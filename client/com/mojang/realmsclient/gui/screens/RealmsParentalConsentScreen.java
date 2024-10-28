@@ -1,5 +1,6 @@
 package com.mojang.realmsclient.gui.screens;
 
+import java.net.URI;
 import javax.annotation.Nullable;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -13,6 +14,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
+import net.minecraft.util.CommonLinks;
 
 public class RealmsParentalConsentScreen extends RealmsScreen {
    private static final Component MESSAGE = Component.translatable("mco.account.privacy.information");
@@ -33,7 +35,7 @@ public class RealmsParentalConsentScreen extends RealmsScreen {
       this.layout.addChild(this.textWidget);
       LinearLayout var1 = (LinearLayout)this.layout.addChild(LinearLayout.horizontal().spacing(8));
       MutableComponent var2 = Component.translatable("mco.account.privacy.info.button");
-      var1.addChild(Button.builder(var2, ConfirmLinkScreen.confirmLink(this, "https://aka.ms/MinecraftGDPR")).build());
+      var1.addChild(Button.builder(var2, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.GDPR)).build());
       var1.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
          this.onClose();
       }).build());

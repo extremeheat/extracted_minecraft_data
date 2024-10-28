@@ -22,13 +22,16 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.util.FastColor;
@@ -151,7 +154,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
          }
 
          if (this.renderHitBoxes && !var1.isInvisible() && !Minecraft.getInstance().showOnlyReducedInfo()) {
-            renderHitbox(var10, var11.getBuffer(RenderType.lines()), var1, var9);
+            renderHitbox(var10, var11.getBuffer(RenderType.lines()), var1, var9, 1.0F, 1.0F, 1.0F);
          }
 
          var10.popPose();
@@ -168,45 +171,74 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       }
    }
 
-   private static void renderHitbox(PoseStack var0, VertexConsumer var1, Entity var2, float var3) {
-      AABB var4 = var2.getBoundingBox().move(-var2.getX(), -var2.getY(), -var2.getZ());
-      LevelRenderer.renderLineBox(var0, var1, var4, 1.0F, 1.0F, 1.0F, 1.0F);
-      if (var2 instanceof EnderDragon) {
-         double var5 = -Mth.lerp((double)var3, var2.xOld, var2.getX());
-         double var7 = -Mth.lerp((double)var3, var2.yOld, var2.getY());
-         double var9 = -Mth.lerp((double)var3, var2.zOld, var2.getZ());
-         EnderDragonPart[] var11 = ((EnderDragon)var2).getSubEntities();
-         int var12 = var11.length;
+   private static void renderServerSideHitbox(PoseStack var0, Entity var1, MultiBufferSource var2) {
+      Entity var3 = getServerSideEntity(var1);
+      if (var3 == null) {
+         DebugRenderer.renderFloatingText(var0, var2, "Missing", var1.getX(), var1.getBoundingBox().maxY + 1.5, var1.getZ(), -65536);
+      } else {
+         var0.pushPose();
+         var0.translate(var3.getX() - var1.getX(), var3.getY() - var1.getY(), var3.getZ() - var1.getZ());
+         renderHitbox(var0, var2.getBuffer(RenderType.lines()), var3, 1.0F, 0.0F, 1.0F, 0.0F);
+         renderVector(var0, var2.getBuffer(RenderType.lines()), new Vector3f(), var3.getDeltaMovement(), -256);
+         var0.popPose();
+      }
+   }
 
-         for(int var13 = 0; var13 < var12; ++var13) {
-            EnderDragonPart var14 = var11[var13];
+   @Nullable
+   private static Entity getServerSideEntity(Entity var0) {
+      IntegratedServer var1 = Minecraft.getInstance().getSingleplayerServer();
+      if (var1 != null) {
+         ServerLevel var2 = var1.getLevel(var0.level().dimension());
+         if (var2 != null) {
+            return var2.getEntity(var0.getId());
+         }
+      }
+
+      return null;
+   }
+
+   private static void renderHitbox(PoseStack var0, VertexConsumer var1, Entity var2, float var3, float var4, float var5, float var6) {
+      AABB var7 = var2.getBoundingBox().move(-var2.getX(), -var2.getY(), -var2.getZ());
+      LevelRenderer.renderLineBox(var0, var1, var7, var4, var5, var6, 1.0F);
+      if (var2 instanceof EnderDragon) {
+         double var8 = -Mth.lerp((double)var3, var2.xOld, var2.getX());
+         double var10 = -Mth.lerp((double)var3, var2.yOld, var2.getY());
+         double var12 = -Mth.lerp((double)var3, var2.zOld, var2.getZ());
+         EnderDragonPart[] var14 = ((EnderDragon)var2).getSubEntities();
+         int var15 = var14.length;
+
+         for(int var16 = 0; var16 < var15; ++var16) {
+            EnderDragonPart var17 = var14[var16];
             var0.pushPose();
-            double var15 = var5 + Mth.lerp((double)var3, var14.xOld, var14.getX());
-            double var17 = var7 + Mth.lerp((double)var3, var14.yOld, var14.getY());
-            double var19 = var9 + Mth.lerp((double)var3, var14.zOld, var14.getZ());
-            var0.translate(var15, var17, var19);
-            LevelRenderer.renderLineBox(var0, var1, var14.getBoundingBox().move(-var14.getX(), -var14.getY(), -var14.getZ()), 0.25F, 1.0F, 0.0F, 1.0F);
+            double var18 = var8 + Mth.lerp((double)var3, var17.xOld, var17.getX());
+            double var20 = var10 + Mth.lerp((double)var3, var17.yOld, var17.getY());
+            double var22 = var12 + Mth.lerp((double)var3, var17.zOld, var17.getZ());
+            var0.translate(var18, var20, var22);
+            LevelRenderer.renderLineBox(var0, var1, var17.getBoundingBox().move(-var17.getX(), -var17.getY(), -var17.getZ()), 0.25F, 1.0F, 0.0F, 1.0F);
             var0.popPose();
          }
       }
 
       if (var2 instanceof LivingEntity) {
-         float var21 = 0.01F;
-         LevelRenderer.renderLineBox(var0, var1, var4.minX, (double)(var2.getEyeHeight() - 0.01F), var4.minZ, var4.maxX, (double)(var2.getEyeHeight() + 0.01F), var4.maxZ, 1.0F, 0.0F, 0.0F, 1.0F);
+         float var24 = 0.01F;
+         LevelRenderer.renderLineBox(var0, var1, var7.minX, (double)(var2.getEyeHeight() - 0.01F), var7.minZ, var7.maxX, (double)(var2.getEyeHeight() + 0.01F), var7.maxZ, 1.0F, 0.0F, 0.0F, 1.0F);
       }
 
-      Entity var22 = var2.getVehicle();
-      if (var22 != null) {
-         float var6 = Math.min(var22.getBbWidth(), var2.getBbWidth()) / 2.0F;
-         float var24 = 0.0625F;
-         Vec3 var8 = var22.getPassengerRidingPosition(var2).subtract(var2.position());
-         LevelRenderer.renderLineBox(var0, var1, var8.x - (double)var6, var8.y, var8.z - (double)var6, var8.x + (double)var6, var8.y + 0.0625, var8.z + (double)var6, 1.0F, 1.0F, 0.0F, 1.0F);
+      Entity var25 = var2.getVehicle();
+      if (var25 != null) {
+         float var9 = Math.min(var25.getBbWidth(), var2.getBbWidth()) / 2.0F;
+         float var26 = 0.0625F;
+         Vec3 var11 = var25.getPassengerRidingPosition(var2).subtract(var2.position());
+         LevelRenderer.renderLineBox(var0, var1, var11.x - (double)var9, var11.y, var11.z - (double)var9, var11.x + (double)var9, var11.y + 0.0625, var11.z + (double)var9, 1.0F, 1.0F, 0.0F, 1.0F);
       }
 
-      Vec3 var23 = var2.getViewVector(var3);
-      PoseStack.Pose var25 = var0.last();
-      var1.addVertex(var25, 0.0F, var2.getEyeHeight(), 0.0F).setColor(-16776961).setNormal(var25, (float)var23.x, (float)var23.y, (float)var23.z);
-      var1.addVertex(var25, (float)(var23.x * 2.0), (float)((double)var2.getEyeHeight() + var23.y * 2.0), (float)(var23.z * 2.0)).setColor(0, 0, 255, 255).setNormal(var25, (float)var23.x, (float)var23.y, (float)var23.z);
+      renderVector(var0, var1, new Vector3f(0.0F, var2.getEyeHeight(), 0.0F), var2.getViewVector(var3).scale(2.0), -16776961);
+   }
+
+   private static void renderVector(PoseStack var0, VertexConsumer var1, Vector3f var2, Vec3 var3, int var4) {
+      PoseStack.Pose var5 = var0.last();
+      var1.addVertex(var5, var2).setColor(var4).setNormal(var5, (float)var3.x, (float)var3.y, (float)var3.z);
+      var1.addVertex(var5, (float)((double)var2.x() + var3.x), (float)((double)var2.y() + var3.y), (float)((double)var2.z() + var3.z)).setColor(var4).setNormal(var5, (float)var3.x, (float)var3.y, (float)var3.z);
    }
 
    private void renderFlame(PoseStack var1, MultiBufferSource var2, Entity var3, Quaternionf var4) {

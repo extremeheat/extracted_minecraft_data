@@ -125,7 +125,7 @@ public class TransferableSelectionList extends ObjectSelectionList<PackEntry> {
       }
 
       private static MultiLineLabel cacheDescription(Minecraft var0, Component var1) {
-         return MultiLineLabel.create(var0.font, var1, 157, 2);
+         return MultiLineLabel.create(var0.font, 157, 2, var1);
       }
 
       public Component getNarration() {

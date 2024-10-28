@@ -141,12 +141,12 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
          var3 = var3.above(10);
          LOGGER.debug("Creating portal at {}", var3);
          spawnGatewayPortal(var1, var3, EndGatewayConfiguration.knownExit(var2, false));
-         this.exitPortal = var3;
+         this.setExitPosition(var3, this.exactTeleport);
       }
 
       if (this.exitPortal != null) {
          var3 = this.exactTeleport ? this.exitPortal : findExitPosition(var1, this.exitPortal);
-         return new Vec3((double)var3.getX() + 0.5, (double)var3.getY(), (double)var3.getZ() + 0.5);
+         return var3.getBottomCenter();
       } else {
          return null;
       }
@@ -289,6 +289,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    public void setExitPosition(BlockPos var1, boolean var2) {
       this.exactTeleport = var2;
       this.exitPortal = var1;
+      this.setChanged();
    }
 
    // $FF: synthetic method

@@ -87,6 +87,7 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    public static final Feature<DiskConfiguration> DISK;
    public static final Feature<LakeFeature.Configuration> LAKE;
    public static final Feature<OreConfiguration> ORE;
+   public static final Feature<NoneFeatureConfiguration> END_PLATFORM;
    public static final Feature<SpikeConfiguration> END_SPIKE;
    public static final Feature<NoneFeatureConfiguration> END_ISLAND;
    public static final Feature<EndGatewayConfiguration> END_GATEWAY;
@@ -235,6 +236,7 @@ public abstract class Feature<FC extends FeatureConfiguration> {
       DISK = register("disk", new DiskFeature(DiskConfiguration.CODEC));
       LAKE = register("lake", new LakeFeature(LakeFeature.Configuration.CODEC));
       ORE = register("ore", new OreFeature(OreConfiguration.CODEC));
+      END_PLATFORM = register("end_platform", new EndPlatformFeature(NoneFeatureConfiguration.CODEC));
       END_SPIKE = register("end_spike", new SpikeFeature(SpikeConfiguration.CODEC));
       END_ISLAND = register("end_island", new EndIslandFeature(NoneFeatureConfiguration.CODEC));
       END_GATEWAY = register("end_gateway", new EndGatewayFeature(EndGatewayConfiguration.CODEC));

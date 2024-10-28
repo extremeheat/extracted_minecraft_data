@@ -7,7 +7,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.layers.SlimeOuterLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Slime;
 
 public class SlimeRenderer extends MobRenderer<Slime, SlimeModel<Slime>> {
@@ -20,7 +19,7 @@ public class SlimeRenderer extends MobRenderer<Slime, SlimeModel<Slime>> {
 
    public void render(Slime var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
       this.shadowRadius = 0.25F * (float)var1.getSize();
-      super.render((Mob)var1, var2, var3, var4, var5, var6);
+      super.render(var1, var2, var3, var4, var5, var6);
    }
 
    protected void scale(Slime var1, PoseStack var2, float var3) {

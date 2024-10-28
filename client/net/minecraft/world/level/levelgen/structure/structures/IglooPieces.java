@@ -25,6 +25,7 @@ import net.minecraft.world.level.levelgen.structure.TemplateStructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
@@ -72,7 +73,7 @@ public class IglooPieces {
       }
 
       private static StructurePlaceSettings makeSettings(Rotation var0, ResourceLocation var1) {
-         return (new StructurePlaceSettings()).setRotation(var0).setMirror(Mirror.NONE).setRotationPivot((BlockPos)IglooPieces.PIVOTS.get(var1)).addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
+         return (new StructurePlaceSettings()).setRotation(var0).setMirror(Mirror.NONE).setRotationPivot((BlockPos)IglooPieces.PIVOTS.get(var1)).addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK).setLiquidSettings(LiquidSettings.IGNORE_WATERLOGGING);
       }
 
       private static BlockPos makePosition(ResourceLocation var0, BlockPos var1, int var2) {

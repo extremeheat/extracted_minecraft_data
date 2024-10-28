@@ -390,7 +390,7 @@ public class ItemInHandRenderer {
                   var8.mulPose(Axis.YP.rotationDegrees((float)var15 * 65.3F));
                   var8.mulPose(Axis.ZP.rotationDegrees((float)var15 * -9.785F));
                   var16 = (float)var6.getUseDuration(var1) - ((float)var1.getUseItemRemainingTicks() - var2 + 1.0F);
-                  var17 = var16 / (float)CrossbowItem.getChargeDuration(var1);
+                  var17 = var16 / (float)CrossbowItem.getChargeDuration(var6, var1);
                   if (var17 > 1.0F) {
                      var17 = 1.0F;
                   }

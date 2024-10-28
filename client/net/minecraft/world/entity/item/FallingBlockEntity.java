@@ -19,6 +19,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
@@ -327,8 +328,8 @@ public class FallingBlockEntity extends Entity {
       return true;
    }
 
-   public Packet<ClientGamePacketListener> getAddEntityPacket() {
-      return new ClientboundAddEntityPacket(this, Block.getId(this.getBlockState()));
+   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
+      return new ClientboundAddEntityPacket(this, var1, Block.getId(this.getBlockState()));
    }
 
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {

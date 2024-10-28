@@ -299,6 +299,7 @@ public class Zombie extends Monster {
                      AttributeInstance var15 = this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE);
                      AttributeModifier var16 = var15.getModifier(REINFORCEMENT_CALLER_CHARGE_ID);
                      double var17 = var16 != null ? var16.amount() : 0.0;
+                     var15.removeModifier(REINFORCEMENT_CALLER_CHARGE_ID);
                      var15.addPermanentModifier(new AttributeModifier(REINFORCEMENT_CALLER_CHARGE_ID, var17 - 0.05, AttributeModifier.Operation.ADD_VALUE));
                      var8.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).addPermanentModifier(ZOMBIE_REINFORCEMENT_CALLEE_CHARGE);
                      break;
@@ -471,15 +472,15 @@ public class Zombie extends Monster {
 
    protected void handleAttributes(float var1) {
       this.randomizeReinforcementsChance();
-      this.getAttribute(Attributes.KNOCKBACK_RESISTANCE).addPermanentModifier(new AttributeModifier(RANDOM_SPAWN_BONUS_ID, this.random.nextDouble() * 0.05000000074505806, AttributeModifier.Operation.ADD_VALUE));
+      this.getAttribute(Attributes.KNOCKBACK_RESISTANCE).addOrReplacePermanentModifier(new AttributeModifier(RANDOM_SPAWN_BONUS_ID, this.random.nextDouble() * 0.05000000074505806, AttributeModifier.Operation.ADD_VALUE));
       double var2 = this.random.nextDouble() * 1.5 * (double)var1;
       if (var2 > 1.0) {
-         this.getAttribute(Attributes.FOLLOW_RANGE).addPermanentModifier(new AttributeModifier(ZOMBIE_RANDOM_SPAWN_BONUS_ID, var2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+         this.getAttribute(Attributes.FOLLOW_RANGE).addOrReplacePermanentModifier(new AttributeModifier(ZOMBIE_RANDOM_SPAWN_BONUS_ID, var2, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
       }
 
       if (this.random.nextFloat() < var1 * 0.05F) {
-         this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).addPermanentModifier(new AttributeModifier(LEADER_ZOMBIE_BONUS_ID, this.random.nextDouble() * 0.25 + 0.5, AttributeModifier.Operation.ADD_VALUE));
-         this.getAttribute(Attributes.MAX_HEALTH).addPermanentModifier(new AttributeModifier(LEADER_ZOMBIE_BONUS_ID, this.random.nextDouble() * 3.0 + 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+         this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE).addOrReplacePermanentModifier(new AttributeModifier(LEADER_ZOMBIE_BONUS_ID, this.random.nextDouble() * 0.25 + 0.5, AttributeModifier.Operation.ADD_VALUE));
+         this.getAttribute(Attributes.MAX_HEALTH).addOrReplacePermanentModifier(new AttributeModifier(LEADER_ZOMBIE_BONUS_ID, this.random.nextDouble() * 3.0 + 1.0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
          this.setCanBreakDoors(this.supportsBreakDoorGoal());
       }
 

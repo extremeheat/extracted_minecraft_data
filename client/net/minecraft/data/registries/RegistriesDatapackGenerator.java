@@ -1,7 +1,6 @@
 package net.minecraft.data.registries;
 
 import com.google.gson.JsonElement;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Encoder;
 import com.mojang.serialization.JsonOps;
@@ -15,10 +14,8 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.resources.RegistryDataLoader;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import org.slf4j.Logger;
 
 public class RegistriesDatapackGenerator implements DataProvider {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private final PackOutput output;
    private final CompletableFuture<HolderLookup.Provider> registries;
 
@@ -52,10 +49,12 @@ public class RegistriesDatapackGenerator implements DataProvider {
    }
 
    private static <E> CompletableFuture<?> dumpValue(Path var0, CachedOutput var1, DynamicOps<JsonElement> var2, Encoder<E> var3, E var4) {
-      Optional var5 = var3.encodeStart(var2, var4).resultOrPartial((var1x) -> {
-         LOGGER.error("Couldn't serialize element {}: {}", var0, var1x);
+      return (CompletableFuture)var3.encodeStart(var2, var4).mapOrElse((var2x) -> {
+         return DataProvider.saveStable(var1, var2x, var0);
+      }, (var1x) -> {
+         String var10002 = String.valueOf(var0);
+         return CompletableFuture.failedFuture(new IllegalStateException("Couldn't generate file '" + var10002 + "': " + var1x.message()));
       });
-      return var5.isPresent() ? DataProvider.saveStable(var1, (JsonElement)var5.get(), var0) : CompletableFuture.completedFuture((Object)null);
    }
 
    public final String getName() {

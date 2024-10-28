@@ -234,7 +234,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Varia
       return var1.is(ItemTags.AXOLOTL_FOOD);
    }
 
-   public boolean canBeLeashed(Player var1) {
+   public boolean canBeLeashed() {
       return true;
    }
 

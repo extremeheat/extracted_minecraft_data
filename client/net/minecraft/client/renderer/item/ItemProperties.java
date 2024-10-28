@@ -171,7 +171,7 @@ public class ItemProperties {
          if (var2 == null) {
             return 0.0F;
          } else {
-            return CrossbowItem.isCharged(var0x) ? 0.0F : (float)(var0x.getUseDuration(var2) - var2.getUseItemRemainingTicks()) / (float)CrossbowItem.getChargeDuration(var2);
+            return CrossbowItem.isCharged(var0x) ? 0.0F : (float)(var0x.getUseDuration(var2) - var2.getUseItemRemainingTicks()) / (float)CrossbowItem.getChargeDuration(var0x, var2);
          }
       });
       register(Items.CROSSBOW, ResourceLocation.withDefaultNamespace("pulling"), (var0x, var1, var2, var3) -> {

@@ -87,7 +87,7 @@ public class EditWorldScreen extends Screen {
          return Files.isRegularFile(var0, new LinkOption[0]);
       }).isPresent();
       this.layout.addChild(Button.builder(FOLDER_BUTTON, (var1x) -> {
-         Util.getPlatform().openFile(var2.getLevelPath(LevelResource.ROOT).toFile());
+         Util.getPlatform().openPath(var2.getLevelPath(LevelResource.ROOT));
       }).width(200).build());
       this.layout.addChild(Button.builder(BACKUP_BUTTON, (var2x) -> {
          boolean var3 = makeBackupAndShowToast(var2);
@@ -103,7 +103,7 @@ public class EditWorldScreen extends Screen {
             throw new RuntimeException(var5);
          }
 
-         Util.getPlatform().openFile(var3.toFile());
+         Util.getPlatform().openPath(var3);
       }).width(200).build());
       this.layout.addChild(Button.builder(OPTIMIZE_BUTTON, (var3x) -> {
          var1.setScreen(new BackupConfirmScreen(() -> {

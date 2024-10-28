@@ -172,4 +172,8 @@ public final class RegionFileStorage implements AutoCloseable {
       }
 
    }
+
+   public RegionStorageInfo info() {
+      return this.info;
+   }
 }

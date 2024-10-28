@@ -308,7 +308,7 @@ public class Sniffer extends Animal {
       return this.getBrain().getMemory(MemoryModuleType.SNIFFER_EXPLORED_POSITIONS).stream().flatMap(Collection::stream);
    }
 
-   protected void jumpFromGround() {
+   public void jumpFromGround() {
       super.jumpFromGround();
       double var1 = this.moveControl.getSpeedModifier();
       if (var1 > 0.0) {

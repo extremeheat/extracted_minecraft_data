@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.projectile;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -154,8 +153,7 @@ public class ThrownTrident extends AbstractArrow {
       });
    }
 
-   @Nonnull
-   protected ItemStack getWeaponItem() {
+   public ItemStack getWeaponItem() {
       return this.getPickupItemStackOrigin();
    }
 

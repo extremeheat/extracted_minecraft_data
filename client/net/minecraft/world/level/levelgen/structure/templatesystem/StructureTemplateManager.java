@@ -13,12 +13,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +53,8 @@ import org.slf4j.Logger;
 
 public class StructureTemplateManager {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final String STRUCTURE_DIRECTORY_NAME = "structure";
+   public static final String STRUCTURE_RESOURCE_DIRECTORY_NAME = "structure";
+   private static final String STRUCTURE_GENERATED_DIRECTORY_NAME = "structures";
    private static final String STRUCTURE_FILE_EXTENSION = ".nbt";
    private static final String STRUCTURE_TEXT_FILE_EXTENSION = ".snbt";
    private final Map<ResourceLocation, Optional<StructureTemplate>> structureRepository = Maps.newConcurrentMap();
@@ -59,7 +63,7 @@ public class StructureTemplateManager {
    private final Path generatedDir;
    private final List<Source> sources;
    private final HolderGetter<Block> blockLookup;
-   private static final FileToIdConverter LISTER = new FileToIdConverter("structure", ".nbt");
+   private static final FileToIdConverter RESOURCE_LISTER = new FileToIdConverter("structure", ".nbt");
 
    public StructureTemplateManager(ResourceManager var1, LevelStorageSource.LevelStorageAccess var2, DataFixer var3, HolderGetter<Block> var4) {
       super();
@@ -122,7 +126,7 @@ public class StructureTemplateManager {
    }
 
    private Optional<StructureTemplate> loadFromResource(ResourceLocation var1) {
-      ResourceLocation var2 = LISTER.idToFile(var1);
+      ResourceLocation var2 = RESOURCE_LISTER.idToFile(var1);
       return this.load(() -> {
          return this.resourceManager.open(var2);
       }, (var1x) -> {
@@ -131,8 +135,8 @@ public class StructureTemplateManager {
    }
 
    private Stream<ResourceLocation> listResources() {
-      Stream var10000 = LISTER.listMatchingResources(this.resourceManager).keySet().stream();
-      FileToIdConverter var10001 = LISTER;
+      Stream var10000 = RESOURCE_LISTER.listMatchingResources(this.resourceManager).keySet().stream();
+      FileToIdConverter var10001 = RESOURCE_LISTER;
       Objects.requireNonNull(var10001);
       return var10000.map(var10001::fileToId);
    }
@@ -142,14 +146,22 @@ public class StructureTemplateManager {
    }
 
    private Stream<ResourceLocation> listTestStructures() {
-      return this.listFolderContents(Paths.get(StructureUtils.testStructuresDir), "minecraft", ".snbt");
+      Path var1 = Paths.get(StructureUtils.testStructuresDir);
+      if (!Files.isDirectory(var1, new LinkOption[0])) {
+         return Stream.empty();
+      } else {
+         ArrayList var2 = new ArrayList();
+         Objects.requireNonNull(var2);
+         this.listFolderContents(var1, "minecraft", ".snbt", var2::add);
+         return var2.stream();
+      }
    }
 
    private Optional<StructureTemplate> loadFromGenerated(ResourceLocation var1) {
       if (!Files.isDirectory(this.generatedDir, new LinkOption[0])) {
          return Optional.empty();
       } else {
-         Path var2 = createAndValidatePathToStructure(this.generatedDir, var1, ".nbt");
+         Path var2 = this.createAndValidatePathToGeneratedStructure(var1, ".nbt");
          return this.load(() -> {
             return new FileInputStream(var2.toFile());
          }, (var1x) -> {
@@ -163,47 +175,83 @@ public class StructureTemplateManager {
          return Stream.empty();
       } else {
          try {
-            return Files.list(this.generatedDir).filter((var0) -> {
+            ArrayList var1 = new ArrayList();
+            DirectoryStream var2 = Files.newDirectoryStream(this.generatedDir, (var0) -> {
                return Files.isDirectory(var0, new LinkOption[0]);
-            }).flatMap((var1) -> {
-               return this.listGeneratedInNamespace(var1);
             });
-         } catch (IOException var2) {
+
+            try {
+               Iterator var3 = var2.iterator();
+
+               while(var3.hasNext()) {
+                  Path var4 = (Path)var3.next();
+                  String var5 = var4.getFileName().toString();
+                  Path var6 = var4.resolve("structures");
+                  Objects.requireNonNull(var1);
+                  this.listFolderContents(var6, var5, ".nbt", var1::add);
+               }
+            } catch (Throwable var8) {
+               if (var2 != null) {
+                  try {
+                     var2.close();
+                  } catch (Throwable var7) {
+                     var8.addSuppressed(var7);
+                  }
+               }
+
+               throw var8;
+            }
+
+            if (var2 != null) {
+               var2.close();
+            }
+
+            return var1.stream();
+         } catch (IOException var9) {
             return Stream.empty();
          }
       }
    }
 
-   private Stream<ResourceLocation> listGeneratedInNamespace(Path var1) {
-      Path var2 = var1.resolve("structure");
-      return this.listFolderContents(var2, var1.getFileName().toString(), ".nbt");
-   }
+   private void listFolderContents(Path var1, String var2, String var3, Consumer<ResourceLocation> var4) {
+      int var5 = var3.length();
+      Function var6 = (var1x) -> {
+         return var1x.substring(0, var1x.length() - var5);
+      };
 
-   private Stream<ResourceLocation> listFolderContents(Path var1, String var2, String var3) {
-      if (!Files.isDirectory(var1, new LinkOption[0])) {
-         return Stream.empty();
-      } else {
-         int var4 = var3.length();
-         Function var5 = (var1x) -> {
-            return var1x.substring(0, var1x.length() - var4);
-         };
+      try {
+         Stream var7 = Files.find(var1, 2147483647, (var1x, var2x) -> {
+            return var2x.isRegularFile() && var1x.toString().endsWith(var3);
+         }, new FileVisitOption[0]);
 
          try {
-            return Files.walk(var1).filter((var1x) -> {
-               return var1x.toString().endsWith(var3);
-            }).mapMulti((var4x, var5x) -> {
+            var7.forEach((var5x) -> {
                try {
-                  var5x.accept(ResourceLocation.fromNamespaceAndPath(var2, (String)var5.apply(this.relativize(var1, var4x))));
+                  var4.accept(ResourceLocation.fromNamespaceAndPath(var2, (String)var6.apply(this.relativize(var1, var5x))));
                } catch (ResourceLocationException var7) {
-                  LOGGER.error("Invalid location while listing pack contents", var7);
+                  LOGGER.error("Invalid location while listing folder {} contents", var1, var7);
                }
 
             });
-         } catch (IOException var7) {
-            LOGGER.error("Failed to list folder contents", var7);
-            return Stream.empty();
+         } catch (Throwable var11) {
+            if (var7 != null) {
+               try {
+                  var7.close();
+               } catch (Throwable var10) {
+                  var11.addSuppressed(var10);
+               }
+            }
+
+            throw var11;
          }
+
+         if (var7 != null) {
+            var7.close();
+         }
+      } catch (IOException var12) {
+         LOGGER.error("Failed to list folder {} contents", var1, var12);
       }
+
    }
 
    private String relativize(Path var1, Path var2) {
@@ -313,7 +361,7 @@ public class StructureTemplateManager {
          return false;
       } else {
          StructureTemplate var3 = (StructureTemplate)var2.get();
-         Path var4 = createAndValidatePathToStructure(this.generatedDir, var1, ".nbt");
+         Path var4 = this.createAndValidatePathToGeneratedStructure(var1, ".nbt");
          Path var5 = var4.getParent();
          if (var5 == null) {
             return false;
@@ -351,29 +399,21 @@ public class StructureTemplateManager {
       }
    }
 
-   public Path getPathToGeneratedStructure(ResourceLocation var1, String var2) {
-      return createPathToStructure(this.generatedDir, var1, var2);
-   }
-
-   public static Path createPathToStructure(Path var0, ResourceLocation var1, String var2) {
-      try {
-         Path var3 = var0.resolve(var1.getNamespace());
-         Path var4 = var3.resolve("structure");
-         return FileUtil.createPathToResource(var4, var1.getPath(), var2);
-      } catch (InvalidPathException var5) {
-         throw new ResourceLocationException("Invalid resource path: " + String.valueOf(var1), var5);
-      }
-   }
-
-   private static Path createAndValidatePathToStructure(Path var0, ResourceLocation var1, String var2) {
+   public Path createAndValidatePathToGeneratedStructure(ResourceLocation var1, String var2) {
       if (var1.getPath().contains("//")) {
          throw new ResourceLocationException("Invalid resource path: " + String.valueOf(var1));
       } else {
-         Path var3 = createPathToStructure(var0, var1, var2);
-         if (var3.startsWith(var0) && FileUtil.isPathNormalized(var3) && FileUtil.isPathPortable(var3)) {
-            return var3;
-         } else {
-            throw new ResourceLocationException("Invalid resource path: " + String.valueOf(var3));
+         try {
+            Path var3 = this.generatedDir.resolve(var1.getNamespace());
+            Path var4 = var3.resolve("structures");
+            Path var5 = FileUtil.createPathToResource(var4, var1.getPath(), var2);
+            if (var5.startsWith(this.generatedDir) && FileUtil.isPathNormalized(var5) && FileUtil.isPathPortable(var5)) {
+               return var5;
+            } else {
+               throw new ResourceLocationException("Invalid resource path: " + String.valueOf(var5));
+            }
+         } catch (InvalidPathException var6) {
+            throw new ResourceLocationException("Invalid resource path: " + String.valueOf(var1), var6);
          }
       }
    }

@@ -184,7 +184,7 @@ public class GameTestServer extends MinecraftServer {
 
    private void startTests(ServerLevel var1) {
       BlockPos var2 = new BlockPos(var1.random.nextIntBetweenInclusive(-14999992, 14999992), -59, var1.random.nextIntBetweenInclusive(-14999992, 14999992));
-      GameTestRunner var3 = GameTestRunner.Builder.fromBatches(this.testBatches, var1).newStructureSpawner(new StructureGridSpawner(var2, 8)).build();
+      GameTestRunner var3 = GameTestRunner.Builder.fromBatches(this.testBatches, var1).newStructureSpawner(new StructureGridSpawner(var2, 8, false)).build();
       List var4 = var3.getTestInfos();
       this.testTracker = new MultipleTestTracker(var4);
       LOGGER.info("{} tests are now running at position {}!", this.testTracker.getTotalCount(), var2.toShortString());
@@ -247,6 +247,7 @@ public class GameTestServer extends MinecraftServer {
          ((GameRules.BooleanValue)var0.getRule(GameRules.RULE_DOMOBSPAWNING)).set(false, (MinecraftServer)null);
          ((GameRules.BooleanValue)var0.getRule(GameRules.RULE_WEATHER_CYCLE)).set(false, (MinecraftServer)null);
          ((GameRules.IntegerValue)var0.getRule(GameRules.RULE_RANDOMTICKING)).set(0, (MinecraftServer)null);
+         ((GameRules.BooleanValue)var0.getRule(GameRules.RULE_DOFIRETICK)).set(false, (MinecraftServer)null);
       });
       WORLD_OPTIONS = new WorldOptions(0L, false, false);
    }

@@ -2378,10 +2378,10 @@ public class Blocks {
       REINFORCED_DEEPSLATE = register("reinforced_deepslate", new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).instrument(NoteBlockInstrument.BASEDRUM).sound(SoundType.DEEPSLATE).strength(55.0F, 1200.0F)));
       DECORATED_POT = register((String)"decorated_pot", new DecoratedPotBlock(BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_RED).strength(0.0F, 0.0F).pushReaction(PushReaction.DESTROY).noOcclusion()));
       CRAFTER = register((String)"crafter", new CrafterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5F, 3.5F)));
-      TRIAL_SPAWNER = register((String)"trial_spawner", new TrialSpawnerBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().lightLevel((var0x) -> {
+      TRIAL_SPAWNER = register((String)"trial_spawner", new TrialSpawnerBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).lightLevel((var0x) -> {
          return ((TrialSpawnerState)var0x.getValue(TrialSpawnerBlock.STATE)).lightLevel();
       }).strength(50.0F).sound(SoundType.TRIAL_SPAWNER).isViewBlocking(Blocks::never).noOcclusion()));
-      VAULT = register((String)"vault", new VaultBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).noOcclusion().requiresCorrectToolForDrops().sound(SoundType.VAULT).lightLevel((var0x) -> {
+      VAULT = register((String)"vault", new VaultBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).noOcclusion().sound(SoundType.VAULT).lightLevel((var0x) -> {
          return ((VaultState)var0x.getValue(VaultBlock.STATE)).lightLevel();
       }).strength(50.0F).isViewBlocking(Blocks::never)));
       HEAVY_CORE = register((String)"heavy_core", new HeavyCoreBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).instrument(NoteBlockInstrument.SNARE).sound(SoundType.HEAVY_CORE).strength(10.0F).pushReaction(PushReaction.NORMAL).explosionResistance(1200.0F)));

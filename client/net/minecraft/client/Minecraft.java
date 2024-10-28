@@ -199,6 +199,7 @@ import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.Musics;
 import net.minecraft.tags.BiomeTags;
+import net.minecraft.util.CommonLinks;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.FileZipper;
 import net.minecraft.util.MemoryReserve;
@@ -531,7 +532,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          Tesselator.init();
          this.renderBuffers = new RenderBuffers(var8);
       } catch (OutOfMemoryError var12) {
-         TinyFileDialogs.tinyfd_messageBox("Minecraft", "Oh no! The game was unable to allocate memory off-heap while trying to start. You may try to free some memory by closing other applications on your computer, check that your system meets the minimum requirements, and try again. If the problem persists, please visit: https://aka.ms/Minecraft-Support", "ok", "error", true);
+         TinyFileDialogs.tinyfd_messageBox("Minecraft", "Oh no! The game was unable to allocate memory off-heap while trying to start. You may try to free some memory by closing other applications on your computer, check that your system meets the minimum requirements, and try again. If the problem persists, please visit: " + String.valueOf(CommonLinks.GENERAL_HELP), "ok", "error", true);
          throw new SilentInitException("Unable to allocate render buffers", var12);
       }
 
@@ -667,7 +668,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          var1.add((var1x) -> {
             return BanNoticeScreens.create((var1) -> {
                if (var1) {
-                  Util.getPlatform().openUri("https://aka.ms/mcjavamoderation");
+                  Util.getPlatform().openUri(CommonLinks.SUSPENSION_HELP);
                }
 
                var1x.run();
@@ -1000,11 +1001,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.gui.setChatDisabledByPlayerShown(false);
             this.setScreen(new ConfirmLinkScreen((var1x) -> {
                if (var1x) {
-                  Util.getPlatform().openUri("https://aka.ms/JavaAccountSettings");
+                  Util.getPlatform().openUri(CommonLinks.ACCOUNT_SETTINGS);
                }
 
                this.setScreen((Screen)null);
-            }, Minecraft.ChatStatus.INFO_DISABLED_BY_PROFILE, "https://aka.ms/JavaAccountSettings", true));
+            }, Minecraft.ChatStatus.INFO_DISABLED_BY_PROFILE, CommonLinks.ACCOUNT_SETTINGS, true));
          } else {
             Component var3 = var2.getMessage();
             this.gui.setOverlayMessage(var3, false);

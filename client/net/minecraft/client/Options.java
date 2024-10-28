@@ -593,6 +593,11 @@ public class Options {
       return this.soundDevice;
    }
 
+   public void onboardingAccessibilityFinished() {
+      this.onboardAccessibility = false;
+      this.save();
+   }
+
    public Options(Minecraft var1, File var2) {
       super();
       this.darkMojangStudiosBackground = OptionInstance.createBoolean("options.darkMojangStudiosBackgroundColor", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DARK_MOJANG_BACKGROUND), false);

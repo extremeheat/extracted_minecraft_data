@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 
 public class RealmsServerPlayerLists extends ValueObject {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public Map<Long, List<ProfileResult>> servers;
+   public Map<Long, List<ProfileResult>> servers = Map.of();
 
    public RealmsServerPlayerLists() {
       super();

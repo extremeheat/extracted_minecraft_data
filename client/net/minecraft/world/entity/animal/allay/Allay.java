@@ -2,7 +2,6 @@ package net.minecraft.world.entity.animal.allay;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import java.util.Iterator;
 import java.util.Objects;
@@ -21,6 +20,7 @@ import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -409,10 +409,10 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       this.writeInventoryToTag(var1, this.registryAccess());
-      DataResult var10000 = VibrationSystem.Data.CODEC.encodeStart(NbtOps.INSTANCE, this.vibrationData);
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      VibrationSystem.Data.CODEC.encodeStart(var2, this.vibrationData).resultOrPartial((var0) -> {
+         LOGGER.error("Failed to encode vibration listener for Allay: '{}'", var0);
+      }).ifPresent((var1x) -> {
          var1.put("listener", var1x);
       });
       var1.putLong("DuplicationCooldown", this.duplicationCooldown);
@@ -422,11 +422,11 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.readInventoryFromTag(var1, this.registryAccess());
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       if (var1.contains("listener", 10)) {
-         DataResult var10000 = VibrationSystem.Data.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.getCompound("listener")));
-         Logger var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+         VibrationSystem.Data.CODEC.parse(var2, var1.getCompound("listener")).resultOrPartial((var0) -> {
+            LOGGER.error("Failed to parse vibration listener for Allay: '{}'", var0);
+         }).ifPresent((var1x) -> {
             this.vibrationData = var1x;
          });
       }

@@ -52,4 +52,8 @@ public class VecDeltaCodec {
    public void setBase(Vec3 var1) {
       this.base = var1;
    }
+
+   public Vec3 getBase() {
+      return this.base;
+   }
 }

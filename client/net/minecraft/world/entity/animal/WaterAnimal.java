@@ -6,7 +6,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -54,7 +53,7 @@ public abstract class WaterAnimal extends PathfinderMob {
       return false;
    }
 
-   public boolean canBeLeashed(Player var1) {
+   public boolean canBeLeashed() {
       return false;
    }
 

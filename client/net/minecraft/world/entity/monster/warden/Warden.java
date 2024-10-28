@@ -2,10 +2,8 @@ package net.minecraft.world.entity.monster.warden;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
@@ -22,6 +20,8 @@ import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -124,8 +124,8 @@ public class Warden extends Monster implements VibrationSystem {
       this.setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);
    }
 
-   public Packet<ClientGamePacketListener> getAddEntityPacket() {
-      return new ClientboundAddEntityPacket(this, this.hasPose(Pose.EMERGING) ? 1 : 0);
+   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
+      return new ClientboundAddEntityPacket(this, var1, this.hasPose(Pose.EMERGING) ? 1 : 0);
    }
 
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {
@@ -369,39 +369,35 @@ public class Warden extends Monster implements VibrationSystem {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      DataResult var10000 = AngerManagement.codec(this::canTargetEntity).encodeStart(NbtOps.INSTANCE, this.angerManagement);
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      AngerManagement.codec(this::canTargetEntity).encodeStart(var2, this.angerManagement).resultOrPartial((var0) -> {
+         LOGGER.error("Failed to encode anger state for Warden: '{}'", var0);
+      }).ifPresent((var1x) -> {
          var1.put("anger", var1x);
       });
-      var10000 = VibrationSystem.Data.CODEC.encodeStart(NbtOps.INSTANCE, this.vibrationData);
-      var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+      VibrationSystem.Data.CODEC.encodeStart(var2, this.vibrationData).resultOrPartial((var0) -> {
+         LOGGER.error("Failed to encode vibration listener for Warden: '{}'", var0);
+      }).ifPresent((var1x) -> {
          var1.put("listener", var1x);
       });
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      DataResult var10000;
-      Logger var10001;
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       if (var1.contains("anger")) {
-         var10000 = AngerManagement.codec(this::canTargetEntity).parse(new Dynamic(NbtOps.INSTANCE, var1.get("anger")));
-         var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+         AngerManagement.codec(this::canTargetEntity).parse(var2, var1.get("anger")).resultOrPartial((var0) -> {
+            LOGGER.error("Failed to parse anger state for Warden: '{}'", var0);
+         }).ifPresent((var1x) -> {
             this.angerManagement = var1x;
          });
          this.syncClientAngerLevel();
       }
 
       if (var1.contains("listener", 10)) {
-         var10000 = VibrationSystem.Data.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.getCompound("listener")));
-         var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
+         VibrationSystem.Data.CODEC.parse(var2, var1.getCompound("listener")).resultOrPartial((var0) -> {
+            LOGGER.error("Failed to parse vibration listener for Warden: '{}'", var0);
+         }).ifPresent((var1x) -> {
             this.vibrationData = var1x;
          });
       }

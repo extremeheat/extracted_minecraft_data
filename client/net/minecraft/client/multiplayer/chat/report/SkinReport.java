@@ -30,6 +30,7 @@ public class SkinReport extends Report {
       SkinReport var1 = new SkinReport(this.reportId, this.createdAt, this.reportedProfileId, this.skinGetter);
       var1.comments = this.comments;
       var1.reason = this.reason;
+      var1.attested = this.attested;
       return var1;
    }
 
@@ -60,7 +61,7 @@ public class SkinReport extends Report {
          if (((SkinReport)this.report).reason == null) {
             return Report.CannotBuildReason.NO_REASON;
          } else {
-            return ((SkinReport)this.report).comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : null;
+            return ((SkinReport)this.report).comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : super.checkBuildable();
          }
       }
 

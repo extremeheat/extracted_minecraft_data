@@ -35,21 +35,25 @@ public class GameTestBatchFactory {
    }
 
    public static GameTestRunner.GameTestBatcher fromGameTestInfo() {
-      return (var0) -> {
-         Map var1 = (Map)var0.stream().filter(Objects::nonNull).collect(Collectors.groupingBy((var0x) -> {
+      return fromGameTestInfo(50);
+   }
+
+   public static GameTestRunner.GameTestBatcher fromGameTestInfo(int var0) {
+      return (var1) -> {
+         Map var2 = (Map)var1.stream().filter(Objects::nonNull).collect(Collectors.groupingBy((var0x) -> {
             return var0x.getTestFunction().batchName();
          }));
-         return var1.entrySet().stream().flatMap((var0x) -> {
-            String var1 = (String)var0x.getKey();
-            List var2 = (List)var0x.getValue();
-            return Streams.mapWithIndex(Lists.partition(var2, 50).stream(), (var1x, var2x) -> {
-               return toGameTestBatch(List.copyOf(var1x), var1, var2x);
+         return var2.entrySet().stream().flatMap((var1x) -> {
+            String var2 = (String)var1x.getKey();
+            List var3 = (List)var1x.getValue();
+            return Streams.mapWithIndex(Lists.partition(var3, var0).stream(), (var1, var2x) -> {
+               return toGameTestBatch(List.copyOf(var1), var2, var2x);
             });
          }).toList();
       };
    }
 
-   private static GameTestBatch toGameTestBatch(List<GameTestInfo> var0, String var1, long var2) {
+   public static GameTestBatch toGameTestBatch(Collection<GameTestInfo> var0, String var1, long var2) {
       Consumer var4 = GameTestRegistry.getBeforeBatchFunction(var1);
       Consumer var5 = GameTestRegistry.getAfterBatchFunction(var1);
       return new GameTestBatch(var1 + ":" + var2, var0, var4, var5);

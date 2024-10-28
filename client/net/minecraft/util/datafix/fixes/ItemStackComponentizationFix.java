@@ -384,15 +384,16 @@ public class ItemStackComponentizationFix extends DataFix {
    }
 
    private static void fixAttributeModifiers(ItemStackData var0, Dynamic<?> var1, int var2) {
-      List var3 = var0.removeTag("AttributeModifiers").asList(ItemStackComponentizationFix::fixAttributeModifier);
-      boolean var4 = (var2 & 2) != 0;
-      if (!var3.isEmpty() || var4) {
-         Dynamic var5 = var1.emptyMap().set("modifiers", var1.createList(var3.stream()));
+      OptionalDynamic var3 = var0.removeTag("AttributeModifiers");
+      if (!var3.result().isEmpty()) {
+         boolean var4 = (var2 & 2) != 0;
+         List var5 = var3.asList(ItemStackComponentizationFix::fixAttributeModifier);
+         Dynamic var6 = var1.emptyMap().set("modifiers", var1.createList(var5.stream()));
          if (var4) {
-            var5 = var5.set("show_in_tooltip", var1.createBoolean(false));
+            var6 = var6.set("show_in_tooltip", var1.createBoolean(false));
          }
 
-         var0.setComponent("minecraft:attribute_modifiers", var5);
+         var0.setComponent("minecraft:attribute_modifiers", var6);
       }
    }
 

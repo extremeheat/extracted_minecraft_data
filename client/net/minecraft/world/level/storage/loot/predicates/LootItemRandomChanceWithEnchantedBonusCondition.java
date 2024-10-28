@@ -1,6 +1,7 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
 import com.google.common.collect.ImmutableSet;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
@@ -17,15 +18,16 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
-public record LootItemRandomChanceWithEnchantedBonusCondition(LevelBasedValue chance, Holder<Enchantment> enchantment) implements LootItemCondition {
+public record LootItemRandomChanceWithEnchantedBonusCondition(float unenchantedChance, LevelBasedValue enchantedChance, Holder<Enchantment> enchantment) implements LootItemCondition {
    public static final MapCodec<LootItemRandomChanceWithEnchantedBonusCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(LevelBasedValue.CODEC.fieldOf("chance").forGetter(LootItemRandomChanceWithEnchantedBonusCondition::chance), Enchantment.CODEC.fieldOf("enchantment").forGetter(LootItemRandomChanceWithEnchantedBonusCondition::enchantment)).apply(var0, LootItemRandomChanceWithEnchantedBonusCondition::new);
+      return var0.group(Codec.floatRange(0.0F, 1.0F).fieldOf("unenchanted_chance").forGetter(LootItemRandomChanceWithEnchantedBonusCondition::unenchantedChance), LevelBasedValue.CODEC.fieldOf("enchanted_chance").forGetter(LootItemRandomChanceWithEnchantedBonusCondition::enchantedChance), Enchantment.CODEC.fieldOf("enchantment").forGetter(LootItemRandomChanceWithEnchantedBonusCondition::enchantment)).apply(var0, LootItemRandomChanceWithEnchantedBonusCondition::new);
    });
 
-   public LootItemRandomChanceWithEnchantedBonusCondition(LevelBasedValue var1, Holder<Enchantment> var2) {
+   public LootItemRandomChanceWithEnchantedBonusCondition(float var1, LevelBasedValue var2, Holder<Enchantment> var3) {
       super();
-      this.chance = var1;
-      this.enchantment = var2;
+      this.unenchantedChance = var1;
+      this.enchantedChance = var2;
+      this.enchantment = var3;
    }
 
    public LootItemConditionType getType() {
@@ -38,25 +40,31 @@ public record LootItemRandomChanceWithEnchantedBonusCondition(LevelBasedValue ch
 
    public boolean test(LootContext var1) {
       Entity var2 = (Entity)var1.getParamOrNull(LootContextParams.ATTACKING_ENTITY);
-      int var3;
+      int var10000;
       if (var2 instanceof LivingEntity var4) {
-         var3 = EnchantmentHelper.getEnchantmentLevel(this.enchantment, var4);
+         var10000 = EnchantmentHelper.getEnchantmentLevel(this.enchantment, var4);
       } else {
-         var3 = 0;
+         var10000 = 0;
       }
 
-      return var1.getRandom().nextFloat() < this.chance.calculate(var3);
+      int var3 = var10000;
+      float var5 = var3 > 0 ? this.enchantedChance.calculate(var3) : this.unenchantedChance;
+      return var1.getRandom().nextFloat() < var5;
    }
 
    public static LootItemCondition.Builder randomChanceAndLootingBoost(HolderLookup.Provider var0, float var1, float var2) {
       HolderLookup.RegistryLookup var3 = var0.lookupOrThrow(Registries.ENCHANTMENT);
       return () -> {
-         return new LootItemRandomChanceWithEnchantedBonusCondition(new LevelBasedValue.Linear(var1 + var2, var2), var3.getOrThrow(Enchantments.LOOTING));
+         return new LootItemRandomChanceWithEnchantedBonusCondition(var1, new LevelBasedValue.Linear(var1 + var2, var2), var3.getOrThrow(Enchantments.LOOTING));
       };
    }
 
-   public LevelBasedValue chance() {
-      return this.chance;
+   public float unenchantedChance() {
+      return this.unenchantedChance;
+   }
+
+   public LevelBasedValue enchantedChance() {
+      return this.enchantedChance;
    }
 
    public Holder<Enchantment> enchantment() {

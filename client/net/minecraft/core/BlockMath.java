@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import com.mojang.math.Transformation;
 import java.util.Map;
-import java.util.function.Supplier;
 import net.minecraft.Util;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -50,15 +49,15 @@ public class BlockMath {
       return new Transformation(var1);
    }
 
-   public static Transformation getUVLockTransform(Transformation var0, Direction var1, Supplier<String> var2) {
-      Direction var3 = Direction.rotate(var0.getMatrix(), var1);
-      Transformation var4 = var0.inverse();
-      if (var4 == null) {
-         LOGGER.warn((String)var2.get());
-         return new Transformation((Vector3f)null, (Quaternionf)null, new Vector3f(0.0F, 0.0F, 0.0F), (Quaternionf)null);
+   public static Transformation getUVLockTransform(Transformation var0, Direction var1) {
+      Direction var2 = Direction.rotate(var0.getMatrix(), var1);
+      Transformation var3 = var0.inverse();
+      if (var3 == null) {
+         LOGGER.debug("Failed to invert transformation {}", var0);
+         return Transformation.identity();
       } else {
-         Transformation var5 = ((Transformation)VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL.get(var1)).compose(var4).compose((Transformation)VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL.get(var3));
-         return blockCenterToCorner(var5);
+         Transformation var4 = ((Transformation)VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL.get(var1)).compose(var3).compose((Transformation)VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL.get(var2));
+         return blockCenterToCorner(var4);
       }
    }
 }

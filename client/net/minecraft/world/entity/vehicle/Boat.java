@@ -30,6 +30,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
@@ -54,7 +55,7 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class Boat extends VehicleEntity implements VariantHolder<Type> {
+public class Boat extends VehicleEntity implements Leashable, VariantHolder<Type> {
    private static final EntityDataAccessor<Integer> DATA_ID_TYPE;
    private static final EntityDataAccessor<Boolean> DATA_ID_PADDLE_LEFT;
    private static final EntityDataAccessor<Boolean> DATA_ID_PADDLE_RIGHT;
@@ -89,6 +90,8 @@ public class Boat extends VehicleEntity implements VariantHolder<Type> {
    private float bubbleMultiplier;
    private float bubbleAngle;
    private float bubbleAngleO;
+   @Nullable
+   private Leashable.LeashData leashData;
 
    public Boat(EntityType<? extends Boat> var1, Level var2) {
       super(var1, var2);
@@ -407,6 +410,26 @@ public class Boat extends VehicleEntity implements VariantHolder<Type> {
       return this.getPaddleState(var1) ? Mth.clampedLerp(this.paddlePositions[var1] - 0.3926991F, this.paddlePositions[var1], var2) : 0.0F;
    }
 
+   @Nullable
+   public Leashable.LeashData getLeashData() {
+      return this.leashData;
+   }
+
+   public void setLeashData(@Nullable Leashable.LeashData var1) {
+      this.leashData = var1;
+   }
+
+   public Vec3 getLeashOffset() {
+      return new Vec3(0.0, (double)(0.88F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.64F));
+   }
+
+   public void elasticRangeLeashBehaviour(Entity var1, float var2) {
+      Vec3 var3 = var1.position().subtract(this.position()).normalize().scale((double)var2 - 6.0);
+      Vec3 var4 = this.getDeltaMovement();
+      boolean var5 = var4.dot(var3) > 0.0;
+      this.setDeltaMovement(var4.add(var3.scale(var5 ? 0.15000000596046448 : 0.20000000298023224)));
+   }
+
    private Status getStatus() {
       Status var1 = this.isUnderwater();
       if (var1 != null) {
@@ -708,10 +731,12 @@ public class Boat extends VehicleEntity implements VariantHolder<Type> {
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {
+      this.writeLeashData(var1, this.leashData);
       var1.putString("Type", this.getVariant().getSerializedName());
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
+      this.leashData = this.readLeashData(var1);
       if (var1.contains("Type", 8)) {
          this.setVariant(Boat.Type.byName(var1.getString("Type")));
       }
@@ -719,7 +744,10 @@ public class Boat extends VehicleEntity implements VariantHolder<Type> {
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (var1.isSecondaryUseActive()) {
+      InteractionResult var3 = super.interact(var1, var2);
+      if (var3 != InteractionResult.PASS) {
+         return var3;
+      } else if (var1.isSecondaryUseActive()) {
          return InteractionResult.PASS;
       } else if (this.outOfControlTicks < 60.0F) {
          if (!this.level().isClientSide) {
@@ -730,6 +758,14 @@ public class Boat extends VehicleEntity implements VariantHolder<Type> {
       } else {
          return InteractionResult.PASS;
       }
+   }
+
+   public void remove(Entity.RemovalReason var1) {
+      if (!this.level().isClientSide && var1.shouldDestroy() && this.isLeashed()) {
+         this.dropLeash(true, true);
+      }
+
+      super.remove(var1);
    }
 
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {

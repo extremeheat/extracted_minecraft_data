@@ -9,16 +9,18 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.LeadItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
@@ -65,35 +67,37 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
          return InteractionResult.SUCCESS;
       } else {
          boolean var3 = false;
-         double var4 = 7.0;
-         List var6 = this.level().getEntitiesOfClass(Mob.class, new AABB(this.getX() - 7.0, this.getY() - 7.0, this.getZ() - 7.0, this.getX() + 7.0, this.getY() + 7.0, this.getZ() + 7.0));
-         Iterator var7 = var6.iterator();
+         List var4 = LeadItem.leashableInArea(this.level(), this.getPos(), (var2x) -> {
+            Entity var3 = var2x.getLeashHolder();
+            return var3 == var1 || var3 == this;
+         });
+         Iterator var5 = var4.iterator();
 
-         while(var7.hasNext()) {
-            Mob var8 = (Mob)var7.next();
-            if (var8.getLeashHolder() == var1) {
-               var8.setLeashedTo(this, true);
+         while(var5.hasNext()) {
+            Leashable var6 = (Leashable)var5.next();
+            if (var6.getLeashHolder() == var1) {
+               var6.setLeashedTo(this, true);
                var3 = true;
             }
          }
 
-         boolean var10 = false;
+         boolean var8 = false;
          if (!var3) {
             this.discard();
             if (var1.getAbilities().instabuild) {
-               Iterator var11 = var6.iterator();
+               Iterator var9 = var4.iterator();
 
-               while(var11.hasNext()) {
-                  Mob var9 = (Mob)var11.next();
-                  if (var9.isLeashed() && var9.getLeashHolder() == this) {
-                     var9.dropLeash(true, false);
-                     var10 = true;
+               while(var9.hasNext()) {
+                  Leashable var7 = (Leashable)var9.next();
+                  if (var7.isLeashed() && var7.getLeashHolder() == this) {
+                     var7.dropLeash(true, false);
+                     var8 = true;
                   }
                }
             }
          }
 
-         if (var3 || var10) {
+         if (var3 || var8) {
             this.gameEvent(GameEvent.BLOCK_ATTACH, var1);
          }
 
@@ -130,7 +134,7 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
       this.playSound(SoundEvents.LEASH_KNOT_PLACE, 1.0F, 1.0F);
    }
 
-   public Packet<ClientGamePacketListener> getAddEntityPacket() {
+   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
       return new ClientboundAddEntityPacket(this, 0, this.getPos());
    }
 

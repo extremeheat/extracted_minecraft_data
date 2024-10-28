@@ -71,10 +71,14 @@ public class FollowOwnerGoal extends Goal {
    }
 
    public void tick() {
-      this.tamable.getLookControl().setLookAt(this.owner, 10.0F, (float)this.tamable.getMaxHeadXRot());
+      boolean var1 = this.tamable.shouldTryTeleportToOwner();
+      if (!var1) {
+         this.tamable.getLookControl().setLookAt(this.owner, 10.0F, (float)this.tamable.getMaxHeadXRot());
+      }
+
       if (--this.timeToRecalcPath <= 0) {
          this.timeToRecalcPath = this.adjustedTickDelay(10);
-         if (this.tamable.shouldTryTeleportToOwner()) {
+         if (var1) {
             this.tamable.tryToTeleportToOwner();
          } else {
             this.navigation.moveTo((Entity)this.owner, this.speedModifier);

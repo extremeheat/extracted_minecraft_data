@@ -140,8 +140,7 @@ public interface DispenseItemBehavior {
                }
             });
             if (!var4.isEmpty()) {
-               ((Saddleable)var4.get(0)).equipSaddle(SoundSource.BLOCKS);
-               var2.shrink(1);
+               ((Saddleable)var4.get(0)).equipSaddle(var2.split(1), SoundSource.BLOCKS);
                this.setSuccess(true);
                return var2;
             } else {

@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.layers.ShulkerHeadLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.phys.AABB;
@@ -29,7 +28,7 @@ public class ShulkerRenderer extends MobRenderer<Shulker, ShulkerModel<Shulker>>
    }
 
    public boolean shouldRender(Shulker var1, Frustum var2, double var3, double var5, double var7) {
-      return super.shouldRender((Mob)var1, var2, var3, var5, var7) ? true : var1.getRenderPosition(0.0F).filter((var2x) -> {
+      return super.shouldRender(var1, var2, var3, var5, var7) ? true : var1.getRenderPosition(0.0F).filter((var2x) -> {
          EntityType var3 = var1.getType();
          float var4 = var3.getHeight() / 2.0F;
          float var5 = var3.getWidth() / 2.0F;

@@ -8,6 +8,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.CommonLinks;
 
 public class DemoIntroScreen extends Screen {
    private static final ResourceLocation DEMO_BACKGROUND_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/demo_background.png");
@@ -24,7 +25,7 @@ public class DemoIntroScreen extends Screen {
       boolean var1 = true;
       this.addRenderableWidget(Button.builder(Component.translatable("demo.help.buy"), (var0) -> {
          var0.active = false;
-         Util.getPlatform().openUri("https://aka.ms/BuyMinecraftJava");
+         Util.getPlatform().openUri(CommonLinks.BUY_MINECRAFT_JAVA);
       }).bounds(this.width / 2 - 116, this.height / 2 + 62 + -16, 114, 20).build());
       this.addRenderableWidget(Button.builder(Component.translatable("demo.help.later"), (var1x) -> {
          this.minecraft.setScreen((Screen)null);

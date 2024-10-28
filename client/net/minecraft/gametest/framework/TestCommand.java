@@ -16,6 +16,8 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -133,7 +135,11 @@ public class TestCommand {
       var10002 = Commands.literal("runfailed").then(var1);
       var10003 = testFinder;
       Objects.requireNonNull(var10003);
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var10001.then(runWithRetryOptionsAndBuildInfo(var10002, var10003::failedTests))).then(Commands.literal("locate").then(Commands.argument("testName", TestFunctionArgument.testFunctionArgument()).executes((var0x) -> {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var10001.then(runWithRetryOptionsAndBuildInfo(var10002, var10003::failedTests))).then(Commands.literal("verify").then(Commands.argument("testName", TestFunctionArgument.testFunctionArgument()).executes((var0x) -> {
+         return ((Runner)testFinder.byArgument(var0x, "testName")).verify();
+      })))).then(Commands.literal("verifyclass").then(Commands.argument("testClassName", TestClassNameArgument.testClassName()).executes((var0x) -> {
+         return ((Runner)testFinder.allTestsInClass(var0x, TestClassNameArgument.getTestClassName(var0x, "testClassName"))).verify();
+      })))).then(Commands.literal("locate").then(Commands.argument("testName", TestFunctionArgument.testFunctionArgument()).executes((var0x) -> {
          return ((Runner)testFinder.locateByName(var0x, "minecraft:" + TestFunctionArgument.getTestFunction(var0x, "testName").structureName())).locate();
       })))).then(Commands.literal("resetclosest").executes((var0x) -> {
          return ((Runner)testFinder.nearest(var0x)).reset();
@@ -295,7 +301,7 @@ public class TestCommand {
    private static int exportTestStructure(CommandSourceStack var0, String var1) {
       Path var2 = Paths.get(StructureUtils.testStructuresDir);
       ResourceLocation var3 = ResourceLocation.parse(var1);
-      Path var4 = var0.getLevel().getStructureManager().getPathToGeneratedStructure(var3, ".nbt");
+      Path var4 = var0.getLevel().getStructureManager().createAndValidatePathToGeneratedStructure(var3, ".nbt");
       Path var5 = NbtToSnbt.convertStructure(CachedOutput.NO_CACHE, var4, var3.getPath(), var2);
       if (var5 == null) {
          say(var0, "Failed to export " + String.valueOf(var4));
@@ -338,7 +344,7 @@ public class TestCommand {
    private static int importTestStructure(CommandSourceStack var0, String var1) {
       Path var2 = Paths.get(StructureUtils.testStructuresDir, var1 + ".snbt");
       ResourceLocation var3 = ResourceLocation.withDefaultNamespace(var1);
-      Path var4 = var0.getLevel().getStructureManager().getPathToGeneratedStructure(var3, ".nbt");
+      Path var4 = var0.getLevel().getStructureManager().createAndValidatePathToGeneratedStructure(var3, ".nbt");
 
       try {
          BufferedReader var5 = Files.newBufferedReader(var2);
@@ -516,6 +522,42 @@ public class TestCommand {
          return var1.getValue() ? 0 : 1;
       }
 
+      int verify() {
+         TestCommand.stopTests();
+         CommandSourceStack var1 = this.finder.source();
+         ServerLevel var2 = var1.getLevel();
+         BlockPos var3 = TestCommand.createTestPositionAround(var1);
+         List var4 = Stream.concat(TestCommand.toGameTestInfos(var1, RetryOptions.noRetries(), this.finder), TestCommand.toGameTestInfo(var1, RetryOptions.noRetries(), this.finder, 0)).toList();
+         boolean var5 = true;
+         GameTestRunner.clearMarkers(var2);
+         GameTestRegistry.forgetFailedTests();
+         ArrayList var6 = new ArrayList();
+         Iterator var7 = var4.iterator();
+
+         while(var7.hasNext()) {
+            GameTestInfo var8 = (GameTestInfo)var7.next();
+            Rotation[] var9 = Rotation.values();
+            int var10 = var9.length;
+
+            for(int var11 = 0; var11 < var10; ++var11) {
+               Rotation var12 = var9[var11];
+               ArrayList var13 = new ArrayList();
+
+               for(int var14 = 0; var14 < 100; ++var14) {
+                  GameTestInfo var15 = new GameTestInfo(var8.getTestFunction(), var12, var2, new RetryOptions(1, true));
+                  var13.add(var15);
+               }
+
+               GameTestBatch var18 = GameTestBatchFactory.toGameTestBatch(var13, var8.getTestFunction().batchName(), (long)var12.ordinal());
+               var6.add(var18);
+            }
+         }
+
+         StructureGridSpawner var16 = new StructureGridSpawner(var3, 10, true);
+         GameTestRunner var17 = GameTestRunner.Builder.fromBatches(var6, var2).batcher(GameTestBatchFactory.fromGameTestInfo(100)).newStructureSpawner(var16).existingStructureSpawner(var16).haltOnError(true).build();
+         return TestCommand.trackAndStartRunner(var1, var2, var17);
+      }
+
       public int run(RetryOptions var1, int var2, int var3) {
          TestCommand.stopTests();
          CommandSourceStack var4 = this.finder.source();
@@ -529,7 +571,7 @@ public class TestCommand {
             GameTestRunner.clearMarkers(var5);
             GameTestRegistry.forgetFailedTests();
             TestCommand.say(var4, "Running " + var7.size() + " tests...");
-            GameTestRunner var8 = GameTestRunner.Builder.fromInfo(var7, var5).newStructureSpawner(new StructureGridSpawner(var6, var3)).build();
+            GameTestRunner var8 = GameTestRunner.Builder.fromInfo(var7, var5).newStructureSpawner(new StructureGridSpawner(var6, var3, false)).build();
             return TestCommand.trackAndStartRunner(var4, var5, var8);
          }
       }

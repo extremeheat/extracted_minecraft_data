@@ -3,6 +3,7 @@ package net.minecraft.world.entity.projectile.windcharge;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
@@ -26,6 +27,7 @@ import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractWindCharge extends AbstractHurtingProjectile implements ItemSupplier {
    public static final ExplosionDamageCalculator EXPLOSION_DAMAGE_CALCULATOR;
+   public static final double JUMP_SCALE = 0.25;
 
    public AbstractWindCharge(EntityType<? extends AbstractWindCharge> var1, Level var2) {
       super(var1, var2);
@@ -86,19 +88,22 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
             EnchantmentHelper.doPostAttackEffects((ServerLevel)this.level(), var5, var7);
          }
 
-         this.explode();
+         this.explode(this.position());
       }
    }
 
    public void push(double var1, double var3, double var5) {
    }
 
-   protected abstract void explode();
+   protected abstract void explode(Vec3 var1);
 
    protected void onHitBlock(BlockHitResult var1) {
       super.onHitBlock(var1);
       if (!this.level().isClientSide) {
-         this.explode();
+         Vec3i var2 = var1.getDirection().getNormal();
+         Vec3 var3 = Vec3.atLowerCornerOf(var2).multiply(0.25, 0.25, 0.25);
+         Vec3 var4 = var1.getLocation().add(var3);
+         this.explode(var4);
          this.discard();
       }
 
@@ -135,12 +140,16 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
 
    public void tick() {
       if (!this.level().isClientSide && this.getBlockY() > this.level().getMaxBuildHeight() + 30) {
-         this.explode();
+         this.explode(this.position());
          this.discard();
       } else {
          super.tick();
       }
 
+   }
+
+   public boolean hurt(DamageSource var1, float var2) {
+      return false;
    }
 
    static {

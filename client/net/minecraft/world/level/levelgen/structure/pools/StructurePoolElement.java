@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
@@ -45,7 +47,7 @@ public abstract class StructurePoolElement {
 
    public abstract BoundingBox getBoundingBox(StructureTemplateManager var1, BlockPos var2, Rotation var3);
 
-   public abstract boolean place(StructureTemplateManager var1, WorldGenLevel var2, StructureManager var3, ChunkGenerator var4, BlockPos var5, BlockPos var6, Rotation var7, BoundingBox var8, RandomSource var9, boolean var10);
+   public abstract boolean place(StructureTemplateManager var1, WorldGenLevel var2, StructureManager var3, ChunkGenerator var4, BlockPos var5, BlockPos var6, Rotation var7, BoundingBox var8, RandomSource var9, LiquidSettings var10, boolean var11);
 
    public abstract StructurePoolElementType<?> getType();
 
@@ -78,25 +80,37 @@ public abstract class StructurePoolElement {
 
    public static Function<StructureTemplatePool.Projection, LegacySinglePoolElement> legacy(String var0) {
       return (var1) -> {
-         return new LegacySinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var1);
+         return new LegacySinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var1, Optional.empty());
       };
    }
 
    public static Function<StructureTemplatePool.Projection, LegacySinglePoolElement> legacy(String var0, Holder<StructureProcessorList> var1) {
       return (var2) -> {
-         return new LegacySinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var2);
+         return new LegacySinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var2, Optional.empty());
       };
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0) {
       return (var1) -> {
-         return new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var1);
+         return new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var1, Optional.empty());
       };
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0, Holder<StructureProcessorList> var1) {
       return (var2) -> {
-         return new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var2);
+         return new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var2, Optional.empty());
+      };
+   }
+
+   public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0, LiquidSettings var1) {
+      return (var2) -> {
+         return new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var2, Optional.of(var1));
+      };
+   }
+
+   public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0, Holder<StructureProcessorList> var1, LiquidSettings var2) {
+      return (var3) -> {
+         return new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var3, Optional.of(var2));
       };
    }
 

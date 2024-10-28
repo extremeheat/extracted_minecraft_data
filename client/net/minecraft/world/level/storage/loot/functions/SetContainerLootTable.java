@@ -53,10 +53,14 @@ public class SetContainerLootTable extends LootItemConditionalFunction {
 
    public void validate(ValidationContext var1) {
       super.validate(var1);
-      if (var1.resolver().get(Registries.LOOT_TABLE, this.name).isEmpty()) {
-         var1.reportProblem("Missing loot table used for container: " + String.valueOf(this.name.location()));
-      }
+      if (!var1.allowsReferences()) {
+         var1.reportProblem("Uses reference to " + String.valueOf(this.name.location()) + ", but references are not allowed");
+      } else {
+         if (var1.resolver().get(Registries.LOOT_TABLE, this.name).isEmpty()) {
+            var1.reportProblem("Missing loot table used for container: " + String.valueOf(this.name.location()));
+         }
 
+      }
    }
 
    public static LootItemConditionalFunction.Builder<?> withLootTable(BlockEntityType<?> var0, ResourceKey<LootTable> var1) {

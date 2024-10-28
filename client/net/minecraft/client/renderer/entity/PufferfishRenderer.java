@@ -9,7 +9,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Pufferfish;
 
 public class PufferfishRenderer extends MobRenderer<Pufferfish, EntityModel<Pufferfish>> {
@@ -43,7 +42,7 @@ public class PufferfishRenderer extends MobRenderer<Pufferfish, EntityModel<Puff
 
       this.puffStateO = var7;
       this.shadowRadius = 0.1F + 0.1F * (float)var7;
-      super.render((Mob)var1, var2, var3, var4, var5, var6);
+      super.render(var1, var2, var3, var4, var5, var6);
    }
 
    protected void setupRotations(Pufferfish var1, PoseStack var2, float var3, float var4, float var5, float var6) {

@@ -6,8 +6,14 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Optionull;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.MultiLineEditBox;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.GenericWaitingScreen;
@@ -33,13 +39,18 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
    private static final Component DESCRIBE_PLACEHOLDER;
    protected static final Component MORE_COMMENTS_LABEL;
    private static final Component MORE_COMMENTS_NARRATION;
+   private static final Component ATTESTATION_CHECKBOX;
+   protected static final int BUTTON_WIDTH = 120;
    protected static final int MARGIN = 20;
    protected static final int SCREEN_WIDTH = 280;
    protected static final int SPACING = 8;
    private static final Logger LOGGER;
    protected final Screen lastScreen;
    protected final ReportingContext reportingContext;
+   protected final LinearLayout layout = LinearLayout.vertical().spacing(8);
    protected B reportBuilder;
+   private Checkbox attestation;
+   protected Button sendButton;
 
    protected AbstractReportScreen(Component var1, Screen var2, ReportingContext var3, B var4) {
       super(var1);
@@ -55,6 +66,49 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
       var5.setCharacterLimit(var4.maxOpinionCommentsLength());
       var5.setValueListener(var3);
       return var5;
+   }
+
+   protected void init() {
+      this.layout.defaultCellSetting().alignHorizontallyCenter();
+      this.createHeader();
+      this.addContent();
+      this.createFooter();
+      this.onReportChanged();
+      this.layout.visitWidgets((var1) -> {
+         AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
+      });
+      this.repositionElements();
+   }
+
+   protected void createHeader() {
+      this.layout.addChild(new StringWidget(this.title, this.font));
+   }
+
+   protected abstract void addContent();
+
+   protected void createFooter() {
+      this.attestation = (Checkbox)this.layout.addChild(Checkbox.builder(ATTESTATION_CHECKBOX, this.font).selected(this.reportBuilder.attested()).maxWidth(280).onValueChange((var1x, var2) -> {
+         this.reportBuilder.setAttested(var2);
+         this.onReportChanged();
+      }).build());
+      LinearLayout var1 = (LinearLayout)this.layout.addChild(LinearLayout.horizontal().spacing(8));
+      var1.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
+         this.onClose();
+      }).width(120).build());
+      this.sendButton = (Button)var1.addChild(Button.builder(SEND_REPORT, (var1x) -> {
+         this.sendReport();
+      }).width(120).build());
+   }
+
+   protected void onReportChanged() {
+      Report.CannotBuildReason var1 = this.reportBuilder.checkBuildable();
+      this.sendButton.active = var1 == null && this.attestation.selected();
+      this.sendButton.setTooltip((Tooltip)Optionull.map(var1, Report.CannotBuildReason::tooltip));
+   }
+
+   protected void repositionElements() {
+      this.layout.arrangeElements();
+      FrameLayout.centerInRectangle(this.layout, this.getRectangle());
    }
 
    protected void sendReport() {
@@ -145,6 +199,7 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
       DESCRIBE_PLACEHOLDER = Component.translatable("gui.abuseReport.describe");
       MORE_COMMENTS_LABEL = Component.translatable("gui.abuseReport.more_comments");
       MORE_COMMENTS_NARRATION = Component.translatable("gui.abuseReport.comments");
+      ATTESTATION_CHECKBOX = Component.translatable("gui.abuseReport.attestation");
       LOGGER = LogUtils.getLogger();
    }
 

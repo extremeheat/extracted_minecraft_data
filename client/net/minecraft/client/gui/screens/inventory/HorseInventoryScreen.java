@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.inventory;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Llama;
 import net.minecraft.world.entity.player.Inventory;
@@ -16,23 +15,22 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
    private static final ResourceLocation ARMOR_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/horse/armor_slot");
    private static final ResourceLocation HORSE_INVENTORY_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/container/horse.png");
    private final AbstractHorse horse;
+   private final int inventoryColumns;
    private float xMouse;
    private float yMouse;
 
-   public HorseInventoryScreen(HorseInventoryMenu var1, Inventory var2, AbstractHorse var3) {
+   public HorseInventoryScreen(HorseInventoryMenu var1, Inventory var2, AbstractHorse var3, int var4) {
       super(var1, var2, var3.getDisplayName());
       this.horse = var3;
+      this.inventoryColumns = var4;
    }
 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
       var1.blit(HORSE_INVENTORY_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
-      AbstractHorse var8 = this.horse;
-      if (var8 instanceof AbstractChestedHorse var7) {
-         if (var7.hasChest()) {
-            var1.blitSprite(CHEST_SLOTS_SPRITE, 90, 54, 0, 0, var5 + 79, var6 + 17, var7.getInventoryColumns() * 18, 54);
-         }
+      if (this.inventoryColumns > 0) {
+         var1.blitSprite(CHEST_SLOTS_SPRITE, 90, 54, 0, 0, var5 + 79, var6 + 17, this.inventoryColumns * 18, 54);
       }
 
       if (this.horse.isSaddleable()) {

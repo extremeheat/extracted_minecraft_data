@@ -254,8 +254,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ExperienceOrb;
+import net.minecraft.world.entity.Leashable;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
@@ -974,8 +974,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleEntityLinkPacket(ClientboundSetEntityLinkPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       Entity var2 = this.level.getEntity(var1.getSourceId());
-      if (var2 instanceof Mob) {
-         ((Mob)var2).setDelayedLeashHolderId(var1.getDestId());
+      if (var2 instanceof Leashable var3) {
+         var3.setDelayedLeashHolderId(var1.getDestId());
       }
 
    }
@@ -1143,10 +1143,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       Entity var2 = this.level.getEntity(var1.getEntityId());
       if (var2 instanceof AbstractHorse var3) {
          LocalPlayer var4 = this.minecraft.player;
-         SimpleContainer var5 = new SimpleContainer(var1.getSize());
-         HorseInventoryMenu var6 = new HorseInventoryMenu(var1.getContainerId(), var4.getInventory(), var5, var3);
-         var4.containerMenu = var6;
-         this.minecraft.setScreen(new HorseInventoryScreen(var6, var4.getInventory(), var3));
+         int var5 = var1.getInventoryColumns();
+         SimpleContainer var6 = new SimpleContainer(AbstractHorse.getInventorySize(var5));
+         HorseInventoryMenu var7 = new HorseInventoryMenu(var1.getContainerId(), var4.getInventory(), var6, var3, var5);
+         var4.containerMenu = var7;
+         this.minecraft.setScreen(new HorseInventoryScreen(var7, var4.getInventory(), var3, var5));
       }
 
    }

@@ -1,21 +1,23 @@
 package net.minecraft.client.renderer;
 
-import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.SequencedMap;
 import javax.annotation.Nullable;
 
 public interface MultiBufferSource {
    static BufferSource immediate(ByteBufferBuilder var0) {
-      return immediateWithBuffers(ImmutableMap.of(), var0);
+      return immediateWithBuffers(Object2ObjectSortedMaps.emptyMap(), var0);
    }
 
-   static BufferSource immediateWithBuffers(Map<RenderType, ByteBufferBuilder> var0, ByteBufferBuilder var1) {
+   static BufferSource immediateWithBuffers(SequencedMap<RenderType, ByteBufferBuilder> var0, ByteBufferBuilder var1) {
       return new BufferSource(var1, var0);
    }
 
@@ -23,12 +25,12 @@ public interface MultiBufferSource {
 
    public static class BufferSource implements MultiBufferSource {
       protected final ByteBufferBuilder sharedBuffer;
-      protected final Map<RenderType, ByteBufferBuilder> fixedBuffers;
+      protected final SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers;
       protected final Map<RenderType, BufferBuilder> startedBuilders = new HashMap();
       @Nullable
       protected RenderType lastSharedType;
 
-      protected BufferSource(ByteBufferBuilder var1, Map<RenderType, ByteBufferBuilder> var2) {
+      protected BufferSource(ByteBufferBuilder var1, SequencedMap<RenderType, ByteBufferBuilder> var2) {
          super();
          this.sharedBuffer = var1;
          this.fixedBuffers = var2;
@@ -62,16 +64,22 @@ public interface MultiBufferSource {
       }
 
       public void endLastBatch() {
-         if (this.lastSharedType != null && !this.fixedBuffers.containsKey(this.lastSharedType)) {
+         if (this.lastSharedType != null) {
             this.endBatch(this.lastSharedType);
+            this.lastSharedType = null;
          }
 
-         this.lastSharedType = null;
       }
 
       public void endBatch() {
-         this.startedBuilders.forEach(this::endBatch);
-         this.startedBuilders.clear();
+         this.endLastBatch();
+         Iterator var1 = this.fixedBuffers.keySet().iterator();
+
+         while(var1.hasNext()) {
+            RenderType var2 = (RenderType)var1.next();
+            this.endBatch(var2);
+         }
+
       }
 
       public void endBatch(RenderType var1) {

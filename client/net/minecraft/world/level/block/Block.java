@@ -469,7 +469,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public String toString() {
-      return "Block{" + String.valueOf(BuiltInRegistries.BLOCK.getKey(this)) + "}";
+      return "Block{" + BuiltInRegistries.BLOCK.wrapAsHolder(this).getRegisteredName() + "}";
    }
 
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {

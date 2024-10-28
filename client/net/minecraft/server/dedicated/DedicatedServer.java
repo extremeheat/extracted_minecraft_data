@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.net.Proxy;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -80,12 +81,14 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    private RemoteSampleLogger tickTimeLogger;
    @Nullable
    private DebugSampleSubscriptionTracker debugSampleSubscriptionTracker;
+   private final ServerLinks serverLinks;
 
    public DedicatedServer(Thread var1, LevelStorageSource.LevelStorageAccess var2, PackRepository var3, WorldStem var4, DedicatedServerSettings var5, DataFixer var6, Services var7, ChunkProgressListenerFactory var8) {
       super(var1, var2, var3, var4, Proxy.NO_PROXY, var6, var7, var8);
       this.settings = var5;
       this.rconConsoleSource = new RconConsoleSource(this);
       this.textFilterClient = TextFilterClient.createFromConfig(var5.getProperties().textFilteringConfig);
+      this.serverLinks = createServerLinks(var5);
    }
 
    public boolean initServer() throws IOException {
@@ -582,8 +585,28 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    }
 
    public ServerLinks serverLinks() {
-      String var1 = this.settings.getProperties().bugReportLink;
-      return var1.isEmpty() ? ServerLinks.EMPTY : new ServerLinks(List.of(ServerLinks.KnownLinkType.BUG_REPORT.create(var1)));
+      return this.serverLinks;
+   }
+
+   private static ServerLinks createServerLinks(DedicatedServerSettings var0) {
+      Optional var1 = parseBugReportLink(var0.getProperties());
+      return (ServerLinks)var1.map((var0x) -> {
+         return new ServerLinks(List.of(ServerLinks.KnownLinkType.BUG_REPORT.create(var0x)));
+      }).orElse(ServerLinks.EMPTY);
+   }
+
+   private static Optional<URI> parseBugReportLink(DedicatedServerProperties var0) {
+      String var1 = var0.bugReportLink;
+      if (var1.isEmpty()) {
+         return Optional.empty();
+      } else {
+         try {
+            return Optional.of(Util.parseAndValidateUntrustedUri(var1));
+         } catch (Exception var3) {
+            LOGGER.warn("Failed to parse bug link {}", var1, var3);
+            return Optional.empty();
+         }
+      }
    }
 
    // $FF: synthetic method

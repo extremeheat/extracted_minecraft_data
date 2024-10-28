@@ -18,12 +18,12 @@ import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.phys.Vec3;
 
-public record ReplaceDisc(LevelBasedValue radius, LevelBasedValue height, Vec3i offset, Optional<BlockPredicate> predicate, BlockStateProvider blockState, Optional<Holder<GameEvent>> triggerGameEvent) implements EnchantmentEntityEffect {
-   public static final MapCodec<ReplaceDisc> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(LevelBasedValue.CODEC.fieldOf("radius").forGetter(ReplaceDisc::radius), LevelBasedValue.CODEC.fieldOf("height").forGetter(ReplaceDisc::height), Vec3i.CODEC.optionalFieldOf("offset", Vec3i.ZERO).forGetter(ReplaceDisc::offset), BlockPredicate.CODEC.optionalFieldOf("predicate").forGetter(ReplaceDisc::predicate), BlockStateProvider.CODEC.fieldOf("block_state").forGetter(ReplaceDisc::blockState), GameEvent.CODEC.optionalFieldOf("trigger_game_event").forGetter(ReplaceDisc::triggerGameEvent)).apply(var0, ReplaceDisc::new);
+public record ReplaceDisk(LevelBasedValue radius, LevelBasedValue height, Vec3i offset, Optional<BlockPredicate> predicate, BlockStateProvider blockState, Optional<Holder<GameEvent>> triggerGameEvent) implements EnchantmentEntityEffect {
+   public static final MapCodec<ReplaceDisk> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+      return var0.group(LevelBasedValue.CODEC.fieldOf("radius").forGetter(ReplaceDisk::radius), LevelBasedValue.CODEC.fieldOf("height").forGetter(ReplaceDisk::height), Vec3i.CODEC.optionalFieldOf("offset", Vec3i.ZERO).forGetter(ReplaceDisk::offset), BlockPredicate.CODEC.optionalFieldOf("predicate").forGetter(ReplaceDisk::predicate), BlockStateProvider.CODEC.fieldOf("block_state").forGetter(ReplaceDisk::blockState), GameEvent.CODEC.optionalFieldOf("trigger_game_event").forGetter(ReplaceDisk::triggerGameEvent)).apply(var0, ReplaceDisk::new);
    });
 
-   public ReplaceDisc(LevelBasedValue var1, LevelBasedValue var2, Vec3i var3, Optional<BlockPredicate> var4, BlockStateProvider var5, Optional<Holder<GameEvent>> var6) {
+   public ReplaceDisk(LevelBasedValue var1, LevelBasedValue var2, Vec3i var3, Optional<BlockPredicate> var4, BlockStateProvider var5, Optional<Holder<GameEvent>> var6) {
       super();
       this.radius = var1;
       this.height = var2;
@@ -53,7 +53,7 @@ public record ReplaceDisc(LevelBasedValue radius, LevelBasedValue height, Vec3i 
 
    }
 
-   public MapCodec<ReplaceDisc> codec() {
+   public MapCodec<ReplaceDisk> codec() {
       return CODEC;
    }
 

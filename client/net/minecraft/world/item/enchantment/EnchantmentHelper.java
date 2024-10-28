@@ -220,7 +220,7 @@ public class EnchantmentHelper {
    public static void doPostAttackEffects(ServerLevel var0, Entity var1, DamageSource var2) {
       Entity var4 = var2.getEntity();
       if (var4 instanceof LivingEntity var3) {
-         doPostAttackEffectsWithItemSource(var0, var1, var2, var3.getMainHandItem());
+         doPostAttackEffectsWithItemSource(var0, var1, var2, var3.getWeaponItem());
       } else {
          doPostAttackEffectsWithItemSource(var0, var1, var2, (ItemStack)null);
       }
@@ -421,20 +421,20 @@ public class EnchantmentHelper {
       return Math.max(0, var3.intValue());
    }
 
-   public static float modifyCrossbowChargingTime(LivingEntity var0, float var1) {
-      MutableFloat var2 = new MutableFloat(var1);
-      runIterationOnEquipment(var0, (var2x, var3, var4) -> {
-         ((Enchantment)var2x.value()).modifyCrossbowChargeTime(var0.getRandom(), var3, var2);
+   public static float modifyCrossbowChargingTime(ItemStack var0, LivingEntity var1, float var2) {
+      MutableFloat var3 = new MutableFloat(var2);
+      runIterationOnItem(var0, (var2x, var3x) -> {
+         ((Enchantment)var2x.value()).modifyCrossbowChargeTime(var1.getRandom(), var3x, var3);
       });
-      return Math.max(0.0F, var2.floatValue());
+      return Math.max(0.0F, var3.floatValue());
    }
 
-   public static float getTridentSpinAttackStrength(LivingEntity var0) {
-      MutableFloat var1 = new MutableFloat(0.0F);
-      runIterationOnEquipment(var0, (var2, var3, var4) -> {
-         ((Enchantment)var2.value()).modifyTridentSpinAttackStrength(var0.getRandom(), var3, var1);
+   public static float getTridentSpinAttackStrength(ItemStack var0, LivingEntity var1) {
+      MutableFloat var2 = new MutableFloat(0.0F);
+      runIterationOnItem(var0, (var2x, var3) -> {
+         ((Enchantment)var2x.value()).modifyTridentSpinAttackStrength(var1.getRandom(), var3, var2);
       });
-      return var1.floatValue();
+      return var2.floatValue();
    }
 
    public static boolean hasTag(ItemStack var0, TagKey<Enchantment> var1) {

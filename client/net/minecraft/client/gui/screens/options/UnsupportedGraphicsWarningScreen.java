@@ -19,7 +19,7 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
    private static final int BUTTON_MARGIN = 5;
    private static final int BUTTON_HEIGHT = 20;
    private final Component narrationMessage;
-   private final FormattedText message;
+   private final List<Component> message;
    private final ImmutableList<ButtonOption> buttonOptions;
    private MultiLineLabel messageLines;
    private int contentTop;
@@ -28,7 +28,7 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
    protected UnsupportedGraphicsWarningScreen(Component var1, List<Component> var2, ImmutableList<ButtonOption> var3) {
       super(var1);
       this.messageLines = MultiLineLabel.EMPTY;
-      this.message = FormattedText.composite(var2);
+      this.message = var2;
       this.narrationMessage = CommonComponents.joinForNarration(var1, ComponentUtils.formatList(var2, (Component)CommonComponents.EMPTY));
       this.buttonOptions = var3;
    }
@@ -45,7 +45,7 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
 
       int var8 = 5 + this.buttonWidth + 5;
       int var9 = var8 * this.buttonOptions.size();
-      this.messageLines = MultiLineLabel.create(this.font, this.message, var9);
+      this.messageLines = MultiLineLabel.create(this.font, var9, (Component[])this.message.toArray(new Component[0]));
       int var10000 = this.messageLines.getLineCount();
       Objects.requireNonNull(this.font);
       int var3 = var10000 * 9;

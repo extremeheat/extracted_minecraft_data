@@ -4,7 +4,6 @@ import com.mojang.text2speech.Narrator;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.NarratorStatus;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -33,8 +32,6 @@ public class AccessibilityOnboardingScreen extends Screen {
    private final Runnable onClose;
    @Nullable
    private FocusableTextWidget textWidget;
-   @Nullable
-   private AbstractWidget narratorButton;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, this.initTitleYPos(), 33);
 
    public AccessibilityOnboardingScreen(Options var1, Runnable var2) {
@@ -51,9 +48,13 @@ public class AccessibilityOnboardingScreen extends Screen {
       this.textWidget = (FocusableTextWidget)var1.addChild(new FocusableTextWidget(this.width, this.title, this.font), (Consumer)((var0) -> {
          var0.padding(8);
       }));
-      this.narratorButton = this.options.narrator().createButton(this.options);
-      this.narratorButton.active = this.narratorAvailable;
-      var1.addChild(this.narratorButton);
+      AbstractWidget var3 = this.options.narrator().createButton(this.options);
+      if (var3 instanceof CycleButton var2) {
+         this.narratorButton = var2;
+         this.narratorButton.active = this.narratorAvailable;
+         var1.addChild(this.narratorButton);
+      }
+
       var1.addChild(CommonButtons.accessibility(150, (var1x) -> {
          this.closeAndSetScreen(new AccessibilityOptionsScreen(this, this.minecraft.options));
       }, false));
@@ -89,20 +90,22 @@ public class AccessibilityOnboardingScreen extends Screen {
    }
 
    public void onClose() {
-      this.close(this.onClose);
+      this.close(true, this.onClose);
    }
 
    private void closeAndSetScreen(Screen var1) {
-      this.close(() -> {
+      this.close(false, () -> {
          this.minecraft.setScreen(var1);
       });
    }
 
-   private void close(Runnable var1) {
-      this.options.onboardAccessibility = false;
-      this.options.save();
+   private void close(boolean var1, Runnable var2) {
+      if (var1) {
+         this.options.onboardingAccessibilityFinished();
+      }
+
       Narrator.getNarrator().clear();
-      var1.run();
+      var2.run();
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
@@ -123,13 +126,6 @@ public class AccessibilityOnboardingScreen extends Screen {
             Narrator.getNarrator().say(ONBOARDING_NARRATOR_MESSAGE.getString(), true);
             this.hasNarrated = true;
          }
-      }
-
-   }
-
-   public void updateNarratorButton() {
-      if (this.narratorButton instanceof CycleButton) {
-         ((CycleButton)this.narratorButton).setValue((NarratorStatus)this.options.narrator().get());
       }
 
    }

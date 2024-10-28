@@ -390,7 +390,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.serverLevel());
       if (containsInvalidValues(var1.getX(), var1.getY(), var1.getZ(), var1.getYRot(), var1.getXRot())) {
          this.disconnect(Component.translatable("multiplayer.disconnect.invalid_vehicle_movement"));
-      } else {
+      } else if (!this.updateAwaitingTeleport()) {
          Entity var2 = this.player.getRootVehicle();
          if (var2 != this.player && var2.getControllingPassenger() == this.player && var2 == this.lastVehicle) {
             ServerLevel var3 = this.player.serverLevel();
@@ -838,14 +838,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                this.resetPosition();
             }
 
-            if (this.awaitingPositionFromClient != null) {
-               if (this.tickCount - this.awaitingTeleportTime > 20) {
-                  this.awaitingTeleportTime = this.tickCount;
-                  this.teleport(this.awaitingPositionFromClient.x, this.awaitingPositionFromClient.y, this.awaitingPositionFromClient.z, this.player.getYRot(), this.player.getXRot());
-               }
-
-            } else {
-               this.awaitingTeleportTime = this.tickCount;
+            if (!this.updateAwaitingTeleport()) {
                double var3 = clampHorizontal(var1.getX(this.player.getX()));
                double var5 = clampVertical(var1.getY(this.player.getY()));
                double var7 = clampHorizontal(var1.getZ(this.player.getZ()));
@@ -919,16 +912,16 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                         boolean var34 = this.player.isAutoSpinAttack();
                         this.clientIsFloating = var31 >= -0.03125 && !var30 && this.player.gameMode.getGameModeForPlayer() != GameType.SPECTATOR && !this.server.isFlightAllowed() && !this.player.getAbilities().mayfly && !this.player.hasEffect(MobEffects.LEVITATION) && !var27 && !var34 && this.noBlocksAround(this.player);
                         this.player.serverLevel().getChunkSource().move(this.player);
-                        this.player.doCheckFallDamage(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15, var1.isOnGround());
                         Vec3 var35 = new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
                         this.player.setOnGroundWithMovement(var1.isOnGround(), var35);
+                        this.player.doCheckFallDamage(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15, var1.isOnGround());
                         this.player.setKnownMovement(var35);
                         if (var37) {
                            this.player.resetFallDistance();
                         }
 
                         if (var1.isOnGround() || this.player.hasLandedInLiquid() || this.player.onClimbable() || this.player.isSpectator() || var27 || var34) {
-                           this.player.resetCurrentImpulseContext();
+                           this.player.tryResetCurrentImpulseContext();
                         }
 
                         this.player.checkMovementStatistics(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
@@ -943,6 +936,20 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                }
             }
          }
+      }
+   }
+
+   private boolean updateAwaitingTeleport() {
+      if (this.awaitingPositionFromClient != null) {
+         if (this.tickCount - this.awaitingTeleportTime > 20) {
+            this.awaitingTeleportTime = this.tickCount;
+            this.teleport(this.awaitingPositionFromClient.x, this.awaitingPositionFromClient.y, this.awaitingPositionFromClient.z, this.player.getYRot(), this.player.getXRot());
+         }
+
+         return true;
+      } else {
+         this.awaitingTeleportTime = this.tickCount;
+         return false;
       }
    }
 
@@ -980,7 +987,6 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       }
 
       this.awaitingTeleportTime = this.tickCount;
-      this.player.resetCurrentImpulseContext();
       this.player.absMoveTo(var1, var3, var5, var7, var8);
       this.player.connection.send(new ClientboundPlayerPositionPacket(var1 - var10, var3 - var12, var5 - var14, var7 - var16, var8 - var17, var9, this.awaitingTeleport));
    }

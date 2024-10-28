@@ -59,7 +59,7 @@ public interface ProblemReporter {
          if (!var1.isEmpty()) {
             String var2 = (String)var1.asMap().entrySet().stream().map((var0) -> {
                String var10000 = (String)var0.getKey();
-               return "  at " + var10000 + ": " + String.join("; ", (Iterable)var0.getValue());
+               return " at " + var10000 + ": " + String.join("; ", (Iterable)var0.getValue());
             }).collect(Collectors.joining("\n"));
             return Optional.of(var2);
          } else {

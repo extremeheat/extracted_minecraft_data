@@ -17,6 +17,7 @@ public abstract class Report {
    protected String comments = "";
    @Nullable
    protected ReportReason reason;
+   protected boolean attested;
 
    public Report(UUID var1, Instant var2, UUID var3) {
       super();
@@ -38,6 +39,7 @@ public abstract class Report {
       public static final CannotBuildReason NO_REPORTED_MESSAGES = new CannotBuildReason(Component.translatable("gui.chatReport.send.no_reported_messages"));
       public static final CannotBuildReason TOO_MANY_MESSAGES = new CannotBuildReason(Component.translatable("gui.chatReport.send.too_many_messages"));
       public static final CannotBuildReason COMMENT_TOO_LONG = new CannotBuildReason(Component.translatable("gui.abuseReport.send.comment_too_long"));
+      public static final CannotBuildReason NOT_ATTESTED = new CannotBuildReason(Component.translatable("gui.abuseReport.send.not_attested"));
 
       public CannotBuildReason(Component var1) {
          super();
@@ -96,6 +98,10 @@ public abstract class Report {
          return this.report.comments;
       }
 
+      public boolean attested() {
+         return this.report().attested;
+      }
+
       public void setComments(String var1) {
          this.report.comments = var1;
       }
@@ -109,10 +115,16 @@ public abstract class Report {
          this.report.reason = var1;
       }
 
+      public void setAttested(boolean var1) {
+         this.report.attested = var1;
+      }
+
       public abstract boolean hasContent();
 
       @Nullable
-      public abstract CannotBuildReason checkBuildable();
+      public CannotBuildReason checkBuildable() {
+         return !this.report().attested ? Report.CannotBuildReason.NOT_ATTESTED : null;
+      }
 
       public abstract Either<Result, CannotBuildReason> build(ReportingContext var1);
    }

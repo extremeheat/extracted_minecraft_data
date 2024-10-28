@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -90,7 +91,7 @@ public class EntitySelectorParser {
    private Double deltaZ;
    private WrappedMinMaxBounds rotX;
    private WrappedMinMaxBounds rotY;
-   private Predicate<Entity> predicate;
+   private final List<Predicate<Entity>> predicates;
    private BiConsumer<Vec3, List<? extends Entity>> order;
    private boolean currentEntity;
    @Nullable
@@ -124,9 +125,7 @@ public class EntitySelectorParser {
       this.level = MinMaxBounds.Ints.ANY;
       this.rotX = WrappedMinMaxBounds.ANY;
       this.rotY = WrappedMinMaxBounds.ANY;
-      this.predicate = (var0) -> {
-         return true;
-      };
+      this.predicates = new ArrayList();
       this.order = EntitySelector.ORDER_ARBITRARY;
       this.suggestions = SUGGEST_NOTHING;
       this.reader = var1;
@@ -157,7 +156,7 @@ public class EntitySelectorParser {
          };
       }
 
-      return new EntitySelector(this.maxResults, this.includesEntities, this.worldLimited, this.predicate, this.distance, var4, var1, this.order, this.currentEntity, this.playerName, this.entityUUID, this.type, this.usesSelectors);
+      return new EntitySelector(this.maxResults, this.includesEntities, this.worldLimited, List.copyOf(this.predicates), this.distance, var4, var1, this.order, this.currentEntity, this.playerName, this.entityUUID, this.type, this.usesSelectors);
    }
 
    private AABB createAabb(double var1, double var3, double var5) {
@@ -175,15 +174,15 @@ public class EntitySelectorParser {
 
    private void finalizePredicates() {
       if (this.rotX != WrappedMinMaxBounds.ANY) {
-         this.predicate = this.predicate.and(this.createRotationPredicate(this.rotX, Entity::getXRot));
+         this.predicates.add(this.createRotationPredicate(this.rotX, Entity::getXRot));
       }
 
       if (this.rotY != WrappedMinMaxBounds.ANY) {
-         this.predicate = this.predicate.and(this.createRotationPredicate(this.rotY, Entity::getYRot));
+         this.predicates.add(this.createRotationPredicate(this.rotY, Entity::getYRot));
       }
 
       if (!this.level.isAny()) {
-         this.predicate = this.predicate.and((var1) -> {
+         this.predicates.add((var1) -> {
             return !(var1 instanceof ServerPlayer) ? false : this.level.matches(((ServerPlayer)var1).experienceLevel);
          });
       }
@@ -211,39 +210,66 @@ public class EntitySelectorParser {
       } else {
          int var1 = this.reader.getCursor();
          char var2 = this.reader.read();
-         if (var2 == 'p') {
-            this.maxResults = 1;
-            this.includesEntities = false;
-            this.order = ORDER_NEAREST;
-            this.limitToType(EntityType.PLAYER);
-         } else if (var2 == 'a') {
-            this.maxResults = 2147483647;
-            this.includesEntities = false;
-            this.order = EntitySelector.ORDER_ARBITRARY;
-            this.limitToType(EntityType.PLAYER);
-         } else if (var2 == 'r') {
-            this.maxResults = 1;
-            this.includesEntities = false;
-            this.order = ORDER_RANDOM;
-            this.limitToType(EntityType.PLAYER);
-         } else if (var2 == 's') {
-            this.maxResults = 1;
-            this.includesEntities = true;
-            this.currentEntity = true;
-         } else if (var2 == 'e') {
-            this.maxResults = 2147483647;
-            this.includesEntities = true;
-            this.order = EntitySelector.ORDER_ARBITRARY;
-            this.predicate = Entity::isAlive;
-         } else {
-            if (var2 != 'n') {
+         boolean var3;
+         switch (var2) {
+            case 'a':
+               this.maxResults = 2147483647;
+               this.includesEntities = false;
+               this.order = EntitySelector.ORDER_ARBITRARY;
+               this.limitToType(EntityType.PLAYER);
+               var3 = false;
+               break;
+            case 'b':
+            case 'c':
+            case 'd':
+            case 'f':
+            case 'g':
+            case 'h':
+            case 'i':
+            case 'j':
+            case 'k':
+            case 'l':
+            case 'm':
+            case 'o':
+            case 'q':
+            default:
                this.reader.setCursor(var1);
                throw ERROR_UNKNOWN_SELECTOR_TYPE.createWithContext(this.reader, "@" + String.valueOf(var2));
-            }
+            case 'e':
+               this.maxResults = 2147483647;
+               this.includesEntities = true;
+               this.order = EntitySelector.ORDER_ARBITRARY;
+               var3 = true;
+               break;
+            case 'n':
+               this.maxResults = 1;
+               this.includesEntities = true;
+               this.order = ORDER_NEAREST;
+               var3 = true;
+               break;
+            case 'p':
+               this.maxResults = 1;
+               this.includesEntities = false;
+               this.order = ORDER_NEAREST;
+               this.limitToType(EntityType.PLAYER);
+               var3 = false;
+               break;
+            case 'r':
+               this.maxResults = 1;
+               this.includesEntities = false;
+               this.order = ORDER_RANDOM;
+               this.limitToType(EntityType.PLAYER);
+               var3 = false;
+               break;
+            case 's':
+               this.maxResults = 1;
+               this.includesEntities = true;
+               this.currentEntity = true;
+               var3 = false;
+         }
 
-            this.maxResults = 1;
-            this.includesEntities = true;
-            this.order = ORDER_NEAREST;
+         if (var3) {
+            this.predicates.add(Entity::isAlive);
          }
 
          this.suggestions = this::suggestOpenOptions;
@@ -352,7 +378,7 @@ public class EntitySelectorParser {
    }
 
    public void addPredicate(Predicate<Entity> var1) {
-      this.predicate = this.predicate.and(var1);
+      this.predicates.add(var1);
    }
 
    public void setWorldLimited() {

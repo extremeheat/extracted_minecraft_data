@@ -11,6 +11,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -34,27 +35,43 @@ public class WorldBorder {
    }
 
    public boolean isWithinBounds(BlockPos var1) {
-      return (double)(var1.getX() + 1) > this.getMinX() && (double)var1.getX() < this.getMaxX() && (double)(var1.getZ() + 1) > this.getMinZ() && (double)var1.getZ() < this.getMaxZ();
+      return this.isWithinBounds((double)var1.getX(), (double)var1.getZ());
+   }
+
+   public boolean isWithinBounds(Vec3 var1) {
+      return this.isWithinBounds(var1.x, var1.z);
    }
 
    public boolean isWithinBounds(ChunkPos var1) {
-      return (double)var1.getMaxBlockX() > this.getMinX() && (double)var1.getMinBlockX() < this.getMaxX() && (double)var1.getMaxBlockZ() > this.getMinZ() && (double)var1.getMinBlockZ() < this.getMaxZ();
-   }
-
-   public boolean isWithinBounds(double var1, double var3) {
-      return var1 > this.getMinX() && var1 < this.getMaxX() && var3 > this.getMinZ() && var3 < this.getMaxZ();
-   }
-
-   public boolean isWithinBounds(double var1, double var3, double var5) {
-      return var1 > this.getMinX() - var5 && var1 < this.getMaxX() + var5 && var3 > this.getMinZ() - var5 && var3 < this.getMaxZ() + var5;
+      return this.isWithinBounds((double)var1.getMinBlockX(), (double)var1.getMinBlockZ()) && this.isWithinBounds((double)var1.getMaxBlockX(), (double)var1.getMaxBlockZ());
    }
 
    public boolean isWithinBounds(AABB var1) {
-      return var1.maxX > this.getMinX() && var1.minX < this.getMaxX() && var1.maxZ > this.getMinZ() && var1.minZ < this.getMaxZ();
+      return this.isWithinBounds(var1.minX, var1.minZ, var1.maxX - 9.999999747378752E-6, var1.maxZ - 9.999999747378752E-6);
+   }
+
+   private boolean isWithinBounds(double var1, double var3, double var5, double var7) {
+      return this.isWithinBounds(var1, var3) && this.isWithinBounds(var5, var7);
+   }
+
+   public boolean isWithinBounds(double var1, double var3) {
+      return this.isWithinBounds(var1, var3, 0.0);
+   }
+
+   public boolean isWithinBounds(double var1, double var3, double var5) {
+      return var1 >= this.getMinX() - var5 && var1 < this.getMaxX() + var5 && var3 >= this.getMinZ() - var5 && var3 < this.getMaxZ() + var5;
+   }
+
+   public BlockPos clampToBounds(BlockPos var1) {
+      return this.clampToBounds((double)var1.getX(), (double)var1.getY(), (double)var1.getZ());
+   }
+
+   public BlockPos clampToBounds(Vec3 var1) {
+      return this.clampToBounds(var1.x(), var1.y(), var1.z());
    }
 
    public BlockPos clampToBounds(double var1, double var3, double var5) {
-      return BlockPos.containing(Mth.clamp(var1, this.getMinX(), this.getMaxX()), var3, Mth.clamp(var5, this.getMinZ(), this.getMaxZ()));
+      return BlockPos.containing(Mth.clamp(var1, this.getMinX(), this.getMaxX() - 1.0), var3, Mth.clamp(var5, this.getMinZ(), this.getMaxZ() - 1.0));
    }
 
    public double getDistanceToBorder(Entity var1) {

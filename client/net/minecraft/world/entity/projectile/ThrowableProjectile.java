@@ -32,7 +32,7 @@ public abstract class ThrowableProjectile extends Projectile {
       return var1 < var3 * var3;
    }
 
-   public boolean canChangeDimensions() {
+   public boolean canUsePortal(boolean var1) {
       return true;
    }
 

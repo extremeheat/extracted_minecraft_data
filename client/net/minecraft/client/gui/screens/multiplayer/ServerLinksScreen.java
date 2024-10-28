@@ -82,7 +82,7 @@ public class ServerLinksScreen extends Screen {
 
       LinkListEntry(Screen var1, ServerLinks.Entry var2) {
          super();
-         this.button = Button.builder(var2.displayName(), ConfirmLinkScreen.confirmLink(var1, var2.url(), false)).width(310).build();
+         this.button = Button.builder(var2.displayName(), ConfirmLinkScreen.confirmLink(var1, var2.link(), false)).width(310).build();
       }
 
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {

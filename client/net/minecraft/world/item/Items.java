@@ -1504,7 +1504,7 @@ public class Items {
       RAW_IRON_BLOCK = registerBlock(Blocks.RAW_IRON_BLOCK);
       RAW_COPPER_BLOCK = registerBlock(Blocks.RAW_COPPER_BLOCK);
       RAW_GOLD_BLOCK = registerBlock(Blocks.RAW_GOLD_BLOCK);
-      HEAVY_CORE = registerBlock(Blocks.HEAVY_CORE);
+      HEAVY_CORE = registerBlock(new BlockItem(Blocks.HEAVY_CORE, (new Item.Properties()).rarity(Rarity.EPIC)));
       AMETHYST_BLOCK = registerBlock(Blocks.AMETHYST_BLOCK);
       BUDDING_AMETHYST = registerBlock(Blocks.BUDDING_AMETHYST);
       IRON_BLOCK = registerBlock(Blocks.IRON_BLOCK);
@@ -2532,7 +2532,7 @@ public class Items {
       WIND_CHARGE = registerItem((String)"wind_charge", new WindChargeItem(new Item.Properties()));
       WRITABLE_BOOK = registerItem((String)"writable_book", new WritableBookItem((new Item.Properties()).stacksTo(1).component(DataComponents.WRITABLE_BOOK_CONTENT, WritableBookContent.EMPTY)));
       WRITTEN_BOOK = registerItem((String)"written_book", new WrittenBookItem((new Item.Properties()).stacksTo(16).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true)));
-      MACE = registerItem((String)"mace", new MaceItem((new Item.Properties()).durability(500).component(DataComponents.TOOL, MaceItem.createToolProperties()).attributes(MaceItem.createAttributes())));
+      MACE = registerItem((String)"mace", new MaceItem((new Item.Properties()).rarity(Rarity.EPIC).durability(500).component(DataComponents.TOOL, MaceItem.createToolProperties()).attributes(MaceItem.createAttributes())));
       ITEM_FRAME = registerItem((String)"item_frame", new ItemFrameItem(EntityType.ITEM_FRAME, new Item.Properties()));
       GLOW_ITEM_FRAME = registerItem((String)"glow_item_frame", new ItemFrameItem(EntityType.GLOW_ITEM_FRAME, new Item.Properties()));
       FLOWER_POT = registerBlock(Blocks.FLOWER_POT);
@@ -2627,7 +2627,7 @@ public class Items {
       MUSIC_DISC_PIGSTEP = registerItem("music_disc_pigstep", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.PIGSTEP)));
       MUSIC_DISC_PRECIPICE = registerItem("music_disc_precipice", new Item((new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.PRECIPICE)));
       DISC_FRAGMENT_5 = registerItem((String)"disc_fragment_5", new DiscFragmentItem(new Item.Properties()));
-      TRIDENT = registerItem((String)"trident", new TridentItem((new Item.Properties()).durability(250).attributes(TridentItem.createAttributes()).component(DataComponents.TOOL, TridentItem.createToolProperties())));
+      TRIDENT = registerItem((String)"trident", new TridentItem((new Item.Properties()).rarity(Rarity.EPIC).durability(250).attributes(TridentItem.createAttributes()).component(DataComponents.TOOL, TridentItem.createToolProperties())));
       PHANTOM_MEMBRANE = registerItem("phantom_membrane", new Item(new Item.Properties()));
       NAUTILUS_SHELL = registerItem("nautilus_shell", new Item(new Item.Properties()));
       HEART_OF_THE_SEA = registerItem("heart_of_the_sea", new Item((new Item.Properties()).rarity(Rarity.UNCOMMON)));
@@ -2639,9 +2639,9 @@ public class Items {
       SKULL_BANNER_PATTERN = registerItem((String)"skull_banner_pattern", new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_SKULL, (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON)));
       MOJANG_BANNER_PATTERN = registerItem((String)"mojang_banner_pattern", new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_MOJANG, (new Item.Properties()).stacksTo(1).rarity(Rarity.EPIC)));
       GLOBE_BANNER_PATTERN = registerItem((String)"globe_banner_pattern", new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_GLOBE, (new Item.Properties()).stacksTo(1)));
-      PIGLIN_BANNER_PATTERN = registerItem((String)"piglin_banner_pattern", new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_PIGLIN, (new Item.Properties()).stacksTo(1)));
-      FLOW_BANNER_PATTERN = registerItem((String)"flow_banner_pattern", new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_FLOW, (new Item.Properties()).stacksTo(1)));
-      GUSTER_BANNER_PATTERN = registerItem((String)"guster_banner_pattern", new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_GUSTER, (new Item.Properties()).stacksTo(1)));
+      PIGLIN_BANNER_PATTERN = registerItem((String)"piglin_banner_pattern", new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_PIGLIN, (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON)));
+      FLOW_BANNER_PATTERN = registerItem((String)"flow_banner_pattern", new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_FLOW, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE)));
+      GUSTER_BANNER_PATTERN = registerItem((String)"guster_banner_pattern", new BannerPatternItem(BannerPatternTags.PATTERN_ITEM_GUSTER, (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE)));
       GOAT_HORN = registerItem((String)"goat_horn", new InstrumentItem((new Item.Properties()).stacksTo(1), InstrumentTags.GOAT_HORNS));
       COMPOSTER = registerBlock(Blocks.COMPOSTER);
       BARREL = registerBlock(Blocks.BARREL, (var0) -> {

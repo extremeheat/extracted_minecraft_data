@@ -56,7 +56,6 @@ import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.network.protocol.game.ClientboundHorseScreenOpenPacket;
 import net.minecraft.network.protocol.game.ClientboundHurtAnimationPacket;
-import net.minecraft.network.protocol.game.ClientboundLevelEventPacket;
 import net.minecraft.network.protocol.game.ClientboundMerchantOffersPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenBookPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
@@ -109,6 +108,7 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.RelativeMovement;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -292,50 +292,53 @@ public class ServerPlayer extends Player {
       this.server = var1;
       this.stats = var1.getPlayerList().getPlayerStats(this);
       this.advancements = var1.getPlayerList().getPlayerAdvancements(this);
-      this.fudgeSpawnLocation(var2);
+      this.moveTo(this.adjustSpawnLocation(var2, var2.getSharedSpawnPos()).getBottomCenter(), 0.0F, 0.0F);
       this.updateOptions(var4);
       this.object = null;
    }
 
-   private void fudgeSpawnLocation(ServerLevel var1) {
-      BlockPos var2 = var1.getSharedSpawnPos();
+   public BlockPos adjustSpawnLocation(ServerLevel var1, BlockPos var2) {
+      AABB var3 = this.getDimensions(Pose.STANDING).makeBoundingBox(Vec3.ZERO);
+      BlockPos var4 = var2;
       if (var1.dimensionType().hasSkyLight() && var1.getServer().getWorldData().getGameType() != GameType.ADVENTURE) {
-         int var3 = Math.max(0, this.server.getSpawnRadius(var1));
-         int var4 = Mth.floor(var1.getWorldBorder().getDistanceToBorder((double)var2.getX(), (double)var2.getZ()));
-         if (var4 < var3) {
-            var3 = var4;
+         int var5 = Math.max(0, this.server.getSpawnRadius(var1));
+         int var6 = Mth.floor(var1.getWorldBorder().getDistanceToBorder((double)var2.getX(), (double)var2.getZ()));
+         if (var6 < var5) {
+            var5 = var6;
          }
 
-         if (var4 <= 1) {
-            var3 = 1;
+         if (var6 <= 1) {
+            var5 = 1;
          }
 
-         long var5 = (long)(var3 * 2 + 1);
-         long var7 = var5 * var5;
-         int var9 = var7 > 2147483647L ? 2147483647 : (int)var7;
-         int var10 = this.getCoprime(var9);
-         int var11 = RandomSource.create().nextInt(var9);
+         long var7 = (long)(var5 * 2 + 1);
+         long var9 = var7 * var7;
+         int var11 = var9 > 2147483647L ? 2147483647 : (int)var9;
+         int var12 = this.getCoprime(var11);
+         int var13 = RandomSource.create().nextInt(var11);
 
-         for(int var12 = 0; var12 < var9; ++var12) {
-            int var13 = (var11 + var10 * var12) % var9;
-            int var14 = var13 % (var3 * 2 + 1);
-            int var15 = var13 / (var3 * 2 + 1);
-            BlockPos var16 = PlayerRespawnLogic.getOverworldRespawnPos(var1, var2.getX() + var14 - var3, var2.getZ() + var15 - var3);
-            if (var16 != null) {
-               this.moveTo(var16, 0.0F, 0.0F);
-               if (var1.noCollision(this)) {
-                  break;
-               }
+         for(int var14 = 0; var14 < var11; ++var14) {
+            int var15 = (var13 + var12 * var14) % var11;
+            int var16 = var15 % (var5 * 2 + 1);
+            int var17 = var15 / (var5 * 2 + 1);
+            var4 = PlayerRespawnLogic.getOverworldRespawnPos(var1, var2.getX() + var16 - var5, var2.getZ() + var17 - var5);
+            if (var4 != null && var1.noCollision(this, var3.move(var4.getBottomCenter()))) {
+               return var4;
             }
          }
-      } else {
-         this.moveTo(var2, 0.0F, 0.0F);
 
-         while(!var1.noCollision(this) && this.getY() < (double)(var1.getMaxBuildHeight() - 1)) {
-            this.setPos(this.getX(), this.getY() + 1.0, this.getZ());
-         }
+         var4 = var2;
       }
 
+      while(!var1.noCollision(this, var3.move(var4.getBottomCenter())) && var4.getY() < var1.getMaxBuildHeight() - 1) {
+         var4 = var4.above();
+      }
+
+      while(var1.noCollision(this, var3.move(var4.below().getBottomCenter())) && var4.getY() > var1.getMinBuildHeight() + 1) {
+         var4 = var4.below();
+      }
+
+      return var4;
    }
 
    private int getCoprime(int var1) {
@@ -492,7 +495,7 @@ public class ServerPlayer extends Player {
       this.connection.send(new ClientboundPlayerCombatEndPacket(this.getCombatTracker()));
    }
 
-   protected void onInsideBlock(BlockState var1) {
+   public void onInsideBlock(BlockState var1) {
       CriteriaTriggers.ENTER_BLOCK.trigger(this, var1);
    }
 
@@ -803,21 +806,21 @@ public class ServerPlayer extends Player {
       return this.server.isPvpAllowed();
    }
 
-   public DimensionTransition findRespawnPositionAndUseSpawnBlock(boolean var1) {
-      BlockPos var2 = this.getRespawnPosition();
-      float var3 = this.getRespawnAngle();
-      boolean var4 = this.isRespawnForced();
-      ServerLevel var5 = this.server.getLevel(this.getRespawnDimension());
-      if (var5 != null && var2 != null) {
-         Optional var6 = findRespawnAndUseSpawnBlock(var5, var2, var3, var4, var1);
-         if (var6.isPresent()) {
-            RespawnPosAngle var7 = (RespawnPosAngle)var6.get();
-            return new DimensionTransition(var5, var7.position(), Vec3.ZERO, var7.yaw(), 0.0F);
+   public DimensionTransition findRespawnPositionAndUseSpawnBlock(boolean var1, DimensionTransition.PostDimensionTransition var2) {
+      BlockPos var3 = this.getRespawnPosition();
+      float var4 = this.getRespawnAngle();
+      boolean var5 = this.isRespawnForced();
+      ServerLevel var6 = this.server.getLevel(this.getRespawnDimension());
+      if (var6 != null && var3 != null) {
+         Optional var7 = findRespawnAndUseSpawnBlock(var6, var3, var4, var5, var1);
+         if (var7.isPresent()) {
+            RespawnPosAngle var8 = (RespawnPosAngle)var7.get();
+            return new DimensionTransition(var6, var8.position(), Vec3.ZERO, var8.yaw(), 0.0F, var2);
          } else {
-            return DimensionTransition.missingRespawnBlock(this.server.overworld());
+            return DimensionTransition.missingRespawnBlock(this.server.overworld(), this, var2);
          }
       } else {
-         return new DimensionTransition(this.server.overworld());
+         return new DimensionTransition(this.server.overworld(), this, var2);
       }
    }
 
@@ -873,7 +876,7 @@ public class ServerPlayer extends Player {
          if (var2.dimension() == var4) {
             this.connection.teleport(var1.pos().x, var1.pos().y, var1.pos().z, var1.yRot(), var1.xRot());
             this.connection.resetPosition();
-            this.connection.send(new ClientboundLevelEventPacket(1032, BlockPos.ZERO, 0, false));
+            var1.postDimensionTransition().onTransition(this);
             return this;
          } else {
             this.isChangingDimension = true;
@@ -901,7 +904,7 @@ public class ServerPlayer extends Player {
             var6.sendLevelInfo(this, var2);
             var6.sendAllPlayerInfo(this);
             var6.sendActivePlayerEffects(this);
-            this.connection.send(new ClientboundLevelEventPacket(1032, BlockPos.ZERO, 0, false));
+            var1.postDimensionTransition().onTransition(this);
             this.lastSentExp = -1;
             this.lastSentHealth = -1.0F;
             this.lastSentFood = -1;
@@ -1050,7 +1053,7 @@ public class ServerPlayer extends Player {
       super.onExplosionHit(var1);
       this.currentImpulseImpactPos = this.position();
       this.currentExplosionCause = var1;
-      this.ignoreFallDamageFromCurrentImpulse = var1 != null && var1.getType() == EntityType.WIND_CHARGE;
+      this.setIgnoreFallDamageFromCurrentImpulse(var1 != null && var1.getType() == EntityType.WIND_CHARGE);
    }
 
    protected void pushEntities() {
@@ -1104,8 +1107,9 @@ public class ServerPlayer extends Player {
       }
 
       this.nextContainerCounter();
-      this.connection.send(new ClientboundHorseScreenOpenPacket(this.containerCounter, var2.getContainerSize(), var1.getId()));
-      this.containerMenu = new HorseInventoryMenu(this.containerCounter, this.getInventory(), var2, var1);
+      int var3 = var1.getInventoryColumns();
+      this.connection.send(new ClientboundHorseScreenOpenPacket(this.containerCounter, var3, var1.getId()));
+      this.containerMenu = new HorseInventoryMenu(this.containerCounter, this.getInventory(), var2, var1, var3);
       this.initMenu(this.containerMenu);
    }
 
@@ -1646,7 +1650,7 @@ public class ServerPlayer extends Player {
       if (var1 == this.level()) {
          this.connection.teleport(var2, var4, var6, var8, var9);
       } else {
-         this.changeDimension(new DimensionTransition(var1, new Vec3(var2, var4, var6), Vec3.ZERO, var8, var9));
+         this.changeDimension(new DimensionTransition(var1, new Vec3(var2, var4, var6), Vec3.ZERO, var8, var9, DimensionTransition.DO_NOTHING));
       }
 
    }
@@ -1834,6 +1838,7 @@ public class ServerPlayer extends Player {
 
    public boolean startRiding(Entity var1, boolean var2) {
       if (super.startRiding(var1, var2)) {
+         this.setKnownMovement(Vec3.ZERO);
          var1.positionRider(this);
          this.connection.teleport(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
          if (var1 instanceof LivingEntity) {
@@ -1879,7 +1884,8 @@ public class ServerPlayer extends Player {
    }
 
    public Vec3 getKnownMovement() {
-      return this.lastKnownClientMovement;
+      Entity var1 = this.getVehicle();
+      return var1 != null && var1.getControllingPassenger() != this ? var1.getKnownMovement() : this.lastKnownClientMovement;
    }
 
    public void setKnownMovement(Vec3 var1) {
@@ -1887,7 +1893,7 @@ public class ServerPlayer extends Player {
    }
 
    protected float getEnchantedDamage(Entity var1, float var2, DamageSource var3) {
-      return EnchantmentHelper.modifyDamage(this.serverLevel(), this.getMainHandItem(), var1, var3, var2);
+      return EnchantmentHelper.modifyDamage(this.serverLevel(), this.getWeaponItem(), var1, var3, var2);
    }
 
    public void onEquippedItemBroken(Item var1, EquipmentSlot var2) {

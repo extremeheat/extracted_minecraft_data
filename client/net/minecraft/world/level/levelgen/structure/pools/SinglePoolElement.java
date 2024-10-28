@@ -34,6 +34,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.JigsawReplacementProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
@@ -45,6 +46,7 @@ public class SinglePoolElement extends StructurePoolElement {
    public static final MapCodec<SinglePoolElement> CODEC;
    protected final Either<ResourceLocation, StructureTemplate> template;
    protected final Holder<StructureProcessorList> processors;
+   protected final Optional<LiquidSettings> overrideLiquidSettings;
 
    private static <T> DataResult<T> encodeTemplate(Either<ResourceLocation, StructureTemplate> var0, DynamicOps<T> var1, T var2) {
       Optional var3 = var0.left();
@@ -59,16 +61,23 @@ public class SinglePoolElement extends StructurePoolElement {
       });
    }
 
+   protected static <E extends SinglePoolElement> RecordCodecBuilder<E, Optional<LiquidSettings>> overrideLiquidSettingsCodec() {
+      return LiquidSettings.CODEC.optionalFieldOf("override_liquid_settings").forGetter((var0) -> {
+         return var0.overrideLiquidSettings;
+      });
+   }
+
    protected static <E extends SinglePoolElement> RecordCodecBuilder<E, Either<ResourceLocation, StructureTemplate>> templateCodec() {
       return TEMPLATE_CODEC.fieldOf("location").forGetter((var0) -> {
          return var0.template;
       });
    }
 
-   protected SinglePoolElement(Either<ResourceLocation, StructureTemplate> var1, Holder<StructureProcessorList> var2, StructureTemplatePool.Projection var3) {
+   protected SinglePoolElement(Either<ResourceLocation, StructureTemplate> var1, Holder<StructureProcessorList> var2, StructureTemplatePool.Projection var3, Optional<LiquidSettings> var4) {
       super(var3);
       this.template = var1;
       this.processors = var2;
+      this.overrideLiquidSettings = var4;
    }
 
    public Vec3i getSize(StructureTemplateManager var1, Rotation var2) {
@@ -124,43 +133,44 @@ public class SinglePoolElement extends StructurePoolElement {
       return var4.getBoundingBox((new StructurePlaceSettings()).setRotation(var3), var2);
    }
 
-   public boolean place(StructureTemplateManager var1, WorldGenLevel var2, StructureManager var3, ChunkGenerator var4, BlockPos var5, BlockPos var6, Rotation var7, BoundingBox var8, RandomSource var9, boolean var10) {
-      StructureTemplate var11 = this.getTemplate(var1);
-      StructurePlaceSettings var12 = this.getSettings(var7, var8, var10);
-      if (!var11.placeInWorld(var2, var5, var6, var12, var9, 18)) {
+   public boolean place(StructureTemplateManager var1, WorldGenLevel var2, StructureManager var3, ChunkGenerator var4, BlockPos var5, BlockPos var6, Rotation var7, BoundingBox var8, RandomSource var9, LiquidSettings var10, boolean var11) {
+      StructureTemplate var12 = this.getTemplate(var1);
+      StructurePlaceSettings var13 = this.getSettings(var7, var8, var10, var11);
+      if (!var12.placeInWorld(var2, var5, var6, var13, var9, 18)) {
          return false;
       } else {
-         List var13 = StructureTemplate.processBlockInfos(var2, var5, var6, var12, this.getDataMarkers(var1, var5, var7, false));
-         Iterator var14 = var13.iterator();
+         List var14 = StructureTemplate.processBlockInfos(var2, var5, var6, var13, this.getDataMarkers(var1, var5, var7, false));
+         Iterator var15 = var14.iterator();
 
-         while(var14.hasNext()) {
-            StructureTemplate.StructureBlockInfo var15 = (StructureTemplate.StructureBlockInfo)var14.next();
-            this.handleDataMarker(var2, var15, var5, var7, var9, var8);
+         while(var15.hasNext()) {
+            StructureTemplate.StructureBlockInfo var16 = (StructureTemplate.StructureBlockInfo)var15.next();
+            this.handleDataMarker(var2, var16, var5, var7, var9, var8);
          }
 
          return true;
       }
    }
 
-   protected StructurePlaceSettings getSettings(Rotation var1, BoundingBox var2, boolean var3) {
-      StructurePlaceSettings var4 = new StructurePlaceSettings();
-      var4.setBoundingBox(var2);
-      var4.setRotation(var1);
-      var4.setKnownShape(true);
-      var4.setIgnoreEntities(false);
-      var4.addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
-      var4.setFinalizeEntities(true);
-      if (!var3) {
-         var4.addProcessor(JigsawReplacementProcessor.INSTANCE);
+   protected StructurePlaceSettings getSettings(Rotation var1, BoundingBox var2, LiquidSettings var3, boolean var4) {
+      StructurePlaceSettings var5 = new StructurePlaceSettings();
+      var5.setBoundingBox(var2);
+      var5.setRotation(var1);
+      var5.setKnownShape(true);
+      var5.setIgnoreEntities(false);
+      var5.addProcessor(BlockIgnoreProcessor.STRUCTURE_BLOCK);
+      var5.setFinalizeEntities(true);
+      var5.setLiquidSettings((LiquidSettings)this.overrideLiquidSettings.orElse(var3));
+      if (!var4) {
+         var5.addProcessor(JigsawReplacementProcessor.INSTANCE);
       }
 
       List var10000 = ((StructureProcessorList)this.processors.value()).list();
-      Objects.requireNonNull(var4);
-      var10000.forEach(var4::addProcessor);
-      ImmutableList var5 = this.getProjection().getProcessors();
-      Objects.requireNonNull(var4);
-      var5.forEach(var4::addProcessor);
-      return var4;
+      Objects.requireNonNull(var5);
+      var10000.forEach(var5::addProcessor);
+      ImmutableList var6 = this.getProjection().getProcessors();
+      Objects.requireNonNull(var5);
+      var6.forEach(var5::addProcessor);
+      return var5;
    }
 
    public StructurePoolElementType<?> getType() {
@@ -174,7 +184,7 @@ public class SinglePoolElement extends StructurePoolElement {
    static {
       TEMPLATE_CODEC = Codec.of(SinglePoolElement::encodeTemplate, ResourceLocation.CODEC.map(Either::left));
       CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(templateCodec(), processorsCodec(), projectionCodec()).apply(var0, SinglePoolElement::new);
+         return var0.group(templateCodec(), processorsCodec(), projectionCodec(), overrideLiquidSettingsCodec()).apply(var0, SinglePoolElement::new);
       });
    }
 }

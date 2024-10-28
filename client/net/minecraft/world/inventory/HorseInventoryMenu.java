@@ -4,7 +4,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -18,14 +17,14 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
    private static final int SLOT_BODY_ARMOR = 1;
    private static final int SLOT_HORSE_INVENTORY_START = 2;
 
-   public HorseInventoryMenu(int var1, Inventory var2, Container var3, final AbstractHorse var4) {
+   public HorseInventoryMenu(int var1, Inventory var2, Container var3, final AbstractHorse var4, int var5) {
       super((MenuType)null, var1);
       this.horseContainer = var3;
       this.armorContainer = var4.getBodyArmorAccess();
       this.horse = var4;
-      boolean var5 = true;
-      var3.startOpen(var2.player);
       boolean var6 = true;
+      var3.startOpen(var2.player);
+      boolean var7 = true;
       this.addSlot(new Slot(this, var3, 0, 8, 18) {
          public boolean mayPlace(ItemStack var1) {
             return var1.is(Items.SADDLE) && !this.hasItem() && var4.isSaddleable();
@@ -44,43 +43,30 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
             return var4.canUseSlot(EquipmentSlot.BODY);
          }
       });
-      int var7;
       int var8;
-      if (this.hasChest(var4)) {
-         for(var7 = 0; var7 < 3; ++var7) {
-            for(var8 = 0; var8 < ((AbstractChestedHorse)var4).getInventoryColumns(); ++var8) {
-               this.addSlot(new Slot(var3, 1 + var8 + var7 * ((AbstractChestedHorse)var4).getInventoryColumns(), 80 + var8 * 18, 18 + var7 * 18));
+      int var9;
+      if (var5 > 0) {
+         for(var8 = 0; var8 < 3; ++var8) {
+            for(var9 = 0; var9 < var5; ++var9) {
+               this.addSlot(new Slot(var3, 1 + var9 + var8 * var5, 80 + var9 * 18, 18 + var8 * 18));
             }
          }
       }
 
-      for(var7 = 0; var7 < 3; ++var7) {
-         for(var8 = 0; var8 < 9; ++var8) {
-            this.addSlot(new Slot(var2, var8 + var7 * 9 + 9, 8 + var8 * 18, 102 + var7 * 18 + -18));
+      for(var8 = 0; var8 < 3; ++var8) {
+         for(var9 = 0; var9 < 9; ++var9) {
+            this.addSlot(new Slot(var2, var9 + var8 * 9 + 9, 8 + var9 * 18, 102 + var8 * 18 + -18));
          }
       }
 
-      for(var7 = 0; var7 < 9; ++var7) {
-         this.addSlot(new Slot(var2, var7, 8 + var7 * 18, 142));
+      for(var8 = 0; var8 < 9; ++var8) {
+         this.addSlot(new Slot(var2, var8, 8 + var8 * 18, 142));
       }
 
    }
 
    public boolean stillValid(Player var1) {
       return !this.horse.hasInventoryChanged(this.horseContainer) && this.horseContainer.stillValid(var1) && this.armorContainer.stillValid(var1) && this.horse.isAlive() && var1.canInteractWithEntity((Entity)this.horse, 4.0);
-   }
-
-   private boolean hasChest(AbstractHorse var1) {
-      boolean var10000;
-      if (var1 instanceof AbstractChestedHorse var2) {
-         if (var2.hasChest()) {
-            var10000 = true;
-            return var10000;
-         }
-      }
-
-      var10000 = false;
-      return var10000;
    }
 
    public ItemStack quickMoveStack(Player var1, int var2) {

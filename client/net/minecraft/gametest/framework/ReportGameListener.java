@@ -115,7 +115,7 @@ class ReportGameListener implements GameTestListener {
    }
 
    public static void reportPassed(GameTestInfo var0, String var1) {
-      spawnBeacon(var0, Blocks.LIME_STAINED_GLASS);
+      updateBeaconGlass(var0, Blocks.LIME_STAINED_GLASS);
       visualizePassedTest(var0, var1);
    }
 
@@ -125,7 +125,7 @@ class ReportGameListener implements GameTestListener {
    }
 
    protected static void reportFailure(GameTestInfo var0, Throwable var1) {
-      spawnBeacon(var0, var0.isRequired() ? Blocks.RED_STAINED_GLASS : Blocks.ORANGE_STAINED_GLASS);
+      updateBeaconGlass(var0, var0.isRequired() ? Blocks.RED_STAINED_GLASS : Blocks.ORANGE_STAINED_GLASS);
       spawnLectern(var0, Util.describeError(var1));
       visualizeFailedTest(var0, var1);
    }
@@ -146,18 +146,31 @@ class ReportGameListener implements GameTestListener {
 
    protected static void spawnBeacon(GameTestInfo var0, Block var1) {
       ServerLevel var2 = var0.getLevel();
-      BlockPos var3 = var0.getStructureBlockPos();
-      BlockPos var4 = new BlockPos(-1, -2, -1);
-      BlockPos var5 = StructureTemplate.transform(var3.offset(var4), Mirror.NONE, var0.getRotation(), var3);
-      var2.setBlockAndUpdate(var5, Blocks.BEACON.defaultBlockState().rotate(var0.getRotation()));
-      BlockPos var6 = var5.offset(0, 1, 0);
-      var2.setBlockAndUpdate(var6, var1.defaultBlockState());
+      BlockPos var3 = getBeaconPos(var0);
+      var2.setBlockAndUpdate(var3, Blocks.BEACON.defaultBlockState().rotate(var0.getRotation()));
+      updateBeaconGlass(var0, var1);
 
-      for(int var7 = -1; var7 <= 1; ++var7) {
-         for(int var8 = -1; var8 <= 1; ++var8) {
-            BlockPos var9 = var5.offset(var7, -1, var8);
-            var2.setBlockAndUpdate(var9, Blocks.IRON_BLOCK.defaultBlockState());
+      for(int var4 = -1; var4 <= 1; ++var4) {
+         for(int var5 = -1; var5 <= 1; ++var5) {
+            BlockPos var6 = var3.offset(var4, -1, var5);
+            var2.setBlockAndUpdate(var6, Blocks.IRON_BLOCK.defaultBlockState());
          }
+      }
+
+   }
+
+   private static BlockPos getBeaconPos(GameTestInfo var0) {
+      BlockPos var1 = var0.getStructureBlockPos();
+      BlockPos var2 = new BlockPos(-1, -2, -1);
+      return StructureTemplate.transform(var1.offset(var2), Mirror.NONE, var0.getRotation(), var1);
+   }
+
+   private static void updateBeaconGlass(GameTestInfo var0, Block var1) {
+      ServerLevel var2 = var0.getLevel();
+      BlockPos var3 = getBeaconPos(var0);
+      if (var2.getBlockState(var3).is(Blocks.BEACON)) {
+         BlockPos var4 = var3.offset(0, 1, 0);
+         var2.setBlockAndUpdate(var4, var1.defaultBlockState());
       }
 
    }

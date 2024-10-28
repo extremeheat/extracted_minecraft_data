@@ -319,7 +319,7 @@ public class Panda extends Animal {
       return this.getVariant() == Panda.Gene.AGGRESSIVE;
    }
 
-   public boolean canBeLeashed(Player var1) {
+   public boolean canBeLeashed() {
       return false;
    }
 

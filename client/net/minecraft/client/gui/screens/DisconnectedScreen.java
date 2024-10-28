@@ -47,12 +47,11 @@ public class DisconnectedScreen extends Screen {
       this.layout.addChild((new MultiLineTextWidget(this.details.reason(), this.font)).setMaxWidth(this.width - 50).setCentered(true));
       this.layout.defaultCellSetting().padding(2);
       this.details.bugReportLink().ifPresent((var1x) -> {
-         this.layout.addChild(Button.builder(REPORT_TO_SERVER_TITLE, ConfirmLinkScreen.confirmLink(this, var1x, false)).width(200).build());
+         this.layout.addChild(Button.builder(REPORT_TO_SERVER_TITLE, ConfirmLinkScreen.confirmLink(this, (URI)var1x, false)).width(200).build());
       });
       this.details.report().ifPresent((var1x) -> {
-         URI var2 = var1x.getParent().toUri();
          this.layout.addChild(Button.builder(OPEN_REPORT_DIR_TITLE, (var1) -> {
-            Util.getPlatform().openUri(var2);
+            Util.getPlatform().openPath(var1x.getParent());
          }).width(200).build());
       });
       Button var1;

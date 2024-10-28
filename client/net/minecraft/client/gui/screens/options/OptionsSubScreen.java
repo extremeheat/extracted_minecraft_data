@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.OptionsList;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
@@ -40,6 +41,12 @@ public abstract class OptionsSubScreen extends Screen {
    protected void addContents() {
       this.list = (OptionsList)this.layout.addToContents(new OptionsList(this.minecraft, this.width, this));
       this.addOptions();
+      AbstractWidget var2 = this.list.findOption(this.options.narrator());
+      if (var2 instanceof CycleButton var1) {
+         this.narratorButton = var1;
+         this.narratorButton.active = this.minecraft.getNarrator().isActive();
+      }
+
    }
 
    protected abstract void addOptions();

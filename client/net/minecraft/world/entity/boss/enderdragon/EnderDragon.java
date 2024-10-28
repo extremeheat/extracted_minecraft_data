@@ -888,7 +888,7 @@ public class EnderDragon extends Mob implements Enemy {
       return false;
    }
 
-   public boolean canChangeDimensions() {
+   public boolean canUsePortal(boolean var1) {
       return false;
    }
 

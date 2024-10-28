@@ -7,6 +7,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.BundlerInfo;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.PacketType;
+import net.minecraft.util.VisibleForDebug;
 
 public interface ProtocolInfo<T extends PacketListener> {
    ConnectionProtocol id();
@@ -20,5 +22,17 @@ public interface ProtocolInfo<T extends PacketListener> {
 
    public interface Unbound<T extends PacketListener, B extends ByteBuf> {
       ProtocolInfo<T> bind(Function<ByteBuf, B> var1);
+
+      ConnectionProtocol id();
+
+      PacketFlow flow();
+
+      @VisibleForDebug
+      void listPackets(PacketVisitor var1);
+
+      @FunctionalInterface
+      public interface PacketVisitor {
+         void accept(PacketType<?> var1, int var2);
+      }
    }
 }

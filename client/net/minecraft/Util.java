@@ -23,10 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -45,6 +43,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -92,6 +91,7 @@ public class Util {
    private static final ExecutorService DOWNLOAD_POOL = makeIoExecutor("Download-", true);
    private static final DateTimeFormatter FILENAME_DATE_TIME_FORMATTER;
    public static final int LINEAR_LOOKUP_THRESHOLD = 8;
+   private static final Set<String> ALLOWED_UNTRUSTED_LINK_PROTOCOLS;
    public static final long NANOS_PER_MILLI = 1000000L;
    public static TimeSource.NanoTimeSource timeSource;
    public static final Ticker TICKER;
@@ -301,56 +301,72 @@ public class Util {
    }
 
    public static <T> Predicate<T> allOf(List<? extends Predicate<T>> var0) {
-      List var1 = List.copyOf(var0);
       Predicate var10000;
-      switch (var1.size()) {
-         case 0 -> var10000 = (var0x) -> {
-   return true;
-};
-         case 1 -> var10000 = (Predicate)var1.get(0);
-         case 2 -> var10000 = ((Predicate)var1.get(0)).and((Predicate)var1.get(1));
-         default -> var10000 = (var1x) -> {
-   Iterator var2 = var1.iterator();
+      switch (var0.size()) {
+         case 0:
+            var10000 = (var0x) -> {
+               return true;
+            };
+            break;
+         case 1:
+            var10000 = (Predicate)var0.get(0);
+            break;
+         case 2:
+            var10000 = ((Predicate)var0.get(0)).and((Predicate)var0.get(1));
+            break;
+         default:
+            Predicate[] var1 = (Predicate[])var0.toArray((var0x) -> {
+               return new Predicate[var0x];
+            });
+            var10000 = (var1x) -> {
+               Predicate[] var2 = var1;
+               int var3 = var1.length;
 
-   Predicate var3;
-   do {
-      if (!var2.hasNext()) {
-         return true;
-      }
+               for(int var4 = 0; var4 < var3; ++var4) {
+                  Predicate var5 = var2[var4];
+                  if (!var5.test(var1x)) {
+                     return false;
+                  }
+               }
 
-      var3 = (Predicate)var2.next();
-   } while(var3.test(var1x));
-
-   return false;
-};
+               return true;
+            };
       }
 
       return var10000;
    }
 
    public static <T> Predicate<T> anyOf(List<? extends Predicate<T>> var0) {
-      List var1 = List.copyOf(var0);
       Predicate var10000;
-      switch (var1.size()) {
-         case 0 -> var10000 = (var0x) -> {
-   return false;
-};
-         case 1 -> var10000 = (Predicate)var1.get(0);
-         case 2 -> var10000 = ((Predicate)var1.get(0)).or((Predicate)var1.get(1));
-         default -> var10000 = (var1x) -> {
-   Iterator var2 = var1.iterator();
+      switch (var0.size()) {
+         case 0:
+            var10000 = (var0x) -> {
+               return false;
+            };
+            break;
+         case 1:
+            var10000 = (Predicate)var0.get(0);
+            break;
+         case 2:
+            var10000 = ((Predicate)var0.get(0)).or((Predicate)var0.get(1));
+            break;
+         default:
+            Predicate[] var1 = (Predicate[])var0.toArray((var0x) -> {
+               return new Predicate[var0x];
+            });
+            var10000 = (var1x) -> {
+               Predicate[] var2 = var1;
+               int var3 = var1.length;
 
-   Predicate var3;
-   do {
-      if (!var2.hasNext()) {
-         return false;
-      }
+               for(int var4 = 0; var4 < var3; ++var4) {
+                  Predicate var5 = var2[var4];
+                  if (var5.test(var1x)) {
+                     return true;
+                  }
+               }
 
-      var3 = (Predicate)var2.next();
-   } while(!var3.test(var1x));
-
-   return true;
-};
+               return false;
+            };
       }
 
       return var10000;
@@ -391,6 +407,21 @@ public class Util {
          return Util.OS.LINUX;
       } else {
          return var0.contains("unix") ? Util.OS.LINUX : Util.OS.UNKNOWN;
+      }
+   }
+
+   public static URI parseAndValidateUntrustedUri(String var0) throws URISyntaxException {
+      URI var1 = new URI(var0);
+      String var2 = var1.getScheme();
+      if (var2 == null) {
+         throw new URISyntaxException(var0, "Missing protocol in URI: " + var0);
+      } else {
+         String var3 = var2.toLowerCase(Locale.ROOT);
+         if (!ALLOWED_UNTRUSTED_LINK_PROTOCOLS.contains(var3)) {
+            throw new URISyntaxException(var0, "Unsupported protocol in URI: " + var0);
+         } else {
+            return var1;
+         }
       }
    }
 
@@ -976,6 +1007,7 @@ public class Util {
 
    static {
       FILENAME_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss", Locale.ROOT);
+      ALLOWED_UNTRUSTED_LINK_PROTOCOLS = Set.of("http", "https");
       timeSource = System::nanoTime;
       TICKER = new Ticker() {
          public long read() {
@@ -996,12 +1028,12 @@ public class Util {
       LINUX("linux"),
       SOLARIS("solaris"),
       WINDOWS("windows") {
-         protected String[] getOpenUrlArguments(URL var1) {
+         protected String[] getOpenUriArguments(URI var1) {
             return new String[]{"rundll32", "url.dll,FileProtocolHandler", var1.toString()};
          }
       },
       OSX("mac") {
-         protected String[] getOpenUrlArguments(URL var1) {
+         protected String[] getOpenUriArguments(URI var1) {
             return new String[]{"open", var1.toString()};
          }
       },
@@ -1013,41 +1045,31 @@ public class Util {
          this.telemetryName = var3;
       }
 
-      public void openUrl(URL var1) {
+      public void openUri(URI var1) {
          try {
             Process var2 = (Process)AccessController.doPrivileged(() -> {
-               return Runtime.getRuntime().exec(this.getOpenUrlArguments(var1));
+               return Runtime.getRuntime().exec(this.getOpenUriArguments(var1));
             });
             var2.getInputStream().close();
             var2.getErrorStream().close();
             var2.getOutputStream().close();
          } catch (IOException | PrivilegedActionException var3) {
-            Util.LOGGER.error("Couldn't open url '{}'", var1, var3);
-         }
-
-      }
-
-      public void openUri(URI var1) {
-         try {
-            this.openUrl(var1.toURL());
-         } catch (MalformedURLException var3) {
-            Util.LOGGER.error("Couldn't open uri '{}'", var1, var3);
+            Util.LOGGER.error("Couldn't open location '{}'", var1, var3);
          }
 
       }
 
       public void openFile(File var1) {
-         try {
-            this.openUrl(var1.toURI().toURL());
-         } catch (MalformedURLException var3) {
-            Util.LOGGER.error("Couldn't open file '{}'", var1, var3);
-         }
-
+         this.openUri(var1.toURI());
       }
 
-      protected String[] getOpenUrlArguments(URL var1) {
+      public void openPath(Path var1) {
+         this.openUri(var1.toUri());
+      }
+
+      protected String[] getOpenUriArguments(URI var1) {
          String var2 = var1.toString();
-         if ("file".equals(var1.getProtocol())) {
+         if ("file".equals(var1.getScheme())) {
             var2 = var2.replace("file:", "file://");
          }
 
@@ -1056,8 +1078,8 @@ public class Util {
 
       public void openUri(String var1) {
          try {
-            this.openUrl((new URI(var1)).toURL());
-         } catch (MalformedURLException | IllegalArgumentException | URISyntaxException var3) {
+            this.openUri(new URI(var1));
+         } catch (IllegalArgumentException | URISyntaxException var3) {
             Util.LOGGER.error("Couldn't open uri '{}'", var1, var3);
          }
 

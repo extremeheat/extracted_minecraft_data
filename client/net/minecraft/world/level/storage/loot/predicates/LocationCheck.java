@@ -4,10 +4,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
+import java.util.Set;
 import net.minecraft.advancements.critereon.LocationPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
@@ -32,6 +34,10 @@ public record LocationCheck(Optional<LocationPredicate> predicate, BlockPos offs
    public boolean test(LootContext var1) {
       Vec3 var2 = (Vec3)var1.getParamOrNull(LootContextParams.ORIGIN);
       return var2 != null && (this.predicate.isEmpty() || ((LocationPredicate)this.predicate.get()).matches(var1.getLevel(), var2.x() + (double)this.offset.getX(), var2.y() + (double)this.offset.getY(), var2.z() + (double)this.offset.getZ()));
+   }
+
+   public Set<LootContextParam<?>> getReferencedContextParams() {
+      return Set.of(LootContextParams.ORIGIN);
    }
 
    public static LootItemCondition.Builder checkLocation(LocationPredicate.Builder var0) {

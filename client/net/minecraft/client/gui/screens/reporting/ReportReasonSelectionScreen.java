@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens.reporting;
 
+import java.net.URI;
 import java.util.Objects;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -18,6 +19,7 @@ import net.minecraft.client.multiplayer.chat.report.ReportReason;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.util.CommonLinks;
 
 public class ReportReasonSelectionScreen extends Screen {
    private static final Component REASON_TITLE = Component.translatable("gui.abuseReport.reason.title");
@@ -53,7 +55,7 @@ public class ReportReasonSelectionScreen extends Screen {
       this.reasonSelectionList.setSelected(var2);
       var1.addChild(SpacerElement.height(this.descriptionHeight()));
       LinearLayout var3 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      var3.addChild(Button.builder(READ_INFO_LABEL, ConfirmLinkScreen.confirmLink(this, "https://aka.ms/aboutjavareporting")).build());
+      var3.addChild(Button.builder(READ_INFO_LABEL, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.REPORTING_HELP)).build());
       var3.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
          ReasonSelectionList.Entry var2 = (ReasonSelectionList.Entry)this.reasonSelectionList.getSelected();
          if (var2 != null) {

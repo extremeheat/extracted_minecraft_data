@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.realms.RealmsScreen;
+import net.minecraft.util.CommonLinks;
 import org.slf4j.Logger;
 
 public class RealmsTermsScreen extends RealmsScreen {
@@ -66,8 +67,8 @@ public class RealmsTermsScreen extends RealmsScreen {
 
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (this.onLink) {
-         this.minecraft.keyboardHandler.setClipboard("https://aka.ms/MinecraftRealmsTerms");
-         Util.getPlatform().openUri("https://aka.ms/MinecraftRealmsTerms");
+         this.minecraft.keyboardHandler.setClipboard(CommonLinks.REALMS_TERMS.toString());
+         Util.getPlatform().openUri(CommonLinks.REALMS_TERMS);
          return true;
       } else {
          return super.mouseClicked(var1, var3, var5);

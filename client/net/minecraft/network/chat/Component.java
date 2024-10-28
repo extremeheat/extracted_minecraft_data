@@ -15,6 +15,7 @@ import com.mojang.brigadier.Message;
 import com.mojang.serialization.JsonOps;
 import java.io.StringReader;
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -230,6 +231,10 @@ public interface Component extends Message, FormattedText {
    }
 
    static Component translationArg(ChunkPos var0) {
+      return literal(var0.toString());
+   }
+
+   static Component translationArg(URI var0) {
       return literal(var0.toString());
    }
 

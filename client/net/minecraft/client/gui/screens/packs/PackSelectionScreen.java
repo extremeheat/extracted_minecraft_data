@@ -109,7 +109,7 @@ public class PackSelectionScreen extends Screen {
       this.selectedPackList = (TransferableSelectionList)this.addRenderableWidget(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, SELECTED_TITLE));
       LinearLayout var2 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       var2.addChild(Button.builder(OPEN_PACK_FOLDER_TITLE, (var1x) -> {
-         Util.getPlatform().openUri(this.packDir.toUri());
+         Util.getPlatform().openPath(this.packDir);
       }).tooltip(Tooltip.create(DIRECTORY_BUTTON_TOOLTIP)).build());
       this.doneButton = (Button)var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
          this.onClose();

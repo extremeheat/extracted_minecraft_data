@@ -228,11 +228,12 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       this.isJumping = var1;
    }
 
-   protected void onLeashDistance(float var1) {
-      if (var1 > 6.0F && this.isEating()) {
+   public boolean handleLeashAtDistance(Entity var1, float var2) {
+      if (var2 > 6.0F && this.isEating()) {
          this.setEating(false);
       }
 
+      return true;
    }
 
    public boolean isEating() {
@@ -255,8 +256,8 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       return this.isAlive() && !this.isBaby() && this.isTamed();
    }
 
-   public void equipSaddle(@Nullable SoundSource var1) {
-      this.inventory.setItem(0, new ItemStack(Items.SADDLE));
+   public void equipSaddle(ItemStack var1, @Nullable SoundSource var2) {
+      this.inventory.setItem(0, var1);
    }
 
    public void equipBodyArmor(Player var1, ItemStack var2) {
@@ -324,8 +325,12 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       }
    }
 
-   protected int getInventorySize() {
-      return 1;
+   public final int getInventorySize() {
+      return getInventorySize(this.getInventoryColumns());
+   }
+
+   public static int getInventorySize(int var0) {
+      return var0 * 3 + 1;
    }
 
    protected void createInventory() {
@@ -1101,6 +1106,10 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
 
    public final Container getBodyArmorAccess() {
       return this.bodyArmorAccess;
+   }
+
+   public int getInventoryColumns() {
+      return 0;
    }
 
    // $FF: synthetic method

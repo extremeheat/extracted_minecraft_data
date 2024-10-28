@@ -184,7 +184,7 @@ public abstract class PlayerList {
       LevelData var12 = var10.getLevelData();
       var2.loadGameTypes((CompoundTag)var7.orElse((Object)null));
       ServerGamePacketListenerImpl var13 = new ServerGamePacketListenerImpl(this.server, var1, var2, var3);
-      var1.setupInboundProtocol(GameProtocols.SERVERBOUND.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess())), var13);
+      var1.setupInboundProtocol(GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess())), var13);
       GameRules var14 = var10.getGameRules();
       boolean var15 = var14.getBoolean(GameRules.RULE_DO_IMMEDIATE_RESPAWN);
       boolean var16 = var14.getBoolean(GameRules.RULE_REDUCEDDEBUGINFO);
@@ -445,7 +445,7 @@ public abstract class PlayerList {
    public ServerPlayer respawn(ServerPlayer var1, boolean var2, Entity.RemovalReason var3) {
       this.players.remove(var1);
       var1.serverLevel().removePlayerImmediately(var1, var3);
-      DimensionTransition var4 = var1.findRespawnPositionAndUseSpawnBlock(var2);
+      DimensionTransition var4 = var1.findRespawnPositionAndUseSpawnBlock(var2, DimensionTransition.DO_NOTHING);
       ServerLevel var5 = var4.newLevel();
       ServerPlayer var6 = new ServerPlayer(this.server, var5, var1.getGameProfile(), var1.clientInformation());
       var6.connection = var1.connection;

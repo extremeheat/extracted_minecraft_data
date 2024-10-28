@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -32,7 +31,7 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianModel> {
    }
 
    public boolean shouldRender(Guardian var1, Frustum var2, double var3, double var5, double var7) {
-      if (super.shouldRender((Mob)var1, var2, var3, var5, var7)) {
+      if (super.shouldRender(var1, var2, var3, var5, var7)) {
          return true;
       } else {
          if (var1.hasActiveAttackTarget()) {
@@ -56,7 +55,7 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianModel> {
    }
 
    public void render(Guardian var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      super.render((Mob)var1, var2, var3, var4, var5, var6);
+      super.render(var1, var2, var3, var4, var5, var6);
       LivingEntity var7 = var1.getActiveAttackTarget();
       if (var7 != null) {
          float var8 = var1.getAttackAnimationScale(var3);

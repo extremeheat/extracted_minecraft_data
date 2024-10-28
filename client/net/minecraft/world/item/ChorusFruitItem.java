@@ -50,6 +50,7 @@ public class ChorusFruitItem extends Item {
 
          if (var3 instanceof Player) {
             Player var15 = (Player)var3;
+            var15.resetCurrentImpulseContext();
             var15.getCooldowns().addCooldown(this, 20);
          }
       }

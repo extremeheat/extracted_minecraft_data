@@ -359,7 +359,7 @@ public class CreateWorldScreen extends Screen {
       }, (var0, var1x, var2x, var3x) -> {
          var0.close();
          return new WorldCreationContext(var3x.worldGenSettings(), var2x, var1x, var3x.dataConfiguration());
-      }, Util.backgroundExecutor(), this.minecraft).thenApplyAsync((var0) -> {
+      }, Util.backgroundExecutor(), this.minecraft).thenApply((var0) -> {
          var0.validate();
          return var0;
       });

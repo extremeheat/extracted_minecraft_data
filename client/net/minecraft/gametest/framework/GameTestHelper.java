@@ -774,6 +774,13 @@ public class GameTestHelper {
       });
    }
 
+   public void assertEntityPosition(Entity var1, AABB var2, String var3) {
+      if (!var2.contains(this.relativeVec(var1.position()))) {
+         this.fail(var3);
+      }
+
+   }
+
    public <E extends Entity> void assertEntityProperty(E var1, Predicate<E> var2, String var3) {
       if (!var2.test(var1)) {
          String var10002 = String.valueOf(var1);
@@ -935,6 +942,10 @@ public class GameTestHelper {
    public Vec3 relativeVec(Vec3 var1) {
       Vec3 var2 = Vec3.atLowerCornerOf(this.testInfo.getStructureBlockPos());
       return StructureTemplate.transform(var1.subtract(var2), Mirror.NONE, this.testInfo.getRotation(), this.testInfo.getStructureBlockPos());
+   }
+
+   public Rotation getTestRotation() {
+      return this.testInfo.getRotation();
    }
 
    public void assertTrue(boolean var1, String var2) {

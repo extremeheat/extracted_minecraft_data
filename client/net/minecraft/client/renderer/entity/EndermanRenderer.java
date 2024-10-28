@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.entity.layers.CarriedBlockLayer;
 import net.minecraft.client.renderer.entity.layers.EnderEyesLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -28,7 +27,7 @@ public class EndermanRenderer extends MobRenderer<EnderMan, EndermanModel<EnderM
       EndermanModel var8 = (EndermanModel)this.getModel();
       var8.carrying = var7 != null;
       var8.creepy = var1.isCreepy();
-      super.render((Mob)var1, var2, var3, var4, var5, var6);
+      super.render(var1, var2, var3, var4, var5, var6);
    }
 
    public Vec3 getRenderOffset(EnderMan var1, float var2) {

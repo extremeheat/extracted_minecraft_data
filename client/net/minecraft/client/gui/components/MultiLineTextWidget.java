@@ -24,7 +24,7 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       this.maxRows = OptionalInt.empty();
       this.centered = false;
       this.cache = Util.singleKeyCache((var1x) -> {
-         return var1x.maxRows.isPresent() ? MultiLineLabel.create(var4, var1x.message, var1x.maxWidth, var1x.maxRows.getAsInt()) : MultiLineLabel.create(var4, var1x.message, var1x.maxWidth);
+         return var1x.maxRows.isPresent() ? MultiLineLabel.create(var4, var1x.maxWidth, var1x.maxRows.getAsInt(), var1x.message) : MultiLineLabel.create(var4, var1x.message, var1x.maxWidth);
       });
       this.active = false;
    }

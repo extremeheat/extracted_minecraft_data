@@ -44,7 +44,7 @@ public class BlockElement {
       while(var1.hasNext()) {
          Map.Entry var2 = (Map.Entry)var1.next();
          float[] var3 = this.uvsByFace((Direction)var2.getKey());
-         ((BlockElementFace)var2.getValue()).uv.setMissingUv(var3);
+         ((BlockElementFace)var2.getValue()).uv().setMissingUv(var3);
       }
 
    }

@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens.social;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Objects;
@@ -24,6 +25,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.CommonLinks;
 
 public class SocialInteractionsScreen extends Screen {
    private static final Component TITLE = Component.translatable("gui.socialInteractions.title");
@@ -122,7 +124,7 @@ public class SocialInteractionsScreen extends Screen {
       this.searchBox.setResponder(this::checkSearchStringUpdate);
       this.addRenderableWidget(this.searchBox);
       this.addWidget(this.socialInteractionsPlayerList);
-      this.blockingHintButton = (Button)this.addRenderableWidget(Button.builder(BLOCKING_HINT, ConfirmLinkScreen.confirmLink(this, "https://aka.ms/javablocking")).bounds(this.width / 2 - 100, 64 + this.windowHeight(), 200, 20).build());
+      this.blockingHintButton = (Button)this.addRenderableWidget(Button.builder(BLOCKING_HINT, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.BLOCKING_HELP)).bounds(this.width / 2 - 100, 64 + this.windowHeight(), 200, 20).build());
       this.showPage(this.page);
       this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
          this.onClose();

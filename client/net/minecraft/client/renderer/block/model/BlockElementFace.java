@@ -10,12 +10,8 @@ import javax.annotation.Nullable;
 import net.minecraft.core.Direction;
 import net.minecraft.util.GsonHelper;
 
-public class BlockElementFace {
+public record BlockElementFace(@Nullable Direction cullForDirection, int tintIndex, String texture, BlockFaceUV uv) {
    public static final int NO_TINT = -1;
-   public final Direction cullForDirection;
-   public final int tintIndex;
-   public final String texture;
-   public final BlockFaceUV uv;
 
    public BlockElementFace(@Nullable Direction var1, int var2, String var3, BlockFaceUV var4) {
       super();
@@ -23,6 +19,23 @@ public class BlockElementFace {
       this.tintIndex = var2;
       this.texture = var3;
       this.uv = var4;
+   }
+
+   @Nullable
+   public Direction cullForDirection() {
+      return this.cullForDirection;
+   }
+
+   public int tintIndex() {
+      return this.tintIndex;
+   }
+
+   public String texture() {
+      return this.texture;
+   }
+
+   public BlockFaceUV uv() {
+      return this.uv;
    }
 
    protected static class Deserializer implements JsonDeserializer<BlockElementFace> {

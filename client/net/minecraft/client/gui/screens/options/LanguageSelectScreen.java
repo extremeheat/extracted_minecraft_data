@@ -1,9 +1,10 @@
 package net.minecraft.client.gui.screens.options;
 
-import net.minecraft.ChatFormatting;
+import java.util.Objects;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -17,7 +18,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public class LanguageSelectScreen extends OptionsSubScreen {
-   private static final Component WARNING_LABEL;
+   private static final Component WARNING_LABEL = Component.translatable("options.languageAccuracyWarning").withColor(-4539718);
    private static final int FOOTER_HEIGHT = 53;
    private LanguageSelectionList languageSelectionList;
    final LanguageManager languageManager;
@@ -64,10 +65,6 @@ public class LanguageSelectScreen extends OptionsSubScreen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   static {
-      WARNING_LABEL = Component.translatable("options.languageAccuracyWarning").withStyle(ChatFormatting.GRAY);
-   }
-
    private class LanguageSelectionList extends ObjectSelectionList<Entry> {
       public LanguageSelectionList(final Minecraft var2) {
          super(var2, LanguageSelectScreen.this.width, LanguageSelectScreen.this.height - 33 - 53, 33, 18);
@@ -102,7 +99,12 @@ public class LanguageSelectScreen extends OptionsSubScreen {
          }
 
          public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            var1.drawCenteredString(LanguageSelectScreen.this.font, (Component)this.language, LanguageSelectionList.this.width / 2, var3 + 1, -1);
+            Font var10001 = LanguageSelectScreen.this.font;
+            Component var10002 = this.language;
+            int var10003 = LanguageSelectionList.this.width / 2;
+            int var10004 = var3 + var6 / 2;
+            Objects.requireNonNull(LanguageSelectScreen.this.font);
+            var1.drawCenteredString(var10001, (Component)var10002, var10003, var10004 - 9 / 2, -1);
          }
 
          public boolean keyPressed(int var1, int var2, int var3) {

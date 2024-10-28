@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
@@ -34,7 +35,8 @@ public interface LevelBasedValue {
       Registry.register(var0, (String)"clamped", LevelBasedValue.Clamped.CODEC);
       Registry.register(var0, (String)"fraction", LevelBasedValue.Fraction.CODEC);
       Registry.register(var0, (String)"levels_squared", LevelBasedValue.LevelsSquared.CODEC);
-      return (MapCodec)Registry.register(var0, (String)"linear", LevelBasedValue.Linear.CODEC);
+      Registry.register(var0, (String)"linear", LevelBasedValue.Linear.CODEC);
+      return (MapCodec)Registry.register(var0, (String)"lookup", LevelBasedValue.Lookup.CODEC);
    }
 
    static Constant constant(float var0) {
@@ -47,6 +49,10 @@ public interface LevelBasedValue {
 
    static Linear perLevel(float var0) {
       return perLevel(var0, var0);
+   }
+
+   static Lookup lookup(List<Float> var0, LevelBasedValue var1) {
+      return new Lookup(var0, var1);
    }
 
    float calculate(int var1);
@@ -167,6 +173,34 @@ public interface LevelBasedValue {
 
       public float perLevelAboveFirst() {
          return this.perLevelAboveFirst;
+      }
+   }
+
+   public static record Lookup(List<Float> values, LevelBasedValue fallback) implements LevelBasedValue {
+      public static final MapCodec<Lookup> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+         return var0.group(Codec.FLOAT.listOf().fieldOf("values").forGetter(Lookup::values), LevelBasedValue.CODEC.fieldOf("fallback").forGetter(Lookup::fallback)).apply(var0, Lookup::new);
+      });
+
+      public Lookup(List<Float> var1, LevelBasedValue var2) {
+         super();
+         this.values = var1;
+         this.fallback = var2;
+      }
+
+      public float calculate(int var1) {
+         return var1 <= this.values.size() ? (Float)this.values.get(var1 - 1) : this.fallback.calculate(var1);
+      }
+
+      public MapCodec<Lookup> codec() {
+         return CODEC;
+      }
+
+      public List<Float> values() {
+         return this.values;
+      }
+
+      public LevelBasedValue fallback() {
+         return this.fallback;
       }
    }
 

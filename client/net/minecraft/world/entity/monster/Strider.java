@@ -138,10 +138,10 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       return this.isAlive() && !this.isBaby();
    }
 
-   public void equipSaddle(@Nullable SoundSource var1) {
+   public void equipSaddle(ItemStack var1, @Nullable SoundSource var2) {
       this.steering.setSaddle(true);
-      if (var1 != null) {
-         this.level().playSound((Player)null, (Entity)this, SoundEvents.STRIDER_SADDLE, var1, 0.5F, 1.0F);
+      if (var2 != null) {
+         this.level().playSound((Player)null, (Entity)this, SoundEvents.STRIDER_SADDLE, var2, 0.5F, 1.0F);
       }
 
    }
@@ -444,7 +444,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
             if (var6 != null) {
                var4 = this.spawnJockey(var1, var2, var6, new Zombie.ZombieGroupData(Zombie.getSpawnAsBabyOdds(var5), false));
                var6.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WARPED_FUNGUS_ON_A_STICK));
-               this.equipSaddle((SoundSource)null);
+               this.equipSaddle(new ItemStack(Items.SADDLE), (SoundSource)null);
             }
          } else if (var5.nextInt(10) == 0) {
             AgeableMob var7 = (AgeableMob)EntityType.STRIDER.create(var1.getLevel());

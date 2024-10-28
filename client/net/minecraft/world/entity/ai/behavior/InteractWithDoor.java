@@ -54,7 +54,7 @@ public class InteractWithDoor {
                   Node var13 = var10.getNextNode();
                   BlockPos var14 = var12.asBlockPos();
                   BlockState var15 = var6.getBlockState(var14);
-                  if (var15.is(BlockTags.WOODEN_DOORS, (var0x) -> {
+                  if (var15.is(BlockTags.MOB_INTERACTABLE_DOORS, (var0x) -> {
                      return var0x.getBlock() instanceof DoorBlock;
                   })) {
                      DoorBlock var16 = (DoorBlock)var15.getBlock();
@@ -67,7 +67,7 @@ public class InteractWithDoor {
 
                   BlockPos var19 = var13.asBlockPos();
                   BlockState var17 = var6.getBlockState(var19);
-                  if (var17.is(BlockTags.WOODEN_DOORS, (var0x) -> {
+                  if (var17.is(BlockTags.MOB_INTERACTABLE_DOORS, (var0x) -> {
                      return var0x.getBlock() instanceof DoorBlock;
                   })) {
                      DoorBlock var18 = (DoorBlock)var17.getBlock();
@@ -110,7 +110,7 @@ public class InteractWithDoor {
             var6.remove();
          } else {
             BlockState var9 = var0.getBlockState(var8);
-            if (!var9.is(BlockTags.WOODEN_DOORS, (var0x) -> {
+            if (!var9.is(BlockTags.MOB_INTERACTABLE_DOORS, (var0x) -> {
                return var0x.getBlock() instanceof DoorBlock;
             })) {
                var6.remove();

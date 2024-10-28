@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 public class ModelManager implements PreparableReloadListener, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Map<ResourceLocation, ResourceLocation> VANILLA_ATLASES;
-   private Map<ResourceLocation, BakedModel> bakedRegistry;
+   private Map<ModelResourceLocation, BakedModel> bakedRegistry;
    private final AtlasSet atlases;
    private final BlockModelShaper blockModelShaper;
    private final BlockColors blockColors;
@@ -139,9 +139,9 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       });
    }
 
-   private static CompletableFuture<Map<ResourceLocation, List<ModelBakery.LoadedJson>>> loadBlockStates(ResourceManager var0, Executor var1) {
+   private static CompletableFuture<Map<ResourceLocation, List<BlockStateModelLoader.LoadedJson>>> loadBlockStates(ResourceManager var0, Executor var1) {
       return CompletableFuture.supplyAsync(() -> {
-         return ModelBakery.BLOCKSTATE_LISTER.listMatchingResourceStacks(var0);
+         return BlockStateModelLoader.BLOCKSTATE_LISTER.listMatchingResourceStacks(var0);
       }, var1).thenCompose((var1x) -> {
          ArrayList var2 = new ArrayList(var1x.size());
          Iterator var3 = var1x.entrySet().iterator();
@@ -161,7 +161,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
 
                      try {
                         JsonObject var6 = GsonHelper.parse((Reader)var5);
-                        var2.add(new ModelBakery.LoadedJson(var4x.sourcePackId(), var6));
+                        var2.add(new BlockStateModelLoader.LoadedJson(var4x.sourcePackId(), var6));
                      } catch (Throwable var9) {
                         if (var5 != null) {
                            try {
@@ -214,7 +214,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       });
       var1.popPush("dispatch");
       Map var5 = var3.getBakedTopLevelModels();
-      BakedModel var6 = (BakedModel)var5.get(ModelBakery.MISSING_MODEL_LOCATION);
+      BakedModel var6 = (BakedModel)var5.get(ModelBakery.MISSING_MODEL_VARIANT);
       IdentityHashMap var7 = new IdentityHashMap();
       Iterator var8 = BuiltInRegistries.BLOCK.iterator();
 

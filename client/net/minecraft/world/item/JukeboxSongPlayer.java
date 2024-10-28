@@ -46,10 +46,6 @@ public class JukeboxSongPlayer {
       }
    }
 
-   public int getComparatorOutput() {
-      return this.song != null ? ((JukeboxSong)this.song.value()).comparatorOutput() : 0;
-   }
-
    public void play(LevelAccessor var1, Holder<JukeboxSong> var2) {
       this.song = var2;
       this.ticksSinceSongStarted = 0L;

@@ -1,6 +1,7 @@
 package com.mojang.realmsclient.gui.screens;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import java.net.URI;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -17,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.CommonLinks;
 
 public class AddRealmPopupScreen extends RealmsScreen {
    private static final Component POPUP_TEXT = Component.translatable("mco.selectServer.popup");
@@ -62,10 +64,10 @@ public class AddRealmPopupScreen extends RealmsScreen {
    protected void init() {
       this.backgroundScreen.resize(this.minecraft, this.width, this.height);
       if (this.trialAvailable) {
-         this.createTrialButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("mco.selectServer.trial"), ConfirmLinkScreen.confirmLink(this, "https://aka.ms/startjavarealmstrial")).bounds(this.right() - 10 - 99, this.bottom() - 10 - 4 - 40, 99, 20).build());
+         this.createTrialButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("mco.selectServer.trial"), ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.START_REALMS_TRIAL)).bounds(this.right() - 10 - 99, this.bottom() - 10 - 4 - 40, 99, 20).build());
       }
 
-      this.addRenderableWidget(Button.builder(Component.translatable("mco.selectServer.buy"), ConfirmLinkScreen.confirmLink(this, "https://aka.ms/BuyJavaRealms")).bounds(this.right() - 10 - 99, this.bottom() - 10 - 20, 99, 20).build());
+      this.addRenderableWidget(Button.builder(Component.translatable("mco.selectServer.buy"), ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.BUY_REALMS)).bounds(this.right() - 10 - 99, this.bottom() - 10 - 20, 99, 20).build());
       ImageButton var1 = (ImageButton)this.addRenderableWidget(new ImageButton(this.left() + 4, this.top() + 4, 14, 14, CROSS_BUTTON_SPRITES, (var1x) -> {
          this.onClose();
       }, CLOSE_TEXT));

@@ -27,7 +27,6 @@ import net.minecraft.world.level.block.Blocks;
 
 public abstract class AbstractChestedHorse extends AbstractHorse {
    private static final EntityDataAccessor<Boolean> DATA_ID_CHEST;
-   public static final int INV_CHEST_COUNT = 15;
    private final EntityDimensions babyDimensions;
 
    protected AbstractChestedHorse(EntityType<? extends AbstractChestedHorse> var1, Level var2) {
@@ -57,10 +56,6 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
 
    public void setChest(boolean var1) {
       this.entityData.set(DATA_ID_CHEST, var1);
-   }
-
-   protected int getInventorySize() {
-      return this.hasChest() ? 16 : super.getInventorySize();
    }
 
    public EntityDimensions getDefaultDimensions(Pose var1) {
@@ -184,7 +179,7 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
    }
 
    public int getInventoryColumns() {
-      return 5;
+      return this.hasChest() ? 5 : 0;
    }
 
    static {

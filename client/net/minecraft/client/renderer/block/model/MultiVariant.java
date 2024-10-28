@@ -61,20 +61,20 @@ public class MultiVariant implements UnbakedModel {
    }
 
    @Nullable
-   public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3, ResourceLocation var4) {
+   public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3) {
       if (this.getVariants().isEmpty()) {
          return null;
       } else {
-         WeightedBakedModel.Builder var5 = new WeightedBakedModel.Builder();
-         Iterator var6 = this.getVariants().iterator();
+         WeightedBakedModel.Builder var4 = new WeightedBakedModel.Builder();
+         Iterator var5 = this.getVariants().iterator();
 
-         while(var6.hasNext()) {
-            Variant var7 = (Variant)var6.next();
-            BakedModel var8 = var1.bake(var7.getModelLocation(), var7);
-            var5.add(var8, var7.getWeight());
+         while(var5.hasNext()) {
+            Variant var6 = (Variant)var5.next();
+            BakedModel var7 = var1.bake(var6.getModelLocation(), var6);
+            var4.add(var7, var6.getWeight());
          }
 
-         return var5.build();
+         return var4.build();
       }
    }
 

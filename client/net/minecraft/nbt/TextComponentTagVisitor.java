@@ -152,7 +152,7 @@ public class TextComponentTagVisitor implements TagVisitor {
       if (var1.isEmpty()) {
          this.result.append("[]");
       } else if (this.depth >= 64) {
-         this.result.append("[" + String.valueOf(FOLDED) + "]");
+         this.result.append("[").append(FOLDED).append("]");
       } else if (INLINE_ELEMENT_TYPES.contains(var1.getElementType()) && var1.size() <= 8) {
          this.result.append("[");
 
@@ -182,7 +182,7 @@ public class TextComponentTagVisitor implements TagVisitor {
          }
 
          if (var1.size() > 128) {
-            this.result.append(var2 + String.valueOf(FOLDED));
+            this.result.append(var2).append(FOLDED);
          }
 
          if (!this.indentation.isEmpty()) {
@@ -197,7 +197,7 @@ public class TextComponentTagVisitor implements TagVisitor {
       if (var1.isEmpty()) {
          this.result.append("{}");
       } else if (this.depth >= 64) {
-         this.result.append("{" + String.valueOf(FOLDED) + "}");
+         this.result.append("{").append(FOLDED).append("}");
       } else {
          this.result.append("{");
          Object var2 = var1.getAllKeys();

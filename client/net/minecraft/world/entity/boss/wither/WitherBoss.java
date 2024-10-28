@@ -509,7 +509,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
       return false;
    }
 
-   public boolean canChangeDimensions() {
+   public boolean canUsePortal(boolean var1) {
       return false;
    }
 

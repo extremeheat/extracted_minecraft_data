@@ -2,8 +2,8 @@ package net.minecraft.world.damagesource;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 
@@ -24,11 +24,12 @@ public class CombatRules {
          float var5 = 2.0F + var4 / 4.0F;
          float var6 = Mth.clamp(var3 - var1 / var5, var3 * 0.2F, 20.0F);
          float var7 = var6 / 25.0F;
-         Entity var11 = var2.getDirectEntity();
-         if (var11 instanceof LivingEntity var9) {
-            Level var12 = var9.level();
-            if (var12 instanceof ServerLevel var10) {
-               var8 = Mth.clamp(EnchantmentHelper.modifyArmorEffectiveness(var10, var9.getMainHandItem(), var0, var2, var7), 0.0F, 1.0F);
+         ItemStack var9 = var2.getWeaponItem();
+         if (var9 != null) {
+            Level var11 = var0.level();
+            if (var11 instanceof ServerLevel) {
+               ServerLevel var10 = (ServerLevel)var11;
+               var8 = Mth.clamp(EnchantmentHelper.modifyArmorEffectiveness(var10, var9, var0, var2, var7), 0.0F, 1.0F);
                break label12;
             }
          }
@@ -36,8 +37,8 @@ public class CombatRules {
          var8 = var7;
       }
 
-      float var13 = 1.0F - var8;
-      return var1 * var13;
+      float var12 = 1.0F - var8;
+      return var1 * var12;
    }
 
    public static float getDamageAfterMagicAbsorb(float var0, float var1) {

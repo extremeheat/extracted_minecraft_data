@@ -29,7 +29,7 @@ public class EndBiomes {
    }
 
    public static Biome theEnd(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
-      BiomeGenerationSettings.Builder var2 = (new BiomeGenerationSettings.Builder(var0, var1)).addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, EndPlacements.END_SPIKE);
+      BiomeGenerationSettings.Builder var2 = (new BiomeGenerationSettings.Builder(var0, var1)).addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, EndPlacements.END_SPIKE).addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, EndPlacements.END_PLATFORM);
       return baseEndBiome(var2);
    }
 

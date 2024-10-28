@@ -182,7 +182,7 @@ public class RealmsMainScreen extends RealmsScreen {
       this.newsButton = new NotificationButton(var2, NEWS_SPRITE, (var1x) -> {
          String var2 = this.newsLink;
          if (var2 != null) {
-            ConfirmLinkScreen.confirmLinkNow(this, var2);
+            ConfirmLinkScreen.confirmLinkNow(this, (String)var2);
             if (this.newsButton.notificationCount() != 0) {
                RealmsPersistence.RealmsPersistenceData var3 = RealmsPersistence.readFile();
                var3.hasUnreadNews = false;

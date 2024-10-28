@@ -23,7 +23,7 @@ public interface EnchantmentLocationBasedEffect {
       Registry.register(var0, (String)"ignite", Ignite.CODEC);
       Registry.register(var0, (String)"play_sound", PlaySoundEffect.CODEC);
       Registry.register(var0, (String)"replace_block", ReplaceBlock.CODEC);
-      Registry.register(var0, (String)"replace_disc", ReplaceDisc.CODEC);
+      Registry.register(var0, (String)"replace_disk", ReplaceDisk.CODEC);
       Registry.register(var0, (String)"run_function", RunFunction.CODEC);
       Registry.register(var0, (String)"set_block_properties", SetBlockProperties.CODEC);
       Registry.register(var0, (String)"spawn_particles", SpawnParticlesEffect.CODEC);

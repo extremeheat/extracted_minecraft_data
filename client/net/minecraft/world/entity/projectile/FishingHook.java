@@ -16,6 +16,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -512,13 +513,13 @@ public class FishingHook extends Projectile {
       return this.hookedIn;
    }
 
-   public boolean canChangeDimensions() {
+   public boolean canUsePortal(boolean var1) {
       return false;
    }
 
-   public Packet<ClientGamePacketListener> getAddEntityPacket() {
-      Entity var1 = this.getOwner();
-      return new ClientboundAddEntityPacket(this, var1 == null ? this.getId() : var1.getId());
+   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
+      Entity var2 = this.getOwner();
+      return new ClientboundAddEntityPacket(this, var1, var2 == null ? this.getId() : var2.getId());
    }
 
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {

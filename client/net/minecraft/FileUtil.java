@@ -27,25 +27,29 @@ public class FileUtil {
       super();
    }
 
-   public static String findAvailableName(Path var0, String var1, String var2) throws IOException {
-      char[] var3 = SharedConstants.ILLEGAL_FILE_CHARACTERS;
-      int var4 = var3.length;
+   public static String sanitizeName(String var0) {
+      char[] var1 = SharedConstants.ILLEGAL_FILE_CHARACTERS;
+      int var2 = var1.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         char var6 = var3[var5];
-         var1 = var1.replace(var6, '_');
+      for(int var3 = 0; var3 < var2; ++var3) {
+         char var4 = var1[var3];
+         var0 = var0.replace(var4, '_');
       }
 
-      var1 = var1.replaceAll("[./\"]", "_");
+      return var0.replaceAll("[./\"]", "_");
+   }
+
+   public static String findAvailableName(Path var0, String var1, String var2) throws IOException {
+      var1 = sanitizeName(var1);
       if (RESERVED_WINDOWS_FILENAMES.matcher(var1).matches()) {
          var1 = "_" + var1 + "_";
       }
 
-      Matcher var9 = COPY_COUNTER_PATTERN.matcher(var1);
-      var4 = 0;
-      if (var9.matches()) {
-         var1 = var9.group("name");
-         var4 = Integer.parseInt(var9.group("count"));
+      Matcher var3 = COPY_COUNTER_PATTERN.matcher(var1);
+      int var4 = 0;
+      if (var3.matches()) {
+         var1 = var3.group("name");
+         var4 = Integer.parseInt(var3.group("count"));
       }
 
       if (var1.length() > 255 - var2.length()) {
@@ -53,24 +57,24 @@ public class FileUtil {
       }
 
       while(true) {
-         String var10 = var1;
+         String var5 = var1;
          if (var4 != 0) {
-            String var11 = " (" + var4 + ")";
-            int var7 = 255 - var11.length();
+            String var6 = " (" + var4 + ")";
+            int var7 = 255 - var6.length();
             if (var1.length() > var7) {
-               var10 = var1.substring(0, var7);
+               var5 = var1.substring(0, var7);
             }
 
-            var10 = var10 + var11;
+            var5 = var5 + var6;
          }
 
-         var10 = var10 + var2;
-         Path var12 = var0.resolve(var10);
+         var5 = var5 + var2;
+         Path var9 = var0.resolve(var5);
 
          try {
-            Path var13 = Files.createDirectory(var12);
-            Files.deleteIfExists(var13);
-            return var0.relativize(var13).toString();
+            Path var10 = Files.createDirectory(var9);
+            Files.deleteIfExists(var10);
+            return var0.relativize(var10).toString();
          } catch (FileAlreadyExistsException var8) {
             ++var4;
          }

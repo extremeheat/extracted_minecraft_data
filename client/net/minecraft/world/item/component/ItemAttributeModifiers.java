@@ -157,7 +157,7 @@ public record ItemAttributeModifiers(List<Entry> modifiers, boolean showInToolti
       }
 
       public boolean matches(Holder<Attribute> var1, ResourceLocation var2) {
-         return var1.equals(this.attribute) && var2.equals(this.modifier);
+         return var1.equals(this.attribute) && this.modifier.is(var2);
       }
 
       public Holder<Attribute> attribute() {

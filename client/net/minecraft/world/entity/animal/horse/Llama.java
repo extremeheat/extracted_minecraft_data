@@ -144,10 +144,6 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       this.entityData.set(DATA_VARIANT_ID, var1.id);
    }
 
-   protected int getInventorySize() {
-      return this.hasChest() ? 1 + 3 * this.getInventoryColumns() : super.getInventorySize();
-   }
-
    public boolean isFood(ItemStack var1) {
       return var1.is(ItemTags.LLAMA_FOOD);
    }
@@ -256,7 +252,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
    }
 
    public int getInventoryColumns() {
-      return this.getStrength();
+      return this.hasChest() ? this.getStrength() : 0;
    }
 
    public boolean canUseSlot(EquipmentSlot var1) {

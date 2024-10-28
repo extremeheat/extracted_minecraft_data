@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -8,6 +7,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -20,12 +20,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.Logger;
 
 public class EndGatewayBlock extends BaseEntityBlock implements Portal {
    public static final MapCodec<EndGatewayBlock> CODEC = simpleCodec(EndGatewayBlock::new);
-   private static final Logger LOGGER = LogUtils.getLogger();
-   private static final int GATEWAY_HEIGHT_ABOVE_SURFACE = 10;
 
    public MapCodec<EndGatewayBlock> codec() {
       return CODEC;
@@ -80,7 +77,7 @@ public class EndGatewayBlock extends BaseEntityBlock implements Portal {
    }
 
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      if (var4.canChangeDimensions()) {
+      if (var4.canUsePortal(false)) {
          BlockEntity var5 = var2.getBlockEntity(var3);
          if (!var2.isClientSide && var5 instanceof TheEndGatewayBlockEntity) {
             TheEndGatewayBlockEntity var6 = (TheEndGatewayBlockEntity)var5;
@@ -98,9 +95,13 @@ public class EndGatewayBlock extends BaseEntityBlock implements Portal {
       BlockEntity var4 = var1.getBlockEntity(var3);
       if (var4 instanceof TheEndGatewayBlockEntity var5) {
          Vec3 var6 = var5.getPortalPosition(var1, var3);
-         return var6 != null ? new DimensionTransition(var1, var6, var2.getDeltaMovement(), var2.getYRot(), var2.getXRot()) : null;
+         return var6 != null ? new DimensionTransition(var1, var6, calculateExitMovement(var2), var2.getYRot(), var2.getXRot(), DimensionTransition.PLACE_PORTAL_TICKET) : null;
       } else {
          return null;
       }
+   }
+
+   private static Vec3 calculateExitMovement(Entity var0) {
+      return var0 instanceof ThrownEnderpearl ? new Vec3(0.0, -1.0, 0.0) : var0.getDeltaMovement();
    }
 }

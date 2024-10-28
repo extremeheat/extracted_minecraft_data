@@ -41,15 +41,17 @@ public class SectionStorage<R> implements AutoCloseable {
    private final Function<Runnable, Codec<R>> codec;
    private final Function<Runnable, R> factory;
    private final RegistryAccess registryAccess;
+   private final ChunkIOErrorReporter errorReporter;
    protected final LevelHeightAccessor levelHeightAccessor;
 
-   public SectionStorage(SimpleRegionStorage var1, Function<Runnable, Codec<R>> var2, Function<Runnable, R> var3, RegistryAccess var4, LevelHeightAccessor var5) {
+   public SectionStorage(SimpleRegionStorage var1, Function<Runnable, Codec<R>> var2, Function<Runnable, R> var3, RegistryAccess var4, ChunkIOErrorReporter var5, LevelHeightAccessor var6) {
       super();
       this.simpleRegionStorage = var1;
       this.codec = var2;
       this.factory = var3;
       this.registryAccess = var4;
-      this.levelHeightAccessor = var5;
+      this.errorReporter = var5;
+      this.levelHeightAccessor = var6;
    }
 
    protected void tick(BooleanSupplier var1) {
@@ -117,12 +119,13 @@ public class SectionStorage<R> implements AutoCloseable {
    }
 
    private CompletableFuture<Optional<CompoundTag>> tryRead(ChunkPos var1) {
-      return this.simpleRegionStorage.read(var1).exceptionally((var1x) -> {
-         if (var1x instanceof IOException var2) {
-            LOGGER.error("Error reading chunk {} data from disk", var1, var2);
+      return this.simpleRegionStorage.read(var1).exceptionally((var2) -> {
+         if (var2 instanceof IOException var3) {
+            LOGGER.error("Error reading chunk {} data from disk", var1, var3);
+            this.errorReporter.reportChunkLoadFailure(var3, this.simpleRegionStorage.storageInfo(), var1);
             return Optional.empty();
          } else {
-            throw new CompletionException(var1x);
+            throw new CompletionException(var2);
          }
       });
    }
@@ -168,7 +171,10 @@ public class SectionStorage<R> implements AutoCloseable {
       Dynamic var3 = this.writeColumn(var1, var2);
       Tag var4 = (Tag)var3.getValue();
       if (var4 instanceof CompoundTag) {
-         this.simpleRegionStorage.write(var1, (CompoundTag)var4);
+         this.simpleRegionStorage.write(var1, (CompoundTag)var4).exceptionally((var2x) -> {
+            this.errorReporter.reportChunkSaveFailure(var2x, this.simpleRegionStorage.storageInfo(), var1);
+            return null;
+         });
       } else {
          LOGGER.error("Expected compound tag, got {}", var4);
       }

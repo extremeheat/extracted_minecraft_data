@@ -232,17 +232,14 @@ public class Slime extends Mob implements Enemy {
    }
 
    protected void dealDamage(LivingEntity var1) {
-      if (this.isAlive()) {
-         int var2 = this.getSize();
-         if (this.distanceToSqr(var1) < 0.6 * (double)var2 * 0.6 * (double)var2 && this.hasLineOfSight(var1)) {
-            DamageSource var3 = this.damageSources().mobAttack(this);
-            if (var1.hurt(var3, this.getAttackDamage())) {
-               this.playSound(SoundEvents.SLIME_ATTACK, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
-               Level var5 = this.level();
-               if (var5 instanceof ServerLevel) {
-                  ServerLevel var4 = (ServerLevel)var5;
-                  EnchantmentHelper.doPostAttackEffects(var4, var1, var3);
-               }
+      if (this.isAlive() && this.isWithinMeleeAttackRange(var1) && this.hasLineOfSight(var1)) {
+         DamageSource var2 = this.damageSources().mobAttack(this);
+         if (var1.hurt(var2, this.getAttackDamage())) {
+            this.playSound(SoundEvents.SLIME_ATTACK, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
+            Level var4 = this.level();
+            if (var4 instanceof ServerLevel) {
+               ServerLevel var3 = (ServerLevel)var4;
+               EnchantmentHelper.doPostAttackEffects(var3, var1, var2);
             }
          }
       }
@@ -313,7 +310,7 @@ public class Slime extends Mob implements Enemy {
       return this.getSize() > 0;
    }
 
-   protected void jumpFromGround() {
+   public void jumpFromGround() {
       Vec3 var1 = this.getDeltaMovement();
       this.setDeltaMovement(var1.x, (double)this.getJumpPower(), var1.z);
       this.hasImpulse = true;

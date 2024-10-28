@@ -21,9 +21,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.GsonHelper;
-import org.apache.commons.lang3.StringUtils;
 
-public class ResourceLocation implements Comparable<ResourceLocation> {
+public final class ResourceLocation implements Comparable<ResourceLocation> {
    public static final Codec<ResourceLocation> CODEC;
    public static final StreamCodec<ByteBuf, ResourceLocation> STREAM_CODEC;
    public static final SimpleCommandExceptionType ERROR_INVALID;
@@ -33,65 +32,74 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
    private final String namespace;
    private final String path;
 
-   protected ResourceLocation(String var1, String var2, @Nullable Dummy var3) {
+   private ResourceLocation(String var1, String var2) {
       super();
+
+      assert isValidNamespace(var1);
+
+      assert isValidPath(var2);
+
       this.namespace = var1;
       this.path = var2;
    }
 
-   protected ResourceLocation(String var1, String var2) {
-      this(assertValidNamespace(var1, var2), assertValidPath(var1, var2), (Dummy)null);
+   private static ResourceLocation createUntrusted(String var0, String var1) {
+      return new ResourceLocation(assertValidNamespace(var0, var1), assertValidPath(var0, var1));
    }
 
    public static ResourceLocation fromNamespaceAndPath(String var0, String var1) {
-      return new ResourceLocation(var0, var1);
-   }
-
-   private ResourceLocation(String[] var1) {
-      this(var1[0], var1[1]);
+      return createUntrusted(var0, var1);
    }
 
    public static ResourceLocation parse(String var0) {
       return bySeparator(var0, ':');
    }
 
-   public static ResourceLocation bySeparator(String var0, char var1) {
-      return new ResourceLocation(decompose(var0, var1));
-   }
-
    public static ResourceLocation withDefaultNamespace(String var0) {
-      return new ResourceLocation("minecraft", var0);
+      return new ResourceLocation("minecraft", assertValidPath("minecraft", var0));
    }
 
    @Nullable
    public static ResourceLocation tryParse(String var0) {
-      try {
-         return parse(var0);
-      } catch (ResourceLocationException var2) {
-         return null;
-      }
+      return tryBySeparator(var0, ':');
    }
 
    @Nullable
    public static ResourceLocation tryBuild(String var0, String var1) {
-      try {
-         return new ResourceLocation(var0, var1);
-      } catch (ResourceLocationException var3) {
-         return null;
+      return isValidNamespace(var0) && isValidPath(var1) ? new ResourceLocation(var0, var1) : null;
+   }
+
+   public static ResourceLocation bySeparator(String var0, char var1) {
+      int var2 = var0.indexOf(var1);
+      if (var2 >= 0) {
+         String var3 = var0.substring(var2 + 1);
+         if (var2 != 0) {
+            String var4 = var0.substring(0, var2);
+            return createUntrusted(var4, var3);
+         } else {
+            return withDefaultNamespace(var3);
+         }
+      } else {
+         return withDefaultNamespace(var0);
       }
    }
 
-   protected static String[] decompose(String var0, char var1) {
-      String[] var2 = new String[]{"minecraft", var0};
-      int var3 = var0.indexOf(var1);
-      if (var3 >= 0) {
-         var2[1] = var0.substring(var3 + 1);
-         if (var3 >= 1) {
-            var2[0] = var0.substring(0, var3);
+   @Nullable
+   public static ResourceLocation tryBySeparator(String var0, char var1) {
+      int var2 = var0.indexOf(var1);
+      if (var2 >= 0) {
+         String var3 = var0.substring(var2 + 1);
+         if (!isValidPath(var3)) {
+            return null;
+         } else if (var2 != 0) {
+            String var4 = var0.substring(0, var2);
+            return isValidNamespace(var4) ? new ResourceLocation(var4, var3) : null;
+         } else {
+            return new ResourceLocation("minecraft", var3);
          }
+      } else {
+         return isValidPath(var0) ? new ResourceLocation("minecraft", var0) : null;
       }
-
-      return var2;
    }
 
    public static DataResult<ResourceLocation> read(String var0) {
@@ -113,7 +121,7 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
    }
 
    public ResourceLocation withPath(String var1) {
-      return new ResourceLocation(this.namespace, assertValidPath(this.namespace, var1), (Dummy)null);
+      return new ResourceLocation(this.namespace, assertValidPath(this.namespace, var1));
    }
 
    public ResourceLocation withPath(UnaryOperator<String> var1) {
@@ -253,11 +261,6 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
       return var0 == '_' || var0 == '-' || var0 >= 'a' && var0 <= 'z' || var0 >= '0' && var0 <= '9' || var0 == '.';
    }
 
-   public static boolean isValidResourceLocation(String var0) {
-      String[] var1 = decompose(var0, ':');
-      return isValidNamespace(StringUtils.isEmpty(var1[0]) ? "minecraft" : var1[0]) && isValidPath(var1[1]);
-   }
-
    private static String assertValidPath(String var0, String var1) {
       if (!isValidPath(var1)) {
          throw new ResourceLocationException("Non [a-z0-9/._-] character in path of location: " + var0 + ":" + var1);
@@ -275,9 +278,6 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
       CODEC = Codec.STRING.comapFlatMap(ResourceLocation::read, ResourceLocation::toString).stable();
       STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(ResourceLocation::parse, ResourceLocation::toString);
       ERROR_INVALID = new SimpleCommandExceptionType(Component.translatable("argument.id.invalid"));
-   }
-
-   protected interface Dummy {
    }
 
    public static class Serializer implements JsonDeserializer<ResourceLocation>, JsonSerializer<ResourceLocation> {

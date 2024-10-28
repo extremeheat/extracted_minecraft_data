@@ -67,6 +67,11 @@ public class DamageSource {
       return this.causingEntity;
    }
 
+   @Nullable
+   public ItemStack getWeaponItem() {
+      return this.directEntity != null ? this.directEntity.getWeaponItem() : null;
+   }
+
    public Component getLocalizedDeathMessage(LivingEntity var1) {
       String var2 = "death.attack." + this.type().msgId();
       if (this.causingEntity == null && this.directEntity == null) {

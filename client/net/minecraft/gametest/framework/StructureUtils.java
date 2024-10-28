@@ -177,7 +177,7 @@ public class StructureUtils {
       });
       var1.getBlockTicks().clearArea(var3);
       var1.clearBlockEvents(var3);
-      AABB var4 = new AABB((double)var3.minX(), (double)var3.minY(), (double)var3.minZ(), (double)var3.maxX(), (double)var3.maxY(), (double)var3.maxZ());
+      AABB var4 = AABB.of(var3);
       List var5 = var1.getEntitiesOfClass(Entity.class, var4, (var0x) -> {
          return !(var0x instanceof Player);
       });

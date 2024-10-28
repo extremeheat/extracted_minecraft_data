@@ -38,6 +38,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsObjectSelectionList;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.CommonLinks;
 import org.slf4j.Logger;
 
 public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
@@ -146,14 +147,14 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
 
    private void onTrailer() {
       if (this.selectedTemplate != null && !this.selectedTemplate.trailer.isBlank()) {
-         ConfirmLinkScreen.confirmLinkNow(this, this.selectedTemplate.trailer);
+         ConfirmLinkScreen.confirmLinkNow(this, (String)this.selectedTemplate.trailer);
       }
 
    }
 
    private void onPublish() {
       if (this.selectedTemplate != null && !this.selectedTemplate.link.isBlank()) {
-         ConfirmLinkScreen.confirmLinkNow(this, this.selectedTemplate.link);
+         ConfirmLinkScreen.confirmLinkNow(this, (String)this.selectedTemplate.link);
       }
 
    }
@@ -184,7 +185,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
                   if (var2.templates.isEmpty()) {
                      if (RealmsSelectWorldTemplateScreen.this.worldTemplateList.isEmpty()) {
                         String var5 = I18n.get("mco.template.select.none", "%link");
-                        TextRenderingUtils.LineSegment var6 = TextRenderingUtils.LineSegment.link(I18n.get("mco.template.select.none.linkTitle"), "https://aka.ms/MinecraftRealmsContentCreator");
+                        TextRenderingUtils.LineSegment var6 = TextRenderingUtils.LineSegment.link(I18n.get("mco.template.select.none.linkTitle"), CommonLinks.REALMS_CONTENT_CREATION.toString());
                         RealmsSelectWorldTemplateScreen.this.noTemplatesMessage = TextRenderingUtils.decompose(var5, var6);
                      }
 
@@ -268,7 +269,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
 
       public boolean mouseClicked(double var1, double var3, int var5) {
          if (RealmsSelectWorldTemplateScreen.this.currentLink != null) {
-            ConfirmLinkScreen.confirmLinkNow(RealmsSelectWorldTemplateScreen.this, RealmsSelectWorldTemplateScreen.this.currentLink);
+            ConfirmLinkScreen.confirmLinkNow(RealmsSelectWorldTemplateScreen.this, (String)RealmsSelectWorldTemplateScreen.this.currentLink);
             return true;
          } else {
             return super.mouseClicked(var1, var3, var5);
@@ -316,12 +317,12 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          super();
          this.template = var2;
          if (!var2.link.isBlank()) {
-            this.websiteButton = new ImageButton(15, 15, WEBSITE_LINK_SPRITES, ConfirmLinkScreen.confirmLink(RealmsSelectWorldTemplateScreen.this, var2.link), PUBLISHER_LINK_TOOLTIP);
+            this.websiteButton = new ImageButton(15, 15, WEBSITE_LINK_SPRITES, ConfirmLinkScreen.confirmLink(RealmsSelectWorldTemplateScreen.this, (String)var2.link), PUBLISHER_LINK_TOOLTIP);
             this.websiteButton.setTooltip(Tooltip.create(PUBLISHER_LINK_TOOLTIP));
          }
 
          if (!var2.trailer.isBlank()) {
-            this.trailerButton = new ImageButton(15, 15, TRAILER_LINK_SPRITES, ConfirmLinkScreen.confirmLink(RealmsSelectWorldTemplateScreen.this, var2.trailer), TRAILER_LINK_TOOLTIP);
+            this.trailerButton = new ImageButton(15, 15, TRAILER_LINK_SPRITES, ConfirmLinkScreen.confirmLink(RealmsSelectWorldTemplateScreen.this, (String)var2.trailer), TRAILER_LINK_TOOLTIP);
             this.trailerButton.setTooltip(Tooltip.create(TRAILER_LINK_TOOLTIP));
          }
 

@@ -232,8 +232,8 @@ public class StructureTemplate {
          List var7 = var4.getRandomPalette(this.palettes, var2).blocks();
          if ((!var7.isEmpty() || !var4.isIgnoreEntities() && !this.entityInfoList.isEmpty()) && this.size.getX() >= 1 && this.size.getY() >= 1 && this.size.getZ() >= 1) {
             BoundingBox var8 = var4.getBoundingBox();
-            ArrayList var9 = Lists.newArrayListWithCapacity(var4.shouldKeepLiquids() ? var7.size() : 0);
-            ArrayList var10 = Lists.newArrayListWithCapacity(var4.shouldKeepLiquids() ? var7.size() : 0);
+            ArrayList var9 = Lists.newArrayListWithCapacity(var4.shouldApplyWaterlogging() ? var7.size() : 0);
+            ArrayList var10 = Lists.newArrayListWithCapacity(var4.shouldApplyWaterlogging() ? var7.size() : 0);
             ArrayList var11 = Lists.newArrayListWithCapacity(var7.size());
             int var12 = 2147483647;
             int var13 = 2147483647;
@@ -336,7 +336,7 @@ public class StructureTemplate {
                   var21 = var20.pos;
                } while(var8 != null && !var8.isInside(var21));
 
-               FluidState var22 = var4.shouldKeepLiquids() ? var1.getFluidState(var21) : null;
+               FluidState var22 = var4.shouldApplyWaterlogging() ? var1.getFluidState(var21) : null;
                BlockState var23 = var20.state.mirror(var4.getMirror()).rotate(var4.getRotation());
                if (var20.nbt != null) {
                   var24 = var1.getBlockEntity(var21);

@@ -121,6 +121,10 @@ public interface VertexConsumer {
       return this.addVertex(var1.x(), var1.y(), var1.z());
    }
 
+   default VertexConsumer addVertex(PoseStack.Pose var1, Vector3f var2) {
+      return this.addVertex(var1, var2.x(), var2.y(), var2.z());
+   }
+
    default VertexConsumer addVertex(PoseStack.Pose var1, float var2, float var3, float var4) {
       return this.addVertex(var1.pose(), var2, var3, var4);
    }

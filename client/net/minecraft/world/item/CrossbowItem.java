@@ -185,7 +185,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
    public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
       if (!var1.isClientSide) {
          ChargingSounds var5 = this.getChargingSounds(var3);
-         float var6 = (float)(var3.getUseDuration(var2) - var4) / (float)getChargeDuration(var2);
+         float var6 = (float)(var3.getUseDuration(var2) - var4) / (float)getChargeDuration(var3, var2);
          if (var6 < 0.2F) {
             this.startSoundPlayed = false;
             this.midLoadSoundPlayed = false;
@@ -209,12 +209,12 @@ public class CrossbowItem extends ProjectileWeaponItem {
    }
 
    public int getUseDuration(ItemStack var1, LivingEntity var2) {
-      return getChargeDuration(var2) + 3;
+      return getChargeDuration(var1, var2) + 3;
    }
 
-   public static int getChargeDuration(LivingEntity var0) {
-      float var1 = EnchantmentHelper.modifyCrossbowChargingTime(var0, 1.25F);
-      return Mth.floor(var1 * 20.0F);
+   public static int getChargeDuration(ItemStack var0, LivingEntity var1) {
+      float var2 = EnchantmentHelper.modifyCrossbowChargingTime(var0, var1, 1.25F);
+      return Mth.floor(var2 * 20.0F);
    }
 
    public UseAnim getUseAnimation(ItemStack var1) {
@@ -226,7 +226,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
    }
 
    private static float getPowerForTime(int var0, ItemStack var1, LivingEntity var2) {
-      float var3 = (float)var0 / (float)getChargeDuration(var2);
+      float var3 = (float)var0 / (float)getChargeDuration(var1, var2);
       if (var3 > 1.0F) {
          var3 = 1.0F;
       }

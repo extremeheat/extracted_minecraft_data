@@ -421,6 +421,20 @@ public final class ItemStack implements DataComponentHolder {
 
    }
 
+   public ItemStack hurtAndConvertOnBreak(int var1, ItemLike var2, LivingEntity var3, EquipmentSlot var4) {
+      this.hurtAndBreak(var1, var3, var4);
+      if (this.isEmpty()) {
+         ItemStack var5 = this.transmuteCopyIgnoreEmpty(var2, 1);
+         if (var5.isDamageableItem()) {
+            var5.setDamageValue(0);
+         }
+
+         return var5;
+      } else {
+         return this;
+      }
+   }
+
    public boolean isBarVisible() {
       return this.getItem().isBarVisible(this);
    }
@@ -499,7 +513,7 @@ public final class ItemStack implements DataComponentHolder {
       return this.isEmpty() ? EMPTY : this.transmuteCopyIgnoreEmpty(var1, var2);
    }
 
-   public ItemStack transmuteCopyIgnoreEmpty(ItemLike var1, int var2) {
+   private ItemStack transmuteCopyIgnoreEmpty(ItemLike var1, int var2) {
       return new ItemStack(var1.asItem().builtInRegistryHolder(), var2, this.components.asPatch());
    }
 

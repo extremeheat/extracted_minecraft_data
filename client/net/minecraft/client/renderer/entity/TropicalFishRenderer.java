@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.layers.TropicalFishPatternLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.TropicalFish;
 
 public class TropicalFishRenderer extends MobRenderer<TropicalFish, ColorableHierarchicalModel<TropicalFish>> {
@@ -47,7 +46,7 @@ public class TropicalFishRenderer extends MobRenderer<TropicalFish, ColorableHie
       ColorableHierarchicalModel var7 = var10000;
       this.model = var7;
       var7.setColor(var1.getBaseColor().getTextureDiffuseColor());
-      super.render((Mob)var1, var2, var3, var4, var5, var6);
+      super.render(var1, var2, var3, var4, var5, var6);
       var7.setColor(-1);
    }
 

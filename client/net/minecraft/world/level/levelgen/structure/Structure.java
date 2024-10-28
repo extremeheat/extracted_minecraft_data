@@ -174,9 +174,12 @@ public abstract class Structure {
       final Map<MobCategory, StructureSpawnOverride> spawnOverrides;
       final GenerationStep.Decoration step;
       final TerrainAdjustment terrainAdaptation;
-      public static final MapCodec<StructureSettings> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(StructureSettings::biomes), Codec.simpleMap(MobCategory.CODEC, StructureSpawnOverride.CODEC, StringRepresentable.keys(MobCategory.values())).fieldOf("spawn_overrides").forGetter(StructureSettings::spawnOverrides), GenerationStep.Decoration.CODEC.fieldOf("step").forGetter(StructureSettings::step), TerrainAdjustment.CODEC.optionalFieldOf("terrain_adaptation", TerrainAdjustment.NONE).forGetter(StructureSettings::terrainAdaptation)).apply(var0, StructureSettings::new);
-      });
+      static final StructureSettings DEFAULT;
+      public static final MapCodec<StructureSettings> CODEC;
+
+      public StructureSettings(HolderSet<Biome> var1) {
+         this(var1, DEFAULT.spawnOverrides, DEFAULT.step, DEFAULT.terrainAdaptation);
+      }
 
       public StructureSettings(HolderSet<Biome> var1, Map<MobCategory, StructureSpawnOverride> var2, GenerationStep.Decoration var3, TerrainAdjustment var4) {
          super();
@@ -200,6 +203,47 @@ public abstract class Structure {
 
       public TerrainAdjustment terrainAdaptation() {
          return this.terrainAdaptation;
+      }
+
+      static {
+         DEFAULT = new StructureSettings(HolderSet.direct(), Map.of(), GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE);
+         CODEC = RecordCodecBuilder.mapCodec((var0) -> {
+            return var0.group(RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(StructureSettings::biomes), Codec.simpleMap(MobCategory.CODEC, StructureSpawnOverride.CODEC, StringRepresentable.keys(MobCategory.values())).fieldOf("spawn_overrides").forGetter(StructureSettings::spawnOverrides), GenerationStep.Decoration.CODEC.fieldOf("step").forGetter(StructureSettings::step), TerrainAdjustment.CODEC.optionalFieldOf("terrain_adaptation", DEFAULT.terrainAdaptation).forGetter(StructureSettings::terrainAdaptation)).apply(var0, StructureSettings::new);
+         });
+      }
+
+      public static class Builder {
+         private final HolderSet<Biome> biomes;
+         private Map<MobCategory, StructureSpawnOverride> spawnOverrides;
+         private GenerationStep.Decoration step;
+         private TerrainAdjustment terrainAdaption;
+
+         public Builder(HolderSet<Biome> var1) {
+            super();
+            this.spawnOverrides = Structure.StructureSettings.DEFAULT.spawnOverrides;
+            this.step = Structure.StructureSettings.DEFAULT.step;
+            this.terrainAdaption = Structure.StructureSettings.DEFAULT.terrainAdaptation;
+            this.biomes = var1;
+         }
+
+         public Builder spawnOverrides(Map<MobCategory, StructureSpawnOverride> var1) {
+            this.spawnOverrides = var1;
+            return this;
+         }
+
+         public Builder generationStep(GenerationStep.Decoration var1) {
+            this.step = var1;
+            return this;
+         }
+
+         public Builder terrainAdapation(TerrainAdjustment var1) {
+            this.terrainAdaption = var1;
+            return this;
+         }
+
+         public StructureSettings build() {
+            return new StructureSettings(this.biomes, this.spawnOverrides, this.step, this.terrainAdaption);
+         }
       }
    }
 

@@ -9,6 +9,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddExperienceOrbPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -310,8 +311,8 @@ public class ExperienceOrb extends Entity {
       return false;
    }
 
-   public Packet<ClientGamePacketListener> getAddEntityPacket() {
-      return new ClientboundAddExperienceOrbPacket(this);
+   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
+      return new ClientboundAddExperienceOrbPacket(this, var1);
    }
 
    public SoundSource getSoundSource() {

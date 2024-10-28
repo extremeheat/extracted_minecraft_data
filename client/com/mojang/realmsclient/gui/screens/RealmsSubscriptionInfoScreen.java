@@ -53,7 +53,7 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
    public void init() {
       this.getSubscription(this.serverData.id);
       this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.subscription.extend"), (var1) -> {
-         ConfirmLinkScreen.confirmLinkNow(this, CommonLinks.extendRealms(this.serverData.remoteSubscriptionId, this.minecraft.getUser().getProfileId()));
+         ConfirmLinkScreen.confirmLinkNow(this, (String)CommonLinks.extendRealms(this.serverData.remoteSubscriptionId, this.minecraft.getUser().getProfileId()));
       }).bounds(this.width / 2 - 100, row(6), 200, 20).build());
       if (this.serverData.expired) {
          this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.delete.button"), (var1) -> {

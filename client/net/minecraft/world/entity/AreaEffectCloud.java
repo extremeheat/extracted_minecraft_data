@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ColorParticleOption;
@@ -228,15 +230,21 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
                      double var12;
                      LivingEntity var22;
                      do {
+                        Stream var10000;
                         do {
                            do {
-                              if (!var21.hasNext()) {
-                                 return;
-                              }
+                              do {
+                                 if (!var21.hasNext()) {
+                                    return;
+                                 }
 
-                              var22 = (LivingEntity)var21.next();
-                           } while(this.victims.containsKey(var22));
-                        } while(!var22.isAffectedByPotions());
+                                 var22 = (LivingEntity)var21.next();
+                              } while(this.victims.containsKey(var22));
+                           } while(!var22.isAffectedByPotions());
+
+                           var10000 = var17.stream();
+                           Objects.requireNonNull(var22);
+                        } while(var10000.noneMatch(var22::canBeAffected));
 
                         double var23 = var22.getX() - this.getX();
                         double var10 = var22.getZ() - this.getZ();

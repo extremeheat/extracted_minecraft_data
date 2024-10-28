@@ -34,7 +34,6 @@ public class EndGatewayFeature extends Feature<EndGatewayConfiguration> {
                   BlockEntity var4x = var3.getBlockEntity(var11);
                   if (var4x instanceof TheEndGatewayBlockEntity var5) {
                      var5.setExitPosition(var3x, var4.isExitExact());
-                     var4x.setChanged();
                   }
 
                });

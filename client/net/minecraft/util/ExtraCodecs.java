@@ -444,7 +444,7 @@ public class ExtraCodecs {
       });
       QUATERNIONF_COMPONENTS = Codec.FLOAT.listOf().comapFlatMap((var0) -> {
          return Util.fixedSize((List)var0, 4).map((var0x) -> {
-            return new Quaternionf((Float)var0x.get(0), (Float)var0x.get(1), (Float)var0x.get(2), (Float)var0x.get(3));
+            return (new Quaternionf((Float)var0x.get(0), (Float)var0x.get(1), (Float)var0x.get(2), (Float)var0x.get(3))).normalize();
          });
       }, (var0) -> {
          return List.of(var0.x, var0.y, var0.z, var0.w);

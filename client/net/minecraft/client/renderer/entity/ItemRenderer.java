@@ -75,7 +75,7 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       while(var6.hasNext()) {
          Item var7 = (Item)var6.next();
          if (!IGNORED.contains(var7)) {
-            this.itemModelShaper.register(var7, new ModelResourceLocation(BuiltInRegistries.ITEM.getKey(var7), "inventory"));
+            this.itemModelShaper.register(var7, ModelResourceLocation.inventory(BuiltInRegistries.ITEM.getKey(var7)));
          }
       }
 
@@ -116,7 +116,9 @@ public class ItemRenderer implements ResourceManagerReloadListener {
 
          var8.getTransforms().getTransform(var2).apply(var3, var4);
          var4.translate(-0.5F, -0.5F, -0.5F);
-         if (!var8.isCustomRenderer() && (!var1.is(Items.TRIDENT) || var9)) {
+         if (var8.isCustomRenderer() || var1.is(Items.TRIDENT) && !var9) {
+            this.blockEntityRenderer.renderByItem(var1, var2, var4, var5, var6, var7);
+         } else {
             boolean var10;
             label63: {
                if (var2 != ItemDisplayContext.GUI && !var2.firstPerson()) {
@@ -150,8 +152,6 @@ public class ItemRenderer implements ResourceManagerReloadListener {
             }
 
             this.renderModelLists(var8, var1, var6, var7, var4, var16);
-         } else {
-            this.blockEntityRenderer.renderByItem(var1, var2, var4, var5, var6, var7);
          }
 
          var4.popPose();
@@ -235,9 +235,9 @@ public class ItemRenderer implements ResourceManagerReloadListener {
 
    static {
       IGNORED = Sets.newHashSet(new Item[]{Items.AIR});
-      TRIDENT_MODEL = ModelResourceLocation.vanilla("trident", "inventory");
-      TRIDENT_IN_HAND_MODEL = ModelResourceLocation.vanilla("trident_in_hand", "inventory");
-      SPYGLASS_MODEL = ModelResourceLocation.vanilla("spyglass", "inventory");
-      SPYGLASS_IN_HAND_MODEL = ModelResourceLocation.vanilla("spyglass_in_hand", "inventory");
+      TRIDENT_MODEL = ModelResourceLocation.inventory(ResourceLocation.withDefaultNamespace("trident"));
+      TRIDENT_IN_HAND_MODEL = ModelResourceLocation.inventory(ResourceLocation.withDefaultNamespace("trident_in_hand"));
+      SPYGLASS_MODEL = ModelResourceLocation.inventory(ResourceLocation.withDefaultNamespace("spyglass"));
+      SPYGLASS_IN_HAND_MODEL = ModelResourceLocation.inventory(ResourceLocation.withDefaultNamespace("spyglass_in_hand"));
    }
 }

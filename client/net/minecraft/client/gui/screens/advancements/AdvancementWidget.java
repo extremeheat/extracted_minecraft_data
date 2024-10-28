@@ -18,6 +18,7 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -62,18 +63,27 @@ public class AdvancementWidget {
       this.title = Language.getInstance().getVisualOrder(var2.font.substrByWidth(var4.getTitle(), 163));
       this.x = Mth.floor(var4.getX() * 28.0F);
       this.y = Mth.floor(var4.getY() * 27.0F);
-      int var5 = var3.advancement().requirements().size();
-      int var6 = String.valueOf(var5).length();
-      int var7 = var5 > 1 ? var2.font.width("  ") + var2.font.width("0") * var6 * 2 + var2.font.width("/") : 0;
-      int var8 = 29 + var2.font.width(this.title) + var7;
-      this.description = Language.getInstance().getVisualOrder(this.findOptimalLines(ComponentUtils.mergeStyles(var4.getDescription().copy(), Style.EMPTY.withColor(var4.getType().getChatColor())), var8));
+      int var5 = this.getMaxProgressWidth();
+      int var6 = 29 + var2.font.width(this.title) + var5;
+      this.description = Language.getInstance().getVisualOrder(this.findOptimalLines(ComponentUtils.mergeStyles(var4.getDescription().copy(), Style.EMPTY.withColor(var4.getType().getChatColor())), var6));
 
-      FormattedCharSequence var10;
-      for(Iterator var9 = this.description.iterator(); var9.hasNext(); var8 = Math.max(var8, var2.font.width(var10))) {
-         var10 = (FormattedCharSequence)var9.next();
+      FormattedCharSequence var8;
+      for(Iterator var7 = this.description.iterator(); var7.hasNext(); var6 = Math.max(var6, var2.font.width(var8))) {
+         var8 = (FormattedCharSequence)var7.next();
       }
 
-      this.width = var8 + 3 + 5;
+      this.width = var6 + 3 + 5;
+   }
+
+   private int getMaxProgressWidth() {
+      int var1 = this.advancementNode.advancement().requirements().size();
+      if (var1 <= 1) {
+         return 0;
+      } else {
+         boolean var2 = true;
+         MutableComponent var3 = Component.translatable("advancements.progress", var1, var1);
+         return this.minecraft.font.width((FormattedText)var3) + 8;
+      }
    }
 
    private static float getMaxWidth(StringSplitter var0, List<FormattedText> var1) {

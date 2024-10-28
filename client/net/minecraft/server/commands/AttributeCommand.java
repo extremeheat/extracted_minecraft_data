@@ -153,7 +153,7 @@ public class AttributeCommand {
 
    private static int removeModifier(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, ResourceLocation var3) throws CommandSyntaxException {
       AttributeInstance var4 = getAttributeInstance(var1, var2);
-      if (var4.removePermanentModifier(var3)) {
+      if (var4.removeModifier(var3)) {
          var0.sendSuccess(() -> {
             return Component.translatable("commands.attribute.modifier.remove.success", Component.translationArg(var3), getAttributeDescription(var2), var1.getName());
          }, false);

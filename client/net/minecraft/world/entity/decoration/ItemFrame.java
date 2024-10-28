@@ -11,6 +11,7 @@ import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
@@ -205,7 +206,7 @@ public class ItemFrame extends HangingEntity {
    }
 
    private void removeFramedMap(ItemStack var1) {
-      MapId var2 = this.getFramedMapId();
+      MapId var2 = this.getFramedMapId(var1);
       if (var2 != null) {
          MapItemSavedData var3 = MapItem.getSavedData(var2, this.level());
          if (var3 != null) {
@@ -222,8 +223,8 @@ public class ItemFrame extends HangingEntity {
    }
 
    @Nullable
-   public MapId getFramedMapId() {
-      return (MapId)this.getItem().get(DataComponents.MAP_ID);
+   public MapId getFramedMapId(ItemStack var1) {
+      return (MapId)var1.get(DataComponents.MAP_ID);
    }
 
    public boolean hasFramedMap() {
@@ -371,7 +372,7 @@ public class ItemFrame extends HangingEntity {
       return this.getItem().isEmpty() ? 0 : this.getRotation() % 8 + 1;
    }
 
-   public Packet<ClientGamePacketListener> getAddEntityPacket() {
+   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
       return new ClientboundAddEntityPacket(this, this.direction.get3DDataValue(), this.getPos());
    }
 

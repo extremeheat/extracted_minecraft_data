@@ -247,6 +247,10 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
       }
    }
 
+   public RegionStorageInfo storageInfo() {
+      return this.storage.info();
+   }
+
    static enum Priority {
       FOREGROUND,
       BACKGROUND,

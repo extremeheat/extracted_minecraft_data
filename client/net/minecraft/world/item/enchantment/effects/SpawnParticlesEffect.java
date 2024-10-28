@@ -52,7 +52,7 @@ public record SpawnParticlesEffect(ParticleOptions particle, PositionSource hori
       Vec3 var7 = var4.getKnownMovement();
       float var8 = var4.getBbWidth();
       float var9 = var4.getBbHeight();
-      var1.sendParticles(this.particle, this.horizontalPosition.getCoordinate(var5.x(), var8, var6), this.verticalPosition.getCoordinate(var5.y(), var9, var6), this.horizontalPosition.getCoordinate(var5.z(), var8, var6), 0, this.horizontalVelocity.getVelocity(var7.x(), var6), this.verticalVelocity.getVelocity(var7.y(), var6), this.horizontalVelocity.getVelocity(var7.z(), var6), (double)this.speed.sample(var6));
+      var1.sendParticles(this.particle, this.horizontalPosition.getCoordinate(var5.x(), var5.x(), var8, var6), this.verticalPosition.getCoordinate(var5.y(), var5.y() + (double)(var9 / 2.0F), var9, var6), this.horizontalPosition.getCoordinate(var5.z(), var5.z(), var8, var6), 0, this.horizontalVelocity.getVelocity(var7.x(), var6), this.verticalVelocity.getVelocity(var7.y(), var6), this.horizontalVelocity.getVelocity(var7.z(), var6), (double)this.speed.sample(var6));
    }
 
    public MapCodec<SpawnParticlesEffect> codec() {
@@ -99,8 +99,8 @@ public record SpawnParticlesEffect(ParticleOptions particle, PositionSource hori
          this.scale = var3;
       }
 
-      public double getCoordinate(double var1, float var3, RandomSource var4) {
-         return this.type.getCoordinate(var1, var3 * this.scale, var4) + (double)this.offset;
+      public double getCoordinate(double var1, double var3, float var5, RandomSource var6) {
+         return this.type.getCoordinate(var1, var3, var5 * this.scale, var6) + (double)this.offset;
       }
 
       public PositionSourceType type() {
@@ -141,11 +141,11 @@ public record SpawnParticlesEffect(ParticleOptions particle, PositionSource hori
    }
 
    public static enum PositionSourceType implements StringRepresentable {
-      ENTITY_POSITION("entity_position", (var0, var2, var3) -> {
+      ENTITY_POSITION("entity_position", (var0, var2, var4, var5) -> {
          return var0;
       }),
-      BOUNDING_BOX("in_bounding_box", (var0, var2, var3) -> {
-         return var0 + (var3.nextDouble() - 0.5) * (double)var2;
+      BOUNDING_BOX("in_bounding_box", (var0, var2, var4, var5) -> {
+         return var2 + (var5.nextDouble() - 0.5) * (double)var4;
       });
 
       public static final Codec<PositionSourceType> CODEC = StringRepresentable.fromEnum(PositionSourceType::values);
@@ -157,8 +157,8 @@ public record SpawnParticlesEffect(ParticleOptions particle, PositionSource hori
          this.source = var4;
       }
 
-      public double getCoordinate(double var1, float var3, RandomSource var4) {
-         return this.source.getCoordinate(var1, var3, var4);
+      public double getCoordinate(double var1, double var3, float var5, RandomSource var6) {
+         return this.source.getCoordinate(var1, var3, var5, var6);
       }
 
       public String getSerializedName() {
@@ -172,7 +172,7 @@ public record SpawnParticlesEffect(ParticleOptions particle, PositionSource hori
 
       @FunctionalInterface
       interface CoordinateSource {
-         double getCoordinate(double var1, float var3, RandomSource var4);
+         double getCoordinate(double var1, double var3, float var5, RandomSource var6);
       }
    }
 }

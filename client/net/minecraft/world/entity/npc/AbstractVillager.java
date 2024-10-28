@@ -201,7 +201,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
 
    }
 
-   public boolean canBeLeashed(Player var1) {
+   public boolean canBeLeashed() {
       return false;
    }
 

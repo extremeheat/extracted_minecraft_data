@@ -14,13 +14,11 @@ import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CommonButtons;
 import net.minecraft.client.gui.components.LogoRenderer;
-import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.PlainTextButton;
 import net.minecraft.client.gui.components.SplashRenderer;
 import net.minecraft.client.gui.components.SpriteIconButton;
@@ -60,8 +58,6 @@ public class TitleScreen extends Screen {
    private float panoramaFade;
    private boolean fading;
    private long fadeInStart;
-   @Nullable
-   private WarningLabel warningLabel;
    private final LogoRenderer logoRenderer;
 
    public TitleScreen() {
@@ -280,10 +276,6 @@ public class TitleScreen extends Screen {
       if ((var8 & -67108864) != 0) {
          super.render(var1, var2, var3, var4);
          this.logoRenderer.renderLogo(var1, this.width, var5);
-         if (this.warningLabel != null) {
-            this.warningLabel.render(var1, var8);
-         }
-
          if (this.splash != null && !(Boolean)this.minecraft.options.hideSplashTexts().get()) {
             this.splash.render(var1, this.width, this.font, var8);
          }
@@ -379,44 +371,5 @@ public class TitleScreen extends Screen {
       }
 
       this.minecraft.setScreen(this);
-   }
-
-   private static record WarningLabel(Font font, MultiLineLabel label, int x, int y) {
-      private WarningLabel(Font var1, MultiLineLabel var2, int var3, int var4) {
-         super();
-         this.font = var1;
-         this.label = var2;
-         this.x = var3;
-         this.y = var4;
-      }
-
-      public void render(GuiGraphics var1, int var2) {
-         MultiLineLabel var10000 = this.label;
-         int var10002 = this.x;
-         int var10003 = this.y;
-         Objects.requireNonNull(this.font);
-         var10000.renderBackgroundCentered(var1, var10002, var10003, 9, 2, 2097152 | Math.min(var2, 1426063360));
-         var10000 = this.label;
-         var10002 = this.x;
-         var10003 = this.y;
-         Objects.requireNonNull(this.font);
-         var10000.renderCentered(var1, var10002, var10003, 9, 16777215 | var2);
-      }
-
-      public Font font() {
-         return this.font;
-      }
-
-      public MultiLineLabel label() {
-         return this.label;
-      }
-
-      public int x() {
-         return this.x;
-      }
-
-      public int y() {
-         return this.y;
-      }
    }
 }
