@@ -145,7 +145,7 @@ public class Salmon extends AbstractSchoolingFish implements VariantHolder<Varia
       }
 
       static Variant byName(String var0) {
-         return (Variant)CODEC.byName(var0, (Enum)SMALL);
+         return (Variant)CODEC.byName(var0, (Enum)MEDIUM);
       }
 
       // $FF: synthetic method

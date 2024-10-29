@@ -104,6 +104,7 @@ import net.minecraft.util.datafix.fixes.EntityPufferfishRenameFix;
 import net.minecraft.util.datafix.fixes.EntityRavagerRenameFix;
 import net.minecraft.util.datafix.fixes.EntityRedundantChanceTagsFix;
 import net.minecraft.util.datafix.fixes.EntityRidingToPassengersFix;
+import net.minecraft.util.datafix.fixes.EntitySalmonSizeFix;
 import net.minecraft.util.datafix.fixes.EntityShulkerColorFix;
 import net.minecraft.util.datafix.fixes.EntityShulkerRotationFix;
 import net.minecraft.util.datafix.fixes.EntitySkeletonSplitFix;
@@ -811,9 +812,9 @@ public class DataFixers {
       var0.addFixer(new CriteriaRenameFix(var172, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> {
          return (String)var173.getOrDefault(var1x, var1x);
       }));
-      Set var245 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var245);
-      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var245::contains));
+      Set var246 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var246);
+      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var246::contains));
       Schema var174 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var174));
       Schema var175 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -973,6 +974,8 @@ public class DataFixers {
       Schema var244 = var0.addSchema(4071, V4071::new);
       var0.addFixer(new AddNewChoices(var244, "Added Creaking", References.ENTITY));
       var0.addFixer(new AddNewChoices(var244, "Added Creaking Heart", References.BLOCK_ENTITY));
+      Schema var245 = var0.addSchema(4081, SAME_NAMESPACED);
+      var0.addFixer(new EntitySalmonSizeFix(var245));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

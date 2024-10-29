@@ -130,9 +130,9 @@ public class GetServerDetailsTask extends LongRunningTask {
 
    private CompletableFuture<?> scheduleResourcePackDownload(RealmsServerAddress var1, UUID var2) {
       try {
-         if (var1.resourcePackUrl != null) {
+         if (var1.resourcePackUrl == null) {
             return CompletableFuture.failedFuture(new IllegalStateException("resourcePackUrl was null"));
-         } else if (var1.resourcePackHash != null) {
+         } else if (var1.resourcePackHash == null) {
             return CompletableFuture.failedFuture(new IllegalStateException("resourcePackHash was null"));
          } else {
             DownloadedPackSource var3 = Minecraft.getInstance().getDownloadedPackSource();
