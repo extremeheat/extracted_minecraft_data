@@ -1,17 +1,16 @@
 package net.minecraft.world.level.block.state.properties;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-import java.util.Collection;
-import java.util.HashSet;
+import it.unimi.dsi.fastutil.ints.IntImmutableList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
-public class IntegerProperty extends Property<Integer> {
-   private final ImmutableSet<Integer> values;
+public final class IntegerProperty extends Property<Integer> {
+   private final IntImmutableList values;
    private final int min;
    private final int max;
 
-   protected IntegerProperty(String var1, int var2, int var3) {
+   private IntegerProperty(String var1, int var2, int var3) {
       super(var1, Integer.class);
       if (var2 < 0) {
          throw new IllegalArgumentException("Min value of " + var1 + " must be 0 or greater");
@@ -20,17 +19,11 @@ public class IntegerProperty extends Property<Integer> {
       } else {
          this.min = var2;
          this.max = var3;
-         HashSet var4 = Sets.newHashSet();
-
-         for(int var5 = var2; var5 <= var3; ++var5) {
-            var4.add(var5);
-         }
-
-         this.values = ImmutableSet.copyOf(var4);
+         this.values = IntImmutableList.toList(IntStream.range(var2, var3 + 1));
       }
    }
 
-   public Collection<Integer> getPossibleValues() {
+   public List<Integer> getPossibleValues() {
       return this.values;
    }
 
@@ -59,7 +52,7 @@ public class IntegerProperty extends Property<Integer> {
 
    public Optional<Integer> getValue(String var1) {
       try {
-         Integer var2 = Integer.valueOf(var1);
+         int var2 = Integer.parseInt(var1);
          return var2 >= this.min && var2 <= this.max ? Optional.of(var2) : Optional.empty();
       } catch (NumberFormatException var3) {
          return Optional.empty();
@@ -68,5 +61,19 @@ public class IntegerProperty extends Property<Integer> {
 
    public String getName(Integer var1) {
       return var1.toString();
+   }
+
+   public int getInternalIndex(Integer var1) {
+      return var1 <= this.max ? var1 - this.min : -1;
+   }
+
+   // $FF: synthetic method
+   public int getInternalIndex(final Comparable var1) {
+      return this.getInternalIndex((Integer)var1);
+   }
+
+   // $FF: synthetic method
+   public String getName(final Comparable var1) {
+      return this.getName((Integer)var1);
    }
 }

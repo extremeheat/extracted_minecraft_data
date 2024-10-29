@@ -1,7 +1,10 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
 
 public abstract class Goal {
    private final EnumSet<Flag> flags = EnumSet.noneOf(Flag.class);
@@ -52,6 +55,14 @@ public abstract class Goal {
 
    protected static int reducedTickDelay(int var0) {
       return Mth.positiveCeilDiv(var0, 2);
+   }
+
+   protected static ServerLevel getServerLevel(Entity var0) {
+      return (ServerLevel)var0.level();
+   }
+
+   protected static ServerLevel getServerLevel(Level var0) {
+      return (ServerLevel)var0;
    }
 
    public static enum Flag {

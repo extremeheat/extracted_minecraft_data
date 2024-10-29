@@ -18,8 +18,8 @@ public class SmokerBlockEntity extends AbstractFurnaceBlockEntity {
       return Component.translatable("container.smoker");
    }
 
-   protected int getBurnDuration(ItemStack var1) {
-      return super.getBurnDuration(var1) / 2;
+   protected int getBurnDuration(FuelValues var1, ItemStack var2) {
+      return super.getBurnDuration(var1, var2) / 2;
    }
 
    protected AbstractContainerMenu createMenu(int var1, Inventory var2) {

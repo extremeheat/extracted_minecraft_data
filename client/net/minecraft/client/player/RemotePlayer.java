@@ -1,10 +1,10 @@
 package net.minecraft.client.player;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.Zone;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.phys.Vec3;
 
@@ -28,7 +28,7 @@ public class RemotePlayer extends AbstractClientPlayer {
       return var1 < var3 * var3;
    }
 
-   public boolean hurt(DamageSource var1, float var2) {
+   public boolean hurtClient(DamageSource var1) {
       return true;
    }
 
@@ -63,9 +63,26 @@ public class RemotePlayer extends AbstractClientPlayer {
       }
 
       this.bob += (var1 - this.bob) * 0.4F;
-      this.level().getProfiler().push("push");
-      this.pushEntities();
-      this.level().getProfiler().pop();
+      Zone var2 = Profiler.get().zone("push");
+
+      try {
+         this.pushEntities();
+      } catch (Throwable var6) {
+         if (var2 != null) {
+            try {
+               var2.close();
+            } catch (Throwable var5) {
+               var6.addSuppressed(var5);
+            }
+         }
+
+         throw var6;
+      }
+
+      if (var2 != null) {
+         var2.close();
+      }
+
    }
 
    public void lerpMotion(double var1, double var3, double var5) {
@@ -74,11 +91,6 @@ public class RemotePlayer extends AbstractClientPlayer {
    }
 
    protected void updatePlayerPose() {
-   }
-
-   public void sendSystemMessage(Component var1) {
-      Minecraft var2 = Minecraft.getInstance();
-      var2.gui.getChat().addMessage(var1);
    }
 
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {

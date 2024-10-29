@@ -135,7 +135,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
             return var2.isUnbound() ? Component.translatable("narrator.controls.unbound", var3) : Component.translatable("narrator.controls.bound", var3, var2x.get());
          }).build();
          this.resetButton = Button.builder(RESET_BUTTON_TITLE, (var2x) -> {
-            KeyBindsList.this.minecraft.options.setKey(var2, var2.getDefaultKey());
+            var2.setKey(var2.getDefaultKey());
             KeyBindsList.this.resetMappingAndUpdateButtons();
          }).bounds(0, 0, 50, 20).createNarration((var1x) -> {
             return Component.translatable("narrator.controls.reset", var3);

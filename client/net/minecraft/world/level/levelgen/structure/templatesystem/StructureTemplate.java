@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -24,13 +25,14 @@ import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Clearable;
 import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.player.Player;
@@ -40,10 +42,12 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.JigsawBlock;
 import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.material.FluidState;
@@ -188,6 +192,25 @@ public class StructureTemplate {
 
    public List<StructureBlockInfo> filterBlocks(BlockPos var1, StructurePlaceSettings var2, Block var3) {
       return this.filterBlocks(var1, var2, var3, true);
+   }
+
+   public List<JigsawBlockInfo> getJigsaws(BlockPos var1, Rotation var2) {
+      if (this.palettes.isEmpty()) {
+         return new ArrayList();
+      } else {
+         StructurePlaceSettings var3 = (new StructurePlaceSettings()).setRotation(var2);
+         List var4 = var3.getRandomPalette(this.palettes, var1).jigsaws();
+         ArrayList var5 = new ArrayList(var4.size());
+         Iterator var6 = var4.iterator();
+
+         while(var6.hasNext()) {
+            JigsawBlockInfo var7 = (JigsawBlockInfo)var6.next();
+            StructureBlockInfo var8 = var7.info;
+            var5.add(var7.withInfo(new StructureBlockInfo(calculateRelativePosition(var3, var8.pos()).offset(var1), var8.state.rotate(var3.getRotation()), var8.nbt)));
+         }
+
+         return var5;
+      }
    }
 
    public ObjectArrayList<StructureBlockInfo> filterBlocks(BlockPos var1, StructurePlaceSettings var2, Block var3, boolean var4) {
@@ -393,12 +416,12 @@ public class StructureTemplate {
          var7.setWithOffset(var6, (Direction)var7x);
          BlockState var11 = var0.getBlockState(var6);
          BlockState var12 = var0.getBlockState(var7);
-         BlockState var13 = var11.updateShape(var7x, var12, var0, var6, var7);
+         BlockState var13 = var11.updateShape(var0, var0, var6, var7x, var7, var12, var0.getRandom());
          if (var11 != var13) {
             var0.setBlock(var6, var13, var1 & -2);
          }
 
-         BlockState var14 = var12.updateShape(var7x.getOpposite(), var13, var0, var7, var6);
+         BlockState var14 = var12.updateShape(var0, var0, var7, var7x.getOpposite(), var6, var13, var0.getRandom());
          if (var12 != var14) {
             var0.setBlock(var7, var14, var1 & -2);
          }
@@ -462,7 +485,7 @@ public class StructureTemplate {
             var6 += var5x.mirror(var3) - var5x.getYRot();
             var5x.moveTo(var13.x, var13.y, var13.z, var6, var5x.getXRot());
             if (var7 && var5x instanceof Mob) {
-               ((Mob)var5x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var13)), MobSpawnType.STRUCTURE, (SpawnGroupData)null);
+               ((Mob)var5x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var13)), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
             }
 
             var1.addFreshEntityWithPassengers(var5x);
@@ -472,7 +495,7 @@ public class StructureTemplate {
 
    private static Optional<Entity> createEntityIgnoreException(ServerLevelAccessor var0, CompoundTag var1) {
       try {
-         return EntityType.create(var1, var0.getLevel());
+         return EntityType.create(var1, var0.getLevel(), EntitySpawnReason.STRUCTURE);
       } catch (Exception var3) {
          return Optional.empty();
       }
@@ -759,6 +782,12 @@ public class StructureTemplate {
       return var2;
    }
 
+   public static JigsawBlockEntity.JointType getJointType(CompoundTag var0, BlockState var1) {
+      return (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.CODEC.byName(var0.getString("joint"), () -> {
+         return JigsawBlock.getFrontFacing(var1).getAxis().isHorizontal() ? JigsawBlockEntity.JointType.ALIGNED : JigsawBlockEntity.JointType.ROLLABLE;
+      });
+   }
+
    public static record StructureBlockInfo(BlockPos pos, BlockState state, @Nullable CompoundTag nbt) {
       final BlockPos pos;
       final BlockState state;
@@ -793,10 +822,20 @@ public class StructureTemplate {
    public static final class Palette {
       private final List<StructureBlockInfo> blocks;
       private final Map<Block, List<StructureBlockInfo>> cache = Maps.newHashMap();
+      @Nullable
+      private List<JigsawBlockInfo> cachedJigsaws;
 
       Palette(List<StructureBlockInfo> var1) {
          super();
          this.blocks = var1;
+      }
+
+      public List<JigsawBlockInfo> jigsaws() {
+         if (this.cachedJigsaws == null) {
+            this.cachedJigsaws = this.blocks(Blocks.JIGSAW).stream().map(JigsawBlockInfo::of).toList();
+         }
+
+         return this.cachedJigsaws;
       }
 
       public List<StructureBlockInfo> blocks() {
@@ -822,6 +861,64 @@ public class StructureTemplate {
          this.pos = var1;
          this.blockPos = var2;
          this.nbt = var3;
+      }
+   }
+
+   public static record JigsawBlockInfo(StructureBlockInfo info, JigsawBlockEntity.JointType jointType, ResourceLocation name, ResourceLocation pool, ResourceLocation target, int placementPriority, int selectionPriority) {
+      final StructureBlockInfo info;
+
+      public JigsawBlockInfo(StructureBlockInfo var1, JigsawBlockEntity.JointType var2, ResourceLocation var3, ResourceLocation var4, ResourceLocation var5, int var6, int var7) {
+         super();
+         this.info = var1;
+         this.jointType = var2;
+         this.name = var3;
+         this.pool = var4;
+         this.target = var5;
+         this.placementPriority = var6;
+         this.selectionPriority = var7;
+      }
+
+      public static JigsawBlockInfo of(StructureBlockInfo var0) {
+         CompoundTag var1 = (CompoundTag)Objects.requireNonNull(var0.nbt(), () -> {
+            return String.valueOf(var0) + " nbt was null";
+         });
+         return new JigsawBlockInfo(var0, StructureTemplate.getJointType(var1, var0.state()), ResourceLocation.parse(var1.getString("name")), ResourceLocation.parse(var1.getString("pool")), ResourceLocation.parse(var1.getString("target")), var1.getInt("placement_priority"), var1.getInt("selection_priority"));
+      }
+
+      public String toString() {
+         return String.format(Locale.ROOT, "<JigsawBlockInfo | %s | %s | name: %s | pool: %s | target: %s | placement: %d | selection: %d | %s>", this.info.pos, this.info.state, this.name, this.pool, this.target, this.placementPriority, this.selectionPriority, this.info.nbt);
+      }
+
+      public JigsawBlockInfo withInfo(StructureBlockInfo var1) {
+         return new JigsawBlockInfo(var1, this.jointType, this.name, this.pool, this.target, this.placementPriority, this.selectionPriority);
+      }
+
+      public StructureBlockInfo info() {
+         return this.info;
+      }
+
+      public JigsawBlockEntity.JointType jointType() {
+         return this.jointType;
+      }
+
+      public ResourceLocation name() {
+         return this.name;
+      }
+
+      public ResourceLocation pool() {
+         return this.pool;
+      }
+
+      public ResourceLocation target() {
+         return this.target;
+      }
+
+      public int placementPriority() {
+         return this.placementPriority;
+      }
+
+      public int selectionPriority() {
+         return this.selectionPriority;
       }
    }
 

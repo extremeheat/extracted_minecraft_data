@@ -67,11 +67,13 @@ public class ExtraCodecs {
    public static final Codec<Quaternionf> QUATERNIONF_COMPONENTS;
    public static final Codec<AxisAngle4f> AXISANGLE4F;
    public static final Codec<Quaternionf> QUATERNIONF;
-   public static Codec<Matrix4f> MATRIX4F;
+   public static final Codec<Matrix4f> MATRIX4F;
+   public static final Codec<Integer> RGB_COLOR_CODEC;
    public static final Codec<Integer> ARGB_COLOR_CODEC;
    public static final Codec<Integer> UNSIGNED_BYTE;
    public static final Codec<Integer> NON_NEGATIVE_INT;
    public static final Codec<Integer> POSITIVE_INT;
+   public static final Codec<Float> NON_NEGATIVE_FLOAT;
    public static final Codec<Float> POSITIVE_FLOAT;
    public static final Codec<Pattern> PATTERN;
    public static final Codec<Instant> INSTANT_ISO8601;
@@ -88,7 +90,7 @@ public class ExtraCodecs {
    public static final Codec<GameProfile> GAME_PROFILE;
    public static final Codec<String> NON_EMPTY_STRING;
    public static final Codec<Integer> CODEPOINT;
-   public static Codec<String> RESOURCE_PATH_CODEC;
+   public static final Codec<String> RESOURCE_PATH_CODEC;
 
    public ExtraCodecs() {
       super();
@@ -246,6 +248,14 @@ public class ExtraCodecs {
       });
    }
 
+   private static Codec<Float> floatRangeMinInclusiveWithMessage(float var0, float var1, Function<Float, String> var2) {
+      return Codec.FLOAT.validate((var3) -> {
+         return var3.compareTo(var0) >= 0 && var3.compareTo(var1) <= 0 ? DataResult.success(var3) : DataResult.error(() -> {
+            return (String)var2.apply(var3);
+         });
+      });
+   }
+
    private static Codec<Float> floatRangeMinExclusiveWithMessage(float var0, float var1, Function<Float, String> var2) {
       return Codec.FLOAT.validate((var3) -> {
          return var3.compareTo(var0) > 0 && var3.compareTo(var1) <= 0 ? DataResult.success(var3) : DataResult.error(() -> {
@@ -266,6 +276,14 @@ public class ExtraCodecs {
       return var0.validate((var0x) -> {
          return var0x.unwrap().right().filter(List::isEmpty).isPresent() ? DataResult.error(() -> {
             return "List must have contents";
+         }) : DataResult.success(var0x);
+      });
+   }
+
+   public static <M extends Map<?, ?>> Codec<M> nonEmptyMap(Codec<M> var0) {
+      return var0.validate((var0x) -> {
+         return var0x.isEmpty() ? DataResult.error(() -> {
+            return "Map must have contents";
          }) : DataResult.success(var0x);
       });
    }
@@ -476,8 +494,11 @@ public class ExtraCodecs {
 
          return var1;
       });
+      RGB_COLOR_CODEC = Codec.withAlternative(Codec.INT, VECTOR3F, (var0) -> {
+         return ARGB.colorFromFloat(1.0F, var0.x(), var0.y(), var0.z());
+      });
       ARGB_COLOR_CODEC = Codec.withAlternative(Codec.INT, VECTOR4F, (var0) -> {
-         return FastColor.ARGB32.colorFromFloat(var0.w(), var0.x(), var0.y(), var0.z());
+         return ARGB.colorFromFloat(var0.w(), var0.x(), var0.y(), var0.z());
       });
       UNSIGNED_BYTE = Codec.BYTE.flatComapMap(UnsignedBytes::toInt, (var0) -> {
          return var0 > 255 ? DataResult.error(() -> {
@@ -489,6 +510,9 @@ public class ExtraCodecs {
       });
       POSITIVE_INT = intRangeWithMessage(1, 2147483647, (var0) -> {
          return "Value must be positive: " + var0;
+      });
+      NON_NEGATIVE_FLOAT = floatRangeMinInclusiveWithMessage(0.0F, 3.4028235E38F, (var0) -> {
+         return "Value must be non-negative: " + var0;
       });
       POSITIVE_FLOAT = floatRangeMinExclusiveWithMessage(0.0F, 3.4028235E38F, (var0) -> {
          return "Value must be positive: " + var0;

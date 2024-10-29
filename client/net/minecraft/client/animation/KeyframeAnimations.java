@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.client.model.HierarchicalModel;
+import net.minecraft.client.model.Model;
 import net.minecraft.util.Mth;
 import org.joml.Vector3f;
 
@@ -13,7 +13,7 @@ public class KeyframeAnimations {
       super();
    }
 
-   public static void animate(HierarchicalModel<?> var0, AnimationDefinition var1, long var2, float var4, Vector3f var5) {
+   public static void animate(Model var0, AnimationDefinition var1, long var2, float var4, Vector3f var5) {
       float var6 = getElapsedSeconds(var1, var2);
       Iterator var7 = var1.boneAnimations().entrySet().iterator();
 

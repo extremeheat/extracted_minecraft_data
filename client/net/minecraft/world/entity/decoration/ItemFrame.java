@@ -12,6 +12,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerEntity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
@@ -120,26 +121,41 @@ public class ItemFrame extends HangingEntity {
 
    }
 
-   public void kill() {
+   public void kill(ServerLevel var1) {
       this.removeFramedMap(this.getItem());
-      super.kill();
+      super.kill(var1);
    }
 
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.fixed) {
-         return !var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && !var1.isCreativePlayer() ? false : super.hurt(var1, var2);
-      } else if (this.isInvulnerableTo(var1)) {
-         return false;
-      } else if (!var1.is(DamageTypeTags.IS_EXPLOSION) && !this.getItem().isEmpty()) {
-         if (!this.level().isClientSide) {
-            this.dropItem(var1.getEntity(), false);
-            this.gameEvent(GameEvent.BLOCK_CHANGE, var1.getEntity());
-            this.playSound(this.getRemoveItemSound(), 1.0F, 1.0F);
-         }
+   private boolean shouldDamageDropItem(DamageSource var1) {
+      return !var1.is(DamageTypeTags.IS_EXPLOSION) && !this.getItem().isEmpty();
+   }
 
-         return true;
+   private static boolean canHurtWhenFixed(DamageSource var0) {
+      return var0.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || var0.isCreativePlayer();
+   }
+
+   public boolean hurtClient(DamageSource var1) {
+      if (this.fixed && !canHurtWhenFixed(var1)) {
+         return false;
       } else {
-         return super.hurt(var1, var2);
+         return !this.isInvulnerableToBase(var1);
+      }
+   }
+
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (!this.fixed) {
+         if (this.isInvulnerableToBase(var2)) {
+            return false;
+         } else if (this.shouldDamageDropItem(var2)) {
+            this.dropItem(var1, var2.getEntity(), false);
+            this.gameEvent(GameEvent.BLOCK_CHANGE, var2.getEntity());
+            this.playSound(this.getRemoveItemSound(), 1.0F, 1.0F);
+            return true;
+         } else {
+            return super.hurtServer(var1, var2, var3);
+         }
+      } else {
+         return canHurtWhenFixed(var2) && super.hurtServer(var1, var2, var3);
       }
    }
 
@@ -153,10 +169,10 @@ public class ItemFrame extends HangingEntity {
       return var1 < var3 * var3;
    }
 
-   public void dropItem(@Nullable Entity var1) {
+   public void dropItem(ServerLevel var1, @Nullable Entity var2) {
       this.playSound(this.getBreakSound(), 1.0F, 1.0F);
-      this.dropItem(var1, true);
-      this.gameEvent(GameEvent.BLOCK_CHANGE, var1);
+      this.dropItem(var1, var2, true);
+      this.gameEvent(GameEvent.BLOCK_CHANGE, var2);
    }
 
    public SoundEvent getBreakSound() {
@@ -171,33 +187,33 @@ public class ItemFrame extends HangingEntity {
       return SoundEvents.ITEM_FRAME_PLACE;
    }
 
-   private void dropItem(@Nullable Entity var1, boolean var2) {
+   private void dropItem(ServerLevel var1, @Nullable Entity var2, boolean var3) {
       if (!this.fixed) {
-         ItemStack var3 = this.getItem();
+         ItemStack var4 = this.getItem();
          this.setItem(ItemStack.EMPTY);
-         if (!this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-            if (var1 == null) {
-               this.removeFramedMap(var3);
+         if (!var1.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+            if (var2 == null) {
+               this.removeFramedMap(var4);
             }
 
          } else {
-            if (var1 instanceof Player) {
-               Player var4 = (Player)var1;
-               if (var4.hasInfiniteMaterials()) {
-                  this.removeFramedMap(var3);
+            if (var2 instanceof Player) {
+               Player var5 = (Player)var2;
+               if (var5.hasInfiniteMaterials()) {
+                  this.removeFramedMap(var4);
                   return;
                }
             }
 
-            if (var2) {
-               this.spawnAtLocation(this.getFrameItemStack());
+            if (var3) {
+               this.spawnAtLocation(var1, this.getFrameItemStack());
             }
 
-            if (!var3.isEmpty()) {
-               var3 = var3.copy();
-               this.removeFramedMap(var3);
+            if (!var4.isEmpty()) {
+               var4 = var4.copy();
+               this.removeFramedMap(var4);
                if (this.random.nextFloat() < this.dropChance) {
-                  this.spawnAtLocation(var3);
+                  this.spawnAtLocation(var1, var4);
                }
             }
 
@@ -211,7 +227,6 @@ public class ItemFrame extends HangingEntity {
          MapItemSavedData var3 = MapItem.getSavedData(var2, this.level());
          if (var3 != null) {
             var3.removedFromFrame(this.pos, this.getId());
-            var3.setDirty(true);
          }
       }
 
@@ -338,29 +353,29 @@ public class ItemFrame extends HangingEntity {
       boolean var5 = !var3.isEmpty();
       if (this.fixed) {
          return InteractionResult.PASS;
-      } else if (!this.level().isClientSide) {
+      } else if (!var1.level().isClientSide) {
          if (!var4) {
             if (var5 && !this.isRemoved()) {
-               if (var3.is(Items.FILLED_MAP)) {
-                  MapItemSavedData var6 = MapItem.getSavedData(var3, this.level());
-                  if (var6 != null && var6.isTrackedCountOverLimit(256)) {
-                     return InteractionResult.FAIL;
-                  }
+               MapItemSavedData var6 = MapItem.getSavedData(var3, this.level());
+               if (var6 != null && var6.isTrackedCountOverLimit(256)) {
+                  return InteractionResult.FAIL;
+               } else {
+                  this.setItem(var3);
+                  this.gameEvent(GameEvent.BLOCK_CHANGE, var1);
+                  var3.consume(1, var1);
+                  return InteractionResult.SUCCESS;
                }
-
-               this.setItem(var3);
-               this.gameEvent(GameEvent.BLOCK_CHANGE, var1);
-               var3.consume(1, var1);
+            } else {
+               return InteractionResult.PASS;
             }
          } else {
             this.playSound(this.getRotateItemSound(), 1.0F, 1.0F);
             this.setRotation(this.getRotation() + 1);
             this.gameEvent(GameEvent.BLOCK_CHANGE, var1);
+            return InteractionResult.SUCCESS;
          }
-
-         return InteractionResult.CONSUME;
       } else {
-         return !var4 && !var5 ? InteractionResult.PASS : InteractionResult.SUCCESS;
+         return (InteractionResult)(!var4 && !var5 ? InteractionResult.PASS : InteractionResult.SUCCESS);
       }
    }
 

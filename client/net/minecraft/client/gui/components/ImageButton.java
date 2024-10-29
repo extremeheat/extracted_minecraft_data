@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -23,6 +24,6 @@ public class ImageButton extends Button {
 
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       ResourceLocation var5 = this.sprites.get(this.isActive(), this.isHoveredOrFocused());
-      var1.blitSprite(var5, this.getX(), this.getY(), this.width, this.height);
+      var1.blitSprite(RenderType::guiTextured, var5, this.getX(), this.getY(), this.width, this.height);
    }
 }

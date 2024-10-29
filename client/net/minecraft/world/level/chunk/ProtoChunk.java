@@ -1,7 +1,7 @@
 package net.minecraft.world.level.chunk;
 
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import it.unimi.dsi.fastutil.shorts.ShortList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -24,7 +24,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.BelowZeroRetrogen;
-import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -44,7 +43,8 @@ public class ProtoChunk extends ChunkAccess {
    private volatile LevelLightEngine lightEngine;
    private volatile ChunkStatus status;
    private final List<CompoundTag> entities;
-   private final Map<GenerationStep.Carving, CarvingMask> carvingMasks;
+   @Nullable
+   private CarvingMask carvingMask;
    @Nullable
    private BelowZeroRetrogen belowZeroRetrogen;
    private final ProtoChunkTicks<Block> blockTicks;
@@ -58,7 +58,6 @@ public class ProtoChunk extends ChunkAccess {
       super(var1, var2, var6, var7, 0L, var3, var8);
       this.status = ChunkStatus.EMPTY;
       this.entities = Lists.newArrayList();
-      this.carvingMasks = new Object2ObjectArrayMap();
       this.blockTicks = var4;
       this.fluidTicks = var5;
    }
@@ -71,8 +70,8 @@ public class ProtoChunk extends ChunkAccess {
       return this.fluidTicks;
    }
 
-   public ChunkAccess.TicksToSave getTicksForSerialization() {
-      return new ChunkAccess.TicksToSave(this.blockTicks, this.fluidTicks);
+   public ChunkAccess.PackedTicks getTicksForSerialization(long var1) {
+      return new ChunkAccess.PackedTicks(this.blockTicks.pack(var1), this.fluidTicks.pack(var1));
    }
 
    public BlockState getBlockState(BlockPos var1) {
@@ -100,7 +99,9 @@ public class ProtoChunk extends ChunkAccess {
       int var4 = var1.getX();
       int var5 = var1.getY();
       int var6 = var1.getZ();
-      if (var5 >= this.getMinBuildHeight() && var5 < this.getMaxBuildHeight()) {
+      if (this.isOutsideBuildHeight(var5)) {
+         return Blocks.VOID_AIR.defaultBlockState();
+      } else {
          int var7 = this.getSectionIndex(var5);
          LevelChunkSection var8 = this.getSection(var7);
          boolean var9 = var8.hasOnlyAir();
@@ -117,7 +118,7 @@ public class ProtoChunk extends ChunkAccess {
                   this.lightEngine.updateSectionStatus(var1, var14);
                }
 
-               if (LightEngine.hasDifferentLightProperties(this, var1, var13, var2)) {
+               if (LightEngine.hasDifferentLightProperties(var13, var2)) {
                   this.skyLightSources.update(this, var10, var5, var12);
                   this.lightEngine.checkBlock(var1);
                }
@@ -153,8 +154,6 @@ public class ProtoChunk extends ChunkAccess {
 
             return var13;
          }
-      } else {
-         return Blocks.VOID_AIR.defaultBlockState();
       }
    }
 
@@ -188,7 +187,7 @@ public class ProtoChunk extends ChunkAccess {
       if (var3 != null && var2.isValid()) {
          BoundingBox var4 = var2.getBoundingBox();
          LevelHeightAccessor var5 = this.getHeightAccessorForGeneration();
-         if (var4.minY() < var5.getMinBuildHeight() || var4.maxY() >= var5.getMaxBuildHeight()) {
+         if (var4.minY() < var5.getMinY() || var4.maxY() > var5.getMaxY()) {
             return;
          }
       }
@@ -210,7 +209,7 @@ public class ProtoChunk extends ChunkAccess {
          this.setBelowZeroRetrogen((BelowZeroRetrogen)null);
       }
 
-      this.setUnsaved(true);
+      this.markUnsaved();
    }
 
    public Holder<Biome> getNoiseBiome(int var1, int var2, int var3) {
@@ -245,8 +244,8 @@ public class ProtoChunk extends ChunkAccess {
 
    }
 
-   public void addPackedPostProcess(short var1, int var2) {
-      ChunkAccess.getOrCreateOffsetList(this.postProcessing, var2).add(var1);
+   public void addPackedPostProcess(ShortList var1, int var2) {
+      ChunkAccess.getOrCreateOffsetList(this.postProcessing, var2).addAll(var1);
    }
 
    public Map<BlockPos, CompoundTag> getBlockEntityNbts() {
@@ -265,18 +264,20 @@ public class ProtoChunk extends ChunkAccess {
    }
 
    @Nullable
-   public CarvingMask getCarvingMask(GenerationStep.Carving var1) {
-      return (CarvingMask)this.carvingMasks.get(var1);
+   public CarvingMask getCarvingMask() {
+      return this.carvingMask;
    }
 
-   public CarvingMask getOrCreateCarvingMask(GenerationStep.Carving var1) {
-      return (CarvingMask)this.carvingMasks.computeIfAbsent(var1, (var1x) -> {
-         return new CarvingMask(this.getHeight(), this.getMinBuildHeight());
-      });
+   public CarvingMask getOrCreateCarvingMask() {
+      if (this.carvingMask == null) {
+         this.carvingMask = new CarvingMask(this.getHeight(), this.getMinY());
+      }
+
+      return this.carvingMask;
    }
 
-   public void setCarvingMask(GenerationStep.Carving var1, CarvingMask var2) {
-      this.carvingMasks.put(var1, var2);
+   public void setCarvingMask(CarvingMask var1) {
+      this.carvingMask = var1;
    }
 
    public void setLightEngine(LevelLightEngine var1) {

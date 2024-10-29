@@ -61,7 +61,7 @@ public class OcelotAttackGoal extends Goal {
       if (!(var3 > var1)) {
          if (this.attackTime <= 0) {
             this.attackTime = 20;
-            this.mob.doHurtTarget(this.target);
+            this.mob.doHurtTarget(getServerLevel(this.mob), this.target);
          }
       }
    }

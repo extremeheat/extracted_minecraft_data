@@ -1,18 +1,19 @@
 package net.minecraft.world.level.block.state.properties;
 
-import com.google.common.collect.ImmutableSet;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
-public class BooleanProperty extends Property<Boolean> {
-   private final ImmutableSet<Boolean> values = ImmutableSet.of(true, false);
+public final class BooleanProperty extends Property<Boolean> {
+   private static final List<Boolean> VALUES = List.of(true, false);
+   private static final int TRUE_INDEX = 0;
+   private static final int FALSE_INDEX = 1;
 
-   protected BooleanProperty(String var1) {
+   private BooleanProperty(String var1) {
       super(var1, Boolean.class);
    }
 
-   public Collection<Boolean> getPossibleValues() {
-      return this.values;
+   public List<Boolean> getPossibleValues() {
+      return VALUES;
    }
 
    public static BooleanProperty create(String var0) {
@@ -20,29 +21,31 @@ public class BooleanProperty extends Property<Boolean> {
    }
 
    public Optional<Boolean> getValue(String var1) {
-      return !"true".equals(var1) && !"false".equals(var1) ? Optional.empty() : Optional.of(Boolean.valueOf(var1));
+      Optional var10000;
+      switch (var1) {
+         case "true" -> var10000 = Optional.of(true);
+         case "false" -> var10000 = Optional.of(false);
+         default -> var10000 = Optional.empty();
+      }
+
+      return var10000;
    }
 
    public String getName(Boolean var1) {
       return var1.toString();
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else {
-         if (var1 instanceof BooleanProperty) {
-            BooleanProperty var2 = (BooleanProperty)var1;
-            if (super.equals(var1)) {
-               return this.values.equals(var2.values);
-            }
-         }
-
-         return false;
-      }
+   public int getInternalIndex(Boolean var1) {
+      return var1 ? 0 : 1;
    }
 
-   public int generateHashCode() {
-      return 31 * super.generateHashCode() + this.values.hashCode();
+   // $FF: synthetic method
+   public int getInternalIndex(final Comparable var1) {
+      return this.getInternalIndex((Boolean)var1);
+   }
+
+   // $FF: synthetic method
+   public String getName(final Comparable var1) {
+      return this.getName((Boolean)var1);
    }
 }

@@ -308,10 +308,14 @@ public class EntitySelectorOptions {
          register("type", (var0) -> {
             var0.setSuggestions((var1x, var2x) -> {
                SharedSuggestionProvider.suggestResource((Iterable)BuiltInRegistries.ENTITY_TYPE.keySet(), var1x, String.valueOf('!'));
-               SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTagNames().map(TagKey::location), var1x, "!#");
+               SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map((var0x) -> {
+                  return var0x.key().location();
+               }), var1x, "!#");
                if (!var0.isTypeLimitedInversely()) {
                   SharedSuggestionProvider.suggestResource((Iterable)BuiltInRegistries.ENTITY_TYPE.keySet(), var1x);
-                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTagNames().map(TagKey::location), var1x, String.valueOf('#'));
+                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map((var0x) -> {
+                     return var0x.key().location();
+                  }), var1x, String.valueOf('#'));
                }
 
                return var1x.buildFuture();
@@ -541,7 +545,7 @@ public class EntitySelectorOptions {
                   return false;
                } else {
                   ServerLevel var3 = (ServerLevel)var2x.level();
-                  Optional var4 = var3.getServer().reloadableRegistries().lookup().get(Registries.PREDICATE, var2).map(Holder::value);
+                  Optional var4 = var3.getServer().reloadableRegistries().lookup().get(var2).map(Holder::value);
                   if (var4.isEmpty()) {
                      return false;
                   } else {

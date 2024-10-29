@@ -110,7 +110,7 @@ public class SkullBlockEntity extends BlockEntity {
             ProfileResult var3 = var1.sessionService().fetchProfile(var0, true);
             return Optional.ofNullable(var3).map(ProfileResult::profile);
          }
-      }, Util.backgroundExecutor());
+      }, Util.backgroundExecutor().forName("fetchProfile"));
    }
 
    public static void clear() {

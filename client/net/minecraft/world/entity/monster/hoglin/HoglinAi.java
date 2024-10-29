@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.TimeUtil;
@@ -133,8 +134,8 @@ public class HoglinAi {
       var0.getBrain().setMemoryWithExpiry(MemoryModuleType.AVOID_TARGET, var1, (long)RETREAT_DURATION.sample(var0.level().random));
    }
 
-   private static Optional<? extends LivingEntity> findNearestValidAttackTarget(Hoglin var0) {
-      return !isPacified(var0) && !isBreeding(var0) ? var0.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER) : Optional.empty();
+   private static Optional<? extends LivingEntity> findNearestValidAttackTarget(ServerLevel var0, Hoglin var1) {
+      return !isPacified(var1) && !isBreeding(var1) ? var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER) : Optional.empty();
    }
 
    static boolean isPosNearNearestRepellent(Hoglin var0, BlockPos var1) {
@@ -156,24 +157,24 @@ public class HoglinAi {
       }
    }
 
-   protected static void wasHurtBy(Hoglin var0, LivingEntity var1) {
-      Brain var2 = var0.getBrain();
-      var2.eraseMemory(MemoryModuleType.PACIFIED);
-      var2.eraseMemory(MemoryModuleType.BREED_TARGET);
-      if (var0.isBaby()) {
-         retreatFromNearestTarget(var0, var1);
+   protected static void wasHurtBy(ServerLevel var0, Hoglin var1, LivingEntity var2) {
+      Brain var3 = var1.getBrain();
+      var3.eraseMemory(MemoryModuleType.PACIFIED);
+      var3.eraseMemory(MemoryModuleType.BREED_TARGET);
+      if (var1.isBaby()) {
+         retreatFromNearestTarget(var1, var2);
       } else {
-         maybeRetaliate(var0, var1);
+         maybeRetaliate(var0, var1, var2);
       }
    }
 
-   private static void maybeRetaliate(Hoglin var0, LivingEntity var1) {
-      if (!var0.getBrain().isActive(Activity.AVOID) || var1.getType() != EntityType.PIGLIN) {
-         if (var1.getType() != EntityType.HOGLIN) {
-            if (!BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(var0, var1, 4.0)) {
-               if (Sensor.isEntityAttackable(var0, var1)) {
-                  setAttackTarget(var0, var1);
-                  broadcastAttackTarget(var0, var1);
+   private static void maybeRetaliate(ServerLevel var0, Hoglin var1, LivingEntity var2) {
+      if (!var1.getBrain().isActive(Activity.AVOID) || var2.getType() != EntityType.PIGLIN) {
+         if (var2.getType() != EntityType.HOGLIN) {
+            if (!BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(var1, var2, 4.0)) {
+               if (Sensor.isEntityAttackable(var0, var1, var2)) {
+                  setAttackTarget(var1, var2);
+                  broadcastAttackTarget(var1, var2);
                }
             }
          }

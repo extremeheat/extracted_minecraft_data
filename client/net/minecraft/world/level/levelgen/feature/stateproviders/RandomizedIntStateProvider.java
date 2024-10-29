@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -34,7 +35,7 @@ public class RandomizedIntStateProvider extends BlockStateProvider {
       this.property = var2;
       this.propertyName = var2.getName();
       this.values = var3;
-      Collection var4 = var2.getPossibleValues();
+      List var4 = var2.getPossibleValues();
 
       for(int var5 = var3.getMinValue(); var5 <= var3.getMaxValue(); ++var5) {
          if (!var4.contains(var5)) {

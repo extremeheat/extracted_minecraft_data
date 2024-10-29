@@ -123,18 +123,21 @@ public abstract class FoliagePlacer {
    }
 
    protected static boolean tryPlaceLeaf(LevelSimulatedReader var0, FoliageSetter var1, RandomSource var2, TreeConfiguration var3, BlockPos var4) {
-      if (!TreeFeature.validTreePos(var0, var4)) {
-         return false;
-      } else {
-         BlockState var5 = var3.foliageProvider.getState(var2, var4);
-         if (var5.hasProperty(BlockStateProperties.WATERLOGGED)) {
-            var5 = (BlockState)var5.setValue(BlockStateProperties.WATERLOGGED, var0.isFluidAtPosition(var4, (var0x) -> {
+      boolean var5 = var0.isStateAtPosition(var4, (var0x) -> {
+         return (Boolean)var0x.getValueOrElse(BlockStateProperties.PERSISTENT, false);
+      });
+      if (!var5 && TreeFeature.validTreePos(var0, var4)) {
+         BlockState var6 = var3.foliageProvider.getState(var2, var4);
+         if (var6.hasProperty(BlockStateProperties.WATERLOGGED)) {
+            var6 = (BlockState)var6.setValue(BlockStateProperties.WATERLOGGED, var0.isFluidAtPosition(var4, (var0x) -> {
                return var0x.isSourceOfType(Fluids.WATER);
             }));
          }
 
-         var1.set(var4, var5);
+         var1.set(var4, var6);
          return true;
+      } else {
+         return false;
       }
    }
 

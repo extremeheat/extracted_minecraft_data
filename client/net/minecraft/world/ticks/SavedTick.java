@@ -1,8 +1,9 @@
 package net.minecraft.world.ticks;
 
 import it.unimi.dsi.fastutil.Hash;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -51,19 +52,21 @@ public record SavedTick<T>(T type, BlockPos pos, int delay, TickPriority priorit
       this.priority = var4;
    }
 
-   public static <T> void loadTickList(ListTag var0, Function<String, Optional<T>> var1, ChunkPos var2, Consumer<SavedTick<T>> var3) {
+   public static <T> List<SavedTick<T>> loadTickList(ListTag var0, Function<String, Optional<T>> var1, ChunkPos var2) {
+      ArrayList var3 = new ArrayList(var0.size());
       long var4 = var2.toLong();
 
       for(int var6 = 0; var6 < var0.size(); ++var6) {
          CompoundTag var7 = var0.getCompound(var6);
          loadTick(var7, var1).ifPresent((var3x) -> {
             if (ChunkPos.asLong(var3x.pos()) == var4) {
-               var3.accept(var3x);
+               var3.add(var3x);
             }
 
          });
       }
 
+      return var3;
    }
 
    public static <T> Optional<SavedTick<T>> loadTick(CompoundTag var0, Function<String, Optional<T>> var1) {
@@ -82,10 +85,6 @@ public record SavedTick<T>(T type, BlockPos pos, int delay, TickPriority priorit
       var4.putInt("t", var2);
       var4.putInt("p", var3.getValue());
       return var4;
-   }
-
-   public static <T> CompoundTag saveTick(ScheduledTick<T> var0, Function<T, String> var1, long var2) {
-      return saveTick((String)var1.apply(var0.type()), var0.pos(), (int)(var0.triggerTick() - var2), var0.priority());
    }
 
    public CompoundTag save(Function<T, String> var1) {

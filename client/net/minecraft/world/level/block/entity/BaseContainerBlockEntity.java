@@ -35,7 +35,7 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      this.lockKey = LockCode.fromTag(var1);
+      this.lockKey = LockCode.fromTag(var1, var2);
       if (var1.contains("CustomName", 8)) {
          this.name = parseCustomNameSafe(var1.getString("CustomName"), var2);
       }
@@ -44,7 +44,7 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
-      this.lockKey.addToTag(var1);
+      this.lockKey.addToTag(var1, var2);
       if (this.name != null) {
          var1.putString("CustomName", Component.Serializer.toJson(this.name, var2));
       }
@@ -156,7 +156,7 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
 
    public void removeComponentsFromTag(CompoundTag var1) {
       var1.remove("CustomName");
-      var1.remove("Lock");
+      var1.remove("lock");
       var1.remove("Items");
    }
 }

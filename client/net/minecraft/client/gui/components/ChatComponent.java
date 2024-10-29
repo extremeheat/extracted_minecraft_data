@@ -22,6 +22,8 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.util.ArrayListDeque;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import org.slf4j.Logger;
 
@@ -60,92 +62,93 @@ public class ChatComponent {
          int var6 = this.getLinesPerPage();
          int var7 = this.trimmedMessages.size();
          if (var7 > 0) {
-            this.minecraft.getProfiler().push("chat");
-            float var8 = (float)this.getScale();
-            int var9 = Mth.ceil((float)this.getWidth() / var8);
-            int var10 = var1.guiHeight();
+            ProfilerFiller var8 = Profiler.get();
+            var8.push("chat");
+            float var9 = (float)this.getScale();
+            int var10 = Mth.ceil((float)this.getWidth() / var9);
+            int var11 = var1.guiHeight();
             var1.pose().pushPose();
-            var1.pose().scale(var8, var8, 1.0F);
+            var1.pose().scale(var9, var9, 1.0F);
             var1.pose().translate(4.0F, 0.0F, 0.0F);
-            int var11 = Mth.floor((float)(var10 - 40) / var8);
-            int var12 = this.getMessageEndIndexAt(this.screenToChatX((double)var3), this.screenToChatY((double)var4));
-            double var13 = (Double)this.minecraft.options.chatOpacity().get() * 0.8999999761581421 + 0.10000000149011612;
-            double var15 = (Double)this.minecraft.options.textBackgroundOpacity().get();
-            double var17 = (Double)this.minecraft.options.chatLineSpacing().get();
-            int var19 = this.getLineHeight();
-            int var20 = (int)Math.round(-8.0 * (var17 + 1.0) + 4.0 * var17);
-            int var21 = 0;
+            int var12 = Mth.floor((float)(var11 - 40) / var9);
+            int var13 = this.getMessageEndIndexAt(this.screenToChatX((double)var3), this.screenToChatY((double)var4));
+            double var14 = (Double)this.minecraft.options.chatOpacity().get() * 0.8999999761581421 + 0.10000000149011612;
+            double var16 = (Double)this.minecraft.options.textBackgroundOpacity().get();
+            double var18 = (Double)this.minecraft.options.chatLineSpacing().get();
+            int var20 = this.getLineHeight();
+            int var21 = (int)Math.round(-8.0 * (var18 + 1.0) + 4.0 * var18);
+            int var22 = 0;
 
-            int var25;
-            int var28;
+            int var26;
             int var29;
-            int var31;
-            for(int var22 = 0; var22 + this.chatScrollbarPos < this.trimmedMessages.size() && var22 < var6; ++var22) {
-               int var23 = var22 + this.chatScrollbarPos;
-               GuiMessage.Line var24 = (GuiMessage.Line)this.trimmedMessages.get(var23);
-               if (var24 != null) {
-                  var25 = var2 - var24.addedTime();
-                  if (var25 < 200 || var5) {
-                     double var26 = var5 ? 1.0 : getTimeFactor(var25);
-                     var28 = (int)(255.0 * var26 * var13);
-                     var29 = (int)(255.0 * var26 * var15);
-                     ++var21;
-                     if (var28 > 3) {
-                        boolean var30 = false;
-                        var31 = var11 - var22 * var19;
-                        int var32 = var31 + var20;
-                        var1.fill(-4, var31 - var19, 0 + var9 + 4 + 4, var31, var29 << 24);
-                        GuiMessageTag var33 = var24.tag();
-                        if (var33 != null) {
-                           int var34 = var33.indicatorColor() | var28 << 24;
-                           var1.fill(-4, var31 - var19, -2, var31, var34);
-                           if (var23 == var12 && var33.icon() != null) {
-                              int var35 = this.getTagIconLeft(var24);
+            int var30;
+            int var32;
+            for(int var23 = 0; var23 + this.chatScrollbarPos < this.trimmedMessages.size() && var23 < var6; ++var23) {
+               int var24 = var23 + this.chatScrollbarPos;
+               GuiMessage.Line var25 = (GuiMessage.Line)this.trimmedMessages.get(var24);
+               if (var25 != null) {
+                  var26 = var2 - var25.addedTime();
+                  if (var26 < 200 || var5) {
+                     double var27 = var5 ? 1.0 : getTimeFactor(var26);
+                     var29 = (int)(255.0 * var27 * var14);
+                     var30 = (int)(255.0 * var27 * var16);
+                     ++var22;
+                     if (var29 > 3) {
+                        boolean var31 = false;
+                        var32 = var12 - var23 * var20;
+                        int var33 = var32 + var21;
+                        var1.fill(-4, var32 - var20, 0 + var10 + 4 + 4, var32, var30 << 24);
+                        GuiMessageTag var34 = var25.tag();
+                        if (var34 != null) {
+                           int var35 = var34.indicatorColor() | var29 << 24;
+                           var1.fill(-4, var32 - var20, -2, var32, var35);
+                           if (var24 == var13 && var34.icon() != null) {
+                              int var36 = this.getTagIconLeft(var25);
                               Objects.requireNonNull(this.minecraft.font);
-                              int var36 = var32 + 9;
-                              this.drawTagIcon(var1, var35, var36, var33.icon());
+                              int var37 = var33 + 9;
+                              this.drawTagIcon(var1, var36, var37, var34.icon());
                            }
                         }
 
                         var1.pose().pushPose();
                         var1.pose().translate(0.0F, 0.0F, 50.0F);
-                        var1.drawString(this.minecraft.font, (FormattedCharSequence)var24.content(), 0, var32, 16777215 + (var28 << 24));
+                        var1.drawString(this.minecraft.font, (FormattedCharSequence)var25.content(), 0, var33, 16777215 + (var29 << 24));
                         var1.pose().popPose();
                      }
                   }
                }
             }
 
-            long var37 = this.minecraft.getChatListener().queueSize();
-            int var38;
-            if (var37 > 0L) {
-               var38 = (int)(128.0 * var13);
-               var25 = (int)(255.0 * var15);
+            long var38 = this.minecraft.getChatListener().queueSize();
+            int var39;
+            if (var38 > 0L) {
+               var39 = (int)(128.0 * var14);
+               var26 = (int)(255.0 * var16);
                var1.pose().pushPose();
-               var1.pose().translate(0.0F, (float)var11, 0.0F);
-               var1.fill(-2, 0, var9 + 4, 9, var25 << 24);
+               var1.pose().translate(0.0F, (float)var12, 0.0F);
+               var1.fill(-2, 0, var10 + 4, 9, var26 << 24);
                var1.pose().translate(0.0F, 0.0F, 50.0F);
-               var1.drawString(this.minecraft.font, (Component)Component.translatable("chat.queue", var37), 0, 1, 16777215 + (var38 << 24));
+               var1.drawString(this.minecraft.font, (Component)Component.translatable("chat.queue", var38), 0, 1, 16777215 + (var39 << 24));
                var1.pose().popPose();
             }
 
             if (var5) {
-               var38 = this.getLineHeight();
-               var25 = var7 * var38;
-               int var39 = var21 * var38;
-               int var27 = this.chatScrollbarPos * var39 / var7 - var11;
-               var28 = var39 * var39 / var25;
-               if (var25 != var39) {
-                  var29 = var27 > 0 ? 170 : 96;
-                  int var40 = this.newMessageSinceScroll ? 13382451 : 3355562;
-                  var31 = var9 + 4;
-                  var1.fill(var31, -var27, var31 + 2, -var27 - var28, 100, var40 + (var29 << 24));
-                  var1.fill(var31 + 2, -var27, var31 + 1, -var27 - var28, 100, 13421772 + (var29 << 24));
+               var39 = this.getLineHeight();
+               var26 = var7 * var39;
+               int var40 = var22 * var39;
+               int var28 = this.chatScrollbarPos * var40 / var7 - var12;
+               var29 = var40 * var40 / var26;
+               if (var26 != var40) {
+                  var30 = var28 > 0 ? 170 : 96;
+                  int var41 = this.newMessageSinceScroll ? 13382451 : 3355562;
+                  var32 = var10 + 4;
+                  var1.fill(var32, -var28, var32 + 2, -var28 - var29, 100, var41 + (var30 << 24));
+                  var1.fill(var32 + 2, -var28, var32 + 1, -var28 - var29, 100, 13421772 + (var30 << 24));
                }
             }
 
             var1.pose().popPose();
-            this.minecraft.getProfiler().pop();
+            var8.pop();
          }
       }
    }

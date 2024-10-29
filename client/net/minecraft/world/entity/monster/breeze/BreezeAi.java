@@ -5,7 +5,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Unit;
@@ -31,9 +33,10 @@ public class BreezeAi {
    public static final float SPEED_MULTIPLIER_WHEN_SLIDING = 0.6F;
    public static final float JUMP_CIRCLE_INNER_RADIUS = 4.0F;
    public static final float JUMP_CIRCLE_MIDDLE_RADIUS = 8.0F;
-   public static final float JUMP_CIRCLE_OUTER_RADIUS = 20.0F;
+   public static final float JUMP_CIRCLE_OUTER_RADIUS = 24.0F;
    static final List<SensorType<? extends Sensor<? super Breeze>>> SENSOR_TYPES;
    static final List<MemoryModuleType<?>> MEMORY_TYPES;
+   private static final int TICKS_TO_REMEMBER_SEEN_TARGET = 100;
 
    public BreezeAi() {
       super();
@@ -54,15 +57,19 @@ public class BreezeAi {
    }
 
    private static void initIdleActivity(Brain<Breeze> var0) {
-      var0.addActivity(Activity.IDLE, ImmutableList.of(Pair.of(0, StartAttacking.create((var0x) -> {
-         return var0x.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE);
-      })), Pair.of(1, StartAttacking.create(Breeze::getHurtBy)), Pair.of(2, new SlideToTargetSink(20, 40)), Pair.of(3, new RunOne(ImmutableList.of(Pair.of(new DoNothing(20, 100), 1), Pair.of(RandomStroll.stroll(0.6F), 2))))));
+      var0.addActivity(Activity.IDLE, ImmutableList.of(Pair.of(0, StartAttacking.create((var0x, var1) -> {
+         return var1.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE);
+      })), Pair.of(1, StartAttacking.create((var0x, var1) -> {
+         return var1.getHurtBy();
+      })), Pair.of(2, new SlideToTargetSink(20, 40)), Pair.of(3, new RunOne(ImmutableList.of(Pair.of(new DoNothing(20, 100), 1), Pair.of(RandomStroll.stroll(0.6F), 2))))));
    }
 
    private static void initFightActivity(Breeze var0, Brain<Breeze> var1) {
-      var1.addActivityWithConditions(Activity.FIGHT, ImmutableList.of(Pair.of(0, StopAttackingIfTargetInvalid.create((var1x) -> {
-         return !Sensor.isEntityAttackable(var0, var1x);
-      })), Pair.of(1, new Shoot()), Pair.of(2, new LongJump()), Pair.of(3, new ShootWhenStuck()), Pair.of(4, new Slide())), ImmutableSet.of(Pair.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT), Pair.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT)));
+      Activity var10001 = Activity.FIGHT;
+      Integer var10002 = 0;
+      BiPredicate var10003 = Sensor.wasEntityAttackableLastNTicks(var0, 100).negate();
+      Objects.requireNonNull(var10003);
+      var1.addActivityWithConditions(var10001, ImmutableList.of(Pair.of(var10002, StopAttackingIfTargetInvalid.create(var10003::test)), Pair.of(1, new Shoot()), Pair.of(2, new LongJump()), Pair.of(3, new ShootWhenStuck()), Pair.of(4, new Slide())), ImmutableSet.of(Pair.of(MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_PRESENT), Pair.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT)));
    }
 
    static void updateActivity(Breeze var0) {

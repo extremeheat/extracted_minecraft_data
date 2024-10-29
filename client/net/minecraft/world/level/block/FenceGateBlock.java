@@ -3,10 +3,13 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -15,7 +18,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -24,6 +28,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -70,13 +75,13 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
       }
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      Direction.Axis var7 = var2.getAxis();
-      if (((Direction)var1.getValue(FACING)).getClockWise().getAxis() != var7) {
-         return super.updateShape(var1, var2, var3, var4, var5, var6);
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      Direction.Axis var9 = var5.getAxis();
+      if (((Direction)var1.getValue(FACING)).getClockWise().getAxis() != var9) {
+         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
       } else {
-         boolean var8 = this.isWall(var3) || this.isWall(var4.getBlockState(var5.relative(var2.getOpposite())));
-         return (BlockState)var1.setValue(IN_WALL, var8);
+         boolean var10 = this.isWall(var7) || this.isWall(var2.getBlockState(var4.relative(var5.getOpposite())));
+         return (BlockState)var1.setValue(IN_WALL, var10);
       }
    }
 
@@ -96,7 +101,7 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
       }
    }
 
-   protected VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getOcclusionShape(BlockState var1) {
       if ((Boolean)var1.getValue(IN_WALL)) {
          return ((Direction)var1.getValue(FACING)).getAxis() == Direction.Axis.X ? X_OCCLUSION_SHAPE_LOW : Z_OCCLUSION_SHAPE_LOW;
       } else {
@@ -152,21 +157,21 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
       boolean var7 = (Boolean)var1.getValue(OPEN);
       var2.playSound(var4, var3, var7 ? this.type.fenceGateOpen() : this.type.fenceGateClose(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
       var2.gameEvent(var4, var7 ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, var3);
-      return InteractionResult.sidedSuccess(var2.isClientSide);
+      return InteractionResult.SUCCESS;
    }
 
-   protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+   protected void onExplosionHit(BlockState var1, ServerLevel var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
       if (var4.canTriggerBlocks() && !(Boolean)var1.getValue(POWERED)) {
          boolean var6 = (Boolean)var1.getValue(OPEN);
          var2.setBlockAndUpdate(var3, (BlockState)var1.setValue(OPEN, !var6));
-         var2.playSound((Player)null, (BlockPos)var3, var6 ? this.type.fenceGateClose() : this.type.fenceGateOpen(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
+         var2.playSound((Player)null, var3, var6 ? this.type.fenceGateClose() : this.type.fenceGateOpen(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
          var2.gameEvent(var6 ? GameEvent.BLOCK_CLOSE : GameEvent.BLOCK_OPEN, var3, GameEvent.Context.of(var1));
       }
 
       super.onExplosionHit(var1, var2, var3, var4, var5);
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       if (!var2.isClientSide) {
          boolean var7 = var2.hasNeighborSignal(var3);
          if ((Boolean)var1.getValue(POWERED) != var7) {

@@ -51,7 +51,7 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
       boolean var4 = var1.is(Items.BOOK);
       boolean var5 = !var4 && this.onlyCompatible;
       Stream var6 = ((Stream)this.options.map(HolderSet::stream).orElseGet(() -> {
-         return var2.getLevel().registryAccess().registryOrThrow(Registries.ENCHANTMENT).holders().map(Function.identity());
+         return var2.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).listElements().map(Function.identity());
       })).filter((var2x) -> {
          return !var5 || ((Enchantment)var2x.value()).canEnchant(var1);
       });

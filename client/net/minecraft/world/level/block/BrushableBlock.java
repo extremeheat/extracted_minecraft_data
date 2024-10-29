@@ -13,7 +13,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BrushableBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -26,7 +27,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class BrushableBlock extends BaseEntityBlock implements Fallable {
    public static final MapCodec<BrushableBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("turns_into").forGetter(BrushableBlock::getTurnsInto), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("brush_sound").forGetter(BrushableBlock::getBrushSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("brush_comleted_sound").forGetter(BrushableBlock::getBrushCompletedSound), propertiesCodec()).apply(var0, BrushableBlock::new);
+      return var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("turns_into").forGetter(BrushableBlock::getTurnsInto), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("brush_sound").forGetter(BrushableBlock::getBrushSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("brush_completed_sound").forGetter(BrushableBlock::getBrushCompletedSound), propertiesCodec()).apply(var0, BrushableBlock::new);
    });
    private static final IntegerProperty DUSTED;
    public static final int TICK_DELAY = 2;
@@ -58,18 +59,18 @@ public class BrushableBlock extends BaseEntityBlock implements Fallable {
       var2.scheduleTick(var3, this, 2);
    }
 
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      var4.scheduleTick(var5, (Block)this, 2);
-      return super.updateShape(var1, var2, var3, var4, var5, var6);
+   public BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      var3.scheduleTick(var4, (Block)this, 2);
+      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       BlockEntity var6 = var2.getBlockEntity(var3);
       if (var6 instanceof BrushableBlockEntity var5) {
-         var5.checkReset();
+         var5.checkReset(var2);
       }
 
-      if (FallingBlock.isFree(var2.getBlockState(var3.below())) && var3.getY() >= var2.getMinBuildHeight()) {
+      if (FallingBlock.isFree(var2.getBlockState(var3.below())) && var3.getY() >= var2.getMinY()) {
          FallingBlockEntity var7 = FallingBlockEntity.fall(var2, var3, var1);
          var7.disableDrop();
       }

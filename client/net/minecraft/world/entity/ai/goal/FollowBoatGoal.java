@@ -10,7 +10,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.world.entity.vehicle.AbstractBoat;
 import net.minecraft.world.phys.Vec3;
 
 public class FollowBoatGoal extends Goal {
@@ -26,12 +26,12 @@ public class FollowBoatGoal extends Goal {
    }
 
    public boolean canUse() {
-      List var1 = this.mob.level().getEntitiesOfClass(Boat.class, this.mob.getBoundingBox().inflate(5.0));
+      List var1 = this.mob.level().getEntitiesOfClass(AbstractBoat.class, this.mob.getBoundingBox().inflate(5.0));
       boolean var2 = false;
       Iterator var3 = var1.iterator();
 
       while(var3.hasNext()) {
-         Boat var4 = (Boat)var3.next();
+         AbstractBoat var4 = (AbstractBoat)var3.next();
          LivingEntity var5 = var4.getControllingPassenger();
          if (var5 instanceof Player && (Mth.abs(((Player)var5).xxa) > 0.0F || Mth.abs(((Player)var5).zza) > 0.0F)) {
             var2 = true;
@@ -51,11 +51,11 @@ public class FollowBoatGoal extends Goal {
    }
 
    public void start() {
-      List var1 = this.mob.level().getEntitiesOfClass(Boat.class, this.mob.getBoundingBox().inflate(5.0));
+      List var1 = this.mob.level().getEntitiesOfClass(AbstractBoat.class, this.mob.getBoundingBox().inflate(5.0));
       Iterator var2 = var1.iterator();
 
       while(var2.hasNext()) {
-         Boat var3 = (Boat)var2.next();
+         AbstractBoat var3 = (AbstractBoat)var2.next();
          LivingEntity var5 = var3.getControllingPassenger();
          if (var5 instanceof Player var4) {
             this.following = var4;

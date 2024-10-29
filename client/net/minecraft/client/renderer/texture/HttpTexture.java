@@ -16,6 +16,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.ARGB;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
@@ -128,7 +129,7 @@ public class HttpTexture extends SimpleTexture {
 
                }
 
-            }, Util.backgroundExecutor());
+            }, Util.backgroundExecutor().forName("downloadTexture"));
          }
       }
    }
@@ -195,8 +196,8 @@ public class HttpTexture extends SimpleTexture {
       int var6;
       for(var5 = var1; var5 < var3; ++var5) {
          for(var6 = var2; var6 < var4; ++var6) {
-            int var7 = var0.getPixelRGBA(var5, var6);
-            if ((var7 >> 24 & 255) < 128) {
+            int var7 = var0.getPixel(var5, var6);
+            if (ARGB.alpha(var7) < 128) {
                return;
             }
          }
@@ -204,7 +205,7 @@ public class HttpTexture extends SimpleTexture {
 
       for(var5 = var1; var5 < var3; ++var5) {
          for(var6 = var2; var6 < var4; ++var6) {
-            var0.setPixelRGBA(var5, var6, var0.getPixelRGBA(var5, var6) & 16777215);
+            var0.setPixel(var5, var6, var0.getPixel(var5, var6) & 16777215);
          }
       }
 
@@ -213,7 +214,7 @@ public class HttpTexture extends SimpleTexture {
    private static void setNoAlpha(NativeImage var0, int var1, int var2, int var3, int var4) {
       for(int var5 = var1; var5 < var3; ++var5) {
          for(int var6 = var2; var6 < var4; ++var6) {
-            var0.setPixelRGBA(var5, var6, var0.getPixelRGBA(var5, var6) | -16777216);
+            var0.setPixel(var5, var6, ARGB.opaque(var0.getPixel(var5, var6)));
          }
       }
 

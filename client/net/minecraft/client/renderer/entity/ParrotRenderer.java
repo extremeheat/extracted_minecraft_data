@@ -2,11 +2,14 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.ParrotModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.entity.state.ParrotRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Parrot;
 
-public class ParrotRenderer extends MobRenderer<Parrot, ParrotModel> {
+public class ParrotRenderer extends MobRenderer<Parrot, ParrotRenderState, ParrotModel> {
    private static final ResourceLocation RED_BLUE = ResourceLocation.withDefaultNamespace("textures/entity/parrot/parrot_red_blue.png");
    private static final ResourceLocation BLUE = ResourceLocation.withDefaultNamespace("textures/entity/parrot/parrot_blue.png");
    private static final ResourceLocation GREEN = ResourceLocation.withDefaultNamespace("textures/entity/parrot/parrot_green.png");
@@ -17,8 +20,21 @@ public class ParrotRenderer extends MobRenderer<Parrot, ParrotModel> {
       super(var1, new ParrotModel(var1.bakeLayer(ModelLayers.PARROT)), 0.3F);
    }
 
-   public ResourceLocation getTextureLocation(Parrot var1) {
-      return getVariantTexture(var1.getVariant());
+   public ResourceLocation getTextureLocation(ParrotRenderState var1) {
+      return getVariantTexture(var1.variant);
+   }
+
+   public ParrotRenderState createRenderState() {
+      return new ParrotRenderState();
+   }
+
+   public void extractRenderState(Parrot var1, ParrotRenderState var2, float var3) {
+      super.extractRenderState(var1, var2, var3);
+      var2.variant = var1.getVariant();
+      float var4 = Mth.lerp(var3, var1.oFlap, var1.flap);
+      float var5 = Mth.lerp(var3, var1.oFlapSpeed, var1.flapSpeed);
+      var2.flapAngle = (Mth.sin(var4) + 1.0F) * var5;
+      var2.pose = ParrotModel.getPose(var1);
    }
 
    public static ResourceLocation getVariantTexture(Parrot.Variant var0) {
@@ -35,9 +51,13 @@ public class ParrotRenderer extends MobRenderer<Parrot, ParrotModel> {
       return var10000;
    }
 
-   public float getBob(Parrot var1, float var2) {
-      float var3 = Mth.lerp(var2, var1.oFlap, var1.flap);
-      float var4 = Mth.lerp(var2, var1.oFlapSpeed, var1.flapSpeed);
-      return (Mth.sin(var3) + 1.0F) * var4;
+   // $FF: synthetic method
+   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+      return this.getTextureLocation((ParrotRenderState)var1);
+   }
+
+   // $FF: synthetic method
+   public EntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

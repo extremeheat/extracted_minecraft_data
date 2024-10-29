@@ -2,6 +2,7 @@ package net.minecraft;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -9,6 +10,12 @@ import javax.annotation.Nullable;
 public class Optionull {
    public Optionull() {
       super();
+   }
+
+   /** @deprecated */
+   @Deprecated
+   public static <T> T orElse(@Nullable T var0, T var1) {
+      return Objects.requireNonNullElse(var0, var1);
    }
 
    @Nullable

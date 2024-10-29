@@ -22,9 +22,16 @@ public class SetPlayerIdleTimeoutCommand {
 
    private static int setIdleTimeout(CommandSourceStack var0, int var1) {
       var0.getServer().setPlayerIdleTimeout(var1);
-      var0.sendSuccess(() -> {
-         return Component.translatable("commands.setidletimeout.success", var1);
-      }, true);
+      if (var1 > 0) {
+         var0.sendSuccess(() -> {
+            return Component.translatable("commands.setidletimeout.success", var1);
+         }, true);
+      } else {
+         var0.sendSuccess(() -> {
+            return Component.translatable("commands.setidletimeout.success.disabled");
+         }, true);
+      }
+
       return var1;
    }
 }

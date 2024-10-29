@@ -6,22 +6,26 @@ import net.minecraft.core.SectionPos;
 public interface LevelHeightAccessor {
    int getHeight();
 
-   int getMinBuildHeight();
+   int getMinY();
 
-   default int getMaxBuildHeight() {
-      return this.getMinBuildHeight() + this.getHeight();
+   default int getMaxY() {
+      return this.getMinY() + this.getHeight() - 1;
    }
 
    default int getSectionsCount() {
-      return this.getMaxSection() - this.getMinSection();
+      return this.getMaxSectionY() - this.getMinSectionY() + 1;
    }
 
-   default int getMinSection() {
-      return SectionPos.blockToSectionCoord(this.getMinBuildHeight());
+   default int getMinSectionY() {
+      return SectionPos.blockToSectionCoord(this.getMinY());
    }
 
-   default int getMaxSection() {
-      return SectionPos.blockToSectionCoord(this.getMaxBuildHeight() - 1) + 1;
+   default int getMaxSectionY() {
+      return SectionPos.blockToSectionCoord(this.getMaxY());
+   }
+
+   default boolean isInsideBuildHeight(int var1) {
+      return var1 >= this.getMinY() && var1 <= this.getMaxY();
    }
 
    default boolean isOutsideBuildHeight(BlockPos var1) {
@@ -29,7 +33,7 @@ public interface LevelHeightAccessor {
    }
 
    default boolean isOutsideBuildHeight(int var1) {
-      return var1 < this.getMinBuildHeight() || var1 >= this.getMaxBuildHeight();
+      return var1 < this.getMinY() || var1 > this.getMaxY();
    }
 
    default int getSectionIndex(int var1) {
@@ -37,11 +41,11 @@ public interface LevelHeightAccessor {
    }
 
    default int getSectionIndexFromSectionY(int var1) {
-      return var1 - this.getMinSection();
+      return var1 - this.getMinSectionY();
    }
 
    default int getSectionYFromSectionIndex(int var1) {
-      return var1 + this.getMinSection();
+      return var1 + this.getMinSectionY();
    }
 
    static LevelHeightAccessor create(final int var0, final int var1) {
@@ -50,7 +54,7 @@ public interface LevelHeightAccessor {
             return var1;
          }
 
-         public int getMinBuildHeight() {
+         public int getMinY() {
             return var0;
          }
       };

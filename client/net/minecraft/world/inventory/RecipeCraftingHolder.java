@@ -8,7 +8,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.Level;
 
 public interface RecipeCraftingHolder {
    void setRecipeUsed(@Nullable RecipeHolder<?> var1);
@@ -28,11 +27,11 @@ public interface RecipeCraftingHolder {
 
    }
 
-   default boolean setRecipeUsed(Level var1, ServerPlayer var2, RecipeHolder<?> var3) {
-      if (!var3.value().isSpecial() && var1.getGameRules().getBoolean(GameRules.RULE_LIMITED_CRAFTING) && !var2.getRecipeBook().contains(var3)) {
+   default boolean setRecipeUsed(ServerPlayer var1, RecipeHolder<?> var2) {
+      if (!var2.value().isSpecial() && var1.serverLevel().getGameRules().getBoolean(GameRules.RULE_LIMITED_CRAFTING) && !var1.getRecipeBook().contains(var2.id())) {
          return false;
       } else {
-         this.setRecipeUsed(var3);
+         this.setRecipeUsed(var2);
          return true;
       }
    }

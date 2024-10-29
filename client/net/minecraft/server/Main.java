@@ -180,7 +180,7 @@ public class Main {
             WorldLoader.InitConfig var34 = loadOrCreateConfig(var21.getProperties(), var43, var31, var44);
             var33 = (WorldStem)Util.blockUntilDone((var6x) -> {
                return WorldLoader.load(var34, (var5x) -> {
-                  Registry var6 = var5x.datapackDimensions().registryOrThrow(Registries.LEVEL_STEM);
+                  Registry var6 = var5x.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM);
                   if (var43 != null) {
                      LevelDataAndDimensions var13 = LevelStorageSource.getLevelDataAndDimensions(var43, var5x.dataConfiguration(), var6, var5x.datapackWorldgen());
                      return new WorldLoader.DataLoadOutput(var13.worldData(), var13.dimensions().dimensionsRegistryAccess());
@@ -195,7 +195,7 @@ public class Main {
                         var9 = WorldPresets.createNormalWorldDimensions(var5x.datapackWorldgen());
                      } else {
                         DedicatedServerProperties var10 = var21.getProperties();
-                        var7 = new LevelSettings(var10.levelName, var10.gamemode, var10.hardcore, var10.difficulty, false, new GameRules(), var5x.dataConfiguration());
+                        var7 = new LevelSettings(var10.levelName, var10.gamemode, var10.hardcore, var10.difficulty, false, new GameRules(var5x.dataConfiguration().enabledFeatures()), var5x.dataConfiguration());
                         var8 = var18.has(var5) ? var10.worldOptions.withBonusChest(true) : var10.worldOptions;
                         var9 = var10.createDimensions(var5x.datapackWorldgen());
                      }
@@ -274,30 +274,42 @@ public class Main {
    private static void forceUpgrade(LevelStorageSource.LevelStorageAccess var0, DataFixer var1, boolean var2, BooleanSupplier var3, RegistryAccess var4, boolean var5) {
       LOGGER.info("Forcing world upgrade!");
       WorldUpgrader var6 = new WorldUpgrader(var0, var1, var4, var2, var5);
-      Component var7 = null;
 
-      while(!var6.isFinished()) {
-         Component var8 = var6.getStatus();
-         if (var7 != var8) {
-            var7 = var8;
-            LOGGER.info(var6.getStatus().getString());
-         }
+      try {
+         Component var7 = null;
 
-         int var9 = var6.getTotalChunks();
-         if (var9 > 0) {
-            int var10 = var6.getConverted() + var6.getSkipped();
-            LOGGER.info("{}% completed ({} / {} chunks)...", new Object[]{Mth.floor((float)var10 / (float)var9 * 100.0F), var10, var9});
-         }
+         while(!var6.isFinished()) {
+            Component var8 = var6.getStatus();
+            if (var7 != var8) {
+               var7 = var8;
+               LOGGER.info(var6.getStatus().getString());
+            }
 
-         if (!var3.getAsBoolean()) {
-            var6.cancel();
-         } else {
-            try {
-               Thread.sleep(1000L);
-            } catch (InterruptedException var11) {
+            int var9 = var6.getTotalChunks();
+            if (var9 > 0) {
+               int var10 = var6.getConverted() + var6.getSkipped();
+               LOGGER.info("{}% completed ({} / {} chunks)...", new Object[]{Mth.floor((float)var10 / (float)var9 * 100.0F), var10, var9});
+            }
+
+            if (!var3.getAsBoolean()) {
+               var6.cancel();
+            } else {
+               try {
+                  Thread.sleep(1000L);
+               } catch (InterruptedException var12) {
+               }
             }
          }
+      } catch (Throwable var13) {
+         try {
+            var6.close();
+         } catch (Throwable var11) {
+            var13.addSuppressed(var11);
+         }
+
+         throw var13;
       }
 
+      var6.close();
    }
 }

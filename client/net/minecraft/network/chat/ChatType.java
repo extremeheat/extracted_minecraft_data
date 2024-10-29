@@ -60,8 +60,8 @@ public record ChatType(ChatTypeDecoration chat, ChatTypeDecoration narration) {
    }
 
    public static Bound bind(ResourceKey<ChatType> var0, RegistryAccess var1, Component var2) {
-      Registry var3 = var1.registryOrThrow(Registries.CHAT_TYPE);
-      return new Bound(var3.getHolderOrThrow(var0), var2);
+      Registry var3 = var1.lookupOrThrow(Registries.CHAT_TYPE);
+      return new Bound(var3.getOrThrow(var0), var2);
    }
 
    public ChatTypeDecoration chat() {

@@ -61,21 +61,26 @@ public class ThrownTrident extends AbstractArrow {
       byte var2 = (Byte)this.entityData.get(ID_LOYALTY);
       if (var2 > 0 && (this.dealtDamage || this.isNoPhysics()) && var1 != null) {
          if (!this.isAcceptibleReturnOwner()) {
-            if (!this.level().isClientSide && this.pickup == AbstractArrow.Pickup.ALLOWED) {
-               this.spawnAtLocation(this.getPickupItem(), 0.1F);
+            Level var4 = this.level();
+            if (var4 instanceof ServerLevel) {
+               ServerLevel var3 = (ServerLevel)var4;
+               if (this.pickup == AbstractArrow.Pickup.ALLOWED) {
+                  this.spawnAtLocation(var3, this.getPickupItem(), 0.1F);
+               }
             }
 
             this.discard();
          } else {
-            this.setNoPhysics(true);
-            Vec3 var3 = var1.getEyePosition().subtract(this.position());
-            this.setPosRaw(this.getX(), this.getY() + var3.y * 0.015 * (double)var2, this.getZ());
-            if (this.level().isClientSide) {
-               this.yOld = this.getY();
+            if (!(var1 instanceof Player) && this.position().distanceTo(var1.getEyePosition()) < (double)var1.getBbWidth() + 1.0) {
+               this.discard();
+               return;
             }
 
-            double var4 = 0.05 * (double)var2;
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.95).add(var3.normalize().scale(var4)));
+            this.setNoPhysics(true);
+            Vec3 var6 = var1.getEyePosition().subtract(this.position());
+            this.setPosRaw(this.getX(), this.getY() + var6.y * 0.015 * (double)var2, this.getZ());
+            double var7 = 0.05 * (double)var2;
+            this.setDeltaMovement(this.getDeltaMovement().scale(0.95).add(var6.normalize().scale(var7)));
             if (this.clientSideReturnTridentTickCount == 0) {
                this.playSound(SoundEvents.TRIDENT_RETURN, 10.0F, 1.0F);
             }
@@ -116,7 +121,7 @@ public class ThrownTrident extends AbstractArrow {
       }
 
       this.dealtDamage = true;
-      if (var2.hurt(var5, var3)) {
+      if (var2.hurtOrSimulate(var5, var3)) {
          if (var2.getType() == EntityType.ENDERMAN) {
             return;
          }
@@ -124,7 +129,9 @@ public class ThrownTrident extends AbstractArrow {
          var7 = this.level();
          if (var7 instanceof ServerLevel) {
             var6 = (ServerLevel)var7;
-            EnchantmentHelper.doPostAttackEffectsWithItemSource(var6, var2, var5, this.getWeaponItem());
+            EnchantmentHelper.doPostAttackEffectsWithItemSourceOnBreak(var6, var2, var5, this.getWeaponItem(), (var2x) -> {
+               this.kill(var6);
+            });
          }
 
          if (var2 instanceof LivingEntity) {
@@ -134,7 +141,8 @@ public class ThrownTrident extends AbstractArrow {
          }
       }
 
-      this.setDeltaMovement(this.getDeltaMovement().multiply(-0.01, -0.1, -0.01));
+      this.deflect(ProjectileDeflection.REVERSE, var2, this.getOwner(), false);
+      this.setDeltaMovement(this.getDeltaMovement().multiply(0.02, 0.2, 0.02));
       this.playSound(SoundEvents.TRIDENT_HIT, 1.0F, 1.0F);
    }
 
@@ -148,8 +156,8 @@ public class ThrownTrident extends AbstractArrow {
          var10002 = null;
       }
 
-      EnchantmentHelper.onHitBlock(var1, var3, var10002, this, (EquipmentSlot)null, var4, var1.getBlockState(var2.getBlockPos()), (var1x) -> {
-         this.kill();
+      EnchantmentHelper.onHitBlock(var1, var3, var10002, this, (EquipmentSlot)null, var4, var1.getBlockState(var2.getBlockPos()), (var2x) -> {
+         this.kill(var1);
       });
    }
 

@@ -23,7 +23,7 @@ public class ApplyExplosionDecay extends LootItemConditionalFunction {
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
-      Float var3 = (Float)var2.getParamOrNull(LootContextParams.EXPLOSION_RADIUS);
+      Float var3 = (Float)var2.getOptionalParameter(LootContextParams.EXPLOSION_RADIUS);
       if (var3 != null) {
          RandomSource var4 = var2.getRandom();
          float var5 = 1.0F / var3;

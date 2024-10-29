@@ -21,18 +21,24 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.FastColor;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.component.ConsumableListener;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.level.Level;
 
-public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> customColor, List<MobEffectInstance> customEffects) {
-   public static final PotionContents EMPTY = new PotionContents(Optional.empty(), Optional.empty(), List.of());
+public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> customColor, List<MobEffectInstance> customEffects, Optional<String> customName) implements ConsumableListener {
+   public static final PotionContents EMPTY = new PotionContents(Optional.empty(), Optional.empty(), List.of(), Optional.empty());
    private static final Component NO_EFFECT;
    private static final int BASE_POTION_COLOR = -13083194;
    private static final Codec<PotionContents> FULL_CODEC;
@@ -40,14 +46,15 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
    public static final StreamCodec<RegistryFriendlyByteBuf, PotionContents> STREAM_CODEC;
 
    public PotionContents(Holder<Potion> var1) {
-      this(Optional.of(var1), Optional.empty(), List.of());
+      this(Optional.of(var1), Optional.empty(), List.of(), Optional.empty());
    }
 
-   public PotionContents(Optional<Holder<Potion>> var1, Optional<Integer> var2, List<MobEffectInstance> var3) {
+   public PotionContents(Optional<Holder<Potion>> var1, Optional<Integer> var2, List<MobEffectInstance> var3, Optional<String> var4) {
       super();
       this.potion = var1;
       this.customColor = var2;
       this.customEffects = var3;
+      this.customName = var4;
    }
 
    public static ItemStack createItemStack(Item var0, Holder<Potion> var1) {
@@ -90,11 +97,11 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
    }
 
    public PotionContents withPotion(Holder<Potion> var1) {
-      return new PotionContents(Optional.of(var1), this.customColor, this.customEffects);
+      return new PotionContents(Optional.of(var1), this.customColor, this.customEffects, this.customName);
    }
 
    public PotionContents withEffectAdded(MobEffectInstance var1) {
-      return new PotionContents(this.potion, this.customColor, Util.copyAndAdd((List)this.customEffects, (Object)var1));
+      return new PotionContents(this.potion, this.customColor, Util.copyAndAdd((List)this.customEffects, (Object)var1), this.customName);
    }
 
    public int getColor() {
@@ -109,6 +116,15 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
       return getColorOptional(var0).orElse(-13083194);
    }
 
+   public Component getName(String var1) {
+      String var2 = (String)this.customName.or(() -> {
+         return this.potion.map((var0) -> {
+            return ((Potion)var0.value()).name();
+         });
+      }).orElse("empty");
+      return Component.translatable(var1 + var2);
+   }
+
    public static OptionalInt getColorOptional(Iterable<MobEffectInstance> var0) {
       int var1 = 0;
       int var2 = 0;
@@ -121,9 +137,9 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
          if (var6.isVisible()) {
             int var7 = ((MobEffect)var6.getEffect().value()).getColor();
             int var8 = var6.getAmplifier() + 1;
-            var1 += var8 * FastColor.ARGB32.red(var7);
-            var2 += var8 * FastColor.ARGB32.green(var7);
-            var3 += var8 * FastColor.ARGB32.blue(var7);
+            var1 += var8 * ARGB.red(var7);
+            var2 += var8 * ARGB.green(var7);
+            var3 += var8 * ARGB.blue(var7);
             var4 += var8;
          }
       }
@@ -131,7 +147,7 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
       if (var4 == 0) {
          return OptionalInt.empty();
       } else {
-         return OptionalInt.of(FastColor.ARGB32.color(var1 / var4, var2 / var4, var3 / var4));
+         return OptionalInt.of(ARGB.color(var1 / var4, var2 / var4, var3 / var4));
       }
    }
 
@@ -149,6 +165,28 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
 
    public void addPotionTooltip(Consumer<Component> var1, float var2, float var3) {
       addPotionTooltip(this.getAllEffects(), var1, var2, var3);
+   }
+
+   public void applyToLivingEntity(LivingEntity var1) {
+      Level var3 = var1.level();
+      if (var3 instanceof ServerLevel var2) {
+         Player var10000;
+         if (var1 instanceof Player var4) {
+            var10000 = var4;
+         } else {
+            var10000 = null;
+         }
+
+         Player var5 = var10000;
+         this.forEachEffect((var3x) -> {
+            if (((MobEffect)var3x.getEffect().value()).isInstantenous()) {
+               ((MobEffect)var3x.getEffect().value()).applyInstantenousEffect(var2, var5, var5, var1, var3x.getAmplifier(), 1.0);
+            } else {
+               var1.addEffect(var3x);
+            }
+
+         });
+      }
    }
 
    public static void addPotionTooltip(Iterable<MobEffectInstance> var0, Consumer<Component> var1, float var2, float var3) {
@@ -206,6 +244,10 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
 
    }
 
+   public void onConsume(Level var1, LivingEntity var2, ItemStack var3, Consumable var4) {
+      this.applyToLivingEntity(var2);
+   }
+
    public Optional<Holder<Potion>> potion() {
       return this.potion;
    }
@@ -214,12 +256,16 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
       return this.customColor;
    }
 
+   public Optional<String> customName() {
+      return this.customName;
+   }
+
    static {
       NO_EFFECT = Component.translatable("effect.none").withStyle(ChatFormatting.GRAY);
       FULL_CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Potion.CODEC.optionalFieldOf("potion").forGetter(PotionContents::potion), Codec.INT.optionalFieldOf("custom_color").forGetter(PotionContents::customColor), MobEffectInstance.CODEC.listOf().optionalFieldOf("custom_effects", List.of()).forGetter(PotionContents::customEffects)).apply(var0, PotionContents::new);
+         return var0.group(Potion.CODEC.optionalFieldOf("potion").forGetter(PotionContents::potion), Codec.INT.optionalFieldOf("custom_color").forGetter(PotionContents::customColor), MobEffectInstance.CODEC.listOf().optionalFieldOf("custom_effects", List.of()).forGetter(PotionContents::customEffects), Codec.STRING.optionalFieldOf("custom_name").forGetter(PotionContents::customName)).apply(var0, PotionContents::new);
       });
       CODEC = Codec.withAlternative(FULL_CODEC, Potion.CODEC, PotionContents::new);
-      STREAM_CODEC = StreamCodec.composite(Potion.STREAM_CODEC.apply(ByteBufCodecs::optional), PotionContents::potion, ByteBufCodecs.INT.apply(ByteBufCodecs::optional), PotionContents::customColor, MobEffectInstance.STREAM_CODEC.apply(ByteBufCodecs.list()), PotionContents::customEffects, PotionContents::new);
+      STREAM_CODEC = StreamCodec.composite(Potion.STREAM_CODEC.apply(ByteBufCodecs::optional), PotionContents::potion, ByteBufCodecs.INT.apply(ByteBufCodecs::optional), PotionContents::customColor, MobEffectInstance.STREAM_CODEC.apply(ByteBufCodecs.list()), PotionContents::customEffects, ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs::optional), PotionContents::customName, PotionContents::new);
    }
 }

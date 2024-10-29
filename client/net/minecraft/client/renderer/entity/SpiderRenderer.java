@@ -4,11 +4,12 @@ import net.minecraft.client.model.SpiderModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.SpiderEyesLayer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Spider;
 
-public class SpiderRenderer<T extends Spider> extends MobRenderer<T, SpiderModel<T>> {
+public class SpiderRenderer<T extends Spider> extends MobRenderer<T, LivingEntityRenderState, SpiderModel> {
    private static final ResourceLocation SPIDER_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/spider/spider.png");
 
    public SpiderRenderer(EntityRendererProvider.Context var1) {
@@ -20,16 +21,24 @@ public class SpiderRenderer<T extends Spider> extends MobRenderer<T, SpiderModel
       this.addLayer(new SpiderEyesLayer(this));
    }
 
-   protected float getFlipDegrees(T var1) {
+   protected float getFlipDegrees() {
       return 180.0F;
    }
 
-   public ResourceLocation getTextureLocation(T var1) {
+   public ResourceLocation getTextureLocation(LivingEntityRenderState var1) {
       return SPIDER_LOCATION;
    }
 
+   public LivingEntityRenderState createRenderState() {
+      return new LivingEntityRenderState();
+   }
+
+   public void extractRenderState(T var1, LivingEntityRenderState var2, float var3) {
+      super.extractRenderState(var1, var2, var3);
+   }
+
    // $FF: synthetic method
-   protected float getFlipDegrees(final LivingEntity var1) {
-      return this.getFlipDegrees((Spider)var1);
+   public EntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

@@ -67,7 +67,7 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
       return var17;
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1) {
       return !(Boolean)var1.getValue(WATERLOGGED);
    }
 

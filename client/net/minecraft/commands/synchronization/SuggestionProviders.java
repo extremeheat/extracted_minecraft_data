@@ -20,7 +20,6 @@ public class SuggestionProviders {
    private static final Map<ResourceLocation, SuggestionProvider<SharedSuggestionProvider>> PROVIDERS_BY_NAME = Maps.newHashMap();
    private static final ResourceLocation DEFAULT_NAME = ResourceLocation.withDefaultNamespace("ask_server");
    public static final SuggestionProvider<SharedSuggestionProvider> ASK_SERVER;
-   public static final SuggestionProvider<CommandSourceStack> ALL_RECIPES;
    public static final SuggestionProvider<CommandSourceStack> AVAILABLE_SOUNDS;
    public static final SuggestionProvider<CommandSourceStack> SUMMONABLE_ENTITIES;
 
@@ -52,9 +51,6 @@ public class SuggestionProviders {
    static {
       ASK_SERVER = register(DEFAULT_NAME, (var0, var1) -> {
          return ((SharedSuggestionProvider)var0.getSource()).customSuggestion(var0);
-      });
-      ALL_RECIPES = register(ResourceLocation.withDefaultNamespace("all_recipes"), (var0, var1) -> {
-         return SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)var0.getSource()).getRecipeNames(), var1);
       });
       AVAILABLE_SOUNDS = register(ResourceLocation.withDefaultNamespace("available_sounds"), (var0, var1) -> {
          return SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)var0.getSource()).getAvailableSounds(), var1);

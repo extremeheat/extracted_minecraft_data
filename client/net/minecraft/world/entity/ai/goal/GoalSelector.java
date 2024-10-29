@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 
 public class GoalSelector {
@@ -23,12 +23,10 @@ public class GoalSelector {
    };
    private final Map<Goal.Flag, WrappedGoal> lockedFlags = new EnumMap(Goal.Flag.class);
    private final Set<WrappedGoal> availableGoals = new ObjectLinkedOpenHashSet();
-   private final Supplier<ProfilerFiller> profiler;
    private final EnumSet<Goal.Flag> disabledFlags = EnumSet.noneOf(Goal.Flag.class);
 
-   public GoalSelector(Supplier<ProfilerFiller> var1) {
+   public GoalSelector() {
       super();
-      this.profiler = var1;
    }
 
    public void addGoal(int var1, Goal var2) {
@@ -88,7 +86,7 @@ public class GoalSelector {
    }
 
    public void tick() {
-      ProfilerFiller var1 = (ProfilerFiller)this.profiler.get();
+      ProfilerFiller var1 = Profiler.get();
       var1.push("goalCleanup");
       Iterator var2 = this.availableGoals.iterator();
 
@@ -143,7 +141,7 @@ public class GoalSelector {
    }
 
    public void tickRunningGoals(boolean var1) {
-      ProfilerFiller var2 = (ProfilerFiller)this.profiler.get();
+      ProfilerFiller var2 = Profiler.get();
       var2.push("goalTick");
       Iterator var3 = this.availableGoals.iterator();
 

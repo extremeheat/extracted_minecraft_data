@@ -26,7 +26,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
@@ -146,12 +146,12 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
                if (var14 == var8.color) {
                   var8.increaseHeight();
                } else {
-                  var8 = new BeaconBeamSection(FastColor.ARGB32.average(var8.color, var14));
+                  var8 = new BeaconBeamSection(ARGB.average(var8.color, var14));
                   var3.checkingBeamSections.add(var8);
                }
             }
          } else {
-            if (var8 == null || var11.getLightBlock(var0, var7) >= 15 && !var11.is(Blocks.BEDROCK)) {
+            if (var8 == null || var11.getLightBlock() >= 15 && !var11.is(Blocks.BEDROCK)) {
                var3.checkingBeamSections.clear();
                var3.lastCheckY = var9;
                break;
@@ -177,7 +177,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
       }
 
       if (var3.lastCheckY >= var9) {
-         var3.lastCheckY = var0.getMinBuildHeight() - 1;
+         var3.lastCheckY = var0.getMinY() - 1;
          boolean var15 = var10 > 0;
          var3.beamSections = var3.checkingBeamSections;
          if (!var0.isClientSide) {
@@ -203,7 +203,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
 
       for(int var5 = 1; var5 <= 4; var4 = var5++) {
          int var6 = var2 - var5;
-         if (var6 < var0.getMinBuildHeight()) {
+         if (var6 < var0.getMinY()) {
             break;
          }
 
@@ -291,7 +291,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    private static Holder<MobEffect> loadEffect(CompoundTag var0, String var1) {
       if (var0.contains(var1, 8)) {
          ResourceLocation var2 = ResourceLocation.tryParse(var0.getString(var1));
-         return var2 == null ? null : (Holder)BuiltInRegistries.MOB_EFFECT.getHolder(var2).map(BeaconBlockEntity::filterEffect).orElse((Object)null);
+         return var2 == null ? null : (Holder)BuiltInRegistries.MOB_EFFECT.get(var2).map(BeaconBlockEntity::filterEffect).orElse((Object)null);
       } else {
          return null;
       }
@@ -305,7 +305,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
          this.name = parseCustomNameSafe(var1.getString("CustomName"), var2);
       }
 
-      this.lockKey = LockCode.fromTag(var1);
+      this.lockKey = LockCode.fromTag(var1, var2);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
@@ -317,7 +317,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
          var1.putString("CustomName", Component.Serializer.toJson(this.name, var2));
       }
 
-      this.lockKey.addToTag(var1);
+      this.lockKey.addToTag(var1, var2);
    }
 
    public void setCustomName(@Nullable Component var1) {
@@ -359,12 +359,12 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
 
    public void removeComponentsFromTag(CompoundTag var1) {
       var1.remove("CustomName");
-      var1.remove("Lock");
+      var1.remove("lock");
    }
 
    public void setLevel(Level var1) {
       super.setLevel(var1);
-      this.lastCheckY = var1.getMinBuildHeight() - 1;
+      this.lastCheckY = var1.getMinY() - 1;
    }
 
    // $FF: synthetic method

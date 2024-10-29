@@ -2,11 +2,13 @@ package com.mojang.blaze3d.vertex;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -41,15 +43,18 @@ public class VertexFormat {
       return new Builder();
    }
 
-   public String toString() {
-      StringBuilder var1 = (new StringBuilder("Vertex format (")).append(this.vertexSize).append(" bytes):\n");
+   public void bindAttributes(int var1) {
+      int var2 = 0;
 
-      for(int var2 = 0; var2 < this.elements.size(); ++var2) {
-         VertexFormatElement var3 = (VertexFormatElement)this.elements.get(var2);
-         var1.append(var2).append(". ").append((String)this.names.get(var2)).append(": ").append(var3).append(" @ ").append(this.getOffset(var3)).append('\n');
+      for(Iterator var3 = this.getElementAttributeNames().iterator(); var3.hasNext(); ++var2) {
+         String var4 = (String)var3.next();
+         GlStateManager._glBindAttribLocation(var1, var2, var4);
       }
 
-      return var1.toString();
+   }
+
+   public String toString() {
+      return "VertexFormat" + String.valueOf(this.names);
    }
 
    public int getVertexSize() {
@@ -112,14 +117,7 @@ public class VertexFormat {
    }
 
    public void setupBufferState() {
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(this::_setupBufferState);
-      } else {
-         this._setupBufferState();
-      }
-   }
-
-   private void _setupBufferState() {
+      RenderSystem.assertOnRenderThread();
       int var1 = this.getVertexSize();
 
       for(int var2 = 0; var2 < this.elements.size(); ++var2) {
@@ -131,14 +129,8 @@ public class VertexFormat {
    }
 
    public void clearBufferState() {
-      if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(this::_clearBufferState);
-      } else {
-         this._clearBufferState();
-      }
-   }
+      RenderSystem.assertOnRenderThread();
 
-   private void _clearBufferState() {
       for(int var1 = 0; var1 < this.elements.size(); ++var1) {
          GlStateManager._disableVertexAttribArray(var1);
       }
@@ -148,7 +140,7 @@ public class VertexFormat {
    public VertexBuffer getImmediateDrawVertexBuffer() {
       VertexBuffer var1 = this.immediateDrawVertexBuffer;
       if (var1 == null) {
-         this.immediateDrawVertexBuffer = var1 = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);
+         this.immediateDrawVertexBuffer = var1 = new VertexBuffer(BufferUsage.DYNAMIC_WRITE);
       }
 
       return var1;

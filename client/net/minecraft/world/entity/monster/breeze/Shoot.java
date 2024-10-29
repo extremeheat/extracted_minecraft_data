@@ -12,11 +12,11 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.windcharge.BreezeWindCharge;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.item.ItemStack;
 
 public class Shoot extends Behavior<Breeze> {
-   private static final int ATTACK_RANGE_MIN_SQRT = 4;
    private static final int ATTACK_RANGE_MAX_SQRT = 256;
    private static final int UNCERTAINTY_BASE = 5;
    private static final int UNCERTAINTY_MULTIPLIER = 4;
@@ -70,30 +70,18 @@ public class Shoot extends Behavior<Breeze> {
          var2.lookAt(EntityAnchorArgument.Anchor.EYES, var6.position());
          if (!var5.getMemory(MemoryModuleType.BREEZE_SHOOT_CHARGING).isPresent() && !var5.getMemory(MemoryModuleType.BREEZE_SHOOT_RECOVERING).isPresent()) {
             var5.setMemoryWithExpiry(MemoryModuleType.BREEZE_SHOOT_RECOVERING, Unit.INSTANCE, (long)SHOOT_RECOVER_DELAY_TICKS);
-            if (isFacingTarget(var2, var6)) {
-               double var7 = var6.getX() - var2.getX();
-               double var9 = var6.getY(var6.isPassenger() ? 0.8 : 0.3) - var2.getY(0.5);
-               double var11 = var6.getZ() - var2.getZ();
-               BreezeWindCharge var13 = new BreezeWindCharge(var2, var1);
-               var2.playSound(SoundEvents.BREEZE_SHOOT, 1.5F, 1.0F);
-               var13.shoot(var7, var9, var11, 0.7F, (float)(5 - var1.getDifficulty().getId() * 4));
-               var1.addFreshEntity(var13);
-            }
-
+            double var7 = var6.getX() - var2.getX();
+            double var9 = var6.getY(var6.isPassenger() ? 0.8 : 0.3) - var2.getFiringYPosition();
+            double var11 = var6.getZ() - var2.getZ();
+            Projectile.spawnProjectileUsingShoot(new BreezeWindCharge(var2, var1), var1, ItemStack.EMPTY, var7, var9, var11, 0.7F, (float)(5 - var1.getDifficulty().getId() * 4));
+            var2.playSound(SoundEvents.BREEZE_SHOOT, 1.5F, 1.0F);
          }
       }
    }
 
-   @VisibleForTesting
-   public static boolean isFacingTarget(Breeze var0, LivingEntity var1) {
-      Vec3 var2 = var0.getViewVector(1.0F);
-      Vec3 var3 = var1.position().subtract(var0.position()).normalize();
-      return var2.dot(var3) > 0.5;
-   }
-
    private static boolean isTargetWithinRange(Breeze var0, LivingEntity var1) {
       double var2 = var0.position().distanceToSqr(var1.position());
-      return var2 > 4.0 && var2 < 256.0;
+      return var2 < 256.0;
    }
 
    // $FF: synthetic method

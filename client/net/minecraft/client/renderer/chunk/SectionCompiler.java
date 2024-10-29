@@ -52,7 +52,7 @@ public class SectionCompiler {
       while(var12.hasNext()) {
          BlockPos var13 = (BlockPos)var12.next();
          BlockState var14 = var2.getBlockState(var13);
-         if (var14.isSolidRender(var2, var13)) {
+         if (var14.isSolidRender()) {
             var8.setOpaque(var13);
          }
 

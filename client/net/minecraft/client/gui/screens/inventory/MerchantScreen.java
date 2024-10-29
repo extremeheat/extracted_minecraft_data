@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Iterator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -104,7 +104,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
-      var1.blit(VILLAGER_LOCATION, var5, var6, 0, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 512, 256);
+      var1.blit(RenderType::guiTextured, VILLAGER_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 512, 256);
       MerchantOffers var7 = ((MerchantMenu)this.menu).getOffers();
       if (!var7.isEmpty()) {
          int var8 = this.shopItem;
@@ -114,7 +114,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
 
          MerchantOffer var9 = (MerchantOffer)var7.get(var8);
          if (var9.isOutOfStock()) {
-            var1.blitSprite((ResourceLocation)OUT_OF_STOCK_SPRITE, this.leftPos + 83 + 99, this.topPos + 35, 0, 28, 21);
+            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)OUT_OF_STOCK_SPRITE, this.leftPos + 83 + 99, this.topPos + 35, 28, 21);
          }
       }
 
@@ -124,17 +124,17 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       int var5 = ((MerchantMenu)this.menu).getTraderLevel();
       int var6 = ((MerchantMenu)this.menu).getTraderXp();
       if (var5 < 5) {
-         var1.blitSprite((ResourceLocation)EXPERIENCE_BAR_BACKGROUND_SPRITE, var2 + 136, var3 + 16, 0, 102, 5);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)EXPERIENCE_BAR_BACKGROUND_SPRITE, var2 + 136, var3 + 16, 102, 5);
          int var7 = VillagerData.getMinXpPerLevel(var5);
          if (var6 >= var7 && VillagerData.canLevelUp(var5)) {
             boolean var8 = true;
             float var9 = 102.0F / (float)(VillagerData.getMaxXpPerLevel(var5) - var7);
             int var10 = Math.min(Mth.floor(var9 * (float)(var6 - var7)), 102);
-            var1.blitSprite((ResourceLocation)EXPERIENCE_BAR_CURRENT_SPRITE, 102, 5, 0, 0, var2 + 136, var3 + 16, 0, var10, 5);
+            var1.blitSprite(RenderType::guiTextured, EXPERIENCE_BAR_CURRENT_SPRITE, 102, 5, 0, 0, var2 + 136, var3 + 16, var10, 5);
             int var11 = ((MerchantMenu)this.menu).getFutureTraderXp();
             if (var11 > 0) {
                int var12 = Math.min(Mth.floor((float)var11 * var9), 102 - var10);
-               var1.blitSprite((ResourceLocation)EXPERIENCE_BAR_RESULT_SPRITE, 102, 5, var10, 0, var2 + 136 + var10, var3 + 16, 0, var12, 5);
+               var1.blitSprite(RenderType::guiTextured, EXPERIENCE_BAR_RESULT_SPRITE, 102, 5, var10, 0, var2 + 136 + var10, var3 + 16, var12, 5);
             }
 
          }
@@ -152,9 +152,9 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
             var9 = 113;
          }
 
-         var1.blitSprite((ResourceLocation)SCROLLER_SPRITE, var2 + 94, var3 + 18 + var9, 0, 6, 27);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SCROLLER_SPRITE, var2 + 94, var3 + 18 + var9, 6, 27);
       } else {
-         var1.blitSprite((ResourceLocation)SCROLLER_DISABLED_SPRITE, var2 + 94, var3 + 18, 0, 6, 27);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)SCROLLER_DISABLED_SPRITE, var2 + 94, var3 + 18, 6, 27);
       }
 
    }
@@ -221,8 +221,6 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
 
                var22.visible = var22.index < ((MerchantMenu)this.menu).getOffers().size();
             }
-
-            RenderSystem.enableDepthTest();
             break;
          }
       }
@@ -231,11 +229,10 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
    }
 
    private void renderButtonArrows(GuiGraphics var1, MerchantOffer var2, int var3, int var4) {
-      RenderSystem.enableBlend();
       if (var2.isOutOfStock()) {
-         var1.blitSprite((ResourceLocation)TRADE_ARROW_OUT_OF_STOCK_SPRITE, var3 + 5 + 35 + 20, var4 + 3, 0, 10, 9);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)TRADE_ARROW_OUT_OF_STOCK_SPRITE, var3 + 5 + 35 + 20, var4 + 3, 10, 9);
       } else {
-         var1.blitSprite((ResourceLocation)TRADE_ARROW_SPRITE, var3 + 5 + 35 + 20, var4 + 3, 0, 10, 9);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)TRADE_ARROW_SPRITE, var3 + 5 + 35 + 20, var4 + 3, 10, 9);
       }
 
    }
@@ -249,7 +246,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
          var1.renderItemDecorations(this.font, var2, var4 + 14, var5, var2.getCount() == 1 ? "1" : null);
          var1.pose().pushPose();
          var1.pose().translate(0.0F, 0.0F, 300.0F);
-         var1.blitSprite((ResourceLocation)DISCOUNT_STRIKETHRUOGH_SPRITE, var4 + 7, var5 + 12, 0, 9, 2);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DISCOUNT_STRIKETHRUOGH_SPRITE, var4 + 7, var5 + 12, 9, 2);
          var1.pose().popPose();
       }
 
@@ -260,13 +257,17 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
    }
 
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
-      int var9 = ((MerchantMenu)this.menu).getOffers().size();
-      if (this.canScroll(var9)) {
-         int var10 = var9 - 7;
-         this.scrollOff = Mth.clamp((int)((double)this.scrollOff - var7), 0, var10);
-      }
+      if (super.mouseScrolled(var1, var3, var5, var7)) {
+         return true;
+      } else {
+         int var9 = ((MerchantMenu)this.menu).getOffers().size();
+         if (this.canScroll(var9)) {
+            int var10 = var9 - 7;
+            this.scrollOff = Mth.clamp((int)((double)this.scrollOff - var7), 0, var10);
+         }
 
-      return true;
+         return true;
+      }
    }
 
    public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {

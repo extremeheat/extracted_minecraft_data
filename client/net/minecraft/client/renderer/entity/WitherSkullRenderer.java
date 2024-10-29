@@ -10,13 +10,14 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.WitherSkullRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.projectile.WitherSkull;
 
-public class WitherSkullRenderer extends EntityRenderer<WitherSkull> {
+public class WitherSkullRenderer extends EntityRenderer<WitherSkull, WitherSkullRenderState> {
    private static final ResourceLocation WITHER_INVULNERABLE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/wither/wither_invulnerable.png");
    private static final ResourceLocation WITHER_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/wither/wither.png");
    private final SkullModel model;
@@ -37,19 +38,33 @@ public class WitherSkullRenderer extends EntityRenderer<WitherSkull> {
       return 15;
    }
 
-   public void render(WitherSkull var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      var4.pushPose();
-      var4.scale(-1.0F, -1.0F, 1.0F);
-      float var7 = Mth.rotLerp(var3, var1.yRotO, var1.getYRot());
-      float var8 = Mth.lerp(var3, var1.xRotO, var1.getXRot());
-      VertexConsumer var9 = var5.getBuffer(this.model.renderType(this.getTextureLocation(var1)));
-      this.model.setupAnim(0.0F, var7, var8);
-      this.model.renderToBuffer(var4, var9, var6, OverlayTexture.NO_OVERLAY);
-      var4.popPose();
-      super.render(var1, var2, var3, var4, var5, var6);
+   public void render(WitherSkullRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+      var2.pushPose();
+      var2.scale(-1.0F, -1.0F, 1.0F);
+      VertexConsumer var5 = var3.getBuffer(this.model.renderType(this.getTextureLocation(var1)));
+      this.model.setupAnim(0.0F, var1.yRot, var1.xRot);
+      this.model.renderToBuffer(var2, var5, var4, OverlayTexture.NO_OVERLAY);
+      var2.popPose();
+      super.render(var1, var2, var3, var4);
    }
 
-   public ResourceLocation getTextureLocation(WitherSkull var1) {
-      return var1.isDangerous() ? WITHER_INVULNERABLE_LOCATION : WITHER_LOCATION;
+   private ResourceLocation getTextureLocation(WitherSkullRenderState var1) {
+      return var1.isDangerous ? WITHER_INVULNERABLE_LOCATION : WITHER_LOCATION;
+   }
+
+   public WitherSkullRenderState createRenderState() {
+      return new WitherSkullRenderState();
+   }
+
+   public void extractRenderState(WitherSkull var1, WitherSkullRenderState var2, float var3) {
+      super.extractRenderState(var1, var2, var3);
+      var2.isDangerous = var1.isDangerous();
+      var2.yRot = var1.getYRot(var3);
+      var2.xRot = var1.getXRot(var3);
+   }
+
+   // $FF: synthetic method
+   public EntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

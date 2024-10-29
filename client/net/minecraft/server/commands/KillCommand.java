@@ -31,7 +31,7 @@ public class KillCommand {
 
       while(var2.hasNext()) {
          Entity var3 = (Entity)var2.next();
-         var3.kill();
+         var3.kill(var0.getLevel());
       }
 
       if (var1.size() == 1) {

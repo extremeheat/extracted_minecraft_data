@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -23,6 +24,8 @@ import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -91,15 +94,14 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
          if ((Boolean)var6.getValue(POWERED)) {
             makeParticle(var6, var2, var3, 1.0F);
          }
-
-         return InteractionResult.SUCCESS;
       } else {
          this.pull(var1, var2, var3, (Player)null);
-         return InteractionResult.CONSUME;
       }
+
+      return InteractionResult.SUCCESS;
    }
 
-   protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+   protected void onExplosionHit(BlockState var1, ServerLevel var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
       if (var4.canTriggerBlocks()) {
          this.pull(var1, var2, var3, (Player)null);
       }
@@ -126,7 +128,7 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
       double var6 = (double)var2.getX() + 0.5 + 0.1 * (double)var4.getStepX() + 0.2 * (double)var5.getStepX();
       double var8 = (double)var2.getY() + 0.5 + 0.1 * (double)var4.getStepY() + 0.2 * (double)var5.getStepY();
       double var10 = (double)var2.getZ() + 0.5 + 0.1 * (double)var4.getStepZ() + 0.2 * (double)var5.getStepZ();
-      var1.addParticle(new DustParticleOptions(DustParticleOptions.REDSTONE_PARTICLE_COLOR, var3), var6, var8, var10, 0.0, 0.0, 0.0);
+      var1.addParticle(new DustParticleOptions(16711680, var3), var6, var8, var10, 0.0, 0.0, 0.0);
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
@@ -159,8 +161,10 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    private void updateNeighbours(BlockState var1, Level var2, BlockPos var3) {
-      var2.updateNeighborsAt(var3, this);
-      var2.updateNeighborsAt(var3.relative(getConnectedDirection(var1).getOpposite()), this);
+      Direction var4 = getConnectedDirection(var1).getOpposite();
+      Orientation var5 = ExperimentalRedstoneUtils.initialOrientation(var2, var4, var4.getAxis().isHorizontal() ? Direction.UP : (Direction)var1.getValue(FACING));
+      var2.updateNeighborsAt(var3, this, var5);
+      var2.updateNeighborsAt(var3.relative(var4), this, var5);
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {

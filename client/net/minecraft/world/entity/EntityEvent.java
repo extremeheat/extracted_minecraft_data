@@ -33,7 +33,7 @@ public class EntityEvent {
    public static final byte FISHING_ROD_REEL_IN = 31;
    public static final byte ARMORSTAND_WOBBLE = 32;
    public static final byte STOP_OFFER_FLOWER = 34;
-   public static final byte TALISMAN_ACTIVATE = 35;
+   public static final byte PROTECTED_FROM_DEATH = 35;
    public static final byte DOLPHIN_LOOKING_FOR_TREASURE = 38;
    public static final byte RAVAGER_STUNNED = 39;
    public static final byte TRUSTING_FAILED = 40;
@@ -59,6 +59,7 @@ public class EntityEvent {
    public static final byte SNIFFER_DIGGING_SOUND = 63;
    public static final byte ARMADILLO_PEEK = 64;
    public static final byte BODY_BREAK = 65;
+   public static final byte SHAKE = 66;
 
    public EntityEvent() {
       super();

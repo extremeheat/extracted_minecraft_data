@@ -25,14 +25,8 @@ public class Selector {
 
    public Selector(Condition var1, MultiVariant var2) {
       super();
-      if (var1 == null) {
-         throw new IllegalArgumentException("Missing condition for selector");
-      } else if (var2 == null) {
-         throw new IllegalArgumentException("Missing variant for selector");
-      } else {
-         this.condition = var1;
-         this.variant = var2;
-      }
+      this.condition = var1;
+      this.variant = var2;
    }
 
    public MultiVariant getVariant() {
@@ -41,14 +35,6 @@ public class Selector {
 
    public Predicate<BlockState> getPredicate(StateDefinition<Block, BlockState> var1) {
       return this.condition.getPredicate(var1);
-   }
-
-   public boolean equals(Object var1) {
-      return this == var1;
-   }
-
-   public int hashCode() {
-      return System.identityHashCode(this);
    }
 
    public static class Deserializer implements JsonDeserializer<Selector> {

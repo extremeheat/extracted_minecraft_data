@@ -134,7 +134,7 @@ public class PlaceCommand {
          ChunkPos var9 = new ChunkPos(SectionPos.blockToSectionCoord(var7.maxX()), SectionPos.blockToSectionCoord(var7.maxZ()));
          checkLoaded(var3, var8, var9);
          ChunkPos.rangeClosed(var8, var9).forEach((var3x) -> {
-            var6.placeInChunk(var3, var3.structureManager(), var5, var3.getRandom(), new BoundingBox(var3x.getMinBlockX(), var3.getMinBuildHeight(), var3x.getMinBlockZ(), var3x.getMaxBlockX(), var3.getMaxBuildHeight(), var3x.getMaxBlockZ()), var3x);
+            var6.placeInChunk(var3, var3.structureManager(), var5, var3.getRandom(), new BoundingBox(var3x.getMinBlockX(), var3.getMinY(), var3x.getMinBlockZ(), var3x.getMaxBlockX(), var3.getMaxY() + 1, var3x.getMaxBlockZ()), var3x);
          });
          String var10 = var1.key().location().toString();
          var0.sendSuccess(() -> {

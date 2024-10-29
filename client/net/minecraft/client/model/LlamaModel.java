@@ -1,21 +1,22 @@
 package net.minecraft.client.model;
 
-import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.function.UnaryOperator;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.LlamaRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 
-public class LlamaModel<T extends AbstractChestedHorse> extends EntityModel<T> {
+public class LlamaModel extends EntityModel<LlamaRenderState> {
+   public static final MeshTransformer BABY_TRANSFORMER = LlamaModel::transformToBaby;
    private final ModelPart head;
-   private final ModelPart body;
    private final ModelPart rightHindLeg;
    private final ModelPart leftHindLeg;
    private final ModelPart rightFrontLeg;
@@ -24,9 +25,8 @@ public class LlamaModel<T extends AbstractChestedHorse> extends EntityModel<T> {
    private final ModelPart leftChest;
 
    public LlamaModel(ModelPart var1) {
-      super();
+      super(var1);
       this.head = var1.getChild("head");
-      this.body = var1.getChild("body");
       this.rightChest = var1.getChild("right_chest");
       this.leftChest = var1.getChild("left_chest");
       this.rightHindLeg = var1.getChild("right_hind_leg");
@@ -52,45 +52,51 @@ public class LlamaModel<T extends AbstractChestedHorse> extends EntityModel<T> {
       return LayerDefinition.create(var1, 128, 64);
    }
 
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.head.xRot = var6 * 0.017453292F;
-      this.head.yRot = var5 * 0.017453292F;
-      this.rightHindLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
-      this.leftHindLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
-      this.rightFrontLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
-      this.leftFrontLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
-      boolean var7 = !var1.isBaby() && var1.hasChest();
-      this.rightChest.visible = var7;
-      this.leftChest.visible = var7;
-   }
+   private static MeshDefinition transformToBaby(MeshDefinition var0) {
+      float var1 = 2.0F;
+      float var2 = 0.7F;
+      float var3 = 1.1F;
+      UnaryOperator var4 = (var0x) -> {
+         return var0x.translated(0.0F, 21.0F, 3.52F).scaled(0.71428573F, 0.64935064F, 0.7936508F);
+      };
+      UnaryOperator var5 = (var0x) -> {
+         return var0x.translated(0.0F, 33.0F, 0.0F).scaled(0.625F, 0.45454544F, 0.45454544F);
+      };
+      UnaryOperator var6 = (var0x) -> {
+         return var0x.translated(0.0F, 33.0F, 0.0F).scaled(0.45454544F, 0.41322312F, 0.45454544F);
+      };
+      MeshDefinition var7 = new MeshDefinition();
+      Iterator var8 = var0.getRoot().getChildren().iterator();
 
-   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
-      if (this.young) {
-         float var6 = 2.0F;
-         var1.pushPose();
-         float var7 = 0.7F;
-         var1.scale(0.71428573F, 0.64935064F, 0.7936508F);
-         var1.translate(0.0F, 1.3125F, 0.22F);
-         this.head.render(var1, var2, var3, var4, var5);
-         var1.popPose();
-         var1.pushPose();
-         float var8 = 1.1F;
-         var1.scale(0.625F, 0.45454544F, 0.45454544F);
-         var1.translate(0.0F, 2.0625F, 0.0F);
-         this.body.render(var1, var2, var3, var4, var5);
-         var1.popPose();
-         var1.pushPose();
-         var1.scale(0.45454544F, 0.41322312F, 0.45454544F);
-         var1.translate(0.0F, 2.0625F, 0.0F);
-         ImmutableList.of(this.rightHindLeg, this.leftHindLeg, this.rightFrontLeg, this.leftFrontLeg, this.rightChest, this.leftChest).forEach((var5x) -> {
-            var5x.render(var1, var2, var3, var4, var5);
-         });
-         var1.popPose();
-      } else {
-         ImmutableList.of(this.head, this.body, this.rightHindLeg, this.leftHindLeg, this.rightFrontLeg, this.leftFrontLeg, this.rightChest, this.leftChest).forEach((var5x) -> {
-            var5x.render(var1, var2, var3, var4, var5);
-         });
+      while(var8.hasNext()) {
+         Map.Entry var9 = (Map.Entry)var8.next();
+         String var10 = (String)var9.getKey();
+         PartDefinition var11 = (PartDefinition)var9.getValue();
+         UnaryOperator var10000;
+         switch (var10) {
+            case "head" -> var10000 = var4;
+            case "body" -> var10000 = var5;
+            default -> var10000 = var6;
+         }
+
+         UnaryOperator var12 = var10000;
+         var7.getRoot().addOrReplaceChild(var10, var11.transformed(var12));
       }
 
+      return var7;
+   }
+
+   public void setupAnim(LlamaRenderState var1) {
+      super.setupAnim(var1);
+      this.head.xRot = var1.xRot * 0.017453292F;
+      this.head.yRot = var1.yRot * 0.017453292F;
+      float var2 = var1.walkAnimationSpeed;
+      float var3 = var1.walkAnimationPos;
+      this.rightHindLeg.xRot = Mth.cos(var3 * 0.6662F) * 1.4F * var2;
+      this.leftHindLeg.xRot = Mth.cos(var3 * 0.6662F + 3.1415927F) * 1.4F * var2;
+      this.rightFrontLeg.xRot = Mth.cos(var3 * 0.6662F + 3.1415927F) * 1.4F * var2;
+      this.leftFrontLeg.xRot = Mth.cos(var3 * 0.6662F) * 1.4F * var2;
+      this.rightChest.visible = var1.hasChest;
+      this.leftChest.visible = var1.hasChest;
    }
 }

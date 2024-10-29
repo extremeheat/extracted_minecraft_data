@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -28,7 +27,6 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.tags.TagLoader;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -40,7 +38,7 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
    private static final FileToIdConverter LISTER;
    private volatile Map<ResourceLocation, CommandFunction<CommandSourceStack>> functions = ImmutableMap.of();
    private final TagLoader<CommandFunction<CommandSourceStack>> tagsLoader;
-   private volatile Map<ResourceLocation, Collection<CommandFunction<CommandSourceStack>>> tags;
+   private volatile Map<ResourceLocation, List<CommandFunction<CommandSourceStack>>> tags;
    private final int functionCompilationLevel;
    private final CommandDispatcher<CommandSourceStack> dispatcher;
 
@@ -52,8 +50,8 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
       return this.functions;
    }
 
-   public Collection<CommandFunction<CommandSourceStack>> getTag(ResourceLocation var1) {
-      return (Collection)this.tags.getOrDefault(var1, List.of());
+   public List<CommandFunction<CommandSourceStack>> getTag(ResourceLocation var1) {
+      return (List)this.tags.getOrDefault(var1, List.of());
    }
 
    public Iterable<ResourceLocation> getAvailableTags() {
@@ -62,39 +60,41 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
 
    public ServerFunctionLibrary(int var1, CommandDispatcher<CommandSourceStack> var2) {
       super();
-      this.tagsLoader = new TagLoader(this::getFunction, Registries.tagsDirPath(TYPE_KEY));
+      this.tagsLoader = new TagLoader((var1x, var2x) -> {
+         return this.getFunction(var1x);
+      }, Registries.tagsDirPath(TYPE_KEY));
       this.tags = Map.of();
       this.functionCompilationLevel = var1;
       this.dispatcher = var2;
    }
 
-   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6) {
-      CompletableFuture var7 = CompletableFuture.supplyAsync(() -> {
+   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, Executor var3, Executor var4) {
+      CompletableFuture var5 = CompletableFuture.supplyAsync(() -> {
          return this.tagsLoader.load(var2);
-      }, var5);
-      CompletableFuture var8 = CompletableFuture.supplyAsync(() -> {
+      }, var3);
+      CompletableFuture var6 = CompletableFuture.supplyAsync(() -> {
          return LISTER.listMatchingResources(var2);
-      }, var5).thenCompose((var2x) -> {
-         HashMap var3 = Maps.newHashMap();
+      }, var3).thenCompose((var2x) -> {
+         HashMap var3x = Maps.newHashMap();
          CommandSourceStack var4 = new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, (ServerLevel)null, this.functionCompilationLevel, "", CommonComponents.EMPTY, (MinecraftServer)null, (Entity)null);
-         Iterator var5x = var2x.entrySet().iterator();
+         Iterator var5 = var2x.entrySet().iterator();
 
-         while(var5x.hasNext()) {
-            Map.Entry var6 = (Map.Entry)var5x.next();
+         while(var5.hasNext()) {
+            Map.Entry var6 = (Map.Entry)var5.next();
             ResourceLocation var7 = (ResourceLocation)var6.getKey();
             ResourceLocation var8 = LISTER.fileToId(var7);
-            var3.put(var8, CompletableFuture.supplyAsync(() -> {
+            var3x.put(var8, CompletableFuture.supplyAsync(() -> {
                List var4x = readLines((Resource)var6.getValue());
                return CommandFunction.fromLines(var8, this.dispatcher, var4, var4x);
-            }, var5));
+            }, var3));
          }
 
-         CompletableFuture[] var9 = (CompletableFuture[])var3.values().toArray(new CompletableFuture[0]);
+         CompletableFuture[] var9 = (CompletableFuture[])var3x.values().toArray(new CompletableFuture[0]);
          return CompletableFuture.allOf(var9).handle((var1, var2) -> {
-            return var3;
+            return var3x;
          });
       });
-      CompletableFuture var10000 = var7.thenCombine(var8, Pair::of);
+      CompletableFuture var10000 = var5.thenCombine(var6, Pair::of);
       Objects.requireNonNull(var1);
       return var10000.thenCompose(var1::wait).thenAcceptAsync((var1x) -> {
          Map var2 = (Map)var1x.getSecond();
@@ -112,7 +112,7 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
          });
          this.functions = var3.build();
          this.tags = this.tagsLoader.build((Map)var1x.getFirst());
-      }, var6);
+      }, var4);
    }
 
    private static List<String> readLines(Resource param0) {

@@ -16,10 +16,12 @@ import com.mojang.realmsclient.util.task.SwitchMinigameTask;
 import com.mojang.realmsclient.util.task.SwitchSlotTask;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -175,7 +177,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       if (this.serverData == null) {
          var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, -1);
       } else {
-         String var5 = this.serverData.getName();
+         String var5 = (String)Objects.requireNonNullElse(this.serverData.getName(), "");
          int var6 = this.font.width(var5);
          int var7 = this.serverData.state == RealmsServer.State.CLOSED ? -6250336 : 8388479;
          int var8 = this.font.width((FormattedText)this.title);
@@ -205,7 +207,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
 
    }
 
-   private void fetchServerData(long var1) {
+   public void fetchServerData(long var1) {
       (new Thread(() -> {
          RealmsClient var3 = RealmsClient.create();
 
@@ -315,7 +317,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    }
 
    private void drawRealmStatus(GuiGraphics var1, int var2, int var3, int var4, int var5, ResourceLocation var6, Supplier<Component> var7) {
-      var1.blitSprite(var6, var2, var3, 10, 28);
+      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var6, var2, var3, 10, 28);
       if (var4 >= var2 && var4 <= var2 + 9 && var5 >= var3 && var5 <= var3 + 27) {
          this.setTooltipForNextRenderPass((Component)var7.get());
       }
@@ -353,6 +355,9 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       try {
          var3.updateSlot(this.serverData.id, this.serverData.activeSlot, var1);
          this.serverData.slots.put(this.serverData.activeSlot, var1);
+         if (var2.gameMode != var1.gameMode || var2.hardcore != var1.hardcore) {
+            RealmsMainScreen.refreshServerList();
+         }
       } catch (RealmsServiceException var5) {
          LOGGER.error("Couldn't save slot settings", var5);
          this.minecraft.setScreen(new RealmsGenericErrorScreen(var5, this));
@@ -363,7 +368,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    }
 
    public void saveSettings(String var1, String var2) {
-      String var3 = StringUtil.isBlank(var2) ? null : var2;
+      String var3 = StringUtil.isBlank(var2) ? "" : var2;
       RealmsClient var4 = RealmsClient.create();
 
       try {

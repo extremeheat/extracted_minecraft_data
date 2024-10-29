@@ -101,7 +101,7 @@ public class DebugLevelSource extends ChunkGenerator {
       return var2;
    }
 
-   public void applyCarvers(WorldGenRegion var1, long var2, RandomState var4, BiomeManager var5, StructureManager var6, ChunkAccess var7, GenerationStep.Carving var8) {
+   public void applyCarvers(WorldGenRegion var1, long var2, RandomState var4, BiomeManager var5, StructureManager var6, ChunkAccess var7) {
    }
 
    public void spawnOriginalMobs(WorldGenRegion var1) {

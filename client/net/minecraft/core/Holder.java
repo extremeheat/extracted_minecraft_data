@@ -109,7 +109,8 @@ public interface Holder<T> {
 
    public static class Reference<T> implements Holder<T> {
       private final HolderOwner<T> owner;
-      private Set<TagKey<T>> tags = Set.of();
+      @Nullable
+      private Set<TagKey<T>> tags;
       private final Type type;
       @Nullable
       private ResourceKey<T> key;
@@ -160,8 +161,16 @@ public interface Holder<T> {
          return this.key() == var1;
       }
 
+      private Set<TagKey<T>> boundTags() {
+         if (this.tags == null) {
+            throw new IllegalStateException("Tags not bound");
+         } else {
+            return this.tags;
+         }
+      }
+
       public boolean is(TagKey<T> var1) {
-         return this.tags.contains(var1);
+         return this.boundTags().contains(var1);
       }
 
       public boolean is(Holder<T> var1) {
@@ -215,7 +224,7 @@ public interface Holder<T> {
       }
 
       public Stream<TagKey<T>> tags() {
-         return this.tags.stream();
+         return this.boundTags().stream();
       }
 
       public String toString() {

@@ -194,7 +194,8 @@ public class ShulkerBullet extends Projectile {
 
    public void tick() {
       super.tick();
-      Vec3 var1;
+      HitResult var1 = null;
+      Vec3 var2;
       if (!this.level().isClientSide) {
          if (this.finalTarget == null && this.targetId != null) {
             this.finalTarget = ((ServerLevel)this.level()).getEntity(this.targetId);
@@ -209,22 +210,27 @@ public class ShulkerBullet extends Projectile {
             this.targetDeltaX = Mth.clamp(this.targetDeltaX * 1.025, -1.0, 1.0);
             this.targetDeltaY = Mth.clamp(this.targetDeltaY * 1.025, -1.0, 1.0);
             this.targetDeltaZ = Mth.clamp(this.targetDeltaZ * 1.025, -1.0, 1.0);
-            var1 = this.getDeltaMovement();
-            this.setDeltaMovement(var1.add((this.targetDeltaX - var1.x) * 0.2, (this.targetDeltaY - var1.y) * 0.2, (this.targetDeltaZ - var1.z) * 0.2));
+            var2 = this.getDeltaMovement();
+            this.setDeltaMovement(var2.add((this.targetDeltaX - var2.x) * 0.2, (this.targetDeltaY - var2.y) * 0.2, (this.targetDeltaZ - var2.z) * 0.2));
          }
 
-         HitResult var5 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
-         if (var5.getType() != HitResult.Type.MISS) {
-            this.hitTargetOrDeflectSelf(var5);
-         }
+         var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
       }
 
-      this.checkInsideBlocks();
-      var1 = this.getDeltaMovement();
-      this.setPos(this.getX() + var1.x, this.getY() + var1.y, this.getZ() + var1.z);
+      var2 = this.getDeltaMovement();
+      this.setPos(this.position().add(var2));
+      this.applyEffectsFromBlocks();
+      if (this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
+         this.handlePortal();
+      }
+
+      if (var1 != null && this.isAlive() && var1.getType() != HitResult.Type.MISS) {
+         this.hitTargetOrDeflectSelf(var1);
+      }
+
       ProjectileUtil.rotateTowardsMovement(this, 0.5F);
       if (this.level().isClientSide) {
-         this.level().addParticle(ParticleTypes.END_ROD, this.getX() - var1.x, this.getY() - var1.y + 0.15, this.getZ() - var1.z, 0.0, 0.0, 0.0);
+         this.level().addParticle(ParticleTypes.END_ROD, this.getX() - var2.x, this.getY() - var2.y + 0.15, this.getZ() - var2.z, 0.0, 0.0, 0.0);
       } else if (this.finalTarget != null && !this.finalTarget.isRemoved()) {
          if (this.flightSteps > 0) {
             --this.flightSteps;
@@ -234,14 +240,14 @@ public class ShulkerBullet extends Projectile {
          }
 
          if (this.currentMoveDirection != null) {
-            BlockPos var2 = this.blockPosition();
-            Direction.Axis var3 = this.currentMoveDirection.getAxis();
-            if (this.level().loadedAndEntityCanStandOn(var2.relative(this.currentMoveDirection), this)) {
-               this.selectNextMoveDirection(var3);
+            BlockPos var3 = this.blockPosition();
+            Direction.Axis var4 = this.currentMoveDirection.getAxis();
+            if (this.level().loadedAndEntityCanStandOn(var3.relative(this.currentMoveDirection), this)) {
+               this.selectNextMoveDirection(var4);
             } else {
-               BlockPos var4 = this.finalTarget.blockPosition();
-               if (var3 == Direction.Axis.X && var2.getX() == var4.getX() || var3 == Direction.Axis.Z && var2.getZ() == var4.getZ() || var3 == Direction.Axis.Y && var2.getY() == var4.getY()) {
-                  this.selectNextMoveDirection(var3);
+               BlockPos var5 = this.finalTarget.blockPosition();
+               if (var4 == Direction.Axis.X && var3.getX() == var5.getX() || var4 == Direction.Axis.Z && var3.getZ() == var5.getZ() || var4 == Direction.Axis.Y && var3.getY() == var5.getY()) {
+                  this.selectNextMoveDirection(var4);
                }
             }
          }
@@ -271,7 +277,7 @@ public class ShulkerBullet extends Projectile {
       Entity var3 = this.getOwner();
       LivingEntity var4 = var3 instanceof LivingEntity ? (LivingEntity)var3 : null;
       DamageSource var5 = this.damageSources().mobProjectile(this, var4);
-      boolean var6 = var2.hurt(var5, 4.0F);
+      boolean var6 = var2.hurtOrSimulate(var5, 4.0F);
       if (var6) {
          Level var8 = this.level();
          if (var8 instanceof ServerLevel) {
@@ -307,13 +313,14 @@ public class ShulkerBullet extends Projectile {
       return true;
    }
 
-   public boolean hurt(DamageSource var1, float var2) {
-      if (!this.level().isClientSide) {
-         this.playSound(SoundEvents.SHULKER_BULLET_HURT, 1.0F, 1.0F);
-         ((ServerLevel)this.level()).sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 15, 0.2, 0.2, 0.2, 0.0);
-         this.destroy();
-      }
+   public boolean hurtClient(DamageSource var1) {
+      return true;
+   }
 
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      this.playSound(SoundEvents.SHULKER_BULLET_HURT, 1.0F, 1.0F);
+      var1.sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 15, 0.2, 0.2, 0.2, 0.0);
+      this.destroy();
       return true;
    }
 

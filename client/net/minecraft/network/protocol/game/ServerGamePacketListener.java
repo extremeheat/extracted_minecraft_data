@@ -4,7 +4,7 @@ import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.common.ServerCommonPacketListener;
 import net.minecraft.network.protocol.ping.ServerPingPacketListener;
 
-public interface ServerGamePacketListener extends ServerPingPacketListener, ServerCommonPacketListener {
+public interface ServerGamePacketListener extends ServerCommonPacketListener, ServerPingPacketListener {
    default ConnectionProtocol protocol() {
       return ConnectionProtocol.PLAY;
    }
@@ -61,6 +61,8 @@ public interface ServerGamePacketListener extends ServerPingPacketListener, Serv
 
    void handleRecipeBookSeenRecipePacket(ServerboundRecipeBookSeenRecipePacket var1);
 
+   void handleBundleItemSelectedPacket(ServerboundSelectBundleItemPacket var1);
+
    void handleRecipeBookChangeSettingsPacket(ServerboundRecipeBookChangeSettingsPacket var1);
 
    void handleSeenAdvancements(ServerboundSeenAdvancementsPacket var1);
@@ -104,4 +106,6 @@ public interface ServerGamePacketListener extends ServerPingPacketListener, Serv
    void handleChunkBatchReceived(ServerboundChunkBatchReceivedPacket var1);
 
    void handleDebugSampleSubscription(ServerboundDebugSampleSubscriptionPacket var1);
+
+   void handleClientTickEnd(ServerboundClientTickEndPacket var1);
 }

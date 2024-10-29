@@ -10,8 +10,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import net.minecraft.Util;
 import net.minecraft.util.Unit;
-import net.minecraft.util.profiling.ActiveProfiler;
-import net.minecraft.util.profiling.ProfileResults;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import org.slf4j.Logger;
 
 public class ProfiledReloadInstance extends SimpleReloadInstance<State> {
@@ -22,32 +22,27 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<State> {
       super(var3, var4, var1, var2, (var1x, var2x, var3x, var4x, var5x) -> {
          AtomicLong var6 = new AtomicLong();
          AtomicLong var7 = new AtomicLong();
-         ActiveProfiler var8 = new ActiveProfiler(Util.timeSource, () -> {
-            return 0;
-         }, false);
-         ActiveProfiler var9 = new ActiveProfiler(Util.timeSource, () -> {
-            return 0;
-         }, false);
-         CompletableFuture var10 = var3x.reload(var1x, var2x, var8, var9, (var2) -> {
-            var4x.execute(() -> {
-               long var2x = Util.getNanos();
-               var2.run();
-               var6.addAndGet(Util.getNanos() - var2x);
-            });
-         }, (var2) -> {
-            var5x.execute(() -> {
-               long var2x = Util.getNanos();
-               var2.run();
-               var7.addAndGet(Util.getNanos() - var2x);
-            });
-         });
-         return var10.thenApplyAsync((var5) -> {
-            LOGGER.debug("Finished reloading " + var3x.getName());
-            return new State(var3x.getName(), var8.getResults(), var9.getResults(), var6, var7);
+         CompletableFuture var8 = var3x.reload(var1x, var2x, profiledExecutor(var4x, var6, var3x.getName()), profiledExecutor(var5x, var7, var3x.getName()));
+         return var8.thenApplyAsync((var3) -> {
+            LOGGER.debug("Finished reloading {}", var3x.getName());
+            return new State(var3x.getName(), var6, var7);
          }, var4);
       }, var5);
       this.total.start();
       this.allDone = this.allDone.thenApplyAsync(this::finish, var4);
+   }
+
+   private static Executor profiledExecutor(Executor var0, AtomicLong var1, String var2) {
+      return (var3) -> {
+         var0.execute(() -> {
+            ProfilerFiller var3x = Profiler.get();
+            var3x.push(var2);
+            long var4 = Util.getNanos();
+            var3.run();
+            var1.addAndGet(Util.getNanos() - var4);
+            var3x.pop();
+         });
+      };
    }
 
    private List<State> finish(List<State> var1) {
@@ -55,36 +50,42 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<State> {
       long var2 = 0L;
       LOGGER.info("Resource reload finished after {} ms", this.total.elapsed(TimeUnit.MILLISECONDS));
 
-      long var10;
-      for(Iterator var4 = var1.iterator(); var4.hasNext(); var2 += var10) {
+      long var8;
+      for(Iterator var4 = var1.iterator(); var4.hasNext(); var2 += var8) {
          State var5 = (State)var4.next();
-         ProfileResults var6 = var5.preparationResult;
-         ProfileResults var7 = var5.reloadResult;
-         long var8 = TimeUnit.NANOSECONDS.toMillis(var5.preparationNanos.get());
-         var10 = TimeUnit.NANOSECONDS.toMillis(var5.reloadNanos.get());
-         long var12 = var8 + var10;
-         String var14 = var5.name;
-         LOGGER.info("{} took approximately {} ms ({} ms preparing, {} ms applying)", new Object[]{var14, var12, var8, var10});
+         long var6 = TimeUnit.NANOSECONDS.toMillis(var5.preparationNanos.get());
+         var8 = TimeUnit.NANOSECONDS.toMillis(var5.reloadNanos.get());
+         long var10 = var6 + var8;
+         String var12 = var5.name;
+         LOGGER.info("{} took approximately {} ms ({} ms preparing, {} ms applying)", new Object[]{var12, var10, var6, var8});
       }
 
       LOGGER.info("Total blocking time: {} ms", var2);
       return var1;
    }
 
-   public static class State {
+   public static record State(String name, AtomicLong preparationNanos, AtomicLong reloadNanos) {
       final String name;
-      final ProfileResults preparationResult;
-      final ProfileResults reloadResult;
       final AtomicLong preparationNanos;
       final AtomicLong reloadNanos;
 
-      State(String var1, ProfileResults var2, ProfileResults var3, AtomicLong var4, AtomicLong var5) {
+      public State(String var1, AtomicLong var2, AtomicLong var3) {
          super();
          this.name = var1;
-         this.preparationResult = var2;
-         this.reloadResult = var3;
-         this.preparationNanos = var4;
-         this.reloadNanos = var5;
+         this.preparationNanos = var2;
+         this.reloadNanos = var3;
+      }
+
+      public String name() {
+         return this.name;
+      }
+
+      public AtomicLong preparationNanos() {
+         return this.preparationNanos;
+      }
+
+      public AtomicLong reloadNanos() {
+         return this.reloadNanos;
       }
    }
 }

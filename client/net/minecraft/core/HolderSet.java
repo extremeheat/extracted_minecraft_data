@@ -20,6 +20,8 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
 
    int size();
 
+   boolean isBound();
+
    Either<TagKey<T>, List<Holder<T>>> unwrap();
 
    Optional<Holder<T>> getRandomElement(RandomSource var1);
@@ -80,6 +82,10 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
          return this.contents;
       }
 
+      public boolean isBound() {
+         return true;
+      }
+
       public Either<TagKey<T>, List<Holder<T>>> unwrap() {
          return Either.right(this.contents);
       }
@@ -126,7 +132,8 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
    public static class Named<T> extends ListBacked<T> {
       private final HolderOwner<T> owner;
       private final TagKey<T> key;
-      private List<Holder<T>> contents = List.of();
+      @Nullable
+      private List<Holder<T>> contents;
 
       Named(HolderOwner<T> var1, TagKey<T> var2) {
          super();
@@ -143,7 +150,16 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
       }
 
       protected List<Holder<T>> contents() {
-         return this.contents;
+         if (this.contents == null) {
+            String var10002 = String.valueOf(this.key);
+            throw new IllegalStateException("Trying to access unbound tag '" + var10002 + "' from registry " + String.valueOf(this.owner));
+         } else {
+            return this.contents;
+         }
+      }
+
+      public boolean isBound() {
+         return this.contents != null;
       }
 
       public Either<TagKey<T>, List<Holder<T>>> unwrap() {

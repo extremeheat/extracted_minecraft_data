@@ -15,18 +15,21 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MapRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.ShapeRenderer;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.debug.DebugRenderer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.client.resources.model.EquipmentModelSet;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
@@ -34,7 +37,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -57,19 +60,21 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    private static final RenderType SHADOW_RENDER_TYPE = RenderType.entityShadow(ResourceLocation.withDefaultNamespace("textures/misc/shadow.png"));
    private static final float MAX_SHADOW_RADIUS = 32.0F;
    private static final float SHADOW_POWER_FALLOFF_Y = 0.5F;
-   private Map<EntityType<?>, EntityRenderer<?>> renderers = ImmutableMap.of();
-   private Map<PlayerSkin.Model, EntityRenderer<? extends Player>> playerRenderers = Map.of();
+   private Map<EntityType<?>, EntityRenderer<?, ?>> renderers = ImmutableMap.of();
+   private Map<PlayerSkin.Model, EntityRenderer<? extends Player, ?>> playerRenderers = Map.of();
    public final TextureManager textureManager;
    private Level level;
    public Camera camera;
    private Quaternionf cameraOrientation;
    public Entity crosshairPickEntity;
    private final ItemRenderer itemRenderer;
+   private final MapRenderer mapRenderer;
    private final BlockRenderDispatcher blockRenderDispatcher;
    private final ItemInHandRenderer itemInHandRenderer;
    private final Font font;
    public final Options options;
    private final EntityModelSet entityModels;
+   private final EquipmentModelSet equipmentModels;
    private boolean shouldRenderShadow = true;
    private boolean renderHitBoxes;
 
@@ -77,18 +82,20 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       return this.getRenderer(var1).getPackedLightCoords(var1, var2);
    }
 
-   public EntityRenderDispatcher(Minecraft var1, TextureManager var2, ItemRenderer var3, BlockRenderDispatcher var4, Font var5, Options var6, EntityModelSet var7) {
+   public EntityRenderDispatcher(Minecraft var1, TextureManager var2, ItemRenderer var3, MapRenderer var4, BlockRenderDispatcher var5, Font var6, Options var7, EntityModelSet var8, EquipmentModelSet var9) {
       super();
       this.textureManager = var2;
       this.itemRenderer = var3;
+      this.mapRenderer = var4;
       this.itemInHandRenderer = new ItemInHandRenderer(var1, this, var3);
-      this.blockRenderDispatcher = var4;
-      this.font = var5;
-      this.options = var6;
-      this.entityModels = var7;
+      this.blockRenderDispatcher = var5;
+      this.font = var6;
+      this.options = var7;
+      this.entityModels = var8;
+      this.equipmentModels = var9;
    }
 
-   public <T extends Entity> EntityRenderer<? super T> getRenderer(T var1) {
+   public <T extends Entity> EntityRenderer<? super T, ?> getRenderer(T var1) {
       if (var1 instanceof AbstractClientPlayer var2) {
          PlayerSkin.Model var3 = var2.getSkin().model();
          EntityRenderer var4 = (EntityRenderer)this.playerRenderers.get(var3);
@@ -126,48 +133,58 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       return var9.shouldRender(var1, var2, var3, var5, var7);
    }
 
-   public <E extends Entity> void render(E var1, double var2, double var4, double var6, float var8, float var9, PoseStack var10, MultiBufferSource var11, int var12) {
-      EntityRenderer var13 = this.getRenderer(var1);
+   public <E extends Entity> void render(E var1, double var2, double var4, double var6, float var8, PoseStack var9, MultiBufferSource var10, int var11) {
+      EntityRenderer var12 = this.getRenderer(var1);
+      this.render(var1, var2, var4, var6, var8, var9, var10, var11, var12);
+   }
 
+   private <E extends Entity, S extends EntityRenderState> void render(E var1, double var2, double var4, double var6, float var8, PoseStack var9, MultiBufferSource var10, int var11, EntityRenderer<? super E, S> var12) {
       try {
-         Vec3 var14 = var13.getRenderOffset(var1, var9);
-         double var26 = var2 + var14.x();
-         double var27 = var4 + var14.y();
-         double var19 = var6 + var14.z();
-         var10.pushPose();
-         var10.translate(var26, var27, var19);
-         var13.render(var1, var8, var9, var10, var11, var12);
-         if (var1.displayFireAnimation()) {
-            this.renderFlame(var10, var11, var1, Mth.rotationAroundAxis(Mth.Y_AXIS, this.cameraOrientation, new Quaternionf()));
+         EntityRenderState var13 = var12.createRenderState(var1, var8);
+         Vec3 var26 = var12.getRenderOffset(var13);
+         double var27 = var2 + var26.x();
+         double var17 = var4 + var26.y();
+         double var19 = var6 + var26.z();
+         var9.pushPose();
+         var9.translate(var27, var17, var19);
+         var12.render(var13, var9, var10, var11);
+         if (var13.displayFireAnimation) {
+            this.renderFlame(var9, var10, var13, Mth.rotationAroundAxis(Mth.Y_AXIS, this.cameraOrientation, new Quaternionf()));
          }
 
-         var10.translate(-var14.x(), -var14.y(), -var14.z());
-         if ((Boolean)this.options.entityShadows().get() && this.shouldRenderShadow && !var1.isInvisible()) {
-            float var21 = var13.getShadowRadius(var1);
+         if (var1 instanceof Player) {
+            var9.translate(-var26.x(), -var26.y(), -var26.z());
+         }
+
+         if ((Boolean)this.options.entityShadows().get() && this.shouldRenderShadow && !var13.isInvisible) {
+            float var21 = var12.getShadowRadius(var13);
             if (var21 > 0.0F) {
-               double var22 = this.distanceToSqr(var1.getX(), var1.getY(), var1.getZ());
-               float var24 = (float)((1.0 - var22 / 256.0) * (double)var13.shadowStrength);
+               double var22 = var13.distanceToCameraSq;
+               float var24 = (float)((1.0 - var22 / 256.0) * (double)var12.shadowStrength);
                if (var24 > 0.0F) {
-                  renderShadow(var10, var11, var1, var24, var9, this.level, Math.min(var21, 32.0F));
+                  renderShadow(var9, var10, var13, var24, var8, this.level, Math.min(var21, 32.0F));
                }
             }
          }
 
-         if (this.renderHitBoxes && !var1.isInvisible() && !Minecraft.getInstance().showOnlyReducedInfo()) {
-            renderHitbox(var10, var11.getBuffer(RenderType.lines()), var1, var9, 1.0F, 1.0F, 1.0F);
+         if (!(var1 instanceof Player)) {
+            var9.translate(-var26.x(), -var26.y(), -var26.z());
          }
 
-         var10.popPose();
+         if (this.renderHitBoxes && !var13.isInvisible && !Minecraft.getInstance().showOnlyReducedInfo()) {
+            renderHitbox(var9, var10.getBuffer(RenderType.lines()), var1, var8, 1.0F, 1.0F, 1.0F);
+         }
+
+         var9.popPose();
       } catch (Throwable var25) {
-         CrashReport var15 = CrashReport.forThrowable(var25, "Rendering entity in world");
-         CrashReportCategory var16 = var15.addCategory("Entity being rendered");
-         var1.fillCrashReportCategory(var16);
-         CrashReportCategory var17 = var15.addCategory("Renderer details");
-         var17.setDetail("Assigned renderer", (Object)var13);
-         var17.setDetail("Location", (Object)CrashReportCategory.formatLocation(this.level, var2, var4, var6));
-         var17.setDetail("Rotation", (Object)var8);
-         var17.setDetail("Delta", (Object)var9);
-         throw new ReportedException(var15);
+         CrashReport var14 = CrashReport.forThrowable(var25, "Rendering entity in world");
+         CrashReportCategory var15 = var14.addCategory("Entity being rendered");
+         var1.fillCrashReportCategory(var15);
+         CrashReportCategory var16 = var14.addCategory("Renderer details");
+         var16.setDetail("Assigned renderer", (Object)var12);
+         var16.setDetail("Location", (Object)CrashReportCategory.formatLocation(this.level, var2, var4, var6));
+         var16.setDetail("Delta", (Object)var8);
+         throw new ReportedException(var14);
       }
    }
 
@@ -179,7 +196,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
          var0.pushPose();
          var0.translate(var3.getX() - var1.getX(), var3.getY() - var1.getY(), var3.getZ() - var1.getZ());
          renderHitbox(var0, var2.getBuffer(RenderType.lines()), var3, 1.0F, 0.0F, 1.0F, 0.0F);
-         renderVector(var0, var2.getBuffer(RenderType.lines()), new Vector3f(), var3.getDeltaMovement(), -256);
+         ShapeRenderer.renderVector(var0, var2.getBuffer(RenderType.lines()), new Vector3f(), var3.getDeltaMovement(), -256);
          var0.popPose();
       }
    }
@@ -199,7 +216,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
 
    private static void renderHitbox(PoseStack var0, VertexConsumer var1, Entity var2, float var3, float var4, float var5, float var6) {
       AABB var7 = var2.getBoundingBox().move(-var2.getX(), -var2.getY(), -var2.getZ());
-      LevelRenderer.renderLineBox(var0, var1, var7, var4, var5, var6, 1.0F);
+      ShapeRenderer.renderLineBox(var0, var1, var7, var4, var5, var6, 1.0F);
       if (var2 instanceof EnderDragon) {
          double var8 = -Mth.lerp((double)var3, var2.xOld, var2.getX());
          double var10 = -Mth.lerp((double)var3, var2.yOld, var2.getY());
@@ -214,14 +231,14 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
             double var20 = var10 + Mth.lerp((double)var3, var17.yOld, var17.getY());
             double var22 = var12 + Mth.lerp((double)var3, var17.zOld, var17.getZ());
             var0.translate(var18, var20, var22);
-            LevelRenderer.renderLineBox(var0, var1, var17.getBoundingBox().move(-var17.getX(), -var17.getY(), -var17.getZ()), 0.25F, 1.0F, 0.0F, 1.0F);
+            ShapeRenderer.renderLineBox(var0, var1, var17.getBoundingBox().move(-var17.getX(), -var17.getY(), -var17.getZ()), 0.25F, 1.0F, 0.0F, 1.0F);
             var0.popPose();
          }
       }
 
       if (var2 instanceof LivingEntity) {
          float var24 = 0.01F;
-         LevelRenderer.renderLineBox(var0, var1, var7.minX, (double)(var2.getEyeHeight() - 0.01F), var7.minZ, var7.maxX, (double)(var2.getEyeHeight() + 0.01F), var7.maxZ, 1.0F, 0.0F, 0.0F, 1.0F);
+         ShapeRenderer.renderLineBox(var0, var1, var7.minX, (double)(var2.getEyeHeight() - 0.01F), var7.minZ, var7.maxX, (double)(var2.getEyeHeight() + 0.01F), var7.maxZ, 1.0F, 0.0F, 0.0F, 1.0F);
       }
 
       Entity var25 = var2.getVehicle();
@@ -229,27 +246,21 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
          float var9 = Math.min(var25.getBbWidth(), var2.getBbWidth()) / 2.0F;
          float var26 = 0.0625F;
          Vec3 var11 = var25.getPassengerRidingPosition(var2).subtract(var2.position());
-         LevelRenderer.renderLineBox(var0, var1, var11.x - (double)var9, var11.y, var11.z - (double)var9, var11.x + (double)var9, var11.y + 0.0625, var11.z + (double)var9, 1.0F, 1.0F, 0.0F, 1.0F);
+         ShapeRenderer.renderLineBox(var0, var1, var11.x - (double)var9, var11.y, var11.z - (double)var9, var11.x + (double)var9, var11.y + 0.0625, var11.z + (double)var9, 1.0F, 1.0F, 0.0F, 1.0F);
       }
 
-      renderVector(var0, var1, new Vector3f(0.0F, var2.getEyeHeight(), 0.0F), var2.getViewVector(var3).scale(2.0), -16776961);
+      ShapeRenderer.renderVector(var0, var1, new Vector3f(0.0F, var2.getEyeHeight(), 0.0F), var2.getViewVector(var3).scale(2.0), -16776961);
    }
 
-   private static void renderVector(PoseStack var0, VertexConsumer var1, Vector3f var2, Vec3 var3, int var4) {
-      PoseStack.Pose var5 = var0.last();
-      var1.addVertex(var5, var2).setColor(var4).setNormal(var5, (float)var3.x, (float)var3.y, (float)var3.z);
-      var1.addVertex(var5, (float)((double)var2.x() + var3.x), (float)((double)var2.y() + var3.y), (float)((double)var2.z() + var3.z)).setColor(var4).setNormal(var5, (float)var3.x, (float)var3.y, (float)var3.z);
-   }
-
-   private void renderFlame(PoseStack var1, MultiBufferSource var2, Entity var3, Quaternionf var4) {
+   private void renderFlame(PoseStack var1, MultiBufferSource var2, EntityRenderState var3, Quaternionf var4) {
       TextureAtlasSprite var5 = ModelBakery.FIRE_0.sprite();
       TextureAtlasSprite var6 = ModelBakery.FIRE_1.sprite();
       var1.pushPose();
-      float var7 = var3.getBbWidth() * 1.4F;
+      float var7 = var3.boundingBoxWidth * 1.4F;
       var1.scale(var7, var7, var7);
       float var8 = 0.5F;
       float var9 = 0.0F;
-      float var10 = var3.getBbHeight() / var7;
+      float var10 = var3.boundingBoxHeight / var7;
       float var11 = 0.0F;
       var1.mulPose(var4);
       var1.translate(0.0F, 0.0F, 0.3F - (float)((int)var10) * 0.02F);
@@ -286,30 +297,27 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       var1.addVertex(var0, var2, var3, var4).setColor(-1).setUv(var5, var6).setUv1(0, 10).setLight(240).setNormal(var0, 0.0F, 1.0F, 0.0F);
    }
 
-   private static void renderShadow(PoseStack var0, MultiBufferSource var1, Entity var2, float var3, float var4, LevelReader var5, float var6) {
-      double var7 = Mth.lerp((double)var4, var2.xOld, var2.getX());
-      double var9 = Mth.lerp((double)var4, var2.yOld, var2.getY());
-      double var11 = Mth.lerp((double)var4, var2.zOld, var2.getZ());
-      float var13 = Math.min(var3 / 0.5F, var6);
-      int var14 = Mth.floor(var7 - (double)var6);
-      int var15 = Mth.floor(var7 + (double)var6);
-      int var16 = Mth.floor(var9 - (double)var13);
-      int var17 = Mth.floor(var9);
-      int var18 = Mth.floor(var11 - (double)var6);
-      int var19 = Mth.floor(var11 + (double)var6);
-      PoseStack.Pose var20 = var0.last();
-      VertexConsumer var21 = var1.getBuffer(SHADOW_RENDER_TYPE);
-      BlockPos.MutableBlockPos var22 = new BlockPos.MutableBlockPos();
+   private static void renderShadow(PoseStack var0, MultiBufferSource var1, EntityRenderState var2, float var3, float var4, LevelReader var5, float var6) {
+      float var7 = Math.min(var3 / 0.5F, var6);
+      int var8 = Mth.floor(var2.x - (double)var6);
+      int var9 = Mth.floor(var2.x + (double)var6);
+      int var10 = Mth.floor(var2.y - (double)var7);
+      int var11 = Mth.floor(var2.y);
+      int var12 = Mth.floor(var2.z - (double)var6);
+      int var13 = Mth.floor(var2.z + (double)var6);
+      PoseStack.Pose var14 = var0.last();
+      VertexConsumer var15 = var1.getBuffer(SHADOW_RENDER_TYPE);
+      BlockPos.MutableBlockPos var16 = new BlockPos.MutableBlockPos();
 
-      for(int var23 = var18; var23 <= var19; ++var23) {
-         for(int var24 = var14; var24 <= var15; ++var24) {
-            var22.set(var24, 0, var23);
-            ChunkAccess var25 = var5.getChunk(var22);
+      for(int var17 = var12; var17 <= var13; ++var17) {
+         for(int var18 = var8; var18 <= var9; ++var18) {
+            var16.set(var18, 0, var17);
+            ChunkAccess var19 = var5.getChunk(var16);
 
-            for(int var26 = var16; var26 <= var17; ++var26) {
-               var22.setY(var26);
-               float var27 = var3 - (float)(var9 - (double)var22.getY()) * 0.5F;
-               renderBlockShadow(var20, var21, var25, var5, var22, var7, var9, var11, var6, var27);
+            for(int var20 = var10; var20 <= var11; ++var20) {
+               var16.setY(var20);
+               float var21 = var3 - (float)(var2.y - (double)var16.getY()) * 0.5F;
+               renderBlockShadow(var14, var15, var19, var5, var16, var2.x, var2.y, var2.z, var6, var21);
             }
          }
       }
@@ -330,7 +338,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
                      var17 = 1.0F;
                   }
 
-                  int var18 = FastColor.ARGB32.color(Mth.floor(var17 * 255.0F), 255, 255, 255);
+                  int var18 = ARGB.color(Mth.floor(var17 * 255.0F), 255, 255, 255);
                   AABB var19 = var15.bounds();
                   double var20 = (double)var4.getX() + var19.minX;
                   double var22 = (double)var4.getX() + var19.maxX;
@@ -387,7 +395,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    }
 
    public void onResourceManagerReload(ResourceManager var1) {
-      EntityRendererProvider.Context var2 = new EntityRendererProvider.Context(this, this.itemRenderer, this.blockRenderDispatcher, this.itemInHandRenderer, var1, this.entityModels, this.font);
+      EntityRendererProvider.Context var2 = new EntityRendererProvider.Context(this, this.itemRenderer, this.mapRenderer, this.blockRenderDispatcher, var1, this.entityModels, this.equipmentModels, this.font);
       this.renderers = EntityRenderers.createEntityRenderers(var2);
       this.playerRenderers = EntityRenderers.createPlayerRenderers(var2);
    }

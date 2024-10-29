@@ -1,7 +1,5 @@
 package net.minecraft.client.model;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -10,9 +8,8 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.util.Mth;
+import net.minecraft.client.renderer.entity.state.ArmorStandRenderState;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.decoration.ArmorStand;
 
 public class ArmorStandModel extends ArmorStandArmorModel {
    private static final String RIGHT_BODY_STICK = "right_body_stick";
@@ -49,30 +46,21 @@ public class ArmorStandModel extends ArmorStandArmorModel {
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   public void prepareMobModel(ArmorStand var1, float var2, float var3, float var4) {
-      this.basePlate.xRot = 0.0F;
-      this.basePlate.yRot = 0.017453292F * -Mth.rotLerp(var4, var1.yRotO, var1.getYRot());
-      this.basePlate.zRot = 0.0F;
-   }
-
-   public void setupAnim(ArmorStand var1, float var2, float var3, float var4, float var5, float var6) {
-      super.setupAnim(var1, var2, var3, var4, var5, var6);
-      this.leftArm.visible = var1.isShowArms();
-      this.rightArm.visible = var1.isShowArms();
-      this.basePlate.visible = !var1.isNoBasePlate();
-      this.rightBodyStick.xRot = 0.017453292F * var1.getBodyPose().getX();
-      this.rightBodyStick.yRot = 0.017453292F * var1.getBodyPose().getY();
-      this.rightBodyStick.zRot = 0.017453292F * var1.getBodyPose().getZ();
-      this.leftBodyStick.xRot = 0.017453292F * var1.getBodyPose().getX();
-      this.leftBodyStick.yRot = 0.017453292F * var1.getBodyPose().getY();
-      this.leftBodyStick.zRot = 0.017453292F * var1.getBodyPose().getZ();
-      this.shoulderStick.xRot = 0.017453292F * var1.getBodyPose().getX();
-      this.shoulderStick.yRot = 0.017453292F * var1.getBodyPose().getY();
-      this.shoulderStick.zRot = 0.017453292F * var1.getBodyPose().getZ();
-   }
-
-   protected Iterable<ModelPart> bodyParts() {
-      return Iterables.concat(super.bodyParts(), ImmutableList.of(this.rightBodyStick, this.leftBodyStick, this.shoulderStick, this.basePlate));
+   public void setupAnim(ArmorStandRenderState var1) {
+      super.setupAnim(var1);
+      this.basePlate.yRot = 0.017453292F * -var1.yRot;
+      this.leftArm.visible = var1.showArms;
+      this.rightArm.visible = var1.showArms;
+      this.basePlate.visible = var1.showBasePlate;
+      this.rightBodyStick.xRot = 0.017453292F * var1.bodyPose.getX();
+      this.rightBodyStick.yRot = 0.017453292F * var1.bodyPose.getY();
+      this.rightBodyStick.zRot = 0.017453292F * var1.bodyPose.getZ();
+      this.leftBodyStick.xRot = 0.017453292F * var1.bodyPose.getX();
+      this.leftBodyStick.yRot = 0.017453292F * var1.bodyPose.getY();
+      this.leftBodyStick.zRot = 0.017453292F * var1.bodyPose.getZ();
+      this.shoulderStick.xRot = 0.017453292F * var1.bodyPose.getX();
+      this.shoulderStick.yRot = 0.017453292F * var1.bodyPose.getY();
+      this.shoulderStick.zRot = 0.017453292F * var1.bodyPose.getZ();
    }
 
    public void translateToHand(HumanoidArm var1, PoseStack var2) {

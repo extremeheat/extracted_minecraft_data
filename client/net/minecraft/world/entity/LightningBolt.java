@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
@@ -33,7 +34,7 @@ public class LightningBolt extends Entity {
    private static final int START_LIFE = 2;
    private static final double DAMAGE_RADIUS = 3.0;
    private static final double DETECTION_RADIUS = 15.0;
-   private int life;
+   private int life = 2;
    public long seed;
    private int flashes;
    private boolean visualOnly;
@@ -44,8 +45,6 @@ public class LightningBolt extends Entity {
 
    public LightningBolt(EntityType<? extends LightningBolt> var1, Level var2) {
       super(var1, var2);
-      this.noCulling = true;
-      this.life = 2;
       this.seed = this.random.nextLong();
       this.flashes = this.random.nextInt(3) + 1;
    }
@@ -149,24 +148,32 @@ public class LightningBolt extends Entity {
    }
 
    private void spawnFire(int var1) {
-      if (!this.visualOnly && !this.level().isClientSide && this.level().getGameRules().getBoolean(GameRules.RULE_DOFIRETICK)) {
-         BlockPos var2 = this.blockPosition();
-         BlockState var3 = BaseFireBlock.getState(this.level(), var2);
-         if (this.level().getBlockState(var2).isAir() && var3.canSurvive(this.level(), var2)) {
-            this.level().setBlockAndUpdate(var2, var3);
-            ++this.blocksSetOnFire;
-         }
+      if (!this.visualOnly) {
+         Level var3 = this.level();
+         if (var3 instanceof ServerLevel) {
+            ServerLevel var2 = (ServerLevel)var3;
+            if (var2.getGameRules().getBoolean(GameRules.RULE_DOFIRETICK)) {
+               BlockPos var7 = this.blockPosition();
+               BlockState var4 = BaseFireBlock.getState(this.level(), var7);
+               if (this.level().getBlockState(var7).isAir() && var4.canSurvive(this.level(), var7)) {
+                  this.level().setBlockAndUpdate(var7, var4);
+                  ++this.blocksSetOnFire;
+               }
 
-         for(int var4 = 0; var4 < var1; ++var4) {
-            BlockPos var5 = var2.offset(this.random.nextInt(3) - 1, this.random.nextInt(3) - 1, this.random.nextInt(3) - 1);
-            var3 = BaseFireBlock.getState(this.level(), var5);
-            if (this.level().getBlockState(var5).isAir() && var3.canSurvive(this.level(), var5)) {
-               this.level().setBlockAndUpdate(var5, var3);
-               ++this.blocksSetOnFire;
+               for(int var5 = 0; var5 < var1; ++var5) {
+                  BlockPos var6 = var7.offset(this.random.nextInt(3) - 1, this.random.nextInt(3) - 1, this.random.nextInt(3) - 1);
+                  var4 = BaseFireBlock.getState(this.level(), var6);
+                  if (this.level().getBlockState(var6).isAir() && var4.canSurvive(this.level(), var6)) {
+                     this.level().setBlockAndUpdate(var6, var4);
+                     ++this.blocksSetOnFire;
+                  }
+               }
+
+               return;
             }
          }
-
       }
+
    }
 
    private static void clearCopperOnLightningStrike(Level var0, BlockPos var1) {
@@ -249,5 +256,9 @@ public class LightningBolt extends Entity {
 
    public Stream<Entity> getHitEntities() {
       return this.hitEntities.stream().filter(Entity::isAlive);
+   }
+
+   public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      return false;
    }
 }

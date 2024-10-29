@@ -7,20 +7,18 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 
-public class SnowGolemModel<T extends Entity> extends HierarchicalModel<T> {
+public class SnowGolemModel extends EntityModel<LivingEntityRenderState> {
    private static final String UPPER_BODY = "upper_body";
-   private final ModelPart root;
    private final ModelPart upperBody;
    private final ModelPart head;
    private final ModelPart leftArm;
    private final ModelPart rightArm;
 
    public SnowGolemModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.head = var1.getChild("head");
       this.leftArm = var1.getChild("left_arm");
       this.rightArm = var1.getChild("right_arm");
@@ -41,22 +39,19 @@ public class SnowGolemModel<T extends Entity> extends HierarchicalModel<T> {
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.head.yRot = var5 * 0.017453292F;
-      this.head.xRot = var6 * 0.017453292F;
-      this.upperBody.yRot = var5 * 0.017453292F * 0.25F;
-      float var7 = Mth.sin(this.upperBody.yRot);
-      float var8 = Mth.cos(this.upperBody.yRot);
+   public void setupAnim(LivingEntityRenderState var1) {
+      super.setupAnim(var1);
+      this.head.yRot = var1.yRot * 0.017453292F;
+      this.head.xRot = var1.xRot * 0.017453292F;
+      this.upperBody.yRot = var1.yRot * 0.017453292F * 0.25F;
+      float var2 = Mth.sin(this.upperBody.yRot);
+      float var3 = Mth.cos(this.upperBody.yRot);
       this.leftArm.yRot = this.upperBody.yRot;
       this.rightArm.yRot = this.upperBody.yRot + 3.1415927F;
-      this.leftArm.x = var8 * 5.0F;
-      this.leftArm.z = -var7 * 5.0F;
-      this.rightArm.x = -var8 * 5.0F;
-      this.rightArm.z = var7 * 5.0F;
-   }
-
-   public ModelPart root() {
-      return this.root;
+      this.leftArm.x = var3 * 5.0F;
+      this.leftArm.z = -var2 * 5.0F;
+      this.rightArm.x = -var3 * 5.0F;
+      this.rightArm.z = var2 * 5.0F;
    }
 
    public ModelPart getHead() {

@@ -12,6 +12,7 @@ import net.minecraft.network.protocol.game.ClientboundSetEntityLinkPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.decoration.LeashFenceKnotEntity;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 
@@ -102,7 +103,7 @@ public interface Leashable {
             }
 
             if (var0.tickCount > 100) {
-               var0.spawnAtLocation((ItemLike)Items.LEAD);
+               var0.spawnAtLocation(var2, (ItemLike)Items.LEAD);
                ((Leashable)var0).setLeashData((LeashData)null);
             }
          }
@@ -118,14 +119,14 @@ public interface Leashable {
       LeashData var3 = ((Leashable)var0).getLeashData();
       if (var3 != null && var3.leashHolder != null) {
          ((Leashable)var0).setLeashData((LeashData)null);
-         if (!var0.level().isClientSide && var2) {
-            var0.spawnAtLocation((ItemLike)Items.LEAD);
-         }
+         Level var5 = var0.level();
+         if (var5 instanceof ServerLevel) {
+            ServerLevel var4 = (ServerLevel)var5;
+            if (var2) {
+               var0.spawnAtLocation(var4, (ItemLike)Items.LEAD);
+            }
 
-         if (var1) {
-            Level var5 = var0.level();
-            if (var5 instanceof ServerLevel) {
-               ServerLevel var4 = (ServerLevel)var5;
+            if (var1) {
                var4.getChunkSource().broadcast(var0, new ClientboundSetEntityLinkPacket(var0, (Entity)null));
             }
          }
@@ -133,31 +134,31 @@ public interface Leashable {
 
    }
 
-   static <E extends Entity & Leashable> void tickLeash(E var0) {
-      LeashData var1 = ((Leashable)var0).getLeashData();
-      if (var1 != null && var1.delayedLeashInfo != null) {
-         restoreLeashFromSave(var0, var1);
+   static <E extends Entity & Leashable> void tickLeash(ServerLevel var0, E var1) {
+      LeashData var2 = ((Leashable)var1).getLeashData();
+      if (var2 != null && var2.delayedLeashInfo != null) {
+         restoreLeashFromSave(var1, var2);
       }
 
-      if (var1 != null && var1.leashHolder != null) {
-         if (!var0.isAlive() || !var1.leashHolder.isAlive()) {
-            dropLeash(var0, true, true);
+      if (var2 != null && var2.leashHolder != null) {
+         if (!var1.isAlive() || !var2.leashHolder.isAlive()) {
+            dropLeash(var1, true, var0.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS));
          }
 
-         Entity var2 = ((Leashable)var0).getLeashHolder();
-         if (var2 != null && var2.level() == var0.level()) {
-            float var3 = var0.distanceTo(var2);
-            if (!((Leashable)var0).handleLeashAtDistance(var2, var3)) {
+         Entity var3 = ((Leashable)var1).getLeashHolder();
+         if (var3 != null && var3.level() == var1.level()) {
+            float var4 = var1.distanceTo(var3);
+            if (!((Leashable)var1).handleLeashAtDistance(var3, var4)) {
                return;
             }
 
-            if ((double)var3 > 10.0) {
-               ((Leashable)var0).leashTooFarBehaviour();
-            } else if ((double)var3 > 6.0) {
-               ((Leashable)var0).elasticRangeLeashBehaviour(var2, var3);
-               var0.checkSlowFallDistance();
+            if ((double)var4 > 10.0) {
+               ((Leashable)var1).leashTooFarBehaviour();
+            } else if ((double)var4 > 6.0) {
+               ((Leashable)var1).elasticRangeLeashBehaviour(var3, var4);
+               var1.checkSlowFallDistance();
             } else {
-               ((Leashable)var0).closeRangeLeashBehaviour(var2);
+               ((Leashable)var1).closeRangeLeashBehaviour(var3);
             }
          }
 

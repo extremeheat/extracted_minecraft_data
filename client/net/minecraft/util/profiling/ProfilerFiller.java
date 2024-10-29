@@ -20,6 +20,25 @@ public interface ProfilerFiller {
 
    void popPush(Supplier<String> var1);
 
+   default void addZoneText(String var1) {
+   }
+
+   default void addZoneValue(long var1) {
+   }
+
+   default void setZoneColor(int var1) {
+   }
+
+   default Zone zone(String var1) {
+      this.push(var1);
+      return new Zone(this);
+   }
+
+   default Zone zone(Supplier<String> var1) {
+      this.push(var1);
+      return new Zone(this);
+   }
+
    void markForCharting(MetricCategory var1);
 
    default void incrementCounter(String var1) {
@@ -34,61 +53,87 @@ public interface ProfilerFiller {
 
    void incrementCounter(Supplier<String> var1, int var2);
 
-   static ProfilerFiller tee(final ProfilerFiller var0, final ProfilerFiller var1) {
+   static ProfilerFiller combine(ProfilerFiller var0, ProfilerFiller var1) {
       if (var0 == InactiveProfiler.INSTANCE) {
          return var1;
       } else {
-         return var1 == InactiveProfiler.INSTANCE ? var0 : new ProfilerFiller() {
-            public void startTick() {
-               var0.startTick();
-               var1.startTick();
-            }
+         return (ProfilerFiller)(var1 == InactiveProfiler.INSTANCE ? var0 : new CombinedProfileFiller(var0, var1));
+      }
+   }
 
-            public void endTick() {
-               var0.endTick();
-               var1.endTick();
-            }
+   public static class CombinedProfileFiller implements ProfilerFiller {
+      private final ProfilerFiller first;
+      private final ProfilerFiller second;
 
-            public void push(String var1x) {
-               var0.push(var1x);
-               var1.push(var1x);
-            }
+      public CombinedProfileFiller(ProfilerFiller var1, ProfilerFiller var2) {
+         super();
+         this.first = var1;
+         this.second = var2;
+      }
 
-            public void push(Supplier<String> var1x) {
-               var0.push(var1x);
-               var1.push(var1x);
-            }
+      public void startTick() {
+         this.first.startTick();
+         this.second.startTick();
+      }
 
-            public void markForCharting(MetricCategory var1x) {
-               var0.markForCharting(var1x);
-               var1.markForCharting(var1x);
-            }
+      public void endTick() {
+         this.first.endTick();
+         this.second.endTick();
+      }
 
-            public void pop() {
-               var0.pop();
-               var1.pop();
-            }
+      public void push(String var1) {
+         this.first.push(var1);
+         this.second.push(var1);
+      }
 
-            public void popPush(String var1x) {
-               var0.popPush(var1x);
-               var1.popPush(var1x);
-            }
+      public void push(Supplier<String> var1) {
+         this.first.push(var1);
+         this.second.push(var1);
+      }
 
-            public void popPush(Supplier<String> var1x) {
-               var0.popPush(var1x);
-               var1.popPush(var1x);
-            }
+      public void markForCharting(MetricCategory var1) {
+         this.first.markForCharting(var1);
+         this.second.markForCharting(var1);
+      }
 
-            public void incrementCounter(String var1x, int var2) {
-               var0.incrementCounter(var1x, var2);
-               var1.incrementCounter(var1x, var2);
-            }
+      public void pop() {
+         this.first.pop();
+         this.second.pop();
+      }
 
-            public void incrementCounter(Supplier<String> var1x, int var2) {
-               var0.incrementCounter(var1x, var2);
-               var1.incrementCounter(var1x, var2);
-            }
-         };
+      public void popPush(String var1) {
+         this.first.popPush(var1);
+         this.second.popPush(var1);
+      }
+
+      public void popPush(Supplier<String> var1) {
+         this.first.popPush(var1);
+         this.second.popPush(var1);
+      }
+
+      public void incrementCounter(String var1, int var2) {
+         this.first.incrementCounter(var1, var2);
+         this.second.incrementCounter(var1, var2);
+      }
+
+      public void incrementCounter(Supplier<String> var1, int var2) {
+         this.first.incrementCounter(var1, var2);
+         this.second.incrementCounter(var1, var2);
+      }
+
+      public void addZoneText(String var1) {
+         this.first.addZoneText(var1);
+         this.second.addZoneText(var1);
+      }
+
+      public void addZoneValue(long var1) {
+         this.first.addZoneValue(var1);
+         this.second.addZoneValue(var1);
+      }
+
+      public void setZoneColor(int var1) {
+         this.first.setZoneColor(var1);
+         this.second.setZoneColor(var1);
       }
    }
 }

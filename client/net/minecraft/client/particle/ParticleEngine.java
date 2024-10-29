@@ -33,7 +33,6 @@ import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.SpriteLoader;
@@ -54,6 +53,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.RenderShape;
@@ -186,6 +186,7 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.DRIPPING_DRIPSTONE_LAVA, (ParticleProvider.Sprite)(DripParticle::createDripstoneLavaHangParticle));
       this.register(ParticleTypes.FALLING_DRIPSTONE_LAVA, (ParticleProvider.Sprite)(DripParticle::createDripstoneLavaFallParticle));
       this.register(ParticleTypes.VIBRATION, VibrationSignalParticle.Provider::new);
+      this.register(ParticleTypes.TRAIL, TrailParticle.Provider::new);
       this.register(ParticleTypes.GLOW_SQUID_INK, (SpriteParticleRegistration)(SquidInkParticle.GlowInkProvider::new));
       this.register(ParticleTypes.GLOW, (SpriteParticleRegistration)(GlowParticle.GlowSquidProvider::new));
       this.register(ParticleTypes.WAX_ON, (SpriteParticleRegistration)(GlowParticle.WaxOnProvider::new));
@@ -202,6 +203,7 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.RAID_OMEN, (SpriteParticleRegistration)(SpellParticle.Provider::new));
       this.register(ParticleTypes.TRIAL_OMEN, (SpriteParticleRegistration)(SpellParticle.Provider::new));
       this.register(ParticleTypes.OMINOUS_SPAWNING, (SpriteParticleRegistration)(FlyStraightTowardsParticle.OminousSpawnProvider::new));
+      this.register(ParticleTypes.BLOCK_CRUMBLE, (ParticleProvider)(new TerrainParticle.CrumblingProvider()));
    }
 
    private <T extends ParticleOptions> void register(ParticleType<T> var1, ParticleProvider<T> var2) {
@@ -227,14 +229,14 @@ public class ParticleEngine implements PreparableReloadListener {
       this.providers.put(BuiltInRegistries.PARTICLE_TYPE.getId(var1), var2.create(var3));
    }
 
-   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6) {
-      CompletableFuture var7 = CompletableFuture.supplyAsync(() -> {
+   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, Executor var3, Executor var4) {
+      CompletableFuture var5 = CompletableFuture.supplyAsync(() -> {
          return PARTICLE_LISTER.listMatchingResources(var2);
-      }, var5).thenCompose((var2x) -> {
-         ArrayList var3 = new ArrayList(var2x.size());
-         var2x.forEach((var3x, var4) -> {
-            ResourceLocation var5x = PARTICLE_LISTER.fileToId(var3x);
-            var3.add(CompletableFuture.supplyAsync(() -> {
+      }, var3).thenCompose((var2x) -> {
+         ArrayList var3x = new ArrayList(var2x.size());
+         var2x.forEach((var3xx, var4) -> {
+            ResourceLocation var5 = PARTICLE_LISTER.fileToId(var3xx);
+            var3x.add(CompletableFuture.supplyAsync(() -> {
                record 1ParticleDefinition(ResourceLocation id, Optional<List<ResourceLocation>> sprites) {
                   _ParticleDefinition/* $FF was: 1ParticleDefinition*/(ResourceLocation var1, Optional<List<ResourceLocation>> var2) {
                      super();
@@ -251,54 +253,53 @@ public class ParticleEngine implements PreparableReloadListener {
                   }
                }
 
-               return new 1ParticleDefinition(var5x, this.loadParticleDescription(var5x, var4));
-            }, var5));
+               return new 1ParticleDefinition(var5, this.loadParticleDescription(var5, var4));
+            }, var3));
          });
-         return Util.sequence(var3);
+         return Util.sequence(var3x);
       });
-      CompletableFuture var8 = SpriteLoader.create(this.textureAtlas).loadAndStitch(var2, PARTICLES_ATLAS_INFO, 0, var5).thenCompose(SpriteLoader.Preparations::waitForUpload);
-      CompletableFuture var10000 = CompletableFuture.allOf(var8, var7);
+      CompletableFuture var6 = SpriteLoader.create(this.textureAtlas).loadAndStitch(var2, PARTICLES_ATLAS_INFO, 0, var3).thenCompose(SpriteLoader.Preparations::waitForUpload);
+      CompletableFuture var10000 = CompletableFuture.allOf(var6, var5);
       Objects.requireNonNull(var1);
-      return var10000.thenCompose(var1::wait).thenAcceptAsync((var4x) -> {
+      return var10000.thenCompose(var1::wait).thenAcceptAsync((var3x) -> {
          this.clearParticles();
-         var4.startTick();
+         ProfilerFiller var4 = Profiler.get();
          var4.push("upload");
-         SpriteLoader.Preparations var5 = (SpriteLoader.Preparations)var8.join();
-         this.textureAtlas.upload(var5);
+         SpriteLoader.Preparations var5x = (SpriteLoader.Preparations)var6.join();
+         this.textureAtlas.upload(var5x);
          var4.popPush("bindSpriteSets");
-         HashSet var6 = new HashSet();
-         TextureAtlasSprite var7x = var5.missing();
-         ((List)var7.join()).forEach((var4xx) -> {
-            Optional var5x = var4xx.sprites();
-            if (!var5x.isEmpty()) {
-               ArrayList var6x = new ArrayList();
-               Iterator var7 = ((List)var5x.get()).iterator();
+         HashSet var6x = new HashSet();
+         TextureAtlasSprite var7 = var5x.missing();
+         ((List)var5.join()).forEach((var4x) -> {
+            Optional var5 = var4x.sprites();
+            if (!var5.isEmpty()) {
+               ArrayList var6 = new ArrayList();
+               Iterator var7x = ((List)var5.get()).iterator();
 
-               while(var7.hasNext()) {
-                  ResourceLocation var8 = (ResourceLocation)var7.next();
-                  TextureAtlasSprite var9 = (TextureAtlasSprite)var5.regions().get(var8);
+               while(var7x.hasNext()) {
+                  ResourceLocation var8 = (ResourceLocation)var7x.next();
+                  TextureAtlasSprite var9 = (TextureAtlasSprite)var5x.regions().get(var8);
                   if (var9 == null) {
-                     var6.add(var8);
-                     var6x.add(var7x);
+                     var6x.add(var8);
+                     var6.add(var7);
                   } else {
-                     var6x.add(var9);
+                     var6.add(var9);
                   }
                }
 
-               if (var6x.isEmpty()) {
-                  var6x.add(var7x);
+               if (var6.isEmpty()) {
+                  var6.add(var7);
                }
 
-               ((MutableSpriteSet)this.spriteSets.get(var4xx.id())).rebind(var6x);
+               ((MutableSpriteSet)this.spriteSets.get(var4x.id())).rebind(var6);
             }
          });
-         if (!var6.isEmpty()) {
-            LOGGER.warn("Missing particle sprites: {}", var6.stream().sorted().map(ResourceLocation::toString).collect(Collectors.joining(",")));
+         if (!var6x.isEmpty()) {
+            LOGGER.warn("Missing particle sprites: {}", var6x.stream().sorted().map(ResourceLocation::toString).collect(Collectors.joining(",")));
          }
 
          var4.pop();
-         var4.endTick();
-      }, var6);
+      }, var4);
    }
 
    public void close() {
@@ -349,9 +350,9 @@ public class ParticleEngine implements PreparableReloadListener {
 
    public void tick() {
       this.particles.forEach((var1x, var2x) -> {
-         this.level.getProfiler().push(var1x.toString());
+         Profiler.get().push(var1x.toString());
          this.tickParticleList(var2x);
-         this.level.getProfiler().pop();
+         Profiler.get().pop();
       });
       if (!this.trackingEmitters.isEmpty()) {
          ArrayList var1 = Lists.newArrayList();
@@ -440,7 +441,6 @@ public class ParticleEngine implements PreparableReloadListener {
                } while(var6 == null);
             } while(var6.isEmpty());
 
-            RenderSystem.setShader(GameRenderer::getParticleShader);
             Tesselator var7 = Tesselator.getInstance();
             var8 = var5.begin(var7, this.textureManager);
          } while(var8 == null);
@@ -561,7 +561,7 @@ public class ParticleEngine implements PreparableReloadListener {
    }
 
    static {
-      RENDER_ORDER = ImmutableList.of(ParticleRenderType.TERRAIN_SHEET, ParticleRenderType.PARTICLE_SHEET_OPAQUE, ParticleRenderType.PARTICLE_SHEET_LIT, ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT, ParticleRenderType.CUSTOM);
+      RENDER_ORDER = ImmutableList.of(ParticleRenderType.TERRAIN_SHEET, ParticleRenderType.PARTICLE_SHEET_OPAQUE, ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT, ParticleRenderType.CUSTOM);
    }
 
    @FunctionalInterface

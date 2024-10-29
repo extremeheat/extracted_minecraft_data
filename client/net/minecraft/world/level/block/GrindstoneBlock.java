@@ -150,13 +150,12 @@ public class GrindstoneBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
-      } else {
+      if (!var2.isClientSide) {
          var4.openMenu(var1.getMenuProvider(var2, var3));
          var4.awardStat(Stats.INTERACT_WITH_GRINDSTONE);
-         return InteractionResult.CONSUME;
       }
+
+      return InteractionResult.SUCCESS;
    }
 
    protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {

@@ -1,18 +1,18 @@
 package net.minecraft.client.model;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.GuardianRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.phys.Vec3;
 
-public class GuardianModel extends HierarchicalModel<Guardian> {
+public class GuardianModel extends EntityModel<GuardianRenderState> {
+   public static final MeshTransformer ELDER_GUARDIAN_SCALE = MeshTransformer.scaling(2.35F);
    private static final float[] SPIKE_X_ROT = new float[]{1.75F, 0.25F, 0.0F, 0.0F, 0.5F, 0.5F, 0.5F, 0.5F, 1.25F, 0.75F, 0.0F, 0.0F};
    private static final float[] SPIKE_Y_ROT = new float[]{0.0F, 0.0F, 0.0F, 0.0F, 0.25F, 1.75F, 1.25F, 0.75F, 0.0F, 0.0F, 0.0F, 0.0F};
    private static final float[] SPIKE_Z_ROT = new float[]{0.0F, 0.0F, 0.25F, 1.75F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.75F, 1.25F};
@@ -23,16 +23,13 @@ public class GuardianModel extends HierarchicalModel<Guardian> {
    private static final String TAIL_0 = "tail0";
    private static final String TAIL_1 = "tail1";
    private static final String TAIL_2 = "tail2";
-   private final ModelPart root;
    private final ModelPart head;
    private final ModelPart eye;
-   private final ModelPart[] spikeParts;
+   private final ModelPart[] spikeParts = new ModelPart[12];
    private final ModelPart[] tailParts;
 
    public GuardianModel(ModelPart var1) {
-      super();
-      this.root = var1;
-      this.spikeParts = new ModelPart[12];
+      super(var1);
       this.head = var1.getChild("head");
 
       for(int var2 = 0; var2 < this.spikeParts.length; ++var2) {
@@ -73,43 +70,36 @@ public class GuardianModel extends HierarchicalModel<Guardian> {
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   public ModelPart root() {
-      return this.root;
+   public static LayerDefinition createElderGuardianLayer() {
+      return createBodyLayer().apply(ELDER_GUARDIAN_SCALE);
    }
 
-   public void setupAnim(Guardian var1, float var2, float var3, float var4, float var5, float var6) {
-      float var7 = var4 - (float)var1.tickCount;
-      this.head.yRot = var5 * 0.017453292F;
-      this.head.xRot = var6 * 0.017453292F;
-      float var8 = (1.0F - var1.getSpikesAnimation(var7)) * 0.55F;
-      this.setupSpikes(var4, var8);
-      Object var9 = Minecraft.getInstance().getCameraEntity();
-      if (var1.hasActiveAttackTarget()) {
-         var9 = var1.getActiveAttackTarget();
-      }
-
-      if (var9 != null) {
-         Vec3 var10 = ((Entity)var9).getEyePosition(0.0F);
-         Vec3 var11 = var1.getEyePosition(0.0F);
-         double var12 = var10.y - var11.y;
-         if (var12 > 0.0) {
+   public void setupAnim(GuardianRenderState var1) {
+      super.setupAnim(var1);
+      this.head.yRot = var1.yRot * 0.017453292F;
+      this.head.xRot = var1.xRot * 0.017453292F;
+      float var2 = (1.0F - var1.spikesAnimation) * 0.55F;
+      this.setupSpikes(var1.ageInTicks, var2);
+      if (var1.lookAtPosition != null && var1.lookDirection != null) {
+         double var3 = var1.lookAtPosition.y - var1.eyePosition.y;
+         if (var3 > 0.0) {
             this.eye.y = 0.0F;
          } else {
             this.eye.y = 1.0F;
          }
 
-         Vec3 var14 = var1.getViewVector(0.0F);
-         var14 = new Vec3(var14.x, 0.0, var14.z);
-         Vec3 var15 = (new Vec3(var11.x - var10.x, 0.0, var11.z - var10.z)).normalize().yRot(1.5707964F);
-         double var16 = var14.dot(var15);
-         this.eye.x = Mth.sqrt((float)Math.abs(var16)) * 2.0F * (float)Math.signum(var16);
+         Vec3 var5 = var1.lookDirection;
+         var5 = new Vec3(var5.x, 0.0, var5.z);
+         Vec3 var6 = (new Vec3(var1.eyePosition.x - var1.lookAtPosition.x, 0.0, var1.eyePosition.z - var1.lookAtPosition.z)).normalize().yRot(1.5707964F);
+         double var7 = var5.dot(var6);
+         this.eye.x = Mth.sqrt((float)Math.abs(var7)) * 2.0F * (float)Math.signum(var7);
       }
 
       this.eye.visible = true;
-      float var18 = var1.getTailAnimation(var7);
-      this.tailParts[0].yRot = Mth.sin(var18) * 3.1415927F * 0.05F;
-      this.tailParts[1].yRot = Mth.sin(var18) * 3.1415927F * 0.1F;
-      this.tailParts[2].yRot = Mth.sin(var18) * 3.1415927F * 0.15F;
+      float var9 = var1.tailAnimation;
+      this.tailParts[0].yRot = Mth.sin(var9) * 3.1415927F * 0.05F;
+      this.tailParts[1].yRot = Mth.sin(var9) * 3.1415927F * 0.1F;
+      this.tailParts[2].yRot = Mth.sin(var9) * 3.1415927F * 0.15F;
    }
 
    private void setupSpikes(float var1, float var2) {

@@ -12,7 +12,11 @@ public class DefaultPlayerSkin {
    }
 
    public static ResourceLocation getDefaultTexture() {
-      return DEFAULT_SKINS[6].texture();
+      return getDefaultSkin().texture();
+   }
+
+   public static PlayerSkin getDefaultSkin() {
+      return DEFAULT_SKINS[6];
    }
 
    public static PlayerSkin get(UUID var0) {

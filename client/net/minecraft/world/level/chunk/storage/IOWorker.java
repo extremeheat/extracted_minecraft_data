@@ -1,15 +1,14 @@
 package net.minecraft.world.level.chunk.storage;
 
-import com.google.common.collect.Maps;
-import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.BitSet;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SequencedMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
@@ -23,7 +22,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.visitors.CollectFields;
 import net.minecraft.nbt.visitors.FieldSelector;
 import net.minecraft.util.Unit;
-import net.minecraft.util.thread.ProcessorMailbox;
+import net.minecraft.util.thread.PriorityConsecutiveExecutor;
 import net.minecraft.util.thread.StrictQueue;
 import net.minecraft.world.level.ChunkPos;
 import org.slf4j.Logger;
@@ -31,16 +30,16 @@ import org.slf4j.Logger;
 public class IOWorker implements ChunkScanAccess, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final AtomicBoolean shutdownRequested = new AtomicBoolean();
-   private final ProcessorMailbox<StrictQueue.IntRunnable> mailbox;
+   private final PriorityConsecutiveExecutor consecutiveExecutor;
    private final RegionFileStorage storage;
-   private final Map<ChunkPos, PendingStore> pendingWrites = Maps.newLinkedHashMap();
+   private final SequencedMap<ChunkPos, PendingStore> pendingWrites = new LinkedHashMap();
    private final Long2ObjectLinkedOpenHashMap<CompletableFuture<BitSet>> regionCacheForBlender = new Long2ObjectLinkedOpenHashMap();
    private static final int REGION_CACHE_SIZE = 1024;
 
    protected IOWorker(RegionStorageInfo var1, Path var2, boolean var3) {
       super();
       this.storage = new RegionFileStorage(var1, var2, var3);
-      this.mailbox = new ProcessorMailbox(new StrictQueue.FixedPriorityQueue(IOWorker.Priority.values().length), Util.ioPool(), "IOWorker-" + var1.type());
+      this.consecutiveExecutor = new PriorityConsecutiveExecutor(IOWorker.Priority.values().length, Util.ioPool(), "IOWorker-" + var1.type());
    }
 
    public boolean isOldChunkAround(ChunkPos var1, int var2) {
@@ -121,27 +120,34 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    }
 
    public CompletableFuture<Void> store(ChunkPos var1, @Nullable CompoundTag var2) {
+      return this.store(var1, () -> {
+         return var2;
+      });
+   }
+
+   public CompletableFuture<Void> store(ChunkPos var1, Supplier<CompoundTag> var2) {
       return this.submitTask(() -> {
-         PendingStore var3 = (PendingStore)this.pendingWrites.computeIfAbsent(var1, (var1x) -> {
-            return new PendingStore(var2);
+         CompoundTag var3 = (CompoundTag)var2.get();
+         PendingStore var4 = (PendingStore)this.pendingWrites.computeIfAbsent(var1, (var1x) -> {
+            return new PendingStore(var3);
          });
-         var3.data = var2;
-         return Either.left(var3.result);
+         var4.data = var3;
+         return var4.result;
       }).thenCompose(Function.identity());
    }
 
    public CompletableFuture<Optional<CompoundTag>> loadAsync(ChunkPos var1) {
-      return this.submitTask(() -> {
+      return this.submitThrowingTask(() -> {
          PendingStore var2 = (PendingStore)this.pendingWrites.get(var1);
          if (var2 != null) {
-            return Either.left(Optional.ofNullable(var2.copyData()));
+            return Optional.ofNullable(var2.copyData());
          } else {
             try {
                CompoundTag var3 = this.storage.read(var1);
-               return Either.left(Optional.ofNullable(var3));
+               return Optional.ofNullable(var3);
             } catch (Exception var4) {
                LOGGER.warn("Failed to read chunk {}", var1, var4);
-               return Either.right(var4);
+               throw var4;
             }
          }
       });
@@ -149,31 +155,31 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
 
    public CompletableFuture<Void> synchronize(boolean var1) {
       CompletableFuture var2 = this.submitTask(() -> {
-         return Either.left(CompletableFuture.allOf((CompletableFuture[])this.pendingWrites.values().stream().map((var0) -> {
+         return CompletableFuture.allOf((CompletableFuture[])this.pendingWrites.values().stream().map((var0) -> {
             return var0.result;
          }).toArray((var0) -> {
             return new CompletableFuture[var0];
-         })));
+         }));
       }).thenCompose(Function.identity());
       return var1 ? var2.thenCompose((var1x) -> {
-         return this.submitTask(() -> {
+         return this.submitThrowingTask(() -> {
             try {
                this.storage.flush();
-               return Either.left((Object)null);
+               return null;
             } catch (Exception var2) {
                LOGGER.warn("Failed to synchronize chunks", var2);
-               return Either.right(var2);
+               throw var2;
             }
          });
       }) : var2.thenCompose((var1x) -> {
          return this.submitTask(() -> {
-            return Either.left((Object)null);
+            return null;
          });
       });
    }
 
    public CompletableFuture<Void> scanChunk(ChunkPos var1, StreamTagVisitor var2) {
-      return this.submitTask(() -> {
+      return this.submitThrowingTask(() -> {
          try {
             PendingStore var3 = (PendingStore)this.pendingWrites.get(var1);
             if (var3 != null) {
@@ -184,38 +190,48 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
                this.storage.scanChunk(var1, var2);
             }
 
-            return Either.left((Object)null);
+            return null;
          } catch (Exception var4) {
             LOGGER.warn("Failed to bulk scan chunk {}", var1, var4);
-            return Either.right(var4);
+            throw var4;
          }
       });
    }
 
-   private <T> CompletableFuture<T> submitTask(Supplier<Either<T, Exception>> var1) {
-      return this.mailbox.askEither((var2) -> {
-         return new StrictQueue.IntRunnable(IOWorker.Priority.FOREGROUND.ordinal(), () -> {
-            if (!this.shutdownRequested.get()) {
-               var2.tell((Either)var1.get());
+   private <T> CompletableFuture<T> submitThrowingTask(ThrowingSupplier<T> var1) {
+      return this.consecutiveExecutor.scheduleWithResult(IOWorker.Priority.FOREGROUND.ordinal(), (var2) -> {
+         if (!this.shutdownRequested.get()) {
+            try {
+               var2.complete(var1.get());
+            } catch (Exception var4) {
+               var2.completeExceptionally(var4);
             }
+         }
 
-            this.tellStorePending();
-         });
+         this.tellStorePending();
+      });
+   }
+
+   private <T> CompletableFuture<T> submitTask(Supplier<T> var1) {
+      return this.consecutiveExecutor.scheduleWithResult(IOWorker.Priority.FOREGROUND.ordinal(), (var2) -> {
+         if (!this.shutdownRequested.get()) {
+            var2.complete(var1.get());
+         }
+
+         this.tellStorePending();
       });
    }
 
    private void storePendingChunk() {
-      if (!this.pendingWrites.isEmpty()) {
-         Iterator var1 = this.pendingWrites.entrySet().iterator();
-         Map.Entry var2 = (Map.Entry)var1.next();
-         var1.remove();
-         this.runStore((ChunkPos)var2.getKey(), (PendingStore)var2.getValue());
+      Map.Entry var1 = this.pendingWrites.pollFirstEntry();
+      if (var1 != null) {
+         this.runStore((ChunkPos)var1.getKey(), (PendingStore)var1.getValue());
          this.tellStorePending();
       }
    }
 
    private void tellStorePending() {
-      this.mailbox.tell(new StrictQueue.IntRunnable(IOWorker.Priority.BACKGROUND.ordinal(), this::storePendingChunk));
+      this.consecutiveExecutor.schedule(new StrictQueue.RunnableWithPriority(IOWorker.Priority.BACKGROUND.ordinal(), this::storePendingChunk));
    }
 
    private void runStore(ChunkPos var1, PendingStore var2) {
@@ -231,12 +247,8 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
 
    public void close() throws IOException {
       if (this.shutdownRequested.compareAndSet(false, true)) {
-         this.mailbox.ask((var0) -> {
-            return new StrictQueue.IntRunnable(IOWorker.Priority.SHUTDOWN.ordinal(), () -> {
-               var0.tell(Unit.INSTANCE);
-            });
-         }).join();
-         this.mailbox.close();
+         this.waitForShutdown();
+         this.consecutiveExecutor.close();
 
          try {
             this.storage.close();
@@ -245,6 +257,12 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
          }
 
       }
+   }
+
+   private void waitForShutdown() {
+      this.consecutiveExecutor.scheduleWithResult(IOWorker.Priority.SHUTDOWN.ordinal(), (var0) -> {
+         var0.complete(Unit.INSTANCE);
+      }).join();
    }
 
    public RegionStorageInfo storageInfo() {
@@ -263,6 +281,12 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
       private static Priority[] $values() {
          return new Priority[]{FOREGROUND, BACKGROUND, SHUTDOWN};
       }
+   }
+
+   @FunctionalInterface
+   interface ThrowingSupplier<T> {
+      @Nullable
+      T get() throws Exception;
    }
 
    private static class PendingStore {

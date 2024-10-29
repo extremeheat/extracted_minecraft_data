@@ -10,7 +10,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.protocol.common.custom.BreezeDebugPayload;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
@@ -18,11 +18,11 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 public class BreezeDebugRenderer {
-   private static final int JUMP_TARGET_LINE_COLOR = FastColor.ARGB32.color(255, 255, 100, 255);
-   private static final int TARGET_LINE_COLOR = FastColor.ARGB32.color(255, 100, 255, 255);
-   private static final int INNER_CIRCLE_COLOR = FastColor.ARGB32.color(255, 0, 255, 0);
-   private static final int MIDDLE_CIRCLE_COLOR = FastColor.ARGB32.color(255, 255, 165, 0);
-   private static final int OUTER_CIRCLE_COLOR = FastColor.ARGB32.color(255, 255, 0, 0);
+   private static final int JUMP_TARGET_LINE_COLOR = ARGB.color(255, 255, 100, 255);
+   private static final int TARGET_LINE_COLOR = ARGB.color(255, 100, 255, 255);
+   private static final int INNER_CIRCLE_COLOR = ARGB.color(255, 0, 255, 0);
+   private static final int MIDDLE_CIRCLE_COLOR = ARGB.color(255, 255, 165, 0);
+   private static final int OUTER_CIRCLE_COLOR = ARGB.color(255, 255, 0, 0);
    private static final int CIRCLE_VERTICES = 20;
    private static final float SEGMENT_SIZE_RADIANS = 0.31415927F;
    private final Minecraft minecraft;
@@ -42,13 +42,13 @@ public class BreezeDebugRenderer {
          var11.map(BreezeDebugPayload.BreezeInfo::attackTarget).map((var1x) -> {
             return var9.level().getEntity(var1x);
          }).map((var1x) -> {
-            return var1x.getPosition(this.minecraft.getTimer().getGameTimeDeltaPartialTick(true));
+            return var1x.getPosition(this.minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(true));
          }).ifPresent((var9x) -> {
             drawLine(var1, var2, var3, var5, var7, var10.position(), var9x, TARGET_LINE_COLOR);
             Vec3 var10x = var9x.add(0.0, 0.009999999776482582, 0.0);
             drawCircle(var1.last().pose(), var3, var5, var7, var2.getBuffer(RenderType.debugLineStrip(2.0)), var10x, 4.0F, INNER_CIRCLE_COLOR);
             drawCircle(var1.last().pose(), var3, var5, var7, var2.getBuffer(RenderType.debugLineStrip(2.0)), var10x, 8.0F, MIDDLE_CIRCLE_COLOR);
-            drawCircle(var1.last().pose(), var3, var5, var7, var2.getBuffer(RenderType.debugLineStrip(2.0)), var10x, 20.0F, OUTER_CIRCLE_COLOR);
+            drawCircle(var1.last().pose(), var3, var5, var7, var2.getBuffer(RenderType.debugLineStrip(2.0)), var10x, 24.0F, OUTER_CIRCLE_COLOR);
          });
          var11.map(BreezeDebugPayload.BreezeInfo::jumpTarget).ifPresent((var9x) -> {
             drawLine(var1, var2, var3, var5, var7, var10.position(), var9x.getCenter(), JUMP_TARGET_LINE_COLOR);

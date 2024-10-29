@@ -15,7 +15,7 @@ public class StopHoldingItemIfNoLongerAdmiring {
          return var0.group(var0.absent(MemoryModuleType.ADMIRING_ITEM)).apply(var0, (var0x) -> {
             return (var0, var1, var2) -> {
                if (!var1.getOffhandItem().isEmpty() && !var1.getOffhandItem().is(Items.SHIELD)) {
-                  PiglinAi.stopHoldingOffHandItem(var1, true);
+                  PiglinAi.stopHoldingOffHandItem(var0, var1, true);
                   return true;
                } else {
                   return false;

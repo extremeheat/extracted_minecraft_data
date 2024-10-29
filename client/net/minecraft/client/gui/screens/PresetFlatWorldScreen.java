@@ -19,9 +19,11 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.screens.worldselection.WorldCreationContext;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
@@ -180,9 +182,9 @@ public class PresetFlatWorldScreen extends Screen {
       WorldCreationContext var1 = this.parent.parent.getUiState().getSettings();
       RegistryAccess.Frozen var2 = var1.worldgenLoadContext();
       FeatureFlagSet var3 = var1.dataConfiguration().enabledFeatures();
-      HolderLookup.RegistryLookup var4 = var2.lookupOrThrow(Registries.BIOME);
-      HolderLookup.RegistryLookup var5 = var2.lookupOrThrow(Registries.STRUCTURE_SET);
-      HolderLookup.RegistryLookup var6 = var2.lookupOrThrow(Registries.PLACED_FEATURE);
+      Registry var4 = var2.lookupOrThrow(Registries.BIOME);
+      Registry var5 = var2.lookupOrThrow(Registries.STRUCTURE_SET);
+      Registry var6 = var2.lookupOrThrow(Registries.PLACED_FEATURE);
       HolderLookup.RegistryLookup var7 = var2.lookupOrThrow(Registries.BLOCK).filterFeatures(var3);
       this.export.setValue(save(this.parent.settings()));
       this.settings = this.parent.settings();
@@ -236,7 +238,7 @@ public class PresetFlatWorldScreen extends Screen {
    private class PresetsList extends ObjectSelectionList<Entry> {
       public PresetsList(final RegistryAccess var2, final FeatureFlagSet var3) {
          super(PresetFlatWorldScreen.this.minecraft, PresetFlatWorldScreen.this.width, PresetFlatWorldScreen.this.height - 117, 80, 24);
-         Iterator var4 = var2.registryOrThrow(Registries.FLAT_LEVEL_GENERATOR_PRESET).getTagOrEmpty(FlatLevelGeneratorPresetTags.VISIBLE).iterator();
+         Iterator var4 = var2.lookupOrThrow(Registries.FLAT_LEVEL_GENERATOR_PRESET).getTagOrEmpty(FlatLevelGeneratorPresetTags.VISIBLE).iterator();
 
          while(var4.hasNext()) {
             Holder var5 = (Holder)var4.next();
@@ -309,7 +311,7 @@ public class PresetFlatWorldScreen extends Screen {
          }
 
          private void blitSlotBg(GuiGraphics var1, int var2, int var3) {
-            var1.blitSprite((ResourceLocation)PresetFlatWorldScreen.SLOT_SPRITE, var2, var3, 0, 18, 18);
+            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)PresetFlatWorldScreen.SLOT_SPRITE, var2, var3, 18, 18);
          }
 
          public Component getNarration() {

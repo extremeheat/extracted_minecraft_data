@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.reporting;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.report.AbuseReportLimits;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -26,6 +25,7 @@ import net.minecraft.client.multiplayer.chat.ChatTrustLevel;
 import net.minecraft.client.multiplayer.chat.LoggedChatMessage;
 import net.minecraft.client.multiplayer.chat.report.ChatReport;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.CommonComponents;
@@ -289,9 +289,7 @@ public class ChatSelectionScreen extends Screen {
 
          private void renderSelectedCheckmark(GuiGraphics var1, int var2, int var3, int var4) {
             int var6 = var2 + (var4 - 8) / 2;
-            RenderSystem.enableBlend();
-            var1.blitSprite(ChatSelectionScreen.CHECKMARK_SPRITE, var3, var6, 9, 8);
-            RenderSystem.disableBlend();
+            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ChatSelectionScreen.CHECKMARK_SPRITE, var3, var6, 9, 8);
          }
 
          private int getMaximumTextWidth() {
@@ -356,7 +354,7 @@ public class ChatSelectionScreen extends Screen {
          public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
             int var11 = var4 - 12 + 4;
             int var12 = var3 + (var6 - 12) / 2;
-            PlayerFaceRenderer.draw(var1, (PlayerSkin)((PlayerSkin)this.skin.get()), var11, var12, 12);
+            PlayerFaceRenderer.draw(var1, (PlayerSkin)this.skin.get(), var11, var12, 12);
             int var10000 = var3 + 1;
             Objects.requireNonNull(ChatSelectionScreen.this.font);
             int var13 = var10000 + (var6 - 9) / 2;
@@ -416,7 +414,6 @@ public class ChatSelectionScreen extends Screen {
       }
 
       public class DividerEntry extends Entry {
-         private static final int COLOR = -6250336;
          private final Component text;
 
          public DividerEntry(final Component var2) {

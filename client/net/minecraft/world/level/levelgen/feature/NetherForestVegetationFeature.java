@@ -23,13 +23,13 @@ public class NetherForestVegetationFeature extends Feature<NetherForestVegetatio
          return false;
       } else {
          int var7 = var3.getY();
-         if (var7 >= var2.getMinBuildHeight() + 1 && var7 + 1 < var2.getMaxBuildHeight()) {
+         if (var7 >= var2.getMinY() + 1 && var7 + 1 <= var2.getMaxY()) {
             int var8 = 0;
 
             for(int var9 = 0; var9 < var5.spreadWidth * var5.spreadWidth; ++var9) {
                BlockPos var10 = var3.offset(var6.nextInt(var5.spreadWidth) - var6.nextInt(var5.spreadWidth), var6.nextInt(var5.spreadHeight) - var6.nextInt(var5.spreadHeight), var6.nextInt(var5.spreadWidth) - var6.nextInt(var5.spreadWidth));
                BlockState var11 = var5.stateProvider.getState(var6, var10);
-               if (var2.isEmptyBlock(var10) && var10.getY() > var2.getMinBuildHeight() && var11.canSurvive(var2, var10)) {
+               if (var2.isEmptyBlock(var10) && var10.getY() > var2.getMinY() && var11.canSurvive(var2, var10)) {
                   var2.setBlock(var10, var11, 2);
                   ++var8;
                }

@@ -7,16 +7,16 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.client.renderer.entity.state.SquidRenderState;
 
-public class SquidModel<T extends Entity> extends HierarchicalModel<T> {
+public class SquidModel extends EntityModel<SquidRenderState> {
+   public static final MeshTransformer BABY_TRANSFORMER = MeshTransformer.scaling(0.5F);
    private final ModelPart[] tentacles = new ModelPart[8];
-   private final ModelPart root;
 
    public SquidModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       Arrays.setAll(this.tentacles, (var1x) -> {
          return var1.getChild(createTentacleName(var1x));
       });
@@ -48,18 +48,15 @@ public class SquidModel<T extends Entity> extends HierarchicalModel<T> {
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      ModelPart[] var7 = this.tentacles;
-      int var8 = var7.length;
+   public void setupAnim(SquidRenderState var1) {
+      super.setupAnim(var1);
+      ModelPart[] var2 = this.tentacles;
+      int var3 = var2.length;
 
-      for(int var9 = 0; var9 < var8; ++var9) {
-         ModelPart var10 = var7[var9];
-         var10.xRot = var4;
+      for(int var4 = 0; var4 < var3; ++var4) {
+         ModelPart var5 = var2[var4];
+         var5.xRot = var1.tentacleAngle;
       }
 
-   }
-
-   public ModelPart root() {
-      return this.root;
    }
 }

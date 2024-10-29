@@ -6,8 +6,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -17,6 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class EyeOfEnder extends Entity implements ItemSupplier {
+   private static final float MIN_CAMERA_DISTANCE_SQUARED = 12.25F;
    private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK;
    private double tx;
    private double ty;
@@ -51,13 +54,17 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
    }
 
    public boolean shouldRenderAtSqrDistance(double var1) {
-      double var3 = this.getBoundingBox().getSize() * 4.0;
-      if (Double.isNaN(var3)) {
-         var3 = 4.0;
-      }
+      if (this.tickCount < 2 && var1 < 12.25) {
+         return false;
+      } else {
+         double var3 = this.getBoundingBox().getSize() * 4.0;
+         if (Double.isNaN(var3)) {
+            var3 = 4.0;
+         }
 
-      var3 *= 64.0;
-      return var1 < var3 * var3;
+         var3 *= 64.0;
+         return var1 < var3 * var3;
+      }
    }
 
    public void signalTo(BlockPos var1) {
@@ -168,6 +175,10 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
    }
 
    public boolean isAttackable() {
+      return false;
+   }
+
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
       return false;
    }
 

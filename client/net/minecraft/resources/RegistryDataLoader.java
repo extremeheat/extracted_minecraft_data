@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +24,11 @@ import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 import net.minecraft.Util;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistrationInfo;
 import net.minecraft.core.Registry;
@@ -38,17 +43,21 @@ import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceProvider;
+import net.minecraft.tags.TagLoader;
+import net.minecraft.tags.TagNetworkSerialization;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.animal.WolfVariant;
 import net.minecraft.world.entity.decoration.PaintingVariant;
+import net.minecraft.world.item.Instrument;
 import net.minecraft.world.item.JukeboxSong;
-import net.minecraft.world.item.armortrim.TrimMaterial;
-import net.minecraft.world.item.armortrim.TrimPattern;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.providers.EnchantmentProvider;
+import net.minecraft.world.item.equipment.trim.TrimMaterial;
+import net.minecraft.world.item.equipment.trim.TrimPattern;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
 import net.minecraft.world.level.block.entity.BannerPattern;
+import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerConfig;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.DensityFunction;
@@ -67,6 +76,7 @@ import org.slf4j.Logger;
 
 public class RegistryDataLoader {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Comparator<ResourceKey<?>> ERROR_KEY_COMPARATOR = Comparator.comparing(ResourceKey::registry).thenComparing(ResourceKey::location);
    private static final RegistrationInfo NETWORK_REGISTRATION_INFO = new RegistrationInfo(Optional.empty(), Lifecycle.experimental());
    private static final Function<Optional<KnownPack>, RegistrationInfo> REGISTRATION_INFO_CACHE = Util.memoize((var0) -> {
       Lifecycle var1 = (Lifecycle)var0.map(KnownPack::isVanilla).map((var0x) -> {
@@ -82,19 +92,19 @@ public class RegistryDataLoader {
       super();
    }
 
-   public static RegistryAccess.Frozen load(ResourceManager var0, RegistryAccess var1, List<RegistryData<?>> var2) {
+   public static RegistryAccess.Frozen load(ResourceManager var0, List<HolderLookup.RegistryLookup<?>> var1, List<RegistryData<?>> var2) {
       return load((var1x, var2x) -> {
          var1x.loadFromResources(var0, var2x);
       }, var1, var2);
    }
 
-   public static RegistryAccess.Frozen load(Map<ResourceKey<? extends Registry<?>>, List<RegistrySynchronization.PackedRegistryEntry>> var0, ResourceProvider var1, RegistryAccess var2, List<RegistryData<?>> var3) {
+   public static RegistryAccess.Frozen load(Map<ResourceKey<? extends Registry<?>>, NetworkedRegistryData> var0, ResourceProvider var1, List<HolderLookup.RegistryLookup<?>> var2, List<RegistryData<?>> var3) {
       return load((var2x, var3x) -> {
          var2x.loadFromNetwork(var0, var1, var3x);
       }, var2, var3);
    }
 
-   private static RegistryAccess.Frozen load(LoadingFunction var0, RegistryAccess var1, List<RegistryData<?>> var2) {
+   private static RegistryAccess.Frozen load(LoadingFunction var0, List<HolderLookup.RegistryLookup<?>> var1, List<RegistryData<?>> var2) {
       HashMap var3 = new HashMap();
       List var4 = (List)var2.stream().map((var1x) -> {
          return var1x.create(Lifecycle.stable(), var3);
@@ -118,17 +128,16 @@ public class RegistryDataLoader {
 
       });
       if (!var3.isEmpty()) {
-         logErrors(var3);
-         throw new IllegalStateException("Failed to load registries due to above errors");
+         throw logErrors(var3);
       } else {
          return (new RegistryAccess.ImmutableRegistryAccess(var4.stream().map(Loader::registry).toList())).freeze();
       }
    }
 
-   private static RegistryOps.RegistryInfoLookup createContext(RegistryAccess var0, List<Loader<?>> var1) {
+   private static RegistryOps.RegistryInfoLookup createContext(List<HolderLookup.RegistryLookup<?>> var0, List<Loader<?>> var1) {
       final HashMap var2 = new HashMap();
-      var0.registries().forEach((var1x) -> {
-         var2.put(var1x.key(), createInfoForContextRegistry(var1x.value()));
+      var0.forEach((var1x) -> {
+         var2.put(var1x.key(), createInfoForContextRegistry(var1x));
       });
       var1.forEach((var1x) -> {
          var2.put(var1x.registry.key(), createInfoForNewRegistry(var1x.registry));
@@ -141,14 +150,19 @@ public class RegistryDataLoader {
    }
 
    private static <T> RegistryOps.RegistryInfo<T> createInfoForNewRegistry(WritableRegistry<T> var0) {
-      return new RegistryOps.RegistryInfo(var0.asLookup(), var0.createRegistrationLookup(), var0.registryLifecycle());
+      return new RegistryOps.RegistryInfo(var0, var0.createRegistrationLookup(), var0.registryLifecycle());
    }
 
-   private static <T> RegistryOps.RegistryInfo<T> createInfoForContextRegistry(Registry<T> var0) {
-      return new RegistryOps.RegistryInfo(var0.asLookup(), var0.asTagAddingLookup(), var0.registryLifecycle());
+   private static <T> RegistryOps.RegistryInfo<T> createInfoForContextRegistry(HolderLookup.RegistryLookup<T> var0) {
+      return new RegistryOps.RegistryInfo(var0, var0, var0.registryLifecycle());
    }
 
-   private static void logErrors(Map<ResourceKey<?>, Exception> var0) {
+   private static ReportedException logErrors(Map<ResourceKey<?>, Exception> var0) {
+      printFullDetailsToLog(var0);
+      return createReportWithBriefInfo(var0);
+   }
+
+   private static void printFullDetailsToLog(Map<ResourceKey<?>, Exception> var0) {
       StringWriter var1 = new StringWriter();
       PrintWriter var2 = new PrintWriter(var1);
       Map var3 = (Map)var0.entrySet().stream().collect(Collectors.groupingBy((var0x) -> {
@@ -165,6 +179,19 @@ public class RegistryDataLoader {
       });
       var2.flush();
       LOGGER.error("Registry loading errors:\n{}", var1);
+   }
+
+   private static ReportedException createReportWithBriefInfo(Map<ResourceKey<?>, Exception> var0) {
+      CrashReport var1 = CrashReport.forThrowable(new IllegalStateException("Failed to load registries due to errors"), "Registry Loading");
+      CrashReportCategory var2 = var1.addCategory("Loading info");
+      var2.setDetail("Errors", () -> {
+         StringBuilder var1 = new StringBuilder();
+         var0.entrySet().stream().sorted(Entry.comparingByKey(ERROR_KEY_COMPARATOR)).forEach((var1x) -> {
+            var1.append("\n\t\t").append(((ResourceKey)var1x.getKey()).registry()).append("/").append(((ResourceKey)var1x.getKey()).location()).append(": ").append(((Exception)var1x.getValue()).getMessage());
+         });
+         return var1.toString();
+      });
+      return new ReportedException(var1);
    }
 
    private static <E> void loadElementFromResource(WritableRegistry<E> var0, Decoder<E> var1, RegistryOps<JsonElement> var2, ResourceKey<E> var3, Resource var4, RegistrationInfo var5) throws IOException {
@@ -213,16 +240,17 @@ public class RegistryDataLoader {
          }
       }
 
+      TagLoader.loadTagsForRegistry(var0, var2);
    }
 
-   static <E> void loadContentsFromNetwork(Map<ResourceKey<? extends Registry<?>>, List<RegistrySynchronization.PackedRegistryEntry>> var0, ResourceProvider var1, RegistryOps.RegistryInfoLookup var2, WritableRegistry<E> var3, Decoder<E> var4, Map<ResourceKey<?>, Exception> var5) {
-      List var6 = (List)var0.get(var3.key());
+   static <E> void loadContentsFromNetwork(Map<ResourceKey<? extends Registry<?>>, NetworkedRegistryData> var0, ResourceProvider var1, RegistryOps.RegistryInfoLookup var2, WritableRegistry<E> var3, Decoder<E> var4, Map<ResourceKey<?>, Exception> var5) {
+      NetworkedRegistryData var6 = (NetworkedRegistryData)var0.get(var3.key());
       if (var6 != null) {
          RegistryOps var7 = RegistryOps.create(NbtOps.INSTANCE, (RegistryOps.RegistryInfoLookup)var2);
          RegistryOps var8 = RegistryOps.create(JsonOps.INSTANCE, (RegistryOps.RegistryInfoLookup)var2);
          String var9 = Registries.elementsDirPath(var3.key());
          FileToIdConverter var10 = FileToIdConverter.json(var9);
-         Iterator var11 = var6.iterator();
+         Iterator var11 = var6.elements.iterator();
 
          while(var11.hasNext()) {
             RegistrySynchronization.PackedRegistryEntry var12 = (RegistrySynchronization.PackedRegistryEntry)var11.next();
@@ -248,18 +276,38 @@ public class RegistryDataLoader {
             }
          }
 
+         TagLoader.loadTagsFromNetwork(var6.tags, var3);
       }
    }
 
    static {
-      WORLDGEN_REGISTRIES = List.of(new RegistryData(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC), new RegistryData(Registries.BIOME, Biome.DIRECT_CODEC), new RegistryData(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC), new RegistryData(Registries.CONFIGURED_CARVER, ConfiguredWorldCarver.DIRECT_CODEC), new RegistryData(Registries.CONFIGURED_FEATURE, ConfiguredFeature.DIRECT_CODEC), new RegistryData(Registries.PLACED_FEATURE, PlacedFeature.DIRECT_CODEC), new RegistryData(Registries.STRUCTURE, Structure.DIRECT_CODEC), new RegistryData(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC), new RegistryData(Registries.PROCESSOR_LIST, StructureProcessorType.DIRECT_CODEC), new RegistryData(Registries.TEMPLATE_POOL, StructureTemplatePool.DIRECT_CODEC), new RegistryData(Registries.NOISE_SETTINGS, NoiseGeneratorSettings.DIRECT_CODEC), new RegistryData(Registries.NOISE, NormalNoise.NoiseParameters.DIRECT_CODEC), new RegistryData(Registries.DENSITY_FUNCTION, DensityFunction.DIRECT_CODEC), new RegistryData(Registries.WORLD_PRESET, WorldPreset.DIRECT_CODEC), new RegistryData(Registries.FLAT_LEVEL_GENERATOR_PRESET, FlatLevelGeneratorPreset.DIRECT_CODEC), new RegistryData(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC), new RegistryData(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC), new RegistryData(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC, true), new RegistryData(Registries.PAINTING_VARIANT, PaintingVariant.DIRECT_CODEC, true), new RegistryData(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC), new RegistryData(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, MultiNoiseBiomeSourceParameterList.DIRECT_CODEC), new RegistryData(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC), new RegistryData(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC), new RegistryData(Registries.ENCHANTMENT_PROVIDER, EnchantmentProvider.DIRECT_CODEC), new RegistryData(Registries.JUKEBOX_SONG, JukeboxSong.DIRECT_CODEC));
+      WORLDGEN_REGISTRIES = List.of(new RegistryData(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC), new RegistryData(Registries.BIOME, Biome.DIRECT_CODEC), new RegistryData(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC), new RegistryData(Registries.CONFIGURED_CARVER, ConfiguredWorldCarver.DIRECT_CODEC), new RegistryData(Registries.CONFIGURED_FEATURE, ConfiguredFeature.DIRECT_CODEC), new RegistryData(Registries.PLACED_FEATURE, PlacedFeature.DIRECT_CODEC), new RegistryData(Registries.STRUCTURE, Structure.DIRECT_CODEC), new RegistryData(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC), new RegistryData(Registries.PROCESSOR_LIST, StructureProcessorType.DIRECT_CODEC), new RegistryData(Registries.TEMPLATE_POOL, StructureTemplatePool.DIRECT_CODEC), new RegistryData(Registries.NOISE_SETTINGS, NoiseGeneratorSettings.DIRECT_CODEC), new RegistryData(Registries.NOISE, NormalNoise.NoiseParameters.DIRECT_CODEC), new RegistryData(Registries.DENSITY_FUNCTION, DensityFunction.DIRECT_CODEC), new RegistryData(Registries.WORLD_PRESET, WorldPreset.DIRECT_CODEC), new RegistryData(Registries.FLAT_LEVEL_GENERATOR_PRESET, FlatLevelGeneratorPreset.DIRECT_CODEC), new RegistryData(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC), new RegistryData(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC), new RegistryData(Registries.TRIAL_SPAWNER_CONFIG, TrialSpawnerConfig.DIRECT_CODEC), new RegistryData(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC, true), new RegistryData(Registries.PAINTING_VARIANT, PaintingVariant.DIRECT_CODEC, true), new RegistryData(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC), new RegistryData(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, MultiNoiseBiomeSourceParameterList.DIRECT_CODEC), new RegistryData(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC), new RegistryData(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC), new RegistryData(Registries.ENCHANTMENT_PROVIDER, EnchantmentProvider.DIRECT_CODEC), new RegistryData(Registries.JUKEBOX_SONG, JukeboxSong.DIRECT_CODEC), new RegistryData(Registries.INSTRUMENT, Instrument.DIRECT_CODEC));
       DIMENSION_REGISTRIES = List.of(new RegistryData(Registries.LEVEL_STEM, LevelStem.CODEC));
-      SYNCHRONIZED_REGISTRIES = List.of(new RegistryData(Registries.BIOME, Biome.NETWORK_CODEC), new RegistryData(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC), new RegistryData(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC), new RegistryData(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC), new RegistryData(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC, true), new RegistryData(Registries.PAINTING_VARIANT, PaintingVariant.DIRECT_CODEC, true), new RegistryData(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC), new RegistryData(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC), new RegistryData(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC), new RegistryData(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC), new RegistryData(Registries.JUKEBOX_SONG, JukeboxSong.DIRECT_CODEC));
+      SYNCHRONIZED_REGISTRIES = List.of(new RegistryData(Registries.BIOME, Biome.NETWORK_CODEC), new RegistryData(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC), new RegistryData(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC), new RegistryData(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC), new RegistryData(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC, true), new RegistryData(Registries.PAINTING_VARIANT, PaintingVariant.DIRECT_CODEC, true), new RegistryData(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC), new RegistryData(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC), new RegistryData(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC), new RegistryData(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC), new RegistryData(Registries.JUKEBOX_SONG, JukeboxSong.DIRECT_CODEC), new RegistryData(Registries.INSTRUMENT, Instrument.DIRECT_CODEC));
    }
 
    @FunctionalInterface
    private interface LoadingFunction {
       void apply(Loader<?> var1, RegistryOps.RegistryInfoLookup var2);
+   }
+
+   public static record NetworkedRegistryData(List<RegistrySynchronization.PackedRegistryEntry> elements, TagNetworkSerialization.NetworkPayload tags) {
+      final List<RegistrySynchronization.PackedRegistryEntry> elements;
+      final TagNetworkSerialization.NetworkPayload tags;
+
+      public NetworkedRegistryData(List<RegistrySynchronization.PackedRegistryEntry> var1, TagNetworkSerialization.NetworkPayload var2) {
+         super();
+         this.elements = var1;
+         this.tags = var2;
+      }
+
+      public List<RegistrySynchronization.PackedRegistryEntry> elements() {
+         return this.elements;
+      }
+
+      public TagNetworkSerialization.NetworkPayload tags() {
+         return this.tags;
+      }
    }
 
    static record Loader<T>(RegistryData<T> data, WritableRegistry<T> registry, Map<ResourceKey<?>, Exception> loadingErrors) {
@@ -277,7 +325,7 @@ public class RegistryDataLoader {
          RegistryDataLoader.loadContentsFromManager(var1, var2, this.registry, this.data.elementCodec, this.loadingErrors);
       }
 
-      public void loadFromNetwork(Map<ResourceKey<? extends Registry<?>>, List<RegistrySynchronization.PackedRegistryEntry>> var1, ResourceProvider var2, RegistryOps.RegistryInfoLookup var3) {
+      public void loadFromNetwork(Map<ResourceKey<? extends Registry<?>>, NetworkedRegistryData> var1, ResourceProvider var2, RegistryOps.RegistryInfoLookup var3) {
          RegistryDataLoader.loadContentsFromNetwork(var1, var2, var3, this.registry, this.data.elementCodec, this.loadingErrors);
       }
 

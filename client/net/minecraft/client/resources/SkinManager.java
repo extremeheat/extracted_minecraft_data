@@ -57,7 +57,7 @@ public class SkinManager {
 
                   return var3x;
                }
-            }, Util.backgroundExecutor()).thenComposeAsync((var2) -> {
+            }, Util.backgroundExecutor().forName("unpackSkinTextures")).thenComposeAsync((var2) -> {
                return SkinManager.this.registerTextures(var1.profileId(), var2);
             }, var4);
          }

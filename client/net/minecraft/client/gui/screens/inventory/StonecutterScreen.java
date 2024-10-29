@@ -1,17 +1,19 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.StonecutterMenu;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.StonecutterRecipe;
+import net.minecraft.world.item.crafting.SelectableRecipe;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
 
 public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> {
    private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace("container/stonecutter/scroller");
@@ -48,10 +50,10 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      var1.blit(BG_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(RenderType::guiTextured, BG_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       int var7 = (int)(41.0F * this.scrollOffs);
       ResourceLocation var8 = this.isScrollBarActive() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-      var1.blitSprite(var8, var5 + 119, var6 + 15 + var7, 12, 15);
+      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var8, var5 + 119, var6 + 15 + var7, 12, 15);
       int var9 = this.leftPos + 52;
       int var10 = this.topPos + 14;
       int var11 = this.startIndex + 12;
@@ -65,14 +67,16 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
          int var4 = this.leftPos + 52;
          int var5 = this.topPos + 14;
          int var6 = this.startIndex + 12;
-         List var7 = ((StonecutterMenu)this.menu).getRecipes();
+         SelectableRecipe.SingleInputSet var7 = ((StonecutterMenu)this.menu).getVisibleRecipes();
 
-         for(int var8 = this.startIndex; var8 < var6 && var8 < ((StonecutterMenu)this.menu).getNumRecipes(); ++var8) {
+         for(int var8 = this.startIndex; var8 < var6 && var8 < var7.size(); ++var8) {
             int var9 = var8 - this.startIndex;
             int var10 = var4 + var9 % 4 * 16;
             int var11 = var5 + var9 / 4 * 18 + 2;
             if (var2 >= var10 && var2 < var10 + 16 && var3 >= var11 && var3 < var11 + 18) {
-               var1.renderTooltip(this.font, ((StonecutterRecipe)((RecipeHolder)var7.get(var8)).value()).getResultItem(this.minecraft.level.registryAccess()), var2, var3);
+               ContextMap var12 = SlotDisplayContext.fromLevel(this.minecraft.level);
+               SlotDisplay var13 = ((SelectableRecipe.SingleInputEntry)var7.entries().get(var8)).recipe().optionDisplay();
+               var1.renderTooltip(this.font, var13.resolveForFirstStack(var12), var2, var3);
             }
          }
       }
@@ -80,7 +84,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    }
 
    private void renderButtons(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
-      for(int var7 = this.startIndex; var7 < var6 && var7 < ((StonecutterMenu)this.menu).getNumRecipes(); ++var7) {
+      for(int var7 = this.startIndex; var7 < var6 && var7 < ((StonecutterMenu)this.menu).getNumberOfVisibleRecipes(); ++var7) {
          int var8 = var7 - this.startIndex;
          int var9 = var4 + var8 % 4 * 16;
          int var10 = var8 / 4;
@@ -94,20 +98,22 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
             var12 = RECIPE_SPRITE;
          }
 
-         var1.blitSprite(var12, var9, var11 - 1, 16, 18);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var12, var9, var11 - 1, 16, 18);
       }
 
    }
 
    private void renderRecipes(GuiGraphics var1, int var2, int var3, int var4) {
-      List var5 = ((StonecutterMenu)this.menu).getRecipes();
+      SelectableRecipe.SingleInputSet var5 = ((StonecutterMenu)this.menu).getVisibleRecipes();
+      ContextMap var6 = SlotDisplayContext.fromLevel(this.minecraft.level);
 
-      for(int var6 = this.startIndex; var6 < var4 && var6 < ((StonecutterMenu)this.menu).getNumRecipes(); ++var6) {
-         int var7 = var6 - this.startIndex;
-         int var8 = var2 + var7 % 4 * 16;
-         int var9 = var7 / 4;
-         int var10 = var3 + var9 * 18 + 2;
-         var1.renderItem(((StonecutterRecipe)((RecipeHolder)var5.get(var6)).value()).getResultItem(this.minecraft.level.registryAccess()), var8, var10);
+      for(int var7 = this.startIndex; var7 < var4 && var7 < var5.size(); ++var7) {
+         int var8 = var7 - this.startIndex;
+         int var9 = var2 + var8 % 4 * 16;
+         int var10 = var8 / 4;
+         int var11 = var3 + var10 * 18 + 2;
+         SlotDisplay var12 = ((SelectableRecipe.SingleInputEntry)var5.entries().get(var7)).recipe().optionDisplay();
+         var1.renderItem(var12.resolveForFirstStack(var6), var9, var11);
       }
 
    }
@@ -154,22 +160,26 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    }
 
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
-      if (this.isScrollBarActive()) {
-         int var9 = this.getOffscreenRows();
-         float var10 = (float)var7 / (float)var9;
-         this.scrollOffs = Mth.clamp(this.scrollOffs - var10, 0.0F, 1.0F);
-         this.startIndex = (int)((double)(this.scrollOffs * (float)var9) + 0.5) * 4;
-      }
+      if (super.mouseScrolled(var1, var3, var5, var7)) {
+         return true;
+      } else {
+         if (this.isScrollBarActive()) {
+            int var9 = this.getOffscreenRows();
+            float var10 = (float)var7 / (float)var9;
+            this.scrollOffs = Mth.clamp(this.scrollOffs - var10, 0.0F, 1.0F);
+            this.startIndex = (int)((double)(this.scrollOffs * (float)var9) + 0.5) * 4;
+         }
 
-      return true;
+         return true;
+      }
    }
 
    private boolean isScrollBarActive() {
-      return this.displayRecipes && ((StonecutterMenu)this.menu).getNumRecipes() > 12;
+      return this.displayRecipes && ((StonecutterMenu)this.menu).getNumberOfVisibleRecipes() > 12;
    }
 
    protected int getOffscreenRows() {
-      return (((StonecutterMenu)this.menu).getNumRecipes() + 4 - 1) / 4 - 3;
+      return (((StonecutterMenu)this.menu).getNumberOfVisibleRecipes() + 4 - 1) / 4 - 3;
    }
 
    private void containerChanged() {

@@ -3,12 +3,13 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
@@ -25,6 +26,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class TntBlock extends Block {
@@ -50,7 +52,7 @@ public class TntBlock extends Block {
       }
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       if (var2.hasNeighborSignal(var3)) {
          explode(var2, var3);
          var2.removeBlock(var3, false);
@@ -66,13 +68,11 @@ public class TntBlock extends Block {
       return super.playerWillDestroy(var1, var2, var3, var4);
    }
 
-   public void wasExploded(Level var1, BlockPos var2, Explosion var3) {
-      if (!var1.isClientSide) {
-         PrimedTnt var4 = new PrimedTnt(var1, (double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5, var3.getIndirectSourceEntity());
-         int var5 = var4.getFuse();
-         var4.setFuse((short)(var1.random.nextInt(var5 / 4) + var5 / 8));
-         var1.addFreshEntity(var4);
-      }
+   public void wasExploded(ServerLevel var1, BlockPos var2, Explosion var3) {
+      PrimedTnt var4 = new PrimedTnt(var1, (double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5, var3.getIndirectSourceEntity());
+      int var5 = var4.getFuse();
+      var4.setFuse((short)(var1.random.nextInt(var5 / 4) + var5 / 8));
+      var1.addFreshEntity(var4);
    }
 
    public static void explode(Level var0, BlockPos var1) {
@@ -88,7 +88,7 @@ public class TntBlock extends Block {
       }
    }
 
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       if (!var1.is(Items.FLINT_AND_STEEL) && !var1.is(Items.FIRE_CHARGE)) {
          return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
       } else {
@@ -102,17 +102,17 @@ public class TntBlock extends Block {
          }
 
          var5.awardStat(Stats.ITEM_USED.get(var8));
-         return ItemInteractionResult.sidedSuccess(var3.isClientSide);
+         return InteractionResult.SUCCESS;
       }
    }
 
    protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
-      if (!var1.isClientSide) {
-         BlockPos var5 = var3.getBlockPos();
-         Entity var6 = var4.getOwner();
-         if (var4.isOnFire() && var4.mayInteract(var1, var5)) {
-            explode(var1, var5, var6 instanceof LivingEntity ? (LivingEntity)var6 : null);
-            var1.removeBlock(var5, false);
+      if (var1 instanceof ServerLevel var5) {
+         BlockPos var6 = var3.getBlockPos();
+         Entity var7 = var4.getOwner();
+         if (var4.isOnFire() && var4.mayInteract(var5, var6)) {
+            explode(var1, var6, var7 instanceof LivingEntity ? (LivingEntity)var7 : null);
+            var1.removeBlock(var6, false);
          }
       }
 

@@ -2,13 +2,14 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -99,18 +100,17 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
          return new Builder();
       }
 
-      public Builder of(Block... var1) {
-         this.blocks = Optional.of(HolderSet.direct(Block::builtInRegistryHolder, (Object[])var1));
+      public Builder of(HolderGetter<Block> var1, Block... var2) {
+         return this.of(var1, (Collection)Arrays.asList(var2));
+      }
+
+      public Builder of(HolderGetter<Block> var1, Collection<Block> var2) {
+         this.blocks = Optional.of(HolderSet.direct(Block::builtInRegistryHolder, var2));
          return this;
       }
 
-      public Builder of(Collection<Block> var1) {
-         this.blocks = Optional.of(HolderSet.direct(Block::builtInRegistryHolder, var1));
-         return this;
-      }
-
-      public Builder of(TagKey<Block> var1) {
-         this.blocks = Optional.of(BuiltInRegistries.BLOCK.getOrCreateTag(var1));
+      public Builder of(HolderGetter<Block> var1, TagKey<Block> var2) {
+         this.blocks = Optional.of(var1.getOrThrow(var2));
          return this;
       }
 

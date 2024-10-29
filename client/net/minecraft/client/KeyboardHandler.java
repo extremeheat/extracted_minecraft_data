@@ -22,6 +22,7 @@ import net.minecraft.client.gui.screens.debug.GameModeSwitcherScreen;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -64,9 +65,31 @@ public class KeyboardHandler {
             this.minecraft.sectionPath = !this.minecraft.sectionPath;
             this.debugFeedback("SectionPath: {0}", this.minecraft.sectionPath ? "shown" : "hidden");
             return true;
+         case 70:
+            boolean var3 = FogRenderer.toggleFog();
+            this.debugFeedback("Fog: {0}", var3 ? "enabled" : "disabled");
+            return true;
+         case 71:
+         case 72:
+         case 73:
+         case 74:
+         case 75:
+         case 77:
+         case 78:
+         case 80:
+         case 81:
+         case 82:
+         case 83:
+         case 84:
+         default:
+            return false;
          case 76:
             this.minecraft.smartCull = !this.minecraft.smartCull;
             this.debugFeedback("SmartCull: {0}", this.minecraft.smartCull ? "enabled" : "disabled");
+            return true;
+         case 79:
+            boolean var2 = this.minecraft.debugRenderer.toggleRenderOctree();
+            this.debugFeedback("Frustum culling Octree: {0}", var2 ? "enabled" : "disabled");
             return true;
          case 85:
             if (Screen.hasShiftDown()) {
@@ -86,8 +109,6 @@ public class KeyboardHandler {
             this.minecraft.wireframe = !this.minecraft.wireframe;
             this.debugFeedback("WireFrame: {0}", this.minecraft.wireframe ? "enabled" : "disabled");
             return true;
-         default:
-            return false;
       }
    }
 
@@ -312,6 +333,7 @@ public class KeyboardHandler {
 
    public void keyPress(long var1, int var3, int var4, int var5, int var6) {
       if (var1 == this.minecraft.getWindow().getWindow()) {
+         this.minecraft.getFramerateLimitTracker().onInputReceived();
          boolean var7 = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 292);
          if (this.debugCrashKeyTime > 0L) {
             if (!InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 67) || !var7) {
@@ -375,55 +397,75 @@ public class KeyboardHandler {
                   }
                }
 
-               LocalPlayer var16 = this.minecraft.player;
+               LocalPlayer var17 = this.minecraft.player;
             }
          }
 
          if (var8 != null) {
-            boolean[] var14 = new boolean[]{false};
-            Screen.wrapScreenError(() -> {
-               if (var5 != 1 && var5 != 2) {
-                  if (var5 == 0) {
-                     var14[0] = var8.keyReleased(var3, var4, var6);
+            label168: {
+               CrashReportCategory var11;
+               CrashReport var18;
+               try {
+                  if (var5 == 1 || var5 == 2) {
+                     var8.afterKeyboardAction();
+                     if (var8.keyPressed(var3, var4, var6)) {
+                        return;
+                     }
+                     break label168;
                   }
-               } else {
-                  var8.afterKeyboardAction();
-                  var14[0] = var8.keyPressed(var3, var4, var6);
+               } catch (Throwable var15) {
+                  var18 = CrashReport.forThrowable(var15, "keyPressed event handler");
+                  var8.fillCrashDetails(var18);
+                  var11 = var18.addCategory("Key");
+                  var11.setDetail("Key", (Object)var3);
+                  var11.setDetail("Scancode", (Object)var4);
+                  var11.setDetail("Mods", (Object)var6);
+                  throw new ReportedException(var18);
                }
 
-            }, "keyPressed event handler", var8.getClass().getCanonicalName());
-            if (var14[0]) {
-               return;
+               try {
+                  if (var5 == 0 && var8.keyReleased(var3, var4, var6)) {
+                     return;
+                  }
+               } catch (Throwable var14) {
+                  var18 = CrashReport.forThrowable(var14, "keyPressed event handler");
+                  var8.fillCrashDetails(var18);
+                  var11 = var18.addCategory("Key");
+                  var11.setDetail("Key", (Object)var3);
+                  var11.setDetail("Scancode", (Object)var4);
+                  var11.setDetail("Mods", (Object)var6);
+                  throw new ReportedException(var18);
+               }
             }
          }
 
-         InputConstants.Key var15;
+         InputConstants.Key var16;
          boolean var10000;
-         label184: {
-            var15 = InputConstants.getKey(var3, var4);
+         label206: {
+            var16 = InputConstants.getKey(var3, var4);
             var10 = this.minecraft.screen == null;
             if (!var10) {
-               label180: {
+               label202: {
                   Screen var13 = this.minecraft.screen;
                   if (var13 instanceof PauseScreen) {
                      PauseScreen var12 = (PauseScreen)var13;
                      if (!var12.showsPauseMenu()) {
-                        break label180;
+                        break label202;
                      }
                   }
 
                   var10000 = false;
-                  break label184;
+                  break label206;
                }
             }
 
             var10000 = true;
          }
 
-         boolean var11 = var10000;
+         boolean var19 = var10000;
          if (var5 == 0) {
-            KeyMapping.set(var15, false);
-            if (var11 && var3 == 292) {
+            KeyMapping.set(var16, false);
+            if (var19 && var3 == 292) {
                if (this.handledDebugKey) {
                   this.handledDebugKey = false;
                } else {
@@ -432,34 +474,34 @@ public class KeyboardHandler {
             }
 
          } else {
-            boolean var17 = false;
-            if (var11) {
+            boolean var20 = false;
+            if (var19) {
                if (var3 == 293 && this.minecraft.gameRenderer != null) {
                   this.minecraft.gameRenderer.togglePostEffect();
                }
 
                if (var3 == 256) {
                   this.minecraft.pauseGame(var7);
-                  var17 |= var7;
+                  var20 |= var7;
                }
 
-               var17 |= var7 && this.handleDebugKeys(var3);
-               this.handledDebugKey |= var17;
+               var20 |= var7 && this.handleDebugKeys(var3);
+               this.handledDebugKey |= var20;
                if (var3 == 290) {
                   this.minecraft.options.hideGui = !this.minecraft.options.hideGui;
                }
 
                if (this.minecraft.getDebugOverlay().showProfilerChart() && !var7 && var3 >= 48 && var3 <= 57) {
-                  this.minecraft.debugFpsMeterKeyPress(var3 - 48);
+                  this.minecraft.getDebugOverlay().getProfilerPieChart().profilerPieChartKeyPress(var3 - 48);
                }
             }
 
             if (var10) {
-               if (var17) {
-                  KeyMapping.set(var15, false);
+               if (var20) {
+                  KeyMapping.set(var16, false);
                } else {
-                  KeyMapping.set(var15, true);
-                  KeyMapping.click(var15);
+                  KeyMapping.set(var16, true);
+                  KeyMapping.click(var16);
                }
             }
 
@@ -471,22 +513,22 @@ public class KeyboardHandler {
       if (var1 == this.minecraft.getWindow().getWindow()) {
          Screen var5 = this.minecraft.screen;
          if (var5 != null && this.minecraft.getOverlay() == null) {
-            if (Character.charCount(var3) == 1) {
-               Screen.wrapScreenError(() -> {
+            try {
+               if (Character.isBmpCodePoint(var3)) {
                   var5.charTyped((char)var3, var4);
-               }, "charTyped event handler", var5.getClass().getCanonicalName());
-            } else {
-               char[] var6 = Character.toChars(var3);
-               int var7 = var6.length;
-
-               for(int var8 = 0; var8 < var7; ++var8) {
-                  char var9 = var6[var8];
-                  Screen.wrapScreenError(() -> {
-                     var5.charTyped(var9, var4);
-                  }, "charTyped event handler", var5.getClass().getCanonicalName());
+               } else if (Character.isValidCodePoint(var3)) {
+                  var5.charTyped(Character.highSurrogate(var3), var4);
+                  var5.charTyped(Character.lowSurrogate(var3), var4);
                }
-            }
 
+            } catch (Throwable var9) {
+               CrashReport var7 = CrashReport.forThrowable(var9, "charTyped event handler");
+               var5.fillCrashDetails(var7);
+               CrashReportCategory var8 = var7.addCategory("Key");
+               var8.setDetail("Codepoint", (Object)var3);
+               var8.setDetail("Mods", (Object)var4);
+               throw new ReportedException(var7);
+            }
          }
       }
    }

@@ -41,7 +41,7 @@ public class GenericMessageScreen extends Screen {
 
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderPanorama(var1, var4);
-      this.renderBlurredBackground(var4);
+      this.renderBlurredBackground();
       this.renderMenuBackground(var1);
    }
 }

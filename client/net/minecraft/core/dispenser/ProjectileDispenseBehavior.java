@@ -7,7 +7,6 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ProjectileItem;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
 
 public class ProjectileDispenseBehavior extends DefaultDispenseItemBehavior {
@@ -29,9 +28,7 @@ public class ProjectileDispenseBehavior extends DefaultDispenseItemBehavior {
       ServerLevel var3 = var1.level();
       Direction var4 = (Direction)var1.state().getValue(DispenserBlock.FACING);
       Position var5 = this.dispenseConfig.positionFunction().getDispensePosition(var1, var4);
-      Projectile var6 = this.projectileItem.asProjectile(var3, var5, var2, var4);
-      this.projectileItem.shoot(var6, (double)var4.getStepX(), (double)var4.getStepY(), (double)var4.getStepZ(), this.dispenseConfig.power(), this.dispenseConfig.uncertainty());
-      ((Level)var3).addFreshEntity(var6);
+      Projectile.spawnProjectileUsingShoot(this.projectileItem.asProjectile(var3, var5, var2, var4), var3, var2, (double)var4.getStepX(), (double)var4.getStepY(), (double)var4.getStepZ(), this.dispenseConfig.power(), this.dispenseConfig.uncertainty());
       var2.shrink(1);
       return var2;
    }

@@ -22,11 +22,11 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
    }
 
    public static SimpleSoundInstance forUI(SoundEvent var0, float var1, float var2) {
-      return new SimpleSoundInstance(var0.getLocation(), SoundSource.MASTER, var2, var1, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
+      return new SimpleSoundInstance(var0.location(), SoundSource.MASTER, var2, var1, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
    public static SimpleSoundInstance forMusic(SoundEvent var0) {
-      return new SimpleSoundInstance(var0.getLocation(), SoundSource.MUSIC, 1.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
+      return new SimpleSoundInstance(var0.location(), SoundSource.MUSIC, 1.0F, 1.0F, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
    public static SimpleSoundInstance forJukeboxSong(SoundEvent var0, Vec3 var1) {
@@ -34,7 +34,7 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
    }
 
    public static SimpleSoundInstance forLocalAmbience(SoundEvent var0, float var1, float var2) {
-      return new SimpleSoundInstance(var0.getLocation(), SoundSource.AMBIENT, var2, var1, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
+      return new SimpleSoundInstance(var0.location(), SoundSource.AMBIENT, var2, var1, SoundInstance.createUnseededRandom(), false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true);
    }
 
    public static SimpleSoundInstance forAmbientAddition(SoundEvent var0) {
@@ -50,7 +50,7 @@ public class SimpleSoundInstance extends AbstractSoundInstance {
    }
 
    private SimpleSoundInstance(SoundEvent var1, SoundSource var2, float var3, float var4, RandomSource var5, boolean var6, int var7, SoundInstance.Attenuation var8, double var9, double var11, double var13) {
-      this(var1.getLocation(), var2, var3, var4, var5, var6, var7, var8, var9, var11, var13, false);
+      this(var1.location(), var2, var3, var4, var5, var6, var7, var8, var9, var11, var13, false);
    }
 
    public SimpleSoundInstance(ResourceLocation var1, SoundSource var2, float var3, float var4, RandomSource var5, boolean var6, int var7, SoundInstance.Attenuation var8, double var9, double var11, double var13, boolean var15) {

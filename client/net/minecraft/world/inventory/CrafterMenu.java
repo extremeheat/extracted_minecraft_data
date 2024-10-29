@@ -1,5 +1,6 @@
 package net.minecraft.world.inventory;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -7,7 +8,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.CrafterBlock;
 
 public class CrafterMenu extends AbstractContainerMenu implements ContainerListener {
@@ -41,25 +41,14 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
    }
 
    private void addSlots(Inventory var1) {
-      int var2;
-      int var3;
-      for(var2 = 0; var2 < 3; ++var2) {
-         for(var3 = 0; var3 < 3; ++var3) {
+      for(int var2 = 0; var2 < 3; ++var2) {
+         for(int var3 = 0; var3 < 3; ++var3) {
             int var4 = var3 + var2 * 3;
             this.addSlot(new CrafterSlot(this.container, var4, 26 + var3 * 18, 17 + var2 * 18, this));
          }
       }
 
-      for(var2 = 0; var2 < 3; ++var2) {
-         for(var3 = 0; var3 < 9; ++var3) {
-            this.addSlot(new Slot(var1, var3 + var2 * 9 + 9, 8 + var3 * 18, 84 + var2 * 18));
-         }
-      }
-
-      for(var2 = 0; var2 < 9; ++var2) {
-         this.addSlot(new Slot(var1, var2, 8 + var2 * 18, 142));
-      }
-
+      this.addStandardInventorySlots(var1, 8, 84);
       this.addSlot(new NonInteractiveResultSlot(this.resultContainer, 0, 134, 35));
       this.addDataSlots(this.containerData);
       this.refreshRecipeResult();
@@ -120,7 +109,7 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
    private void refreshRecipeResult() {
       Player var2 = this.player;
       if (var2 instanceof ServerPlayer var1) {
-         Level var5 = var1.level();
+         ServerLevel var5 = var1.serverLevel();
          CraftingInput var3 = this.container.asCraftInput();
          ItemStack var4 = (ItemStack)CrafterBlock.getPotentialResults(var5, var3).map((var2x) -> {
             return ((CraftingRecipe)var2x.value()).assemble(var3, var5.registryAccess());

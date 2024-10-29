@@ -7,7 +7,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 
 public class ClientActivePlayersTooltip implements ClientTooltipComponent {
@@ -20,7 +19,7 @@ public class ClientActivePlayersTooltip implements ClientTooltipComponent {
       this.activePlayers = var1.profiles();
    }
 
-   public int getHeight() {
+   public int getHeight(Font var1) {
       return this.activePlayers.size() * 12 + 2;
    }
 
@@ -39,12 +38,12 @@ public class ClientActivePlayersTooltip implements ClientTooltipComponent {
       return var2 + 10 + 6;
    }
 
-   public void renderImage(Font var1, int var2, int var3, GuiGraphics var4) {
-      for(int var5 = 0; var5 < this.activePlayers.size(); ++var5) {
-         ProfileResult var6 = (ProfileResult)this.activePlayers.get(var5);
-         int var7 = var3 + 2 + var5 * 12;
-         PlayerFaceRenderer.draw(var4, (PlayerSkin)Minecraft.getInstance().getSkinManager().getInsecureSkin(var6.profile()), var2 + 2, var7, 10);
-         var4.drawString(var1, (String)var6.profile().getName(), var2 + 10 + 4, var7 + 2, -1);
+   public void renderImage(Font var1, int var2, int var3, int var4, int var5, GuiGraphics var6) {
+      for(int var7 = 0; var7 < this.activePlayers.size(); ++var7) {
+         ProfileResult var8 = (ProfileResult)this.activePlayers.get(var7);
+         int var9 = var3 + 2 + var7 * 12;
+         PlayerFaceRenderer.draw(var6, Minecraft.getInstance().getSkinManager().getInsecureSkin(var8.profile()), var2 + 2, var9, 10);
+         var6.drawString(var1, (String)var8.profile().getName(), var2 + 10 + 4, var9 + 2, -1);
       }
 
    }

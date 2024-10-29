@@ -73,8 +73,8 @@ public class PlayerSkinWidget extends AbstractWidget {
       return null;
    }
 
-   static record Model(PlayerModel<?> wideModel, PlayerModel<?> slimModel) {
-      private Model(PlayerModel<?> var1, PlayerModel<?> var2) {
+   static record Model(PlayerModel wideModel, PlayerModel slimModel) {
+      private Model(PlayerModel var1, PlayerModel var2) {
          super();
          this.wideModel = var1;
          this.slimModel = var2;
@@ -83,26 +83,26 @@ public class PlayerSkinWidget extends AbstractWidget {
       public static Model bake(EntityModelSet var0) {
          PlayerModel var1 = new PlayerModel(var0.bakeLayer(ModelLayers.PLAYER), false);
          PlayerModel var2 = new PlayerModel(var0.bakeLayer(ModelLayers.PLAYER_SLIM), true);
-         var1.young = false;
-         var2.young = false;
          return new Model(var1, var2);
       }
 
       public void render(GuiGraphics var1, PlayerSkin var2) {
          var1.pose().pushPose();
          var1.pose().scale(1.0F, 1.0F, -1.0F);
-         var1.pose().translate(0.0F, -1.5F, 0.0F);
+         var1.pose().translate(0.0F, -1.501F, 0.0F);
          PlayerModel var3 = var2.model() == PlayerSkin.Model.SLIM ? this.slimModel : this.wideModel;
          RenderType var4 = var3.renderType(var2.texture());
-         var3.renderToBuffer(var1.pose(), var1.bufferSource().getBuffer(var4), 15728880, OverlayTexture.NO_OVERLAY);
+         var1.drawSpecial((var3x) -> {
+            var3.renderToBuffer(var1.pose(), var3x.getBuffer(var4), 15728880, OverlayTexture.NO_OVERLAY);
+         });
          var1.pose().popPose();
       }
 
-      public PlayerModel<?> wideModel() {
+      public PlayerModel wideModel() {
          return this.wideModel;
       }
 
-      public PlayerModel<?> slimModel() {
+      public PlayerModel slimModel() {
          return this.slimModel;
       }
    }

@@ -44,7 +44,7 @@ public class SpawnerRenderer implements BlockEntityRenderer<SpawnerBlockEntity> 
       var1.translate(0.0F, -0.2F, 0.0F);
       var1.mulPose(Axis.XP.rotationDegrees(-30.0F));
       var1.scale(var10, var10, var10);
-      var5.render(var4, 0.0, 0.0, 0.0, 0.0F, var0, var1, var2, var3);
+      var5.render(var4, 0.0, 0.0, 0.0, var0, var1, var2, var3);
       var1.popPose();
    }
 }

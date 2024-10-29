@@ -14,9 +14,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
@@ -1077,10 +1077,10 @@ public class WoodlandMansionPieces {
             label60:
             switch (var1) {
                case "Mage":
-                  var6.add((Mob)EntityType.EVOKER.create(var3.getLevel()));
+                  var6.add((Mob)EntityType.EVOKER.create(var3.getLevel(), EntitySpawnReason.STRUCTURE));
                   break;
                case "Warrior":
-                  var6.add((Mob)EntityType.VINDICATOR.create(var3.getLevel()));
+                  var6.add((Mob)EntityType.VINDICATOR.create(var3.getLevel(), EntitySpawnReason.STRUCTURE));
                   break;
                case "Group of Allays":
                   int var9 = var3.getRandom().nextInt(3) + 1;
@@ -1091,7 +1091,7 @@ public class WoodlandMansionPieces {
                         break label60;
                      }
 
-                     var6.add((Mob)EntityType.ALLAY.create(var3.getLevel()));
+                     var6.add((Mob)EntityType.ALLAY.create(var3.getLevel(), EntitySpawnReason.STRUCTURE));
                      ++var10;
                   }
                default:
@@ -1105,7 +1105,7 @@ public class WoodlandMansionPieces {
                if (var13 != null) {
                   var13.setPersistenceRequired();
                   var13.moveTo(var2, 0.0F, 0.0F);
-                  var13.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var13.blockPosition()), MobSpawnType.STRUCTURE, (SpawnGroupData)null);
+                  var13.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var13.blockPosition()), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
                   var3.addFreshEntityWithPassengers(var13);
                   var3.setBlock(var2, Blocks.AIR.defaultBlockState(), 2);
                }

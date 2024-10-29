@@ -10,6 +10,7 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.progress.StoringChunkProgressListener;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 
@@ -92,23 +93,21 @@ public class LevelLoadingScreen extends Screen {
       int var12 = var3 - var10 / 2;
       int var13 = var8 / 2 + 1;
       int var14 = -16772609;
-      var0.drawManaged(() -> {
-         if (var5 != 0) {
-            var0.fill(var2 - var13, var3 - var13, var2 - var13 + 1, var3 + var13, -16772609);
-            var0.fill(var2 + var13 - 1, var3 - var13, var2 + var13, var3 + var13, -16772609);
-            var0.fill(var2 - var13, var3 - var13, var2 + var13, var3 - var13 + 1, -16772609);
-            var0.fill(var2 - var13, var3 + var13 - 1, var2 + var13, var3 + var13, -16772609);
-         }
+      if (var5 != 0) {
+         var0.fill(var2 - var13, var3 - var13, var2 - var13 + 1, var3 + var13, -16772609);
+         var0.fill(var2 + var13 - 1, var3 - var13, var2 + var13, var3 + var13, -16772609);
+         var0.fill(var2 - var13, var3 - var13, var2 + var13, var3 - var13 + 1, -16772609);
+         var0.fill(var2 - var13, var3 + var13 - 1, var2 + var13, var3 + var13, -16772609);
+      }
 
-         for(int var11x = 0; var11x < var9; ++var11x) {
-            for(int var12x = 0; var12x < var9; ++var12x) {
-               ChunkStatus var13x = var1.getStatus(var11x, var12x);
-               int var14 = var11 + var11x * var6;
-               int var15 = var12 + var12x * var6;
-               var0.fill(var14, var15, var14 + var4, var15 + var4, COLORS.getInt(var13x) | -16777216);
-            }
+      for(int var15 = 0; var15 < var9; ++var15) {
+         for(int var16 = 0; var16 < var9; ++var16) {
+            ChunkStatus var17 = var1.getStatus(var15, var16);
+            int var18 = var11 + var15 * var6;
+            int var19 = var12 + var16 * var6;
+            var0.fill(var18, var19, var18 + var4, var19 + var4, ARGB.opaque(COLORS.getInt(var17)));
          }
+      }
 
-      });
    }
 }

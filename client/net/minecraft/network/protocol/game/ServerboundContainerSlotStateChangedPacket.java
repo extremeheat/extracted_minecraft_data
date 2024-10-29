@@ -9,7 +9,7 @@ public record ServerboundContainerSlotStateChangedPacket(int slotId, int contain
    public static final StreamCodec<FriendlyByteBuf, ServerboundContainerSlotStateChangedPacket> STREAM_CODEC = Packet.codec(ServerboundContainerSlotStateChangedPacket::write, ServerboundContainerSlotStateChangedPacket::new);
 
    private ServerboundContainerSlotStateChangedPacket(FriendlyByteBuf var1) {
-      this(var1.readVarInt(), var1.readVarInt(), var1.readBoolean());
+      this(var1.readVarInt(), var1.readContainerId(), var1.readBoolean());
    }
 
    public ServerboundContainerSlotStateChangedPacket(int var1, int var2, boolean var3) {
@@ -21,7 +21,7 @@ public record ServerboundContainerSlotStateChangedPacket(int slotId, int contain
 
    private void write(FriendlyByteBuf var1) {
       var1.writeVarInt(this.slotId);
-      var1.writeVarInt(this.containerId);
+      var1.writeContainerId(this.containerId);
       var1.writeBoolean(this.newState);
    }
 

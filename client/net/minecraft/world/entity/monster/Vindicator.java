@@ -13,14 +13,15 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.BreakDoorGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -32,6 +33,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.util.GoalUtils;
 import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.monster.creaking.Creaking;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
@@ -57,10 +59,11 @@ public class Vindicator extends AbstractIllager {
    protected void registerGoals() {
       super.registerGoals();
       this.goalSelector.addGoal(0, new FloatGoal(this));
-      this.goalSelector.addGoal(1, new VindicatorBreakDoorGoal(this));
-      this.goalSelector.addGoal(2, new AbstractIllager.RaiderOpenDoorGoal(this));
-      this.goalSelector.addGoal(3, new Raider.HoldGroundAttackGoal(this, 10.0F));
-      this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.0, false));
+      this.goalSelector.addGoal(1, new AvoidEntityGoal(this, Creaking.class, 8.0F, 1.0, 1.2));
+      this.goalSelector.addGoal(2, new VindicatorBreakDoorGoal(this));
+      this.goalSelector.addGoal(3, new AbstractIllager.RaiderOpenDoorGoal(this));
+      this.goalSelector.addGoal(4, new Raider.HoldGroundAttackGoal(this, 10.0F));
+      this.goalSelector.addGoal(5, new MeleeAttackGoal(this, 1.0, false));
       this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{Raider.class})).setAlertOthers());
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, true));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, AbstractVillager.class, true));
@@ -71,13 +74,13 @@ public class Vindicator extends AbstractIllager {
       this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0F));
    }
 
-   protected void customServerAiStep() {
+   protected void customServerAiStep(ServerLevel var1) {
       if (!this.isNoAi() && GoalUtils.hasGroundPathNavigation(this)) {
-         boolean var1 = ((ServerLevel)this.level()).isRaided(this.blockPosition());
-         ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(var1);
+         boolean var2 = var1.isRaided(this.blockPosition());
+         ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(var2);
       }
 
-      super.customServerAiStep();
+      super.customServerAiStep(var1);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -113,7 +116,7 @@ public class Vindicator extends AbstractIllager {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       SpawnGroupData var5 = super.finalizeSpawn(var1, var2, var3, var4);
       ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(true);
       RandomSource var6 = var1.getRandom();
@@ -185,7 +188,9 @@ public class Vindicator extends AbstractIllager {
 
    private static class VindicatorJohnnyAttackGoal extends NearestAttackableTargetGoal<LivingEntity> {
       public VindicatorJohnnyAttackGoal(Vindicator var1) {
-         super(var1, LivingEntity.class, 0, true, true, LivingEntity::attackable);
+         super(var1, LivingEntity.class, 0, true, true, (var0, var1x) -> {
+            return var0.attackable();
+         });
       }
 
       public boolean canUse() {

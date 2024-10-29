@@ -35,7 +35,7 @@ public class HugeExplosionParticle extends TextureSheetParticle {
    }
 
    public ParticleRenderType getRenderType() {
-      return ParticleRenderType.PARTICLE_SHEET_LIT;
+      return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {

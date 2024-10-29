@@ -2,11 +2,13 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.BlazeModel;
 import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.Blaze;
 
-public class BlazeRenderer extends MobRenderer<Blaze, BlazeModel<Blaze>> {
+public class BlazeRenderer extends MobRenderer<Blaze, LivingEntityRenderState, BlazeModel> {
    private static final ResourceLocation BLAZE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/blaze.png");
 
    public BlazeRenderer(EntityRendererProvider.Context var1) {
@@ -17,7 +19,16 @@ public class BlazeRenderer extends MobRenderer<Blaze, BlazeModel<Blaze>> {
       return 15;
    }
 
-   public ResourceLocation getTextureLocation(Blaze var1) {
+   public ResourceLocation getTextureLocation(LivingEntityRenderState var1) {
       return BLAZE_LOCATION;
+   }
+
+   public LivingEntityRenderState createRenderState() {
+      return new LivingEntityRenderState();
+   }
+
+   // $FF: synthetic method
+   public EntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

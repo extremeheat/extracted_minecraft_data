@@ -1,46 +1,54 @@
 package net.minecraft.world;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
-import net.minecraft.core.component.DataComponents;
+import com.mojang.serialization.DataResult;
+import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.world.item.ItemStack;
 
-public record LockCode(String key) {
-   public static final LockCode NO_LOCK = new LockCode("");
+public record LockCode(ItemPredicate predicate) {
+   public static final LockCode NO_LOCK = new LockCode(ItemPredicate.Builder.item().build());
    public static final Codec<LockCode> CODEC;
-   public static final String TAG_LOCK = "Lock";
+   public static final String TAG_LOCK = "lock";
 
-   public LockCode(String var1) {
+   public LockCode(ItemPredicate var1) {
       super();
-      this.key = var1;
+      this.predicate = var1;
    }
 
    public boolean unlocksWith(ItemStack var1) {
-      if (this.key.isEmpty()) {
-         return true;
-      } else {
-         Component var2 = (Component)var1.get(DataComponents.CUSTOM_NAME);
-         return var2 != null && this.key.equals(var2.getString());
-      }
+      return this.predicate.test(var1);
    }
 
-   public void addToTag(CompoundTag var1) {
-      if (!this.key.isEmpty()) {
-         var1.putString("Lock", this.key);
+   public void addToTag(CompoundTag var1, HolderLookup.Provider var2) {
+      if (this != NO_LOCK) {
+         DataResult var3 = CODEC.encode(this, var2.createSerializationContext(NbtOps.INSTANCE), new CompoundTag());
+         var3.result().ifPresent((var1x) -> {
+            var1.put("lock", var1x);
+         });
       }
 
    }
 
-   public static LockCode fromTag(CompoundTag var0) {
-      return var0.contains("Lock", 8) ? new LockCode(var0.getString("Lock")) : NO_LOCK;
+   public static LockCode fromTag(CompoundTag var0, HolderLookup.Provider var1) {
+      if (var0.contains("lock", 10)) {
+         DataResult var2 = CODEC.decode(var1.createSerializationContext(NbtOps.INSTANCE), var0.get("lock"));
+         if (var2.isSuccess()) {
+            return (LockCode)((Pair)var2.getOrThrow()).getFirst();
+         }
+      }
+
+      return NO_LOCK;
    }
 
-   public String key() {
-      return this.key;
+   public ItemPredicate predicate() {
+      return this.predicate;
    }
 
    static {
-      CODEC = Codec.STRING.xmap(LockCode::new, LockCode::key);
+      CODEC = ItemPredicate.CODEC.xmap(LockCode::new, LockCode::predicate);
    }
 }

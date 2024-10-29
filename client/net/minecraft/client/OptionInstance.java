@@ -434,7 +434,6 @@ public final class OptionInstance<T> {
          Object var1 = this.values.fromSliderValue(this.value);
          if (!Objects.equals(var1, this.instance.get())) {
             this.instance.set(var1);
-            this.options.save();
             this.onValueChanged.accept(this.instance.get());
          }
 

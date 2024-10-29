@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -55,15 +56,15 @@ public final class ModelPart {
    }
 
    public void loadPose(PartPose var1) {
-      this.x = var1.x;
-      this.y = var1.y;
-      this.z = var1.z;
-      this.xRot = var1.xRot;
-      this.yRot = var1.yRot;
-      this.zRot = var1.zRot;
-      this.xScale = 1.0F;
-      this.yScale = 1.0F;
-      this.zScale = 1.0F;
+      this.x = var1.x();
+      this.y = var1.y();
+      this.z = var1.z();
+      this.xRot = var1.xRot();
+      this.yRot = var1.yRot();
+      this.zRot = var1.zRot();
+      this.xScale = var1.xScale();
+      this.yScale = var1.yScale();
+      this.zScale = var1.zScale();
    }
 
    public void copyFrom(ModelPart var1) {
@@ -126,6 +127,13 @@ public final class ModelPart {
             var1.popPose();
          }
       }
+   }
+
+   public void rotateBy(Quaternionf var1) {
+      Matrix3f var2 = (new Matrix3f()).rotationZYX(this.zRot, this.yRot, this.xRot);
+      Matrix3f var3 = var2.rotate(var1);
+      Vector3f var4 = var3.getEulerAnglesZYX(new Vector3f());
+      this.setRotation(var4.x, var4.y, var4.z);
    }
 
    public void visit(PoseStack var1, Visitor var2) {
@@ -208,7 +216,7 @@ public final class ModelPart {
    }
 
    public static class Cube {
-      private final Polygon[] polygons;
+      public final Polygon[] polygons;
       public final float minX;
       public final float minY;
       public final float minZ;
@@ -312,17 +320,13 @@ public final class ModelPart {
       }
    }
 
-   static class Vertex {
-      public final Vector3f pos;
-      public final float u;
-      public final float v;
+   public static record Vertex(Vector3f pos, float u, float v) {
+      final Vector3f pos;
+      final float u;
+      final float v;
 
       public Vertex(float var1, float var2, float var3, float var4, float var5) {
          this(new Vector3f(var1, var2, var3), var4, var5);
-      }
-
-      public Vertex remap(float var1, float var2) {
-         return new Vertex(this.pos, var1, var2);
       }
 
       public Vertex(Vector3f var1, float var2, float var3) {
@@ -331,15 +335,30 @@ public final class ModelPart {
          this.u = var2;
          this.v = var3;
       }
+
+      public Vertex remap(float var1, float var2) {
+         return new Vertex(this.pos, var1, var2);
+      }
+
+      public Vector3f pos() {
+         return this.pos;
+      }
+
+      public float u() {
+         return this.u;
+      }
+
+      public float v() {
+         return this.v;
+      }
    }
 
-   private static class Polygon {
-      public final Vertex[] vertices;
-      public final Vector3f normal;
+   public static record Polygon(Vertex[] vertices, Vector3f normal) {
+      final Vertex[] vertices;
+      final Vector3f normal;
 
       public Polygon(Vertex[] var1, float var2, float var3, float var4, float var5, float var6, float var7, boolean var8, Direction var9) {
-         super();
-         this.vertices = var1;
+         this(var1, var9.step());
          float var10 = 0.0F / var6;
          float var11 = 0.0F / var7;
          var1[0] = var1[0].remap(var4 / var6 - var10, var3 / var7 + var11);
@@ -356,11 +375,24 @@ public final class ModelPart {
             }
          }
 
-         this.normal = var9.step();
          if (var8) {
             this.normal.mul(-1.0F, 1.0F, 1.0F);
          }
 
+      }
+
+      public Polygon(Vertex[] var1, Vector3f var2) {
+         super();
+         this.vertices = var1;
+         this.normal = var2;
+      }
+
+      public Vertex[] vertices() {
+         return this.vertices;
+      }
+
+      public Vector3f normal() {
+         return this.normal;
       }
    }
 }

@@ -23,6 +23,7 @@ import net.minecraft.world.entity.animal.FrogVariant;
 import net.minecraft.world.entity.animal.MushroomCow;
 import net.minecraft.world.entity.animal.Parrot;
 import net.minecraft.world.entity.animal.Rabbit;
+import net.minecraft.world.entity.animal.Salmon;
 import net.minecraft.world.entity.animal.TropicalFish;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.animal.WolfVariant;
@@ -35,7 +36,6 @@ import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.entity.npc.VillagerDataHolder;
 import net.minecraft.world.entity.npc.VillagerType;
-import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.phys.Vec3;
 
 public class EntitySubPredicates {
@@ -44,15 +44,16 @@ public class EntitySubPredicates {
    public static final MapCodec<PlayerPredicate> PLAYER;
    public static final MapCodec<SlimePredicate> SLIME;
    public static final MapCodec<RaiderPredicate> RAIDER;
+   public static final MapCodec<SheepPredicate> SHEEP;
    public static final EntityVariantPredicateType<Axolotl.Variant> AXOLOTL;
-   public static final EntityVariantPredicateType<Boat.Type> BOAT;
-   public static final EntityVariantPredicateType<Fox.Type> FOX;
-   public static final EntityVariantPredicateType<MushroomCow.MushroomType> MOOSHROOM;
+   public static final EntityVariantPredicateType<Fox.Variant> FOX;
+   public static final EntityVariantPredicateType<MushroomCow.Variant> MOOSHROOM;
    public static final EntityVariantPredicateType<Rabbit.Variant> RABBIT;
    public static final EntityVariantPredicateType<Variant> HORSE;
    public static final EntityVariantPredicateType<Llama.Variant> LLAMA;
    public static final EntityVariantPredicateType<VillagerType> VILLAGER;
    public static final EntityVariantPredicateType<Parrot.Variant> PARROT;
+   public static final EntityVariantPredicateType<Salmon.Variant> SALMON;
    public static final EntityVariantPredicateType<TropicalFish.Pattern> TROPICAL_FISH;
    public static final EntityHolderVariantPredicateType<PaintingVariant> PAINTING;
    public static final EntityHolderVariantPredicateType<CatVariant> CAT;
@@ -99,6 +100,7 @@ public class EntitySubPredicates {
       PLAYER = register("player", PlayerPredicate.CODEC);
       SLIME = register("slime", SlimePredicate.CODEC);
       RAIDER = register("raider", RaiderPredicate.CODEC);
+      SHEEP = register("sheep", SheepPredicate.CODEC);
       AXOLOTL = register("axolotl", EntitySubPredicates.EntityVariantPredicateType.create(Axolotl.Variant.CODEC, (var0) -> {
          Optional var10000;
          if (var0 instanceof Axolotl var1) {
@@ -109,17 +111,7 @@ public class EntitySubPredicates {
 
          return var10000;
       }));
-      BOAT = register("boat", EntitySubPredicates.EntityVariantPredicateType.create((Codec)Boat.Type.CODEC, (var0) -> {
-         Optional var10000;
-         if (var0 instanceof Boat var1) {
-            var10000 = Optional.of(var1.getVariant());
-         } else {
-            var10000 = Optional.empty();
-         }
-
-         return var10000;
-      }));
-      FOX = register("fox", EntitySubPredicates.EntityVariantPredicateType.create((Codec)Fox.Type.CODEC, (var0) -> {
+      FOX = register("fox", EntitySubPredicates.EntityVariantPredicateType.create((Codec)Fox.Variant.CODEC, (var0) -> {
          Optional var10000;
          if (var0 instanceof Fox var1) {
             var10000 = Optional.of(var1.getVariant());
@@ -129,7 +121,7 @@ public class EntitySubPredicates {
 
          return var10000;
       }));
-      MOOSHROOM = register("mooshroom", EntitySubPredicates.EntityVariantPredicateType.create((Codec)MushroomCow.MushroomType.CODEC, (var0) -> {
+      MOOSHROOM = register("mooshroom", EntitySubPredicates.EntityVariantPredicateType.create((Codec)MushroomCow.Variant.CODEC, (var0) -> {
          Optional var10000;
          if (var0 instanceof MushroomCow var1) {
             var10000 = Optional.of(var1.getVariant());
@@ -182,6 +174,16 @@ public class EntitySubPredicates {
       PARROT = register("parrot", EntitySubPredicates.EntityVariantPredicateType.create(Parrot.Variant.CODEC, (var0) -> {
          Optional var10000;
          if (var0 instanceof Parrot var1) {
+            var10000 = Optional.of(var1.getVariant());
+         } else {
+            var10000 = Optional.empty();
+         }
+
+         return var10000;
+      }));
+      SALMON = register("salmon", EntitySubPredicates.EntityVariantPredicateType.create((Codec)Salmon.Variant.CODEC, (var0) -> {
+         Optional var10000;
+         if (var0 instanceof Salmon var1) {
             var10000 = Optional.of(var1.getVariant());
          } else {
             var10000 = Optional.empty();

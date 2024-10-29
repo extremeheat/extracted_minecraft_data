@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
@@ -8,9 +9,9 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -21,8 +22,8 @@ public class Husk extends Zombie {
       super(var1, var2);
    }
 
-   public static boolean checkHuskSpawnRules(EntityType<Husk> var0, ServerLevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
-      return checkMonsterSpawnRules(var0, var1, var2, var3, var4) && (MobSpawnType.isSpawner(var2) || var1.canSeeSky(var3));
+   public static boolean checkHuskSpawnRules(EntityType<Husk> var0, ServerLevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
+      return checkMonsterSpawnRules(var0, var1, var2, var3, var4) && (EntitySpawnReason.isSpawner(var2) || var1.canSeeSky(var3));
    }
 
    protected boolean isSunSensitive() {
@@ -45,14 +46,14 @@ public class Husk extends Zombie {
       return SoundEvents.HUSK_STEP;
    }
 
-   public boolean doHurtTarget(Entity var1) {
-      boolean var2 = super.doHurtTarget(var1);
-      if (var2 && this.getMainHandItem().isEmpty() && var1 instanceof LivingEntity) {
-         float var3 = this.level().getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
-         ((LivingEntity)var1).addEffect(new MobEffectInstance(MobEffects.HUNGER, 140 * (int)var3), this);
+   public boolean doHurtTarget(ServerLevel var1, Entity var2) {
+      boolean var3 = super.doHurtTarget(var1, var2);
+      if (var3 && this.getMainHandItem().isEmpty() && var2 instanceof LivingEntity) {
+         float var4 = this.level().getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
+         ((LivingEntity)var2).addEffect(new MobEffectInstance(MobEffects.HUNGER, 140 * (int)var4), this);
       }
 
-      return var2;
+      return var3;
    }
 
    protected boolean convertsInWater() {

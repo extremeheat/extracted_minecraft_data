@@ -81,17 +81,13 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
       return this.minecraft.getSoundManager().getAvailableSounds().stream();
    }
 
-   public Stream<ResourceLocation> getRecipeNames() {
-      return this.connection.getRecipeManager().getRecipeIds();
-   }
-
    public boolean hasPermission(int var1) {
       LocalPlayer var2 = this.minecraft.player;
       return var2 != null ? var2.hasPermissions(var1) : var1 == 0;
    }
 
    public CompletableFuture<Suggestions> suggestRegistryElements(ResourceKey<? extends Registry<?>> var1, SharedSuggestionProvider.ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4) {
-      return (CompletableFuture)this.registryAccess().registry(var1).map((var3x) -> {
+      return (CompletableFuture)this.registryAccess().lookup(var1).map((var3x) -> {
          this.suggestRegistryElements(var3x, var2, var3);
          return var3.buildFuture();
       }).orElseGet(() -> {

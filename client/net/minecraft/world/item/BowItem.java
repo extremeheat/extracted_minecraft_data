@@ -9,7 +9,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -23,13 +23,19 @@ public class BowItem extends ProjectileWeaponItem {
       super(var1);
    }
 
-   public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
-      if (var3 instanceof Player var5) {
+   public boolean releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
+      if (!(var3 instanceof Player var5)) {
+         return false;
+      } else {
          ItemStack var6 = var5.getProjectile(var1);
-         if (!var6.isEmpty()) {
+         if (var6.isEmpty()) {
+            return false;
+         } else {
             int var7 = this.getUseDuration(var1, var3) - var4;
             float var8 = getPowerForTime(var7);
-            if (!((double)var8 < 0.1)) {
+            if ((double)var8 < 0.1) {
+               return false;
+            } else {
                List var9 = draw(var1, var6, var5);
                if (var2 instanceof ServerLevel) {
                   ServerLevel var10 = (ServerLevel)var2;
@@ -40,6 +46,7 @@ public class BowItem extends ProjectileWeaponItem {
 
                var2.playSound((Player)null, var5.getX(), var5.getY(), var5.getZ(), (SoundEvent)SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F / (var2.getRandom().nextFloat() * 0.4F + 1.2F) + var8 * 0.5F);
                var5.awardStat(Stats.ITEM_USED.get(this));
+               return true;
             }
          }
       }
@@ -63,18 +70,18 @@ public class BowItem extends ProjectileWeaponItem {
       return 72000;
    }
 
-   public UseAnim getUseAnimation(ItemStack var1) {
-      return UseAnim.BOW;
+   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+      return ItemUseAnimation.BOW;
    }
 
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       boolean var5 = !var2.getProjectile(var4).isEmpty();
       if (!var2.hasInfiniteMaterials() && !var5) {
-         return InteractionResultHolder.fail(var4);
+         return InteractionResult.FAIL;
       } else {
          var2.startUsingItem(var3);
-         return InteractionResultHolder.consume(var4);
+         return InteractionResult.CONSUME;
       }
    }
 

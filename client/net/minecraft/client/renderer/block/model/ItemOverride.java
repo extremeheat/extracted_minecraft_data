@@ -12,45 +12,23 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 
-public class ItemOverride {
-   private final ResourceLocation model;
-   private final List<Predicate> predicates;
-
+public record ItemOverride(ResourceLocation model, List<Predicate> predicates) {
    public ItemOverride(ResourceLocation var1, List<Predicate> var2) {
       super();
+      var2 = List.copyOf(var2);
       this.model = var1;
-      this.predicates = ImmutableList.copyOf(var2);
+      this.predicates = var2;
    }
 
-   public ResourceLocation getModel() {
+   public ResourceLocation model() {
       return this.model;
    }
 
-   public Stream<Predicate> getPredicates() {
-      return this.predicates.stream();
-   }
-
-   public static class Predicate {
-      private final ResourceLocation property;
-      private final float value;
-
-      public Predicate(ResourceLocation var1, float var2) {
-         super();
-         this.property = var1;
-         this.value = var2;
-      }
-
-      public ResourceLocation getProperty() {
-         return this.property;
-      }
-
-      public float getValue() {
-         return this.value;
-      }
+   public List<Predicate> predicates() {
+      return this.predicates;
    }
 
    protected static class Deserializer implements JsonDeserializer<ItemOverride> {
@@ -83,6 +61,22 @@ public class ItemOverride {
       // $FF: synthetic method
       public Object deserialize(final JsonElement var1, final Type var2, final JsonDeserializationContext var3) throws JsonParseException {
          return this.deserialize(var1, var2, var3);
+      }
+   }
+
+   public static record Predicate(ResourceLocation property, float value) {
+      public Predicate(ResourceLocation var1, float var2) {
+         super();
+         this.property = var1;
+         this.value = var2;
+      }
+
+      public ResourceLocation property() {
+         return this.property;
+      }
+
+      public float value() {
+         return this.value;
       }
    }
 }

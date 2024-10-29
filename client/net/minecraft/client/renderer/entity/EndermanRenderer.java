@@ -1,18 +1,17 @@
 package net.minecraft.client.renderer.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.EndermanModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.layers.CarriedBlockLayer;
 import net.minecraft.client.renderer.entity.layers.EnderEyesLayer;
+import net.minecraft.client.renderer.entity.state.EndermanRenderState;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.monster.EnderMan;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-public class EndermanRenderer extends MobRenderer<EnderMan, EndermanModel<EnderMan>> {
+public class EndermanRenderer extends MobRenderer<EnderMan, EndermanRenderState, EndermanModel<EndermanRenderState>> {
    private static final ResourceLocation ENDERMAN_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/enderman/enderman.png");
    private final RandomSource random = RandomSource.create();
 
@@ -22,24 +21,33 @@ public class EndermanRenderer extends MobRenderer<EnderMan, EndermanModel<EnderM
       this.addLayer(new CarriedBlockLayer(this, var1.getBlockRenderDispatcher()));
    }
 
-   public void render(EnderMan var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      BlockState var7 = var1.getCarriedBlock();
-      EndermanModel var8 = (EndermanModel)this.getModel();
-      var8.carrying = var7 != null;
-      var8.creepy = var1.isCreepy();
-      super.render(var1, var2, var3, var4, var5, var6);
-   }
-
-   public Vec3 getRenderOffset(EnderMan var1, float var2) {
-      if (var1.isCreepy()) {
-         double var3 = 0.02 * (double)var1.getScale();
-         return new Vec3(this.random.nextGaussian() * var3, 0.0, this.random.nextGaussian() * var3);
+   public Vec3 getRenderOffset(EndermanRenderState var1) {
+      Vec3 var2 = super.getRenderOffset(var1);
+      if (var1.isCreepy) {
+         double var3 = 0.02 * (double)var1.scale;
+         return var2.add(this.random.nextGaussian() * var3, 0.0, this.random.nextGaussian() * var3);
       } else {
-         return super.getRenderOffset(var1, var2);
+         return var2;
       }
    }
 
-   public ResourceLocation getTextureLocation(EnderMan var1) {
+   public ResourceLocation getTextureLocation(EndermanRenderState var1) {
       return ENDERMAN_LOCATION;
+   }
+
+   public EndermanRenderState createRenderState() {
+      return new EndermanRenderState();
+   }
+
+   public void extractRenderState(EnderMan var1, EndermanRenderState var2, float var3) {
+      super.extractRenderState(var1, var2, var3);
+      HumanoidMobRenderer.extractHumanoidRenderState(var1, var2, var3);
+      var2.isCreepy = var1.isCreepy();
+      var2.carriedBlock = var1.getCarriedBlock();
+   }
+
+   // $FF: synthetic method
+   public EntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

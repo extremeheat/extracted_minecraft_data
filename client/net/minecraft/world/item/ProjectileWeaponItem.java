@@ -40,10 +40,6 @@ public abstract class ProjectileWeaponItem extends Item {
       }
    }
 
-   public int getEnchantmentValue() {
-      return 1;
-   }
-
    public abstract int getDefaultProjectileRange();
 
    protected void shoot(ServerLevel var1, LivingEntity var2, InteractionHand var3, ItemStack var4, List<ItemStack> var5, float var6, float var7, boolean var8, @Nullable LivingEntity var9) {
@@ -57,9 +53,9 @@ public abstract class ProjectileWeaponItem extends Item {
          if (!var15.isEmpty()) {
             float var16 = var12 + var13 * (float)((var14 + 1) / 2) * var11;
             var13 = -var13;
-            Projectile var17 = this.createProjectile(var1, var2, var4, var15, var8);
-            this.shootProjectile(var2, var17, var14, var6, var7, var16, var9);
-            var1.addFreshEntity(var17);
+            Projectile.spawnProjectile(this.createProjectile(var1, var2, var4, var15, var8), var1, var15, (var7x) -> {
+               this.shootProjectile(var2, var7x, var14, var6, var7, var16, var9);
+            });
             var4.hurtAndBreak(this.getDurabilityUse(var15), var2, LivingEntity.getSlotForHand(var3));
             if (var4.isEmpty()) {
                break;

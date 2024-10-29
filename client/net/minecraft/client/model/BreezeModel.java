@@ -9,14 +9,12 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.monster.breeze.Breeze;
+import net.minecraft.client.renderer.entity.state.BreezeRenderState;
 
-public class BreezeModel<T extends Breeze> extends HierarchicalModel<T> {
+public class BreezeModel extends EntityModel<BreezeRenderState> {
    private static final float WIND_TOP_SPEED = 0.6F;
    private static final float WIND_MIDDLE_SPEED = 0.8F;
    private static final float WIND_BOTTOM_SPEED = 1.0F;
-   private final ModelPart root;
    private final ModelPart head;
    private final ModelPart eyes;
    private final ModelPart wind;
@@ -26,8 +24,7 @@ public class BreezeModel<T extends Breeze> extends HierarchicalModel<T> {
    private final ModelPart rods;
 
    public BreezeModel(ModelPart var1) {
-      super(RenderType::entityTranslucent);
-      this.root = var1;
+      super(var1, RenderType::entityTranslucent);
       this.wind = var1.getChild("wind_body");
       this.windBottom = this.wind.getChild("wind_bottom");
       this.windMid = this.windBottom.getChild("wind_mid");
@@ -54,25 +51,14 @@ public class BreezeModel<T extends Breeze> extends HierarchicalModel<T> {
       return LayerDefinition.create(var2, var0, var1);
    }
 
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.root().getAllParts().forEach(ModelPart::resetPose);
-      float var7 = var4 * 3.1415927F * -0.1F;
-      this.windTop.x = Mth.cos(var7) * 1.0F * 0.6F;
-      this.windTop.z = Mth.sin(var7) * 1.0F * 0.6F;
-      this.windMid.x = Mth.sin(var7) * 0.5F * 0.8F;
-      this.windMid.z = Mth.cos(var7) * 0.8F;
-      this.windBottom.x = Mth.cos(var7) * -0.25F * 1.0F;
-      this.windBottom.z = Mth.sin(var7) * -0.25F * 1.0F;
-      this.head.y = 4.0F + Mth.cos(var7) / 4.0F;
-      this.rods.yRot = var4 * 3.1415927F * 0.1F;
-      this.animate(var1.shoot, BreezeAnimation.SHOOT, var4);
-      this.animate(var1.slide, BreezeAnimation.SLIDE, var4);
-      this.animate(var1.slideBack, BreezeAnimation.SLIDE_BACK, var4);
-      this.animate(var1.longJump, BreezeAnimation.JUMP, var4);
-   }
-
-   public ModelPart root() {
-      return this.root;
+   public void setupAnim(BreezeRenderState var1) {
+      super.setupAnim(var1);
+      this.animate(var1.idle, BreezeAnimation.IDLE, var1.ageInTicks);
+      this.animate(var1.shoot, BreezeAnimation.SHOOT, var1.ageInTicks);
+      this.animate(var1.slide, BreezeAnimation.SLIDE, var1.ageInTicks);
+      this.animate(var1.slideBack, BreezeAnimation.SLIDE_BACK, var1.ageInTicks);
+      this.animate(var1.inhale, BreezeAnimation.INHALE, var1.ageInTicks);
+      this.animate(var1.longJump, BreezeAnimation.JUMP, var1.ageInTicks);
    }
 
    public ModelPart head() {

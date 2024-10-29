@@ -9,6 +9,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.CollisionGetter;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 
 public class EntityCollisionContext implements CollisionContext {
@@ -31,21 +33,26 @@ public class EntityCollisionContext implements CollisionContext {
 
    /** @deprecated */
    @Deprecated
-   protected EntityCollisionContext(Entity var1) {
+   protected EntityCollisionContext(Entity var1, boolean var2) {
       boolean var10001 = var1.isDescending();
       double var10002 = var1.getY();
       ItemStack var10003 = var1 instanceof LivingEntity ? ((LivingEntity)var1).getMainHandItem() : ItemStack.EMPTY;
-      Predicate var2;
-      if (var1 instanceof LivingEntity var10004) {
+      Predicate var10004;
+      if (var2) {
+         var10004 = (var0) -> {
+            return true;
+         };
+      } else if (var1 instanceof LivingEntity) {
+         LivingEntity var3 = (LivingEntity)var1;
          Objects.requireNonNull((LivingEntity)var1);
-         var2 = var10004::canStandOnFluid;
+         var10004 = var3::canStandOnFluid;
       } else {
-         var2 = (var0) -> {
+         var10004 = (var0) -> {
             return false;
          };
       }
 
-      this(var10001, var10002, var10003, var2, var1);
+      this(var10001, var10002, var10003, var10004, var1);
    }
 
    public boolean isHoldingItem(Item var1) {
@@ -54,6 +61,10 @@ public class EntityCollisionContext implements CollisionContext {
 
    public boolean canStandOnFluid(FluidState var1, FluidState var2) {
       return this.canStandOnFluid.test(var2) && !var1.getType().isSame(var2.getType());
+   }
+
+   public VoxelShape getCollisionShape(BlockState var1, CollisionGetter var2, BlockPos var3) {
+      return var1.getCollisionShape(var2, var3, this);
    }
 
    public boolean isDescending() {

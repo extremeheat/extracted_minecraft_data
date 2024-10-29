@@ -1,13 +1,20 @@
 package net.minecraft.world.item.crafting;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.level.Level;
 
 public class ShapedRecipe implements CraftingRecipe {
@@ -16,6 +23,8 @@ public class ShapedRecipe implements CraftingRecipe {
    final String group;
    final CraftingBookCategory category;
    final boolean showNotification;
+   @Nullable
+   private PlacementInfo placementInfo;
 
    public ShapedRecipe(String var1, CraftingBookCategory var2, ShapedRecipePattern var3, ItemStack var4, boolean var5) {
       super();
@@ -30,11 +39,11 @@ public class ShapedRecipe implements CraftingRecipe {
       this(var1, var2, var3, var4, true);
    }
 
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<? extends ShapedRecipe> getSerializer() {
       return RecipeSerializer.SHAPED_RECIPE;
    }
 
-   public String getGroup() {
+   public String group() {
       return this.group;
    }
 
@@ -42,20 +51,21 @@ public class ShapedRecipe implements CraftingRecipe {
       return this.category;
    }
 
-   public ItemStack getResultItem(HolderLookup.Provider var1) {
-      return this.result;
+   @VisibleForTesting
+   public List<Optional<Ingredient>> getIngredients() {
+      return this.pattern.ingredients();
    }
 
-   public NonNullList<Ingredient> getIngredients() {
-      return this.pattern.ingredients();
+   public PlacementInfo placementInfo() {
+      if (this.placementInfo == null) {
+         this.placementInfo = PlacementInfo.createFromOptionals(this.pattern.ingredients());
+      }
+
+      return this.placementInfo;
    }
 
    public boolean showNotification() {
       return this.showNotification;
-   }
-
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 >= this.pattern.width() && var2 >= this.pattern.height();
    }
 
    public boolean matches(CraftingInput var1, Level var2) {
@@ -63,7 +73,7 @@ public class ShapedRecipe implements CraftingRecipe {
    }
 
    public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
-      return this.getResultItem(var2).copy();
+      return this.result.copy();
    }
 
    public int getWidth() {
@@ -74,13 +84,10 @@ public class ShapedRecipe implements CraftingRecipe {
       return this.pattern.height();
    }
 
-   public boolean isIncomplete() {
-      NonNullList var1 = this.getIngredients();
-      return var1.isEmpty() || var1.stream().filter((var0) -> {
-         return !var0.isEmpty();
-      }).anyMatch((var0) -> {
-         return var0.getItems().length == 0;
-      });
+   public List<RecipeDisplay> display() {
+      return List.of(new ShapedCraftingRecipeDisplay(this.pattern.width(), this.pattern.height(), this.pattern.ingredients().stream().map((var0) -> {
+         return (SlotDisplay)var0.map(Ingredient::display).orElse(SlotDisplay.Empty.INSTANCE);
+      }).toList(), new SlotDisplay.ItemStackSlotDisplay(this.result), new SlotDisplay.ItemSlotDisplay(Items.CRAFTING_TABLE)));
    }
 
    public static class Serializer implements RecipeSerializer<ShapedRecipe> {

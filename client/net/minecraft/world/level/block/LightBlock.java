@@ -5,6 +5,7 @@ import java.util.function.ToIntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -12,8 +13,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -51,7 +52,7 @@ public class LightBlock extends Block implements SimpleWaterloggedBlock {
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (!var2.isClientSide && var4.canUseGameMasterBlocks()) {
          var2.setBlock(var3, (BlockState)var1.cycle(LEVEL), 2);
-         return InteractionResult.SUCCESS;
+         return InteractionResult.SUCCESS_SERVER;
       } else {
          return InteractionResult.CONSUME;
       }
@@ -61,7 +62,7 @@ public class LightBlock extends Block implements SimpleWaterloggedBlock {
       return var4.isHoldingItem(Items.LIGHT) ? Shapes.block() : Shapes.empty();
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1) {
       return var1.getFluidState().isEmpty();
    }
 
@@ -73,12 +74,12 @@ public class LightBlock extends Block implements SimpleWaterloggedBlock {
       return 1.0F;
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
       if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var4.scheduleTick(var5, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6);
+      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    protected FluidState getFluidState(BlockState var1) {

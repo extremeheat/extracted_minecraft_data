@@ -11,8 +11,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.world.flag.FeatureFlagSet;
 
-public record CommonListenerCookie(GameProfile localGameProfile, WorldSessionTelemetryManager telemetryManager, RegistryAccess.Frozen receivedRegistries, FeatureFlagSet enabledFeatures, @Nullable String serverBrand, @Nullable ServerData serverData, @Nullable Screen postDisconnectScreen, Map<ResourceLocation, byte[]> serverCookies, @Nullable ChatComponent.State chatState, boolean strictErrorHandling, Map<String, String> customReportDetails, ServerLinks serverLinks) {
-   public CommonListenerCookie(GameProfile var1, WorldSessionTelemetryManager var2, RegistryAccess.Frozen var3, FeatureFlagSet var4, @Nullable String var5, @Nullable ServerData var6, @Nullable Screen var7, Map<ResourceLocation, byte[]> var8, @Nullable ChatComponent.State var9, @Deprecated(forRemoval = true) boolean var10, Map<String, String> var11, ServerLinks var12) {
+public record CommonListenerCookie(GameProfile localGameProfile, WorldSessionTelemetryManager telemetryManager, RegistryAccess.Frozen receivedRegistries, FeatureFlagSet enabledFeatures, @Nullable String serverBrand, @Nullable ServerData serverData, @Nullable Screen postDisconnectScreen, Map<ResourceLocation, byte[]> serverCookies, @Nullable ChatComponent.State chatState, Map<String, String> customReportDetails, ServerLinks serverLinks) {
+   public CommonListenerCookie(GameProfile var1, WorldSessionTelemetryManager var2, RegistryAccess.Frozen var3, FeatureFlagSet var4, @Nullable String var5, @Nullable ServerData var6, @Nullable Screen var7, Map<ResourceLocation, byte[]> var8, @Nullable ChatComponent.State var9, Map<String, String> var10, ServerLinks var11) {
       super();
       this.localGameProfile = var1;
       this.telemetryManager = var2;
@@ -23,9 +23,8 @@ public record CommonListenerCookie(GameProfile localGameProfile, WorldSessionTel
       this.postDisconnectScreen = var7;
       this.serverCookies = var8;
       this.chatState = var9;
-      this.strictErrorHandling = var10;
-      this.customReportDetails = var11;
-      this.serverLinks = var12;
+      this.customReportDetails = var10;
+      this.serverLinks = var11;
    }
 
    public GameProfile localGameProfile() {
@@ -66,14 +65,6 @@ public record CommonListenerCookie(GameProfile localGameProfile, WorldSessionTel
    @Nullable
    public ChatComponent.State chatState() {
       return this.chatState;
-   }
-
-   /** @deprecated */
-   @Deprecated(
-      forRemoval = true
-   )
-   public boolean strictErrorHandling() {
-      return this.strictErrorHandling;
    }
 
    public Map<String, String> customReportDetails() {

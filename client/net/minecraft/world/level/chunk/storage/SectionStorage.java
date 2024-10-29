@@ -8,15 +8,23 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.OptionalDynamic;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongListIterator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -32,38 +40,77 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
 import org.slf4j.Logger;
 
-public class SectionStorage<R> implements AutoCloseable {
-   private static final Logger LOGGER = LogUtils.getLogger();
+public class SectionStorage<R, P> implements AutoCloseable {
+   static final Logger LOGGER = LogUtils.getLogger();
    private static final String SECTIONS_TAG = "Sections";
    private final SimpleRegionStorage simpleRegionStorage;
    private final Long2ObjectMap<Optional<R>> storage = new Long2ObjectOpenHashMap();
-   private final LongLinkedOpenHashSet dirty = new LongLinkedOpenHashSet();
-   private final Function<Runnable, Codec<R>> codec;
+   private final LongLinkedOpenHashSet dirtyChunks = new LongLinkedOpenHashSet();
+   private final Codec<P> codec;
+   private final Function<R, P> packer;
+   private final BiFunction<P, Runnable, R> unpacker;
    private final Function<Runnable, R> factory;
    private final RegistryAccess registryAccess;
    private final ChunkIOErrorReporter errorReporter;
    protected final LevelHeightAccessor levelHeightAccessor;
+   private final LongSet loadedChunks = new LongOpenHashSet();
+   private final Long2ObjectMap<CompletableFuture<Optional<PackedChunk<P>>>> pendingLoads = new Long2ObjectOpenHashMap();
+   private final Object loadLock = new Object();
 
-   public SectionStorage(SimpleRegionStorage var1, Function<Runnable, Codec<R>> var2, Function<Runnable, R> var3, RegistryAccess var4, ChunkIOErrorReporter var5, LevelHeightAccessor var6) {
+   public SectionStorage(SimpleRegionStorage var1, Codec<P> var2, Function<R, P> var3, BiFunction<P, Runnable, R> var4, Function<Runnable, R> var5, RegistryAccess var6, ChunkIOErrorReporter var7, LevelHeightAccessor var8) {
       super();
       this.simpleRegionStorage = var1;
       this.codec = var2;
-      this.factory = var3;
-      this.registryAccess = var4;
-      this.errorReporter = var5;
-      this.levelHeightAccessor = var6;
+      this.packer = var3;
+      this.unpacker = var4;
+      this.factory = var5;
+      this.registryAccess = var6;
+      this.errorReporter = var7;
+      this.levelHeightAccessor = var8;
    }
 
    protected void tick(BooleanSupplier var1) {
-      while(this.hasWork() && var1.getAsBoolean()) {
-         ChunkPos var2 = SectionPos.of(this.dirty.firstLong()).chunk();
-         this.writeColumn(var2);
+      LongListIterator var2 = this.dirtyChunks.iterator();
+
+      while(var2.hasNext() && var1.getAsBoolean()) {
+         ChunkPos var3 = new ChunkPos(var2.nextLong());
+         var2.remove();
+         this.writeChunk(var3);
+      }
+
+      this.unpackPendingLoads();
+   }
+
+   private void unpackPendingLoads() {
+      synchronized(this.loadLock) {
+         ObjectIterator var2 = Long2ObjectMaps.fastIterator(this.pendingLoads);
+
+         while(var2.hasNext()) {
+            Long2ObjectMap.Entry var3 = (Long2ObjectMap.Entry)var2.next();
+            Optional var4 = (Optional)((CompletableFuture)var3.getValue()).getNow((Object)null);
+            if (var4 != null) {
+               long var5 = var3.getLongKey();
+               this.unpackChunk(new ChunkPos(var5), (PackedChunk)var4.orElse((Object)null));
+               var2.remove();
+               this.loadedChunks.add(var5);
+            }
+         }
+
+      }
+   }
+
+   public void flushAll() {
+      if (!this.dirtyChunks.isEmpty()) {
+         this.dirtyChunks.forEach((var1) -> {
+            this.writeChunk(new ChunkPos(var1));
+         });
+         this.dirtyChunks.clear();
       }
 
    }
 
    public boolean hasWork() {
-      return !this.dirty.isEmpty();
+      return !this.dirtyChunks.isEmpty();
    }
 
    @Nullable
@@ -79,7 +126,7 @@ public class SectionStorage<R> implements AutoCloseable {
          if (var3 != null) {
             return var3;
          } else {
-            this.readColumn(SectionPos.of(var1).chunk());
+            this.unpackChunk(SectionPos.of(var1).chunk());
             var3 = this.get(var1);
             if (var3 == null) {
                throw (IllegalStateException)Util.pauseInIde(new IllegalStateException());
@@ -112,52 +159,71 @@ public class SectionStorage<R> implements AutoCloseable {
       }
    }
 
-   private void readColumn(ChunkPos var1) {
-      Optional var2 = (Optional)this.tryRead(var1).join();
-      RegistryOps var3 = this.registryAccess.createSerializationContext(NbtOps.INSTANCE);
-      this.readColumn(var1, var3, (CompoundTag)var2.orElse((Object)null));
+   public CompletableFuture<?> prefetch(ChunkPos var1) {
+      synchronized(this.loadLock) {
+         long var3 = var1.toLong();
+         return this.loadedChunks.contains(var3) ? CompletableFuture.completedFuture((Object)null) : (CompletableFuture)this.pendingLoads.computeIfAbsent(var3, (var2) -> {
+            return this.tryRead(var1);
+         });
+      }
    }
 
-   private CompletableFuture<Optional<CompoundTag>> tryRead(ChunkPos var1) {
-      return this.simpleRegionStorage.read(var1).exceptionally((var2) -> {
-         if (var2 instanceof IOException var3) {
+   private void unpackChunk(ChunkPos var1) {
+      long var2 = var1.toLong();
+      CompletableFuture var4;
+      synchronized(this.loadLock) {
+         if (!this.loadedChunks.add(var2)) {
+            return;
+         }
+
+         var4 = (CompletableFuture)this.pendingLoads.computeIfAbsent(var2, (var2x) -> {
+            return this.tryRead(var1);
+         });
+      }
+
+      this.unpackChunk(var1, (PackedChunk)((Optional)var4.join()).orElse((Object)null));
+      synchronized(this.loadLock) {
+         this.pendingLoads.remove(var2);
+      }
+   }
+
+   private CompletableFuture<Optional<PackedChunk<P>>> tryRead(ChunkPos var1) {
+      RegistryOps var2 = this.registryAccess.createSerializationContext(NbtOps.INSTANCE);
+      return this.simpleRegionStorage.read(var1).thenApplyAsync((var2x) -> {
+         return var2x.map((var2xx) -> {
+            return SectionStorage.PackedChunk.parse(this.codec, var2, var2xx, this.simpleRegionStorage, this.levelHeightAccessor);
+         });
+      }, Util.backgroundExecutor().forName("parseSection")).exceptionally((var2x) -> {
+         if (var2x instanceof IOException var3) {
             LOGGER.error("Error reading chunk {} data from disk", var1, var3);
             this.errorReporter.reportChunkLoadFailure(var3, this.simpleRegionStorage.storageInfo(), var1);
             return Optional.empty();
          } else {
-            throw new CompletionException(var2);
+            throw new CompletionException(var2x);
          }
       });
    }
 
-   private void readColumn(ChunkPos var1, RegistryOps<Tag> var2, @Nullable CompoundTag var3) {
-      if (var3 == null) {
-         for(int var4 = this.levelHeightAccessor.getMinSection(); var4 < this.levelHeightAccessor.getMaxSection(); ++var4) {
-            this.storage.put(getKey(var1, var4), Optional.empty());
+   private void unpackChunk(ChunkPos var1, @Nullable PackedChunk<P> var2) {
+      if (var2 == null) {
+         for(int var3 = this.levelHeightAccessor.getMinSectionY(); var3 <= this.levelHeightAccessor.getMaxSectionY(); ++var3) {
+            this.storage.put(getKey(var1, var3), Optional.empty());
          }
       } else {
-         Dynamic var14 = new Dynamic(var2, var3);
-         int var5 = getVersion(var14);
-         int var6 = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
-         boolean var7 = var5 != var6;
-         Dynamic var8 = this.simpleRegionStorage.upgradeChunkTag(var14, var5);
-         OptionalDynamic var9 = var8.get("Sections");
+         boolean var8 = var2.versionChanged();
 
-         for(int var10 = this.levelHeightAccessor.getMinSection(); var10 < this.levelHeightAccessor.getMaxSection(); ++var10) {
-            long var11 = getKey(var1, var10);
-            Optional var13 = var9.get(Integer.toString(var10)).result().flatMap((var3x) -> {
-               DataResult var10000 = ((Codec)this.codec.apply(() -> {
-                  this.setDirty(var11);
-               })).parse(var3x);
-               Logger var10001 = LOGGER;
-               Objects.requireNonNull(var10001);
-               return var10000.resultOrPartial(var10001::error);
+         for(int var4 = this.levelHeightAccessor.getMinSectionY(); var4 <= this.levelHeightAccessor.getMaxSectionY(); ++var4) {
+            long var5 = getKey(var1, var4);
+            Optional var7 = Optional.ofNullable(var2.sectionsByY.get(var4)).map((var3x) -> {
+               return this.unpacker.apply(var3x, () -> {
+                  this.setDirty(var5);
+               });
             });
-            this.storage.put(var11, var13);
-            var13.ifPresent((var4x) -> {
-               this.onSectionLoad(var11);
-               if (var7) {
-                  this.setDirty(var11);
+            this.storage.put(var5, var7);
+            var7.ifPresent((var4x) -> {
+               this.onSectionLoad(var5);
+               if (var8) {
+                  this.setDirty(var5);
                }
 
             });
@@ -166,9 +232,9 @@ public class SectionStorage<R> implements AutoCloseable {
 
    }
 
-   private void writeColumn(ChunkPos var1) {
+   private void writeChunk(ChunkPos var1) {
       RegistryOps var2 = this.registryAccess.createSerializationContext(NbtOps.INSTANCE);
-      Dynamic var3 = this.writeColumn(var1, var2);
+      Dynamic var3 = this.writeChunk(var1, var2);
       Tag var4 = (Tag)var3.getValue();
       if (var4 instanceof CompoundTag) {
          this.simpleRegionStorage.write(var1, (CompoundTag)var4).exceptionally((var2x) -> {
@@ -181,17 +247,14 @@ public class SectionStorage<R> implements AutoCloseable {
 
    }
 
-   private <T> Dynamic<T> writeColumn(ChunkPos var1, DynamicOps<T> var2) {
+   private <T> Dynamic<T> writeChunk(ChunkPos var1, DynamicOps<T> var2) {
       HashMap var3 = Maps.newHashMap();
 
-      for(int var4 = this.levelHeightAccessor.getMinSection(); var4 < this.levelHeightAccessor.getMaxSection(); ++var4) {
+      for(int var4 = this.levelHeightAccessor.getMinSectionY(); var4 <= this.levelHeightAccessor.getMaxSectionY(); ++var4) {
          long var5 = getKey(var1, var4);
-         this.dirty.remove(var5);
          Optional var7 = (Optional)this.storage.get(var5);
          if (var7 != null && !var7.isEmpty()) {
-            DataResult var8 = ((Codec)this.codec.apply(() -> {
-               this.setDirty(var5);
-            })).encodeStart(var2, var7.get());
+            DataResult var8 = this.codec.encodeStart(var2, this.packer.apply(var7.get()));
             String var9 = Integer.toString(var4);
             Logger var10001 = LOGGER;
             Objects.requireNonNull(var10001);
@@ -214,30 +277,66 @@ public class SectionStorage<R> implements AutoCloseable {
    protected void setDirty(long var1) {
       Optional var3 = (Optional)this.storage.get(var1);
       if (var3 != null && !var3.isEmpty()) {
-         this.dirty.add(var1);
+         this.dirtyChunks.add(ChunkPos.asLong(SectionPos.x(var1), SectionPos.z(var1)));
       } else {
          LOGGER.warn("No data for position: {}", SectionPos.of(var1));
       }
    }
 
-   private static int getVersion(Dynamic<?> var0) {
+   static int getVersion(Dynamic<?> var0) {
       return var0.get("DataVersion").asInt(1945);
    }
 
    public void flush(ChunkPos var1) {
-      if (this.hasWork()) {
-         for(int var2 = this.levelHeightAccessor.getMinSection(); var2 < this.levelHeightAccessor.getMaxSection(); ++var2) {
-            long var3 = getKey(var1, var2);
-            if (this.dirty.contains(var3)) {
-               this.writeColumn(var1);
-               return;
-            }
-         }
+      if (this.dirtyChunks.remove(var1.toLong())) {
+         this.writeChunk(var1);
       }
 
    }
 
    public void close() throws IOException {
       this.simpleRegionStorage.close();
+   }
+
+   private static record PackedChunk<T>(Int2ObjectMap<T> sectionsByY, boolean versionChanged) {
+      final Int2ObjectMap<T> sectionsByY;
+
+      private PackedChunk(Int2ObjectMap<T> var1, boolean var2) {
+         super();
+         this.sectionsByY = var1;
+         this.versionChanged = var2;
+      }
+
+      public static <T> PackedChunk<T> parse(Codec<T> var0, DynamicOps<Tag> var1, Tag var2, SimpleRegionStorage var3, LevelHeightAccessor var4) {
+         Dynamic var5 = new Dynamic(var1, var2);
+         int var6 = SectionStorage.getVersion(var5);
+         int var7 = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+         boolean var8 = var6 != var7;
+         Dynamic var9 = var3.upgradeChunkTag(var5, var6);
+         OptionalDynamic var10 = var9.get("Sections");
+         Int2ObjectOpenHashMap var11 = new Int2ObjectOpenHashMap();
+
+         for(int var12 = var4.getMinSectionY(); var12 <= var4.getMaxSectionY(); ++var12) {
+            Optional var13 = var10.get(Integer.toString(var12)).result().flatMap((var1x) -> {
+               DataResult var10000 = var0.parse(var1x);
+               Logger var10001 = SectionStorage.LOGGER;
+               Objects.requireNonNull(var10001);
+               return var10000.resultOrPartial(var10001::error);
+            });
+            if (var13.isPresent()) {
+               var11.put(var12, var13.get());
+            }
+         }
+
+         return new PackedChunk(var11, var8);
+      }
+
+      public Int2ObjectMap<T> sectionsByY() {
+         return this.sectionsByY;
+      }
+
+      public boolean versionChanged() {
+         return this.versionChanged;
+      }
    }
 }

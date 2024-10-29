@@ -4,13 +4,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.StriderModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.SaddleLayer;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.entity.state.StriderRenderState;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Strider;
 
-public class StriderRenderer extends MobRenderer<Strider, StriderModel<Strider>> {
+public class StriderRenderer extends MobRenderer<Strider, StriderRenderState, StriderModel> {
    private static final ResourceLocation STRIDER_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/strider/strider.png");
    private static final ResourceLocation COLD_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/strider/strider_cold.png");
    private static final float SHADOW_RADIUS = 0.5F;
@@ -20,36 +20,52 @@ public class StriderRenderer extends MobRenderer<Strider, StriderModel<Strider>>
       this.addLayer(new SaddleLayer(this, new StriderModel(var1.bakeLayer(ModelLayers.STRIDER_SADDLE)), ResourceLocation.withDefaultNamespace("textures/entity/strider/strider_saddle.png")));
    }
 
-   public ResourceLocation getTextureLocation(Strider var1) {
-      return var1.isSuffocating() ? COLD_LOCATION : STRIDER_LOCATION;
+   public ResourceLocation getTextureLocation(StriderRenderState var1) {
+      return var1.isSuffocating ? COLD_LOCATION : STRIDER_LOCATION;
    }
 
-   protected float getShadowRadius(Strider var1) {
-      float var2 = super.getShadowRadius((Mob)var1);
-      return var1.isBaby() ? var2 * 0.5F : var2;
+   protected float getShadowRadius(StriderRenderState var1) {
+      float var2 = super.getShadowRadius((LivingEntityRenderState)var1);
+      return var1.isBaby ? var2 * 0.5F : var2;
    }
 
-   protected void scale(Strider var1, PoseStack var2, float var3) {
-      float var4 = var1.getAgeScale();
-      var2.scale(var4, var4, var4);
+   public StriderRenderState createRenderState() {
+      return new StriderRenderState();
    }
 
-   protected boolean isShaking(Strider var1) {
-      return super.isShaking(var1) || var1.isSuffocating();
+   public void extractRenderState(Strider var1, StriderRenderState var2, float var3) {
+      super.extractRenderState(var1, var2, var3);
+      var2.isSaddled = var1.isSaddled();
+      var2.isSuffocating = var1.isSuffocating();
+      var2.isRidden = var1.isVehicle();
+   }
+
+   protected void scale(StriderRenderState var1, PoseStack var2) {
+      float var3 = var1.ageScale;
+      var2.scale(var3, var3, var3);
+   }
+
+   protected boolean isShaking(StriderRenderState var1) {
+      return super.isShaking(var1) || var1.isSuffocating;
    }
 
    // $FF: synthetic method
-   protected float getShadowRadius(final LivingEntity var1) {
-      return this.getShadowRadius((Strider)var1);
+   protected float getShadowRadius(final LivingEntityRenderState var1) {
+      return this.getShadowRadius((StriderRenderState)var1);
    }
 
    // $FF: synthetic method
-   protected boolean isShaking(final LivingEntity var1) {
-      return this.isShaking((Strider)var1);
+   protected boolean isShaking(final LivingEntityRenderState var1) {
+      return this.isShaking((StriderRenderState)var1);
    }
 
    // $FF: synthetic method
-   protected float getShadowRadius(final Entity var1) {
-      return this.getShadowRadius((Strider)var1);
+   public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
+      return this.getTextureLocation((StriderRenderState)var1);
+   }
+
+   // $FF: synthetic method
+   public EntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

@@ -65,7 +65,7 @@ public class CountOnEveryLayerPlacement extends PlacementModifier {
       int var6 = 0;
       BlockState var7 = var0.getBlockState(var5);
 
-      for(int var8 = var2; var8 >= var0.getMinBuildHeight() + 1; --var8) {
+      for(int var8 = var2; var8 >= var0.getMinY() + 1; --var8) {
          var5.setY(var8 - 1);
          BlockState var9 = var0.getBlockState(var5);
          if (!isEmpty(var9) && isEmpty(var7) && !var9.is(Blocks.BEDROCK)) {

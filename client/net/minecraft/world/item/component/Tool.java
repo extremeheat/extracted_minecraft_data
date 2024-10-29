@@ -5,15 +5,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -93,32 +90,16 @@ public record Tool(List<Rule> rules, float defaultMiningSpeed, int damagePerBloc
          this.correctForDrops = var3;
       }
 
-      public static Rule minesAndDrops(List<Block> var0, float var1) {
-         return forBlocks(var0, Optional.of(var1), Optional.of(true));
+      public static Rule minesAndDrops(HolderSet<Block> var0, float var1) {
+         return new Rule(var0, Optional.of(var1), Optional.of(true));
       }
 
-      public static Rule minesAndDrops(TagKey<Block> var0, float var1) {
-         return forTag(var0, Optional.of(var1), Optional.of(true));
+      public static Rule deniesDrops(HolderSet<Block> var0) {
+         return new Rule(var0, Optional.empty(), Optional.of(false));
       }
 
-      public static Rule deniesDrops(TagKey<Block> var0) {
-         return forTag(var0, Optional.empty(), Optional.of(false));
-      }
-
-      public static Rule overrideSpeed(TagKey<Block> var0, float var1) {
-         return forTag(var0, Optional.of(var1), Optional.empty());
-      }
-
-      public static Rule overrideSpeed(List<Block> var0, float var1) {
-         return forBlocks(var0, Optional.of(var1), Optional.empty());
-      }
-
-      private static Rule forTag(TagKey<Block> var0, Optional<Float> var1, Optional<Boolean> var2) {
-         return new Rule(BuiltInRegistries.BLOCK.getOrCreateTag(var0), var1, var2);
-      }
-
-      private static Rule forBlocks(List<Block> var0, Optional<Float> var1, Optional<Boolean> var2) {
-         return new Rule(HolderSet.direct((List)var0.stream().map(Block::builtInRegistryHolder).collect(Collectors.toList())), var1, var2);
+      public static Rule overrideSpeed(HolderSet<Block> var0, float var1) {
+         return new Rule(var0, Optional.of(var1), Optional.empty());
       }
 
       public HolderSet<Block> blocks() {

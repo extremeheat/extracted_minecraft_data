@@ -20,7 +20,7 @@ import net.minecraft.server.RegistryLayer;
 import net.minecraft.server.packs.repository.KnownPack;
 
 public class RegistrySynchronization {
-   public static final Set<ResourceKey<? extends Registry<?>>> NETWORKABLE_REGISTRIES;
+   private static final Set<ResourceKey<? extends Registry<?>>> NETWORKABLE_REGISTRIES;
 
    public RegistrySynchronization() {
       super();
@@ -33,9 +33,9 @@ public class RegistrySynchronization {
    }
 
    private static <T> void packRegistry(DynamicOps<Tag> var0, RegistryDataLoader.RegistryData<T> var1, RegistryAccess var2, Set<KnownPack> var3, BiConsumer<ResourceKey<? extends Registry<?>>, List<PackedRegistryEntry>> var4) {
-      var2.registry(var1.key()).ifPresent((var4x) -> {
+      var2.lookup(var1.key()).ifPresent((var4x) -> {
          ArrayList var5 = new ArrayList(var4x.size());
-         var4x.holders().forEach((var5x) -> {
+         var4x.listElements().forEach((var5x) -> {
             Optional var10000 = var4x.registrationInfo(var5x.key()).flatMap(RegistrationInfo::knownPackInfo);
             Objects.requireNonNull(var3);
             boolean var6 = var10000.filter(var3::contains).isPresent();
@@ -58,7 +58,7 @@ public class RegistrySynchronization {
 
    private static Stream<RegistryAccess.RegistryEntry<?>> ownedNetworkableRegistries(RegistryAccess var0) {
       return var0.registries().filter((var0x) -> {
-         return NETWORKABLE_REGISTRIES.contains(var0x.key());
+         return isNetworkable(var0x.key());
       });
    }
 
@@ -70,6 +70,10 @@ public class RegistrySynchronization {
       Stream var1 = var0.getLayer(RegistryLayer.STATIC).registries();
       Stream var2 = networkedRegistries(var0);
       return Stream.concat(var2, var1);
+   }
+
+   public static boolean isNetworkable(ResourceKey<? extends Registry<?>> var0) {
+      return NETWORKABLE_REGISTRIES.contains(var0);
    }
 
    static {

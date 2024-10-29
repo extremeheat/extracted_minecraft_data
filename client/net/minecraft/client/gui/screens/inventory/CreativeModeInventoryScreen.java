@@ -25,8 +25,10 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.SessionSearchTrees;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.inventory.Hotbar;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.searchtree.SearchTree;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
@@ -56,7 +58,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 
-public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<ItemPickerMenu> {
+public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPickerMenu> {
    private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace("container/creative_inventory/scroller");
    private static final ResourceLocation SCROLLER_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("container/creative_inventory/scroller_disabled");
    private static final ResourceLocation[] UNSELECTED_TOP_TABS = new ResourceLocation[]{ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_1"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_2"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_3"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_4"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_5"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_6"), ResourceLocation.withDefaultNamespace("container/creative_inventory/tab_top_unselected_7")};
@@ -85,6 +87,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
    private boolean hasClickedOutside;
    private final Set<TagKey<Item>> visibleTags = new HashSet();
    private final boolean displayOperatorCreativeTab;
+   private final EffectsInInventory effects;
 
    public CreativeModeInventoryScreen(LocalPlayer var1, FeatureFlagSet var2, boolean var3) {
       super(new ItemPickerMenu(var1), var1.getInventory(), CommonComponents.EMPTY);
@@ -93,6 +96,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       this.imageWidth = 195;
       this.displayOperatorCreativeTab = var3;
       this.tryRebuildTabContents(var1.connection.searchTrees(), var2, this.hasPermissions(var1), var1.level().registryAccess());
+      this.effects = new EffectsInInventory(this);
    }
 
    private boolean hasPermissions(Player var1) {
@@ -176,127 +180,132 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
 
       boolean var5 = var4 == ClickType.QUICK_MOVE;
       var4 = var2 == -999 && var4 == ClickType.PICKUP ? ClickType.THROW : var4;
-      ItemStack var6;
-      if (var1 == null && selectedTab.getType() != CreativeModeTab.Type.INVENTORY && var4 != ClickType.QUICK_CRAFT) {
-         if (!((ItemPickerMenu)this.menu).getCarried().isEmpty() && this.hasClickedOutside) {
-            if (var3 == 0) {
-               this.minecraft.player.drop(((ItemPickerMenu)this.menu).getCarried(), true);
-               this.minecraft.gameMode.handleCreativeModeItemDrop(((ItemPickerMenu)this.menu).getCarried());
-               ((ItemPickerMenu)this.menu).setCarried(ItemStack.EMPTY);
-            }
+      if (var4 != ClickType.THROW || this.minecraft.player.canDropItems()) {
+         this.onMouseClickAction(var1, var4);
+         ItemStack var6;
+         if (var1 == null && selectedTab.getType() != CreativeModeTab.Type.INVENTORY && var4 != ClickType.QUICK_CRAFT) {
+            if (!((ItemPickerMenu)this.menu).getCarried().isEmpty() && this.hasClickedOutside) {
+               if (!this.minecraft.player.canDropItems()) {
+                  return;
+               }
 
-            if (var3 == 1) {
-               var6 = ((ItemPickerMenu)this.menu).getCarried().split(1);
-               this.minecraft.player.drop(var6, true);
-               this.minecraft.gameMode.handleCreativeModeItemDrop(var6);
-            }
-         }
-      } else {
-         if (var1 != null && !var1.mayPickup(this.minecraft.player)) {
-            return;
-         }
-
-         if (var1 == this.destroyItemSlot && var5) {
-            for(int var10 = 0; var10 < this.minecraft.player.inventoryMenu.getItems().size(); ++var10) {
-               this.minecraft.gameMode.handleCreativeModeItemAdd(ItemStack.EMPTY, var10);
-            }
-         } else {
-            ItemStack var7;
-            if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
-               if (var1 == this.destroyItemSlot) {
-                  ((ItemPickerMenu)this.menu).setCarried(ItemStack.EMPTY);
-               } else if (var4 == ClickType.THROW && var1 != null && var1.hasItem()) {
-                  var6 = var1.remove(var3 == 0 ? 1 : var1.getItem().getMaxStackSize());
-                  var7 = var1.getItem();
-                  this.minecraft.player.drop(var6, true);
-                  this.minecraft.gameMode.handleCreativeModeItemDrop(var6);
-                  this.minecraft.gameMode.handleCreativeModeItemAdd(var7, ((SlotWrapper)var1).target.index);
-               } else if (var4 == ClickType.THROW && !((ItemPickerMenu)this.menu).getCarried().isEmpty()) {
+               if (var3 == 0) {
                   this.minecraft.player.drop(((ItemPickerMenu)this.menu).getCarried(), true);
                   this.minecraft.gameMode.handleCreativeModeItemDrop(((ItemPickerMenu)this.menu).getCarried());
                   ((ItemPickerMenu)this.menu).setCarried(ItemStack.EMPTY);
-               } else {
-                  this.minecraft.player.inventoryMenu.clicked(var1 == null ? var2 : ((SlotWrapper)var1).target.index, var3, var4, this.minecraft.player);
-                  this.minecraft.player.inventoryMenu.broadcastChanges();
+               }
+
+               if (var3 == 1) {
+                  var6 = ((ItemPickerMenu)this.menu).getCarried().split(1);
+                  this.minecraft.player.drop(var6, true);
+                  this.minecraft.gameMode.handleCreativeModeItemDrop(var6);
+               }
+            }
+         } else {
+            if (var1 != null && !var1.mayPickup(this.minecraft.player)) {
+               return;
+            }
+
+            if (var1 == this.destroyItemSlot && var5) {
+               for(int var9 = 0; var9 < this.minecraft.player.inventoryMenu.getItems().size(); ++var9) {
+                  this.minecraft.player.inventoryMenu.getSlot(var9).set(ItemStack.EMPTY);
+                  this.minecraft.gameMode.handleCreativeModeItemAdd(ItemStack.EMPTY, var9);
                }
             } else {
-               int var8;
-               if (var4 != ClickType.QUICK_CRAFT && var1.container == CONTAINER) {
-                  var6 = ((ItemPickerMenu)this.menu).getCarried();
-                  var7 = var1.getItem();
-                  if (var4 == ClickType.SWAP) {
-                     if (!var7.isEmpty()) {
-                        this.minecraft.player.getInventory().setItem(var3, var7.copyWithCount(var7.getMaxStackSize()));
+               ItemStack var7;
+               if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
+                  if (var1 == this.destroyItemSlot) {
+                     ((ItemPickerMenu)this.menu).setCarried(ItemStack.EMPTY);
+                  } else if (var4 == ClickType.THROW && var1 != null && var1.hasItem()) {
+                     var6 = var1.remove(var3 == 0 ? 1 : var1.getItem().getMaxStackSize());
+                     var7 = var1.getItem();
+                     this.minecraft.player.drop(var6, true);
+                     this.minecraft.gameMode.handleCreativeModeItemDrop(var6);
+                     this.minecraft.gameMode.handleCreativeModeItemAdd(var7, ((SlotWrapper)var1).target.index);
+                  } else if (var4 == ClickType.THROW && var2 == -999 && !((ItemPickerMenu)this.menu).getCarried().isEmpty()) {
+                     this.minecraft.player.drop(((ItemPickerMenu)this.menu).getCarried(), true);
+                     this.minecraft.gameMode.handleCreativeModeItemDrop(((ItemPickerMenu)this.menu).getCarried());
+                     ((ItemPickerMenu)this.menu).setCarried(ItemStack.EMPTY);
+                  } else {
+                     this.minecraft.player.inventoryMenu.clicked(var1 == null ? var2 : ((SlotWrapper)var1).target.index, var3, var4, this.minecraft.player);
+                     this.minecraft.player.inventoryMenu.broadcastChanges();
+                  }
+               } else {
+                  ItemStack var8;
+                  if (var4 != ClickType.QUICK_CRAFT && var1.container == CONTAINER) {
+                     var6 = ((ItemPickerMenu)this.menu).getCarried();
+                     var7 = var1.getItem();
+                     if (var4 == ClickType.SWAP) {
+                        if (!var7.isEmpty()) {
+                           this.minecraft.player.getInventory().setItem(var3, var7.copyWithCount(var7.getMaxStackSize()));
+                           this.minecraft.player.inventoryMenu.broadcastChanges();
+                        }
+
+                        return;
+                     }
+
+                     if (var4 == ClickType.CLONE) {
+                        if (((ItemPickerMenu)this.menu).getCarried().isEmpty() && var1.hasItem()) {
+                           var8 = var1.getItem();
+                           ((ItemPickerMenu)this.menu).setCarried(var8.copyWithCount(var8.getMaxStackSize()));
+                        }
+
+                        return;
+                     }
+
+                     if (var4 == ClickType.THROW) {
+                        if (!var7.isEmpty()) {
+                           var8 = var7.copyWithCount(var3 == 0 ? 1 : var7.getMaxStackSize());
+                           this.minecraft.player.drop(var8, true);
+                           this.minecraft.gameMode.handleCreativeModeItemDrop(var8);
+                        }
+
+                        return;
+                     }
+
+                     if (!var6.isEmpty() && !var7.isEmpty() && ItemStack.isSameItemSameComponents(var6, var7)) {
+                        if (var3 == 0) {
+                           if (var5) {
+                              var6.setCount(var6.getMaxStackSize());
+                           } else if (var6.getCount() < var6.getMaxStackSize()) {
+                              var6.grow(1);
+                           }
+                        } else {
+                           var6.shrink(1);
+                        }
+                     } else if (!var7.isEmpty() && var6.isEmpty()) {
+                        int var11 = var5 ? var7.getMaxStackSize() : var7.getCount();
+                        ((ItemPickerMenu)this.menu).setCarried(var7.copyWithCount(var11));
+                     } else if (var3 == 0) {
+                        ((ItemPickerMenu)this.menu).setCarried(ItemStack.EMPTY);
+                     } else if (!((ItemPickerMenu)this.menu).getCarried().isEmpty()) {
+                        ((ItemPickerMenu)this.menu).getCarried().shrink(1);
+                     }
+                  } else if (this.menu != null) {
+                     var6 = var1 == null ? ItemStack.EMPTY : ((ItemPickerMenu)this.menu).getSlot(var1.index).getItem();
+                     ((ItemPickerMenu)this.menu).clicked(var1 == null ? var2 : var1.index, var3, var4, this.minecraft.player);
+                     int var10;
+                     if (AbstractContainerMenu.getQuickcraftHeader(var3) == 2) {
+                        for(var10 = 0; var10 < 9; ++var10) {
+                           this.minecraft.gameMode.handleCreativeModeItemAdd(((ItemPickerMenu)this.menu).getSlot(45 + var10).getItem(), 36 + var10);
+                        }
+                     } else if (var1 != null && Inventory.isHotbarSlot(var1.getContainerSlot()) && selectedTab.getType() != CreativeModeTab.Type.INVENTORY) {
+                        if (var4 == ClickType.THROW && !var6.isEmpty() && !((ItemPickerMenu)this.menu).getCarried().isEmpty()) {
+                           var10 = var3 == 0 ? 1 : var6.getCount();
+                           var8 = var6.copyWithCount(var10);
+                           var6.shrink(var10);
+                           this.minecraft.player.drop(var8, true);
+                           this.minecraft.gameMode.handleCreativeModeItemDrop(var8);
+                        }
+
                         this.minecraft.player.inventoryMenu.broadcastChanges();
                      }
-
-                     return;
-                  }
-
-                  ItemStack var12;
-                  if (var4 == ClickType.CLONE) {
-                     if (((ItemPickerMenu)this.menu).getCarried().isEmpty() && var1.hasItem()) {
-                        var12 = var1.getItem();
-                        ((ItemPickerMenu)this.menu).setCarried(var12.copyWithCount(var12.getMaxStackSize()));
-                     }
-
-                     return;
-                  }
-
-                  if (var4 == ClickType.THROW) {
-                     if (!var7.isEmpty()) {
-                        var12 = var7.copyWithCount(var3 == 0 ? 1 : var7.getMaxStackSize());
-                        this.minecraft.player.drop(var12, true);
-                        this.minecraft.gameMode.handleCreativeModeItemDrop(var12);
-                     }
-
-                     return;
-                  }
-
-                  if (!var6.isEmpty() && !var7.isEmpty() && ItemStack.isSameItemSameComponents(var6, var7)) {
-                     if (var3 == 0) {
-                        if (var5) {
-                           var6.setCount(var6.getMaxStackSize());
-                        } else if (var6.getCount() < var6.getMaxStackSize()) {
-                           var6.grow(1);
-                        }
-                     } else {
-                        var6.shrink(1);
-                     }
-                  } else if (!var7.isEmpty() && var6.isEmpty()) {
-                     var8 = var5 ? var7.getMaxStackSize() : var7.getCount();
-                     ((ItemPickerMenu)this.menu).setCarried(var7.copyWithCount(var8));
-                  } else if (var3 == 0) {
-                     ((ItemPickerMenu)this.menu).setCarried(ItemStack.EMPTY);
-                  } else if (!((ItemPickerMenu)this.menu).getCarried().isEmpty()) {
-                     ((ItemPickerMenu)this.menu).getCarried().shrink(1);
-                  }
-               } else if (this.menu != null) {
-                  var6 = var1 == null ? ItemStack.EMPTY : ((ItemPickerMenu)this.menu).getSlot(var1.index).getItem();
-                  ((ItemPickerMenu)this.menu).clicked(var1 == null ? var2 : var1.index, var3, var4, this.minecraft.player);
-                  if (AbstractContainerMenu.getQuickcraftHeader(var3) == 2) {
-                     for(int var11 = 0; var11 < 9; ++var11) {
-                        this.minecraft.gameMode.handleCreativeModeItemAdd(((ItemPickerMenu)this.menu).getSlot(45 + var11).getItem(), 36 + var11);
-                     }
-                  } else if (var1 != null) {
-                     var7 = ((ItemPickerMenu)this.menu).getSlot(var1.index).getItem();
-                     this.minecraft.gameMode.handleCreativeModeItemAdd(var7, var1.index - ((ItemPickerMenu)this.menu).slots.size() + 9 + 36);
-                     var8 = 45 + var3;
-                     if (var4 == ClickType.SWAP) {
-                        this.minecraft.gameMode.handleCreativeModeItemAdd(var6, var8 - ((ItemPickerMenu)this.menu).slots.size() + 9 + 36);
-                     } else if (var4 == ClickType.THROW && !var6.isEmpty()) {
-                        ItemStack var9 = var6.copyWithCount(var3 == 0 ? 1 : var6.getMaxStackSize());
-                        this.minecraft.player.drop(var9, true);
-                        this.minecraft.gameMode.handleCreativeModeItemDrop(var9);
-                     }
-
-                     this.minecraft.player.inventoryMenu.broadcastChanges();
                   }
                }
             }
          }
-      }
 
+      }
    }
 
    private boolean isCreativeSlot(@Nullable Slot var1) {
@@ -449,7 +458,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          };
       }
 
-      Stream var10000 = BuiltInRegistries.ITEM.getTagNames().filter((var1x) -> {
+      Stream var10000 = BuiltInRegistries.ITEM.getTags().map(HolderSet.Named::key).filter((var1x) -> {
          return var3.test(var1x.location());
       });
       Set var10001 = this.visibleTags;
@@ -613,7 +622,9 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
    }
 
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
-      if (!this.canScroll()) {
+      if (super.mouseScrolled(var1, var3, var5, var7)) {
+         return true;
+      } else if (!this.canScroll()) {
          return false;
       } else {
          this.scrollOffs = ((ItemPickerMenu)this.menu).subtractInputFromScroll(this.scrollOffs, var7);
@@ -653,6 +664,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
+      this.effects.render(var1, var2, var3, var4);
       Iterator var5 = CreativeModeTabs.tabs().iterator();
 
       while(var5.hasNext()) {
@@ -667,6 +679,10 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       }
 
       this.renderTooltip(var1, var2, var3);
+   }
+
+   public boolean showsActiveEffects() {
+      return this.effects.canSeeEffects();
    }
 
    public List<Component> getTooltipFromContainerItem(ItemStack var1) {
@@ -713,14 +729,14 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          }
       }
 
-      var1.blit(selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(RenderType::guiTextured, selectedTab.getBackgroundTexture(), this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       this.searchBox.render(var1, var3, var4, var2);
       int var9 = this.leftPos + 175;
       int var10 = this.topPos + 18;
       int var7 = var10 + 112;
       if (selectedTab.canScroll()) {
          ResourceLocation var8 = this.canScroll() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
-         var1.blitSprite(var8, var9, var10 + (int)((float)(var7 - var10 - 17) * this.scrollOffs), 12, 15);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var8, var9, var10 + (int)((float)(var7 - var10 - 17) * this.scrollOffs), 12, 15);
       }
 
       this.renderTabButton(var1, selectedTab);
@@ -782,7 +798,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          var8 = var3 ? SELECTED_BOTTOM_TABS : UNSELECTED_BOTTOM_TABS;
       }
 
-      var1.blitSprite(var8[Mth.clamp(var5, 0, var8.length)], var6, var7, 26, 32);
+      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var8[Mth.clamp(var5, 0, var8.length)], var6, var7, 26, 32);
       var1.pose().pushPose();
       var1.pose().translate(0.0F, 0.0F, 100.0F);
       var6 += 5;
@@ -833,17 +849,13 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
          this.inventoryMenu = var1.inventoryMenu;
          Inventory var2 = var1.getInventory();
 
-         int var3;
-         for(var3 = 0; var3 < 5; ++var3) {
+         for(int var3 = 0; var3 < 5; ++var3) {
             for(int var4 = 0; var4 < 9; ++var4) {
                this.addSlot(new CustomCreativeSlot(CreativeModeInventoryScreen.CONTAINER, var3 * 9 + var4, 9 + var4 * 18, 18 + var3 * 18));
             }
          }
 
-         for(var3 = 0; var3 < 9; ++var3) {
-            this.addSlot(new Slot(var2, var3, 9 + var3 * 18, 112));
-         }
-
+         this.addInventoryHotbarSlots(var2, 9, 112);
          this.scrollTo(0.0F);
       }
 

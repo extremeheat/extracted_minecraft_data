@@ -79,7 +79,7 @@ public class NbtToSnbt implements DataProvider {
                LOGGER.error("Failed to read structure input directory", var8);
                return CompletableFuture.completedFuture((Object)null);
             }
-         }, Util.backgroundExecutor()).thenCompose((var0) -> {
+         }, Util.backgroundExecutor().forName("NbtToSnbt")).thenCompose((var0) -> {
             return var0;
          }));
       }

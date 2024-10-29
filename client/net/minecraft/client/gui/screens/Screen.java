@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import java.io.File;
 import java.net.URI;
@@ -17,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
-import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.NarratorStatus;
@@ -42,6 +40,7 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositione
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.renderer.CubeMap;
 import net.minecraft.client.renderer.PanoramaRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -373,12 +372,12 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
          this.renderPanorama(var1, var4);
       }
 
-      this.renderBlurredBackground(var4);
+      this.renderBlurredBackground();
       this.renderMenuBackground(var1);
    }
 
-   protected void renderBlurredBackground(float var1) {
-      this.minecraft.gameRenderer.processBlurEffect(var1);
+   protected void renderBlurredBackground() {
+      this.minecraft.gameRenderer.processBlurEffect();
       this.minecraft.getMainRenderTarget().bindWrite(false);
    }
 
@@ -396,9 +395,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    public static void renderMenuBackgroundTexture(GuiGraphics var0, ResourceLocation var1, int var2, int var3, float var4, float var5, int var6, int var7) {
       boolean var8 = true;
-      RenderSystem.enableBlend();
-      var0.blit(var1, var2, var3, 0, var4, var5, var6, var7, 32, 32);
-      RenderSystem.disableBlend();
+      var0.blit(RenderType::guiTextured, var1, var2, var3, var4, var5, var6, var7, 32, 32);
    }
 
    public void renderTransparentBackground(GuiGraphics var1) {
@@ -451,17 +448,11 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.repositionElements();
    }
 
-   public static void wrapScreenError(Runnable var0, String var1, String var2) {
-      try {
-         var0.run();
-      } catch (Throwable var6) {
-         CrashReport var4 = CrashReport.forThrowable(var6, var1);
-         CrashReportCategory var5 = var4.addCategory("Affected screen");
-         var5.setDetail("Screen name", () -> {
-            return var2;
-         });
-         throw new ReportedException(var4);
-      }
+   public void fillCrashDetails(CrashReport var1) {
+      CrashReportCategory var2 = var1.addCategory("Affected screen", 1);
+      var2.setDetail("Screen name", () -> {
+         return this.getClass().getCanonicalName();
+      });
    }
 
    protected boolean isValidCharacterForName(String var1, char var2, int var3) {
@@ -630,6 +621,14 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    public void setTooltipForNextRenderPass(Tooltip var1, ClientTooltipPositioner var2, boolean var3) {
       this.setTooltipForNextRenderPass(var1.toCharSequence(this.minecraft), var2, var3);
+   }
+
+   public Font getFont() {
+      return this.font;
+   }
+
+   public boolean showsActiveEffects() {
+      return false;
    }
 
    public ScreenRectangle getRectangle() {

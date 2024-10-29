@@ -1,7 +1,6 @@
 package net.minecraft.core;
 
 import com.mojang.datafixers.DataFixUtils;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -18,10 +17,11 @@ import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.tags.TagLoader;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 
-public interface Registry<T> extends Keyable, IdMap<T> {
+public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, IdMap<T> {
    ResourceKey<? extends Registry<T>> key();
 
    default Codec<T> byNameCodec() {
@@ -38,7 +38,7 @@ public interface Registry<T> extends Keyable, IdMap<T> {
 
    private Codec<Holder.Reference<T>> referenceHolderWithLifecycle() {
       Codec var1 = ResourceLocation.CODEC.comapFlatMap((var1x) -> {
-         return (DataResult)this.getHolder(var1x).map(DataResult::success).orElseGet(() -> {
+         return (DataResult)this.get(var1x).map(DataResult::success).orElseGet(() -> {
             return DataResult.error(() -> {
                String var10000 = String.valueOf(this.key());
                return "Unknown registry key in " + var10000 + ": " + String.valueOf(var1x);
@@ -80,27 +80,25 @@ public interface Registry<T> extends Keyable, IdMap<T> {
    int getId(@Nullable T var1);
 
    @Nullable
-   T get(@Nullable ResourceKey<T> var1);
+   T getValue(@Nullable ResourceKey<T> var1);
 
    @Nullable
-   T get(@Nullable ResourceLocation var1);
+   T getValue(@Nullable ResourceLocation var1);
 
    Optional<RegistrationInfo> registrationInfo(ResourceKey<T> var1);
 
-   Lifecycle registryLifecycle();
-
    default Optional<T> getOptional(@Nullable ResourceLocation var1) {
-      return Optional.ofNullable(this.get(var1));
+      return Optional.ofNullable(this.getValue(var1));
    }
 
    default Optional<T> getOptional(@Nullable ResourceKey<T> var1) {
-      return Optional.ofNullable(this.get(var1));
+      return Optional.ofNullable(this.getValue(var1));
    }
 
    Optional<Holder.Reference<T>> getAny();
 
-   default T getOrThrow(ResourceKey<T> var1) {
-      Object var2 = this.get(var1);
+   default T getValueOrThrow(ResourceKey<T> var1) {
+      Object var2 = this.getValue(var1);
       if (var2 == null) {
          String var10002 = String.valueOf(this.key());
          throw new IllegalStateException("Missing key in " + var10002 + ": " + String.valueOf(var1));
@@ -150,44 +148,23 @@ public interface Registry<T> extends Keyable, IdMap<T> {
 
    Holder.Reference<T> createIntrusiveHolder(T var1);
 
-   Optional<Holder.Reference<T>> getHolder(int var1);
+   Optional<Holder.Reference<T>> get(int var1);
 
-   Optional<Holder.Reference<T>> getHolder(ResourceLocation var1);
-
-   Optional<Holder.Reference<T>> getHolder(ResourceKey<T> var1);
+   Optional<Holder.Reference<T>> get(ResourceLocation var1);
 
    Holder<T> wrapAsHolder(T var1);
 
-   default Holder.Reference<T> getHolderOrThrow(ResourceKey<T> var1) {
-      return (Holder.Reference)this.getHolder(var1).orElseThrow(() -> {
-         String var10002 = String.valueOf(this.key());
-         return new IllegalStateException("Missing key in " + var10002 + ": " + String.valueOf(var1));
-      });
-   }
-
-   Stream<Holder.Reference<T>> holders();
-
-   Optional<HolderSet.Named<T>> getTag(TagKey<T> var1);
-
    default Iterable<Holder<T>> getTagOrEmpty(TagKey<T> var1) {
-      return (Iterable)DataFixUtils.orElse(this.getTag(var1), List.of());
+      return (Iterable)DataFixUtils.orElse(this.get(var1), List.of());
    }
 
    default Optional<Holder<T>> getRandomElementOf(TagKey<T> var1, RandomSource var2) {
-      return this.getTag(var1).flatMap((var1x) -> {
+      return this.get(var1).flatMap((var1x) -> {
          return var1x.getRandomElement(var2);
       });
    }
 
-   HolderSet.Named<T> getOrCreateTag(TagKey<T> var1);
-
-   Stream<Pair<TagKey<T>, HolderSet.Named<T>>> getTags();
-
-   Stream<TagKey<T>> getTagNames();
-
-   void resetTags();
-
-   void bindTags(Map<TagKey<T>, List<Holder<T>>> var1);
+   Stream<HolderSet.Named<T>> getTags();
 
    default IdMap<Holder<T>> asHolderIdMap() {
       return new IdMap<Holder<T>>() {
@@ -197,7 +174,7 @@ public interface Registry<T> extends Keyable, IdMap<T> {
 
          @Nullable
          public Holder<T> byId(int var1) {
-            return (Holder)Registry.this.getHolder(var1).orElse((Object)null);
+            return (Holder)Registry.this.get(var1).orElse((Object)null);
          }
 
          public int size() {
@@ -205,7 +182,7 @@ public interface Registry<T> extends Keyable, IdMap<T> {
          }
 
          public Iterator<Holder<T>> iterator() {
-            return Registry.this.holders().map((var0) -> {
+            return Registry.this.listElements().map((var0) -> {
                return var0;
             }).iterator();
          }
@@ -218,23 +195,15 @@ public interface Registry<T> extends Keyable, IdMap<T> {
       };
    }
 
-   HolderOwner<T> holderOwner();
+   PendingTags<T> prepareTagReload(TagLoader.LoadResult<T> var1);
 
-   HolderLookup.RegistryLookup<T> asLookup();
+   public interface PendingTags<T> {
+      ResourceKey<? extends Registry<? extends T>> key();
 
-   default HolderLookup.RegistryLookup<T> asTagAddingLookup() {
-      return new HolderLookup.RegistryLookup.Delegate<T>() {
-         public HolderLookup.RegistryLookup<T> parent() {
-            return Registry.this.asLookup();
-         }
+      HolderLookup.RegistryLookup<T> lookup();
 
-         public Optional<HolderSet.Named<T>> get(TagKey<T> var1) {
-            return Optional.of(this.getOrThrow(var1));
-         }
+      void apply();
 
-         public HolderSet.Named<T> getOrThrow(TagKey<T> var1) {
-            return Registry.this.getOrCreateTag(var1);
-         }
-      };
+      int size();
    }
 }

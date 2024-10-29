@@ -103,10 +103,6 @@ public class WorldCoordinates implements Coordinates {
       return new WorldCoordinates(new WorldCoordinate(false, (double)var0.x), new WorldCoordinate(false, (double)var0.y), new WorldCoordinate(true, 0.0));
    }
 
-   public static WorldCoordinates current() {
-      return new WorldCoordinates(new WorldCoordinate(true, 0.0), new WorldCoordinate(true, 0.0), new WorldCoordinate(true, 0.0));
-   }
-
    public int hashCode() {
       int var1 = this.x.hashCode();
       var1 = 31 * var1 + this.y.hashCode();

@@ -38,7 +38,7 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
       this.target = var1.readResourceLocation();
       this.pool = var1.readResourceLocation();
       this.finalState = var1.readUtf();
-      this.joint = (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.byName(var1.readUtf()).orElse(JigsawBlockEntity.JointType.ALIGNED);
+      this.joint = (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.CODEC.byName(var1.readUtf(), (Enum)JigsawBlockEntity.JointType.ALIGNED);
       this.selectionPriority = var1.readVarInt();
       this.placementPriority = var1.readVarInt();
    }

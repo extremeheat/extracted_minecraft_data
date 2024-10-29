@@ -4,8 +4,10 @@ import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import io.netty.buffer.ByteBuf;
 import java.util.Optional;
 import net.minecraft.core.Registry;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
@@ -36,6 +38,12 @@ public record TagKey<T>(ResourceKey<? extends Registry<T>> registry, ResourceLoc
       }, (var0x) -> {
          return "#" + String.valueOf(var0x.location);
       });
+   }
+
+   public static <T> StreamCodec<ByteBuf, TagKey<T>> streamCodec(ResourceKey<? extends Registry<T>> var0) {
+      return ResourceLocation.STREAM_CODEC.map((var1) -> {
+         return create(var0, var1);
+      }, TagKey::location);
    }
 
    public static <T> TagKey<T> create(ResourceKey<? extends Registry<T>> var0, ResourceLocation var1) {

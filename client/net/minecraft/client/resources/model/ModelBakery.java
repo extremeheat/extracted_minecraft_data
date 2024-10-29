@@ -1,37 +1,20 @@
 package net.minecraft.client.resources.model;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.mojang.logging.LogUtils;
 import com.mojang.math.Transformation;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
-import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.ItemModelGenerator;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.level.block.state.BlockState;
 import org.slf4j.Logger;
 
 public class ModelBakery {
@@ -47,64 +30,23 @@ public class ModelBakery {
    public static final List<ResourceLocation> DESTROY_STAGES;
    public static final List<ResourceLocation> BREAKING_LOCATIONS;
    public static final List<RenderType> DESTROY_TYPES;
-   private static final Logger LOGGER;
-   private static final String BUILTIN_SLASH = "builtin/";
-   private static final String BUILTIN_SLASH_GENERATED = "builtin/generated";
-   private static final String BUILTIN_BLOCK_ENTITY = "builtin/entity";
-   private static final String MISSING_MODEL_NAME = "missing";
-   public static final ResourceLocation MISSING_MODEL_LOCATION;
-   public static final ModelResourceLocation MISSING_MODEL_VARIANT;
-   public static final FileToIdConverter MODEL_LISTER;
-   @VisibleForTesting
-   public static final String MISSING_MODEL_MESH;
-   private static final Map<String, String> BUILTIN_MODELS;
-   public static final BlockModel GENERATION_MARKER;
-   public static final BlockModel BLOCK_ENTITY_MARKER;
+   static final Logger LOGGER;
    static final ItemModelGenerator ITEM_MODEL_GENERATOR;
-   private final Map<ResourceLocation, BlockModel> modelResources;
-   private final Set<ResourceLocation> loadingStack = new HashSet();
-   private final Map<ResourceLocation, UnbakedModel> unbakedCache = new HashMap();
    final Map<BakedCacheKey, BakedModel> bakedCache = new HashMap();
-   private final Map<ModelResourceLocation, UnbakedModel> topLevelModels = new HashMap();
    private final Map<ModelResourceLocation, BakedModel> bakedTopLevelModels = new HashMap();
-   private final UnbakedModel missingModel;
-   private final Object2IntMap<BlockState> modelGroups;
+   private final Map<ModelResourceLocation, UnbakedModel> topModels;
+   final Map<ResourceLocation, UnbakedModel> unbakedModels;
+   final UnbakedModel missingModel;
 
-   public ModelBakery(BlockColors var1, ProfilerFiller var2, Map<ResourceLocation, BlockModel> var3, Map<ResourceLocation, List<BlockStateModelLoader.LoadedJson>> var4) {
+   public ModelBakery(Map<ModelResourceLocation, UnbakedModel> var1, Map<ResourceLocation, UnbakedModel> var2, UnbakedModel var3) {
       super();
-      this.modelResources = var3;
-      var2.push("missing_model");
-
-      try {
-         this.missingModel = this.loadBlockModel(MISSING_MODEL_LOCATION);
-         this.registerModel(MISSING_MODEL_VARIANT, this.missingModel);
-      } catch (IOException var8) {
-         LOGGER.error("Error loading missing model, should never happen :(", var8);
-         throw new RuntimeException(var8);
-      }
-
-      BlockStateModelLoader var5 = new BlockStateModelLoader(var4, var2, this.missingModel, var1, this::registerModelAndLoadDependencies);
-      var5.loadAllBlockStates();
-      this.modelGroups = var5.getModelGroups();
-      var2.popPush("items");
-      Iterator var6 = BuiltInRegistries.ITEM.keySet().iterator();
-
-      while(var6.hasNext()) {
-         ResourceLocation var7 = (ResourceLocation)var6.next();
-         this.loadItemModelAndDependencies(var7);
-      }
-
-      var2.popPush("special");
-      this.loadSpecialItemModelAndDependencies(ItemRenderer.TRIDENT_IN_HAND_MODEL);
-      this.loadSpecialItemModelAndDependencies(ItemRenderer.SPYGLASS_IN_HAND_MODEL);
-      this.topLevelModels.values().forEach((var1x) -> {
-         var1x.resolveParents(this::getModel);
-      });
-      var2.pop();
+      this.topModels = var1;
+      this.unbakedModels = var2;
+      this.missingModel = var3;
    }
 
    public void bakeModels(TextureGetter var1) {
-      this.topLevelModels.forEach((var2, var3) -> {
+      this.topModels.forEach((var2, var3) -> {
          BakedModel var4 = null;
 
          try {
@@ -120,98 +62,8 @@ public class ModelBakery {
       });
    }
 
-   UnbakedModel getModel(ResourceLocation var1) {
-      if (this.unbakedCache.containsKey(var1)) {
-         return (UnbakedModel)this.unbakedCache.get(var1);
-      } else if (this.loadingStack.contains(var1)) {
-         throw new IllegalStateException("Circular reference while loading " + String.valueOf(var1));
-      } else {
-         this.loadingStack.add(var1);
-
-         while(!this.loadingStack.isEmpty()) {
-            ResourceLocation var2 = (ResourceLocation)this.loadingStack.iterator().next();
-
-            try {
-               if (!this.unbakedCache.containsKey(var2)) {
-                  BlockModel var3 = this.loadBlockModel(var2);
-                  this.unbakedCache.put(var2, var3);
-                  this.loadingStack.addAll(var3.getDependencies());
-               }
-            } catch (Exception var7) {
-               LOGGER.warn("Unable to load model: '{}' referenced from: {}: {}", new Object[]{var2, var1, var7});
-               this.unbakedCache.put(var2, this.missingModel);
-            } finally {
-               this.loadingStack.remove(var2);
-            }
-         }
-
-         return (UnbakedModel)this.unbakedCache.getOrDefault(var1, this.missingModel);
-      }
-   }
-
-   private void loadItemModelAndDependencies(ResourceLocation var1) {
-      ModelResourceLocation var2 = ModelResourceLocation.inventory(var1);
-      ResourceLocation var3 = var1.withPrefix("item/");
-      UnbakedModel var4 = this.getModel(var3);
-      this.registerModelAndLoadDependencies(var2, var4);
-   }
-
-   private void loadSpecialItemModelAndDependencies(ModelResourceLocation var1) {
-      ResourceLocation var2 = var1.id().withPrefix("item/");
-      UnbakedModel var3 = this.getModel(var2);
-      this.registerModelAndLoadDependencies(var1, var3);
-   }
-
-   private void registerModelAndLoadDependencies(ModelResourceLocation var1, UnbakedModel var2) {
-      Iterator var3 = var2.getDependencies().iterator();
-
-      while(var3.hasNext()) {
-         ResourceLocation var4 = (ResourceLocation)var3.next();
-         this.getModel(var4);
-      }
-
-      this.registerModel(var1, var2);
-   }
-
-   private void registerModel(ModelResourceLocation var1, UnbakedModel var2) {
-      this.topLevelModels.put(var1, var2);
-   }
-
-   private BlockModel loadBlockModel(ResourceLocation var1) throws IOException {
-      String var2 = var1.getPath();
-      if ("builtin/generated".equals(var2)) {
-         return GENERATION_MARKER;
-      } else if ("builtin/entity".equals(var2)) {
-         return BLOCK_ENTITY_MARKER;
-      } else if (var2.startsWith("builtin/")) {
-         String var7 = var2.substring("builtin/".length());
-         String var8 = (String)BUILTIN_MODELS.get(var7);
-         if (var8 == null) {
-            throw new FileNotFoundException(var1.toString());
-         } else {
-            StringReader var5 = new StringReader(var8);
-            BlockModel var6 = BlockModel.fromStream(var5);
-            var6.name = var1.toString();
-            return var6;
-         }
-      } else {
-         ResourceLocation var3 = MODEL_LISTER.idToFile(var1);
-         BlockModel var4 = (BlockModel)this.modelResources.get(var3);
-         if (var4 == null) {
-            throw new FileNotFoundException(var3.toString());
-         } else {
-            var4.name = var1.toString();
-            return var4;
-         }
-      }
-   }
-
    public Map<ModelResourceLocation, BakedModel> getBakedTopLevelModels() {
       return this.bakedTopLevelModels;
-   }
-
-   public Object2IntMap<BlockState> getModelGroups() {
-      return this.modelGroups;
    }
 
    static {
@@ -233,17 +85,6 @@ public class ModelBakery {
       }).collect(Collectors.toList());
       DESTROY_TYPES = (List)BREAKING_LOCATIONS.stream().map(RenderType::crumbling).collect(Collectors.toList());
       LOGGER = LogUtils.getLogger();
-      MISSING_MODEL_LOCATION = ResourceLocation.withDefaultNamespace("builtin/missing");
-      MISSING_MODEL_VARIANT = new ModelResourceLocation(MISSING_MODEL_LOCATION, "missing");
-      MODEL_LISTER = FileToIdConverter.json("models");
-      MISSING_MODEL_MESH = ("{    'textures': {       'particle': '" + MissingTextureAtlasSprite.getLocation().getPath() + "',       'missingno': '" + MissingTextureAtlasSprite.getLocation().getPath() + "'    },    'elements': [         {  'from': [ 0, 0, 0 ],            'to': [ 16, 16, 16 ],            'faces': {                'down':  { 'uv': [ 0, 0, 16, 16 ], 'cullface': 'down',  'texture': '#missingno' },                'up':    { 'uv': [ 0, 0, 16, 16 ], 'cullface': 'up',    'texture': '#missingno' },                'north': { 'uv': [ 0, 0, 16, 16 ], 'cullface': 'north', 'texture': '#missingno' },                'south': { 'uv': [ 0, 0, 16, 16 ], 'cullface': 'south', 'texture': '#missingno' },                'west':  { 'uv': [ 0, 0, 16, 16 ], 'cullface': 'west',  'texture': '#missingno' },                'east':  { 'uv': [ 0, 0, 16, 16 ], 'cullface': 'east',  'texture': '#missingno' }            }        }    ]}").replace('\'', '"');
-      BUILTIN_MODELS = Map.of("missing", MISSING_MODEL_MESH);
-      GENERATION_MARKER = (BlockModel)Util.make(BlockModel.fromString("{\"gui_light\": \"front\"}"), (var0) -> {
-         var0.name = "generation marker";
-      });
-      BLOCK_ENTITY_MARKER = (BlockModel)Util.make(BlockModel.fromString("{\"gui_light\": \"side\"}"), (var0) -> {
-         var0.name = "block entity marker";
-      });
       ITEM_MODEL_GENERATOR = new ItemModelGenerator();
    }
 
@@ -262,8 +103,14 @@ public class ModelBakery {
          };
       }
 
-      public UnbakedModel getModel(ResourceLocation var1) {
-         return ModelBakery.this.getModel(var1);
+      private UnbakedModel getModel(ResourceLocation var1) {
+         UnbakedModel var2 = (UnbakedModel)ModelBakery.this.unbakedModels.get(var1);
+         if (var2 == null) {
+            ModelBakery.LOGGER.warn("Requested a model that was not discovered previously: {}", var1);
+            return ModelBakery.this.missingModel;
+         } else {
+            return var2;
+         }
       }
 
       public BakedModel bake(ResourceLocation var1, ModelState var2) {
@@ -279,11 +126,10 @@ public class ModelBakery {
          }
       }
 
-      @Nullable
       BakedModel bakeUncached(UnbakedModel var1, ModelState var2) {
          if (var1 instanceof BlockModel var3) {
-            if (var3.getRootModel() == ModelBakery.GENERATION_MARKER) {
-               return ModelBakery.ITEM_MODEL_GENERATOR.generateBlockModel(this.modelTextureGetter, var3).bake(this, var3, this.modelTextureGetter, var2, false);
+            if (var3.getRootModel() == SpecialModels.GENERATED_MARKER) {
+               return ModelBakery.ITEM_MODEL_GENERATOR.generateBlockModel(this.modelTextureGetter, var3).bake(this.modelTextureGetter, var2, false);
             }
          }
 

@@ -8,9 +8,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.debugchart.SampleStorage;
 
 public class FpsDebugChart extends AbstractDebugChart {
-   private static final int RED = -65536;
-   private static final int YELLOW = -256;
-   private static final int GREEN = -16711936;
    private static final int CHART_TOP_FPS = 30;
    private static final double CHART_TOP_VALUE = 33.333333333333336;
 

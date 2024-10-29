@@ -9,15 +9,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.Mth;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
@@ -43,7 +41,7 @@ public class SetEnchantmentsFunction extends LootItemConditionalFunction {
       return LootItemFunctions.SET_ENCHANTMENTS;
    }
 
-   public Set<LootContextParam<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getReferencedContextParams() {
       return (Set)this.enchantments.values().stream().flatMap((var0) -> {
          return var0.getReferencedContextParams().stream();
       }).collect(ImmutableSet.toImmutableSet());
@@ -52,7 +50,6 @@ public class SetEnchantmentsFunction extends LootItemConditionalFunction {
    public ItemStack run(ItemStack var1, LootContext var2) {
       if (var1.is(Items.BOOK)) {
          var1 = var1.transmuteCopy(Items.ENCHANTED_BOOK);
-         var1.set(DataComponents.STORED_ENCHANTMENTS, (ItemEnchantments)var1.remove(DataComponents.ENCHANTMENTS));
       }
 
       EnchantmentHelper.updateEnchantments(var1, (var2x) -> {

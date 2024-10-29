@@ -47,7 +47,7 @@ public interface StatFormatter {
          } else if (var5 > 0.5) {
             return DECIMAL_FORMAT.format(var5) + " h";
          } else {
-            return var3 > 0.5 ? DECIMAL_FORMAT.format(var3) + " m" : "" + var1 + " s";
+            return var3 > 0.5 ? DECIMAL_FORMAT.format(var3) + " min" : "" + var1 + " s";
          }
       };
    }

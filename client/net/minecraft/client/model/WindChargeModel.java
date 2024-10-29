@@ -8,16 +8,16 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.world.entity.projectile.windcharge.AbstractWindCharge;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 
-public class WindChargeModel extends HierarchicalModel<AbstractWindCharge> {
+public class WindChargeModel extends EntityModel<EntityRenderState> {
    private static final int ROTATION_SPEED = 16;
    private final ModelPart bone;
    private final ModelPart windCharge;
    private final ModelPart wind;
 
    public WindChargeModel(ModelPart var1) {
-      super(RenderType::entityTranslucent);
+      super(var1, RenderType::entityTranslucent);
       this.bone = var1.getChild("bone");
       this.wind = this.bone.getChild("wind");
       this.windCharge = this.bone.getChild("wind_charge");
@@ -32,12 +32,9 @@ public class WindChargeModel extends HierarchicalModel<AbstractWindCharge> {
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   public void setupAnim(AbstractWindCharge var1, float var2, float var3, float var4, float var5, float var6) {
-      this.windCharge.yRot = -var4 * 16.0F * 0.017453292F;
-      this.wind.yRot = var4 * 16.0F * 0.017453292F;
-   }
-
-   public ModelPart root() {
-      return this.bone;
+   public void setupAnim(EntityRenderState var1) {
+      super.setupAnim(var1);
+      this.windCharge.yRot = -var1.ageInTicks * 16.0F * 0.017453292F;
+      this.wind.yRot = var1.ageInTicks * 16.0F * 0.017453292F;
    }
 }

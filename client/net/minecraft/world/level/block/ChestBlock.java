@@ -32,6 +32,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -43,7 +45,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.ChestType;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
@@ -56,11 +57,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements SimpleWaterloggedBlock {
    public static final MapCodec<ChestBlock> CODEC = simpleCodec((var0) -> {
-      return new ChestBlock(var0, () -> {
+      return new ChestBlock(() -> {
          return BlockEntityType.CHEST;
-      });
+      }, var0);
    });
-   public static final DirectionProperty FACING;
+   public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<ChestType> TYPE;
    public static final BooleanProperty WATERLOGGED;
    public static final int EVENT_SET_OPEN_COUNT = 1;
@@ -78,8 +79,8 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return CODEC;
    }
 
-   protected ChestBlock(BlockBehaviour.Properties var1, Supplier<BlockEntityType<? extends ChestBlockEntity>> var2) {
-      super(var1, var2);
+   protected ChestBlock(Supplier<BlockEntityType<? extends ChestBlockEntity>> var1, BlockBehaviour.Properties var2) {
+      super(var2, var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(TYPE, ChestType.SINGLE)).setValue(WATERLOGGED, false));
    }
 
@@ -96,21 +97,21 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return RenderShape.ENTITYBLOCK_ANIMATED;
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
       if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var4.scheduleTick(var5, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
       }
 
-      if (var3.is(this) && var2.getAxis().isHorizontal()) {
-         ChestType var7 = (ChestType)var3.getValue(TYPE);
-         if (var1.getValue(TYPE) == ChestType.SINGLE && var7 != ChestType.SINGLE && var1.getValue(FACING) == var3.getValue(FACING) && getConnectedDirection(var3) == var2.getOpposite()) {
-            return (BlockState)var1.setValue(TYPE, var7.getOpposite());
+      if (var7.is(this) && var5.getAxis().isHorizontal()) {
+         ChestType var9 = (ChestType)var7.getValue(TYPE);
+         if (var1.getValue(TYPE) == ChestType.SINGLE && var9 != ChestType.SINGLE && var1.getValue(FACING) == var7.getValue(FACING) && getConnectedDirection(var7) == var5.getOpposite()) {
+            return (BlockState)var1.setValue(TYPE, var9.getOpposite());
          }
-      } else if (getConnectedDirection(var1) == var2) {
+      } else if (getConnectedDirection(var1) == var5) {
          return (BlockState)var1.setValue(TYPE, ChestType.SINGLE);
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6);
+      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -177,18 +178,16 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
-      } else {
-         MenuProvider var6 = this.getMenuProvider(var1, var2, var3);
-         if (var6 != null) {
-            var4.openMenu(var6);
+      if (var2 instanceof ServerLevel var6) {
+         MenuProvider var7 = this.getMenuProvider(var1, var2, var3);
+         if (var7 != null) {
+            var4.openMenu(var7);
             var4.awardStat(this.getOpenChestStat());
-            PiglinAi.angerNearbyPiglins(var4, true);
+            PiglinAi.angerNearbyPiglins(var6, var4, true);
          }
-
-         return InteractionResult.CONSUME;
       }
+
+      return InteractionResult.SUCCESS;
    }
 
    protected Stat<ResourceLocation> getOpenChestStat() {

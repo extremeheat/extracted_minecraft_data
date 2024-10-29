@@ -177,6 +177,14 @@ public class Mth {
       return var0 % var1 == 0;
    }
 
+   public static byte packDegrees(float var0) {
+      return (byte)floor(var0 * 256.0F / 360.0F);
+   }
+
+   public static float unpackDegrees(byte var0) {
+      return (float)(var0 * 360) / 256.0F;
+   }
+
    public static int wrapDegrees(int var0) {
       int var1 = var0 % 360;
       if (var1 >= 180) {
@@ -188,6 +196,19 @@ public class Mth {
       }
 
       return var1;
+   }
+
+   public static float wrapDegrees(long var0) {
+      float var2 = (float)(var0 % 360L);
+      if (var2 >= 180.0F) {
+         var2 -= 360.0F;
+      }
+
+      if (var2 < -180.0F) {
+         var2 += 360.0F;
+      }
+
+      return var2;
    }
 
    public static float wrapDegrees(float var0) {
@@ -265,10 +286,6 @@ public class Mth {
 
    public static int log2(int var0) {
       return ceillog2(var0) - (isPowerOfTwo(var0) ? 0 : 1);
-   }
-
-   public static int color(float var0, float var1, float var2) {
-      return FastColor.ARGB32.color(0, floor(var0 * 255.0F), floor(var1 * 255.0F), floor(var2 * 255.0F));
    }
 
    public static float frac(float var0) {
@@ -476,7 +493,7 @@ public class Mth {
             throw new RuntimeException("Something went wrong when converting from HSV to RGB. Input was " + var0 + ", " + var1 + ", " + var2);
       }
 
-      return FastColor.ARGB32.color(var3, clamp((int)(var9 * 255.0F), 0, 255), clamp((int)(var10 * 255.0F), 0, 255), clamp((int)(var11 * 255.0F), 0, 255));
+      return ARGB.color(var3, clamp((int)(var9 * 255.0F), 0, 255), clamp((int)(var10 * 255.0F), 0, 255), clamp((int)(var11 * 255.0F), 0, 255));
    }
 
    public static int murmurHash3Mixer(int var0) {
@@ -518,6 +535,10 @@ public class Mth {
       return var1 + var0 * (var2 - var1);
    }
 
+   public static Vec3 lerp(double var0, Vec3 var2, Vec3 var3) {
+      return new Vec3(lerp(var0, var2.x, var3.x), lerp(var0, var2.y, var3.y), lerp(var0, var2.z, var3.z));
+   }
+
    public static double lerp(double var0, double var2, double var4) {
       return var2 + var0 * (var4 - var2);
    }
@@ -556,6 +577,18 @@ public class Mth {
 
    public static double rotLerp(double var0, double var2, double var4) {
       return var2 + var0 * wrapDegrees(var4 - var2);
+   }
+
+   public static float rotLerpRad(float var0, float var1, float var2) {
+      float var3;
+      for(var3 = var2 - var1; var3 < -3.1415927F; var3 += 6.2831855F) {
+      }
+
+      while(var3 >= 3.1415927F) {
+         var3 -= 6.2831855F;
+      }
+
+      return var1 + var0 * var3;
    }
 
    public static float triangleWave(float var0, float var1) {
@@ -626,6 +659,10 @@ public class Mth {
       return Math.sqrt(lengthSquared(var0, var2));
    }
 
+   public static float length(float var0, float var1) {
+      return (float)Math.sqrt(lengthSquared((double)var0, (double)var1));
+   }
+
    public static double lengthSquared(double var0, double var2, double var4) {
       return var0 * var0 + var2 * var2 + var4 * var4;
    }
@@ -678,6 +715,10 @@ public class Mth {
 
    public static int mulAndTruncate(Fraction var0, int var1) {
       return var0.getNumerator() * var1 / var0.getDenominator();
+   }
+
+   public static float easeInOutSine(float var0) {
+      return -(cos(3.1415927F * var0) - 1.0F) / 2.0F;
    }
 
    static {

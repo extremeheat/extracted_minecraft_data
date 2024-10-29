@@ -3,6 +3,7 @@ package net.minecraft.util;
 import com.mojang.util.UndashedUuid;
 import java.net.URI;
 import java.util.UUID;
+import javax.annotation.Nullable;
 
 public class CommonLinks {
    public static final URI GDPR = URI.create("https://aka.ms/MinecraftGDPR");
@@ -25,17 +26,22 @@ public class CommonLinks {
    public static final URI BUY_REALMS = URI.create("https://aka.ms/BuyJavaRealms");
    public static final URI REALMS_TERMS = URI.create("https://aka.ms/MinecraftRealmsTerms");
    public static final URI REALMS_CONTENT_CREATION = URI.create("https://aka.ms/MinecraftRealmsContentCreator");
+   public static final String EXTEND_REALMS_LINK = "https://aka.ms/ExtendJavaRealms";
 
    public CommonLinks() {
       super();
    }
 
-   public static String extendRealms(String var0, UUID var1, boolean var2) {
-      String var10000 = extendRealms(var0, var1);
-      return var10000 + "&ref=" + (var2 ? "expiredTrial" : "expiredRealm");
+   public static String extendRealms(@Nullable String var0, UUID var1, boolean var2) {
+      if (var0 == null) {
+         return "https://aka.ms/ExtendJavaRealms";
+      } else {
+         String var10000 = extendRealms(var0, var1);
+         return var10000 + "&ref=" + (var2 ? "expiredTrial" : "expiredRealm");
+      }
    }
 
-   public static String extendRealms(String var0, UUID var1) {
-      return "https://aka.ms/ExtendJavaRealms?subscriptionId=" + var0 + "&profileId=" + UndashedUuid.toString(var1);
+   public static String extendRealms(@Nullable String var0, UUID var1) {
+      return var0 == null ? "https://aka.ms/ExtendJavaRealms" : "https://aka.ms/ExtendJavaRealms?subscriptionId=" + var0 + "&profileId=" + UndashedUuid.toString(var1);
    }
 }

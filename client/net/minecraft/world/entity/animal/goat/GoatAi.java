@@ -32,6 +32,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameRules;
 
 public class GoatAi {
    public static final int RAM_PREPARE_TIME = 20;
@@ -48,8 +49,8 @@ public class GoatAi {
    public static final float MAX_JUMP_VELOCITY_MULTIPLIER = 3.5714288F;
    private static final UniformInt TIME_BETWEEN_RAMS = UniformInt.of(600, 6000);
    private static final UniformInt TIME_BETWEEN_RAMS_SCREAMER = UniformInt.of(100, 300);
-   private static final TargetingConditions RAM_TARGET_CONDITIONS = TargetingConditions.forCombat().selector((var0) -> {
-      return !var0.getType().equals(EntityType.GOAT) && var0.level().getWorldBorder().isWithinBounds(var0.getBoundingBox());
+   private static final TargetingConditions RAM_TARGET_CONDITIONS = TargetingConditions.forCombat().selector((var0, var1) -> {
+      return !var0.getType().equals(EntityType.GOAT) && (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) || !var0.getType().equals(EntityType.ARMOR_STAND)) && var1.getWorldBorder().isWithinBounds(var0.getBoundingBox());
    });
    private static final float SPEED_MULTIPLIER_WHEN_RAMMING = 3.0F;
    public static final int RAM_MIN_DISTANCE = 4;
@@ -100,7 +101,7 @@ public class GoatAi {
       }, (var0x) -> {
          return var0x.isScreamingGoat() ? SoundEvents.GOAT_SCREAMING_RAM_IMPACT : SoundEvents.GOAT_RAM_IMPACT;
       }, (var0x) -> {
-         return var0x.isScreamingGoat() ? SoundEvents.GOAT_SCREAMING_HORN_BREAK : SoundEvents.GOAT_HORN_BREAK;
+         return SoundEvents.GOAT_HORN_BREAK;
       })), Pair.of(1, new PrepareRamNearestTarget((var0x) -> {
          return var0x.isScreamingGoat() ? TIME_BETWEEN_RAMS_SCREAMER.getMinValue() : TIME_BETWEEN_RAMS.getMinValue();
       }, 4, 7, 1.25F, RAM_TARGET_CONDITIONS, 20, (var0x) -> {

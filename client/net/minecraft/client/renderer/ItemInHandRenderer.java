@@ -11,6 +11,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
@@ -19,6 +20,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -102,6 +104,7 @@ public class ItemInHandRenderer {
    private static final float BOW_CHARGE_Z_SCALE = 0.2F;
    private static final float BOW_MIN_SHAKE_CHARGE = 0.1F;
    private final Minecraft minecraft;
+   private final MapRenderState mapRenderState = new MapRenderState();
    private ItemStack mainHandItem;
    private ItemStack offHandItem;
    private float mainHandHeight;
@@ -141,10 +144,11 @@ public class ItemInHandRenderer {
       var1.mulPose(Axis.XP.rotationDegrees(45.0F));
       var1.mulPose(Axis.ZP.rotationDegrees(var6 * -41.0F));
       var1.translate(var6 * 0.3F, -1.1F, 0.45F);
+      ResourceLocation var7 = this.minecraft.player.getSkin().texture();
       if (var4 == HumanoidArm.RIGHT) {
-         var5.renderRightHand(var1, var2, var3, this.minecraft.player);
+         var5.renderRightHand(var1, var2, var3, var7, this.minecraft.player.isModelPartShown(PlayerModelPart.RIGHT_SLEEVE));
       } else {
-         var5.renderLeftHand(var1, var2, var3, this.minecraft.player);
+         var5.renderLeftHand(var1, var2, var3, var7, this.minecraft.player.isModelPartShown(PlayerModelPart.LEFT_SLEEVE));
       }
 
       var1.popPose();
@@ -211,7 +215,9 @@ public class ItemInHandRenderer {
       var7.addVertex(var8, 135.0F, -7.0F, 0.0F).setColor(-1).setUv(1.0F, 0.0F).setLight(var3);
       var7.addVertex(var8, -7.0F, -7.0F, 0.0F).setColor(-1).setUv(0.0F, 0.0F).setLight(var3);
       if (var6 != null) {
-         this.minecraft.gameRenderer.getMapRenderer().render(var1, var2, var5, var6, false, var3);
+         MapRenderer var9 = this.minecraft.getMapRenderer();
+         var9.extractRenderState(var5, var6, this.mapRenderState);
+         var9.render(this.mapRenderState, var1, var2, false, var3);
       }
 
    }
@@ -236,10 +242,11 @@ public class ItemInHandRenderer {
       var1.mulPose(Axis.YP.rotationDegrees(var8 * -135.0F));
       var1.translate(var8 * 5.6F, 0.0F, 0.0F);
       PlayerRenderer var16 = (PlayerRenderer)this.entityRenderDispatcher.getRenderer(var15);
+      ResourceLocation var17 = ((AbstractClientPlayer)var15).getSkin().texture();
       if (var7) {
-         var16.renderRightHand(var1, var2, var3, var15);
+         var16.renderRightHand(var1, var2, var3, var17, ((AbstractClientPlayer)var15).isModelPartShown(PlayerModelPart.RIGHT_SLEEVE));
       } else {
-         var16.renderLeftHand(var1, var2, var3, var15);
+         var16.renderLeftHand(var1, var2, var3, var17, ((AbstractClientPlayer)var15).isModelPartShown(PlayerModelPart.LEFT_SLEEVE));
       }
 
    }
@@ -306,7 +313,7 @@ public class ItemInHandRenderer {
    public void renderHandsWithItems(float var1, PoseStack var2, MultiBufferSource.BufferSource var3, LocalPlayer var4, int var5) {
       float var6 = var4.getAttackAnim(var1);
       InteractionHand var7 = (InteractionHand)MoreObjects.firstNonNull(var4.swingingArm, InteractionHand.MAIN_HAND);
-      float var8 = Mth.lerp(var1, var4.xRotO, var4.getXRot());
+      float var8 = var4.getXRot(var1);
       HandRenderSelection var9 = evaluateWhichHandsToRender(var4);
       float var10 = Mth.lerp(var1, var4.xBobO, var4.xBob);
       float var11 = Mth.lerp(var1, var4.yBobO, var4.yBob);
@@ -367,7 +374,7 @@ public class ItemInHandRenderer {
             if (var11 && !var1.isInvisible()) {
                this.renderPlayerArm(var8, var9, var10, var7, var5, var12);
             }
-         } else if (var6.is(Items.FILLED_MAP)) {
+         } else if (var6.has(DataComponents.MAP_ID)) {
             if (var11 && this.offHandItem.isEmpty()) {
                this.renderTwoHandedMap(var8, var9, var10, var3, var7, var5);
             } else {

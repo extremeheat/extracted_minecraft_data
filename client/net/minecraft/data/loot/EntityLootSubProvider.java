@@ -1,13 +1,13 @@
 package net.minecraft.data.loot;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import net.minecraft.advancements.critereon.DamageSourcePredicate;
@@ -20,30 +20,28 @@ import net.minecraft.advancements.critereon.ItemEnchantmentsPredicate;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.ItemSubPredicates;
 import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.advancements.critereon.SheepPredicate;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.animal.FrogVariant;
 import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.level.ItemLike;
-import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.entries.AlternativesEntry;
 import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
 import net.minecraft.world.level.storage.loot.predicates.AnyOfCondition;
 import net.minecraft.world.level.storage.loot.predicates.DamageSourceCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 public abstract class EntityLootSubProvider implements LootTableSubProvider {
-   private static final Set<EntityType<?>> SPECIAL_LOOT_TABLE_TYPES;
    protected final HolderLookup.Provider registries;
    private final FeatureFlagSet allowed;
    private final FeatureFlagSet required;
@@ -66,8 +64,15 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
       this.registries = var3;
    }
 
-   protected static LootTable.Builder createSheepTable(ItemLike var0) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(var0))).withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(NestedLootTable.lootTableReference(EntityType.SHEEP.getDefaultLootTable())));
+   public static LootPool.Builder createSheepDispatchPool(Map<DyeColor, ResourceKey<LootTable>> var0) {
+      AlternativesEntry.Builder var1 = AlternativesEntry.alternatives();
+
+      Map.Entry var3;
+      for(Iterator var2 = var0.entrySet().iterator(); var2.hasNext(); var1 = var1.otherwise(NestedLootTable.lootTableReference((ResourceKey)var3.getValue()).when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().subPredicate(SheepPredicate.hasWool((DyeColor)var3.getKey())))))) {
+         var3 = (Map.Entry)var2.next();
+      }
+
+      return LootPool.lootPool().add(var1);
    }
 
    public abstract void generate();
@@ -75,19 +80,19 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
    public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {
       this.generate();
       HashSet var2 = new HashSet();
-      BuiltInRegistries.ENTITY_TYPE.holders().forEach((var3) -> {
+      BuiltInRegistries.ENTITY_TYPE.listElements().forEach((var3) -> {
          EntityType var4 = (EntityType)var3.value();
          if (var4.isEnabled(this.allowed)) {
-            Map var5;
-            if (canHaveLootTable(var4)) {
-               var5 = (Map)this.map.remove(var4);
-               ResourceKey var6 = var4.getDefaultLootTable();
-               if (var6 != BuiltInLootTables.EMPTY && var4.isEnabled(this.required) && (var5 == null || !var5.containsKey(var6))) {
-                  throw new IllegalStateException(String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var6, var3.key().location()));
+            Optional var5 = var4.getDefaultLootTable();
+            Map var6;
+            if (var5.isPresent()) {
+               var6 = (Map)this.map.remove(var4);
+               if (var4.isEnabled(this.required) && (var6 == null || !var6.containsKey(var5.get()))) {
+                  throw new IllegalStateException(String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var5.get(), var3.key().location()));
                }
 
-               if (var5 != null) {
-                  var5.forEach((var3x, var4x) -> {
+               if (var6 != null) {
+                  var6.forEach((var3x, var4x) -> {
                      if (!var2.add(var3x)) {
                         throw new IllegalStateException(String.format(Locale.ROOT, "Duplicate loottable '%s' for '%s'", var3x, var3.key().location()));
                      } else {
@@ -96,9 +101,9 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
                   });
                }
             } else {
-               var5 = (Map)this.map.remove(var4);
-               if (var5 != null) {
-                  throw new IllegalStateException(String.format(Locale.ROOT, "Weird loottables '%s' for '%s', not a LivingEntity so should not have loot", var5.keySet().stream().map((var0) -> {
+               var6 = (Map)this.map.remove(var4);
+               if (var6 != null) {
+                  throw new IllegalStateException(String.format(Locale.ROOT, "Weird loottables '%s' for '%s', not a LivingEntity so should not have loot", var6.keySet().stream().map((var0) -> {
                      return var0.location().toString();
                   }).collect(Collectors.joining(",")), var3.key().location()));
                }
@@ -111,29 +116,23 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
       }
    }
 
-   private static boolean canHaveLootTable(EntityType<?> var0) {
-      return SPECIAL_LOOT_TABLE_TYPES.contains(var0) || var0.getCategory() != MobCategory.MISC;
+   protected LootItemCondition.Builder killedByFrog(HolderGetter<EntityType<?>> var1) {
+      return DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().source(EntityPredicate.Builder.entity().of(var1, EntityType.FROG)));
    }
 
-   protected LootItemCondition.Builder killedByFrog() {
-      return DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().source(EntityPredicate.Builder.entity().of(EntityType.FROG)));
-   }
-
-   protected LootItemCondition.Builder killedByFrogVariant(ResourceKey<FrogVariant> var1) {
-      return DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().source(EntityPredicate.Builder.entity().of(EntityType.FROG).subPredicate(EntitySubPredicates.frogVariant(BuiltInRegistries.FROG_VARIANT.getHolderOrThrow(var1)))));
+   protected LootItemCondition.Builder killedByFrogVariant(HolderGetter<EntityType<?>> var1, ResourceKey<FrogVariant> var2) {
+      return DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().source(EntityPredicate.Builder.entity().of(var1, EntityType.FROG).subPredicate(EntitySubPredicates.frogVariant(BuiltInRegistries.FROG_VARIANT.getOrThrow(var2)))));
    }
 
    protected void add(EntityType<?> var1, LootTable.Builder var2) {
-      this.add(var1, var1.getDefaultLootTable(), var2);
+      this.add(var1, (ResourceKey)var1.getDefaultLootTable().orElseThrow(() -> {
+         return new IllegalStateException("Entity " + String.valueOf(var1) + " has no loot table");
+      }), var2);
    }
 
    protected void add(EntityType<?> var1, ResourceKey<LootTable> var2, LootTable.Builder var3) {
       ((Map)this.map.computeIfAbsent(var1, (var0) -> {
          return new HashMap();
       })).put(var2, var3);
-   }
-
-   static {
-      SPECIAL_LOOT_TABLE_TYPES = ImmutableSet.of(EntityType.PLAYER, EntityType.ARMOR_STAND, EntityType.IRON_GOLEM, EntityType.SNOW_GOLEM, EntityType.VILLAGER);
    }
 }

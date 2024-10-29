@@ -41,7 +41,6 @@ public abstract class FlyingMob extends Mob {
          }
       }
 
-      this.calculateEntityAnimation(false);
    }
 
    public boolean onClimbable() {

@@ -12,13 +12,15 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.ConversionParams;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -31,6 +33,7 @@ import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.AbstractFish;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.Bucketable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -73,18 +76,19 @@ public class Tadpole extends AbstractFish {
       return SoundEvents.TADPOLE_FLOP;
    }
 
-   protected void customServerAiStep() {
-      this.level().getProfiler().push("tadpoleBrain");
-      this.getBrain().tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().pop();
-      this.level().getProfiler().push("tadpoleActivityUpdate");
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("tadpoleBrain");
+      this.getBrain().tick(var1, this);
+      var2.pop();
+      var2.push("tadpoleActivityUpdate");
       TadpoleAi.updateActivity(this);
-      this.level().getProfiler().pop();
-      super.customServerAiStep();
+      var2.pop();
+      super.customServerAiStep(var1);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MOVEMENT_SPEED, 1.0).add(Attributes.MAX_HEALTH, 6.0);
+      return Animal.createAnimalAttributes().add(Attributes.MOVEMENT_SPEED, 1.0).add(Attributes.MAX_HEALTH, 6.0);
    }
 
    public void aiStep() {
@@ -124,7 +128,7 @@ public class Tadpole extends AbstractFish {
       ItemStack var3 = var1.getItemInHand(var2);
       if (this.isFood(var3)) {
          this.feed(var1, var3);
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return (InteractionResult)Bucketable.bucketMobPickup(var1, var2, this).orElse(super.mobInteract(var1, var2));
       }
@@ -198,22 +202,12 @@ public class Tadpole extends AbstractFish {
    private void ageUp() {
       Level var2 = this.level();
       if (var2 instanceof ServerLevel var1) {
-         Frog var3 = (Frog)EntityType.FROG.create(this.level());
-         if (var3 != null) {
-            var3.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
-            var3.finalizeSpawn(var1, this.level().getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.CONVERSION, (SpawnGroupData)null);
-            var3.setNoAi(this.isNoAi());
-            if (this.hasCustomName()) {
-               var3.setCustomName(this.getCustomName());
-               var3.setCustomNameVisible(this.isCustomNameVisible());
-            }
-
-            var3.setPersistenceRequired();
-            var3.fudgePositionAfterSizeChange(this.getDimensions(this.getPose()));
+         this.convertTo(EntityType.FROG, ConversionParams.single(this, false, false), (var2x) -> {
+            var2x.finalizeSpawn(var1, this.level().getCurrentDifficultyAt(var2x.blockPosition()), EntitySpawnReason.CONVERSION, (SpawnGroupData)null);
+            var2x.setPersistenceRequired();
+            var2x.fudgePositionAfterSizeChange(this.getDimensions(this.getPose()));
             this.playSound(SoundEvents.TADPOLE_GROW_UP, 0.15F, 1.0F);
-            var1.addFreshEntityWithPassengers(var3);
-            this.discard();
-         }
+         });
       }
 
    }

@@ -2,9 +2,10 @@ package com.mojang.blaze3d.vertex;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.Vec3i;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
@@ -36,11 +37,11 @@ public interface VertexConsumer {
    }
 
    default VertexConsumer setColor(int var1) {
-      return this.setColor(FastColor.ARGB32.red(var1), FastColor.ARGB32.green(var1), FastColor.ARGB32.blue(var1), FastColor.ARGB32.alpha(var1));
+      return this.setColor(ARGB.red(var1), ARGB.green(var1), ARGB.blue(var1), ARGB.alpha(var1));
    }
 
    default VertexConsumer setWhiteAlpha(int var1) {
-      return this.setColor(FastColor.ARGB32.color(var1, -1));
+      return this.setColor(ARGB.color(var1, -1));
    }
 
    default VertexConsumer setLight(int var1) {
@@ -57,62 +58,63 @@ public interface VertexConsumer {
 
    default void putBulkData(PoseStack.Pose var1, BakedQuad var2, float[] var3, float var4, float var5, float var6, float var7, int[] var8, int var9, boolean var10) {
       int[] var11 = var2.getVertices();
-      Vec3i var12 = var2.getDirection().getNormal();
+      Vec3i var12 = var2.getDirection().getUnitVec3i();
       Matrix4f var13 = var1.pose();
       Vector3f var14 = var1.transformNormal((float)var12.getX(), (float)var12.getY(), (float)var12.getZ(), new Vector3f());
       boolean var15 = true;
       int var16 = var11.length / 8;
       int var17 = (int)(var7 * 255.0F);
-      MemoryStack var18 = MemoryStack.stackPush();
+      int var18 = var2.getLightEmission();
+      MemoryStack var19 = MemoryStack.stackPush();
 
       try {
-         ByteBuffer var19 = var18.malloc(DefaultVertexFormat.BLOCK.getVertexSize());
-         IntBuffer var20 = var19.asIntBuffer();
+         ByteBuffer var20 = var19.malloc(DefaultVertexFormat.BLOCK.getVertexSize());
+         IntBuffer var21 = var20.asIntBuffer();
 
-         for(int var21 = 0; var21 < var16; ++var21) {
-            var20.clear();
-            var20.put(var11, var21 * 8, 8);
-            float var22 = var19.getFloat(0);
-            float var23 = var19.getFloat(4);
-            float var24 = var19.getFloat(8);
-            float var25;
+         for(int var22 = 0; var22 < var16; ++var22) {
+            var21.clear();
+            var21.put(var11, var22 * 8, 8);
+            float var23 = var20.getFloat(0);
+            float var24 = var20.getFloat(4);
+            float var25 = var20.getFloat(8);
             float var26;
             float var27;
-            float var30;
+            float var28;
+            float var31;
             if (var10) {
-               float var28 = (float)(var19.get(12) & 255);
-               float var29 = (float)(var19.get(13) & 255);
-               var30 = (float)(var19.get(14) & 255);
-               var25 = var28 * var3[var21] * var4;
-               var26 = var29 * var3[var21] * var5;
-               var27 = var30 * var3[var21] * var6;
+               float var29 = (float)(var20.get(12) & 255);
+               float var30 = (float)(var20.get(13) & 255);
+               var31 = (float)(var20.get(14) & 255);
+               var26 = var29 * var3[var22] * var4;
+               var27 = var30 * var3[var22] * var5;
+               var28 = var31 * var3[var22] * var6;
             } else {
-               var25 = var3[var21] * var4 * 255.0F;
-               var26 = var3[var21] * var5 * 255.0F;
-               var27 = var3[var21] * var6 * 255.0F;
+               var26 = var3[var22] * var4 * 255.0F;
+               var27 = var3[var22] * var5 * 255.0F;
+               var28 = var3[var22] * var6 * 255.0F;
             }
 
-            int var35 = FastColor.ARGB32.color(var17, (int)var25, (int)var26, (int)var27);
-            int var36 = var8[var21];
-            var30 = var19.getFloat(16);
-            float var31 = var19.getFloat(20);
-            Vector3f var32 = var13.transformPosition(var22, var23, var24, new Vector3f());
-            this.addVertex(var32.x(), var32.y(), var32.z(), var35, var30, var31, var9, var36, var14.x(), var14.y(), var14.z());
+            int var36 = ARGB.color(var17, (int)var26, (int)var27, (int)var28);
+            int var37 = LightTexture.lightCoordsWithEmission(var8[var22], var18);
+            var31 = var20.getFloat(16);
+            float var32 = var20.getFloat(20);
+            Vector3f var33 = var13.transformPosition(var23, var24, var25, new Vector3f());
+            this.addVertex(var33.x(), var33.y(), var33.z(), var36, var31, var32, var9, var37, var14.x(), var14.y(), var14.z());
          }
-      } catch (Throwable var34) {
-         if (var18 != null) {
+      } catch (Throwable var35) {
+         if (var19 != null) {
             try {
-               var18.close();
-            } catch (Throwable var33) {
-               var34.addSuppressed(var33);
+               var19.close();
+            } catch (Throwable var34) {
+               var35.addSuppressed(var34);
             }
          }
 
-         throw var34;
+         throw var35;
       }
 
-      if (var18 != null) {
-         var18.close();
+      if (var19 != null) {
+         var19.close();
       }
 
    }
@@ -137,5 +139,9 @@ public interface VertexConsumer {
    default VertexConsumer setNormal(PoseStack.Pose var1, float var2, float var3, float var4) {
       Vector3f var5 = var1.transformNormal(var2, var3, var4, new Vector3f());
       return this.setNormal(var5.x(), var5.y(), var5.z());
+   }
+
+   default VertexConsumer setNormal(PoseStack.Pose var1, Vector3f var2) {
+      return this.setNormal(var1, var2.x(), var2.y(), var2.z());
    }
 }

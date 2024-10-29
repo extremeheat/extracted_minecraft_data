@@ -107,12 +107,12 @@ public class RuinedPortalStructure extends Structure {
          int var17 = var11.getBaseHeight(var16.getX(), var16.getZ(), RuinedPortalPiece.getHeightMapType(var4.placement()), var12, var13) - 1;
          int var18 = findSuitableY(var3, var11, var4.placement(), var2.airPocket, var17, var15.getYSpan(), var15, var12, var13);
          BlockPos var19 = new BlockPos(var14.getX(), var18, var14.getZ());
-         return Optional.of(new Structure.GenerationStub(var19, (var10x) -> {
+         return Optional.of(new Structure.GenerationStub(var19, (var11x) -> {
             if (var4.canBeCold()) {
-               var2.cold = isCold(var19, var1.chunkGenerator().getBiomeSource().getNoiseBiome(QuartPos.fromBlock(var19.getX()), QuartPos.fromBlock(var19.getY()), QuartPos.fromBlock(var19.getZ()), var13.sampler()));
+               var2.cold = isCold(var19, var1.chunkGenerator().getBiomeSource().getNoiseBiome(QuartPos.fromBlock(var19.getX()), QuartPos.fromBlock(var19.getY()), QuartPos.fromBlock(var19.getZ()), var13.sampler()), var11.getSeaLevel());
             }
 
-            var10x.addPiece(new RuinedPortalPiece(var1.structureTemplateManager(), var19, var4.placement(), var2, var21, var23, var24, var9, var10));
+            var11x.addPiece(new RuinedPortalPiece(var1.structureTemplateManager(), var19, var4.placement(), var2, var21, var23, var24, var9, var10));
          }));
       }
    }
@@ -127,12 +127,12 @@ public class RuinedPortalStructure extends Structure {
       }
    }
 
-   private static boolean isCold(BlockPos var0, Holder<Biome> var1) {
-      return ((Biome)var1.value()).coldEnoughToSnow(var0);
+   private static boolean isCold(BlockPos var0, Holder<Biome> var1, int var2) {
+      return ((Biome)var1.value()).coldEnoughToSnow(var0, var2);
    }
 
    private static int findSuitableY(RandomSource var0, ChunkGenerator var1, RuinedPortalPiece.VerticalPlacement var2, boolean var3, int var4, int var5, BoundingBox var6, LevelHeightAccessor var7, RandomState var8) {
-      int var10 = var7.getMinBuildHeight() + 15;
+      int var10 = var7.getMinY() + 15;
       int var9;
       if (var2 == RuinedPortalPiece.VerticalPlacement.IN_NETHER) {
          if (var3) {

@@ -1,9 +1,9 @@
 package net.minecraft.world.level.levelgen;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -133,7 +133,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
          this.aquifer = Aquifer.create(this, new ChunkPos(var12, var13), var18, var2.aquiferRandom(), var5.minY(), var5.height(), var8);
       }
 
-      ImmutableList.Builder var19 = ImmutableList.builder();
+      ArrayList var19 = new ArrayList();
       DensityFunction var20 = DensityFunctions.cacheAllInCell(DensityFunctions.add(var18.finalDensity(), DensityFunctions.BeardifierMarker.INSTANCE)).mapAll(this::wrap);
       var19.add((var2x) -> {
          return this.aquifer.computeSubstance(var2x, var20.compute(var2x));
@@ -142,7 +142,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
          var19.add(OreVeinifier.create(var18.veinToggle(), var18.veinRidged(), var18.veinGap(), var2.oreRandom()));
       }
 
-      this.blockStateRule = new MaterialRuleList(var19.build());
+      this.blockStateRule = new MaterialRuleList((BlockStateFiller[])var19.toArray(new BlockStateFiller[0]));
       this.initialDensityNoJaggedness = var18.initialDensityWithoutJaggedness();
    }
 
@@ -258,18 +258,22 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
    }
 
    public void selectCellYZ(int var1, int var2) {
-      this.interpolators.forEach((var2x) -> {
-         var2x.selectCellYZ(var1, var2);
-      });
+      Iterator var3 = this.interpolators.iterator();
+
+      while(var3.hasNext()) {
+         NoiseInterpolator var4 = (NoiseInterpolator)var3.next();
+         var4.selectCellYZ(var1, var2);
+      }
+
       this.fillingCell = true;
       this.cellStartBlockY = (var1 + this.cellNoiseMinY) * this.cellHeight;
       this.cellStartBlockZ = (this.firstCellZ + var2) * this.cellWidth;
       ++this.arrayInterpolationCounter;
-      Iterator var3 = this.cellCaches.iterator();
+      var3 = this.cellCaches.iterator();
 
       while(var3.hasNext()) {
-         CacheAllInCell var4 = (CacheAllInCell)var3.next();
-         var4.noiseFiller.fillArray(var4.values, this);
+         CacheAllInCell var5 = (CacheAllInCell)var3.next();
+         var5.noiseFiller.fillArray(var5.values, this);
       }
 
       ++this.arrayInterpolationCounter;
@@ -278,24 +282,36 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
 
    public void updateForY(int var1, double var2) {
       this.inCellY = var1 - this.cellStartBlockY;
-      this.interpolators.forEach((var2x) -> {
-         var2x.updateForY(var2);
-      });
+      Iterator var4 = this.interpolators.iterator();
+
+      while(var4.hasNext()) {
+         NoiseInterpolator var5 = (NoiseInterpolator)var4.next();
+         var5.updateForY(var2);
+      }
+
    }
 
    public void updateForX(int var1, double var2) {
       this.inCellX = var1 - this.cellStartBlockX;
-      this.interpolators.forEach((var2x) -> {
-         var2x.updateForX(var2);
-      });
+      Iterator var4 = this.interpolators.iterator();
+
+      while(var4.hasNext()) {
+         NoiseInterpolator var5 = (NoiseInterpolator)var4.next();
+         var5.updateForX(var2);
+      }
+
    }
 
    public void updateForZ(int var1, double var2) {
       this.inCellZ = var1 - this.cellStartBlockZ;
       ++this.interpolationCounter;
-      this.interpolators.forEach((var2x) -> {
-         var2x.updateForZ(var2);
-      });
+      Iterator var4 = this.interpolators.iterator();
+
+      while(var4.hasNext()) {
+         NoiseInterpolator var5 = (NoiseInterpolator)var4.next();
+         var5.updateForZ(var2);
+      }
+
    }
 
    public void stopInterpolation() {

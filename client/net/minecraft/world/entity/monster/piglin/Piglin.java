@@ -15,6 +15,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.VisibleForDebug;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -22,10 +24,10 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.Brain;
@@ -42,6 +44,7 @@ import net.minecraft.world.entity.monster.CrossbowAttackMob;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
@@ -110,11 +113,13 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
          if (var5.canDropMobsSkull()) {
             ItemStack var6 = new ItemStack(Items.PIGLIN_HEAD);
             var5.increaseDroppedSkulls();
-            this.spawnAtLocation(var6);
+            this.spawnAtLocation(var1, var6);
          }
       }
 
-      this.inventory.removeAllItems().forEach(this::spawnAtLocation);
+      this.inventory.removeAllItems().forEach((var2x) -> {
+         this.spawnAtLocation(var1, var2x);
+      });
    }
 
    protected ItemStack addToInventory(ItemStack var1) {
@@ -144,14 +149,14 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 16.0).add(Attributes.MOVEMENT_SPEED, 0.3499999940395355).add(Attributes.ATTACK_DAMAGE, 5.0);
    }
 
-   public static boolean checkPiglinSpawnRules(EntityType<Piglin> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkPiglinSpawnRules(EntityType<Piglin> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       return !var1.getBlockState(var3.below()).is(Blocks.NETHER_WART_BLOCK);
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
-      if (var3 != MobSpawnType.STRUCTURE) {
+      if (var3 != EntitySpawnReason.STRUCTURE) {
          if (var5.nextFloat() < 0.2F) {
             this.setBaby(true);
          } else if (this.isAdult()) {
@@ -206,11 +211,15 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       InteractionResult var3 = super.mobInteract(var1, var2);
       if (var3.consumesAction()) {
          return var3;
-      } else if (!this.level().isClientSide) {
-         return PiglinAi.mobInteract(this, var1, var2);
       } else {
-         boolean var4 = PiglinAi.canAdmire(this, var1.getItemInHand(var2)) && this.getArmPose() != PiglinArmPose.ADMIRING_ITEM;
-         return var4 ? InteractionResult.SUCCESS : InteractionResult.PASS;
+         Level var5 = this.level();
+         if (var5 instanceof ServerLevel) {
+            ServerLevel var6 = (ServerLevel)var5;
+            return PiglinAi.mobInteract(var6, this, var1, var2);
+         } else {
+            boolean var4 = PiglinAi.canAdmire(this, var1.getItemInHand(var2)) && this.getArmPose() != PiglinArmPose.ADMIRING_ITEM;
+            return (InteractionResult)(var4 ? InteractionResult.SUCCESS : InteractionResult.PASS);
+         }
       }
    }
 
@@ -242,21 +251,24 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       return !this.cannotHunt;
    }
 
-   protected void customServerAiStep() {
-      this.level().getProfiler().push("piglinBrain");
-      this.getBrain().tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().pop();
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("piglinBrain");
+      this.getBrain().tick(var1, this);
+      var2.pop();
       PiglinAi.updateActivity(this);
-      super.customServerAiStep();
+      super.customServerAiStep(var1);
    }
 
-   protected int getBaseExperienceReward() {
+   protected int getBaseExperienceReward(ServerLevel var1) {
       return this.xpReward;
    }
 
    protected void finishConversion(ServerLevel var1) {
-      PiglinAi.cancelAdmiring(this);
-      this.inventory.removeAllItems().forEach(this::spawnAtLocation);
+      PiglinAi.cancelAdmiring(var1, this);
+      this.inventory.removeAllItems().forEach((var2) -> {
+         this.spawnAtLocation(var1, var2);
+      });
       super.finishConversion(var1);
    }
 
@@ -286,7 +298,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       } else if (this.isChargingCrossbow()) {
          return PiglinArmPose.CROSSBOW_CHARGE;
       } else {
-         return this.isAggressive() && this.isHolding(Items.CROSSBOW) ? PiglinArmPose.CROSSBOW_HOLD : PiglinArmPose.DEFAULT;
+         return this.isHolding(Items.CROSSBOW) && CrossbowItem.isCharged(this.getWeaponItem()) ? PiglinArmPose.CROSSBOW_HOLD : PiglinArmPose.DEFAULT;
       }
    }
 
@@ -298,17 +310,17 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       this.entityData.set(DATA_IS_DANCING, var1);
    }
 
-   public boolean hurt(DamageSource var1, float var2) {
-      boolean var3 = super.hurt(var1, var2);
-      if (this.level().isClientSide) {
-         return false;
-      } else {
-         if (var3 && var1.getEntity() instanceof LivingEntity) {
-            PiglinAi.wasHurtBy(this, (LivingEntity)var1.getEntity());
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      boolean var4 = super.hurtServer(var1, var2, var3);
+      if (var4) {
+         Entity var6 = var2.getEntity();
+         if (var6 instanceof LivingEntity) {
+            LivingEntity var5 = (LivingEntity)var6;
+            PiglinAi.wasHurtBy(var1, this, var5);
          }
-
-         return var3;
       }
+
+      return var4;
    }
 
    public void performRangedAttack(LivingEntity var1, float var2) {
@@ -333,35 +345,35 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    }
 
-   public boolean wantsToPickUp(ItemStack var1) {
-      return this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && this.canPickUpLoot() && PiglinAi.wantsToPickup(this, var1);
+   public boolean wantsToPickUp(ServerLevel var1, ItemStack var2) {
+      return var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && this.canPickUpLoot() && PiglinAi.wantsToPickup(this, var2);
    }
 
    protected boolean canReplaceCurrentItem(ItemStack var1) {
       EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
       ItemStack var3 = this.getItemBySlot(var2);
-      return this.canReplaceCurrentItem(var1, var3);
+      return this.canReplaceCurrentItem(var1, var3, var2);
    }
 
-   protected boolean canReplaceCurrentItem(ItemStack var1, ItemStack var2) {
+   protected boolean canReplaceCurrentItem(ItemStack var1, ItemStack var2, EquipmentSlot var3) {
       if (EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE)) {
          return false;
       } else {
-         boolean var3 = PiglinAi.isLovedItem(var1) || var1.is(Items.CROSSBOW);
-         boolean var4 = PiglinAi.isLovedItem(var2) || var2.is(Items.CROSSBOW);
-         if (var3 && !var4) {
+         boolean var4 = PiglinAi.isLovedItem(var1) || var1.is(Items.CROSSBOW);
+         boolean var5 = PiglinAi.isLovedItem(var2) || var2.is(Items.CROSSBOW);
+         if (var4 && !var5) {
             return true;
-         } else if (!var3 && var4) {
+         } else if (!var4 && var5) {
             return false;
          } else {
-            return this.isAdult() && !var1.is(Items.CROSSBOW) && var2.is(Items.CROSSBOW) ? false : super.canReplaceCurrentItem(var1, var2);
+            return this.isAdult() && !var1.is(Items.CROSSBOW) && var2.is(Items.CROSSBOW) ? false : super.canReplaceCurrentItem(var1, var2, var3);
          }
       }
    }
 
-   protected void pickUpItem(ItemEntity var1) {
-      this.onItemPickup(var1);
-      PiglinAi.pickUpItem(this, var1);
+   protected void pickUpItem(ServerLevel var1, ItemEntity var2) {
+      this.onItemPickup(var2);
+      PiglinAi.pickUpItem(var1, this, var2);
    }
 
    public boolean startRiding(Entity var1, boolean var2) {

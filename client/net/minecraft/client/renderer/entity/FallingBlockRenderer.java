@@ -4,17 +4,17 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.FallingBlockRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.item.FallingBlockEntity;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class FallingBlockRenderer extends EntityRenderer<FallingBlockEntity> {
+public class FallingBlockRenderer extends EntityRenderer<FallingBlockEntity, FallingBlockRenderState> {
    private final BlockRenderDispatcher dispatcher;
 
    public FallingBlockRenderer(EntityRendererProvider.Context var1) {
@@ -23,22 +23,41 @@ public class FallingBlockRenderer extends EntityRenderer<FallingBlockEntity> {
       this.dispatcher = var1.getBlockRenderDispatcher();
    }
 
-   public void render(FallingBlockEntity var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      BlockState var7 = var1.getBlockState();
-      if (var7.getRenderShape() == RenderShape.MODEL) {
-         Level var8 = var1.level();
-         if (var7 != var8.getBlockState(var1.blockPosition()) && var7.getRenderShape() != RenderShape.INVISIBLE) {
-            var4.pushPose();
-            BlockPos var9 = BlockPos.containing(var1.getX(), var1.getBoundingBox().maxY, var1.getZ());
-            var4.translate(-0.5, 0.0, -0.5);
-            this.dispatcher.getModelRenderer().tesselateBlock(var8, this.dispatcher.getBlockModel(var7), var7, var9, var4, var5.getBuffer(ItemBlockRenderTypes.getMovingBlockRenderType(var7)), false, RandomSource.create(), var7.getSeed(var1.getStartPos()), OverlayTexture.NO_OVERLAY);
-            var4.popPose();
-            super.render(var1, var2, var3, var4, var5, var6);
-         }
+   public boolean shouldRender(FallingBlockEntity var1, Frustum var2, double var3, double var5, double var7) {
+      if (!super.shouldRender(var1, var2, var3, var5, var7)) {
+         return false;
+      } else {
+         return var1.getBlockState() != var1.level().getBlockState(var1.blockPosition());
       }
    }
 
-   public ResourceLocation getTextureLocation(FallingBlockEntity var1) {
-      return TextureAtlas.LOCATION_BLOCKS;
+   public void render(FallingBlockRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
+      BlockState var5 = var1.blockState;
+      if (var5.getRenderShape() == RenderShape.MODEL) {
+         var2.pushPose();
+         var2.translate(-0.5, 0.0, -0.5);
+         this.dispatcher.getModelRenderer().tesselateBlock(var1, this.dispatcher.getBlockModel(var5), var5, var1.blockPos, var2, var3.getBuffer(ItemBlockRenderTypes.getMovingBlockRenderType(var5)), false, RandomSource.create(), var5.getSeed(var1.startBlockPos), OverlayTexture.NO_OVERLAY);
+         var2.popPose();
+         super.render(var1, var2, var3, var4);
+      }
+   }
+
+   public FallingBlockRenderState createRenderState() {
+      return new FallingBlockRenderState();
+   }
+
+   public void extractRenderState(FallingBlockEntity var1, FallingBlockRenderState var2, float var3) {
+      super.extractRenderState(var1, var2, var3);
+      BlockPos var4 = BlockPos.containing(var1.getX(), var1.getBoundingBox().maxY, var1.getZ());
+      var2.startBlockPos = var1.getStartPos();
+      var2.blockPos = var4;
+      var2.blockState = var1.getBlockState();
+      var2.biome = var1.level().getBiome(var4);
+      var2.level = var1.level();
+   }
+
+   // $FF: synthetic method
+   public EntityRenderState createRenderState() {
+      return this.createRenderState();
    }
 }

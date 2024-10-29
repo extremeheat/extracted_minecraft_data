@@ -10,6 +10,7 @@ import com.mojang.datafixers.util.Pair;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.network.chat.Component;
@@ -75,7 +76,7 @@ public class FunctionArgument implements ArgumentType<Result> {
    }
 
    static Collection<CommandFunction<CommandSourceStack>> getFunctionTag(CommandContext<CommandSourceStack> var0, ResourceLocation var1) throws CommandSyntaxException {
-      Collection var2 = ((CommandSourceStack)var0.getSource()).getServer().getFunctions().getTag(var1);
+      List var2 = ((CommandSourceStack)var0.getSource()).getServer().getFunctions().getTag(var1);
       if (var2 == null) {
          throw ERROR_UNKNOWN_TAG.create(var1.toString());
       } else {

@@ -27,10 +27,9 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -173,7 +172,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
       var1.define(DATA_TYPE_ID, Rabbit.Variant.BROWN.id);
    }
 
-   public void customServerAiStep() {
+   public void customServerAiStep(ServerLevel var1) {
       if (this.jumpDelayTicks > 0) {
          --this.jumpDelayTicks;
       }
@@ -192,28 +191,28 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
          }
 
          if (this.getVariant() == Rabbit.Variant.EVIL && this.jumpDelayTicks == 0) {
-            LivingEntity var1 = this.getTarget();
-            if (var1 != null && this.distanceToSqr(var1) < 16.0) {
-               this.facePoint(var1.getX(), var1.getZ());
-               this.moveControl.setWantedPosition(var1.getX(), var1.getY(), var1.getZ(), this.moveControl.getSpeedModifier());
+            LivingEntity var2 = this.getTarget();
+            if (var2 != null && this.distanceToSqr(var2) < 16.0) {
+               this.facePoint(var2.getX(), var2.getZ());
+               this.moveControl.setWantedPosition(var2.getX(), var2.getY(), var2.getZ(), this.moveControl.getSpeedModifier());
                this.startJumping();
                this.wasOnGround = true;
             }
          }
 
-         RabbitJumpControl var4 = (RabbitJumpControl)this.jumpControl;
-         if (!var4.wantJump()) {
+         RabbitJumpControl var5 = (RabbitJumpControl)this.jumpControl;
+         if (!var5.wantJump()) {
             if (this.moveControl.hasWanted() && this.jumpDelayTicks == 0) {
-               Path var2 = this.navigation.getPath();
-               Vec3 var3 = new Vec3(this.moveControl.getWantedX(), this.moveControl.getWantedY(), this.moveControl.getWantedZ());
-               if (var2 != null && !var2.isDone()) {
-                  var3 = var2.getNextEntityPos(this);
+               Path var3 = this.navigation.getPath();
+               Vec3 var4 = new Vec3(this.moveControl.getWantedX(), this.moveControl.getWantedY(), this.moveControl.getWantedZ());
+               if (var3 != null && !var3.isDone()) {
+                  var4 = var3.getNextEntityPos(this);
                }
 
-               this.facePoint(var3.x, var3.z);
+               this.facePoint(var4.x, var4.z);
                this.startJumping();
             }
-         } else if (!var4.canJump()) {
+         } else if (!var5.canJump()) {
             this.enableJumpControl();
          }
       }
@@ -264,7 +263,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 3.0).add(Attributes.MOVEMENT_SPEED, 0.30000001192092896).add(Attributes.ATTACK_DAMAGE, 3.0);
+      return Animal.createAnimalAttributes().add(Attributes.MAX_HEALTH, 3.0).add(Attributes.MOVEMENT_SPEED, 0.30000001192092896).add(Attributes.ATTACK_DAMAGE, 3.0);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
@@ -308,7 +307,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
 
    @Nullable
    public Rabbit getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Rabbit var3 = (Rabbit)EntityType.RABBIT.create(var1);
+      Rabbit var3 = (Rabbit)EntityType.RABBIT.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          Variant var4 = getRandomRabbitVariant(var1, this.blockPosition());
          if (this.random.nextInt(20) != 0) {
@@ -358,7 +357,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       Variant var5 = getRandomRabbitVariant(var1, this.blockPosition());
       if (var4 instanceof RabbitGroupData) {
          var5 = ((RabbitGroupData)var4).variant;
@@ -382,7 +381,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
       }
    }
 
-   public static boolean checkRabbitSpawnRules(EntityType<Rabbit> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkRabbitSpawnRules(EntityType<Rabbit> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       return var1.getBlockState(var3.below()).is(BlockTags.RABBITS_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
    }
 
@@ -523,7 +522,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
 
       public boolean canUse() {
          if (this.nextStartTick <= 0) {
-            if (!this.rabbit.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            if (!getServerLevel(this.rabbit).getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                return false;
             }
 

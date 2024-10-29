@@ -65,7 +65,12 @@ public class MultiNoiseBiomeSourceParameterList {
       });
       public static final Preset OVERWORLD = new Preset(ResourceLocation.withDefaultNamespace("overworld"), new SourceProvider() {
          public <T> Climate.ParameterList<T> apply(Function<ResourceKey<Biome>, T> var1) {
-            return MultiNoiseBiomeSourceParameterList.Preset.generateOverworldBiomes(var1);
+            return MultiNoiseBiomeSourceParameterList.Preset.generateOverworldBiomes(var1, OverworldBiomeBuilder.Modifier.NONE);
+         }
+      });
+      public static final Preset OVERWORLD_WINTER_DROP = new Preset(ResourceLocation.withDefaultNamespace("overworld_winter_drop"), new SourceProvider() {
+         public <T> Climate.ParameterList<T> apply(Function<ResourceKey<Biome>, T> var1) {
+            return MultiNoiseBiomeSourceParameterList.Preset.generateOverworldBiomes(var1, OverworldBiomeBuilder.Modifier.WINTER_DROP);
          }
       });
       static final Map<ResourceLocation, Preset> BY_NAME;
@@ -77,12 +82,12 @@ public class MultiNoiseBiomeSourceParameterList {
          this.provider = var2;
       }
 
-      static <T> Climate.ParameterList<T> generateOverworldBiomes(Function<ResourceKey<Biome>, T> var0) {
-         ImmutableList.Builder var1 = ImmutableList.builder();
-         (new OverworldBiomeBuilder()).addBiomes((var2) -> {
-            var1.add(var2.mapSecond(var0));
+      static <T> Climate.ParameterList<T> generateOverworldBiomes(Function<ResourceKey<Biome>, T> var0, OverworldBiomeBuilder.Modifier var1) {
+         ImmutableList.Builder var2 = ImmutableList.builder();
+         (new OverworldBiomeBuilder(var1)).addBiomes((var2x) -> {
+            var2.add(var2x.mapSecond(var0));
          });
-         return new Climate.ParameterList(var1.build());
+         return new Climate.ParameterList(var2.build());
       }
 
       public Stream<ResourceKey<Biome>> usedBiomes() {
@@ -100,7 +105,7 @@ public class MultiNoiseBiomeSourceParameterList {
       }
 
       static {
-         BY_NAME = (Map)Stream.of(NETHER, OVERWORLD).collect(Collectors.toMap(Preset::id, (var0) -> {
+         BY_NAME = (Map)Stream.of(NETHER, OVERWORLD, OVERWORLD_WINTER_DROP).collect(Collectors.toMap(Preset::id, (var0) -> {
             return var0;
          }));
          CODEC = ResourceLocation.CODEC.flatXmap((var0) -> {

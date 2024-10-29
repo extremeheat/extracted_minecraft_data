@@ -102,7 +102,7 @@ public class ChunkStorage implements AutoCloseable {
       return this.worker.loadAsync(var1);
    }
 
-   public CompletableFuture<Void> write(ChunkPos var1, CompoundTag var2) {
+   public CompletableFuture<Void> write(ChunkPos var1, Supplier<CompoundTag> var2) {
       this.handleLegacyStructureIndex(var1);
       return this.worker.store(var1, var2);
    }

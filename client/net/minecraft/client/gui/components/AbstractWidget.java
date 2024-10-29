@@ -184,7 +184,11 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    }
 
    public void playDownSound(SoundManager var1) {
-      var1.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
+      playButtonClickSound(var1);
+   }
+
+   public static void playButtonClickSound(SoundManager var0) {
+      var0.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
    }
 
    public int getWidth() {

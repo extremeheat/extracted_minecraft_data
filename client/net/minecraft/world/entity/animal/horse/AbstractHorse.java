@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.UUID;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntUnaryOperator;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -36,13 +35,12 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.Pose;
@@ -107,8 +105,17 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    });
    private static final float BACKWARDS_MOVE_SPEED_FACTOR = 0.25F;
    private static final float SIDEWAYS_MOVE_SPEED_FACTOR = 0.5F;
-   private static final Predicate<LivingEntity> PARENT_HORSE_SELECTOR = (var0) -> {
-      return var0 instanceof AbstractHorse && ((AbstractHorse)var0).isBred();
+   private static final TargetingConditions.Selector PARENT_HORSE_SELECTOR = (var0, var1) -> {
+      boolean var10000;
+      if (var0 instanceof AbstractHorse var2) {
+         if (var2.isBred()) {
+            var10000 = true;
+            return var10000;
+         }
+      }
+
+      var10000 = false;
+      return var10000;
    };
    private static final TargetingConditions MOMMY_TARGETING;
    private static final EntityDataAccessor<Byte> DATA_ID_FLAGS;
@@ -120,6 +127,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    private static final int FLAG_OPEN_MOUTH = 64;
    public static final int INV_SLOT_SADDLE = 0;
    public static final int INV_BASE_COUNT = 1;
+   public static final int INVENTORY_ROWS = 3;
    private int eatingCounter;
    private int mouthCounter;
    private int standCounter;
@@ -261,11 +269,14 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    public void equipBodyArmor(Player var1, ItemStack var2) {
-      if (this.isBodyArmorItem(var2)) {
-         this.setBodyArmorItem(var2.copyWithCount(1));
-         var2.consume(1, var1);
+      if (this.isEquippableInSlot(var2, EquipmentSlot.BODY)) {
+         this.setBodyArmorItem(var2.consumeAndReturn(1, var1));
       }
 
+   }
+
+   protected boolean canDispenserEquipIntoSlot(EquipmentSlot var1) {
+      return var1 == EquipmentSlot.BODY && this.isTamed() || super.canDispenserEquipIntoSlot(var1);
    }
 
    public boolean isSaddled() {
@@ -367,13 +378,13 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
 
    }
 
-   public boolean hurt(DamageSource var1, float var2) {
-      boolean var3 = super.hurt(var1, var2);
-      if (var3 && this.random.nextInt(3) == 0) {
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      boolean var4 = super.hurtServer(var1, var2, var3);
+      if (var4 && this.random.nextInt(3) == 0) {
          this.standIfPossible();
       }
 
-      return var3;
+      return var4;
    }
 
    protected boolean canPerformRearing() {
@@ -423,7 +434,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    public static AttributeSupplier.Builder createBaseHorseAttributes() {
-      return Mob.createMobAttributes().add(Attributes.JUMP_STRENGTH, 0.7).add(Attributes.MAX_HEALTH, 53.0).add(Attributes.MOVEMENT_SPEED, 0.22499999403953552).add(Attributes.STEP_HEIGHT, 1.0).add(Attributes.SAFE_FALL_DISTANCE, 6.0).add(Attributes.FALL_DAMAGE_MULTIPLIER, 0.5);
+      return Animal.createAnimalAttributes().add(Attributes.JUMP_STRENGTH, 0.7).add(Attributes.MAX_HEALTH, 53.0).add(Attributes.MOVEMENT_SPEED, 0.22499999403953552).add(Attributes.STEP_HEIGHT, 1.0).add(Attributes.SAFE_FALL_DISTANCE, 6.0).add(Attributes.FALL_DAMAGE_MULTIPLIER, 0.5);
    }
 
    public int getMaxSpawnClusterSize() {
@@ -455,11 +466,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          var2.consume(1, var1);
       }
 
-      if (this.level().isClientSide) {
-         return InteractionResult.CONSUME;
-      } else {
-         return var3 ? InteractionResult.SUCCESS : InteractionResult.PASS;
-      }
+      return (InteractionResult)(!var3 && !this.level().isClientSide ? InteractionResult.PASS : InteractionResult.SUCCESS_SERVER);
    }
 
    protected boolean handleEating(Player var1, ItemStack var2) {
@@ -549,13 +556,13 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       this.tailCounter = 1;
    }
 
-   protected void dropEquipment() {
-      super.dropEquipment();
+   protected void dropEquipment(ServerLevel var1) {
+      super.dropEquipment(var1);
       if (this.inventory != null) {
-         for(int var1 = 0; var1 < this.inventory.getContainerSize(); ++var1) {
-            ItemStack var2 = this.inventory.getItem(var1);
-            if (!var2.isEmpty() && !EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
-               this.spawnAtLocation(var2);
+         for(int var2 = 0; var2 < this.inventory.getContainerSize(); ++var2) {
+            ItemStack var3 = this.inventory.getItem(var2);
+            if (!var3.isEmpty() && !EnchantmentHelper.has(var3, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
+               this.spawnAtLocation(var1, var3);
             }
          }
 
@@ -568,31 +575,36 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       }
 
       super.aiStep();
-      if (!this.level().isClientSide && this.isAlive()) {
-         if (this.random.nextInt(900) == 0 && this.deathTime == 0) {
-            this.heal(1.0F);
-         }
-
-         if (this.canEatGrass()) {
-            if (!this.isEating() && !this.isVehicle() && this.random.nextInt(300) == 0 && this.level().getBlockState(this.blockPosition().below()).is(Blocks.GRASS_BLOCK)) {
-               this.setEating(true);
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel var1) {
+         if (this.isAlive()) {
+            if (this.random.nextInt(900) == 0 && this.deathTime == 0) {
+               this.heal(1.0F);
             }
 
-            if (this.isEating() && ++this.eatingCounter > 50) {
-               this.eatingCounter = 0;
-               this.setEating(false);
-            }
-         }
+            if (this.canEatGrass()) {
+               if (!this.isEating() && !this.isVehicle() && this.random.nextInt(300) == 0 && var1.getBlockState(this.blockPosition().below()).is(Blocks.GRASS_BLOCK)) {
+                  this.setEating(true);
+               }
 
-         this.followMommy();
+               if (this.isEating() && ++this.eatingCounter > 50) {
+                  this.eatingCounter = 0;
+                  this.setEating(false);
+               }
+            }
+
+            this.followMommy(var1);
+            return;
+         }
       }
+
    }
 
-   protected void followMommy() {
+   protected void followMommy(ServerLevel var1) {
       if (this.isBred() && this.isBaby() && !this.isEating()) {
-         LivingEntity var1 = this.level().getNearestEntity(AbstractHorse.class, MOMMY_TARGETING, this, this.getX(), this.getY(), this.getZ(), this.getBoundingBox().inflate(16.0));
-         if (var1 != null && this.distanceToSqr(var1) > 4.0) {
-            this.navigation.createPath((Entity)var1, 0);
+         LivingEntity var2 = var1.getNearestEntity(AbstractHorse.class, MOMMY_TARGETING, this, this.getX(), this.getY(), this.getZ(), this.getBoundingBox().inflate(16.0));
+         if (var2 != null && this.distanceToSqr(var2) > 4.0) {
+            this.navigation.createPath((Entity)var2, 0);
          }
       }
 
@@ -673,7 +685,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       if (!this.isVehicle() && !this.isBaby()) {
          if (this.isTamed() && var1.isSecondaryUseActive()) {
             this.openCustomInventoryScreen(var1);
-            return InteractionResult.sidedSuccess(this.level().isClientSide);
+            return InteractionResult.SUCCESS;
          } else {
             ItemStack var3 = var1.getItemInHand(var2);
             if (!var3.isEmpty()) {
@@ -682,14 +694,14 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
                   return var4;
                }
 
-               if (this.canUseSlot(EquipmentSlot.BODY) && this.isBodyArmorItem(var3) && !this.isWearingBodyArmor()) {
+               if (this.isEquippableInSlot(var3, EquipmentSlot.BODY) && !this.isWearingBodyArmor()) {
                   this.equipBodyArmor(var1, var3);
-                  return InteractionResult.sidedSuccess(this.level().isClientSide);
+                  return InteractionResult.SUCCESS;
                }
             }
 
             this.doPlayerRide(var1);
-            return InteractionResult.sidedSuccess(this.level().isClientSide);
+            return InteractionResult.SUCCESS;
          }
       } else {
          return super.mobInteract(var1, var2);
@@ -1083,7 +1095,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(0.2F);
       }

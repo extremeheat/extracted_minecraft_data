@@ -13,6 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.PotionItem;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.level.ItemLike;
 
 public class PotionBrewing {
    public static final int BREWING_TIME_SECONDS = 20;
@@ -281,20 +282,20 @@ public class PotionBrewing {
          if (var1.isEnabled(this.enabledFeatures) && var2.isEnabled(this.enabledFeatures) && var3.isEnabled(this.enabledFeatures)) {
             expectPotion(var1);
             expectPotion(var3);
-            this.containerMixes.add(new Mix(var1.builtInRegistryHolder(), Ingredient.of(var2), var3.builtInRegistryHolder()));
+            this.containerMixes.add(new Mix(var1.builtInRegistryHolder(), Ingredient.of((ItemLike)var2), var3.builtInRegistryHolder()));
          }
       }
 
       public void addContainer(Item var1) {
          if (var1.isEnabled(this.enabledFeatures)) {
             expectPotion(var1);
-            this.containers.add(Ingredient.of(var1));
+            this.containers.add(Ingredient.of((ItemLike)var1));
          }
       }
 
       public void addMix(Holder<Potion> var1, Item var2, Holder<Potion> var3) {
          if (((Potion)var1.value()).isEnabled(this.enabledFeatures) && var2.isEnabled(this.enabledFeatures) && ((Potion)var3.value()).isEnabled(this.enabledFeatures)) {
-            this.potionMixes.add(new Mix(var1, Ingredient.of(var2), var3));
+            this.potionMixes.add(new Mix(var1, Ingredient.of((ItemLike)var2), var3));
          }
 
       }

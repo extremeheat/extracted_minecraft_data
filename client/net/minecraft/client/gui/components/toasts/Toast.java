@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.components.toasts;
 
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
@@ -9,9 +10,14 @@ import net.minecraft.util.Mth;
 
 public interface Toast {
    Object NO_TOKEN = new Object();
+   int DEFAULT_WIDTH = 160;
    int SLOT_HEIGHT = 32;
 
-   Visibility render(GuiGraphics var1, ToastComponent var2, long var3);
+   Visibility getWantedVisibility();
+
+   void update(ToastManager var1, long var2);
+
+   void render(GuiGraphics var1, Font var2, long var3);
 
    default Object getToken() {
       return NO_TOKEN;
@@ -25,7 +31,7 @@ public interface Toast {
       return 32;
    }
 
-   default int slotCount() {
+   default int occcupiedSlotCount() {
       return Mth.positiveCeilDiv(this.height(), 32);
    }
 

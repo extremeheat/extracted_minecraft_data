@@ -1,6 +1,5 @@
 package net.minecraft.world.level.storage.loot.providers.nbt;
 
-import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -8,17 +7,17 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.critereon.NbtPredicate;
 import net.minecraft.nbt.Tag;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public class ContextNbtProvider implements NbtProvider {
    private static final String BLOCK_ENTITY_ID = "block_entity";
    private static final Getter BLOCK_ENTITY_PROVIDER = new Getter() {
       public Tag get(LootContext var1) {
-         BlockEntity var2 = (BlockEntity)var1.getParamOrNull(LootContextParams.BLOCK_ENTITY);
+         BlockEntity var2 = (BlockEntity)var1.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
          return var2 != null ? var2.saveWithFullMetadata(var2.getLevel().registryAccess()) : null;
       }
 
@@ -26,8 +25,8 @@ public class ContextNbtProvider implements NbtProvider {
          return "block_entity";
       }
 
-      public Set<LootContextParam<?>> getReferencedContextParams() {
-         return ImmutableSet.of(LootContextParams.BLOCK_ENTITY);
+      public Set<ContextKey<?>> getReferencedContextParams() {
+         return Set.of(LootContextParams.BLOCK_ENTITY);
       }
    };
    public static final ContextNbtProvider BLOCK_ENTITY;
@@ -40,7 +39,7 @@ public class ContextNbtProvider implements NbtProvider {
       return new Getter() {
          @Nullable
          public Tag get(LootContext var1) {
-            Entity var2 = (Entity)var1.getParamOrNull(var0.getParam());
+            Entity var2 = (Entity)var1.getOptionalParameter(var0.getParam());
             return var2 != null ? NbtPredicate.getEntityTagToCompare(var2) : null;
          }
 
@@ -48,8 +47,8 @@ public class ContextNbtProvider implements NbtProvider {
             return var0.name();
          }
 
-         public Set<LootContextParam<?>> getReferencedContextParams() {
-            return ImmutableSet.of(var0.getParam());
+         public Set<ContextKey<?>> getReferencedContextParams() {
+            return Set.of(var0.getParam());
          }
       };
    }
@@ -68,7 +67,7 @@ public class ContextNbtProvider implements NbtProvider {
       return this.getter.get(var1);
    }
 
-   public Set<LootContextParam<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getReferencedContextParams() {
       return this.getter.getReferencedContextParams();
    }
 
@@ -102,6 +101,6 @@ public class ContextNbtProvider implements NbtProvider {
 
       String getId();
 
-      Set<LootContextParam<?>> getReferencedContextParams();
+      Set<ContextKey<?>> getReferencedContextParams();
    }
 }

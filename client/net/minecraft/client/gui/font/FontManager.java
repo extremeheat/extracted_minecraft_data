@@ -44,6 +44,7 @@ import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.DependencySorter;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.slf4j.Logger;
 
@@ -72,14 +73,12 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       return new GlyphProvider.Conditional(new AllMissingGlyphProvider(), FontOption.Filter.ALWAYS_PASS);
    }
 
-   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, ProfilerFiller var3, ProfilerFiller var4, Executor var5, Executor var6) {
-      var3.startTick();
-      var3.endTick();
-      CompletableFuture var10000 = this.prepare(var2, var5);
+   public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, Executor var3, Executor var4) {
+      CompletableFuture var10000 = this.prepare(var2, var3);
       Objects.requireNonNull(var1);
-      return var10000.thenCompose(var1::wait).thenAcceptAsync((var2x) -> {
-         this.apply(var2x, var4);
-      }, var6);
+      return var10000.thenCompose(var1::wait).thenAcceptAsync((var1x) -> {
+         this.apply(var1x, Profiler.get());
+      }, var4);
    }
 
    private CompletableFuture<Preparation> prepare(ResourceManager var1, Executor var2) {
@@ -196,7 +195,6 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
    }
 
    private void apply(Preparation var1, ProfilerFiller var2) {
-      var2.startTick();
       var2.push("closing");
       this.lastFontSetCache = null;
       this.fontSets.values().forEach(FontSet::close);
@@ -212,7 +210,6 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       });
       this.providersToClose.addAll(var1.allProviders);
       var2.pop();
-      var2.endTick();
       if (!this.fontSets.containsKey(Minecraft.DEFAULT_FONT)) {
          throw new IllegalStateException("Default font failed to load");
       }

@@ -17,7 +17,6 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -62,24 +61,24 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
       return RenderShape.MODEL;
    }
 
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       BlockEntity var9 = var3.getBlockEntity(var4);
       if (var9 instanceof ChiseledBookShelfBlockEntity var8) {
          if (!var1.is(ItemTags.BOOKSHELF_BOOKS)) {
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
          } else {
             OptionalInt var10 = this.getHitSlot(var7, var2);
             if (var10.isEmpty()) {
-               return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+               return InteractionResult.PASS;
             } else if ((Boolean)var2.getValue((Property)SLOT_OCCUPIED_PROPERTIES.get(var10.getAsInt()))) {
-               return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+               return InteractionResult.TRY_WITH_EMPTY_HAND;
             } else {
                addBook(var3, var4, var5, var8, var1, var10.getAsInt());
-               return ItemInteractionResult.sidedSuccess(var3.isClientSide);
+               return InteractionResult.SUCCESS;
             }
          }
       } else {
-         return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+         return InteractionResult.PASS;
       }
    }
 
@@ -93,7 +92,7 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
             return InteractionResult.CONSUME;
          } else {
             removeBook(var2, var3, var4, var6, var8.getAsInt());
-            return InteractionResult.sidedSuccess(var2.isClientSide);
+            return InteractionResult.SUCCESS;
          }
       } else {
          return InteractionResult.PASS;

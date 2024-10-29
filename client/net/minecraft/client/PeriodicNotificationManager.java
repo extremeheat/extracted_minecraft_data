@@ -171,7 +171,7 @@ public class PeriodicNotificationManager extends SimplePreparableReloadListener<
                long var9 = var3 / var6.period;
                if (var7 != var9) {
                   this.minecraft.execute(() -> {
-                     SystemToast.add(Minecraft.getInstance().getToasts(), SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Component.translatable(var6.title, var7), Component.translatable(var6.message, var7));
+                     SystemToast.add(Minecraft.getInstance().getToastManager(), SystemToast.SystemToastId.PERIODIC_NOTIFICATION, Component.translatable(var6.title, var7), Component.translatable(var6.message, var7));
                   });
                   return;
                }

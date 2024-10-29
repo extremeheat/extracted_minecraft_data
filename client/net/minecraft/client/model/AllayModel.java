@@ -10,12 +10,11 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.state.AllayRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.animal.allay.Allay;
 
-public class AllayModel extends HierarchicalModel<Allay> implements ArmedModel {
-   private final ModelPart root;
+public class AllayModel extends EntityModel<AllayRenderState> implements ArmedModel {
    private final ModelPart head;
    private final ModelPart body;
    private final ModelPart right_arm;
@@ -27,18 +26,13 @@ public class AllayModel extends HierarchicalModel<Allay> implements ArmedModel {
    private static final float MIN_HAND_HOLDING_ITEM_X_ROT_RAD = -1.0471976F;
 
    public AllayModel(ModelPart var1) {
-      super(RenderType::entityTranslucent);
-      this.root = var1.getChild("root");
+      super(var1.getChild("root"), RenderType::entityTranslucent);
       this.head = this.root.getChild("head");
       this.body = this.root.getChild("body");
       this.right_arm = this.body.getChild("right_arm");
       this.left_arm = this.body.getChild("left_arm");
       this.right_wing = this.body.getChild("right_wing");
       this.left_wing = this.body.getChild("left_wing");
-   }
-
-   public ModelPart root() {
-      return this.root;
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -54,49 +48,50 @@ public class AllayModel extends HierarchicalModel<Allay> implements ArmedModel {
       return LayerDefinition.create(var0, 32, 32);
    }
 
-   public void setupAnim(Allay var1, float var2, float var3, float var4, float var5, float var6) {
-      this.root().getAllParts().forEach(ModelPart::resetPose);
-      float var7 = var4 * 20.0F * 0.017453292F + var2;
-      float var8 = Mth.cos(var7) * 3.1415927F * 0.15F + var3;
-      float var9 = var4 - (float)var1.tickCount;
-      float var10 = var4 * 9.0F * 0.017453292F;
-      float var11 = Math.min(var3 / 0.3F, 1.0F);
-      float var12 = 1.0F - var11;
-      float var13 = var1.getHoldingItemAnimationProgress(var9);
-      float var14;
-      float var15;
-      float var16;
-      if (var1.isDancing()) {
-         var14 = var4 * 8.0F * 0.017453292F + var3;
-         var15 = Mth.cos(var14) * 16.0F * 0.017453292F;
-         var16 = var1.getSpinningProgress(var9);
-         float var17 = Mth.cos(var14) * 14.0F * 0.017453292F;
-         float var18 = Mth.cos(var14) * 30.0F * 0.017453292F;
-         this.root.yRot = var1.isSpinning() ? 12.566371F * var16 : this.root.yRot;
-         this.root.zRot = var15 * (1.0F - var16);
-         this.head.yRot = var18 * (1.0F - var16);
-         this.head.zRot = var17 * (1.0F - var16);
+   public void setupAnim(AllayRenderState var1) {
+      super.setupAnim(var1);
+      float var2 = var1.walkAnimationSpeed;
+      float var3 = var1.walkAnimationPos;
+      float var4 = var1.ageInTicks * 20.0F * 0.017453292F + var3;
+      float var5 = Mth.cos(var4) * 3.1415927F * 0.15F + var2;
+      float var6 = var1.ageInTicks * 9.0F * 0.017453292F;
+      float var7 = Math.min(var2 / 0.3F, 1.0F);
+      float var8 = 1.0F - var7;
+      float var9 = var1.holdingAnimationProgress;
+      float var10;
+      float var11;
+      float var12;
+      if (var1.isDancing) {
+         var10 = var1.ageInTicks * 8.0F * 0.017453292F + var2;
+         var11 = Mth.cos(var10) * 16.0F * 0.017453292F;
+         var12 = var1.spinningProgress;
+         float var13 = Mth.cos(var10) * 14.0F * 0.017453292F;
+         float var14 = Mth.cos(var10) * 30.0F * 0.017453292F;
+         this.root.yRot = var1.isSpinning ? 12.566371F * var12 : this.root.yRot;
+         this.root.zRot = var11 * (1.0F - var12);
+         this.head.yRot = var14 * (1.0F - var12);
+         this.head.zRot = var13 * (1.0F - var12);
       } else {
-         this.head.xRot = var6 * 0.017453292F;
-         this.head.yRot = var5 * 0.017453292F;
+         this.head.xRot = var1.xRot * 0.017453292F;
+         this.head.yRot = var1.yRot * 0.017453292F;
       }
 
-      this.right_wing.xRot = 0.43633232F * (1.0F - var11);
-      this.right_wing.yRot = -0.7853982F + var8;
-      this.left_wing.xRot = 0.43633232F * (1.0F - var11);
-      this.left_wing.yRot = 0.7853982F - var8;
-      this.body.xRot = var11 * 0.7853982F;
-      var14 = var13 * Mth.lerp(var11, -1.0471976F, -1.134464F);
+      this.right_wing.xRot = 0.43633232F * (1.0F - var7);
+      this.right_wing.yRot = -0.7853982F + var5;
+      this.left_wing.xRot = 0.43633232F * (1.0F - var7);
+      this.left_wing.yRot = 0.7853982F - var5;
+      this.body.xRot = var7 * 0.7853982F;
+      var10 = var9 * Mth.lerp(var7, -1.0471976F, -1.134464F);
       ModelPart var10000 = this.root;
-      var10000.y += (float)Math.cos((double)var10) * 0.25F * var12;
-      this.right_arm.xRot = var14;
-      this.left_arm.xRot = var14;
-      var15 = var12 * (1.0F - var13);
-      var16 = 0.43633232F - Mth.cos(var10 + 4.712389F) * 3.1415927F * 0.075F * var15;
-      this.left_arm.zRot = -var16;
-      this.right_arm.zRot = var16;
-      this.right_arm.yRot = 0.27925268F * var13;
-      this.left_arm.yRot = -0.27925268F * var13;
+      var10000.y += (float)Math.cos((double)var6) * 0.25F * var8;
+      this.right_arm.xRot = var10;
+      this.left_arm.xRot = var10;
+      var11 = var8 * (1.0F - var9);
+      var12 = 0.43633232F - Mth.cos(var6 + 4.712389F) * 3.1415927F * 0.075F * var11;
+      this.left_arm.zRot = -var12;
+      this.right_arm.zRot = var12;
+      this.right_arm.yRot = 0.27925268F * var9;
+      this.left_arm.yRot = -0.27925268F * var9;
    }
 
    public void translateToHand(HumanoidArm var1, PoseStack var2) {

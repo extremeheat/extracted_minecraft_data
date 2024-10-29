@@ -3,11 +3,11 @@ package com.mojang.blaze3d.platform;
 import com.google.common.base.Charsets;
 import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.jtracy.Plot;
+import com.mojang.jtracy.TracyClient;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.Iterator;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
@@ -22,6 +22,7 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL20C;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL32;
 import org.lwjgl.opengl.GL32C;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -29,6 +30,10 @@ import org.lwjgl.system.MemoryUtil;
 @DontObfuscate
 public class GlStateManager {
    private static final boolean ON_LINUX;
+   private static final Plot PLOT_TEXTURES;
+   private static int numTextures;
+   private static final Plot PLOT_BUFFERS;
+   private static int numBuffers;
    public static final int TEXTURE_COUNT = 12;
    private static final BlendState BLEND;
    private static final DepthState DEPTH;
@@ -37,6 +42,8 @@ public class GlStateManager {
    private static final ColorLogicState COLOR_LOGIC;
    private static final StencilState STENCIL;
    private static final ScissorState SCISSOR;
+   private static final FramebufferState READ_FRAMEBUFFER;
+   private static final FramebufferState DRAW_FRAMEBUFFER;
    private static int activeTexture;
    private static final TextureState[] TEXTURES;
    private static final ColorMask COLOR_MASK;
@@ -145,46 +152,38 @@ public class GlStateManager {
       return GL20.glCreateShader(var0);
    }
 
-   public static void glShaderSource(int var0, List<String> var1) {
+   public static void glShaderSource(int var0, String var1) {
       RenderSystem.assertOnRenderThread();
-      StringBuilder var2 = new StringBuilder();
-      Iterator var3 = var1.iterator();
-
-      while(var3.hasNext()) {
-         String var4 = (String)var3.next();
-         var2.append(var4);
-      }
-
-      byte[] var15 = var2.toString().getBytes(Charsets.UTF_8);
-      ByteBuffer var16 = MemoryUtil.memAlloc(var15.length + 1);
-      var16.put(var15);
-      var16.put((byte)0);
-      var16.flip();
+      byte[] var2 = var1.getBytes(Charsets.UTF_8);
+      ByteBuffer var3 = MemoryUtil.memAlloc(var2.length + 1);
+      var3.put(var2);
+      var3.put((byte)0);
+      var3.flip();
 
       try {
-         MemoryStack var5 = MemoryStack.stackPush();
+         MemoryStack var4 = MemoryStack.stackPush();
 
          try {
-            PointerBuffer var6 = var5.mallocPointer(1);
-            var6.put(var16);
-            GL20C.nglShaderSource(var0, 1, var6.address0(), 0L);
-         } catch (Throwable var13) {
-            if (var5 != null) {
+            PointerBuffer var5 = var4.mallocPointer(1);
+            var5.put(var3);
+            GL20C.nglShaderSource(var0, 1, var5.address0(), 0L);
+         } catch (Throwable var12) {
+            if (var4 != null) {
                try {
-                  var5.close();
-               } catch (Throwable var12) {
-                  var13.addSuppressed(var12);
+                  var4.close();
+               } catch (Throwable var11) {
+                  var12.addSuppressed(var11);
                }
             }
 
-            throw var13;
+            throw var12;
          }
 
-         if (var5 != null) {
-            var5.close();
+         if (var4 != null) {
+            var4.close();
          }
       } finally {
-         MemoryUtil.memFree(var16);
+         MemoryUtil.memFree(var3);
       }
 
    }
@@ -296,6 +295,8 @@ public class GlStateManager {
 
    public static int _glGenBuffers() {
       RenderSystem.assertOnRenderThreadOrInit();
+      ++numBuffers;
+      PLOT_BUFFERS.setValue((double)numBuffers);
       return GL15.glGenBuffers();
    }
 
@@ -319,6 +320,11 @@ public class GlStateManager {
       GL15.glBufferData(var0, var1, var2);
    }
 
+   public static void _glBufferSubData(int var0, int var1, ByteBuffer var2) {
+      RenderSystem.assertOnRenderThreadOrInit();
+      GL15.glBufferSubData(var0, (long)var1, var2);
+   }
+
    public static void _glBufferData(int var0, long var1, int var3) {
       RenderSystem.assertOnRenderThreadOrInit();
       GL15.glBufferData(var0, var1, var3);
@@ -328,6 +334,12 @@ public class GlStateManager {
    public static ByteBuffer _glMapBuffer(int var0, int var1) {
       RenderSystem.assertOnRenderThreadOrInit();
       return GL15.glMapBuffer(var0, var1);
+   }
+
+   @Nullable
+   public static ByteBuffer _glMapBufferRange(int var0, int var1, int var2, int var3) {
+      RenderSystem.assertOnRenderThreadOrInit();
+      return GL30.glMapBufferRange(var0, (long)var1, (long)var2, var3);
    }
 
    public static void _glUnmapBuffer(int var0) {
@@ -343,6 +355,8 @@ public class GlStateManager {
          GL32C.glBindBuffer(34962, 0);
       }
 
+      --numBuffers;
+      PLOT_BUFFERS.setValue((double)numBuffers);
       GL15.glDeleteBuffers(var0);
    }
 
@@ -358,7 +372,19 @@ public class GlStateManager {
 
    public static void _glBindFramebuffer(int var0, int var1) {
       RenderSystem.assertOnRenderThreadOrInit();
-      GL30.glBindFramebuffer(var0, var1);
+      boolean var10000;
+      switch (var0) {
+         case 36008 -> var10000 = READ_FRAMEBUFFER.update(var1);
+         case 36009 -> var10000 = DRAW_FRAMEBUFFER.update(var1);
+         case 36160 -> var10000 = READ_FRAMEBUFFER.update(var1) | DRAW_FRAMEBUFFER.update(var1);
+         default -> var10000 = true;
+      }
+
+      boolean var2 = var10000;
+      if (var2) {
+         GL30.glBindFramebuffer(var0, var1);
+      }
+
    }
 
    public static void _glBlitFrameBuffer(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9) {
@@ -532,11 +558,15 @@ public class GlStateManager {
 
    public static int _genTexture() {
       RenderSystem.assertOnRenderThreadOrInit();
+      ++numTextures;
+      PLOT_TEXTURES.setValue((double)numTextures);
       return GL11.glGenTextures();
    }
 
    public static void _genTextures(int[] var0) {
       RenderSystem.assertOnRenderThreadOrInit();
+      numTextures += var0.length;
+      PLOT_TEXTURES.setValue((double)numTextures);
       GL11.glGenTextures(var0);
    }
 
@@ -553,6 +583,8 @@ public class GlStateManager {
          }
       }
 
+      --numTextures;
+      PLOT_TEXTURES.setValue((double)numTextures);
    }
 
    public static void _deleteTextures(int[] var0) {
@@ -574,6 +606,8 @@ public class GlStateManager {
       }
 
       GL11.glDeleteTextures(var0);
+      numTextures -= var0.length;
+      PLOT_TEXTURES.setValue((double)numTextures);
    }
 
    public static void _bindTexture(int var0) {
@@ -696,10 +730,10 @@ public class GlStateManager {
       GL11.glClearStencil(var0);
    }
 
-   public static void _clear(int var0, boolean var1) {
+   public static void _clear(int var0) {
       RenderSystem.assertOnRenderThreadOrInit();
       GL11.glClear(var0);
-      if (var1) {
+      if (MacosUtil.IS_MACOS) {
          _getError();
       }
 
@@ -765,8 +799,27 @@ public class GlStateManager {
       return GL11.glGetInteger(var0);
    }
 
+   public static long _glFenceSync(int var0, int var1) {
+      RenderSystem.assertOnRenderThreadOrInit();
+      return GL32.glFenceSync(var0, var1);
+   }
+
+   public static int _glClientWaitSync(long var0, int var2, long var3) {
+      RenderSystem.assertOnRenderThreadOrInit();
+      return GL32.glClientWaitSync(var0, var2, var3);
+   }
+
+   public static void _glDeleteSync(long var0) {
+      RenderSystem.assertOnRenderThreadOrInit();
+      GL32.glDeleteSync(var0);
+   }
+
    static {
       ON_LINUX = Util.getPlatform() == Util.OS.LINUX;
+      PLOT_TEXTURES = TracyClient.createPlot("GPU Textures");
+      numTextures = 0;
+      PLOT_BUFFERS = TracyClient.createPlot("GPU Buffers");
+      numBuffers = 0;
       BLEND = new BlendState();
       DEPTH = new DepthState();
       CULL = new CullState();
@@ -774,6 +827,8 @@ public class GlStateManager {
       COLOR_LOGIC = new ColorLogicState();
       STENCIL = new StencilState();
       SCISSOR = new ScissorState();
+      READ_FRAMEBUFFER = new FramebufferState();
+      DRAW_FRAMEBUFFER = new FramebufferState();
       TEXTURES = (TextureState[])IntStream.range(0, 12).mapToObj((var0) -> {
          return new TextureState();
       }).toArray((var0) -> {
@@ -840,6 +895,23 @@ public class GlStateManager {
 
       BlendState() {
          super();
+      }
+   }
+
+   static class FramebufferState {
+      public int binding;
+
+      FramebufferState() {
+         super();
+      }
+
+      public boolean update(int var1) {
+         if (var1 != this.binding) {
+            this.binding = var1;
+            return true;
+         } else {
+            return false;
+         }
       }
    }
 

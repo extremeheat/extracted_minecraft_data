@@ -1,13 +1,18 @@
 package net.minecraft.world.entity.projectile;
 
+import java.util.Iterator;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class ThrowableProjectile extends Projectile {
+   private static final float MIN_CAMERA_DISTANCE_SQUARED = 12.25F;
+
    protected ThrowableProjectile(EntityType<? extends ThrowableProjectile> var1, Level var2) {
       super(var1, var2);
    }
@@ -17,19 +22,18 @@ public abstract class ThrowableProjectile extends Projectile {
       this.setPos(var2, var4, var6);
    }
 
-   protected ThrowableProjectile(EntityType<? extends ThrowableProjectile> var1, LivingEntity var2, Level var3) {
-      this(var1, var2.getX(), var2.getEyeY() - 0.10000000149011612, var2.getZ(), var3);
-      this.setOwner(var2);
-   }
-
    public boolean shouldRenderAtSqrDistance(double var1) {
-      double var3 = this.getBoundingBox().getSize() * 4.0;
-      if (Double.isNaN(var3)) {
-         var3 = 4.0;
-      }
+      if (this.tickCount < 2 && var1 < 12.25) {
+         return false;
+      } else {
+         double var3 = this.getBoundingBox().getSize() * 4.0;
+         if (Double.isNaN(var3)) {
+            var3 = 4.0;
+         }
 
-      var3 *= 64.0;
-      return var1 < var3 * var3;
+         var3 *= 64.0;
+         return var1 < var3 * var3;
+      }
    }
 
    public boolean canUsePortal(boolean var1) {
@@ -37,33 +41,58 @@ public abstract class ThrowableProjectile extends Projectile {
    }
 
    public void tick() {
-      super.tick();
+      this.handleFirstTickBubbleColumn();
+      this.applyGravity();
+      this.applyInertia();
       HitResult var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
+      Vec3 var2;
       if (var1.getType() != HitResult.Type.MISS) {
+         var2 = var1.getLocation();
+      } else {
+         var2 = this.position().add(this.getDeltaMovement());
+      }
+
+      this.setPos(var2);
+      this.updateRotation();
+      this.applyEffectsFromBlocks();
+      super.tick();
+      if (var1.getType() != HitResult.Type.MISS && this.isAlive()) {
          this.hitTargetOrDeflectSelf(var1);
       }
 
-      this.checkInsideBlocks();
-      Vec3 var2 = this.getDeltaMovement();
-      double var3 = this.getX() + var2.x;
-      double var5 = this.getY() + var2.y;
-      double var7 = this.getZ() + var2.z;
-      this.updateRotation();
-      float var9;
+   }
+
+   private void applyInertia() {
+      Vec3 var1 = this.getDeltaMovement();
+      Vec3 var2 = this.position();
+      float var3;
       if (this.isInWater()) {
-         for(int var10 = 0; var10 < 4; ++var10) {
-            float var11 = 0.25F;
-            this.level().addParticle(ParticleTypes.BUBBLE, var3 - var2.x * 0.25, var5 - var2.y * 0.25, var7 - var2.z * 0.25, var2.x, var2.y, var2.z);
+         for(int var4 = 0; var4 < 4; ++var4) {
+            float var5 = 0.25F;
+            this.level().addParticle(ParticleTypes.BUBBLE, var2.x - var1.x * 0.25, var2.y - var1.y * 0.25, var2.z - var1.z * 0.25, var1.x, var1.y, var1.z);
          }
 
-         var9 = 0.8F;
+         var3 = 0.8F;
       } else {
-         var9 = 0.99F;
+         var3 = 0.99F;
       }
 
-      this.setDeltaMovement(var2.scale((double)var9));
-      this.applyGravity();
-      this.setPos(var3, var5, var7);
+      this.setDeltaMovement(var1.scale((double)var3));
+   }
+
+   private void handleFirstTickBubbleColumn() {
+      if (this.firstTick) {
+         Iterator var1 = BlockPos.betweenClosed(this.getBoundingBox()).iterator();
+
+         while(var1.hasNext()) {
+            BlockPos var2 = (BlockPos)var1.next();
+            BlockState var3 = this.level().getBlockState(var2);
+            if (var3.is(Blocks.BUBBLE_COLUMN)) {
+               var3.entityInside(this.level(), var2, this);
+            }
+         }
+      }
+
    }
 
    protected double getDefaultGravity() {

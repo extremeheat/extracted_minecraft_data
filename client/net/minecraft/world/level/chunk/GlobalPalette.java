@@ -49,7 +49,7 @@ public class GlobalPalette<T> implements Palette<T> {
       return this.registry.size();
    }
 
-   public Palette<T> copy() {
+   public Palette<T> copy(PaletteResize<T> var1) {
       return this;
    }
 }

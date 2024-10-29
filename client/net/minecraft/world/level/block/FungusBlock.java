@@ -52,7 +52,7 @@ public class FungusBlock extends BushBlock implements BonemealableBlock {
    }
 
    private Optional<? extends Holder<ConfiguredFeature<?, ?>>> getFeature(LevelReader var1) {
-      return var1.registryAccess().registryOrThrow(Registries.CONFIGURED_FEATURE).getHolder(this.feature);
+      return var1.registryAccess().lookupOrThrow(Registries.CONFIGURED_FEATURE).get(this.feature);
    }
 
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {

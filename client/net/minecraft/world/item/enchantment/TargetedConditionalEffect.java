@@ -4,8 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
+import net.minecraft.util.context.ContextKeySet;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public record TargetedConditionalEffect<T>(EnchantmentTarget enchanted, EnchantmentTarget affected, T effect, Optional<LootItemCondition> requirements) {
@@ -17,13 +17,13 @@ public record TargetedConditionalEffect<T>(EnchantmentTarget enchanted, Enchantm
       this.requirements = var4;
    }
 
-   public static <S> Codec<TargetedConditionalEffect<S>> codec(Codec<S> var0, LootContextParamSet var1) {
+   public static <S> Codec<TargetedConditionalEffect<S>> codec(Codec<S> var0, ContextKeySet var1) {
       return RecordCodecBuilder.create((var2) -> {
          return var2.group(EnchantmentTarget.CODEC.fieldOf("enchanted").forGetter(TargetedConditionalEffect::enchanted), EnchantmentTarget.CODEC.fieldOf("affected").forGetter(TargetedConditionalEffect::affected), var0.fieldOf("effect").forGetter(TargetedConditionalEffect::effect), ConditionalEffect.conditionCodec(var1).optionalFieldOf("requirements").forGetter(TargetedConditionalEffect::requirements)).apply(var2, TargetedConditionalEffect::new);
       });
    }
 
-   public static <S> Codec<TargetedConditionalEffect<S>> equipmentDropsCodec(Codec<S> var0, LootContextParamSet var1) {
+   public static <S> Codec<TargetedConditionalEffect<S>> equipmentDropsCodec(Codec<S> var0, ContextKeySet var1) {
       return RecordCodecBuilder.create((var2) -> {
          return var2.group(EnchantmentTarget.CODEC.validate((var0x) -> {
             return var0x != EnchantmentTarget.DAMAGING_ENTITY ? DataResult.success(var0x) : DataResult.error(() -> {

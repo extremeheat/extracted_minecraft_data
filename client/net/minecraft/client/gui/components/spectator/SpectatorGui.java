@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.components.spectator;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -9,10 +8,11 @@ import net.minecraft.client.gui.spectator.SpectatorMenu;
 import net.minecraft.client.gui.spectator.SpectatorMenuItem;
 import net.minecraft.client.gui.spectator.SpectatorMenuListener;
 import net.minecraft.client.gui.spectator.categories.SpectatorPage;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 
 public class SpectatorGui implements SpectatorMenuListener {
@@ -63,35 +63,29 @@ public class SpectatorGui implements SpectatorMenuListener {
    }
 
    protected void renderPage(GuiGraphics var1, float var2, int var3, int var4, SpectatorPage var5) {
-      RenderSystem.enableBlend();
-      var1.setColor(1.0F, 1.0F, 1.0F, var2);
-      var1.blitSprite(HOTBAR_SPRITE, var3 - 91, var4, 182, 22);
+      int var6 = ARGB.white(var2);
+      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_SPRITE, var3 - 91, var4, 182, 22, var6);
       if (var5.getSelectedSlot() >= 0) {
-         var1.blitSprite(HOTBAR_SELECTION_SPRITE, var3 - 91 - 1 + var5.getSelectedSlot() * 20, var4 - 1, 24, 23);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_SELECTION_SPRITE, var3 - 91 - 1 + var5.getSelectedSlot() * 20, var4 - 1, 24, 23, var6);
       }
 
-      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-
-      for(int var6 = 0; var6 < 9; ++var6) {
-         this.renderSlot(var1, var6, var1.guiWidth() / 2 - 90 + var6 * 20 + 2, (float)(var4 + 3), var2, var5.getItem(var6));
+      for(int var7 = 0; var7 < 9; ++var7) {
+         this.renderSlot(var1, var7, var1.guiWidth() / 2 - 90 + var7 * 20 + 2, (float)(var4 + 3), var2, var5.getItem(var7));
       }
 
-      RenderSystem.disableBlend();
    }
 
    private void renderSlot(GuiGraphics var1, int var2, int var3, float var4, float var5, SpectatorMenuItem var6) {
       if (var6 != SpectatorMenu.EMPTY_SLOT) {
-         int var7 = (int)(var5 * 255.0F);
          var1.pose().pushPose();
          var1.pose().translate((float)var3, var4, 0.0F);
-         float var8 = var6.isEnabled() ? 1.0F : 0.25F;
-         var1.setColor(var8, var8, var8, var5);
-         var6.renderIcon(var1, var8, var7);
-         var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+         float var7 = var6.isEnabled() ? 1.0F : 0.25F;
+         var6.renderIcon(var1, var7, var5);
          var1.pose().popPose();
-         if (var7 > 3 && var6.isEnabled()) {
+         int var8 = (int)(var5 * 255.0F);
+         if (var8 > 3 && var6.isEnabled()) {
             Component var9 = this.minecraft.options.keyHotbarSlots[var2].getTranslatedKeyMessage();
-            var1.drawString(this.minecraft.font, var9, var3 + 19 - 2 - this.minecraft.font.width((FormattedText)var9), (int)var4 + 6 + 3, 16777215 + (var7 << 24));
+            var1.drawString(this.minecraft.font, var9, var3 + 19 - 2 - this.minecraft.font.width((FormattedText)var9), (int)var4 + 6 + 3, 16777215 + (var8 << 24));
          }
       }
 
@@ -106,7 +100,7 @@ public class SpectatorGui implements SpectatorMenuListener {
             int var5 = this.minecraft.font.width((FormattedText)var4);
             int var6 = (var1.guiWidth() - var5) / 2;
             int var7 = var1.guiHeight() - 35;
-            var1.drawStringWithBackdrop(this.minecraft.font, var4, var6, var7, var5, FastColor.ARGB32.color(var2, -1));
+            var1.drawStringWithBackdrop(this.minecraft.font, var4, var6, var7, var5, ARGB.color(var2, -1));
          }
       }
 

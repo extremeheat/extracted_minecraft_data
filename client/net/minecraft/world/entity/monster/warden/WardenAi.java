@@ -7,6 +7,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.LivingEntity;
@@ -110,8 +111,8 @@ public class WardenAi {
    }
 
    private static void initFightActivity(Warden var0, Brain<Warden> var1) {
-      var1.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(DIG_COOLDOWN_SETTER, StopAttackingIfTargetInvalid.create((var1x) -> {
-         return !var0.getAngerLevel().isAngry() || !var0.canTargetEntity(var1x);
+      var1.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(DIG_COOLDOWN_SETTER, StopAttackingIfTargetInvalid.create((var1x, var2) -> {
+         return !var0.getAngerLevel().isAngry() || !var0.canTargetEntity(var2);
       }, WardenAi::onTargetInvalid, false), SetEntityLookTarget.create((var1x) -> {
          return isTarget(var0, var1x);
       }, (float)var0.getAttributeValue(Attributes.FOLLOW_RANGE)), SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.2F), new SonicBoom(), MeleeAttack.create(18)), MemoryModuleType.ATTACK_TARGET);
@@ -123,12 +124,12 @@ public class WardenAi {
       }).isPresent();
    }
 
-   private static void onTargetInvalid(Warden var0, LivingEntity var1) {
-      if (!var0.canTargetEntity(var1)) {
-         var0.clearAnger(var1);
+   private static void onTargetInvalid(ServerLevel var0, Warden var1, LivingEntity var2) {
+      if (!var1.canTargetEntity(var2)) {
+         var1.clearAnger(var2);
       }
 
-      setDigCooldown(var0);
+      setDigCooldown(var1);
    }
 
    public static void setDigCooldown(LivingEntity var0) {

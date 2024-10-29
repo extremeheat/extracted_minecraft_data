@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -28,6 +29,8 @@ import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.flag.FeatureFlags;
 import org.slf4j.Logger;
 
 public class GameRules {
@@ -54,6 +57,7 @@ public class GameRules {
    public static final Key<BooleanValue> RULE_REDUCEDDEBUGINFO;
    public static final Key<BooleanValue> RULE_SPECTATORSGENERATECHUNKS;
    public static final Key<IntegerValue> RULE_SPAWN_RADIUS;
+   public static final Key<BooleanValue> RULE_DISABLE_PLAYER_MOVEMENT_CHECK;
    public static final Key<BooleanValue> RULE_DISABLE_ELYTRA_MOVEMENT_CHECK;
    public static final Key<IntegerValue> RULE_MAX_ENTITY_CRAMMING;
    public static final Key<BooleanValue> RULE_WEATHER_CYCLE;
@@ -86,8 +90,10 @@ public class GameRules {
    public static final Key<BooleanValue> RULE_GLOBAL_SOUND_EVENTS;
    public static final Key<BooleanValue> RULE_DO_VINES_SPREAD;
    public static final Key<BooleanValue> RULE_ENDER_PEARLS_VANISH_ON_DEATH;
+   public static final Key<IntegerValue> RULE_MINECART_MAX_SPEED;
    public static final Key<IntegerValue> RULE_SPAWN_CHUNK_RADIUS;
    private final Map<Key<?>, Value<?>> rules;
+   private final FeatureFlagSet enabledFeatures;
 
    private static <T extends Value<T>> Key<T> register(String var0, Category var1, Type<T> var2) {
       Key var3 = new Key(var0, var1);
@@ -99,25 +105,36 @@ public class GameRules {
       }
    }
 
-   public GameRules(DynamicLike<?> var1) {
-      this();
-      this.loadFromTag(var1);
+   public GameRules(FeatureFlagSet var1, DynamicLike<?> var2) {
+      this(var1);
+      this.loadFromTag(var2);
    }
 
-   public GameRules() {
-      super();
-      this.rules = (Map)GAME_RULE_TYPES.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (var0) -> {
+   public GameRules(FeatureFlagSet var1) {
+      this((Map)availableRules(var1).collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (var0) -> {
          return ((Type)var0.getValue()).createRule();
-      }));
+      })), var1);
    }
 
-   private GameRules(Map<Key<?>, Value<?>> var1) {
+   private static Stream<Map.Entry<Key<?>, Type<?>>> availableRules(FeatureFlagSet var0) {
+      return GAME_RULE_TYPES.entrySet().stream().filter((var1) -> {
+         return ((Type)var1.getValue()).requiredFeatures.isSubsetOf(var0);
+      });
+   }
+
+   private GameRules(Map<Key<?>, Value<?>> var1, FeatureFlagSet var2) {
       super();
       this.rules = var1;
+      this.enabledFeatures = var2;
    }
 
    public <T extends Value<T>> T getRule(Key<T> var1) {
-      return (Value)this.rules.get(var1);
+      Value var2 = (Value)this.rules.get(var1);
+      if (var2 == null) {
+         throw new IllegalArgumentException("Tried to access invalid game rule");
+      } else {
+         return var2;
+      }
    }
 
    public CompoundTag createTag() {
@@ -136,21 +153,24 @@ public class GameRules {
       });
    }
 
-   public GameRules copy() {
-      return new GameRules((Map)this.rules.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (var0) -> {
-         return ((Value)var0.getValue()).copy();
-      })));
+   public GameRules copy(FeatureFlagSet var1) {
+      return new GameRules((Map)availableRules(var1).collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (var1x) -> {
+         return this.rules.containsKey(var1x.getKey()) ? (Value)this.rules.get(var1x.getKey()) : ((Type)var1x.getValue()).createRule();
+      })), var1);
    }
 
-   public static void visitGameRuleTypes(GameRuleTypeVisitor var0) {
-      GAME_RULE_TYPES.forEach((var1, var2) -> {
-         callVisitorCap(var0, var1, var2);
+   public void visitGameRuleTypes(GameRuleTypeVisitor var1) {
+      GAME_RULE_TYPES.forEach((var2, var3) -> {
+         this.callVisitorCap(var1, var2, var3);
       });
    }
 
-   private static <T extends Value<T>> void callVisitorCap(GameRuleTypeVisitor var0, Key<?> var1, Type<?> var2) {
-      var0.visit(var1, var2);
-      var2.callVisitor(var0, var1);
+   private <T extends Value<T>> void callVisitorCap(GameRuleTypeVisitor var1, Key<?> var2, Type<?> var3) {
+      if (var3.requiredFeatures.isSubsetOf(this.enabledFeatures)) {
+         var1.visit(var2, var3);
+         var3.callVisitor(var1, var2);
+      }
+
    }
 
    public void assignFrom(GameRules var1, @Nullable MinecraftServer var2) {
@@ -200,6 +220,7 @@ public class GameRules {
       }));
       RULE_SPECTATORSGENERATECHUNKS = register("spectatorsGenerateChunks", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true));
       RULE_SPAWN_RADIUS = register("spawnRadius", GameRules.Category.PLAYER, GameRules.IntegerValue.create(10));
+      RULE_DISABLE_PLAYER_MOVEMENT_CHECK = register("disablePlayerMovementCheck", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false));
       RULE_DISABLE_ELYTRA_MOVEMENT_CHECK = register("disableElytraMovementCheck", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false));
       RULE_MAX_ENTITY_CRAMMING = register("maxEntityCramming", GameRules.Category.MOBS, GameRules.IntegerValue.create(24));
       RULE_WEATHER_CYCLE = register("doWeatherCycle", GameRules.Category.UPDATES, GameRules.BooleanValue.create(true));
@@ -228,7 +249,7 @@ public class GameRules {
 
       }));
       RULE_PLAYERS_NETHER_PORTAL_DEFAULT_DELAY = register("playersNetherPortalDefaultDelay", GameRules.Category.PLAYER, GameRules.IntegerValue.create(80));
-      RULE_PLAYERS_NETHER_PORTAL_CREATIVE_DELAY = register("playersNetherPortalCreativeDelay", GameRules.Category.PLAYER, GameRules.IntegerValue.create(1));
+      RULE_PLAYERS_NETHER_PORTAL_CREATIVE_DELAY = register("playersNetherPortalCreativeDelay", GameRules.Category.PLAYER, GameRules.IntegerValue.create(0));
       RULE_DROWNING_DAMAGE = register("drowningDamage", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true));
       RULE_FALL_DAMAGE = register("fallDamage", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true));
       RULE_FIRE_DAMAGE = register("fireDamage", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true));
@@ -248,7 +269,9 @@ public class GameRules {
       RULE_GLOBAL_SOUND_EVENTS = register("globalSoundEvents", GameRules.Category.MISC, GameRules.BooleanValue.create(true));
       RULE_DO_VINES_SPREAD = register("doVinesSpread", GameRules.Category.UPDATES, GameRules.BooleanValue.create(true));
       RULE_ENDER_PEARLS_VANISH_ON_DEATH = register("enderPearlsVanishOnDeath", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true));
-      RULE_SPAWN_CHUNK_RADIUS = register("spawnChunkRadius", GameRules.Category.MISC, GameRules.IntegerValue.create(2, 0, 32, (var0, var1) -> {
+      RULE_MINECART_MAX_SPEED = register("minecartMaxSpeed", GameRules.Category.MISC, GameRules.IntegerValue.create(8, 1, 1000, FeatureFlagSet.of(FeatureFlags.MINECART_IMPROVEMENTS), (var0, var1) -> {
+      }));
+      RULE_SPAWN_CHUNK_RADIUS = register("spawnChunkRadius", GameRules.Category.MISC, GameRules.IntegerValue.create(2, 0, 32, FeatureFlagSet.of(), (var0, var1) -> {
          ServerLevel var2 = var0.overworld();
          var2.setDefaultSpawnPos(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle());
       }));
@@ -323,13 +346,15 @@ public class GameRules {
       private final Function<Type<T>, T> constructor;
       final BiConsumer<MinecraftServer, T> callback;
       private final VisitorCaller<T> visitorCaller;
+      final FeatureFlagSet requiredFeatures;
 
-      Type(Supplier<ArgumentType<?>> var1, Function<Type<T>, T> var2, BiConsumer<MinecraftServer, T> var3, VisitorCaller<T> var4) {
+      Type(Supplier<ArgumentType<?>> var1, Function<Type<T>, T> var2, BiConsumer<MinecraftServer, T> var3, VisitorCaller<T> var4, FeatureFlagSet var5) {
          super();
          this.argument = var1;
          this.constructor = var2;
          this.callback = var3;
          this.visitorCaller = var4;
+         this.requiredFeatures = var5;
       }
 
       public RequiredArgumentBuilder<CommandSourceStack, ?> createArgument(String var1) {
@@ -342,6 +367,10 @@ public class GameRules {
 
       public void callVisitor(GameRuleTypeVisitor var1, Key<T> var2) {
          this.visitorCaller.call(var1, var2, this);
+      }
+
+      public FeatureFlagSet requiredFeatures() {
+         return this.requiredFeatures;
       }
    }
 
@@ -401,7 +430,7 @@ public class GameRules {
       static Type<BooleanValue> create(boolean var0, BiConsumer<MinecraftServer, BooleanValue> var1) {
          return new Type(BoolArgumentType::bool, (var1x) -> {
             return new BooleanValue(var1x, var0);
-         }, var1, GameRuleTypeVisitor::visitBoolean);
+         }, var1, GameRuleTypeVisitor::visitBoolean, FeatureFlagSet.of());
       }
 
       static Type<BooleanValue> create(boolean var0) {
@@ -469,15 +498,15 @@ public class GameRules {
       private static Type<IntegerValue> create(int var0, BiConsumer<MinecraftServer, IntegerValue> var1) {
          return new Type(IntegerArgumentType::integer, (var1x) -> {
             return new IntegerValue(var1x, var0);
-         }, var1, GameRuleTypeVisitor::visitInteger);
+         }, var1, GameRuleTypeVisitor::visitInteger, FeatureFlagSet.of());
       }
 
-      static Type<IntegerValue> create(int var0, int var1, int var2, BiConsumer<MinecraftServer, IntegerValue> var3) {
+      static Type<IntegerValue> create(int var0, int var1, int var2, FeatureFlagSet var3, BiConsumer<MinecraftServer, IntegerValue> var4) {
          return new Type(() -> {
             return IntegerArgumentType.integer(var1, var2);
          }, (var1x) -> {
             return new IntegerValue(var1x, var0);
-         }, var3, GameRuleTypeVisitor::visitInteger);
+         }, var4, GameRuleTypeVisitor::visitInteger, var3);
       }
 
       static Type<IntegerValue> create(int var0) {

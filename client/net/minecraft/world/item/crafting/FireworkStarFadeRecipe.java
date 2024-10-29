@@ -8,6 +8,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.FireworkExplosion;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 
 public class FireworkStarFadeRecipe extends CustomRecipe {
@@ -18,29 +19,33 @@ public class FireworkStarFadeRecipe extends CustomRecipe {
    }
 
    public boolean matches(CraftingInput var1, Level var2) {
-      boolean var3 = false;
-      boolean var4 = false;
+      if (var1.ingredientCount() < 2) {
+         return false;
+      } else {
+         boolean var3 = false;
+         boolean var4 = false;
 
-      for(int var5 = 0; var5 < var1.size(); ++var5) {
-         ItemStack var6 = var1.getItem(var5);
-         if (!var6.isEmpty()) {
-            if (var6.getItem() instanceof DyeItem) {
-               var3 = true;
-            } else {
-               if (!STAR_INGREDIENT.test(var6)) {
-                  return false;
+         for(int var5 = 0; var5 < var1.size(); ++var5) {
+            ItemStack var6 = var1.getItem(var5);
+            if (!var6.isEmpty()) {
+               if (var6.getItem() instanceof DyeItem) {
+                  var3 = true;
+               } else {
+                  if (!STAR_INGREDIENT.test(var6)) {
+                     return false;
+                  }
+
+                  if (var4) {
+                     return false;
+                  }
+
+                  var4 = true;
                }
-
-               if (var4) {
-                  return false;
-               }
-
-               var4 = true;
             }
          }
-      }
 
-      return var4 && var3;
+         return var4 && var3;
+      }
    }
 
    public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
@@ -50,8 +55,8 @@ public class FireworkStarFadeRecipe extends CustomRecipe {
       for(int var5 = 0; var5 < var1.size(); ++var5) {
          ItemStack var6 = var1.getItem(var5);
          Item var7 = var6.getItem();
-         if (var7 instanceof DyeItem) {
-            var3.add(((DyeItem)var7).getDyeColor().getFireworkColor());
+         if (var7 instanceof DyeItem var8) {
+            var3.add(var8.getDyeColor().getFireworkColor());
          } else if (STAR_INGREDIENT.test(var6)) {
             var4 = var6.copyWithCount(1);
          }
@@ -65,15 +70,11 @@ public class FireworkStarFadeRecipe extends CustomRecipe {
       }
    }
 
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 * var2 >= 2;
-   }
-
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<FireworkStarFadeRecipe> getSerializer() {
       return RecipeSerializer.FIREWORK_STAR_FADE;
    }
 
    static {
-      STAR_INGREDIENT = Ingredient.of(Items.FIREWORK_STAR);
+      STAR_INGREDIENT = Ingredient.of((ItemLike)Items.FIREWORK_STAR);
    }
 }

@@ -7,12 +7,12 @@ import java.util.function.ToIntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 
 class WeavingMobEffect extends MobEffect {
@@ -23,14 +23,14 @@ class WeavingMobEffect extends MobEffect {
       this.maxCobwebs = var3;
    }
 
-   public void onMobRemoved(LivingEntity var1, int var2, Entity.RemovalReason var3) {
-      if (var3 == Entity.RemovalReason.KILLED && (var1 instanceof Player || var1.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING))) {
-         this.spawnCobwebsRandomlyAround(var1.level(), var1.getRandom(), var1.getOnPos());
+   public void onMobRemoved(ServerLevel var1, LivingEntity var2, int var3, Entity.RemovalReason var4) {
+      if (var4 == Entity.RemovalReason.KILLED && (var2 instanceof Player || var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING))) {
+         this.spawnCobwebsRandomlyAround(var1, var2.getRandom(), var2.blockPosition());
       }
 
    }
 
-   private void spawnCobwebsRandomlyAround(Level var1, RandomSource var2, BlockPos var3) {
+   private void spawnCobwebsRandomlyAround(ServerLevel var1, RandomSource var2, BlockPos var3) {
       HashSet var4 = Sets.newHashSet();
       int var5 = this.maxCobwebs.applyAsInt(var2);
       Iterator var6 = BlockPos.randomInCube(var2, 15, var3, 1).iterator();

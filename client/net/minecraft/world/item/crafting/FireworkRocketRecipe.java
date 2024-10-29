@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.component.Fireworks;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 
 public class FireworkRocketRecipe extends CustomRecipe {
@@ -19,30 +20,34 @@ public class FireworkRocketRecipe extends CustomRecipe {
    }
 
    public boolean matches(CraftingInput var1, Level var2) {
-      boolean var3 = false;
-      int var4 = 0;
+      if (var1.ingredientCount() < 2) {
+         return false;
+      } else {
+         boolean var3 = false;
+         int var4 = 0;
 
-      for(int var5 = 0; var5 < var1.size(); ++var5) {
-         ItemStack var6 = var1.getItem(var5);
-         if (!var6.isEmpty()) {
-            if (PAPER_INGREDIENT.test(var6)) {
-               if (var3) {
+         for(int var5 = 0; var5 < var1.size(); ++var5) {
+            ItemStack var6 = var1.getItem(var5);
+            if (!var6.isEmpty()) {
+               if (PAPER_INGREDIENT.test(var6)) {
+                  if (var3) {
+                     return false;
+                  }
+
+                  var3 = true;
+               } else if (GUNPOWDER_INGREDIENT.test(var6)) {
+                  ++var4;
+                  if (var4 > 3) {
+                     return false;
+                  }
+               } else if (!STAR_INGREDIENT.test(var6)) {
                   return false;
                }
-
-               var3 = true;
-            } else if (GUNPOWDER_INGREDIENT.test(var6)) {
-               ++var4;
-               if (var4 > 3) {
-                  return false;
-               }
-            } else if (!STAR_INGREDIENT.test(var6)) {
-               return false;
             }
          }
-      }
 
-      return var3 && var4 >= 1;
+         return var3 && var4 >= 1;
+      }
    }
 
    public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
@@ -68,21 +73,13 @@ public class FireworkRocketRecipe extends CustomRecipe {
       return var8;
    }
 
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 * var2 >= 2;
-   }
-
-   public ItemStack getResultItem(HolderLookup.Provider var1) {
-      return new ItemStack(Items.FIREWORK_ROCKET);
-   }
-
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<FireworkRocketRecipe> getSerializer() {
       return RecipeSerializer.FIREWORK_ROCKET;
    }
 
    static {
-      PAPER_INGREDIENT = Ingredient.of(Items.PAPER);
-      GUNPOWDER_INGREDIENT = Ingredient.of(Items.GUNPOWDER);
-      STAR_INGREDIENT = Ingredient.of(Items.FIREWORK_STAR);
+      PAPER_INGREDIENT = Ingredient.of((ItemLike)Items.PAPER);
+      GUNPOWDER_INGREDIENT = Ingredient.of((ItemLike)Items.GUNPOWDER);
+      STAR_INGREDIENT = Ingredient.of((ItemLike)Items.FIREWORK_STAR);
    }
 }

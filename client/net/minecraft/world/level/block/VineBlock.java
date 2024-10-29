@@ -15,8 +15,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -80,7 +80,7 @@ public class VineBlock extends Block {
       return (VoxelShape)this.shapesCache.get(var1);
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1) {
       return true;
    }
 
@@ -161,12 +161,12 @@ public class VineBlock extends Block {
       }
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (var2 == Direction.DOWN) {
-         return super.updateShape(var1, var2, var3, var4, var5, var6);
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      if (var5 == Direction.DOWN) {
+         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
       } else {
-         BlockState var7 = this.getUpdatedState(var1, var4, var5);
-         return !this.hasFaces(var7) ? Blocks.AIR.defaultBlockState() : var7;
+         BlockState var9 = this.getUpdatedState(var1, var2, var4);
+         return !this.hasFaces(var9) ? Blocks.AIR.defaultBlockState() : var9;
       }
    }
 
@@ -209,7 +209,7 @@ public class VineBlock extends Block {
 
                }
             } else {
-               if (var5 == Direction.UP && var3.getY() < var2.getMaxBuildHeight() - 1) {
+               if (var5 == Direction.UP && var3.getY() < var2.getMaxY()) {
                   if (this.canSupportAtFace(var2, var3, var5)) {
                      var2.setBlock(var3, (BlockState)var1.setValue(UP, true), 2);
                      return;
@@ -241,7 +241,7 @@ public class VineBlock extends Block {
                   }
                }
 
-               if (var3.getY() > var2.getMinBuildHeight()) {
+               if (var3.getY() > var2.getMinY()) {
                   var7 = var3.below();
                   var8 = var2.getBlockState(var7);
                   if (var8.isAir() || var8.is(this)) {

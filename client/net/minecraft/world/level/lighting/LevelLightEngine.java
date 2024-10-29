@@ -11,6 +11,7 @@ import net.minecraft.world.level.chunk.LightChunkGetter;
 
 public class LevelLightEngine implements LightEventListener {
    public static final int LIGHT_SECTION_PADDING = 1;
+   public static final LevelLightEngine EMPTY = new LevelLightEngine();
    protected final LevelHeightAccessor levelHeightAccessor;
    @Nullable
    private final LightEngine<?, ?> blockEngine;
@@ -22,6 +23,13 @@ public class LevelLightEngine implements LightEventListener {
       this.levelHeightAccessor = var1.getLevel();
       this.blockEngine = var2 ? new BlockLightEngine(var1) : null;
       this.skyEngine = var3 ? new SkyLightEngine(var1) : null;
+   }
+
+   private LevelLightEngine() {
+      super();
+      this.levelHeightAccessor = LevelHeightAccessor.create(0, 0);
+      this.blockEngine = null;
+      this.skyEngine = null;
    }
 
    public void checkBlock(BlockPos var1) {
@@ -149,9 +157,8 @@ public class LevelLightEngine implements LightEventListener {
       return Math.max(var4, var3);
    }
 
-   public boolean lightOnInSection(SectionPos var1) {
-      long var2 = var1.asLong();
-      return this.blockEngine == null || this.blockEngine.storage.lightOnInSection(var2) && (this.skyEngine == null || this.skyEngine.storage.lightOnInSection(var2));
+   public boolean lightOnInColumn(long var1) {
+      return this.blockEngine == null || this.blockEngine.storage.lightOnInColumn(var1) && (this.skyEngine == null || this.skyEngine.storage.lightOnInColumn(var1));
    }
 
    public int getLightSectionCount() {
@@ -159,7 +166,7 @@ public class LevelLightEngine implements LightEventListener {
    }
 
    public int getMinLightSection() {
-      return this.levelHeightAccessor.getMinSection() - 1;
+      return this.levelHeightAccessor.getMinSectionY() - 1;
    }
 
    public int getMaxLightSection() {

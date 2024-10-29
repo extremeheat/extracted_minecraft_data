@@ -15,29 +15,33 @@ public class BookCloningRecipe extends CustomRecipe {
    }
 
    public boolean matches(CraftingInput var1, Level var2) {
-      int var3 = 0;
-      ItemStack var4 = ItemStack.EMPTY;
+      if (var1.ingredientCount() < 2) {
+         return false;
+      } else {
+         boolean var3 = false;
+         boolean var4 = false;
 
-      for(int var5 = 0; var5 < var1.size(); ++var5) {
-         ItemStack var6 = var1.getItem(var5);
-         if (!var6.isEmpty()) {
-            if (var6.is(Items.WRITTEN_BOOK)) {
-               if (!var4.isEmpty()) {
-                  return false;
+         for(int var5 = 0; var5 < var1.size(); ++var5) {
+            ItemStack var6 = var1.getItem(var5);
+            if (!var6.isEmpty()) {
+               if (var6.is(Items.WRITTEN_BOOK)) {
+                  if (var4) {
+                     return false;
+                  }
+
+                  var4 = true;
+               } else {
+                  if (!var6.is(Items.WRITABLE_BOOK)) {
+                     return false;
+                  }
+
+                  var3 = true;
                }
-
-               var4 = var6;
-            } else {
-               if (!var6.is(Items.WRITABLE_BOOK)) {
-                  return false;
-               }
-
-               ++var3;
             }
          }
-      }
 
-      return !var4.isEmpty() && var3 > 0;
+         return var4 && var3;
+      }
    }
 
    public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
@@ -83,8 +87,9 @@ public class BookCloningRecipe extends CustomRecipe {
 
       for(int var3 = 0; var3 < var2.size(); ++var3) {
          ItemStack var4 = var1.getItem(var3);
-         if (var4.getItem().hasCraftingRemainingItem()) {
-            var2.set(var3, new ItemStack(var4.getItem().getCraftingRemainingItem()));
+         ItemStack var5 = var4.getItem().getCraftingRemainder();
+         if (!var5.isEmpty()) {
+            var2.set(var3, var5);
          } else if (var4.getItem() instanceof WrittenBookItem) {
             var2.set(var3, var4.copyWithCount(1));
             break;
@@ -94,11 +99,7 @@ public class BookCloningRecipe extends CustomRecipe {
       return var2;
    }
 
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<BookCloningRecipe> getSerializer() {
       return RecipeSerializer.BOOK_CLONING;
-   }
-
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 >= 3 && var2 >= 3;
    }
 }

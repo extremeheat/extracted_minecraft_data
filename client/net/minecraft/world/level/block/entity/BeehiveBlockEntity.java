@@ -31,6 +31,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.player.Player;
@@ -171,7 +172,7 @@ public class BeehiveBlockEntity extends BlockEntity {
    }
 
    private static boolean releaseOccupant(Level var0, BlockPos var1, BlockState var2, Occupant var3, @Nullable List<Entity> var4, BeeReleaseStatus var5, @Nullable BlockPos var6) {
-      if ((var0.isNight() || var0.isRaining()) && var5 != BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY) {
+      if (Bee.isNightOrRaining(var0) && var5 != BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY) {
          return false;
       } else {
          Direction var7 = (Direction)var2.getValue(BeehiveBlock.FACING);
@@ -360,7 +361,7 @@ public class BeehiveBlockEntity extends BlockEntity {
          List var10000 = BeehiveBlockEntity.IGNORED_BEE_TAGS;
          Objects.requireNonNull(var3);
          var10000.forEach(var3::remove);
-         Entity var4 = EntityType.loadEntityRecursive(var3, var1, (var0) -> {
+         Entity var4 = EntityType.loadEntityRecursive(var3, var1, EntitySpawnReason.LOAD, (var0) -> {
             return var0;
          });
          if (var4 != null && var4.getType().is(EntityTypeTags.BEEHIVE_INHABITORS)) {

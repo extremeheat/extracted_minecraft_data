@@ -7,7 +7,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
@@ -31,7 +32,7 @@ public class CoralFanBlock extends BaseCoralFanBlock {
    }
 
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      this.tryScheduleDieTick(var1, var2, var3);
+      this.tryScheduleDieTick(var1, var2, var2, var2.random, var3);
    }
 
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
@@ -41,16 +42,16 @@ public class CoralFanBlock extends BaseCoralFanBlock {
 
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (var2 == Direction.DOWN && !var1.canSurvive(var4, var5)) {
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      if (var5 == Direction.DOWN && !var1.canSurvive(var2, var4)) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         this.tryScheduleDieTick(var1, var4, var5);
+         this.tryScheduleDieTick(var1, var2, var3, var8, var4);
          if ((Boolean)var1.getValue(WATERLOGGED)) {
-            var4.scheduleTick(var5, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+            var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
          }
 
-         return super.updateShape(var1, var2, var3, var4, var5, var6);
+         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
       }
    }
 }

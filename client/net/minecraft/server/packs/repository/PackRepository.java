@@ -57,6 +57,11 @@ public class PackRepository {
       return ImmutableMap.copyOf(var1);
    }
 
+   public boolean isAbleToClearAnyPack() {
+      List var1 = this.rebuildSelected(List.of());
+      return !this.selected.equals(var1);
+   }
+
    public void setSelected(Collection<String> var1) {
       this.selected = this.rebuildSelected(var1);
    }

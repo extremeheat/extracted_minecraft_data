@@ -9,7 +9,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.StackedContents;
+import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.inventory.StackedContentsCompatible;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -176,7 +176,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
       this.setChanged();
    }
 
-   public void fillStackedContents(StackedContents var1) {
+   public void fillStackedContents(StackedItemContents var1) {
       Iterator var2 = this.items.iterator();
 
       while(var2.hasNext()) {

@@ -14,41 +14,41 @@ public class ShieldDecorationRecipe extends CustomRecipe {
    }
 
    public boolean matches(CraftingInput var1, Level var2) {
-      ItemStack var3 = ItemStack.EMPTY;
-      ItemStack var4 = ItemStack.EMPTY;
+      if (var1.ingredientCount() != 2) {
+         return false;
+      } else {
+         boolean var3 = false;
+         boolean var4 = false;
 
-      for(int var5 = 0; var5 < var1.size(); ++var5) {
-         ItemStack var6 = var1.getItem(var5);
-         if (!var6.isEmpty()) {
-            if (var6.getItem() instanceof BannerItem) {
-               if (!var4.isEmpty()) {
-                  return false;
+         for(int var5 = 0; var5 < var1.size(); ++var5) {
+            ItemStack var6 = var1.getItem(var5);
+            if (!var6.isEmpty()) {
+               if (var6.getItem() instanceof BannerItem) {
+                  if (var4) {
+                     return false;
+                  }
+
+                  var4 = true;
+               } else {
+                  if (!var6.is(Items.SHIELD)) {
+                     return false;
+                  }
+
+                  if (var3) {
+                     return false;
+                  }
+
+                  BannerPatternLayers var7 = (BannerPatternLayers)var6.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+                  if (!var7.layers().isEmpty()) {
+                     return false;
+                  }
+
+                  var3 = true;
                }
-
-               var4 = var6;
-            } else {
-               if (!var6.is(Items.SHIELD)) {
-                  return false;
-               }
-
-               if (!var3.isEmpty()) {
-                  return false;
-               }
-
-               BannerPatternLayers var7 = (BannerPatternLayers)var6.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
-               if (!var7.layers().isEmpty()) {
-                  return false;
-               }
-
-               var3 = var6;
             }
          }
-      }
 
-      if (!var3.isEmpty() && !var4.isEmpty()) {
-         return true;
-      } else {
-         return false;
+         return var3 && var4;
       }
    }
 
@@ -76,11 +76,7 @@ public class ShieldDecorationRecipe extends CustomRecipe {
       }
    }
 
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 * var2 >= 2;
-   }
-
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<ShieldDecorationRecipe> getSerializer() {
       return RecipeSerializer.SHIELD_DECORATION;
    }
 }

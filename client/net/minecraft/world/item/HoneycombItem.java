@@ -38,15 +38,15 @@ public class HoneycombItem extends Item implements SignApplicator {
       return (InteractionResult)getWaxed(var4).map((var3x) -> {
          Player var4 = var1.getPlayer();
          ItemStack var5 = var1.getItemInHand();
-         if (var4 instanceof ServerPlayer) {
-            CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger((ServerPlayer)var4, var3, var5);
+         if (var4 instanceof ServerPlayer var6) {
+            CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(var6, var3, var5);
          }
 
          var5.shrink(1);
          var2.setBlock(var3, var3x, 11);
          var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, var3x));
          var2.levelEvent(var4, 3003, var3, 0);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       }).orElse(InteractionResult.PASS);
    }
 

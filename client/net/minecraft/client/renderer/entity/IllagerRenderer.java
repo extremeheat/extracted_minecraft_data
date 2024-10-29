@@ -1,18 +1,25 @@
 package net.minecraft.client.renderer.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.IllagerModel;
 import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
+import net.minecraft.client.renderer.entity.state.IllagerRenderState;
 import net.minecraft.world.entity.monster.AbstractIllager;
+import net.minecraft.world.item.CrossbowItem;
 
-public abstract class IllagerRenderer<T extends AbstractIllager> extends MobRenderer<T, IllagerModel<T>> {
-   protected IllagerRenderer(EntityRendererProvider.Context var1, IllagerModel<T> var2, float var3) {
+public abstract class IllagerRenderer<T extends AbstractIllager, S extends IllagerRenderState> extends MobRenderer<T, S, IllagerModel<S>> {
+   protected IllagerRenderer(EntityRendererProvider.Context var1, IllagerModel<S> var2, float var3) {
       super(var1, var2, var3);
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getItemInHandRenderer()));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getItemRenderer()));
    }
 
-   protected void scale(T var1, PoseStack var2, float var3) {
-      float var4 = 0.9375F;
-      var2.scale(0.9375F, 0.9375F, 0.9375F);
+   public void extractRenderState(T var1, S var2, float var3) {
+      super.extractRenderState(var1, var2, var3);
+      var2.isRiding = var1.isPassenger();
+      var2.mainArm = var1.getMainArm();
+      var2.armPose = var1.getArmPose();
+      var2.maxCrossbowChargeDuration = var2.armPose == AbstractIllager.IllagerArmPose.CROSSBOW_CHARGE ? CrossbowItem.getChargeDuration(var1.getUseItem(), var1) : 0;
+      var2.ticksUsingItem = var1.getTicksUsingItem();
+      var2.attackAnim = var1.getAttackAnim(var3);
+      var2.isAggressive = var1.isAggressive();
    }
 }

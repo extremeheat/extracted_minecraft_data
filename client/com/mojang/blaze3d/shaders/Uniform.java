@@ -5,6 +5,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Arrays;
+import java.util.List;
+import net.minecraft.client.renderer.ShaderProgramConfig;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -32,15 +35,12 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
    private final IntBuffer intValues;
    private final FloatBuffer floatValues;
    private final String name;
-   private boolean dirty;
-   private final Shader parent;
 
-   public Uniform(String var1, int var2, int var3, Shader var4) {
+   public Uniform(String var1, int var2, int var3) {
       super();
       this.name = var1;
       this.count = var3;
       this.type = var2;
-      this.parent = var4;
       if (var2 <= 3) {
          this.intValues = MemoryUtil.memAllocInt(var3);
          this.floatValues = null;
@@ -61,12 +61,28 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
       RenderSystem.glUniform1i(var0, var1);
    }
 
-   public static int glGetAttribLocation(int var0, CharSequence var1) {
-      return GlStateManager._glGetAttribLocation(var0, var1);
+   public void setFromConfig(ShaderProgramConfig.Uniform var1) {
+      this.setFromConfig(var1.values(), var1.count());
    }
 
-   public static void glBindAttribLocation(int var0, int var1, CharSequence var2) {
-      GlStateManager._glBindAttribLocation(var0, var1, var2);
+   public void setFromConfig(List<Float> var1, int var2) {
+      float[] var3 = new float[Math.max(var2, 16)];
+      if (var1.size() == 1) {
+         Arrays.fill(var3, (Float)var1.getFirst());
+      } else {
+         for(int var4 = 0; var4 < var1.size(); ++var4) {
+            var3[var4] = (Float)var1.get(var4);
+         }
+      }
+
+      if (this.type <= 3) {
+         this.setSafe((int)var3[0], (int)var3[1], (int)var3[2], (int)var3[3]);
+      } else if (this.type <= 7) {
+         this.setSafe(var3[0], var3[1], var3[2], var3[3]);
+      } else {
+         this.set(Arrays.copyOfRange(var3, 0, var2));
+      }
+
    }
 
    public void close() {
@@ -81,11 +97,6 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
    }
 
    private void markDirty() {
-      this.dirty = true;
-      if (this.parent != null) {
-         this.parent.markDirty();
-      }
-
    }
 
    public static int getTypeFromString(String var0) {
@@ -386,10 +397,6 @@ public class Uniform extends AbstractUniform implements AutoCloseable {
    }
 
    public void upload() {
-      if (!this.dirty) {
-      }
-
-      this.dirty = false;
       if (this.type <= 3) {
          this.uploadAsInteger();
       } else if (this.type <= 7) {

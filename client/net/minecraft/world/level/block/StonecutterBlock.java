@@ -18,7 +18,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -27,7 +27,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class StonecutterBlock extends Block {
    public static final MapCodec<StonecutterBlock> CODEC = simpleCodec(StonecutterBlock::new);
    private static final Component CONTAINER_TITLE = Component.translatable("container.stonecutter");
-   public static final DirectionProperty FACING;
+   public static final EnumProperty<Direction> FACING;
    protected static final VoxelShape SHAPE;
 
    public MapCodec<StonecutterBlock> codec() {
@@ -44,13 +44,12 @@ public class StonecutterBlock extends Block {
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
-      } else {
+      if (!var2.isClientSide) {
          var4.openMenu(var1.getMenuProvider(var2, var3));
          var4.awardStat(Stats.INTERACT_WITH_STONECUTTER);
-         return InteractionResult.CONSUME;
       }
+
+      return InteractionResult.SUCCESS;
    }
 
    @Nullable

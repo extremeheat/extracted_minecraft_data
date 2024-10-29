@@ -18,6 +18,7 @@ import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.core.DefaultedMappedRegistry;
 import net.minecraft.core.DefaultedRegistry;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistrationInfo;
 import net.minecraft.core.Registry;
@@ -53,18 +54,21 @@ import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.entity.schedule.Schedule;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.ArmorMaterial;
-import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Instrument;
-import net.minecraft.world.item.Instruments;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.consume_effects.ConsumeEffect;
+import net.minecraft.world.item.crafting.RecipeBookCategories;
+import net.minecraft.world.item.crafting.RecipeBookCategory;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.RecipeDisplays;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplays;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.item.enchantment.effects.EnchantmentEntityEffect;
@@ -194,12 +198,10 @@ public class BuiltInRegistries {
    public static final Registry<MapCodec<? extends PoolAliasBinding>> POOL_ALIAS_BINDING_TYPE;
    public static final Registry<CatVariant> CAT_VARIANT;
    public static final Registry<FrogVariant> FROG_VARIANT;
-   public static final Registry<Instrument> INSTRUMENT;
    public static final Registry<DecoratedPotPattern> DECORATED_POT_PATTERN;
    public static final Registry<CreativeModeTab> CREATIVE_MODE_TAB;
    public static final Registry<CriterionTrigger<?>> TRIGGER_TYPES;
    public static final Registry<NumberFormatType<?>> NUMBER_FORMAT_TYPE;
-   public static final Registry<ArmorMaterial> ARMOR_MATERIAL;
    public static final Registry<DataComponentType<?>> DATA_COMPONENT_TYPE;
    public static final Registry<MapCodec<? extends EntitySubPredicate>> ENTITY_SUB_PREDICATE_TYPE;
    public static final Registry<ItemSubPredicate.Type<?>> ITEM_SUB_PREDICATE_TYPE;
@@ -210,6 +212,10 @@ public class BuiltInRegistries {
    public static final Registry<MapCodec<? extends EnchantmentLocationBasedEffect>> ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE;
    public static final Registry<MapCodec<? extends EnchantmentValueEffect>> ENCHANTMENT_VALUE_EFFECT_TYPE;
    public static final Registry<MapCodec<? extends EnchantmentProvider>> ENCHANTMENT_PROVIDER_TYPE;
+   public static final Registry<ConsumeEffect.Type<?>> CONSUME_EFFECT_TYPE;
+   public static final Registry<RecipeDisplay.Type<?>> RECIPE_DISPLAY;
+   public static final Registry<SlotDisplay.Type<?>> SLOT_DISPLAY;
+   public static final Registry<RecipeBookCategory> RECIPE_BOOK_CATEGORY;
    public static final Registry<? extends Registry<?>> REGISTRY;
 
    public BuiltInRegistries() {
@@ -234,7 +240,7 @@ public class BuiltInRegistries {
 
    private static <T, R extends WritableRegistry<T>> R internalRegister(ResourceKey<? extends Registry<T>> var0, R var1, RegistryBootstrap<T> var2) {
       Bootstrap.checkBootstrapCalled(() -> {
-         return "registry " + String.valueOf(var0);
+         return "registry " + String.valueOf(var0.location());
       });
       ResourceLocation var3 = var0.location();
       LOADERS.put(var3, () -> {
@@ -265,6 +271,7 @@ public class BuiltInRegistries {
 
       while(var0.hasNext()) {
          Registry var1 = (Registry)var0.next();
+         bindBootstrappedTagsToEmpty(var1);
          var1.freeze();
       }
 
@@ -279,10 +286,18 @@ public class BuiltInRegistries {
 
          if (var1 instanceof DefaultedRegistry) {
             ResourceLocation var2 = ((DefaultedRegistry)var1).getDefaultKey();
-            Validate.notNull(var1.get(var2), "Missing default of DefaultedMappedRegistry: " + String.valueOf(var2), new Object[0]);
+            Validate.notNull(var1.getValue(var2), "Missing default of DefaultedMappedRegistry: " + String.valueOf(var2), new Object[0]);
          }
 
       });
+   }
+
+   public static <T> HolderGetter<T> acquireBootstrapRegistrationLookup(Registry<T> var0) {
+      return ((WritableRegistry)var0).createRegistrationLookup();
+   }
+
+   private static void bindBootstrappedTagsToEmpty(Registry<?> var0) {
+      ((MappedRegistry)var0).bindAllTagsToEmpty();
    }
 
    static {
@@ -443,12 +458,10 @@ public class BuiltInRegistries {
       POOL_ALIAS_BINDING_TYPE = registerSimple(Registries.POOL_ALIAS_BINDING, PoolAliasBindings::bootstrap);
       CAT_VARIANT = registerSimple(Registries.CAT_VARIANT, CatVariant::bootstrap);
       FROG_VARIANT = registerSimple(Registries.FROG_VARIANT, FrogVariant::bootstrap);
-      INSTRUMENT = registerSimple(Registries.INSTRUMENT, Instruments::bootstrap);
       DECORATED_POT_PATTERN = registerSimple(Registries.DECORATED_POT_PATTERN, DecoratedPotPatterns::bootstrap);
       CREATIVE_MODE_TAB = registerSimple(Registries.CREATIVE_MODE_TAB, CreativeModeTabs::bootstrap);
       TRIGGER_TYPES = registerSimple(Registries.TRIGGER_TYPE, CriteriaTriggers::bootstrap);
       NUMBER_FORMAT_TYPE = registerSimple(Registries.NUMBER_FORMAT_TYPE, NumberFormatTypes::bootstrap);
-      ARMOR_MATERIAL = registerSimple(Registries.ARMOR_MATERIAL, ArmorMaterials::bootstrap);
       DATA_COMPONENT_TYPE = registerSimple(Registries.DATA_COMPONENT_TYPE, DataComponents::bootstrap);
       ENTITY_SUB_PREDICATE_TYPE = registerSimple(Registries.ENTITY_SUB_PREDICATE_TYPE, EntitySubPredicates::bootstrap);
       ITEM_SUB_PREDICATE_TYPE = registerSimple(Registries.ITEM_SUB_PREDICATE_TYPE, ItemSubPredicates::bootstrap);
@@ -459,6 +472,12 @@ public class BuiltInRegistries {
       ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE = registerSimple(Registries.ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE, EnchantmentLocationBasedEffect::bootstrap);
       ENCHANTMENT_VALUE_EFFECT_TYPE = registerSimple(Registries.ENCHANTMENT_VALUE_EFFECT_TYPE, EnchantmentValueEffect::bootstrap);
       ENCHANTMENT_PROVIDER_TYPE = registerSimple(Registries.ENCHANTMENT_PROVIDER_TYPE, EnchantmentProviderTypes::bootstrap);
+      CONSUME_EFFECT_TYPE = registerSimple(Registries.CONSUME_EFFECT_TYPE, (var0) -> {
+         return ConsumeEffect.Type.APPLY_EFFECTS;
+      });
+      RECIPE_DISPLAY = registerSimple(Registries.RECIPE_DISPLAY, RecipeDisplays::bootstrap);
+      SLOT_DISPLAY = registerSimple(Registries.SLOT_DISPLAY, SlotDisplays::bootstrap);
+      RECIPE_BOOK_CATEGORY = registerSimple(Registries.RECIPE_BOOK_CATEGORY, RecipeBookCategories::bootstrap);
       REGISTRY = WRITABLE_REGISTRY;
    }
 

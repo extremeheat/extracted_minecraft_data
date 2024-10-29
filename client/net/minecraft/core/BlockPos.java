@@ -34,8 +34,7 @@ public class BlockPos extends Vec3i {
    public static final StreamCodec<ByteBuf, BlockPos> STREAM_CODEC;
    private static final Logger LOGGER;
    public static final BlockPos ZERO;
-   private static final int PACKED_X_LENGTH;
-   private static final int PACKED_Z_LENGTH;
+   public static final int PACKED_HORIZONTAL_LENGTH;
    public static final int PACKED_Y_LENGTH;
    private static final long PACKED_X_MASK;
    private static final long PACKED_Y_MASK;
@@ -43,6 +42,7 @@ public class BlockPos extends Vec3i {
    private static final int Y_OFFSET = 0;
    private static final int Z_OFFSET;
    private static final int X_OFFSET;
+   public static final int MAX_HORIZONTAL_COORDINATE;
 
    public BlockPos(int var1, int var2, int var3) {
       super(var1, var2, var3);
@@ -61,7 +61,7 @@ public class BlockPos extends Vec3i {
    }
 
    public static int getX(long var0) {
-      return (int)(var0 << 64 - X_OFFSET - PACKED_X_LENGTH >> 64 - PACKED_X_LENGTH);
+      return (int)(var0 << 64 - X_OFFSET - PACKED_HORIZONTAL_LENGTH >> 64 - PACKED_HORIZONTAL_LENGTH);
    }
 
    public static int getY(long var0) {
@@ -69,7 +69,7 @@ public class BlockPos extends Vec3i {
    }
 
    public static int getZ(long var0) {
-      return (int)(var0 << 64 - Z_OFFSET - PACKED_Z_LENGTH >> 64 - PACKED_Z_LENGTH);
+      return (int)(var0 << 64 - Z_OFFSET - PACKED_HORIZONTAL_LENGTH >> 64 - PACKED_HORIZONTAL_LENGTH);
    }
 
    public static BlockPos of(long var0) {
@@ -353,6 +353,12 @@ public class BlockPos extends Vec3i {
       return StreamSupport.stream(withinManhattan(var0, var1, var2, var3).spliterator(), false);
    }
 
+   public static Iterable<BlockPos> betweenClosed(AABB var0) {
+      BlockPos var1 = containing(var0.minX, var0.minY, var0.minZ);
+      BlockPos var2 = containing(var0.maxX, var0.maxY, var0.maxZ);
+      return betweenClosed(var1, var2);
+   }
+
    public static Iterable<BlockPos> betweenClosed(BlockPos var0, BlockPos var1) {
       return betweenClosed(Math.min(var0.getX(), var1.getX()), Math.min(var0.getY(), var1.getY()), Math.min(var0.getZ(), var1.getZ()), Math.max(var0.getX(), var1.getX()), Math.max(var0.getY(), var1.getY()), Math.max(var0.getZ(), var1.getZ()));
    }
@@ -608,14 +614,14 @@ public class BlockPos extends Vec3i {
       };
       LOGGER = LogUtils.getLogger();
       ZERO = new BlockPos(0, 0, 0);
-      PACKED_X_LENGTH = 1 + Mth.log2(Mth.smallestEncompassingPowerOfTwo(30000000));
-      PACKED_Z_LENGTH = PACKED_X_LENGTH;
-      PACKED_Y_LENGTH = 64 - PACKED_X_LENGTH - PACKED_Z_LENGTH;
-      PACKED_X_MASK = (1L << PACKED_X_LENGTH) - 1L;
+      PACKED_HORIZONTAL_LENGTH = 1 + Mth.log2(Mth.smallestEncompassingPowerOfTwo(30000000));
+      PACKED_Y_LENGTH = 64 - 2 * PACKED_HORIZONTAL_LENGTH;
+      PACKED_X_MASK = (1L << PACKED_HORIZONTAL_LENGTH) - 1L;
       PACKED_Y_MASK = (1L << PACKED_Y_LENGTH) - 1L;
-      PACKED_Z_MASK = (1L << PACKED_Z_LENGTH) - 1L;
+      PACKED_Z_MASK = (1L << PACKED_HORIZONTAL_LENGTH) - 1L;
       Z_OFFSET = PACKED_Y_LENGTH;
-      X_OFFSET = PACKED_Y_LENGTH + PACKED_Z_LENGTH;
+      X_OFFSET = PACKED_Y_LENGTH + PACKED_HORIZONTAL_LENGTH;
+      MAX_HORIZONTAL_COORDINATE = (1 << PACKED_HORIZONTAL_LENGTH) / 2 - 1;
    }
 
    public static class MutableBlockPos extends BlockPos {

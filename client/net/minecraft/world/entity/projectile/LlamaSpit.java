@@ -60,10 +60,9 @@ public class LlamaSpit extends Projectile {
       if (var3 instanceof LivingEntity var2) {
          var3 = var1.getEntity();
          DamageSource var4 = this.damageSources().spit(this, var2);
-         if (var3.hurt(var4, 1.0F)) {
-            Level var6 = this.level();
-            if (var6 instanceof ServerLevel) {
-               ServerLevel var5 = (ServerLevel)var6;
+         Level var6 = this.level();
+         if (var6 instanceof ServerLevel var5) {
+            if (var3.hurtServer(var5, var4, 1.0F)) {
                EnchantmentHelper.doPostAttackEffects(var5, var3, var4);
             }
          }

@@ -6,16 +6,14 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.client.renderer.entity.state.ShulkerBulletRenderState;
 
-public class ShulkerBulletModel<T extends Entity> extends HierarchicalModel<T> {
+public class ShulkerBulletModel extends EntityModel<ShulkerBulletRenderState> {
    private static final String MAIN = "main";
-   private final ModelPart root;
    private final ModelPart main;
 
    public ShulkerBulletModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.main = var1.getChild("main");
    }
 
@@ -26,12 +24,9 @@ public class ShulkerBulletModel<T extends Entity> extends HierarchicalModel<T> {
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   public ModelPart root() {
-      return this.root;
-   }
-
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.main.yRot = var5 * 0.017453292F;
-      this.main.xRot = var6 * 0.017453292F;
+   public void setupAnim(ShulkerBulletRenderState var1) {
+      super.setupAnim(var1);
+      this.main.yRot = var1.yRot * 0.017453292F;
+      this.main.xRot = var1.xRot * 0.017453292F;
    }
 }

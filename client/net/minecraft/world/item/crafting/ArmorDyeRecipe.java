@@ -1,6 +1,5 @@
 package net.minecraft.world.item.crafting;
 
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.tags.ItemTags;
@@ -16,33 +15,37 @@ public class ArmorDyeRecipe extends CustomRecipe {
    }
 
    public boolean matches(CraftingInput var1, Level var2) {
-      ItemStack var3 = ItemStack.EMPTY;
-      ArrayList var4 = Lists.newArrayList();
+      if (var1.ingredientCount() < 2) {
+         return false;
+      } else {
+         boolean var3 = false;
+         boolean var4 = false;
 
-      for(int var5 = 0; var5 < var1.size(); ++var5) {
-         ItemStack var6 = var1.getItem(var5);
-         if (!var6.isEmpty()) {
-            if (var6.is(ItemTags.DYEABLE)) {
-               if (!var3.isEmpty()) {
-                  return false;
+         for(int var5 = 0; var5 < var1.size(); ++var5) {
+            ItemStack var6 = var1.getItem(var5);
+            if (!var6.isEmpty()) {
+               if (var6.is(ItemTags.DYEABLE)) {
+                  if (var3) {
+                     return false;
+                  }
+
+                  var3 = true;
+               } else {
+                  if (!(var6.getItem() instanceof DyeItem)) {
+                     return false;
+                  }
+
+                  var4 = true;
                }
-
-               var3 = var6;
-            } else {
-               if (!(var6.getItem() instanceof DyeItem)) {
-                  return false;
-               }
-
-               var4.add(var6);
             }
          }
-      }
 
-      return !var3.isEmpty() && !var4.isEmpty();
+         return var4 && var3;
+      }
    }
 
    public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
-      ArrayList var3 = Lists.newArrayList();
+      ArrayList var3 = new ArrayList();
       ItemStack var4 = ItemStack.EMPTY;
 
       for(int var5 = 0; var5 < var1.size(); ++var5) {
@@ -73,11 +76,7 @@ public class ArmorDyeRecipe extends CustomRecipe {
       }
    }
 
-   public boolean canCraftInDimensions(int var1, int var2) {
-      return var1 * var2 >= 2;
-   }
-
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<ArmorDyeRecipe> getSerializer() {
       return RecipeSerializer.ARMOR_DYE;
    }
 }

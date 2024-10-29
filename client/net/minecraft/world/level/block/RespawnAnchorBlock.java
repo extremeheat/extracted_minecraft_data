@@ -20,7 +20,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -60,13 +59,13 @@ public class RespawnAnchorBlock extends Block {
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(CHARGE, 0));
    }
 
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       if (isRespawnFuel(var1) && canBeCharged(var2)) {
          charge(var5, var3, var4, var2);
          var1.consume(1, var5);
-         return ItemInteractionResult.sidedSuccess(var3.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
-         return var6 == InteractionHand.MAIN_HAND && isRespawnFuel(var5.getItemInHand(InteractionHand.OFF_HAND)) && canBeCharged(var2) ? ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+         return (InteractionResult)(var6 == InteractionHand.MAIN_HAND && isRespawnFuel(var5.getItemInHand(InteractionHand.OFF_HAND)) && canBeCharged(var2) ? InteractionResult.PASS : InteractionResult.TRY_WITH_EMPTY_HAND);
       }
    }
 
@@ -78,14 +77,14 @@ public class RespawnAnchorBlock extends Block {
             this.explode(var1, var2, var3);
          }
 
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          if (!var2.isClientSide) {
             ServerPlayer var6 = (ServerPlayer)var4;
             if (var6.getRespawnDimension() != var2.dimension() || !var3.equals(var6.getRespawnPosition())) {
                var6.setRespawnPosition(var2.dimension(), var3, 0.0F, false, true);
                var2.playSound((Player)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, (SoundEvent)SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
-               return InteractionResult.SUCCESS;
+               return InteractionResult.SUCCESS_SERVER;
             }
          }
 

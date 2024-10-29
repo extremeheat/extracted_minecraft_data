@@ -38,13 +38,13 @@ public class DefaultedMappedRegistry<T> extends MappedRegistry<T> implements Def
    }
 
    @Nonnull
-   public T get(@Nullable ResourceLocation var1) {
-      Object var2 = super.get(var1);
+   public T getValue(@Nullable ResourceLocation var1) {
+      Object var2 = super.getValue(var1);
       return var2 == null ? this.defaultValue.value() : var2;
    }
 
    public Optional<T> getOptional(@Nullable ResourceLocation var1) {
-      return Optional.ofNullable(super.get(var1));
+      return Optional.ofNullable(super.getValue(var1));
    }
 
    public Optional<Holder.Reference<T>> getAny() {

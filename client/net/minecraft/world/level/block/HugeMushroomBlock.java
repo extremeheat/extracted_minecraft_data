@@ -4,9 +4,11 @@ import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -38,8 +40,8 @@ public class HugeMushroomBlock extends Block {
       return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(DOWN, !var2.getBlockState(var3.below()).is(this))).setValue(UP, !var2.getBlockState(var3.above()).is(this))).setValue(NORTH, !var2.getBlockState(var3.north()).is(this))).setValue(EAST, !var2.getBlockState(var3.east()).is(this))).setValue(SOUTH, !var2.getBlockState(var3.south()).is(this))).setValue(WEST, !var2.getBlockState(var3.west()).is(this));
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return var3.is(this) ? (BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var2), false) : super.updateShape(var1, var2, var3, var4, var5, var6);
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      return var7.is(this) ? (BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var5), false) : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    protected BlockState rotate(BlockState var1, Rotation var2) {

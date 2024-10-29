@@ -22,9 +22,7 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
       this.horseContainer = var3;
       this.armorContainer = var4.getBodyArmorAccess();
       this.horse = var4;
-      boolean var6 = true;
       var3.startOpen(var2.player);
-      boolean var7 = true;
       this.addSlot(new Slot(this, var3, 0, 8, 18) {
          public boolean mayPlace(ItemStack var1) {
             return var1.is(Items.SADDLE) && !this.hasItem() && var4.isSaddleable();
@@ -36,33 +34,22 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
       });
       this.addSlot(new ArmorSlot(this, this.armorContainer, var4, EquipmentSlot.BODY, 0, 8, 36, (ResourceLocation)null) {
          public boolean mayPlace(ItemStack var1) {
-            return var4.isBodyArmorItem(var1);
+            return var4.isEquippableInSlot(var1, EquipmentSlot.BODY);
          }
 
          public boolean isActive() {
             return var4.canUseSlot(EquipmentSlot.BODY);
          }
       });
-      int var8;
-      int var9;
       if (var5 > 0) {
-         for(var8 = 0; var8 < 3; ++var8) {
-            for(var9 = 0; var9 < var5; ++var9) {
-               this.addSlot(new Slot(var3, 1 + var9 + var8 * var5, 80 + var9 * 18, 18 + var8 * 18));
+         for(int var6 = 0; var6 < 3; ++var6) {
+            for(int var7 = 0; var7 < var5; ++var7) {
+               this.addSlot(new Slot(var3, 1 + var7 + var6 * var5, 80 + var7 * 18, 18 + var6 * 18));
             }
          }
       }
 
-      for(var8 = 0; var8 < 3; ++var8) {
-         for(var9 = 0; var9 < 9; ++var9) {
-            this.addSlot(new Slot(var2, var9 + var8 * 9 + 9, 8 + var9 * 18, 102 + var8 * 18 + -18));
-         }
-      }
-
-      for(var8 = 0; var8 < 9; ++var8) {
-         this.addSlot(new Slot(var2, var8, 8 + var8 * 18, 142));
-      }
-
+      this.addStandardInventorySlots(var2, 8, 84);
    }
 
    public boolean stillValid(Player var1) {

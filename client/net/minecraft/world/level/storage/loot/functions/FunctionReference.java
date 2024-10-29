@@ -38,7 +38,7 @@ public class FunctionReference extends LootItemConditionalFunction {
          var1.reportProblem("Function " + String.valueOf(this.name.location()) + " is recursively called");
       } else {
          super.validate(var1);
-         var1.resolver().get(Registries.ITEM_MODIFIER, this.name).ifPresentOrElse((var2) -> {
+         var1.resolver().get(this.name).ifPresentOrElse((var2) -> {
             ((LootItemFunction)var2.value()).validate(var1.enterElement(".{" + String.valueOf(this.name.location()) + "}", this.name));
          }, () -> {
             var1.reportProblem("Unknown function table called " + String.valueOf(this.name.location()));
@@ -47,7 +47,7 @@ public class FunctionReference extends LootItemConditionalFunction {
    }
 
    protected ItemStack run(ItemStack var1, LootContext var2) {
-      LootItemFunction var3 = (LootItemFunction)var2.getResolver().get(Registries.ITEM_MODIFIER, this.name).map(Holder::value).orElse((Object)null);
+      LootItemFunction var3 = (LootItemFunction)var2.getResolver().get(this.name).map(Holder::value).orElse((Object)null);
       if (var3 == null) {
          LOGGER.warn("Unknown function: {}", this.name.location());
          return var1;

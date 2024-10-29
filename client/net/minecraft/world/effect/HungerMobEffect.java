@@ -1,5 +1,6 @@
 package net.minecraft.world.effect;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
@@ -8,9 +9,9 @@ class HungerMobEffect extends MobEffect {
       super(var1, var2);
    }
 
-   public boolean applyEffectTick(LivingEntity var1, int var2) {
-      if (var1 instanceof Player var3) {
-         var3.causeFoodExhaustion(0.005F * (float)(var2 + 1));
+   public boolean applyEffectTick(ServerLevel var1, LivingEntity var2, int var3) {
+      if (var2 instanceof Player var4) {
+         var4.causeFoodExhaustion(0.005F * (float)(var3 + 1));
       }
 
       return true;

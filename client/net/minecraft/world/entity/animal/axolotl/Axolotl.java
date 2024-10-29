@@ -1,12 +1,10 @@
 package net.minecraft.world.entity.animal.axolotl;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
@@ -23,9 +21,13 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.BinaryAnimator;
 import net.minecraft.util.ByIdMap;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -34,11 +36,9 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LerpingModel;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.VariantHolder;
@@ -64,10 +64,10 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
-public class Axolotl extends Animal implements LerpingModel, VariantHolder<Variant>, Bucketable {
+public class Axolotl extends Animal implements VariantHolder<Variant>, Bucketable {
    public static final int TOTAL_PLAYDEAD_TIME = 200;
+   private static final int POSE_ANIMATION_TICKS = 10;
    protected static final ImmutableList<? extends SensorType<? extends Sensor<? super Axolotl>>> SENSOR_TYPES;
    protected static final ImmutableList<? extends MemoryModuleType<?>> MEMORY_TYPES;
    private static final EntityDataAccessor<Integer> DATA_VARIANT;
@@ -79,7 +79,10 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Varia
    public static final String VARIANT_TAG = "Variant";
    private static final int REHYDRATE_AIR_SUPPLY = 1800;
    private static final int REGEN_BUFF_MAX_DURATION = 2400;
-   private final Map<String, Vector3f> modelRotationValues = Maps.newHashMap();
+   public final BinaryAnimator playingDeadAnimator = new BinaryAnimator(10, Mth::easeInOutSine);
+   public final BinaryAnimator inWaterAnimator = new BinaryAnimator(10, Mth::easeInOutSine);
+   public final BinaryAnimator onGroundAnimator = new BinaryAnimator(10, Mth::easeInOutSine);
+   public final BinaryAnimator movingAnimator = new BinaryAnimator(10, Mth::easeInOutSine);
    private static final int REGEN_BUFF_BASE_DURATION = 100;
 
    public Axolotl(EntityType<? extends Axolotl> var1, Level var2) {
@@ -87,10 +90,6 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Varia
       this.setPathfindingMalus(PathType.WATER, 0.0F);
       this.moveControl = new AxolotlMoveControl(this);
       this.lookControl = new AxolotlLookControl(this, 20);
-   }
-
-   public Map<String, Vector3f> getModelRotationValues() {
-      return this.modelRotationValues;
    }
 
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
@@ -122,9 +121,9 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Varia
       }
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       boolean var5 = false;
-      if (var3 == MobSpawnType.BUCKET) {
+      if (var3 == EntitySpawnReason.BUCKET) {
          return (SpawnGroupData)var4;
       } else {
          RandomSource var6 = var1.getRandom();
@@ -152,6 +151,29 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Varia
          this.handleAirSupply(var1);
       }
 
+      if (this.level().isClientSide()) {
+         this.tickAnimations();
+      }
+
+   }
+
+   private void tickAnimations() {
+      AnimationState var1;
+      if (this.isPlayingDead()) {
+         var1 = Axolotl.AnimationState.PLAYING_DEAD;
+      } else if (this.isInWaterOrBubble()) {
+         var1 = Axolotl.AnimationState.IN_WATER;
+      } else if (this.onGround()) {
+         var1 = Axolotl.AnimationState.ON_GROUND;
+      } else {
+         var1 = Axolotl.AnimationState.IN_AIR;
+      }
+
+      this.playingDeadAnimator.tick(var1 == Axolotl.AnimationState.PLAYING_DEAD);
+      this.inWaterAnimator.tick(var1 == Axolotl.AnimationState.IN_WATER);
+      this.onGroundAnimator.tick(var1 == Axolotl.AnimationState.ON_GROUND);
+      boolean var2 = this.walkAnimation.isMoving() || this.getXRot() != this.xRotO || this.getYRot() != this.yRotO;
+      this.movingAnimator.tick(var2);
    }
 
    protected void handleAirSupply(int var1) {
@@ -214,7 +236,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Varia
 
    @Nullable
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Axolotl var3 = (Axolotl)EntityType.AXOLOTL.create(var1);
+      Axolotl var3 = (Axolotl)EntityType.AXOLOTL.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          Variant var4;
          if (useRareVariant(this.random)) {
@@ -238,22 +260,23 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Varia
       return true;
    }
 
-   protected void customServerAiStep() {
-      this.level().getProfiler().push("axolotlBrain");
-      this.getBrain().tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().pop();
-      this.level().getProfiler().push("axolotlActivityUpdate");
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("axolotlBrain");
+      this.getBrain().tick(var1, this);
+      var2.pop();
+      var2.push("axolotlActivityUpdate");
       AxolotlAi.updateActivity(this);
-      this.level().getProfiler().pop();
+      var2.pop();
       if (!this.isNoAi()) {
-         Optional var1 = this.getBrain().getMemory(MemoryModuleType.PLAY_DEAD_TICKS);
-         this.setPlayingDead(var1.isPresent() && (Integer)var1.get() > 0);
+         Optional var3 = this.getBrain().getMemory(MemoryModuleType.PLAY_DEAD_TICKS);
+         this.setPlayingDead(var3.isPresent() && (Integer)var3.get() > 0);
       }
 
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 14.0).add(Attributes.MOVEMENT_SPEED, 1.0).add(Attributes.ATTACK_DAMAGE, 2.0).add(Attributes.STEP_HEIGHT, 1.0);
+      return Animal.createAnimalAttributes().add(Attributes.MAX_HEALTH, 14.0).add(Attributes.MOVEMENT_SPEED, 1.0).add(Attributes.ATTACK_DAMAGE, 2.0).add(Attributes.STEP_HEIGHT, 1.0);
    }
 
    protected PathNavigation createNavigation(Level var1) {
@@ -264,13 +287,13 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Varia
       this.playSound(SoundEvents.AXOLOTL_ATTACK, 1.0F, 1.0F);
    }
 
-   public boolean hurt(DamageSource var1, float var2) {
-      float var3 = this.getHealth();
-      if (!this.level().isClientSide && !this.isNoAi() && this.level().random.nextInt(3) == 0 && ((float)this.level().random.nextInt(3) < var2 || var3 / this.getMaxHealth() < 0.5F) && var2 < var3 && this.isInWater() && (var1.getEntity() != null || var1.getDirectEntity() != null) && !this.isPlayingDead()) {
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      float var4 = this.getHealth();
+      if (!this.isNoAi() && this.level().random.nextInt(3) == 0 && ((float)this.level().random.nextInt(3) < var3 || var4 / this.getMaxHealth() < 0.5F) && var3 < var4 && this.isInWater() && (var2.getEntity() != null || var2.getDirectEntity() != null) && !this.isPlayingDead()) {
          this.brain.setMemory(MemoryModuleType.PLAY_DEAD_TICKS, (int)200);
       }
 
-      return super.hurt(var1, var2);
+      return super.hurtServer(var1, var2, var3);
    }
 
    public int getMaxHeadXRot() {
@@ -323,17 +346,16 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Varia
       return !this.isPlayingDead() && super.canBeSeenAsEnemy();
    }
 
-   public static void onStopAttacking(Axolotl var0, LivingEntity var1) {
-      Level var2 = var0.level();
-      if (var1.isDeadOrDying()) {
-         DamageSource var3 = var1.getLastDamageSource();
+   public static void onStopAttacking(ServerLevel var0, Axolotl var1, LivingEntity var2) {
+      if (var2.isDeadOrDying()) {
+         DamageSource var3 = var2.getLastDamageSource();
          if (var3 != null) {
             Entity var4 = var3.getEntity();
             if (var4 != null && var4.getType() == EntityType.PLAYER) {
                Player var5 = (Player)var4;
-               List var6 = var2.getEntitiesOfClass(Player.class, var0.getBoundingBox().inflate(20.0));
+               List var6 = var0.getEntitiesOfClass(Player.class, var1.getBoundingBox().inflate(20.0));
                if (var6.contains(var5)) {
-                  var0.applySupportingEffects(var5);
+                  var1.applySupportingEffects(var5);
                }
             }
          }
@@ -424,7 +446,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Varia
       return this.getTargetFromBrain();
    }
 
-   public static boolean checkAxolotlSpawnRules(EntityType<? extends LivingEntity> var0, ServerLevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkAxolotlSpawnRules(EntityType<? extends LivingEntity> var0, ServerLevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       return var1.getBlockState(var3.below()).is(BlockTags.AXOLOTLS_SPAWNABLE_ON);
    }
 
@@ -538,6 +560,21 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Varia
 
       public Variant getVariant(RandomSource var1) {
          return this.types[var1.nextInt(this.types.length)];
+      }
+   }
+
+   public static enum AnimationState {
+      PLAYING_DEAD,
+      IN_WATER,
+      ON_GROUND,
+      IN_AIR;
+
+      private AnimationState() {
+      }
+
+      // $FF: synthetic method
+      private static AnimationState[] $values() {
+         return new AnimationState[]{PLAYING_DEAD, IN_WATER, ON_GROUND, IN_AIR};
       }
    }
 }

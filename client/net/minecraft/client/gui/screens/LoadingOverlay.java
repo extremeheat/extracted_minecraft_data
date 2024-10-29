@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,13 +21,13 @@ import net.minecraft.server.packs.VanillaPackResources;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.server.packs.resources.ReloadInstance;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 
 public class LoadingOverlay extends Overlay {
-   static final ResourceLocation MOJANG_STUDIOS_LOGO_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/title/mojangstudios.png");
-   private static final int LOGO_BACKGROUND_COLOR = FastColor.ARGB32.color(255, 239, 50, 61);
-   private static final int LOGO_BACKGROUND_COLOR_DARK = FastColor.ARGB32.color(255, 0, 0, 0);
+   public static final ResourceLocation MOJANG_STUDIOS_LOGO_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/title/mojangstudios.png");
+   private static final int LOGO_BACKGROUND_COLOR = ARGB.color(255, 239, 50, 61);
+   private static final int LOGO_BACKGROUND_COLOR_DARK = ARGB.color(255, 0, 0, 0);
    private static final IntSupplier BRAND_BACKGROUND = () -> {
       return (Boolean)Minecraft.getInstance().options.darkMojangStudiosBackground().get() ? LOGO_BACKGROUND_COLOR_DARK : LOGO_BACKGROUND_COLOR;
    };
@@ -98,33 +97,28 @@ public class LoadingOverlay extends Overlay {
          float var14 = (float)(var12 >> 8 & 255) / 255.0F;
          float var15 = (float)(var12 & 255) / 255.0F;
          GlStateManager._clearColor(var13, var14, var15, 1.0F);
-         GlStateManager._clear(16384, Minecraft.ON_OSX);
+         GlStateManager._clear(16384);
          var11 = 1.0F;
       }
 
       var12 = (int)((double)var1.guiWidth() * 0.5);
-      int var24 = (int)((double)var1.guiHeight() * 0.5);
-      double var25 = Math.min((double)var1.guiWidth() * 0.75, (double)var1.guiHeight()) * 0.25;
-      int var16 = (int)(var25 * 0.5);
-      double var17 = var25 * 4.0;
+      int var25 = (int)((double)var1.guiHeight() * 0.5);
+      double var26 = Math.min((double)var1.guiWidth() * 0.75, (double)var1.guiHeight()) * 0.25;
+      int var16 = (int)(var26 * 0.5);
+      double var17 = var26 * 4.0;
       int var19 = (int)(var17 * 0.5);
-      RenderSystem.disableDepthTest();
-      RenderSystem.depthMask(false);
-      RenderSystem.enableBlend();
-      RenderSystem.blendFunc(770, 1);
-      var1.setColor(1.0F, 1.0F, 1.0F, var11);
-      var1.blit(MOJANG_STUDIOS_LOGO_LOCATION, var12 - var19, var24 - var16, var19, (int)var25, -0.0625F, 0.0F, 120, 60, 120, 120);
-      var1.blit(MOJANG_STUDIOS_LOGO_LOCATION, var12, var24 - var16, var19, (int)var25, 0.0625F, 60.0F, 120, 60, 120, 120);
-      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-      RenderSystem.defaultBlendFunc();
-      RenderSystem.disableBlend();
-      RenderSystem.depthMask(true);
-      RenderSystem.enableDepthTest();
-      int var20 = (int)((double)var1.guiHeight() * 0.8325);
-      float var21 = this.reload.getActualProgress();
-      this.currentProgress = Mth.clamp(this.currentProgress * 0.95F + var21 * 0.050000012F, 0.0F, 1.0F);
+      int var20 = ARGB.white(var11);
+      var1.blit((var0) -> {
+         return RenderType.mojangLogo();
+      }, MOJANG_STUDIOS_LOGO_LOCATION, var12 - var19, var25 - var16, -0.0625F, 0.0F, var19, (int)var26, 120, 60, 120, 120, var20);
+      var1.blit((var0) -> {
+         return RenderType.mojangLogo();
+      }, MOJANG_STUDIOS_LOGO_LOCATION, var12, var25 - var16, 0.0625F, 60.0F, var19, (int)var26, 120, 60, 120, 120, var20);
+      int var21 = (int)((double)var1.guiHeight() * 0.8325);
+      float var22 = this.reload.getActualProgress();
+      this.currentProgress = Mth.clamp(this.currentProgress * 0.95F + var22 * 0.050000012F, 0.0F, 1.0F);
       if (var9 < 1.0F) {
-         this.drawProgressBar(var1, var5 / 2 - var19, var20 - 5, var5 / 2 + var19, var20 + 5, 1.0F - Mth.clamp(var9, 0.0F, 1.0F));
+         this.drawProgressBar(var1, var5 / 2 - var19, var21 - 5, var5 / 2 + var19, var21 + 5, 1.0F - Mth.clamp(var9, 0.0F, 1.0F));
       }
 
       if (var9 >= 2.0F) {
@@ -135,8 +129,8 @@ public class LoadingOverlay extends Overlay {
          try {
             this.reload.checkExceptions();
             this.onFinish.accept(Optional.empty());
-         } catch (Throwable var23) {
-            this.onFinish.accept(Optional.of(var23));
+         } catch (Throwable var24) {
+            this.onFinish.accept(Optional.of(var24));
          }
 
          this.fadeOutStart = Util.getMillis();
@@ -150,7 +144,7 @@ public class LoadingOverlay extends Overlay {
    private void drawProgressBar(GuiGraphics var1, int var2, int var3, int var4, int var5, float var6) {
       int var7 = Mth.ceil((float)(var4 - var2 - 2) * this.currentProgress);
       int var8 = Math.round(var6 * 255.0F);
-      int var9 = FastColor.ARGB32.color(var8, 255, 255, 255);
+      int var9 = ARGB.color(var8, 255, 255, 255);
       var1.fill(var2 + 2, var3 + 2, var2 + var7, var5 - 2, var9);
       var1.fill(var2 + 1, var3, var4 - 1, var3 + 1, var9);
       var1.fill(var2 + 1, var5, var4 - 1, var5 - 1, var9);

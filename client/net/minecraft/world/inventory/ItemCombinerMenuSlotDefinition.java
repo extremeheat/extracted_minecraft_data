@@ -3,7 +3,6 @@ package net.minecraft.world.inventory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import net.minecraft.world.item.ItemStack;
 
 public class ItemCombinerMenuSlotDefinition {
@@ -22,10 +21,6 @@ public class ItemCombinerMenuSlotDefinition {
 
    public static Builder create() {
       return new Builder();
-   }
-
-   public boolean hasSlot(int var1) {
-      return this.slots.size() >= var1;
    }
 
    public SlotDefinition getSlot(int var1) {
@@ -48,11 +43,8 @@ public class ItemCombinerMenuSlotDefinition {
       return this.getNumOfInputSlots();
    }
 
-   public List<Integer> getInputSlotIndexes() {
-      return (List)this.slots.stream().map(SlotDefinition::slotIndex).collect(Collectors.toList());
-   }
-
    public static record SlotDefinition(int slotIndex, int x, int y, Predicate<ItemStack> mayPlace) {
+      final int slotIndex;
       static final SlotDefinition EMPTY = new SlotDefinition(0, 0, 0, (var0) -> {
          return true;
       });
@@ -83,7 +75,7 @@ public class ItemCombinerMenuSlotDefinition {
    }
 
    public static class Builder {
-      private final List<SlotDefinition> slots = new ArrayList();
+      private final List<SlotDefinition> inputSlots = new ArrayList();
       private SlotDefinition resultSlot;
 
       public Builder() {
@@ -92,7 +84,7 @@ public class ItemCombinerMenuSlotDefinition {
       }
 
       public Builder withSlot(int var1, int var2, int var3, Predicate<ItemStack> var4) {
-         this.slots.add(new SlotDefinition(var1, var2, var3, var4));
+         this.inputSlots.add(new SlotDefinition(var1, var2, var3, var4));
          return this;
       }
 
@@ -104,7 +96,20 @@ public class ItemCombinerMenuSlotDefinition {
       }
 
       public ItemCombinerMenuSlotDefinition build() {
-         return new ItemCombinerMenuSlotDefinition(this.slots, this.resultSlot);
+         int var1 = this.inputSlots.size();
+
+         for(int var2 = 0; var2 < var1; ++var2) {
+            SlotDefinition var3 = (SlotDefinition)this.inputSlots.get(var2);
+            if (var3.slotIndex != var2) {
+               throw new IllegalArgumentException("Expected input slots to have continous indexes");
+            }
+         }
+
+         if (this.resultSlot.slotIndex != var1) {
+            throw new IllegalArgumentException("Expected result slot index to follow last input slot");
+         } else {
+            return new ItemCombinerMenuSlotDefinition(this.inputSlots, this.resultSlot);
+         }
       }
    }
 }

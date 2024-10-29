@@ -2,6 +2,7 @@ package net.minecraft.world.entity.animal;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -24,11 +25,13 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -59,7 +62,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.Vec3;
 
-public class Dolphin extends WaterAnimal {
+public class Dolphin extends AgeableWaterCreature {
    private static final EntityDataAccessor<BlockPos> TREASURE_POS;
    private static final EntityDataAccessor<Boolean> GOT_FISH;
    private static final EntityDataAccessor<Integer> MOISTNESS_LEVEL;
@@ -67,6 +70,7 @@ public class Dolphin extends WaterAnimal {
    public static final int TOTAL_AIR_SUPPLY = 4800;
    private static final int TOTAL_MOISTNESS_LEVEL = 2400;
    public static final Predicate<ItemEntity> ALLOWED_ITEMS;
+   public static final float BABY_SCALE = 0.65F;
 
    public Dolphin(EntityType<? extends Dolphin> var1, Level var2) {
       super(var1, var2);
@@ -76,10 +80,22 @@ public class Dolphin extends WaterAnimal {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setAirSupply(this.getMaxAirSupply());
       this.setXRot(0.0F);
-      return super.finalizeSpawn(var1, var2, var3, var4);
+      SpawnGroupData var5 = (SpawnGroupData)Objects.requireNonNullElseGet(var4, () -> {
+         return new AgeableMob.AgeableMobGroupData(0.1F);
+      });
+      return super.finalizeSpawn(var1, var2, var3, var5);
+   }
+
+   @Nullable
+   public Dolphin getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+      return (Dolphin)EntityType.DOLPHIN.create(var1, EntitySpawnReason.BREEDING);
+   }
+
+   public float getAgeScale() {
+      return this.isBaby() ? 0.65F : 1.0F;
    }
 
    protected void handleAirSupply(int var1) {
@@ -163,6 +179,10 @@ public class Dolphin extends WaterAnimal {
       this.playSound(SoundEvents.DOLPHIN_ATTACK, 1.0F, 1.0F);
    }
 
+   public boolean canAttack(LivingEntity var1) {
+      return !this.isBaby() && super.canAttack(var1);
+   }
+
    public int getMaxAirSupply() {
       return 4800;
    }
@@ -183,24 +203,19 @@ public class Dolphin extends WaterAnimal {
       return true;
    }
 
-   public boolean canTakeItem(ItemStack var1) {
-      EquipmentSlot var2 = this.getEquipmentSlotForItem(var1);
-      if (!this.getItemBySlot(var2).isEmpty()) {
-         return false;
-      } else {
-         return var2 == EquipmentSlot.MAINHAND && super.canTakeItem(var1);
-      }
+   protected boolean canDispenserEquipIntoSlot(EquipmentSlot var1) {
+      return var1 == EquipmentSlot.MAINHAND && this.canPickUpLoot();
    }
 
-   protected void pickUpItem(ItemEntity var1) {
+   protected void pickUpItem(ServerLevel var1, ItemEntity var2) {
       if (this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty()) {
-         ItemStack var2 = var1.getItem();
-         if (this.canHoldItem(var2)) {
-            this.onItemPickup(var1);
-            this.setItemSlot(EquipmentSlot.MAINHAND, var2);
+         ItemStack var3 = var2.getItem();
+         if (this.canHoldItem(var3)) {
+            this.onItemPickup(var2);
+            this.setItemSlot(EquipmentSlot.MAINHAND, var3);
             this.setGuaranteedDrop(EquipmentSlot.MAINHAND);
-            this.take(var1, var2.getCount());
-            var1.discard();
+            this.take(var2, var3.getCount());
+            var2.discard();
          }
       }
 
@@ -268,9 +283,15 @@ public class Dolphin extends WaterAnimal {
             this.playSound(SoundEvents.DOLPHIN_EAT, 1.0F, 1.0F);
          }
 
-         this.setGotFish(true);
-         var3.consume(1, var1);
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         if (this.isBaby()) {
+            var3.consume(1, var1);
+            this.ageUp(getSpeedUpSecondsWhenFeeding(-this.age), true);
+         } else {
+            this.setGotFish(true);
+            var3.consume(1, var1);
+         }
+
+         return InteractionResult.SUCCESS;
       } else {
          return super.mobInteract(var1, var2);
       }
@@ -304,7 +325,7 @@ public class Dolphin extends WaterAnimal {
    }
 
    public void travel(Vec3 var1) {
-      if (this.isEffectiveAi() && this.isInWater()) {
+      if (this.isControlledByLocalInstance() && this.isInWater()) {
          this.moveRelative(this.getSpeed(), var1);
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
@@ -319,6 +340,12 @@ public class Dolphin extends WaterAnimal {
 
    public boolean canBeLeashed() {
       return true;
+   }
+
+   // $FF: synthetic method
+   @Nullable
+   public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
+      return this.getBreedOffspring(var1, var2);
    }
 
    static {
@@ -423,7 +450,7 @@ public class Dolphin extends WaterAnimal {
       }
 
       public boolean canUse() {
-         this.player = this.dolphin.level().getNearestPlayer(Dolphin.SWIM_WITH_PLAYER_TARGETING, this.dolphin);
+         this.player = getServerLevel(this.dolphin).getNearestPlayer(Dolphin.SWIM_WITH_PLAYER_TARGETING, this.dolphin);
          if (this.player == null) {
             return false;
          } else {

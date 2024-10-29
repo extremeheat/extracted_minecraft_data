@@ -6,10 +6,12 @@ import java.util.function.UnaryOperator;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.EncoderCache;
 import net.minecraft.util.ExtraCodecs;
@@ -22,12 +24,14 @@ import net.minecraft.world.item.Instrument;
 import net.minecraft.world.item.JukeboxPlayable;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.armortrim.ArmorTrim;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.item.component.ChargedProjectiles;
+import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.item.component.DamageResistant;
+import net.minecraft.world.item.component.DeathProtection;
 import net.minecraft.world.item.component.DebugStickState;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.component.FireworkExplosion;
@@ -39,14 +43,22 @@ import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.item.component.MapDecorations;
 import net.minecraft.world.item.component.MapItemColor;
 import net.minecraft.world.item.component.MapPostProcessing;
+import net.minecraft.world.item.component.OminousBottleAmplifier;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.component.SeededContainerLoot;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.component.Unbreakable;
+import net.minecraft.world.item.component.UseCooldown;
+import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.enchantment.Enchantable;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.item.enchantment.Repairable;
+import net.minecraft.world.item.equipment.Equippable;
+import net.minecraft.world.item.equipment.trim.ArmorTrim;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.entity.PotDecorations;
@@ -74,6 +86,9 @@ public class DataComponents {
    });
    public static final DataComponentType<Component> ITEM_NAME = register("item_name", (var0) -> {
       return var0.persistent(ComponentSerialization.FLAT_CODEC).networkSynchronized(ComponentSerialization.STREAM_CODEC).cacheEncoding();
+   });
+   public static final DataComponentType<ResourceLocation> ITEM_MODEL = register("item_model", (var0) -> {
+      return var0.persistent(ResourceLocation.CODEC).networkSynchronized(ResourceLocation.STREAM_CODEC).cacheEncoding();
    });
    public static final DataComponentType<ItemLore> LORE = register("lore", (var0) -> {
       return var0.persistent(ItemLore.CODEC).networkSynchronized(ItemLore.STREAM_CODEC).cacheEncoding();
@@ -117,11 +132,38 @@ public class DataComponents {
    public static final DataComponentType<FoodProperties> FOOD = register("food", (var0) -> {
       return var0.persistent(FoodProperties.DIRECT_CODEC).networkSynchronized(FoodProperties.DIRECT_STREAM_CODEC).cacheEncoding();
    });
-   public static final DataComponentType<Unit> FIRE_RESISTANT = register("fire_resistant", (var0) -> {
-      return var0.persistent(Unit.CODEC).networkSynchronized(StreamCodec.unit(Unit.INSTANCE));
+   public static final DataComponentType<Consumable> CONSUMABLE = register("consumable", (var0) -> {
+      return var0.persistent(Consumable.CODEC).networkSynchronized(Consumable.STREAM_CODEC).cacheEncoding();
+   });
+   public static final DataComponentType<UseRemainder> USE_REMAINDER = register("use_remainder", (var0) -> {
+      return var0.persistent(UseRemainder.CODEC).networkSynchronized(UseRemainder.STREAM_CODEC).cacheEncoding();
+   });
+   public static final DataComponentType<UseCooldown> USE_COOLDOWN = register("use_cooldown", (var0) -> {
+      return var0.persistent(UseCooldown.CODEC).networkSynchronized(UseCooldown.STREAM_CODEC).cacheEncoding();
+   });
+   public static final DataComponentType<DamageResistant> DAMAGE_RESISTANT = register("damage_resistant", (var0) -> {
+      return var0.persistent(DamageResistant.CODEC).networkSynchronized(DamageResistant.STREAM_CODEC).cacheEncoding();
    });
    public static final DataComponentType<Tool> TOOL = register("tool", (var0) -> {
       return var0.persistent(Tool.CODEC).networkSynchronized(Tool.STREAM_CODEC).cacheEncoding();
+   });
+   public static final DataComponentType<Enchantable> ENCHANTABLE = register("enchantable", (var0) -> {
+      return var0.persistent(Enchantable.CODEC).networkSynchronized(Enchantable.STREAM_CODEC).cacheEncoding();
+   });
+   public static final DataComponentType<Equippable> EQUIPPABLE = register("equippable", (var0) -> {
+      return var0.persistent(Equippable.CODEC).networkSynchronized(Equippable.STREAM_CODEC).cacheEncoding();
+   });
+   public static final DataComponentType<Repairable> REPAIRABLE = register("repairable", (var0) -> {
+      return var0.persistent(Repairable.CODEC).networkSynchronized(Repairable.STREAM_CODEC).cacheEncoding();
+   });
+   public static final DataComponentType<Unit> GLIDER = register("glider", (var0) -> {
+      return var0.persistent(Unit.CODEC).networkSynchronized(StreamCodec.unit(Unit.INSTANCE));
+   });
+   public static final DataComponentType<ResourceLocation> TOOLTIP_STYLE = register("tooltip_style", (var0) -> {
+      return var0.persistent(ResourceLocation.CODEC).networkSynchronized(ResourceLocation.STREAM_CODEC).cacheEncoding();
+   });
+   public static final DataComponentType<DeathProtection> DEATH_PROTECTION = register("death_protection", (var0) -> {
+      return var0.persistent(DeathProtection.CODEC).networkSynchronized(DeathProtection.STREAM_CODEC).cacheEncoding();
    });
    public static final DataComponentType<ItemEnchantments> STORED_ENCHANTMENTS = register("stored_enchantments", (var0) -> {
       return var0.persistent(ItemEnchantments.CODEC).networkSynchronized(ItemEnchantments.STREAM_CODEC).cacheEncoding();
@@ -177,14 +219,14 @@ public class DataComponents {
    public static final DataComponentType<Holder<Instrument>> INSTRUMENT = register("instrument", (var0) -> {
       return var0.persistent(Instrument.CODEC).networkSynchronized(Instrument.STREAM_CODEC).cacheEncoding();
    });
-   public static final DataComponentType<Integer> OMINOUS_BOTTLE_AMPLIFIER = register("ominous_bottle_amplifier", (var0) -> {
-      return var0.persistent(ExtraCodecs.intRange(0, 4)).networkSynchronized(ByteBufCodecs.VAR_INT);
+   public static final DataComponentType<OminousBottleAmplifier> OMINOUS_BOTTLE_AMPLIFIER = register("ominous_bottle_amplifier", (var0) -> {
+      return var0.persistent(OminousBottleAmplifier.CODEC).networkSynchronized(OminousBottleAmplifier.STREAM_CODEC);
    });
    public static final DataComponentType<JukeboxPlayable> JUKEBOX_PLAYABLE = register("jukebox_playable", (var0) -> {
       return var0.persistent(JukeboxPlayable.CODEC).networkSynchronized(JukeboxPlayable.STREAM_CODEC);
    });
-   public static final DataComponentType<List<ResourceLocation>> RECIPES = register("recipes", (var0) -> {
-      return var0.persistent(ResourceLocation.CODEC.listOf()).cacheEncoding();
+   public static final DataComponentType<List<ResourceKey<Recipe<?>>>> RECIPES = register("recipes", (var0) -> {
+      return var0.persistent(ResourceKey.codec(Registries.RECIPE).listOf()).cacheEncoding();
    });
    public static final DataComponentType<LodestoneTracker> LODESTONE_TRACKER = register("lodestone_tracker", (var0) -> {
       return var0.persistent(LodestoneTracker.CODEC).networkSynchronized(LodestoneTracker.STREAM_CODEC).cacheEncoding();

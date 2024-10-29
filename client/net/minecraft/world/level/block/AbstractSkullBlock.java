@@ -3,8 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -17,8 +15,9 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.redstone.Orientation;
 
-public abstract class AbstractSkullBlock extends BaseEntityBlock implements Equipable {
+public abstract class AbstractSkullBlock extends BaseEntityBlock {
    public static final BooleanProperty POWERED;
    private final SkullBlock.Type type;
 
@@ -54,10 +53,6 @@ public abstract class AbstractSkullBlock extends BaseEntityBlock implements Equi
       return false;
    }
 
-   public EquipmentSlot getEquipmentSlot() {
-      return EquipmentSlot.HEAD;
-   }
-
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(POWERED);
    }
@@ -66,7 +61,7 @@ public abstract class AbstractSkullBlock extends BaseEntityBlock implements Equi
       return (BlockState)this.defaultBlockState().setValue(POWERED, var1.getLevel().hasNeighborSignal(var1.getClickedPos()));
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       if (!var2.isClientSide) {
          boolean var7 = var2.hasNeighborSignal(var3);
          if (var7 != (Boolean)var1.getValue(POWERED)) {

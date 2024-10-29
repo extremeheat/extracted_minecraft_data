@@ -16,7 +16,6 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderGetter;
@@ -44,16 +43,17 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.SpawnPlacementType;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BannerPattern;
@@ -63,13 +63,12 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
 public class Raid {
+   public static final SpawnPlacementType RAVAGER_SPAWN_PLACEMENT_TYPE;
+   private static final int ALLOW_SPAWNING_WITHIN_VILLAGE_SECONDS_THRESHOLD = 7;
    private static final int SECTION_RADIUS_FOR_FINDING_NEW_VILLAGE_CENTER = 2;
-   private static final int ATTEMPT_RAID_FARTHEST = 0;
-   private static final int ATTEMPT_RAID_CLOSE = 1;
-   private static final int ATTEMPT_RAID_INSIDE = 2;
    private static final int VILLAGE_SEARCH_RADIUS = 32;
    private static final int RAID_TIMEOUT_TICKS = 48000;
-   private static final int NUM_SPAWN_ATTEMPTS = 3;
+   private static final int NUM_SPAWN_ATTEMPTS = 5;
    private static final Component OMINOUS_BANNER_PATTERN_NAME;
    private static final String RAIDERS_REMAINING = "event.minecraft.raid.raiders_remaining";
    public static final int VILLAGE_RADIUS_BUFFER = 16;
@@ -85,6 +84,7 @@ public class Raid {
    private static final Component RAID_BAR_VICTORY_COMPONENT;
    private static final Component RAID_BAR_DEFEAT_COMPONENT;
    private static final int HERO_OF_THE_VILLAGE_DURATION = 48000;
+   private static final int VALID_RAID_RADIUS = 96;
    public static final int VALID_RAID_RADIUS_SQR = 9216;
    public static final int RAID_REMOVAL_THRESHOLD_SQR = 12544;
    private final Map<Integer, Raider> groupToLeaderMap = Maps.newHashMap();
@@ -324,14 +324,7 @@ public class Raid {
                   }
 
                   if (var4) {
-                     byte var5 = 0;
-                     if (this.raidCooldownTicks < 100) {
-                        var5 = 1;
-                     } else if (this.raidCooldownTicks < 40) {
-                        var5 = 2;
-                     }
-
-                     this.waveSpawnPos = this.getValidSpawnPos(var5);
+                     this.waveSpawnPos = this.getValidSpawnPos();
                   }
 
                   if (this.raidCooldownTicks == 300 || this.raidCooldownTicks % 20 == 0) {
@@ -361,19 +354,21 @@ public class Raid {
             int var10 = 0;
 
             while(this.shouldSpawnGroup()) {
-               BlockPos var11 = this.waveSpawnPos.isPresent() ? (BlockPos)this.waveSpawnPos.get() : this.findRandomSpawnPos(var10, 20);
-               if (var11 != null) {
+               BlockPos var5 = (BlockPos)this.waveSpawnPos.orElseGet(() -> {
+                  return this.findRandomSpawnPos(20);
+               });
+               if (var5 != null) {
                   this.started = true;
-                  this.spawnGroup(var11);
+                  this.spawnGroup(var5);
                   if (!var3) {
-                     this.playSound(var11);
+                     this.playSound(var5);
                      var3 = true;
                   }
                } else {
                   ++var10;
                }
 
-               if (var10 > 3) {
+               if (var10 > 5) {
                   this.stop();
                   break;
                }
@@ -384,10 +379,10 @@ public class Raid {
                   ++this.postRaidTicks;
                } else {
                   this.status = Raid.RaidStatus.VICTORY;
-                  Iterator var12 = this.heroesOfTheVillage.iterator();
+                  Iterator var11 = this.heroesOfTheVillage.iterator();
 
-                  while(var12.hasNext()) {
-                     UUID var6 = (UUID)var12.next();
+                  while(var11.hasNext()) {
+                     UUID var6 = (UUID)var11.next();
                      Entity var7 = this.level.getEntity(var6);
                      if (var7 instanceof LivingEntity) {
                         LivingEntity var8 = (LivingEntity)var7;
@@ -436,15 +431,9 @@ public class Raid {
       })).ifPresent(this::setCenter);
    }
 
-   private Optional<BlockPos> getValidSpawnPos(int var1) {
-      for(int var2 = 0; var2 < 3; ++var2) {
-         BlockPos var3 = this.findRandomSpawnPos(var1, 1);
-         if (var3 != null) {
-            return Optional.of(var3);
-         }
-      }
-
-      return Optional.empty();
+   private Optional<BlockPos> getValidSpawnPos() {
+      BlockPos var1 = this.findRandomSpawnPos(8);
+      return var1 != null ? Optional.of(var1) : Optional.empty();
    }
 
    private boolean hasMoreWaves() {
@@ -475,7 +464,7 @@ public class Raid {
       Iterator var1 = this.groupRaiderMap.values().iterator();
       HashSet var2 = Sets.newHashSet();
 
-      label54:
+      label55:
       while(var1.hasNext()) {
          Set var3 = (Set)var1.next();
          Iterator var4 = var3.iterator();
@@ -483,7 +472,7 @@ public class Raid {
          while(true) {
             while(true) {
                if (!var4.hasNext()) {
-                  continue label54;
+                  continue label55;
                }
 
                Raider var5 = (Raider)var4.next();
@@ -514,6 +503,9 @@ public class Raid {
       while(var7.hasNext()) {
          Raider var8 = (Raider)var7.next();
          this.removeFromRaid(var8, true);
+         if (var8.isPatrolLeader()) {
+            this.removeLeader(var8.getWave());
+         }
       }
 
    }
@@ -562,7 +554,7 @@ public class Raid {
          int var11 = 0;
 
          for(int var12 = 0; var12 < var10; ++var12) {
-            Raider var13 = (Raider)var9.entityType.create(this.level);
+            Raider var13 = (Raider)var9.entityType.create(this.level, EntitySpawnReason.EVENT);
             if (var13 == null) {
                break;
             }
@@ -577,12 +569,12 @@ public class Raid {
             if (var9.entityType == EntityType.RAVAGER) {
                Raider var14 = null;
                if (var3 == this.getNumGroups(Difficulty.NORMAL)) {
-                  var14 = (Raider)EntityType.PILLAGER.create(this.level);
+                  var14 = (Raider)EntityType.PILLAGER.create(this.level, EntitySpawnReason.EVENT);
                } else if (var3 >= this.getNumGroups(Difficulty.HARD)) {
                   if (var11 == 0) {
-                     var14 = (Raider)EntityType.EVOKER.create(this.level);
+                     var14 = (Raider)EntityType.EVOKER.create(this.level, EntitySpawnReason.EVENT);
                   } else {
-                     var14 = (Raider)EntityType.VINDICATOR.create(this.level);
+                     var14 = (Raider)EntityType.VINDICATOR.create(this.level, EntitySpawnReason.EVENT);
                   }
                }
 
@@ -611,7 +603,7 @@ public class Raid {
          var2.setTicksOutsideRaid(0);
          if (!var4 && var3 != null) {
             var2.setPos((double)var3.getX() + 0.5, (double)var3.getY() + 1.0, (double)var3.getZ() + 0.5);
-            var2.finalizeSpawn(this.level, this.level.getCurrentDifficultyAt(var3), MobSpawnType.EVENT, (SpawnGroupData)null);
+            var2.finalizeSpawn(this.level, this.level.getCurrentDifficultyAt(var3), EntitySpawnReason.EVENT, (SpawnGroupData)null);
             var2.applyRaidBuffs(this.level, var1, false);
             var2.setOnGround(true);
             this.level.addFreshEntityWithPassengers(var2);
@@ -669,12 +661,13 @@ public class Raid {
       this.level.getRaids().setDirty();
    }
 
-   public static ItemStack getLeaderBannerInstance(HolderGetter<BannerPattern> var0) {
+   public static ItemStack getOminousBannerInstance(HolderGetter<BannerPattern> var0) {
       ItemStack var1 = new ItemStack(Items.WHITE_BANNER);
       BannerPatternLayers var2 = (new BannerPatternLayers.Builder()).addIfRegistered(var0, BannerPatterns.RHOMBUS_MIDDLE, DyeColor.CYAN).addIfRegistered(var0, BannerPatterns.STRIPE_BOTTOM, DyeColor.LIGHT_GRAY).addIfRegistered(var0, BannerPatterns.STRIPE_CENTER, DyeColor.GRAY).addIfRegistered(var0, BannerPatterns.BORDER, DyeColor.LIGHT_GRAY).addIfRegistered(var0, BannerPatterns.STRIPE_MIDDLE, DyeColor.BLACK).addIfRegistered(var0, BannerPatterns.HALF_HORIZONTAL, DyeColor.LIGHT_GRAY).addIfRegistered(var0, BannerPatterns.CIRCLE_MIDDLE, DyeColor.LIGHT_GRAY).addIfRegistered(var0, BannerPatterns.BORDER, DyeColor.BLACK).build();
       var1.set(DataComponents.BANNER_PATTERNS, var2);
       var1.set(DataComponents.HIDE_ADDITIONAL_TOOLTIP, Unit.INSTANCE);
       var1.set(DataComponents.ITEM_NAME, OMINOUS_BANNER_PATTERN_NAME);
+      var1.set(DataComponents.RARITY, Rarity.UNCOMMON);
       return var1;
    }
 
@@ -684,21 +677,24 @@ public class Raid {
    }
 
    @Nullable
-   private BlockPos findRandomSpawnPos(int var1, int var2) {
-      int var3 = var1 == 0 ? 2 : 2 - var1;
+   private BlockPos findRandomSpawnPos(int var1) {
+      int var2 = this.raidCooldownTicks / 20;
+      float var3 = 0.22F * (float)var2 - 0.24F;
       BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos();
-      SpawnPlacementType var8 = SpawnPlacements.getPlacementType(EntityType.RAVAGER);
+      float var8 = this.level.random.nextFloat() * 6.2831855F;
 
-      for(int var9 = 0; var9 < var2; ++var9) {
-         float var10 = this.level.random.nextFloat() * 6.2831855F;
-         int var4 = this.center.getX() + Mth.floor(Mth.cos(var10) * 32.0F * (float)var3) + this.level.random.nextInt(5);
-         int var6 = this.center.getZ() + Mth.floor(Mth.sin(var10) * 32.0F * (float)var3) + this.level.random.nextInt(5);
+      for(int var9 = 0; var9 < var1; ++var9) {
+         float var10 = var8 + 3.1415927F * (float)var9 / 8.0F;
+         int var4 = this.center.getX() + Mth.floor(Mth.cos(var10) * 32.0F * var3) + this.level.random.nextInt(3) * Mth.floor(var3);
+         int var6 = this.center.getZ() + Mth.floor(Mth.sin(var10) * 32.0F * var3) + this.level.random.nextInt(3) * Mth.floor(var3);
          int var5 = this.level.getHeight(Heightmap.Types.WORLD_SURFACE, var4, var6);
-         var7.set(var4, var5, var6);
-         if (!this.level.isVillage((BlockPos)var7) || var1 >= 2) {
-            boolean var11 = true;
-            if (this.level.hasChunksAt(var7.getX() - 10, var7.getZ() - 10, var7.getX() + 10, var7.getZ() + 10) && this.level.isPositionEntityTicking(var7) && (var8.isSpawnPositionOk(this.level, var7, EntityType.RAVAGER) || this.level.getBlockState(var7.below()).is(Blocks.SNOW) && this.level.getBlockState(var7).isAir())) {
-               return var7;
+         if (Mth.abs(var5 - this.center.getY()) <= 96) {
+            var7.set(var4, var5, var6);
+            if (!this.level.isVillage((BlockPos)var7) || var2 <= 7) {
+               boolean var11 = true;
+               if (this.level.hasChunksAt(var7.getX() - 10, var7.getZ() - 10, var7.getX() + 10, var7.getZ() + 10) && this.level.isPositionEntityTicking(var7) && (RAVAGER_SPAWN_PLACEMENT_TYPE.isSpawnPositionOk(this.level, var7, EntityType.RAVAGER) || this.level.getBlockState(var7.below()).is(Blocks.SNOW) && this.level.getBlockState(var7).isAir())) {
+                  return var7;
+               }
             }
          }
       }
@@ -743,7 +739,7 @@ public class Raid {
 
    public void setLeader(int var1, Raider var2) {
       this.groupToLeaderMap.put(var1, var2);
-      var2.setItemSlot(EquipmentSlot.HEAD, getLeaderBannerInstance(var2.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
+      var2.setItemSlot(EquipmentSlot.HEAD, getOminousBannerInstance(var2.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
       var2.setDropChance(EquipmentSlot.HEAD, 2.0F);
    }
 
@@ -866,7 +862,8 @@ public class Raid {
    }
 
    static {
-      OMINOUS_BANNER_PATTERN_NAME = Component.translatable("block.minecraft.ominous_banner").withStyle(ChatFormatting.GOLD);
+      RAVAGER_SPAWN_PLACEMENT_TYPE = SpawnPlacements.getPlacementType(EntityType.RAVAGER);
+      OMINOUS_BANNER_PATTERN_NAME = Component.translatable("block.minecraft.ominous_banner");
       RAID_NAME_COMPONENT = Component.translatable("event.minecraft.raid");
       RAID_BAR_VICTORY_COMPONENT = Component.translatable("event.minecraft.raid.victory.full");
       RAID_BAR_DEFEAT_COMPONENT = Component.translatable("event.minecraft.raid.defeat.full");

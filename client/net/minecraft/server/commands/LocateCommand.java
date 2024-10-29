@@ -76,16 +76,16 @@ public class LocateCommand {
    private static Optional<? extends HolderSet.ListBacked<Structure>> getHolders(ResourceOrTagKeyArgument.Result<Structure> var0, Registry<Structure> var1) {
       Either var10000 = var0.unwrap();
       Function var10001 = (var1x) -> {
-         return var1.getHolder(var1x).map((var0) -> {
+         return var1.get(var1x).map((var0) -> {
             return HolderSet.direct(var0);
          });
       };
       Objects.requireNonNull(var1);
-      return (Optional)var10000.map(var10001, var1::getTag);
+      return (Optional)var10000.map(var10001, var1::get);
    }
 
    private static int locateStructure(CommandSourceStack var0, ResourceOrTagKeyArgument.Result<Structure> var1) throws CommandSyntaxException {
-      Registry var2 = var0.getLevel().registryAccess().registryOrThrow(Registries.STRUCTURE);
+      Registry var2 = var0.getLevel().registryAccess().lookupOrThrow(Registries.STRUCTURE);
       HolderSet var3 = (HolderSet)getHolders(var1, var2).orElseThrow(() -> {
          return ERROR_STRUCTURE_INVALID.create(var1.asPrintable());
       });

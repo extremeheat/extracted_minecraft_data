@@ -53,7 +53,6 @@ public class BlockTypes {
       Registry.register(var0, (String)"carpet", CarpetBlock.CODEC);
       Registry.register(var0, (String)"carrot", CarrotBlock.CODEC);
       Registry.register(var0, (String)"cartography_table", CartographyTableBlock.CODEC);
-      Registry.register(var0, (String)"carved_pumpkin", EquipableCarvedPumpkinBlock.CODEC);
       Registry.register(var0, (String)"cauldron", CauldronBlock.CODEC);
       Registry.register(var0, (String)"cave_vines", CaveVinesBlock.CODEC);
       Registry.register(var0, (String)"cave_vines_plant", CaveVinesPlantBlock.CODEC);
@@ -98,6 +97,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"end_portal_frame", EndPortalFrameBlock.CODEC);
       Registry.register(var0, (String)"end_rod", EndRodBlock.CODEC);
       Registry.register(var0, (String)"farm", FarmBlock.CODEC);
+      Registry.register(var0, (String)"bonemealable_feature_placer", BonemealableFeaturePlacerBlock.CODEC);
       Registry.register(var0, (String)"fence", FenceBlock.CODEC);
       Registry.register(var0, (String)"fence_gate", FenceGateBlock.CODEC);
       Registry.register(var0, (String)"fire", FireBlock.CODEC);
@@ -113,6 +113,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"grass", GrassBlock.CODEC);
       Registry.register(var0, (String)"grindstone", GrindstoneBlock.CODEC);
       Registry.register(var0, (String)"half_transparent", HalfTransparentBlock.CODEC);
+      Registry.register(var0, (String)"hanging_moss", HangingMossBlock.CODEC);
       Registry.register(var0, (String)"hanging_roots", HangingRootsBlock.CODEC);
       Registry.register(var0, (String)"hay", HayBlock.CODEC);
       Registry.register(var0, (String)"heavy_core", HeavyCoreBlock.CODEC);
@@ -143,7 +144,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"mangrove_leaves", MangroveLeavesBlock.CODEC);
       Registry.register(var0, (String)"mangrove_propagule", MangrovePropaguleBlock.CODEC);
       Registry.register(var0, (String)"mangrove_roots", MangroveRootsBlock.CODEC);
-      Registry.register(var0, (String)"moss", MossBlock.CODEC);
+      Registry.register(var0, (String)"mossy_carpet", MossyCarpetBlock.CODEC);
       Registry.register(var0, (String)"moving_piston", MovingPistonBlock.CODEC);
       Registry.register(var0, (String)"mud", MudBlock.CODEC);
       Registry.register(var0, (String)"mushroom", MushroomBlock.CODEC);
@@ -202,6 +203,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"soul_fire", SoulFireBlock.CODEC);
       Registry.register(var0, (String)"soul_sand", SoulSandBlock.CODEC);
       Registry.register(var0, (String)"spawner", SpawnerBlock.CODEC);
+      Registry.register(var0, (String)"creaking_heart", CreakingHeartBlock.CODEC);
       Registry.register(var0, (String)"sponge", SpongeBlock.CODEC);
       Registry.register(var0, (String)"spore_blossom", SporeBlossomBlock.CODEC);
       Registry.register(var0, (String)"stained_glass_pane", StainedGlassPaneBlock.CODEC);

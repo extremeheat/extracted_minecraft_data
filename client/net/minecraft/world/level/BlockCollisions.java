@@ -30,8 +30,12 @@ public class BlockCollisions<T> extends AbstractIterator<T> {
    private final BiFunction<BlockPos.MutableBlockPos, VoxelShape, T> resultProvider;
 
    public BlockCollisions(CollisionGetter var1, @Nullable Entity var2, AABB var3, boolean var4, BiFunction<BlockPos.MutableBlockPos, VoxelShape, T> var5) {
+      this(var1, var2 == null ? CollisionContext.empty() : CollisionContext.of(var2), var3, var4, var5);
+   }
+
+   public BlockCollisions(CollisionGetter var1, CollisionContext var2, AABB var3, boolean var4, BiFunction<BlockPos.MutableBlockPos, VoxelShape, T> var5) {
       super();
-      this.context = var2 == null ? CollisionContext.empty() : CollisionContext.of(var2);
+      this.context = var2;
       this.pos = new BlockPos.MutableBlockPos();
       this.entityShape = Shapes.create(var3);
       this.collisionGetter = var1;
@@ -84,7 +88,7 @@ public class BlockCollisions<T> extends AbstractIterator<T> {
                continue;
             }
 
-            VoxelShape var7 = var6.getCollisionShape(this.collisionGetter, this.pos, this.context);
+            VoxelShape var7 = this.context.getCollisionShape(var6, this.collisionGetter, this.pos);
             if (var7 == Shapes.block()) {
                if (!this.box.intersects((double)var1, (double)var2, (double)var3, (double)var1 + 1.0, (double)var2 + 1.0, (double)var3 + 1.0)) {
                   continue;

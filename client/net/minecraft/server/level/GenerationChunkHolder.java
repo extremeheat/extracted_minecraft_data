@@ -33,13 +33,18 @@ public abstract class GenerationChunkHolder {
    private final AtomicReferenceArray<CompletableFuture<ChunkResult<ChunkAccess>>> futures;
    private final AtomicReference<ChunkGenerationTask> task;
    private final AtomicInteger generationRefCount;
+   private volatile CompletableFuture<Void> generationSaveSyncFuture;
 
    public GenerationChunkHolder(ChunkPos var1) {
       super();
       this.futures = new AtomicReferenceArray(CHUNK_STATUSES.size());
       this.task = new AtomicReference();
       this.generationRefCount = new AtomicInteger();
+      this.generationSaveSyncFuture = CompletableFuture.completedFuture((Object)null);
       this.pos = var1;
+      if (var1.getChessboardDistance(ChunkPos.ZERO) > ChunkPos.MAX_COORDINATE_VALUE) {
+         throw new IllegalStateException("Trying to create chunk out of reasonable bounds: " + String.valueOf(var1));
+      }
    }
 
    public CompletableFuture<ChunkResult<ChunkAccess>> scheduleChunkGenerationTask(ChunkStatus var1, ChunkMap var2) {
@@ -237,19 +242,26 @@ public abstract class GenerationChunkHolder {
       return var2 == null || var1.isAfter(var2);
    }
 
+   protected abstract void addSaveDependency(CompletableFuture<?> var1);
+
    public void increaseGenerationRefCount() {
-      this.generationRefCount.incrementAndGet();
+      if (this.generationRefCount.getAndIncrement() == 0) {
+         this.generationSaveSyncFuture = new CompletableFuture();
+         this.addSaveDependency(this.generationSaveSyncFuture);
+      }
+
    }
 
    public void decreaseGenerationRefCount() {
-      int var1 = this.generationRefCount.decrementAndGet();
-      if (var1 < 0) {
-         throw new IllegalStateException("More releases than claims. Count: " + var1);
+      CompletableFuture var1 = this.generationSaveSyncFuture;
+      int var2 = this.generationRefCount.decrementAndGet();
+      if (var2 == 0) {
+         var1.complete((Object)null);
       }
-   }
 
-   public int getGenerationRefCount() {
-      return this.generationRefCount.get();
+      if (var2 < 0) {
+         throw new IllegalStateException("More releases than claims. Count: " + var2);
+      }
    }
 
    @Nullable

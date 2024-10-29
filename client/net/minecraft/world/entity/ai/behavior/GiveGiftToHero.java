@@ -1,13 +1,8 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -19,34 +14,15 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
-import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public class GiveGiftToHero extends Behavior<Villager> {
    private static final int THROW_GIFT_AT_DISTANCE = 5;
    private static final int MIN_TIME_BETWEEN_GIFTS = 600;
    private static final int MAX_TIME_BETWEEN_GIFTS = 6600;
    private static final int TIME_TO_DELAY_FOR_HEAD_TO_FINISH_TURNING = 20;
-   private static final Map<VillagerProfession, ResourceKey<LootTable>> GIFTS = (Map)Util.make(Maps.newHashMap(), (var0) -> {
-      var0.put(VillagerProfession.ARMORER, BuiltInLootTables.ARMORER_GIFT);
-      var0.put(VillagerProfession.BUTCHER, BuiltInLootTables.BUTCHER_GIFT);
-      var0.put(VillagerProfession.CARTOGRAPHER, BuiltInLootTables.CARTOGRAPHER_GIFT);
-      var0.put(VillagerProfession.CLERIC, BuiltInLootTables.CLERIC_GIFT);
-      var0.put(VillagerProfession.FARMER, BuiltInLootTables.FARMER_GIFT);
-      var0.put(VillagerProfession.FISHERMAN, BuiltInLootTables.FISHERMAN_GIFT);
-      var0.put(VillagerProfession.FLETCHER, BuiltInLootTables.FLETCHER_GIFT);
-      var0.put(VillagerProfession.LEATHERWORKER, BuiltInLootTables.LEATHERWORKER_GIFT);
-      var0.put(VillagerProfession.LIBRARIAN, BuiltInLootTables.LIBRARIAN_GIFT);
-      var0.put(VillagerProfession.MASON, BuiltInLootTables.MASON_GIFT);
-      var0.put(VillagerProfession.SHEPHERD, BuiltInLootTables.SHEPHERD_GIFT);
-      var0.put(VillagerProfession.TOOLSMITH, BuiltInLootTables.TOOLSMITH_GIFT);
-      var0.put(VillagerProfession.WEAPONSMITH, BuiltInLootTables.WEAPONSMITH_GIFT);
-   });
+   private static final Map<VillagerProfession, ResourceKey<LootTable>> GIFTS;
    private static final float SPEED_MODIFIER = 0.5F;
    private int timeUntilNextGift = 600;
    private boolean giftGivenDuringThisRun;
@@ -84,7 +60,7 @@ public class GiveGiftToHero extends Behavior<Villager> {
       BehaviorUtils.lookAtEntity(var2, var5);
       if (this.isWithinThrowingDistance(var2, var5)) {
          if (var3 - this.timeSinceStart > 20L) {
-            this.throwGift(var2, var5);
+            this.throwGift(var1, var2, var5);
             this.giftGivenDuringThisRun = true;
          }
       } else {
@@ -100,29 +76,18 @@ public class GiveGiftToHero extends Behavior<Villager> {
       var2.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
    }
 
-   private void throwGift(Villager var1, LivingEntity var2) {
-      List var3 = this.getItemToThrow(var1);
-      Iterator var4 = var3.iterator();
-
-      while(var4.hasNext()) {
-         ItemStack var5 = (ItemStack)var4.next();
-         BehaviorUtils.throwItem(var1, var5, var2.position());
-      }
-
+   private void throwGift(ServerLevel var1, Villager var2, LivingEntity var3) {
+      var2.dropFromGiftLootTable(var1, getLootTableToThrow(var2), (var2x, var3x) -> {
+         BehaviorUtils.throwItem(var2, var3x, var3.position());
+      });
    }
 
-   private List<ItemStack> getItemToThrow(Villager var1) {
-      if (var1.isBaby()) {
-         return ImmutableList.of(new ItemStack(Items.POPPY));
+   private static ResourceKey<LootTable> getLootTableToThrow(Villager var0) {
+      if (var0.isBaby()) {
+         return BuiltInLootTables.BABY_VILLAGER_GIFT;
       } else {
-         VillagerProfession var2 = var1.getVillagerData().getProfession();
-         if (GIFTS.containsKey(var2)) {
-            LootTable var3 = var1.level().getServer().reloadableRegistries().getLootTable((ResourceKey)GIFTS.get(var2));
-            LootParams var4 = (new LootParams.Builder((ServerLevel)var1.level())).withParameter(LootContextParams.ORIGIN, var1.position()).withParameter(LootContextParams.THIS_ENTITY, var1).create(LootContextParamSets.GIFT);
-            return var3.getRandomItems(var4);
-         } else {
-            return ImmutableList.of(new ItemStack(Items.WHEAT_SEEDS));
-         }
+         VillagerProfession var1 = var0.getVillagerData().getProfession();
+         return (ResourceKey)GIFTS.getOrDefault(var1, BuiltInLootTables.UNEMPLOYED_GIFT);
       }
    }
 
@@ -161,5 +126,9 @@ public class GiveGiftToHero extends Behavior<Villager> {
    // $FF: synthetic method
    protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
       this.start(var1, (Villager)var2, var3);
+   }
+
+   static {
+      GIFTS = ImmutableMap.builder().put(VillagerProfession.ARMORER, BuiltInLootTables.ARMORER_GIFT).put(VillagerProfession.BUTCHER, BuiltInLootTables.BUTCHER_GIFT).put(VillagerProfession.CARTOGRAPHER, BuiltInLootTables.CARTOGRAPHER_GIFT).put(VillagerProfession.CLERIC, BuiltInLootTables.CLERIC_GIFT).put(VillagerProfession.FARMER, BuiltInLootTables.FARMER_GIFT).put(VillagerProfession.FISHERMAN, BuiltInLootTables.FISHERMAN_GIFT).put(VillagerProfession.FLETCHER, BuiltInLootTables.FLETCHER_GIFT).put(VillagerProfession.LEATHERWORKER, BuiltInLootTables.LEATHERWORKER_GIFT).put(VillagerProfession.LIBRARIAN, BuiltInLootTables.LIBRARIAN_GIFT).put(VillagerProfession.MASON, BuiltInLootTables.MASON_GIFT).put(VillagerProfession.SHEPHERD, BuiltInLootTables.SHEPHERD_GIFT).put(VillagerProfession.TOOLSMITH, BuiltInLootTables.TOOLSMITH_GIFT).put(VillagerProfession.WEAPONSMITH, BuiltInLootTables.WEAPONSMITH_GIFT).build();
    }
 }

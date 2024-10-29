@@ -51,11 +51,11 @@ public class WolfVariants {
    }
 
    public static Holder<WolfVariant> getSpawnVariant(RegistryAccess var0, Holder<Biome> var1) {
-      Registry var2 = var0.registryOrThrow(Registries.WOLF_VARIANT);
-      Optional var10000 = var2.holders().filter((var1x) -> {
+      Registry var2 = var0.lookupOrThrow(Registries.WOLF_VARIANT);
+      Optional var10000 = var2.listElements().filter((var1x) -> {
          return ((WolfVariant)var1x.value()).biomes().contains(var1);
       }).findFirst().or(() -> {
-         return var2.getHolder(DEFAULT);
+         return var2.get(DEFAULT);
       });
       Objects.requireNonNull(var2);
       return (Holder)var10000.or(var2::getAny).orElseThrow();

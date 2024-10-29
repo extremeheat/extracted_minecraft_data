@@ -31,7 +31,7 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
       ServerLevel var3 = var1.level();
       if (!var3.isClientSide()) {
          BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
-         this.setSuccess(tryShearBeehive(var3, var4) || tryShearLivingEntity(var3, var4));
+         this.setSuccess(tryShearBeehive(var3, var4) || tryShearLivingEntity(var3, var4, var2));
          if (this.isSuccess()) {
             var2.hurtAndBreak(1, var3, (ServerPlayer)null, (var0) -> {
             });
@@ -59,15 +59,15 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
       return false;
    }
 
-   private static boolean tryShearLivingEntity(ServerLevel var0, BlockPos var1) {
-      List var2 = var0.getEntitiesOfClass(LivingEntity.class, new AABB(var1), EntitySelector.NO_SPECTATORS);
-      Iterator var3 = var2.iterator();
+   private static boolean tryShearLivingEntity(ServerLevel var0, BlockPos var1, ItemStack var2) {
+      List var3 = var0.getEntitiesOfClass(LivingEntity.class, new AABB(var1), EntitySelector.NO_SPECTATORS);
+      Iterator var4 = var3.iterator();
 
-      while(var3.hasNext()) {
-         LivingEntity var4 = (LivingEntity)var3.next();
-         if (var4 instanceof Shearable var5) {
-            if (var5.readyForShearing()) {
-               var5.shear(SoundSource.BLOCKS);
+      while(var4.hasNext()) {
+         LivingEntity var5 = (LivingEntity)var4.next();
+         if (var5 instanceof Shearable var6) {
+            if (var6.readyForShearing()) {
+               var6.shear(var0, SoundSource.BLOCKS, var2);
                var0.gameEvent((Entity)null, GameEvent.SHEAR, var1);
                return true;
             }

@@ -5,17 +5,14 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.flag.FeatureFlag;
-import net.minecraft.world.item.armortrim.TrimPattern;
 
 public class SmithingTemplateItem extends Item {
    private static final ChatFormatting TITLE_FORMAT;
    private static final ChatFormatting DESCRIPTION_FORMAT;
    private static final Component INGREDIENTS_TITLE;
    private static final Component APPLIES_TO_TITLE;
-   private static final Component NETHERITE_UPGRADE;
+   private static final Component SMITHING_TEMPLATE_SUFFIX;
    private static final Component ARMOR_TRIM_APPLIES_TO;
    private static final Component ARMOR_TRIM_INGREDIENTS;
    private static final Component ARMOR_TRIM_BASE_SLOT_DESCRIPTION;
@@ -42,33 +39,27 @@ public class SmithingTemplateItem extends Item {
    private static final ResourceLocation EMPTY_SLOT_AMETHYST_SHARD;
    private final Component appliesTo;
    private final Component ingredients;
-   private final Component upgradeDescription;
    private final Component baseSlotDescription;
    private final Component additionsSlotDescription;
    private final List<ResourceLocation> baseSlotEmptyIcons;
    private final List<ResourceLocation> additionalSlotEmptyIcons;
 
-   public SmithingTemplateItem(Component var1, Component var2, Component var3, Component var4, Component var5, List<ResourceLocation> var6, List<ResourceLocation> var7, FeatureFlag... var8) {
-      super((new Item.Properties()).requiredFeatures(var8));
+   public SmithingTemplateItem(Component var1, Component var2, Component var3, Component var4, List<ResourceLocation> var5, List<ResourceLocation> var6, Item.Properties var7) {
+      super(var7);
       this.appliesTo = var1;
       this.ingredients = var2;
-      this.upgradeDescription = var3;
-      this.baseSlotDescription = var4;
-      this.additionsSlotDescription = var5;
-      this.baseSlotEmptyIcons = var6;
-      this.additionalSlotEmptyIcons = var7;
+      this.baseSlotDescription = var3;
+      this.additionsSlotDescription = var4;
+      this.baseSlotEmptyIcons = var5;
+      this.additionalSlotEmptyIcons = var6;
    }
 
-   public static SmithingTemplateItem createArmorTrimTemplate(ResourceKey<TrimPattern> var0, FeatureFlag... var1) {
-      return createArmorTrimTemplate(var0.location(), var1);
+   public static SmithingTemplateItem createArmorTrimTemplate(Item.Properties var0) {
+      return new SmithingTemplateItem(ARMOR_TRIM_APPLIES_TO, ARMOR_TRIM_INGREDIENTS, ARMOR_TRIM_BASE_SLOT_DESCRIPTION, ARMOR_TRIM_ADDITIONS_SLOT_DESCRIPTION, createTrimmableArmorIconList(), createTrimmableMaterialIconList(), var0);
    }
 
-   public static SmithingTemplateItem createArmorTrimTemplate(ResourceLocation var0, FeatureFlag... var1) {
-      return new SmithingTemplateItem(ARMOR_TRIM_APPLIES_TO, ARMOR_TRIM_INGREDIENTS, Component.translatable(Util.makeDescriptionId("trim_pattern", var0)).withStyle(TITLE_FORMAT), ARMOR_TRIM_BASE_SLOT_DESCRIPTION, ARMOR_TRIM_ADDITIONS_SLOT_DESCRIPTION, createTrimmableArmorIconList(), createTrimmableMaterialIconList(), var1);
-   }
-
-   public static SmithingTemplateItem createNetheriteUpgradeTemplate() {
-      return new SmithingTemplateItem(NETHERITE_UPGRADE_APPLIES_TO, NETHERITE_UPGRADE_INGREDIENTS, NETHERITE_UPGRADE, NETHERITE_UPGRADE_BASE_SLOT_DESCRIPTION, NETHERITE_UPGRADE_ADDITIONS_SLOT_DESCRIPTION, createNetheriteUpgradeIconList(), createNetheriteUpgradeMaterialList(), new FeatureFlag[0]);
+   public static SmithingTemplateItem createNetheriteUpgradeTemplate(Item.Properties var0) {
+      return new SmithingTemplateItem(NETHERITE_UPGRADE_APPLIES_TO, NETHERITE_UPGRADE_INGREDIENTS, NETHERITE_UPGRADE_BASE_SLOT_DESCRIPTION, NETHERITE_UPGRADE_ADDITIONS_SLOT_DESCRIPTION, createNetheriteUpgradeIconList(), createNetheriteUpgradeMaterialList(), var0);
    }
 
    private static List<ResourceLocation> createTrimmableArmorIconList() {
@@ -89,7 +80,7 @@ public class SmithingTemplateItem extends Item {
 
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
-      var3.add(this.upgradeDescription);
+      var3.add(SMITHING_TEMPLATE_SUFFIX);
       var3.add(CommonComponents.EMPTY);
       var3.add(APPLIES_TO_TITLE);
       var3.add(CommonComponents.space().append(this.appliesTo));
@@ -118,7 +109,7 @@ public class SmithingTemplateItem extends Item {
       DESCRIPTION_FORMAT = ChatFormatting.BLUE;
       INGREDIENTS_TITLE = Component.translatable(Util.makeDescriptionId("item", ResourceLocation.withDefaultNamespace("smithing_template.ingredients"))).withStyle(TITLE_FORMAT);
       APPLIES_TO_TITLE = Component.translatable(Util.makeDescriptionId("item", ResourceLocation.withDefaultNamespace("smithing_template.applies_to"))).withStyle(TITLE_FORMAT);
-      NETHERITE_UPGRADE = Component.translatable(Util.makeDescriptionId("upgrade", ResourceLocation.withDefaultNamespace("netherite_upgrade"))).withStyle(TITLE_FORMAT);
+      SMITHING_TEMPLATE_SUFFIX = Component.translatable(Util.makeDescriptionId("item", ResourceLocation.withDefaultNamespace("smithing_template"))).withStyle(TITLE_FORMAT);
       ARMOR_TRIM_APPLIES_TO = Component.translatable(Util.makeDescriptionId("item", ResourceLocation.withDefaultNamespace("smithing_template.armor_trim.applies_to"))).withStyle(DESCRIPTION_FORMAT);
       ARMOR_TRIM_INGREDIENTS = Component.translatable(Util.makeDescriptionId("item", ResourceLocation.withDefaultNamespace("smithing_template.armor_trim.ingredients"))).withStyle(DESCRIPTION_FORMAT);
       ARMOR_TRIM_BASE_SLOT_DESCRIPTION = Component.translatable(Util.makeDescriptionId("item", ResourceLocation.withDefaultNamespace("smithing_template.armor_trim.base_slot_description")));

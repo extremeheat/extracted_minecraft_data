@@ -16,8 +16,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.piston.MovingPistonBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -44,12 +44,12 @@ public class FarmBlock extends Block {
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(MOISTURE, 0));
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (var2 == Direction.UP && !var1.canSurvive(var4, var5)) {
-         var4.scheduleTick(var5, (Block)this, 1);
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      if (var5 == Direction.UP && !var1.canSurvive(var2, var4)) {
+         var3.scheduleTick(var4, (Block)this, 1);
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6);
+      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
@@ -91,8 +91,10 @@ public class FarmBlock extends Block {
    }
 
    public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
-      if (!var1.isClientSide && var1.random.nextFloat() < var5 - 0.5F && var4 instanceof LivingEntity && (var4 instanceof Player || var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) && var4.getBbWidth() * var4.getBbWidth() * var4.getBbHeight() > 0.512F) {
-         turnToDirt(var4, var2, var1, var3);
+      if (var1 instanceof ServerLevel var6) {
+         if (var1.random.nextFloat() < var5 - 0.5F && var4 instanceof LivingEntity && (var4 instanceof Player || var6.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) && var4.getBbWidth() * var4.getBbWidth() * var4.getBbHeight() > 0.512F) {
+            turnToDirt(var4, var2, var1, var3);
+         }
       }
 
       super.fallOn(var1, var2, var3, var4, var5);

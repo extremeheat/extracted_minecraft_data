@@ -78,7 +78,7 @@ public class SingleValuePalette<T> implements Palette<T> {
       return 1;
    }
 
-   public Palette<T> copy() {
+   public Palette<T> copy(PaletteResize<T> var1) {
       if (this.value == null) {
          throw new IllegalStateException("Use of an uninitialized palette");
       } else {

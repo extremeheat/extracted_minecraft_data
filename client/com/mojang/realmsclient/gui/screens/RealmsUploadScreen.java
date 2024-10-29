@@ -2,34 +2,24 @@ package com.mojang.realmsclient.gui.screens;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.RateLimiter;
-import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.Unit;
-import com.mojang.realmsclient.client.FileUpload;
-import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.client.UploadStatus;
-import com.mojang.realmsclient.dto.UploadInfo;
-import com.mojang.realmsclient.exception.RealmsServiceException;
-import com.mojang.realmsclient.exception.RetryCallException;
-import com.mojang.realmsclient.util.UploadTokenCache;
+import com.mojang.realmsclient.client.worldupload.RealmsUploadException;
+import com.mojang.realmsclient.client.worldupload.RealmsWorldUpload;
+import com.mojang.realmsclient.client.worldupload.RealmsWorldUploadStatusTracker;
+import com.mojang.realmsclient.dto.RealmsWorldOptions;
 import com.mojang.realmsclient.util.task.LongRunningTask;
 import com.mojang.realmsclient.util.task.RealmCreationTask;
 import com.mojang.realmsclient.util.task.SwitchSlotTask;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.zip.GZIPOutputStream;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
-import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -41,13 +31,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.world.level.storage.LevelSummary;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.slf4j.Logger;
 
-public class RealmsUploadScreen extends RealmsScreen {
-   private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ReentrantLock UPLOAD_LOCK = new ReentrantLock();
+public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploadStatusTracker {
    private static final int BAR_WIDTH = 200;
    private static final int BAR_TOP = 80;
    private static final int BAR_BOTTOM = 95;
@@ -60,6 +45,7 @@ public class RealmsUploadScreen extends RealmsScreen {
    private final RealmCreationTask realmCreationTask;
    private final long realmId;
    private final int slotId;
+   final AtomicReference<RealmsWorldUpload> currentUpload = new AtomicReference();
    private final UploadStatus uploadStatus;
    private final RateLimiter narrationRateLimiter;
    @Nullable
@@ -76,11 +62,6 @@ public class RealmsUploadScreen extends RealmsScreen {
    @Nullable
    private Button cancelButton;
    private int tickCount;
-   @Nullable
-   private Long previousWrittenBytes;
-   @Nullable
-   private Long previousTimeSnapshot;
-   private long bytesPersSecond;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
 
    public RealmsUploadScreen(@Nullable RealmCreationTask var1, long var2, int var4, RealmsResetWorldScreen var5, LevelSummary var6) {
@@ -142,7 +123,13 @@ public class RealmsUploadScreen extends RealmsScreen {
 
    private void onCancel() {
       this.cancelled = true;
-      this.minecraft.setScreen(this.lastScreen);
+      RealmsWorldUpload var1 = (RealmsWorldUpload)this.currentUpload.get();
+      if (var1 != null) {
+         var1.cancel();
+      } else {
+         this.minecraft.setScreen(this.lastScreen);
+      }
+
    }
 
    public boolean keyPressed(int var1, int var2, int var3) {
@@ -161,7 +148,7 @@ public class RealmsUploadScreen extends RealmsScreen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      if (!this.uploadFinished && this.uploadStatus.bytesWritten != 0L && this.uploadStatus.bytesWritten == this.uploadStatus.totalBytes && this.cancelButton != null) {
+      if (!this.uploadFinished && this.uploadStatus.uploadStarted() && this.uploadStatus.uploadCompleted() && this.cancelButton != null) {
          this.status = VERIFYING_TEXT;
          this.cancelButton.active = false;
       }
@@ -171,7 +158,7 @@ public class RealmsUploadScreen extends RealmsScreen {
          var1.drawString(this.font, (String)DOTS[this.tickCount / 10 % DOTS.length], this.width / 2 + this.font.width((FormattedText)this.status) / 2 + 5, 50, -1, false);
       }
 
-      if (this.uploadStatus.bytesWritten != 0L && !this.cancelled) {
+      if (this.uploadStatus.uploadStarted() && !this.cancelled) {
          this.drawProgressBar(var1);
          this.drawUploadSpeed(var1);
       }
@@ -186,7 +173,7 @@ public class RealmsUploadScreen extends RealmsScreen {
    }
 
    private void drawProgressBar(GuiGraphics var1) {
-      double var2 = Math.min((double)this.uploadStatus.bytesWritten / (double)this.uploadStatus.totalBytes, 1.0);
+      double var2 = this.uploadStatus.getPercentage();
       this.progress = String.format(Locale.ROOT, "%.1f", var2 * 100.0);
       int var4 = (this.width - 200) / 2;
       int var5 = var4 + (int)Math.round(200.0 * var2);
@@ -196,23 +183,7 @@ public class RealmsUploadScreen extends RealmsScreen {
    }
 
    private void drawUploadSpeed(GuiGraphics var1) {
-      if (this.tickCount % 20 == 0) {
-         if (this.previousWrittenBytes != null && this.previousTimeSnapshot != null) {
-            long var2 = Util.getMillis() - this.previousTimeSnapshot;
-            if (var2 == 0L) {
-               var2 = 1L;
-            }
-
-            this.bytesPersSecond = 1000L * (this.uploadStatus.bytesWritten - this.previousWrittenBytes) / var2;
-            this.drawUploadSpeed0(var1, this.bytesPersSecond);
-         }
-
-         this.previousWrittenBytes = this.uploadStatus.bytesWritten;
-         this.previousTimeSnapshot = Util.getMillis();
-      } else {
-         this.drawUploadSpeed0(var1, this.bytesPersSecond);
-      }
-
+      this.drawUploadSpeed0(var1, this.uploadStatus.getBytesPerSecond());
    }
 
    private void drawUploadSpeed0(GuiGraphics var1, long var2) {
@@ -228,6 +199,7 @@ public class RealmsUploadScreen extends RealmsScreen {
    public void tick() {
       super.tick();
       ++this.tickCount;
+      this.uploadStatus.refreshBytesPerSecond();
       if (this.narrationRateLimiter.tryAcquire(1)) {
          Component var1 = this.createProgressNarrationMessage();
          this.minecraft.getNarrator().sayNow(var1);
@@ -251,210 +223,61 @@ public class RealmsUploadScreen extends RealmsScreen {
    }
 
    private void upload() {
-      (new Thread(() -> {
-         File var1 = null;
-         RealmsClient var2 = RealmsClient.create();
-
-         try {
-            try {
-               if (!UPLOAD_LOCK.tryLock(1L, TimeUnit.SECONDS)) {
-                  this.status = Component.translatable("mco.upload.close.failure");
-                  return;
+      Path var1 = this.minecraft.gameDirectory.toPath().resolve("saves").resolve(this.selectedLevel.getLevelId());
+      RealmsWorldOptions var2 = RealmsWorldOptions.createFromSettings(this.selectedLevel.getSettings(), this.selectedLevel.levelVersion().minecraftVersionName());
+      RealmsWorldUpload var3 = new RealmsWorldUpload(var1, var2, this.minecraft.getUser(), this.realmId, this.slotId, this);
+      if (!this.currentUpload.compareAndSet((Object)null, var3)) {
+         throw new IllegalStateException("Tried to start uploading but was already uploading");
+      } else {
+         var3.packAndUpload().handleAsync((var1x, var2x) -> {
+            if (var2x != null) {
+               if (var2x instanceof CompletionException) {
+                  CompletionException var3 = (CompletionException)var2x;
+                  var2x = var3.getCause();
                }
 
-               UploadInfo var3 = null;
-
-               for(int var4 = 0; var4 < 20; ++var4) {
-                  try {
-                     if (this.cancelled) {
-                        this.uploadCancelled();
-                        return;
-                     }
-
-                     var3 = var2.requestUploadInfo(this.realmId, UploadTokenCache.get(this.realmId));
-                     if (var3 != null) {
-                        break;
-                     }
-                  } catch (RetryCallException var18) {
-                     Thread.sleep((long)(var18.delaySeconds * 1000));
-                  }
-               }
-
-               if (var3 == null) {
-                  this.status = Component.translatable("mco.upload.close.failure");
-                  return;
-               }
-
-               UploadTokenCache.put(this.realmId, var3.getToken());
-               if (!var3.isWorldClosed()) {
-                  this.status = Component.translatable("mco.upload.close.failure");
-                  return;
-               }
-
-               if (this.cancelled) {
-                  this.uploadCancelled();
-                  return;
-               }
-
-               File var23 = new File(this.minecraft.gameDirectory.getAbsolutePath(), "saves");
-               var1 = this.tarGzipArchive(new File(var23, this.selectedLevel.getLevelId()));
-               if (this.cancelled) {
-                  this.uploadCancelled();
-                  return;
-               }
-
-               if (!this.verify(var1)) {
-                  long var24 = var1.length();
-                  Unit var7 = Unit.getLargest(var24);
-                  Unit var8 = Unit.getLargest(5368709120L);
-                  if (Unit.humanReadable(var24, var7).equals(Unit.humanReadable(5368709120L, var8)) && var7 != Unit.B) {
-                     Unit var9 = Unit.values()[var7.ordinal() - 1];
-                     this.setErrorMessage(Component.translatable("mco.upload.size.failure.line1", this.selectedLevel.getLevelName()), Component.translatable("mco.upload.size.failure.line2", Unit.humanReadable(var24, var9), Unit.humanReadable(5368709120L, var9)));
-                     return;
+               if (var2x instanceof RealmsUploadException) {
+                  RealmsUploadException var4 = (RealmsUploadException)var2x;
+                  if (var4.getStatusMessage() != null) {
+                     this.status = var4.getStatusMessage();
                   }
 
-                  this.setErrorMessage(Component.translatable("mco.upload.size.failure.line1", this.selectedLevel.getLevelName()), Component.translatable("mco.upload.size.failure.line2", Unit.humanReadable(var24, var7), Unit.humanReadable(5368709120L, var8)));
-                  return;
+                  this.setErrorMessage(var4.getErrorMessages());
+               } else {
+                  this.status = Component.translatable("mco.upload.failed", var2x.getMessage());
                }
-
-               this.status = Component.translatable("mco.upload.uploading", this.selectedLevel.getLevelName());
-               FileUpload var5 = new FileUpload(var1, this.realmId, this.slotId, var3, this.minecraft.getUser(), SharedConstants.getCurrentVersion().getName(), this.selectedLevel.levelVersion().minecraftVersionName(), this.uploadStatus);
-               var5.upload((var1x) -> {
-                  if (var1x.statusCode >= 200 && var1x.statusCode < 300) {
-                     this.uploadFinished = true;
-                     this.status = Component.translatable("mco.upload.done");
-                     if (this.backButton != null) {
-                        this.backButton.setMessage(CommonComponents.GUI_DONE);
-                     }
-
-                     UploadTokenCache.invalidate(this.realmId);
-                  } else if (var1x.statusCode == 400 && var1x.errorMessage != null) {
-                     this.setErrorMessage(Component.translatable("mco.upload.failed", var1x.errorMessage));
-                  } else {
-                     this.setErrorMessage(Component.translatable("mco.upload.failed", var1x.statusCode));
-                  }
-
-               });
-
-               while(!var5.isFinished()) {
-                  if (this.cancelled) {
-                     var5.cancel();
-                     this.uploadCancelled();
-                     return;
-                  }
-
-                  try {
-                     Thread.sleep(500L);
-                  } catch (InterruptedException var17) {
-                     LOGGER.error("Failed to check Realms file upload status");
-                  }
-               }
-
-               return;
-            } catch (IOException var19) {
-               this.setErrorMessage(Component.translatable("mco.upload.failed", var19.getMessage()));
-            } catch (RealmsServiceException var20) {
-               this.setErrorMessage(Component.translatable("mco.upload.failed", var20.realmsError.errorMessage()));
-            } catch (InterruptedException var21) {
-               LOGGER.error("Could not acquire upload lock");
-            }
-
-         } finally {
-            this.uploadFinished = true;
-            if (UPLOAD_LOCK.isHeldByCurrentThread()) {
-               UPLOAD_LOCK.unlock();
-               this.showDots = false;
-               if (this.backButton != null) {
-                  this.backButton.visible = true;
-               }
-
-               if (this.cancelButton != null) {
-                  this.cancelButton.visible = false;
-               }
-
-               if (var1 != null) {
-                  LOGGER.debug("Deleting file {}", var1.getAbsolutePath());
-                  var1.delete();
-               }
-
             } else {
-               return;
+               this.status = Component.translatable("mco.upload.done");
+               if (this.backButton != null) {
+                  this.backButton.setMessage(CommonComponents.GUI_DONE);
+               }
             }
-         }
-      })).start();
+
+            this.uploadFinished = true;
+            this.showDots = false;
+            if (this.backButton != null) {
+               this.backButton.visible = true;
+            }
+
+            if (this.cancelButton != null) {
+               this.cancelButton.visible = false;
+            }
+
+            this.currentUpload.set((Object)null);
+            return null;
+         }, this.minecraft);
+      }
    }
 
-   private void setErrorMessage(Component... var1) {
+   private void setErrorMessage(@Nullable Component... var1) {
       this.errorMessage = var1;
    }
 
-   private void uploadCancelled() {
-      this.status = Component.translatable("mco.upload.cancelled");
-      LOGGER.debug("Upload was cancelled");
+   public UploadStatus getUploadStatus() {
+      return this.uploadStatus;
    }
 
-   private boolean verify(File var1) {
-      return var1.length() < 5368709120L;
-   }
-
-   private File tarGzipArchive(File var1) throws IOException {
-      TarArchiveOutputStream var2 = null;
-
-      File var4;
-      try {
-         File var3 = File.createTempFile("realms-upload-file", ".tar.gz");
-         var2 = new TarArchiveOutputStream(new GZIPOutputStream(new FileOutputStream(var3)));
-         var2.setLongFileMode(3);
-         this.addFileToTarGz(var2, var1.getAbsolutePath(), "world", true);
-         var2.finish();
-         var4 = var3;
-      } finally {
-         if (var2 != null) {
-            var2.close();
-         }
-
-      }
-
-      return var4;
-   }
-
-   private void addFileToTarGz(TarArchiveOutputStream var1, String var2, String var3, boolean var4) throws IOException {
-      if (!this.cancelled) {
-         File var5 = new File(var2);
-         String var6 = var4 ? var3 : var3 + var5.getName();
-         TarArchiveEntry var7 = new TarArchiveEntry(var5, var6);
-         var1.putArchiveEntry(var7);
-         if (var5.isFile()) {
-            FileInputStream var8 = new FileInputStream(var5);
-
-            try {
-               ((InputStream)var8).transferTo(var1);
-            } catch (Throwable var14) {
-               try {
-                  ((InputStream)var8).close();
-               } catch (Throwable var13) {
-                  var14.addSuppressed(var13);
-               }
-
-               throw var14;
-            }
-
-            ((InputStream)var8).close();
-            var1.closeArchiveEntry();
-         } else {
-            var1.closeArchiveEntry();
-            File[] var15 = var5.listFiles();
-            if (var15 != null) {
-               File[] var9 = var15;
-               int var10 = var15.length;
-
-               for(int var11 = 0; var11 < var10; ++var11) {
-                  File var12 = var9[var11];
-                  this.addFileToTarGz(var1, var12.getAbsolutePath(), var6 + "/", false);
-               }
-            }
-         }
-
-      }
+   public void setUploading() {
+      this.status = Component.translatable("mco.upload.uploading", this.selectedLevel.getLevelName());
    }
 }

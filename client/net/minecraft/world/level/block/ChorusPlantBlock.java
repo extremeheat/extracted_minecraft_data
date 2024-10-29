@@ -8,8 +8,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -43,13 +43,13 @@ public class ChorusPlantBlock extends PipeBlock {
       return (BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)var2.trySetValue(DOWN, var3.is(var9) || var3.is(Blocks.CHORUS_FLOWER) || var3.is(Blocks.END_STONE))).trySetValue(UP, var4.is(var9) || var4.is(Blocks.CHORUS_FLOWER))).trySetValue(NORTH, var5.is(var9) || var5.is(Blocks.CHORUS_FLOWER))).trySetValue(EAST, var6.is(var9) || var6.is(Blocks.CHORUS_FLOWER))).trySetValue(SOUTH, var7.is(var9) || var7.is(Blocks.CHORUS_FLOWER))).trySetValue(WEST, var8.is(var9) || var8.is(Blocks.CHORUS_FLOWER));
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (!var1.canSurvive(var4, var5)) {
-         var4.scheduleTick(var5, (Block)this, 1);
-         return super.updateShape(var1, var2, var3, var4, var5, var6);
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      if (!var1.canSurvive(var2, var4)) {
+         var3.scheduleTick(var4, (Block)this, 1);
+         return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
       } else {
-         boolean var7 = var3.is(this) || var3.is(Blocks.CHORUS_FLOWER) || var2 == Direction.DOWN && var3.is(Blocks.END_STONE);
-         return (BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var2), var7);
+         boolean var9 = var7.is(this) || var7.is(Blocks.CHORUS_FLOWER) || var5 == Direction.DOWN && var7.is(Blocks.END_STONE);
+         return (BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var5), var9);
       }
    }
 

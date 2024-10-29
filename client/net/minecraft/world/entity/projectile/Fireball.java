@@ -4,7 +4,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
@@ -14,6 +13,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class Fireball extends AbstractHurtingProjectile implements ItemSupplier {
+   private static final float MIN_CAMERA_DISTANCE_SQUARED = 12.25F;
    private static final EntityDataAccessor<ItemStack> DATA_ITEM_STACK;
 
    public Fireball(EntityType<? extends Fireball> var1, Level var2) {
@@ -35,6 +35,9 @@ public abstract class Fireball extends AbstractHurtingProjectile implements Item
          this.getEntityData().set(DATA_ITEM_STACK, var1.copyWithCount(1));
       }
 
+   }
+
+   protected void playEntityOnFireExtinguishedSound() {
    }
 
    public ItemStack getItem() {
@@ -68,8 +71,8 @@ public abstract class Fireball extends AbstractHurtingProjectile implements Item
       return var1 == 0 ? SlotAccess.of(this::getItem, this::setItem) : super.getSlot(var1);
    }
 
-   public boolean hurt(DamageSource var1, float var2) {
-      return false;
+   public boolean shouldRenderAtSqrDistance(double var1) {
+      return this.tickCount < 2 && var1 < 12.25 ? false : super.shouldRenderAtSqrDistance(var1);
    }
 
    static {

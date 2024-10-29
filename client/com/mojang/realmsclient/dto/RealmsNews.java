@@ -4,10 +4,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 
 public class RealmsNews extends ValueObject {
    private static final Logger LOGGER = LogUtils.getLogger();
+   @Nullable
    public String newsLink;
 
    public RealmsNews() {
@@ -18,11 +20,10 @@ public class RealmsNews extends ValueObject {
       RealmsNews var1 = new RealmsNews();
 
       try {
-         JsonParser var2 = new JsonParser();
-         JsonObject var3 = var2.parse(var0).getAsJsonObject();
-         var1.newsLink = JsonUtils.getStringOr("newsLink", var3, (String)null);
-      } catch (Exception var4) {
-         LOGGER.error("Could not parse RealmsNews: {}", var4.getMessage());
+         JsonObject var2 = JsonParser.parseString(var0).getAsJsonObject();
+         var1.newsLink = JsonUtils.getStringOr("newsLink", var2, (String)null);
+      } catch (Exception var3) {
+         LOGGER.error("Could not parse RealmsNews: {}", var3.getMessage());
       }
 
       return var1;

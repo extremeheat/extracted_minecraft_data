@@ -96,7 +96,7 @@ public abstract class TagsProvider<T> implements DataProvider {
                throw new IllegalArgumentException(String.format(Locale.ROOT, "Couldn't define tag %s as it is missing following references: %s", var6, var9.stream().map(Objects::toString).collect(Collectors.joining(","))));
             } else {
                Path var10 = this.pathProvider.json(var6);
-               return DataProvider.saveStable(var1, var2.contents, TagFile.CODEC, new TagFile(var8, false), var10);
+               return DataProvider.saveStable(var1, (HolderLookup.Provider)var2.contents, TagFile.CODEC, new TagFile(var8, false), var10);
             }
          }).toArray((var0) -> {
             return new CompletableFuture[var0];

@@ -12,8 +12,8 @@ import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -57,13 +57,13 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
       var1.add(AGE, LEAVES, STAGE);
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1) {
       return true;
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       VoxelShape var5 = var1.getValue(LEAVES) == BambooLeaves.LARGE ? LARGE_SHAPE : SMALL_SHAPE;
-      Vec3 var6 = var1.getOffset(var2, var3);
+      Vec3 var6 = var1.getOffset(var3);
       return var5.move(var6.x, var6.y, var6.z);
    }
 
@@ -72,7 +72,7 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      Vec3 var5 = var1.getOffset(var2, var3);
+      Vec3 var5 = var1.getOffset(var3);
       return COLLISION_SHAPE.move(var5.x, var5.y, var5.z);
    }
 
@@ -130,16 +130,12 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
       return var2.getBlockState(var3.below()).is(BlockTags.BAMBOO_PLANTABLE_ON);
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (!var1.canSurvive(var4, var5)) {
-         var4.scheduleTick(var5, (Block)this, 1);
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      if (!var1.canSurvive(var2, var4)) {
+         var3.scheduleTick(var4, (Block)this, 1);
       }
 
-      if (var2 == Direction.UP && var3.is(Blocks.BAMBOO) && (Integer)var3.getValue(AGE) > (Integer)var1.getValue(AGE)) {
-         var4.setBlock(var5, (BlockState)var1.cycle(AGE), 2);
-      }
-
-      return super.updateShape(var1, var2, var3, var4, var5, var6);
+      return var5 == Direction.UP && var7.is(Blocks.BAMBOO) && (Integer)var7.getValue(AGE) > (Integer)var1.getValue(AGE) ? (BlockState)var1.cycle(AGE) : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {

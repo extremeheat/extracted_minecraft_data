@@ -76,7 +76,7 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
          BlockPos var4 = BlockPos.containing(this.player.getX() + (double)this.random.nextInt(var3) - (double)var1x.getBlockSearchExtent(), this.player.getEyeY() + (double)this.random.nextInt(var3) - (double)var1x.getBlockSearchExtent(), this.player.getZ() + (double)this.random.nextInt(var3) - (double)var1x.getBlockSearchExtent());
          int var5 = var2.getBrightness(LightLayer.SKY, var4);
          if (var5 > 0) {
-            this.moodiness -= (float)var5 / (float)var2.getMaxLightLevel() * 0.001F;
+            this.moodiness -= (float)var5 / 15.0F * 0.001F;
          } else {
             this.moodiness -= (float)(var2.getBrightness(LightLayer.BLOCK, var4) - 1) / (float)var1x.getTickDelay();
          }

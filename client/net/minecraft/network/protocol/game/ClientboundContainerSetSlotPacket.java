@@ -8,8 +8,6 @@ import net.minecraft.world.item.ItemStack;
 
 public class ClientboundContainerSetSlotPacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundContainerSetSlotPacket> STREAM_CODEC = Packet.codec(ClientboundContainerSetSlotPacket::write, ClientboundContainerSetSlotPacket::new);
-   public static final int CARRIED_ITEM = -1;
-   public static final int PLAYER_INVENTORY = -2;
    private final int containerId;
    private final int stateId;
    private final int slot;
@@ -25,14 +23,14 @@ public class ClientboundContainerSetSlotPacket implements Packet<ClientGamePacke
 
    private ClientboundContainerSetSlotPacket(RegistryFriendlyByteBuf var1) {
       super();
-      this.containerId = var1.readByte();
+      this.containerId = var1.readContainerId();
       this.stateId = var1.readVarInt();
       this.slot = var1.readShort();
       this.itemStack = (ItemStack)ItemStack.OPTIONAL_STREAM_CODEC.decode(var1);
    }
 
    private void write(RegistryFriendlyByteBuf var1) {
-      var1.writeByte(this.containerId);
+      var1.writeContainerId(this.containerId);
       var1.writeVarInt(this.stateId);
       var1.writeShort(this.slot);
       ItemStack.OPTIONAL_STREAM_CODEC.encode(var1, this.itemStack);

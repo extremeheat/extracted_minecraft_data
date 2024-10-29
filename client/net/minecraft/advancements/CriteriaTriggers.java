@@ -23,7 +23,7 @@ import net.minecraft.advancements.critereon.ImpossibleTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemDurabilityTrigger;
 import net.minecraft.advancements.critereon.ItemUsedOnLocationTrigger;
-import net.minecraft.advancements.critereon.KilledByCrossbowTrigger;
+import net.minecraft.advancements.critereon.KilledByArrowTrigger;
 import net.minecraft.advancements.critereon.KilledTrigger;
 import net.minecraft.advancements.critereon.LevitationTrigger;
 import net.minecraft.advancements.critereon.LightningStrikeTrigger;
@@ -81,7 +81,7 @@ public class CriteriaTriggers {
    public static final FishingRodHookedTrigger FISHING_ROD_HOOKED;
    public static final ChanneledLightningTrigger CHANNELED_LIGHTNING;
    public static final ShotCrossbowTrigger SHOT_CROSSBOW;
-   public static final KilledByCrossbowTrigger KILLED_BY_CROSSBOW;
+   public static final KilledByArrowTrigger KILLED_BY_ARROW;
    public static final PlayerTrigger RAID_WIN;
    public static final PlayerTrigger RAID_OMEN;
    public static final SlideDownBlockTrigger HONEY_BLOCK_SLIDE;
@@ -152,7 +152,7 @@ public class CriteriaTriggers {
       FISHING_ROD_HOOKED = (FishingRodHookedTrigger)register("fishing_rod_hooked", new FishingRodHookedTrigger());
       CHANNELED_LIGHTNING = (ChanneledLightningTrigger)register("channeled_lightning", new ChanneledLightningTrigger());
       SHOT_CROSSBOW = (ShotCrossbowTrigger)register("shot_crossbow", new ShotCrossbowTrigger());
-      KILLED_BY_CROSSBOW = (KilledByCrossbowTrigger)register("killed_by_crossbow", new KilledByCrossbowTrigger());
+      KILLED_BY_ARROW = (KilledByArrowTrigger)register("killed_by_arrow", new KilledByArrowTrigger());
       RAID_WIN = (PlayerTrigger)register("hero_of_the_village", new PlayerTrigger());
       RAID_OMEN = (PlayerTrigger)register("voluntary_exile", new PlayerTrigger());
       HONEY_BLOCK_SLIDE = (SlideDownBlockTrigger)register("slide_down_block", new SlideDownBlockTrigger());

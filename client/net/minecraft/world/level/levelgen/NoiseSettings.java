@@ -59,8 +59,8 @@ public record NoiseSettings(int minY, int height, int noiseSizeHorizontal, int n
    }
 
    public NoiseSettings clampToHeightAccessor(LevelHeightAccessor var1) {
-      int var2 = Math.max(this.minY, var1.getMinBuildHeight());
-      int var3 = Math.min(this.minY + this.height, var1.getMaxBuildHeight()) - var2;
+      int var2 = Math.max(this.minY, var1.getMinY());
+      int var3 = Math.min(this.minY + this.height, var1.getMaxY() + 1) - var2;
       return new NoiseSettings(var2, var3, this.noiseSizeHorizontal, this.noiseSizeVertical);
    }
 

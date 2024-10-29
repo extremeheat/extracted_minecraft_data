@@ -15,6 +15,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -100,25 +101,18 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
-      } else if (var4.isSpectator()) {
-         return InteractionResult.CONSUME;
-      } else {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (var6 instanceof ShulkerBoxBlockEntity) {
-            ShulkerBoxBlockEntity var7 = (ShulkerBoxBlockEntity)var6;
+      if (var2 instanceof ServerLevel var6) {
+         BlockEntity var8 = var2.getBlockEntity(var3);
+         if (var8 instanceof ShulkerBoxBlockEntity var7) {
             if (canOpen(var1, var2, var3, var7)) {
                var4.openMenu(var7);
                var4.awardStat(Stats.OPEN_SHULKER_BOX);
-               PiglinAi.angerNearbyPiglins(var4, true);
+               PiglinAi.angerNearbyPiglins(var6, var4, true);
             }
-
-            return InteractionResult.CONSUME;
-         } else {
-            return InteractionResult.PASS;
          }
       }
+
+      return InteractionResult.SUCCESS;
    }
 
    private static boolean canOpen(BlockState var0, Level var1, BlockPos var2, ShulkerBoxBlockEntity var3) {
@@ -221,7 +215,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       return var5 instanceof ShulkerBoxBlockEntity ? Shapes.create(((ShulkerBoxBlockEntity)var5).getBoundingBox(var1)) : Shapes.block();
    }
 
-   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1) {
       return false;
    }
 

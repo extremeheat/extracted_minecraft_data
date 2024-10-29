@@ -8,7 +8,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -75,21 +74,29 @@ public class SweetBerryBushBlock extends BushBlock implements BonemealableBlock 
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (var4 instanceof LivingEntity && var4.getType() != EntityType.FOX && var4.getType() != EntityType.BEE) {
          var4.makeStuckInBlock(var1, new Vec3(0.800000011920929, 0.75, 0.800000011920929));
-         if (!var2.isClientSide && (Integer)var1.getValue(AGE) > 0 && (var4.xOld != var4.getX() || var4.zOld != var4.getZ())) {
-            double var5 = Math.abs(var4.getX() - var4.xOld);
-            double var7 = Math.abs(var4.getZ() - var4.zOld);
-            if (var5 >= 0.003000000026077032 || var7 >= 0.003000000026077032) {
-               var4.hurt(var2.damageSources().sweetBerryBush(), 1.0F);
+         if (var2 instanceof ServerLevel) {
+            ServerLevel var5 = (ServerLevel)var2;
+            if ((Integer)var1.getValue(AGE) != 0) {
+               Vec3 var6 = var4.isControlledByClient() ? var4.getKnownMovement() : var4.oldPosition().subtract(var4.position());
+               if (var6.horizontalDistanceSqr() > 0.0) {
+                  double var7 = Math.abs(var6.x());
+                  double var9 = Math.abs(var6.z());
+                  if (var7 >= 0.003000000026077032 || var9 >= 0.003000000026077032) {
+                     var4.hurtServer(var5, var2.damageSources().sweetBerryBush(), 1.0F);
+                  }
+               }
+
+               return;
             }
          }
 
       }
    }
 
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
       int var8 = (Integer)var2.getValue(AGE);
       boolean var9 = var8 == 3;
-      return !var9 && var1.is(Items.BONE_MEAL) ? ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION : super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
+      return (InteractionResult)(!var9 && var1.is(Items.BONE_MEAL) ? InteractionResult.PASS : super.useItemOn(var1, var2, var3, var4, var5, var6, var7));
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
@@ -102,7 +109,7 @@ public class SweetBerryBushBlock extends BushBlock implements BonemealableBlock 
          BlockState var9 = (BlockState)var1.setValue(AGE, 1);
          var2.setBlock(var3, var9, 2);
          var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, var9));
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return super.useWithoutItem(var1, var2, var3, var4, var5);
       }

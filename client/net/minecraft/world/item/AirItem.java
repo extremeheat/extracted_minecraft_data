@@ -12,12 +12,12 @@ public class AirItem extends Item {
       this.block = var1;
    }
 
-   public String getDescriptionId() {
-      return this.block.getDescriptionId();
-   }
-
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
       this.block.appendHoverText(var1, var2, var3, var4);
+   }
+
+   public Component getName(ItemStack var1) {
+      return this.getName();
    }
 }

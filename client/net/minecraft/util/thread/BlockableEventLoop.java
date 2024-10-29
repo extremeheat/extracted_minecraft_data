@@ -2,6 +2,8 @@ package net.minecraft.util.thread;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Queues;
+import com.mojang.jtracy.TracyClient;
+import com.mojang.jtracy.Zone;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Queue;
@@ -11,13 +13,16 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import javax.annotation.CheckReturnValue;
+import net.minecraft.ReportedException;
+import net.minecraft.SharedConstants;
 import net.minecraft.util.profiling.metrics.MetricCategory;
 import net.minecraft.util.profiling.metrics.MetricSampler;
 import net.minecraft.util.profiling.metrics.MetricsRegistry;
 import net.minecraft.util.profiling.metrics.ProfilerMeasured;
 import org.slf4j.Logger;
 
-public abstract class BlockableEventLoop<R extends Runnable> implements ProfilerMeasured, ProcessorHandle<R>, Executor {
+public abstract class BlockableEventLoop<R extends Runnable> implements ProfilerMeasured, TaskScheduler<R>, Executor {
+   public static final long BLOCK_TIME_NANOS = 100000L;
    private final String name;
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Queue<R> pendingRunnables = Queues.newConcurrentLinkedQueue();
@@ -28,8 +33,6 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
       this.name = var1;
       MetricsRegistry.INSTANCE.add(this);
    }
-
-   protected abstract R wrapRunnable(Runnable var1);
 
    protected abstract boolean shouldRun(R var1);
 
@@ -81,14 +84,14 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
 
    }
 
-   public void tell(R var1) {
+   public void schedule(R var1) {
       this.pendingRunnables.add(var1);
       LockSupport.unpark(this.getRunningThread());
    }
 
    public void execute(Runnable var1) {
       if (this.scheduleExecutables()) {
-         this.tell(this.wrapRunnable(var1));
+         this.schedule(this.wrapRunnable(var1));
       } else {
          var1.run();
       }
@@ -136,16 +139,37 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
 
    }
 
-   public void waitForTasks() {
+   protected void waitForTasks() {
       Thread.yield();
       LockSupport.parkNanos("waiting for tasks", 100000L);
    }
 
    protected void doRunTask(R var1) {
       try {
-         var1.run();
-      } catch (Exception var3) {
-         LOGGER.error(LogUtils.FATAL_MARKER, "Error executing task on {}", this.name(), var3);
+         Zone var2 = TracyClient.beginZone("Task", SharedConstants.IS_RUNNING_IN_IDE);
+
+         try {
+            var1.run();
+         } catch (Throwable var6) {
+            if (var2 != null) {
+               try {
+                  var2.close();
+               } catch (Throwable var5) {
+                  var6.addSuppressed(var5);
+               }
+            }
+
+            throw var6;
+         }
+
+         if (var2 != null) {
+            var2.close();
+         }
+      } catch (Exception var7) {
+         LOGGER.error(LogUtils.FATAL_MARKER, "Error executing task on {}", this.name(), var7);
+         if (isNonRecoverable(var7)) {
+            throw var7;
+         }
       }
 
    }
@@ -154,8 +178,11 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
       return ImmutableList.of(MetricSampler.create(this.name + "-pending-tasks", MetricCategory.EVENT_LOOPS, this::getPendingTasksCount));
    }
 
-   // $FF: synthetic method
-   public void tell(final Object var1) {
-      this.tell((Runnable)var1);
+   public static boolean isNonRecoverable(Throwable var0) {
+      if (var0 instanceof ReportedException var1) {
+         return isNonRecoverable(var1.getCause());
+      } else {
+         return var0 instanceof OutOfMemoryError || var0 instanceof StackOverflowError;
+      }
    }
 }

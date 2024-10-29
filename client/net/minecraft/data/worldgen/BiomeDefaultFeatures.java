@@ -17,9 +17,9 @@ public class BiomeDefaultFeatures {
    }
 
    public static void addDefaultCarversAndLakes(BiomeGenerationSettings.Builder var0) {
-      var0.addCarver(GenerationStep.Carving.AIR, Carvers.CAVE);
-      var0.addCarver(GenerationStep.Carving.AIR, Carvers.CAVE_EXTRA_UNDERGROUND);
-      var0.addCarver(GenerationStep.Carving.AIR, Carvers.CANYON);
+      var0.addCarver(Carvers.CAVE);
+      var0.addCarver(Carvers.CAVE_EXTRA_UNDERGROUND);
+      var0.addCarver(Carvers.CANYON);
       var0.addFeature(GenerationStep.Decoration.LAKES, MiscOverworldPlacements.LAKE_LAVA_UNDERGROUND);
       var0.addFeature(GenerationStep.Decoration.LAKES, MiscOverworldPlacements.LAKE_LAVA_SURFACE);
    }
@@ -352,10 +352,6 @@ public class BiomeDefaultFeatures {
 
    public static void addColdOceanExtraVegetation(BiomeGenerationSettings.Builder var0) {
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.KELP_COLD);
-   }
-
-   public static void addDefaultSeagrass(BiomeGenerationSettings.Builder var0) {
-      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_SIMPLE);
    }
 
    public static void addLukeWarmKelp(BiomeGenerationSettings.Builder var0) {

@@ -11,6 +11,8 @@ import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
+import com.mojang.jtracy.TracyClient;
+import com.mojang.jtracy.Zone;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
@@ -37,6 +39,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -86,9 +89,9 @@ public class Util {
    private static final int DEFAULT_MAX_THREADS = 255;
    private static final int DEFAULT_SAFE_FILE_OPERATION_RETRIES = 10;
    private static final String MAX_THREADS_SYSTEM_PROPERTY = "max.bg.threads";
-   private static final ExecutorService BACKGROUND_EXECUTOR = makeExecutor("Main");
-   private static final ExecutorService IO_POOL = makeIoExecutor("IO-Worker-", false);
-   private static final ExecutorService DOWNLOAD_POOL = makeIoExecutor("Download-", true);
+   private static final TracingExecutor BACKGROUND_EXECUTOR = makeExecutor("Main");
+   private static final TracingExecutor IO_POOL = makeIoExecutor("IO-Worker-", false);
+   private static final TracingExecutor DOWNLOAD_POOL = makeIoExecutor("Download-", true);
    private static final DateTimeFormatter FILENAME_DATE_TIME_FORMATTER;
    public static final int LINEAR_LOOKUP_THRESHOLD = 8;
    private static final Set<String> ALLOWED_UNTRUSTED_LINK_PROTOCOLS;
@@ -135,7 +138,7 @@ public class Util {
       return FILENAME_DATE_TIME_FORMATTER.format(ZonedDateTime.now());
    }
 
-   private static ExecutorService makeExecutor(String var0) {
+   private static TracingExecutor makeExecutor(String var0) {
       int var1 = Mth.clamp(Runtime.getRuntime().availableProcessors() - 1, 1, getMaxThreads());
       Object var2;
       if (var1 <= 0) {
@@ -143,7 +146,13 @@ public class Util {
       } else {
          AtomicInteger var3 = new AtomicInteger(1);
          var2 = new ForkJoinPool(var1, (var2x) -> {
-            ForkJoinWorkerThread var3x = new ForkJoinWorkerThread(var2x) {
+            final String var3x = "Worker-" + var0 + "-" + var3.getAndIncrement();
+            ForkJoinWorkerThread var4 = new ForkJoinWorkerThread(var2x) {
+               protected void onStart() {
+                  TracyClient.setThreadName(var3, var0.hashCode());
+                  super.onStart();
+               }
+
                protected void onTermination(Throwable var1) {
                   if (var1 != null) {
                      Util.LOGGER.warn("{} died", this.getName(), var1);
@@ -154,12 +163,12 @@ public class Util {
                   super.onTermination(var1);
                }
             };
-            var3x.setName("Worker-" + var0 + "-" + var3.getAndIncrement());
-            return var3x;
+            var4.setName(var3x);
+            return var4;
          }, Util::onThreadException, true);
       }
 
-      return (ExecutorService)var2;
+      return new TracingExecutor((ExecutorService)var2);
    }
 
    private static int getMaxThreads() {
@@ -180,48 +189,34 @@ public class Util {
       return 255;
    }
 
-   public static ExecutorService backgroundExecutor() {
+   public static TracingExecutor backgroundExecutor() {
       return BACKGROUND_EXECUTOR;
    }
 
-   public static ExecutorService ioPool() {
+   public static TracingExecutor ioPool() {
       return IO_POOL;
    }
 
-   public static ExecutorService nonCriticalIoPool() {
+   public static TracingExecutor nonCriticalIoPool() {
       return DOWNLOAD_POOL;
    }
 
    public static void shutdownExecutors() {
-      shutdownExecutor(BACKGROUND_EXECUTOR);
-      shutdownExecutor(IO_POOL);
+      BACKGROUND_EXECUTOR.shutdownAndAwait(3L, TimeUnit.SECONDS);
+      IO_POOL.shutdownAndAwait(3L, TimeUnit.SECONDS);
    }
 
-   private static void shutdownExecutor(ExecutorService var0) {
-      var0.shutdown();
-
-      boolean var1;
-      try {
-         var1 = var0.awaitTermination(3L, TimeUnit.SECONDS);
-      } catch (InterruptedException var3) {
-         var1 = false;
-      }
-
-      if (!var1) {
-         var0.shutdownNow();
-      }
-
-   }
-
-   private static ExecutorService makeIoExecutor(String var0, boolean var1) {
+   private static TracingExecutor makeIoExecutor(String var0, boolean var1) {
       AtomicInteger var2 = new AtomicInteger(1);
-      return Executors.newCachedThreadPool((var3) -> {
+      return new TracingExecutor(Executors.newCachedThreadPool((var3) -> {
          Thread var4 = new Thread(var3);
-         var4.setName(var0 + var2.getAndIncrement());
+         String var5 = var0 + var2.getAndIncrement();
+         TracyClient.setThreadName(var5, var0.hashCode());
+         var4.setName(var5);
          var4.setDaemon(var1);
          var4.setUncaughtExceptionHandler(Util::onThreadException);
          return var4;
-      });
+      }));
    }
 
    public static void throwAsRuntime(Throwable var0) {
@@ -263,36 +258,57 @@ public class Util {
       return var2;
    }
 
-   public static Runnable wrapThreadWithTaskName(String var0, Runnable var1) {
-      return SharedConstants.IS_RUNNING_IN_IDE ? () -> {
+   public static void runNamed(Runnable var0, String var1) {
+      if (SharedConstants.IS_RUNNING_IN_IDE) {
          Thread var2 = Thread.currentThread();
          String var3 = var2.getName();
-         var2.setName(var0);
+         var2.setName(var1);
 
          try {
-            var1.run();
+            Zone var4 = TracyClient.beginZone(var1, SharedConstants.IS_RUNNING_IN_IDE);
+
+            try {
+               var0.run();
+            } catch (Throwable var16) {
+               if (var4 != null) {
+                  try {
+                     var4.close();
+                  } catch (Throwable var13) {
+                     var16.addSuppressed(var13);
+                  }
+               }
+
+               throw var16;
+            }
+
+            if (var4 != null) {
+               var4.close();
+            }
          } finally {
             var2.setName(var3);
          }
+      } else {
+         Zone var18 = TracyClient.beginZone(var1, SharedConstants.IS_RUNNING_IN_IDE);
 
-      } : var1;
-   }
-
-   public static <V> Supplier<V> wrapThreadWithTaskName(String var0, Supplier<V> var1) {
-      return SharedConstants.IS_RUNNING_IN_IDE ? () -> {
-         Thread var2 = Thread.currentThread();
-         String var3 = var2.getName();
-         var2.setName(var0);
-
-         Object var4;
          try {
-            var4 = var1.get();
-         } finally {
-            var2.setName(var3);
+            var0.run();
+         } catch (Throwable var15) {
+            if (var18 != null) {
+               try {
+                  var18.close();
+               } catch (Throwable var14) {
+                  var15.addSuppressed(var14);
+               }
+            }
+
+            throw var15;
          }
 
-         return var4;
-      } : var1;
+         if (var18 != null) {
+            var18.close();
+         }
+      }
+
    }
 
    public static <T> String getRegisteredName(Registry<T> var0, T var1) {
@@ -300,73 +316,165 @@ public class Util {
       return var2 == null ? "[unregistered]" : var2.toString();
    }
 
-   public static <T> Predicate<T> allOf(List<? extends Predicate<T>> var0) {
+   public static <T> Predicate<T> allOf() {
+      return (var0) -> {
+         return true;
+      };
+   }
+
+   public static <T> Predicate<T> allOf(Predicate<? super T> var0) {
+      return var0;
+   }
+
+   public static <T> Predicate<T> allOf(Predicate<? super T> var0, Predicate<? super T> var1) {
+      return (var2) -> {
+         return var0.test(var2) && var1.test(var2);
+      };
+   }
+
+   public static <T> Predicate<T> allOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2) {
+      return (var3) -> {
+         return var0.test(var3) && var1.test(var3) && var2.test(var3);
+      };
+   }
+
+   public static <T> Predicate<T> allOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3) {
+      return (var4) -> {
+         return var0.test(var4) && var1.test(var4) && var2.test(var4) && var3.test(var4);
+      };
+   }
+
+   public static <T> Predicate<T> allOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3, Predicate<? super T> var4) {
+      return (var5) -> {
+         return var0.test(var5) && var1.test(var5) && var2.test(var5) && var3.test(var5) && var4.test(var5);
+      };
+   }
+
+   @SafeVarargs
+   public static <T> Predicate<T> allOf(Predicate<? super T>... var0) {
+      return (var1) -> {
+         Predicate[] var2 = var0;
+         int var3 = var0.length;
+
+         for(int var4 = 0; var4 < var3; ++var4) {
+            Predicate var5 = var2[var4];
+            if (!var5.test(var1)) {
+               return false;
+            }
+         }
+
+         return true;
+      };
+   }
+
+   public static <T> Predicate<T> allOf(List<? extends Predicate<? super T>> var0) {
       Predicate var10000;
       switch (var0.size()) {
          case 0:
-            var10000 = (var0x) -> {
-               return true;
-            };
+            var10000 = allOf();
             break;
          case 1:
-            var10000 = (Predicate)var0.get(0);
+            var10000 = allOf((Predicate)var0.get(0));
             break;
          case 2:
-            var10000 = ((Predicate)var0.get(0)).and((Predicate)var0.get(1));
+            var10000 = allOf((Predicate)var0.get(0), (Predicate)var0.get(1));
+            break;
+         case 3:
+            var10000 = allOf((Predicate)var0.get(0), (Predicate)var0.get(1), (Predicate)var0.get(2));
+            break;
+         case 4:
+            var10000 = allOf((Predicate)var0.get(0), (Predicate)var0.get(1), (Predicate)var0.get(2), (Predicate)var0.get(3));
+            break;
+         case 5:
+            var10000 = allOf((Predicate)var0.get(0), (Predicate)var0.get(1), (Predicate)var0.get(2), (Predicate)var0.get(3), (Predicate)var0.get(4));
             break;
          default:
             Predicate[] var1 = (Predicate[])var0.toArray((var0x) -> {
                return new Predicate[var0x];
             });
-            var10000 = (var1x) -> {
-               Predicate[] var2 = var1;
-               int var3 = var1.length;
-
-               for(int var4 = 0; var4 < var3; ++var4) {
-                  Predicate var5 = var2[var4];
-                  if (!var5.test(var1x)) {
-                     return false;
-                  }
-               }
-
-               return true;
-            };
+            var10000 = allOf(var1);
       }
 
       return var10000;
    }
 
-   public static <T> Predicate<T> anyOf(List<? extends Predicate<T>> var0) {
+   public static <T> Predicate<T> anyOf() {
+      return (var0) -> {
+         return false;
+      };
+   }
+
+   public static <T> Predicate<T> anyOf(Predicate<? super T> var0) {
+      return var0;
+   }
+
+   public static <T> Predicate<T> anyOf(Predicate<? super T> var0, Predicate<? super T> var1) {
+      return (var2) -> {
+         return var0.test(var2) || var1.test(var2);
+      };
+   }
+
+   public static <T> Predicate<T> anyOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2) {
+      return (var3) -> {
+         return var0.test(var3) || var1.test(var3) || var2.test(var3);
+      };
+   }
+
+   public static <T> Predicate<T> anyOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3) {
+      return (var4) -> {
+         return var0.test(var4) || var1.test(var4) || var2.test(var4) || var3.test(var4);
+      };
+   }
+
+   public static <T> Predicate<T> anyOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3, Predicate<? super T> var4) {
+      return (var5) -> {
+         return var0.test(var5) || var1.test(var5) || var2.test(var5) || var3.test(var5) || var4.test(var5);
+      };
+   }
+
+   @SafeVarargs
+   public static <T> Predicate<T> anyOf(Predicate<? super T>... var0) {
+      return (var1) -> {
+         Predicate[] var2 = var0;
+         int var3 = var0.length;
+
+         for(int var4 = 0; var4 < var3; ++var4) {
+            Predicate var5 = var2[var4];
+            if (var5.test(var1)) {
+               return true;
+            }
+         }
+
+         return false;
+      };
+   }
+
+   public static <T> Predicate<T> anyOf(List<? extends Predicate<? super T>> var0) {
       Predicate var10000;
       switch (var0.size()) {
          case 0:
-            var10000 = (var0x) -> {
-               return false;
-            };
+            var10000 = anyOf();
             break;
          case 1:
-            var10000 = (Predicate)var0.get(0);
+            var10000 = anyOf((Predicate)var0.get(0));
             break;
          case 2:
-            var10000 = ((Predicate)var0.get(0)).or((Predicate)var0.get(1));
+            var10000 = anyOf((Predicate)var0.get(0), (Predicate)var0.get(1));
+            break;
+         case 3:
+            var10000 = anyOf((Predicate)var0.get(0), (Predicate)var0.get(1), (Predicate)var0.get(2));
+            break;
+         case 4:
+            var10000 = anyOf((Predicate)var0.get(0), (Predicate)var0.get(1), (Predicate)var0.get(2), (Predicate)var0.get(3));
+            break;
+         case 5:
+            var10000 = anyOf((Predicate)var0.get(0), (Predicate)var0.get(1), (Predicate)var0.get(2), (Predicate)var0.get(3), (Predicate)var0.get(4));
             break;
          default:
             Predicate[] var1 = (Predicate[])var0.toArray((var0x) -> {
                return new Predicate[var0x];
             });
-            var10000 = (var1x) -> {
-               Predicate[] var2 = var1;
-               int var3 = var1.length;
-
-               for(int var4 = 0; var4 < var3; ++var4) {
-                  Predicate var5 = var2[var4];
-                  if (var5.test(var1x)) {
-                     return true;
-                  }
-               }
-
-               return false;
-            };
+            var10000 = anyOf(var1);
       }
 
       return var10000;
@@ -481,6 +589,19 @@ public class Util {
    public static <T> T make(T var0, Consumer<? super T> var1) {
       var1.accept(var0);
       return var0;
+   }
+
+   public static <K extends Enum<K>, V> EnumMap<K, V> makeEnumMap(Class<K> var0, Function<K, V> var1) {
+      EnumMap var2 = new EnumMap(var0);
+      Enum[] var3 = (Enum[])var0.getEnumConstants();
+      int var4 = var3.length;
+
+      for(int var5 = 0; var5 < var4; ++var5) {
+         Enum var6 = var3[var5];
+         var2.put(var6, var1.apply(var6));
+      }
+
+      return var2;
    }
 
    public static <V> CompletableFuture<List<V>> sequence(List<? extends CompletableFuture<V>> var0) {

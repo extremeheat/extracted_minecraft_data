@@ -1,16 +1,21 @@
 package net.minecraft.client.model;
 
+import java.util.Set;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.world.entity.animal.goat.Goat;
+import net.minecraft.client.renderer.entity.state.GoatRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 
-public class GoatModel<T extends Goat> extends QuadrupedModel<T> {
+public class GoatModel extends QuadrupedModel<GoatRenderState> {
+   public static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 19.0F, 1.0F, 2.5F, 2.0F, 24.0F, Set.of("head"));
+
    public GoatModel(ModelPart var1) {
-      super(var1, true, 19.0F, 1.0F, 2.5F, 2.0F, 24);
+      super(var1);
    }
 
    public static LayerDefinition createBodyLayer() {
@@ -28,13 +33,12 @@ public class GoatModel<T extends Goat> extends QuadrupedModel<T> {
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.head.getChild("left_horn").visible = var1.hasLeftHorn();
-      this.head.getChild("right_horn").visible = var1.hasRightHorn();
-      super.setupAnim(var1, var2, var3, var4, var5, var6);
-      float var7 = var1.getRammingXHeadRot();
-      if (var7 != 0.0F) {
-         this.head.xRot = var7;
+   public void setupAnim(GoatRenderState var1) {
+      super.setupAnim((LivingEntityRenderState)var1);
+      this.head.getChild("left_horn").visible = var1.hasLeftHorn;
+      this.head.getChild("right_horn").visible = var1.hasRightHorn;
+      if (var1.rammingXHeadRot != 0.0F) {
+         this.head.xRot = var1.rammingXHeadRot;
       }
 
    }

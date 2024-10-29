@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.RandomizableContainer;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.monster.Shulker;
@@ -274,7 +275,7 @@ public class EndCityPieces {
             }
          } else if (var5.isInside(var2) && Level.isInSpawnableBounds(var2)) {
             if (var1.startsWith("Sentry")) {
-               Shulker var7 = (Shulker)EntityType.SHULKER.create(var3.getLevel());
+               Shulker var7 = (Shulker)EntityType.SHULKER.create(var3.getLevel(), EntitySpawnReason.STRUCTURE);
                if (var7 != null) {
                   var7.setPos((double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5);
                   var3.addFreshEntity(var7);

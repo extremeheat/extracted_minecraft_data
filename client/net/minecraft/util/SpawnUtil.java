@@ -5,9 +5,10 @@ import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
@@ -20,7 +21,7 @@ public class SpawnUtil {
       super();
    }
 
-   public static <T extends Mob> Optional<T> trySpawnMob(EntityType<T> var0, MobSpawnType var1, ServerLevel var2, BlockPos var3, int var4, int var5, int var6, Strategy var7) {
+   public static <T extends Mob> Optional<T> trySpawnMob(EntityType<T> var0, EntitySpawnReason var1, ServerLevel var2, BlockPos var3, int var4, int var5, int var6, Strategy var7) {
       BlockPos.MutableBlockPos var8 = var3.mutable();
 
       for(int var9 = 0; var9 < var4; ++var9) {
@@ -74,6 +75,9 @@ public class SpawnUtil {
       };
       Strategy ON_TOP_OF_COLLIDER = (var0, var1, var2, var3, var4) -> {
          return var4.getCollisionShape(var0, var3).isEmpty() && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
+      };
+      Strategy ON_TOP_OF_COLLIDER_NO_LEAVES = (var0, var1, var2, var3, var4) -> {
+         return var4.getCollisionShape(var0, var3).isEmpty() && !var2.is(BlockTags.LEAVES) && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
       };
 
       boolean canSpawnOn(ServerLevel var1, BlockPos var2, BlockState var3, BlockPos var4, BlockState var5);

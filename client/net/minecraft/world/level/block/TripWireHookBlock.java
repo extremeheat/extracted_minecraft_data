@@ -17,21 +17,23 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TripWireHookBlock extends Block {
    public static final MapCodec<TripWireHookBlock> CODEC = simpleCodec(TripWireHookBlock::new);
-   public static final DirectionProperty FACING;
+   public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty POWERED;
    public static final BooleanProperty ATTACHED;
    protected static final int WIRE_DIST_MIN = 1;
@@ -73,8 +75,8 @@ public class TripWireHookBlock extends Block {
       return var4.getAxis().isHorizontal() && var6.isFaceSturdy(var2, var5, var4);
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return var2.getOpposite() == var1.getValue(FACING) && !var1.canSurvive(var4, var5) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6);
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      return var5.getOpposite() == var1.getValue(FACING) && !var1.canSurvive(var2, var4) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    @Nullable
@@ -170,8 +172,9 @@ public class TripWireHookBlock extends Block {
                BlockPos var24 = var1.relative(var8, var22);
                BlockState var25 = var15[var22];
                if (var25 != null) {
-                  var0.setBlock(var24, (BlockState)var25.trySetValue(ATTACHED, var12), 3);
-                  if (!var0.getBlockState(var24).isAir()) {
+                  BlockState var26 = var0.getBlockState(var24);
+                  if (var26.is(Blocks.TRIPWIRE) || var26.is(Blocks.TRIPWIRE_HOOK)) {
+                     var0.setBlock(var24, (BlockState)var25.trySetValue(ATTACHED, var12), 3);
                   }
                }
             }
@@ -202,8 +205,10 @@ public class TripWireHookBlock extends Block {
    }
 
    private static void notifyNeighbors(Block var0, Level var1, BlockPos var2, Direction var3) {
-      var1.updateNeighborsAt(var2, var0);
-      var1.updateNeighborsAt(var2.relative(var3.getOpposite()), var0);
+      Direction var4 = var3.getOpposite();
+      Orientation var5 = ExperimentalRedstoneUtils.initialOrientation(var1, var4, Direction.UP);
+      var1.updateNeighborsAt(var2, var0, var5);
+      var1.updateNeighborsAt(var2.relative(var4), var0, var5);
    }
 
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
@@ -215,8 +220,7 @@ public class TripWireHookBlock extends Block {
          }
 
          if (var7) {
-            var2.updateNeighborsAt(var3, this);
-            var2.updateNeighborsAt(var3.relative(((Direction)var1.getValue(FACING)).getOpposite()), this);
+            notifyNeighbors(this, var2, var3, (Direction)var1.getValue(FACING));
          }
 
          super.onRemove(var1, var2, var3, var4, var5);

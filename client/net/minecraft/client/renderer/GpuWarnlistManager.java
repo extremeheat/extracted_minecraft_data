@@ -21,6 +21,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.profiling.Zone;
 import org.slf4j.Logger;
 
 public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparations> {
@@ -98,17 +99,31 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
       ArrayList var3 = Lists.newArrayList();
       ArrayList var4 = Lists.newArrayList();
       ArrayList var5 = Lists.newArrayList();
-      var2.startTick();
       JsonObject var6 = parseJson(var1, var2);
       if (var6 != null) {
-         var2.push("compile_regex");
-         compilePatterns(var6.getAsJsonArray("renderer"), var3);
-         compilePatterns(var6.getAsJsonArray("version"), var4);
-         compilePatterns(var6.getAsJsonArray("vendor"), var5);
-         var2.pop();
+         Zone var7 = var2.zone("compile_regex");
+
+         try {
+            compilePatterns(var6.getAsJsonArray("renderer"), var3);
+            compilePatterns(var6.getAsJsonArray("version"), var4);
+            compilePatterns(var6.getAsJsonArray("vendor"), var5);
+         } catch (Throwable var11) {
+            if (var7 != null) {
+               try {
+                  var7.close();
+               } catch (Throwable var10) {
+                  var11.addSuppressed(var10);
+               }
+            }
+
+            throw var11;
+         }
+
+         if (var7 != null) {
+            var7.close();
+         }
       }
 
-      var2.endTick();
       return new Preparations(var3, var4, var5);
    }
 
@@ -124,35 +139,51 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
 
    @Nullable
    private static JsonObject parseJson(ResourceManager var0, ProfilerFiller var1) {
-      var1.push("parse_json");
-      JsonObject var2 = null;
-
       try {
-         BufferedReader var3 = var0.openAsReader(GPU_WARNLIST_LOCATION);
+         Zone var2 = var1.zone("parse_json");
 
+         JsonObject var4;
          try {
-            var2 = JsonParser.parseReader(var3).getAsJsonObject();
-         } catch (Throwable var7) {
+            BufferedReader var3 = var0.openAsReader(GPU_WARNLIST_LOCATION);
+
+            try {
+               var4 = JsonParser.parseReader(var3).getAsJsonObject();
+            } catch (Throwable var8) {
+               if (var3 != null) {
+                  try {
+                     ((Reader)var3).close();
+                  } catch (Throwable var7) {
+                     var8.addSuppressed(var7);
+                  }
+               }
+
+               throw var8;
+            }
+
             if (var3 != null) {
+               ((Reader)var3).close();
+            }
+         } catch (Throwable var9) {
+            if (var2 != null) {
                try {
-                  ((Reader)var3).close();
+                  var2.close();
                } catch (Throwable var6) {
-                  var7.addSuppressed(var6);
+                  var9.addSuppressed(var6);
                }
             }
 
-            throw var7;
+            throw var9;
          }
 
-         if (var3 != null) {
-            ((Reader)var3).close();
+         if (var2 != null) {
+            var2.close();
          }
-      } catch (JsonSyntaxException | IOException var8) {
+
+         return var4;
+      } catch (JsonSyntaxException | IOException var10) {
          LOGGER.warn("Failed to load GPU warnlist");
+         return null;
       }
-
-      var1.pop();
-      return var2;
    }
 
    // $FF: synthetic method

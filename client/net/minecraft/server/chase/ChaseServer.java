@@ -69,7 +69,7 @@ public class ChaseServer {
                while(var4.hasNext()) {
                   Socket var5 = (Socket)var4.next();
                   if (!var5.isClosed()) {
-                     Util.ioPool().submit(() -> {
+                     Util.ioPool().execute(() -> {
                         try {
                            OutputStream var2 = var5.getOutputStream();
                            var2.write(var3);

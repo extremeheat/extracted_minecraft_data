@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -91,9 +91,9 @@ public class PopupScreen extends Screen {
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       this.backgroundScreen.render(var1, -1, -1, var4);
       var1.flush();
-      RenderSystem.clear(256, Minecraft.ON_OSX);
+      RenderSystem.clear(256);
       this.renderTransparentBackground(var1);
-      var1.blitSprite(BACKGROUND_SPRITE, this.layout.getX() - 18, this.layout.getY() - 18, this.layout.getWidth() + 36, this.layout.getHeight() + 36);
+      var1.blitSprite(RenderType::guiTextured, BACKGROUND_SPRITE, this.layout.getX() - 18, this.layout.getY() - 18, this.layout.getWidth() + 36, this.layout.getHeight() + 36);
    }
 
    public Component getNarrationMessage() {

@@ -3,8 +3,8 @@ package com.mojang.realmsclient.gui;
 import java.util.Iterator;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.realms.RealmsObjectSelectionList;
 
 public abstract class RowButton {
    public final int width;
@@ -39,7 +39,7 @@ public abstract class RowButton {
 
    public abstract void onClick(int var1);
 
-   public static void drawButtonsInRow(GuiGraphics var0, List<RowButton> var1, RealmsObjectSelectionList<?> var2, int var3, int var4, int var5, int var6) {
+   public static void drawButtonsInRow(GuiGraphics var0, List<RowButton> var1, AbstractSelectionList<?> var2, int var3, int var4, int var5, int var6) {
       Iterator var7 = var1.iterator();
 
       while(var7.hasNext()) {
@@ -51,10 +51,10 @@ public abstract class RowButton {
 
    }
 
-   public static void rowButtonMouseClicked(RealmsObjectSelectionList<?> var0, ObjectSelectionList.Entry<?> var1, List<RowButton> var2, int var3, double var4, double var6) {
+   public static void rowButtonMouseClicked(AbstractSelectionList<?> var0, ObjectSelectionList.Entry<?> var1, List<RowButton> var2, int var3, double var4, double var6) {
       int var8 = var0.children().indexOf(var1);
       if (var8 > -1) {
-         var0.selectItem(var8);
+         var0.setSelectedIndex(var8);
          int var9 = var0.getRowLeft();
          int var10 = var0.getRowTop(var8);
          int var11 = (int)(var4 - (double)var9);

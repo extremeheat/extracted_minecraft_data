@@ -5,8 +5,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.monster.PatrollingMonster;
 import net.minecraft.world.entity.player.Player;
@@ -95,10 +95,10 @@ public class PatrolSpawner implements CustomSpawner {
       BlockState var5 = var1.getBlockState(var2);
       if (!NaturalSpawner.isValidEmptySpawnBlock(var1, var2, var5, var5.getFluidState(), EntityType.PILLAGER)) {
          return false;
-      } else if (!PatrollingMonster.checkPatrollingMonsterSpawnRules(EntityType.PILLAGER, var1, MobSpawnType.PATROL, var2, var3)) {
+      } else if (!PatrollingMonster.checkPatrollingMonsterSpawnRules(EntityType.PILLAGER, var1, EntitySpawnReason.PATROL, var2, var3)) {
          return false;
       } else {
-         PatrollingMonster var6 = (PatrollingMonster)EntityType.PILLAGER.create(var1);
+         PatrollingMonster var6 = (PatrollingMonster)EntityType.PILLAGER.create(var1, EntitySpawnReason.PATROL);
          if (var6 != null) {
             if (var4) {
                var6.setPatrolLeader(true);
@@ -106,7 +106,7 @@ public class PatrolSpawner implements CustomSpawner {
             }
 
             var6.setPos((double)var2.getX(), (double)var2.getY(), (double)var2.getZ());
-            var6.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var2), MobSpawnType.PATROL, (SpawnGroupData)null);
+            var6.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var2), EntitySpawnReason.PATROL, (SpawnGroupData)null);
             var1.addFreshEntityWithPassengers(var6);
             return true;
          } else {

@@ -3,12 +3,12 @@ package net.minecraft.world.level.levelgen.feature.treedecorators;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -49,7 +49,7 @@ public class BeehiveDecorator extends TreeDecorator {
             return var10000.map(var0::relative);
          }).collect(Collectors.toList());
          if (!var6.isEmpty()) {
-            Collections.shuffle(var6);
+            Util.shuffle(var6, var2);
             Optional var7 = var6.stream().filter((var1x) -> {
                return var1.isAir(var1x) && var1.isAir(var1x.relative(WORLDGEN_FACING));
             }).findFirst();

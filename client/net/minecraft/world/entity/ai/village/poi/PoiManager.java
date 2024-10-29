@@ -39,14 +39,14 @@ import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.chunk.storage.SectionStorage;
 import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
 
-public class PoiManager extends SectionStorage<PoiSection> {
+public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
    public static final int MAX_VILLAGE_DISTANCE = 6;
    public static final int VILLAGE_SECTION_SIZE = 1;
    private final DistanceTracker distanceTracker = new DistanceTracker();
    private final LongSet loadedChunks = new LongOpenHashSet();
 
    public PoiManager(RegionStorageInfo var1, Path var2, DataFixer var3, boolean var4, RegistryAccess var5, ChunkIOErrorReporter var6, LevelHeightAccessor var7) {
-      super(new SimpleRegionStorage(var1, var2, var3, var4, DataFixTypes.POI_CHUNK), PoiSection::codec, PoiSection::new, var5, var6, var7);
+      super(new SimpleRegionStorage(var1, var2, var3, var4, DataFixTypes.POI_CHUNK), PoiSection.Packed.CODEC, PoiSection::pack, PoiSection.Packed::unpack, PoiSection::new, var5, var6, var7);
    }
 
    public void add(BlockPos var1, Holder<PoiType> var2) {
@@ -88,7 +88,7 @@ public class PoiManager extends SectionStorage<PoiSection> {
 
    @VisibleForDebug
    public Stream<PoiRecord> getInChunk(Predicate<Holder<PoiType>> var1, ChunkPos var2, Occupancy var3) {
-      return IntStream.range(this.levelHeightAccessor.getMinSection(), this.levelHeightAccessor.getMaxSection()).boxed().map((var2x) -> {
+      return IntStream.rangeClosed(this.levelHeightAccessor.getMinSectionY(), this.levelHeightAccessor.getMaxSectionY()).boxed().map((var2x) -> {
          return this.getOrLoad(SectionPos.of(var2, var2x).asLong());
       }).filter(Optional::isPresent).flatMap((var2x) -> {
          return ((PoiSection)var2x.get()).getRecords(var1, var3);
@@ -242,7 +242,7 @@ public class PoiManager extends SectionStorage<PoiSection> {
    }
 
    public void ensureLoadedAndValid(LevelReader var1, BlockPos var2, int var3) {
-      SectionPos.aroundChunk(new ChunkPos(var2), Math.floorDiv(var3, 16), this.levelHeightAccessor.getMinSection(), this.levelHeightAccessor.getMaxSection()).map((var1x) -> {
+      SectionPos.aroundChunk(new ChunkPos(var2), Math.floorDiv(var3, 16), this.levelHeightAccessor.getMinSectionY(), this.levelHeightAccessor.getMaxSectionY()).map((var1x) -> {
          return Pair.of(var1x, this.getOrLoad(var1x.asLong()));
       }).filter((var0) -> {
          return !(Boolean)((Optional)var0.getSecond()).map(PoiSection::isValid).orElse(false);

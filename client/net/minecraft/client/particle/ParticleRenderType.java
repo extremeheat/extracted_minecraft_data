@@ -6,7 +6,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import javax.annotation.Nullable;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 
@@ -16,6 +16,7 @@ public interface ParticleRenderType {
          RenderSystem.enableBlend();
          RenderSystem.defaultBlendFunc();
          RenderSystem.depthMask(true);
+         RenderSystem.setShader(CoreShaders.PARTICLE);
          RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
          return var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
       }
@@ -28,7 +29,7 @@ public interface ParticleRenderType {
       public BufferBuilder begin(Tesselator var1, TextureManager var2) {
          RenderSystem.disableBlend();
          RenderSystem.depthMask(true);
-         RenderSystem.setShader(GameRenderer::getParticleShader);
+         RenderSystem.setShader(CoreShaders.PARTICLE);
          RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
          return var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
       }
@@ -40,6 +41,7 @@ public interface ParticleRenderType {
    ParticleRenderType PARTICLE_SHEET_TRANSLUCENT = new ParticleRenderType() {
       public BufferBuilder begin(Tesselator var1, TextureManager var2) {
          RenderSystem.depthMask(true);
+         RenderSystem.setShader(CoreShaders.PARTICLE);
          RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
          RenderSystem.enableBlend();
          RenderSystem.defaultBlendFunc();
@@ -48,18 +50,6 @@ public interface ParticleRenderType {
 
       public String toString() {
          return "PARTICLE_SHEET_TRANSLUCENT";
-      }
-   };
-   ParticleRenderType PARTICLE_SHEET_LIT = new ParticleRenderType() {
-      public BufferBuilder begin(Tesselator var1, TextureManager var2) {
-         RenderSystem.disableBlend();
-         RenderSystem.depthMask(true);
-         RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
-         return var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
-      }
-
-      public String toString() {
-         return "PARTICLE_SHEET_LIT";
       }
    };
    ParticleRenderType CUSTOM = new ParticleRenderType() {

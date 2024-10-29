@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.texture;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import java.util.ArrayList;
@@ -18,6 +17,7 @@ import net.minecraft.client.resources.metadata.animation.AnimationMetadataSectio
 import net.minecraft.client.resources.metadata.animation.FrameSize;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceMetadata;
+import net.minecraft.util.ARGB;
 import org.slf4j.Logger;
 
 public class SpriteContents implements Stitcher.Entry, AutoCloseable {
@@ -180,7 +180,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
          var5 = var3 + this.animatedTexture.getFrameY(var1) * this.height;
       }
 
-      return (this.originalImage.getPixelRGBA(var4, var5) >> 24 & 255) == 0;
+      return ARGB.alpha(this.originalImage.getPixel(var4, var5)) == 0;
    }
 
    public void uploadFirstFrame(int var1, int var2) {
@@ -269,13 +269,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
                this.animationInfo.uploadFrame(var1, var2, var5);
             }
          } else if (this.interpolationData != null) {
-            if (!RenderSystem.isOnRenderThread()) {
-               RenderSystem.recordRenderCall(() -> {
-                  this.interpolationData.uploadInterpolatedFrame(var1, var2, this);
-               });
-            } else {
-               this.interpolationData.uploadInterpolatedFrame(var1, var2, this);
-            }
+            this.interpolationData.uploadInterpolatedFrame(var1, var2, this);
          }
 
       }
@@ -307,22 +301,19 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
          AnimatedTexture var4 = var3.animationInfo;
          List var5 = var4.frames;
          FrameInfo var6 = (FrameInfo)var5.get(var3.frame);
-         double var7 = 1.0 - (double)var3.subFrame / (double)var6.time;
-         int var9 = var6.index;
-         int var10 = ((FrameInfo)var5.get((var3.frame + 1) % var5.size())).index;
-         if (var9 != var10) {
-            for(int var11 = 0; var11 < this.activeFrame.length; ++var11) {
-               int var12 = SpriteContents.this.width >> var11;
-               int var13 = SpriteContents.this.height >> var11;
+         float var7 = (float)var3.subFrame / (float)var6.time;
+         int var8 = var6.index;
+         int var9 = ((FrameInfo)var5.get((var3.frame + 1) % var5.size())).index;
+         if (var8 != var9) {
+            for(int var10 = 0; var10 < this.activeFrame.length; ++var10) {
+               int var11 = SpriteContents.this.width >> var10;
+               int var12 = SpriteContents.this.height >> var10;
 
-               for(int var14 = 0; var14 < var13; ++var14) {
-                  for(int var15 = 0; var15 < var12; ++var15) {
-                     int var16 = this.getPixel(var4, var9, var11, var15, var14);
-                     int var17 = this.getPixel(var4, var10, var11, var15, var14);
-                     int var18 = this.mix(var7, var16 >> 16 & 255, var17 >> 16 & 255);
-                     int var19 = this.mix(var7, var16 >> 8 & 255, var17 >> 8 & 255);
-                     int var20 = this.mix(var7, var16 & 255, var17 & 255);
-                     this.activeFrame[var11].setPixelRGBA(var15, var14, var16 & -16777216 | var18 << 16 | var19 << 8 | var20);
+               for(int var13 = 0; var13 < var12; ++var13) {
+                  for(int var14 = 0; var14 < var11; ++var14) {
+                     int var15 = this.getPixel(var4, var8, var10, var14, var13);
+                     int var16 = this.getPixel(var4, var9, var10, var14, var13);
+                     this.activeFrame[var10].setPixel(var14, var13, ARGB.lerp(var7, var15, var16));
                   }
                }
             }
@@ -333,11 +324,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       }
 
       private int getPixel(AnimatedTexture var1, int var2, int var3, int var4, int var5) {
-         return SpriteContents.this.byMipLevel[var3].getPixelRGBA(var4 + (var1.getFrameX(var2) * SpriteContents.this.width >> var3), var5 + (var1.getFrameY(var2) * SpriteContents.this.height >> var3));
-      }
-
-      private int mix(double var1, int var3, int var4) {
-         return (int)(var1 * (double)var3 + (1.0 - var1) * (double)var4);
+         return SpriteContents.this.byMipLevel[var3].getPixel(var4 + (var1.getFrameX(var2) * SpriteContents.this.width >> var3), var5 + (var1.getFrameY(var2) * SpriteContents.this.height >> var3));
       }
 
       public void close() {

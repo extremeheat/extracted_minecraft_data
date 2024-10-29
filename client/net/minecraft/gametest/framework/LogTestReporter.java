@@ -12,7 +12,7 @@ public class LogTestReporter implements TestReporter {
    }
 
    public void onTestFailed(GameTestInfo var1) {
-      String var2 = var1.getStructureBlockPos().toShortString();
+      String var2 = var1.getTestOrigin().toShortString();
       if (var1.isRequired()) {
          LOGGER.error("{} failed at {}! {}", new Object[]{var1.getTestName(), var2, Util.describeError(var1.getError())});
       } else {

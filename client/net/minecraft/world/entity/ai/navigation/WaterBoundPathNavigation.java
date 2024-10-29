@@ -38,7 +38,7 @@ public class WaterBoundPathNavigation extends PathNavigation {
    }
 
    public boolean isStableDestination(BlockPos var1) {
-      return !this.level.getBlockState(var1).isSolidRender(this.level, var1);
+      return !this.level.getBlockState(var1).isSolidRender();
    }
 
    public void setCanFloat(boolean var1) {

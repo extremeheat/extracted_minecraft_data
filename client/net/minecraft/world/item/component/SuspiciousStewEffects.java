@@ -2,17 +2,28 @@ package net.minecraft.world.item.component;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.level.Level;
 
-public record SuspiciousStewEffects(List<Entry> effects) {
+public record SuspiciousStewEffects(List<Entry> effects) implements ConsumableListener, TooltipProvider {
    public static final SuspiciousStewEffects EMPTY = new SuspiciousStewEffects(List.of());
+   public static final int DEFAULT_DURATION = 160;
    public static final Codec<SuspiciousStewEffects> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, SuspiciousStewEffects> STREAM_CODEC;
 
@@ -23,6 +34,31 @@ public record SuspiciousStewEffects(List<Entry> effects) {
 
    public SuspiciousStewEffects withEffectAdded(Entry var1) {
       return new SuspiciousStewEffects(Util.copyAndAdd((List)this.effects, (Object)var1));
+   }
+
+   public void onConsume(Level var1, LivingEntity var2, ItemStack var3, Consumable var4) {
+      Iterator var5 = this.effects.iterator();
+
+      while(var5.hasNext()) {
+         Entry var6 = (Entry)var5.next();
+         var2.addEffect(var6.createEffectInstance());
+      }
+
+   }
+
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
+      if (var3.isCreative()) {
+         ArrayList var4 = new ArrayList();
+         Iterator var5 = this.effects.iterator();
+
+         while(var5.hasNext()) {
+            Entry var6 = (Entry)var5.next();
+            var4.add(var6.createEffectInstance());
+         }
+
+         PotionContents.addPotionTooltip(var4, var2, 1.0F, var1.tickRate());
+      }
+
    }
 
    public List<Entry> effects() {

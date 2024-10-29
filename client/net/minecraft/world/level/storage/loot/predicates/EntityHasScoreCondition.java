@@ -10,10 +10,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import net.minecraft.server.ServerScoreboard;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.IntRange;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.Scoreboard;
@@ -33,14 +33,14 @@ public record EntityHasScoreCondition(Map<String, IntRange> scores, LootContext.
       return LootItemConditions.ENTITY_SCORES;
    }
 
-   public Set<LootContextParam<?>> getReferencedContextParams() {
+   public Set<ContextKey<?>> getReferencedContextParams() {
       return (Set)Stream.concat(Stream.of(this.entityTarget.getParam()), this.scores.values().stream().flatMap((var0) -> {
          return var0.getReferencedContextParams().stream();
       })).collect(ImmutableSet.toImmutableSet());
    }
 
    public boolean test(LootContext var1) {
-      Entity var2 = (Entity)var1.getParamOrNull(this.entityTarget.getParam());
+      Entity var2 = (Entity)var1.getOptionalParameter(this.entityTarget.getParam());
       if (var2 == null) {
          return false;
       } else {

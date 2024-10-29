@@ -27,7 +27,7 @@ public final class LevelSettings {
       GameType var2 = GameType.byId(var0.get("GameType").asInt(0));
       return new LevelSettings(var0.get("LevelName").asString(""), var2, var0.get("hardcore").asBoolean(false), (Difficulty)var0.get("Difficulty").asNumber().map((var0x) -> {
          return Difficulty.byId(var0x.byteValue());
-      }).result().orElse(Difficulty.NORMAL), var0.get("allowCommands").asBoolean(var2 == GameType.CREATIVE), new GameRules(var0.get("GameRules")), var1);
+      }).result().orElse(Difficulty.NORMAL), var0.get("allowCommands").asBoolean(var2 == GameType.CREATIVE), new GameRules(var1.enabledFeatures(), var0.get("GameRules")), var1);
    }
 
    public String levelName() {
@@ -71,6 +71,6 @@ public final class LevelSettings {
    }
 
    public LevelSettings copy() {
-      return new LevelSettings(this.levelName, this.gameType, this.hardcore, this.difficulty, this.allowCommands, this.gameRules.copy(), this.dataConfiguration);
+      return new LevelSettings(this.levelName, this.gameType, this.hardcore, this.difficulty, this.allowCommands, this.gameRules.copy(this.dataConfiguration.enabledFeatures()), this.dataConfiguration);
    }
 }

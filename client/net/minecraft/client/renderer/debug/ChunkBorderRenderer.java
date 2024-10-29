@@ -5,15 +5,15 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import org.joml.Matrix4f;
 
 public class ChunkBorderRenderer implements DebugRenderer.SimpleDebugRenderer {
    private final Minecraft minecraft;
-   private static final int CELL_BORDER = FastColor.ARGB32.color(255, 0, 155, 155);
-   private static final int YELLOW = FastColor.ARGB32.color(255, 255, 255, 0);
+   private static final int CELL_BORDER = ARGB.color(255, 0, 155, 155);
+   private static final int YELLOW = ARGB.color(255, 255, 255, 0);
 
    public ChunkBorderRenderer(Minecraft var1) {
       super();
@@ -22,8 +22,8 @@ public class ChunkBorderRenderer implements DebugRenderer.SimpleDebugRenderer {
 
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       Entity var9 = this.minecraft.gameRenderer.getMainCamera().getEntity();
-      float var10 = (float)((double)this.minecraft.level.getMinBuildHeight() - var5);
-      float var11 = (float)((double)this.minecraft.level.getMaxBuildHeight() - var5);
+      float var10 = (float)((double)this.minecraft.level.getMinY() - var5);
+      float var11 = (float)((double)(this.minecraft.level.getMaxY() + 1) - var5);
       ChunkPos var12 = var9.chunkPosition();
       float var13 = (float)((double)var12.getMinBlockX() - var3);
       float var14 = (float)((double)var12.getMinBlockZ() - var7);
@@ -66,7 +66,7 @@ public class ChunkBorderRenderer implements DebugRenderer.SimpleDebugRenderer {
       }
 
       float var20;
-      for(var17 = this.minecraft.level.getMinBuildHeight(); var17 <= this.minecraft.level.getMaxBuildHeight(); var17 += 2) {
+      for(var17 = this.minecraft.level.getMinY(); var17 <= this.minecraft.level.getMaxY() + 1; var17 += 2) {
          var20 = (float)((double)var17 - var5);
          int var19 = var17 % 8 == 0 ? CELL_BORDER : YELLOW;
          var15.addVertex(var16, var13, var20, var14).setColor(1.0F, 1.0F, 0.0F, 0.0F);
@@ -89,7 +89,7 @@ public class ChunkBorderRenderer implements DebugRenderer.SimpleDebugRenderer {
          }
       }
 
-      for(var17 = this.minecraft.level.getMinBuildHeight(); var17 <= this.minecraft.level.getMaxBuildHeight(); var17 += 16) {
+      for(var17 = this.minecraft.level.getMinY(); var17 <= this.minecraft.level.getMaxY() + 1; var17 += 16) {
          var20 = (float)((double)var17 - var5);
          var15.addVertex(var16, var13, var20, var14).setColor(0.25F, 0.25F, 1.0F, 0.0F);
          var15.addVertex(var16, var13, var20, var14).setColor(0.25F, 0.25F, 1.0F, 1.0F);

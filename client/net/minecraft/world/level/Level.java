@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -35,6 +34,7 @@ import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
@@ -47,13 +47,14 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.component.FireworkExplosion;
-import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
@@ -71,6 +72,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.redstone.CollectingNeighborUpdater;
 import net.minecraft.world.level.redstone.NeighborUpdater;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.LevelData;
@@ -110,7 +112,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    private final RandomSource threadSafeRandom = RandomSource.createThreadSafe();
    private final Holder<DimensionType> dimensionTypeRegistration;
    protected final WritableLevelData levelData;
-   private final Supplier<ProfilerFiller> profiler;
    public final boolean isClientSide;
    private final WorldBorder worldBorder;
    private final BiomeManager biomeManager;
@@ -119,22 +120,21 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    private final DamageSources damageSources;
    private long subTickCount;
 
-   protected Level(WritableLevelData var1, ResourceKey<Level> var2, RegistryAccess var3, Holder<DimensionType> var4, Supplier<ProfilerFiller> var5, boolean var6, boolean var7, long var8, int var10) {
+   protected Level(WritableLevelData var1, ResourceKey<Level> var2, RegistryAccess var3, Holder<DimensionType> var4, boolean var5, boolean var6, long var7, int var9) {
       super();
-      this.profiler = var5;
       this.levelData = var1;
       this.dimensionTypeRegistration = var4;
-      final DimensionType var11 = (DimensionType)var4.value();
+      final DimensionType var10 = (DimensionType)var4.value();
       this.dimension = var2;
-      this.isClientSide = var6;
-      if (var11.coordinateScale() != 1.0) {
+      this.isClientSide = var5;
+      if (var10.coordinateScale() != 1.0) {
          this.worldBorder = new WorldBorder(this) {
             public double getCenterX() {
-               return super.getCenterX() / var11.coordinateScale();
+               return super.getCenterX() / var10.coordinateScale();
             }
 
             public double getCenterZ() {
-               return super.getCenterZ() / var11.coordinateScale();
+               return super.getCenterZ() / var10.coordinateScale();
             }
          };
       } else {
@@ -142,9 +142,9 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       }
 
       this.thread = Thread.currentThread();
-      this.biomeManager = new BiomeManager(this, var8);
-      this.isDebug = var7;
-      this.neighborUpdater = new CollectingNeighborUpdater(this, var10);
+      this.biomeManager = new BiomeManager(this, var7);
+      this.isDebug = var6;
+      this.neighborUpdater = new CollectingNeighborUpdater(this, var9);
       this.registryAccess = var3;
       this.damageSources = new DamageSources(var3);
    }
@@ -287,17 +287,20 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public void updateNeighborsAt(BlockPos var1, Block var2) {
    }
 
-   public void updateNeighborsAtExceptFromFacing(BlockPos var1, Block var2, Direction var3) {
+   public void updateNeighborsAt(BlockPos var1, Block var2, @Nullable Orientation var3) {
    }
 
-   public void neighborChanged(BlockPos var1, Block var2, BlockPos var3) {
+   public void updateNeighborsAtExceptFromFacing(BlockPos var1, Block var2, Direction var3, @Nullable Orientation var4) {
    }
 
-   public void neighborChanged(BlockState var1, BlockPos var2, Block var3, BlockPos var4, boolean var5) {
+   public void neighborChanged(BlockPos var1, Block var2, @Nullable Orientation var3) {
    }
 
-   public void neighborShapeChanged(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
-      this.neighborUpdater.shapeUpdate(var1, var2, var3, var4, var5, var6);
+   public void neighborChanged(BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5) {
+   }
+
+   public void neighborShapeChanged(Direction var1, BlockPos var2, BlockPos var3, BlockState var4, int var5, int var6) {
+      this.neighborUpdater.shapeUpdate(var1, var4, var2, var3, var5, var6);
    }
 
    public int getHeight(Heightmap.Types var1, int var2, int var3) {
@@ -306,7 +309,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          if (this.hasChunk(SectionPos.blockToSectionCoord(var2), SectionPos.blockToSectionCoord(var3))) {
             var4 = this.getChunk(SectionPos.blockToSectionCoord(var2), SectionPos.blockToSectionCoord(var3)).getHeight(var1, var2 & 15, var3 & 15) + 1;
          } else {
-            var4 = this.getMinBuildHeight();
+            var4 = this.getMinY();
          }
       } else {
          var4 = this.getSeaLevel() + 1;
@@ -416,7 +419,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    protected void tickBlockEntities() {
-      ProfilerFiller var1 = this.getProfiler();
+      ProfilerFiller var1 = Profiler.get();
       var1.push("blockEntities");
       this.tickingBlockEntities = true;
       if (!this.pendingBlockEntityTickers.isEmpty()) {
@@ -463,47 +466,23 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.shouldTickBlocksAt(ChunkPos.asLong(var1));
    }
 
-   public Explosion explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, ExplosionInteraction var9) {
-      return this.explode(var1, Explosion.getDefaultDamageSource(this, var1), (ExplosionDamageCalculator)null, var2, var4, var6, var8, false, var9, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
+   public void explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, ExplosionInteraction var9) {
+      this.explode(var1, Explosion.getDefaultDamageSource(this, var1), (ExplosionDamageCalculator)null, var2, var4, var6, var8, false, var9, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
    }
 
-   public Explosion explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, boolean var9, ExplosionInteraction var10) {
-      return this.explode(var1, Explosion.getDefaultDamageSource(this, var1), (ExplosionDamageCalculator)null, var2, var4, var6, var8, var9, var10, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
+   public void explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, boolean var9, ExplosionInteraction var10) {
+      this.explode(var1, Explosion.getDefaultDamageSource(this, var1), (ExplosionDamageCalculator)null, var2, var4, var6, var8, var9, var10, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
    }
 
-   public Explosion explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, Vec3 var4, float var5, boolean var6, ExplosionInteraction var7) {
-      return this.explode(var1, var2, var3, var4.x(), var4.y(), var4.z(), var5, var6, var7, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
+   public void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, Vec3 var4, float var5, boolean var6, ExplosionInteraction var7) {
+      this.explode(var1, var2, var3, var4.x(), var4.y(), var4.z(), var5, var6, var7, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
    }
 
-   public Explosion explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, ExplosionInteraction var12) {
-      return this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
+   public void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, ExplosionInteraction var12) {
+      this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE);
    }
 
-   public Explosion explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, ExplosionInteraction var12, ParticleOptions var13, ParticleOptions var14, Holder<SoundEvent> var15) {
-      return this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, true, var13, var14, var15);
-   }
-
-   public Explosion explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, ExplosionInteraction var12, boolean var13, ParticleOptions var14, ParticleOptions var15, Holder<SoundEvent> var16) {
-      Explosion.BlockInteraction var10000;
-      switch (var12.ordinal()) {
-         case 0 -> var10000 = Explosion.BlockInteraction.KEEP;
-         case 1 -> var10000 = this.getDestroyType(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY);
-         case 2 -> var10000 = this.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) ? this.getDestroyType(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY) : Explosion.BlockInteraction.KEEP;
-         case 3 -> var10000 = this.getDestroyType(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY);
-         case 4 -> var10000 = Explosion.BlockInteraction.TRIGGER_BLOCK;
-         default -> throw new MatchException((String)null, (Throwable)null);
-      }
-
-      Explosion.BlockInteraction var17 = var10000;
-      Explosion var18 = new Explosion(this, var1, var2, var3, var4, var6, var8, var10, var11, var17, var14, var15, var16);
-      var18.explode();
-      var18.finalizeExplosion(var13);
-      return var18;
-   }
-
-   private Explosion.BlockInteraction getDestroyType(GameRules.Key<GameRules.BooleanValue> var1) {
-      return this.getGameRules().getBoolean(var1) ? Explosion.BlockInteraction.DESTROY_WITH_DECAY : Explosion.BlockInteraction.DESTROY;
-   }
+   public abstract void explode(@Nullable Entity var1, @Nullable DamageSource var2, @Nullable ExplosionDamageCalculator var3, double var4, double var6, double var8, float var10, boolean var11, ExplosionInteraction var12, ParticleOptions var13, ParticleOptions var14, Holder<SoundEvent> var15);
 
    public abstract String gatherChunkSourceStats();
 
@@ -553,8 +532,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.skyDarken = (int)((1.0 - var5 * var1 * var3) * 11.0);
    }
 
-   public void setSpawnSettings(boolean var1, boolean var2) {
-      this.getChunkSource().setSpawnSettings(var1, var2);
+   public void setSpawnSettings(boolean var1) {
+      this.getChunkSource().setSpawnSettings(var1);
    }
 
    public BlockPos getSharedSpawnPos() {
@@ -590,7 +569,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public List<Entity> getEntities(@Nullable Entity var1, AABB var2, Predicate<? super Entity> var3) {
-      this.getProfiler().incrementCounter("getEntities");
+      Profiler.get().incrementCounter("getEntities");
       ArrayList var4 = Lists.newArrayList();
       this.getEntities().get(var2, (var3x) -> {
          if (var3x != var1 && var3.test(var3x)) {
@@ -624,7 +603,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public <T extends Entity> void getEntities(EntityTypeTest<Entity, T> var1, AABB var2, Predicate<? super T> var3, List<? super T> var4, int var5) {
-      this.getProfiler().incrementCounter("getEntities");
+      Profiler.get().incrementCounter("getEntities");
       this.getEntities().get(var1, var2, (var4x) -> {
          if (var3.test(var4x)) {
             var4.add(var4x);
@@ -658,13 +637,9 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public void blockEntityChanged(BlockPos var1) {
       if (this.hasChunkAt(var1)) {
-         this.getChunkAt(var1).setUnsaved(true);
+         this.getChunkAt(var1).markUnsaved();
       }
 
-   }
-
-   public int getSeaLevel() {
-      return 63;
    }
 
    public void disconnect() {
@@ -696,10 +671,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.levelData;
    }
 
-   public GameRules getGameRules() {
-      return this.levelData.getGameRules();
-   }
-
    public abstract TickRateManager tickRateManager();
 
    public float getThunderLevel(float var1) {
@@ -722,16 +693,16 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.rainLevel = var2;
    }
 
+   private boolean canHaveWeather() {
+      return this.dimensionType().hasSkyLight() && !this.dimensionType().hasCeiling();
+   }
+
    public boolean isThundering() {
-      if (this.dimensionType().hasSkyLight() && !this.dimensionType().hasCeiling()) {
-         return (double)this.getThunderLevel(1.0F) > 0.9;
-      } else {
-         return false;
-      }
+      return this.canHaveWeather() && (double)this.getThunderLevel(1.0F) > 0.9;
    }
 
    public boolean isRaining() {
-      return (double)this.getRainLevel(1.0F) > 0.2;
+      return this.canHaveWeather() && (double)this.getRainLevel(1.0F) > 0.2;
    }
 
    public boolean isRainingAt(BlockPos var1) {
@@ -743,7 +714,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          return false;
       } else {
          Biome var2 = (Biome)this.getBiome(var1).value();
-         return var2.getPrecipitationAt(var1) == Biome.Precipitation.RAIN;
+         return var2.getPrecipitationAt(var1, this.getSeaLevel()) == Biome.Precipitation.RAIN;
       }
    }
 
@@ -795,12 +766,12 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          if (this.hasChunkAt(var5)) {
             BlockState var6 = this.getBlockState(var5);
             if (var6.is(Blocks.COMPARATOR)) {
-               this.neighborChanged(var6, var5, var2, var1, false);
+               this.neighborChanged(var6, var5, var2, (Orientation)null, false);
             } else if (var6.isRedstoneConductor(this, var5)) {
                var5 = var5.relative(var4);
                var6 = this.getBlockState(var5);
                if (var6.is(Blocks.COMPARATOR)) {
-                  this.neighborChanged(var6, var5, var2, var1, false);
+                  this.neighborChanged(var6, var5, var2, (Orientation)null, false);
                }
             }
          }
@@ -858,7 +829,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return var2.test(this.getFluidState(var1));
    }
 
-   public abstract RecipeManager getRecipeManager();
+   public abstract RecipeAccess recipeAccess();
 
    public BlockPos getBlockRandomPos(int var1, int var2, int var3, int var4) {
       this.randValue = this.randValue * 3 + 1013904223;
@@ -868,14 +839,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public boolean noSave() {
       return false;
-   }
-
-   public ProfilerFiller getProfiler() {
-      return (ProfilerFiller)this.profiler.get();
-   }
-
-   public Supplier<ProfilerFiller> getProfilerSupplier() {
-      return this.profiler;
    }
 
    public BiomeManager getBiomeManager() {
@@ -902,6 +865,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public abstract PotionBrewing potionBrewing();
 
+   public abstract FuelValues fuelValues();
+
    // $FF: synthetic method
    public ChunkAccess getChunk(final int var1, final int var2) {
       return this.getChunk(var1, var2);
@@ -924,7 +889,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       public static final Codec<ExplosionInteraction> CODEC = StringRepresentable.fromEnum(ExplosionInteraction::values);
       private final String id;
 
-      private ExplosionInteraction(String var3) {
+      private ExplosionInteraction(final String var3) {
          this.id = var3;
       }
 

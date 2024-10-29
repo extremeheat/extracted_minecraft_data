@@ -1,7 +1,5 @@
 package net.minecraft.client.model;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -16,7 +14,6 @@ public class BookModel extends Model {
    private static final String RIGHT_PAGES = "right_pages";
    private static final String FLIP_PAGE_1 = "flip_page1";
    private static final String FLIP_PAGE_2 = "flip_page2";
-   private final ModelPart root;
    private final ModelPart leftLid;
    private final ModelPart rightLid;
    private final ModelPart leftPages;
@@ -25,8 +22,7 @@ public class BookModel extends Model {
    private final ModelPart flipPage2;
 
    public BookModel(ModelPart var1) {
-      super(RenderType::entitySolid);
-      this.root = var1;
+      super(var1, RenderType::entitySolid);
       this.leftLid = var1.getChild("left_lid");
       this.rightLid = var1.getChild("right_lid");
       this.leftPages = var1.getChild("left_pages");
@@ -47,14 +43,6 @@ public class BookModel extends Model {
       var1.addOrReplaceChild("flip_page1", var2, PartPose.ZERO);
       var1.addOrReplaceChild("flip_page2", var2, PartPose.ZERO);
       return LayerDefinition.create(var0, 64, 32);
-   }
-
-   public void renderToBuffer(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
-      this.render(var1, var2, var3, var4, var5);
-   }
-
-   public void render(PoseStack var1, VertexConsumer var2, int var3, int var4, int var5) {
-      this.root.render(var1, var2, var3, var4, var5);
    }
 
    public void setupAnim(float var1, float var2, float var3, float var4) {

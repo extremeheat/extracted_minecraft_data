@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.advancements;
 
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
@@ -39,7 +40,7 @@ enum AdvancementTabType {
          var7 = var6.middle();
       }
 
-      var1.blitSprite(var7, var2 + this.getX(var5), var3 + this.getY(var5), this.width, this.height);
+      var1.blitSprite(RenderType::guiTextured, var7, var2 + this.getX(var5), var3 + this.getY(var5), this.width, this.height);
    }
 
    public void drawIcon(GuiGraphics var1, int var2, int var3, int var4, ItemStack var5) {

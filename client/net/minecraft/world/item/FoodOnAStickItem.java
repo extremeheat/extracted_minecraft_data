@@ -2,7 +2,7 @@ package net.minecraft.world.item;
 
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -15,16 +15,16 @@ public class FoodOnAStickItem<T extends Entity & ItemSteerable> extends Item {
    private final EntityType<T> canInteractWith;
    private final int consumeItemDamage;
 
-   public FoodOnAStickItem(Item.Properties var1, EntityType<T> var2, int var3) {
-      super(var1);
-      this.canInteractWith = var2;
-      this.consumeItemDamage = var3;
+   public FoodOnAStickItem(EntityType<T> var1, int var2, Item.Properties var3) {
+      super(var3);
+      this.canInteractWith = var1;
+      this.consumeItemDamage = var2;
    }
 
-   public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
+   public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       if (var1.isClientSide) {
-         return InteractionResultHolder.pass(var4);
+         return InteractionResult.PASS;
       } else {
          Entity var5 = var2.getControlledVehicle();
          if (var2.isPassenger() && var5 instanceof ItemSteerable) {
@@ -32,12 +32,12 @@ public class FoodOnAStickItem<T extends Entity & ItemSteerable> extends Item {
             if (var5.getType() == this.canInteractWith && var6.boost()) {
                EquipmentSlot var7 = LivingEntity.getSlotForHand(var3);
                ItemStack var8 = var4.hurtAndConvertOnBreak(this.consumeItemDamage, Items.FISHING_ROD, var2, var7);
-               return InteractionResultHolder.success(var8);
+               return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(var8);
             }
          }
 
          var2.awardStat(Stats.ITEM_USED.get(this));
-         return InteractionResultHolder.pass(var4);
+         return InteractionResult.PASS;
       }
    }
 }

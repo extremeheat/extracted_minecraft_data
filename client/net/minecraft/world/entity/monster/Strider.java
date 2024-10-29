@@ -28,13 +28,13 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ItemBasedSteering;
 import net.minecraft.world.entity.ItemSteerable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -95,7 +95,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       this.setPathfindingMalus(PathType.DAMAGE_FIRE, 0.0F);
    }
 
-   public static boolean checkStriderSpawnRules(EntityType<Strider> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkStriderSpawnRules(EntityType<Strider> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       BlockPos.MutableBlockPos var5 = var3.mutable();
 
       do {
@@ -286,7 +286,6 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    }
 
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
-      this.checkInsideBlocks();
       if (this.isInLava()) {
          this.resetFallDistance();
       } else {
@@ -326,7 +325,6 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
 
       super.tick();
       this.floatStrider();
-      this.checkInsideBlocks();
    }
 
    private boolean isBeingTempted() {
@@ -350,7 +348,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MOVEMENT_SPEED, 0.17499999701976776).add(Attributes.FOLLOW_RANGE, 16.0);
+      return Animal.createAnimalAttributes().add(Attributes.MOVEMENT_SPEED, 0.17499999701976776);
    }
 
    protected SoundEvent getAmbientSound() {
@@ -391,17 +389,17 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
 
    @Nullable
    public Strider getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (Strider)EntityType.STRIDER.create(var1);
+      return (Strider)EntityType.STRIDER.create(var1, EntitySpawnReason.BREEDING);
    }
 
    public boolean isFood(ItemStack var1) {
       return var1.is(ItemTags.STRIDER_FOOD);
    }
 
-   protected void dropEquipment() {
-      super.dropEquipment();
+   protected void dropEquipment(ServerLevel var1) {
+      super.dropEquipment(var1);
       if (this.isSaddled()) {
-         this.spawnAtLocation(Items.SADDLE);
+         this.spawnAtLocation(var1, Items.SADDLE);
       }
 
    }
@@ -413,12 +411,12 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
             var1.startRiding(this);
          }
 
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          InteractionResult var4 = super.mobInteract(var1, var2);
          if (!var4.consumesAction()) {
             ItemStack var5 = var1.getItemInHand(var2);
-            return var5.is(Items.SADDLE) ? var5.interactLivingEntity(var1, this, var2) : InteractionResult.PASS;
+            return (InteractionResult)(var5.is(Items.SADDLE) ? var5.interactLivingEntity(var1, this, var2) : InteractionResult.PASS);
          } else {
             if (var3 && !this.isSilent()) {
                this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)SoundEvents.STRIDER_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
@@ -434,20 +432,20 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    }
 
    @Nullable
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       if (this.isBaby()) {
          return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
       } else {
          RandomSource var5 = var1.getRandom();
          if (var5.nextInt(30) == 0) {
-            Mob var6 = (Mob)EntityType.ZOMBIFIED_PIGLIN.create(var1.getLevel());
+            Mob var6 = (Mob)EntityType.ZOMBIFIED_PIGLIN.create(var1.getLevel(), EntitySpawnReason.JOCKEY);
             if (var6 != null) {
                var4 = this.spawnJockey(var1, var2, var6, new Zombie.ZombieGroupData(Zombie.getSpawnAsBabyOdds(var5), false));
                var6.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WARPED_FUNGUS_ON_A_STICK));
                this.equipSaddle(new ItemStack(Items.SADDLE), (SoundSource)null);
             }
          } else if (var5.nextInt(10) == 0) {
-            AgeableMob var7 = (AgeableMob)EntityType.STRIDER.create(var1.getLevel());
+            AgeableMob var7 = (AgeableMob)EntityType.STRIDER.create(var1.getLevel(), EntitySpawnReason.JOCKEY);
             if (var7 != null) {
                var7.setAge(-24000);
                var4 = this.spawnJockey(var1, var2, var7, (SpawnGroupData)null);
@@ -462,7 +460,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
 
    private SpawnGroupData spawnJockey(ServerLevelAccessor var1, DifficultyInstance var2, Mob var3, @Nullable SpawnGroupData var4) {
       var3.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
-      var3.finalizeSpawn(var1, var2, MobSpawnType.JOCKEY, var4);
+      var3.finalizeSpawn(var1, var2, EntitySpawnReason.JOCKEY, var4);
       var3.startRiding(this, true);
       return new AgeableMob.AgeableMobGroupData(0.0F);
    }

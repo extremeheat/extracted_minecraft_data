@@ -107,12 +107,6 @@ public class LookControl implements Control {
       return !(Math.abs(var3) > 9.999999747378752E-6) && !(Math.abs(var1) > 9.999999747378752E-6) ? Optional.empty() : Optional.of((float)(Mth.atan2(var3, var1) * 57.2957763671875) - 90.0F);
    }
 
-   protected float rotateTowards(float var1, float var2, float var3) {
-      float var4 = Mth.degreesDifference(var1, var2);
-      float var5 = Mth.clamp(var4, -var3, var3);
-      return var1 + var5;
-   }
-
    private static double getWantedY(Entity var0) {
       return var0 instanceof LivingEntity ? var0.getEyeY() : (var0.getBoundingBox().minY + var0.getBoundingBox().maxY) / 2.0;
    }

@@ -9,19 +9,21 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class RedstoneWallTorchBlock extends RedstoneTorchBlock {
    public static final MapCodec<RedstoneWallTorchBlock> CODEC = simpleCodec(RedstoneWallTorchBlock::new);
-   public static final DirectionProperty FACING;
+   public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty LIT;
 
    public MapCodec<RedstoneWallTorchBlock> codec() {
@@ -33,10 +35,6 @@ public class RedstoneWallTorchBlock extends RedstoneTorchBlock {
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(LIT, true));
    }
 
-   public String getDescriptionId() {
-      return this.asItem().getDescriptionId();
-   }
-
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return WallTorchBlock.getShape(var1);
    }
@@ -45,8 +43,8 @@ public class RedstoneWallTorchBlock extends RedstoneTorchBlock {
       return WallTorchBlock.canSurvive(var2, var3, (Direction)var1.getValue(FACING));
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return var2.getOpposite() == var1.getValue(FACING) && !var1.canSurvive(var4, var5) ? Blocks.AIR.defaultBlockState() : var1;
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      return var5.getOpposite() == var1.getValue(FACING) && !var1.canSurvive(var2, var4) ? Blocks.AIR.defaultBlockState() : var1;
    }
 
    @Nullable
@@ -85,6 +83,11 @@ public class RedstoneWallTorchBlock extends RedstoneTorchBlock {
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(FACING, LIT);
+   }
+
+   @Nullable
+   protected Orientation randomOrientation(Level var1, BlockState var2) {
+      return ExperimentalRedstoneUtils.initialOrientation(var1, ((Direction)var2.getValue(FACING)).getOpposite(), Direction.UP);
    }
 
    static {

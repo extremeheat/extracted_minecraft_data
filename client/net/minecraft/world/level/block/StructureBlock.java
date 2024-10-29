@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.StructureMode;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
@@ -39,7 +40,7 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       BlockEntity var6 = var2.getBlockEntity(var3);
       if (var6 instanceof StructureBlockEntity) {
-         return ((StructureBlockEntity)var6).usedBy(var4) ? InteractionResult.sidedSuccess(var2.isClientSide) : InteractionResult.PASS;
+         return (InteractionResult)(((StructureBlockEntity)var6).usedBy(var4) ? InteractionResult.SUCCESS : InteractionResult.PASS);
       } else {
          return InteractionResult.PASS;
       }
@@ -65,7 +66,7 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
       var1.add(MODE);
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       if (var2 instanceof ServerLevel) {
          BlockEntity var7 = var2.getBlockEntity(var3);
          if (var7 instanceof StructureBlockEntity) {

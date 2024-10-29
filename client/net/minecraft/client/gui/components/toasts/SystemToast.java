@@ -9,6 +9,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
@@ -27,6 +28,7 @@ public class SystemToast implements Toast {
    private boolean changed;
    private final int width;
    private boolean forceHide;
+   private Toast.Visibility wantedVisibility;
 
    public SystemToast(SystemToastId var1, Component var2, @Nullable Component var3) {
       this(var1, var2, nullToEmpty(var3), Math.max(160, 30 + Math.max(Minecraft.getInstance().font.width((FormattedText)var2), var3 == null ? 0 : Minecraft.getInstance().font.width((FormattedText)var3))));
@@ -43,6 +45,7 @@ public class SystemToast implements Toast {
 
    private SystemToast(SystemToastId var1, Component var2, List<FormattedCharSequence> var3, int var4) {
       super();
+      this.wantedVisibility = Toast.Visibility.HIDE;
       this.id = var1;
       this.title = var2;
       this.messageLines = var3;
@@ -65,16 +68,26 @@ public class SystemToast implements Toast {
       this.forceHide = true;
    }
 
-   public Toast.Visibility render(GuiGraphics var1, ToastComponent var2, long var3) {
+   public Toast.Visibility getWantedVisibility() {
+      return this.wantedVisibility;
+   }
+
+   public void update(ToastManager var1, long var2) {
       if (this.changed) {
-         this.lastChanged = var3;
+         this.lastChanged = var2;
          this.changed = false;
       }
 
+      double var4 = (double)this.id.displayTime * var1.getNotificationDisplayTimeMultiplier();
+      long var6 = var2 - this.lastChanged;
+      this.wantedVisibility = !this.forceHide && (double)var6 < var4 ? Toast.Visibility.SHOW : Toast.Visibility.HIDE;
+   }
+
+   public void render(GuiGraphics var1, Font var2, long var3) {
       int var5 = this.width();
       int var6;
       if (var5 == 160 && this.messageLines.size() <= 1) {
-         var1.blitSprite(BACKGROUND_SPRITE, 0, 0, var5, this.height());
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, var5, this.height());
       } else {
          var6 = this.height();
          boolean var7 = true;
@@ -89,31 +102,28 @@ public class SystemToast implements Toast {
       }
 
       if (this.messageLines.isEmpty()) {
-         var1.drawString(var2.getMinecraft().font, (Component)this.title, 18, 12, -256, false);
+         var1.drawString(var2, (Component)this.title, 18, 12, -256, false);
       } else {
-         var1.drawString(var2.getMinecraft().font, (Component)this.title, 18, 7, -256, false);
+         var1.drawString(var2, (Component)this.title, 18, 7, -256, false);
 
          for(var6 = 0; var6 < this.messageLines.size(); ++var6) {
-            var1.drawString(var2.getMinecraft().font, (FormattedCharSequence)((FormattedCharSequence)this.messageLines.get(var6)), 18, 18 + var6 * 12, -1, false);
+            var1.drawString(var2, (FormattedCharSequence)((FormattedCharSequence)this.messageLines.get(var6)), 18, 18 + var6 * 12, -1, false);
          }
       }
 
-      double var10 = (double)this.id.displayTime * var2.getNotificationDisplayTimeMultiplier();
-      long var11 = var3 - this.lastChanged;
-      return !this.forceHide && (double)var11 < var10 ? Toast.Visibility.SHOW : Toast.Visibility.HIDE;
    }
 
    private void renderBackgroundRow(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       int var6 = var3 == 0 ? 20 : 5;
       int var7 = Math.min(60, var2 - var6);
       ResourceLocation var8 = BACKGROUND_SPRITE;
-      var1.blitSprite(var8, 160, 32, 0, var3, 0, var4, var6, var5);
+      var1.blitSprite(RenderType::guiTextured, var8, 160, 32, 0, var3, 0, var4, var6, var5);
 
       for(int var9 = var6; var9 < var2 - var7; var9 += 64) {
-         var1.blitSprite(var8, 160, 32, 32, var3, var9, var4, Math.min(64, var2 - var9 - var7), var5);
+         var1.blitSprite(RenderType::guiTextured, var8, 160, 32, 32, var3, var9, var4, Math.min(64, var2 - var9 - var7), var5);
       }
 
-      var1.blitSprite(var8, 160, 32, 160 - var7, var3, var2 - var7, var4, var7, var5);
+      var1.blitSprite(RenderType::guiTextured, var8, 160, 32, 160 - var7, var3, var2 - var7, var4, var7, var5);
    }
 
    public void reset(Component var1, @Nullable Component var2) {
@@ -126,11 +136,11 @@ public class SystemToast implements Toast {
       return this.id;
    }
 
-   public static void add(ToastComponent var0, SystemToastId var1, Component var2, @Nullable Component var3) {
+   public static void add(ToastManager var0, SystemToastId var1, Component var2, @Nullable Component var3) {
       var0.addToast(new SystemToast(var1, var2, var3));
    }
 
-   public static void addOrUpdate(ToastComponent var0, SystemToastId var1, Component var2, @Nullable Component var3) {
+   public static void addOrUpdate(ToastManager var0, SystemToastId var1, Component var2, @Nullable Component var3) {
       SystemToast var4 = (SystemToast)var0.getToast(SystemToast.class, var1);
       if (var4 == null) {
          add(var0, var1, var2, var3);
@@ -140,7 +150,7 @@ public class SystemToast implements Toast {
 
    }
 
-   public static void forceHide(ToastComponent var0, SystemToastId var1) {
+   public static void forceHide(ToastManager var0, SystemToastId var1) {
       SystemToast var2 = (SystemToast)var0.getToast(SystemToast.class, var1);
       if (var2 != null) {
          var2.forceHide();
@@ -149,31 +159,31 @@ public class SystemToast implements Toast {
    }
 
    public static void onWorldAccessFailure(Minecraft var0, String var1) {
-      add(var0.getToasts(), SystemToast.SystemToastId.WORLD_ACCESS_FAILURE, Component.translatable("selectWorld.access_failure"), Component.literal(var1));
+      add(var0.getToastManager(), SystemToast.SystemToastId.WORLD_ACCESS_FAILURE, Component.translatable("selectWorld.access_failure"), Component.literal(var1));
    }
 
    public static void onWorldDeleteFailure(Minecraft var0, String var1) {
-      add(var0.getToasts(), SystemToast.SystemToastId.WORLD_ACCESS_FAILURE, Component.translatable("selectWorld.delete_failure"), Component.literal(var1));
+      add(var0.getToastManager(), SystemToast.SystemToastId.WORLD_ACCESS_FAILURE, Component.translatable("selectWorld.delete_failure"), Component.literal(var1));
    }
 
    public static void onPackCopyFailure(Minecraft var0, String var1) {
-      add(var0.getToasts(), SystemToast.SystemToastId.PACK_COPY_FAILURE, Component.translatable("pack.copyFailure"), Component.literal(var1));
+      add(var0.getToastManager(), SystemToast.SystemToastId.PACK_COPY_FAILURE, Component.translatable("pack.copyFailure"), Component.literal(var1));
    }
 
    public static void onFileDropFailure(Minecraft var0, int var1) {
-      add(var0.getToasts(), SystemToast.SystemToastId.FILE_DROP_FAILURE, Component.translatable("gui.fileDropFailure.title"), Component.translatable("gui.fileDropFailure.detail", var1));
+      add(var0.getToastManager(), SystemToast.SystemToastId.FILE_DROP_FAILURE, Component.translatable("gui.fileDropFailure.title"), Component.translatable("gui.fileDropFailure.detail", var1));
    }
 
    public static void onLowDiskSpace(Minecraft var0) {
-      addOrUpdate(var0.getToasts(), SystemToast.SystemToastId.LOW_DISK_SPACE, Component.translatable("chunk.toast.lowDiskSpace"), Component.translatable("chunk.toast.lowDiskSpace.description"));
+      addOrUpdate(var0.getToastManager(), SystemToast.SystemToastId.LOW_DISK_SPACE, Component.translatable("chunk.toast.lowDiskSpace"), Component.translatable("chunk.toast.lowDiskSpace.description"));
    }
 
    public static void onChunkLoadFailure(Minecraft var0, ChunkPos var1) {
-      addOrUpdate(var0.getToasts(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE, Component.translatable("chunk.toast.loadFailure", Component.translationArg(var1)).withStyle(ChatFormatting.RED), Component.translatable("chunk.toast.checkLog"));
+      addOrUpdate(var0.getToastManager(), SystemToast.SystemToastId.CHUNK_LOAD_FAILURE, Component.translatable("chunk.toast.loadFailure", Component.translationArg(var1)).withStyle(ChatFormatting.RED), Component.translatable("chunk.toast.checkLog"));
    }
 
    public static void onChunkSaveFailure(Minecraft var0, ChunkPos var1) {
-      addOrUpdate(var0.getToasts(), SystemToast.SystemToastId.CHUNK_SAVE_FAILURE, Component.translatable("chunk.toast.saveFailure", Component.translationArg(var1)).withStyle(ChatFormatting.RED), Component.translatable("chunk.toast.checkLog"));
+      addOrUpdate(var0.getToastManager(), SystemToast.SystemToastId.CHUNK_SAVE_FAILURE, Component.translatable("chunk.toast.saveFailure", Component.translationArg(var1)).withStyle(ChatFormatting.RED), Component.translatable("chunk.toast.checkLog"));
    }
 
    // $FF: synthetic method

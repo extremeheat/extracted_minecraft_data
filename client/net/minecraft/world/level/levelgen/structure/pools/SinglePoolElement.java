@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import net.minecraft.Optionull;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -42,6 +41,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public class SinglePoolElement extends StructurePoolElement {
+   private static final Comparator<StructureTemplate.JigsawBlockInfo> HIGHEST_SELECTION_PRIORITY_FIRST = Comparator.comparingInt(StructureTemplate.JigsawBlockInfo::selectionPriority).reversed();
    private static final Codec<Either<ResourceLocation, StructureTemplate>> TEMPLATE_CODEC;
    public static final MapCodec<SinglePoolElement> CODEC;
    protected final Either<ResourceLocation, StructureTemplate> template;
@@ -111,21 +111,16 @@ public class SinglePoolElement extends StructurePoolElement {
       return var7;
    }
 
-   public List<StructureTemplate.StructureBlockInfo> getShuffledJigsawBlocks(StructureTemplateManager var1, BlockPos var2, Rotation var3, RandomSource var4) {
-      StructureTemplate var5 = this.getTemplate(var1);
-      ObjectArrayList var6 = var5.filterBlocks(var2, (new StructurePlaceSettings()).setRotation(var3), Blocks.JIGSAW, true);
-      Util.shuffle(var6, var4);
-      sortBySelectionPriority(var6);
-      return var6;
+   public List<StructureTemplate.JigsawBlockInfo> getShuffledJigsawBlocks(StructureTemplateManager var1, BlockPos var2, Rotation var3, RandomSource var4) {
+      List var5 = this.getTemplate(var1).getJigsaws(var2, var3);
+      Util.shuffle(var5, var4);
+      sortBySelectionPriority(var5);
+      return var5;
    }
 
    @VisibleForTesting
-   static void sortBySelectionPriority(List<StructureTemplate.StructureBlockInfo> var0) {
-      var0.sort(Comparator.comparingInt((var0x) -> {
-         return (Integer)Optionull.mapOrDefault(var0x.nbt(), (var0) -> {
-            return var0.getInt("selection_priority");
-         }, 0);
-      }).reversed());
+   static void sortBySelectionPriority(List<StructureTemplate.JigsawBlockInfo> var0) {
+      var0.sort(HIGHEST_SELECTION_PRIORITY_FIRST);
    }
 
    public BoundingBox getBoundingBox(StructureTemplateManager var1, BlockPos var2, Rotation var3) {

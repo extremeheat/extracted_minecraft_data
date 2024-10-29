@@ -45,6 +45,7 @@ public class EditWorldScreen extends Screen {
    private static final Component OPTIMIZE_BUTTON;
    private static final Component OPTIMIZE_TITLE;
    private static final Component OPTIMIIZE_DESCRIPTION;
+   private static final Component OPTIMIIZE_CONFIRMATION;
    private static final Component SAVE_BUTTON;
    private static final int DEFAULT_WIDTH = 200;
    private static final int VERTICAL_SPACING = 4;
@@ -114,7 +115,7 @@ public class EditWorldScreen extends Screen {
             }
 
             var1.setScreen(OptimizeWorldScreen.create(var1, this.callback, var1.getFixerUpper(), var2, var4));
-         }, OPTIMIZE_TITLE, OPTIMIIZE_DESCRIPTION, true));
+         }, OPTIMIZE_TITLE, OPTIMIIZE_DESCRIPTION, OPTIMIIZE_CONFIRMATION, true));
       }).width(200).build());
       this.layout.addChild(new SpacerElement(200, 20));
       this.layout.addChild(var6);
@@ -166,12 +167,12 @@ public class EditWorldScreen extends Screen {
       if (var3 != null) {
          var4 = Component.translatable("selectWorld.edit.backupFailed");
          var5 = Component.literal(var3.getMessage());
-         Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, var4, var5));
+         Minecraft.getInstance().getToastManager().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, var4, var5));
          return false;
       } else {
          var4 = Component.translatable("selectWorld.edit.backupCreated", var0.getLevelId());
          var5 = Component.translatable("selectWorld.edit.backupSize", Mth.ceil((double)var1 / 1048576.0));
-         Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, var4, var5));
+         Minecraft.getInstance().getToastManager().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, var4, var5));
          return true;
       }
    }
@@ -190,6 +191,7 @@ public class EditWorldScreen extends Screen {
       OPTIMIZE_BUTTON = Component.translatable("selectWorld.edit.optimize");
       OPTIMIZE_TITLE = Component.translatable("optimizeWorld.confirm.title");
       OPTIMIIZE_DESCRIPTION = Component.translatable("optimizeWorld.confirm.description");
+      OPTIMIIZE_CONFIRMATION = Component.translatable("optimizeWorld.confirm.proceed");
       SAVE_BUTTON = Component.translatable("selectWorld.edit.save");
    }
 }

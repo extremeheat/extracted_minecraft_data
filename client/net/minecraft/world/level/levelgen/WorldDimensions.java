@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.RegistrationInfo;
 import net.minecraft.core.Registry;
@@ -49,7 +50,7 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
    }
 
    public WorldDimensions(Registry<LevelStem> var1) {
-      this((Map)var1.holders().collect(Collectors.toMap(Holder.Reference::key, Holder.Reference::value)));
+      this((Map)var1.listElements().collect(Collectors.toMap(Holder.Reference::key, Holder.Reference::value)));
    }
 
    public static Stream<ResourceKey<LevelStem>> keysInOrder(Stream<ResourceKey<LevelStem>> var0) {
@@ -58,15 +59,15 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
       }));
    }
 
-   public WorldDimensions replaceOverworldGenerator(RegistryAccess var1, ChunkGenerator var2) {
-      Registry var3 = var1.registryOrThrow(Registries.DIMENSION_TYPE);
-      Map var4 = withOverworld(var3, this.dimensions, var2);
+   public WorldDimensions replaceOverworldGenerator(HolderLookup.Provider var1, ChunkGenerator var2) {
+      HolderLookup.RegistryLookup var3 = var1.lookupOrThrow(Registries.DIMENSION_TYPE);
+      Map var4 = withOverworld((HolderLookup)var3, (Map)this.dimensions, var2);
       return new WorldDimensions(var4);
    }
 
-   public static Map<ResourceKey<LevelStem>, LevelStem> withOverworld(Registry<DimensionType> var0, Map<ResourceKey<LevelStem>, LevelStem> var1, ChunkGenerator var2) {
+   public static Map<ResourceKey<LevelStem>, LevelStem> withOverworld(HolderLookup<DimensionType> var0, Map<ResourceKey<LevelStem>, LevelStem> var1, ChunkGenerator var2) {
       LevelStem var3 = (LevelStem)var1.get(LevelStem.OVERWORLD);
-      Object var4 = var3 == null ? var0.getHolderOrThrow(BuiltinDimensionTypes.OVERWORLD) : var3.type();
+      Object var4 = var3 == null ? var0.getOrThrow(BuiltinDimensionTypes.OVERWORLD) : var3.type();
       return withOverworld((Map)var1, (Holder)var4, var2);
    }
 

@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.monster;
 
-import java.util.function.Predicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
@@ -30,7 +29,9 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableWitchTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestHealableRaiderTargetGoal;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ThrownPotion;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.ItemStack;
@@ -55,10 +56,10 @@ public class Witch extends Raider implements RangedAttackMob {
 
    protected void registerGoals() {
       super.registerGoals();
-      this.healRaidersGoal = new NearestHealableRaiderTargetGoal(this, Raider.class, true, (var1) -> {
-         return var1 != null && this.hasActiveRaid() && var1.getType() != EntityType.WITCH;
+      this.healRaidersGoal = new NearestHealableRaiderTargetGoal(this, Raider.class, true, (var1, var2) -> {
+         return this.hasActiveRaid() && var1.getType() != EntityType.WITCH;
       });
-      this.attackPlayersGoal = new NearestAttackableWitchTargetGoal(this, Player.class, 10, true, false, (Predicate)null);
+      this.attackPlayersGoal = new NearestAttackableWitchTargetGoal(this, Player.class, 10, true, false, (TargetingConditions.Selector)null);
       this.goalSelector.addGoal(1, new FloatGoal(this));
       this.goalSelector.addGoal(2, new RangedAttackGoal(this, 1.0, 60, 10.0F));
       this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 1.0));
@@ -206,15 +207,17 @@ public class Witch extends Raider implements RangedAttackMob {
             var12 = Potions.WEAKNESS;
          }
 
-         ThrownPotion var13 = new ThrownPotion(this.level(), this);
-         var13.setItem(PotionContents.createItemStack(Items.SPLASH_POTION, var12));
-         var13.setXRot(var13.getXRot() - -20.0F);
-         var13.shoot(var4, var6 + var10 * 0.2, var8, 0.75F, 8.0F);
+         Level var14 = this.level();
+         if (var14 instanceof ServerLevel) {
+            ServerLevel var13 = (ServerLevel)var14;
+            ItemStack var15 = PotionContents.createItemStack(Items.SPLASH_POTION, var12);
+            Projectile.spawnProjectileUsingShoot(ThrownPotion::new, var13, var15, this, var4, var6 + var10 * 0.2, var8, 0.75F, 8.0F);
+         }
+
          if (!this.isSilent()) {
             this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)SoundEvents.WITCH_THROW, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
          }
 
-         this.level().addFreshEntity(var13);
       }
    }
 

@@ -13,6 +13,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -66,18 +68,18 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
       var2.setBlock(var3, updateDistance(var1, var2, var3), 3);
    }
 
-   protected int getLightBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected int getLightBlock(BlockState var1) {
       return 1;
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
       if ((Boolean)var1.getValue(WATERLOGGED)) {
-         var4.scheduleTick(var5, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var4));
+         var3.scheduleTick(var4, (Fluid)Fluids.WATER, Fluids.WATER.getTickDelay(var2));
       }
 
-      int var7 = getDistanceAt(var3) + 1;
-      if (var7 != 1 || (Integer)var1.getValue(DISTANCE) != var7) {
-         var4.scheduleTick(var5, (Block)this, 1);
+      int var9 = getDistanceAt(var7) + 1;
+      if (var9 != 1 || (Integer)var1.getValue(DISTANCE) != var9) {
+         var3.scheduleTick(var4, (Block)this, 1);
       }
 
       return var1;

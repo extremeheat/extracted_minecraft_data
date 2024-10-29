@@ -7,12 +7,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.component.MapPostProcessing;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 public class MapExtendingRecipe extends ShapedRecipe {
    public MapExtendingRecipe(CraftingBookCategory var1) {
-      super("", var1, ShapedRecipePattern.of(Map.of('#', Ingredient.of(Items.PAPER), 'x', Ingredient.of(Items.FILLED_MAP)), "###", "#x#", "###"), new ItemStack(Items.MAP));
+      super("", var1, ShapedRecipePattern.of(Map.of('#', Ingredient.of((ItemLike)Items.PAPER), 'x', Ingredient.of((ItemLike)Items.FILLED_MAP)), "###", "#x#", "###"), new ItemStack(Items.MAP));
    }
 
    public boolean matches(CraftingInput var1, Level var2) {
@@ -44,7 +45,7 @@ public class MapExtendingRecipe extends ShapedRecipe {
    private static ItemStack findFilledMap(CraftingInput var0) {
       for(int var1 = 0; var1 < var0.size(); ++var1) {
          ItemStack var2 = var0.getItem(var1);
-         if (var2.is(Items.FILLED_MAP)) {
+         if (var2.has(DataComponents.MAP_ID)) {
             return var2;
          }
       }
@@ -56,7 +57,7 @@ public class MapExtendingRecipe extends ShapedRecipe {
       return true;
    }
 
-   public RecipeSerializer<?> getSerializer() {
+   public RecipeSerializer<MapExtendingRecipe> getSerializer() {
       return RecipeSerializer.MAP_EXTENDING;
    }
 }

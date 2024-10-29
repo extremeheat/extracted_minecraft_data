@@ -59,8 +59,8 @@ public final class BelowZeroRetrogen {
 
    public void applyBedrockMask(ProtoChunk var1) {
       LevelHeightAccessor var2 = var1.getHeightAccessorForGeneration();
-      int var3 = var2.getMinBuildHeight();
-      int var4 = var2.getMaxBuildHeight() - 1;
+      int var3 = var2.getMinY();
+      int var4 = var2.getMaxY();
 
       for(int var5 = 0; var5 < 16; ++var5) {
          for(int var6 = 0; var6 < 16; ++var6) {
@@ -122,7 +122,7 @@ public final class BelowZeroRetrogen {
             return 64;
          }
 
-         public int getMinBuildHeight() {
+         public int getMinY() {
             return -64;
          }
       };

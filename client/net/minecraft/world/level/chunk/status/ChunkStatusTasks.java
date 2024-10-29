@@ -5,13 +5,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ChunkTaskPriorityQueueSorter;
 import net.minecraft.server.level.GenerationChunkHolder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ThreadedLevelLightEngine;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.util.StaticCache2D;
-import net.minecraft.util.thread.ProcessorHandle;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -19,7 +18,6 @@ import net.minecraft.world.level.chunk.ImposterProtoChunk;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.levelgen.BelowZeroRetrogen;
-import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.blending.Blender;
 
@@ -96,7 +94,7 @@ public class ChunkStatusTasks {
          Blender.addAroundOldChunksCarvingMaskFilter(var5, var6);
       }
 
-      var0.generator().applyCarvers(var5, var4.getSeed(), var4.getChunkSource().randomState(), var4.getBiomeManager(), var4.structureManager().forWorldGenRegion(var5), var3, GenerationStep.Carving.AIR);
+      var0.generator().applyCarvers(var5, var4.getSeed(), var4.getChunkSource().randomState(), var4.getBiomeManager(), var4.structureManager().forWorldGenRegion(var5), var3);
       return CompletableFuture.completedFuture(var3);
    }
 
@@ -137,8 +135,8 @@ public class ChunkStatusTasks {
          ProtoChunk var3x = (ProtoChunk)var3;
          ServerLevel var5x = var0.level();
          LevelChunk var4;
-         if (var3x instanceof ImposterProtoChunk) {
-            var4 = ((ImposterProtoChunk)var3x).getWrapped();
+         if (var3x instanceof ImposterProtoChunk var6) {
+            var4 = var6.getWrapped();
          } else {
             var4 = new LevelChunk(var5x, var3x, (var2) -> {
                postLoadProtoChunk(var5x, var3x.getEntities());
@@ -152,18 +150,14 @@ public class ChunkStatusTasks {
          var4.setLoaded(true);
          var4.registerAllBlockEntitiesAfterLevelLoad();
          var4.registerTickContainerInLevel(var5x);
+         var4.setUnsavedListener(var0.unsavedListener());
          return var4;
-      }, (var3x) -> {
-         ProcessorHandle var10000 = var0.mainThreadMailBox();
-         long var10002 = var4.toLong();
-         Objects.requireNonNull(var5);
-         var10000.tell(ChunkTaskPriorityQueueSorter.message(var3x, var10002, var5::getTicketLevel));
-      });
+      }, var0.mainThreadExecutor());
    }
 
    private static void postLoadProtoChunk(ServerLevel var0, List<CompoundTag> var1) {
       if (!var1.isEmpty()) {
-         var0.addWorldGenChunkEntities(EntityType.loadEntitiesRecursive(var1, var0));
+         var0.addWorldGenChunkEntities(EntityType.loadEntitiesRecursive(var1, var0, EntitySpawnReason.LOAD));
       }
 
    }

@@ -44,6 +44,7 @@ public class SculkSpreader {
    public static final float MAX_DECAY_FACTOR = 0.5F;
    private static final int MAX_CURSORS = 32;
    public static final int SHRIEKER_PLACEMENT_RATE = 11;
+   public static final int MAX_CURSOR_DISTANCE = 1024;
    final boolean isWorldGeneration;
    private final TagKey<Block> replaceableBlocks;
    private final int growthSpawnCost;
@@ -152,9 +153,33 @@ public class SculkSpreader {
          Iterator var8 = this.cursors.iterator();
 
          while(true) {
-            BlockPos var10;
-            while(var8.hasNext()) {
-               ChargeCursor var9 = (ChargeCursor)var8.next();
+            while(true) {
+               ChargeCursor var9;
+               BlockPos var10;
+               do {
+                  if (!var8.hasNext()) {
+                     ObjectIterator var16 = var7.object2IntEntrySet().iterator();
+
+                     while(var16.hasNext()) {
+                        Object2IntMap.Entry var17 = (Object2IntMap.Entry)var16.next();
+                        var10 = (BlockPos)var17.getKey();
+                        int var18 = var17.getIntValue();
+                        ChargeCursor var12 = (ChargeCursor)var6.get(var10);
+                        Set var13 = var12 == null ? null : var12.getFacingData();
+                        if (var18 > 0 && var13 != null) {
+                           int var14 = (int)(Math.log1p((double)var18) / 2.299999952316284) + 1;
+                           int var15 = (var14 << 6) + MultifaceBlock.pack(var13);
+                           var1.levelEvent(3006, var10, var15);
+                        }
+                     }
+
+                     this.cursors = var5;
+                     return;
+                  }
+
+                  var9 = (ChargeCursor)var8.next();
+               } while(var9.isPosUnreasonable(var2));
+
                var9.update(var1, var2, var3, this, var4);
                if (var9.charge <= 0) {
                   var1.levelEvent(3006, var9.getPos(), 0);
@@ -177,24 +202,6 @@ public class SculkSpreader {
                   }
                }
             }
-
-            ObjectIterator var16 = var7.object2IntEntrySet().iterator();
-
-            while(var16.hasNext()) {
-               Object2IntMap.Entry var17 = (Object2IntMap.Entry)var16.next();
-               var10 = (BlockPos)var17.getKey();
-               int var18 = var17.getIntValue();
-               ChargeCursor var12 = (ChargeCursor)var6.get(var10);
-               Set var13 = var12 == null ? null : var12.getFacingData();
-               if (var18 > 0 && var13 != null) {
-                  int var14 = (int)(Math.log1p((double)var18) / 2.299999952316284) + 1;
-                  int var15 = (var14 << 6) + MultifaceBlock.pack(var13);
-                  var1.levelEvent(3006, var10, var15);
-               }
-            }
-
-            this.cursors = var5;
-            return;
          }
       }
    }
@@ -237,6 +244,10 @@ public class SculkSpreader {
 
       public BlockPos getPos() {
          return this.pos;
+      }
+
+      boolean isPosUnreasonable(BlockPos var1) {
+         return this.pos.distChessboard(var1) > 1024;
       }
 
       public int getCharge() {

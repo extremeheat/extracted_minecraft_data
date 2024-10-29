@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -14,11 +15,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.FlyingMob;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
@@ -45,7 +46,7 @@ public class Ghast extends FlyingMob implements Enemy {
       this.goalSelector.addGoal(5, new RandomFloatAroundGoal(this));
       this.goalSelector.addGoal(7, new GhastLookGoal(this));
       this.goalSelector.addGoal(7, new GhastShootFireballGoal(this));
-      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (var1) -> {
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (var1, var2) -> {
          return Math.abs(var1.getY() - this.getY()) <= 4.0;
       }));
    }
@@ -70,16 +71,16 @@ public class Ghast extends FlyingMob implements Enemy {
       return var0.getDirectEntity() instanceof LargeFireball && var0.getEntity() instanceof Player;
    }
 
-   public boolean isInvulnerableTo(DamageSource var1) {
-      return this.isInvulnerable() && !var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || !isReflectedFireball(var1) && super.isInvulnerableTo(var1);
+   public boolean isInvulnerableTo(ServerLevel var1, DamageSource var2) {
+      return this.isInvulnerable() && !var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || !isReflectedFireball(var2) && super.isInvulnerableTo(var1, var2);
    }
 
-   public boolean hurt(DamageSource var1, float var2) {
-      if (isReflectedFireball(var1)) {
-         super.hurt(var1, 1000.0F);
+   public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      if (isReflectedFireball(var2)) {
+         super.hurtServer(var1, var2, 1000.0F);
          return true;
       } else {
-         return this.isInvulnerableTo(var1) ? false : super.hurt(var1, var2);
+         return this.isInvulnerableTo(var1, var2) ? false : super.hurtServer(var1, var2, var3);
       }
    }
 
@@ -112,7 +113,7 @@ public class Ghast extends FlyingMob implements Enemy {
       return 5.0F;
    }
 
-   public static boolean checkGhastSpawnRules(EntityType<Ghast> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkGhastSpawnRules(EntityType<Ghast> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       return var1.getDifficulty() != Difficulty.PEACEFUL && var4.nextInt(20) == 0 && checkMobSpawnRules(var0, var1, var2, var3, var4);
    }
 

@@ -11,15 +11,16 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -31,6 +32,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class NoteBlock extends Block {
@@ -49,7 +51,7 @@ public class NoteBlock extends Block {
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(INSTRUMENT, NoteBlockInstrument.HARP)).setValue(NOTE, 0)).setValue(POWERED, false));
    }
 
-   private BlockState setInstrument(LevelAccessor var1, BlockPos var2, BlockState var3) {
+   private BlockState setInstrument(LevelReader var1, BlockPos var2, BlockState var3) {
       NoteBlockInstrument var4 = var1.getBlockState(var2.above()).instrument();
       if (var4.worksAboveNoteBlock()) {
          return (BlockState)var3.setValue(INSTRUMENT, var4);
@@ -64,12 +66,12 @@ public class NoteBlock extends Block {
       return this.setInstrument(var1.getLevel(), var1.getClickedPos(), this.defaultBlockState());
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      boolean var7 = var2.getAxis() == Direction.Axis.Y;
-      return var7 ? this.setInstrument(var4, var5, var1) : super.updateShape(var1, var2, var3, var4, var5, var6);
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      boolean var9 = var5.getAxis() == Direction.Axis.Y;
+      return var9 ? this.setInstrument(var2, var4, var1) : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       boolean var7 = var2.hasNeighborSignal(var3);
       if (var7 != (Boolean)var1.getValue(POWERED)) {
          if (var7) {
@@ -89,20 +91,19 @@ public class NoteBlock extends Block {
 
    }
 
-   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
-      return var1.is(ItemTags.NOTE_BLOCK_TOP_INSTRUMENTS) && var7.getDirection() == Direction.UP ? ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION : super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
+   protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      return (InteractionResult)(var1.is(ItemTags.NOTE_BLOCK_TOP_INSTRUMENTS) && var7.getDirection() == Direction.UP ? InteractionResult.PASS : super.useItemOn(var1, var2, var3, var4, var5, var6, var7));
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
-      if (var2.isClientSide) {
-         return InteractionResult.SUCCESS;
-      } else {
+      if (!var2.isClientSide) {
          var1 = (BlockState)var1.cycle(NOTE);
          var2.setBlock(var3, var1, 3);
          this.playNote(var4, var1, var2, var3);
          var4.awardStat(Stats.TUNE_NOTEBLOCK);
-         return InteractionResult.CONSUME;
       }
+
+      return InteractionResult.SUCCESS;
    }
 
    protected void attack(BlockState var1, Level var2, BlockPos var3, Player var4) {

@@ -95,7 +95,7 @@ public interface MultiBufferSource {
          if (var3 != null) {
             if (var1.sortOnUpload()) {
                ByteBufferBuilder var4 = (ByteBufferBuilder)this.fixedBuffers.getOrDefault(var1, this.sharedBuffer);
-               var3.sortQuads(var4, RenderSystem.getVertexSorting());
+               var3.sortQuads(var4, RenderSystem.getProjectionType().vertexSorting());
             }
 
             var1.draw(var3);

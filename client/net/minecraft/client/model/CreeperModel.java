@@ -7,11 +7,10 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.CreeperRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 
-public class CreeperModel<T extends Entity> extends HierarchicalModel<T> {
-   private final ModelPart root;
+public class CreeperModel extends EntityModel<CreeperRenderState> {
    private final ModelPart head;
    private final ModelPart rightHindLeg;
    private final ModelPart leftHindLeg;
@@ -20,8 +19,7 @@ public class CreeperModel<T extends Entity> extends HierarchicalModel<T> {
    private static final int Y_OFFSET = 6;
 
    public CreeperModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       this.head = var1.getChild("head");
       this.leftHindLeg = var1.getChild("right_hind_leg");
       this.rightHindLeg = var1.getChild("left_hind_leg");
@@ -42,16 +40,15 @@ public class CreeperModel<T extends Entity> extends HierarchicalModel<T> {
       return LayerDefinition.create(var1, 64, 32);
    }
 
-   public ModelPart root() {
-      return this.root;
-   }
-
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      this.head.yRot = var5 * 0.017453292F;
-      this.head.xRot = var6 * 0.017453292F;
-      this.rightHindLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
-      this.leftHindLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
-      this.rightFrontLeg.xRot = Mth.cos(var2 * 0.6662F + 3.1415927F) * 1.4F * var3;
-      this.leftFrontLeg.xRot = Mth.cos(var2 * 0.6662F) * 1.4F * var3;
+   public void setupAnim(CreeperRenderState var1) {
+      super.setupAnim(var1);
+      this.head.yRot = var1.yRot * 0.017453292F;
+      this.head.xRot = var1.xRot * 0.017453292F;
+      float var2 = var1.walkAnimationSpeed;
+      float var3 = var1.walkAnimationPos;
+      this.rightHindLeg.xRot = Mth.cos(var3 * 0.6662F) * 1.4F * var2;
+      this.leftHindLeg.xRot = Mth.cos(var3 * 0.6662F + 3.1415927F) * 1.4F * var2;
+      this.rightFrontLeg.xRot = Mth.cos(var3 * 0.6662F + 3.1415927F) * 1.4F * var2;
+      this.leftFrontLeg.xRot = Mth.cos(var3 * 0.6662F) * 1.4F * var2;
    }
 }

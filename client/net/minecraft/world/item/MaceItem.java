@@ -2,6 +2,7 @@ package net.minecraft.world.item;
 
 import java.util.List;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
@@ -50,38 +51,38 @@ public class MaceItem extends Item {
       return !var4.isCreative();
    }
 
-   public int getEnchantmentValue() {
-      return 15;
-   }
-
    public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
-      if (var3 instanceof ServerPlayer var4) {
-         if (canSmashAttack(var4)) {
-            ServerLevel var5 = (ServerLevel)var3.level();
-            if (var4.isIgnoringFallDamageFromCurrentImpulse() && var4.currentImpulseImpactPos != null) {
-               if (var4.currentImpulseImpactPos.y > var4.position().y) {
-                  var4.currentImpulseImpactPos = var4.position();
-               }
-            } else {
-               var4.currentImpulseImpactPos = var4.position();
-            }
-
-            var4.setIgnoreFallDamageFromCurrentImpulse(true);
-            var4.setDeltaMovement(var4.getDeltaMovement().with(Direction.Axis.Y, 0.009999999776482582));
-            var4.connection.send(new ClientboundSetEntityMotionPacket(var4));
-            if (var2.onGround()) {
-               var4.setSpawnExtraParticlesOnFall(true);
-               SoundEvent var6 = var4.fallDistance > 5.0F ? SoundEvents.MACE_SMASH_GROUND_HEAVY : SoundEvents.MACE_SMASH_GROUND;
-               var5.playSound((Player)null, var4.getX(), var4.getY(), var4.getZ(), var6, var4.getSoundSource(), 1.0F, 1.0F);
-            } else {
-               var5.playSound((Player)null, var4.getX(), var4.getY(), var4.getZ(), SoundEvents.MACE_SMASH_AIR, var4.getSoundSource(), 1.0F, 1.0F);
-            }
-
-            knockback(var5, var4, var2);
+      if (canSmashAttack(var3)) {
+         ServerLevel var4 = (ServerLevel)var3.level();
+         var3.setDeltaMovement(var3.getDeltaMovement().with(Direction.Axis.Y, 0.009999999776482582));
+         ServerPlayer var5;
+         if (var3 instanceof ServerPlayer) {
+            var5 = (ServerPlayer)var3;
+            var5.currentImpulseImpactPos = this.calculateImpactPosition(var5);
+            var5.setIgnoreFallDamageFromCurrentImpulse(true);
+            var5.connection.send(new ClientboundSetEntityMotionPacket(var5));
          }
+
+         if (var2.onGround()) {
+            if (var3 instanceof ServerPlayer) {
+               var5 = (ServerPlayer)var3;
+               var5.setSpawnExtraParticlesOnFall(true);
+            }
+
+            SoundEvent var6 = var3.fallDistance > 5.0F ? SoundEvents.MACE_SMASH_GROUND_HEAVY : SoundEvents.MACE_SMASH_GROUND;
+            var4.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), var6, var3.getSoundSource(), 1.0F, 1.0F);
+         } else {
+            var4.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), SoundEvents.MACE_SMASH_AIR, var3.getSoundSource(), 1.0F, 1.0F);
+         }
+
+         knockback(var4, var3, var2);
       }
 
       return true;
+   }
+
+   private Vec3 calculateImpactPosition(ServerPlayer var1) {
+      return var1.isIgnoringFallDamageFromCurrentImpulse() && var1.currentImpulseImpactPos != null && var1.currentImpulseImpactPos.y <= var1.position().y ? var1.currentImpulseImpactPos : var1.position();
    }
 
    public void postHurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
@@ -90,10 +91,6 @@ public class MaceItem extends Item {
          var3.resetFallDistance();
       }
 
-   }
-
-   public boolean isValidRepairItem(ItemStack var1, ItemStack var2) {
-      return var2.is(Items.BREEZE_ROD);
    }
 
    public float getAttackDamageBonus(Entity var1, float var2, DamageSource var3) {
@@ -127,7 +124,7 @@ public class MaceItem extends Item {
       }
    }
 
-   private static void knockback(Level var0, Player var1, Entity var2) {
+   private static void knockback(Level var0, Entity var1, Entity var2) {
       var0.levelEvent(2013, var2.getOnPos(), 750);
       var0.getEntitiesOfClass(LivingEntity.class, var2.getBoundingBox().inflate(3.5), knockbackPredicate(var1, var2)).forEach((var2x) -> {
          Vec3 var3 = var2x.position().subtract(var2.position());
@@ -144,7 +141,7 @@ public class MaceItem extends Item {
       });
    }
 
-   private static Predicate<LivingEntity> knockbackPredicate(Player var0, Entity var1) {
+   private static Predicate<LivingEntity> knockbackPredicate(Entity var0, Entity var1) {
       return (var2) -> {
          boolean var10000;
          boolean var3;
@@ -153,7 +150,7 @@ public class MaceItem extends Item {
          label62: {
             var3 = !var2.isSpectator();
             var4 = var2 != var0 && var2 != var1;
-            var5 = !var0.isAlliedTo(var2);
+            var5 = !var0.isAlliedTo((Entity)var2);
             if (var2 instanceof TamableAnimal var7) {
                if (var7.isTame() && var0.getUUID().equals(var7.getOwnerUUID())) {
                   var10000 = true;
@@ -183,11 +180,16 @@ public class MaceItem extends Item {
       };
    }
 
-   private static double getKnockbackPower(Player var0, LivingEntity var1, Vec3 var2) {
+   private static double getKnockbackPower(Entity var0, LivingEntity var1, Vec3 var2) {
       return (3.5 - var2.length()) * 0.699999988079071 * (double)(var0.fallDistance > 5.0F ? 2 : 1) * (1.0 - var1.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
    }
 
    public static boolean canSmashAttack(LivingEntity var0) {
       return var0.fallDistance > 1.5F && !var0.isFallFlying();
+   }
+
+   @Nullable
+   public DamageSource getDamageSource(LivingEntity var1) {
+      return canSmashAttack(var1) ? var1.damageSources().mace(var1) : super.getDamageSource(var1);
    }
 }

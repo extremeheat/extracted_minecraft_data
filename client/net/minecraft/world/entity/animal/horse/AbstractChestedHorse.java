@@ -6,6 +6,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -62,13 +63,10 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
       return this.isBaby() ? this.babyDimensions : super.getDefaultDimensions(var1);
    }
 
-   protected void dropEquipment() {
-      super.dropEquipment();
+   protected void dropEquipment(ServerLevel var1) {
+      super.dropEquipment(var1);
       if (this.hasChest()) {
-         if (!this.level().isClientSide) {
-            this.spawnAtLocation(Blocks.CHEST);
-         }
-
+         this.spawnAtLocation(var1, Blocks.CHEST);
          this.setChest(false);
       }
 
@@ -152,12 +150,12 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
 
             if (!this.isTamed()) {
                this.makeMad();
-               return InteractionResult.sidedSuccess(this.level().isClientSide);
+               return InteractionResult.SUCCESS;
             }
 
             if (!this.hasChest() && var4.is(Items.CHEST)) {
                this.equipChest(var1, var4);
-               return InteractionResult.sidedSuccess(this.level().isClientSide);
+               return InteractionResult.SUCCESS;
             }
          }
 

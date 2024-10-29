@@ -12,6 +12,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
@@ -85,7 +87,7 @@ public class Breeze extends Monster {
          Pose var2 = this.getPose();
          switch (var2) {
             case SHOOTING -> this.shoot.startIfStopped(this.tickCount);
-            case INHALING -> this.longJump.startIfStopped(this.tickCount);
+            case INHALING -> this.inhale.startIfStopped(this.tickCount);
             case SLIDING -> this.slide.startIfStopped(this.tickCount);
          }
       }
@@ -112,12 +114,17 @@ public class Breeze extends Monster {
             this.emitGroundParticles(20);
             break;
          case LONG_JUMPING:
+            this.longJump.startIfStopped(this.tickCount);
             this.emitJumpTrailParticles();
       }
 
       if (var1 != Pose.SLIDING && this.slide.isStarted()) {
          this.slideBack.start(this.tickCount);
          this.slide.stop();
+      }
+
+      if (var1 == Pose.STANDING) {
+         this.idle.startIfStopped(this.tickCount);
       }
 
       this.soundTick = this.soundTick == 0 ? this.random.nextIntBetweenInclusive(1, 80) : this.soundTick - 1;
@@ -209,13 +216,14 @@ public class Breeze extends Monster {
       return var1.closerThan(var2, 4.0, 10.0);
    }
 
-   protected void customServerAiStep() {
-      this.level().getProfiler().push("breezeBrain");
-      this.getBrain().tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().popPush("breezeActivityUpdate");
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("breezeBrain");
+      this.getBrain().tick(var1, this);
+      var2.popPush("breezeActivityUpdate");
       BreezeAi.updateActivity(this);
-      this.level().getProfiler().pop();
-      super.customServerAiStep();
+      var2.pop();
+      super.customServerAiStep(var1);
    }
 
    protected void sendDebugPackets() {
@@ -236,12 +244,12 @@ public class Breeze extends Monster {
       return 25;
    }
 
-   public double getSnoutYPosition() {
-      return this.getEyeY() - 0.4;
+   public double getFiringYPosition() {
+      return this.getY() + (double)(this.getBbHeight() / 2.0F) + 0.30000001192092896;
    }
 
-   public boolean isInvulnerableTo(DamageSource var1) {
-      return var1.getEntity() instanceof Breeze || super.isInvulnerableTo(var1);
+   public boolean isInvulnerableTo(ServerLevel var1, DamageSource var2) {
+      return var2.getEntity() instanceof Breeze || super.isInvulnerableTo(var1, var2);
    }
 
    public double getFluidJumpThreshold() {

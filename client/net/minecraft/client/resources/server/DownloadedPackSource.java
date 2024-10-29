@@ -78,7 +78,7 @@ public class DownloadedPackSource implements AutoCloseable {
       }
 
       Objects.requireNonNull(var1);
-      Executor var4 = var1::tell;
+      Executor var4 = var1::schedule;
       this.manager = new ServerPackManager(this.createDownloader(this.downloadQueue, var4, var3.user, var3.proxy), new PackLoadFeedback() {
          public void reportUpdate(UUID var1, PackLoadFeedback.Update var2) {
             DownloadedPackSource.this.packFeedback.reportUpdate(var1, var2);
@@ -101,7 +101,7 @@ public class DownloadedPackSource implements AutoCloseable {
          private OptionalLong totalBytes = OptionalLong.empty();
 
          private void updateToast() {
-            SystemToast.addOrUpdate(DownloadedPackSource.this.minecraft.getToasts(), this.toastId, this.title, this.message);
+            SystemToast.addOrUpdate(DownloadedPackSource.this.minecraft.getToastManager(), this.toastId, this.title, this.message);
          }
 
          private void updateProgress(long var1x) {
@@ -146,7 +146,7 @@ public class DownloadedPackSource implements AutoCloseable {
                   this.message = null;
                   this.updateToast();
                } else {
-                  SystemToast.forceHide(DownloadedPackSource.this.minecraft.getToasts(), this.toastId);
+                  SystemToast.forceHide(DownloadedPackSource.this.minecraft.getToastManager(), this.toastId);
                }
             }
 

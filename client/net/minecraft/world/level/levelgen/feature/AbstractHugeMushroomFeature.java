@@ -18,7 +18,7 @@ public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFe
    protected void placeTrunk(LevelAccessor var1, RandomSource var2, BlockPos var3, HugeMushroomFeatureConfiguration var4, int var5, BlockPos.MutableBlockPos var6) {
       for(int var7 = 0; var7 < var5; ++var7) {
          var6.set(var3).move(Direction.UP, var7);
-         if (!var1.getBlockState(var6).isSolidRender(var1, var6)) {
+         if (!var1.getBlockState(var6).isSolidRender()) {
             this.setBlock(var1, var6, var4.stemProvider.getState(var2, var3));
          }
       }
@@ -36,7 +36,7 @@ public abstract class AbstractHugeMushroomFeature extends Feature<HugeMushroomFe
 
    protected boolean isValidPosition(LevelAccessor var1, BlockPos var2, int var3, BlockPos.MutableBlockPos var4, HugeMushroomFeatureConfiguration var5) {
       int var6 = var2.getY();
-      if (var6 >= var1.getMinBuildHeight() + 1 && var6 + var3 + 1 < var1.getMaxBuildHeight()) {
+      if (var6 >= var1.getMinY() + 1 && var6 + var3 + 1 <= var1.getMaxY()) {
          BlockState var7 = var1.getBlockState(var2.below());
          if (!isDirt(var7) && !var7.is(BlockTags.MUSHROOM_GROW_BLOCK)) {
             return false;

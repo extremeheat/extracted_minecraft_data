@@ -2,15 +2,13 @@ package net.minecraft.world.level.biome;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -20,7 +18,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -30,28 +27,27 @@ import org.slf4j.Logger;
 
 public class BiomeGenerationSettings {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final BiomeGenerationSettings EMPTY = new BiomeGenerationSettings(ImmutableMap.of(), ImmutableList.of());
+   public static final BiomeGenerationSettings EMPTY = new BiomeGenerationSettings(HolderSet.direct(), List.of());
    public static final MapCodec<BiomeGenerationSettings> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      Codec var10001 = GenerationStep.Carving.CODEC;
-      Codec var10002 = ConfiguredWorldCarver.LIST_CODEC;
-      Logger var10004 = LOGGER;
-      Objects.requireNonNull(var10004);
-      RecordCodecBuilder var1 = Codec.simpleMap(var10001, var10002.promotePartial(Util.prefix("Carver: ", var10004::error)), StringRepresentable.keys(GenerationStep.Carving.values())).fieldOf("carvers").forGetter((var0x) -> {
+      Codec var10001 = ConfiguredWorldCarver.LIST_CODEC;
+      Logger var10003 = LOGGER;
+      Objects.requireNonNull(var10003);
+      RecordCodecBuilder var1 = var10001.promotePartial(Util.prefix("Carver: ", var10003::error)).fieldOf("carvers").forGetter((var0x) -> {
          return var0x.carvers;
       });
-      var10002 = PlacedFeature.LIST_OF_LISTS_CODEC;
-      var10004 = LOGGER;
+      Codec var10002 = PlacedFeature.LIST_OF_LISTS_CODEC;
+      Logger var10004 = LOGGER;
       Objects.requireNonNull(var10004);
       return var0.group(var1, var10002.promotePartial(Util.prefix("Features: ", var10004::error)).fieldOf("features").forGetter((var0x) -> {
          return var0x.features;
       })).apply(var0, BiomeGenerationSettings::new);
    });
-   private final Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> carvers;
+   private final HolderSet<ConfiguredWorldCarver<?>> carvers;
    private final List<HolderSet<PlacedFeature>> features;
    private final Supplier<List<ConfiguredFeature<?, ?>>> flowerFeatures;
    private final Supplier<Set<PlacedFeature>> featureSet;
 
-   BiomeGenerationSettings(Map<GenerationStep.Carving, HolderSet<ConfiguredWorldCarver<?>>> var1, List<HolderSet<PlacedFeature>> var2) {
+   BiomeGenerationSettings(HolderSet<ConfiguredWorldCarver<?>> var1, List<HolderSet<PlacedFeature>> var2) {
       super();
       this.carvers = var1;
       this.features = var2;
@@ -65,8 +61,8 @@ public class BiomeGenerationSettings {
       });
    }
 
-   public Iterable<Holder<ConfiguredWorldCarver<?>>> getCarvers(GenerationStep.Carving var1) {
-      return (Iterable)Objects.requireNonNullElseGet((Iterable)this.carvers.get(var1), List::of);
+   public Iterable<Holder<ConfiguredWorldCarver<?>>> getCarvers() {
+      return this.carvers;
    }
 
    public List<ConfiguredFeature<?, ?>> getFlowerFeatures() {
@@ -96,15 +92,15 @@ public class BiomeGenerationSettings {
          return this;
       }
 
-      public Builder addCarver(GenerationStep.Carving var1, ResourceKey<ConfiguredWorldCarver<?>> var2) {
-         this.addCarver(var1, this.worldCarvers.getOrThrow(var2));
+      public Builder addCarver(ResourceKey<ConfiguredWorldCarver<?>> var1) {
+         this.addCarver(this.worldCarvers.getOrThrow(var1));
          return this;
       }
    }
 
    public static class PlainBuilder {
-      private final Map<GenerationStep.Carving, List<Holder<ConfiguredWorldCarver<?>>>> carvers = Maps.newLinkedHashMap();
-      private final List<List<Holder<PlacedFeature>>> features = Lists.newArrayList();
+      private final List<Holder<ConfiguredWorldCarver<?>>> carvers = new ArrayList();
+      private final List<List<Holder<PlacedFeature>>> features = new ArrayList();
 
       public PlainBuilder() {
          super();
@@ -120,10 +116,8 @@ public class BiomeGenerationSettings {
          return this;
       }
 
-      public PlainBuilder addCarver(GenerationStep.Carving var1, Holder<ConfiguredWorldCarver<?>> var2) {
-         ((List)this.carvers.computeIfAbsent(var1, (var0) -> {
-            return Lists.newArrayList();
-         })).add(var2);
+      public PlainBuilder addCarver(Holder<ConfiguredWorldCarver<?>> var1) {
+         this.carvers.add(var1);
          return this;
       }
 
@@ -135,9 +129,7 @@ public class BiomeGenerationSettings {
       }
 
       public BiomeGenerationSettings build() {
-         return new BiomeGenerationSettings((Map)this.carvers.entrySet().stream().collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (var0) -> {
-            return HolderSet.direct((List)var0.getValue());
-         })), (List)this.features.stream().map(HolderSet::direct).collect(ImmutableList.toImmutableList()));
+         return new BiomeGenerationSettings(HolderSet.direct(this.carvers), (List)this.features.stream().map(HolderSet::direct).collect(ImmutableList.toImmutableList()));
       }
    }
 }

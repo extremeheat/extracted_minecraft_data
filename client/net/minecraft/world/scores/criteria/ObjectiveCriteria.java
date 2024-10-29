@@ -119,7 +119,7 @@ public class ObjectiveCriteria {
       }
 
       public static RenderType byId(String var0) {
-         return (RenderType)CODEC.byName(var0, INTEGER);
+         return (RenderType)CODEC.byName(var0, (Enum)INTEGER);
       }
 
       // $FF: synthetic method

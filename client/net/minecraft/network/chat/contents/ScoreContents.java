@@ -1,16 +1,16 @@
 package net.minecraft.network.chat.contents;
 
-import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.selector.EntitySelector;
-import net.minecraft.commands.arguments.selector.EntitySelectorParser;
+import net.minecraft.commands.arguments.selector.SelectorPattern;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
@@ -23,30 +23,16 @@ import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 
-public class ScoreContents implements ComponentContents {
+public record ScoreContents(Either<SelectorPattern, String> name, String objective) implements ComponentContents {
    public static final MapCodec<ScoreContents> INNER_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.STRING.fieldOf("name").forGetter(ScoreContents::getName), Codec.STRING.fieldOf("objective").forGetter(ScoreContents::getObjective)).apply(var0, ScoreContents::new);
+      return var0.group(Codec.either(SelectorPattern.CODEC, Codec.STRING).fieldOf("name").forGetter(ScoreContents::name), Codec.STRING.fieldOf("objective").forGetter(ScoreContents::objective)).apply(var0, ScoreContents::new);
    });
    public static final MapCodec<ScoreContents> CODEC;
    public static final ComponentContents.Type<ScoreContents> TYPE;
-   private final String name;
-   @Nullable
-   private final EntitySelector selector;
-   private final String objective;
 
-   @Nullable
-   private static EntitySelector parseSelector(String var0) {
-      try {
-         return (new EntitySelectorParser(new StringReader(var0), true)).parse();
-      } catch (CommandSyntaxException var2) {
-         return null;
-      }
-   }
-
-   public ScoreContents(String var1, String var2) {
+   public ScoreContents(Either<SelectorPattern, String> var1, String var2) {
       super();
       this.name = var1;
-      this.selector = parseSelector(var1);
       this.objective = var2;
    }
 
@@ -54,32 +40,22 @@ public class ScoreContents implements ComponentContents {
       return TYPE;
    }
 
-   public String getName() {
-      return this.name;
-   }
-
-   @Nullable
-   public EntitySelector getSelector() {
-      return this.selector;
-   }
-
-   public String getObjective() {
-      return this.objective;
-   }
-
    private ScoreHolder findTargetName(CommandSourceStack var1) throws CommandSyntaxException {
-      if (this.selector != null) {
-         List var2 = this.selector.findEntities(var1);
-         if (!var2.isEmpty()) {
-            if (var2.size() != 1) {
+      Optional var2 = this.name.left();
+      if (var2.isPresent()) {
+         List var3 = ((SelectorPattern)var2.get()).resolved().findEntities(var1);
+         if (!var3.isEmpty()) {
+            if (var3.size() != 1) {
                throw EntityArgument.ERROR_NOT_SINGLE_ENTITY.create();
+            } else {
+               return (ScoreHolder)var3.getFirst();
             }
-
-            return (ScoreHolder)var2.get(0);
+         } else {
+            return ScoreHolder.forNameOnly(((SelectorPattern)var2.get()).pattern());
          }
+      } else {
+         return ScoreHolder.forNameOnly((String)this.name.right().orElseThrow());
       }
-
-      return ScoreHolder.forNameOnly(this.name);
    }
 
    private MutableComponent getScore(ScoreHolder var1, CommandSourceStack var2) {
@@ -108,32 +84,17 @@ public class ScoreContents implements ComponentContents {
       }
    }
 
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else {
-         boolean var10000;
-         if (var1 instanceof ScoreContents) {
-            ScoreContents var2 = (ScoreContents)var1;
-            if (this.name.equals(var2.name) && this.objective.equals(var2.objective)) {
-               var10000 = true;
-               return var10000;
-            }
-         }
-
-         var10000 = false;
-         return var10000;
-      }
-   }
-
-   public int hashCode() {
-      int var1 = this.name.hashCode();
-      var1 = 31 * var1 + this.objective.hashCode();
-      return var1;
-   }
-
    public String toString() {
-      return "score{name='" + this.name + "', objective='" + this.objective + "'}";
+      String var10000 = String.valueOf(this.name);
+      return "score{name='" + var10000 + "', objective='" + this.objective + "'}";
+   }
+
+   public Either<SelectorPattern, String> name() {
+      return this.name;
+   }
+
+   public String objective() {
+      return this.objective;
    }
 
    static {

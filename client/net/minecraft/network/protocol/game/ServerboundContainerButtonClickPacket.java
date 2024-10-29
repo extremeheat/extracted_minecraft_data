@@ -32,6 +32,6 @@ public record ServerboundContainerButtonClickPacket(int containerId, int buttonI
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ServerboundContainerButtonClickPacket::containerId, ByteBufCodecs.VAR_INT, ServerboundContainerButtonClickPacket::buttonId, ServerboundContainerButtonClickPacket::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.CONTAINER_ID, ServerboundContainerButtonClickPacket::containerId, ByteBufCodecs.VAR_INT, ServerboundContainerButtonClickPacket::buttonId, ServerboundContainerButtonClickPacket::new);
    }
 }

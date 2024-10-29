@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.monster;
 
+import com.google.common.annotations.VisibleForTesting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -8,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.ConversionParams;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -78,17 +80,19 @@ public class Skeleton extends AbstractSkeleton {
 
    }
 
-   private void startFreezeConversion(int var1) {
+   @VisibleForTesting
+   public void startFreezeConversion(int var1) {
       this.conversionTime = var1;
       this.setFreezeConverting(true);
    }
 
    protected void doFreezeConversion() {
-      this.convertTo(EntityType.STRAY, true);
-      if (!this.isSilent()) {
-         this.level().levelEvent((Player)null, 1048, this.blockPosition(), 0);
-      }
+      this.convertTo(EntityType.STRAY, ConversionParams.single(this, true, true), (var1) -> {
+         if (!this.isSilent()) {
+            this.level().levelEvent((Player)null, 1048, this.blockPosition(), 0);
+         }
 
+      });
    }
 
    public boolean canFreeze() {
@@ -117,7 +121,7 @@ public class Skeleton extends AbstractSkeleton {
       if (var4 instanceof Creeper var5) {
          if (var5.canDropMobsSkull()) {
             var5.increaseDroppedSkulls();
-            this.spawnAtLocation(Items.SKELETON_SKULL);
+            this.spawnAtLocation(var1, Items.SKELETON_SKULL);
          }
       }
 

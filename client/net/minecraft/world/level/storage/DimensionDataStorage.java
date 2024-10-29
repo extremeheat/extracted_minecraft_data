@@ -1,19 +1,24 @@
 package net.minecraft.world.level.storage;
 
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.io.DataInput;
 import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
+import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
@@ -24,22 +29,23 @@ import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 import org.slf4j.Logger;
 
-public class DimensionDataStorage {
+public class DimensionDataStorage implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final Map<String, SavedData> cache = Maps.newHashMap();
+   private final Map<String, Optional<SavedData>> cache = new HashMap();
    private final DataFixer fixerUpper;
    private final HolderLookup.Provider registries;
-   private final File dataFolder;
+   private final Path dataFolder;
+   private CompletableFuture<?> pendingWriteFuture = CompletableFuture.completedFuture((Object)null);
 
-   public DimensionDataStorage(File var1, DataFixer var2, HolderLookup.Provider var3) {
+   public DimensionDataStorage(Path var1, DataFixer var2, HolderLookup.Provider var3) {
       super();
       this.fixerUpper = var2;
       this.dataFolder = var1;
       this.registries = var3;
    }
 
-   private File getDataFile(String var1) {
-      return new File(this.dataFolder, var1 + ".dat");
+   private Path getDataFile(String var1) {
+      return this.dataFolder.resolve(var1 + ".dat");
    }
 
    public <T extends SavedData> T computeIfAbsent(SavedData.Factory<T> var1, String var2) {
@@ -55,20 +61,20 @@ public class DimensionDataStorage {
 
    @Nullable
    public <T extends SavedData> T get(SavedData.Factory<T> var1, String var2) {
-      SavedData var3 = (SavedData)this.cache.get(var2);
-      if (var3 == null && !this.cache.containsKey(var2)) {
-         var3 = this.readSavedData(var1.deserializer(), var1.type(), var2);
+      Optional var3 = (Optional)this.cache.get(var2);
+      if (var3 == null) {
+         var3 = Optional.ofNullable(this.readSavedData(var1.deserializer(), var1.type(), var2));
          this.cache.put(var2, var3);
       }
 
-      return var3;
+      return (SavedData)var3.orElse((Object)null);
    }
 
    @Nullable
    private <T extends SavedData> T readSavedData(BiFunction<CompoundTag, HolderLookup.Provider, T> var1, DataFixTypes var2, String var3) {
       try {
-         File var4 = this.getDataFile(var3);
-         if (var4.exists()) {
+         Path var4 = this.getDataFile(var3);
+         if (Files.exists(var4, new LinkOption[0])) {
             CompoundTag var5 = this.readTagFromDisk(var3, var2, SharedConstants.getCurrentVersion().getDataVersion().getVersion());
             return (SavedData)var1.apply(var5.getCompound("data"), this.registries);
          }
@@ -80,64 +86,69 @@ public class DimensionDataStorage {
    }
 
    public void set(String var1, SavedData var2) {
-      this.cache.put(var1, var2);
+      this.cache.put(var1, Optional.of(var2));
+      var2.setDirty();
    }
 
    public CompoundTag readTagFromDisk(String var1, DataFixTypes var2, int var3) throws IOException {
-      File var4 = this.getDataFile(var1);
-      FileInputStream var5 = new FileInputStream(var4);
+      InputStream var4 = Files.newInputStream(this.getDataFile(var1));
 
-      CompoundTag var9;
+      CompoundTag var8;
       try {
-         PushbackInputStream var6 = new PushbackInputStream(new FastBufferedInputStream(var5), 2);
+         PushbackInputStream var5 = new PushbackInputStream(new FastBufferedInputStream(var4), 2);
 
          try {
-            CompoundTag var7;
-            if (this.isGzip(var6)) {
-               var7 = NbtIo.readCompressed((InputStream)var6, NbtAccounter.unlimitedHeap());
+            CompoundTag var6;
+            if (this.isGzip(var5)) {
+               var6 = NbtIo.readCompressed((InputStream)var5, NbtAccounter.unlimitedHeap());
             } else {
-               DataInputStream var8 = new DataInputStream(var6);
+               DataInputStream var7 = new DataInputStream(var5);
 
                try {
-                  var7 = NbtIo.read((DataInput)var8);
-               } catch (Throwable var14) {
+                  var6 = NbtIo.read((DataInput)var7);
+               } catch (Throwable var13) {
                   try {
-                     var8.close();
-                  } catch (Throwable var13) {
-                     var14.addSuppressed(var13);
+                     var7.close();
+                  } catch (Throwable var12) {
+                     var13.addSuppressed(var12);
                   }
 
-                  throw var14;
+                  throw var13;
                }
 
-               var8.close();
+               var7.close();
             }
 
-            int var17 = NbtUtils.getDataVersion(var7, 1343);
-            var9 = var2.update(this.fixerUpper, var7, var17, var3);
-         } catch (Throwable var15) {
+            int var16 = NbtUtils.getDataVersion(var6, 1343);
+            var8 = var2.update(this.fixerUpper, var6, var16, var3);
+         } catch (Throwable var14) {
             try {
-               var6.close();
-            } catch (Throwable var12) {
-               var15.addSuppressed(var12);
+               var5.close();
+            } catch (Throwable var11) {
+               var14.addSuppressed(var11);
             }
 
-            throw var15;
+            throw var14;
          }
 
-         var6.close();
-      } catch (Throwable var16) {
-         try {
-            ((InputStream)var5).close();
-         } catch (Throwable var11) {
-            var16.addSuppressed(var11);
+         var5.close();
+      } catch (Throwable var15) {
+         if (var4 != null) {
+            try {
+               var4.close();
+            } catch (Throwable var10) {
+               var15.addSuppressed(var10);
+            }
          }
 
-         throw var16;
+         throw var15;
       }
 
-      ((InputStream)var5).close();
-      return var9;
+      if (var4 != null) {
+         var4.close();
+      }
+
+      return var8;
    }
 
    private boolean isGzip(PushbackInputStream var1) throws IOException {
@@ -158,12 +169,48 @@ public class DimensionDataStorage {
       return var3;
    }
 
-   public void save() {
-      this.cache.forEach((var1, var2) -> {
-         if (var2 != null) {
-            var2.save(this.getDataFile(var1), this.registries);
+   public CompletableFuture<?> scheduleSave() {
+      Map var1 = this.collectDirtyTagsToSave();
+      if (var1.isEmpty()) {
+         return CompletableFuture.completedFuture((Object)null);
+      } else {
+         this.pendingWriteFuture = this.pendingWriteFuture.thenCompose((var1x) -> {
+            return CompletableFuture.allOf((CompletableFuture[])var1.entrySet().stream().map((var0) -> {
+               return tryWriteAsync((Path)var0.getKey(), (CompoundTag)var0.getValue());
+            }).toArray((var0) -> {
+               return new CompletableFuture[var0];
+            }));
+         });
+         return this.pendingWriteFuture;
+      }
+   }
+
+   private Map<Path, CompoundTag> collectDirtyTagsToSave() {
+      Object2ObjectArrayMap var1 = new Object2ObjectArrayMap();
+      this.cache.forEach((var2, var3) -> {
+         var3.filter(SavedData::isDirty).ifPresent((var3x) -> {
+            var1.put(this.getDataFile(var2), var3x.save(this.registries));
+         });
+      });
+      return var1;
+   }
+
+   private static CompletableFuture<Void> tryWriteAsync(Path var0, CompoundTag var1) {
+      return CompletableFuture.runAsync(() -> {
+         try {
+            NbtIo.writeCompressed(var1, var0);
+         } catch (IOException var3) {
+            LOGGER.error("Could not save data to {}", var0.getFileName(), var3);
          }
 
-      });
+      }, Util.ioPool());
+   }
+
+   public void saveAndJoin() {
+      this.scheduleSave().join();
+   }
+
+   public void close() {
+      this.saveAndJoin();
    }
 }

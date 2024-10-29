@@ -16,11 +16,11 @@ public class ClientboundContainerClosePacket implements Packet<ClientGamePacketL
 
    private ClientboundContainerClosePacket(FriendlyByteBuf var1) {
       super();
-      this.containerId = var1.readUnsignedByte();
+      this.containerId = var1.readContainerId();
    }
 
    private void write(FriendlyByteBuf var1) {
-      var1.writeByte(this.containerId);
+      var1.writeContainerId(this.containerId);
    }
 
    public PacketType<ClientboundContainerClosePacket> type() {

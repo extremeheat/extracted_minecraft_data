@@ -63,22 +63,20 @@ public class JigsawBlock extends Block implements EntityBlock, GameMasterBlock {
       BlockEntity var6 = var2.getBlockEntity(var3);
       if (var6 instanceof JigsawBlockEntity && var4.canUseGameMasterBlocks()) {
          var4.openJigsawBlock((JigsawBlockEntity)var6);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return InteractionResult.SUCCESS;
       } else {
          return InteractionResult.PASS;
       }
    }
 
-   public static boolean canAttach(StructureTemplate.StructureBlockInfo var0, StructureTemplate.StructureBlockInfo var1) {
-      Direction var2 = getFrontFacing(var0.state());
-      Direction var3 = getFrontFacing(var1.state());
-      Direction var4 = getTopFacing(var0.state());
-      Direction var5 = getTopFacing(var1.state());
-      JigsawBlockEntity.JointType var6 = (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.byName(var0.nbt().getString("joint")).orElseGet(() -> {
-         return var2.getAxis().isHorizontal() ? JigsawBlockEntity.JointType.ALIGNED : JigsawBlockEntity.JointType.ROLLABLE;
-      });
+   public static boolean canAttach(StructureTemplate.JigsawBlockInfo var0, StructureTemplate.JigsawBlockInfo var1) {
+      Direction var2 = getFrontFacing(var0.info().state());
+      Direction var3 = getFrontFacing(var1.info().state());
+      Direction var4 = getTopFacing(var0.info().state());
+      Direction var5 = getTopFacing(var1.info().state());
+      JigsawBlockEntity.JointType var6 = var0.jointType();
       boolean var7 = var6 == JigsawBlockEntity.JointType.ROLLABLE;
-      return var2 == var3.getOpposite() && (var7 || var4 == var5) && var0.nbt().getString("target").equals(var1.nbt().getString("name"));
+      return var2 == var3.getOpposite() && (var7 || var4 == var5) && var0.target().equals(var1.name());
    }
 
    public static Direction getFrontFacing(BlockState var0) {

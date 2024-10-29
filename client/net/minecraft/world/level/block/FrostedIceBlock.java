@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -15,6 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.redstone.Orientation;
 
 public class FrostedIceBlock extends IceBlock {
    public static final MapCodec<FrostedIceBlock> CODEC = simpleCodec(FrostedIceBlock::new);
@@ -37,7 +39,7 @@ public class FrostedIceBlock extends IceBlock {
    }
 
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      if ((var4.nextInt(3) == 0 || this.fewerNeigboursThan(var2, var3, 4)) && var2.getMaxLocalRawBrightness(var3) > 11 - (Integer)var1.getValue(AGE) - var1.getLightBlock(var2, var3) && this.slightlyMelt(var1, var2, var3)) {
+      if ((var4.nextInt(3) == 0 || this.fewerNeigboursThan(var2, var3, 4)) && var2.getMaxLocalRawBrightness(var3) > 11 - (Integer)var1.getValue(AGE) - var1.getLightBlock() && this.slightlyMelt(var1, var2, var3)) {
          BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
          Direction[] var6 = Direction.values();
          int var7 = var6.length;
@@ -67,7 +69,7 @@ public class FrostedIceBlock extends IceBlock {
       }
    }
 
-   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, @Nullable Orientation var5, boolean var6) {
       if (var4.defaultBlockState().is(this) && this.fewerNeigboursThan(var2, var3, 2)) {
          this.melt(var1, var2, var3);
       }

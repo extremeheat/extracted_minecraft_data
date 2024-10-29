@@ -1,0 +1,44 @@
+package net.minecraft.data.tags;
+
+import java.util.concurrent.CompletableFuture;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.PackOutput;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+
+public class WinterDropBlockTagsProvider extends IntrinsicHolderTagsProvider<Block> {
+   public WinterDropBlockTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2, CompletableFuture<TagsProvider.TagLookup<Block>> var3) {
+      super(var1, Registries.BLOCK, var2, var3, (var0) -> {
+         return var0.builtInRegistryHolder().key();
+      });
+   }
+
+   protected void addTags(HolderLookup.Provider var1) {
+      this.tag(BlockTags.PLANKS).add((Object)Blocks.PALE_OAK_PLANKS);
+      this.tag(BlockTags.WOODEN_BUTTONS).add((Object)Blocks.PALE_OAK_BUTTON);
+      this.tag(BlockTags.WOODEN_DOORS).add((Object)Blocks.PALE_OAK_DOOR);
+      this.tag(BlockTags.WOODEN_STAIRS).add((Object)Blocks.PALE_OAK_STAIRS);
+      this.tag(BlockTags.WOODEN_SLABS).add((Object)Blocks.PALE_OAK_SLAB);
+      this.tag(BlockTags.WOODEN_FENCES).add((Object)Blocks.PALE_OAK_FENCE);
+      this.tag(BlockTags.SAPLINGS).add((Object)Blocks.PALE_OAK_SAPLING);
+      this.tag(BlockTags.PALE_OAK_LOGS).add((Object[])(Blocks.PALE_OAK_LOG, Blocks.PALE_OAK_WOOD, Blocks.STRIPPED_PALE_OAK_LOG, Blocks.STRIPPED_PALE_OAK_WOOD));
+      this.tag(BlockTags.LOGS_THAT_BURN).addTag(BlockTags.PALE_OAK_LOGS);
+      this.tag(BlockTags.OVERWORLD_NATURAL_LOGS).add((Object)Blocks.PALE_OAK_LOG);
+      this.tag(BlockTags.DIRT).add((Object)Blocks.PALE_MOSS_BLOCK);
+      this.tag(BlockTags.FLOWER_POTS).add((Object)Blocks.POTTED_PALE_OAK_SAPLING);
+      this.tag(BlockTags.WOODEN_PRESSURE_PLATES).add((Object)Blocks.PALE_OAK_PRESSURE_PLATE);
+      this.tag(BlockTags.LEAVES).add((Object)Blocks.PALE_OAK_LEAVES);
+      this.tag(BlockTags.WOODEN_TRAPDOORS).add((Object)Blocks.PALE_OAK_TRAPDOOR);
+      this.tag(BlockTags.STANDING_SIGNS).add((Object)Blocks.PALE_OAK_SIGN);
+      this.tag(BlockTags.WALL_SIGNS).add((Object)Blocks.PALE_OAK_WALL_SIGN);
+      this.tag(BlockTags.CEILING_HANGING_SIGNS).add((Object)Blocks.PALE_OAK_HANGING_SIGN);
+      this.tag(BlockTags.WALL_HANGING_SIGNS).add((Object)Blocks.PALE_OAK_WALL_HANGING_SIGN);
+      this.tag(BlockTags.FENCE_GATES).add((Object)Blocks.PALE_OAK_FENCE_GATE);
+      this.tag(BlockTags.MINEABLE_WITH_HOE).add((Object[])(Blocks.PALE_OAK_LEAVES, Blocks.PALE_MOSS_BLOCK, Blocks.PALE_MOSS_CARPET));
+      this.tag(BlockTags.MINEABLE_WITH_AXE).add((Object)Blocks.CREAKING_HEART);
+      this.tag(BlockTags.SWORD_EFFICIENT).add((Object)Blocks.PALE_MOSS_CARPET);
+      this.tag(BlockTags.COMBINATION_STEP_SOUND_BLOCKS).add((Object)Blocks.PALE_MOSS_CARPET);
+   }
+}

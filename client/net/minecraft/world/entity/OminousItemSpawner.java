@@ -6,8 +6,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -42,21 +44,23 @@ public class OminousItemSpawner extends Entity {
 
    public void tick() {
       super.tick();
-      if (this.level().isClientSide) {
-         this.tickClient();
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel var1) {
+         this.tickServer(var1);
       } else {
-         this.tickServer();
+         this.tickClient();
       }
+
    }
 
-   private void tickServer() {
+   private void tickServer(ServerLevel var1) {
       if ((long)this.tickCount == this.spawnItemAfterTicks - 36L) {
-         this.level().playSound((Player)null, this.blockPosition(), SoundEvents.TRIAL_SPAWNER_ABOUT_TO_SPAWN_ITEM, SoundSource.NEUTRAL);
+         var1.playSound((Player)null, this.blockPosition(), SoundEvents.TRIAL_SPAWNER_ABOUT_TO_SPAWN_ITEM, SoundSource.NEUTRAL);
       }
 
       if ((long)this.tickCount >= this.spawnItemAfterTicks) {
          this.spawnItem();
-         this.kill();
+         this.kill(var1);
       }
 
    }
@@ -69,31 +73,36 @@ public class OminousItemSpawner extends Entity {
    }
 
    private void spawnItem() {
-      Level var1 = this.level();
-      ItemStack var2 = this.getItem();
-      if (!var2.isEmpty()) {
-         Item var5 = var2.getItem();
-         Object var3;
-         if (var5 instanceof ProjectileItem) {
-            ProjectileItem var4 = (ProjectileItem)var5;
-            Direction var8 = Direction.DOWN;
-            Projectile var6 = var4.asProjectile(var1, this.position(), var2, var8);
-            var6.setOwner(this);
-            ProjectileItem.DispenseConfig var7 = var4.createDispenseConfig();
-            var4.shoot(var6, (double)var8.getStepX(), (double)var8.getStepY(), (double)var8.getStepZ(), var7.power(), var7.uncertainty());
-            var7.overrideDispenseEvent().ifPresent((var2x) -> {
-               var1.levelEvent(var2x, this.blockPosition(), 0);
-            });
-            var3 = var6;
-         } else {
-            var3 = new ItemEntity(var1, this.getX(), this.getY(), this.getZ(), var2);
-         }
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel var1) {
+         ItemStack var6 = this.getItem();
+         if (!var6.isEmpty()) {
+            Item var5 = var6.getItem();
+            Object var3;
+            if (var5 instanceof ProjectileItem) {
+               ProjectileItem var4 = (ProjectileItem)var5;
+               var3 = this.spawnProjectile(var1, var4, var6);
+            } else {
+               var3 = new ItemEntity(var1, this.getX(), this.getY(), this.getZ(), var6);
+               var1.addFreshEntity((Entity)var3);
+            }
 
-         var1.addFreshEntity((Entity)var3);
-         var1.levelEvent(3021, this.blockPosition(), 1);
-         var1.gameEvent((Entity)var3, GameEvent.ENTITY_PLACE, this.position());
-         this.setItem(ItemStack.EMPTY);
+            var1.levelEvent(3021, this.blockPosition(), 1);
+            var1.gameEvent((Entity)var3, GameEvent.ENTITY_PLACE, this.position());
+            this.setItem(ItemStack.EMPTY);
+         }
       }
+   }
+
+   private Entity spawnProjectile(ServerLevel var1, ProjectileItem var2, ItemStack var3) {
+      ProjectileItem.DispenseConfig var4 = var2.createDispenseConfig();
+      var4.overrideDispenseEvent().ifPresent((var2x) -> {
+         var1.levelEvent(var2x, this.blockPosition(), 0);
+      });
+      Direction var5 = Direction.DOWN;
+      Projectile var6 = Projectile.spawnProjectileUsingShoot(var2.asProjectile(var1, this.position(), var3, var5), var1, var3, (double)var5.getStepX(), (double)var5.getStepY(), (double)var5.getStepZ(), var4.power(), var4.uncertainty());
+      var6.setOwner(this);
+      return var6;
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -153,6 +162,10 @@ public class OminousItemSpawner extends Entity {
 
    private void setItem(ItemStack var1) {
       this.getEntityData().set(DATA_ITEM, var1);
+   }
+
+   public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
+      return false;
    }
 
    static {

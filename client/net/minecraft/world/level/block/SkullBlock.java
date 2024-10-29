@@ -44,7 +44,7 @@ public class SkullBlock extends AbstractSkullBlock {
       return this.getType() == SkullBlock.Types.PIGLIN ? PIGLIN_SHAPE : SHAPE;
    }
 
-   protected VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getOcclusionShape(BlockState var1) {
       return Shapes.empty();
    }
 

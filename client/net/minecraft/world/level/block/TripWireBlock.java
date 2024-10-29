@@ -16,7 +16,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -66,8 +67,8 @@ public class TripWireBlock extends Block {
       return (BlockState)((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(NORTH, this.shouldConnectTo(var2.getBlockState(var3.north()), Direction.NORTH))).setValue(EAST, this.shouldConnectTo(var2.getBlockState(var3.east()), Direction.EAST))).setValue(SOUTH, this.shouldConnectTo(var2.getBlockState(var3.south()), Direction.SOUTH))).setValue(WEST, this.shouldConnectTo(var2.getBlockState(var3.west()), Direction.WEST));
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return var2.getAxis().isHorizontal() ? (BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var2), this.shouldConnectTo(var3, var2)) : super.updateShape(var1, var2, var3, var4, var5, var6);
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      return var5.getAxis().isHorizontal() ? (BlockState)var1.setValue((Property)PROPERTY_BY_DIRECTION.get(var5), this.shouldConnectTo(var7, var5)) : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
@@ -116,10 +117,14 @@ public class TripWireBlock extends Block {
 
    }
 
+   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, Level var2, BlockPos var3) {
+      return var1.getShape(var2, var3);
+   }
+
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (!var2.isClientSide) {
          if (!(Boolean)var1.getValue(POWERED)) {
-            this.checkPressed(var2, var3);
+            this.checkPressed(var2, var3, List.of(var4));
          }
       }
    }
@@ -132,28 +137,33 @@ public class TripWireBlock extends Block {
 
    private void checkPressed(Level var1, BlockPos var2) {
       BlockState var3 = var1.getBlockState(var2);
-      boolean var4 = (Boolean)var3.getValue(POWERED);
-      boolean var5 = false;
-      List var6 = var1.getEntities((Entity)null, var3.getShape(var1, var2).bounds().move(var2));
-      if (!var6.isEmpty()) {
-         Iterator var7 = var6.iterator();
+      List var4 = var1.getEntities((Entity)null, var3.getShape(var1, var2).bounds().move(var2));
+      this.checkPressed(var1, var2, var4);
+   }
+
+   private void checkPressed(Level var1, BlockPos var2, List<? extends Entity> var3) {
+      BlockState var4 = var1.getBlockState(var2);
+      boolean var5 = (Boolean)var4.getValue(POWERED);
+      boolean var6 = false;
+      if (!var3.isEmpty()) {
+         Iterator var7 = var3.iterator();
 
          while(var7.hasNext()) {
             Entity var8 = (Entity)var7.next();
             if (!var8.isIgnoringBlockTriggers()) {
-               var5 = true;
+               var6 = true;
                break;
             }
          }
       }
 
-      if (var5 != var4) {
-         var3 = (BlockState)var3.setValue(POWERED, var5);
-         var1.setBlock(var2, var3, 3);
-         this.updateSource(var1, var2, var3);
+      if (var6 != var5) {
+         var4 = (BlockState)var4.setValue(POWERED, var6);
+         var1.setBlock(var2, var4, 3);
+         this.updateSource(var1, var2, var4);
       }
 
-      if (var5) {
+      if (var6) {
          var1.scheduleTick(new BlockPos(var2), this, 10);
       }
 

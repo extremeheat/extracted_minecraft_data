@@ -22,6 +22,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
@@ -29,15 +30,17 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -55,6 +58,7 @@ import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.FrogVariant;
 import net.minecraft.world.entity.monster.Slime;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -102,7 +106,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_VARIANT_ID, BuiltInRegistries.FROG_VARIANT.getHolderOrThrow(DEFAULT_VARIANT));
+      var1.define(DATA_VARIANT_ID, BuiltInRegistries.FROG_VARIANT.getOrThrow(DEFAULT_VARIANT));
       var1.define(DATA_TONGUE_TARGET_ID, OptionalInt.empty());
    }
 
@@ -149,17 +153,18 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
       });
       Registry var10001 = BuiltInRegistries.FROG_VARIANT;
       Objects.requireNonNull(var10001);
-      var10000.flatMap(var10001::getHolder).ifPresent(this::setVariant);
+      var10000.flatMap(var10001::get).ifPresent(this::setVariant);
    }
 
-   protected void customServerAiStep() {
-      this.level().getProfiler().push("frogBrain");
-      this.getBrain().tick((ServerLevel)this.level(), this);
-      this.level().getProfiler().pop();
-      this.level().getProfiler().push("frogActivityUpdate");
+   protected void customServerAiStep(ServerLevel var1) {
+      ProfilerFiller var2 = Profiler.get();
+      var2.push("frogBrain");
+      this.getBrain().tick(var1, this);
+      var2.pop();
+      var2.push("frogActivityUpdate");
       FrogAi.updateActivity(this);
-      this.level().getProfiler().pop();
-      super.customServerAiStep();
+      var2.pop();
+      super.customServerAiStep(var1);
    }
 
    public void tick() {
@@ -203,12 +208,16 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
          var2 = Math.min(var1 * 25.0F, 1.0F);
       }
 
-      this.walkAnimation.update(var2, 0.4F);
+      this.walkAnimation.update(var2, 0.4F, this.isBaby() ? 3.0F : 1.0F);
+   }
+
+   public void playEatingSound() {
+      this.level().playSound((Player)null, (Entity)this, SoundEvents.FROG_EAT, SoundSource.NEUTRAL, 2.0F, 1.0F);
    }
 
    @Nullable
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Frog var3 = (Frog)EntityType.FROG.create(var1);
+      Frog var3 = (Frog)EntityType.FROG.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          FrogAi.initMemories(var3, var1.getRandom());
       }
@@ -228,14 +237,14 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
       this.getBrain().setMemory(MemoryModuleType.IS_PREGNANT, (Object)Unit.INSTANCE);
    }
 
-   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       Holder var5 = var1.getBiome(this.blockPosition());
       if (var5.is(BiomeTags.SPAWNS_COLD_VARIANT_FROGS)) {
-         this.setVariant((Holder)BuiltInRegistries.FROG_VARIANT.getHolderOrThrow(FrogVariant.COLD));
+         this.setVariant((Holder)BuiltInRegistries.FROG_VARIANT.getOrThrow(FrogVariant.COLD));
       } else if (var5.is(BiomeTags.SPAWNS_WARM_VARIANT_FROGS)) {
-         this.setVariant((Holder)BuiltInRegistries.FROG_VARIANT.getHolderOrThrow(FrogVariant.WARM));
+         this.setVariant((Holder)BuiltInRegistries.FROG_VARIANT.getOrThrow(FrogVariant.WARM));
       } else {
-         this.setVariant((Holder)BuiltInRegistries.FROG_VARIANT.getHolderOrThrow(DEFAULT_VARIANT));
+         this.setVariant((Holder)BuiltInRegistries.FROG_VARIANT.getOrThrow(DEFAULT_VARIANT));
       }
 
       FrogAi.initMemories(this, var1.getRandom());
@@ -243,7 +252,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MOVEMENT_SPEED, 1.0).add(Attributes.MAX_HEALTH, 10.0).add(Attributes.ATTACK_DAMAGE, 10.0).add(Attributes.STEP_HEIGHT, 1.0);
+      return Animal.createAnimalAttributes().add(Attributes.MOVEMENT_SPEED, 1.0).add(Attributes.MAX_HEALTH, 10.0).add(Attributes.ATTACK_DAMAGE, 10.0).add(Attributes.STEP_HEIGHT, 1.0);
    }
 
    @Nullable
@@ -312,7 +321,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
       return var1.is(ItemTags.FROG_FOOD);
    }
 
-   public static boolean checkFrogSpawnRules(EntityType<? extends Animal> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+   public static boolean checkFrogSpawnRules(EntityType<? extends Animal> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       return var1.getBlockState(var3.below()).is(BlockTags.FROGS_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
    }
 

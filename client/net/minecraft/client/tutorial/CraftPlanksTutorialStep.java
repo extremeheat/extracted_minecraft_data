@@ -1,6 +1,7 @@
 package net.minecraft.client.tutorial;
 
 import java.util.Iterator;
+import javax.annotation.Nullable;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
@@ -17,6 +18,7 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
    private static final Component CRAFT_TITLE = Component.translatable("tutorial.craft_planks.title");
    private static final Component CRAFT_DESCRIPTION = Component.translatable("tutorial.craft_planks.description");
    private final Tutorial tutorial;
+   @Nullable
    private TutorialToast toast;
    private int timeWaiting;
 
@@ -47,7 +49,7 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
 
          if (this.timeWaiting >= 1200 && this.toast == null) {
             this.toast = new TutorialToast(TutorialToast.Icons.WOODEN_PLANKS, CRAFT_TITLE, CRAFT_DESCRIPTION, false);
-            this.tutorial.getMinecraft().getToasts().addToast(this.toast);
+            this.tutorial.getMinecraft().getToastManager().addToast(this.toast);
          }
 
       }

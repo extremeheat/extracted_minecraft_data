@@ -1,13 +1,12 @@
 package net.minecraft.world.level.storage.loot.providers.score;
 
-import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
 import javax.annotation.Nullable;
+import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.scores.ScoreHolder;
 
 public record ContextScoreboardNameProvider(LootContext.EntityTarget target) implements ScoreboardNameProvider {
@@ -31,11 +30,11 @@ public record ContextScoreboardNameProvider(LootContext.EntityTarget target) imp
 
    @Nullable
    public ScoreHolder getScoreHolder(LootContext var1) {
-      return (ScoreHolder)var1.getParamOrNull(this.target.getParam());
+      return (ScoreHolder)var1.getOptionalParameter(this.target.getParam());
    }
 
-   public Set<LootContextParam<?>> getReferencedContextParams() {
-      return ImmutableSet.of(this.target.getParam());
+   public Set<ContextKey<?>> getReferencedContextParams() {
+      return Set.of(this.target.getParam());
    }
 
    public LootContext.EntityTarget target() {

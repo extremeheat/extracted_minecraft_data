@@ -6,47 +6,43 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.chars.CharArraySet;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.Util;
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 
 public final class ShapedRecipePattern {
    private static final int MAX_SIZE = 3;
+   public static final char EMPTY_SLOT = ' ';
    public static final MapCodec<ShapedRecipePattern> MAP_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ShapedRecipePattern> STREAM_CODEC;
    private final int width;
    private final int height;
-   private final NonNullList<Ingredient> ingredients;
+   private final List<Optional<Ingredient>> ingredients;
    private final Optional<Data> data;
    private final int ingredientCount;
    private final boolean symmetrical;
 
-   public ShapedRecipePattern(int var1, int var2, NonNullList<Ingredient> var3, Optional<Data> var4) {
+   public ShapedRecipePattern(int var1, int var2, List<Optional<Ingredient>> var3, Optional<Data> var4) {
       super();
       this.width = var1;
       this.height = var2;
       this.ingredients = var3;
       this.data = var4;
-      int var5 = 0;
-      Iterator var6 = var3.iterator();
-
-      while(var6.hasNext()) {
-         Ingredient var7 = (Ingredient)var6.next();
-         if (!var7.isEmpty()) {
-            ++var5;
-         }
-      }
-
-      this.ingredientCount = var5;
+      this.ingredientCount = (int)var3.stream().flatMap(Optional::stream).count();
       this.symmetrical = Util.isSymmetrical(var1, var2, var3);
+   }
+
+   private static ShapedRecipePattern createFromNetwork(Integer var0, Integer var1, List<Optional<Ingredient>> var2) {
+      return new ShapedRecipePattern(var0, var1, var2, Optional.empty());
    }
 
    public static ShapedRecipePattern of(Map<Character, Ingredient> var0, String... var1) {
@@ -62,23 +58,32 @@ public final class ShapedRecipePattern {
       String[] var1 = shrink(var0.pattern);
       int var2 = var1[0].length();
       int var3 = var1.length;
-      NonNullList var4 = NonNullList.withSize(var2 * var3, Ingredient.EMPTY);
+      ArrayList var4 = new ArrayList(var2 * var3);
       CharArraySet var5 = new CharArraySet(var0.key.keySet());
+      String[] var6 = var1;
+      int var7 = var1.length;
 
-      for(int var6 = 0; var6 < var1.length; ++var6) {
-         String var7 = var1[var6];
+      for(int var8 = 0; var8 < var7; ++var8) {
+         String var9 = var6[var8];
 
-         for(int var8 = 0; var8 < var7.length(); ++var8) {
-            char var9 = var7.charAt(var8);
-            Ingredient var10 = var9 == ' ' ? Ingredient.EMPTY : (Ingredient)var0.key.get(var9);
-            if (var10 == null) {
-               return DataResult.error(() -> {
-                  return "Pattern references symbol '" + var9 + "' but it's not defined in the key";
-               });
+         for(int var10 = 0; var10 < var9.length(); ++var10) {
+            char var11 = var9.charAt(var10);
+            Optional var12;
+            if (var11 == ' ') {
+               var12 = Optional.empty();
+            } else {
+               Ingredient var13 = (Ingredient)var0.key.get(var11);
+               if (var13 == null) {
+                  return DataResult.error(() -> {
+                     return "Pattern references symbol '" + var11 + "' but it's not defined in the key";
+                  });
+               }
+
+               var12 = Optional.of(var13);
             }
 
-            var5.remove(var9);
-            var4.set(var8 + var2 * var6, var10);
+            var5.remove(var11);
+            var4.add(var12);
          }
       }
 
@@ -100,8 +105,8 @@ public final class ShapedRecipePattern {
 
       for(int var5 = 0; var5 < var0.size(); ++var5) {
          String var6 = (String)var0.get(var5);
-         var1 = Math.min(var1, firstNonSpace(var6));
-         int var7 = lastNonSpace(var6);
+         var1 = Math.min(var1, firstNonEmpty(var6));
+         int var7 = lastNonEmpty(var6);
          var2 = Math.max(var2, var7);
          if (var7 < 0) {
             if (var3 == var5) {
@@ -127,7 +132,7 @@ public final class ShapedRecipePattern {
       }
    }
 
-   private static int firstNonSpace(String var0) {
+   private static int firstNonEmpty(String var0) {
       int var1;
       for(var1 = 0; var1 < var0.length() && var0.charAt(var1) == ' '; ++var1) {
       }
@@ -135,7 +140,7 @@ public final class ShapedRecipePattern {
       return var1;
    }
 
-   private static int lastNonSpace(String var0) {
+   private static int lastNonEmpty(String var0) {
       int var1;
       for(var1 = var0.length() - 1; var1 >= 0 && var0.charAt(var1) == ' '; --var1) {
       }
@@ -164,43 +169,21 @@ public final class ShapedRecipePattern {
    private boolean matches(CraftingInput var1, boolean var2) {
       for(int var3 = 0; var3 < this.height; ++var3) {
          for(int var4 = 0; var4 < this.width; ++var4) {
-            Ingredient var5;
+            Optional var5;
             if (var2) {
-               var5 = (Ingredient)this.ingredients.get(this.width - var4 - 1 + var3 * this.width);
+               var5 = (Optional)this.ingredients.get(this.width - var4 - 1 + var3 * this.width);
             } else {
-               var5 = (Ingredient)this.ingredients.get(var4 + var3 * this.width);
+               var5 = (Optional)this.ingredients.get(var4 + var3 * this.width);
             }
 
             ItemStack var6 = var1.getItem(var4, var3);
-            if (!var5.test(var6)) {
+            if (!Ingredient.testOptionalIngredient(var5, var6)) {
                return false;
             }
          }
       }
 
       return true;
-   }
-
-   private void toNetwork(RegistryFriendlyByteBuf var1) {
-      var1.writeVarInt(this.width);
-      var1.writeVarInt(this.height);
-      Iterator var2 = this.ingredients.iterator();
-
-      while(var2.hasNext()) {
-         Ingredient var3 = (Ingredient)var2.next();
-         Ingredient.CONTENTS_STREAM_CODEC.encode(var1, var3);
-      }
-
-   }
-
-   private static ShapedRecipePattern fromNetwork(RegistryFriendlyByteBuf var0) {
-      int var1 = var0.readVarInt();
-      int var2 = var0.readVarInt();
-      NonNullList var3 = NonNullList.withSize(var1 * var2, Ingredient.EMPTY);
-      var3.replaceAll((var1x) -> {
-         return (Ingredient)Ingredient.CONTENTS_STREAM_CODEC.decode(var0);
-      });
-      return new ShapedRecipePattern(var1, var2, var3, Optional.empty());
    }
 
    public int width() {
@@ -211,7 +194,7 @@ public final class ShapedRecipePattern {
       return this.height;
    }
 
-   public NonNullList<Ingredient> ingredients() {
+   public List<Optional<Ingredient>> ingredients() {
       return this.ingredients;
    }
 
@@ -223,7 +206,13 @@ public final class ShapedRecipePattern {
             });
          });
       });
-      STREAM_CODEC = StreamCodec.ofMember(ShapedRecipePattern::toNetwork, ShapedRecipePattern::fromNetwork);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, (var0) -> {
+         return var0.width;
+      }, ByteBufCodecs.VAR_INT, (var0) -> {
+         return var0.height;
+      }, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()), (var0) -> {
+         return var0.ingredients;
+      }, ShapedRecipePattern::createFromNetwork);
    }
 
    public static record Data(Map<Character, Ingredient> key, List<String> pattern) {
@@ -292,7 +281,7 @@ public final class ShapedRecipePattern {
             }
          }, String::valueOf);
          MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-            return var0.group(ExtraCodecs.strictUnboundedMap(SYMBOL_CODEC, Ingredient.CODEC_NONEMPTY).fieldOf("key").forGetter((var0x) -> {
+            return var0.group(ExtraCodecs.strictUnboundedMap(SYMBOL_CODEC, Ingredient.CODEC).fieldOf("key").forGetter((var0x) -> {
                return var0x.key;
             }), PATTERN_CODEC.fieldOf("pattern").forGetter((var0x) -> {
                return var0x.pattern;

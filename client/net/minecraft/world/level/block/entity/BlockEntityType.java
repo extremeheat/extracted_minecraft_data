@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import com.google.common.collect.ImmutableSet;
-import com.mojang.datafixers.types.Type;
 import com.mojang.logging.LogUtils;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -32,6 +30,7 @@ public class BlockEntityType<T extends BlockEntity> {
    public static final BlockEntityType<SignBlockEntity> SIGN;
    public static final BlockEntityType<HangingSignBlockEntity> HANGING_SIGN;
    public static final BlockEntityType<SpawnerBlockEntity> MOB_SPAWNER;
+   public static final BlockEntityType<CreakingHeartBlockEntity> CREAKING_HEART;
    public static final BlockEntityType<PistonMovingBlockEntity> PISTON;
    public static final BlockEntityType<BrewingStandBlockEntity> BREWING_STAND;
    public static final BlockEntityType<EnchantingTableBlockEntity> ENCHANTING_TABLE;
@@ -68,7 +67,6 @@ public class BlockEntityType<T extends BlockEntity> {
    public static final BlockEntityType<VaultBlockEntity> VAULT;
    private final BlockEntitySupplier<? extends T> factory;
    private final Set<Block> validBlocks;
-   private final Type<?> dataType;
    private final Holder.Reference<BlockEntityType<?>> builtInRegistryHolder;
 
    @Nullable
@@ -76,21 +74,20 @@ public class BlockEntityType<T extends BlockEntity> {
       return BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(var0);
    }
 
-   private static <T extends BlockEntity> BlockEntityType<T> register(String var0, Builder<T> var1) {
-      if (var1.validBlocks.isEmpty()) {
+   private static <T extends BlockEntity> BlockEntityType<T> register(String var0, BlockEntitySupplier<? extends T> var1, Block... var2) {
+      if (var2.length == 0) {
          LOGGER.warn("Block entity type {} requires at least one valid block to be defined!", var0);
       }
 
-      Type var2 = Util.fetchChoiceType(References.BLOCK_ENTITY, var0);
-      return (BlockEntityType)Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, (String)var0, var1.build(var2));
+      Util.fetchChoiceType(References.BLOCK_ENTITY, var0);
+      return (BlockEntityType)Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, (String)var0, new BlockEntityType(var1, Set.of(var2)));
    }
 
-   public BlockEntityType(BlockEntitySupplier<? extends T> var1, Set<Block> var2, Type<?> var3) {
+   private BlockEntityType(BlockEntitySupplier<? extends T> var1, Set<Block> var2) {
       super();
       this.builtInRegistryHolder = BuiltInRegistries.BLOCK_ENTITY_TYPE.createIntrusiveHolder(this);
       this.factory = var1;
       this.validBlocks = var2;
-      this.dataType = var3;
    }
 
    @Nullable
@@ -102,7 +99,8 @@ public class BlockEntityType<T extends BlockEntity> {
       return this.validBlocks.contains(var1.getBlock());
    }
 
-   @Nullable
+   /** @deprecated */
+   @Deprecated
    public Holder.Reference<BlockEntityType<?>> builtInRegistryHolder() {
       return this.builtInRegistryHolder;
    }
@@ -114,69 +112,51 @@ public class BlockEntityType<T extends BlockEntity> {
    }
 
    static {
-      FURNACE = register("furnace", BlockEntityType.Builder.of(FurnaceBlockEntity::new, Blocks.FURNACE));
-      CHEST = register("chest", BlockEntityType.Builder.of(ChestBlockEntity::new, Blocks.CHEST));
-      TRAPPED_CHEST = register("trapped_chest", BlockEntityType.Builder.of(TrappedChestBlockEntity::new, Blocks.TRAPPED_CHEST));
-      ENDER_CHEST = register("ender_chest", BlockEntityType.Builder.of(EnderChestBlockEntity::new, Blocks.ENDER_CHEST));
-      JUKEBOX = register("jukebox", BlockEntityType.Builder.of(JukeboxBlockEntity::new, Blocks.JUKEBOX));
-      DISPENSER = register("dispenser", BlockEntityType.Builder.of(DispenserBlockEntity::new, Blocks.DISPENSER));
-      DROPPER = register("dropper", BlockEntityType.Builder.of(DropperBlockEntity::new, Blocks.DROPPER));
-      SIGN = register("sign", BlockEntityType.Builder.of(SignBlockEntity::new, Blocks.OAK_SIGN, Blocks.SPRUCE_SIGN, Blocks.BIRCH_SIGN, Blocks.ACACIA_SIGN, Blocks.CHERRY_SIGN, Blocks.JUNGLE_SIGN, Blocks.DARK_OAK_SIGN, Blocks.OAK_WALL_SIGN, Blocks.SPRUCE_WALL_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.ACACIA_WALL_SIGN, Blocks.CHERRY_WALL_SIGN, Blocks.JUNGLE_WALL_SIGN, Blocks.DARK_OAK_WALL_SIGN, Blocks.CRIMSON_SIGN, Blocks.CRIMSON_WALL_SIGN, Blocks.WARPED_SIGN, Blocks.WARPED_WALL_SIGN, Blocks.MANGROVE_SIGN, Blocks.MANGROVE_WALL_SIGN, Blocks.BAMBOO_SIGN, Blocks.BAMBOO_WALL_SIGN));
-      HANGING_SIGN = register("hanging_sign", BlockEntityType.Builder.of(HangingSignBlockEntity::new, Blocks.OAK_HANGING_SIGN, Blocks.SPRUCE_HANGING_SIGN, Blocks.BIRCH_HANGING_SIGN, Blocks.ACACIA_HANGING_SIGN, Blocks.CHERRY_HANGING_SIGN, Blocks.JUNGLE_HANGING_SIGN, Blocks.DARK_OAK_HANGING_SIGN, Blocks.CRIMSON_HANGING_SIGN, Blocks.WARPED_HANGING_SIGN, Blocks.MANGROVE_HANGING_SIGN, Blocks.BAMBOO_HANGING_SIGN, Blocks.OAK_WALL_HANGING_SIGN, Blocks.SPRUCE_WALL_HANGING_SIGN, Blocks.BIRCH_WALL_HANGING_SIGN, Blocks.ACACIA_WALL_HANGING_SIGN, Blocks.CHERRY_WALL_HANGING_SIGN, Blocks.JUNGLE_WALL_HANGING_SIGN, Blocks.DARK_OAK_WALL_HANGING_SIGN, Blocks.CRIMSON_WALL_HANGING_SIGN, Blocks.WARPED_WALL_HANGING_SIGN, Blocks.MANGROVE_WALL_HANGING_SIGN, Blocks.BAMBOO_WALL_HANGING_SIGN));
-      MOB_SPAWNER = register("mob_spawner", BlockEntityType.Builder.of(SpawnerBlockEntity::new, Blocks.SPAWNER));
-      PISTON = register("piston", BlockEntityType.Builder.of(PistonMovingBlockEntity::new, Blocks.MOVING_PISTON));
-      BREWING_STAND = register("brewing_stand", BlockEntityType.Builder.of(BrewingStandBlockEntity::new, Blocks.BREWING_STAND));
-      ENCHANTING_TABLE = register("enchanting_table", BlockEntityType.Builder.of(EnchantingTableBlockEntity::new, Blocks.ENCHANTING_TABLE));
-      END_PORTAL = register("end_portal", BlockEntityType.Builder.of(TheEndPortalBlockEntity::new, Blocks.END_PORTAL));
-      BEACON = register("beacon", BlockEntityType.Builder.of(BeaconBlockEntity::new, Blocks.BEACON));
-      SKULL = register("skull", BlockEntityType.Builder.of(SkullBlockEntity::new, Blocks.SKELETON_SKULL, Blocks.SKELETON_WALL_SKULL, Blocks.CREEPER_HEAD, Blocks.CREEPER_WALL_HEAD, Blocks.DRAGON_HEAD, Blocks.DRAGON_WALL_HEAD, Blocks.ZOMBIE_HEAD, Blocks.ZOMBIE_WALL_HEAD, Blocks.WITHER_SKELETON_SKULL, Blocks.WITHER_SKELETON_WALL_SKULL, Blocks.PLAYER_HEAD, Blocks.PLAYER_WALL_HEAD, Blocks.PIGLIN_HEAD, Blocks.PIGLIN_WALL_HEAD));
-      DAYLIGHT_DETECTOR = register("daylight_detector", BlockEntityType.Builder.of(DaylightDetectorBlockEntity::new, Blocks.DAYLIGHT_DETECTOR));
-      HOPPER = register("hopper", BlockEntityType.Builder.of(HopperBlockEntity::new, Blocks.HOPPER));
-      COMPARATOR = register("comparator", BlockEntityType.Builder.of(ComparatorBlockEntity::new, Blocks.COMPARATOR));
-      BANNER = register("banner", BlockEntityType.Builder.of(BannerBlockEntity::new, Blocks.WHITE_BANNER, Blocks.ORANGE_BANNER, Blocks.MAGENTA_BANNER, Blocks.LIGHT_BLUE_BANNER, Blocks.YELLOW_BANNER, Blocks.LIME_BANNER, Blocks.PINK_BANNER, Blocks.GRAY_BANNER, Blocks.LIGHT_GRAY_BANNER, Blocks.CYAN_BANNER, Blocks.PURPLE_BANNER, Blocks.BLUE_BANNER, Blocks.BROWN_BANNER, Blocks.GREEN_BANNER, Blocks.RED_BANNER, Blocks.BLACK_BANNER, Blocks.WHITE_WALL_BANNER, Blocks.ORANGE_WALL_BANNER, Blocks.MAGENTA_WALL_BANNER, Blocks.LIGHT_BLUE_WALL_BANNER, Blocks.YELLOW_WALL_BANNER, Blocks.LIME_WALL_BANNER, Blocks.PINK_WALL_BANNER, Blocks.GRAY_WALL_BANNER, Blocks.LIGHT_GRAY_WALL_BANNER, Blocks.CYAN_WALL_BANNER, Blocks.PURPLE_WALL_BANNER, Blocks.BLUE_WALL_BANNER, Blocks.BROWN_WALL_BANNER, Blocks.GREEN_WALL_BANNER, Blocks.RED_WALL_BANNER, Blocks.BLACK_WALL_BANNER));
-      STRUCTURE_BLOCK = register("structure_block", BlockEntityType.Builder.of(StructureBlockEntity::new, Blocks.STRUCTURE_BLOCK));
-      END_GATEWAY = register("end_gateway", BlockEntityType.Builder.of(TheEndGatewayBlockEntity::new, Blocks.END_GATEWAY));
-      COMMAND_BLOCK = register("command_block", BlockEntityType.Builder.of(CommandBlockEntity::new, Blocks.COMMAND_BLOCK, Blocks.CHAIN_COMMAND_BLOCK, Blocks.REPEATING_COMMAND_BLOCK));
-      SHULKER_BOX = register("shulker_box", BlockEntityType.Builder.of(ShulkerBoxBlockEntity::new, Blocks.SHULKER_BOX, Blocks.BLACK_SHULKER_BOX, Blocks.BLUE_SHULKER_BOX, Blocks.BROWN_SHULKER_BOX, Blocks.CYAN_SHULKER_BOX, Blocks.GRAY_SHULKER_BOX, Blocks.GREEN_SHULKER_BOX, Blocks.LIGHT_BLUE_SHULKER_BOX, Blocks.LIGHT_GRAY_SHULKER_BOX, Blocks.LIME_SHULKER_BOX, Blocks.MAGENTA_SHULKER_BOX, Blocks.ORANGE_SHULKER_BOX, Blocks.PINK_SHULKER_BOX, Blocks.PURPLE_SHULKER_BOX, Blocks.RED_SHULKER_BOX, Blocks.WHITE_SHULKER_BOX, Blocks.YELLOW_SHULKER_BOX));
-      BED = register("bed", BlockEntityType.Builder.of(BedBlockEntity::new, Blocks.RED_BED, Blocks.BLACK_BED, Blocks.BLUE_BED, Blocks.BROWN_BED, Blocks.CYAN_BED, Blocks.GRAY_BED, Blocks.GREEN_BED, Blocks.LIGHT_BLUE_BED, Blocks.LIGHT_GRAY_BED, Blocks.LIME_BED, Blocks.MAGENTA_BED, Blocks.ORANGE_BED, Blocks.PINK_BED, Blocks.PURPLE_BED, Blocks.WHITE_BED, Blocks.YELLOW_BED));
-      CONDUIT = register("conduit", BlockEntityType.Builder.of(ConduitBlockEntity::new, Blocks.CONDUIT));
-      BARREL = register("barrel", BlockEntityType.Builder.of(BarrelBlockEntity::new, Blocks.BARREL));
-      SMOKER = register("smoker", BlockEntityType.Builder.of(SmokerBlockEntity::new, Blocks.SMOKER));
-      BLAST_FURNACE = register("blast_furnace", BlockEntityType.Builder.of(BlastFurnaceBlockEntity::new, Blocks.BLAST_FURNACE));
-      LECTERN = register("lectern", BlockEntityType.Builder.of(LecternBlockEntity::new, Blocks.LECTERN));
-      BELL = register("bell", BlockEntityType.Builder.of(BellBlockEntity::new, Blocks.BELL));
-      JIGSAW = register("jigsaw", BlockEntityType.Builder.of(JigsawBlockEntity::new, Blocks.JIGSAW));
-      CAMPFIRE = register("campfire", BlockEntityType.Builder.of(CampfireBlockEntity::new, Blocks.CAMPFIRE, Blocks.SOUL_CAMPFIRE));
-      BEEHIVE = register("beehive", BlockEntityType.Builder.of(BeehiveBlockEntity::new, Blocks.BEE_NEST, Blocks.BEEHIVE));
-      SCULK_SENSOR = register("sculk_sensor", BlockEntityType.Builder.of(SculkSensorBlockEntity::new, Blocks.SCULK_SENSOR));
-      CALIBRATED_SCULK_SENSOR = register("calibrated_sculk_sensor", BlockEntityType.Builder.of(CalibratedSculkSensorBlockEntity::new, Blocks.CALIBRATED_SCULK_SENSOR));
-      SCULK_CATALYST = register("sculk_catalyst", BlockEntityType.Builder.of(SculkCatalystBlockEntity::new, Blocks.SCULK_CATALYST));
-      SCULK_SHRIEKER = register("sculk_shrieker", BlockEntityType.Builder.of(SculkShriekerBlockEntity::new, Blocks.SCULK_SHRIEKER));
-      CHISELED_BOOKSHELF = register("chiseled_bookshelf", BlockEntityType.Builder.of(ChiseledBookShelfBlockEntity::new, Blocks.CHISELED_BOOKSHELF));
-      BRUSHABLE_BLOCK = register("brushable_block", BlockEntityType.Builder.of(BrushableBlockEntity::new, Blocks.SUSPICIOUS_SAND, Blocks.SUSPICIOUS_GRAVEL));
-      DECORATED_POT = register("decorated_pot", BlockEntityType.Builder.of(DecoratedPotBlockEntity::new, Blocks.DECORATED_POT));
-      CRAFTER = register("crafter", BlockEntityType.Builder.of(CrafterBlockEntity::new, Blocks.CRAFTER));
-      TRIAL_SPAWNER = register("trial_spawner", BlockEntityType.Builder.of(TrialSpawnerBlockEntity::new, Blocks.TRIAL_SPAWNER));
-      VAULT = register("vault", BlockEntityType.Builder.of(VaultBlockEntity::new, Blocks.VAULT));
-   }
-
-   public static final class Builder<T extends BlockEntity> {
-      private final BlockEntitySupplier<? extends T> factory;
-      final Set<Block> validBlocks;
-
-      private Builder(BlockEntitySupplier<? extends T> var1, Set<Block> var2) {
-         super();
-         this.factory = var1;
-         this.validBlocks = var2;
-      }
-
-      public static <T extends BlockEntity> Builder<T> of(BlockEntitySupplier<? extends T> var0, Block... var1) {
-         return new Builder(var0, ImmutableSet.copyOf(var1));
-      }
-
-      public BlockEntityType<T> build(Type<?> var1) {
-         return new BlockEntityType(this.factory, this.validBlocks, var1);
-      }
+      FURNACE = register("furnace", FurnaceBlockEntity::new, Blocks.FURNACE);
+      CHEST = register("chest", ChestBlockEntity::new, Blocks.CHEST);
+      TRAPPED_CHEST = register("trapped_chest", TrappedChestBlockEntity::new, Blocks.TRAPPED_CHEST);
+      ENDER_CHEST = register("ender_chest", EnderChestBlockEntity::new, Blocks.ENDER_CHEST);
+      JUKEBOX = register("jukebox", JukeboxBlockEntity::new, Blocks.JUKEBOX);
+      DISPENSER = register("dispenser", DispenserBlockEntity::new, Blocks.DISPENSER);
+      DROPPER = register("dropper", DropperBlockEntity::new, Blocks.DROPPER);
+      SIGN = register("sign", SignBlockEntity::new, Blocks.OAK_SIGN, Blocks.SPRUCE_SIGN, Blocks.BIRCH_SIGN, Blocks.ACACIA_SIGN, Blocks.CHERRY_SIGN, Blocks.JUNGLE_SIGN, Blocks.DARK_OAK_SIGN, Blocks.PALE_OAK_SIGN, Blocks.OAK_WALL_SIGN, Blocks.SPRUCE_WALL_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.ACACIA_WALL_SIGN, Blocks.CHERRY_WALL_SIGN, Blocks.JUNGLE_WALL_SIGN, Blocks.DARK_OAK_WALL_SIGN, Blocks.PALE_OAK_WALL_SIGN, Blocks.CRIMSON_SIGN, Blocks.CRIMSON_WALL_SIGN, Blocks.WARPED_SIGN, Blocks.WARPED_WALL_SIGN, Blocks.MANGROVE_SIGN, Blocks.MANGROVE_WALL_SIGN, Blocks.BAMBOO_SIGN, Blocks.BAMBOO_WALL_SIGN);
+      HANGING_SIGN = register("hanging_sign", HangingSignBlockEntity::new, Blocks.OAK_HANGING_SIGN, Blocks.SPRUCE_HANGING_SIGN, Blocks.BIRCH_HANGING_SIGN, Blocks.ACACIA_HANGING_SIGN, Blocks.CHERRY_HANGING_SIGN, Blocks.JUNGLE_HANGING_SIGN, Blocks.DARK_OAK_HANGING_SIGN, Blocks.PALE_OAK_HANGING_SIGN, Blocks.CRIMSON_HANGING_SIGN, Blocks.WARPED_HANGING_SIGN, Blocks.MANGROVE_HANGING_SIGN, Blocks.BAMBOO_HANGING_SIGN, Blocks.OAK_WALL_HANGING_SIGN, Blocks.SPRUCE_WALL_HANGING_SIGN, Blocks.BIRCH_WALL_HANGING_SIGN, Blocks.ACACIA_WALL_HANGING_SIGN, Blocks.CHERRY_WALL_HANGING_SIGN, Blocks.JUNGLE_WALL_HANGING_SIGN, Blocks.DARK_OAK_WALL_HANGING_SIGN, Blocks.PALE_OAK_WALL_HANGING_SIGN, Blocks.CRIMSON_WALL_HANGING_SIGN, Blocks.WARPED_WALL_HANGING_SIGN, Blocks.MANGROVE_WALL_HANGING_SIGN, Blocks.BAMBOO_WALL_HANGING_SIGN);
+      MOB_SPAWNER = register("mob_spawner", SpawnerBlockEntity::new, Blocks.SPAWNER);
+      CREAKING_HEART = register("creaking_heart", CreakingHeartBlockEntity::new, Blocks.CREAKING_HEART);
+      PISTON = register("piston", PistonMovingBlockEntity::new, Blocks.MOVING_PISTON);
+      BREWING_STAND = register("brewing_stand", BrewingStandBlockEntity::new, Blocks.BREWING_STAND);
+      ENCHANTING_TABLE = register("enchanting_table", EnchantingTableBlockEntity::new, Blocks.ENCHANTING_TABLE);
+      END_PORTAL = register("end_portal", TheEndPortalBlockEntity::new, Blocks.END_PORTAL);
+      BEACON = register("beacon", BeaconBlockEntity::new, Blocks.BEACON);
+      SKULL = register("skull", SkullBlockEntity::new, Blocks.SKELETON_SKULL, Blocks.SKELETON_WALL_SKULL, Blocks.CREEPER_HEAD, Blocks.CREEPER_WALL_HEAD, Blocks.DRAGON_HEAD, Blocks.DRAGON_WALL_HEAD, Blocks.ZOMBIE_HEAD, Blocks.ZOMBIE_WALL_HEAD, Blocks.WITHER_SKELETON_SKULL, Blocks.WITHER_SKELETON_WALL_SKULL, Blocks.PLAYER_HEAD, Blocks.PLAYER_WALL_HEAD, Blocks.PIGLIN_HEAD, Blocks.PIGLIN_WALL_HEAD);
+      DAYLIGHT_DETECTOR = register("daylight_detector", DaylightDetectorBlockEntity::new, Blocks.DAYLIGHT_DETECTOR);
+      HOPPER = register("hopper", HopperBlockEntity::new, Blocks.HOPPER);
+      COMPARATOR = register("comparator", ComparatorBlockEntity::new, Blocks.COMPARATOR);
+      BANNER = register("banner", BannerBlockEntity::new, Blocks.WHITE_BANNER, Blocks.ORANGE_BANNER, Blocks.MAGENTA_BANNER, Blocks.LIGHT_BLUE_BANNER, Blocks.YELLOW_BANNER, Blocks.LIME_BANNER, Blocks.PINK_BANNER, Blocks.GRAY_BANNER, Blocks.LIGHT_GRAY_BANNER, Blocks.CYAN_BANNER, Blocks.PURPLE_BANNER, Blocks.BLUE_BANNER, Blocks.BROWN_BANNER, Blocks.GREEN_BANNER, Blocks.RED_BANNER, Blocks.BLACK_BANNER, Blocks.WHITE_WALL_BANNER, Blocks.ORANGE_WALL_BANNER, Blocks.MAGENTA_WALL_BANNER, Blocks.LIGHT_BLUE_WALL_BANNER, Blocks.YELLOW_WALL_BANNER, Blocks.LIME_WALL_BANNER, Blocks.PINK_WALL_BANNER, Blocks.GRAY_WALL_BANNER, Blocks.LIGHT_GRAY_WALL_BANNER, Blocks.CYAN_WALL_BANNER, Blocks.PURPLE_WALL_BANNER, Blocks.BLUE_WALL_BANNER, Blocks.BROWN_WALL_BANNER, Blocks.GREEN_WALL_BANNER, Blocks.RED_WALL_BANNER, Blocks.BLACK_WALL_BANNER);
+      STRUCTURE_BLOCK = register("structure_block", StructureBlockEntity::new, Blocks.STRUCTURE_BLOCK);
+      END_GATEWAY = register("end_gateway", TheEndGatewayBlockEntity::new, Blocks.END_GATEWAY);
+      COMMAND_BLOCK = register("command_block", CommandBlockEntity::new, Blocks.COMMAND_BLOCK, Blocks.CHAIN_COMMAND_BLOCK, Blocks.REPEATING_COMMAND_BLOCK);
+      SHULKER_BOX = register("shulker_box", ShulkerBoxBlockEntity::new, Blocks.SHULKER_BOX, Blocks.BLACK_SHULKER_BOX, Blocks.BLUE_SHULKER_BOX, Blocks.BROWN_SHULKER_BOX, Blocks.CYAN_SHULKER_BOX, Blocks.GRAY_SHULKER_BOX, Blocks.GREEN_SHULKER_BOX, Blocks.LIGHT_BLUE_SHULKER_BOX, Blocks.LIGHT_GRAY_SHULKER_BOX, Blocks.LIME_SHULKER_BOX, Blocks.MAGENTA_SHULKER_BOX, Blocks.ORANGE_SHULKER_BOX, Blocks.PINK_SHULKER_BOX, Blocks.PURPLE_SHULKER_BOX, Blocks.RED_SHULKER_BOX, Blocks.WHITE_SHULKER_BOX, Blocks.YELLOW_SHULKER_BOX);
+      BED = register("bed", BedBlockEntity::new, Blocks.RED_BED, Blocks.BLACK_BED, Blocks.BLUE_BED, Blocks.BROWN_BED, Blocks.CYAN_BED, Blocks.GRAY_BED, Blocks.GREEN_BED, Blocks.LIGHT_BLUE_BED, Blocks.LIGHT_GRAY_BED, Blocks.LIME_BED, Blocks.MAGENTA_BED, Blocks.ORANGE_BED, Blocks.PINK_BED, Blocks.PURPLE_BED, Blocks.WHITE_BED, Blocks.YELLOW_BED);
+      CONDUIT = register("conduit", ConduitBlockEntity::new, Blocks.CONDUIT);
+      BARREL = register("barrel", BarrelBlockEntity::new, Blocks.BARREL);
+      SMOKER = register("smoker", SmokerBlockEntity::new, Blocks.SMOKER);
+      BLAST_FURNACE = register("blast_furnace", BlastFurnaceBlockEntity::new, Blocks.BLAST_FURNACE);
+      LECTERN = register("lectern", LecternBlockEntity::new, Blocks.LECTERN);
+      BELL = register("bell", BellBlockEntity::new, Blocks.BELL);
+      JIGSAW = register("jigsaw", JigsawBlockEntity::new, Blocks.JIGSAW);
+      CAMPFIRE = register("campfire", CampfireBlockEntity::new, Blocks.CAMPFIRE, Blocks.SOUL_CAMPFIRE);
+      BEEHIVE = register("beehive", BeehiveBlockEntity::new, Blocks.BEE_NEST, Blocks.BEEHIVE);
+      SCULK_SENSOR = register("sculk_sensor", SculkSensorBlockEntity::new, Blocks.SCULK_SENSOR);
+      CALIBRATED_SCULK_SENSOR = register("calibrated_sculk_sensor", CalibratedSculkSensorBlockEntity::new, Blocks.CALIBRATED_SCULK_SENSOR);
+      SCULK_CATALYST = register("sculk_catalyst", SculkCatalystBlockEntity::new, Blocks.SCULK_CATALYST);
+      SCULK_SHRIEKER = register("sculk_shrieker", SculkShriekerBlockEntity::new, Blocks.SCULK_SHRIEKER);
+      CHISELED_BOOKSHELF = register("chiseled_bookshelf", ChiseledBookShelfBlockEntity::new, Blocks.CHISELED_BOOKSHELF);
+      BRUSHABLE_BLOCK = register("brushable_block", BrushableBlockEntity::new, Blocks.SUSPICIOUS_SAND, Blocks.SUSPICIOUS_GRAVEL);
+      DECORATED_POT = register("decorated_pot", DecoratedPotBlockEntity::new, Blocks.DECORATED_POT);
+      CRAFTER = register("crafter", CrafterBlockEntity::new, Blocks.CRAFTER);
+      TRIAL_SPAWNER = register("trial_spawner", TrialSpawnerBlockEntity::new, Blocks.TRIAL_SPAWNER);
+      VAULT = register("vault", VaultBlockEntity::new, Blocks.VAULT);
    }
 
    @FunctionalInterface

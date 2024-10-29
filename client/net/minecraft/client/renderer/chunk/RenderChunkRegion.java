@@ -57,8 +57,8 @@ public class RenderChunkRegion implements BlockAndTintGetter {
       return this.level.getBlockTint(var1, var2);
    }
 
-   public int getMinBuildHeight() {
-      return this.level.getMinBuildHeight();
+   public int getMinY() {
+      return this.level.getMinY();
    }
 
    public int getHeight() {

@@ -35,7 +35,7 @@ import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -128,6 +128,12 @@ public class EnchantmentHelper {
       }
    }
 
+   public static ItemStack createBook(EnchantmentInstance var0) {
+      ItemStack var1 = new ItemStack(Items.ENCHANTED_BOOK);
+      var1.enchant(var0.enchantment, var0.level);
+      return var1;
+   }
+
    private static void runIterationOnItem(ItemStack var0, EnchantmentVisitor var1) {
       ItemEnchantments var2 = (ItemEnchantments)var0.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
       Iterator var3 = var2.entrySet().iterator();
@@ -159,12 +165,11 @@ public class EnchantmentHelper {
    }
 
    private static void runIterationOnEquipment(LivingEntity var0, EnchantmentInSlotVisitor var1) {
-      EquipmentSlot[] var2 = EquipmentSlot.values();
-      int var3 = var2.length;
+      Iterator var2 = EquipmentSlot.VALUES.iterator();
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         EquipmentSlot var5 = var2[var4];
-         runIterationOnItem(var0.getItemBySlot(var5), var5, var0, var1);
+      while(var2.hasNext()) {
+         EquipmentSlot var3 = (EquipmentSlot)var2.next();
+         runIterationOnItem(var0.getItemBySlot(var3), var3, var0, var1);
       }
 
    }
@@ -228,18 +233,27 @@ public class EnchantmentHelper {
    }
 
    public static void doPostAttackEffectsWithItemSource(ServerLevel var0, Entity var1, DamageSource var2, @Nullable ItemStack var3) {
-      if (var1 instanceof LivingEntity var4) {
-         runIterationOnEquipment(var4, (var3x, var4x, var5x) -> {
+      doPostAttackEffectsWithItemSourceOnBreak(var0, var1, var2, var3, (Consumer)null);
+   }
+
+   public static void doPostAttackEffectsWithItemSourceOnBreak(ServerLevel var0, Entity var1, DamageSource var2, @Nullable ItemStack var3, @Nullable Consumer<Item> var4) {
+      if (var1 instanceof LivingEntity var5) {
+         runIterationOnEquipment(var5, (var3x, var4x, var5x) -> {
             ((Enchantment)var3x.value()).doPostAttack(var0, var4x, var5x, EnchantmentTarget.VICTIM, var1, var2);
          });
       }
 
       if (var3 != null) {
-         Entity var5 = var2.getEntity();
-         if (var5 instanceof LivingEntity) {
-            var4 = (LivingEntity)var5;
-            runIterationOnItem(var3, EquipmentSlot.MAINHAND, var4, (var3x, var4x, var5x) -> {
+         Entity var6 = var2.getEntity();
+         if (var6 instanceof LivingEntity) {
+            var5 = (LivingEntity)var6;
+            runIterationOnItem(var3, EquipmentSlot.MAINHAND, var5, (var3x, var4x, var5x) -> {
                ((Enchantment)var3x.value()).doPostAttack(var0, var4x, var5x, EnchantmentTarget.ATTACKER, var1, var2);
+            });
+         } else if (var4 != null) {
+            EnchantedItemInUse var7 = new EnchantedItemInUse(var3, (EquipmentSlot)null, (LivingEntity)null, var4);
+            runIterationOnItem(var3, (var4x, var5x) -> {
+               ((Enchantment)var4x.value()).doPostAttack(var0, var5x, var7, EnchantmentTarget.ATTACKER, var1, var2);
             });
          }
       }
@@ -316,7 +330,7 @@ public class EnchantmentHelper {
       return Math.max(0, var3.intValue());
    }
 
-   public static void onProjectileSpawned(ServerLevel var0, ItemStack var1, AbstractArrow var2, Consumer<Item> var3) {
+   public static void onProjectileSpawned(ServerLevel var0, ItemStack var1, Projectile var2, Consumer<Item> var3) {
       Entity var6 = var2.getOwner();
       LivingEntity var10000;
       if (var6 instanceof LivingEntity var5) {
@@ -493,51 +507,54 @@ public class EnchantmentHelper {
 
    public static Optional<EnchantedItemInUse> getRandomItemWith(DataComponentType<?> var0, LivingEntity var1, Predicate<ItemStack> var2) {
       ArrayList var3 = new ArrayList();
-      EquipmentSlot[] var4 = EquipmentSlot.values();
-      int var5 = var4.length;
+      Iterator var4 = EquipmentSlot.VALUES.iterator();
 
-      for(int var6 = 0; var6 < var5; ++var6) {
-         EquipmentSlot var7 = var4[var6];
-         ItemStack var8 = var1.getItemBySlot(var7);
-         if (var2.test(var8)) {
-            ItemEnchantments var9 = (ItemEnchantments)var8.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
-            Iterator var10 = var9.entrySet().iterator();
+      while(true) {
+         EquipmentSlot var5;
+         ItemStack var6;
+         do {
+            if (!var4.hasNext()) {
+               return Util.getRandomSafe(var3, var1.getRandom());
+            }
 
-            while(var10.hasNext()) {
-               Object2IntMap.Entry var11 = (Object2IntMap.Entry)var10.next();
-               Holder var12 = (Holder)var11.getKey();
-               if (((Enchantment)var12.value()).effects().has(var0) && ((Enchantment)var12.value()).matchingSlot(var7)) {
-                  var3.add(new EnchantedItemInUse(var8, var7, var1));
-               }
+            var5 = (EquipmentSlot)var4.next();
+            var6 = var1.getItemBySlot(var5);
+         } while(!var2.test(var6));
+
+         ItemEnchantments var7 = (ItemEnchantments)var6.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+         Iterator var8 = var7.entrySet().iterator();
+
+         while(var8.hasNext()) {
+            Object2IntMap.Entry var9 = (Object2IntMap.Entry)var8.next();
+            Holder var10 = (Holder)var9.getKey();
+            if (((Enchantment)var10.value()).effects().has(var0) && ((Enchantment)var10.value()).matchingSlot(var5)) {
+               var3.add(new EnchantedItemInUse(var6, var5, var1));
             }
          }
       }
-
-      return Util.getRandomSafe(var3, var1.getRandom());
    }
 
    public static int getEnchantmentCost(RandomSource var0, int var1, int var2, ItemStack var3) {
-      Item var4 = var3.getItem();
-      int var5 = var4.getEnchantmentValue();
-      if (var5 <= 0) {
+      Enchantable var4 = (Enchantable)var3.get(DataComponents.ENCHANTABLE);
+      if (var4 == null) {
          return 0;
       } else {
          if (var2 > 15) {
             var2 = 15;
          }
 
-         int var6 = var0.nextInt(8) + 1 + (var2 >> 1) + var0.nextInt(var2 + 1);
+         int var5 = var0.nextInt(8) + 1 + (var2 >> 1) + var0.nextInt(var2 + 1);
          if (var1 == 0) {
-            return Math.max(var6 / 3, 1);
+            return Math.max(var5 / 3, 1);
          } else {
-            return var1 == 1 ? var6 * 2 / 3 + 1 : Math.max(var6, var2 * 2);
+            return var1 == 1 ? var5 * 2 / 3 + 1 : Math.max(var5, var2 * 2);
          }
       }
    }
 
    public static ItemStack enchantItem(RandomSource var0, ItemStack var1, int var2, RegistryAccess var3, Optional<? extends HolderSet<Enchantment>> var4) {
       return enchantItem(var0, var1, var2, (Stream)var4.map(HolderSet::stream).orElseGet(() -> {
-         return var3.registryOrThrow(Registries.ENCHANTMENT).holders().map((var0) -> {
+         return var3.lookupOrThrow(Registries.ENCHANTMENT).listElements().map((var0) -> {
             return var0;
          });
       }));
@@ -561,30 +578,29 @@ public class EnchantmentHelper {
 
    public static List<EnchantmentInstance> selectEnchantment(RandomSource var0, ItemStack var1, int var2, Stream<Holder<Enchantment>> var3) {
       ArrayList var4 = Lists.newArrayList();
-      Item var5 = var1.getItem();
-      int var6 = var5.getEnchantmentValue();
-      if (var6 <= 0) {
+      Enchantable var5 = (Enchantable)var1.get(DataComponents.ENCHANTABLE);
+      if (var5 == null) {
          return var4;
       } else {
-         var2 += 1 + var0.nextInt(var6 / 4 + 1) + var0.nextInt(var6 / 4 + 1);
-         float var7 = (var0.nextFloat() + var0.nextFloat() - 1.0F) * 0.15F;
-         var2 = Mth.clamp(Math.round((float)var2 + (float)var2 * var7), 1, 2147483647);
-         List var8 = getAvailableEnchantmentResults(var2, var1, var3);
-         if (!var8.isEmpty()) {
-            Optional var10000 = WeightedRandom.getRandomItem(var0, var8);
+         var2 += 1 + var0.nextInt(var5.value() / 4 + 1) + var0.nextInt(var5.value() / 4 + 1);
+         float var6 = (var0.nextFloat() + var0.nextFloat() - 1.0F) * 0.15F;
+         var2 = Mth.clamp(Math.round((float)var2 + (float)var2 * var6), 1, 2147483647);
+         List var7 = getAvailableEnchantmentResults(var2, var1, var3);
+         if (!var7.isEmpty()) {
+            Optional var10000 = WeightedRandom.getRandomItem(var0, var7);
             Objects.requireNonNull(var4);
             var10000.ifPresent(var4::add);
 
             while(var0.nextInt(50) <= var2) {
                if (!var4.isEmpty()) {
-                  filterCompatibleEnchantments(var8, (EnchantmentInstance)Util.lastOf(var4));
+                  filterCompatibleEnchantments(var7, (EnchantmentInstance)Util.lastOf(var4));
                }
 
-               if (var8.isEmpty()) {
+               if (var7.isEmpty()) {
                   break;
                }
 
-               var10000 = WeightedRandom.getRandomItem(var0, var8);
+               var10000 = WeightedRandom.getRandomItem(var0, var7);
                Objects.requireNonNull(var4);
                var10000.ifPresent(var4::add);
                var2 /= 2;
@@ -636,7 +652,7 @@ public class EnchantmentHelper {
    }
 
    public static void enchantItemFromProvider(ItemStack var0, RegistryAccess var1, ResourceKey<EnchantmentProvider> var2, DifficultyInstance var3, RandomSource var4) {
-      EnchantmentProvider var5 = (EnchantmentProvider)var1.registryOrThrow(Registries.ENCHANTMENT_PROVIDER).get(var2);
+      EnchantmentProvider var5 = (EnchantmentProvider)var1.lookupOrThrow(Registries.ENCHANTMENT_PROVIDER).getValue(var2);
       if (var5 != null) {
          updateEnchantments(var0, (var4x) -> {
             var5.enchant(var0, var4x, var4, var3);

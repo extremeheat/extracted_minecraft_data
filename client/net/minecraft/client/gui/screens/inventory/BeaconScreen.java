@@ -10,6 +10,7 @@ import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.CommonComponents;
@@ -122,7 +123,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
-      var1.blit(BEACON_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(RenderType::guiTextured, BEACON_LOCATION, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
       var1.pose().pushPose();
       var1.pose().translate(0.0F, 0.0F, 100.0F);
       var1.renderItem(new ItemStack(Items.NETHERITE_INGOT), var5 + 20, var6 + 109);
@@ -206,7 +207,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       }
 
       protected void renderIcon(GuiGraphics var1) {
-         var1.blit(this.getX() + 2, this.getY() + 2, 0, 18, 18, this.sprite);
+         var1.blitSprite(RenderType::guiTextured, (TextureAtlasSprite)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
       }
 
       public void updateStatus(int var1) {
@@ -249,7 +250,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       }
 
       protected void renderIcon(GuiGraphics var1) {
-         var1.blitSprite(this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)this.sprite, this.getX() + 2, this.getY() + 2, 18, 18);
       }
    }
 
@@ -276,7 +277,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
             var5 = BeaconScreen.BUTTON_SPRITE;
          }
 
-         var1.blitSprite(var5, this.getX(), this.getY(), this.width, this.height);
+         var1.blitSprite(RenderType::guiTextured, var5, this.getX(), this.getY(), this.width, this.height);
          this.renderIcon(var1);
       }
 

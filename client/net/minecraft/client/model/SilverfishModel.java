@@ -7,20 +7,18 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 
-public class SilverfishModel<T extends Entity> extends HierarchicalModel<T> {
+public class SilverfishModel extends EntityModel<EntityRenderState> {
    private static final int BODY_COUNT = 7;
-   private final ModelPart root;
    private final ModelPart[] bodyParts = new ModelPart[7];
    private final ModelPart[] bodyLayers = new ModelPart[3];
    private static final int[][] BODY_SIZES = new int[][]{{3, 2, 2}, {4, 3, 2}, {6, 4, 3}, {3, 3, 3}, {2, 2, 3}, {2, 1, 2}, {1, 1, 2}};
    private static final int[][] BODY_TEXS = new int[][]{{0, 0}, {0, 4}, {0, 9}, {0, 16}, {0, 22}, {11, 0}, {13, 4}};
 
    public SilverfishModel(ModelPart var1) {
-      super();
-      this.root = var1;
+      super(var1);
       Arrays.setAll(this.bodyParts, (var1x) -> {
          return var1.getChild(getSegmentName(var1x));
       });
@@ -57,14 +55,12 @@ public class SilverfishModel<T extends Entity> extends HierarchicalModel<T> {
       return LayerDefinition.create(var0, 64, 32);
    }
 
-   public ModelPart root() {
-      return this.root;
-   }
+   public void setupAnim(EntityRenderState var1) {
+      super.setupAnim(var1);
 
-   public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
-      for(int var7 = 0; var7 < this.bodyParts.length; ++var7) {
-         this.bodyParts[var7].yRot = Mth.cos(var4 * 0.9F + (float)var7 * 0.15F * 3.1415927F) * 3.1415927F * 0.05F * (float)(1 + Math.abs(var7 - 2));
-         this.bodyParts[var7].x = Mth.sin(var4 * 0.9F + (float)var7 * 0.15F * 3.1415927F) * 3.1415927F * 0.2F * (float)Math.abs(var7 - 2);
+      for(int var2 = 0; var2 < this.bodyParts.length; ++var2) {
+         this.bodyParts[var2].yRot = Mth.cos(var1.ageInTicks * 0.9F + (float)var2 * 0.15F * 3.1415927F) * 3.1415927F * 0.05F * (float)(1 + Math.abs(var2 - 2));
+         this.bodyParts[var2].x = Mth.sin(var1.ageInTicks * 0.9F + (float)var2 * 0.15F * 3.1415927F) * 3.1415927F * 0.2F * (float)Math.abs(var2 - 2);
       }
 
       this.bodyLayers[0].yRot = this.bodyParts[2].yRot;

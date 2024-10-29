@@ -7,7 +7,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 public class ChestMenu extends AbstractContainerMenu {
-   private static final int SLOTS_PER_ROW = 9;
    private final Container container;
    private final int containerRows;
 
@@ -53,24 +52,17 @@ public class ChestMenu extends AbstractContainerMenu {
       this.container = var4;
       this.containerRows = var5;
       var4.startOpen(var3.player);
-      int var6 = (this.containerRows - 4) * 18;
+      boolean var6 = true;
+      this.addChestGrid(var4, 8, 18);
+      int var7 = 18 + this.containerRows * 18 + 13;
+      this.addStandardInventorySlots(var3, 8, var7);
+   }
 
-      int var7;
-      int var8;
-      for(var7 = 0; var7 < this.containerRows; ++var7) {
-         for(var8 = 0; var8 < 9; ++var8) {
-            this.addSlot(new Slot(var4, var8 + var7 * 9, 8 + var8 * 18, 18 + var7 * 18));
+   private void addChestGrid(Container var1, int var2, int var3) {
+      for(int var4 = 0; var4 < this.containerRows; ++var4) {
+         for(int var5 = 0; var5 < 9; ++var5) {
+            this.addSlot(new Slot(var1, var5 + var4 * 9, var2 + var5 * 18, var3 + var4 * 18));
          }
-      }
-
-      for(var7 = 0; var7 < 3; ++var7) {
-         for(var8 = 0; var8 < 9; ++var8) {
-            this.addSlot(new Slot(var3, var8 + var7 * 9 + 9, 8 + var8 * 18, 103 + var7 * 18 + var6));
-         }
-      }
-
-      for(var7 = 0; var7 < 9; ++var7) {
-         this.addSlot(new Slot(var3, var7, 8 + var7 * 18, 161 + var6));
       }
 
    }

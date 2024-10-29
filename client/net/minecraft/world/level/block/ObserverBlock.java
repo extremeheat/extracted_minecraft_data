@@ -8,12 +8,15 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
+import net.minecraft.world.level.redstone.Orientation;
 
 public class ObserverBlock extends DirectionalBlock {
    public static final MapCodec<ObserverBlock> CODEC = simpleCodec(ObserverBlock::new);
@@ -51,17 +54,17 @@ public class ObserverBlock extends DirectionalBlock {
       this.updateNeighborsInFront(var2, var3, var1);
    }
 
-   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      if (var1.getValue(FACING) == var2 && !(Boolean)var1.getValue(POWERED)) {
-         this.startSignal(var4, var5);
+   protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
+      if (var1.getValue(FACING) == var5 && !(Boolean)var1.getValue(POWERED)) {
+         this.startSignal(var2, var3, var4);
       }
 
-      return super.updateShape(var1, var2, var3, var4, var5, var6);
+      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
-   private void startSignal(LevelAccessor var1, BlockPos var2) {
-      if (!var1.isClientSide() && !var1.getBlockTicks().hasScheduledTick(var2, this)) {
-         var1.scheduleTick(var2, (Block)this, 2);
+   private void startSignal(LevelReader var1, ScheduledTickAccess var2, BlockPos var3) {
+      if (!var1.isClientSide() && !var2.getBlockTicks().hasScheduledTick(var3, this)) {
+         var2.scheduleTick(var3, (Block)this, 2);
       }
 
    }
@@ -69,8 +72,9 @@ public class ObserverBlock extends DirectionalBlock {
    protected void updateNeighborsInFront(Level var1, BlockPos var2, BlockState var3) {
       Direction var4 = (Direction)var3.getValue(FACING);
       BlockPos var5 = var2.relative(var4.getOpposite());
-      var1.neighborChanged(var5, this, var2);
-      var1.updateNeighborsAtExceptFromFacing(var5, this, var4);
+      Orientation var6 = ExperimentalRedstoneUtils.initialOrientation(var1, var4.getOpposite(), (Direction)null);
+      var1.neighborChanged(var5, this, var6);
+      var1.updateNeighborsAtExceptFromFacing(var5, this, var4, var6);
    }
 
    protected boolean isSignalSource(BlockState var1) {

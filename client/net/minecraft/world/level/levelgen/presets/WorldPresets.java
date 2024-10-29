@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
@@ -83,12 +83,16 @@ public class WorldPresets {
       });
    }
 
-   public static WorldDimensions createNormalWorldDimensions(RegistryAccess var0) {
-      return ((WorldPreset)var0.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(NORMAL).value()).createWorldDimensions();
+   public static WorldDimensions createNormalWorldDimensions(HolderLookup.Provider var0) {
+      return ((WorldPreset)var0.lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(NORMAL).value()).createWorldDimensions();
    }
 
-   public static LevelStem getNormalOverworld(RegistryAccess var0) {
-      return (LevelStem)((WorldPreset)var0.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(NORMAL).value()).overworld().orElseThrow();
+   public static LevelStem getNormalOverworld(HolderLookup.Provider var0) {
+      return (LevelStem)((WorldPreset)var0.lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(NORMAL).value()).overworld().orElseThrow();
+   }
+
+   public static WorldDimensions createFlatWorldDimensions(HolderLookup.Provider var0) {
+      return ((WorldPreset)var0.lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(FLAT).value()).createWorldDimensions();
    }
 
    private static class Bootstrap {
