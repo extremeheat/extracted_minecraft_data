@@ -23,6 +23,7 @@ public class PlayerInfo {
    private int latency;
    @Nullable
    private Component tabListDisplayName;
+   private boolean showHat;
    @Nullable
    private RemoteChatSession chatSession;
    private SignedMessageValidator messageValidator;
@@ -31,6 +32,7 @@ public class PlayerInfo {
    public PlayerInfo(GameProfile var1, boolean var2) {
       super();
       this.gameMode = GameType.DEFAULT_MODE;
+      this.showHat = true;
       this.profile = var1;
       this.messageValidator = fallbackMessageValidator(var2);
       com.google.common.base.Supplier var3 = Suppliers.memoize(() -> {
@@ -116,6 +118,14 @@ public class PlayerInfo {
    @Nullable
    public Component getTabListDisplayName() {
       return this.tabListDisplayName;
+   }
+
+   public void setShowHat(boolean var1) {
+      this.showHat = var1;
+   }
+
+   public boolean showHat() {
+      return this.showHat;
    }
 
    public void setTabListOrder(int var1) {

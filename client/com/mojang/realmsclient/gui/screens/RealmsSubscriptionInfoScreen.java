@@ -123,15 +123,15 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
       super.render(var1, var2, var3, var4);
       int var5 = this.width / 2 - 100;
       var1.drawCenteredString(this.font, (Component)SUBSCRIPTION_TITLE, this.width / 2, 17, -1);
-      var1.drawString(this.font, SUBSCRIPTION_START_LABEL, var5, row(0), -6250336, false);
-      var1.drawString(this.font, (Component)this.startDate, var5, row(1), -1, false);
+      var1.drawString(this.font, SUBSCRIPTION_START_LABEL, var5, row(0), -6250336);
+      var1.drawString(this.font, (Component)this.startDate, var5, row(1), -1);
       if (this.type == Subscription.SubscriptionType.NORMAL) {
-         var1.drawString(this.font, TIME_LEFT_LABEL, var5, row(3), -6250336, false);
+         var1.drawString(this.font, TIME_LEFT_LABEL, var5, row(3), -6250336);
       } else if (this.type == Subscription.SubscriptionType.RECURRING) {
-         var1.drawString(this.font, DAYS_LEFT_LABEL, var5, row(3), -6250336, false);
+         var1.drawString(this.font, DAYS_LEFT_LABEL, var5, row(3), -6250336);
       }
 
-      var1.drawString(this.font, (Component)this.daysLeft, var5, row(4), -1, false);
+      var1.drawString(this.font, (Component)this.daysLeft, var5, row(4), -1);
    }
 
    private Component daysLeftPresentation(int var1) {

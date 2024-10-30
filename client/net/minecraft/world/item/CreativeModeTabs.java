@@ -323,6 +323,11 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.MUD_BRICK_STAIRS);
          var1.accept((ItemLike)Items.MUD_BRICK_SLAB);
          var1.accept((ItemLike)Items.MUD_BRICK_WALL);
+         var1.accept((ItemLike)Items.RESIN_BRICKS);
+         var1.accept((ItemLike)Items.RESIN_BRICK_STAIRS);
+         var1.accept((ItemLike)Items.RESIN_BRICK_SLAB);
+         var1.accept((ItemLike)Items.RESIN_BRICK_WALL);
+         var1.accept((ItemLike)Items.CHISELED_RESIN_BRICKS);
          var1.accept((ItemLike)Items.SANDSTONE);
          var1.accept((ItemLike)Items.SANDSTONE_STAIRS);
          var1.accept((ItemLike)Items.SANDSTONE_SLAB);
@@ -823,6 +828,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.FERN);
          var1.accept((ItemLike)Items.DEAD_BUSH);
          var1.accept((ItemLike)Items.DANDELION);
+         var1.accept((ItemLike)Items.OPEN_EYEBLOSSOM);
+         var1.accept((ItemLike)Items.CLOSED_EYEBLOSSOM);
          var1.accept((ItemLike)Items.POPPY);
          var1.accept((ItemLike)Items.BLUE_ORCHID);
          var1.accept((ItemLike)Items.ALLIUM);
@@ -919,6 +926,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.HONEYCOMB_BLOCK);
          var1.accept((ItemLike)Items.SLIME_BLOCK);
          var1.accept((ItemLike)Items.HONEY_BLOCK);
+         var1.accept((ItemLike)Items.RESIN_BLOCK);
          var1.accept((ItemLike)Items.OCHRE_FROGLIGHT);
          var1.accept((ItemLike)Items.VERDANT_FROGLIGHT);
          var1.accept((ItemLike)Items.PEARLESCENT_FROGLIGHT);
@@ -1468,6 +1476,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.ANCIENT_DEBRIS);
          var1.accept((ItemLike)Items.QUARTZ);
          var1.accept((ItemLike)Items.AMETHYST_SHARD);
+         var1.accept((ItemLike)Items.RESIN_CLUMP);
          var1.accept((ItemLike)Items.IRON_NUGGET);
          var1.accept((ItemLike)Items.GOLD_NUGGET);
          var1.accept((ItemLike)Items.IRON_INGOT);
@@ -1527,6 +1536,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.BOWL);
          var1.accept((ItemLike)Items.BRICK);
          var1.accept((ItemLike)Items.NETHER_BRICK);
+         var1.accept((ItemLike)Items.RESIN_BRICK);
          var1.accept((ItemLike)Items.PAPER);
          var1.accept((ItemLike)Items.BOOK);
          var1.accept((ItemLike)Items.FIREWORK_STAR);

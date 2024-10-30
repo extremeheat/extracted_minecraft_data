@@ -217,7 +217,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
 
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       BlockEntity var5 = var1.getBlockEntity(var2);
       if (var5 instanceof DecoratedPotBlockEntity var4) {
          return var4.getPotAsItem();

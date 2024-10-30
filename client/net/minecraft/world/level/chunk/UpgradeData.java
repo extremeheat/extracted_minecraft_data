@@ -170,9 +170,9 @@ public class UpgradeData {
          boolean var10 = var3.size() == 1;
          ChunkPos var11 = var0.getPos();
          int var12 = var11.getMinBlockX() + (var10 && (var9 || var8) ? 1 : (var7 ? 0 : 15));
-         int var13 = var11.getMinBlockX() + (!var10 || !var9 && !var8 ? (var7 ? 0 : 15) : 14);
+         int var13 = var11.getMinBlockX() + (var10 && (var9 || var8) ? 14 : (var7 ? 0 : 15));
          int var14 = var11.getMinBlockZ() + (!var10 || !var6 && !var7 ? (var9 ? 0 : 15) : 1);
-         int var15 = var11.getMinBlockZ() + (var10 && (var6 || var7) ? 14 : (var9 ? 0 : 15));
+         int var15 = var11.getMinBlockZ() + (!var10 || !var6 && !var7 ? (var9 ? 0 : 15) : 14);
          Direction[] var16 = Direction.values();
          BlockPos.MutableBlockPos var17 = new BlockPos.MutableBlockPos();
          Iterator var18 = BlockPos.betweenClosed(var12, var2.getMinY(), var14, var13, var2.getMaxY(), var15).iterator();

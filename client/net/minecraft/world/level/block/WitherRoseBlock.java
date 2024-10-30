@@ -61,10 +61,14 @@ public class WitherRoseBlock extends FlowerBlock {
       if (var2 instanceof ServerLevel var5) {
          if (var2.getDifficulty() != Difficulty.PEACEFUL && var4 instanceof LivingEntity var6) {
             if (!var6.isInvulnerableTo(var5, var2.damageSources().wither())) {
-               var6.addEffect(new MobEffectInstance(MobEffects.WITHER, 40));
+               var6.addEffect(this.getBeeInteractionEffect());
             }
          }
       }
 
+   }
+
+   public MobEffectInstance getBeeInteractionEffect() {
+      return new MobEffectInstance(MobEffects.WITHER, 40);
    }
 }

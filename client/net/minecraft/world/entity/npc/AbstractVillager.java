@@ -240,6 +240,10 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
       return this.level().isClientSide;
    }
 
+   public boolean stillValid(Player var1) {
+      return this.getTradingPlayer() == var1 && this.isAlive() && var1.canInteractWithEntity((Entity)this, 4.0);
+   }
+
    static {
       DATA_UNHAPPY_COUNTER = SynchedEntityData.defineId(AbstractVillager.class, EntityDataSerializers.INT);
       LOGGER = LogUtils.getLogger();

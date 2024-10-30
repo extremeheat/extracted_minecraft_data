@@ -743,8 +743,8 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       COD = register("cod", EntityType.Builder.of(Cod::new, MobCategory.WATER_AMBIENT).sized(0.5F, 0.3F).eyeHeight(0.195F).clientTrackingRange(4));
       COMMAND_BLOCK_MINECART = register("command_block_minecart", EntityType.Builder.of(MinecartCommandBlock::new, MobCategory.MISC).noLootTable().sized(0.98F, 0.7F).passengerAttachments(0.1875F).clientTrackingRange(8));
       COW = register("cow", EntityType.Builder.of(Cow::new, MobCategory.CREATURE).sized(0.9F, 1.4F).eyeHeight(1.3F).passengerAttachments(1.36875F).clientTrackingRange(10));
-      CREAKING = register("creaking", EntityType.Builder.of(Creaking::new, MobCategory.MONSTER).fireImmune().sized(0.9F, 2.7F).eyeHeight(2.3F).clientTrackingRange(8).requiredFeatures(FeatureFlags.WINTER_DROP));
-      CREAKING_TRANSIENT = register("creaking_transient", EntityType.Builder.of(CreakingTransient::new, MobCategory.MONSTER).noSave().noSummon().fireImmune().sized(0.9F, 2.7F).eyeHeight(2.3F).clientTrackingRange(8).requiredFeatures(FeatureFlags.WINTER_DROP));
+      CREAKING = register("creaking", EntityType.Builder.of(Creaking::new, MobCategory.MONSTER).sized(0.9F, 2.7F).eyeHeight(2.3F).clientTrackingRange(8));
+      CREAKING_TRANSIENT = register("creaking_transient", EntityType.Builder.of(CreakingTransient::new, MobCategory.MONSTER).noSave().noSummon().fireImmune().sized(0.9F, 2.7F).eyeHeight(2.3F).clientTrackingRange(8));
       CREEPER = register("creeper", EntityType.Builder.of(Creeper::new, MobCategory.MONSTER).sized(0.6F, 1.7F).clientTrackingRange(8));
       DARK_OAK_BOAT = register("dark_oak_boat", EntityType.Builder.of(boatFactory(() -> {
          return Items.DARK_OAK_BOAT;
@@ -822,10 +822,10 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       PAINTING = register("painting", EntityType.Builder.of(Painting::new, MobCategory.MISC).noLootTable().sized(0.5F, 0.5F).clientTrackingRange(10).updateInterval(2147483647));
       PALE_OAK_BOAT = register("pale_oak_boat", EntityType.Builder.of(boatFactory(() -> {
          return Items.PALE_OAK_BOAT;
-      }), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10).requiredFeatures(FeatureFlags.WINTER_DROP));
+      }), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       PALE_OAK_CHEST_BOAT = register("pale_oak_chest_boat", EntityType.Builder.of(chestBoatFactory(() -> {
          return Items.PALE_OAK_CHEST_BOAT;
-      }), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10).requiredFeatures(FeatureFlags.WINTER_DROP));
+      }), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       PANDA = register("panda", EntityType.Builder.of(Panda::new, MobCategory.CREATURE).sized(1.3F, 1.25F).clientTrackingRange(10));
       PARROT = register("parrot", EntityType.Builder.of(Parrot::new, MobCategory.CREATURE).sized(0.5F, 0.9F).eyeHeight(0.54F).passengerAttachments(0.4625F).clientTrackingRange(8));
       PHANTOM = register("phantom", EntityType.Builder.of(Phantom::new, MobCategory.MONSTER).sized(0.9F, 0.5F).eyeHeight(0.175F).passengerAttachments(0.3375F).ridingOffset(-0.125F).clientTrackingRange(8));

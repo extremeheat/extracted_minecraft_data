@@ -45,7 +45,7 @@ public class SweetBerryBushBlock extends BushBlock implements BonemealableBlock 
       this.registerDefaultState((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0));
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       return new ItemStack(Items.SWEET_BERRIES);
    }
 

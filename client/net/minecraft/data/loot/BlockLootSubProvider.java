@@ -248,6 +248,12 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
       })).apply(SetItemCountFunction.setCount(ConstantValue.exactly(-1.0F), true)))));
    }
 
+   protected LootTable.Builder createMultifaceBlockDrops(Block var1) {
+      return LootTable.lootTable().withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var1).apply(Direction.values(), (var1x) -> {
+         return SetItemCountFunction.setCount(ConstantValue.exactly(1.0F), true).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MultifaceBlock.getFaceProperty(var1x), true)));
+      })).apply(SetItemCountFunction.setCount(ConstantValue.exactly(-1.0F), true)))));
+   }
+
    protected LootTable.Builder createMossyCarpetBlockDrops(Block var1) {
       return LootTable.lootTable().withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, (FunctionUserBuilder)LootItem.lootTableItem(var1).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MossyCarpetBlock.BASE, true))))));
    }

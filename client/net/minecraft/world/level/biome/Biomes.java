@@ -17,6 +17,7 @@ public abstract class Biomes {
    public static final ResourceKey<Biome> FLOWER_FOREST = register("flower_forest");
    public static final ResourceKey<Biome> BIRCH_FOREST = register("birch_forest");
    public static final ResourceKey<Biome> DARK_FOREST = register("dark_forest");
+   public static final ResourceKey<Biome> PALE_GARDEN = register("pale_garden");
    public static final ResourceKey<Biome> OLD_GROWTH_BIRCH_FOREST = register("old_growth_birch_forest");
    public static final ResourceKey<Biome> OLD_GROWTH_PINE_TAIGA = register("old_growth_pine_taiga");
    public static final ResourceKey<Biome> OLD_GROWTH_SPRUCE_TAIGA = register("old_growth_spruce_taiga");

@@ -36,7 +36,7 @@ public class SnowyDirtBlock extends Block {
       return (BlockState)this.defaultBlockState().setValue(SNOWY, isSnowySetting(var2));
    }
 
-   private static boolean isSnowySetting(BlockState var0) {
+   protected static boolean isSnowySetting(BlockState var0) {
       return var0.is(BlockTags.SNOW);
    }
 

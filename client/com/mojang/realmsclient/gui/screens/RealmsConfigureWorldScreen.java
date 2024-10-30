@@ -188,7 +188,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
          if (this.isMinigame()) {
             String var10 = this.serverData.getMinigameName();
             if (var10 != null) {
-               var1.drawString(this.font, (Component)Component.translatable("mco.configure.world.minigame", var10), this.leftX + 80 + 20 + 10, row(13), -1, false);
+               var1.drawString(this.font, (Component)Component.translatable("mco.configure.world.minigame", var10), this.leftX + 80 + 20 + 10, row(13), -1);
             }
          }
 

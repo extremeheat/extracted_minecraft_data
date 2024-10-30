@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.inventory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.datafixers.util.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -56,7 +55,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
 
 public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPickerMenu> {
    private static final ResourceLocation SCROLLER_SPRITE = ResourceLocation.withDefaultNamespace("container/creative_inventory/scroller");
@@ -691,7 +689,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       boolean var4 = selectedTab.getType() == CreativeModeTab.Type.SEARCH;
       TooltipFlag.Default var5 = this.minecraft.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL;
       TooltipFlag.Default var6 = var2 ? var5.asCreative() : var5;
-      List var7 = var1.getTooltipLines(Item.TooltipContext.of((Level)this.minecraft.level), this.minecraft.player, var6);
+      List var7 = var1.getTooltipLines(Item.TooltipContext.of(this.minecraft.level, this.minecraft.player), this.minecraft.player, var6);
       if (var3 && var2) {
          return var7;
       } else {
@@ -972,7 +970,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       }
 
       @Nullable
-      public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
+      public ResourceLocation getNoItemIcon() {
          return this.target.getNoItemIcon();
       }
 

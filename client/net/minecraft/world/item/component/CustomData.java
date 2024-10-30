@@ -11,6 +11,7 @@ import io.netty.buffer.ByteBuf;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
@@ -20,6 +21,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -28,6 +30,7 @@ import org.slf4j.Logger;
 public final class CustomData {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final CustomData EMPTY = new CustomData(new CompoundTag());
+   private static final String TYPE_TAG = "id";
    public static final Codec<CustomData> CODEC;
    public static final Codec<CustomData> CODEC_WITH_ID;
    /** @deprecated */
@@ -78,6 +81,11 @@ public final class CustomData {
       CompoundTag var2 = this.tag.copy();
       var1.accept(var2);
       return new CustomData(var2);
+   }
+
+   @Nullable
+   public ResourceLocation parseEntityId() {
+      return !this.tag.contains("id", 8) ? null : ResourceLocation.tryParse(this.tag.getString("id"));
    }
 
    public void loadInto(Entity var1) {

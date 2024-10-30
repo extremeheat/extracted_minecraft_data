@@ -14,6 +14,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -242,15 +243,28 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
    protected void apply(Configs var1, ResourceManager var2, ProfilerFiller var3) {
       CompilationCache var4 = new CompilationCache(var1);
       HashMap var5 = new HashMap();
-      Iterator var6 = CoreShaders.getProgramsToPreload().iterator();
+      ArrayList var6 = new ArrayList(CoreShaders.getProgramsToPreload());
+      Iterator var7 = var1.postChains.values().iterator();
 
-      while(var6.hasNext()) {
-         ShaderProgram var7 = (ShaderProgram)var6.next();
+      while(var7.hasNext()) {
+         PostChainConfig var8 = (PostChainConfig)var7.next();
+         Iterator var9 = var8.passes().iterator();
+
+         while(var9.hasNext()) {
+            PostChainConfig.Pass var10 = (PostChainConfig.Pass)var9.next();
+            var6.add(var10.program());
+         }
+      }
+
+      var7 = var6.iterator();
+
+      while(var7.hasNext()) {
+         ShaderProgram var12 = (ShaderProgram)var7.next();
 
          try {
-            var4.programs.put(var7, Optional.of(var4.compileProgram(var7)));
-         } catch (CompilationException var9) {
-            var5.put(var7, var9);
+            var4.programs.put(var12, Optional.of(var4.compileProgram(var12)));
+         } catch (CompilationException var11) {
+            var5.put(var12, var11);
          }
       }
 
@@ -269,6 +283,13 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
 
    public String getName() {
       return "Shader Loader";
+   }
+
+   private void tryTriggerRecovery(Exception var1) {
+      if (!this.compilationCache.triggeredRecovery) {
+         this.recoveryHandler.accept(var1);
+         this.compilationCache.triggeredRecovery = true;
+      }
    }
 
    public void preloadForStartup(ResourceProvider var1, ShaderProgram... var2) throws IOException, CompilationException {
@@ -344,7 +365,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       } catch (CompilationException var3) {
          LOGGER.error("Failed to load shader program: {}", var1, var3);
          this.compilationCache.programs.put(var1, Optional.empty());
-         this.recoveryHandler.accept(var3);
+         this.tryTriggerRecovery(var3);
          return null;
       }
    }
@@ -371,7 +392,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       } catch (CompilationException var4) {
          LOGGER.error("Failed to load post chain: {}", var1, var4);
          this.compilationCache.postChains.put(var1, Optional.empty());
-         this.recoveryHandler.accept(var4);
+         this.tryTriggerRecovery(var4);
          return null;
       }
    }
@@ -390,6 +411,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       final Map<ShaderProgram, Optional<CompiledShaderProgram>> programs = new HashMap();
       final Map<ShaderCompilationKey, CompiledShader> shaders = new HashMap();
       final Map<ResourceLocation, Optional<PostChain>> postChains = new HashMap();
+      boolean triggeredRecovery;
 
       CompilationCache(final Configs var2) {
          super();

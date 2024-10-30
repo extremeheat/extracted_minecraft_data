@@ -31,6 +31,10 @@ public class SimpleBlockFeature extends Feature<SimpleBlockConfiguration> {
             var3.setBlock(var4, var5, 2);
          }
 
+         if (var2.scheduleTick()) {
+            var3.scheduleTick(var4, var3.getBlockState(var4).getBlock(), 1);
+         }
+
          return true;
       } else {
          return false;

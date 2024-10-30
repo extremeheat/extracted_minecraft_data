@@ -144,10 +144,20 @@ public class BlockModelGenerators {
       ModelTemplates.FLAT_ITEM.create(ModelLocationUtils.getModelLocation(var1), TextureMapping.layer0(var1), this.modelOutput);
    }
 
-   private void createSimpleFlatItemModel(Block var1) {
+   void createSimpleFlatItemModel(Block var1) {
       Item var2 = var1.asItem();
       if (var2 != Items.AIR) {
          ModelTemplates.FLAT_ITEM.create(ModelLocationUtils.getModelLocation(var2), TextureMapping.layer0(var1), this.modelOutput);
+      }
+
+   }
+
+   void createTwoLayerFlatItemModel(Block var1, String var2) {
+      Item var3 = var1.asItem();
+      ResourceLocation var4 = TextureMapping.getBlockTexture(var1);
+      ResourceLocation var5 = TextureMapping.getBlockTexture(var1, var2);
+      if (var3 != Items.AIR) {
+         ModelTemplates.TWO_LAYERED_ITEM.create(ModelLocationUtils.getModelLocation(var3), TextureMapping.layered(var4, var5), this.modelOutput);
       }
 
    }
@@ -305,7 +315,7 @@ public class BlockModelGenerators {
       ResourceLocation var4 = TexturedModel.COLUMN_HORIZONTAL_ALT.create(var1, this.modelOutput);
       ResourceLocation var5 = (ResourceLocation)var2.apply(TexturedModel.COLUMN_ALT);
       ResourceLocation var6 = (ResourceLocation)var2.apply(TexturedModel.COLUMN_HORIZONTAL_ALT);
-      this.blockStateOutput.accept(MultiVariantGenerator.multiVariant(var1).with(PropertyDispatch.properties(BlockStateProperties.AXIS, CreakingHeartBlock.CREAKING).select(Direction.Axis.Y, CreakingHeartBlock.CreakingHeartState.DISABLED, (Variant)Variant.variant().with(VariantProperties.MODEL, var3)).select(Direction.Axis.Z, CreakingHeartBlock.CreakingHeartState.DISABLED, (Variant)Variant.variant().with(VariantProperties.MODEL, var4).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.X, CreakingHeartBlock.CreakingHeartState.DISABLED, (Variant)Variant.variant().with(VariantProperties.MODEL, var4).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.Y, CreakingHeartBlock.CreakingHeartState.DORMANT, (Variant)Variant.variant().with(VariantProperties.MODEL, var5)).select(Direction.Axis.Z, CreakingHeartBlock.CreakingHeartState.DORMANT, (Variant)Variant.variant().with(VariantProperties.MODEL, var6).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.X, CreakingHeartBlock.CreakingHeartState.DORMANT, (Variant)Variant.variant().with(VariantProperties.MODEL, var6).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.Y, CreakingHeartBlock.CreakingHeartState.ACTIVE, (Variant)Variant.variant().with(VariantProperties.MODEL, var5)).select(Direction.Axis.Z, CreakingHeartBlock.CreakingHeartState.ACTIVE, (Variant)Variant.variant().with(VariantProperties.MODEL, var6).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.X, CreakingHeartBlock.CreakingHeartState.ACTIVE, (Variant)Variant.variant().with(VariantProperties.MODEL, var6).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90))));
+      this.blockStateOutput.accept(MultiVariantGenerator.multiVariant(var1).with(PropertyDispatch.properties(BlockStateProperties.AXIS, CreakingHeartBlock.ACTIVE).select(Direction.Axis.Y, false, (Variant)Variant.variant().with(VariantProperties.MODEL, var3)).select(Direction.Axis.Z, false, (Variant)Variant.variant().with(VariantProperties.MODEL, var4).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.X, false, (Variant)Variant.variant().with(VariantProperties.MODEL, var4).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.Y, true, (Variant)Variant.variant().with(VariantProperties.MODEL, var5)).select(Direction.Axis.Z, true, (Variant)Variant.variant().with(VariantProperties.MODEL, var6).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.X, true, (Variant)Variant.variant().with(VariantProperties.MODEL, var6).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90))));
    }
 
    private ResourceLocation createSuffixedVariant(Block var1, String var2, ModelTemplate var3, Function<ResourceLocation, TextureMapping> var4) {
@@ -420,27 +430,27 @@ public class BlockModelGenerators {
       this.blockStateOutput.accept(createSimpleBlock(var1, ModelLocationUtils.getModelLocation(var2)));
    }
 
-   private void createCrossBlockWithDefaultItem(Block var1, TintState var2) {
-      this.createSimpleFlatItemModel(var1);
+   private void createCrossBlockWithDefaultItem(Block var1, PlantType var2) {
+      var2.createItemModel(this, var1);
       this.createCrossBlock(var1, var2);
    }
 
-   private void createCrossBlockWithDefaultItem(Block var1, TintState var2, TextureMapping var3) {
+   private void createCrossBlockWithDefaultItem(Block var1, PlantType var2, TextureMapping var3) {
       this.createSimpleFlatItemModel(var1);
       this.createCrossBlock(var1, var2, var3);
    }
 
-   private void createCrossBlock(Block var1, TintState var2) {
-      TextureMapping var3 = TextureMapping.cross(var1);
+   private void createCrossBlock(Block var1, PlantType var2) {
+      TextureMapping var3 = var2.getTextureMapping(var1);
       this.createCrossBlock(var1, var2, var3);
    }
 
-   private void createCrossBlock(Block var1, TintState var2, TextureMapping var3) {
+   private void createCrossBlock(Block var1, PlantType var2, TextureMapping var3) {
       ResourceLocation var4 = var2.getCross().create(var1, var3, this.modelOutput);
       this.blockStateOutput.accept(createSimpleBlock(var1, var4));
    }
 
-   private void createCrossBlock(Block var1, TintState var2, Property<Integer> var3, int... var4) {
+   private void createCrossBlock(Block var1, PlantType var2, Property<Integer> var3, int... var4) {
       if (var3.getPossibleValues().size() != var4.length) {
          throw new IllegalArgumentException("missing values for property: " + String.valueOf(var3));
       } else {
@@ -456,9 +466,9 @@ public class BlockModelGenerators {
       }
    }
 
-   private void createPlant(Block var1, Block var2, TintState var3) {
+   private void createPlant(Block var1, Block var2, PlantType var3) {
       this.createCrossBlockWithDefaultItem(var1, var3);
-      TextureMapping var4 = TextureMapping.plant(var1);
+      TextureMapping var4 = var3.getPlantTextureMapping(var1);
       ResourceLocation var5 = var3.getCrossPot().create(var2, var4, this.modelOutput);
       this.blockStateOutput.accept(createSimpleBlock(var2, var5));
    }
@@ -508,15 +518,15 @@ public class BlockModelGenerators {
    }
 
    private void createCoral(Block var1, Block var2, Block var3, Block var4, Block var5, Block var6, Block var7, Block var8) {
-      this.createCrossBlockWithDefaultItem(var1, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createCrossBlockWithDefaultItem(var2, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createCrossBlockWithDefaultItem(var1, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createCrossBlockWithDefaultItem(var2, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createTrivialCube(var3);
       this.createTrivialCube(var4);
       this.createCoralFans(var5, var7);
       this.createCoralFans(var6, var8);
    }
 
-   private void createDoublePlant(Block var1, TintState var2) {
+   private void createDoublePlant(Block var1, PlantType var2) {
       this.createSimpleFlatItemModel(var1, "_top");
       ResourceLocation var3 = this.createSuffixedVariant(var1, "_top", var2.getCross(), TextureMapping::cross);
       ResourceLocation var4 = this.createSuffixedVariant(var1, "_bottom", var2.getCross(), TextureMapping::cross);
@@ -526,7 +536,7 @@ public class BlockModelGenerators {
    private void createSunflower() {
       this.createSimpleFlatItemModel(Blocks.SUNFLOWER, "_front");
       ResourceLocation var1 = ModelLocationUtils.getModelLocation(Blocks.SUNFLOWER, "_top");
-      ResourceLocation var2 = this.createSuffixedVariant(Blocks.SUNFLOWER, "_bottom", BlockModelGenerators.TintState.NOT_TINTED.getCross(), TextureMapping::cross);
+      ResourceLocation var2 = this.createSuffixedVariant(Blocks.SUNFLOWER, "_bottom", BlockModelGenerators.PlantType.NOT_TINTED.getCross(), TextureMapping::cross);
       this.createDoubleBlock(Blocks.SUNFLOWER, var1, var2);
    }
 
@@ -1511,6 +1521,15 @@ public class BlockModelGenerators {
 
    private void createMultiface(Block var1) {
       this.createSimpleFlatItemModel(var1);
+      this.createMultifaceBlockStates(var1);
+   }
+
+   private void createMultiface(Block var1, Item var2) {
+      this.createSimpleFlatItemModel(var2);
+      this.createMultifaceBlockStates(var1);
+   }
+
+   private void createMultifaceBlockStates(Block var1) {
       ResourceLocation var2 = ModelLocationUtils.getModelLocation(var1);
       MultiPartGenerator var3 = MultiPartGenerator.multiPart(var1);
       Condition.TerminalCondition var4 = (Condition.TerminalCondition)Util.make(Condition.condition(), (var1x) -> {
@@ -1576,7 +1595,7 @@ public class BlockModelGenerators {
       PropertyDispatch var2 = PropertyDispatch.property(HangingMossBlock.TIP).generate((var2x) -> {
          String var3 = var2x ? "_tip" : "";
          TextureMapping var4 = TextureMapping.cross(TextureMapping.getBlockTexture(var1, var3));
-         ResourceLocation var5 = BlockModelGenerators.TintState.NOT_TINTED.getCross().createWithSuffix(var1, var3, var4, this.modelOutput);
+         ResourceLocation var5 = BlockModelGenerators.PlantType.NOT_TINTED.getCross().createWithSuffix(var1, var3, var4, this.modelOutput);
          return Variant.variant().with(VariantProperties.MODEL, var5);
       });
       this.createSimpleFlatItemModel(var1);
@@ -1639,7 +1658,7 @@ public class BlockModelGenerators {
       ModelTemplates.SHULKER_BOX_INVENTORY.create(ModelLocationUtils.getModelLocation(var1.asItem()), TextureMapping.particle(var1), this.modelOutput);
    }
 
-   private void createGrowingPlant(Block var1, Block var2, TintState var3) {
+   private void createGrowingPlant(Block var1, Block var2, PlantType var3) {
       this.createCrossBlock(var1, var3);
       this.createCrossBlock(var2, var3);
    }
@@ -1663,9 +1682,9 @@ public class BlockModelGenerators {
    }
 
    private void createNetherRoots(Block var1, Block var2) {
-      this.createCrossBlockWithDefaultItem(var1, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createCrossBlockWithDefaultItem(var1, BlockModelGenerators.PlantType.NOT_TINTED);
       TextureMapping var3 = TextureMapping.plant(TextureMapping.getBlockTexture(var1, "_pot"));
-      ResourceLocation var4 = BlockModelGenerators.TintState.NOT_TINTED.getCrossPot().create(var2, var3, this.modelOutput);
+      ResourceLocation var4 = BlockModelGenerators.PlantType.NOT_TINTED.getCrossPot().create(var2, var3, this.modelOutput);
       this.blockStateOutput.accept(createSimpleBlock(var2, var4));
    }
 
@@ -1840,6 +1859,7 @@ public class BlockModelGenerators {
       this.createTrivialCube(Blocks.LAPIS_ORE);
       this.createTrivialCube(Blocks.DEEPSLATE_LAPIS_ORE);
       this.createTrivialCube(Blocks.LAPIS_BLOCK);
+      this.createTrivialCube(Blocks.RESIN_BLOCK);
       this.createTrivialCube(Blocks.NETHER_QUARTZ_ORE);
       this.createTrivialCube(Blocks.REDSTONE_ORE);
       this.createTrivialCube(Blocks.DEEPSLATE_REDSTONE_ORE);
@@ -1972,6 +1992,7 @@ public class BlockModelGenerators {
       this.createMultiface(Blocks.VINE);
       this.createMultiface(Blocks.GLOW_LICHEN);
       this.createMultiface(Blocks.SCULK_VEIN);
+      this.createMultiface(Blocks.RESIN_CLUMP, Items.RESIN_CLUMP);
       this.createMagmaBlock();
       this.createJigsaw();
       this.createSculkSensor();
@@ -2026,7 +2047,7 @@ public class BlockModelGenerators {
       this.createCropBlock(Blocks.NETHER_WART, BlockStateProperties.AGE_3, 0, 1, 1, 2);
       this.createCropBlock(Blocks.POTATOES, BlockStateProperties.AGE_7, 0, 0, 1, 1, 2, 2, 2, 3);
       this.createCropBlock(Blocks.WHEAT, BlockStateProperties.AGE_7, 0, 1, 2, 3, 4, 5, 6, 7);
-      this.createCrossBlock(Blocks.TORCHFLOWER_CROP, BlockModelGenerators.TintState.NOT_TINTED, BlockStateProperties.AGE_1, 0, 1);
+      this.createCrossBlock(Blocks.TORCHFLOWER_CROP, BlockModelGenerators.PlantType.NOT_TINTED, BlockStateProperties.AGE_1, 0, 1);
       this.createPitcherCrop();
       this.createPitcherPlant();
       this.blockEntityModels(ModelLocationUtils.decorateBlockModelLocation("decorated_pot"), Blocks.TERRACOTTA).createWithoutBlockItem(Blocks.DECORATED_POT);
@@ -2144,51 +2165,53 @@ public class BlockModelGenerators {
       this.createFullAndCarpetBlocks(Blocks.BLACK_WOOL, Blocks.BLACK_CARPET);
       this.createTrivialCube(Blocks.MUD);
       this.createTrivialCube(Blocks.PACKED_MUD);
-      this.createPlant(Blocks.FERN, Blocks.POTTED_FERN, BlockModelGenerators.TintState.TINTED);
-      this.createPlant(Blocks.DANDELION, Blocks.POTTED_DANDELION, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.POPPY, Blocks.POTTED_POPPY, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.BLUE_ORCHID, Blocks.POTTED_BLUE_ORCHID, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.ALLIUM, Blocks.POTTED_ALLIUM, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.AZURE_BLUET, Blocks.POTTED_AZURE_BLUET, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.RED_TULIP, Blocks.POTTED_RED_TULIP, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.ORANGE_TULIP, Blocks.POTTED_ORANGE_TULIP, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.WHITE_TULIP, Blocks.POTTED_WHITE_TULIP, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.PINK_TULIP, Blocks.POTTED_PINK_TULIP, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.OXEYE_DAISY, Blocks.POTTED_OXEYE_DAISY, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.CORNFLOWER, Blocks.POTTED_CORNFLOWER, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.LILY_OF_THE_VALLEY, Blocks.POTTED_LILY_OF_THE_VALLEY, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.WITHER_ROSE, Blocks.POTTED_WITHER_ROSE, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.RED_MUSHROOM, Blocks.POTTED_RED_MUSHROOM, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.BROWN_MUSHROOM, Blocks.POTTED_BROWN_MUSHROOM, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.DEAD_BUSH, Blocks.POTTED_DEAD_BUSH, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createPlant(Blocks.TORCHFLOWER, Blocks.POTTED_TORCHFLOWER, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createPlant(Blocks.FERN, Blocks.POTTED_FERN, BlockModelGenerators.PlantType.TINTED);
+      this.createPlant(Blocks.DANDELION, Blocks.POTTED_DANDELION, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.POPPY, Blocks.POTTED_POPPY, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.OPEN_EYEBLOSSOM, Blocks.POTTED_OPEN_EYEBLOSSOM, BlockModelGenerators.PlantType.EMISSIVE_NOT_TINTED);
+      this.createPlant(Blocks.CLOSED_EYEBLOSSOM, Blocks.POTTED_CLOSED_EYEBLOSSOM, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.BLUE_ORCHID, Blocks.POTTED_BLUE_ORCHID, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.ALLIUM, Blocks.POTTED_ALLIUM, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.AZURE_BLUET, Blocks.POTTED_AZURE_BLUET, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.RED_TULIP, Blocks.POTTED_RED_TULIP, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.ORANGE_TULIP, Blocks.POTTED_ORANGE_TULIP, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.WHITE_TULIP, Blocks.POTTED_WHITE_TULIP, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.PINK_TULIP, Blocks.POTTED_PINK_TULIP, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.OXEYE_DAISY, Blocks.POTTED_OXEYE_DAISY, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.CORNFLOWER, Blocks.POTTED_CORNFLOWER, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.LILY_OF_THE_VALLEY, Blocks.POTTED_LILY_OF_THE_VALLEY, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.WITHER_ROSE, Blocks.POTTED_WITHER_ROSE, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.RED_MUSHROOM, Blocks.POTTED_RED_MUSHROOM, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.BROWN_MUSHROOM, Blocks.POTTED_BROWN_MUSHROOM, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.DEAD_BUSH, Blocks.POTTED_DEAD_BUSH, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createPlant(Blocks.TORCHFLOWER, Blocks.POTTED_TORCHFLOWER, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createPointedDripstone();
       this.createMushroomBlock(Blocks.BROWN_MUSHROOM_BLOCK);
       this.createMushroomBlock(Blocks.RED_MUSHROOM_BLOCK);
       this.createMushroomBlock(Blocks.MUSHROOM_STEM);
-      this.createCrossBlockWithDefaultItem(Blocks.SHORT_GRASS, BlockModelGenerators.TintState.TINTED);
-      this.createCrossBlock(Blocks.SUGAR_CANE, BlockModelGenerators.TintState.TINTED);
+      this.createCrossBlockWithDefaultItem(Blocks.SHORT_GRASS, BlockModelGenerators.PlantType.TINTED);
+      this.createCrossBlock(Blocks.SUGAR_CANE, BlockModelGenerators.PlantType.TINTED);
       this.createSimpleFlatItemModel(Items.SUGAR_CANE);
-      this.createGrowingPlant(Blocks.KELP, Blocks.KELP_PLANT, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createGrowingPlant(Blocks.KELP, Blocks.KELP_PLANT, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createSimpleFlatItemModel(Items.KELP);
       this.skipAutoItemBlock(Blocks.KELP_PLANT);
-      this.createCrossBlock(Blocks.HANGING_ROOTS, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createCrossBlock(Blocks.HANGING_ROOTS, BlockModelGenerators.PlantType.NOT_TINTED);
       this.skipAutoItemBlock(Blocks.HANGING_ROOTS);
       this.skipAutoItemBlock(Blocks.CAVE_VINES_PLANT);
-      this.createGrowingPlant(Blocks.WEEPING_VINES, Blocks.WEEPING_VINES_PLANT, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createGrowingPlant(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createGrowingPlant(Blocks.WEEPING_VINES, Blocks.WEEPING_VINES_PLANT, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createGrowingPlant(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createSimpleFlatItemModel(Blocks.WEEPING_VINES, "_plant");
       this.skipAutoItemBlock(Blocks.WEEPING_VINES_PLANT);
       this.createSimpleFlatItemModel(Blocks.TWISTING_VINES, "_plant");
       this.skipAutoItemBlock(Blocks.TWISTING_VINES_PLANT);
-      this.createCrossBlockWithDefaultItem(Blocks.BAMBOO_SAPLING, BlockModelGenerators.TintState.TINTED, TextureMapping.cross(TextureMapping.getBlockTexture(Blocks.BAMBOO, "_stage0")));
+      this.createCrossBlockWithDefaultItem(Blocks.BAMBOO_SAPLING, BlockModelGenerators.PlantType.TINTED, TextureMapping.cross(TextureMapping.getBlockTexture(Blocks.BAMBOO, "_stage0")));
       this.createBamboo();
-      this.createCrossBlockWithDefaultItem(Blocks.COBWEB, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createDoublePlant(Blocks.LILAC, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createDoublePlant(Blocks.ROSE_BUSH, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createDoublePlant(Blocks.PEONY, BlockModelGenerators.TintState.NOT_TINTED);
-      this.createDoublePlant(Blocks.TALL_GRASS, BlockModelGenerators.TintState.TINTED);
-      this.createDoublePlant(Blocks.LARGE_FERN, BlockModelGenerators.TintState.TINTED);
+      this.createCrossBlockWithDefaultItem(Blocks.COBWEB, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createDoublePlant(Blocks.LILAC, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createDoublePlant(Blocks.ROSE_BUSH, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createDoublePlant(Blocks.PEONY, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createDoublePlant(Blocks.TALL_GRASS, BlockModelGenerators.PlantType.TINTED);
+      this.createDoublePlant(Blocks.LARGE_FERN, BlockModelGenerators.PlantType.TINTED);
       this.createSunflower();
       this.createTallSeagrass();
       this.createSmallDripleaf();
@@ -2206,57 +2229,57 @@ public class BlockModelGenerators {
       this.woodProvider(Blocks.ACACIA_LOG).logWithHorizontal(Blocks.ACACIA_LOG).wood(Blocks.ACACIA_WOOD);
       this.woodProvider(Blocks.STRIPPED_ACACIA_LOG).logWithHorizontal(Blocks.STRIPPED_ACACIA_LOG).wood(Blocks.STRIPPED_ACACIA_WOOD);
       this.createHangingSign(Blocks.STRIPPED_ACACIA_LOG, Blocks.ACACIA_HANGING_SIGN, Blocks.ACACIA_WALL_HANGING_SIGN);
-      this.createPlant(Blocks.ACACIA_SAPLING, Blocks.POTTED_ACACIA_SAPLING, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createPlant(Blocks.ACACIA_SAPLING, Blocks.POTTED_ACACIA_SAPLING, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createTrivialBlock(Blocks.ACACIA_LEAVES, TexturedModel.LEAVES);
       this.woodProvider(Blocks.CHERRY_LOG).logUVLocked(Blocks.CHERRY_LOG).wood(Blocks.CHERRY_WOOD);
       this.woodProvider(Blocks.STRIPPED_CHERRY_LOG).logUVLocked(Blocks.STRIPPED_CHERRY_LOG).wood(Blocks.STRIPPED_CHERRY_WOOD);
       this.createHangingSign(Blocks.STRIPPED_CHERRY_LOG, Blocks.CHERRY_HANGING_SIGN, Blocks.CHERRY_WALL_HANGING_SIGN);
-      this.createPlant(Blocks.CHERRY_SAPLING, Blocks.POTTED_CHERRY_SAPLING, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createPlant(Blocks.CHERRY_SAPLING, Blocks.POTTED_CHERRY_SAPLING, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createTrivialBlock(Blocks.CHERRY_LEAVES, TexturedModel.LEAVES);
       this.woodProvider(Blocks.BIRCH_LOG).logWithHorizontal(Blocks.BIRCH_LOG).wood(Blocks.BIRCH_WOOD);
       this.woodProvider(Blocks.STRIPPED_BIRCH_LOG).logWithHorizontal(Blocks.STRIPPED_BIRCH_LOG).wood(Blocks.STRIPPED_BIRCH_WOOD);
       this.createHangingSign(Blocks.STRIPPED_BIRCH_LOG, Blocks.BIRCH_HANGING_SIGN, Blocks.BIRCH_WALL_HANGING_SIGN);
-      this.createPlant(Blocks.BIRCH_SAPLING, Blocks.POTTED_BIRCH_SAPLING, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createPlant(Blocks.BIRCH_SAPLING, Blocks.POTTED_BIRCH_SAPLING, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createTrivialBlock(Blocks.BIRCH_LEAVES, TexturedModel.LEAVES);
       this.woodProvider(Blocks.OAK_LOG).logWithHorizontal(Blocks.OAK_LOG).wood(Blocks.OAK_WOOD);
       this.woodProvider(Blocks.STRIPPED_OAK_LOG).logWithHorizontal(Blocks.STRIPPED_OAK_LOG).wood(Blocks.STRIPPED_OAK_WOOD);
       this.createHangingSign(Blocks.STRIPPED_OAK_LOG, Blocks.OAK_HANGING_SIGN, Blocks.OAK_WALL_HANGING_SIGN);
-      this.createPlant(Blocks.OAK_SAPLING, Blocks.POTTED_OAK_SAPLING, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createPlant(Blocks.OAK_SAPLING, Blocks.POTTED_OAK_SAPLING, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createTrivialBlock(Blocks.OAK_LEAVES, TexturedModel.LEAVES);
       this.woodProvider(Blocks.SPRUCE_LOG).logWithHorizontal(Blocks.SPRUCE_LOG).wood(Blocks.SPRUCE_WOOD);
       this.woodProvider(Blocks.STRIPPED_SPRUCE_LOG).logWithHorizontal(Blocks.STRIPPED_SPRUCE_LOG).wood(Blocks.STRIPPED_SPRUCE_WOOD);
       this.createHangingSign(Blocks.STRIPPED_SPRUCE_LOG, Blocks.SPRUCE_HANGING_SIGN, Blocks.SPRUCE_WALL_HANGING_SIGN);
-      this.createPlant(Blocks.SPRUCE_SAPLING, Blocks.POTTED_SPRUCE_SAPLING, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createPlant(Blocks.SPRUCE_SAPLING, Blocks.POTTED_SPRUCE_SAPLING, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createTrivialBlock(Blocks.SPRUCE_LEAVES, TexturedModel.LEAVES);
       this.woodProvider(Blocks.DARK_OAK_LOG).logWithHorizontal(Blocks.DARK_OAK_LOG).wood(Blocks.DARK_OAK_WOOD);
       this.woodProvider(Blocks.STRIPPED_DARK_OAK_LOG).logWithHorizontal(Blocks.STRIPPED_DARK_OAK_LOG).wood(Blocks.STRIPPED_DARK_OAK_WOOD);
       this.createHangingSign(Blocks.STRIPPED_DARK_OAK_LOG, Blocks.DARK_OAK_HANGING_SIGN, Blocks.DARK_OAK_WALL_HANGING_SIGN);
-      this.createPlant(Blocks.DARK_OAK_SAPLING, Blocks.POTTED_DARK_OAK_SAPLING, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createPlant(Blocks.DARK_OAK_SAPLING, Blocks.POTTED_DARK_OAK_SAPLING, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createTrivialBlock(Blocks.DARK_OAK_LEAVES, TexturedModel.LEAVES);
       this.woodProvider(Blocks.PALE_OAK_LOG).logWithHorizontal(Blocks.PALE_OAK_LOG).wood(Blocks.PALE_OAK_WOOD);
       this.woodProvider(Blocks.STRIPPED_PALE_OAK_LOG).logWithHorizontal(Blocks.STRIPPED_PALE_OAK_LOG).wood(Blocks.STRIPPED_PALE_OAK_WOOD);
       this.createHangingSign(Blocks.STRIPPED_PALE_OAK_LOG, Blocks.PALE_OAK_HANGING_SIGN, Blocks.PALE_OAK_WALL_HANGING_SIGN);
-      this.createPlant(Blocks.PALE_OAK_SAPLING, Blocks.POTTED_PALE_OAK_SAPLING, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createPlant(Blocks.PALE_OAK_SAPLING, Blocks.POTTED_PALE_OAK_SAPLING, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createTrivialBlock(Blocks.PALE_OAK_LEAVES, TexturedModel.LEAVES);
       this.woodProvider(Blocks.JUNGLE_LOG).logWithHorizontal(Blocks.JUNGLE_LOG).wood(Blocks.JUNGLE_WOOD);
       this.woodProvider(Blocks.STRIPPED_JUNGLE_LOG).logWithHorizontal(Blocks.STRIPPED_JUNGLE_LOG).wood(Blocks.STRIPPED_JUNGLE_WOOD);
       this.createHangingSign(Blocks.STRIPPED_JUNGLE_LOG, Blocks.JUNGLE_HANGING_SIGN, Blocks.JUNGLE_WALL_HANGING_SIGN);
-      this.createPlant(Blocks.JUNGLE_SAPLING, Blocks.POTTED_JUNGLE_SAPLING, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createPlant(Blocks.JUNGLE_SAPLING, Blocks.POTTED_JUNGLE_SAPLING, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createTrivialBlock(Blocks.JUNGLE_LEAVES, TexturedModel.LEAVES);
       this.woodProvider(Blocks.CRIMSON_STEM).log(Blocks.CRIMSON_STEM).wood(Blocks.CRIMSON_HYPHAE);
       this.woodProvider(Blocks.STRIPPED_CRIMSON_STEM).log(Blocks.STRIPPED_CRIMSON_STEM).wood(Blocks.STRIPPED_CRIMSON_HYPHAE);
       this.createHangingSign(Blocks.STRIPPED_CRIMSON_STEM, Blocks.CRIMSON_HANGING_SIGN, Blocks.CRIMSON_WALL_HANGING_SIGN);
-      this.createPlant(Blocks.CRIMSON_FUNGUS, Blocks.POTTED_CRIMSON_FUNGUS, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createPlant(Blocks.CRIMSON_FUNGUS, Blocks.POTTED_CRIMSON_FUNGUS, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createNetherRoots(Blocks.CRIMSON_ROOTS, Blocks.POTTED_CRIMSON_ROOTS);
       this.woodProvider(Blocks.WARPED_STEM).log(Blocks.WARPED_STEM).wood(Blocks.WARPED_HYPHAE);
       this.woodProvider(Blocks.STRIPPED_WARPED_STEM).log(Blocks.STRIPPED_WARPED_STEM).wood(Blocks.STRIPPED_WARPED_HYPHAE);
       this.createHangingSign(Blocks.STRIPPED_WARPED_STEM, Blocks.WARPED_HANGING_SIGN, Blocks.WARPED_WALL_HANGING_SIGN);
-      this.createPlant(Blocks.WARPED_FUNGUS, Blocks.POTTED_WARPED_FUNGUS, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createPlant(Blocks.WARPED_FUNGUS, Blocks.POTTED_WARPED_FUNGUS, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createNetherRoots(Blocks.WARPED_ROOTS, Blocks.POTTED_WARPED_ROOTS);
       this.woodProvider(Blocks.BAMBOO_BLOCK).logUVLocked(Blocks.BAMBOO_BLOCK);
       this.woodProvider(Blocks.STRIPPED_BAMBOO_BLOCK).logUVLocked(Blocks.STRIPPED_BAMBOO_BLOCK);
       this.createHangingSign(Blocks.BAMBOO_PLANKS, Blocks.BAMBOO_HANGING_SIGN, Blocks.BAMBOO_WALL_HANGING_SIGN);
-      this.createCrossBlock(Blocks.NETHER_SPROUTS, BlockModelGenerators.TintState.NOT_TINTED);
+      this.createCrossBlock(Blocks.NETHER_SPROUTS, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createSimpleFlatItemModel(Items.NETHER_SPROUTS);
       this.createDoor(Blocks.IRON_DOOR);
       this.createTrapdoor(Blocks.IRON_TRAPDOOR);
@@ -2558,24 +2581,49 @@ public class BlockModelGenerators {
       }
    }
 
-   private static enum TintState {
-      TINTED,
-      NOT_TINTED;
+   static enum PlantType {
+      TINTED(ModelTemplates.TINTED_CROSS, ModelTemplates.TINTED_FLOWER_POT_CROSS, false),
+      NOT_TINTED(ModelTemplates.CROSS, ModelTemplates.FLOWER_POT_CROSS, false),
+      EMISSIVE_NOT_TINTED(ModelTemplates.CROSS_EMISSIVE, ModelTemplates.FLOWER_POT_CROSS_EMISSIVE, true);
 
-      private TintState() {
+      private final ModelTemplate blockTemplate;
+      private final ModelTemplate flowerPotTemplate;
+      private final boolean isEmissive;
+
+      private PlantType(final ModelTemplate var3, final ModelTemplate var4, final boolean var5) {
+         this.blockTemplate = var3;
+         this.flowerPotTemplate = var4;
+         this.isEmissive = var5;
       }
 
       public ModelTemplate getCross() {
-         return this == TINTED ? ModelTemplates.TINTED_CROSS : ModelTemplates.CROSS;
+         return this.blockTemplate;
       }
 
       public ModelTemplate getCrossPot() {
-         return this == TINTED ? ModelTemplates.TINTED_FLOWER_POT_CROSS : ModelTemplates.FLOWER_POT_CROSS;
+         return this.flowerPotTemplate;
+      }
+
+      public void createItemModel(BlockModelGenerators var1, Block var2) {
+         if (this.isEmissive) {
+            var1.createTwoLayerFlatItemModel(var2, "_emissive");
+         } else {
+            var1.createSimpleFlatItemModel(var2);
+         }
+
+      }
+
+      public TextureMapping getTextureMapping(Block var1) {
+         return this.isEmissive ? TextureMapping.crossEmissive(var1) : TextureMapping.cross(var1);
+      }
+
+      public TextureMapping getPlantTextureMapping(Block var1) {
+         return this.isEmissive ? TextureMapping.plantEmissive(var1) : TextureMapping.plant(var1);
       }
 
       // $FF: synthetic method
-      private static TintState[] $values() {
-         return new TintState[]{TINTED, NOT_TINTED};
+      private static PlantType[] $values() {
+         return new PlantType[]{TINTED, NOT_TINTED, EMISSIVE_NOT_TINTED};
       }
    }
 

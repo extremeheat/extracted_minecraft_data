@@ -98,6 +98,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    private static final float WATER_VISION_QUICK_PERCENT = 0.6F;
    private static final double SUFFOCATING_COLLISION_CHECK_SCALE = 0.35;
    private static final double MINOR_COLLISION_ANGLE_THRESHOLD_RADIAN = 0.13962633907794952;
+   public static final float USING_ITEM_SPEED_FACTOR = 0.2F;
    public final ClientPacketListener connection;
    private final StatsCounter stats;
    private final ClientRecipeBook recipeBook;
@@ -378,7 +379,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    }
 
-   protected int getPermissionLevel() {
+   public int getPermissionLevel() {
       return this.permissionLevel;
    }
 
@@ -639,21 +640,29 @@ public class LocalPlayer extends AbstractClientPlayer {
       boolean var3 = this.hasEnoughImpulseToStartSprinting();
       Abilities var4 = this.getAbilities();
       this.crouching = !var4.flying && !this.isSwimming() && !this.isPassenger() && this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.CROUCHING) && (this.isShiftKeyDown() || !this.isSleeping() && !this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.STANDING));
-      float var5 = (float)this.getAttributeValue(Attributes.SNEAKING_SPEED);
-      this.input.tick(this.isMovingSlowly(), var5);
+      this.input.tick();
       this.minecraft.getTutorial().onInput(this.input);
+      ClientInput var10000;
       if (this.isUsingItem() && !this.isPassenger()) {
-         ClientInput var10000 = this.input;
+         this.setSprinting(false);
+         var10000 = this.input;
          var10000.leftImpulse *= 0.2F;
          var10000 = this.input;
          var10000.forwardImpulse *= 0.2F;
          this.sprintTriggerTime = 0;
+      } else if (this.isMovingSlowly()) {
+         this.setSprinting(false);
+         float var5 = (float)this.getAttributeValue(Attributes.SNEAKING_SPEED);
+         var10000 = this.input;
+         var10000.leftImpulse *= var5;
+         var10000 = this.input;
+         var10000.forwardImpulse *= var5;
       }
 
-      boolean var6 = false;
+      boolean var11 = false;
       if (this.autoJumpTime > 0) {
          --this.autoJumpTime;
-         var6 = true;
+         var11 = true;
          this.input.makeJump();
       }
 
@@ -668,10 +677,10 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.sprintTriggerTime = 0;
       }
 
-      boolean var7 = this.canStartSprinting();
-      boolean var8 = this.isPassenger() ? this.getVehicle().onGround() : this.onGround();
-      boolean var9 = !var2 && !var3;
-      if ((var8 || this.isUnderWater()) && var9 && var7) {
+      boolean var6 = this.canStartSprinting();
+      boolean var7 = this.isPassenger() ? this.getVehicle().onGround() : this.onGround();
+      boolean var8 = !var2 && !var3;
+      if ((var7 || this.isUnderWater()) && var8 && var6) {
          if (this.sprintTriggerTime <= 0 && !this.minecraft.options.keySprint.isDown()) {
             this.sprintTriggerTime = 7;
          } else {
@@ -679,32 +688,32 @@ public class LocalPlayer extends AbstractClientPlayer {
          }
       }
 
-      if ((!this.isInWater() || this.isUnderWater()) && var7 && this.minecraft.options.keySprint.isDown()) {
+      if ((!this.isInWater() || this.isUnderWater()) && var6 && this.minecraft.options.keySprint.isDown()) {
          this.setSprinting(true);
       }
 
-      boolean var10;
+      boolean var9;
       if (this.isSprinting()) {
-         var10 = !this.input.hasForwardImpulse() || !this.hasEnoughFoodToStartSprinting();
-         boolean var11 = var10 || this.horizontalCollision && !this.minorHorizontalCollision || this.isInWater() && !this.isUnderWater();
+         var9 = !this.input.hasForwardImpulse() || !this.hasEnoughFoodToStartSprinting();
+         boolean var10 = var9 || this.horizontalCollision && !this.minorHorizontalCollision || this.isInWater() && !this.isUnderWater();
          if (this.isSwimming()) {
-            if (!this.onGround() && !this.input.keyPresses.shift() && var10 || !this.isInWater()) {
+            if (!this.onGround() && !this.input.keyPresses.shift() && var9 || !this.isInWater()) {
                this.setSprinting(false);
             }
-         } else if (var11) {
+         } else if (var10) {
             this.setSprinting(false);
          }
       }
 
-      var10 = false;
+      var9 = false;
       if (var4.mayfly) {
          if (this.minecraft.gameMode.isAlwaysFlying()) {
             if (!var4.flying) {
                var4.flying = true;
-               var10 = true;
+               var9 = true;
                this.onUpdateAbilities();
             }
-         } else if (!var1 && this.input.keyPresses.jump() && !var6) {
+         } else if (!var1 && this.input.keyPresses.jump() && !var11) {
             if (this.jumpTriggerTime == 0) {
                this.jumpTriggerTime = 7;
             } else if (!this.isSwimming()) {
@@ -713,14 +722,14 @@ public class LocalPlayer extends AbstractClientPlayer {
                   this.jumpFromGround();
                }
 
-               var10 = true;
+               var9 = true;
                this.onUpdateAbilities();
                this.jumpTriggerTime = 0;
             }
          }
       }
 
-      if (this.input.keyPresses.jump() && !var10 && !var1 && !this.onClimbable() && this.tryToStartFallFlying()) {
+      if (this.input.keyPresses.jump() && !var9 && !var1 && !this.onClimbable() && this.tryToStartFallFlying()) {
          this.connection.send(new ServerboundPlayerCommandPacket(this, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
       }
 
@@ -1005,7 +1014,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    private boolean canStartSprinting() {
-      return !this.isSprinting() && this.hasEnoughImpulseToStartSprinting() && this.hasEnoughFoodToStartSprinting() && !this.isUsingItem() && !this.hasEffect(MobEffects.BLINDNESS) && (!this.isPassenger() || this.vehicleCanSprint(this.getVehicle())) && !this.isFallFlying();
+      return !this.isSprinting() && this.hasEnoughImpulseToStartSprinting() && this.hasEnoughFoodToStartSprinting() && !this.isUsingItem() && !this.hasEffect(MobEffects.BLINDNESS) && (!this.isPassenger() || this.vehicleCanSprint(this.getVehicle())) && !this.isFallFlying() && !this.isMovingSlowly();
    }
 
    private boolean vehicleCanSprint(Entity var1) {

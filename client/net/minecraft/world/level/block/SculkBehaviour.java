@@ -43,7 +43,7 @@ public interface SculkBehaviour {
    }
 
    default boolean attemptSpreadVein(LevelAccessor var1, BlockPos var2, BlockState var3, @Nullable Collection<Direction> var4, boolean var5) {
-      return ((MultifaceBlock)Blocks.SCULK_VEIN).getSpreader().spreadAll(var3, var1, var2, var5) > 0L;
+      return ((MultifaceSpreadeableBlock)Blocks.SCULK_VEIN).getSpreader().spreadAll(var3, var1, var2, var5) > 0L;
    }
 
    default boolean canChangeBlockStateOnSpread() {

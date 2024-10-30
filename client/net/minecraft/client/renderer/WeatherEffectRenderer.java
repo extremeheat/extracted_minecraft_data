@@ -1,11 +1,6 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -61,7 +56,7 @@ public class WeatherEffectRenderer {
 
    }
 
-   public void render(Level var1, LightTexture var2, int var3, float var4, Vec3 var5) {
+   public void render(Level var1, MultiBufferSource var2, int var3, float var4, Vec3 var5) {
       float var6 = var1.getRainLevel(var4);
       if (!(var6 <= 0.0F)) {
          int var7 = Minecraft.useFancyGraphics() ? 10 : 5;
@@ -106,28 +101,18 @@ public class WeatherEffectRenderer {
 
    }
 
-   private void render(LightTexture var1, Vec3 var2, int var3, float var4, List<ColumnInstance> var5, List<ColumnInstance> var6) {
-      var1.turnOnLightLayer();
-      Tesselator var7 = Tesselator.getInstance();
-      RenderSystem.disableCull();
-      RenderSystem.enableBlend();
-      RenderSystem.enableDepthTest();
-      RenderSystem.depthMask(Minecraft.useShaderTransparency());
-      RenderSystem.setShader(CoreShaders.PARTICLE);
+   private void render(MultiBufferSource var1, Vec3 var2, int var3, float var4, List<ColumnInstance> var5, List<ColumnInstance> var6) {
+      RenderType var7;
       if (!var5.isEmpty()) {
-         RenderSystem.setShaderTexture(0, RAIN_LOCATION);
-         this.renderInstances(var7, var5, var2, 1.0F, var3, var4);
+         var7 = RenderType.weather(RAIN_LOCATION, Minecraft.useShaderTransparency());
+         this.renderInstances(var1.getBuffer(var7), var5, var2, 1.0F, var3, var4);
       }
 
       if (!var6.isEmpty()) {
-         RenderSystem.setShaderTexture(0, SNOW_LOCATION);
-         this.renderInstances(var7, var6, var2, 0.8F, var3, var4);
+         var7 = RenderType.weather(SNOW_LOCATION, Minecraft.useShaderTransparency());
+         this.renderInstances(var1.getBuffer(var7), var6, var2, 0.8F, var3, var4);
       }
 
-      RenderSystem.depthMask(true);
-      RenderSystem.enableCull();
-      RenderSystem.disableBlend();
-      var1.turnOffLightLayer();
    }
 
    private ColumnInstance createRainColumnInstance(RandomSource var1, int var2, int var3, int var4, int var5, int var6, int var7, float var8) {
@@ -148,37 +133,35 @@ public class WeatherEffectRenderer {
       return new ColumnInstance(var3, var6, var4, var5, var10, var12 + var11, var13);
    }
 
-   private void renderInstances(Tesselator var1, List<ColumnInstance> var2, Vec3 var3, float var4, int var5, float var6) {
-      BufferBuilder var7 = var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
-      Iterator var8 = var2.iterator();
+   private void renderInstances(VertexConsumer var1, List<ColumnInstance> var2, Vec3 var3, float var4, int var5, float var6) {
+      Iterator var7 = var2.iterator();
 
-      while(var8.hasNext()) {
-         ColumnInstance var9 = (ColumnInstance)var8.next();
-         float var10 = (float)((double)var9.x + 0.5 - var3.x);
-         float var11 = (float)((double)var9.z + 0.5 - var3.z);
-         float var12 = (float)Mth.lengthSquared((double)var10, (double)var11);
-         float var13 = Mth.lerp(var12 / (float)(var5 * var5), var4, 0.5F) * var6;
-         int var14 = ARGB.white(var13);
-         int var15 = (var9.z - Mth.floor(var3.z) + 16) * 32 + var9.x - Mth.floor(var3.x) + 16;
-         float var16 = this.columnSizeX[var15] / 2.0F;
-         float var17 = this.columnSizeZ[var15] / 2.0F;
-         float var18 = var10 - var16;
-         float var19 = var10 + var16;
-         float var20 = (float)((double)var9.topY - var3.y);
-         float var21 = (float)((double)var9.bottomY - var3.y);
-         float var22 = var11 - var17;
-         float var23 = var11 + var17;
-         float var24 = var9.uOffset + 0.0F;
-         float var25 = var9.uOffset + 1.0F;
-         float var26 = (float)var9.bottomY * 0.25F + var9.vOffset;
-         float var27 = (float)var9.topY * 0.25F + var9.vOffset;
-         var7.addVertex(var18, var20, var22).setUv(var24, var26).setColor(var14).setLight(var9.lightCoords);
-         var7.addVertex(var19, var20, var23).setUv(var25, var26).setColor(var14).setLight(var9.lightCoords);
-         var7.addVertex(var19, var21, var23).setUv(var25, var27).setColor(var14).setLight(var9.lightCoords);
-         var7.addVertex(var18, var21, var22).setUv(var24, var27).setColor(var14).setLight(var9.lightCoords);
+      while(var7.hasNext()) {
+         ColumnInstance var8 = (ColumnInstance)var7.next();
+         float var9 = (float)((double)var8.x + 0.5 - var3.x);
+         float var10 = (float)((double)var8.z + 0.5 - var3.z);
+         float var11 = (float)Mth.lengthSquared((double)var9, (double)var10);
+         float var12 = Mth.lerp(var11 / (float)(var5 * var5), var4, 0.5F) * var6;
+         int var13 = ARGB.white(var12);
+         int var14 = (var8.z - Mth.floor(var3.z) + 16) * 32 + var8.x - Mth.floor(var3.x) + 16;
+         float var15 = this.columnSizeX[var14] / 2.0F;
+         float var16 = this.columnSizeZ[var14] / 2.0F;
+         float var17 = var9 - var15;
+         float var18 = var9 + var15;
+         float var19 = (float)((double)var8.topY - var3.y);
+         float var20 = (float)((double)var8.bottomY - var3.y);
+         float var21 = var10 - var16;
+         float var22 = var10 + var16;
+         float var23 = var8.uOffset + 0.0F;
+         float var24 = var8.uOffset + 1.0F;
+         float var25 = (float)var8.bottomY * 0.25F + var8.vOffset;
+         float var26 = (float)var8.topY * 0.25F + var8.vOffset;
+         var1.addVertex(var17, var19, var21).setUv(var23, var25).setColor(var13).setLight(var8.lightCoords);
+         var1.addVertex(var18, var19, var22).setUv(var24, var25).setColor(var13).setLight(var8.lightCoords);
+         var1.addVertex(var18, var20, var22).setUv(var24, var26).setColor(var13).setLight(var8.lightCoords);
+         var1.addVertex(var17, var20, var21).setUv(var23, var26).setColor(var13).setLight(var8.lightCoords);
       }
 
-      BufferUploader.drawWithShader(var7.buildOrThrow());
    }
 
    public void tickRainParticles(ClientLevel var1, Camera var2, int var3, ParticleStatus var4) {

@@ -6,9 +6,11 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.nio.ByteBuffer;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.CompiledShaderProgram;
+import net.minecraft.client.renderer.RenderType;
 import org.joml.Matrix4f;
 
 public class VertexBuffer implements AutoCloseable {
@@ -31,6 +33,16 @@ public class VertexBuffer implements AutoCloseable {
       RenderSystem.assertOnRenderThread();
       this.vertexBuffer = new GpuBuffer(BufferType.VERTICES, var1, 0);
       this.arrayObjectId = GlStateManager._glGenVertexArrays();
+   }
+
+   public static VertexBuffer uploadStatic(VertexFormat.Mode var0, VertexFormat var1, Consumer<VertexConsumer> var2) {
+      BufferBuilder var3 = Tesselator.getInstance().begin(var0, var1);
+      var2.accept(var3);
+      VertexBuffer var4 = new VertexBuffer(BufferUsage.STATIC_WRITE);
+      var4.bind();
+      var4.upload(var3.buildOrThrow());
+      unbind();
+      return var4;
    }
 
    public void upload(MeshData var1) {
@@ -185,6 +197,14 @@ public class VertexBuffer implements AutoCloseable {
          this.draw();
          var3.clear();
       }
+   }
+
+   public void drawWithRenderType(RenderType var1) {
+      var1.setupRenderState();
+      this.bind();
+      this.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
+      unbind();
+      var1.clearRenderState();
    }
 
    public void close() {

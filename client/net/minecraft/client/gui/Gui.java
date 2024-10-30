@@ -1261,7 +1261,7 @@ public class Gui {
       this.titleTime = this.titleFadeInTime + this.titleStayTime + this.titleFadeOutTime;
    }
 
-   public void clear() {
+   public void clearTitles() {
       this.title = null;
       this.subtitle = null;
       this.titleTime = 0;
@@ -1293,6 +1293,8 @@ public class Gui {
       this.minecraft.getToastManager().clear();
       this.debugOverlay.reset();
       this.chat.clearMessages(true);
+      this.clearTitles();
+      this.resetTitleTimes();
    }
 
    public BossHealthOverlay getBossOverlay() {

@@ -54,7 +54,7 @@ public class ParticleCommand {
 
       while(var9.hasNext()) {
          ServerPlayer var10 = (ServerPlayer)var9.next();
-         if (var0.getLevel().sendParticles(var10, var1, var6, var2.x, var2.y, var2.z, var5, var3.x, var3.y, var3.z, (double)var4)) {
+         if (var0.getLevel().sendParticles(var10, var1, var6, false, var2.x, var2.y, var2.z, var5, var3.x, var3.y, var3.z, (double)var4)) {
             ++var8;
          }
       }

@@ -29,11 +29,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringDecomposer;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 public class Font {
    private static final float EFFECT_DEPTH = 0.01F;
-   private static final Vector3f SHADOW_OFFSET = new Vector3f(0.0F, 0.0F, 0.03F);
+   public static final float SHADOW_DEPTH = 0.03F;
+   public static final int NO_SHADOW = 0;
    public static final int ALPHA_CUTOFF = 8;
    public final int lineHeight = 9;
    public final RandomSource random = RandomSource.create();
@@ -117,25 +117,13 @@ public class Font {
 
    private int drawInternal(String var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10, boolean var11) {
       var4 = adjustColor(var4);
-      Matrix4f var12 = new Matrix4f(var6);
-      if (var5) {
-         this.renderText(var1, var2, var3, var4, true, var6, var7, var8, var9, var10, var11);
-         var12.translate(SHADOW_OFFSET);
-      }
-
-      var2 = this.renderText(var1, var2, var3, var4, false, var12, var7, var8, var9, var10, var11);
+      var2 = this.renderText(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
       return (int)var2 + (var5 ? 1 : 0);
    }
 
    private int drawInternal(FormattedCharSequence var1, float var2, float var3, int var4, boolean var5, Matrix4f var6, MultiBufferSource var7, DisplayMode var8, int var9, int var10, boolean var11) {
       var4 = adjustColor(var4);
-      Matrix4f var12 = new Matrix4f(var6);
-      if (var5) {
-         this.renderText(var1, var2, var3, var4, true, var6, var7, var8, var9, var10, var11);
-         var12.translate(SHADOW_OFFSET);
-      }
-
-      var2 = this.renderText(var1, var2, var3, var4, false, var12, var7, var8, var9, var10, var11);
+      var2 = this.renderText(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
       return (int)var2 + (var5 ? 1 : 0);
    }
 
@@ -211,8 +199,7 @@ public class Font {
 
    private class StringRenderOutput implements FormattedCharSink {
       final MultiBufferSource bufferSource;
-      private final boolean dropShadow;
-      private final float dimFactor;
+      private final boolean drawShadow;
       private final int color;
       private final int backgroundColor;
       private final Matrix4f pose;
@@ -243,9 +230,8 @@ public class Font {
          this.bufferSource = var2;
          this.x = var3;
          this.y = var4;
-         this.dropShadow = var7;
-         this.dimFactor = var7 ? 0.25F : 1.0F;
-         this.color = ARGB.scaleRGB(var5, this.dimFactor);
+         this.drawShadow = var7;
+         this.color = var5;
          this.backgroundColor = var6;
          this.pose = var8;
          this.mode = var9;
@@ -259,26 +245,25 @@ public class Font {
          BakedGlyph var6 = var2.isObfuscated() && var3 != 32 ? var4.getRandomGlyph(var5) : var4.getGlyph(var3);
          boolean var7 = var2.isBold();
          TextColor var8 = var2.getColor();
-         int var9 = var8 != null ? ARGB.color(ARGB.alpha(this.color), ARGB.scaleRGB(var8.getValue(), this.dimFactor)) : this.color;
-         float var10 = var5.getAdvance(var7);
-         float var11 = var1 == 0 ? this.x - 1.0F : this.x;
-         float var12;
+         int var9 = this.getTextColor(var8);
+         int var10 = this.getShadowColor(var2, var9);
+         float var11 = var5.getAdvance(var7);
+         float var12 = var1 == 0 ? this.x - 1.0F : this.x;
+         float var13 = var5.getShadowOffset();
          if (!(var6 instanceof EmptyGlyph)) {
-            var12 = var7 ? var5.getBoldOffset() : 0.0F;
-            float var13 = this.dropShadow ? var5.getShadowOffset() : 0.0F;
-            this.glyphInstances.add(new BakedGlyph.GlyphInstance(this.x + var13, this.y + var13, var9, var6, var2, var12));
+            float var14 = var7 ? var5.getBoldOffset() : 0.0F;
+            this.glyphInstances.add(new BakedGlyph.GlyphInstance(this.x, this.y, var9, var10, var6, var2, var14, var13));
          }
 
-         var12 = this.dropShadow ? 1.0F : 0.0F;
          if (var2.isStrikethrough()) {
-            this.addEffect(new BakedGlyph.Effect(var11 + var12, this.y + var12 + 4.5F, this.x + var12 + var10, this.y + var12 + 4.5F - 1.0F, this.getOverTextEffectDepth(), var9));
+            this.addEffect(new BakedGlyph.Effect(var12, this.y + 4.5F, this.x + var11, this.y + 4.5F - 1.0F, this.getOverTextEffectDepth(), var9, var10, var13));
          }
 
          if (var2.isUnderlined()) {
-            this.addEffect(new BakedGlyph.Effect(var11 + var12, this.y + var12 + 9.0F, this.x + var12 + var10, this.y + var12 + 9.0F - 1.0F, this.getOverTextEffectDepth(), var9));
+            this.addEffect(new BakedGlyph.Effect(var12, this.y + 9.0F, this.x + var11, this.y + 9.0F - 1.0F, this.getOverTextEffectDepth(), var9, var10, var13));
          }
 
-         this.x += var10;
+         this.x += var11;
          return true;
       }
 
@@ -307,6 +292,27 @@ public class Font {
          }
 
          return this.x;
+      }
+
+      private int getTextColor(@Nullable TextColor var1) {
+         if (var1 != null) {
+            int var2 = ARGB.alpha(this.color);
+            int var3 = var1.getValue();
+            return ARGB.color(var2, var3);
+         } else {
+            return this.color;
+         }
+      }
+
+      private int getShadowColor(Style var1, int var2) {
+         Integer var3 = var1.getShadowColor();
+         if (var3 != null) {
+            float var4 = ARGB.alphaFloat(var2);
+            float var5 = ARGB.alphaFloat(var3);
+            return var4 != 1.0F ? ARGB.color(ARGB.as8BitChannel(var4 * var5), var3) : var3;
+         } else {
+            return this.drawShadow ? ARGB.scaleRGB(var2, 0.25F) : 0;
+         }
       }
 
       void renderCharacters() {

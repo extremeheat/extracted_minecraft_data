@@ -19,14 +19,9 @@ public class KeyboardInput extends ClientInput {
       }
    }
 
-   public void tick(boolean var1, float var2) {
+   public void tick() {
       this.keyPresses = new Input(this.options.keyUp.isDown(), this.options.keyDown.isDown(), this.options.keyLeft.isDown(), this.options.keyRight.isDown(), this.options.keyJump.isDown(), this.options.keyShift.isDown(), this.options.keySprint.isDown());
       this.forwardImpulse = calculateImpulse(this.keyPresses.forward(), this.keyPresses.backward());
       this.leftImpulse = calculateImpulse(this.keyPresses.left(), this.keyPresses.right());
-      if (var1) {
-         this.leftImpulse *= var2;
-         this.forwardImpulse *= var2;
-      }
-
    }
 }

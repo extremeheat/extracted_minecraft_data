@@ -398,7 +398,9 @@ public class GameRenderer implements AutoCloseable {
          var6.popMatrix();
          var5.popPose();
          if (this.minecraft.options.getCameraType().isFirstPerson() && !var7) {
-            ScreenEffectRenderer.renderScreenEffect(this.minecraft, var5);
+            MultiBufferSource.BufferSource var8 = this.renderBuffers.bufferSource();
+            ScreenEffectRenderer.renderScreenEffect(this.minecraft, var5, var8);
+            var8.endBatch();
          }
 
       }
@@ -690,7 +692,7 @@ public class GameRenderer implements AutoCloseable {
       Matrix4f var20 = (new Matrix4f()).rotation(var19);
       this.minecraft.levelRenderer.prepareCullFrustum(var5.getPosition(), var20, var18);
       this.minecraft.getMainRenderTarget().bindWrite(true);
-      this.minecraft.levelRenderer.renderLevel(this.resourcePool, var1, var4, var5, this, this.lightTexture, var20, var9);
+      this.minecraft.levelRenderer.renderLevel(this.resourcePool, var1, var4, var5, this, var20, var9);
       var3.popPush("hand");
       if (this.renderHand) {
          RenderSystem.clear(256);

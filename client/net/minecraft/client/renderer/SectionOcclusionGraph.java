@@ -95,7 +95,7 @@ public class SectionOcclusionGraph {
       return this.needsFrustumUpdate.compareAndSet(true, false);
    }
 
-   public void onChunkLoaded(ChunkPos var1) {
+   public void onChunkReadyToRender(ChunkPos var1) {
       GraphEvents var2 = (GraphEvents)this.nextGraphEvents.get();
       if (var2 != null) {
          this.addNeighbors(var2, var1);
@@ -195,6 +195,10 @@ public class SectionOcclusionGraph {
       var1.chunksWhichReceivedNeighbors.add(ChunkPos.asLong(var2.x, var2.z - 1));
       var1.chunksWhichReceivedNeighbors.add(ChunkPos.asLong(var2.x + 1, var2.z));
       var1.chunksWhichReceivedNeighbors.add(ChunkPos.asLong(var2.x, var2.z + 1));
+      var1.chunksWhichReceivedNeighbors.add(ChunkPos.asLong(var2.x - 1, var2.z - 1));
+      var1.chunksWhichReceivedNeighbors.add(ChunkPos.asLong(var2.x - 1, var2.z + 1));
+      var1.chunksWhichReceivedNeighbors.add(ChunkPos.asLong(var2.x + 1, var2.z - 1));
+      var1.chunksWhichReceivedNeighbors.add(ChunkPos.asLong(var2.x + 1, var2.z + 1));
    }
 
    private void initializeQueueForFullUpdate(Camera var1, Queue<Node> var2) {

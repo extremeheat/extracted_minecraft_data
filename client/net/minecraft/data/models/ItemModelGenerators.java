@@ -317,6 +317,7 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.NETHERITE_SHOVEL, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.NETHERITE_SWORD, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.NETHER_BRICK, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.RESIN_BRICK, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.NETHER_STAR, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.OAK_BOAT, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.OAK_CHEST_BOAT, ModelTemplates.FLAT_ITEM);
@@ -475,7 +476,7 @@ public class ItemModelGenerators {
    }
 
    static {
-      GENERATED_TRIM_MODELS = List.of(new TrimModelData("quartz", 0.1F, Map.of()), new TrimModelData("iron", 0.2F, Map.of(EquipmentModels.IRON, "iron_darker")), new TrimModelData("netherite", 0.3F, Map.of(EquipmentModels.NETHERITE, "netherite_darker")), new TrimModelData("redstone", 0.4F, Map.of()), new TrimModelData("copper", 0.5F, Map.of()), new TrimModelData("gold", 0.6F, Map.of(EquipmentModels.GOLD, "gold_darker")), new TrimModelData("emerald", 0.7F, Map.of()), new TrimModelData("diamond", 0.8F, Map.of(EquipmentModels.DIAMOND, "diamond_darker")), new TrimModelData("lapis", 0.9F, Map.of()), new TrimModelData("amethyst", 1.0F, Map.of()));
+      GENERATED_TRIM_MODELS = List.of(new TrimModelData("quartz", 0.01F, Map.of()), new TrimModelData("iron", 0.02F, Map.of(EquipmentModels.IRON, "iron_darker")), new TrimModelData("netherite", 0.03F, Map.of(EquipmentModels.NETHERITE, "netherite_darker")), new TrimModelData("redstone", 0.04F, Map.of()), new TrimModelData("copper", 0.05F, Map.of()), new TrimModelData("gold", 0.06F, Map.of(EquipmentModels.GOLD, "gold_darker")), new TrimModelData("emerald", 0.07F, Map.of()), new TrimModelData("diamond", 0.08F, Map.of(EquipmentModels.DIAMOND, "diamond_darker")), new TrimModelData("lapis", 0.09F, Map.of()), new TrimModelData("amethyst", 0.1F, Map.of()), new TrimModelData("resin", 0.11F, Map.of()));
    }
 
    private static record TrimModelData(String name, float itemModelIndex, Map<ResourceLocation, String> overrideArmorMaterials) {

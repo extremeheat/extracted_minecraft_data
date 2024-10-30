@@ -58,7 +58,6 @@ public class BlockTypes {
       Registry.register(var0, (String)"cave_vines_plant", CaveVinesPlantBlock.CODEC);
       Registry.register(var0, (String)"ceiling_hanging_sign", CeilingHangingSignBlock.CODEC);
       Registry.register(var0, (String)"chain", ChainBlock.CODEC);
-      Registry.register(var0, (String)"cherry_leaves", CherryLeavesBlock.CODEC);
       Registry.register(var0, (String)"chest", ChestBlock.CODEC);
       Registry.register(var0, (String)"chiseled_book_shelf", ChiseledBookShelfBlock.CODEC);
       Registry.register(var0, (String)"chorus_flower", ChorusFlowerBlock.CODEC);
@@ -96,6 +95,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"end_portal", EndPortalBlock.CODEC);
       Registry.register(var0, (String)"end_portal_frame", EndPortalFrameBlock.CODEC);
       Registry.register(var0, (String)"end_rod", EndRodBlock.CODEC);
+      Registry.register(var0, (String)"eyeblossom", EyeblossomBlock.CODEC);
       Registry.register(var0, (String)"farm", FarmBlock.CODEC);
       Registry.register(var0, (String)"bonemealable_feature_placer", BonemealableFeaturePlacerBlock.CODEC);
       Registry.register(var0, (String)"fence", FenceBlock.CODEC);
@@ -147,6 +147,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"mossy_carpet", MossyCarpetBlock.CODEC);
       Registry.register(var0, (String)"moving_piston", MovingPistonBlock.CODEC);
       Registry.register(var0, (String)"mud", MudBlock.CODEC);
+      Registry.register(var0, (String)"multiface", MultifaceBlock.CODEC);
       Registry.register(var0, (String)"mushroom", MushroomBlock.CODEC);
       Registry.register(var0, (String)"mycelium", MyceliumBlock.CODEC);
       Registry.register(var0, (String)"nether_portal", NetherPortalBlock.CODEC);
@@ -157,6 +158,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"nylium", NyliumBlock.CODEC);
       Registry.register(var0, (String)"observer", ObserverBlock.CODEC);
       Registry.register(var0, (String)"piglinwallskull", PiglinWallSkullBlock.CODEC);
+      Registry.register(var0, (String)"particle_leaves", ParticleLeavesBlock.CODEC);
       Registry.register(var0, (String)"pink_petals", PinkPetalsBlock.CODEC);
       Registry.register(var0, (String)"piston_base", PistonBaseBlock.CODEC);
       Registry.register(var0, (String)"piston_head", PistonHeadBlock.CODEC);

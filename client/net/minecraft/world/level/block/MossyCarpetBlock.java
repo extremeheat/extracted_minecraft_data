@@ -152,12 +152,7 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
    }
 
    private static boolean canSupportAtFace(BlockGetter var0, BlockPos var1, Direction var2) {
-      if (var2 == Direction.UP) {
-         return false;
-      } else {
-         BlockPos var3 = var1.relative(var2);
-         return MultifaceBlock.canAttachTo(var0, var2, var3, var0.getBlockState(var3));
-      }
+      return var2 == Direction.UP ? false : MultifaceBlock.canAttachTo(var0, var1, var2);
    }
 
    private static BlockState getUpdatedState(BlockState var0, BlockGetter var1, BlockPos var2, boolean var3) {
@@ -293,13 +288,13 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
    }
 
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return (Boolean)var3.getValue(BASE);
+      return (Boolean)var3.getValue(BASE) && !createTopperWithSideChance(var1, var2, () -> {
+         return true;
+      }).isAir();
    }
 
    public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      return !createTopperWithSideChance(var1, var3, () -> {
-         return true;
-      }).isAir();
+      return true;
    }
 
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {

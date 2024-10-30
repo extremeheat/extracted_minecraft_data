@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 import net.minecraft.Optionull;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
@@ -97,15 +96,12 @@ public class ChatSelectionScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, -1);
       AbuseReportLimits var5 = this.reportingContext.sender().reportLimits();
       int var6 = this.report.reportedMessages().size();
       int var7 = var5.maxReportedMessageCount();
       MutableComponent var8 = Component.translatable("gui.chatSelection.selected", var6, var7);
-      Font var10001 = this.font;
-      int var10003 = this.width / 2;
-      Objects.requireNonNull(this.font);
-      var1.drawCenteredString(var10001, (Component)var8, var10003, 16 + 9 * 3 / 2, -1);
+      var1.drawCenteredString(this.font, (Component)var8, this.width / 2, 26, -1);
       this.contextInfoLabel.renderCentered(var1, this.width / 2, this.chatSelectionList.getFooterTop());
    }
 

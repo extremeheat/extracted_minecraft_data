@@ -78,6 +78,19 @@ public abstract class RenderType extends RenderStateShard {
    private static final CompositeRenderType DEBUG_TRIANGLE_FAN;
    private static final CompositeRenderType DEBUG_STRUCTURE_QUADS;
    private static final CompositeRenderType DEBUG_SECTION_QUADS;
+   private static final RenderType WORLD_BORDER_NO_DEPTH_WRITE;
+   private static final RenderType WORLD_BORDER_DEPTH_WRITE;
+   private static final Function<ResourceLocation, RenderType> OPAQUE_PARTICLE;
+   private static final Function<ResourceLocation, RenderType> TRANSLUCENT_PARTICLE;
+   private static final Function<ResourceLocation, RenderType> WEATHER_DEPTH_WRITE;
+   private static final Function<ResourceLocation, RenderType> WEATHER_NO_DEPTH_WRITE;
+   private static final RenderType SKY;
+   private static final RenderType END_SKY;
+   private static final RenderType SUNRISE_SUNSET;
+   private static final RenderType STARS;
+   private static final Function<ResourceLocation, RenderType> CELESTIAL;
+   private static final Function<ResourceLocation, RenderType> BLOCK_SCREEN_EFFECT;
+   private static final Function<ResourceLocation, RenderType> FIRE_SCREEN_EFFECT;
    private static final CompositeRenderType GUI;
    private static final CompositeRenderType GUI_OVERLAY;
    private static final Function<ResourceLocation, RenderType> GUI_TEXTURED_OVERLAY;
@@ -373,6 +386,60 @@ public abstract class RenderType extends RenderStateShard {
       return DEBUG_SECTION_QUADS;
    }
 
+   private static RenderType createWorldBorder(boolean var0) {
+      return create("world_border", DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS, 1536, false, false, RenderType.CompositeState.builder().setShaderState(POSITION_TEX_SHADER).setTextureState(new RenderStateShard.TextureStateShard(WorldBorderRenderer.FORCEFIELD_LOCATION, TriState.FALSE, false)).setTransparencyState(OVERLAY_TRANSPARENCY).setLightmapState(LIGHTMAP).setOutputState(WEATHER_TARGET).setWriteMaskState(var0 ? COLOR_DEPTH_WRITE : COLOR_WRITE).setLayeringState(WORLD_BORDER_LAYERING).setCullState(NO_CULL).createCompositeState(false));
+   }
+
+   public static RenderType worldBorder(boolean var0) {
+      return var0 ? WORLD_BORDER_DEPTH_WRITE : WORLD_BORDER_NO_DEPTH_WRITE;
+   }
+
+   public static RenderType opaqueParticle(ResourceLocation var0) {
+      return (RenderType)OPAQUE_PARTICLE.apply(var0);
+   }
+
+   public static RenderType translucentParticle(ResourceLocation var0) {
+      return (RenderType)TRANSLUCENT_PARTICLE.apply(var0);
+   }
+
+   private static Function<ResourceLocation, RenderType> createWeather(boolean var0) {
+      return Util.memoize((var1) -> {
+         return create("weather", DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS, 1536, false, false, RenderType.CompositeState.builder().setShaderState(PARTICLE_SHADER).setTextureState(new RenderStateShard.TextureStateShard(var1, TriState.FALSE, false)).setTransparencyState(TRANSLUCENT_TRANSPARENCY).setOutputState(WEATHER_TARGET).setLightmapState(LIGHTMAP).setWriteMaskState(var0 ? COLOR_DEPTH_WRITE : COLOR_WRITE).setCullState(NO_CULL).createCompositeState(false));
+      });
+   }
+
+   public static RenderType weather(ResourceLocation var0, boolean var1) {
+      return (RenderType)(var1 ? WEATHER_DEPTH_WRITE : WEATHER_NO_DEPTH_WRITE).apply(var0);
+   }
+
+   public static RenderType sky() {
+      return SKY;
+   }
+
+   public static RenderType endSky() {
+      return END_SKY;
+   }
+
+   public static RenderType sunriseSunset() {
+      return SUNRISE_SUNSET;
+   }
+
+   public static RenderType stars() {
+      return STARS;
+   }
+
+   public static RenderType celestial(ResourceLocation var0) {
+      return (RenderType)CELESTIAL.apply(var0);
+   }
+
+   public static RenderType blockScreenEffect(ResourceLocation var0) {
+      return (RenderType)BLOCK_SCREEN_EFFECT.apply(var0);
+   }
+
+   public static RenderType fireScreenEffect(ResourceLocation var0) {
+      return (RenderType)FIRE_SCREEN_EFFECT.apply(var0);
+   }
+
    public static RenderType gui() {
       return GUI;
    }
@@ -603,6 +670,29 @@ public abstract class RenderType extends RenderStateShard {
       DEBUG_TRIANGLE_FAN = create("debug_triangle_fan", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLE_FAN, 1536, false, true, RenderType.CompositeState.builder().setShaderState(POSITION_COLOR_SHADER).setTransparencyState(TRANSLUCENT_TRANSPARENCY).setCullState(NO_CULL).createCompositeState(false));
       DEBUG_STRUCTURE_QUADS = create("debug_structure_quads", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, 1536, false, true, RenderType.CompositeState.builder().setShaderState(POSITION_COLOR_SHADER).setTransparencyState(TRANSLUCENT_TRANSPARENCY).setCullState(NO_CULL).setDepthTestState(LEQUAL_DEPTH_TEST).setWriteMaskState(COLOR_WRITE).createCompositeState(false));
       DEBUG_SECTION_QUADS = create("debug_section_quads", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, 1536, false, true, RenderType.CompositeState.builder().setShaderState(POSITION_COLOR_SHADER).setLayeringState(VIEW_OFFSET_Z_LAYERING).setTransparencyState(TRANSLUCENT_TRANSPARENCY).setCullState(CULL).createCompositeState(false));
+      WORLD_BORDER_NO_DEPTH_WRITE = createWorldBorder(false);
+      WORLD_BORDER_DEPTH_WRITE = createWorldBorder(true);
+      OPAQUE_PARTICLE = Util.memoize((var0) -> {
+         return create("opaque_particle", DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS, 1536, false, false, RenderType.CompositeState.builder().setShaderState(PARTICLE_SHADER).setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false)).setLightmapState(LIGHTMAP).setWriteMaskState(COLOR_DEPTH_WRITE).createCompositeState(false));
+      });
+      TRANSLUCENT_PARTICLE = Util.memoize((var0) -> {
+         return create("translucent_particle", DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS, 1536, false, false, RenderType.CompositeState.builder().setShaderState(PARTICLE_SHADER).setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false)).setTransparencyState(TRANSLUCENT_TRANSPARENCY).setOutputState(PARTICLES_TARGET).setLightmapState(LIGHTMAP).setWriteMaskState(COLOR_DEPTH_WRITE).createCompositeState(false));
+      });
+      WEATHER_DEPTH_WRITE = createWeather(true);
+      WEATHER_NO_DEPTH_WRITE = createWeather(false);
+      SKY = create("sky", DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS, 1536, false, false, RenderType.CompositeState.builder().setShaderState(POSITION_SHADER).setWriteMaskState(COLOR_WRITE).createCompositeState(false));
+      END_SKY = create("end_sky", DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS, 1536, false, false, RenderType.CompositeState.builder().setShaderState(POSITION_TEXTURE_COLOR_SHADER).setTextureState(new RenderStateShard.TextureStateShard(SkyRenderer.END_SKY_LOCATION, TriState.FALSE, false)).setTransparencyState(TRANSLUCENT_TRANSPARENCY).setWriteMaskState(COLOR_WRITE).createCompositeState(false));
+      SUNRISE_SUNSET = create("sunrise_sunset", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLE_FAN, 1536, false, false, RenderType.CompositeState.builder().setShaderState(POSITION_COLOR_SHADER).setTransparencyState(TRANSLUCENT_TRANSPARENCY).setWriteMaskState(COLOR_WRITE).createCompositeState(false));
+      STARS = create("stars", DefaultVertexFormat.POSITION, VertexFormat.Mode.QUADS, 1536, false, false, RenderType.CompositeState.builder().setShaderState(POSITION_SHADER).setTransparencyState(OVERLAY_TRANSPARENCY).setWriteMaskState(COLOR_WRITE).createCompositeState(false));
+      CELESTIAL = Util.memoize((var0) -> {
+         return create("celestial", DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS, 1536, false, false, RenderType.CompositeState.builder().setShaderState(POSITION_TEXTURE_COLOR_SHADER).setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false)).setTransparencyState(OVERLAY_TRANSPARENCY).setWriteMaskState(COLOR_WRITE).createCompositeState(false));
+      });
+      BLOCK_SCREEN_EFFECT = Util.memoize((var0) -> {
+         return create("block_screen_effect", DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS, 1536, false, false, RenderType.CompositeState.builder().setShaderState(POSITION_TEXTURE_COLOR_SHADER).setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false)).setDepthTestState(NO_DEPTH_TEST).setWriteMaskState(COLOR_WRITE).setTransparencyState(TRANSLUCENT_TRANSPARENCY).createCompositeState(false));
+      });
+      FIRE_SCREEN_EFFECT = Util.memoize((var0) -> {
+         return create("fire_screen_effect", DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS, 1536, false, false, RenderType.CompositeState.builder().setShaderState(POSITION_TEXTURE_COLOR_SHADER).setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false)).setDepthTestState(NO_DEPTH_TEST).setWriteMaskState(COLOR_WRITE).setTransparencyState(TRANSLUCENT_TRANSPARENCY).createCompositeState(false));
+      });
       GUI = create("gui", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, 786432, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_GUI_SHADER).setTransparencyState(TRANSLUCENT_TRANSPARENCY).setDepthTestState(LEQUAL_DEPTH_TEST).createCompositeState(false));
       GUI_OVERLAY = create("gui_overlay", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, 1536, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_GUI_OVERLAY_SHADER).setTransparencyState(TRANSLUCENT_TRANSPARENCY).setDepthTestState(NO_DEPTH_TEST).setWriteMaskState(COLOR_WRITE).createCompositeState(false));
       GUI_TEXTURED_OVERLAY = Util.memoize((var0) -> {

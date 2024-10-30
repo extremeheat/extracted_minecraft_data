@@ -45,6 +45,10 @@ public class ClientSideMerchant implements Merchant {
       return this.source.level().isClientSide;
    }
 
+   public boolean stillValid(Player var1) {
+      return this.source == var1;
+   }
+
    public int getVillagerXp() {
       return this.xp;
    }

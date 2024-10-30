@@ -28,7 +28,7 @@ public abstract class AbstractBannerBlock extends BaseEntityBlock {
       return new BannerBlockEntity(var1, var2, this.color);
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       BlockEntity var5 = var1.getBlockEntity(var2);
       if (var5 instanceof BannerBlockEntity var4) {
          return var4.getItem();

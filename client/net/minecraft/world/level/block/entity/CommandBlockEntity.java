@@ -71,10 +71,6 @@ public class CommandBlockEntity extends BlockEntity {
       this.setAutomatic(var1.getBoolean("auto"));
    }
 
-   public boolean onlyOpCanSetNbt() {
-      return true;
-   }
-
    public BaseCommandBlock getCommandBlock() {
       return this.commandBlock;
    }

@@ -87,7 +87,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          int var10003 = KeyBindsList.this.width / 2 - this.width / 2;
          int var10004 = var3 + var6;
          Objects.requireNonNull(KeyBindsList.this.minecraft.font);
-         var1.drawString(var10001, (Component)var10002, var10003, var10004 - 9 - 1, -1, false);
+         var1.drawString(var10001, (Component)var10002, var10003, var10004 - 9 - 1, -1);
       }
 
       @Nullable

@@ -13,7 +13,7 @@ public class ClientInput {
       this.keyPresses = Input.EMPTY;
    }
 
-   public void tick(boolean var1, float var2) {
+   public void tick() {
    }
 
    public Vec2 getMoveVector() {

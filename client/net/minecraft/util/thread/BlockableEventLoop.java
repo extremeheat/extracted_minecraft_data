@@ -165,13 +165,11 @@ public abstract class BlockableEventLoop<R extends Runnable> implements Profiler
          if (var2 != null) {
             var2.close();
          }
+
       } catch (Exception var7) {
          LOGGER.error(LogUtils.FATAL_MARKER, "Error executing task on {}", this.name(), var7);
-         if (isNonRecoverable(var7)) {
-            throw var7;
-         }
+         throw var7;
       }
-
    }
 
    public List<MetricSampler> profiledMetrics() {

@@ -34,6 +34,10 @@ public class PufferfishRenderer extends MobRenderer<Pufferfish, PufferfishRender
       return new PufferfishRenderState();
    }
 
+   protected float getShadowRadius(PufferfishRenderState var1) {
+      return 0.1F + 0.1F * (float)var1.puffState;
+   }
+
    public void render(PufferfishRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
       EntityModel var10001;
       switch (var1.puffState) {
@@ -43,7 +47,6 @@ public class PufferfishRenderer extends MobRenderer<Pufferfish, PufferfishRender
       }
 
       this.model = var10001;
-      this.shadowRadius = 0.1F + 0.1F * (float)var1.puffState;
       super.render(var1, var2, var3, var4);
    }
 
@@ -58,6 +61,11 @@ public class PufferfishRenderer extends MobRenderer<Pufferfish, PufferfishRender
    }
 
    // $FF: synthetic method
+   protected float getShadowRadius(final LivingEntityRenderState var1) {
+      return this.getShadowRadius((PufferfishRenderState)var1);
+   }
+
+   // $FF: synthetic method
    public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((PufferfishRenderState)var1);
    }
@@ -65,5 +73,10 @@ public class PufferfishRenderer extends MobRenderer<Pufferfish, PufferfishRender
    // $FF: synthetic method
    public EntityRenderState createRenderState() {
       return this.createRenderState();
+   }
+
+   // $FF: synthetic method
+   protected float getShadowRadius(final EntityRenderState var1) {
+      return this.getShadowRadius((PufferfishRenderState)var1);
    }
 }

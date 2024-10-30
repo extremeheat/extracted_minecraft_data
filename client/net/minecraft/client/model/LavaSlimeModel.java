@@ -30,20 +30,19 @@ public class LavaSlimeModel extends EntityModel<SlimeRenderState> {
 
       for(int var2 = 0; var2 < 8; ++var2) {
          byte var3 = 0;
-         int var4 = var2;
-         if (var2 == 2) {
-            var3 = 24;
-            var4 = 10;
-         } else if (var2 == 3) {
-            var3 = 24;
-            var4 = 19;
+         int var4 = 0;
+         if (var2 > 0 && var2 < 4) {
+            var4 += 9 * var2;
+         } else if (var2 > 3) {
+            var3 = 32;
+            var4 += 9 * var2 - 36;
          }
 
          var1.addOrReplaceChild(getSegmentName(var2), CubeListBuilder.create().texOffs(var3, var4).addBox(-4.0F, (float)(16 + var2), -4.0F, 8.0F, 1.0F, 8.0F), PartPose.ZERO);
       }
 
-      var1.addOrReplaceChild("inside_cube", CubeListBuilder.create().texOffs(0, 16).addBox(-2.0F, 18.0F, -2.0F, 4.0F, 4.0F, 4.0F), PartPose.ZERO);
-      return LayerDefinition.create(var0, 64, 32);
+      var1.addOrReplaceChild("inside_cube", CubeListBuilder.create().texOffs(24, 40).addBox(-2.0F, 18.0F, -2.0F, 4.0F, 4.0F, 4.0F), PartPose.ZERO);
+      return LayerDefinition.create(var0, 64, 64);
    }
 
    public void setupAnim(SlimeRenderState var1) {

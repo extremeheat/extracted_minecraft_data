@@ -5,12 +5,16 @@ import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.Llama;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class HorseInventoryMenu extends AbstractContainerMenu {
+   static final ResourceLocation SADDLE_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/saddle");
+   private static final ResourceLocation LLAMA_ARMOR_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/llama_armor");
+   private static final ResourceLocation ARMOR_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/horse_armor");
    private final Container horseContainer;
    private final Container armorContainer;
    private final AbstractHorse horse;
@@ -31,8 +35,13 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
          public boolean isActive() {
             return var4.isSaddleable();
          }
+
+         public ResourceLocation getNoItemIcon() {
+            return HorseInventoryMenu.SADDLE_SLOT_SPRITE;
+         }
       });
-      this.addSlot(new ArmorSlot(this, this.armorContainer, var4, EquipmentSlot.BODY, 0, 8, 36, (ResourceLocation)null) {
+      ResourceLocation var6 = var4 instanceof Llama ? LLAMA_ARMOR_SLOT_SPRITE : ARMOR_SLOT_SPRITE;
+      this.addSlot(new ArmorSlot(this, this.armorContainer, var4, EquipmentSlot.BODY, 0, 8, 36, var6) {
          public boolean mayPlace(ItemStack var1) {
             return var4.isEquippableInSlot(var1, EquipmentSlot.BODY);
          }
@@ -42,9 +51,9 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
          }
       });
       if (var5 > 0) {
-         for(int var6 = 0; var6 < 3; ++var6) {
-            for(int var7 = 0; var7 < var5; ++var7) {
-               this.addSlot(new Slot(var3, 1 + var7 + var6 * var5, 80 + var7 * 18, 18 + var6 * 18));
+         for(int var7 = 0; var7 < 3; ++var7) {
+            for(int var8 = 0; var8 < var5; ++var8) {
+               this.addSlot(new Slot(var3, 1 + var8 + var7 * var5, 80 + var8 * 18, 18 + var7 * 18));
             }
          }
       }

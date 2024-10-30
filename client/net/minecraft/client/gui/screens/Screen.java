@@ -51,7 +51,6 @@ import net.minecraft.util.StringUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 
 public abstract class Screen extends AbstractContainerEventHandler implements Renderable {
@@ -264,7 +263,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    public static List<Component> getTooltipFromItem(Minecraft var0, ItemStack var1) {
-      return var1.getTooltipLines(Item.TooltipContext.of((Level)var0.level), var0.player, var0.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL);
+      return var1.getTooltipLines(Item.TooltipContext.of(var0.level, var0.player), var0.player, var0.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL);
    }
 
    protected void insertText(String var1, boolean var2) {

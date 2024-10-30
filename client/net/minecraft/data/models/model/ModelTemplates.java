@@ -73,8 +73,10 @@ public class ModelTemplates {
    public static final ModelTemplate POINTED_DRIPSTONE;
    public static final ModelTemplate CROSS;
    public static final ModelTemplate TINTED_CROSS;
+   public static final ModelTemplate CROSS_EMISSIVE;
    public static final ModelTemplate FLOWER_POT_CROSS;
    public static final ModelTemplate TINTED_FLOWER_POT_CROSS;
+   public static final ModelTemplate FLOWER_POT_CROSS_EMISSIVE;
    public static final ModelTemplate RAIL_FLAT;
    public static final ModelTemplate RAIL_CURVED;
    public static final ModelTemplate RAIL_RAISED_NE;
@@ -245,8 +247,10 @@ public class ModelTemplates {
       POINTED_DRIPSTONE = create("pointed_dripstone", TextureSlot.CROSS);
       CROSS = create("cross", TextureSlot.CROSS);
       TINTED_CROSS = create("tinted_cross", TextureSlot.CROSS);
+      CROSS_EMISSIVE = create("cross_emissive", TextureSlot.CROSS, TextureSlot.CROSS_EMISSIVE);
       FLOWER_POT_CROSS = create("flower_pot_cross", TextureSlot.PLANT);
       TINTED_FLOWER_POT_CROSS = create("tinted_flower_pot_cross", TextureSlot.PLANT);
+      FLOWER_POT_CROSS_EMISSIVE = create("flower_pot_cross_emissive", TextureSlot.PLANT, TextureSlot.CROSS_EMISSIVE);
       RAIL_FLAT = create("rail_flat", TextureSlot.RAIL);
       RAIL_CURVED = create("rail_curved", "_corner", TextureSlot.RAIL);
       RAIL_RAISED_NE = create("template_rail_raised_ne", "_raised_ne", TextureSlot.RAIL);

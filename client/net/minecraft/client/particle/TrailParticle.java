@@ -2,7 +2,7 @@ package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.TargetColorParticleOption;
+import net.minecraft.core.particles.TrailParticleOption;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -43,7 +43,7 @@ public class TrailParticle extends TextureSheetParticle {
       return 15728880;
    }
 
-   public static class Provider implements ParticleProvider<TargetColorParticleOption> {
+   public static class Provider implements ParticleProvider<TrailParticleOption> {
       private final SpriteSet sprite;
 
       public Provider(SpriteSet var1) {
@@ -51,16 +51,16 @@ public class TrailParticle extends TextureSheetParticle {
          this.sprite = var1;
       }
 
-      public Particle createParticle(TargetColorParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(TrailParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          TrailParticle var15 = new TrailParticle(var2, var3, var5, var7, var9, var11, var13, var1.target(), var1.color());
          var15.pickSprite(this.sprite);
-         var15.setLifetime(var2.random.nextInt(40) + 10);
+         var15.setLifetime(var1.duration());
          return var15;
       }
 
       // $FF: synthetic method
       public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((TargetColorParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
+         return this.createParticle((TrailParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
       }
    }
 }

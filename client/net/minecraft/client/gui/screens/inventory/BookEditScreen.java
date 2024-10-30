@@ -397,7 +397,7 @@ public class BookEditScreen extends Screen {
          var1.drawString(this.font, (FormattedCharSequence)var8, var5 + 36 + (114 - var10) / 2, 50, 0, false);
          var11 = this.font.width((FormattedText)this.ownerText);
          var1.drawString(this.font, (Component)this.ownerText, var5 + 36 + (114 - var11) / 2, 60, 0, false);
-         var1.drawWordWrap(this.font, FINALIZE_WARNING_LABEL, var5 + 36, 82, 114, 0);
+         var1.drawWordWrap(this.font, FINALIZE_WARNING_LABEL, var5 + 36, 82, 114, 0, false);
       } else {
          int var13 = this.font.width((FormattedText)this.pageMsg);
          var1.drawString(this.font, (Component)this.pageMsg, var5 - var13 + 192 - 44, 18, 0, false);

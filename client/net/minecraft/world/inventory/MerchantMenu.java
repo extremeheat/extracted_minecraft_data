@@ -59,7 +59,7 @@ public class MerchantMenu extends AbstractContainerMenu {
    }
 
    public boolean stillValid(Player var1) {
-      return this.trader.getTradingPlayer() == var1;
+      return this.trader.stillValid(var1);
    }
 
    public int getTraderXp() {

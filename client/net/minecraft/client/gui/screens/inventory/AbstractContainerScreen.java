@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.inventory;
 
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.datafixers.util.Pair;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -17,7 +16,6 @@ import net.minecraft.client.gui.ItemSlotMouseAction;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -271,10 +269,9 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       var1.pose().pushPose();
       var1.pose().translate(0.0F, 0.0F, 100.0F);
       if (var5.isEmpty() && var2.isActive()) {
-         Pair var13 = var2.getNoItemIcon();
+         ResourceLocation var13 = var2.getNoItemIcon();
          if (var13 != null) {
-            TextureAtlasSprite var14 = (TextureAtlasSprite)this.minecraft.getTextureAtlas((ResourceLocation)var13.getFirst()).apply((ResourceLocation)var13.getSecond());
-            var1.blitSprite(RenderType::guiTextured, (TextureAtlasSprite)var14, var3, var4, 16, 16);
+            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var13, var3, var4, 16, 16);
             var7 = true;
          }
       }

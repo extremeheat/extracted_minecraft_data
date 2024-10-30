@@ -53,6 +53,7 @@ public class ParticleTypes {
    public static final SimpleParticleType FLAME = register("flame", false);
    public static final SimpleParticleType INFESTED = register("infested", false);
    public static final SimpleParticleType CHERRY_LEAVES = register("cherry_leaves", false);
+   public static final SimpleParticleType PALE_OAK_LEAVES = register("pale_oak_leaves", false);
    public static final SimpleParticleType SCULK_SOUL = register("sculk_soul", false);
    public static final ParticleType<SculkChargeParticleOptions> SCULK_CHARGE = register("sculk_charge", true, (var0) -> {
       return SculkChargeParticleOptions.CODEC;
@@ -73,10 +74,10 @@ public class ParticleTypes {
    }, (var0) -> {
       return VibrationParticleOption.STREAM_CODEC;
    });
-   public static final ParticleType<TargetColorParticleOption> TRAIL = register("trail", false, (var0) -> {
-      return TargetColorParticleOption.CODEC;
+   public static final ParticleType<TrailParticleOption> TRAIL = register("trail", false, (var0) -> {
+      return TrailParticleOption.CODEC;
    }, (var0) -> {
-      return TargetColorParticleOption.STREAM_CODEC;
+      return TrailParticleOption.STREAM_CODEC;
    });
    public static final SimpleParticleType ITEM_SLIME = register("item_slime", false);
    public static final SimpleParticleType ITEM_COBWEB = register("item_cobweb", false);

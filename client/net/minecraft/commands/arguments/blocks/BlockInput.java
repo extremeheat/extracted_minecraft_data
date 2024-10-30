@@ -68,6 +68,7 @@ public class BlockInput implements Predicate<BlockInWorld> {
          var4 = this.state;
       }
 
+      var4 = this.overwriteWithDefinedProperties(var4);
       if (!var1.setBlock(var2, var4, var3)) {
          return false;
       } else {
@@ -80,6 +81,23 @@ public class BlockInput implements Predicate<BlockInWorld> {
 
          return true;
       }
+   }
+
+   private BlockState overwriteWithDefinedProperties(BlockState var1) {
+      if (var1 == this.state) {
+         return var1;
+      } else {
+         Property var3;
+         for(Iterator var2 = this.properties.iterator(); var2.hasNext(); var1 = copyProperty(var1, this.state, var3)) {
+            var3 = (Property)var2.next();
+         }
+
+         return var1;
+      }
+   }
+
+   private static <T extends Comparable<T>> BlockState copyProperty(BlockState var0, BlockState var1, Property<T> var2) {
+      return (BlockState)var0.setValue(var2, var1.getValue(var2));
    }
 
    // $FF: synthetic method

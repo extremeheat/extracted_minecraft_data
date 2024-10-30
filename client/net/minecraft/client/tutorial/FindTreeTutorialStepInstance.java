@@ -2,6 +2,7 @@ package net.minecraft.client.tutorial;
 
 import java.util.Iterator;
 import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -36,17 +37,18 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
       if (!this.tutorial.isSurvival()) {
          this.tutorial.setStep(TutorialSteps.NONE);
       } else {
+         Minecraft var1 = this.tutorial.getMinecraft();
          if (this.timeWaiting == 1) {
-            LocalPlayer var1 = this.tutorial.getMinecraft().player;
-            if (var1 != null && (hasCollectedTreeItems(var1) || hasPunchedTreesPreviously(var1))) {
+            LocalPlayer var2 = var1.player;
+            if (var2 != null && (hasCollectedTreeItems(var2) || hasPunchedTreesPreviously(var2))) {
                this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
                return;
             }
          }
 
          if (this.timeWaiting >= 6000 && this.toast == null) {
-            this.toast = new TutorialToast(TutorialToast.Icons.TREE, TITLE, DESCRIPTION, false);
-            this.tutorial.getMinecraft().getToastManager().addToast(this.toast);
+            this.toast = new TutorialToast(var1.font, TutorialToast.Icons.TREE, TITLE, DESCRIPTION, false);
+            var1.getToastManager().addToast(this.toast);
          }
 
       }

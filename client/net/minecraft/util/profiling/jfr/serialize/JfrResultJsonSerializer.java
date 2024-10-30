@@ -17,6 +17,7 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import net.minecraft.Util;
 import net.minecraft.util.profiling.jfr.Percentiles;
@@ -28,6 +29,7 @@ import net.minecraft.util.profiling.jfr.stats.FileIOStat;
 import net.minecraft.util.profiling.jfr.stats.GcHeapStat;
 import net.minecraft.util.profiling.jfr.stats.IoSummary;
 import net.minecraft.util.profiling.jfr.stats.PacketIdentification;
+import net.minecraft.util.profiling.jfr.stats.StructureGenStat;
 import net.minecraft.util.profiling.jfr.stats.ThreadAllocationStat;
 import net.minecraft.util.profiling.jfr.stats.TickTimeStat;
 import net.minecraft.util.profiling.jfr.stats.TimedStatSummary;
@@ -75,6 +77,7 @@ public class JfrResultJsonSerializer {
       var2.add("serverTick", this.serverTicks(var1.tickTimes()));
       var2.add("threadAllocation", this.threadAllocations(var1.threadAllocationSummary()));
       var2.add("chunkGen", this.chunkGen(var1.chunkGenSummary()));
+      var2.add("structureGen", this.structureGen(var1.structureGenStats()));
       return this.gson.toJson(var2);
    }
 
@@ -84,6 +87,42 @@ public class JfrResultJsonSerializer {
       var2.addProperty("gcCount", var1.totalGCs());
       var2.addProperty("gcOverHeadPercent", var1.gcOverHead());
       var2.addProperty("gcTotalDurationMs", var1.gcTotalDuration().toMillis());
+      return var2;
+   }
+
+   private JsonElement structureGen(List<StructureGenStat> var1) {
+      JsonObject var2 = new JsonObject();
+      TimedStatSummary var3 = TimedStatSummary.summary(var1);
+      JsonArray var4 = new JsonArray();
+      var2.add("structure", var4);
+      ((Map)var1.stream().collect(Collectors.groupingBy(StructureGenStat::structureName))).forEach((var3x, var4x) -> {
+         JsonObject var5 = new JsonObject();
+         var4.add(var5);
+         var5.addProperty("name", var3x);
+         TimedStatSummary var6 = TimedStatSummary.summary(var4x);
+         var5.addProperty("count", var6.count());
+         var5.addProperty("durationNanosTotal", var6.totalDuration().toNanos());
+         var5.addProperty("durationNanosAvg", var6.totalDuration().toNanos() / (long)var6.count());
+         JsonObject var7 = (JsonObject)Util.make(new JsonObject(), (var1) -> {
+            var5.add("durationNanosPercentiles", var1);
+         });
+         var6.percentilesNanos().forEach((var1, var2x) -> {
+            var7.addProperty("p" + var1, var2x);
+         });
+         Function var8 = (var0) -> {
+            JsonObject var1 = new JsonObject();
+            var1.addProperty("durationNanos", var0.duration().toNanos());
+            var1.addProperty("chunkPosX", var0.chunkPos().x);
+            var1.addProperty("chunkPosZ", var0.chunkPos().z);
+            var1.addProperty("structureName", var0.structureName());
+            var1.addProperty("level", var0.level());
+            var1.addProperty("success", var0.success());
+            return var1;
+         };
+         var2.add("fastest", (JsonElement)var8.apply((StructureGenStat)var3.fastest()));
+         var2.add("slowest", (JsonElement)var8.apply((StructureGenStat)var3.slowest()));
+         var2.add("secondSlowest", (JsonElement)(var3.secondSlowest() != null ? (JsonElement)var8.apply((StructureGenStat)var3.secondSlowest()) : JsonNull.INSTANCE));
+      });
       return var2;
    }
 

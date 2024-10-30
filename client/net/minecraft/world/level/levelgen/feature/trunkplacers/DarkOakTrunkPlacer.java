@@ -75,7 +75,7 @@ public class DarkOakTrunkPlacer extends TrunkPlacer {
                   this.placeLog(var1, var2, var3, new BlockPos(var12 + var18, var17 - var21 - 1, var14 + var19), var6);
                }
 
-               var7.add(new FoliagePlacer.FoliageAttachment(new BlockPos(var15 + var18, var17, var16 + var19), 0, false));
+               var7.add(new FoliagePlacer.FoliageAttachment(new BlockPos(var12 + var18, var17, var14 + var19), 0, false));
             }
          }
       }

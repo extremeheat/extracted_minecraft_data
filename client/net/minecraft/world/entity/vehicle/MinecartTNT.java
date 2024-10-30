@@ -15,7 +15,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -30,9 +30,13 @@ import net.minecraft.world.level.material.FluidState;
 public class MinecartTNT extends AbstractMinecart {
    private static final byte EVENT_PRIME = 10;
    private static final String TAG_EXPLOSION_POWER = "explosion_power";
+   private static final String TAG_EXPLOSION_SPEED_FACTOR = "explosion_speed_factor";
+   private static final String TAG_FUSE = "fuse";
    private static final float DEFAULT_EXPLOSION_POWER_BASE = 4.0F;
+   private static final float DEFAULT_EXPLOSION_SPEED_FACTOR = 1.0F;
    private int fuse = -1;
    private float explosionPowerBase = 4.0F;
+   private float explosionSpeedFactor = 1.0F;
 
    public MinecartTNT(EntityType<? extends MinecartTNT> var1, Level var2) {
       super(var1, var2);
@@ -62,7 +66,7 @@ public class MinecartTNT extends AbstractMinecart {
 
    public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
       Entity var4 = var2.getDirectEntity();
-      if (var4 instanceof AbstractArrow var5) {
+      if (var4 instanceof Projectile var5) {
          if (var5.isOnFire()) {
             DamageSource var6 = this.damageSources().explosion(this, var2.getEntity());
             this.explode(var6, var5.getDeltaMovement().lengthSqr());
@@ -101,7 +105,7 @@ public class MinecartTNT extends AbstractMinecart {
       Level var5 = this.level();
       if (var5 instanceof ServerLevel var4) {
          double var7 = Math.min(Math.sqrt(var2), 5.0);
-         var4.explode(this, var1, (ExplosionDamageCalculator)null, this.getX(), this.getY(), this.getZ(), (float)((double)this.explosionPowerBase + this.random.nextDouble() * 1.5 * var7), false, Level.ExplosionInteraction.TNT);
+         var4.explode(this, var1, (ExplosionDamageCalculator)null, this.getX(), this.getY(), this.getZ(), (float)((double)this.explosionPowerBase + (double)this.explosionSpeedFactor * this.random.nextDouble() * 1.5 * var7), false, Level.ExplosionInteraction.TNT);
          this.discard();
       }
 
@@ -161,21 +165,29 @@ public class MinecartTNT extends AbstractMinecart {
 
    protected void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("TNTFuse", 99)) {
-         this.fuse = var1.getInt("TNTFuse");
+      if (var1.contains("fuse", 99)) {
+         this.fuse = var1.getInt("fuse");
       }
 
       if (var1.contains("explosion_power", 99)) {
          this.explosionPowerBase = Mth.clamp(var1.getFloat("explosion_power"), 0.0F, 128.0F);
       }
 
+      if (var1.contains("explosion_speed_factor", 99)) {
+         this.explosionSpeedFactor = Mth.clamp(var1.getFloat("explosion_speed_factor"), 0.0F, 128.0F);
+      }
+
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putInt("TNTFuse", this.fuse);
+      var1.putInt("fuse", this.fuse);
       if (this.explosionPowerBase != 4.0F) {
          var1.putFloat("explosion_power", this.explosionPowerBase);
+      }
+
+      if (this.explosionSpeedFactor != 1.0F) {
+         var1.putFloat("explosion_speed_factor", this.explosionSpeedFactor);
       }
 
    }

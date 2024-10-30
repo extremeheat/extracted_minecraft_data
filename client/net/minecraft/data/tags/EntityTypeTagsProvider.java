@@ -49,6 +49,6 @@ public class EntityTypeTagsProvider extends IntrinsicHolderTagsProvider<EntityTy
       this.tag(EntityTypeTags.NO_ANGER_FROM_WIND_CHARGE).add((Object[])(EntityType.BREEZE, EntityType.SKELETON, EntityType.BOGGED, EntityType.STRAY, EntityType.ZOMBIE, EntityType.HUSK, EntityType.SPIDER, EntityType.CAVE_SPIDER, EntityType.SLIME));
       this.tag(EntityTypeTags.IMMUNE_TO_INFESTED).add((Object)EntityType.SILVERFISH);
       this.tag(EntityTypeTags.IMMUNE_TO_OOZING).add((Object)EntityType.SLIME);
-      this.tag(EntityTypeTags.BOAT).add((Object[])(EntityType.OAK_BOAT, EntityType.SPRUCE_BOAT, EntityType.BIRCH_BOAT, EntityType.JUNGLE_BOAT, EntityType.ACACIA_BOAT, EntityType.CHERRY_BOAT, EntityType.DARK_OAK_BOAT, EntityType.MANGROVE_BOAT, EntityType.BAMBOO_RAFT));
+      this.tag(EntityTypeTags.BOAT).add((Object[])(EntityType.OAK_BOAT, EntityType.SPRUCE_BOAT, EntityType.BIRCH_BOAT, EntityType.JUNGLE_BOAT, EntityType.ACACIA_BOAT, EntityType.CHERRY_BOAT, EntityType.DARK_OAK_BOAT, EntityType.PALE_OAK_BOAT, EntityType.MANGROVE_BOAT, EntityType.BAMBOO_RAFT));
    }
 }

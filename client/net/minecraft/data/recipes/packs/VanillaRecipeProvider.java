@@ -73,6 +73,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.planksFromLogs(Blocks.BIRCH_PLANKS, ItemTags.BIRCH_LOGS, 4);
       this.planksFromLogs(Blocks.CRIMSON_PLANKS, ItemTags.CRIMSON_STEMS, 4);
       this.planksFromLog(Blocks.DARK_OAK_PLANKS, ItemTags.DARK_OAK_LOGS, 4);
+      this.planksFromLog(Blocks.PALE_OAK_PLANKS, ItemTags.PALE_OAK_LOGS, 4);
       this.planksFromLogs(Blocks.JUNGLE_PLANKS, ItemTags.JUNGLE_LOGS, 4);
       this.planksFromLogs(Blocks.OAK_PLANKS, ItemTags.OAK_LOGS, 4);
       this.planksFromLogs(Blocks.SPRUCE_PLANKS, ItemTags.SPRUCE_LOGS, 4);
@@ -81,6 +82,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.woodFromLogs(Blocks.ACACIA_WOOD, Blocks.ACACIA_LOG);
       this.woodFromLogs(Blocks.BIRCH_WOOD, Blocks.BIRCH_LOG);
       this.woodFromLogs(Blocks.DARK_OAK_WOOD, Blocks.DARK_OAK_LOG);
+      this.woodFromLogs(Blocks.PALE_OAK_WOOD, Blocks.PALE_OAK_LOG);
       this.woodFromLogs(Blocks.JUNGLE_WOOD, Blocks.JUNGLE_LOG);
       this.woodFromLogs(Blocks.OAK_WOOD, Blocks.OAK_LOG);
       this.woodFromLogs(Blocks.SPRUCE_WOOD, Blocks.SPRUCE_LOG);
@@ -90,6 +92,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.woodFromLogs(Blocks.STRIPPED_ACACIA_WOOD, Blocks.STRIPPED_ACACIA_LOG);
       this.woodFromLogs(Blocks.STRIPPED_BIRCH_WOOD, Blocks.STRIPPED_BIRCH_LOG);
       this.woodFromLogs(Blocks.STRIPPED_DARK_OAK_WOOD, Blocks.STRIPPED_DARK_OAK_LOG);
+      this.woodFromLogs(Blocks.STRIPPED_PALE_OAK_WOOD, Blocks.STRIPPED_PALE_OAK_LOG);
       this.woodFromLogs(Blocks.STRIPPED_JUNGLE_WOOD, Blocks.STRIPPED_JUNGLE_LOG);
       this.woodFromLogs(Blocks.STRIPPED_OAK_WOOD, Blocks.STRIPPED_OAK_LOG);
       this.woodFromLogs(Blocks.STRIPPED_SPRUCE_WOOD, Blocks.STRIPPED_SPRUCE_LOG);
@@ -99,6 +102,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.woodenBoat(Items.ACACIA_BOAT, Blocks.ACACIA_PLANKS);
       this.woodenBoat(Items.BIRCH_BOAT, Blocks.BIRCH_PLANKS);
       this.woodenBoat(Items.DARK_OAK_BOAT, Blocks.DARK_OAK_PLANKS);
+      this.woodenBoat(Items.PALE_OAK_BOAT, Blocks.PALE_OAK_PLANKS);
       this.woodenBoat(Items.JUNGLE_BOAT, Blocks.JUNGLE_PLANKS);
       this.woodenBoat(Items.OAK_BOAT, Blocks.OAK_PLANKS);
       this.woodenBoat(Items.SPRUCE_BOAT, Blocks.SPRUCE_PLANKS);
@@ -159,6 +163,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.bedFromPlanksAndWool(Items.YELLOW_BED, Blocks.YELLOW_WOOL);
       this.banner(Items.YELLOW_BANNER, Blocks.YELLOW_WOOL);
       this.carpet(Blocks.MOSS_CARPET, Blocks.MOSS_BLOCK);
+      this.carpet(Blocks.PALE_MOSS_CARPET, Blocks.PALE_MOSS_BLOCK);
       this.stainedGlassFromGlassAndDye(Blocks.BLACK_STAINED_GLASS, Items.BLACK_DYE);
       this.stainedGlassPaneFromStainedGlass(Blocks.BLACK_STAINED_GLASS_PANE, Blocks.BLACK_STAINED_GLASS);
       this.stainedGlassPaneFromGlassPaneAndDye(Blocks.BLACK_STAINED_GLASS_PANE, Items.BLACK_DYE);
@@ -296,6 +301,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.chestBoat(Items.ACACIA_CHEST_BOAT, Items.ACACIA_BOAT);
       this.chestBoat(Items.BIRCH_CHEST_BOAT, Items.BIRCH_BOAT);
       this.chestBoat(Items.DARK_OAK_CHEST_BOAT, Items.DARK_OAK_BOAT);
+      this.chestBoat(Items.PALE_OAK_CHEST_BOAT, Items.PALE_OAK_BOAT);
       this.chestBoat(Items.JUNGLE_CHEST_BOAT, Items.JUNGLE_BOAT);
       this.chestBoat(Items.OAK_CHEST_BOAT, Items.OAK_BOAT);
       this.chestBoat(Items.SPRUCE_CHEST_BOAT, Items.SPRUCE_BOAT);
@@ -441,6 +447,9 @@ public class VanillaRecipeProvider extends RecipeProvider {
 
       });
       this.twoByTwoPacker(RecipeCategory.BUILDING_BLOCKS, Blocks.NETHER_BRICKS, Items.NETHER_BRICK);
+      this.twoByTwoPacker(RecipeCategory.BUILDING_BLOCKS, Blocks.RESIN_BRICKS, Items.RESIN_BRICK);
+      this.nineBlockStorageRecipes(RecipeCategory.MISC, Items.RESIN_CLUMP, RecipeCategory.BUILDING_BLOCKS, Items.RESIN_BLOCK);
+      this.shaped(RecipeCategory.MISC, Blocks.CREAKING_HEART).define('R', (ItemLike)Items.RESIN_BLOCK).define('L', (ItemLike)Blocks.PALE_OAK_LOG).pattern(" L ").pattern(" R ").pattern(" L ").unlockedBy("has_resin_block", this.has(Items.RESIN_BLOCK)).save(this.output);
       this.threeByThreePacker(RecipeCategory.BUILDING_BLOCKS, Blocks.NETHER_WART_BLOCK, Items.NETHER_WART);
       this.shaped(RecipeCategory.REDSTONE, Blocks.NOTE_BLOCK).define('#', ItemTags.PLANKS).define('X', (ItemLike)Items.REDSTONE).pattern("###").pattern("#X#").pattern("###").unlockedBy("has_redstone", this.has(Items.REDSTONE)).save(this.output);
       this.shaped(RecipeCategory.REDSTONE, Blocks.OBSERVER).define('Q', (ItemLike)Items.QUARTZ).define('R', (ItemLike)Items.REDSTONE).define('#', (ItemLike)Blocks.COBBLESTONE).pattern("###").pattern("RRQ").pattern("###").unlockedBy("has_quartz", this.has(Items.QUARTZ)).save(this.output);
@@ -479,6 +488,8 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.oneToOneConversionRecipe(Items.RED_DYE, Items.BEETROOT, "red_dye");
       this.oneToOneConversionRecipe(Items.RED_DYE, Blocks.POPPY, "red_dye");
       this.oneToOneConversionRecipe(Items.RED_DYE, Blocks.ROSE_BUSH, "red_dye", 2);
+      this.oneToOneConversionRecipe(Items.ORANGE_DYE, Blocks.OPEN_EYEBLOSSOM, "orange_dye");
+      this.oneToOneConversionRecipe(Items.GRAY_DYE, Blocks.CLOSED_EYEBLOSSOM, "gray_dye");
       this.shapeless(RecipeCategory.MISC, Items.RED_DYE).requires((ItemLike)Blocks.RED_TULIP).group("red_dye").unlockedBy("has_red_flower", this.has(Blocks.RED_TULIP)).save(this.output, "red_dye_from_tulip");
       this.shaped(RecipeCategory.BUILDING_BLOCKS, Blocks.RED_NETHER_BRICKS).define('W', (ItemLike)Items.NETHER_WART).define('N', (ItemLike)Items.NETHER_BRICK).pattern("NW").pattern("WN").unlockedBy("has_nether_wart", this.has(Items.NETHER_WART)).save(this.output);
       this.shaped(RecipeCategory.BUILDING_BLOCKS, Blocks.RED_SANDSTONE).define('#', (ItemLike)Blocks.RED_SAND).pattern("##").pattern("##").unlockedBy("has_sand", this.has(Blocks.RED_SAND)).save(this.output);
@@ -607,6 +618,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       SimpleCookingRecipeBuilder.smelting(Ingredient.of(Items.IRON_PICKAXE, Items.IRON_SHOVEL, Items.IRON_AXE, Items.IRON_HOE, Items.IRON_SWORD, Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS, Items.IRON_HORSE_ARMOR, Items.CHAINMAIL_HELMET, Items.CHAINMAIL_CHESTPLATE, Items.CHAINMAIL_LEGGINGS, Items.CHAINMAIL_BOOTS), RecipeCategory.MISC, Items.IRON_NUGGET, 0.1F, 200).unlockedBy("has_iron_pickaxe", this.has(Items.IRON_PICKAXE)).unlockedBy("has_iron_shovel", this.has(Items.IRON_SHOVEL)).unlockedBy("has_iron_axe", this.has(Items.IRON_AXE)).unlockedBy("has_iron_hoe", this.has(Items.IRON_HOE)).unlockedBy("has_iron_sword", this.has(Items.IRON_SWORD)).unlockedBy("has_iron_helmet", this.has(Items.IRON_HELMET)).unlockedBy("has_iron_chestplate", this.has(Items.IRON_CHESTPLATE)).unlockedBy("has_iron_leggings", this.has(Items.IRON_LEGGINGS)).unlockedBy("has_iron_boots", this.has(Items.IRON_BOOTS)).unlockedBy("has_iron_horse_armor", this.has(Items.IRON_HORSE_ARMOR)).unlockedBy("has_chainmail_helmet", this.has(Items.CHAINMAIL_HELMET)).unlockedBy("has_chainmail_chestplate", this.has(Items.CHAINMAIL_CHESTPLATE)).unlockedBy("has_chainmail_leggings", this.has(Items.CHAINMAIL_LEGGINGS)).unlockedBy("has_chainmail_boots", this.has(Items.CHAINMAIL_BOOTS)).save(this.output, getSmeltingRecipeName(Items.IRON_NUGGET));
       SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.CLAY), RecipeCategory.BUILDING_BLOCKS, Blocks.TERRACOTTA.asItem(), 0.35F, 200).unlockedBy("has_clay_block", this.has(Blocks.CLAY)).save(this.output);
       SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.NETHERRACK), RecipeCategory.MISC, Items.NETHER_BRICK, 0.1F, 200).unlockedBy("has_netherrack", this.has(Blocks.NETHERRACK)).save(this.output);
+      SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Items.RESIN_CLUMP), RecipeCategory.MISC, Items.RESIN_BRICK, 0.1F, 200).unlockedBy("has_resin_clump", this.has(Blocks.RESIN_CLUMP)).save(this.output);
       SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.NETHER_QUARTZ_ORE), RecipeCategory.MISC, Items.QUARTZ, 0.2F, 200).unlockedBy("has_nether_quartz_ore", this.has(Blocks.NETHER_QUARTZ_ORE)).save(this.output);
       SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.WET_SPONGE), RecipeCategory.BUILDING_BLOCKS, Blocks.SPONGE.asItem(), 0.15F, 200).unlockedBy("has_wet_sponge", this.has(Blocks.WET_SPONGE)).save(this.output);
       SimpleCookingRecipeBuilder.smelting(Ingredient.of((ItemLike)Blocks.COBBLESTONE), RecipeCategory.BUILDING_BLOCKS, Blocks.STONE.asItem(), 0.1F, 200).unlockedBy("has_cobblestone", this.has(Blocks.COBBLESTONE)).save(this.output);
@@ -691,6 +703,10 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.NETHER_BRICK_STAIRS, Blocks.NETHER_BRICKS);
       this.stonecutterResultFromBase(RecipeCategory.DECORATIONS, Blocks.NETHER_BRICK_WALL, Blocks.NETHER_BRICKS);
       this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.CHISELED_NETHER_BRICKS, Blocks.NETHER_BRICKS);
+      this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.RESIN_BRICK_SLAB, Blocks.RESIN_BRICKS, 2);
+      this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.RESIN_BRICK_STAIRS, Blocks.RESIN_BRICKS);
+      this.stonecutterResultFromBase(RecipeCategory.DECORATIONS, Blocks.RESIN_BRICK_WALL, Blocks.RESIN_BRICKS);
+      this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.CHISELED_RESIN_BRICKS, Blocks.RESIN_BRICKS);
       this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.RED_NETHER_BRICK_SLAB, Blocks.RED_NETHER_BRICKS, 2);
       this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.RED_NETHER_BRICK_STAIRS, Blocks.RED_NETHER_BRICKS);
       this.stonecutterResultFromBase(RecipeCategory.DECORATIONS, Blocks.RED_NETHER_BRICK_WALL, Blocks.RED_NETHER_BRICKS);
@@ -892,6 +908,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.hangingSign(Items.ACACIA_HANGING_SIGN, Blocks.STRIPPED_ACACIA_LOG);
       this.hangingSign(Items.CHERRY_HANGING_SIGN, Blocks.STRIPPED_CHERRY_LOG);
       this.hangingSign(Items.DARK_OAK_HANGING_SIGN, Blocks.STRIPPED_DARK_OAK_LOG);
+      this.hangingSign(Items.PALE_OAK_HANGING_SIGN, Blocks.STRIPPED_PALE_OAK_LOG);
       this.hangingSign(Items.MANGROVE_HANGING_SIGN, Blocks.STRIPPED_MANGROVE_LOG);
       this.hangingSign(Items.BAMBOO_HANGING_SIGN, Items.STRIPPED_BAMBOO_BLOCK);
       this.hangingSign(Items.CRIMSON_HANGING_SIGN, Blocks.STRIPPED_CRIMSON_STEM);

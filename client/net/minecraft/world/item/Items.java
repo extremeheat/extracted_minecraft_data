@@ -19,7 +19,6 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.food.Foods;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.BundleContents;
@@ -274,6 +273,8 @@ public class Items {
    public static final Item RED_WOOL;
    public static final Item BLACK_WOOL;
    public static final Item DANDELION;
+   public static final Item OPEN_EYEBLOSSOM;
+   public static final Item CLOSED_EYEBLOSSOM;
    public static final Item POPPY;
    public static final Item BLUE_ORCHID;
    public static final Item ALLIUM;
@@ -422,6 +423,13 @@ public class Items {
    public static final Item MELON;
    public static final Item VINE;
    public static final Item GLOW_LICHEN;
+   public static final Item RESIN_CLUMP;
+   public static final Item RESIN_BLOCK;
+   public static final Item RESIN_BRICKS;
+   public static final Item RESIN_BRICK_STAIRS;
+   public static final Item RESIN_BRICK_SLAB;
+   public static final Item RESIN_BRICK_WALL;
+   public static final Item CHISELED_RESIN_BRICKS;
    public static final Item BRICK_STAIRS;
    public static final Item STONE_BRICK_STAIRS;
    public static final Item MUD_BRICK_STAIRS;
@@ -1206,6 +1214,7 @@ public class Items {
    public static final Item FIREWORK_STAR;
    public static final Item ENCHANTED_BOOK;
    public static final Item NETHER_BRICK;
+   public static final Item RESIN_BRICK;
    public static final Item PRISMARINE_SHARD;
    public static final Item PRISMARINE_CRYSTALS;
    public static final Item RABBIT;
@@ -1735,6 +1744,8 @@ public class Items {
       RED_WOOL = registerBlock(Blocks.RED_WOOL);
       BLACK_WOOL = registerBlock(Blocks.BLACK_WOOL);
       DANDELION = registerBlock(Blocks.DANDELION);
+      OPEN_EYEBLOSSOM = registerBlock(Blocks.OPEN_EYEBLOSSOM);
+      CLOSED_EYEBLOSSOM = registerBlock(Blocks.CLOSED_EYEBLOSSOM);
       POPPY = registerBlock(Blocks.POPPY);
       BLUE_ORCHID = registerBlock(Blocks.BLUE_ORCHID);
       ALLIUM = registerBlock(Blocks.ALLIUM);
@@ -1810,7 +1821,7 @@ public class Items {
       CHISELED_BOOKSHELF = registerBlock(Blocks.CHISELED_BOOKSHELF, (var0) -> {
          return var0.component(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
       });
-      DECORATED_POT = registerBlock(Blocks.DECORATED_POT, (new Item.Properties()).component(DataComponents.POT_DECORATIONS, PotDecorations.EMPTY));
+      DECORATED_POT = registerBlock(Blocks.DECORATED_POT, (new Item.Properties()).component(DataComponents.POT_DECORATIONS, PotDecorations.EMPTY).component(DataComponents.CONTAINER, ItemContainerContents.EMPTY));
       MOSSY_COBBLESTONE = registerBlock(Blocks.MOSSY_COBBLESTONE);
       OBSIDIAN = registerBlock(Blocks.OBSIDIAN);
       TORCH = registerBlock(Blocks.TORCH, (var0, var1) -> {
@@ -1895,6 +1906,13 @@ public class Items {
       MELON = registerBlock(Blocks.MELON);
       VINE = registerBlock(Blocks.VINE);
       GLOW_LICHEN = registerBlock(Blocks.GLOW_LICHEN);
+      RESIN_CLUMP = registerItem("resin_clump", createBlockItemWithCustomItemName(Blocks.RESIN_CLUMP));
+      RESIN_BLOCK = registerBlock(Blocks.RESIN_BLOCK);
+      RESIN_BRICKS = registerBlock(Blocks.RESIN_BRICKS);
+      RESIN_BRICK_STAIRS = registerBlock(Blocks.RESIN_BRICK_STAIRS);
+      RESIN_BRICK_SLAB = registerBlock(Blocks.RESIN_BRICK_SLAB);
+      RESIN_BRICK_WALL = registerBlock(Blocks.RESIN_BRICK_WALL);
+      CHISELED_RESIN_BRICKS = registerBlock(Blocks.CHISELED_RESIN_BRICKS);
       BRICK_STAIRS = registerBlock(Blocks.BRICK_STAIRS);
       STONE_BRICK_STAIRS = registerBlock(Blocks.STONE_BRICK_STAIRS);
       MUD_BRICK_STAIRS = registerBlock(Blocks.MUD_BRICK_STAIRS);
@@ -2437,10 +2455,10 @@ public class Items {
       }, (new Item.Properties()).stacksTo(1));
       PALE_OAK_BOAT = registerItem("pale_oak_boat", (var0) -> {
          return new BoatItem(EntityType.PALE_OAK_BOAT, var0);
-      }, (new Item.Properties()).stacksTo(1).requiredFeatures(FeatureFlags.WINTER_DROP));
+      }, (new Item.Properties()).stacksTo(1));
       PALE_OAK_CHEST_BOAT = registerItem("pale_oak_chest_boat", (var0) -> {
          return new BoatItem(EntityType.PALE_OAK_CHEST_BOAT, var0);
-      }, (new Item.Properties()).stacksTo(1).requiredFeatures(FeatureFlags.WINTER_DROP));
+      }, (new Item.Properties()).stacksTo(1));
       MANGROVE_BOAT = registerItem("mangrove_boat", (var0) -> {
          return new BoatItem(EntityType.MANGROVE_BOAT, var0);
       }, (new Item.Properties()).stacksTo(1));
@@ -3229,6 +3247,7 @@ public class Items {
       FIREWORK_STAR = registerItem("firework_star", FireworkStarItem::new);
       ENCHANTED_BOOK = registerItem("enchanted_book", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).component(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true));
       NETHER_BRICK = registerItem("nether_brick");
+      RESIN_BRICK = registerItem("resin_brick");
       PRISMARINE_SHARD = registerItem("prismarine_shard");
       PRISMARINE_CRYSTALS = registerItem("prismarine_crystals");
       RABBIT = registerItem("rabbit", (new Item.Properties()).food(Foods.RABBIT));

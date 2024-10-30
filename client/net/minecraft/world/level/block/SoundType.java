@@ -119,6 +119,8 @@ public class SoundType {
    public static final SoundType HEAVY_CORE;
    public static final SoundType COBWEB;
    public static final SoundType SPAWNER;
+   public static final SoundType RESIN;
+   public static final SoundType RESIN_BRICKS;
    public final float volume;
    public final float pitch;
    private final SoundEvent breakSound;
@@ -282,5 +284,7 @@ public class SoundType {
       HEAVY_CORE = new SoundType(1.0F, 1.0F, SoundEvents.HEAVY_CORE_BREAK, SoundEvents.HEAVY_CORE_STEP, SoundEvents.HEAVY_CORE_PLACE, SoundEvents.HEAVY_CORE_HIT, SoundEvents.HEAVY_CORE_FALL);
       COBWEB = new SoundType(1.0F, 1.0F, SoundEvents.COBWEB_BREAK, SoundEvents.COBWEB_STEP, SoundEvents.COBWEB_PLACE, SoundEvents.COBWEB_HIT, SoundEvents.COBWEB_FALL);
       SPAWNER = new SoundType(1.0F, 1.0F, SoundEvents.SPAWNER_BREAK, SoundEvents.SPAWNER_STEP, SoundEvents.SPAWNER_PLACE, SoundEvents.SPAWNER_HIT, SoundEvents.SPAWNER_FALL);
+      RESIN = new SoundType(1.0F, 1.0F, SoundEvents.RESIN_BREAK, SoundEvents.RESIN_STEP, SoundEvents.RESIN_PLACE, SoundEvents.RESIN_HIT, SoundEvents.RESIN_FALL);
+      RESIN_BRICKS = new SoundType(1.0F, 1.0F, SoundEvents.RESIN_BRICKS_BREAK, SoundEvents.RESIN_BRICKS_STEP, SoundEvents.RESIN_BRICKS_PLACE, SoundEvents.RESIN_BRICKS_HIT, SoundEvents.RESIN_BRICKS_FALL);
    }
 }

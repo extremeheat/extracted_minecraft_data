@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal;
 
+import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -8,6 +9,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.world.DifficultyInstance;
@@ -25,7 +27,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 
 public class Salmon extends AbstractSchoolingFish implements VariantHolder<Variant> {
-   private static final EntityDataAccessor<String> DATA_TYPE;
+   private static final String TAG_TYPE = "type";
+   private static final EntityDataAccessor<Integer> DATA_TYPE;
 
    public Salmon(EntityType<? extends Salmon> var1, Level var2) {
       super(var1, var2);
@@ -58,7 +61,7 @@ public class Salmon extends AbstractSchoolingFish implements VariantHolder<Varia
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_TYPE, Salmon.Variant.MEDIUM.type);
+      var1.define(DATA_TYPE, Salmon.Variant.MEDIUM.id());
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
@@ -92,11 +95,11 @@ public class Salmon extends AbstractSchoolingFish implements VariantHolder<Varia
    }
 
    public void setVariant(Variant var1) {
-      this.entityData.set(DATA_TYPE, var1.type);
+      this.entityData.set(DATA_TYPE, var1.id);
    }
 
    public Variant getVariant() {
-      return Salmon.Variant.byName((String)this.entityData.get(DATA_TYPE));
+      return (Variant)Salmon.Variant.BY_ID.apply((Integer)this.entityData.get(DATA_TYPE));
    }
 
    @Nullable
@@ -123,25 +126,32 @@ public class Salmon extends AbstractSchoolingFish implements VariantHolder<Varia
    }
 
    static {
-      DATA_TYPE = SynchedEntityData.defineId(Salmon.class, EntityDataSerializers.STRING);
+      DATA_TYPE = SynchedEntityData.defineId(Salmon.class, EntityDataSerializers.INT);
    }
 
    public static enum Variant implements StringRepresentable {
-      SMALL("small", 0.5F),
-      MEDIUM("medium", 1.0F),
-      LARGE("large", 1.5F);
+      SMALL("small", 0, 0.5F),
+      MEDIUM("medium", 1, 1.0F),
+      LARGE("large", 2, 1.5F);
 
       public static final StringRepresentable.EnumCodec<Variant> CODEC = StringRepresentable.fromEnum(Variant::values);
-      final String type;
+      static final IntFunction<Variant> BY_ID = ByIdMap.continuous(Variant::id, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
+      private final String name;
+      final int id;
       final float boundingBoxScale;
 
-      private Variant(final String var3, final float var4) {
-         this.type = var3;
-         this.boundingBoxScale = var4;
+      private Variant(final String var3, final int var4, final float var5) {
+         this.name = var3;
+         this.id = var4;
+         this.boundingBoxScale = var5;
       }
 
       public String getSerializedName() {
-         return this.type;
+         return this.name;
+      }
+
+      int id() {
+         return this.id;
       }
 
       static Variant byName(String var0) {

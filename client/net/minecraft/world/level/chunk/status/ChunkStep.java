@@ -47,7 +47,7 @@ public record ChunkStep(ChunkStatus targetStatus, ChunkDependencies directDepend
       }
 
       if (var2 != null) {
-         var2.finish();
+         var2.finish(true);
       }
 
       return var1;

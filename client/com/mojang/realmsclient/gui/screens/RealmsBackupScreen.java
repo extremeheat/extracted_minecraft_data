@@ -88,7 +88,7 @@ public class RealmsBackupScreen extends RealmsScreen {
          int var10003 = this.width / 2 - this.font.width((FormattedText)NO_BACKUPS_LABEL) / 2;
          int var10004 = this.backupList.getY() + this.backupList.getHeight() / 2;
          Objects.requireNonNull(this.font);
-         var1.drawString(var10001, (Component)var10002, var10003, var10004 - 9 / 2, -1, false);
+         var1.drawString(var10001, (Component)var10002, var10003, var10004 - 9 / 2, -1);
       }
 
    }
@@ -252,8 +252,8 @@ public class RealmsBackupScreen extends RealmsScreen {
          int var12 = var11 - 9 - 2;
          int var13 = var11 + 2;
          int var14 = this.backup.isUploadedVersion() ? -8388737 : -1;
-         var1.drawString(RealmsBackupScreen.this.font, (Component)Component.translatable("mco.backup.entry", RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModifiedDate)), var4, var12, var14, false);
-         var1.drawString(RealmsBackupScreen.this.font, this.getMediumDatePresentation(this.backup.lastModifiedDate), var4, var13, 5000268, false);
+         var1.drawString(RealmsBackupScreen.this.font, (Component)Component.translatable("mco.backup.entry", RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModifiedDate)), var4, var12, var14);
+         var1.drawString(RealmsBackupScreen.this.font, this.getMediumDatePresentation(this.backup.lastModifiedDate), var4, var13, 5000268);
          int var15 = 0;
          int var16 = var3 + var6 / 2 - 10;
          if (this.restoreButton != null) {

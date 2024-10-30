@@ -5,11 +5,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -33,7 +30,8 @@ import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -178,11 +176,8 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.SMALL_FLAME, (SpriteParticleRegistration)(FlameParticle.SmallFlameProvider::new));
       this.register(ParticleTypes.DRIPPING_DRIPSTONE_WATER, (ParticleProvider.Sprite)(DripParticle::createDripstoneWaterHangParticle));
       this.register(ParticleTypes.FALLING_DRIPSTONE_WATER, (ParticleProvider.Sprite)(DripParticle::createDripstoneWaterFallParticle));
-      this.register(ParticleTypes.CHERRY_LEAVES, (SpriteParticleRegistration)((var0) -> {
-         return (var1, var2, var3, var5, var7, var9, var11, var13) -> {
-            return new CherryParticle(var2, var3, var5, var7, var0);
-         };
-      }));
+      this.register(ParticleTypes.CHERRY_LEAVES, (SpriteParticleRegistration)(FallingLeavesParticle.CherryProvider::new));
+      this.register(ParticleTypes.PALE_OAK_LEAVES, (SpriteParticleRegistration)(FallingLeavesParticle.PaleOakProvider::new));
       this.register(ParticleTypes.DRIPPING_DRIPSTONE_LAVA, (ParticleProvider.Sprite)(DripParticle::createDripstoneLavaHangParticle));
       this.register(ParticleTypes.FALLING_DRIPSTONE_LAVA, (ParticleProvider.Sprite)(DripParticle::createDripstoneLavaFallParticle));
       this.register(ParticleTypes.VIBRATION, VibrationSignalParticle.Provider::new);
@@ -417,57 +412,66 @@ public class ParticleEngine implements PreparableReloadListener {
       }
    }
 
-   public void render(LightTexture var1, Camera var2, float var3) {
-      var1.turnOnLightLayer();
-      RenderSystem.enableDepthTest();
+   public void render(Camera var1, float var2, MultiBufferSource.BufferSource var3) {
       Iterator var4 = RENDER_ORDER.iterator();
 
-      while(true) {
-         ParticleRenderType var5;
-         Queue var6;
-         BufferBuilder var8;
-         do {
-            do {
-               do {
-                  if (!var4.hasNext()) {
-                     RenderSystem.depthMask(true);
-                     RenderSystem.disableBlend();
-                     var1.turnOffLightLayer();
-                     return;
-                  }
-
-                  var5 = (ParticleRenderType)var4.next();
-                  var6 = (Queue)this.particles.get(var5);
-               } while(var6 == null);
-            } while(var6.isEmpty());
-
-            Tesselator var7 = Tesselator.getInstance();
-            var8 = var5.begin(var7, this.textureManager);
-         } while(var8 == null);
-
-         Iterator var9 = var6.iterator();
-
-         while(var9.hasNext()) {
-            Particle var10 = (Particle)var9.next();
-
-            try {
-               var10.render(var8, var2, var3);
-            } catch (Throwable var14) {
-               CrashReport var12 = CrashReport.forThrowable(var14, "Rendering Particle");
-               CrashReportCategory var13 = var12.addCategory("Particle being rendered");
-               Objects.requireNonNull(var10);
-               var13.setDetail("Particle", var10::toString);
-               Objects.requireNonNull(var5);
-               var13.setDetail("Particle Type", var5::toString);
-               throw new ReportedException(var12);
-            }
-         }
-
-         MeshData var15 = var8.build();
-         if (var15 != null) {
-            BufferUploader.drawWithShader(var15);
+      while(var4.hasNext()) {
+         ParticleRenderType var5 = (ParticleRenderType)var4.next();
+         Queue var6 = (Queue)this.particles.get(var5);
+         if (var6 != null && !var6.isEmpty()) {
+            renderParticleType(var1, var2, var3, var5, var6);
          }
       }
+
+      Queue var7 = (Queue)this.particles.get(ParticleRenderType.CUSTOM);
+      if (var7 != null && !var7.isEmpty()) {
+         renderCustomParticles(var1, var2, var3, var7);
+      }
+
+      var3.endBatch();
+   }
+
+   private static void renderParticleType(Camera var0, float var1, MultiBufferSource.BufferSource var2, ParticleRenderType var3, Queue<Particle> var4) {
+      VertexConsumer var5 = var2.getBuffer((RenderType)Objects.requireNonNull(var3.renderType()));
+      Iterator var6 = var4.iterator();
+
+      while(var6.hasNext()) {
+         Particle var7 = (Particle)var6.next();
+
+         try {
+            var7.render(var5, var0, var1);
+         } catch (Throwable var11) {
+            CrashReport var9 = CrashReport.forThrowable(var11, "Rendering Particle");
+            CrashReportCategory var10 = var9.addCategory("Particle being rendered");
+            Objects.requireNonNull(var7);
+            var10.setDetail("Particle", var7::toString);
+            Objects.requireNonNull(var3);
+            var10.setDetail("Particle Type", var3::toString);
+            throw new ReportedException(var9);
+         }
+      }
+
+   }
+
+   private static void renderCustomParticles(Camera var0, float var1, MultiBufferSource.BufferSource var2, Queue<Particle> var3) {
+      PoseStack var4 = new PoseStack();
+      Iterator var5 = var3.iterator();
+
+      while(var5.hasNext()) {
+         Particle var6 = (Particle)var5.next();
+
+         try {
+            var6.renderCustom(var4, var2, var0, var1);
+         } catch (Throwable var10) {
+            CrashReport var8 = CrashReport.forThrowable(var10, "Rendering Particle");
+            CrashReportCategory var9 = var8.addCategory("Particle being rendered");
+            Objects.requireNonNull(var6);
+            var9.setDetail("Particle", var6::toString);
+            var9.setDetail("Particle Type", (Object)"Custom");
+            throw new ReportedException(var8);
+         }
+      }
+
    }
 
    public void setLevel(@Nullable ClientLevel var1) {
@@ -561,7 +565,7 @@ public class ParticleEngine implements PreparableReloadListener {
    }
 
    static {
-      RENDER_ORDER = ImmutableList.of(ParticleRenderType.TERRAIN_SHEET, ParticleRenderType.PARTICLE_SHEET_OPAQUE, ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT, ParticleRenderType.CUSTOM);
+      RENDER_ORDER = List.of(ParticleRenderType.TERRAIN_SHEET, ParticleRenderType.PARTICLE_SHEET_OPAQUE, ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT);
    }
 
    @FunctionalInterface

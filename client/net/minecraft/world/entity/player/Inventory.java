@@ -69,26 +69,16 @@ public class Inventory implements Container, Nameable {
       return -1;
    }
 
-   public void setPickedItem(ItemStack var1) {
-      int var2 = this.findSlotMatchingItem(var1);
-      if (isHotbarSlot(var2)) {
-         this.selected = var2;
-      } else {
-         if (var2 == -1) {
-            this.selected = this.getSuitableHotbarSlot();
-            if (!((ItemStack)this.items.get(this.selected)).isEmpty()) {
-               int var3 = this.getFreeSlot();
-               if (var3 != -1) {
-                  this.items.set(var3, (ItemStack)this.items.get(this.selected));
-               }
-            }
-
-            this.items.set(this.selected, var1);
-         } else {
-            this.pickSlot(var2);
+   public void addAndPickItem(ItemStack var1) {
+      this.selected = this.getSuitableHotbarSlot();
+      if (!((ItemStack)this.items.get(this.selected)).isEmpty()) {
+         int var2 = this.getFreeSlot();
+         if (var2 != -1) {
+            this.items.set(var2, (ItemStack)this.items.get(this.selected));
          }
-
       }
+
+      this.items.set(this.selected, var1);
    }
 
    public void pickSlot(int var1) {

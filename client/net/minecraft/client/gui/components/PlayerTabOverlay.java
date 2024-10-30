@@ -30,7 +30,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerTeam;
@@ -138,56 +137,56 @@ public class PlayerTabOverlay {
       }
 
       if (!this.healthStates.isEmpty()) {
-         Set var33 = (Set)var5.stream().map((var0) -> {
+         Set var32 = (Set)var5.stream().map((var0) -> {
             return var0.getProfile().getId();
          }).collect(Collectors.toSet());
          this.healthStates.keySet().removeIf((var1x) -> {
-            return !var33.contains(var1x);
+            return !var32.contains(var1x);
          });
       }
 
-      int var34 = var5.size();
-      int var35 = var34;
+      int var33 = var5.size();
+      int var34 = var33;
 
-      int var36;
-      for(var36 = 1; var35 > 20; var35 = (var34 + var36 - 1) / var36) {
-         ++var36;
+      int var35;
+      for(var35 = 1; var34 > 20; var34 = (var33 + var35 - 1) / var35) {
+         ++var35;
       }
 
-      boolean var37 = this.minecraft.isLocalServer() || this.minecraft.getConnection().getConnection().isEncrypted();
-      int var38;
+      boolean var36 = this.minecraft.isLocalServer() || this.minecraft.getConnection().getConnection().isEncrypted();
+      int var37;
       if (var4 != null) {
          if (var4.getRenderType() == ObjectiveCriteria.RenderType.HEARTS) {
-            var38 = 90;
+            var37 = 90;
          } else {
-            var38 = var9;
+            var37 = var9;
          }
       } else {
-         var38 = 0;
+         var37 = 0;
       }
 
-      var15 = Math.min(var36 * ((var37 ? 9 : 0) + var8 + var38 + 13), var2 - 50) / var36;
-      int var39 = var2 / 2 - (var15 * var36 + (var36 - 1) * 5) / 2;
-      int var40 = 10;
-      int var41 = var15 * var36 + (var36 - 1) * 5;
+      var15 = Math.min(var35 * ((var36 ? 9 : 0) + var8 + var37 + 13), var2 - 50) / var35;
+      int var38 = var2 / 2 - (var15 * var35 + (var35 - 1) * 5) / 2;
+      int var39 = 10;
+      int var40 = var15 * var35 + (var35 - 1) * 5;
       List var19 = null;
       if (this.header != null) {
          var19 = this.minecraft.font.split(this.header, var2 - 50);
 
          FormattedCharSequence var21;
-         for(Iterator var20 = var19.iterator(); var20.hasNext(); var41 = Math.max(var41, this.minecraft.font.width(var21))) {
+         for(Iterator var20 = var19.iterator(); var20.hasNext(); var40 = Math.max(var40, this.minecraft.font.width(var21))) {
             var21 = (FormattedCharSequence)var20.next();
          }
       }
 
-      List var42 = null;
+      List var41 = null;
       FormattedCharSequence var22;
-      Iterator var43;
+      Iterator var42;
       if (this.footer != null) {
-         var42 = this.minecraft.font.split(this.footer, var2 - 50);
+         var41 = this.minecraft.font.split(this.footer, var2 - 50);
 
-         for(var43 = var42.iterator(); var43.hasNext(); var41 = Math.max(var41, this.minecraft.font.width(var22))) {
-            var22 = (FormattedCharSequence)var43.next();
+         for(var42 = var41.iterator(); var42.hasNext(); var40 = Math.max(var40, this.minecraft.font.width(var22))) {
+            var22 = (FormattedCharSequence)var42.next();
          }
       }
 
@@ -197,71 +196,70 @@ public class PlayerTabOverlay {
       int var10005;
       int var23;
       if (var19 != null) {
-         var10001 = var2 / 2 - var41 / 2 - 1;
-         var10002 = var40 - 1;
-         var10003 = var2 / 2 + var41 / 2 + 1;
+         var10001 = var2 / 2 - var40 / 2 - 1;
+         var10002 = var39 - 1;
+         var10003 = var2 / 2 + var40 / 2 + 1;
          var10005 = var19.size();
          Objects.requireNonNull(this.minecraft.font);
-         var1.fill(var10001, var10002, var10003, var40 + var10005 * 9, -2147483648);
+         var1.fill(var10001, var10002, var10003, var39 + var10005 * 9, -2147483648);
 
-         for(var43 = var19.iterator(); var43.hasNext(); var40 += 9) {
-            var22 = (FormattedCharSequence)var43.next();
+         for(var42 = var19.iterator(); var42.hasNext(); var39 += 9) {
+            var22 = (FormattedCharSequence)var42.next();
             var23 = this.minecraft.font.width(var22);
-            var1.drawString(this.minecraft.font, (FormattedCharSequence)var22, var2 / 2 - var23 / 2, var40, -1);
+            var1.drawString(this.minecraft.font, (FormattedCharSequence)var22, var2 / 2 - var23 / 2, var39, -1);
             Objects.requireNonNull(this.minecraft.font);
          }
 
-         ++var40;
+         ++var39;
       }
 
-      var1.fill(var2 / 2 - var41 / 2 - 1, var40 - 1, var2 / 2 + var41 / 2 + 1, var40 + var35 * 9, -2147483648);
-      int var44 = this.minecraft.options.getBackgroundColor(553648127);
+      var1.fill(var2 / 2 - var40 / 2 - 1, var39 - 1, var2 / 2 + var40 / 2 + 1, var39 + var34 * 9, -2147483648);
+      int var43 = this.minecraft.options.getBackgroundColor(553648127);
 
       int var24;
-      for(int var45 = 0; var45 < var34; ++var45) {
-         var23 = var45 / var35;
-         var24 = var45 % var35;
-         int var25 = var39 + var23 * var15 + var23 * 5;
-         int var26 = var40 + var24 * 9;
-         var1.fill(var25, var26, var25 + var15, var26 + 8, var44);
-         if (var45 < var5.size()) {
-            PlayerInfo var27 = (PlayerInfo)var5.get(var45);
-            ScoreDisplayEntry var28 = (ScoreDisplayEntry)var6.get(var45);
+      for(int var44 = 0; var44 < var33; ++var44) {
+         var23 = var44 / var34;
+         var24 = var44 % var34;
+         int var25 = var38 + var23 * var15 + var23 * 5;
+         int var26 = var39 + var24 * 9;
+         var1.fill(var25, var26, var25 + var15, var26 + 8, var43);
+         if (var44 < var5.size()) {
+            PlayerInfo var27 = (PlayerInfo)var5.get(var44);
+            ScoreDisplayEntry var28 = (ScoreDisplayEntry)var6.get(var44);
             GameProfile var29 = var27.getProfile();
-            if (var37) {
+            if (var36) {
                Player var30 = this.minecraft.level.getPlayerByUUID(var29.getId());
                boolean var31 = var30 != null && LivingEntityRenderer.isEntityUpsideDown(var30);
-               boolean var32 = var30 != null && var30.isModelPartShown(PlayerModelPart.HAT);
-               PlayerFaceRenderer.draw(var1, var27.getSkin().texture(), var25, var26, 8, var32, var31, -1);
+               PlayerFaceRenderer.draw(var1, var27.getSkin().texture(), var25, var26, 8, var27.showHat(), var31, -1);
                var25 += 9;
             }
 
             var1.drawString(this.minecraft.font, var28.name, var25, var26, var27.getGameMode() == GameType.SPECTATOR ? -1862270977 : -1);
             if (var4 != null && var27.getGameMode() != GameType.SPECTATOR) {
-               int var48 = var25 + var8 + 1;
-               int var49 = var48 + var38;
-               if (var49 - var48 > 5) {
-                  this.renderTablistScore(var4, var26, var28, var48, var49, var29.getId(), var1);
+               int var47 = var25 + var8 + 1;
+               int var48 = var47 + var37;
+               if (var48 - var47 > 5) {
+                  this.renderTablistScore(var4, var26, var28, var47, var48, var29.getId(), var1);
                }
             }
 
-            this.renderPingIcon(var1, var15, var25 - (var37 ? 9 : 0), var26, var27);
+            this.renderPingIcon(var1, var15, var25 - (var36 ? 9 : 0), var26, var27);
          }
       }
 
-      if (var42 != null) {
-         var40 += var35 * 9 + 1;
-         var10001 = var2 / 2 - var41 / 2 - 1;
-         var10002 = var40 - 1;
-         var10003 = var2 / 2 + var41 / 2 + 1;
-         var10005 = var42.size();
+      if (var41 != null) {
+         var39 += var34 * 9 + 1;
+         var10001 = var2 / 2 - var40 / 2 - 1;
+         var10002 = var39 - 1;
+         var10003 = var2 / 2 + var40 / 2 + 1;
+         var10005 = var41.size();
          Objects.requireNonNull(this.minecraft.font);
-         var1.fill(var10001, var10002, var10003, var40 + var10005 * 9, -2147483648);
+         var1.fill(var10001, var10002, var10003, var39 + var10005 * 9, -2147483648);
 
-         for(Iterator var46 = var42.iterator(); var46.hasNext(); var40 += 9) {
-            FormattedCharSequence var47 = (FormattedCharSequence)var46.next();
-            var24 = this.minecraft.font.width(var47);
-            var1.drawString(this.minecraft.font, (FormattedCharSequence)var47, var2 / 2 - var24 / 2, var40, -1);
+         for(Iterator var45 = var41.iterator(); var45.hasNext(); var39 += 9) {
+            FormattedCharSequence var46 = (FormattedCharSequence)var45.next();
+            var24 = this.minecraft.font.width(var46);
+            var1.drawString(this.minecraft.font, (FormattedCharSequence)var46, var2 / 2 - var24 / 2, var39, -1);
             Objects.requireNonNull(this.minecraft.font);
          }
       }

@@ -21,6 +21,7 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -1129,22 +1130,26 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    }
 
    public <T extends ParticleOptions> int sendParticles(T var1, double var2, double var4, double var6, int var8, double var9, double var11, double var13, double var15) {
-      ClientboundLevelParticlesPacket var17 = new ClientboundLevelParticlesPacket(var1, false, var2, var4, var6, (float)var9, (float)var11, (float)var13, (float)var15, var8);
-      int var18 = 0;
+      return this.sendParticles(var1, false, false, var2, var4, var6, var8, var9, var11, var13, var15);
+   }
 
-      for(int var19 = 0; var19 < this.players.size(); ++var19) {
-         ServerPlayer var20 = (ServerPlayer)this.players.get(var19);
-         if (this.sendParticles(var20, false, var2, var4, var6, var17)) {
-            ++var18;
+   public <T extends ParticleOptions> int sendParticles(T var1, boolean var2, boolean var3, double var4, double var6, double var8, int var10, double var11, double var13, double var15, double var17) {
+      ClientboundLevelParticlesPacket var19 = new ClientboundLevelParticlesPacket(var1, var2, var3, var4, var6, var8, (float)var11, (float)var13, (float)var15, (float)var17, var10);
+      int var20 = 0;
+
+      for(int var21 = 0; var21 < this.players.size(); ++var21) {
+         ServerPlayer var22 = (ServerPlayer)this.players.get(var21);
+         if (this.sendParticles(var22, var2, var4, var6, var8, var19)) {
+            ++var20;
          }
       }
 
-      return var18;
+      return var20;
    }
 
-   public <T extends ParticleOptions> boolean sendParticles(ServerPlayer var1, T var2, boolean var3, double var4, double var6, double var8, int var10, double var11, double var13, double var15, double var17) {
-      ClientboundLevelParticlesPacket var19 = new ClientboundLevelParticlesPacket(var2, var3, var4, var6, var8, (float)var11, (float)var13, (float)var15, (float)var17, var10);
-      return this.sendParticles(var1, var3, var4, var6, var8, var19);
+   public <T extends ParticleOptions> boolean sendParticles(ServerPlayer var1, T var2, boolean var3, boolean var4, double var5, double var7, double var9, int var11, double var12, double var14, double var16, double var18) {
+      ClientboundLevelParticlesPacket var20 = new ClientboundLevelParticlesPacket(var2, var3, var4, var5, var7, var9, (float)var12, (float)var14, (float)var16, (float)var18, var11);
+      return this.sendParticles(var1, var3, var5, var7, var9, var20);
    }
 
    private boolean sendParticles(ServerPlayer var1, boolean var2, double var3, double var5, double var7, Packet<?> var9) {
@@ -1166,6 +1171,11 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return (Entity)this.getEntities().get(var1);
    }
 
+   @Nullable
+   public Entity getEntity(UUID var1) {
+      return (Entity)this.getEntities().get(var1);
+   }
+
    /** @deprecated */
    @Deprecated
    @Nullable
@@ -1174,9 +1184,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return var2 != null ? var2 : (Entity)this.dragonParts.get(var1);
    }
 
-   @Nullable
-   public Entity getEntity(UUID var1) {
-      return (Entity)this.getEntities().get(var1);
+   public Collection<EnderDragonPart> dragonParts() {
+      return this.dragonParts.values();
    }
 
    @Nullable
@@ -1366,8 +1375,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          if (var3 != null) {
             try {
                ((Writer)var3).close();
-            } catch (Throwable var12) {
-               var22.addSuppressed(var12);
+            } catch (Throwable var11) {
+               var22.addSuppressed(var11);
             }
          }
 
@@ -1384,16 +1393,16 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       try {
          ((Writer)var24).write(var23.getFriendlyReport(ReportType.TEST));
-      } catch (Throwable var21) {
+      } catch (Throwable var18) {
          if (var24 != null) {
             try {
                ((Writer)var24).close();
-            } catch (Throwable var16) {
-               var21.addSuppressed(var16);
+            } catch (Throwable var12) {
+               var18.addSuppressed(var12);
             }
          }
 
-         throw var21;
+         throw var18;
       }
 
       if (var24 != null) {
@@ -1405,16 +1414,16 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       try {
          var2.dumpChunks(var26);
-      } catch (Throwable var19) {
+      } catch (Throwable var17) {
          if (var26 != null) {
             try {
                ((Writer)var26).close();
             } catch (Throwable var14) {
-               var19.addSuppressed(var14);
+               var17.addSuppressed(var14);
             }
          }
 
-         throw var19;
+         throw var17;
       }
 
       if (var26 != null) {
@@ -1426,16 +1435,16 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       try {
          this.entityManager.dumpSections(var28);
-      } catch (Throwable var18) {
+      } catch (Throwable var20) {
          if (var28 != null) {
             try {
                ((Writer)var28).close();
-            } catch (Throwable var11) {
-               var18.addSuppressed(var11);
+            } catch (Throwable var16) {
+               var20.addSuppressed(var16);
             }
          }
 
-         throw var18;
+         throw var20;
       }
 
       if (var28 != null) {
@@ -1447,16 +1456,16 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       try {
          dumpEntities(var7, this.getEntities().getAll());
-      } catch (Throwable var20) {
+      } catch (Throwable var19) {
          if (var7 != null) {
             try {
                ((Writer)var7).close();
             } catch (Throwable var15) {
-               var20.addSuppressed(var15);
+               var19.addSuppressed(var15);
             }
          }
 
-         throw var20;
+         throw var19;
       }
 
       if (var7 != null) {
@@ -1468,16 +1477,16 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       try {
          this.dumpBlockEntityTickers(var8);
-      } catch (Throwable var17) {
+      } catch (Throwable var21) {
          if (var8 != null) {
             try {
                ((Writer)var8).close();
             } catch (Throwable var13) {
-               var17.addSuppressed(var13);
+               var21.addSuppressed(var13);
             }
          }
 
-         throw var17;
+         throw var21;
       }
 
       if (var8 != null) {

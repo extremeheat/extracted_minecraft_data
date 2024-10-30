@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.DoubleSupplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -197,7 +196,7 @@ public class EnderMan extends Monster implements NeutralMob {
    }
 
    boolean isBeingStaredBy(Player var1) {
-      return this.isLookingAtMe(var1, 0.025, true, false, LivingEntity.PLAYER_NOT_WEARING_DISGUISE_ITEM, new DoubleSupplier[]{this::getEyeY});
+      return !LivingEntity.PLAYER_NOT_WEARING_DISGUISE_ITEM.test(var1) ? false : this.isLookingAtMe(var1, 0.025, true, false, new double[]{this.getEyeY()});
    }
 
    public void aiStep() {

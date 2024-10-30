@@ -1635,8 +1635,6 @@ public class ServerPlayer extends Player {
    }
 
    public boolean teleportTo(ServerLevel var1, double var2, double var4, double var6, Set<Relative> var8, float var9, float var10, boolean var11) {
-      ChunkPos var12 = new ChunkPos(BlockPos.containing(var2, var4, var6));
-      var1.getChunkSource().addRegionTicket(TicketType.POST_TELEPORT, var12, 1, this.getId());
       if (this.isSleeping()) {
          this.stopSleepInBed(true, true);
       }
@@ -1645,12 +1643,12 @@ public class ServerPlayer extends Player {
          this.setCamera(this);
       }
 
-      boolean var13 = super.teleportTo(var1, var2, var4, var6, var8, var9, var10, var11);
-      if (var13) {
+      boolean var12 = super.teleportTo(var1, var2, var4, var6, var8, var9, var10, var11);
+      if (var12) {
          this.setYHeadRot(var8.contains(Relative.Y_ROT) ? this.getYHeadRot() + var9 : var9);
       }
 
-      return var13;
+      return var12;
    }
 
    public void moveTo(double var1, double var3, double var5) {
@@ -1793,7 +1791,7 @@ public class ServerPlayer extends Player {
       this.connection.send(new ClientboundServerDataPacket(var1.description(), var1.favicon().map(ServerStatus.Favicon::iconBytes)));
    }
 
-   protected int getPermissionLevel() {
+   public int getPermissionLevel() {
       return this.server.getProfilePermissions(this.getGameProfile());
    }
 

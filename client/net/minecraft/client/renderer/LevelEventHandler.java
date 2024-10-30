@@ -363,7 +363,7 @@ public class LevelEventHandler {
             ParticleUtils.spawnSmashAttackParticles(this.level, var2, var3);
             break;
          case 3000:
-            this.level.addParticle(ParticleTypes.EXPLOSION_EMITTER, true, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, 0.0, 0.0, 0.0);
+            this.level.addParticle(ParticleTypes.EXPLOSION_EMITTER, true, true, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, 0.0, 0.0, 0.0);
             this.level.playLocalSound(var2, SoundEvents.END_GATEWAY_SPAWN, SoundSource.BLOCKS, 10.0F, (1.0F + (this.level.random.nextFloat() - this.level.random.nextFloat()) * 0.2F) * 0.7F, false);
             break;
          case 3001:
@@ -445,7 +445,7 @@ public class LevelEventHandler {
             }
          case 3007:
             for(int var32 = 0; var32 < 10; ++var32) {
-               this.level.addParticle(new ShriekParticleOption(var32 * 5), false, (double)var2.getX() + 0.5, (double)var2.getY() + SculkShriekerBlock.TOP_Y, (double)var2.getZ() + 0.5, 0.0, 0.0, 0.0);
+               this.level.addParticle(new ShriekParticleOption(var32 * 5), (double)var2.getX() + 0.5, (double)var2.getY() + SculkShriekerBlock.TOP_Y, (double)var2.getZ() + 0.5, 0.0, 0.0, 0.0);
             }
 
             BlockState var36 = this.level.getBlockState(var2);

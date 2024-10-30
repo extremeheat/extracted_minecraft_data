@@ -68,10 +68,6 @@ public class SpawnerBlockEntity extends BlockEntity implements Spawner {
       return this.spawner.onEventTriggered(this.level, var1) ? true : super.triggerEvent(var1, var2);
    }
 
-   public boolean onlyOpCanSetNbt() {
-      return true;
-   }
-
    public void setEntityId(EntityType<?> var1, RandomSource var2) {
       this.spawner.setEntityId(var1, this.level, var2, this.worldPosition);
       this.setChanged();

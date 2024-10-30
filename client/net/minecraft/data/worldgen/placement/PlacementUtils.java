@@ -27,6 +27,7 @@ import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 
 public class PlacementUtils {
    public static final PlacementModifier HEIGHTMAP;
+   public static final PlacementModifier HEIGHTMAP_NO_LEAVES;
    public static final PlacementModifier HEIGHTMAP_TOP_SOLID;
    public static final PlacementModifier HEIGHTMAP_WORLD_SURFACE;
    public static final PlacementModifier HEIGHTMAP_OCEAN_FLOOR;
@@ -100,6 +101,7 @@ public class PlacementUtils {
 
    static {
       HEIGHTMAP = HeightmapPlacement.onHeightmap(Heightmap.Types.MOTION_BLOCKING);
+      HEIGHTMAP_NO_LEAVES = HeightmapPlacement.onHeightmap(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES);
       HEIGHTMAP_TOP_SOLID = HeightmapPlacement.onHeightmap(Heightmap.Types.OCEAN_FLOOR_WG);
       HEIGHTMAP_WORLD_SURFACE = HeightmapPlacement.onHeightmap(Heightmap.Types.WORLD_SURFACE_WG);
       HEIGHTMAP_OCEAN_FLOOR = HeightmapPlacement.onHeightmap(Heightmap.Types.OCEAN_FLOOR);

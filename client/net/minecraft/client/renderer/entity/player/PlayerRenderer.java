@@ -200,7 +200,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       double var7 = var3.horizontalDistanceSqr();
       if (var5 > 0.0 && var7 > 0.0) {
          var1.shouldApplyFlyingYRot = true;
-         double var9 = (var4.x * var3.x + var4.z * var3.z) / Math.sqrt(var5 * var7);
+         double var9 = Math.min(1.0, (var4.x * var3.x + var4.z * var3.z) / Math.sqrt(var5 * var7));
          double var11 = var4.x * var3.z - var4.z * var3.x;
          var1.flyingYRot = (float)(Math.signum(var11) * Math.acos(var9));
       } else {

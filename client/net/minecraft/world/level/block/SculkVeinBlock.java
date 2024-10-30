@@ -27,7 +27,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
-public class SculkVeinBlock extends MultifaceBlock implements SculkBehaviour, SimpleWaterloggedBlock {
+public class SculkVeinBlock extends MultifaceSpreadeableBlock implements SculkBehaviour, SimpleWaterloggedBlock {
    public static final MapCodec<SculkVeinBlock> CODEC = simpleCodec(SculkVeinBlock::new);
    private static final BooleanProperty WATERLOGGED;
    private final MultifaceSpreader veinSpreader;
@@ -59,8 +59,7 @@ public class SculkVeinBlock extends MultifaceBlock implements SculkBehaviour, Si
 
       while(var6.hasNext()) {
          Direction var7 = (Direction)var6.next();
-         BlockPos var8 = var1.relative(var7);
-         if (canAttachTo(var0, var7, var8, var0.getBlockState(var8))) {
+         if (canAttachTo(var0, var1, var7)) {
             var5 = (BlockState)var5.setValue(getFaceProperty(var7), true);
             var4 = true;
          }

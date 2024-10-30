@@ -123,7 +123,7 @@ public class PlaceCommand {
       ServerLevel var3 = var0.getLevel();
       Structure var4 = (Structure)var1.value();
       ChunkGenerator var5 = var3.getChunkSource().getGenerator();
-      StructureStart var6 = var4.generate(var0.registryAccess(), var5, var5.getBiomeSource(), var3.getChunkSource().randomState(), var3.getStructureManager(), var3.getSeed(), new ChunkPos(var2), 0, var3, (var0x) -> {
+      StructureStart var6 = var4.generate(var1, var3.dimension(), var0.registryAccess(), var5, var5.getBiomeSource(), var3.getChunkSource().randomState(), var3.getStructureManager(), var3.getSeed(), new ChunkPos(var2), 0, var3, (var0x) -> {
          return true;
       });
       if (!var6.isValid()) {

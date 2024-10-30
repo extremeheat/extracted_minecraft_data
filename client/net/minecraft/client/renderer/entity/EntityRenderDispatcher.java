@@ -160,7 +160,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
             float var21 = var12.getShadowRadius(var13);
             if (var21 > 0.0F) {
                double var22 = var13.distanceToCameraSq;
-               float var24 = (float)((1.0 - var22 / 256.0) * (double)var12.shadowStrength);
+               float var24 = (float)((1.0 - var22 / 256.0) * (double)var12.getShadowStrength(var13));
                if (var24 > 0.0F) {
                   renderShadow(var9, var10, var13, var24, var8, this.level, Math.min(var21, 32.0F));
                }

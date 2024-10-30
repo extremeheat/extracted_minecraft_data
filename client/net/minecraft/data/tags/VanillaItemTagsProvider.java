@@ -32,6 +32,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.copy(BlockTags.BAMBOO_BLOCKS, ItemTags.BAMBOO_BLOCKS);
       this.copy(BlockTags.OAK_LOGS, ItemTags.OAK_LOGS);
       this.copy(BlockTags.DARK_OAK_LOGS, ItemTags.DARK_OAK_LOGS);
+      this.copy(BlockTags.PALE_OAK_LOGS, ItemTags.PALE_OAK_LOGS);
       this.copy(BlockTags.BIRCH_LOGS, ItemTags.BIRCH_LOGS);
       this.copy(BlockTags.ACACIA_LOGS, ItemTags.ACACIA_LOGS);
       this.copy(BlockTags.SPRUCE_LOGS, ItemTags.SPRUCE_LOGS);
@@ -74,9 +75,9 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.copy(BlockTags.COMPLETES_FIND_TREE_TUTORIAL, ItemTags.COMPLETES_FIND_TREE_TUTORIAL);
       this.copy(BlockTags.SHULKER_BOXES, ItemTags.SHULKER_BOXES);
       this.tag(ItemTags.BANNERS).add((Object[])(Items.WHITE_BANNER, Items.ORANGE_BANNER, Items.MAGENTA_BANNER, Items.LIGHT_BLUE_BANNER, Items.YELLOW_BANNER, Items.LIME_BANNER, Items.PINK_BANNER, Items.GRAY_BANNER, Items.LIGHT_GRAY_BANNER, Items.CYAN_BANNER, Items.PURPLE_BANNER, Items.BLUE_BANNER, Items.BROWN_BANNER, Items.GREEN_BANNER, Items.RED_BANNER, Items.BLACK_BANNER));
-      this.tag(ItemTags.BOATS).add((Object[])(Items.OAK_BOAT, Items.SPRUCE_BOAT, Items.BIRCH_BOAT, Items.JUNGLE_BOAT, Items.ACACIA_BOAT, Items.DARK_OAK_BOAT, Items.MANGROVE_BOAT, Items.BAMBOO_RAFT, Items.CHERRY_BOAT)).addTag(ItemTags.CHEST_BOATS);
+      this.tag(ItemTags.BOATS).add((Object[])(Items.OAK_BOAT, Items.SPRUCE_BOAT, Items.BIRCH_BOAT, Items.JUNGLE_BOAT, Items.ACACIA_BOAT, Items.DARK_OAK_BOAT, Items.PALE_OAK_BOAT, Items.MANGROVE_BOAT, Items.BAMBOO_RAFT, Items.CHERRY_BOAT)).addTag(ItemTags.CHEST_BOATS);
       this.tag(ItemTags.BUNDLES).add((Object[])(Items.BUNDLE, Items.BLACK_BUNDLE, Items.BLUE_BUNDLE, Items.BROWN_BUNDLE, Items.CYAN_BUNDLE, Items.GRAY_BUNDLE, Items.GREEN_BUNDLE, Items.LIGHT_BLUE_BUNDLE, Items.LIGHT_GRAY_BUNDLE, Items.LIME_BUNDLE, Items.MAGENTA_BUNDLE, Items.ORANGE_BUNDLE, Items.PINK_BUNDLE, Items.PURPLE_BUNDLE, Items.RED_BUNDLE, Items.YELLOW_BUNDLE, Items.WHITE_BUNDLE));
-      this.tag(ItemTags.CHEST_BOATS).add((Object[])(Items.OAK_CHEST_BOAT, Items.SPRUCE_CHEST_BOAT, Items.BIRCH_CHEST_BOAT, Items.JUNGLE_CHEST_BOAT, Items.ACACIA_CHEST_BOAT, Items.DARK_OAK_CHEST_BOAT, Items.MANGROVE_CHEST_BOAT, Items.BAMBOO_CHEST_RAFT, Items.CHERRY_CHEST_BOAT));
+      this.tag(ItemTags.CHEST_BOATS).add((Object[])(Items.OAK_CHEST_BOAT, Items.SPRUCE_CHEST_BOAT, Items.BIRCH_CHEST_BOAT, Items.JUNGLE_CHEST_BOAT, Items.ACACIA_CHEST_BOAT, Items.DARK_OAK_CHEST_BOAT, Items.PALE_OAK_CHEST_BOAT, Items.MANGROVE_CHEST_BOAT, Items.BAMBOO_CHEST_RAFT, Items.CHERRY_CHEST_BOAT));
       this.tag(ItemTags.FISHES).add((Object[])(Items.COD, Items.COOKED_COD, Items.SALMON, Items.COOKED_SALMON, Items.PUFFERFISH, Items.TROPICAL_FISH));
       this.copy(BlockTags.STANDING_SIGNS, ItemTags.SIGNS);
       this.copy(BlockTags.CEILING_HANGING_SIGNS, ItemTags.HANGING_SIGNS);
@@ -128,7 +129,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.HEAD_ARMOR).add((Object[])(Items.LEATHER_HELMET, Items.CHAINMAIL_HELMET, Items.GOLDEN_HELMET, Items.IRON_HELMET, Items.DIAMOND_HELMET, Items.NETHERITE_HELMET, Items.TURTLE_HELMET));
       this.tag(ItemTags.SKULLS).add((Object[])(Items.PLAYER_HEAD, Items.CREEPER_HEAD, Items.ZOMBIE_HEAD, Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, Items.DRAGON_HEAD, Items.PIGLIN_HEAD));
       this.tag(ItemTags.TRIMMABLE_ARMOR).addTag(ItemTags.FOOT_ARMOR).addTag(ItemTags.LEG_ARMOR).addTag(ItemTags.CHEST_ARMOR).addTag(ItemTags.HEAD_ARMOR);
-      this.tag(ItemTags.TRIM_MATERIALS).add((Object)Items.IRON_INGOT).add((Object)Items.COPPER_INGOT).add((Object)Items.GOLD_INGOT).add((Object)Items.LAPIS_LAZULI).add((Object)Items.EMERALD).add((Object)Items.DIAMOND).add((Object)Items.NETHERITE_INGOT).add((Object)Items.REDSTONE).add((Object)Items.QUARTZ).add((Object)Items.AMETHYST_SHARD);
+      this.tag(ItemTags.TRIM_MATERIALS).add((Object)Items.IRON_INGOT).add((Object)Items.COPPER_INGOT).add((Object)Items.GOLD_INGOT).add((Object)Items.LAPIS_LAZULI).add((Object)Items.EMERALD).add((Object)Items.DIAMOND).add((Object)Items.NETHERITE_INGOT).add((Object)Items.REDSTONE).add((Object)Items.QUARTZ).add((Object)Items.AMETHYST_SHARD).add((Object)Items.RESIN_CLUMP);
       this.tag(ItemTags.TRIM_TEMPLATES).add((Object)Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.EYE_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.RIB_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.VEX_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE).add((Object)Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE);
       this.tag(ItemTags.BOOKSHELF_BOOKS).add((Object[])(Items.BOOK, Items.WRITTEN_BOOK, Items.ENCHANTED_BOOK, Items.WRITABLE_BOOK, Items.KNOWLEDGE_BOOK));
       this.tag(ItemTags.NOTE_BLOCK_TOP_INSTRUMENTS).add((Object[])(Items.ZOMBIE_HEAD, Items.SKELETON_SKULL, Items.CREEPER_HEAD, Items.DRAGON_HEAD, Items.WITHER_SKELETON_SKULL, Items.PIGLIN_HEAD, Items.PLAYER_HEAD));

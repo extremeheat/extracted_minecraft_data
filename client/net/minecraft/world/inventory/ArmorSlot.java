@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import com.mojang.datafixers.util.Pair;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
@@ -42,7 +41,8 @@ class ArmorSlot extends Slot {
       return !var2.isEmpty() && !var1.isCreative() && EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) ? false : super.mayPickup(var1);
    }
 
-   public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-      return this.emptyIcon != null ? Pair.of(InventoryMenu.BLOCK_ATLAS, this.emptyIcon) : super.getNoItemIcon();
+   @Nullable
+   public ResourceLocation getNoItemIcon() {
+      return this.emptyIcon;
    }
 }

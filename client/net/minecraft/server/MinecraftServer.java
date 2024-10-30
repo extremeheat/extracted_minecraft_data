@@ -364,7 +364,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.forceDifficulty();
       this.prepareLevels(var3);
       if (var2 != null) {
-         var2.finish();
+         var2.finish(true);
       }
 
       if (var1) {

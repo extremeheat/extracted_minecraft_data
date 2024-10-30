@@ -31,7 +31,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public abstract class MultifaceBlock extends Block {
+public class MultifaceBlock extends Block {
+   public static final MapCodec<MultifaceBlock> CODEC = simpleCodec(MultifaceBlock::new);
    private static final float AABB_OFFSET = 1.0F;
    private static final VoxelShape UP_AABB = Block.box(0.0, 15.0, 0.0, 16.0, 16.0, 16.0);
    private static final VoxelShape DOWN_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 1.0, 16.0);
@@ -47,6 +48,10 @@ public abstract class MultifaceBlock extends Block {
    private final boolean canMirrorX;
    private final boolean canMirrorZ;
 
+   protected MapCodec<? extends MultifaceBlock> codec() {
+      return CODEC;
+   }
+
    public MultifaceBlock(BlockBehaviour.Properties var1) {
       super(var1);
       this.registerDefaultState(getDefaultMultifaceState(this.stateDefinition));
@@ -55,8 +60,6 @@ public abstract class MultifaceBlock extends Block {
       this.canMirrorX = Direction.Plane.HORIZONTAL.stream().filter(Direction.Axis.X).filter(this::isFaceSupported).count() % 2L == 0L;
       this.canMirrorZ = Direction.Plane.HORIZONTAL.stream().filter(Direction.Axis.Z).filter(this::isFaceSupported).count() % 2L == 0L;
    }
-
-   protected abstract MapCodec<? extends MultifaceBlock> codec();
 
    public static Set<Direction> availableFaces(BlockState var0) {
       if (!(var0.getBlock() instanceof MultifaceBlock)) {
@@ -140,8 +143,7 @@ public abstract class MultifaceBlock extends Block {
       for(int var7 = 0; var7 < var6; ++var7) {
          Direction var8 = var5[var7];
          if (hasFace(var1, var8)) {
-            BlockPos var9 = var3.relative(var8);
-            if (!canAttachTo(var2, var8, var9, var2.getBlockState(var9))) {
+            if (!canAttachTo(var2, var3, var8)) {
                return false;
             }
 
@@ -233,6 +235,12 @@ public abstract class MultifaceBlock extends Block {
       return (Boolean)var0.getValueOrElse(var2, false);
    }
 
+   public static boolean canAttachTo(BlockGetter var0, BlockPos var1, Direction var2) {
+      BlockPos var3 = var1.relative(var2);
+      BlockState var4 = var0.getBlockState(var3);
+      return canAttachTo(var0, var2, var3, var4);
+   }
+
    public static boolean canAttachTo(BlockGetter var0, Direction var1, BlockPos var2, BlockState var3) {
       return Block.isFaceFull(var3.getBlockSupportShape(var0, var2), var1.getOpposite()) || Block.isFaceFull(var3.getCollisionShape(var0, var2), var1.getOpposite());
    }
@@ -303,8 +311,6 @@ public abstract class MultifaceBlock extends Block {
 
       return false;
    }
-
-   public abstract MultifaceSpreader getSpreader();
 
    static {
       PROPERTY_BY_DIRECTION = PipeBlock.PROPERTY_BY_DIRECTION;

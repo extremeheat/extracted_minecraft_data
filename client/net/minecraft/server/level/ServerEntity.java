@@ -187,7 +187,7 @@ public class ServerEntity {
                   var12 = true;
                }
 
-               if ((this.trackDelta || this.entity.hasImpulse || this.entity instanceof LivingEntity && ((LivingEntity)this.entity).isFallFlying()) && this.tickCount > 0) {
+               if (this.entity.hasImpulse || this.trackDelta || this.entity instanceof LivingEntity && ((LivingEntity)this.entity).isFallFlying()) {
                   Vec3 var20 = this.entity.getDeltaMovement();
                   double var21 = var20.distanceToSqr(this.lastSentMovement);
                   if (var21 > 1.0E-7 || var21 > 0.0 && var20.lengthSqr() == 0.0) {

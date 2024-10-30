@@ -46,7 +46,7 @@ public abstract class SpreadingSnowyDirtBlock extends SnowyDirtBlock {
             for(int var6 = 0; var6 < 4; ++var6) {
                BlockPos var7 = var3.offset(var4.nextInt(3) - 1, var4.nextInt(5) - 3, var4.nextInt(3) - 1);
                if (var2.getBlockState(var7).is(Blocks.DIRT) && canPropagate(var5, var2, var7)) {
-                  var2.setBlockAndUpdate(var7, (BlockState)var5.setValue(SNOWY, var2.getBlockState(var7.above()).is(Blocks.SNOW)));
+                  var2.setBlockAndUpdate(var7, (BlockState)var5.setValue(SNOWY, isSnowySetting(var2.getBlockState(var7.above()))));
                }
             }
          }

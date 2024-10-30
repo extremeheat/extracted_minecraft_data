@@ -186,10 +186,6 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
       return new CommandSourceStack(CommandSource.NULL, var5, Vec2.ZERO, var2, 2, var3, (Component)var4, var2.getServer(), var1);
    }
 
-   public boolean onlyOpCanSetNbt() {
-      return true;
-   }
-
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       if (var1.contains("Book", 10)) {

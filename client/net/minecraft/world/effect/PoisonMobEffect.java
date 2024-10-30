@@ -3,7 +3,9 @@ package net.minecraft.world.effect;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 
-class PoisonMobEffect extends MobEffect {
+public class PoisonMobEffect extends MobEffect {
+   public static final int DAMAGE_INTERVAL = 25;
+
    protected PoisonMobEffect(MobEffectCategory var1, int var2) {
       super(var1, var2);
    }

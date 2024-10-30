@@ -45,6 +45,7 @@ import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.util.random.WeightedRandomList;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.NoiseColumn;
@@ -468,57 +469,57 @@ public abstract class ChunkGenerator {
       return ((Biome)var1.value()).getMobSettings().getMobs(var3);
    }
 
-   public void createStructures(RegistryAccess var1, ChunkGeneratorStructureState var2, StructureManager var3, ChunkAccess var4, StructureTemplateManager var5) {
-      ChunkPos var6 = var4.getPos();
-      SectionPos var7 = SectionPos.bottomOf(var4);
-      RandomState var8 = var2.randomState();
-      var2.possibleStructureSets().forEach((var9) -> {
-         StructurePlacement var10 = ((StructureSet)var9.value()).placement();
-         List var11 = ((StructureSet)var9.value()).structures();
-         Iterator var12 = var11.iterator();
+   public void createStructures(RegistryAccess var1, ChunkGeneratorStructureState var2, StructureManager var3, ChunkAccess var4, StructureTemplateManager var5, ResourceKey<Level> var6) {
+      ChunkPos var7 = var4.getPos();
+      SectionPos var8 = SectionPos.bottomOf(var4);
+      RandomState var9 = var2.randomState();
+      var2.possibleStructureSets().forEach((var10) -> {
+         StructurePlacement var11 = ((StructureSet)var10.value()).placement();
+         List var12 = ((StructureSet)var10.value()).structures();
+         Iterator var13 = var12.iterator();
 
-         while(var12.hasNext()) {
-            StructureSet.StructureSelectionEntry var13 = (StructureSet.StructureSelectionEntry)var12.next();
-            StructureStart var14 = var3.getStartForStructure(var7, (Structure)var13.structure().value(), var4);
-            if (var14 != null && var14.isValid()) {
+         while(var13.hasNext()) {
+            StructureSet.StructureSelectionEntry var14 = (StructureSet.StructureSelectionEntry)var13.next();
+            StructureStart var15 = var3.getStartForStructure(var8, (Structure)var14.structure().value(), var4);
+            if (var15 != null && var15.isValid()) {
                return;
             }
          }
 
-         if (var10.isStructureChunk(var2, var6.x, var6.z)) {
-            if (var11.size() == 1) {
-               this.tryGenerateStructure((StructureSet.StructureSelectionEntry)var11.get(0), var3, var1, var8, var5, var2.getLevelSeed(), var4, var6, var7);
+         if (var11.isStructureChunk(var2, var7.x, var7.z)) {
+            if (var12.size() == 1) {
+               this.tryGenerateStructure((StructureSet.StructureSelectionEntry)var12.get(0), var3, var1, var9, var5, var2.getLevelSeed(), var4, var7, var8, var6);
             } else {
-               ArrayList var19 = new ArrayList(var11.size());
-               var19.addAll(var11);
-               WorldgenRandom var20 = new WorldgenRandom(new LegacyRandomSource(0L));
-               var20.setLargeFeatureSeed(var2.getLevelSeed(), var6.x, var6.z);
-               int var21 = 0;
+               ArrayList var20 = new ArrayList(var12.size());
+               var20.addAll(var12);
+               WorldgenRandom var21 = new WorldgenRandom(new LegacyRandomSource(0L));
+               var21.setLargeFeatureSeed(var2.getLevelSeed(), var7.x, var7.z);
+               int var22 = 0;
 
-               StructureSet.StructureSelectionEntry var16;
-               for(Iterator var15 = var19.iterator(); var15.hasNext(); var21 += var16.weight()) {
-                  var16 = (StructureSet.StructureSelectionEntry)var15.next();
+               StructureSet.StructureSelectionEntry var17;
+               for(Iterator var16 = var20.iterator(); var16.hasNext(); var22 += var17.weight()) {
+                  var17 = (StructureSet.StructureSelectionEntry)var16.next();
                }
 
-               while(!var19.isEmpty()) {
-                  int var22 = var20.nextInt(var21);
-                  int var23 = 0;
+               while(!var20.isEmpty()) {
+                  int var23 = var21.nextInt(var22);
+                  int var24 = 0;
 
-                  for(Iterator var17 = var19.iterator(); var17.hasNext(); ++var23) {
-                     StructureSet.StructureSelectionEntry var18 = (StructureSet.StructureSelectionEntry)var17.next();
-                     var22 -= var18.weight();
-                     if (var22 < 0) {
+                  for(Iterator var18 = var20.iterator(); var18.hasNext(); ++var24) {
+                     StructureSet.StructureSelectionEntry var19 = (StructureSet.StructureSelectionEntry)var18.next();
+                     var23 -= var19.weight();
+                     if (var23 < 0) {
                         break;
                      }
                   }
 
-                  StructureSet.StructureSelectionEntry var24 = (StructureSet.StructureSelectionEntry)var19.get(var23);
-                  if (this.tryGenerateStructure(var24, var3, var1, var8, var5, var2.getLevelSeed(), var4, var6, var7)) {
+                  StructureSet.StructureSelectionEntry var25 = (StructureSet.StructureSelectionEntry)var20.get(var24);
+                  if (this.tryGenerateStructure(var25, var3, var1, var9, var5, var2.getLevelSeed(), var4, var7, var8, var6)) {
                      return;
                   }
 
-                  var19.remove(var23);
-                  var21 -= var24.weight();
+                  var20.remove(var24);
+                  var22 -= var25.weight();
                }
 
             }
@@ -526,15 +527,15 @@ public abstract class ChunkGenerator {
       });
    }
 
-   private boolean tryGenerateStructure(StructureSet.StructureSelectionEntry var1, StructureManager var2, RegistryAccess var3, RandomState var4, StructureTemplateManager var5, long var6, ChunkAccess var8, ChunkPos var9, SectionPos var10) {
-      Structure var11 = (Structure)var1.structure().value();
-      int var12 = fetchReferences(var2, var8, var10, var11);
-      HolderSet var13 = var11.biomes();
-      Objects.requireNonNull(var13);
-      Predicate var14 = var13::contains;
-      StructureStart var15 = var11.generate(var3, this, this.biomeSource, var4, var5, var6, var9, var12, var8, var14);
-      if (var15.isValid()) {
-         var2.setStartForStructure(var10, var11, var15, var8);
+   private boolean tryGenerateStructure(StructureSet.StructureSelectionEntry var1, StructureManager var2, RegistryAccess var3, RandomState var4, StructureTemplateManager var5, long var6, ChunkAccess var8, ChunkPos var9, SectionPos var10, ResourceKey<Level> var11) {
+      Structure var12 = (Structure)var1.structure().value();
+      int var13 = fetchReferences(var2, var8, var10, var12);
+      HolderSet var14 = var12.biomes();
+      Objects.requireNonNull(var14);
+      Predicate var15 = var14::contains;
+      StructureStart var16 = var12.generate(var1.structure(), var11, var3, this, this.biomeSource, var4, var5, var6, var9, var13, var8, var15);
+      if (var16.isValid()) {
+         var2.setStartForStructure(var10, var12, var16, var8);
          return true;
       } else {
          return false;

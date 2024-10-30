@@ -92,9 +92,9 @@ public class FogRenderer {
          var23 = 0.25F + 0.75F * (float)var3 / 32.0F;
          var23 = 1.0F - (float)Math.pow((double)var23, 0.25);
          int var11 = var2.getSkyColor(var0.getPosition(), var1);
-         var25 = ARGB.from8BitChannel(ARGB.red(var11));
-         var27 = ARGB.from8BitChannel(ARGB.green(var11));
-         float var29 = ARGB.from8BitChannel(ARGB.blue(var11));
+         var25 = ARGB.redFloat(var11);
+         var27 = ARGB.greenFloat(var11);
+         float var29 = ARGB.blueFloat(var11);
          float var30 = Mth.clamp(Mth.cos(var2.getTimeOfDay(var1) * 6.2831855F) * 2.0F + 0.5F, 0.0F, 1.0F);
          BiomeManager var31 = var2.getBiomeManager();
          Vec3 var32 = var0.getPosition().subtract(2.0, 2.0, 2.0).scale(0.25);
@@ -114,10 +114,10 @@ public class FogRenderer {
 
             if (var21 > 0.0F && var2.effects().isSunriseOrSunset(var2.getTimeOfDay(var1))) {
                int var35 = var2.effects().getSunriseOrSunsetColor(var2.getTimeOfDay(var1));
-               var21 *= ARGB.from8BitChannel(ARGB.alpha(var35));
-               var7 = var7 * (1.0F - var21) + ARGB.from8BitChannel(ARGB.red(var35)) * var21;
-               var8 = var8 * (1.0F - var21) + ARGB.from8BitChannel(ARGB.green(var35)) * var21;
-               var9 = var9 * (1.0F - var21) + ARGB.from8BitChannel(ARGB.blue(var35)) * var21;
+               var21 *= ARGB.alphaFloat(var35);
+               var7 = var7 * (1.0F - var21) + ARGB.redFloat(var35) * var21;
+               var8 = var8 * (1.0F - var21) + ARGB.greenFloat(var35) * var21;
+               var9 = var9 * (1.0F - var21) + ARGB.blueFloat(var35) * var21;
             }
          }
 

@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -60,20 +61,24 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
       });
    }
 
-   public static record Pass(ResourceLocation program, List<Input> inputs, ResourceLocation outputTarget, List<Uniform> uniforms) {
+   public static record Pass(ResourceLocation programId, List<Input> inputs, ResourceLocation outputTarget, List<Uniform> uniforms) {
       private static final Codec<List<Input>> INPUTS_CODEC;
       public static final Codec<Pass> CODEC;
 
       public Pass(ResourceLocation var1, List<Input> var2, ResourceLocation var3, List<Uniform> var4) {
          super();
-         this.program = var1;
+         this.programId = var1;
          this.inputs = var2;
          this.outputTarget = var3;
          this.uniforms = var4;
       }
 
-      public ResourceLocation program() {
-         return this.program;
+      public ShaderProgram program() {
+         return new ShaderProgram(this.programId, DefaultVertexFormat.POSITION, ShaderDefines.EMPTY);
+      }
+
+      public ResourceLocation programId() {
+         return this.programId;
       }
 
       public List<Input> inputs() {
@@ -107,7 +112,7 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
             });
          });
          CODEC = RecordCodecBuilder.create((var0) -> {
-            return var0.group(ResourceLocation.CODEC.fieldOf("program").forGetter(Pass::program), INPUTS_CODEC.optionalFieldOf("inputs", List.of()).forGetter(Pass::inputs), ResourceLocation.CODEC.fieldOf("output").forGetter(Pass::outputTarget), PostChainConfig.Uniform.CODEC.listOf().optionalFieldOf("uniforms", List.of()).forGetter(Pass::uniforms)).apply(var0, Pass::new);
+            return var0.group(ResourceLocation.CODEC.fieldOf("program").forGetter(Pass::programId), INPUTS_CODEC.optionalFieldOf("inputs", List.of()).forGetter(Pass::inputs), ResourceLocation.CODEC.fieldOf("output").forGetter(Pass::outputTarget), PostChainConfig.Uniform.CODEC.listOf().optionalFieldOf("uniforms", List.of()).forGetter(Pass::uniforms)).apply(var0, Pass::new);
          });
       }
    }

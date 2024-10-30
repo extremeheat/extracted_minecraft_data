@@ -21,6 +21,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.level.GameType;
 
 public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacketListener> {
@@ -41,7 +42,7 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
    }
 
    public static ClientboundPlayerInfoUpdatePacket createPlayerInitializing(Collection<ServerPlayer> var0) {
-      EnumSet var1 = EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, ClientboundPlayerInfoUpdatePacket.Action.INITIALIZE_CHAT, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LISTED, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LATENCY, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LIST_ORDER);
+      EnumSet var1 = EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, ClientboundPlayerInfoUpdatePacket.Action.INITIALIZE_CHAT, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LISTED, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LATENCY, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_HAT, ClientboundPlayerInfoUpdatePacket.Action.UPDATE_LIST_ORDER);
       return new ClientboundPlayerInfoUpdatePacket(var1, var0);
    }
 
@@ -99,16 +100,17 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       return MoreObjects.toStringHelper(this).add("actions", this.actions).add("entries", this.entries).toString();
    }
 
-   public static record Entry(UUID profileId, @Nullable GameProfile profile, boolean listed, int latency, GameType gameMode, @Nullable Component displayName, int listOrder, @Nullable RemoteChatSession.Data chatSession) {
+   public static record Entry(UUID profileId, @Nullable GameProfile profile, boolean listed, int latency, GameType gameMode, @Nullable Component displayName, boolean showHat, int listOrder, @Nullable RemoteChatSession.Data chatSession) {
+      final boolean showHat;
       final int listOrder;
       @Nullable
       final RemoteChatSession.Data chatSession;
 
       Entry(ServerPlayer var1) {
-         this(var1.getUUID(), var1.getGameProfile(), true, var1.connection.latency(), var1.gameMode.getGameModeForPlayer(), var1.getTabListDisplayName(), var1.getTabListOrder(), (RemoteChatSession.Data)Optionull.map(var1.getChatSession(), RemoteChatSession::asData));
+         this(var1.getUUID(), var1.getGameProfile(), true, var1.connection.latency(), var1.gameMode.getGameModeForPlayer(), var1.getTabListDisplayName(), var1.isModelPartShown(PlayerModelPart.HAT), var1.getTabListOrder(), (RemoteChatSession.Data)Optionull.map(var1.getChatSession(), RemoteChatSession::asData));
       }
 
-      public Entry(UUID var1, @Nullable GameProfile var2, boolean var3, int var4, GameType var5, @Nullable Component var6, int var7, @Nullable RemoteChatSession.Data var8) {
+      public Entry(UUID var1, @Nullable GameProfile var2, boolean var3, int var4, GameType var5, @Nullable Component var6, boolean var7, int var8, @Nullable RemoteChatSession.Data var9) {
          super();
          this.profileId = var1;
          this.profile = var2;
@@ -116,8 +118,9 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
          this.latency = var4;
          this.gameMode = var5;
          this.displayName = var6;
-         this.listOrder = var7;
-         this.chatSession = var8;
+         this.showHat = var7;
+         this.listOrder = var8;
+         this.chatSession = var9;
       }
 
       public UUID profileId() {
@@ -144,6 +147,10 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       @Nullable
       public Component displayName() {
          return this.displayName;
+      }
+
+      public boolean showHat() {
+         return this.showHat;
       }
 
       public int listOrder() {
@@ -195,6 +202,11 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
          var0.listOrder = var1.readVarInt();
       }, (var0, var1) -> {
          var0.writeVarInt(var1.listOrder);
+      }),
+      UPDATE_HAT((var0, var1) -> {
+         var0.showHat = var1.readBoolean();
+      }, (var0, var1) -> {
+         var0.writeBoolean(var1.showHat);
       });
 
       final Reader reader;
@@ -207,7 +219,7 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
 
       // $FF: synthetic method
       private static Action[] $values() {
-         return new Action[]{ADD_PLAYER, INITIALIZE_CHAT, UPDATE_GAME_MODE, UPDATE_LISTED, UPDATE_LATENCY, UPDATE_DISPLAY_NAME, UPDATE_LIST_ORDER};
+         return new Action[]{ADD_PLAYER, INITIALIZE_CHAT, UPDATE_GAME_MODE, UPDATE_LISTED, UPDATE_LATENCY, UPDATE_DISPLAY_NAME, UPDATE_LIST_ORDER, UPDATE_HAT};
       }
 
       public interface Reader {
@@ -228,6 +240,7 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       GameType gameMode;
       @Nullable
       Component displayName;
+      boolean showHat;
       int listOrder;
       @Nullable
       RemoteChatSession.Data chatSession;
@@ -239,7 +252,7 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       }
 
       Entry build() {
-         return new Entry(this.profileId, this.profile, this.listed, this.latency, this.gameMode, this.displayName, this.listOrder, this.chatSession);
+         return new Entry(this.profileId, this.profile, this.listed, this.latency, this.gameMode, this.displayName, this.showHat, this.listOrder, this.chatSession);
       }
    }
 }

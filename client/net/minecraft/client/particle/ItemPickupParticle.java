@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -14,7 +13,6 @@ import net.minecraft.world.phys.Vec3;
 
 public class ItemPickupParticle extends Particle {
    private static final int LIFE_TIME = 3;
-   private final RenderBuffers renderBuffers;
    private final Entity itemEntity;
    private final Entity target;
    private int life;
@@ -26,15 +24,14 @@ public class ItemPickupParticle extends Particle {
    private double targetYOld;
    private double targetZOld;
 
-   public ItemPickupParticle(EntityRenderDispatcher var1, RenderBuffers var2, ClientLevel var3, Entity var4, Entity var5) {
-      this(var1, var2, var3, var4, var5, var4.getDeltaMovement());
+   public ItemPickupParticle(EntityRenderDispatcher var1, ClientLevel var2, Entity var3, Entity var4) {
+      this(var1, var2, var3, var4, var3.getDeltaMovement());
    }
 
-   private ItemPickupParticle(EntityRenderDispatcher var1, RenderBuffers var2, ClientLevel var3, Entity var4, Entity var5, Vec3 var6) {
-      super(var3, var4.getX(), var4.getY(), var4.getZ(), var6.x, var6.y, var6.z);
-      this.renderBuffers = var2;
-      this.itemEntity = this.getSafeCopy(var4);
-      this.target = var5;
+   private ItemPickupParticle(EntityRenderDispatcher var1, ClientLevel var2, Entity var3, Entity var4, Vec3 var5) {
+      super(var2, var3.getX(), var3.getY(), var3.getZ(), var5.x, var5.y, var5.z);
+      this.itemEntity = this.getSafeCopy(var3);
+      this.target = var4;
       this.entityRenderDispatcher = var1;
       this.updatePosition();
       this.saveOldPosition();
@@ -48,19 +45,20 @@ public class ItemPickupParticle extends Particle {
       return ParticleRenderType.CUSTOM;
    }
 
+   public void renderCustom(PoseStack var1, MultiBufferSource var2, Camera var3, float var4) {
+      float var5 = ((float)this.life + var4) / 3.0F;
+      var5 *= var5;
+      double var6 = Mth.lerp((double)var4, this.targetXOld, this.targetX);
+      double var8 = Mth.lerp((double)var4, this.targetYOld, this.targetY);
+      double var10 = Mth.lerp((double)var4, this.targetZOld, this.targetZ);
+      double var12 = Mth.lerp((double)var5, this.itemEntity.getX(), var6);
+      double var14 = Mth.lerp((double)var5, this.itemEntity.getY(), var8);
+      double var16 = Mth.lerp((double)var5, this.itemEntity.getZ(), var10);
+      Vec3 var18 = var3.getPosition();
+      this.entityRenderDispatcher.render(this.itemEntity, var12 - var18.x(), var14 - var18.y(), var16 - var18.z(), var4, new PoseStack(), var2, this.entityRenderDispatcher.getPackedLightCoords(this.itemEntity, var4));
+   }
+
    public void render(VertexConsumer var1, Camera var2, float var3) {
-      float var4 = ((float)this.life + var3) / 3.0F;
-      var4 *= var4;
-      double var5 = Mth.lerp((double)var3, this.targetXOld, this.targetX);
-      double var7 = Mth.lerp((double)var3, this.targetYOld, this.targetY);
-      double var9 = Mth.lerp((double)var3, this.targetZOld, this.targetZ);
-      double var11 = Mth.lerp((double)var4, this.itemEntity.getX(), var5);
-      double var13 = Mth.lerp((double)var4, this.itemEntity.getY(), var7);
-      double var15 = Mth.lerp((double)var4, this.itemEntity.getZ(), var9);
-      MultiBufferSource.BufferSource var17 = this.renderBuffers.bufferSource();
-      Vec3 var18 = var2.getPosition();
-      this.entityRenderDispatcher.render(this.itemEntity, var11 - var18.x(), var13 - var18.y(), var15 - var18.z(), var3, new PoseStack(), var17, this.entityRenderDispatcher.getPackedLightCoords(this.itemEntity, var3));
-      var17.endBatch();
    }
 
    public void tick() {

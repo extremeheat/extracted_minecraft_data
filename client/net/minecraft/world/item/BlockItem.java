@@ -3,12 +3,17 @@ package net.minecraft.world.item;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -32,6 +37,9 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 public class BlockItem extends Item {
+   private static final Component OP_NBT_WARNING_LINE_1;
+   private static final Component OP_NBT_WARNING_LINE_2;
+   private static final Component OP_NBT_WARNING_LINE_3;
    /** @deprecated */
    @Deprecated
    private final Block block;
@@ -144,16 +152,25 @@ public class BlockItem extends Item {
    }
 
    public static boolean updateCustomBlockEntityTag(Level var0, @Nullable Player var1, BlockPos var2, ItemStack var3) {
-      MinecraftServer var4 = var0.getServer();
-      if (var4 == null) {
+      if (var0.isClientSide) {
          return false;
       } else {
-         CustomData var5 = (CustomData)var3.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
-         if (!var5.isEmpty()) {
+         CustomData var4 = (CustomData)var3.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+         if (!var4.isEmpty()) {
+            BlockEntityType var5 = getBlockEntityType(var0.registryAccess(), var4);
+            if (var5 == null) {
+               return false;
+            }
+
             BlockEntity var6 = var0.getBlockEntity(var2);
             if (var6 != null) {
-               if (var0.isClientSide || !var6.onlyOpCanSetNbt() || var1 != null && var1.canUseGameMasterBlocks()) {
-                  return var5.loadInto(var6, var0.registryAccess());
+               BlockEntityType var7 = var6.getType();
+               if (var7 != var5) {
+                  return false;
+               }
+
+               if (!var7.onlyOpCanSetNbt() || var1 != null && var1.canUseGameMasterBlocks()) {
+                  return var4.loadInto(var6, var0.registryAccess());
                }
 
                return false;
@@ -164,9 +181,27 @@ public class BlockItem extends Item {
       }
    }
 
+   @Nullable
+   private static BlockEntityType<?> getBlockEntityType(HolderLookup.Provider var0, CustomData var1) {
+      ResourceLocation var2 = var1.parseEntityId();
+      return var2 == null ? null : (BlockEntityType)var0.lookup(Registries.BLOCK_ENTITY_TYPE).flatMap((var1x) -> {
+         return var1x.get(ResourceKey.create(Registries.BLOCK_ENTITY_TYPE, var2));
+      }).map(Holder::value).orElse((Object)null);
+   }
+
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
       this.getBlock().appendHoverText(var1, var2, var3, var4);
+      CustomData var5 = (CustomData)var1.get(DataComponents.BLOCK_ENTITY_DATA);
+      if (var5 != null && var2.permissionLevel() >= 2) {
+         BlockEntityType var6 = getBlockEntityType(var2.registries(), var5);
+         if (var6 != null && var6.onlyOpCanSetNbt()) {
+            var3.add(OP_NBT_WARNING_LINE_1);
+            var3.add(OP_NBT_WARNING_LINE_2);
+            var3.add(OP_NBT_WARNING_LINE_3);
+         }
+      }
+
    }
 
    public Block getBlock() {
@@ -202,5 +237,11 @@ public class BlockItem extends Item {
 
    public FeatureFlagSet requiredFeatures() {
       return this.getBlock().requiredFeatures();
+   }
+
+   static {
+      OP_NBT_WARNING_LINE_1 = Component.translatable("item.op_block_warning.line1").withStyle(ChatFormatting.RED, ChatFormatting.BOLD);
+      OP_NBT_WARNING_LINE_2 = Component.translatable("item.op_block_warning.line2").withStyle(ChatFormatting.RED);
+      OP_NBT_WARNING_LINE_3 = Component.translatable("item.op_block_warning.line3").withStyle(ChatFormatting.RED);
    }
 }

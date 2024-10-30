@@ -97,7 +97,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
             if ((var7 < var8 + 1 || this.minecraft.player.experienceLevel < var11) && !this.minecraft.player.getAbilities().instabuild) {
                var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ENCHANTMENT_SLOT_DISABLED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
                var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DISABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
-               var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, (var15 & 16711422) >> 1);
+               var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, (var15 & 16711422) >> 1, false);
                var15 = 4226832;
             } else {
                int var16 = var3 - (var5 + 60);
@@ -110,7 +110,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
                }
 
                var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ENABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
-               var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, var15);
+               var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, var15, false);
                var15 = 8453920;
             }
 

@@ -1,11 +1,13 @@
 package net.minecraft.client.particle;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleGroup;
 import net.minecraft.util.Mth;
@@ -143,6 +145,9 @@ public abstract class Particle {
    }
 
    public abstract void render(VertexConsumer var1, Camera var2, float var3);
+
+   public void renderCustom(PoseStack var1, MultiBufferSource var2, Camera var3, float var4) {
+   }
 
    public abstract ParticleRenderType getRenderType();
 

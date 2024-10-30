@@ -392,6 +392,7 @@ public class SoundEvents {
    public static final SoundEvent CREAKING_UNFREEZE = register("entity.creaking.unfreeze");
    public static final SoundEvent CREAKING_SPAWN = register("entity.creaking.spawn");
    public static final SoundEvent CREAKING_SWAY = register("entity.creaking.sway");
+   public static final SoundEvent CREAKING_TWITCH = register("entity.creaking.twitch");
    public static final SoundEvent CREAKING_HEART_BREAK = register("block.creaking_heart.break");
    public static final SoundEvent CREAKING_HEART_FALL = register("block.creaking_heart.fall");
    public static final SoundEvent CREAKING_HEART_HIT = register("block.creaking_heart.hit");
@@ -530,6 +531,11 @@ public class SoundEvents {
    public static final SoundEvent EVOKER_PREPARE_WOLOLO = register("entity.evoker.prepare_wololo");
    public static final SoundEvent EXPERIENCE_BOTTLE_THROW = register("entity.experience_bottle.throw");
    public static final SoundEvent EXPERIENCE_ORB_PICKUP = register("entity.experience_orb.pickup");
+   public static final SoundEvent EYEBLOSSOM_OPEN_LONG = register("block.eyeblossom.open_long");
+   public static final SoundEvent EYEBLOSSOM_OPEN = register("block.eyeblossom.open");
+   public static final SoundEvent EYEBLOSSOM_CLOSE_LONG = register("block.eyeblossom.close_long");
+   public static final SoundEvent EYEBLOSSOM_CLOSE = register("block.eyeblossom.close");
+   public static final SoundEvent EYEBLOSSOM_IDLE = register("block.eyeblossom.idle");
    public static final SoundEvent FENCE_GATE_CLOSE = register("block.fence_gate.close");
    public static final SoundEvent FENCE_GATE_OPEN = register("block.fence_gate.open");
    public static final SoundEvent FIRECHARGE_USE = register("item.firecharge.use");
@@ -1324,6 +1330,16 @@ public class SoundEvents {
    public static final SoundEvent SPAWNER_HIT = register("block.spawner.hit");
    public static final SoundEvent SPAWNER_PLACE = register("block.spawner.place");
    public static final SoundEvent SPAWNER_STEP = register("block.spawner.step");
+   public static final SoundEvent RESIN_BREAK = register("block.resin.break");
+   public static final SoundEvent RESIN_FALL = register("block.resin.fall");
+   public static final SoundEvent RESIN_HIT = register("block.resin.hit");
+   public static final SoundEvent RESIN_PLACE = register("block.resin.place");
+   public static final SoundEvent RESIN_STEP = register("block.resin.step");
+   public static final SoundEvent RESIN_BRICKS_BREAK = register("block.resin_bricks.break");
+   public static final SoundEvent RESIN_BRICKS_FALL = register("block.resin_bricks.fall");
+   public static final SoundEvent RESIN_BRICKS_HIT = register("block.resin_bricks.hit");
+   public static final SoundEvent RESIN_BRICKS_PLACE = register("block.resin_bricks.place");
+   public static final SoundEvent RESIN_BRICKS_STEP = register("block.resin_bricks.step");
    public static final SoundEvent SPORE_BLOSSOM_BREAK = register("block.spore_blossom.break");
    public static final SoundEvent SPORE_BLOSSOM_FALL = register("block.spore_blossom.fall");
    public static final SoundEvent SPORE_BLOSSOM_HIT = register("block.spore_blossom.hit");

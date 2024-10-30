@@ -65,6 +65,7 @@ public class BlockEntityType<T extends BlockEntity> {
    public static final BlockEntityType<CrafterBlockEntity> CRAFTER;
    public static final BlockEntityType<TrialSpawnerBlockEntity> TRIAL_SPAWNER;
    public static final BlockEntityType<VaultBlockEntity> VAULT;
+   private static final Set<BlockEntityType<?>> OP_ONLY_CUSTOM_DATA;
    private final BlockEntitySupplier<? extends T> factory;
    private final Set<Block> validBlocks;
    private final Holder.Reference<BlockEntityType<?>> builtInRegistryHolder;
@@ -109,6 +110,10 @@ public class BlockEntityType<T extends BlockEntity> {
    public T getBlockEntity(BlockGetter var1, BlockPos var2) {
       BlockEntity var3 = var1.getBlockEntity(var2);
       return var3 != null && var3.getType() == this ? var3 : null;
+   }
+
+   public boolean onlyOpCanSetNbt() {
+      return OP_ONLY_CUSTOM_DATA.contains(this);
    }
 
    static {
@@ -157,6 +162,7 @@ public class BlockEntityType<T extends BlockEntity> {
       CRAFTER = register("crafter", CrafterBlockEntity::new, Blocks.CRAFTER);
       TRIAL_SPAWNER = register("trial_spawner", TrialSpawnerBlockEntity::new, Blocks.TRIAL_SPAWNER);
       VAULT = register("vault", VaultBlockEntity::new, Blocks.VAULT);
+      OP_ONLY_CUSTOM_DATA = Set.of(COMMAND_BLOCK, LECTERN, SIGN, HANGING_SIGN, MOB_SPAWNER, TRIAL_SPAWNER);
    }
 
    @FunctionalInterface

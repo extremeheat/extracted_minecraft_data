@@ -20,17 +20,16 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.inventory.InventoryMenu;
 import org.slf4j.Logger;
 
 public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable {
    private static final Logger LOGGER = LogUtils.getLogger();
    /** @deprecated */
    @Deprecated
-   public static final ResourceLocation LOCATION_BLOCKS;
+   public static final ResourceLocation LOCATION_BLOCKS = ResourceLocation.withDefaultNamespace("textures/atlas/blocks.png");
    /** @deprecated */
    @Deprecated
-   public static final ResourceLocation LOCATION_PARTICLES;
+   public static final ResourceLocation LOCATION_PARTICLES = ResourceLocation.withDefaultNamespace("textures/atlas/particles.png");
    private List<SpriteContents> sprites = List.of();
    private List<TextureAtlasSprite.Ticker> animatedTextures = List.of();
    private Map<ResourceLocation, TextureAtlasSprite> texturesByName = Map.of();
@@ -185,10 +184,5 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
 
    public void updateFilter(SpriteLoader.Preparations var1) {
       this.setFilter(false, var1.mipLevel() > 0);
-   }
-
-   static {
-      LOCATION_BLOCKS = InventoryMenu.BLOCK_ATLAS;
-      LOCATION_PARTICLES = ResourceLocation.withDefaultNamespace("textures/atlas/particles.png");
    }
 }

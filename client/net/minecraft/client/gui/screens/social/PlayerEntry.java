@@ -148,11 +148,11 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
          Objects.requireNonNull(this.minecraft.font);
          Objects.requireNonNull(this.minecraft.font);
          var14 = var3 + (var6 - (9 + 9)) / 2;
-         var1.drawString(this.minecraft.font, var15, var13, var14 + 12, PLAYER_STATUS_COLOR, false);
+         var1.drawString(this.minecraft.font, var15, var13, var14 + 12, PLAYER_STATUS_COLOR);
       }
 
       PlayerFaceRenderer.draw(var1, (PlayerSkin)this.skinGetter.get(), var11, var12, 24);
-      var1.drawString(this.minecraft.font, this.playerName, var13, var14, PLAYERNAME_COLOR, false);
+      var1.drawString(this.minecraft.font, this.playerName, var13, var14, PLAYERNAME_COLOR);
       if (this.isRemoved) {
          var1.fill(var11, var12, var11 + 24, var12 + 24, SKIN_SHADE);
       }

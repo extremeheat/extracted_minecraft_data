@@ -294,12 +294,12 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
          int var11 = (this.minecraft.screen.width - this.minecraft.font.width((FormattedText)LOADING_LABEL)) / 2;
          Objects.requireNonNull(this.minecraft.font);
          int var12 = var3 + (var6 - 9) / 2;
-         var1.drawString(this.minecraft.font, LOADING_LABEL, var11, var12, 16777215, false);
+         var1.drawString(this.minecraft.font, (Component)LOADING_LABEL, var11, var12, -1);
          String var13 = LoadingDotsText.get(Util.getMillis());
          int var14 = (this.minecraft.screen.width - this.minecraft.font.width(var13)) / 2;
          Objects.requireNonNull(this.minecraft.font);
          int var15 = var12 + 9;
-         var1.drawString(this.minecraft.font, var13, var14, var15, -8355712, false);
+         var1.drawString(this.minecraft.font, var13, var14, var15, -8355712);
       }
 
       public Component getNarration() {
@@ -383,17 +383,17 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
          }
 
          Component var15 = this.summary.getInfo();
-         var1.drawString(this.minecraft.font, var11, var4 + 32 + 3, var3 + 1, 16777215, false);
+         var1.drawString(this.minecraft.font, (String)var11, var4 + 32 + 3, var3 + 1, -1);
          Font var10001 = this.minecraft.font;
          int var10003 = var4 + 32 + 3;
          Objects.requireNonNull(this.minecraft.font);
-         var1.drawString(var10001, var12, var10003, var3 + 9 + 3, -8355712, false);
+         var1.drawString(var10001, var12, var10003, var3 + 9 + 3, -8355712);
          var10001 = this.minecraft.font;
          var10003 = var4 + 32 + 3;
          Objects.requireNonNull(this.minecraft.font);
          int var10004 = var3 + 9;
          Objects.requireNonNull(this.minecraft.font);
-         var1.drawString(var10001, var15, var10003, var10004 + 9 + 3, -8355712, false);
+         var1.drawString(var10001, var15, var10003, var10004 + 9 + 3, -8355712);
          var1.blit(RenderType::guiTextured, this.icon.textureLocation(), var4, var3, 0.0F, 0.0F, 32, 32, 32, 32);
          if ((Boolean)this.minecraft.options.touchscreen().get() || var9) {
             var1.fill(var4, var3, var4 + 32, var3 + 32, -1601138544);

@@ -6,11 +6,14 @@ import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.DonkeyRenderState;
 import net.minecraft.client.renderer.entity.state.EquineRenderState;
 
 public class DonkeyModel extends AbstractEquineModel<DonkeyRenderState> {
+   public static final float DONKEY_SCALE = 0.87F;
+   public static final float MULE_SCALE = 0.92F;
    private final ModelPart leftChest;
    private final ModelPart rightChest;
 
@@ -20,16 +23,16 @@ public class DonkeyModel extends AbstractEquineModel<DonkeyRenderState> {
       this.rightChest = this.body.getChild("right_chest");
    }
 
-   public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = AbstractEquineModel.createBodyMesh(CubeDeformation.NONE);
-      modifyMesh(var0.getRoot());
-      return LayerDefinition.create(var0, 64, 64);
+   public static LayerDefinition createBodyLayer(float var0) {
+      MeshDefinition var1 = AbstractEquineModel.createBodyMesh(CubeDeformation.NONE);
+      modifyMesh(var1.getRoot());
+      return LayerDefinition.create(var1, 64, 64).apply(MeshTransformer.scaling(var0));
    }
 
-   public static LayerDefinition createBabyLayer() {
-      MeshDefinition var0 = AbstractEquineModel.createFullScaleBabyMesh(CubeDeformation.NONE);
-      modifyMesh(var0.getRoot());
-      return LayerDefinition.create(AbstractEquineModel.BABY_TRANSFORMER.apply(var0), 64, 64);
+   public static LayerDefinition createBabyLayer(float var0) {
+      MeshDefinition var1 = AbstractEquineModel.createFullScaleBabyMesh(CubeDeformation.NONE);
+      modifyMesh(var1.getRoot());
+      return LayerDefinition.create(AbstractEquineModel.BABY_TRANSFORMER.apply(var1), 64, 64).apply(MeshTransformer.scaling(var0));
    }
 
    private static void modifyMesh(PartDefinition var0) {

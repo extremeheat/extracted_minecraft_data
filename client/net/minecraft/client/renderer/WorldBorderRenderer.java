@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
@@ -17,7 +16,7 @@ import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.phys.Vec3;
 
 public class WorldBorderRenderer {
-   private static final ResourceLocation FORCEFIELD_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/forcefield.png");
+   public static final ResourceLocation FORCEFIELD_LOCATION = ResourceLocation.withDefaultNamespace("textures/misc/forcefield.png");
 
    public WorldBorderRenderer() {
       super();
@@ -35,102 +34,90 @@ public class WorldBorderRenderer {
          double var17 = var2.x;
          double var19 = var2.z;
          float var21 = (float)var5;
-         RenderSystem.enableBlend();
-         RenderSystem.enableDepthTest();
-         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-         RenderSystem.setShaderTexture(0, FORCEFIELD_LOCATION);
-         RenderSystem.depthMask(Minecraft.useShaderTransparency());
-         int var22 = var1.getStatus().getColor();
-         float var23 = (float)ARGB.red(var22) / 255.0F;
-         float var24 = (float)ARGB.green(var22) / 255.0F;
-         float var25 = (float)ARGB.blue(var22) / 255.0F;
-         RenderSystem.setShaderColor(var23, var24, var25, (float)var15);
-         RenderSystem.setShader(CoreShaders.POSITION_TEX);
-         RenderSystem.polygonOffset(-3.0F, -3.0F);
-         RenderSystem.enablePolygonOffset();
-         RenderSystem.disableCull();
-         float var26 = (float)(Util.getMillis() % 3000L) / 3000.0F;
-         float var27 = (float)(-Mth.frac(var2.y * 0.5));
-         float var28 = var27 + var21;
-         BufferBuilder var29 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-         double var30 = Math.max((double)Mth.floor(var19 - var3), var11);
-         double var32 = Math.min((double)Mth.ceil(var19 + var3), var13);
-         float var34 = (float)(Mth.floor(var30) & 1) * 0.5F;
-         float var35;
-         double var36;
-         double var38;
-         float var40;
+         RenderType var22 = RenderType.worldBorder(Minecraft.useShaderTransparency());
+         var22.setupRenderState();
+         int var23 = var1.getStatus().getColor();
+         float var24 = (float)ARGB.red(var23) / 255.0F;
+         float var25 = (float)ARGB.green(var23) / 255.0F;
+         float var26 = (float)ARGB.blue(var23) / 255.0F;
+         RenderSystem.setShaderColor(var24, var25, var26, (float)var15);
+         float var27 = (float)(Util.getMillis() % 3000L) / 3000.0F;
+         float var28 = (float)(-Mth.frac(var2.y * 0.5));
+         float var29 = var28 + var21;
+         BufferBuilder var30 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+         double var31 = Math.max((double)Mth.floor(var19 - var3), var11);
+         double var33 = Math.min((double)Mth.ceil(var19 + var3), var13);
+         float var35 = (float)(Mth.floor(var31) & 1) * 0.5F;
+         float var36;
+         double var37;
+         double var39;
+         float var41;
          if (var17 > var9 - var3) {
-            var35 = var34;
+            var36 = var35;
 
-            for(var36 = var30; var36 < var32; var35 += 0.5F) {
-               var38 = Math.min(1.0, var32 - var36);
-               var40 = (float)var38 * 0.5F;
-               var29.addVertex((float)(var9 - var17), -var21, (float)(var36 - var19)).setUv(var26 - var35, var26 + var28);
-               var29.addVertex((float)(var9 - var17), -var21, (float)(var36 + var38 - var19)).setUv(var26 - (var40 + var35), var26 + var28);
-               var29.addVertex((float)(var9 - var17), var21, (float)(var36 + var38 - var19)).setUv(var26 - (var40 + var35), var26 + var27);
-               var29.addVertex((float)(var9 - var17), var21, (float)(var36 - var19)).setUv(var26 - var35, var26 + var27);
-               ++var36;
+            for(var37 = var31; var37 < var33; var36 += 0.5F) {
+               var39 = Math.min(1.0, var33 - var37);
+               var41 = (float)var39 * 0.5F;
+               var30.addVertex((float)(var9 - var17), -var21, (float)(var37 - var19)).setUv(var27 - var36, var27 + var29);
+               var30.addVertex((float)(var9 - var17), -var21, (float)(var37 + var39 - var19)).setUv(var27 - (var41 + var36), var27 + var29);
+               var30.addVertex((float)(var9 - var17), var21, (float)(var37 + var39 - var19)).setUv(var27 - (var41 + var36), var27 + var28);
+               var30.addVertex((float)(var9 - var17), var21, (float)(var37 - var19)).setUv(var27 - var36, var27 + var28);
+               ++var37;
             }
          }
 
          if (var17 < var7 + var3) {
-            var35 = var34;
+            var36 = var35;
 
-            for(var36 = var30; var36 < var32; var35 += 0.5F) {
-               var38 = Math.min(1.0, var32 - var36);
-               var40 = (float)var38 * 0.5F;
-               var29.addVertex((float)(var7 - var17), -var21, (float)(var36 - var19)).setUv(var26 + var35, var26 + var28);
-               var29.addVertex((float)(var7 - var17), -var21, (float)(var36 + var38 - var19)).setUv(var26 + var40 + var35, var26 + var28);
-               var29.addVertex((float)(var7 - var17), var21, (float)(var36 + var38 - var19)).setUv(var26 + var40 + var35, var26 + var27);
-               var29.addVertex((float)(var7 - var17), var21, (float)(var36 - var19)).setUv(var26 + var35, var26 + var27);
-               ++var36;
+            for(var37 = var31; var37 < var33; var36 += 0.5F) {
+               var39 = Math.min(1.0, var33 - var37);
+               var41 = (float)var39 * 0.5F;
+               var30.addVertex((float)(var7 - var17), -var21, (float)(var37 - var19)).setUv(var27 + var36, var27 + var29);
+               var30.addVertex((float)(var7 - var17), -var21, (float)(var37 + var39 - var19)).setUv(var27 + var41 + var36, var27 + var29);
+               var30.addVertex((float)(var7 - var17), var21, (float)(var37 + var39 - var19)).setUv(var27 + var41 + var36, var27 + var28);
+               var30.addVertex((float)(var7 - var17), var21, (float)(var37 - var19)).setUv(var27 + var36, var27 + var28);
+               ++var37;
             }
          }
 
-         var30 = Math.max((double)Mth.floor(var17 - var3), var7);
-         var32 = Math.min((double)Mth.ceil(var17 + var3), var9);
-         var34 = (float)(Mth.floor(var30) & 1) * 0.5F;
+         var31 = Math.max((double)Mth.floor(var17 - var3), var7);
+         var33 = Math.min((double)Mth.ceil(var17 + var3), var9);
+         var35 = (float)(Mth.floor(var31) & 1) * 0.5F;
          if (var19 > var13 - var3) {
-            var35 = var34;
+            var36 = var35;
 
-            for(var36 = var30; var36 < var32; var35 += 0.5F) {
-               var38 = Math.min(1.0, var32 - var36);
-               var40 = (float)var38 * 0.5F;
-               var29.addVertex((float)(var36 - var17), -var21, (float)(var13 - var19)).setUv(var26 + var35, var26 + var28);
-               var29.addVertex((float)(var36 + var38 - var17), -var21, (float)(var13 - var19)).setUv(var26 + var40 + var35, var26 + var28);
-               var29.addVertex((float)(var36 + var38 - var17), var21, (float)(var13 - var19)).setUv(var26 + var40 + var35, var26 + var27);
-               var29.addVertex((float)(var36 - var17), var21, (float)(var13 - var19)).setUv(var26 + var35, var26 + var27);
-               ++var36;
+            for(var37 = var31; var37 < var33; var36 += 0.5F) {
+               var39 = Math.min(1.0, var33 - var37);
+               var41 = (float)var39 * 0.5F;
+               var30.addVertex((float)(var37 - var17), -var21, (float)(var13 - var19)).setUv(var27 + var36, var27 + var29);
+               var30.addVertex((float)(var37 + var39 - var17), -var21, (float)(var13 - var19)).setUv(var27 + var41 + var36, var27 + var29);
+               var30.addVertex((float)(var37 + var39 - var17), var21, (float)(var13 - var19)).setUv(var27 + var41 + var36, var27 + var28);
+               var30.addVertex((float)(var37 - var17), var21, (float)(var13 - var19)).setUv(var27 + var36, var27 + var28);
+               ++var37;
             }
          }
 
          if (var19 < var11 + var3) {
-            var35 = var34;
+            var36 = var35;
 
-            for(var36 = var30; var36 < var32; var35 += 0.5F) {
-               var38 = Math.min(1.0, var32 - var36);
-               var40 = (float)var38 * 0.5F;
-               var29.addVertex((float)(var36 - var17), -var21, (float)(var11 - var19)).setUv(var26 - var35, var26 + var28);
-               var29.addVertex((float)(var36 + var38 - var17), -var21, (float)(var11 - var19)).setUv(var26 - (var40 + var35), var26 + var28);
-               var29.addVertex((float)(var36 + var38 - var17), var21, (float)(var11 - var19)).setUv(var26 - (var40 + var35), var26 + var27);
-               var29.addVertex((float)(var36 - var17), var21, (float)(var11 - var19)).setUv(var26 - var35, var26 + var27);
-               ++var36;
+            for(var37 = var31; var37 < var33; var36 += 0.5F) {
+               var39 = Math.min(1.0, var33 - var37);
+               var41 = (float)var39 * 0.5F;
+               var30.addVertex((float)(var37 - var17), -var21, (float)(var11 - var19)).setUv(var27 - var36, var27 + var29);
+               var30.addVertex((float)(var37 + var39 - var17), -var21, (float)(var11 - var19)).setUv(var27 - (var41 + var36), var27 + var29);
+               var30.addVertex((float)(var37 + var39 - var17), var21, (float)(var11 - var19)).setUv(var27 - (var41 + var36), var27 + var28);
+               var30.addVertex((float)(var37 - var17), var21, (float)(var11 - var19)).setUv(var27 - var36, var27 + var28);
+               ++var37;
             }
          }
 
-         MeshData var41 = var29.build();
-         if (var41 != null) {
-            BufferUploader.drawWithShader(var41);
+         MeshData var42 = var30.build();
+         if (var42 != null) {
+            BufferUploader.drawWithShader(var42);
          }
 
-         RenderSystem.enableCull();
-         RenderSystem.polygonOffset(0.0F, 0.0F);
-         RenderSystem.disablePolygonOffset();
-         RenderSystem.disableBlend();
-         RenderSystem.defaultBlendFunc();
+         var22.clearRenderState();
          RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-         RenderSystem.depthMask(true);
       }
    }
 }

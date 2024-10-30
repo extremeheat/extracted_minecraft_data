@@ -113,7 +113,7 @@ public class RealmsPlayerScreen extends RealmsScreen {
       protected void renderHeader(GuiGraphics var1, int var2, int var3) {
          String var4 = RealmsPlayerScreen.this.serverData.players != null ? Integer.toString(RealmsPlayerScreen.this.serverData.players.size()) : "0";
          MutableComponent var5 = Component.translatable("mco.configure.world.invited.number", var4).withStyle(ChatFormatting.UNDERLINE);
-         var1.drawString(RealmsPlayerScreen.this.font, (Component)var5, var2 + this.getRowWidth() / 2 - RealmsPlayerScreen.this.font.width((FormattedText)var5) / 2, var3, -1, false);
+         var1.drawString(RealmsPlayerScreen.this.font, (Component)var5, var2 + this.getRowWidth() / 2 - RealmsPlayerScreen.this.font.width((FormattedText)var5) / 2, var3, -1);
       }
 
       public int getRowWidth() {
@@ -250,7 +250,7 @@ public class RealmsPlayerScreen extends RealmsScreen {
          int var10000 = var3 + var6 / 2;
          Objects.requireNonNull(RealmsPlayerScreen.this.font);
          int var13 = var10000 - 9 / 2;
-         var1.drawString(RealmsPlayerScreen.this.font, this.playerInfo.getName(), var4 + 8 + 32, var13, var11, false);
+         var1.drawString(RealmsPlayerScreen.this.font, this.playerInfo.getName(), var4 + 8 + 32, var13, var11);
          int var14 = var3 + var6 / 2 - 10;
          int var15 = var4 + var5 - this.removeButton.getWidth();
          this.removeButton.setPosition(var15, var14);

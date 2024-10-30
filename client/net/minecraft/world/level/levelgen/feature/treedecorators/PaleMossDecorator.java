@@ -12,7 +12,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HangingMossBlock;
-import net.minecraft.world.level.block.MossyCarpetBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -57,25 +56,17 @@ public class PaleMossDecorator extends TreeDecorator {
          BlockPos var6 = (BlockPos)var5.getValue();
          if (var2.nextFloat() < this.groundProbability) {
             var3.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((var0) -> {
-               return var0.get(VegetationFeatures.PALE_MOSS_PATCH_BONEMEAL);
+               return var0.get(VegetationFeatures.PALE_MOSS_PATCH);
             }).ifPresent((var3x) -> {
                ((ConfiguredFeature)var3x.value()).place(var3, var3.getLevel().getChunkSource().getGenerator(), var2, var6.above());
             });
          }
 
          var1.logs().forEach((var3x) -> {
-            BlockPos var4;
             if (var2.nextFloat() < this.trunkProbability) {
-               var4 = var3x.below();
+               BlockPos var4 = var3x.below();
                if (var1.isAir(var4)) {
                   addMossHanger(var4, var1);
-               }
-            }
-
-            if (var2.nextFloat() < this.trunkProbability) {
-               var4 = var3x.above();
-               if (var1.isAir(var4)) {
-                  MossyCarpetBlock.placeAt((WorldGenLevel)var1.level(), var4, var1.random(), 3);
                }
             }
 

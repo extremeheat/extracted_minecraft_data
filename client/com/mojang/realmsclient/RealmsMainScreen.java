@@ -690,7 +690,7 @@ public class RealmsMainScreen extends RealmsScreen {
       var1.pose().translate((float)(this.width / 2 - 25), 20.0F, 0.0F);
       var1.pose().mulPose(Axis.ZP.rotationDegrees(-20.0F));
       var1.pose().scale(1.5F, 1.5F, 1.5F);
-      var1.drawString(this.font, (String)var2, 0, 0, var3, false);
+      var1.drawString(this.font, (String)var2, 0, 0, var3);
       var1.pose().popPose();
    }
 
@@ -886,7 +886,7 @@ public class RealmsMainScreen extends RealmsScreen {
          int var8 = this.versionTextX(var3, var4, var7);
          this.renderClampedString(var1, this.serverData.getName(), var5, var6, var8, -1);
          if (var7 != CommonComponents.EMPTY && !this.serverData.isMinigameActive()) {
-            var1.drawString(RealmsMainScreen.this.font, var7, var8, var6, -8355712, false);
+            var1.drawString(RealmsMainScreen.this.font, var7, var8, var6, -8355712);
          }
 
       }
@@ -899,7 +899,7 @@ public class RealmsMainScreen extends RealmsScreen {
          boolean var9 = this.serverData.isMinigameActive();
          if (var9 && var8 != null) {
             MutableComponent var11 = Component.literal(var8).withStyle(ChatFormatting.GRAY);
-            var1.drawString(RealmsMainScreen.this.font, (Component)Component.translatable("mco.selectServer.minigameName", var11).withColor(-171), var5, var7, -1, false);
+            var1.drawString(RealmsMainScreen.this.font, (Component)Component.translatable("mco.selectServer.minigameName", var11).withColor(-171), var5, var7, -1);
          } else {
             int var10 = this.renderGameMode(this.serverData, var1, var3, var4, var6);
             this.renderClampedString(var1, this.serverData.getDescription(), var5, this.secondLineY(var6), var10, -8355712);
@@ -1028,10 +1028,10 @@ public class RealmsMainScreen extends RealmsScreen {
          int var6 = this.firstLineY(var2);
          int var7 = this.thirdLineY(var6);
          if (!RealmsMainScreen.isSelfOwnedServer(var4)) {
-            var1.drawString(RealmsMainScreen.this.font, var4.owner, var5, this.thirdLineY(var6), -8355712, false);
+            var1.drawString(RealmsMainScreen.this.font, var4.owner, var5, this.thirdLineY(var6), -8355712);
          } else if (var4.expired) {
             Component var8 = var4.expiredTrial ? RealmsMainScreen.TRIAL_EXPIRED_TEXT : RealmsMainScreen.SUBSCRIPTION_EXPIRED_TEXT;
-            var1.drawString(RealmsMainScreen.this.font, var8, var5, var7, -2142128, false);
+            var1.drawString(RealmsMainScreen.this.font, var8, var5, var7, -2142128);
          }
 
       }
@@ -1041,9 +1041,9 @@ public class RealmsMainScreen extends RealmsScreen {
             int var7 = var5 - var3;
             if (RealmsMainScreen.this.font.width(var2) > var7) {
                String var8 = RealmsMainScreen.this.font.plainSubstrByWidth(var2, var7 - RealmsMainScreen.this.font.width("... "));
-               var1.drawString(RealmsMainScreen.this.font, var8 + "...", var3, var4, var6, false);
+               var1.drawString(RealmsMainScreen.this.font, var8 + "...", var3, var4, var6);
             } else {
-               var1.drawString(RealmsMainScreen.this.font, var2, var3, var4, var6, false);
+               var1.drawString(RealmsMainScreen.this.font, var2, var3, var4, var6);
             }
 
          }
@@ -1064,7 +1064,7 @@ public class RealmsMainScreen extends RealmsScreen {
          if (GameType.isValidId(var7)) {
             Component var9 = RealmsMainScreen.getGameModeComponent(var7, var6);
             var8 = this.gameModeTextX(var3, var4, var9);
-            var2.drawString(RealmsMainScreen.this.font, var9, var8, this.secondLineY(var5), -8355712, false);
+            var2.drawString(RealmsMainScreen.this.font, var9, var8, this.secondLineY(var5), -8355712);
          }
 
          if (var6) {
@@ -1127,7 +1127,7 @@ public class RealmsMainScreen extends RealmsScreen {
          int var14 = this.versionTextX(var4, var5, var13);
          this.renderClampedString(var1, this.server.getName(), var11, var12, var14, -8355712);
          if (var13 != CommonComponents.EMPTY) {
-            var1.drawString(RealmsMainScreen.this.font, var13, var14, var12, -8355712, false);
+            var1.drawString(RealmsMainScreen.this.font, var13, var14, var12, -8355712);
          }
 
          int var15 = var4;

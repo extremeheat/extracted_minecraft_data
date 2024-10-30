@@ -136,6 +136,19 @@ public class AttributeMap {
       });
    }
 
+   public boolean resetBaseValue(Holder<Attribute> var1) {
+      if (!this.supplier.hasAttribute(var1)) {
+         return false;
+      } else {
+         AttributeInstance var2 = (AttributeInstance)this.attributes.get(var1);
+         if (var2 != null) {
+            var2.setBaseValue(this.supplier.getBaseValue(var1));
+         }
+
+         return true;
+      }
+   }
+
    public ListTag save() {
       ListTag var1 = new ListTag();
       Iterator var2 = this.attributes.values().iterator();

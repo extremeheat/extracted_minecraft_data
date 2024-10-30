@@ -1,11 +1,15 @@
 package net.minecraft.client.gui.screens;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.CommonComponents;
@@ -22,6 +26,7 @@ import net.minecraft.world.level.levelgen.flat.FlatLayerInfo;
 import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
 
 public class CreateFlatWorldScreen extends Screen {
+   private static final Component TITLE = Component.translatable("createWorld.customize.flat.title");
    static final ResourceLocation SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot");
    private static final int SLOT_BG_SIZE = 18;
    private static final int SLOT_STAT_HEIGHT = 20;
@@ -29,16 +34,17 @@ public class CreateFlatWorldScreen extends Screen {
    private static final int SLOT_BG_Y = 1;
    private static final int SLOT_FG_X = 2;
    private static final int SLOT_FG_Y = 2;
+   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 33, 64);
    protected final CreateWorldScreen parent;
    private final Consumer<FlatLevelGeneratorSettings> applySettings;
    FlatLevelGeneratorSettings generator;
-   private Component columnType;
-   private Component columnHeight;
+   @Nullable
    private DetailsList list;
+   @Nullable
    private Button deleteLayerButton;
 
    public CreateFlatWorldScreen(CreateWorldScreen var1, Consumer<FlatLevelGeneratorSettings> var2, FlatLevelGeneratorSettings var3) {
-      super(Component.translatable("createWorld.customize.flat.title"));
+      super(TITLE);
       this.parent = var1;
       this.applySettings = var2;
       this.generator = var3;
@@ -53,10 +59,13 @@ public class CreateFlatWorldScreen extends Screen {
    }
 
    protected void init() {
-      this.columnType = Component.translatable("createWorld.customize.flat.tile");
-      this.columnHeight = Component.translatable("createWorld.customize.flat.height");
-      this.list = (DetailsList)this.addRenderableWidget(new DetailsList());
-      this.deleteLayerButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.flat.removeLayer"), (var1) -> {
+      this.layout.addTitleHeader(this.title, this.font);
+      this.list = (DetailsList)this.layout.addToContents(new DetailsList());
+      LinearLayout var1 = (LinearLayout)this.layout.addToFooter(LinearLayout.vertical().spacing(4));
+      var1.defaultCellSetting().alignVerticallyMiddle();
+      LinearLayout var2 = (LinearLayout)var1.addChild(LinearLayout.horizontal().spacing(8));
+      LinearLayout var3 = (LinearLayout)var1.addChild(LinearLayout.horizontal().spacing(8));
+      this.deleteLayerButton = (Button)var2.addChild(Button.builder(Component.translatable("createWorld.customize.flat.removeLayer"), (var1x) -> {
          if (this.hasValidSelection()) {
             List var2 = this.generator.getLayersInfo();
             int var3 = this.list.children().indexOf(this.list.getSelected());
@@ -67,48 +76,58 @@ public class CreateFlatWorldScreen extends Screen {
             this.list.resetRows();
             this.updateButtonValidity();
          }
-      }).bounds(this.width / 2 - 155, this.height - 52, 150, 20).build());
-      this.addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.presets"), (var1) -> {
+      }).build());
+      var2.addChild(Button.builder(Component.translatable("createWorld.customize.presets"), (var1x) -> {
          this.minecraft.setScreen(new PresetFlatWorldScreen(this));
          this.generator.updateLayers();
          this.updateButtonValidity();
-      }).bounds(this.width / 2 + 5, this.height - 52, 150, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> {
+      }).build());
+      var3.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
          this.applySettings.accept(this.generator);
-         this.minecraft.setScreen(this.parent);
+         this.onClose();
          this.generator.updateLayers();
-      }).bounds(this.width / 2 - 155, this.height - 28, 150, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> {
-         this.minecraft.setScreen(this.parent);
+      }).build());
+      var3.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
+         this.onClose();
          this.generator.updateLayers();
-      }).bounds(this.width / 2 + 5, this.height - 28, 150, 20).build());
+      }).build());
       this.generator.updateLayers();
       this.updateButtonValidity();
+      this.layout.visitWidgets(this::addRenderableWidget);
+      this.repositionElements();
+   }
+
+   protected void repositionElements() {
+      if (this.list != null) {
+         this.list.updateSize(this.width, this.layout);
+      }
+
+      this.layout.arrangeElements();
    }
 
    void updateButtonValidity() {
-      this.deleteLayerButton.active = this.hasValidSelection();
+      if (this.deleteLayerButton != null) {
+         this.deleteLayerButton.active = this.hasValidSelection();
+      }
+
    }
 
    private boolean hasValidSelection() {
-      return this.list.getSelected() != null;
+      return this.list != null && this.list.getSelected() != null;
    }
 
    public void onClose() {
       this.minecraft.setScreen(this.parent);
    }
 
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 8, 16777215);
-      int var5 = this.width / 2 - 92 - 16;
-      var1.drawString(this.font, (Component)this.columnType, var5, 32, 16777215);
-      var1.drawString(this.font, (Component)this.columnHeight, var5 + 2 + 213 - this.font.width((FormattedText)this.columnHeight), 32, 16777215);
-   }
-
    private class DetailsList extends ObjectSelectionList<Entry> {
+      private static final Component LAYER_MATERIAL_TITLE;
+      private static final Component HEIGHT_TITLE;
+
       public DetailsList() {
          super(CreateFlatWorldScreen.this.minecraft, CreateFlatWorldScreen.this.width, CreateFlatWorldScreen.this.height - 103, 43, 24);
+         Objects.requireNonNull(CreateFlatWorldScreen.this.font);
+         this.setRenderHeader(true, (int)(9.0 * 1.5));
 
          for(int var2 = 0; var2 < CreateFlatWorldScreen.this.generator.getLayersInfo().size(); ++var2) {
             this.addEntry(new Entry());
@@ -136,6 +155,16 @@ public class CreateFlatWorldScreen extends Screen {
 
       }
 
+      protected void renderHeader(GuiGraphics var1, int var2, int var3) {
+         var1.drawString(CreateFlatWorldScreen.this.font, (Component)LAYER_MATERIAL_TITLE, var2, var3, -1);
+         var1.drawString(CreateFlatWorldScreen.this.font, (Component)HEIGHT_TITLE, var2 + this.getRowWidth() - CreateFlatWorldScreen.this.font.width((FormattedText)HEIGHT_TITLE) - 8, var3, -1);
+      }
+
+      static {
+         LAYER_MATERIAL_TITLE = Component.translatable("createWorld.customize.flat.tile").withStyle(ChatFormatting.UNDERLINE);
+         HEIGHT_TITLE = Component.translatable("createWorld.customize.flat.height").withStyle(ChatFormatting.UNDERLINE);
+      }
+
       class Entry extends ObjectSelectionList.Entry<Entry> {
          Entry() {
             super();
@@ -146,17 +175,20 @@ public class CreateFlatWorldScreen extends Screen {
             BlockState var12 = var11.getBlockState();
             ItemStack var13 = this.getDisplayItem(var12);
             this.blitSlot(var1, var4, var3, var13);
-            var1.drawString(CreateFlatWorldScreen.this.font, var13.getHoverName(), var4 + 18 + 5, var3 + 3, 16777215, false);
-            MutableComponent var14;
+            int var10000 = var3 + var6 / 2;
+            Objects.requireNonNull(CreateFlatWorldScreen.this.font);
+            int var14 = var10000 - 9 / 2;
+            var1.drawString(CreateFlatWorldScreen.this.font, (Component)var13.getHoverName(), var4 + 18 + 5, var14, -1);
+            MutableComponent var15;
             if (var2 == 0) {
-               var14 = Component.translatable("createWorld.customize.flat.layer.top", var11.getHeight());
+               var15 = Component.translatable("createWorld.customize.flat.layer.top", var11.getHeight());
             } else if (var2 == CreateFlatWorldScreen.this.generator.getLayersInfo().size() - 1) {
-               var14 = Component.translatable("createWorld.customize.flat.layer.bottom", var11.getHeight());
+               var15 = Component.translatable("createWorld.customize.flat.layer.bottom", var11.getHeight());
             } else {
-               var14 = Component.translatable("createWorld.customize.flat.layer", var11.getHeight());
+               var15 = Component.translatable("createWorld.customize.flat.layer", var11.getHeight());
             }
 
-            var1.drawString(CreateFlatWorldScreen.this.font, (Component)var14, var4 + 2 + 213 - CreateFlatWorldScreen.this.font.width((FormattedText)var14), var3 + 3, 16777215, false);
+            var1.drawString(CreateFlatWorldScreen.this.font, (Component)var15, var4 + var5 - CreateFlatWorldScreen.this.font.width((FormattedText)var15) - 8, var14, -1);
          }
 
          private ItemStack getDisplayItem(BlockState var1) {

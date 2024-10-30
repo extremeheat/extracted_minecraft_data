@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.Optional;
 import net.minecraft.Util;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.VillagerHeadModel;
+import net.minecraft.client.model.VillagerLikeModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -24,7 +24,7 @@ import net.minecraft.world.entity.npc.VillagerData;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerType;
 
-public class VillagerProfessionLayer<S extends LivingEntityRenderState & VillagerDataHolderRenderState, M extends EntityModel<S> & VillagerHeadModel> extends RenderLayer<S, M> {
+public class VillagerProfessionLayer<S extends LivingEntityRenderState & VillagerDataHolderRenderState, M extends EntityModel<S> & VillagerLikeModel> extends RenderLayer<S, M> {
    private static final Int2ObjectMap<ResourceLocation> LEVEL_LOCATIONS = (Int2ObjectMap)Util.make(new Int2ObjectOpenHashMap(), (var0) -> {
       var0.put(1, ResourceLocation.withDefaultNamespace("stone"));
       var0.put(2, ResourceLocation.withDefaultNamespace("iron"));
@@ -51,10 +51,10 @@ public class VillagerProfessionLayer<S extends LivingEntityRenderState & Village
          VillagerMetaDataSection.Hat var10 = this.getHatData(this.typeHatCache, "type", BuiltInRegistries.VILLAGER_TYPE, var8);
          VillagerMetaDataSection.Hat var11 = this.getHatData(this.professionHatCache, "profession", BuiltInRegistries.VILLAGER_PROFESSION, var9);
          EntityModel var12 = this.getParentModel();
-         ((VillagerHeadModel)var12).hatVisible(var11 == VillagerMetaDataSection.Hat.NONE || var11 == VillagerMetaDataSection.Hat.PARTIAL && var10 != VillagerMetaDataSection.Hat.FULL);
+         ((VillagerLikeModel)var12).hatVisible(var11 == VillagerMetaDataSection.Hat.NONE || var11 == VillagerMetaDataSection.Hat.PARTIAL && var10 != VillagerMetaDataSection.Hat.FULL);
          ResourceLocation var13 = this.getResourceLocation("type", BuiltInRegistries.VILLAGER_TYPE.getKey(var8));
          renderColoredCutoutModel(var12, var13, var1, var2, var3, var4, -1);
-         ((VillagerHeadModel)var12).hatVisible(true);
+         ((VillagerLikeModel)var12).hatVisible(true);
          if (var9 != VillagerProfession.NONE && !var4.isBaby) {
             ResourceLocation var14 = this.getResourceLocation("profession", BuiltInRegistries.VILLAGER_PROFESSION.getKey(var9));
             renderColoredCutoutModel(var12, var14, var1, var2, var3, var4, -1);

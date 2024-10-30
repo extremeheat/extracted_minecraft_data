@@ -91,27 +91,36 @@ public class JigsawPlacement {
          BoundingBox var24 = var23.getBoundingBox();
          int var25 = (var24.maxX() + var24.minX()) / 2;
          int var26 = (var24.maxZ() + var24.minZ()) / 2;
-         int var27;
-         if (var6.isPresent()) {
-            var27 = var4.getY() + var12.getFirstFreeHeight(var25, var26, (Heightmap.Types)var6.get(), var14, var0.randomState());
-         } else {
-            var27 = var31.getY();
-         }
-
+         int var27 = var6.isEmpty() ? var31.getY() : var4.getY() + var12.getFirstFreeHeight(var25, var26, (Heightmap.Types)var6.get(), var14, var0.randomState());
          int var28 = var24.minY() + var23.getGroundLevelDelta();
          var23.move(0, var27 - var28, 0);
-         int var29 = var27 + ((Vec3i)var30).getY();
-         return Optional.of(new Structure.GenerationStub(new BlockPos(var25, var29, var26), (var17x) -> {
-            ArrayList var18 = Lists.newArrayList();
-            var18.add(var23);
-            if (var3 > 0) {
-               AABB var19 = new AABB((double)(var25 - var7), (double)Math.max(var29 - var7, var14.getMinY() + var9.bottom()), (double)(var26 - var7), (double)(var25 + var7 + 1), (double)Math.min(var29 + var7 + 1, var14.getMaxY() + 1 - var9.top()), (double)(var26 + var7 + 1));
-               VoxelShape var20 = Shapes.join(Shapes.create(var19), Shapes.create(AABB.of(var24)), BooleanOp.ONLY_FIRST);
-               addPieces(var0.randomState(), var3, var5, var12, var13, var14, var15, var16, var23, var18, var20, var8, var10);
-               Objects.requireNonNull(var17x);
-               var18.forEach(var17x::addPiece);
-            }
-         }));
+         if (isStartTooCloseToWorldHeightLimits(var14, var9, var23.getBoundingBox())) {
+            LOGGER.debug("Center piece {} with bounding box {} does not fit dimension padding {}", new Object[]{var19, var23.getBoundingBox(), var9});
+            return Optional.empty();
+         } else {
+            int var29 = var27 + ((Vec3i)var30).getY();
+            return Optional.of(new Structure.GenerationStub(new BlockPos(var25, var29, var26), (var17x) -> {
+               ArrayList var18 = Lists.newArrayList();
+               var18.add(var23);
+               if (var3 > 0) {
+                  AABB var19 = new AABB((double)(var25 - var7), (double)Math.max(var29 - var7, var14.getMinY() + var9.bottom()), (double)(var26 - var7), (double)(var25 + var7 + 1), (double)Math.min(var29 + var7 + 1, var14.getMaxY() + 1 - var9.top()), (double)(var26 + var7 + 1));
+                  VoxelShape var20 = Shapes.join(Shapes.create(var19), Shapes.create(AABB.of(var24)), BooleanOp.ONLY_FIRST);
+                  addPieces(var0.randomState(), var3, var5, var12, var13, var14, var15, var16, var23, var18, var20, var8, var10);
+                  Objects.requireNonNull(var17x);
+                  var18.forEach(var17x::addPiece);
+               }
+            }));
+         }
+      }
+   }
+
+   private static boolean isStartTooCloseToWorldHeightLimits(LevelHeightAccessor var0, DimensionPadding var1, BoundingBox var2) {
+      if (var1 == DimensionPadding.ZERO) {
+         return false;
+      } else {
+         int var3 = var0.getMinY() + var1.bottom();
+         int var4 = var0.getMaxY() - var1.top();
+         return var2.minY() < var3 || var2.maxY() > var4;
       }
    }
 

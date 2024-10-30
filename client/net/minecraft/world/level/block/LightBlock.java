@@ -86,7 +86,7 @@ public class LightBlock extends Block implements SimpleWaterloggedBlock {
       return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       return setLightOnStack(super.getCloneItemStack(var1, var2, var3), (Integer)var3.getValue(LEVEL));
    }
 

@@ -18,10 +18,14 @@ import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.profiling.jfr.JvmProfiler;
+import net.minecraft.util.profiling.jfr.callback.ProfiledDuration;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
@@ -80,15 +84,24 @@ public abstract class Structure {
       return this.terrainAdaptation() != TerrainAdjustment.NONE ? var1.inflatedBy(12) : var1;
    }
 
-   public StructureStart generate(RegistryAccess var1, ChunkGenerator var2, BiomeSource var3, RandomState var4, StructureTemplateManager var5, long var6, ChunkPos var8, int var9, LevelHeightAccessor var10, Predicate<Holder<Biome>> var11) {
-      GenerationContext var12 = new GenerationContext(var1, var2, var3, var4, var5, var6, var8, var10, var11);
-      Optional var13 = this.findValidGenerationPoint(var12);
-      if (var13.isPresent()) {
-         StructurePiecesBuilder var14 = ((GenerationStub)var13.get()).getPiecesBuilder();
-         StructureStart var15 = new StructureStart(this, var8, var9, var14.build());
-         if (var15.isValid()) {
-            return var15;
+   public StructureStart generate(Holder<Structure> var1, ResourceKey<Level> var2, RegistryAccess var3, ChunkGenerator var4, BiomeSource var5, RandomState var6, StructureTemplateManager var7, long var8, ChunkPos var10, int var11, LevelHeightAccessor var12, Predicate<Holder<Biome>> var13) {
+      ProfiledDuration var14 = JvmProfiler.INSTANCE.onStructureGenerate(var10, var2, var1);
+      GenerationContext var15 = new GenerationContext(var3, var4, var5, var6, var7, var8, var10, var12, var13);
+      Optional var16 = this.findValidGenerationPoint(var15);
+      if (var16.isPresent()) {
+         StructurePiecesBuilder var17 = ((GenerationStub)var16.get()).getPiecesBuilder();
+         StructureStart var18 = new StructureStart(this, var10, var11, var17.build());
+         if (var18.isValid()) {
+            if (var14 != null) {
+               var14.finish(true);
+            }
+
+            return var18;
          }
+      }
+
+      if (var14 != null) {
+         var14.finish(false);
       }
 
       return StructureStart.INVALID_START;

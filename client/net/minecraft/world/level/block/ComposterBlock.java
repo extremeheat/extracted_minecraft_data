@@ -146,6 +146,8 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.65F, Items.CORNFLOWER);
       add(0.65F, Items.LILY_OF_THE_VALLEY);
       add(0.65F, Items.WITHER_ROSE);
+      add(0.65F, Items.OPEN_EYEBLOSSOM);
+      add(0.65F, Items.CLOSED_EYEBLOSSOM);
       add(0.65F, Items.FERN);
       add(0.65F, Items.SUNFLOWER);
       add(0.65F, Items.LILAC);

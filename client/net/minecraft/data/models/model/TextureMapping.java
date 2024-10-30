@@ -90,12 +90,20 @@ public class TextureMapping {
       return singleSlot(TextureSlot.SIDE, getBlockTexture(var0));
    }
 
+   public static TextureMapping crossEmissive(Block var0) {
+      return (new TextureMapping()).put(TextureSlot.CROSS, getBlockTexture(var0)).put(TextureSlot.CROSS_EMISSIVE, getBlockTexture(var0, "_emissive"));
+   }
+
    public static TextureMapping cross(ResourceLocation var0) {
       return singleSlot(TextureSlot.CROSS, var0);
    }
 
    public static TextureMapping plant(Block var0) {
       return singleSlot(TextureSlot.PLANT, getBlockTexture(var0));
+   }
+
+   public static TextureMapping plantEmissive(Block var0) {
+      return (new TextureMapping()).put(TextureSlot.PLANT, getBlockTexture(var0)).put(TextureSlot.CROSS_EMISSIVE, getBlockTexture(var0, "_emissive"));
    }
 
    public static TextureMapping plant(ResourceLocation var0) {

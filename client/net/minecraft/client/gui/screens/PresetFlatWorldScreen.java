@@ -290,7 +290,7 @@ public class PresetFlatWorldScreen extends Screen {
 
          public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
             this.blitSlot(var1, var4, var3, (Item)this.preset.displayItem().value());
-            var1.drawString(PresetFlatWorldScreen.this.font, this.name, var4 + 18 + 5, var3 + 6, 16777215, false);
+            var1.drawString(PresetFlatWorldScreen.this.font, (Component)this.name, var4 + 18 + 5, var3 + 6, -1);
          }
 
          public boolean mouseClicked(double var1, double var3, int var5) {

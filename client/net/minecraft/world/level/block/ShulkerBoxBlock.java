@@ -227,7 +227,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       ItemStack var4 = super.getCloneItemStack(var1, var2, var3);
       var1.getBlockEntity(var2, BlockEntityType.SHULKER_BOX).ifPresent((var2x) -> {
          var2x.saveToItem(var4, var1.registryAccess());

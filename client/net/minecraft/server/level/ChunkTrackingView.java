@@ -75,13 +75,12 @@ public interface ChunkTrackingView {
    }
 
    static boolean isWithinDistance(int var0, int var1, int var2, int var3, int var4, boolean var5) {
-      int var6 = Math.max(0, Math.abs(var3 - var0) - 1);
-      int var7 = Math.max(0, Math.abs(var4 - var1) - 1);
-      long var8 = (long)Math.max(0, Math.max(var6, var7) - (var5 ? 1 : 0));
-      long var10 = (long)Math.min(var6, var7);
-      long var12 = var10 * var10 + var8 * var8;
-      int var14 = var2 * var2;
-      return var12 < (long)var14;
+      int var6 = var5 ? 2 : 1;
+      long var7 = (long)Math.max(0, Math.abs(var3 - var0) - var6);
+      long var9 = (long)Math.max(0, Math.abs(var4 - var1) - var6);
+      long var11 = var7 * var7 + var9 * var9;
+      int var13 = var2 * var2;
+      return var11 < (long)var13;
    }
 
    public static record Positioned(ChunkPos center, int viewDistance) implements ChunkTrackingView {

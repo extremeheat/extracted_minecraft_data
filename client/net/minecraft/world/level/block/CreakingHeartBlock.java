@@ -1,21 +1,25 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.ServerExplosion;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -24,12 +28,14 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 
 public class CreakingHeartBlock extends BaseEntityBlock {
    public static final MapCodec<CreakingHeartBlock> CODEC = simpleCodec(CreakingHeartBlock::new);
    public static final EnumProperty<Direction.Axis> AXIS;
-   public static final EnumProperty<CreakingHeartState> CREAKING;
+   public static final BooleanProperty ACTIVE;
+   public static final BooleanProperty NATURAL;
 
    public MapCodec<CreakingHeartBlock> codec() {
       return CODEC;
@@ -37,7 +43,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
 
    protected CreakingHeartBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState((BlockState)((BlockState)this.defaultBlockState().setValue(AXIS, Direction.Axis.Y)).setValue(CREAKING, CreakingHeartBlock.CreakingHeartState.DISABLED));
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(AXIS, Direction.Axis.Y)).setValue(ACTIVE, false)).setValue(NATURAL, false));
    }
 
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
@@ -49,17 +55,17 @@ public class CreakingHeartBlock extends BaseEntityBlock {
       if (var1.isClientSide) {
          return null;
       } else {
-         return var2.getValue(CREAKING) != CreakingHeartBlock.CreakingHeartState.DISABLED ? createTickerHelper(var3, BlockEntityType.CREAKING_HEART, CreakingHeartBlockEntity::serverTick) : null;
+         return (Boolean)var2.getValue(ACTIVE) ? createTickerHelper(var3, BlockEntityType.CREAKING_HEART, CreakingHeartBlockEntity::serverTick) : null;
       }
    }
 
-   public static boolean canSummonCreaking(Level var0) {
+   public static boolean isNaturalNight(Level var0) {
       return var0.dimensionType().natural() && var0.isNight();
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      if (canSummonCreaking(var2)) {
-         if (var1.getValue(CREAKING) != CreakingHeartBlock.CreakingHeartState.DISABLED) {
+      if (isNaturalNight(var2)) {
+         if ((Boolean)var1.getValue(ACTIVE)) {
             if (var4.nextInt(16) == 0 && isSurroundedByLogs(var2, var3)) {
                var2.playLocalSound((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), SoundEvents.CREAKING_HEART_IDLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
             }
@@ -75,8 +81,8 @@ public class CreakingHeartBlock extends BaseEntityBlock {
 
    private static BlockState updateState(BlockState var0, LevelReader var1, BlockPos var2) {
       boolean var3 = hasRequiredLogs(var0, var1, var2);
-      CreakingHeartState var4 = (CreakingHeartState)var0.getValue(CREAKING);
-      return var3 && var4 == CreakingHeartBlock.CreakingHeartState.DISABLED ? (BlockState)var0.setValue(CREAKING, CreakingHeartBlock.CreakingHeartState.DORMANT) : var0;
+      boolean var4 = !(Boolean)var0.getValue(ACTIVE);
+      return var3 && var4 ? (BlockState)var0.setValue(ACTIVE, true) : var0;
    }
 
    public static boolean hasRequiredLogs(BlockState var0, LevelReader var1, BlockPos var2) {
@@ -125,7 +131,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(AXIS, CREAKING);
+      var1.add(AXIS, ACTIVE, NATURAL);
    }
 
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
@@ -137,13 +143,35 @@ public class CreakingHeartBlock extends BaseEntityBlock {
       super.onRemove(var1, var2, var3, var4, var5);
    }
 
+   protected void onExplosionHit(BlockState var1, ServerLevel var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+      BlockEntity var8 = var2.getBlockEntity(var3);
+      if (var8 instanceof CreakingHeartBlockEntity var6) {
+         if (var4 instanceof ServerExplosion var7) {
+            var6.removeProtector(var7.getDamageSource());
+            if (var4.getIndirectSourceEntity() instanceof Player && var4.getBlockInteraction().shouldAffectBlocklikeEntities()) {
+               this.tryAwardExperience(var1, var2, var3);
+            }
+         }
+      }
+
+      super.onExplosionHit(var1, var2, var3, var4, var5);
+   }
+
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       BlockEntity var6 = var1.getBlockEntity(var2);
       if (var6 instanceof CreakingHeartBlockEntity var5) {
          var5.removeProtector(var4.damageSources().playerAttack(var4));
+         this.tryAwardExperience(var3, var1, var2);
       }
 
       return super.playerWillDestroy(var1, var2, var3, var4);
+   }
+
+   private void tryAwardExperience(BlockState var1, Level var2, BlockPos var3) {
+      if ((Boolean)var1.getValue(NATURAL) && var2 instanceof ServerLevel var4) {
+         this.popExperience(var4, var3, var2.random.nextIntBetweenInclusive(20, 24));
+      }
+
    }
 
    protected boolean hasAnalogOutputSignal(BlockState var1) {
@@ -151,7 +179,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
    }
 
    protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
-      if (var1.getValue(CREAKING) != CreakingHeartBlock.CreakingHeartState.ACTIVE) {
+      if (!(Boolean)var1.getValue(ACTIVE)) {
          return 0;
       } else {
          BlockEntity var5 = var2.getBlockEntity(var3);
@@ -166,27 +194,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
 
    static {
       AXIS = BlockStateProperties.AXIS;
-      CREAKING = BlockStateProperties.CREAKING;
-   }
-
-   public static enum CreakingHeartState implements StringRepresentable {
-      DISABLED("disabled"),
-      DORMANT("dormant"),
-      ACTIVE("active");
-
-      private final String name;
-
-      private CreakingHeartState(final String var3) {
-         this.name = var3;
-      }
-
-      public String getSerializedName() {
-         return this.name;
-      }
-
-      // $FF: synthetic method
-      private static CreakingHeartState[] $values() {
-         return new CreakingHeartState[]{DISABLED, DORMANT, ACTIVE};
-      }
+      ACTIVE = BlockStateProperties.ACTIVE;
+      NATURAL = BlockStateProperties.NATURAL;
    }
 }

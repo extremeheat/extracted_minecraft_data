@@ -1,5 +1,6 @@
 package net.minecraft.client.model;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
@@ -9,8 +10,9 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.ZombieVillagerRenderState;
+import net.minecraft.world.entity.HumanoidArm;
 
-public class ZombieVillagerModel<S extends ZombieVillagerRenderState> extends HumanoidModel<S> implements VillagerHeadModel {
+public class ZombieVillagerModel<S extends ZombieVillagerRenderState> extends HumanoidModel<S> implements VillagerLikeModel {
    private final ModelPart hatRim;
 
    public ZombieVillagerModel(ModelPart var1) {
@@ -53,5 +55,9 @@ public class ZombieVillagerModel<S extends ZombieVillagerRenderState> extends Hu
       this.head.visible = var1;
       this.hat.visible = var1;
       this.hatRim.visible = var1;
+   }
+
+   public void translateToArms(PoseStack var1) {
+      this.translateToHand(HumanoidArm.RIGHT, var1);
    }
 }

@@ -199,7 +199,7 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
          }
 
          if (!this.vertexBufferEmpty) {
-            RenderSystem.setShaderColor(ARGB.from8BitChannel(ARGB.red(var1)), ARGB.from8BitChannel(ARGB.green(var1)), ARGB.from8BitChannel(ARGB.blue(var1)), 1.0F);
+            RenderSystem.setShaderColor(ARGB.redFloat(var1), ARGB.greenFloat(var1), ARGB.blueFloat(var1), 1.0F);
             if (var2 == CloudStatus.FANCY) {
                this.drawWithRenderType(RenderType.cloudsDepthOnly(), var4, var5, var21, var8, var22);
             }

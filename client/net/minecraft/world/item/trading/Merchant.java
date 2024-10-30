@@ -49,4 +49,6 @@ public interface Merchant {
    }
 
    boolean isClientSide();
+
+   boolean stillValid(Player var1);
 }

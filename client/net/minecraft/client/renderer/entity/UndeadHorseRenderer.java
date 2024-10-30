@@ -15,7 +15,7 @@ public class UndeadHorseRenderer extends AbstractHorseRenderer<AbstractHorse, Eq
    private final ResourceLocation texture;
 
    public UndeadHorseRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, boolean var4) {
-      super(var1, new HorseModel(var1.bakeLayer(var2)), new HorseModel(var1.bakeLayer(var3)), 1.0F);
+      super(var1, new HorseModel(var1.bakeLayer(var2)), new HorseModel(var1.bakeLayer(var3)));
       this.texture = var4 ? SKELETON_TEXTURE : ZOMBIE_TEXTURE;
    }
 

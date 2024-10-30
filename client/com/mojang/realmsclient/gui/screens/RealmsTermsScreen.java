@@ -82,7 +82,7 @@ public class RealmsTermsScreen extends RealmsScreen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, -1);
-      var1.drawString(this.font, (Component)TERMS_STATIC_TEXT, this.width / 2 - 120, row(5), -1, false);
+      var1.drawString(this.font, (Component)TERMS_STATIC_TEXT, this.width / 2 - 120, row(5), -1);
       int var5 = this.font.width((FormattedText)TERMS_STATIC_TEXT);
       int var6 = this.width / 2 - 121 + var5;
       int var7 = row(5);
@@ -91,7 +91,7 @@ public class RealmsTermsScreen extends RealmsScreen {
       Objects.requireNonNull(this.font);
       int var9 = var10000 + 9;
       this.onLink = var6 <= var2 && var2 <= var8 && var7 <= var3 && var3 <= var9;
-      var1.drawString(this.font, TERMS_LINK_TEXT, this.width / 2 - 120 + var5, row(5), this.onLink ? 7107012 : 3368635, false);
+      var1.drawString(this.font, TERMS_LINK_TEXT, this.width / 2 - 120 + var5, row(5), this.onLink ? 7107012 : 3368635);
    }
 
    static {

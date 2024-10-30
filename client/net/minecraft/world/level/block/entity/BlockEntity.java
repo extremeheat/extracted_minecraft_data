@@ -246,10 +246,6 @@ public abstract class BlockEntity {
       return var10000 + " // " + this.getClass().getCanonicalName();
    }
 
-   public boolean onlyOpCanSetNbt() {
-      return false;
-   }
-
    public BlockEntityType<?> getType() {
       return this.type;
    }

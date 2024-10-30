@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import com.mojang.datafixers.util.Pair;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
@@ -82,7 +81,7 @@ public class Slot {
    }
 
    @Nullable
-   public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
+   public ResourceLocation getNoItemIcon() {
       return null;
    }
 

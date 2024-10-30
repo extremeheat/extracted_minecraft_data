@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.creaking.Creaking;
+import net.minecraft.world.entity.monster.creaking.CreakingTransient;
 
 public class CreakingRenderer<T extends Creaking> extends MobRenderer<T, CreakingRenderState, CreakingModel> {
    private static final ResourceLocation TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/creaking/creaking.png");
@@ -30,10 +31,23 @@ public class CreakingRenderer<T extends Creaking> extends MobRenderer<T, Creakin
    }
 
    public void extractRenderState(T var1, CreakingRenderState var2, float var3) {
-      super.extractRenderState(var1, var2, var3);
-      var2.attackAnimationState.copyFrom(var1.attackAnimationState);
-      var2.invulnerabilityAnimationState.copyFrom(var1.invulnerabilityAnimationState);
-      var2.isActive = var1.isActive();
+      label12: {
+         super.extractRenderState(var1, var2, var3);
+         var2.attackAnimationState.copyFrom(var1.attackAnimationState);
+         var2.invulnerabilityAnimationState.copyFrom(var1.invulnerabilityAnimationState);
+         var2.deathAnimationState.copyFrom(var1.deathAnimationState);
+         if (var1 instanceof CreakingTransient var4) {
+            if (var1.deathAnimationState.isStarted()) {
+               var2.deathTime = 0.0F;
+               var2.hasRedOverlay = false;
+               var2.eyesGlowing = var4.hasGlowingEyes();
+               break label12;
+            }
+         }
+
+         var2.eyesGlowing = var1.isActive();
+      }
+
       var2.canMove = var1.canMove();
    }
 

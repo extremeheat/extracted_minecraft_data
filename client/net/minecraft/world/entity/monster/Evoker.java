@@ -56,7 +56,7 @@ public class Evoker extends SpellcasterIllager {
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new EvokerCastingSpellGoal());
       this.goalSelector.addGoal(2, new AvoidEntityGoal(this, Player.class, 8.0F, 0.6, 1.0));
-      this.goalSelector.addGoal(3, new AvoidEntityGoal(this, Creaking.class, 8.0F, 1.0, 1.2));
+      this.goalSelector.addGoal(3, new AvoidEntityGoal(this, Creaking.class, 8.0F, 0.6, 1.0));
       this.goalSelector.addGoal(4, new EvokerSummonSpellGoal());
       this.goalSelector.addGoal(5, new EvokerAttackSpellGoal());
       this.goalSelector.addGoal(6, new EvokerWololoSpellGoal());

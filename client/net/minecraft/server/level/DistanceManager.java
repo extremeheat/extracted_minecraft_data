@@ -338,7 +338,7 @@ public abstract class DistanceManager {
    }
 
    public void removeTicketsOnClosing() {
-      ImmutableSet var1 = ImmutableSet.of(TicketType.UNKNOWN, TicketType.POST_TELEPORT);
+      ImmutableSet var1 = ImmutableSet.of(TicketType.UNKNOWN);
       ObjectIterator var2 = this.tickets.long2ObjectEntrySet().fastIterator();
 
       while(var2.hasNext()) {

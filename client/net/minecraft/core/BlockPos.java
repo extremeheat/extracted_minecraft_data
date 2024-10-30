@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -457,7 +458,7 @@ public class BlockPos extends Vec3i {
       };
    }
 
-   public static int breadthFirstTraversal(BlockPos var0, int var1, int var2, BiConsumer<BlockPos, Consumer<BlockPos>> var3, Predicate<BlockPos> var4) {
+   public static int breadthFirstTraversal(BlockPos var0, int var1, int var2, BiConsumer<BlockPos, Consumer<BlockPos>> var3, Function<BlockPos, TraversalNodeStatus> var4) {
       ArrayDeque var5 = new ArrayDeque();
       LongOpenHashSet var6 = new LongOpenHashSet();
       var5.add(Pair.of(var0, 0));
@@ -468,16 +469,23 @@ public class BlockPos extends Vec3i {
          BlockPos var9 = (BlockPos)var8.getLeft();
          int var10 = (Integer)var8.getRight();
          long var11 = var9.asLong();
-         if (var6.add(var11) && var4.test(var9)) {
-            ++var7;
-            if (var7 >= var2) {
-               return var7;
-            }
+         if (var6.add(var11)) {
+            TraversalNodeStatus var13 = (TraversalNodeStatus)var4.apply(var9);
+            if (var13 != BlockPos.TraversalNodeStatus.SKIP) {
+               if (var13 == BlockPos.TraversalNodeStatus.STOP) {
+                  break;
+               }
 
-            if (var10 < var1) {
-               var3.accept(var9, (var2x) -> {
-                  var5.add(Pair.of(var2x, var10 + 1));
-               });
+               ++var7;
+               if (var7 >= var2) {
+                  return var7;
+               }
+
+               if (var10 < var1) {
+                  var3.accept(var9, (var2x) -> {
+                     var5.add(Pair.of(var2x, var10 + 1));
+                  });
+               }
             }
          }
       }
@@ -855,6 +863,20 @@ public class BlockPos extends Vec3i {
       // $FF: synthetic method
       public Vec3i setX(final int var1) {
          return this.setX(var1);
+      }
+   }
+
+   public static enum TraversalNodeStatus {
+      ACCEPT,
+      SKIP,
+      STOP;
+
+      private TraversalNodeStatus() {
+      }
+
+      // $FF: synthetic method
+      private static TraversalNodeStatus[] $values() {
+         return new TraversalNodeStatus[]{ACCEPT, SKIP, STOP};
       }
    }
 }

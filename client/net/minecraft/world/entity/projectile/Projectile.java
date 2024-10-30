@@ -293,19 +293,6 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       var2.onProjectileHit(this.level(), var2, var1, this);
    }
 
-   public void lerpMotion(double var1, double var3, double var5) {
-      this.setDeltaMovement(var1, var3, var5);
-      if (this.xRotO == 0.0F && this.yRotO == 0.0F) {
-         double var7 = Math.sqrt(var1 * var1 + var5 * var5);
-         this.setXRot((float)(Mth.atan2(var3, var7) * 57.2957763671875));
-         this.setYRot((float)(Mth.atan2(var1, var5) * 57.2957763671875));
-         this.xRotO = this.getXRot();
-         this.yRotO = this.getYRot();
-         this.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
-      }
-
-   }
-
    protected boolean canHitEntity(Entity var1) {
       if (!var1.canBeHitByProjectile()) {
          return false;
@@ -341,9 +328,11 @@ public abstract class Projectile extends Entity implements TraceableEntity {
 
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {
       super.recreateFromPacket(var1);
-      Entity var2 = this.level().getEntity(var1.getData());
-      if (var2 != null) {
-         this.setOwner(var2);
+      Vec3 var2 = new Vec3(var1.getXa(), var1.getYa(), var1.getZa());
+      this.setDeltaMovement(var2);
+      Entity var3 = this.level().getEntity(var1.getData());
+      if (var3 != null) {
+         this.setOwner(var3);
       }
 
    }

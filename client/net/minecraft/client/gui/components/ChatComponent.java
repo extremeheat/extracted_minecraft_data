@@ -19,6 +19,7 @@ import net.minecraft.client.multiplayer.chat.ChatListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MessageSignature;
 import net.minecraft.network.chat.Style;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.ArrayListDeque;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
@@ -72,7 +73,7 @@ public class ChatComponent {
             var1.pose().translate(4.0F, 0.0F, 0.0F);
             int var12 = Mth.floor((float)(var11 - 40) / var9);
             int var13 = this.getMessageEndIndexAt(this.screenToChatX((double)var3), this.screenToChatY((double)var4));
-            double var14 = (Double)this.minecraft.options.chatOpacity().get() * 0.8999999761581421 + 0.10000000149011612;
+            double var14 = (Double)this.minecraft.options.chatOpacity().get() * 0.9 + 0.1;
             double var16 = (Double)this.minecraft.options.textBackgroundOpacity().get();
             double var18 = (Double)this.minecraft.options.chatLineSpacing().get();
             int var20 = this.getLineHeight();
@@ -112,7 +113,7 @@ public class ChatComponent {
 
                         var1.pose().pushPose();
                         var1.pose().translate(0.0F, 0.0F, 50.0F);
-                        var1.drawString(this.minecraft.font, (FormattedCharSequence)var25.content(), 0, var33, 16777215 + (var29 << 24));
+                        var1.drawString(this.minecraft.font, (FormattedCharSequence)var25.content(), 0, var33, ARGB.color(var29, -1));
                         var1.pose().popPose();
                      }
                   }

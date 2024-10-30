@@ -30,6 +30,7 @@ import jdk.jfr.RecordingState;
 import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
+import net.minecraft.core.Holder;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceKey;
@@ -41,11 +42,13 @@ import net.minecraft.util.profiling.jfr.event.NetworkSummaryEvent;
 import net.minecraft.util.profiling.jfr.event.PacketReceivedEvent;
 import net.minecraft.util.profiling.jfr.event.PacketSentEvent;
 import net.minecraft.util.profiling.jfr.event.ServerTickTimeEvent;
+import net.minecraft.util.profiling.jfr.event.StructureGenerationEvent;
 import net.minecraft.util.profiling.jfr.event.WorldLoadFinishedEvent;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.storage.RegionFileVersion;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import org.slf4j.Logger;
 
 public class JfrProfiler implements JvmProfiler {
@@ -55,7 +58,7 @@ public class JfrProfiler implements JvmProfiler {
    public static final String TICK_CATEGORY = "Ticking";
    public static final String NETWORK_CATEGORY = "Network";
    public static final String STORAGE_CATEGORY = "Storage";
-   private static final List<Class<? extends Event>> CUSTOM_EVENTS = List.of(ChunkGenerationEvent.class, ChunkRegionReadEvent.class, ChunkRegionWriteEvent.class, PacketReceivedEvent.class, PacketSentEvent.class, NetworkSummaryEvent.class, ServerTickTimeEvent.class, WorldLoadFinishedEvent.class);
+   private static final List<Class<? extends Event>> CUSTOM_EVENTS = List.of(ChunkGenerationEvent.class, ChunkRegionReadEvent.class, ChunkRegionWriteEvent.class, PacketReceivedEvent.class, PacketSentEvent.class, NetworkSummaryEvent.class, ServerTickTimeEvent.class, StructureGenerationEvent.class, WorldLoadFinishedEvent.class);
    private static final String FLIGHT_RECORDER_CONFIG = "/flightrecorder-config.jfc";
    private static final DateTimeFormatter DATE_TIME_FORMATTER = (new DateTimeFormatterBuilder()).appendPattern("yyyy-MM-dd-HHmmss").toFormatter().withZone(ZoneId.systemDefault());
    private static final JfrProfiler INSTANCE = new JfrProfiler();
@@ -235,8 +238,9 @@ public class JfrProfiler implements JvmProfiler {
       } else {
          WorldLoadFinishedEvent var1 = new WorldLoadFinishedEvent();
          var1.begin();
-         Objects.requireNonNull(var1);
-         return var1::commit;
+         return (var1x) -> {
+            var1.commit();
+         };
       }
    }
 
@@ -247,8 +251,23 @@ public class JfrProfiler implements JvmProfiler {
       } else {
          ChunkGenerationEvent var4 = new ChunkGenerationEvent(var1, var2, var3);
          var4.begin();
-         Objects.requireNonNull(var4);
-         return var4::commit;
+         return (var1x) -> {
+            var4.commit();
+         };
+      }
+   }
+
+   @Nullable
+   public ProfiledDuration onStructureGenerate(ChunkPos var1, ResourceKey<Level> var2, Holder<Structure> var3) {
+      if (!StructureGenerationEvent.TYPE.isEnabled()) {
+         return null;
+      } else {
+         StructureGenerationEvent var4 = new StructureGenerationEvent(var1, var3, var2);
+         var4.begin();
+         return (var1x) -> {
+            var4.success = var1x;
+            var4.commit();
+         };
       }
    }
 }

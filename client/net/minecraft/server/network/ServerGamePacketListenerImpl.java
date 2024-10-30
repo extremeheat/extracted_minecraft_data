@@ -104,7 +104,8 @@ import net.minecraft.network.protocol.game.ServerboundLockDifficultyPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundMoveVehiclePacket;
 import net.minecraft.network.protocol.game.ServerboundPaddleBoatPacket;
-import net.minecraft.network.protocol.game.ServerboundPickItemPacket;
+import net.minecraft.network.protocol.game.ServerboundPickItemFromBlockPacket;
+import net.minecraft.network.protocol.game.ServerboundPickItemFromEntityPacket;
 import net.minecraft.network.protocol.game.ServerboundPlaceRecipePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerAbilitiesPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
@@ -156,6 +157,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.entity.player.ProfilePublicKey;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.vehicle.AbstractBoat;
@@ -170,7 +172,6 @@ import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -611,13 +612,66 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       }
    }
 
-   public void handlePickItem(ServerboundPickItemPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.serverLevel());
-      this.player.getInventory().pickSlot(var1.getSlot());
-      int var2 = this.player.getInventory().selected;
-      this.player.connection.send(this.player.getInventory().createInventoryUpdatePacket(var2));
-      this.player.connection.send(this.player.getInventory().createInventoryUpdatePacket(var1.getSlot()));
-      this.player.connection.send(new ClientboundSetHeldSlotPacket(var2));
+   public void handlePickItemFromBlock(ServerboundPickItemFromBlockPacket var1) {
+      ServerLevel var2 = this.player.serverLevel();
+      PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)var2);
+      BlockPos var3 = var1.pos();
+      if (this.player.canInteractWithBlock(var3, 1.0)) {
+         if (var2.isLoaded(var3)) {
+            BlockState var4 = var2.getBlockState(var3);
+            ItemStack var5 = var4.getCloneItemStack(var2, var3);
+            if (!var5.isEmpty()) {
+               if (this.player.hasInfiniteMaterials() && var1.includeData()) {
+                  addBlockDataToItem(var4, var2, var3, var5);
+               }
+
+               this.tryPickItem(var5);
+            }
+         }
+      }
+   }
+
+   private static void addBlockDataToItem(BlockState var0, ServerLevel var1, BlockPos var2, ItemStack var3) {
+      BlockEntity var4 = var0.hasBlockEntity() ? var1.getBlockEntity(var2) : null;
+      if (var4 != null) {
+         CompoundTag var5 = var4.saveCustomOnly(var1.registryAccess());
+         var4.removeComponentsFromTag(var5);
+         BlockItem.setBlockEntityData(var3, var4.getType(), var5);
+         var3.applyComponents(var4.collectComponents());
+      }
+
+   }
+
+   public void handlePickItemFromEntity(ServerboundPickItemFromEntityPacket var1) {
+      ServerLevel var2 = this.player.serverLevel();
+      PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)var2);
+      Entity var3 = var2.getEntity(var1.id());
+      if (var3 != null && this.player.canInteractWithEntity(var3, 3.0)) {
+         ItemStack var4 = var3.getPickResult();
+         if (var4 != null && !var4.isEmpty()) {
+            this.tryPickItem(var4);
+         }
+
+      }
+   }
+
+   private void tryPickItem(ItemStack var1) {
+      if (var1.isItemEnabled(this.player.level().enabledFeatures())) {
+         Inventory var2 = this.player.getInventory();
+         int var3 = var2.findSlotMatchingItem(var1);
+         if (var3 != -1) {
+            if (Inventory.isHotbarSlot(var3)) {
+               var2.selected = var3;
+            } else {
+               var2.pickSlot(var3);
+            }
+         } else if (this.player.hasInfiniteMaterials()) {
+            var2.addAndPickItem(var1);
+         }
+
+         this.player.connection.send(new ClientboundSetHeldSlotPacket(var2.selected));
+         this.player.inventoryMenu.broadcastChanges();
+      }
    }
 
    public void handleRenameItem(ServerboundRenameItemPacket var1) {
@@ -1682,29 +1736,17 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       if (this.player.gameMode.isCreative()) {
          boolean var2 = var1.slotNum() < 0;
          ItemStack var3 = var1.itemStack();
-         ItemStack var4 = var3.copy();
          if (!var3.isItemEnabled(this.player.level().enabledFeatures())) {
             return;
          }
 
-         CustomData var5 = (CustomData)var3.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
-         if (var5.contains("x") && var5.contains("y") && var5.contains("z")) {
-            BlockPos var6 = BlockEntity.getPosFromTag(var5.getUnsafe());
-            if (this.player.level().isLoaded(var6)) {
-               BlockEntity var7 = this.player.level().getBlockEntity(var6);
-               if (var7 != null) {
-                  var7.saveToItem(var3, this.player.level().registryAccess());
-               }
-            }
-         }
-
-         boolean var8 = var1.slotNum() >= 1 && var1.slotNum() <= 45;
-         boolean var9 = var3.isEmpty() || var3.getCount() <= var3.getMaxStackSize();
-         if (var8 && var9) {
+         boolean var4 = var1.slotNum() >= 1 && var1.slotNum() <= 45;
+         boolean var5 = var3.isEmpty() || var3.getCount() <= var3.getMaxStackSize();
+         if (var4 && var5) {
             this.player.inventoryMenu.getSlot(var1.slotNum()).setByPlayer(var3);
-            this.player.inventoryMenu.setRemoteSlot(var1.slotNum(), var4);
+            this.player.inventoryMenu.setRemoteSlot(var1.slotNum(), var3);
             this.player.inventoryMenu.broadcastChanges();
-         } else if (var2 && var9) {
+         } else if (var2 && var5) {
             if (this.dropSpamThrottler.isUnderThreshold()) {
                this.dropSpamThrottler.increment();
                this.player.drop(var3, true);
@@ -1746,7 +1788,12 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleClientInformation(ServerboundClientInformationPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.serverLevel());
+      boolean var2 = this.player.isModelPartShown(PlayerModelPart.HAT);
       this.player.updateOptions(var1.information());
+      if (this.player.isModelPartShown(PlayerModelPart.HAT) != var2) {
+         this.server.getPlayerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_HAT, this.player));
+      }
+
    }
 
    public void handleChangeDifficulty(ServerboundChangeDifficultyPacket var1) {

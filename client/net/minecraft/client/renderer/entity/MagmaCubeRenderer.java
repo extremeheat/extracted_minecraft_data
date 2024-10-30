@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.LavaSlimeModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SlimeRenderState;
@@ -37,9 +36,8 @@ public class MagmaCubeRenderer extends MobRenderer<MagmaCube, SlimeRenderState, 
       var2.size = var1.getSize();
    }
 
-   public void render(SlimeRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
-      this.shadowRadius = 0.25F * (float)var1.size;
-      super.render(var1, var2, var3, var4);
+   protected float getShadowRadius(SlimeRenderState var1) {
+      return (float)var1.size * 0.25F;
    }
 
    protected void scale(SlimeRenderState var1, PoseStack var2) {
@@ -50,6 +48,11 @@ public class MagmaCubeRenderer extends MobRenderer<MagmaCube, SlimeRenderState, 
    }
 
    // $FF: synthetic method
+   protected float getShadowRadius(final LivingEntityRenderState var1) {
+      return this.getShadowRadius((SlimeRenderState)var1);
+   }
+
+   // $FF: synthetic method
    public ResourceLocation getTextureLocation(final LivingEntityRenderState var1) {
       return this.getTextureLocation((SlimeRenderState)var1);
    }
@@ -57,5 +60,10 @@ public class MagmaCubeRenderer extends MobRenderer<MagmaCube, SlimeRenderState, 
    // $FF: synthetic method
    public EntityRenderState createRenderState() {
       return this.createRenderState();
+   }
+
+   // $FF: synthetic method
+   protected float getShadowRadius(final EntityRenderState var1) {
+      return this.getShadowRadius((SlimeRenderState)var1);
    }
 }

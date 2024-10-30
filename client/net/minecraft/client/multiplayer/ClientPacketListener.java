@@ -627,8 +627,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleSetHeldSlot(ClientboundSetHeldSlotPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      if (Inventory.isHotbarSlot(var1.getSlot())) {
-         this.minecraft.player.getInventory().selected = var1.getSlot();
+      if (Inventory.isHotbarSlot(var1.slot())) {
+         this.minecraft.player.getInventory().selected = var1.slot();
       }
 
    }
@@ -756,6 +756,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          LevelChunk var4x = this.level.getChunkSource().getChunk(var2, var3, false);
          if (var4x != null) {
             this.enableChunkLight(var4x, var2, var3);
+            this.minecraft.levelRenderer.onChunkReadyToRender(var4x.getPos());
          }
 
       });
@@ -869,7 +870,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             this.level.playLocalSound(var2.getX(), var2.getY(), var2.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, (this.random.nextFloat() - this.random.nextFloat()) * 1.4F + 2.0F, false);
          }
 
-         this.minecraft.particleEngine.add(new ItemPickupParticle(this.minecraft.getEntityRenderDispatcher(), this.minecraft.renderBuffers(), this.level, var2, (Entity)var3));
+         this.minecraft.particleEngine.add(new ItemPickupParticle(this.minecraft.getEntityRenderDispatcher(), this.level, var2, (Entity)var3));
          if (var2 instanceof ItemEntity) {
             ItemEntity var4 = (ItemEntity)var2;
             ItemStack var5 = var4.getItem();
@@ -1663,7 +1664,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleTitlesClear(ClientboundClearTitlesPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      this.minecraft.gui.clear();
+      this.minecraft.gui.clearTitles();
       if (var1.shouldResetTimes()) {
          this.minecraft.gui.resetTitleTimes();
       }
@@ -1797,6 +1798,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             break;
          case UPDATE_DISPLAY_NAME:
             var3.setTabListDisplayName(var2.displayName());
+            break;
+         case UPDATE_HAT:
+            var3.setShowHat(var2.showHat());
             break;
          case UPDATE_LIST_ORDER:
             var3.setTabListOrder(var2.listOrder());
@@ -2081,7 +2085,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          double var6 = (double)(var1.getMaxSpeed() * var1.getZDist());
 
          try {
-            this.level.addParticle(var1.getParticle(), var1.isOverrideLimiter(), var1.getX(), var1.getY(), var1.getZ(), var2, var4, var6);
+            this.level.addParticle(var1.getParticle(), var1.isOverrideLimiter(), var1.alwaysShow(), var1.getX(), var1.getY(), var1.getZ(), var2, var4, var6);
          } catch (Throwable var17) {
             LOGGER.warn("Could not spawn particle effect {}", var1.getParticle());
          }
@@ -2095,7 +2099,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             double var13 = this.random.nextGaussian() * (double)var1.getMaxSpeed();
 
             try {
-               this.level.addParticle(var1.getParticle(), var1.isOverrideLimiter(), var1.getX() + var3, var1.getY() + var5, var1.getZ() + var7, var9, var11, var13);
+               this.level.addParticle(var1.getParticle(), var1.isOverrideLimiter(), var1.alwaysShow(), var1.getX() + var3, var1.getY() + var5, var1.getZ() + var7, var9, var11, var13);
             } catch (Throwable var16) {
                LOGGER.warn("Could not spawn particle effect {}", var1.getParticle());
                return;

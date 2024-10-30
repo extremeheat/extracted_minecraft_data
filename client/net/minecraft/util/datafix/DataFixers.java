@@ -89,6 +89,7 @@ import net.minecraft.util.datafix.fixes.EntityCodSalmonFix;
 import net.minecraft.util.datafix.fixes.EntityCustomNameToComponentFix;
 import net.minecraft.util.datafix.fixes.EntityElderGuardianSplitFix;
 import net.minecraft.util.datafix.fixes.EntityEquipmentToArmorAndHandFix;
+import net.minecraft.util.datafix.fixes.EntityFieldsRenameFix;
 import net.minecraft.util.datafix.fixes.EntityGoatMissingStateFix;
 import net.minecraft.util.datafix.fixes.EntityHealthFix;
 import net.minecraft.util.datafix.fixes.EntityHorseSaddleFix;
@@ -96,7 +97,6 @@ import net.minecraft.util.datafix.fixes.EntityHorseSplitFix;
 import net.minecraft.util.datafix.fixes.EntityIdFix;
 import net.minecraft.util.datafix.fixes.EntityItemFrameDirectionFix;
 import net.minecraft.util.datafix.fixes.EntityMinecartIdentifiersFix;
-import net.minecraft.util.datafix.fixes.EntityPaintingFieldsRenameFix;
 import net.minecraft.util.datafix.fixes.EntityPaintingItemFrameDirectionFix;
 import net.minecraft.util.datafix.fixes.EntityPaintingMotiveFix;
 import net.minecraft.util.datafix.fixes.EntityProjectileOwnerFix;
@@ -799,7 +799,7 @@ public class DataFixers {
       Objects.requireNonNull(var10008);
       var0.addFixer(new EntityVariantFix(var168, "Change frog variant type", var10005, "minecraft:frog", "Variant", var10008::get));
       Schema var169 = var0.addSchema(3090, SAME_NAMESPACED);
-      var0.addFixer(new EntityPaintingFieldsRenameFix(var169));
+      var0.addFixer(new EntityFieldsRenameFix(var169, "EntityPaintingFieldsRenameFix", "minecraft:painting", Map.of("Motive", "variant", "Facing", "facing")));
       Schema var170 = var0.addSchema(3093, SAME_NAMESPACED);
       var0.addFixer(new EntityGoatMissingStateFix(var170));
       Schema var171 = var0.addSchema(3094, SAME_NAMESPACED);
@@ -812,9 +812,9 @@ public class DataFixers {
       var0.addFixer(new CriteriaRenameFix(var172, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> {
          return (String)var173.getOrDefault(var1x, var1x);
       }));
-      Set var246 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var246);
-      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var246::contains));
+      Set var247 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var247);
+      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var247::contains));
       Schema var174 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var174));
       Schema var175 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -976,6 +976,8 @@ public class DataFixers {
       var0.addFixer(new AddNewChoices(var244, "Added Creaking Heart", References.BLOCK_ENTITY));
       Schema var245 = var0.addSchema(4081, SAME_NAMESPACED);
       var0.addFixer(new EntitySalmonSizeFix(var245));
+      Schema var246 = var0.addSchema(4173, SAME_NAMESPACED);
+      var0.addFixer(new EntityFieldsRenameFix(var246, "Rename TNT Minecart fuse", "minecraft:tnt_minecart", Map.of("TNTFuse", "fuse")));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

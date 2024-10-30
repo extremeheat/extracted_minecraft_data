@@ -164,7 +164,7 @@ public class EntityRenderers {
       register(EntityType.CREEPER, CreeperRenderer::new);
       register(EntityType.DOLPHIN, DolphinRenderer::new);
       register(EntityType.DONKEY, (var0) -> {
-         return new DonkeyRenderer(var0, 0.87F, ModelLayers.DONKEY, ModelLayers.DONKEY_BABY, false);
+         return new DonkeyRenderer(var0, ModelLayers.DONKEY, ModelLayers.DONKEY_BABY, false);
       });
       register(EntityType.DRAGON_FIREBALL, DragonFireballRenderer::new);
       register(EntityType.DROWNED, DrownedRenderer::new);
@@ -229,7 +229,7 @@ public class EntityRenderers {
       });
       register(EntityType.MOOSHROOM, MushroomCowRenderer::new);
       register(EntityType.MULE, (var0) -> {
-         return new DonkeyRenderer(var0, 0.92F, ModelLayers.MULE, ModelLayers.MULE_BABY, true);
+         return new DonkeyRenderer(var0, ModelLayers.MULE, ModelLayers.MULE_BABY, true);
       });
       register(EntityType.OCELOT, OcelotRenderer::new);
       register(EntityType.PAINTING, PaintingRenderer::new);

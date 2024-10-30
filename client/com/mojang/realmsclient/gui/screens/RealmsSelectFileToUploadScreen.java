@@ -171,9 +171,9 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
             var5 = this.name;
          }
 
-         var1.drawString(RealmsSelectFileToUploadScreen.this.font, var5, var3 + 2, var4 + 1, 16777215, false);
-         var1.drawString(RealmsSelectFileToUploadScreen.this.font, this.id, var3 + 2, var4 + 12, -8355712, false);
-         var1.drawString(RealmsSelectFileToUploadScreen.this.font, this.info, var3 + 2, var4 + 12 + 10, -8355712, false);
+         var1.drawString(RealmsSelectFileToUploadScreen.this.font, (String)var5, var3 + 2, var4 + 1, -1);
+         var1.drawString(RealmsSelectFileToUploadScreen.this.font, this.id, var3 + 2, var4 + 12, -8355712);
+         var1.drawString(RealmsSelectFileToUploadScreen.this.font, this.info, var3 + 2, var4 + 12 + 10, -8355712);
       }
 
       public Component getNarration() {

@@ -84,46 +84,17 @@ public class SystemToast implements Toast {
    }
 
    public void render(GuiGraphics var1, Font var2, long var3) {
-      int var5 = this.width();
-      int var6;
-      if (var5 == 160 && this.messageLines.size() <= 1) {
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, var5, this.height());
-      } else {
-         var6 = this.height();
-         boolean var7 = true;
-         int var8 = Math.min(4, var6 - 28);
-         this.renderBackgroundRow(var1, var5, 0, 0, 28);
-
-         for(int var9 = 28; var9 < var6 - var8; var9 += 10) {
-            this.renderBackgroundRow(var1, var5, 16, var9, Math.min(16, var6 - var9 - var8));
-         }
-
-         this.renderBackgroundRow(var1, var5, 32 - var8, var6 - var8, var8);
-      }
-
+      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       if (this.messageLines.isEmpty()) {
          var1.drawString(var2, (Component)this.title, 18, 12, -256, false);
       } else {
          var1.drawString(var2, (Component)this.title, 18, 7, -256, false);
 
-         for(var6 = 0; var6 < this.messageLines.size(); ++var6) {
-            var1.drawString(var2, (FormattedCharSequence)((FormattedCharSequence)this.messageLines.get(var6)), 18, 18 + var6 * 12, -1, false);
+         for(int var5 = 0; var5 < this.messageLines.size(); ++var5) {
+            var1.drawString(var2, (FormattedCharSequence)((FormattedCharSequence)this.messageLines.get(var5)), 18, 18 + var5 * 12, -1, false);
          }
       }
 
-   }
-
-   private void renderBackgroundRow(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      int var6 = var3 == 0 ? 20 : 5;
-      int var7 = Math.min(60, var2 - var6);
-      ResourceLocation var8 = BACKGROUND_SPRITE;
-      var1.blitSprite(RenderType::guiTextured, var8, 160, 32, 0, var3, 0, var4, var6, var5);
-
-      for(int var9 = var6; var9 < var2 - var7; var9 += 64) {
-         var1.blitSprite(RenderType::guiTextured, var8, 160, 32, 32, var3, var9, var4, Math.min(64, var2 - var9 - var7), var5);
-      }
-
-      var1.blitSprite(RenderType::guiTextured, var8, 160, 32, 160 - var7, var3, var2 - var7, var4, var7, var5);
    }
 
    public void reset(Component var1, @Nullable Component var2) {

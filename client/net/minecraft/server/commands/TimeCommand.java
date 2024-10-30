@@ -58,6 +58,7 @@ public class TimeCommand {
          var3.setDayTime((long)var1);
       }
 
+      var0.getServer().forceTimeSynchronization();
       var0.sendSuccess(() -> {
          return Component.translatable("commands.time.set", var1);
       }, true);
@@ -72,6 +73,7 @@ public class TimeCommand {
          var3.setDayTime(var3.getDayTime() + (long)var1);
       }
 
+      var0.getServer().forceTimeSynchronization();
       int var4 = getDayTime(var0.getLevel());
       var0.sendSuccess(() -> {
          return Component.translatable("commands.time.set", var4);

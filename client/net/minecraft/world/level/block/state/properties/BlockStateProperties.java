@@ -3,13 +3,16 @@ package net.minecraft.world.level.block.state.properties;
 import java.util.function.Predicate;
 import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;
-import net.minecraft.world.level.block.CreakingHeartBlock;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerState;
 import net.minecraft.world.level.block.entity.vault.VaultState;
 
 public class BlockStateProperties {
+   public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
    public static final BooleanProperty ATTACHED = BooleanProperty.create("attached");
+   public static final BooleanProperty BERRIES = BooleanProperty.create("berries");
+   public static final BooleanProperty BLOOM = BooleanProperty.create("bloom");
    public static final BooleanProperty BOTTOM = BooleanProperty.create("bottom");
+   public static final BooleanProperty CAN_SUMMON = BooleanProperty.create("can_summon");
    public static final BooleanProperty CONDITIONAL = BooleanProperty.create("conditional");
    public static final BooleanProperty DISARMED = BooleanProperty.create("disarmed");
    public static final BooleanProperty DRAG = BooleanProperty.create("drag");
@@ -26,22 +29,20 @@ public class BlockStateProperties {
    public static final BooleanProperty INVERTED = BooleanProperty.create("inverted");
    public static final BooleanProperty IN_WALL = BooleanProperty.create("in_wall");
    public static final BooleanProperty LIT = BooleanProperty.create("lit");
-   public static final BooleanProperty TIP = BooleanProperty.create("tip");
    public static final BooleanProperty LOCKED = BooleanProperty.create("locked");
+   public static final BooleanProperty NATURAL = BooleanProperty.create("natural");
    public static final BooleanProperty OCCUPIED = BooleanProperty.create("occupied");
    public static final BooleanProperty OPEN = BooleanProperty.create("open");
    public static final BooleanProperty PERSISTENT = BooleanProperty.create("persistent");
    public static final BooleanProperty POWERED = BooleanProperty.create("powered");
    public static final BooleanProperty SHORT = BooleanProperty.create("short");
+   public static final BooleanProperty SHRIEKING = BooleanProperty.create("shrieking");
    public static final BooleanProperty SIGNAL_FIRE = BooleanProperty.create("signal_fire");
    public static final BooleanProperty SNOWY = BooleanProperty.create("snowy");
+   public static final BooleanProperty TIP = BooleanProperty.create("tip");
    public static final BooleanProperty TRIGGERED = BooleanProperty.create("triggered");
    public static final BooleanProperty UNSTABLE = BooleanProperty.create("unstable");
    public static final BooleanProperty WATERLOGGED = BooleanProperty.create("waterlogged");
-   public static final BooleanProperty BERRIES = BooleanProperty.create("berries");
-   public static final BooleanProperty BLOOM = BooleanProperty.create("bloom");
-   public static final BooleanProperty SHRIEKING = BooleanProperty.create("shrieking");
-   public static final BooleanProperty CAN_SUMMON = BooleanProperty.create("can_summon");
    public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS;
    public static final EnumProperty<Direction.Axis> AXIS;
    public static final BooleanProperty UP;
@@ -139,7 +140,6 @@ public class BlockStateProperties {
    public static final BooleanProperty CRAFTING;
    public static final EnumProperty<TrialSpawnerState> TRIAL_SPAWNER_STATE;
    public static final EnumProperty<VaultState> VAULT_STATE;
-   public static final EnumProperty<CreakingHeartBlock.CreakingHeartState> CREAKING;
    public static final BooleanProperty OMINOUS;
 
    public BlockStateProperties() {
@@ -231,7 +231,6 @@ public class BlockStateProperties {
       CRAFTING = BooleanProperty.create("crafting");
       TRIAL_SPAWNER_STATE = EnumProperty.create("trial_spawner_state", TrialSpawnerState.class);
       VAULT_STATE = EnumProperty.create("vault_state", VaultState.class);
-      CREAKING = EnumProperty.create("creaking", CreakingHeartBlock.CreakingHeartState.class);
       OMINOUS = BooleanProperty.create("ominous");
    }
 }

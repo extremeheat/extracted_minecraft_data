@@ -26,6 +26,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
+import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.joml.Matrix4f;
@@ -443,6 +444,12 @@ public class ItemInHandRenderer {
                         break;
                      case BLOCK:
                         this.applyItemArmTransform(var8, var12, var7);
+                        if (!(var6.getItem() instanceof ShieldItem)) {
+                           var8.translate((float)var21 * -0.14142136F, 0.08F, 0.14142136F);
+                           var8.mulPose(Axis.XP.rotationDegrees(-102.25F));
+                           var8.mulPose(Axis.YP.rotationDegrees((float)var21 * 13.365F));
+                           var8.mulPose(Axis.ZP.rotationDegrees((float)var21 * 78.05F));
+                        }
                         break;
                      case BOW:
                         this.applyItemArmTransform(var8, var12, var7);

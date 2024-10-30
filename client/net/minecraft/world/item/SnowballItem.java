@@ -15,6 +15,8 @@ import net.minecraft.world.entity.projectile.Snowball;
 import net.minecraft.world.level.Level;
 
 public class SnowballItem extends Item implements ProjectileItem {
+   public static float PROJECTILE_SHOOT_POWER = 1.5F;
+
    public SnowballItem(Item.Properties var1) {
       super(var1);
    }
@@ -23,7 +25,7 @@ public class SnowballItem extends Item implements ProjectileItem {
       ItemStack var4 = var2.getItemInHand(var3);
       var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)SoundEvents.SNOWBALL_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
       if (var1 instanceof ServerLevel var5) {
-         Projectile.spawnProjectileFromRotation(Snowball::new, var5, var4, var2, 0.0F, 1.5F, 1.0F);
+         Projectile.spawnProjectileFromRotation(Snowball::new, var5, var4, var2, 0.0F, PROJECTILE_SHOOT_POWER, 1.0F);
       }
 
       var2.awardStat(Stats.ITEM_USED.get(this));

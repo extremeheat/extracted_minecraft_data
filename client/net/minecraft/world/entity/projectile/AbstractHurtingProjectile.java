@@ -4,11 +4,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -161,19 +157,6 @@ public abstract class AbstractHurtingProjectile extends Projectile {
 
    public float getLightLevelDependentMagicValue() {
       return 1.0F;
-   }
-
-   public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
-      Entity var2 = this.getOwner();
-      int var3 = var2 == null ? 0 : var2.getId();
-      Vec3 var4 = var1.getPositionBase();
-      return new ClientboundAddEntityPacket(this.getId(), this.getUUID(), var4.x(), var4.y(), var4.z(), var1.getLastSentXRot(), var1.getLastSentYRot(), this.getType(), var3, var1.getLastSentMovement(), 0.0);
-   }
-
-   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
-      super.recreateFromPacket(var1);
-      Vec3 var2 = new Vec3(var1.getXa(), var1.getYa(), var1.getZa());
-      this.setDeltaMovement(var2);
    }
 
    private void assignDirectionalMovement(Vec3 var1, double var2) {

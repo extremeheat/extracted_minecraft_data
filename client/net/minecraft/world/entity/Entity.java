@@ -786,13 +786,14 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          }
 
          this.movementThisTick.add(new Movement(var1, var2));
-         this.checkInsideBlocks(this.movementThisTick, this.blocksInside);
-         boolean var5 = Iterables.any(this.blocksInside, (var0) -> {
+         List var5 = List.copyOf(this.movementThisTick);
+         this.movementThisTick.clear();
+         this.checkInsideBlocks(var5, this.blocksInside);
+         boolean var6 = Iterables.any(this.blocksInside, (var0) -> {
             return var0.is(BlockTags.FIRE) || var0.is(Blocks.LAVA);
          });
-         this.movementThisTick.clear();
          this.blocksInside.clear();
-         if (!var5 && this.isAlive()) {
+         if (!var6 && this.isAlive()) {
             if (this.remainingFireTicks <= 0) {
                this.setRemainingFireTicks(-this.getFireImmuneTicks());
             }

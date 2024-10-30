@@ -107,7 +107,7 @@ public class RecipeBookPage {
       if (this.totalPages > 1) {
          MutableComponent var7 = Component.translatable("gui.recipebook.page", this.currentPage + 1, this.totalPages);
          int var8 = this.minecraft.font.width((FormattedText)var7);
-         var1.drawString(this.minecraft.font, (Component)var7, var2 - var8 / 2 + 73, var3 + 141, -1, false);
+         var1.drawString(this.minecraft.font, (Component)var7, var2 - var8 / 2 + 73, var3 + 141, -1);
       }
 
       this.hoveredButton = null;

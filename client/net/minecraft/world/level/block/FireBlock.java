@@ -414,6 +414,8 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.LARGE_FERN, 60, 100);
       var0.setFlammable(Blocks.DANDELION, 60, 100);
       var0.setFlammable(Blocks.POPPY, 60, 100);
+      var0.setFlammable(Blocks.OPEN_EYEBLOSSOM, 60, 100);
+      var0.setFlammable(Blocks.CLOSED_EYEBLOSSOM, 60, 100);
       var0.setFlammable(Blocks.BLUE_ORCHID, 60, 100);
       var0.setFlammable(Blocks.ALLIUM, 60, 100);
       var0.setFlammable(Blocks.AZURE_BLUET, 60, 100);
@@ -464,9 +466,9 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.GREEN_CARPET, 60, 20);
       var0.setFlammable(Blocks.RED_CARPET, 60, 20);
       var0.setFlammable(Blocks.BLACK_CARPET, 60, 20);
-      var0.setFlammable(Blocks.PALE_MOSS_BLOCK, 60, 20);
-      var0.setFlammable(Blocks.PALE_MOSS_CARPET, 60, 20);
-      var0.setFlammable(Blocks.PALE_HANGING_MOSS, 60, 100);
+      var0.setFlammable(Blocks.PALE_MOSS_BLOCK, 5, 100);
+      var0.setFlammable(Blocks.PALE_MOSS_CARPET, 5, 100);
+      var0.setFlammable(Blocks.PALE_HANGING_MOSS, 5, 100);
       var0.setFlammable(Blocks.DRIED_KELP_BLOCK, 30, 60);
       var0.setFlammable(Blocks.BAMBOO, 60, 60);
       var0.setFlammable(Blocks.SCAFFOLDING, 60, 60);

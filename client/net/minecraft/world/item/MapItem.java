@@ -116,7 +116,7 @@ public class MapItem extends Item {
                                  var11.set(var20 + var27, 0, var21 + var28);
                                  int var29 = var23.getHeight(Heightmap.Types.WORLD_SURFACE, var11.getX(), var11.getZ()) + 1;
                                  BlockState var30;
-                                 if (var29 <= var1.getMinY() + 1) {
+                                 if (var29 <= var1.getMinY()) {
                                     var30 = Blocks.BEDROCK.defaultBlockState();
                                  } else {
                                     do {

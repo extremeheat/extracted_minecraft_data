@@ -823,7 +823,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
             return var2x.wantsToSpawnGolem(var2);
          }).limit(5L).toList();
          if (var7.size() >= var4) {
-            if (!SpawnUtil.trySpawnMob(EntityType.IRON_GOLEM, EntitySpawnReason.MOB_SUMMONED, var1, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM).isEmpty()) {
+            if (!SpawnUtil.trySpawnMob(EntityType.IRON_GOLEM, EntitySpawnReason.MOB_SUMMONED, var1, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM, false).isEmpty()) {
                var6.forEach(GolemSensor::golemDetected);
             }
          }

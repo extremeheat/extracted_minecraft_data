@@ -24,7 +24,12 @@ public abstract class ObjectSelectionList<E extends Entry<E>> extends AbstractSe
       } else if (this.isFocused() && var1 instanceof FocusNavigationEvent.ArrowNavigation) {
          FocusNavigationEvent.ArrowNavigation var4 = (FocusNavigationEvent.ArrowNavigation)var1;
          Entry var3 = (Entry)this.nextEntry(var4.direction());
-         return var3 != null ? ComponentPath.path((ContainerEventHandler)this, (ComponentPath)ComponentPath.leaf(var3)) : null;
+         if (var3 != null) {
+            return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)ComponentPath.leaf(var3));
+         } else {
+            this.setSelected((AbstractSelectionList.Entry)null);
+            return null;
+         }
       } else if (!this.isFocused()) {
          Entry var2 = (Entry)this.getSelected();
          if (var2 == null) {

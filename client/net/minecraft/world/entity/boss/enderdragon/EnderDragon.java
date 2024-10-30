@@ -851,7 +851,7 @@ public class EnderDragon extends Mob implements Enemy {
       EnderDragonPart[] var2 = this.getSubEntities();
 
       for(int var3 = 0; var3 < var2.length; ++var3) {
-         var2[var3].setId(var3 + var1.getId());
+         var2[var3].setId(var3 + var1.getId() + 1);
       }
 
    }

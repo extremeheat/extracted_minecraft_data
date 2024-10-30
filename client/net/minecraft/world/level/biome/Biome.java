@@ -18,6 +18,7 @@ import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.LevelReader;
@@ -250,8 +251,12 @@ public final class Biome {
       return this.specialEffects.getAmbientAdditionsSettings();
    }
 
-   public Optional<Music> getBackgroundMusic() {
+   public Optional<SimpleWeightedRandomList<Music>> getBackgroundMusic() {
       return this.specialEffects.getBackgroundMusic();
+   }
+
+   public float getBackgroundMusicVolume() {
+      return this.specialEffects.getBackgroundMusicVolume();
    }
 
    static {

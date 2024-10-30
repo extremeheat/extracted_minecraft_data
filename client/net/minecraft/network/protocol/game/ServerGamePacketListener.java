@@ -73,7 +73,9 @@ public interface ServerGamePacketListener extends ServerCommonPacketListener, Se
 
    void handleSetCommandMinecart(ServerboundSetCommandMinecartPacket var1);
 
-   void handlePickItem(ServerboundPickItemPacket var1);
+   void handlePickItemFromBlock(ServerboundPickItemFromBlockPacket var1);
+
+   void handlePickItemFromEntity(ServerboundPickItemFromEntityPacket var1);
 
    void handleRenameItem(ServerboundRenameItemPacket var1);
 

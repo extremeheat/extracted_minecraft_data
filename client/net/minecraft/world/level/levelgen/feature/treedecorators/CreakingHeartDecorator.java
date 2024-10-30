@@ -52,7 +52,7 @@ public class CreakingHeartDecorator extends TreeDecorator {
                return true;
             }).findFirst();
             if (!var5.isEmpty()) {
-               var1.setBlock((BlockPos)var5.get(), (BlockState)Blocks.CREAKING_HEART.defaultBlockState().setValue(CreakingHeartBlock.CREAKING, CreakingHeartBlock.CreakingHeartState.DORMANT));
+               var1.setBlock((BlockPos)var5.get(), (BlockState)((BlockState)Blocks.CREAKING_HEART.defaultBlockState().setValue(CreakingHeartBlock.ACTIVE, true)).setValue(CreakingHeartBlock.NATURAL, true));
             }
          }
       }

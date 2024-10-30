@@ -184,6 +184,10 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       return this.shadowRadius;
    }
 
+   protected float getShadowStrength(S var1) {
+      return this.shadowStrength;
+   }
+
    public abstract S createRenderState();
 
    public final S createRenderState(T var1, float var2) {

@@ -8,9 +8,11 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.Dynamic3CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import java.util.stream.Stream;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
@@ -50,21 +52,27 @@ public class AttributeCommand {
          return getAttributeValue((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), 1.0);
       })).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((var0x) -> {
          return getAttributeValue((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), DoubleArgumentType.getDouble(var0x, "scale"));
-      })))).then(((LiteralArgumentBuilder)Commands.literal("base").then(Commands.literal("set").then(Commands.argument("value", DoubleArgumentType.doubleArg()).executes((var0x) -> {
+      })))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("base").then(Commands.literal("set").then(Commands.argument("value", DoubleArgumentType.doubleArg()).executes((var0x) -> {
          return setAttributeBase((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), DoubleArgumentType.getDouble(var0x, "value"));
       })))).then(((LiteralArgumentBuilder)Commands.literal("get").executes((var0x) -> {
          return getAttributeBase((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), 1.0);
       })).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((var0x) -> {
          return getAttributeBase((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), DoubleArgumentType.getDouble(var0x, "scale"));
-      }))))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("modifier").then(Commands.literal("add").then(Commands.argument("id", ResourceLocationArgument.id()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("value", DoubleArgumentType.doubleArg()).then(Commands.literal("add_value").executes((var0x) -> {
+      })))).then(Commands.literal("reset").executes((var0x) -> {
+         return resetAttributeBase((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"));
+      })))).then(((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("modifier").then(Commands.literal("add").then(Commands.argument("id", ResourceLocationArgument.id()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("value", DoubleArgumentType.doubleArg()).then(Commands.literal("add_value").executes((var0x) -> {
          return addModifier((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), ResourceLocationArgument.getId(var0x, "id"), DoubleArgumentType.getDouble(var0x, "value"), AttributeModifier.Operation.ADD_VALUE);
       }))).then(Commands.literal("add_multiplied_base").executes((var0x) -> {
          return addModifier((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), ResourceLocationArgument.getId(var0x, "id"), DoubleArgumentType.getDouble(var0x, "value"), AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
       }))).then(Commands.literal("add_multiplied_total").executes((var0x) -> {
          return addModifier((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), ResourceLocationArgument.getId(var0x, "id"), DoubleArgumentType.getDouble(var0x, "value"), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-      })))))).then(Commands.literal("remove").then(Commands.argument("id", ResourceLocationArgument.id()).executes((var0x) -> {
+      })))))).then(Commands.literal("remove").then(Commands.argument("id", ResourceLocationArgument.id()).suggests((var0x, var1x) -> {
+         return SharedSuggestionProvider.suggestResource(getAttributeModifiers(EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute")), var1x);
+      }).executes((var0x) -> {
          return removeModifier((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), ResourceLocationArgument.getId(var0x, "id"));
-      })))).then(Commands.literal("value").then(Commands.literal("get").then(((RequiredArgumentBuilder)Commands.argument("id", ResourceLocationArgument.id()).executes((var0x) -> {
+      })))).then(Commands.literal("value").then(Commands.literal("get").then(((RequiredArgumentBuilder)Commands.argument("id", ResourceLocationArgument.id()).suggests((var0x, var1x) -> {
+         return SharedSuggestionProvider.suggestResource(getAttributeModifiers(EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute")), var1x);
+      }).executes((var0x) -> {
          return getAttributeModifier((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), ResourceLocationArgument.getId(var0x, "id"), 1.0);
       })).then(Commands.argument("scale", DoubleArgumentType.doubleArg()).executes((var0x) -> {
          return getAttributeModifier((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target"), ResourceArgument.getAttribute(var0x, "attribute"), ResourceLocationArgument.getId(var0x, "id"), DoubleArgumentType.getDouble(var0x, "scale"));
@@ -129,12 +137,30 @@ public class AttributeCommand {
       }
    }
 
+   private static Stream<ResourceLocation> getAttributeModifiers(Entity var0, Holder<Attribute> var1) throws CommandSyntaxException {
+      AttributeInstance var2 = getAttributeInstance(var0, var1);
+      return var2.getModifiers().stream().map(AttributeModifier::id);
+   }
+
    private static int setAttributeBase(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, double var3) throws CommandSyntaxException {
       getAttributeInstance(var1, var2).setBaseValue(var3);
       var0.sendSuccess(() -> {
          return Component.translatable("commands.attribute.base_value.set.success", getAttributeDescription(var2), var1.getName(), var3);
       }, false);
       return 1;
+   }
+
+   private static int resetAttributeBase(CommandSourceStack var0, Entity var1, Holder<Attribute> var2) throws CommandSyntaxException {
+      LivingEntity var3 = getLivingEntity(var1);
+      if (!var3.getAttributes().resetBaseValue(var2)) {
+         throw ERROR_NO_SUCH_ATTRIBUTE.create(var1.getName(), getAttributeDescription(var2));
+      } else {
+         double var4 = var3.getAttributeBaseValue(var2);
+         var0.sendSuccess(() -> {
+            return Component.translatable("commands.attribute.base_value.reset.success", getAttributeDescription(var2), var1.getName(), var4);
+         }, false);
+         return 1;
+      }
    }
 
    private static int addModifier(CommandSourceStack var0, Entity var1, Holder<Attribute> var2, ResourceLocation var3, double var4, AttributeModifier.Operation var6) throws CommandSyntaxException {

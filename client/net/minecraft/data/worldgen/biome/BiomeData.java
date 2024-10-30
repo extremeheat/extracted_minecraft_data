@@ -26,6 +26,7 @@ public abstract class BiomeData {
       var0.register(Biomes.FLOWER_FOREST, OverworldBiomes.forest(var1, var2, false, false, true));
       var0.register(Biomes.BIRCH_FOREST, OverworldBiomes.forest(var1, var2, true, false, false));
       var0.register(Biomes.DARK_FOREST, OverworldBiomes.darkForest(var1, var2, false));
+      var0.register(Biomes.PALE_GARDEN, OverworldBiomes.darkForest(var1, var2, true));
       var0.register(Biomes.OLD_GROWTH_BIRCH_FOREST, OverworldBiomes.forest(var1, var2, true, true, false));
       var0.register(Biomes.OLD_GROWTH_PINE_TAIGA, OverworldBiomes.oldGrowthTaiga(var1, var2, false));
       var0.register(Biomes.OLD_GROWTH_SPRUCE_TAIGA, OverworldBiomes.oldGrowthTaiga(var1, var2, true));

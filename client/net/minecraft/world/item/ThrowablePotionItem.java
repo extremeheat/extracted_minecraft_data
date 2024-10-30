@@ -12,6 +12,8 @@ import net.minecraft.world.entity.projectile.ThrownPotion;
 import net.minecraft.world.level.Level;
 
 public class ThrowablePotionItem extends PotionItem implements ProjectileItem {
+   public static float PROJECTILE_SHOOT_POWER = 0.5F;
+
    public ThrowablePotionItem(Item.Properties var1) {
       super(var1);
    }
@@ -19,7 +21,7 @@ public class ThrowablePotionItem extends PotionItem implements ProjectileItem {
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       if (var1 instanceof ServerLevel var5) {
-         Projectile.spawnProjectileFromRotation(ThrownPotion::new, var5, var4, var2, -20.0F, 0.5F, 1.0F);
+         Projectile.spawnProjectileFromRotation(ThrownPotion::new, var5, var4, var2, -20.0F, PROJECTILE_SHOOT_POWER, 1.0F);
       }
 
       var2.awardStat(Stats.ITEM_USED.get(this));

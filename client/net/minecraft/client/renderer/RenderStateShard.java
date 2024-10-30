@@ -56,6 +56,13 @@ public abstract class RenderStateShard {
       RenderSystem.disableBlend();
       RenderSystem.defaultBlendFunc();
    });
+   protected static final TransparencyStateShard OVERLAY_TRANSPARENCY = new TransparencyStateShard("overlay_transparency", () -> {
+      RenderSystem.enableBlend();
+      RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+   }, () -> {
+      RenderSystem.disableBlend();
+      RenderSystem.defaultBlendFunc();
+   });
    protected static final TransparencyStateShard TRANSLUCENT_TRANSPARENCY = new TransparencyStateShard("translucent_transparency", () -> {
       RenderSystem.enableBlend();
       RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
@@ -98,6 +105,7 @@ public abstract class RenderStateShard {
    protected static final ShaderStateShard POSITION_COLOR_TEX_LIGHTMAP_SHADER;
    protected static final ShaderStateShard POSITION_COLOR_SHADER;
    protected static final ShaderStateShard POSITION_TEXTURE_COLOR_SHADER;
+   protected static final ShaderStateShard PARTICLE_SHADER;
    protected static final ShaderStateShard RENDERTYPE_SOLID_SHADER;
    protected static final ShaderStateShard RENDERTYPE_CUTOUT_MIPPED_SHADER;
    protected static final ShaderStateShard RENDERTYPE_CUTOUT_SHADER;
@@ -168,6 +176,7 @@ public abstract class RenderStateShard {
    protected static final LayeringStateShard POLYGON_OFFSET_LAYERING;
    protected static final LayeringStateShard VIEW_OFFSET_Z_LAYERING;
    protected static final LayeringStateShard VIEW_OFFSET_Z_LAYERING_FORWARD;
+   protected static final LayeringStateShard WORLD_BORDER_LAYERING;
    protected static final OutputStateShard MAIN_TARGET;
    protected static final OutputStateShard OUTLINE_TARGET;
    protected static final OutputStateShard TRANSLUCENT_TARGET;
@@ -214,6 +223,7 @@ public abstract class RenderStateShard {
       POSITION_COLOR_TEX_LIGHTMAP_SHADER = new ShaderStateShard(CoreShaders.POSITION_COLOR_TEX_LIGHTMAP);
       POSITION_COLOR_SHADER = new ShaderStateShard(CoreShaders.POSITION_COLOR);
       POSITION_TEXTURE_COLOR_SHADER = new ShaderStateShard(CoreShaders.POSITION_TEX_COLOR);
+      PARTICLE_SHADER = new ShaderStateShard(CoreShaders.PARTICLE);
       RENDERTYPE_SOLID_SHADER = new ShaderStateShard(CoreShaders.RENDERTYPE_SOLID);
       RENDERTYPE_CUTOUT_MIPPED_SHADER = new ShaderStateShard(CoreShaders.RENDERTYPE_CUTOUT_MIPPED);
       RENDERTYPE_CUTOUT_SHADER = new ShaderStateShard(CoreShaders.RENDERTYPE_CUTOUT);
@@ -315,6 +325,13 @@ public abstract class RenderStateShard {
       }, () -> {
          Matrix4fStack var0 = RenderSystem.getModelViewStack();
          var0.popMatrix();
+      });
+      WORLD_BORDER_LAYERING = new LayeringStateShard("world_border_layering", () -> {
+         RenderSystem.polygonOffset(-3.0F, -3.0F);
+         RenderSystem.enablePolygonOffset();
+      }, () -> {
+         RenderSystem.polygonOffset(0.0F, 0.0F);
+         RenderSystem.disablePolygonOffset();
       });
       MAIN_TARGET = new OutputStateShard("main_target", () -> {
          Minecraft.getInstance().getMainRenderTarget().bindWrite(false);

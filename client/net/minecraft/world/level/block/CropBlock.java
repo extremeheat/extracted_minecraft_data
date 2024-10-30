@@ -159,7 +159,7 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
       return Items.WHEAT_SEEDS;
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       return new ItemStack(this.getBaseSeedId());
    }
 

@@ -99,7 +99,7 @@ public class CandleCakeBlock extends AbstractCandleBlock {
       var1.add(LIT);
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       return new ItemStack(Blocks.CAKE);
    }
 

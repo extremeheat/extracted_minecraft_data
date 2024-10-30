@@ -63,21 +63,27 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       return var3 != -1 ? LightTexture.block(var3) : super.getBlockLightLevel(var1, var2);
    }
 
+   protected float getShadowRadius(ST var1) {
+      Display.RenderState var2 = var1.renderState;
+      return var2 == null ? 0.0F : var2.shadowRadius().get(var1.interpolationProgress);
+   }
+
+   protected float getShadowStrength(ST var1) {
+      Display.RenderState var2 = var1.renderState;
+      return var2 == null ? 0.0F : var2.shadowStrength().get(var1.interpolationProgress);
+   }
+
    public void render(ST var1, PoseStack var2, MultiBufferSource var3, int var4) {
       Display.RenderState var5 = var1.renderState;
-      if (var5 != null) {
-         if (var1.hasSubState()) {
-            float var6 = var1.interpolationProgress;
-            this.shadowRadius = var5.shadowRadius().get(var6);
-            this.shadowStrength = var5.shadowStrength().get(var6);
-            super.render(var1, var2, var3, var4);
-            var2.pushPose();
-            var2.mulPose(this.calculateOrientation(var5, var1, new Quaternionf()));
-            Transformation var7 = (Transformation)var5.transformation().get(var6);
-            var2.mulPose(var7.getMatrix());
-            this.renderInner(var1, var2, var3, var4, var6);
-            var2.popPose();
-         }
+      if (var5 != null && var1.hasSubState()) {
+         float var6 = var1.interpolationProgress;
+         super.render(var1, var2, var3, var4);
+         var2.pushPose();
+         var2.mulPose(this.calculateOrientation(var5, var1, new Quaternionf()));
+         Transformation var7 = (Transformation)var5.transformation().get(var6);
+         var2.mulPose(var7.getMatrix());
+         this.renderInner(var1, var2, var3, var4, var6);
+         var2.popPose();
       }
    }
 
@@ -119,6 +125,11 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       var2.interpolationProgress = var1.calculateInterpolationProgress(var3);
       var2.entityYRot = entityYRot(var1, var3);
       var2.entityXRot = entityXRot(var1, var3);
+   }
+
+   // $FF: synthetic method
+   protected float getShadowRadius(final EntityRenderState var1) {
+      return this.getShadowRadius((DisplayEntityRenderState)var1);
    }
 
    // $FF: synthetic method
@@ -223,6 +234,11 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       }
 
       // $FF: synthetic method
+      protected float getShadowRadius(final EntityRenderState var1) {
+         return super.getShadowRadius((DisplayEntityRenderState)var1);
+      }
+
+      // $FF: synthetic method
       protected int getBlockLightLevel(final Entity var1, final BlockPos var2) {
          return super.getBlockLightLevel((Display)var1, var2);
       }
@@ -273,6 +289,11 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       }
 
       // $FF: synthetic method
+      protected float getShadowRadius(final EntityRenderState var1) {
+         return super.getShadowRadius((DisplayEntityRenderState)var1);
+      }
+
+      // $FF: synthetic method
       protected int getBlockLightLevel(final Entity var1, final BlockPos var2) {
          return super.getBlockLightLevel((Display)var1, var2);
       }
@@ -307,6 +328,11 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       // $FF: synthetic method
       public EntityRenderState createRenderState() {
          return this.createRenderState();
+      }
+
+      // $FF: synthetic method
+      protected float getShadowRadius(final EntityRenderState var1) {
+         return super.getShadowRadius((DisplayEntityRenderState)var1);
       }
 
       // $FF: synthetic method

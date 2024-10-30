@@ -134,6 +134,10 @@ public class MatrixUtil {
       return Triple.of(var9, var18, var2.conjugate());
    }
 
+   public static boolean isIdentity(Matrix4f var0) {
+      return (var0.properties() & 4) != 0;
+   }
+
    public static boolean isPureTranslation(Matrix4f var0) {
       return (var0.properties() & 8) != 0;
    }

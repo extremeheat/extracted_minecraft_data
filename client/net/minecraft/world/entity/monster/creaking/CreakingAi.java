@@ -45,7 +45,7 @@ public class CreakingAi {
          return var1.isActive();
       }, (var0x, var1) -> {
          return var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER);
-      }), SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.2F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.2F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
+      }), SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.3F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.3F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
    }
 
    static void initFightActivity(Brain<Creaking> var0) {

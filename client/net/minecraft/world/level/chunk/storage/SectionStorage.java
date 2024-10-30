@@ -194,6 +194,10 @@ public class SectionStorage<R, P> implements AutoCloseable {
             return SectionStorage.PackedChunk.parse(this.codec, var2, var2xx, this.simpleRegionStorage, this.levelHeightAccessor);
          });
       }, Util.backgroundExecutor().forName("parseSection")).exceptionally((var2x) -> {
+         if (var2x instanceof CompletionException) {
+            var2x = var2x.getCause();
+         }
+
          if (var2x instanceof IOException var3) {
             LOGGER.error("Error reading chunk {} data from disk", var1, var3);
             this.errorReporter.reportChunkLoadFailure(var3, this.simpleRegionStorage.storageInfo(), var1);

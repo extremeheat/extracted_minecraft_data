@@ -15,11 +15,11 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.MultifaceBlock;
+import net.minecraft.world.level.block.MultifaceSpreadeableBlock;
 
 public class MultifaceGrowthConfiguration implements FeatureConfiguration {
    public static final Codec<MultifaceGrowthConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("block").flatXmap(MultifaceGrowthConfiguration::apply, DataResult::success).orElse((MultifaceBlock)Blocks.GLOW_LICHEN).forGetter((var0x) -> {
+      return var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("block").flatXmap(MultifaceGrowthConfiguration::apply, DataResult::success).orElse((MultifaceSpreadeableBlock)Blocks.GLOW_LICHEN).forGetter((var0x) -> {
          return var0x.placeBlock;
       }), Codec.intRange(1, 64).fieldOf("search_range").orElse(10).forGetter((var0x) -> {
          return var0x.searchRange;
@@ -35,7 +35,7 @@ public class MultifaceGrowthConfiguration implements FeatureConfiguration {
          return var0x.canBePlacedOn;
       })).apply(var0, MultifaceGrowthConfiguration::new);
    });
-   public final MultifaceBlock placeBlock;
+   public final MultifaceSpreadeableBlock placeBlock;
    public final int searchRange;
    public final boolean canPlaceOnFloor;
    public final boolean canPlaceOnCeiling;
@@ -44,20 +44,20 @@ public class MultifaceGrowthConfiguration implements FeatureConfiguration {
    public final HolderSet<Block> canBePlacedOn;
    private final ObjectArrayList<Direction> validDirections;
 
-   private static DataResult<MultifaceBlock> apply(Block var0) {
+   private static DataResult<MultifaceSpreadeableBlock> apply(Block var0) {
       DataResult var10000;
-      if (var0 instanceof MultifaceBlock var1) {
+      if (var0 instanceof MultifaceSpreadeableBlock var1) {
          var10000 = DataResult.success(var1);
       } else {
          var10000 = DataResult.error(() -> {
-            return "Growth block should be a multiface block";
+            return "Growth block should be a multiface spreadeable block";
          });
       }
 
       return var10000;
    }
 
-   public MultifaceGrowthConfiguration(MultifaceBlock var1, int var2, boolean var3, boolean var4, boolean var5, float var6, HolderSet<Block> var7) {
+   public MultifaceGrowthConfiguration(MultifaceSpreadeableBlock var1, int var2, boolean var3, boolean var4, boolean var5, float var6, HolderSet<Block> var7) {
       super();
       this.placeBlock = var1;
       this.searchRange = var2;

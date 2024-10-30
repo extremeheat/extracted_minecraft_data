@@ -176,7 +176,7 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, -1);
-      var1.drawString(this.font, (Component)NAME_LABEL, this.column1X + this.columnWidth / 2 - this.font.width((FormattedText)NAME_LABEL) / 2, row(0) - 5, -1, false);
+      var1.drawString(this.font, (Component)NAME_LABEL, this.column1X + this.columnWidth / 2 - this.font.width((FormattedText)NAME_LABEL) / 2, row(0) - 5, -1);
       this.nameEdit.render(var1, var2, var3, var4);
    }
 

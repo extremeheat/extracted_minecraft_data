@@ -623,10 +623,6 @@ public class RenderSystem {
       blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
    }
 
-   public static void overlayBlendFunc() {
-      blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-   }
-
    @Nullable
    public static CompiledShaderProgram setShader(ShaderProgram var0) {
       assertOnRenderThread();

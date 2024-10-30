@@ -33,7 +33,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    private static final int DEFAULT_FUSE_TIME = 80;
    private static final float DEFAULT_EXPLOSION_POWER = 4.0F;
    private static final String TAG_BLOCK_STATE = "block_state";
-   private static final String TAG_FUSE = "fuse";
+   public static final String TAG_FUSE = "fuse";
    private static final String TAG_EXPLOSION_POWER = "explosion_power";
    private static final ExplosionDamageCalculator USED_PORTAL_DAMAGE_CALCULATOR;
    @Nullable

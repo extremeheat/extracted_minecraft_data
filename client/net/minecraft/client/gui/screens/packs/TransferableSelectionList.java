@@ -42,7 +42,7 @@ public class TransferableSelectionList extends ObjectSelectionList<PackEntry> {
 
    protected void renderHeader(GuiGraphics var1, int var2, int var3) {
       MutableComponent var4 = Component.empty().append(this.title).withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
-      var1.drawString(this.minecraft.font, (Component)var4, var2 + this.width / 2 - this.minecraft.font.width((FormattedText)var4) / 2, Math.min(this.getY() + 3, var3), -1, false);
+      var1.drawString(this.minecraft.font, (Component)var4, var2 + this.width / 2 - this.minecraft.font.width((FormattedText)var4) / 2, Math.min(this.getY() + 3, var3), -1);
    }
 
    public int getRowWidth() {

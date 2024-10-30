@@ -213,7 +213,7 @@ public class ServerExplosion implements Explosion {
          var15 *= var26;
          var17 *= var26;
          Vec3 var30 = new Vec3(var13, var15, var17);
-         var10.setDeltaMovement(var10.getDeltaMovement().add(var30));
+         var10.push(var30);
          if (var10 instanceof Player var29) {
             if (!var29.isSpectator() && (!var29.isCreative() || !var29.getAbilities().flying)) {
                this.hitPlayers.put(var29, var30);
@@ -309,6 +309,10 @@ public class ServerExplosion implements Explosion {
    @Nullable
    public Entity getDirectSourceEntity() {
       return this.source;
+   }
+
+   public DamageSource getDamageSource() {
+      return this.damageSource;
    }
 
    public Explosion.BlockInteraction getBlockInteraction() {

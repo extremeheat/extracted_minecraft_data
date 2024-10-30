@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
@@ -160,6 +161,7 @@ import net.minecraft.client.resources.model.EquipmentModelSet;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.client.sounds.MusicInfo;
 import net.minecraft.client.sounds.MusicManager;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.telemetry.ClientTelemetryManager;
@@ -169,9 +171,7 @@ import net.minecraft.client.tutorial.Tutorial;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -221,6 +221,7 @@ import net.minecraft.util.profiling.metrics.profiling.ActiveMetricsRecorder;
 import net.minecraft.util.profiling.metrics.profiling.InactiveMetricsRecorder;
 import net.minecraft.util.profiling.metrics.profiling.MetricsRecorder;
 import net.minecraft.util.profiling.metrics.storage.MetricsPersister;
+import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -228,15 +229,12 @@ import net.minecraft.world.TickRateManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.ChatVisiblity;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.LevelStorageSource;
@@ -779,9 +777,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.options.resourcePacks.clear();
       this.options.incompatibleResourcePacks.clear();
       this.options.save();
-      this.reloadResourcePacks(true, var3).thenRun(() -> {
+      this.reloadResourcePacks(true, var3).thenRunAsync(() -> {
          this.addResourcePackLoadFailToast(var2);
-      });
+      }, this);
    }
 
    private void abortResourcePackRecovery() {
@@ -1510,8 +1508,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          } catch (Throwable var22) {
             try {
                var26.close();
-            } catch (Throwable var20) {
-               var22.addSuppressed(var20);
+            } catch (Throwable var19) {
+               var22.addSuppressed(var19);
             }
 
             throw var22;
@@ -1528,8 +1526,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
                try {
                   FileUtils.forceDelete(var10.toFile());
-               } catch (IOException var19) {
-                  LOGGER.warn("Failed to delete temporary profiling result {}", var10, var19);
+               } catch (IOException var20) {
+                  LOGGER.warn("Failed to delete temporary profiling result {}", var10, var20);
                }
             }
 
@@ -1825,7 +1823,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             if (!this.options.joinedFirstServer && this.isMultiplayerServer()) {
                MutableComponent var7 = Component.translatable("tutorial.socialInteractions.title");
                MutableComponent var10 = Component.translatable("tutorial.socialInteractions.description", Tutorial.key("socialInteractions"));
-               this.socialInteractionsToast = new TutorialToast(TutorialToast.Icons.SOCIAL_INTERACTIONS, var7, var10, true, 8000);
+               this.socialInteractionsToast = new TutorialToast(this.font, TutorialToast.Icons.SOCIAL_INTERACTIONS, var7, var10, true, 8000);
                this.toastManager.addToast(this.socialInteractionsToast);
                this.options.joinedFirstServer = true;
                this.options.save();
@@ -2302,74 +2300,25 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    private void pickBlock() {
       if (this.hitResult != null && this.hitResult.getType() != HitResult.Type.MISS) {
-         boolean var1 = this.player.getAbilities().instabuild;
-         BlockEntity var2 = null;
-         HitResult.Type var4 = this.hitResult.getType();
-         ItemStack var3;
-         if (var4 == HitResult.Type.BLOCK) {
-            BlockPos var8 = ((BlockHitResult)this.hitResult).getBlockPos();
-            BlockState var6 = this.level.getBlockState(var8);
-            if (var6.isAir()) {
-               return;
-            }
-
-            Block var7 = var6.getBlock();
-            var3 = var7.getCloneItemStack(this.level, var8, var6);
-            if (var3.isEmpty()) {
-               return;
-            }
-
-            if (var1 && Screen.hasControlDown() && var6.hasBlockEntity()) {
-               var2 = this.level.getBlockEntity(var8);
-            }
-         } else {
-            if (var4 != HitResult.Type.ENTITY || !var1) {
-               return;
-            }
-
-            Entity var5 = ((EntityHitResult)this.hitResult).getEntity();
-            var3 = var5.getPickResult();
-            if (var3 == null) {
-               return;
-            }
+         boolean var1 = Screen.hasControlDown();
+         HitResult var10000 = this.hitResult;
+         Objects.requireNonNull(var10000);
+         HitResult var2 = var10000;
+         byte var3 = 0;
+         //$FF: var3->value
+         //0->net/minecraft/world/phys/BlockHitResult
+         //1->net/minecraft/world/phys/EntityHitResult
+         switch (var2.typeSwitch<invokedynamic>(var2, var3)) {
+            case 0:
+               BlockHitResult var4 = (BlockHitResult)var2;
+               this.gameMode.handlePickItemFromBlock(var4.getBlockPos(), var1);
+               break;
+            case 1:
+               EntityHitResult var5 = (EntityHitResult)var2;
+               this.gameMode.handlePickItemFromEntity(var5.getEntity(), var1);
          }
 
-         if (var3.isEmpty()) {
-            String var10 = "";
-            if (var4 == HitResult.Type.BLOCK) {
-               var10 = BuiltInRegistries.BLOCK.getKey(this.level.getBlockState(((BlockHitResult)this.hitResult).getBlockPos()).getBlock()).toString();
-            } else if (var4 == HitResult.Type.ENTITY) {
-               var10 = BuiltInRegistries.ENTITY_TYPE.getKey(((EntityHitResult)this.hitResult).getEntity().getType()).toString();
-            }
-
-            LOGGER.warn("Picking on: [{}] {} gave null item", var4, var10);
-         } else {
-            Inventory var9 = this.player.getInventory();
-            if (var2 != null) {
-               this.addCustomNbtData(var3, var2, this.level.registryAccess());
-            }
-
-            int var11 = var9.findSlotMatchingItem(var3);
-            if (var1) {
-               var9.setPickedItem(var3);
-               this.gameMode.handleCreativeModeItemAdd(this.player.getItemInHand(InteractionHand.MAIN_HAND), 36 + var9.selected);
-            } else if (var11 != -1) {
-               if (Inventory.isHotbarSlot(var11)) {
-                  var9.selected = var11;
-               } else {
-                  this.gameMode.handlePickItem(var11);
-               }
-            }
-
-         }
       }
-   }
-
-   private void addCustomNbtData(ItemStack var1, BlockEntity var2, RegistryAccess var3) {
-      CompoundTag var4 = var2.saveCustomAndMetadata(var3);
-      var2.removeComponentsFromTag(var4);
-      BlockItem.setBlockEntityData(var1, var2.getType(), var4);
-      var1.applyComponents(var2.collectComponents());
    }
 
    public CrashReport fillReport(CrashReport var1) {
@@ -2587,23 +2536,35 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return this.soundManager;
    }
 
-   public Music getSituationalMusic() {
+   public MusicInfo getSituationalMusic() {
       Music var1 = (Music)Optionull.map(this.screen, Screen::getBackgroundMusic);
       if (var1 != null) {
-         return var1;
+         return new MusicInfo(var1);
       } else if (this.player != null) {
-         if (this.player.level().dimension() == Level.END) {
-            return this.gui.getBossOverlay().shouldPlayMusic() ? Musics.END_BOSS : Musics.END;
+         Level var2 = this.player.level();
+         if (var2.dimension() == Level.END) {
+            return this.gui.getBossOverlay().shouldPlayMusic() ? new MusicInfo(Musics.END_BOSS) : new MusicInfo(Musics.END);
          } else {
-            Holder var2 = this.player.level().getBiome(this.player.blockPosition());
-            if (this.musicManager.isPlayingMusic(Musics.UNDER_WATER) || this.player.isUnderWater() && var2.is(BiomeTags.PLAYS_UNDERWATER_MUSIC)) {
-               return Musics.UNDER_WATER;
+            Holder var3 = var2.getBiome(this.player.blockPosition());
+            float var4 = ((Biome)var3.value()).getBackgroundMusicVolume();
+            if (!this.musicManager.isPlayingMusic(Musics.UNDER_WATER) && (!this.player.isUnderWater() || !var3.is(BiomeTags.PLAYS_UNDERWATER_MUSIC))) {
+               if (var2.dimension() != Level.NETHER && this.player.getAbilities().instabuild && this.player.getAbilities().mayfly) {
+                  return new MusicInfo(Musics.CREATIVE, var4);
+               } else {
+                  Optional var5 = ((Biome)var3.value()).getBackgroundMusic();
+                  if (var5.isPresent()) {
+                     Optional var6 = ((SimpleWeightedRandomList)var5.get()).getRandomValue(var2.random);
+                     return new MusicInfo((Music)var6.orElse((Object)null), var4);
+                  } else {
+                     return new MusicInfo(Musics.GAME, var4);
+                  }
+               }
             } else {
-               return this.player.level().dimension() != Level.NETHER && this.player.getAbilities().instabuild && this.player.getAbilities().mayfly ? Musics.CREATIVE : (Music)((Biome)var2.value()).getBackgroundMusic().orElse(Musics.GAME);
+               return new MusicInfo(Musics.UNDER_WATER, var4);
             }
          }
       } else {
-         return Musics.MENU;
+         return new MusicInfo(Musics.MENU);
       }
    }
 

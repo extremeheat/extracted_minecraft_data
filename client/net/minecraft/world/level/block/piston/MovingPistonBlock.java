@@ -110,7 +110,7 @@ public class MovingPistonBlock extends BaseEntityBlock {
       return var3 instanceof PistonMovingBlockEntity ? (PistonMovingBlockEntity)var3 : null;
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       return ItemStack.EMPTY;
    }
 

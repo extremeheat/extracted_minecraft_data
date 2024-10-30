@@ -24,7 +24,8 @@ import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerSlotStateChangedPacket;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
-import net.minecraft.network.protocol.game.ServerboundPickItemPacket;
+import net.minecraft.network.protocol.game.ServerboundPickItemFromBlockPacket;
+import net.minecraft.network.protocol.game.ServerboundPickItemFromEntityPacket;
 import net.minecraft.network.protocol.game.ServerboundPlaceRecipePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
@@ -514,8 +515,12 @@ public class MultiPlayerGameMode {
       return this.destroyProgress > 0.0F ? (int)(this.destroyProgress * 10.0F) : -1;
    }
 
-   public void handlePickItem(int var1) {
-      this.connection.send(new ServerboundPickItemPacket(var1));
+   public void handlePickItemFromBlock(BlockPos var1, boolean var2) {
+      this.connection.send(new ServerboundPickItemFromBlockPacket(var1, var2));
+   }
+
+   public void handlePickItemFromEntity(Entity var1, boolean var2) {
+      this.connection.send(new ServerboundPickItemFromEntityPacket(var1.getId(), var2));
    }
 
    public void handleSlotStateChanged(int var1, int var2, boolean var3) {

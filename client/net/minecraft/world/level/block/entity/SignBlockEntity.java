@@ -251,10 +251,6 @@ public class SignBlockEntity extends BlockEntity {
       return this.saveCustomOnly(var1);
    }
 
-   public boolean onlyOpCanSetNbt() {
-      return true;
-   }
-
    public void setAllowedPlayerEditor(@Nullable UUID var1) {
       this.playerWhoMayEdit = var1;
    }

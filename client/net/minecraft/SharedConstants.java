@@ -11,31 +11,31 @@ import net.minecraft.world.level.ChunkPos;
 public class SharedConstants {
    /** @deprecated */
    @Deprecated
-   public static final boolean SNAPSHOT = false;
+   public static final boolean SNAPSHOT = true;
    /** @deprecated */
    @Deprecated
-   public static final int WORLD_VERSION = 4082;
+   public static final int WORLD_VERSION = 4174;
    /** @deprecated */
    @Deprecated
    public static final String SERIES = "main";
    /** @deprecated */
    @Deprecated
-   public static final String VERSION_STRING = "1.21.3";
+   public static final String VERSION_STRING = "24w44a";
    /** @deprecated */
    @Deprecated
-   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 768;
+   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 769;
    /** @deprecated */
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 219;
-   public static final int SNBT_NAG_VERSION = 4053;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 220;
+   public static final int SNBT_NAG_VERSION = 4173;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
-   public static final boolean CRASH_EAGERLY = false;
+   public static final boolean CRASH_EAGERLY = true;
    /** @deprecated */
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT = 42;
+   public static final int RESOURCE_PACK_FORMAT = 43;
    /** @deprecated */
    @Deprecated
-   public static final int DATA_PACK_FORMAT = 57;
+   public static final int DATA_PACK_FORMAT = 58;
    /** @deprecated */
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
@@ -175,7 +175,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 768;
+      return 1073742044;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {

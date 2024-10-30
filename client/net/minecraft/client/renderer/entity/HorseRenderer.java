@@ -28,7 +28,7 @@ public final class HorseRenderer extends AbstractHorseRenderer<Horse, HorseRende
    });
 
    public HorseRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new HorseModel(var1.bakeLayer(ModelLayers.HORSE)), new HorseModel(var1.bakeLayer(ModelLayers.HORSE_BABY)), 1.1F);
+      super(var1, new HorseModel(var1.bakeLayer(ModelLayers.HORSE)), new HorseModel(var1.bakeLayer(ModelLayers.HORSE_BABY)));
       this.addLayer(new HorseMarkingLayer(this));
       this.addLayer(new HorseArmorLayer(this, var1.getModelSet(), var1.getEquipmentRenderer()));
    }

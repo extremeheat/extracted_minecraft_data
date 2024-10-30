@@ -63,10 +63,6 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, Tri
       return this.trialSpawner.getData().getUpdateTag((TrialSpawnerState)this.getBlockState().getValue(TrialSpawnerBlock.STATE));
    }
 
-   public boolean onlyOpCanSetNbt() {
-      return true;
-   }
-
    public void setEntityId(EntityType<?> var1, RandomSource var2) {
       this.trialSpawner.getData().setEntityId(this.trialSpawner, var2, var1);
       this.setChanged();

@@ -1895,7 +1895,7 @@ public abstract class Player extends LivingEntity {
       return this.abilities.instabuild && this.getPermissionLevel() >= 2;
    }
 
-   protected int getPermissionLevel() {
+   public int getPermissionLevel() {
       return 0;
    }
 
@@ -2062,6 +2062,10 @@ public abstract class Player extends LivingEntity {
 
    public boolean isControlledByClient() {
       return true;
+   }
+
+   public boolean onClimbable() {
+      return this.abilities.flying ? false : super.onClimbable();
    }
 
    static {

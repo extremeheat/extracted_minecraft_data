@@ -1,79 +1,36 @@
 package net.minecraft.client.particle;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import javax.annotation.Nullable;
-import net.minecraft.client.renderer.CoreShaders;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.renderer.texture.TextureManager;
 
-public interface ParticleRenderType {
-   ParticleRenderType TERRAIN_SHEET = new ParticleRenderType() {
-      public BufferBuilder begin(Tesselator var1, TextureManager var2) {
-         RenderSystem.enableBlend();
-         RenderSystem.defaultBlendFunc();
-         RenderSystem.depthMask(true);
-         RenderSystem.setShader(CoreShaders.PARTICLE);
-         RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
-         return var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
-      }
+public record ParticleRenderType(String name, @Nullable RenderType renderType) {
+   public static final ParticleRenderType TERRAIN_SHEET;
+   public static final ParticleRenderType PARTICLE_SHEET_OPAQUE;
+   public static final ParticleRenderType PARTICLE_SHEET_TRANSLUCENT;
+   public static final ParticleRenderType CUSTOM;
+   public static final ParticleRenderType NO_RENDER;
 
-      public String toString() {
-         return "TERRAIN_SHEET";
-      }
-   };
-   ParticleRenderType PARTICLE_SHEET_OPAQUE = new ParticleRenderType() {
-      public BufferBuilder begin(Tesselator var1, TextureManager var2) {
-         RenderSystem.disableBlend();
-         RenderSystem.depthMask(true);
-         RenderSystem.setShader(CoreShaders.PARTICLE);
-         RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
-         return var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
-      }
+   public ParticleRenderType(String var1, @Nullable RenderType var2) {
+      super();
+      this.name = var1;
+      this.renderType = var2;
+   }
 
-      public String toString() {
-         return "PARTICLE_SHEET_OPAQUE";
-      }
-   };
-   ParticleRenderType PARTICLE_SHEET_TRANSLUCENT = new ParticleRenderType() {
-      public BufferBuilder begin(Tesselator var1, TextureManager var2) {
-         RenderSystem.depthMask(true);
-         RenderSystem.setShader(CoreShaders.PARTICLE);
-         RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_PARTICLES);
-         RenderSystem.enableBlend();
-         RenderSystem.defaultBlendFunc();
-         return var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
-      }
-
-      public String toString() {
-         return "PARTICLE_SHEET_TRANSLUCENT";
-      }
-   };
-   ParticleRenderType CUSTOM = new ParticleRenderType() {
-      public BufferBuilder begin(Tesselator var1, TextureManager var2) {
-         RenderSystem.depthMask(true);
-         RenderSystem.disableBlend();
-         return var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
-      }
-
-      public String toString() {
-         return "CUSTOM";
-      }
-   };
-   ParticleRenderType NO_RENDER = new ParticleRenderType() {
-      @Nullable
-      public BufferBuilder begin(Tesselator var1, TextureManager var2) {
-         return null;
-      }
-
-      public String toString() {
-         return "NO_RENDER";
-      }
-   };
+   public String name() {
+      return this.name;
+   }
 
    @Nullable
-   BufferBuilder begin(Tesselator var1, TextureManager var2);
+   public RenderType renderType() {
+      return this.renderType;
+   }
+
+   static {
+      TERRAIN_SHEET = new ParticleRenderType("TERRAIN_SHEET", RenderType.translucentParticle(TextureAtlas.LOCATION_BLOCKS));
+      PARTICLE_SHEET_OPAQUE = new ParticleRenderType("PARTICLE_SHEET_OPAQUE", RenderType.opaqueParticle(TextureAtlas.LOCATION_PARTICLES));
+      PARTICLE_SHEET_TRANSLUCENT = new ParticleRenderType("PARTICLE_SHEET_TRANSLUCENT", RenderType.translucentParticle(TextureAtlas.LOCATION_PARTICLES));
+      CUSTOM = new ParticleRenderType("CUSTOM", (RenderType)null);
+      NO_RENDER = new ParticleRenderType("NO_RENDER", (RenderType)null);
+   }
 }

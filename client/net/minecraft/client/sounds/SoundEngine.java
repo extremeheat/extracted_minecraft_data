@@ -179,6 +179,18 @@ public class SoundEngine {
 
    }
 
+   public void setVolume(SoundInstance var1, float var2) {
+      if (this.loaded) {
+         ChannelAccess.ChannelHandle var3 = (ChannelAccess.ChannelHandle)this.instanceToChannel.get(var1);
+         if (var3 != null) {
+            var3.execute((var3x) -> {
+               var3x.setVolume(var2 * this.calculateVolume(var1));
+            });
+         }
+      }
+
+   }
+
    public void stopAll() {
       if (this.loaded) {
          this.executor.flush();

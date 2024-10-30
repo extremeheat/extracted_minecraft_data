@@ -2,6 +2,7 @@ package net.minecraft.client.tutorial;
 
 import java.util.Iterator;
 import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
@@ -32,15 +33,16 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
       if (!this.tutorial.isSurvival()) {
          this.tutorial.setStep(TutorialSteps.NONE);
       } else {
+         Minecraft var1 = this.tutorial.getMinecraft();
          if (this.timeWaiting == 1) {
-            LocalPlayer var1 = this.tutorial.getMinecraft().player;
-            if (var1 != null) {
-               if (var1.getInventory().contains(ItemTags.PLANKS)) {
+            LocalPlayer var2 = var1.player;
+            if (var2 != null) {
+               if (var2.getInventory().contains(ItemTags.PLANKS)) {
                   this.tutorial.setStep(TutorialSteps.NONE);
                   return;
                }
 
-               if (hasCraftedPlanksPreviously(var1, ItemTags.PLANKS)) {
+               if (hasCraftedPlanksPreviously(var2, ItemTags.PLANKS)) {
                   this.tutorial.setStep(TutorialSteps.NONE);
                   return;
                }
@@ -48,8 +50,8 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
          }
 
          if (this.timeWaiting >= 1200 && this.toast == null) {
-            this.toast = new TutorialToast(TutorialToast.Icons.WOODEN_PLANKS, CRAFT_TITLE, CRAFT_DESCRIPTION, false);
-            this.tutorial.getMinecraft().getToastManager().addToast(this.toast);
+            this.toast = new TutorialToast(var1.font, TutorialToast.Icons.WOODEN_PLANKS, CRAFT_TITLE, CRAFT_DESCRIPTION, false);
+            var1.getToastManager().addToast(this.toast);
          }
 
       }

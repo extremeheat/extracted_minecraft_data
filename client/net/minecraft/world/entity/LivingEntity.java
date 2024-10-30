@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.annotation.Nonnull;
@@ -1608,27 +1607,23 @@ public abstract class LivingEntity extends Entity implements Attackable {
       return !this.isRemoved() && this.getHealth() > 0.0F;
    }
 
-   public boolean isLookingAtMe(LivingEntity var1, double var2, boolean var4, boolean var5, Predicate<LivingEntity> var6, DoubleSupplier... var7) {
-      if (!var6.test(var1)) {
-         return false;
-      } else {
-         Vec3 var8 = var1.getViewVector(1.0F).normalize();
-         DoubleSupplier[] var9 = var7;
-         int var10 = var7.length;
+   public boolean isLookingAtMe(LivingEntity var1, double var2, boolean var4, boolean var5, double... var6) {
+      Vec3 var7 = var1.getViewVector(1.0F).normalize();
+      double[] var8 = var6;
+      int var9 = var6.length;
 
-         for(int var11 = 0; var11 < var10; ++var11) {
-            DoubleSupplier var12 = var9[var11];
-            Vec3 var13 = new Vec3(this.getX() - var1.getX(), var12.getAsDouble() - var1.getEyeY(), this.getZ() - var1.getZ());
-            double var14 = var13.length();
-            var13 = var13.normalize();
-            double var16 = var8.dot(var13);
-            if (var16 > 1.0 - var2 / (var4 ? var14 : 1.0)) {
-               return var1.hasLineOfSight(this, var5 ? ClipContext.Block.VISUAL : ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var12);
-            }
+      for(int var10 = 0; var10 < var9; ++var10) {
+         double var11 = var8[var10];
+         Vec3 var13 = new Vec3(this.getX() - var1.getX(), var11 - var1.getEyeY(), this.getZ() - var1.getZ());
+         double var14 = var13.length();
+         var13 = var13.normalize();
+         double var16 = var7.dot(var13);
+         if (var16 > 1.0 - var2 / (var4 ? var14 : 1.0)) {
+            return var1.hasLineOfSight(this, var5 ? ClipContext.Block.VISUAL : ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var11);
          }
-
-         return false;
       }
+
+      return false;
    }
 
    public int getMaxFallDistance() {
@@ -3055,22 +3050,19 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    public boolean hasLineOfSight(Entity var1) {
-      ClipContext.Block var10002 = ClipContext.Block.COLLIDER;
-      ClipContext.Fluid var10003 = ClipContext.Fluid.NONE;
-      java.util.Objects.requireNonNull(var1);
-      return this.hasLineOfSight(var1, var10002, var10003, var1::getEyeY);
+      return this.hasLineOfSight(var1, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var1.getEyeY());
    }
 
-   public boolean hasLineOfSight(Entity var1, ClipContext.Block var2, ClipContext.Fluid var3, DoubleSupplier var4) {
+   public boolean hasLineOfSight(Entity var1, ClipContext.Block var2, ClipContext.Fluid var3, double var4) {
       if (var1.level() != this.level()) {
          return false;
       } else {
-         Vec3 var5 = new Vec3(this.getX(), this.getEyeY(), this.getZ());
-         Vec3 var6 = new Vec3(var1.getX(), var4.getAsDouble(), var1.getZ());
-         if (var6.distanceTo(var5) > 128.0) {
+         Vec3 var6 = new Vec3(this.getX(), this.getEyeY(), this.getZ());
+         Vec3 var7 = new Vec3(var1.getX(), var4, var1.getZ());
+         if (var7.distanceTo(var6) > 128.0) {
             return false;
          } else {
-            return this.level().clip(new ClipContext(var5, var6, var2, var3, this)).getType() == HitResult.Type.MISS;
+            return this.level().clip(new ClipContext(var6, var7, var2, var3, this)).getType() == HitResult.Type.MISS;
          }
       }
    }

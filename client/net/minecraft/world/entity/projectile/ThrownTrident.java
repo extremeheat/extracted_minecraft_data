@@ -27,6 +27,7 @@ import net.minecraft.world.phys.Vec3;
 public class ThrownTrident extends AbstractArrow {
    private static final EntityDataAccessor<Byte> ID_LOYALTY;
    private static final EntityDataAccessor<Boolean> ID_FOIL;
+   private static final float WATER_INERTIA = 0.99F;
    private boolean dealtDamage;
    public int clientSideReturnTridentTickCount;
 

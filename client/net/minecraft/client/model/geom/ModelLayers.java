@@ -3,6 +3,7 @@ package net.minecraft.client.model.geom;
 import com.google.common.collect.Sets;
 import java.util.Set;
 import java.util.stream.Stream;
+import net.minecraft.client.renderer.blockentity.HangingSignRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.properties.WoodType;
 
@@ -25,7 +26,10 @@ public class ModelLayers {
    public static final ModelLayerLocation AXOLOTL_BABY = register("axolotl_baby");
    public static final ModelLayerLocation BAMBOO_CHEST_RAFT = register("chest_boat/bamboo");
    public static final ModelLayerLocation BAMBOO_RAFT = register("boat/bamboo");
-   public static final ModelLayerLocation BANNER = register("banner");
+   public static final ModelLayerLocation STANDING_BANNER = register("standing_banner");
+   public static final ModelLayerLocation STANDING_BANNER_FLAG = register("standing_banner", "flag");
+   public static final ModelLayerLocation WALL_BANNER = register("wall_banner");
+   public static final ModelLayerLocation WALL_BANNER_FLAG = register("wall_banner", "flag");
    public static final ModelLayerLocation BAT = register("bat");
    public static final ModelLayerLocation BED_FOOT = register("bed_foot");
    public static final ModelLayerLocation BED_HEAD = register("bed_head");
@@ -219,6 +223,8 @@ public class ModelLayers {
    public static final ModelLayerLocation STRAY_OUTER_LAYER = register("stray", "outer");
    public static final ModelLayerLocation STRIDER = register("strider");
    public static final ModelLayerLocation STRIDER_SADDLE = register("strider", "saddle");
+   public static final ModelLayerLocation STRIDER_BABY = register("strider_baby");
+   public static final ModelLayerLocation STRIDER_BABY_SADDLE = register("strider_baby", "saddle");
    public static final ModelLayerLocation TADPOLE = register("tadpole");
    public static final ModelLayerLocation TNT_MINECART = register("tnt_minecart");
    public static final ModelLayerLocation TRADER_LLAMA = register("trader_llama");
@@ -232,6 +238,7 @@ public class ModelLayers {
    public static final ModelLayerLocation TURTLE_BABY = register("turtle_baby");
    public static final ModelLayerLocation VEX = register("vex");
    public static final ModelLayerLocation VILLAGER = register("villager");
+   public static final ModelLayerLocation VILLAGER_BABY = register("villager_baby");
    public static final ModelLayerLocation VINDICATOR = register("vindicator");
    public static final ModelLayerLocation WANDERING_TRADER = register("wandering_trader");
    public static final ModelLayerLocation WARDEN = register("warden");
@@ -309,8 +316,8 @@ public class ModelLayers {
       return createLocation("sign/wall/" + var0.name(), "main");
    }
 
-   public static ModelLayerLocation createHangingSignModelName(WoodType var0) {
-      return createLocation("hanging_sign/" + var0.name(), "main");
+   public static ModelLayerLocation createHangingSignModelName(WoodType var0, HangingSignRenderer.AttachmentType var1) {
+      return createLocation("hanging_sign/" + var0.name() + "/" + var1.getSerializedName(), "main");
    }
 
    public static Stream<ModelLayerLocation> getKnownLocations() {

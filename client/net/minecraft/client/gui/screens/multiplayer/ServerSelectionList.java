@@ -158,12 +158,12 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          int var10000 = var3 + var6 / 2;
          Objects.requireNonNull(this.minecraft.font);
          int var11 = var10000 - 9 / 2;
-         var1.drawString(this.minecraft.font, ServerSelectionList.SCANNING_LABEL, this.minecraft.screen.width / 2 - this.minecraft.font.width((FormattedText)ServerSelectionList.SCANNING_LABEL) / 2, var11, 16777215, false);
+         var1.drawString(this.minecraft.font, (Component)ServerSelectionList.SCANNING_LABEL, this.minecraft.screen.width / 2 - this.minecraft.font.width((FormattedText)ServerSelectionList.SCANNING_LABEL) / 2, var11, -1);
          String var12 = LoadingDotsText.get(Util.getMillis());
          Font var10001 = this.minecraft.font;
          int var10003 = this.minecraft.screen.width / 2 - this.minecraft.font.width(var12) / 2;
          Objects.requireNonNull(this.minecraft.font);
-         var1.drawString(var10001, var12, var10003, var11 + 9, -8355712, false);
+         var1.drawString(var10001, var12, var10003, var11 + 9, -8355712);
       }
 
       public Component getNarration() {
@@ -235,7 +235,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             });
          }
 
-         var1.drawString(this.minecraft.font, this.serverData.name, var4 + 32 + 3, var3 + 1, 16777215, false);
+         var1.drawString(this.minecraft.font, (String)this.serverData.name, var4 + 32 + 3, var3 + 1, -1);
          List var11 = this.minecraft.font.split(this.serverData.motd, var5 - 32 - 2);
 
          int var12;
@@ -245,7 +245,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
             int var10003 = var4 + 32 + 3;
             int var10004 = var3 + 12;
             Objects.requireNonNull(this.minecraft.font);
-            var1.drawString(var10001, var10002, var10003, var10004 + 9 * var12, -8355712, false);
+            var1.drawString(var10001, var10002, var10003, var10004 + 9 * var12, -8355712);
          }
 
          this.drawIcon(var1, var4, var3, this.icon.textureLocation());
@@ -285,7 +285,7 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
          Object var14 = this.serverData.state() == ServerData.State.INCOMPATIBLE ? this.serverData.version.copy().withStyle(ChatFormatting.RED) : this.serverData.status;
          int var15 = this.minecraft.font.width((FormattedText)var14);
          int var16 = var12 - var15 - 5;
-         var1.drawString(this.minecraft.font, (Component)var14, var16, var3 + 1, -8355712, false);
+         var1.drawString(this.minecraft.font, (Component)var14, var16, var3 + 1, -8355712);
          if (this.statusIconTooltip != null && var7 >= var12 && var7 <= var12 + 10 && var8 >= var3 && var8 <= var3 + 8) {
             this.screen.setTooltipForNextRenderPass(this.statusIconTooltip);
          } else if (this.onlinePlayersTooltip != null && var7 >= var16 && var7 <= var16 + var15 && var8 >= var3) {
@@ -507,12 +507,12 @@ public class ServerSelectionList extends ObjectSelectionList<Entry> {
       }
 
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         var1.drawString(this.minecraft.font, LAN_SERVER_HEADER, var4 + 32 + 3, var3 + 1, 16777215, false);
-         var1.drawString(this.minecraft.font, this.serverData.getMotd(), var4 + 32 + 3, var3 + 12, -8355712, false);
+         var1.drawString(this.minecraft.font, (Component)LAN_SERVER_HEADER, var4 + 32 + 3, var3 + 1, -1);
+         var1.drawString(this.minecraft.font, this.serverData.getMotd(), var4 + 32 + 3, var3 + 12, -8355712);
          if (this.minecraft.options.hideServerAddress) {
-            var1.drawString(this.minecraft.font, HIDDEN_ADDRESS_TEXT, var4 + 32 + 3, var3 + 12 + 11, 3158064, false);
+            var1.drawString(this.minecraft.font, HIDDEN_ADDRESS_TEXT, var4 + 32 + 3, var3 + 12 + 11, 3158064);
          } else {
-            var1.drawString(this.minecraft.font, this.serverData.getAddress(), var4 + 32 + 3, var3 + 12 + 11, 3158064, false);
+            var1.drawString(this.minecraft.font, this.serverData.getAddress(), var4 + 32 + 3, var3 + 12 + 11, 3158064);
          }
 
       }

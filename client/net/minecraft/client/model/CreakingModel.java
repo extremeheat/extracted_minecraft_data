@@ -43,16 +43,19 @@ public class CreakingModel extends EntityModel<CreakingRenderState> {
    }
 
    public void setupAnim(CreakingRenderState var1) {
-      this.root().getAllParts().forEach(ModelPart::resetPose);
+      super.setupAnim(var1);
+      this.head.xRot = var1.xRot * 0.017453292F;
+      this.head.yRot = var1.yRot * 0.017453292F;
       if (var1.canMove) {
-         this.animateWalk(CreakingAnimation.CREAKING_WALK, var1.walkAnimationPos, var1.walkAnimationSpeed, 5.5F, 3.0F);
+         this.animateWalk(CreakingAnimation.CREAKING_WALK, var1.walkAnimationPos, var1.walkAnimationSpeed, 1.0F, 1.0F);
       }
 
       this.animate(var1.attackAnimationState, CreakingAnimation.CREAKING_ATTACK, var1.ageInTicks);
       this.animate(var1.invulnerabilityAnimationState, CreakingAnimation.CREAKING_INVULNERABLE, var1.ageInTicks);
+      this.animate(var1.deathAnimationState, CreakingAnimation.CREAKING_DEATH, var1.ageInTicks);
    }
 
    public List<ModelPart> getHeadModelParts(CreakingRenderState var1) {
-      return !var1.isActive ? NO_PARTS : this.headParts;
+      return !var1.eyesGlowing ? NO_PARTS : this.headParts;
    }
 }

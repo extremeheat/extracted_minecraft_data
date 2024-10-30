@@ -266,6 +266,10 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       this.soundEngine.stop(var1);
    }
 
+   public void setVolume(SoundInstance var1, float var2) {
+      this.soundEngine.setVolume(var1, var2);
+   }
+
    public boolean isActive(SoundInstance var1) {
       return this.soundEngine.isActive(var1);
    }

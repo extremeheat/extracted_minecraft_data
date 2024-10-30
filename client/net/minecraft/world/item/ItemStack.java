@@ -758,6 +758,12 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public Component getHoverName() {
+      Component var1 = this.getCustomName();
+      return var1 != null ? var1 : this.getItemName();
+   }
+
+   @Nullable
+   public Component getCustomName() {
       Component var1 = (Component)this.get(DataComponents.CUSTOM_NAME);
       if (var1 != null) {
          return var1;
@@ -770,7 +776,7 @@ public final class ItemStack implements DataComponentHolder {
             }
          }
 
-         return this.getItemName();
+         return null;
       }
    }
 

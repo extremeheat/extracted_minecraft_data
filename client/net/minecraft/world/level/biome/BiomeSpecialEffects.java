@@ -9,6 +9,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.random.SimpleWeightedRandomList;
 
 public class BiomeSpecialEffects {
    public static final Codec<BiomeSpecialEffects> CODEC = RecordCodecBuilder.create((var0) -> {
@@ -34,8 +35,10 @@ public class BiomeSpecialEffects {
          return var0x.ambientMoodSettings;
       }), AmbientAdditionsSettings.CODEC.optionalFieldOf("additions_sound").forGetter((var0x) -> {
          return var0x.ambientAdditionsSettings;
-      }), Music.CODEC.optionalFieldOf("music").forGetter((var0x) -> {
+      }), SimpleWeightedRandomList.wrappedCodecAllowingEmpty(Music.CODEC).optionalFieldOf("music").forGetter((var0x) -> {
          return var0x.backgroundMusic;
+      }), Codec.FLOAT.fieldOf("music_volume").orElse(1.0F).forGetter((var0x) -> {
+         return var0x.backgroundMusicVolume;
       })).apply(var0, BiomeSpecialEffects::new);
    });
    private final int fogColor;
@@ -49,9 +52,10 @@ public class BiomeSpecialEffects {
    private final Optional<Holder<SoundEvent>> ambientLoopSoundEvent;
    private final Optional<AmbientMoodSettings> ambientMoodSettings;
    private final Optional<AmbientAdditionsSettings> ambientAdditionsSettings;
-   private final Optional<Music> backgroundMusic;
+   private final Optional<SimpleWeightedRandomList<Music>> backgroundMusic;
+   private final float backgroundMusicVolume;
 
-   BiomeSpecialEffects(int var1, int var2, int var3, int var4, Optional<Integer> var5, Optional<Integer> var6, GrassColorModifier var7, Optional<AmbientParticleSettings> var8, Optional<Holder<SoundEvent>> var9, Optional<AmbientMoodSettings> var10, Optional<AmbientAdditionsSettings> var11, Optional<Music> var12) {
+   BiomeSpecialEffects(int var1, int var2, int var3, int var4, Optional<Integer> var5, Optional<Integer> var6, GrassColorModifier var7, Optional<AmbientParticleSettings> var8, Optional<Holder<SoundEvent>> var9, Optional<AmbientMoodSettings> var10, Optional<AmbientAdditionsSettings> var11, Optional<SimpleWeightedRandomList<Music>> var12, float var13) {
       super();
       this.fogColor = var1;
       this.waterColor = var2;
@@ -65,6 +69,7 @@ public class BiomeSpecialEffects {
       this.ambientMoodSettings = var10;
       this.ambientAdditionsSettings = var11;
       this.backgroundMusic = var12;
+      this.backgroundMusicVolume = var13;
    }
 
    public int getFogColor() {
@@ -111,8 +116,12 @@ public class BiomeSpecialEffects {
       return this.ambientAdditionsSettings;
    }
 
-   public Optional<Music> getBackgroundMusic() {
+   public Optional<SimpleWeightedRandomList<Music>> getBackgroundMusic() {
       return this.backgroundMusic;
+   }
+
+   public float getBackgroundMusicVolume() {
+      return this.backgroundMusicVolume;
    }
 
    public static enum GrassColorModifier implements StringRepresentable {
@@ -168,7 +177,8 @@ public class BiomeSpecialEffects {
       private Optional<Holder<SoundEvent>> ambientLoopSoundEvent;
       private Optional<AmbientMoodSettings> ambientMoodSettings;
       private Optional<AmbientAdditionsSettings> ambientAdditionsSettings;
-      private Optional<Music> backgroundMusic;
+      private Optional<SimpleWeightedRandomList<Music>> backgroundMusic;
+      private float backgroundMusicVolume;
 
       public Builder() {
          super();
@@ -178,6 +188,7 @@ public class BiomeSpecialEffects {
          this.ambientMoodSettings = Optional.empty();
          this.ambientAdditionsSettings = Optional.empty();
          this.backgroundMusic = Optional.empty();
+         this.backgroundMusicVolume = 1.0F;
       }
 
       public Builder fogColor(int var1) {
@@ -236,7 +247,26 @@ public class BiomeSpecialEffects {
       }
 
       public Builder backgroundMusic(@Nullable Music var1) {
-         this.backgroundMusic = Optional.ofNullable(var1);
+         if (var1 == null) {
+            this.backgroundMusic = Optional.empty();
+            return this;
+         } else {
+            this.backgroundMusic = Optional.of(SimpleWeightedRandomList.single(var1));
+            return this;
+         }
+      }
+
+      public Builder silenceAllBackgroundMusic() {
+         return this.backgroundMusic(SimpleWeightedRandomList.empty()).backgroundMusicVolume(0.0F);
+      }
+
+      public Builder backgroundMusic(SimpleWeightedRandomList<Music> var1) {
+         this.backgroundMusic = Optional.of(var1);
+         return this;
+      }
+
+      public Builder backgroundMusicVolume(float var1) {
+         this.backgroundMusicVolume = var1;
          return this;
       }
 
@@ -249,7 +279,7 @@ public class BiomeSpecialEffects {
             return new IllegalStateException("Missing 'water fog' color.");
          }), this.skyColor.orElseThrow(() -> {
             return new IllegalStateException("Missing 'sky' color.");
-         }), this.foliageColorOverride, this.grassColorOverride, this.grassColorModifier, this.ambientParticle, this.ambientLoopSoundEvent, this.ambientMoodSettings, this.ambientAdditionsSettings, this.backgroundMusic);
+         }), this.foliageColorOverride, this.grassColorOverride, this.grassColorModifier, this.ambientParticle, this.ambientLoopSoundEvent, this.ambientMoodSettings, this.ambientAdditionsSettings, this.backgroundMusic, this.backgroundMusicVolume);
       }
    }
 }

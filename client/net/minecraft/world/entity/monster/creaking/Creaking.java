@@ -3,8 +3,6 @@ package net.minecraft.world.entity.monster.creaking;
 import com.mojang.serialization.Dynamic;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.DoubleSupplier;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.DebugPackets;
@@ -40,19 +38,20 @@ import net.minecraft.world.level.gameevent.GameEvent;
 public class Creaking extends Monster {
    private static final EntityDataAccessor<Boolean> CAN_MOVE;
    private static final EntityDataAccessor<Boolean> IS_ACTIVE;
-   private static final int ATTACK_ANIMATION_DURATION = 20;
+   private static final int ATTACK_ANIMATION_DURATION = 15;
    private static final int MAX_HEALTH = 1;
-   private static final float ATTACK_DAMAGE = 2.0F;
+   private static final float ATTACK_DAMAGE = 3.0F;
    private static final float FOLLOW_RANGE = 32.0F;
    private static final float ACTIVATION_RANGE_SQ = 144.0F;
    public static final int ATTACK_INTERVAL = 40;
-   private static final float MOVEMENT_SPEED_WHEN_FIGHTING = 0.3F;
-   public static final float SPEED_MULTIPLIER_WHEN_IDLING = 0.2F;
+   private static final float MOVEMENT_SPEED_WHEN_FIGHTING = 0.4F;
+   public static final float SPEED_MULTIPLIER_WHEN_IDLING = 0.3F;
    public static final int CREAKING_ORANGE = 16545810;
    public static final int CREAKING_GRAY = 6250335;
    private int attackAnimationRemainingTicks;
    public final AnimationState attackAnimationState = new AnimationState();
    public final AnimationState invulnerabilityAnimationState = new AnimationState();
+   public final AnimationState deathAnimationState = new AnimationState();
 
    public Creaking(EntityType<? extends Creaking> var1, Level var2) {
       super(var1, var2);
@@ -83,7 +82,7 @@ public class Creaking extends Monster {
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 1.0).add(Attributes.MOVEMENT_SPEED, 0.30000001192092896).add(Attributes.ATTACK_DAMAGE, 2.0).add(Attributes.FOLLOW_RANGE, 32.0).add(Attributes.STEP_HEIGHT, 1.0);
+      return Monster.createMonsterAttributes().add(Attributes.MAX_HEALTH, 1.0).add(Attributes.MOVEMENT_SPEED, 0.4000000059604645).add(Attributes.ATTACK_DAMAGE, 3.0).add(Attributes.FOLLOW_RANGE, 32.0).add(Attributes.STEP_HEIGHT, 1.0625);
    }
 
    public boolean canMove() {
@@ -94,7 +93,7 @@ public class Creaking extends Monster {
       if (!(var2 instanceof LivingEntity)) {
          return false;
       } else {
-         this.attackAnimationRemainingTicks = 20;
+         this.attackAnimationRemainingTicks = 15;
          this.level().broadcastEntityEvent(this, (byte)4);
          return super.doHurtTarget(var1, var2);
       }
@@ -148,13 +147,18 @@ public class Creaking extends Monster {
 
    }
 
+   protected void updateWalkAnimation(float var1) {
+      float var2 = Math.min(var1 * 25.0F, 3.0F);
+      this.walkAnimation.update(var2, 0.4F, 1.0F);
+   }
+
    private void setupAnimationStates() {
       this.attackAnimationState.animateWhen(this.attackAnimationRemainingTicks > 0, this.tickCount);
    }
 
    public void handleEntityEvent(byte var1) {
       if (var1 == 4) {
-         this.attackAnimationRemainingTicks = 20;
+         this.attackAnimationRemainingTicks = 15;
          this.playAttackSound();
       } else {
          super.handleEntityEvent(var1);
@@ -200,41 +204,63 @@ public class Creaking extends Monster {
 
    public boolean checkCanMove() {
       List var1 = (List)this.brain.getMemory(MemoryModuleType.NEAREST_PLAYERS).orElse(List.of());
+      boolean var2 = this.isActive();
       if (var1.isEmpty()) {
-         if (this.isActive()) {
-            this.gameEvent(GameEvent.ENTITY_ACTION);
-            this.makeSound(SoundEvents.CREAKING_DEACTIVATE);
-            this.setIsActive(false);
+         if (var2) {
+            this.deactivate();
          }
 
          return true;
       } else {
-         Predicate var2 = this.isActive() ? LivingEntity.PLAYER_NOT_WEARING_DISGUISE_ITEM : (var0) -> {
-            return true;
-         };
-         Iterator var3 = var1.iterator();
+         boolean var3 = false;
+         Iterator var4 = var1.iterator();
 
-         while(var3.hasNext()) {
-            Player var4 = (Player)var3.next();
-            if (!var4.isCreative() && this.isLookingAtMe(var4, 0.5, false, true, var2, new DoubleSupplier[]{this::getEyeY, this::getY, () -> {
-               return (this.getEyeY() + this.getY()) / 2.0;
-            }})) {
-               if (this.isActive()) {
+         while(true) {
+            Player var5;
+            do {
+               do {
+                  do {
+                     if (!var4.hasNext()) {
+                        if (!var3 && var2) {
+                           this.deactivate();
+                        }
+
+                        return true;
+                     }
+
+                     var5 = (Player)var4.next();
+                  } while(!this.canAttack(var5));
+               } while(this.isAlliedTo(var5));
+
+               var3 = true;
+            } while(var2 && !LivingEntity.PLAYER_NOT_WEARING_DISGUISE_ITEM.test(var5));
+
+            if (this.isLookingAtMe(var5, 0.5, false, true, new double[]{this.getEyeY(), this.getY() + 0.5 * (double)this.getScale(), (this.getEyeY() + this.getY()) / 2.0})) {
+               if (var2) {
                   return false;
                }
 
-               if (var4.distanceToSqr(this) < 144.0) {
-                  this.gameEvent(GameEvent.ENTITY_ACTION);
-                  this.makeSound(SoundEvents.CREAKING_ACTIVATE);
-                  this.setIsActive(true);
-                  this.getBrain().setMemory(MemoryModuleType.ATTACK_TARGET, (Object)var4);
+               if (var5.distanceToSqr(this) < 144.0) {
+                  this.activate(var5);
                   return false;
                }
             }
          }
-
-         return true;
       }
+   }
+
+   public void activate(Player var1) {
+      this.getBrain().setMemory(MemoryModuleType.ATTACK_TARGET, (Object)var1);
+      this.gameEvent(GameEvent.ENTITY_ACTION);
+      this.makeSound(SoundEvents.CREAKING_ACTIVATE);
+      this.setIsActive(true);
+   }
+
+   public void deactivate() {
+      this.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+      this.gameEvent(GameEvent.ENTITY_ACTION);
+      this.makeSound(SoundEvents.CREAKING_DEACTIVATE);
+      this.setIsActive(false);
    }
 
    public void setIsActive(boolean var1) {

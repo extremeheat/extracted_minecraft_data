@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -400,7 +401,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public void addParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
    }
 
-   public void addParticle(ParticleOptions var1, boolean var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+   public void addParticle(ParticleOptions var1, boolean var2, boolean var3, double var4, double var6, double var8, double var10, double var12, double var14) {
    }
 
    public void addAlwaysVisibleParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
@@ -576,19 +577,16 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
             var4.add(var3x);
          }
 
-         if (var3x instanceof EnderDragon) {
-            EnderDragonPart[] var4x = ((EnderDragon)var3x).getSubEntities();
-            int var5 = var4x.length;
-
-            for(int var6 = 0; var6 < var5; ++var6) {
-               EnderDragonPart var7 = var4x[var6];
-               if (var3x != var1 && var3.test(var7)) {
-                  var4.add(var7);
-               }
-            }
-         }
-
       });
+      Iterator var5 = this.dragonParts().iterator();
+
+      while(var5.hasNext()) {
+         EnderDragonPart var6 = (EnderDragonPart)var5.next();
+         if (var6 != var1 && var6.parentMob != var1 && var3.test(var6) && var2.intersects(var6.getBoundingBox())) {
+            var4.add(var6);
+         }
+      }
+
       return var4;
    }
 
@@ -634,6 +632,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    @Nullable
    public abstract Entity getEntity(int var1);
+
+   public abstract Collection<EnderDragonPart> dragonParts();
 
    public void blockEntityChanged(BlockPos var1) {
       if (this.hasChunkAt(var1)) {

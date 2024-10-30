@@ -336,14 +336,28 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
 
    @Nullable
    public LivingEntity getOwner() {
-      if (this.owner == null && this.ownerUUID != null && this.level() instanceof ServerLevel) {
-         Entity var1 = ((ServerLevel)this.level()).getEntity(this.ownerUUID);
-         if (var1 instanceof LivingEntity) {
-            this.owner = (LivingEntity)var1;
-         }
-      }
+      if (this.owner != null && !this.owner.isRemoved()) {
+         return this.owner;
+      } else {
+         if (this.ownerUUID != null) {
+            Level var2 = this.level();
+            if (var2 instanceof ServerLevel) {
+               ServerLevel var1 = (ServerLevel)var2;
+               Entity var3 = var1.getEntity(this.ownerUUID);
+               LivingEntity var10001;
+               if (var3 instanceof LivingEntity) {
+                  LivingEntity var4 = (LivingEntity)var3;
+                  var10001 = var4;
+               } else {
+                  var10001 = null;
+               }
 
-      return this.owner;
+               this.owner = var10001;
+            }
+         }
+
+         return this.owner;
+      }
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {

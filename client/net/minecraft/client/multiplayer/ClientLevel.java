@@ -6,10 +6,13 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
@@ -55,6 +58,8 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.boss.EnderDragonPart;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.BlockItem;
@@ -111,6 +116,7 @@ public class ClientLevel extends Level {
    private final TickRateManager tickRateManager;
    private final Minecraft minecraft = Minecraft.getInstance();
    final List<AbstractClientPlayer> players = Lists.newArrayList();
+   final List<EnderDragonPart> dragonParts = Lists.newArrayList();
    private final Map<MapId, MapItemSavedData> mapData = Maps.newHashMap();
    private static final int CLOUD_COLOR = -1;
    private int skyFlashTime;
@@ -331,7 +337,6 @@ public class ClientLevel extends Level {
          var2.invalidateForChunk(var1.x, var1.z);
       });
       this.entityStorage.startTicking(var1);
-      this.levelRenderer.onChunkLoaded(var1);
    }
 
    public void onSectionBecomingNonEmpty(long var1) {
@@ -614,8 +619,8 @@ public class ClientLevel extends Level {
       this.levelRenderer.addParticle(var1, var1.getType().getOverrideLimiter(), var2, var4, var6, var8, var10, var12);
    }
 
-   public void addParticle(ParticleOptions var1, boolean var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-      this.levelRenderer.addParticle(var1, var1.getType().getOverrideLimiter() || var2, var3, var5, var7, var9, var11, var13);
+   public void addParticle(ParticleOptions var1, boolean var2, boolean var3, double var4, double var6, double var8, double var10, double var12, double var14) {
+      this.levelRenderer.addParticle(var1, var1.getType().getOverrideLimiter() || var2, var3, var4, var6, var8, var10, var12, var14);
    }
 
    public void addAlwaysVisibleParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
@@ -628,6 +633,10 @@ public class ClientLevel extends Level {
 
    public List<AbstractClientPlayer> players() {
       return this.players;
+   }
+
+   public List<EnderDragonPart> dragonParts() {
+      return this.dragonParts;
    }
 
    public Holder<Biome> getUncachedNoiseBiome(int var1, int var2, int var3) {
@@ -838,6 +847,11 @@ public class ClientLevel extends Level {
    }
 
    // $FF: synthetic method
+   public Collection dragonParts() {
+      return this.dragonParts();
+   }
+
+   // $FF: synthetic method
    public ChunkSource getChunkSource() {
       return this.getChunkSource();
    }
@@ -866,15 +880,40 @@ public class ClientLevel extends Level {
       }
 
       public void onTrackingStart(Entity var1) {
-         if (var1 instanceof AbstractClientPlayer) {
-            ClientLevel.this.players.add((AbstractClientPlayer)var1);
+         Objects.requireNonNull(var1);
+         byte var3 = 0;
+         //$FF: var3->value
+         //0->net/minecraft/client/player/AbstractClientPlayer
+         //1->net/minecraft/world/entity/boss/enderdragon/EnderDragon
+         switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+            case 0:
+               AbstractClientPlayer var4 = (AbstractClientPlayer)var1;
+               ClientLevel.this.players.add(var4);
+               break;
+            case 1:
+               EnderDragon var5 = (EnderDragon)var1;
+               ClientLevel.this.dragonParts.addAll(Arrays.asList(var5.getSubEntities()));
          }
 
       }
 
       public void onTrackingEnd(Entity var1) {
          var1.unRide();
-         ClientLevel.this.players.remove(var1);
+         Objects.requireNonNull(var1);
+         byte var3 = 0;
+         //$FF: var3->value
+         //0->net/minecraft/client/player/AbstractClientPlayer
+         //1->net/minecraft/world/entity/boss/enderdragon/EnderDragon
+         switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+            case 0:
+               AbstractClientPlayer var4 = (AbstractClientPlayer)var1;
+               ClientLevel.this.players.remove(var4);
+               break;
+            case 1:
+               EnderDragon var5 = (EnderDragon)var1;
+               ClientLevel.this.dragonParts.removeAll(Arrays.asList(var5.getSubEntities()));
+         }
+
       }
 
       public void onSectionChange(Entity var1) {

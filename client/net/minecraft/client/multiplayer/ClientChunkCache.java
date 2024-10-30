@@ -112,7 +112,9 @@ public class ClientChunkCache extends ChunkSource {
             var7.replaceWithPacketData(var3, var4, var5);
             this.storage.replace(var6, var7);
          } else {
+            this.storage.dropEmptySections(var7);
             var7.replaceWithPacketData(var3, var4, var5);
+            this.storage.addEmptySections(var7);
          }
 
          this.level.onChunkLoaded(var8);
@@ -238,7 +240,7 @@ public class ClientChunkCache extends ChunkSource {
          }
       }
 
-      private void dropEmptySections(LevelChunk var1) {
+      void dropEmptySections(LevelChunk var1) {
          LevelChunkSection[] var2 = var1.getSections();
 
          for(int var3 = 0; var3 < var2.length; ++var3) {
@@ -248,7 +250,7 @@ public class ClientChunkCache extends ChunkSource {
 
       }
 
-      private void addEmptySections(LevelChunk var1) {
+      void addEmptySections(LevelChunk var1) {
          LevelChunkSection[] var2 = var1.getSections();
 
          for(int var3 = 0; var3 < var2.length; ++var3) {

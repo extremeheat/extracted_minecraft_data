@@ -119,7 +119,8 @@ public class GuiGraphics {
    }
 
    public void enableScissor(int var1, int var2, int var3, int var4) {
-      this.applyScissor(this.scissorStack.push(new ScreenRectangle(var1, var2, var3 - var1, var4 - var2)));
+      ScreenRectangle var5 = (new ScreenRectangle(var1, var2, var3 - var1, var4 - var2)).transformAxisAligned(this.pose.last().pose());
+      this.applyScissor(this.scissorStack.push(var5));
    }
 
    public void disableScissor() {
@@ -255,9 +256,13 @@ public class GuiGraphics {
    }
 
    public void drawWordWrap(Font var1, FormattedText var2, int var3, int var4, int var5, int var6) {
-      for(Iterator var7 = var1.split(var2, var5).iterator(); var7.hasNext(); var4 += 9) {
-         FormattedCharSequence var8 = (FormattedCharSequence)var7.next();
-         this.drawString(var1, var8, var3, var4, var6, false);
+      this.drawWordWrap(var1, var2, var3, var4, var5, var6, true);
+   }
+
+   public void drawWordWrap(Font var1, FormattedText var2, int var3, int var4, int var5, int var6, boolean var7) {
+      for(Iterator var8 = var1.split(var2, var5).iterator(); var8.hasNext(); var4 += 9) {
+         FormattedCharSequence var9 = (FormattedCharSequence)var8.next();
+         this.drawString(var1, var9, var3, var4, var6, var7);
          Objects.requireNonNull(var1);
       }
 
@@ -309,7 +314,9 @@ public class GuiGraphics {
       if (var12 instanceof GuiSpriteScaling.Stretch) {
          this.blitSprite(var1, var11, var3, var4, var5, var6, var7, var8, var9, var10, -1);
       } else {
-         this.blitSprite(var1, var11, var7, var8, var9, var10);
+         this.enableScissor(var7, var8, var7 + var9, var8 + var10);
+         this.blitSprite(var1, (ResourceLocation)var2, var7 - var5, var8 - var6, var3, var4, -1);
+         this.disableScissor();
       }
 
    }
@@ -355,7 +362,7 @@ public class GuiGraphics {
          this.blitSprite(var1, var2, var3.width(), var3.height(), var3.width() - var11, var3.height() - var13, var4 + var6 - var11, var5 + var7 - var13, var11, var13, var8);
          this.blitNineSliceInnerSegment(var1, var3, var2, var4, var5 + var12, var10, var7 - var13 - var12, 0, var12, var10, var3.height() - var13 - var12, var3.width(), var3.height(), var8);
          this.blitNineSliceInnerSegment(var1, var3, var2, var4 + var10, var5 + var12, var6 - var11 - var10, var7 - var13 - var12, var10, var12, var3.width() - var11 - var10, var3.height() - var13 - var12, var3.width(), var3.height(), var8);
-         this.blitNineSliceInnerSegment(var1, var3, var2, var4 + var6 - var11, var5 + var12, var10, var7 - var13 - var12, var3.width() - var11, var12, var11, var3.height() - var13 - var12, var3.width(), var3.height(), var8);
+         this.blitNineSliceInnerSegment(var1, var3, var2, var4 + var6 - var11, var5 + var12, var11, var7 - var13 - var12, var3.width() - var11, var12, var11, var3.height() - var13 - var12, var3.width(), var3.height(), var8);
       }
    }
 

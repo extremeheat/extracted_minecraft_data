@@ -233,10 +233,10 @@ public class EditGameRulesScreen extends Screen {
 
       protected void renderLabel(GuiGraphics var1, int var2, int var3) {
          if (this.label.size() == 1) {
-            var1.drawString(EditGameRulesScreen.this.minecraft.font, (FormattedCharSequence)((FormattedCharSequence)this.label.get(0)), var3, var2 + 5, -1, false);
+            var1.drawString(EditGameRulesScreen.this.minecraft.font, (FormattedCharSequence)((FormattedCharSequence)this.label.get(0)), var3, var2 + 5, -1);
          } else if (this.label.size() >= 2) {
-            var1.drawString(EditGameRulesScreen.this.minecraft.font, (FormattedCharSequence)((FormattedCharSequence)this.label.get(0)), var3, var2, -1, false);
-            var1.drawString(EditGameRulesScreen.this.minecraft.font, (FormattedCharSequence)((FormattedCharSequence)this.label.get(1)), var3, var2 + 10, -1, false);
+            var1.drawString(EditGameRulesScreen.this.minecraft.font, (FormattedCharSequence)((FormattedCharSequence)this.label.get(0)), var3, var2, -1);
+            var1.drawString(EditGameRulesScreen.this.minecraft.font, (FormattedCharSequence)((FormattedCharSequence)this.label.get(1)), var3, var2 + 10, -1);
          }
 
       }

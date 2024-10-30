@@ -122,7 +122,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
    }
 
    protected boolean shouldShowName(T var1, double var2) {
-      return Minecraft.renderNames() && !var1.getItem().isEmpty() && var1.getItem().has(DataComponents.CUSTOM_NAME) && this.entityRenderDispatcher.crosshairPickEntity == var1;
+      return Minecraft.renderNames() && this.entityRenderDispatcher.crosshairPickEntity == var1 && var1.getItem().getCustomName() != null;
    }
 
    protected Component getNameTag(T var1) {

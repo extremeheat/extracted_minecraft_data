@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import com.mojang.datafixers.util.Pair;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +29,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EnchantingTableBlock;
 
 public class EnchantmentMenu extends AbstractContainerMenu {
-   static final ResourceLocation EMPTY_SLOT_LAPIS_LAZULI = ResourceLocation.withDefaultNamespace("item/empty_slot_lapis_lazuli");
+   static final ResourceLocation EMPTY_SLOT_LAPIS_LAZULI = ResourceLocation.withDefaultNamespace("container/slot/lapis_lazuli");
    private final Container enchantSlots;
    private final ContainerLevelAccess access;
    private final RandomSource random;
@@ -67,8 +66,8 @@ public class EnchantmentMenu extends AbstractContainerMenu {
             return var1.is(Items.LAPIS_LAZULI);
          }
 
-         public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-            return Pair.of(InventoryMenu.BLOCK_ATLAS, EnchantmentMenu.EMPTY_SLOT_LAPIS_LAZULI);
+         public ResourceLocation getNoItemIcon() {
+            return EnchantmentMenu.EMPTY_SLOT_LAPIS_LAZULI;
          }
       });
       this.addStandardInventorySlots(var2, 8, 84);

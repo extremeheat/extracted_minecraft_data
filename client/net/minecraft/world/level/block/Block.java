@@ -381,10 +381,6 @@ public class Block extends BlockBehaviour implements ItemLike {
       var2.setDeltaMovement(var2.getDeltaMovement().multiply(1.0, 0.0, 1.0));
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
-      return new ItemStack(this);
-   }
-
    public float getFriction() {
       return this.friction;
    }

@@ -34,6 +34,8 @@ import net.minecraft.util.TimeUtil;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -67,6 +69,8 @@ import net.minecraft.world.entity.ai.util.HoverRandomPos;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiRecord;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
@@ -76,6 +80,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
+import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
@@ -556,6 +561,27 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       var2.setCanPassDoors(true);
       var2.setRequiredPathLength(48.0F);
       return var2;
+   }
+
+   public InteractionResult mobInteract(Player var1, InteractionHand var2) {
+      ItemStack var3 = var1.getItemInHand(var2);
+      Item var6 = var3.getItem();
+      if (var6 instanceof BlockItem var4) {
+         Block var7 = var4.getBlock();
+         if (var7 instanceof FlowerBlock var5) {
+            MobEffectInstance var8 = var5.getBeeInteractionEffect();
+            if (var8 != null) {
+               this.usePlayerItem(var1, var2, var3);
+               if (!this.level().isClientSide) {
+                  this.addEffect(var8);
+               }
+
+               return InteractionResult.SUCCESS;
+            }
+         }
+      }
+
+      return super.mobInteract(var1, var2);
    }
 
    public boolean isFood(ItemStack var1) {

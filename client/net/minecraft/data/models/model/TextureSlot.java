@@ -19,6 +19,7 @@ public final class TextureSlot {
    public static final TextureSlot UP;
    public static final TextureSlot DOWN;
    public static final TextureSlot CROSS;
+   public static final TextureSlot CROSS_EMISSIVE;
    public static final TextureSlot PLANT;
    public static final TextureSlot WALL;
    public static final TextureSlot RAIL;
@@ -92,6 +93,7 @@ public final class TextureSlot {
       UP = create("up");
       DOWN = create("down");
       CROSS = create("cross");
+      CROSS_EMISSIVE = create("cross_emissive");
       PLANT = create("plant");
       WALL = create("wall", ALL);
       RAIL = create("rail");
