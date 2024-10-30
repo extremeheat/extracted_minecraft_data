@@ -116,9 +116,9 @@ async function main () {
   }
 }
 
-// main()
+main()
 
-async function fix () {
+/*async function fix () {
   exec('git config user.name "github-actions[bot]"')
   exec('git config user.email "41898282+github-actions[bot]@users.noreply.github.com"')
   // https://github.com/extremeheat/extracted_minecraft_data/commit/612030ccc3f16172fa6136a617a519b152ccded5
@@ -136,4 +136,4 @@ async function fix () {
   await decomp('1.21.2')
   await decomp('1.21.3')
 }
-fix()
+fix()*/
