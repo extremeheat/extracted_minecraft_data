@@ -13,29 +13,30 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.RegistryFileCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 
-public record TrimMaterial(String assetName, Holder<Item> ingredient, float itemModelIndex, Map<ResourceLocation, String> overrideArmorMaterials, Component description) {
+public record TrimMaterial(String assetName, Holder<Item> ingredient, Map<ResourceKey<EquipmentAsset>, String> overrideArmorAssets, Component description) {
    public static final Codec<TrimMaterial> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ExtraCodecs.RESOURCE_PATH_CODEC.fieldOf("asset_name").forGetter(TrimMaterial::assetName), Item.CODEC.fieldOf("ingredient").forGetter(TrimMaterial::ingredient), Codec.FLOAT.fieldOf("item_model_index").forGetter(TrimMaterial::itemModelIndex), Codec.unboundedMap(ResourceLocation.CODEC, Codec.STRING).optionalFieldOf("override_armor_materials", Map.of()).forGetter(TrimMaterial::overrideArmorMaterials), ComponentSerialization.CODEC.fieldOf("description").forGetter(TrimMaterial::description)).apply(var0, TrimMaterial::new);
+      return var0.group(ExtraCodecs.RESOURCE_PATH_CODEC.fieldOf("asset_name").forGetter(TrimMaterial::assetName), Item.CODEC.fieldOf("ingredient").forGetter(TrimMaterial::ingredient), Codec.unboundedMap(ResourceKey.codec(EquipmentAssets.ROOT_ID), Codec.STRING).optionalFieldOf("override_armor_assets", Map.of()).forGetter(TrimMaterial::overrideArmorAssets), ComponentSerialization.CODEC.fieldOf("description").forGetter(TrimMaterial::description)).apply(var0, TrimMaterial::new);
    });
    public static final StreamCodec<RegistryFriendlyByteBuf, TrimMaterial> DIRECT_STREAM_CODEC;
    public static final Codec<Holder<TrimMaterial>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<TrimMaterial>> STREAM_CODEC;
 
-   public TrimMaterial(String var1, Holder<Item> var2, float var3, Map<ResourceLocation, String> var4, Component var5) {
+   public TrimMaterial(String var1, Holder<Item> var2, Map<ResourceKey<EquipmentAsset>, String> var3, Component var4) {
       super();
       this.assetName = var1;
       this.ingredient = var2;
-      this.itemModelIndex = var3;
-      this.overrideArmorMaterials = var4;
-      this.description = var5;
+      this.overrideArmorAssets = var3;
+      this.description = var4;
    }
 
-   public static TrimMaterial create(String var0, Item var1, float var2, Component var3, Map<ResourceLocation, String> var4) {
-      return new TrimMaterial(var0, BuiltInRegistries.ITEM.wrapAsHolder(var1), var2, var4, var3);
+   public static TrimMaterial create(String var0, Item var1, Component var2, Map<ResourceKey<EquipmentAsset>, String> var3) {
+      return new TrimMaterial(var0, BuiltInRegistries.ITEM.wrapAsHolder(var1), var3, var2);
    }
 
    public String assetName() {
@@ -46,12 +47,8 @@ public record TrimMaterial(String assetName, Holder<Item> ingredient, float item
       return this.ingredient;
    }
 
-   public float itemModelIndex() {
-      return this.itemModelIndex;
-   }
-
-   public Map<ResourceLocation, String> overrideArmorMaterials() {
-      return this.overrideArmorMaterials;
+   public Map<ResourceKey<EquipmentAsset>, String> overrideArmorAssets() {
+      return this.overrideArmorAssets;
    }
 
    public Component description() {
@@ -59,7 +56,7 @@ public record TrimMaterial(String assetName, Holder<Item> ingredient, float item
    }
 
    static {
-      DIRECT_STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8, TrimMaterial::assetName, ByteBufCodecs.holderRegistry(Registries.ITEM), TrimMaterial::ingredient, ByteBufCodecs.FLOAT, TrimMaterial::itemModelIndex, ByteBufCodecs.map(Object2ObjectOpenHashMap::new, ResourceLocation.STREAM_CODEC, ByteBufCodecs.STRING_UTF8), TrimMaterial::overrideArmorMaterials, ComponentSerialization.STREAM_CODEC, TrimMaterial::description, TrimMaterial::new);
+      DIRECT_STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8, TrimMaterial::assetName, ByteBufCodecs.holderRegistry(Registries.ITEM), TrimMaterial::ingredient, ByteBufCodecs.map(Object2ObjectOpenHashMap::new, ResourceKey.streamCodec(EquipmentAssets.ROOT_ID), ByteBufCodecs.STRING_UTF8), TrimMaterial::overrideArmorAssets, ComponentSerialization.STREAM_CODEC, TrimMaterial::description, TrimMaterial::new);
       CODEC = RegistryFileCodec.create(Registries.TRIM_MATERIAL, DIRECT_CODEC);
       STREAM_CODEC = ByteBufCodecs.holder(Registries.TRIM_MATERIAL, DIRECT_STREAM_CODEC);
    }

@@ -86,7 +86,6 @@ public class WitherBoss extends Monster implements RangedAttackMob {
       FlyingPathNavigation var2 = new FlyingPathNavigation(this, var1);
       var2.setCanOpenDoors(false);
       var2.setCanFloat(true);
-      var2.setCanPassDoors(true);
       return var2;
    }
 

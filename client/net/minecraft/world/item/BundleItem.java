@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -37,26 +36,14 @@ public class BundleItem extends Item {
    private static final int TICKS_AFTER_FIRST_THROW = 10;
    private static final int TICKS_BETWEEN_THROWS = 2;
    private static final int TICKS_MAX_THROW_DURATION = 200;
-   private final ResourceLocation openFrontModel;
-   private final ResourceLocation openBackModel;
 
-   public BundleItem(ResourceLocation var1, ResourceLocation var2, Item.Properties var3) {
-      super(var3);
-      this.openFrontModel = var1;
-      this.openBackModel = var2;
+   public BundleItem(Item.Properties var1) {
+      super(var1);
    }
 
    public static float getFullnessDisplay(ItemStack var0) {
       BundleContents var1 = (BundleContents)var0.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
       return var1.weight().floatValue();
-   }
-
-   public ResourceLocation openFrontModel() {
-      return this.openFrontModel;
-   }
-
-   public ResourceLocation openBackModel() {
-      return this.openBackModel;
    }
 
    public boolean overrideStackedOnOther(ItemStack var1, Slot var2, ClickAction var3, Player var4) {
@@ -178,8 +165,8 @@ public class BundleItem extends Item {
    }
 
    public static boolean hasSelectedItem(ItemStack var0) {
-      BundleContents var1 = (BundleContents)var0.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-      return var1.getSelectedItem() != -1;
+      BundleContents var1 = (BundleContents)var0.get(DataComponents.BUNDLE_CONTENTS);
+      return var1 != null && var1.getSelectedItem() != -1;
    }
 
    public static int getSelectedItem(ItemStack var0) {
@@ -188,8 +175,8 @@ public class BundleItem extends Item {
    }
 
    public static ItemStack getSelectedItemStack(ItemStack var0) {
-      BundleContents var1 = (BundleContents)var0.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-      return var1.getItemUnsafe(var1.getSelectedItem());
+      BundleContents var1 = (BundleContents)var0.get(DataComponents.BUNDLE_CONTENTS);
+      return var1 != null && var1.getSelectedItem() != -1 ? var1.getItemUnsafe(var1.getSelectedItem()) : ItemStack.EMPTY;
    }
 
    public static int getNumberOfItemsToShow(ItemStack var0) {

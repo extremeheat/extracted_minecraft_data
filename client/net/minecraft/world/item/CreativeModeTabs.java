@@ -828,8 +828,6 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.FERN);
          var1.accept((ItemLike)Items.DEAD_BUSH);
          var1.accept((ItemLike)Items.DANDELION);
-         var1.accept((ItemLike)Items.OPEN_EYEBLOSSOM);
-         var1.accept((ItemLike)Items.CLOSED_EYEBLOSSOM);
          var1.accept((ItemLike)Items.POPPY);
          var1.accept((ItemLike)Items.BLUE_ORCHID);
          var1.accept((ItemLike)Items.ALLIUM);
@@ -842,6 +840,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.CORNFLOWER);
          var1.accept((ItemLike)Items.LILY_OF_THE_VALLEY);
          var1.accept((ItemLike)Items.TORCHFLOWER);
+         var1.accept((ItemLike)Items.CLOSED_EYEBLOSSOM);
+         var1.accept((ItemLike)Items.OPEN_EYEBLOSSOM);
          var1.accept((ItemLike)Items.WITHER_ROSE);
          var1.accept((ItemLike)Items.PINK_PETALS);
          var1.accept((ItemLike)Items.SPORE_BLOSSOM);

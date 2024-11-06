@@ -16,7 +16,7 @@ import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.layouts.GridLayout;
-import net.minecraft.client.gui.layouts.LayoutElement;
+import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.network.chat.CommonComponents;
@@ -26,10 +26,16 @@ import net.minecraft.network.chat.MutableComponent;
 class SwitchGrid {
    private static final int DEFAULT_SWITCH_BUTTON_WIDTH = 44;
    private final List<LabeledSwitch> switches;
+   private final Layout layout;
 
-   SwitchGrid(List<LabeledSwitch> var1) {
+   SwitchGrid(List<LabeledSwitch> var1, Layout var2) {
       super();
       this.switches = var1;
+      this.layout = var2;
+   }
+
+   public Layout layout() {
+      return this.layout;
    }
 
    public void refreshStates() {
@@ -73,24 +79,23 @@ class SwitchGrid {
          return this;
       }
 
-      public SwitchGrid build(Consumer<LayoutElement> var1) {
-         GridLayout var2 = (new GridLayout()).rowSpacing(this.rowSpacing);
-         var2.addChild(SpacerElement.width(this.width - 44), 0, 0);
-         var2.addChild(SpacerElement.width(44), 0, 1);
-         ArrayList var3 = new ArrayList();
+      public SwitchGrid build() {
+         GridLayout var1 = (new GridLayout()).rowSpacing(this.rowSpacing);
+         var1.addChild(SpacerElement.width(this.width - 44), 0, 0);
+         var1.addChild(SpacerElement.width(44), 0, 1);
+         ArrayList var2 = new ArrayList();
          this.rowCount = 0;
-         Iterator var4 = this.switchBuilders.iterator();
+         Iterator var3 = this.switchBuilders.iterator();
 
-         while(var4.hasNext()) {
-            SwitchBuilder var5 = (SwitchBuilder)var4.next();
-            var3.add(var5.build(this, var2, 0));
+         while(var3.hasNext()) {
+            SwitchBuilder var4 = (SwitchBuilder)var3.next();
+            var2.add(var4.build(this, var1, 0));
          }
 
-         var2.arrangeElements();
-         var1.accept(var2);
-         SwitchGrid var6 = new SwitchGrid(var3);
-         var6.refreshStates();
-         return var6;
+         var1.arrangeElements();
+         SwitchGrid var5 = new SwitchGrid(var2, var1);
+         var5.refreshStates();
+         return var5;
       }
 
       public Builder withInfoUnderneath(int var1, boolean var2) {

@@ -1,12 +1,12 @@
 package net.minecraft.client.renderer.entity.state;
 
 import javax.annotation.Nullable;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.level.block.SkullBlock;
 
 public class LivingEntityRenderState extends EntityRenderState {
    public float bodyRot;
@@ -15,7 +15,6 @@ public class LivingEntityRenderState extends EntityRenderState {
    public float deathTime;
    public float walkAnimationPos;
    public float walkAnimationSpeed;
-   public float wornHeadAnimationPos;
    public float scale = 1.0F;
    public float ageScale = 1.0F;
    public boolean isUpsideDown;
@@ -31,33 +30,17 @@ public class LivingEntityRenderState extends EntityRenderState {
    @Nullable
    public Component customName;
    public Pose pose;
+   public final ItemStackRenderState headItem;
+   public float wornHeadAnimationPos;
    @Nullable
-   public BakedModel headItemModel;
-   public ItemStack headItem;
-   public HumanoidArm mainArm;
+   public SkullBlock.Type wornHeadType;
    @Nullable
-   public BakedModel rightHandItemModel;
-   public ItemStack rightHandItem;
-   @Nullable
-   public BakedModel leftHandItemModel;
-   public ItemStack leftHandItem;
+   public ResolvableProfile wornHeadProfile;
 
    public LivingEntityRenderState() {
       super();
       this.pose = Pose.STANDING;
-      this.headItem = ItemStack.EMPTY;
-      this.mainArm = HumanoidArm.RIGHT;
-      this.rightHandItem = ItemStack.EMPTY;
-      this.leftHandItem = ItemStack.EMPTY;
-   }
-
-   public ItemStack getMainHandItem() {
-      return this.mainArm == HumanoidArm.RIGHT ? this.rightHandItem : this.leftHandItem;
-   }
-
-   @Nullable
-   public BakedModel getMainHandItemModel() {
-      return this.mainArm == HumanoidArm.RIGHT ? this.rightHandItemModel : this.leftHandItemModel;
+      this.headItem = new ItemStackRenderState();
    }
 
    public boolean hasPose(Pose var1) {

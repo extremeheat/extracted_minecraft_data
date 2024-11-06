@@ -3,6 +3,7 @@ package net.minecraft.world.level.block.entity;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import java.util.Objects;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -64,8 +65,12 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, Tri
    }
 
    public void setEntityId(EntityType<?> var1, RandomSource var2) {
-      this.trialSpawner.getData().setEntityId(this.trialSpawner, var2, var1);
-      this.setChanged();
+      if (this.level == null) {
+         Util.logAndPauseIfInIde("Expected non-null level");
+      } else {
+         this.trialSpawner.overrideEntityToSpawn(var1, this.level);
+         this.setChanged();
+      }
    }
 
    public TrialSpawner getTrialSpawner() {

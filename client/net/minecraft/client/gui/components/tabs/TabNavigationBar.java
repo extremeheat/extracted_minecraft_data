@@ -65,6 +65,10 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
       this.width = var1;
    }
 
+   public boolean isMouseOver(double var1, double var3) {
+      return var1 >= (double)this.layout.getX() && var3 >= (double)this.layout.getY() && var1 < (double)(this.layout.getX() + this.layout.getWidth()) && var3 < (double)(this.layout.getY() + this.layout.getHeight());
+   }
+
    public void setFocused(boolean var1) {
       super.setFocused(var1);
       if (this.getFocused() != null) {

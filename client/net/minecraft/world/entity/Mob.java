@@ -17,7 +17,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Vec3i;
-import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -60,20 +59,15 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractBoat;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.CrossbowItem;
-import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.SpawnEggItem;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -637,62 +631,49 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    protected boolean canReplaceCurrentItem(ItemStack var1, ItemStack var2, EquipmentSlot var3) {
       if (var2.isEmpty()) {
          return true;
+      } else if (var3.isArmor()) {
+         return this.compareArmor(var1, var2, var3);
       } else {
-         double var4;
-         double var6;
-         if (var1.getItem() instanceof SwordItem) {
-            if (!(var2.getItem() instanceof SwordItem)) {
-               return true;
-            } else {
-               var4 = this.getApproximateAttributeWith(var1, Attributes.ATTACK_DAMAGE, var3);
-               var6 = this.getApproximateAttributeWith(var2, Attributes.ATTACK_DAMAGE, var3);
-               if (var4 != var6) {
-                  return var4 > var6;
-               } else {
-                  return this.canReplaceEqualItem(var1, var2);
-               }
-            }
-         } else if (var1.getItem() instanceof BowItem && var2.getItem() instanceof BowItem) {
-            return this.canReplaceEqualItem(var1, var2);
-         } else if (var1.getItem() instanceof CrossbowItem && var2.getItem() instanceof CrossbowItem) {
-            return this.canReplaceEqualItem(var1, var2);
-         } else if (var1.getItem() instanceof ArmorItem) {
-            if (EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE)) {
-               return false;
-            } else if (!(var2.getItem() instanceof ArmorItem)) {
-               return true;
-            } else {
-               var4 = this.getApproximateAttributeWith(var1, Attributes.ARMOR, var3);
-               var6 = this.getApproximateAttributeWith(var2, Attributes.ARMOR, var3);
-               double var8 = this.getApproximateAttributeWith(var1, Attributes.ARMOR_TOUGHNESS, var3);
-               double var10 = this.getApproximateAttributeWith(var2, Attributes.ARMOR_TOUGHNESS, var3);
-               if (var4 != var6) {
-                  return var4 > var6;
-               } else if (var8 != var10) {
-                  return var8 > var10;
-               } else {
-                  return this.canReplaceEqualItem(var1, var2);
-               }
-            }
+         return var3 == EquipmentSlot.MAINHAND ? this.compareWeapons(var1, var2, var3) : false;
+      }
+   }
+
+   private boolean compareArmor(ItemStack var1, ItemStack var2, EquipmentSlot var3) {
+      if (EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE)) {
+         return false;
+      } else {
+         double var4 = this.getApproximateAttributeWith(var1, Attributes.ARMOR, var3);
+         double var6 = this.getApproximateAttributeWith(var2, Attributes.ARMOR, var3);
+         double var8 = this.getApproximateAttributeWith(var1, Attributes.ARMOR_TOUGHNESS, var3);
+         double var10 = this.getApproximateAttributeWith(var2, Attributes.ARMOR_TOUGHNESS, var3);
+         if (var4 != var6) {
+            return var4 > var6;
+         } else if (var8 != var10) {
+            return var8 > var10;
          } else {
-            if (var1.getItem() instanceof DiggerItem) {
-               if (var2.getItem() instanceof BlockItem) {
-                  return true;
-               }
+            return this.canReplaceEqualItem(var1, var2);
+         }
+      }
+   }
 
-               if (var2.getItem() instanceof DiggerItem) {
-                  var4 = this.getApproximateAttributeWith(var1, Attributes.ATTACK_DAMAGE, var3);
-                  var6 = this.getApproximateAttributeWith(var2, Attributes.ATTACK_DAMAGE, var3);
-                  if (var4 != var6) {
-                     return var4 > var6;
-                  }
-
-                  return this.canReplaceEqualItem(var1, var2);
-               }
-            }
-
+   private boolean compareWeapons(ItemStack var1, ItemStack var2, EquipmentSlot var3) {
+      TagKey var4 = this.getPreferredWeaponType();
+      if (var4 != null) {
+         if (var2.is(var4) && !var1.is(var4)) {
             return false;
          }
+
+         if (!var2.is(var4) && var1.is(var4)) {
+            return true;
+         }
+      }
+
+      double var5 = this.getApproximateAttributeWith(var1, Attributes.ATTACK_DAMAGE, var3);
+      double var7 = this.getApproximateAttributeWith(var2, Attributes.ATTACK_DAMAGE, var3);
+      if (var5 != var7) {
+         return var5 > var7;
+      } else {
+         return this.canReplaceEqualItem(var1, var2);
       }
    }
 
@@ -703,17 +684,19 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    }
 
    public boolean canReplaceEqualItem(ItemStack var1, ItemStack var2) {
-      if (var1.getDamageValue() < var2.getDamageValue()) {
-         return true;
+      Set var3 = ((ItemEnchantments)var2.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY)).entrySet();
+      Set var4 = ((ItemEnchantments)var1.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY)).entrySet();
+      if (var4.size() != var3.size()) {
+         return var4.size() > var3.size();
       } else {
-         return hasAnyComponentExceptDamage(var1) && !hasAnyComponentExceptDamage(var2);
+         int var5 = var1.getDamageValue();
+         int var6 = var2.getDamageValue();
+         if (var5 != var6) {
+            return var5 < var6;
+         } else {
+            return var1.has(DataComponents.CUSTOM_NAME) && !var2.has(DataComponents.CUSTOM_NAME);
+         }
       }
-   }
-
-   private static boolean hasAnyComponentExceptDamage(ItemStack var0) {
-      DataComponentMap var1 = var0.getComponents();
-      int var2 = var1.size();
-      return var2 > 1 || var2 == 1 && !var1.has(DataComponents.DAMAGE);
    }
 
    public boolean canHoldItem(ItemStack var1) {
@@ -722,6 +705,11 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    public boolean wantsToPickUp(ServerLevel var1, ItemStack var2) {
       return this.canHoldItem(var2);
+   }
+
+   @Nullable
+   public TagKey<Item> getPreferredWeaponType() {
+      return null;
    }
 
    public boolean removeWhenFarAway(double var1) {

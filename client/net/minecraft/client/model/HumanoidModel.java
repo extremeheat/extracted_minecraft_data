@@ -67,14 +67,10 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       return var2;
    }
 
-   protected ArmPose getArmPose(T var1, HumanoidArm var2) {
-      return HumanoidModel.ArmPose.EMPTY;
-   }
-
    public void setupAnim(T var1) {
       super.setupAnim(var1);
-      ArmPose var2 = this.getArmPose(var1, HumanoidArm.LEFT);
-      ArmPose var3 = this.getArmPose(var1, HumanoidArm.RIGHT);
+      ArmPose var2 = var1.leftArmPose;
+      ArmPose var3 = var1.rightArmPose;
       float var4 = var1.swimAmount;
       boolean var5 = var1.isFallFlying;
       this.head.xRot = var1.xRot * 0.017453292F;

@@ -269,16 +269,16 @@ public class Util {
 
             try {
                var0.run();
-            } catch (Throwable var15) {
+            } catch (Throwable var16) {
                if (var4 != null) {
                   try {
                      var4.close();
-                  } catch (Throwable var13) {
-                     var15.addSuppressed(var13);
+                  } catch (Throwable var14) {
+                     var16.addSuppressed(var14);
                   }
                }
 
-               throw var15;
+               throw var16;
             }
 
             if (var4 != null) {
@@ -292,16 +292,16 @@ public class Util {
 
          try {
             var0.run();
-         } catch (Throwable var17) {
+         } catch (Throwable var15) {
             if (var18 != null) {
                try {
                   var18.close();
-               } catch (Throwable var14) {
-                  var17.addSuppressed(var14);
+               } catch (Throwable var13) {
+                  var15.addSuppressed(var13);
                }
             }
 
-            throw var17;
+            throw var15;
          }
 
          if (var18 != null) {

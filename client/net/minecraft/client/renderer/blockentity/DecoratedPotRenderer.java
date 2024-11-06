@@ -6,6 +6,7 @@ import com.mojang.math.Axis;
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
+import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
@@ -43,6 +44,10 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
    private static final float WOBBLE_AMPLITUDE = 0.125F;
 
    public DecoratedPotRenderer(BlockEntityRendererProvider.Context var1) {
+      this(var1.getModelSet());
+   }
+
+   public DecoratedPotRenderer(EntityModelSet var1) {
       super();
       ModelPart var2 = var1.bakeLayer(ModelLayers.DECORATED_POT_BASE);
       this.neck = var2.getChild("neck");
@@ -116,16 +121,23 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
          }
       }
 
-      VertexConsumer var15 = Sheets.DECORATED_POT_BASE.buffer(var4, RenderType::entitySolid);
-      this.neck.render(var3, var15, var5, var6);
-      this.top.render(var3, var15, var5, var6);
-      this.bottom.render(var3, var15, var5, var6);
-      PotDecorations var14 = var1.getDecorations();
-      this.renderSide(this.frontSide, var3, var4, var5, var6, getSideMaterial(var14.front()));
-      this.renderSide(this.backSide, var3, var4, var5, var6, getSideMaterial(var14.back()));
-      this.renderSide(this.leftSide, var3, var4, var5, var6, getSideMaterial(var14.left()));
-      this.renderSide(this.rightSide, var3, var4, var5, var6, getSideMaterial(var14.right()));
+      this.render(var3, var4, var5, var6, var1.getDecorations());
       var3.popPose();
+   }
+
+   public void renderInHand(PoseStack var1, MultiBufferSource var2, int var3, int var4, PotDecorations var5) {
+      this.render(var1, var2, var3, var4, var5);
+   }
+
+   private void render(PoseStack var1, MultiBufferSource var2, int var3, int var4, PotDecorations var5) {
+      VertexConsumer var6 = Sheets.DECORATED_POT_BASE.buffer(var2, RenderType::entitySolid);
+      this.neck.render(var1, var6, var3, var4);
+      this.top.render(var1, var6, var3, var4);
+      this.bottom.render(var1, var6, var3, var4);
+      this.renderSide(this.frontSide, var1, var2, var3, var4, getSideMaterial(var5.front()));
+      this.renderSide(this.backSide, var1, var2, var3, var4, getSideMaterial(var5.back()));
+      this.renderSide(this.leftSide, var1, var2, var3, var4, getSideMaterial(var5.left()));
+      this.renderSide(this.rightSide, var1, var2, var3, var4, getSideMaterial(var5.right()));
    }
 
    private void renderSide(ModelPart var1, PoseStack var2, MultiBufferSource var3, int var4, int var5, Material var6) {

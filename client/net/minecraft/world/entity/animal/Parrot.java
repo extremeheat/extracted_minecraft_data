@@ -122,7 +122,6 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
       FlyingPathNavigation var2 = new FlyingPathNavigation(this, var1);
       var2.setCanOpenDoors(false);
       var2.setCanFloat(true);
-      var2.setCanPassDoors(true);
       return var2;
    }
 

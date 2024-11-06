@@ -65,6 +65,10 @@ public class SkullBlock extends AbstractSkullBlock {
       var1.add(ROTATION);
    }
 
+   protected RenderShape getRenderShape(BlockState var1) {
+      return RenderShape.ENTITYBLOCK_ANIMATED;
+   }
+
    static {
       ROTATIONS = MAX + 1;
       ROTATION = BlockStateProperties.ROTATION_16;

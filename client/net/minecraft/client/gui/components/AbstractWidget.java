@@ -130,7 +130,7 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (this.active && this.visible) {
          if (this.isValidClickButton(var5)) {
-            boolean var6 = this.clicked(var1, var3);
+            boolean var6 = this.isMouseOver(var1, var3);
             if (var6) {
                this.playDownSound(Minecraft.getInstance().getSoundManager());
                this.onClick(var1, var3);
@@ -166,10 +166,6 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       }
    }
 
-   protected boolean clicked(double var1, double var3) {
-      return this.active && this.visible && var1 >= (double)this.getX() && var3 >= (double)this.getY() && var1 < (double)(this.getX() + this.getWidth()) && var3 < (double)(this.getY() + this.getHeight());
-   }
-
    @Nullable
    public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       if (this.active && this.visible) {
@@ -180,7 +176,7 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    }
 
    public boolean isMouseOver(double var1, double var3) {
-      return this.active && this.visible && var1 >= (double)this.getX() && var3 >= (double)this.getY() && var1 < (double)(this.getX() + this.width) && var3 < (double)(this.getY() + this.height);
+      return this.active && this.visible && var1 >= (double)this.getX() && var3 >= (double)this.getY() && var1 < (double)this.getRight() && var3 < (double)this.getBottom();
    }
 
    public void playDownSound(SoundManager var1) {

@@ -364,7 +364,6 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
 
       protected PathFinder createPathFinder(int var1) {
          this.nodeEvaluator = new FrogNodeEvaluator(true);
-         this.nodeEvaluator.setCanPassDoors(true);
          return new PathFinder(this.nodeEvaluator, var1);
       }
    }

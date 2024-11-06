@@ -41,7 +41,7 @@ public class EndermanRenderer extends MobRenderer<EnderMan, EndermanRenderState,
 
    public void extractRenderState(EnderMan var1, EndermanRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
-      HumanoidMobRenderer.extractHumanoidRenderState(var1, var2, var3);
+      HumanoidMobRenderer.extractHumanoidRenderState(var1, var2, var3, this.itemModelResolver);
       var2.isCreepy = var1.isCreepy();
       var2.carriedBlock = var1.getCarriedBlock();
    }

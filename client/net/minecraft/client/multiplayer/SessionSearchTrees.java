@@ -70,7 +70,7 @@ public class SessionSearchTrees {
          List var3 = var1.getCollections();
          RegistryAccess var4 = var2.registryAccess();
          Registry var5 = var4.lookupOrThrow(Registries.ITEM);
-         Item.TooltipContext var6 = Item.TooltipContext.of(var4);
+         Item.TooltipContext var6 = Item.TooltipContext.of((HolderLookup.Provider)var4);
          ContextMap var7 = SlotDisplayContext.fromLevel(var2);
          TooltipFlag.Default var8 = TooltipFlag.Default.NORMAL;
          CompletableFuture var9 = this.recipeSearch;

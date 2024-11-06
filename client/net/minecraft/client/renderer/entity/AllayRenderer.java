@@ -4,6 +4,7 @@ import net.minecraft.client.model.AllayModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.client.renderer.entity.state.AllayRenderState;
+import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.core.BlockPos;
@@ -15,7 +16,7 @@ public class AllayRenderer extends MobRenderer<Allay, AllayRenderState, AllayMod
 
    public AllayRenderer(EntityRendererProvider.Context var1) {
       super(var1, new AllayModel(var1.bakeLayer(ModelLayers.ALLAY)), 0.4F);
-      this.addLayer(new ItemInHandLayer(this, var1.getItemRenderer()));
+      this.addLayer(new ItemInHandLayer(this));
    }
 
    public ResourceLocation getTextureLocation(AllayRenderState var1) {
@@ -28,6 +29,7 @@ public class AllayRenderer extends MobRenderer<Allay, AllayRenderState, AllayMod
 
    public void extractRenderState(Allay var1, AllayRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
+      ArmedEntityRenderState.extractArmedEntityRenderState(var1, var2, this.itemModelResolver);
       var2.isDancing = var1.isDancing();
       var2.isSpinning = var1.isSpinning();
       var2.spinningProgress = var1.getSpinningProgress(var3);

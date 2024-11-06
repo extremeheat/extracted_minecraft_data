@@ -78,16 +78,6 @@ public class DecoratedPotBlockEntity extends BlockEntity implements Randomizable
       return this.decorations;
    }
 
-   public void setFromItem(ItemStack var1) {
-      this.applyComponentsFromItemStack(var1);
-   }
-
-   public ItemStack getPotAsItem() {
-      ItemStack var1 = Items.DECORATED_POT.getDefaultInstance();
-      var1.applyComponents(this.collectComponents());
-      return var1;
-   }
-
    public static ItemStack createDecoratedPotItem(PotDecorations var0) {
       ItemStack var1 = Items.DECORATED_POT.getDefaultInstance();
       var1.set(DataComponents.POT_DECORATIONS, var0);

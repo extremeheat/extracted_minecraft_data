@@ -58,7 +58,7 @@ public abstract class DoorInteractGoal extends Goal {
       } else {
          GroundPathNavigation var1 = (GroundPathNavigation)this.mob.getNavigation();
          Path var2 = var1.getPath();
-         if (var2 != null && !var2.isDone() && var1.canOpenDoors()) {
+         if (var2 != null && !var2.isDone()) {
             for(int var3 = 0; var3 < Math.min(var2.getNextNodeIndex() + 2, var2.getNodeCount()); ++var3) {
                Node var4 = var2.getNode(var3);
                this.doorPos = new BlockPos(var4.x, var4.y + 1, var4.z);

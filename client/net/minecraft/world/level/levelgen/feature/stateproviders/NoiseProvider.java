@@ -1,11 +1,11 @@
 package net.minecraft.world.level.levelgen.feature.stateproviders;
 
 import com.mojang.datafixers.Products;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
@@ -18,7 +18,7 @@ public class NoiseProvider extends NoiseBasedStateProvider {
    protected final List<BlockState> states;
 
    protected static <P extends NoiseProvider> Products.P4<RecordCodecBuilder.Mu<P>, Long, NormalNoise.NoiseParameters, Float, List<BlockState>> noiseProviderCodec(RecordCodecBuilder.Instance<P> var0) {
-      return noiseCodec(var0).and(Codec.list(BlockState.CODEC).fieldOf("states").forGetter((var0x) -> {
+      return noiseCodec(var0).and(ExtraCodecs.nonEmptyList(BlockState.CODEC.listOf()).fieldOf("states").forGetter((var0x) -> {
          return var0x.states;
       }));
    }

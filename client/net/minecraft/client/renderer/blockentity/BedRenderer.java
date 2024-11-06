@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import net.minecraft.client.model.Model;
+import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -30,6 +31,10 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
    private final Model footModel;
 
    public BedRenderer(BlockEntityRendererProvider.Context var1) {
+      this(var1.getModelSet());
+   }
+
+   public BedRenderer(EntityModelSet var1) {
       super();
       this.headModel = new Model.Simple(var1.bakeLayer(ModelLayers.BED_HEAD), RenderType::entitySolid);
       this.footModel = new Model.Simple(var1.bakeLayer(ModelLayers.BED_FOOT), RenderType::entitySolid);
@@ -54,20 +59,22 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
    }
 
    public void render(BedBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      Material var7 = Sheets.BED_TEXTURES[var1.getColor().getId()];
-      Level var8 = var1.getLevel();
-      if (var8 != null) {
+      Level var7 = var1.getLevel();
+      if (var7 != null) {
+         Material var8 = Sheets.getBedMaterial(var1.getColor());
          BlockState var9 = var1.getBlockState();
-         DoubleBlockCombiner.NeighborCombineResult var10 = DoubleBlockCombiner.combineWithNeigbour(BlockEntityType.BED, BedBlock::getBlockType, BedBlock::getConnectedDirection, ChestBlock.FACING, var9, var8, var1.getBlockPos(), (var0, var1x) -> {
+         DoubleBlockCombiner.NeighborCombineResult var10 = DoubleBlockCombiner.combineWithNeigbour(BlockEntityType.BED, BedBlock::getBlockType, BedBlock::getConnectedDirection, ChestBlock.FACING, var9, var7, var1.getBlockPos(), (var0, var1x) -> {
             return false;
          });
          int var11 = ((Int2IntFunction)var10.apply(new BrightnessCombiner())).get(var5);
-         this.renderPiece(var3, var4, var9.getValue(BedBlock.PART) == BedPart.HEAD ? this.headModel : this.footModel, (Direction)var9.getValue(BedBlock.FACING), var7, var11, var6, false);
-      } else {
-         this.renderPiece(var3, var4, this.headModel, Direction.SOUTH, var7, var5, var6, false);
-         this.renderPiece(var3, var4, this.footModel, Direction.SOUTH, var7, var5, var6, true);
+         this.renderPiece(var3, var4, var9.getValue(BedBlock.PART) == BedPart.HEAD ? this.headModel : this.footModel, (Direction)var9.getValue(BedBlock.FACING), var8, var11, var6, false);
       }
 
+   }
+
+   public void renderInHand(PoseStack var1, MultiBufferSource var2, int var3, int var4, Material var5) {
+      this.renderPiece(var1, var2, this.headModel, Direction.SOUTH, var5, var3, var4, false);
+      this.renderPiece(var1, var2, this.footModel, Direction.SOUTH, var5, var3, var4, true);
    }
 
    private void renderPiece(PoseStack var1, MultiBufferSource var2, Model var3, Direction var4, Material var5, int var6, int var7, boolean var8) {

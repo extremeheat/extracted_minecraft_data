@@ -13,18 +13,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.client.renderer.block.model.MultiVariant;
 import net.minecraft.client.renderer.block.model.UnbakedBlockStateModel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
-import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.MultiPartBakedModel;
-import net.minecraft.client.resources.model.UnbakedModel;
+import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -65,23 +61,23 @@ public class MultiPart implements UnbakedBlockStateModel {
       return new 1Key(this, var2);
    }
 
-   public void resolveDependencies(UnbakedModel.Resolver var1) {
+   public void resolveDependencies(ResolvableModel.Resolver var1) {
       this.selectors.forEach((var1x) -> {
          var1x.variant.resolveDependencies(var1);
       });
    }
 
-   public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3) {
-      ArrayList var4 = new ArrayList(this.selectors.size());
-      Iterator var5 = this.selectors.iterator();
+   public BakedModel bake(ModelBaker var1) {
+      ArrayList var2 = new ArrayList(this.selectors.size());
+      Iterator var3 = this.selectors.iterator();
 
-      while(var5.hasNext()) {
-         InstantiatedSelector var6 = (InstantiatedSelector)var5.next();
-         BakedModel var7 = var6.variant.bake(var1, var2, var3);
-         var4.add(new MultiPartBakedModel.Selector(var6.predicate, var7));
+      while(var3.hasNext()) {
+         InstantiatedSelector var4 = (InstantiatedSelector)var3.next();
+         BakedModel var5 = var4.variant.bake(var1);
+         var2.add(new MultiPartBakedModel.Selector(var4.predicate, var5));
       }
 
-      return new MultiPartBakedModel(var4);
+      return new MultiPartBakedModel(var2);
    }
 
    private static record InstantiatedSelector(Predicate<BlockState> predicate, MultiVariant variant) {

@@ -92,7 +92,7 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
       }
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return new ItemStack((ItemLike)DataFixUtils.orElse(var1.registryAccess().lookupOrThrow(Registries.ITEM).getOptional(this.seed), this));
    }
 

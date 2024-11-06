@@ -444,11 +444,6 @@ public class Item implements FeatureElement, ItemLike {
          return (String)this.descriptionId.get((ResourceKey)Objects.requireNonNull(this.id, "Item id not set"));
       }
 
-      public Properties overrideModel(ResourceLocation var1) {
-         this.model = DependantName.fixed(var1);
-         return this;
-      }
-
       public ResourceLocation effectiveModel() {
          return (ResourceLocation)this.model.get((ResourceKey)Objects.requireNonNull(this.id, "Item id not set"));
       }
@@ -487,10 +482,6 @@ public class Item implements FeatureElement, ItemLike {
          public MapItemSavedData mapData(MapId var1) {
             return null;
          }
-
-         public int permissionLevel() {
-            return 0;
-         }
       };
 
       @Nullable
@@ -501,31 +492,20 @@ public class Item implements FeatureElement, ItemLike {
       @Nullable
       MapItemSavedData mapData(MapId var1);
 
-      int permissionLevel();
+      static TooltipContext of(@Nullable final Level var0) {
+         return var0 == null ? EMPTY : new TooltipContext() {
+            public HolderLookup.Provider registries() {
+               return var0.registryAccess();
+            }
 
-      static TooltipContext of(@Nullable final Level var0, @Nullable Player var1) {
-         if (var0 == null) {
-            return EMPTY;
-         } else {
-            final int var2 = var1 != null ? var1.getPermissionLevel() : 0;
-            return new TooltipContext() {
-               public HolderLookup.Provider registries() {
-                  return var0.registryAccess();
-               }
+            public float tickRate() {
+               return var0.tickRateManager().tickrate();
+            }
 
-               public float tickRate() {
-                  return var0.tickRateManager().tickrate();
-               }
-
-               public MapItemSavedData mapData(MapId var1) {
-                  return var0.getMapData(var1);
-               }
-
-               public int permissionLevel() {
-                  return var2;
-               }
-            };
-         }
+            public MapItemSavedData mapData(MapId var1) {
+               return var0.getMapData(var1);
+            }
+         };
       }
 
       static TooltipContext of(final HolderLookup.Provider var0) {
@@ -541,10 +521,6 @@ public class Item implements FeatureElement, ItemLike {
             @Nullable
             public MapItemSavedData mapData(MapId var1) {
                return null;
-            }
-
-            public int permissionLevel() {
-               return 0;
             }
          };
       }

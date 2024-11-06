@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -38,6 +39,7 @@ import org.slf4j.Logger;
 public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> implements RecipeAccess {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Map<ResourceKey<RecipePropertySet>, IngredientExtractor> RECIPE_PROPERTY_SETS;
+   private static final FileToIdConverter RECIPE_LISTER;
    private final HolderLookup.Provider registries;
    private RecipeMap recipes;
    private Map<ResourceKey<RecipePropertySet>, RecipePropertySet> propertySets;
@@ -57,7 +59,7 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
 
    protected RecipeMap prepare(ResourceManager var1, ProfilerFiller var2) {
       TreeMap var3 = new TreeMap();
-      SimpleJsonResourceReloadListener.scanDirectory(var1, Registries.elementsDirPath(Registries.RECIPE), this.registries.createSerializationContext(JsonOps.INSTANCE), Recipe.CODEC, var3);
+      SimpleJsonResourceReloadListener.scanDirectory(var1, (FileToIdConverter)RECIPE_LISTER, this.registries.createSerializationContext(JsonOps.INSTANCE), Recipe.CODEC, var3);
       ArrayList var4 = new ArrayList(var3.size());
       var3.forEach((var1x, var2x) -> {
          ResourceKey var3 = ResourceKey.create(Registries.RECIPE, var1x);
@@ -289,6 +291,7 @@ public class RecipeManager extends SimplePreparableReloadListener<RecipeMap> imp
 
          return var10000;
       }, RecipePropertySet.FURNACE_INPUT, forSingleInput(RecipeType.SMELTING), RecipePropertySet.BLAST_FURNACE_INPUT, forSingleInput(RecipeType.BLASTING), RecipePropertySet.SMOKER_INPUT, forSingleInput(RecipeType.SMOKING), RecipePropertySet.CAMPFIRE_INPUT, forSingleInput(RecipeType.CAMPFIRE_COOKING));
+      RECIPE_LISTER = FileToIdConverter.registry(Registries.RECIPE);
    }
 
    public static record ServerDisplayInfo(RecipeDisplayEntry display, RecipeHolder<?> parent) {

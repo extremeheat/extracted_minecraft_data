@@ -39,23 +39,20 @@ public interface ContainerEventHandler extends GuiEventListener {
    }
 
    default boolean mouseClicked(double var1, double var3, int var5) {
-      Iterator var6 = this.children().iterator();
-
-      GuiEventListener var7;
-      do {
-         if (!var6.hasNext()) {
-            return false;
+      Optional var6 = this.getChildAt(var1, var3);
+      if (var6.isEmpty()) {
+         return false;
+      } else {
+         GuiEventListener var7 = (GuiEventListener)var6.get();
+         if (var7.mouseClicked(var1, var3, var5)) {
+            this.setFocused(var7);
+            if (var5 == 0) {
+               this.setDragging(true);
+            }
          }
 
-         var7 = (GuiEventListener)var6.next();
-      } while(!var7.mouseClicked(var1, var3, var5));
-
-      this.setFocused(var7);
-      if (var5 == 0) {
-         this.setDragging(true);
+         return true;
       }
-
-      return true;
    }
 
    default boolean mouseReleased(double var1, double var3, int var5) {
@@ -192,7 +189,7 @@ public interface ContainerEventHandler extends GuiEventListener {
       GuiEventListener var2 = this.getFocused();
       if (var2 == null) {
          ScreenDirection var5 = var1.direction();
-         ScreenRectangle var4 = this.getRectangle().getBorder(var5.getOpposite());
+         ScreenRectangle var4 = this.getBorderForArrowNavigation(var5.getOpposite());
          return ComponentPath.path(this, this.nextFocusPathInDirection(var4, var5, (GuiEventListener)null, var1));
       } else {
          ScreenRectangle var3 = var2.getRectangle();

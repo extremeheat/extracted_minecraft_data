@@ -29,17 +29,16 @@ import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
@@ -60,10 +59,12 @@ public class GuiGraphics {
    private final MultiBufferSource.BufferSource bufferSource;
    private final ScissorStack scissorStack;
    private final GuiSpriteManager sprites;
+   private final ItemStackRenderState scratchItemStackRenderState;
 
    private GuiGraphics(Minecraft var1, PoseStack var2, MultiBufferSource.BufferSource var3) {
       super();
       this.scissorStack = new ScissorStack();
+      this.scratchItemStackRenderState = new ItemStackRenderState();
       this.minecraft = var1;
       this.pose = var2;
       this.bufferSource = var3;
@@ -451,41 +452,36 @@ public class GuiGraphics {
 
    private void renderItem(@Nullable LivingEntity var1, @Nullable Level var2, ItemStack var3, int var4, int var5, int var6, int var7) {
       if (!var3.isEmpty()) {
-         BakedModel var8 = this.minecraft.getItemRenderer().getModel(var3, var2, var1, var6);
+         this.minecraft.getItemModelResolver().updateForTopItem(this.scratchItemStackRenderState, var3, ItemDisplayContext.GUI, false, var2, var1, var6);
          this.pose.pushPose();
-         this.pose.translate((float)(var4 + 8), (float)(var5 + 8), (float)(150 + (var8.isGui3d() ? var7 : 0)));
+         this.pose.translate((float)(var4 + 8), (float)(var5 + 8), (float)(150 + (this.scratchItemStackRenderState.isGui3d() ? var7 : 0)));
 
          try {
             this.pose.scale(16.0F, -16.0F, 16.0F);
-            boolean var9 = !var8.usesBlockLight();
-            if (var9) {
+            boolean var8 = !this.scratchItemStackRenderState.usesBlockLight();
+            if (var8) {
                this.flush();
                Lighting.setupForFlatItems();
             }
 
-            if (var3.is(ItemTags.BUNDLES)) {
-               this.minecraft.getItemRenderer().renderBundleItem(var3, ItemDisplayContext.GUI, false, this.pose, this.bufferSource, 15728880, OverlayTexture.NO_OVERLAY, var8, var2, var1, var6);
-            } else {
-               this.minecraft.getItemRenderer().render(var3, ItemDisplayContext.GUI, false, this.pose, this.bufferSource, 15728880, OverlayTexture.NO_OVERLAY, var8);
-            }
-
+            this.scratchItemStackRenderState.render(this.pose, this.bufferSource, 15728880, OverlayTexture.NO_OVERLAY);
             this.flush();
-            if (var9) {
+            if (var8) {
                Lighting.setupFor3DItems();
             }
-         } catch (Throwable var12) {
-            CrashReport var10 = CrashReport.forThrowable(var12, "Rendering item");
-            CrashReportCategory var11 = var10.addCategory("Item being rendered");
-            var11.setDetail("Item Type", () -> {
+         } catch (Throwable var11) {
+            CrashReport var9 = CrashReport.forThrowable(var11, "Rendering item");
+            CrashReportCategory var10 = var9.addCategory("Item being rendered");
+            var10.setDetail("Item Type", () -> {
                return String.valueOf(var3.getItem());
             });
-            var11.setDetail("Item Components", () -> {
+            var10.setDetail("Item Components", () -> {
                return String.valueOf(var3.getComponents());
             });
-            var11.setDetail("Item Foil", () -> {
+            var10.setDetail("Item Foil", () -> {
                return String.valueOf(var3.hasFoil());
             });
-            throw new ReportedException(var10);
+            throw new ReportedException(var9);
          }
 
          this.pose.popPose();

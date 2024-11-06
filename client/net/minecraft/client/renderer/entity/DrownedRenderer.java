@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.entity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.DrownedModel;
+import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.DrownedOuterLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -10,7 +11,10 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ZombieRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.monster.Drowned;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public class DrownedRenderer extends AbstractZombieRenderer<Drowned, ZombieRenderState, DrownedModel> {
    private static final ResourceLocation DROWNED_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/zombie/drowned.png");
@@ -37,6 +41,11 @@ public class DrownedRenderer extends AbstractZombieRenderer<Drowned, ZombieRende
          var2.rotateAround(Axis.XP.rotationDegrees(var7), 0.0F, var1.boundingBoxHeight / 2.0F / var4, 0.0F);
       }
 
+   }
+
+   protected HumanoidModel.ArmPose getArmPose(Drowned var1, HumanoidArm var2) {
+      ItemStack var3 = var1.getItemHeldByArm(var2);
+      return var1.getMainArm() == var2 && var1.isAggressive() && var3.is(Items.TRIDENT) ? HumanoidModel.ArmPose.THROW_SPEAR : HumanoidModel.ArmPose.EMPTY;
    }
 
    // $FF: synthetic method

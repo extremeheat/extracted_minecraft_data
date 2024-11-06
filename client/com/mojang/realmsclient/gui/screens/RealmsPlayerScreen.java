@@ -105,9 +105,12 @@ public class RealmsPlayerScreen extends RealmsScreen {
       private static final int ITEM_HEIGHT = 36;
 
       public InvitedObjectSelectionList() {
-         super(Minecraft.getInstance(), RealmsPlayerScreen.this.width, RealmsPlayerScreen.this.layout.getContentHeight(), RealmsPlayerScreen.this.layout.getHeaderHeight(), 36);
+         Minecraft var10001 = Minecraft.getInstance();
+         int var10002 = RealmsPlayerScreen.this.width;
+         int var10003 = RealmsPlayerScreen.this.layout.getContentHeight();
+         int var10004 = RealmsPlayerScreen.this.layout.getHeaderHeight();
          Objects.requireNonNull(RealmsPlayerScreen.this.font);
-         this.setRenderHeader(true, (int)(9.0F * 1.5F));
+         super(var10001, var10002, var10003, var10004, 36, (int)(9.0F * 1.5F));
       }
 
       protected void renderHeader(GuiGraphics var1, int var2, int var3) {

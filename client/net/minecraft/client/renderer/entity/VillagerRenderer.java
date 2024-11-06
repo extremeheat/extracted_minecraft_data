@@ -6,6 +6,7 @@ import net.minecraft.client.renderer.entity.layers.CrossedArmsItemLayer;
 import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.layers.VillagerProfessionLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.HoldingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.VillagerRenderState;
 import net.minecraft.resources.ResourceLocation;
@@ -17,9 +18,9 @@ public class VillagerRenderer extends AgeableMobRenderer<Villager, VillagerRende
 
    public VillagerRenderer(EntityRendererProvider.Context var1) {
       super(var1, new VillagerModel(var1.bakeLayer(ModelLayers.VILLAGER)), new VillagerModel(var1.bakeLayer(ModelLayers.VILLAGER_BABY)), 0.5F);
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), CUSTOM_HEAD_TRANSFORMS, var1.getItemRenderer()));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), CUSTOM_HEAD_TRANSFORMS));
       this.addLayer(new VillagerProfessionLayer(this, var1.getResourceManager(), "villager"));
-      this.addLayer(new CrossedArmsItemLayer(this, var1.getItemRenderer()));
+      this.addLayer(new CrossedArmsItemLayer(this));
    }
 
    public ResourceLocation getTextureLocation(VillagerRenderState var1) {
@@ -37,6 +38,7 @@ public class VillagerRenderer extends AgeableMobRenderer<Villager, VillagerRende
 
    public void extractRenderState(Villager var1, VillagerRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
+      HoldingEntityRenderState.extractHoldingEntityRenderState(var1, var2, this.itemModelResolver);
       var2.isUnhappy = var1.getUnhappyCounter() > 0;
       var2.villagerData = var1.getVillagerData();
    }

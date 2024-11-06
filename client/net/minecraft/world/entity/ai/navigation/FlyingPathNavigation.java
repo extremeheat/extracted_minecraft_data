@@ -18,7 +18,6 @@ public class FlyingPathNavigation extends PathNavigation {
 
    protected PathFinder createPathFinder(int var1) {
       this.nodeEvaluator = new FlyNodeEvaluator();
-      this.nodeEvaluator.setCanPassDoors(true);
       return new PathFinder(this.nodeEvaluator, var1);
    }
 
@@ -65,18 +64,6 @@ public class FlyingPathNavigation extends PathNavigation {
 
    public void setCanOpenDoors(boolean var1) {
       this.nodeEvaluator.setCanOpenDoors(var1);
-   }
-
-   public boolean canPassDoors() {
-      return this.nodeEvaluator.canPassDoors();
-   }
-
-   public void setCanPassDoors(boolean var1) {
-      this.nodeEvaluator.setCanPassDoors(var1);
-   }
-
-   public boolean canOpenDoors() {
-      return this.nodeEvaluator.canPassDoors();
    }
 
    public boolean isStableDestination(BlockPos var1) {

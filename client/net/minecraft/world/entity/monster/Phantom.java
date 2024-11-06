@@ -56,7 +56,7 @@ public class Phantom extends FlyingMob implements Enemy {
       this.attackPhase = Phantom.AttackPhase.CIRCLE;
       this.xpReward = 5;
       this.moveControl = new PhantomMoveControl(this);
-      this.lookControl = new PhantomLookControl(this, this);
+      this.lookControl = new PhantomLookControl(this);
    }
 
    public boolean isFlapping() {
@@ -261,9 +261,9 @@ public class Phantom extends FlyingMob implements Enemy {
       }
    }
 
-   class PhantomLookControl extends LookControl {
-      public PhantomLookControl(final Phantom var1, final Mob var2) {
-         super(var2);
+   static class PhantomLookControl extends LookControl {
+      public PhantomLookControl(Mob var1) {
+         super(var1);
       }
 
       public void tick() {

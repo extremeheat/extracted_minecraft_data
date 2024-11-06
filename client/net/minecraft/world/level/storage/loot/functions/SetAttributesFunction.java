@@ -2,7 +2,6 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -10,7 +9,6 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -127,11 +125,7 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
       }
 
       static {
-         SLOTS_CODEC = ExtraCodecs.nonEmptyList(Codec.either(EquipmentSlotGroup.CODEC, EquipmentSlotGroup.CODEC.listOf()).xmap((var0) -> {
-            return (List)var0.map(List::of, Function.identity());
-         }, (var0) -> {
-            return var0.size() == 1 ? Either.left((EquipmentSlotGroup)var0.getFirst()) : Either.right(var0);
-         }));
+         SLOTS_CODEC = ExtraCodecs.nonEmptyList(ExtraCodecs.compactListCodec(EquipmentSlotGroup.CODEC));
          CODEC = RecordCodecBuilder.create((var0) -> {
             return var0.group(ResourceLocation.CODEC.fieldOf("id").forGetter(Modifier::id), Attribute.CODEC.fieldOf("attribute").forGetter(Modifier::attribute), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(Modifier::operation), NumberProviders.CODEC.fieldOf("amount").forGetter(Modifier::amount), SLOTS_CODEC.fieldOf("slot").forGetter(Modifier::slots)).apply(var0, Modifier::new);
          });

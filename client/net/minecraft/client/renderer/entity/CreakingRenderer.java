@@ -19,7 +19,7 @@ public class CreakingRenderer<T extends Creaking> extends MobRenderer<T, Creakin
       super(var1, new CreakingModel(var1.bakeLayer(ModelLayers.CREAKING)), 0.7F);
       this.addLayer(new LivingEntityEmissiveLayer(this, EYES_TEXTURE_LOCATION, (var0, var1x) -> {
          return 1.0F;
-      }, CreakingModel::getHeadModelParts, RenderType::eyes));
+      }, CreakingModel::getHeadModelParts, RenderType::eyes, true));
    }
 
    public ResourceLocation getTextureLocation(CreakingRenderState var1) {

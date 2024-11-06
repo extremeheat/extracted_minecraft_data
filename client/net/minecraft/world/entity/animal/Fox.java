@@ -163,7 +163,7 @@ public class Fox extends Animal implements VariantHolder<Variant> {
       this.goalSelector.addGoal(6, new SeekShelterGoal(1.25));
       this.goalSelector.addGoal(7, new FoxMeleeAttackGoal(1.2000000476837158, true));
       this.goalSelector.addGoal(7, new SleepGoal());
-      this.goalSelector.addGoal(8, new FoxFollowParentGoal(this, this, 1.25));
+      this.goalSelector.addGoal(8, new FoxFollowParentGoal(this, 1.25));
       this.goalSelector.addGoal(9, new FoxStrollThroughVillageGoal(32, 200));
       this.goalSelector.addGoal(10, new FoxEatBerriesGoal(1.2000000476837158, 12, 1));
       this.goalSelector.addGoal(10, new LeapAtTargetGoal(this, 0.4F));
@@ -1078,12 +1078,12 @@ public class Fox extends Animal implements VariantHolder<Variant> {
       }
    }
 
-   private class FoxFollowParentGoal extends FollowParentGoal {
+   private static class FoxFollowParentGoal extends FollowParentGoal {
       private final Fox fox;
 
-      public FoxFollowParentGoal(final Fox var1, final Fox var2, final double var3) {
-         super(var2, var3);
-         this.fox = var2;
+      public FoxFollowParentGoal(Fox var1, double var2) {
+         super(var1, var2);
+         this.fox = var1;
       }
 
       public boolean canUse() {

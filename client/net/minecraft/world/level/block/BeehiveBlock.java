@@ -298,6 +298,15 @@ public class BeehiveBlock extends BaseEntityBlock {
       return super.getDrops(var1, var2);
    }
 
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+      ItemStack var5 = super.getCloneItemStack(var1, var2, var3, var4);
+      if (var4) {
+         var5.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(HONEY_LEVEL, (Comparable)((Integer)var3.getValue(HONEY_LEVEL))));
+      }
+
+      return var5;
+   }
+
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
       if (var2.getBlockState(var6).getBlock() instanceof FireBlock) {
          BlockEntity var9 = var2.getBlockEntity(var4);

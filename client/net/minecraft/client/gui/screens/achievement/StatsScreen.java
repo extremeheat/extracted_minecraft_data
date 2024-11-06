@@ -231,10 +231,9 @@ public class StatsScreen extends Screen {
       protected int sortOrder;
 
       public ItemStatisticsList(final Minecraft var2) {
-         super(var2, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 22);
+         super(var2, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 22, 22);
          this.blockColumns.add(Stats.BLOCK_MINED);
          this.itemColumns = Lists.newArrayList(new StatType[]{Stats.ITEM_BROKEN, Stats.ITEM_CRAFTED, Stats.ITEM_USED, Stats.ITEM_PICKED_UP, Stats.ITEM_DROPPED});
-         this.setRenderHeader(true, 22);
          Set var3 = Sets.newIdentityHashSet();
          Iterator var4 = BuiltInRegistries.ITEM.iterator();
 
@@ -317,8 +316,9 @@ public class StatsScreen extends Screen {
 
       }
 
-      public int getRowWidth() {
-         return 280;
+      public boolean mouseClicked(double var1, double var3, int var5) {
+         boolean var6 = super.mouseClicked(var1, var3, var5);
+         return !var6 && this.clickedHeader((int)(var1 - ((double)this.getX() + (double)this.width / 2.0 - (double)this.getRowWidth() / 2.0)), (int)(var3 - (double)this.getY()) + (int)this.scrollAmount() - 4) ? true : var6;
       }
 
       protected boolean clickedHeader(int var1, int var2) {
@@ -337,8 +337,12 @@ public class StatsScreen extends Screen {
             this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
             return true;
          } else {
-            return super.clickedHeader(var1, var2);
+            return false;
          }
+      }
+
+      public int getRowWidth() {
+         return 280;
       }
 
       private StatType<?> getColumn(int var1) {

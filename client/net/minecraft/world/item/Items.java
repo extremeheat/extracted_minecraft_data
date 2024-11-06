@@ -21,6 +21,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.food.Foods;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.item.component.Consumables;
@@ -38,10 +39,11 @@ import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.equipment.ArmorMaterials;
 import net.minecraft.world.item.equipment.ArmorType;
-import net.minecraft.world.item.equipment.EquipmentModels;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import net.minecraft.world.level.material.Fluids;
@@ -1997,7 +1999,9 @@ public class Items {
       RED_TERRACOTTA = registerBlock(Blocks.RED_TERRACOTTA);
       BLACK_TERRACOTTA = registerBlock(Blocks.BLACK_TERRACOTTA);
       BARRIER = registerBlock(Blocks.BARRIER, (new Item.Properties()).rarity(Rarity.EPIC));
-      LIGHT = registerBlock(Blocks.LIGHT, (new Item.Properties()).rarity(Rarity.EPIC));
+      LIGHT = registerBlock(Blocks.LIGHT, (var0) -> {
+         return var0.rarity(Rarity.EPIC).component(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(LightBlock.LEVEL, (int)15));
+      });
       HAY_BLOCK = registerBlock(Blocks.HAY_BLOCK);
       WHITE_CARPET = registerBlock(Blocks.WHITE_CARPET, (var0) -> {
          return var0.component(DataComponents.EQUIPPABLE, Equippable.llamaSwag(DyeColor.WHITE));
@@ -2410,7 +2414,7 @@ public class Items {
          return new FoodOnAStickItem(EntityType.STRIDER, 1, var0);
       }, (new Item.Properties()).durability(100));
       PHANTOM_MEMBRANE = registerItem("phantom_membrane");
-      ELYTRA = registerItem("elytra", (new Item.Properties()).durability(432).rarity(Rarity.EPIC).component(DataComponents.GLIDER, Unit.INSTANCE).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.CHEST).setEquipSound(SoundEvents.ARMOR_EQUIP_ELYTRA).setModel(EquipmentModels.ELYTRA).setDamageOnHurt(false).build()).repairable(PHANTOM_MEMBRANE));
+      ELYTRA = registerItem("elytra", (new Item.Properties()).durability(432).rarity(Rarity.EPIC).component(DataComponents.GLIDER, Unit.INSTANCE).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.CHEST).setEquipSound(SoundEvents.ARMOR_EQUIP_ELYTRA).setAsset(EquipmentAssets.ELYTRA).setDamageOnHurt(false).build()).repairable(PHANTOM_MEMBRANE));
       OAK_BOAT = registerItem("oak_boat", (var0) -> {
          return new BoatItem(EntityType.OAK_BOAT, var0);
       }, (new Item.Properties()).stacksTo(1));
@@ -2793,60 +2797,26 @@ public class Items {
       EGG = registerItem("egg", EggItem::new, (new Item.Properties()).stacksTo(16));
       COMPASS = registerItem("compass", CompassItem::new);
       RECOVERY_COMPASS = registerItem("recovery_compass", (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      BUNDLE = registerItem("bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("bundle_open_front"), ResourceLocation.withDefaultNamespace("bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      WHITE_BUNDLE = registerItem("white_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("white_bundle_open_front"), ResourceLocation.withDefaultNamespace("white_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      ORANGE_BUNDLE = registerItem("orange_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("orange_bundle_open_front"), ResourceLocation.withDefaultNamespace("orange_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      MAGENTA_BUNDLE = registerItem("magenta_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("magenta_bundle_open_front"), ResourceLocation.withDefaultNamespace("magenta_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      LIGHT_BLUE_BUNDLE = registerItem("light_blue_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("light_blue_bundle_open_front"), ResourceLocation.withDefaultNamespace("light_blue_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      YELLOW_BUNDLE = registerItem("yellow_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("yellow_bundle_open_front"), ResourceLocation.withDefaultNamespace("yellow_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      LIME_BUNDLE = registerItem("lime_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("lime_bundle_open_front"), ResourceLocation.withDefaultNamespace("lime_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      PINK_BUNDLE = registerItem("pink_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("pink_bundle_open_front"), ResourceLocation.withDefaultNamespace("pink_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      GRAY_BUNDLE = registerItem("gray_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("gray_bundle_open_front"), ResourceLocation.withDefaultNamespace("gray_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      LIGHT_GRAY_BUNDLE = registerItem("light_gray_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("light_gray_bundle_open_front"), ResourceLocation.withDefaultNamespace("light_gray_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      CYAN_BUNDLE = registerItem("cyan_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("cyan_bundle_open_front"), ResourceLocation.withDefaultNamespace("cyan_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      PURPLE_BUNDLE = registerItem("purple_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("purple_bundle_open_front"), ResourceLocation.withDefaultNamespace("purple_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      BLUE_BUNDLE = registerItem("blue_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("blue_bundle_open_front"), ResourceLocation.withDefaultNamespace("blue_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      BROWN_BUNDLE = registerItem("brown_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("brown_bundle_open_front"), ResourceLocation.withDefaultNamespace("brown_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      GREEN_BUNDLE = registerItem("green_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("green_bundle_open_front"), ResourceLocation.withDefaultNamespace("green_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      RED_BUNDLE = registerItem("red_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("red_bundle_open_front"), ResourceLocation.withDefaultNamespace("red_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
-      BLACK_BUNDLE = registerItem("black_bundle", (var0) -> {
-         return new BundleItem(ResourceLocation.withDefaultNamespace("black_bundle_open_front"), ResourceLocation.withDefaultNamespace("black_bundle_open_back"), var0);
-      }, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      BUNDLE = registerItem("bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      WHITE_BUNDLE = registerItem("white_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      ORANGE_BUNDLE = registerItem("orange_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      MAGENTA_BUNDLE = registerItem("magenta_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      LIGHT_BLUE_BUNDLE = registerItem("light_blue_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      YELLOW_BUNDLE = registerItem("yellow_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      LIME_BUNDLE = registerItem("lime_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      PINK_BUNDLE = registerItem("pink_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      GRAY_BUNDLE = registerItem("gray_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      LIGHT_GRAY_BUNDLE = registerItem("light_gray_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      CYAN_BUNDLE = registerItem("cyan_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      PURPLE_BUNDLE = registerItem("purple_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      BLUE_BUNDLE = registerItem("blue_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      BROWN_BUNDLE = registerItem("brown_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      GREEN_BUNDLE = registerItem("green_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      RED_BUNDLE = registerItem("red_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
+      BLACK_BUNDLE = registerItem("black_bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));
       FISHING_ROD = registerItem("fishing_rod", FishingRodItem::new, (new Item.Properties()).durability(64).enchantable(1));
       CLOCK = registerItem("clock");
-      SPYGLASS = registerItem("spyglass", SpyglassItem::new, (new Item.Properties()).stacksTo(1).overrideModel(ResourceLocation.withDefaultNamespace("spyglass_in_hand")));
+      SPYGLASS = registerItem("spyglass", SpyglassItem::new, (new Item.Properties()).stacksTo(1));
       GLOWSTONE_DUST = registerItem("glowstone_dust");
       COD = registerItem("cod", (new Item.Properties()).food(Foods.COD));
       SALMON = registerItem("salmon", (new Item.Properties()).food(Foods.SALMON));
@@ -2958,247 +2928,247 @@ public class Items {
       ENDER_EYE = registerItem("ender_eye", EnderEyeItem::new);
       GLISTERING_MELON_SLICE = registerItem("glistering_melon_slice");
       ARMADILLO_SPAWN_EGG = registerItem("armadillo_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.ARMADILLO, 11366765, 8538184, var0);
+         return new SpawnEggItem(EntityType.ARMADILLO, var0);
       });
       ALLAY_SPAWN_EGG = registerItem("allay_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.ALLAY, 56063, 44543, var0);
+         return new SpawnEggItem(EntityType.ALLAY, var0);
       });
       AXOLOTL_SPAWN_EGG = registerItem("axolotl_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.AXOLOTL, 16499171, 10890612, var0);
+         return new SpawnEggItem(EntityType.AXOLOTL, var0);
       });
       BAT_SPAWN_EGG = registerItem("bat_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.BAT, 4996656, 986895, var0);
+         return new SpawnEggItem(EntityType.BAT, var0);
       });
       BEE_SPAWN_EGG = registerItem("bee_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.BEE, 15582019, 4400155, var0);
+         return new SpawnEggItem(EntityType.BEE, var0);
       });
       BLAZE_SPAWN_EGG = registerItem("blaze_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.BLAZE, 16167425, 16775294, var0);
+         return new SpawnEggItem(EntityType.BLAZE, var0);
       });
       BOGGED_SPAWN_EGG = registerItem("bogged_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.BOGGED, 9084018, 3231003, var0);
+         return new SpawnEggItem(EntityType.BOGGED, var0);
       });
       BREEZE_SPAWN_EGG = registerItem("breeze_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.BREEZE, 11506911, 9529055, var0);
+         return new SpawnEggItem(EntityType.BREEZE, var0);
       });
       CAT_SPAWN_EGG = registerItem("cat_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.CAT, 15714446, 9794134, var0);
+         return new SpawnEggItem(EntityType.CAT, var0);
       });
       CAMEL_SPAWN_EGG = registerItem("camel_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.CAMEL, 16565097, 13341495, var0);
+         return new SpawnEggItem(EntityType.CAMEL, var0);
       });
       CAVE_SPIDER_SPAWN_EGG = registerItem("cave_spider_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.CAVE_SPIDER, 803406, 11013646, var0);
+         return new SpawnEggItem(EntityType.CAVE_SPIDER, var0);
       });
       CHICKEN_SPAWN_EGG = registerItem("chicken_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.CHICKEN, 10592673, 16711680, var0);
+         return new SpawnEggItem(EntityType.CHICKEN, var0);
       });
       COD_SPAWN_EGG = registerItem("cod_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.COD, 12691306, 15058059, var0);
+         return new SpawnEggItem(EntityType.COD, var0);
       });
       COW_SPAWN_EGG = registerItem("cow_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.COW, 4470310, 10592673, var0);
+         return new SpawnEggItem(EntityType.COW, var0);
       });
       CREEPER_SPAWN_EGG = registerItem("creeper_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.CREEPER, 894731, 0, var0);
+         return new SpawnEggItem(EntityType.CREEPER, var0);
       });
       DOLPHIN_SPAWN_EGG = registerItem("dolphin_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.DOLPHIN, 2243405, 16382457, var0);
+         return new SpawnEggItem(EntityType.DOLPHIN, var0);
       });
       DONKEY_SPAWN_EGG = registerItem("donkey_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.DONKEY, 5457209, 8811878, var0);
+         return new SpawnEggItem(EntityType.DONKEY, var0);
       });
       DROWNED_SPAWN_EGG = registerItem("drowned_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.DROWNED, 9433559, 7969893, var0);
+         return new SpawnEggItem(EntityType.DROWNED, var0);
       });
       ELDER_GUARDIAN_SPAWN_EGG = registerItem("elder_guardian_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.ELDER_GUARDIAN, 13552826, 7632531, var0);
+         return new SpawnEggItem(EntityType.ELDER_GUARDIAN, var0);
       });
       ENDER_DRAGON_SPAWN_EGG = registerItem("ender_dragon_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.ENDER_DRAGON, 1842204, 14711290, var0);
+         return new SpawnEggItem(EntityType.ENDER_DRAGON, var0);
       });
       ENDERMAN_SPAWN_EGG = registerItem("enderman_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.ENDERMAN, 1447446, 0, var0);
+         return new SpawnEggItem(EntityType.ENDERMAN, var0);
       });
       ENDERMITE_SPAWN_EGG = registerItem("endermite_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.ENDERMITE, 1447446, 7237230, var0);
+         return new SpawnEggItem(EntityType.ENDERMITE, var0);
       });
       EVOKER_SPAWN_EGG = registerItem("evoker_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.EVOKER, 9804699, 1973274, var0);
+         return new SpawnEggItem(EntityType.EVOKER, var0);
       });
       FOX_SPAWN_EGG = registerItem("fox_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.FOX, 14005919, 13396256, var0);
+         return new SpawnEggItem(EntityType.FOX, var0);
       });
       FROG_SPAWN_EGG = registerItem("frog_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.FROG, 13661252, 16762748, var0);
+         return new SpawnEggItem(EntityType.FROG, var0);
       });
       GHAST_SPAWN_EGG = registerItem("ghast_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.GHAST, 16382457, 12369084, var0);
+         return new SpawnEggItem(EntityType.GHAST, var0);
       });
       GLOW_SQUID_SPAWN_EGG = registerItem("glow_squid_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.GLOW_SQUID, 611926, 8778172, var0);
+         return new SpawnEggItem(EntityType.GLOW_SQUID, var0);
       });
       GOAT_SPAWN_EGG = registerItem("goat_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.GOAT, 10851452, 5589310, var0);
+         return new SpawnEggItem(EntityType.GOAT, var0);
       });
       GUARDIAN_SPAWN_EGG = registerItem("guardian_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.GUARDIAN, 5931634, 15826224, var0);
+         return new SpawnEggItem(EntityType.GUARDIAN, var0);
       });
       HOGLIN_SPAWN_EGG = registerItem("hoglin_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.HOGLIN, 13004373, 6251620, var0);
+         return new SpawnEggItem(EntityType.HOGLIN, var0);
       });
       HORSE_SPAWN_EGG = registerItem("horse_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.HORSE, 12623485, 15656192, var0);
+         return new SpawnEggItem(EntityType.HORSE, var0);
       });
       HUSK_SPAWN_EGG = registerItem("husk_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.HUSK, 7958625, 15125652, var0);
+         return new SpawnEggItem(EntityType.HUSK, var0);
       });
       IRON_GOLEM_SPAWN_EGG = registerItem("iron_golem_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.IRON_GOLEM, 14405058, 7643954, var0);
+         return new SpawnEggItem(EntityType.IRON_GOLEM, var0);
       });
       LLAMA_SPAWN_EGG = registerItem("llama_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.LLAMA, 12623485, 10051392, var0);
+         return new SpawnEggItem(EntityType.LLAMA, var0);
       });
       MAGMA_CUBE_SPAWN_EGG = registerItem("magma_cube_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.MAGMA_CUBE, 3407872, 16579584, var0);
+         return new SpawnEggItem(EntityType.MAGMA_CUBE, var0);
       });
       MOOSHROOM_SPAWN_EGG = registerItem("mooshroom_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.MOOSHROOM, 10489616, 12040119, var0);
+         return new SpawnEggItem(EntityType.MOOSHROOM, var0);
       });
       MULE_SPAWN_EGG = registerItem("mule_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.MULE, 1769984, 5321501, var0);
+         return new SpawnEggItem(EntityType.MULE, var0);
       });
       OCELOT_SPAWN_EGG = registerItem("ocelot_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.OCELOT, 15720061, 5653556, var0);
+         return new SpawnEggItem(EntityType.OCELOT, var0);
       });
       PANDA_SPAWN_EGG = registerItem("panda_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.PANDA, 15198183, 1776418, var0);
+         return new SpawnEggItem(EntityType.PANDA, var0);
       });
       PARROT_SPAWN_EGG = registerItem("parrot_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.PARROT, 894731, 16711680, var0);
+         return new SpawnEggItem(EntityType.PARROT, var0);
       });
       PHANTOM_SPAWN_EGG = registerItem("phantom_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.PHANTOM, 4411786, 8978176, var0);
+         return new SpawnEggItem(EntityType.PHANTOM, var0);
       });
       PIG_SPAWN_EGG = registerItem("pig_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.PIG, 15771042, 14377823, var0);
+         return new SpawnEggItem(EntityType.PIG, var0);
       });
       PIGLIN_SPAWN_EGG = registerItem("piglin_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.PIGLIN, 10051392, 16380836, var0);
+         return new SpawnEggItem(EntityType.PIGLIN, var0);
       });
       PIGLIN_BRUTE_SPAWN_EGG = registerItem("piglin_brute_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.PIGLIN_BRUTE, 5843472, 16380836, var0);
+         return new SpawnEggItem(EntityType.PIGLIN_BRUTE, var0);
       });
       PILLAGER_SPAWN_EGG = registerItem("pillager_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.PILLAGER, 5451574, 9804699, var0);
+         return new SpawnEggItem(EntityType.PILLAGER, var0);
       });
       POLAR_BEAR_SPAWN_EGG = registerItem("polar_bear_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.POLAR_BEAR, 15658718, 14014157, var0);
+         return new SpawnEggItem(EntityType.POLAR_BEAR, var0);
       });
       PUFFERFISH_SPAWN_EGG = registerItem("pufferfish_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.PUFFERFISH, 16167425, 3654642, var0);
+         return new SpawnEggItem(EntityType.PUFFERFISH, var0);
       });
       RABBIT_SPAWN_EGG = registerItem("rabbit_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.RABBIT, 10051392, 7555121, var0);
+         return new SpawnEggItem(EntityType.RABBIT, var0);
       });
       RAVAGER_SPAWN_EGG = registerItem("ravager_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.RAVAGER, 7697520, 5984329, var0);
+         return new SpawnEggItem(EntityType.RAVAGER, var0);
       });
       SALMON_SPAWN_EGG = registerItem("salmon_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.SALMON, 10489616, 951412, var0);
+         return new SpawnEggItem(EntityType.SALMON, var0);
       });
       SHEEP_SPAWN_EGG = registerItem("sheep_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.SHEEP, 15198183, 16758197, var0);
+         return new SpawnEggItem(EntityType.SHEEP, var0);
       });
       SHULKER_SPAWN_EGG = registerItem("shulker_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.SHULKER, 9725844, 5060690, var0);
+         return new SpawnEggItem(EntityType.SHULKER, var0);
       });
       SILVERFISH_SPAWN_EGG = registerItem("silverfish_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.SILVERFISH, 7237230, 3158064, var0);
+         return new SpawnEggItem(EntityType.SILVERFISH, var0);
       });
       SKELETON_SPAWN_EGG = registerItem("skeleton_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.SKELETON, 12698049, 4802889, var0);
+         return new SpawnEggItem(EntityType.SKELETON, var0);
       });
       SKELETON_HORSE_SPAWN_EGG = registerItem("skeleton_horse_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.SKELETON_HORSE, 6842447, 15066584, var0);
+         return new SpawnEggItem(EntityType.SKELETON_HORSE, var0);
       });
       SLIME_SPAWN_EGG = registerItem("slime_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.SLIME, 5349438, 8306542, var0);
+         return new SpawnEggItem(EntityType.SLIME, var0);
       });
       SNIFFER_SPAWN_EGG = registerItem("sniffer_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.SNIFFER, 8855049, 2468720, var0);
+         return new SpawnEggItem(EntityType.SNIFFER, var0);
       });
       SNOW_GOLEM_SPAWN_EGG = registerItem("snow_golem_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.SNOW_GOLEM, 14283506, 8496292, var0);
+         return new SpawnEggItem(EntityType.SNOW_GOLEM, var0);
       });
       SPIDER_SPAWN_EGG = registerItem("spider_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.SPIDER, 3419431, 11013646, var0);
+         return new SpawnEggItem(EntityType.SPIDER, var0);
       });
       SQUID_SPAWN_EGG = registerItem("squid_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.SQUID, 2243405, 7375001, var0);
+         return new SpawnEggItem(EntityType.SQUID, var0);
       });
       STRAY_SPAWN_EGG = registerItem("stray_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.STRAY, 6387319, 14543594, var0);
+         return new SpawnEggItem(EntityType.STRAY, var0);
       });
       STRIDER_SPAWN_EGG = registerItem("strider_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.STRIDER, 10236982, 5065037, var0);
+         return new SpawnEggItem(EntityType.STRIDER, var0);
       });
       TADPOLE_SPAWN_EGG = registerItem("tadpole_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.TADPOLE, 7164733, 1444352, var0);
+         return new SpawnEggItem(EntityType.TADPOLE, var0);
       });
       TRADER_LLAMA_SPAWN_EGG = registerItem("trader_llama_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.TRADER_LLAMA, 15377456, 4547222, var0);
+         return new SpawnEggItem(EntityType.TRADER_LLAMA, var0);
       });
       TROPICAL_FISH_SPAWN_EGG = registerItem("tropical_fish_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.TROPICAL_FISH, 15690005, 16775663, var0);
+         return new SpawnEggItem(EntityType.TROPICAL_FISH, var0);
       });
       TURTLE_SPAWN_EGG = registerItem("turtle_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.TURTLE, 15198183, 44975, var0);
+         return new SpawnEggItem(EntityType.TURTLE, var0);
       });
       VEX_SPAWN_EGG = registerItem("vex_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.VEX, 8032420, 15265265, var0);
+         return new SpawnEggItem(EntityType.VEX, var0);
       });
       VILLAGER_SPAWN_EGG = registerItem("villager_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.VILLAGER, 5651507, 12422002, var0);
+         return new SpawnEggItem(EntityType.VILLAGER, var0);
       });
       VINDICATOR_SPAWN_EGG = registerItem("vindicator_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.VINDICATOR, 9804699, 2580065, var0);
+         return new SpawnEggItem(EntityType.VINDICATOR, var0);
       });
       WANDERING_TRADER_SPAWN_EGG = registerItem("wandering_trader_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.WANDERING_TRADER, 4547222, 15377456, var0);
+         return new SpawnEggItem(EntityType.WANDERING_TRADER, var0);
       });
       WARDEN_SPAWN_EGG = registerItem("warden_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.WARDEN, 1001033, 3790560, var0);
+         return new SpawnEggItem(EntityType.WARDEN, var0);
       });
       WITCH_SPAWN_EGG = registerItem("witch_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.WITCH, 3407872, 5349438, var0);
+         return new SpawnEggItem(EntityType.WITCH, var0);
       });
       WITHER_SPAWN_EGG = registerItem("wither_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.WITHER, 1315860, 5075616, var0);
+         return new SpawnEggItem(EntityType.WITHER, var0);
       });
       WITHER_SKELETON_SPAWN_EGG = registerItem("wither_skeleton_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.WITHER_SKELETON, 1315860, 4672845, var0);
+         return new SpawnEggItem(EntityType.WITHER_SKELETON, var0);
       });
       WOLF_SPAWN_EGG = registerItem("wolf_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.WOLF, 14144467, 13545366, var0);
+         return new SpawnEggItem(EntityType.WOLF, var0);
       });
       ZOGLIN_SPAWN_EGG = registerItem("zoglin_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.ZOGLIN, 13004373, 15132390, var0);
+         return new SpawnEggItem(EntityType.ZOGLIN, var0);
       });
       CREAKING_SPAWN_EGG = registerItem("creaking_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.CREAKING, 6250335, 16545810, var0);
+         return new SpawnEggItem(EntityType.CREAKING, var0);
       });
       ZOMBIE_SPAWN_EGG = registerItem("zombie_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.ZOMBIE, 44975, 7969893, var0);
+         return new SpawnEggItem(EntityType.ZOMBIE, var0);
       });
       ZOMBIE_HORSE_SPAWN_EGG = registerItem("zombie_horse_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.ZOMBIE_HORSE, 3232308, 9945732, var0);
+         return new SpawnEggItem(EntityType.ZOMBIE_HORSE, var0);
       });
       ZOMBIE_VILLAGER_SPAWN_EGG = registerItem("zombie_villager_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.ZOMBIE_VILLAGER, 5651507, 7969893, var0);
+         return new SpawnEggItem(EntityType.ZOMBIE_VILLAGER, var0);
       });
       ZOMBIFIED_PIGLIN_SPAWN_EGG = registerItem("zombified_piglin_spawn_egg", (var0) -> {
-         return new SpawnEggItem(EntityType.ZOMBIFIED_PIGLIN, 15373203, 5009705, var0);
+         return new SpawnEggItem(EntityType.ZOMBIFIED_PIGLIN, var0);
       });
       EXPERIENCE_BOTTLE = registerItem("experience_bottle", ExperienceBottleItem::new, (new Item.Properties()).rarity(Rarity.UNCOMMON).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true));
       FIRE_CHARGE = registerItem("fire_charge", FireChargeItem::new);
@@ -3362,7 +3332,7 @@ public class Items {
       MUSIC_DISC_PIGSTEP = registerItem("music_disc_pigstep", (new Item.Properties()).stacksTo(1).rarity(Rarity.RARE).jukeboxPlayable(JukeboxSongs.PIGSTEP));
       MUSIC_DISC_PRECIPICE = registerItem("music_disc_precipice", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).jukeboxPlayable(JukeboxSongs.PRECIPICE));
       DISC_FRAGMENT_5 = registerItem("disc_fragment_5", DiscFragmentItem::new, (new Item.Properties()).rarity(Rarity.UNCOMMON));
-      TRIDENT = registerItem("trident", TridentItem::new, (new Item.Properties()).rarity(Rarity.RARE).durability(250).attributes(TridentItem.createAttributes()).component(DataComponents.TOOL, TridentItem.createToolProperties()).enchantable(1).overrideModel(ResourceLocation.withDefaultNamespace("trident_in_hand")));
+      TRIDENT = registerItem("trident", TridentItem::new, (new Item.Properties()).rarity(Rarity.RARE).durability(250).attributes(TridentItem.createAttributes()).component(DataComponents.TOOL, TridentItem.createToolProperties()).enchantable(1));
       NAUTILUS_SHELL = registerItem("nautilus_shell", (new Item.Properties()).rarity(Rarity.UNCOMMON));
       HEART_OF_THE_SEA = registerItem("heart_of_the_sea", (new Item.Properties()).rarity(Rarity.UNCOMMON));
       CROSSBOW = registerItem("crossbow", CrossbowItem::new, (new Item.Properties()).stacksTo(1).durability(465).component(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY).enchantable(1));

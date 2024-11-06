@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -56,6 +57,11 @@ public class CreateFlatWorldScreen extends Screen {
 
    public void setConfig(FlatLevelGeneratorSettings var1) {
       this.generator = var1;
+      if (this.list != null) {
+         this.list.resetRows();
+         this.updateButtonValidity();
+      }
+
    }
 
    protected void init() {
@@ -125,9 +131,11 @@ public class CreateFlatWorldScreen extends Screen {
       private static final Component HEIGHT_TITLE;
 
       public DetailsList() {
-         super(CreateFlatWorldScreen.this.minecraft, CreateFlatWorldScreen.this.width, CreateFlatWorldScreen.this.height - 103, 43, 24);
+         Minecraft var10001 = CreateFlatWorldScreen.this.minecraft;
+         int var10002 = CreateFlatWorldScreen.this.width;
+         int var10003 = CreateFlatWorldScreen.this.height - 103;
          Objects.requireNonNull(CreateFlatWorldScreen.this.font);
-         this.setRenderHeader(true, (int)(9.0 * 1.5));
+         super(var10001, var10002, var10003, 43, 24, (int)(9.0 * 1.5));
 
          for(int var2 = 0; var2 < CreateFlatWorldScreen.this.generator.getLayersInfo().size(); ++var2) {
             this.addEntry(new Entry());

@@ -221,22 +221,21 @@ public class RegistryDataLoader {
    }
 
    static <E> void loadContentsFromManager(ResourceManager var0, RegistryOps.RegistryInfoLookup var1, WritableRegistry<E> var2, Decoder<E> var3, Map<ResourceKey<?>, Exception> var4) {
-      String var5 = Registries.elementsDirPath(var2.key());
-      FileToIdConverter var6 = FileToIdConverter.json(var5);
-      RegistryOps var7 = RegistryOps.create(JsonOps.INSTANCE, (RegistryOps.RegistryInfoLookup)var1);
-      Iterator var8 = var6.listMatchingResources(var0).entrySet().iterator();
+      FileToIdConverter var5 = FileToIdConverter.registry(var2.key());
+      RegistryOps var6 = RegistryOps.create(JsonOps.INSTANCE, (RegistryOps.RegistryInfoLookup)var1);
+      Iterator var7 = var5.listMatchingResources(var0).entrySet().iterator();
 
-      while(var8.hasNext()) {
-         Map.Entry var9 = (Map.Entry)var8.next();
-         ResourceLocation var10 = (ResourceLocation)var9.getKey();
-         ResourceKey var11 = ResourceKey.create(var2.key(), var6.fileToId(var10));
-         Resource var12 = (Resource)var9.getValue();
-         RegistrationInfo var13 = (RegistrationInfo)REGISTRATION_INFO_CACHE.apply(var12.knownPackInfo());
+      while(var7.hasNext()) {
+         Map.Entry var8 = (Map.Entry)var7.next();
+         ResourceLocation var9 = (ResourceLocation)var8.getKey();
+         ResourceKey var10 = ResourceKey.create(var2.key(), var5.fileToId(var9));
+         Resource var11 = (Resource)var8.getValue();
+         RegistrationInfo var12 = (RegistrationInfo)REGISTRATION_INFO_CACHE.apply(var11.knownPackInfo());
 
          try {
-            loadElementFromResource(var2, var3, var7, var11, var12, var13);
-         } catch (Exception var15) {
-            var4.put(var11, new IllegalStateException(String.format(Locale.ROOT, "Failed to parse %s from pack %s", var10, var12.sourcePackId()), var15));
+            loadElementFromResource(var2, var3, var6, var10, var11, var12);
+         } catch (Exception var14) {
+            var4.put(var10, new IllegalStateException(String.format(Locale.ROOT, "Failed to parse %s from pack %s", var9, var11.sourcePackId()), var14));
          }
       }
 
@@ -248,30 +247,29 @@ public class RegistryDataLoader {
       if (var6 != null) {
          RegistryOps var7 = RegistryOps.create(NbtOps.INSTANCE, (RegistryOps.RegistryInfoLookup)var2);
          RegistryOps var8 = RegistryOps.create(JsonOps.INSTANCE, (RegistryOps.RegistryInfoLookup)var2);
-         String var9 = Registries.elementsDirPath(var3.key());
-         FileToIdConverter var10 = FileToIdConverter.json(var9);
-         Iterator var11 = var6.elements.iterator();
+         FileToIdConverter var9 = FileToIdConverter.registry(var3.key());
+         Iterator var10 = var6.elements.iterator();
 
-         while(var11.hasNext()) {
-            RegistrySynchronization.PackedRegistryEntry var12 = (RegistrySynchronization.PackedRegistryEntry)var11.next();
-            ResourceKey var13 = ResourceKey.create(var3.key(), var12.id());
-            Optional var14 = var12.data();
-            if (var14.isPresent()) {
+         while(var10.hasNext()) {
+            RegistrySynchronization.PackedRegistryEntry var11 = (RegistrySynchronization.PackedRegistryEntry)var10.next();
+            ResourceKey var12 = ResourceKey.create(var3.key(), var11.id());
+            Optional var13 = var11.data();
+            if (var13.isPresent()) {
                try {
-                  DataResult var15 = var4.parse(var7, (Tag)var14.get());
-                  Object var16 = var15.getOrThrow();
-                  var3.register(var13, var16, NETWORK_REGISTRATION_INFO);
-               } catch (Exception var17) {
-                  var5.put(var13, new IllegalStateException(String.format(Locale.ROOT, "Failed to parse value %s from server", var14.get()), var17));
+                  DataResult var14 = var4.parse(var7, (Tag)var13.get());
+                  Object var15 = var14.getOrThrow();
+                  var3.register(var12, var15, NETWORK_REGISTRATION_INFO);
+               } catch (Exception var16) {
+                  var5.put(var12, new IllegalStateException(String.format(Locale.ROOT, "Failed to parse value %s from server", var13.get()), var16));
                }
             } else {
-               ResourceLocation var19 = var10.idToFile(var12.id());
+               ResourceLocation var18 = var9.idToFile(var11.id());
 
                try {
-                  Resource var20 = var1.getResourceOrThrow(var19);
-                  loadElementFromResource(var3, var4, var8, var13, var20, NETWORK_REGISTRATION_INFO);
-               } catch (Exception var18) {
-                  var5.put(var13, new IllegalStateException("Failed to parse local data", var18));
+                  Resource var19 = var1.getResourceOrThrow(var18);
+                  loadElementFromResource(var3, var4, var8, var12, var19, NETWORK_REGISTRATION_INFO);
+               } catch (Exception var17) {
+                  var5.put(var12, new IllegalStateException("Failed to parse local data", var17));
                }
             }
          }

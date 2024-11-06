@@ -111,6 +111,7 @@ import net.minecraft.network.protocol.game.ServerboundPlayerAbilitiesPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookChangeSettingsPacket;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookSeenRecipePacket;
 import net.minecraft.network.protocol.game.ServerboundRenameItemPacket;
@@ -389,20 +390,20 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleMoveVehicle(ServerboundMoveVehiclePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.serverLevel());
-      if (containsInvalidValues(var1.getX(), var1.getY(), var1.getZ(), var1.getYRot(), var1.getXRot())) {
+      if (containsInvalidValues(var1.position().x(), var1.position().y(), var1.position().z(), var1.yRot(), var1.xRot())) {
          this.disconnect(Component.translatable("multiplayer.disconnect.invalid_vehicle_movement"));
-      } else if (!this.updateAwaitingTeleport()) {
+      } else if (!this.updateAwaitingTeleport() && this.player.hasClientLoaded()) {
          Entity var2 = this.player.getRootVehicle();
          if (var2 != this.player && var2.getControllingPassenger() == this.player && var2 == this.lastVehicle) {
             ServerLevel var3 = this.player.serverLevel();
             double var4 = var2.getX();
             double var6 = var2.getY();
             double var8 = var2.getZ();
-            double var10 = clampHorizontal(var1.getX());
-            double var12 = clampVertical(var1.getY());
-            double var14 = clampHorizontal(var1.getZ());
-            float var16 = Mth.wrapDegrees(var1.getYRot());
-            float var17 = Mth.wrapDegrees(var1.getXRot());
+            double var10 = clampHorizontal(var1.position().x());
+            double var12 = clampVertical(var1.position().y());
+            double var14 = clampHorizontal(var1.position().z());
+            float var16 = Mth.wrapDegrees(var1.yRot());
+            float var17 = Mth.wrapDegrees(var1.xRot());
             double var18 = var10 - this.vehicleFirstGoodX;
             double var20 = var12 - this.vehicleFirstGoodY;
             double var22 = var14 - this.vehicleFirstGoodZ;
@@ -410,13 +411,13 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             double var26 = var18 * var18 + var20 * var20 + var22 * var22;
             if (var26 - var24 > 100.0 && !this.isSingleplayerOwner()) {
                LOGGER.warn("{} (vehicle of {}) moved too quickly! {},{},{}", new Object[]{var2.getName().getString(), this.player.getName().getString(), var18, var20, var22});
-               this.send(new ClientboundMoveVehiclePacket(var2));
+               this.send(ClientboundMoveVehiclePacket.fromEntity(var2));
                return;
             }
 
             boolean var28 = var3.noCollision(var2, var2.getBoundingBox().deflate(0.0625));
             var18 = var10 - this.vehicleLastGoodX;
-            var20 = var12 - this.vehicleLastGoodY - 1.0E-6;
+            var20 = var12 - this.vehicleLastGoodY;
             var22 = var14 - this.vehicleLastGoodZ;
             boolean var29 = var2.verticalCollisionBelow;
             if (var2 instanceof LivingEntity) {
@@ -446,7 +447,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             boolean var33 = var3.noCollision(var2, var2.getBoundingBox().deflate(0.0625));
             if (var28 && (var32 || !var33)) {
                var2.absMoveTo(var4, var6, var8, var16, var17);
-               this.send(new ClientboundMoveVehiclePacket(var2));
+               this.send(ClientboundMoveVehiclePacket.fromEntity(var2));
                return;
             }
 
@@ -454,6 +455,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             var2.recordMovementThroughBlocks(new Vec3(var4, var6, var8), var2.position());
             Vec3 var34 = new Vec3(var2.getX() - var4, var2.getY() - var6, var2.getZ() - var8);
             this.handlePlayerKnownMovement(var34);
+            var2.setOnGroundWithMovement(var1.onGround(), var34);
             this.player.checkMovementStatistics(var34.x, var34.y, var34.z);
             this.clientVehicleIsFloating = var35 >= -0.03125 && !var29 && !this.server.isFlightAllowed() && !var2.isNoGravity() && this.noBlocksAround(var2);
             this.vehicleLastGoodX = var2.getX();
@@ -480,13 +482,15 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          this.lastGoodX = this.awaitingPositionFromClient.x;
          this.lastGoodY = this.awaitingPositionFromClient.y;
          this.lastGoodZ = this.awaitingPositionFromClient.z;
-         if (this.player.isChangingDimension()) {
-            this.player.hasChangedDimension();
-         }
-
+         this.player.hasChangedDimension();
          this.awaitingPositionFromClient = null;
       }
 
+   }
+
+   public void handleAcceptPlayerLoad(ServerboundPlayerLoadedPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.serverLevel());
+      this.player.setClientLoaded(true);
    }
 
    public void handleRecipeBookSeenRecipePacket(ServerboundRecipeBookSeenRecipePacket var1) {
@@ -619,13 +623,14 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       if (this.player.canInteractWithBlock(var3, 1.0)) {
          if (var2.isLoaded(var3)) {
             BlockState var4 = var2.getBlockState(var3);
-            ItemStack var5 = var4.getCloneItemStack(var2, var3);
-            if (!var5.isEmpty()) {
-               if (this.player.hasInfiniteMaterials() && var1.includeData()) {
-                  addBlockDataToItem(var4, var2, var3, var5);
+            boolean var5 = this.player.hasInfiniteMaterials() && var1.includeData();
+            ItemStack var6 = var4.getCloneItemStack(var2, var3, var5);
+            if (!var6.isEmpty()) {
+               if (var5) {
+                  addBlockDataToItem(var4, var2, var3, var6);
                }
 
-               this.tryPickItem(var5);
+               this.tryPickItem(var6);
             }
          }
       }
@@ -897,7 +902,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                this.resetPosition();
             }
 
-            if (!this.updateAwaitingTeleport()) {
+            if (!this.updateAwaitingTeleport() && this.player.hasClientLoaded()) {
                double var3 = clampHorizontal(var1.getX(this.player.getX()));
                double var5 = clampVertical(var1.getY(this.player.getY()));
                double var7 = clampHorizontal(var1.getZ(this.player.getZ()));
@@ -1063,42 +1068,44 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handlePlayerAction(ServerboundPlayerActionPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.serverLevel());
-      BlockPos var2 = var1.getPos();
-      this.player.resetLastActionTime();
-      ServerboundPlayerActionPacket.Action var3 = var1.getAction();
-      switch (var3) {
-         case SWAP_ITEM_WITH_OFFHAND:
-            if (!this.player.isSpectator()) {
-               ItemStack var4 = this.player.getItemInHand(InteractionHand.OFF_HAND);
-               this.player.setItemInHand(InteractionHand.OFF_HAND, this.player.getItemInHand(InteractionHand.MAIN_HAND));
-               this.player.setItemInHand(InteractionHand.MAIN_HAND, var4);
-               this.player.stopUsingItem();
-            }
+      if (this.player.hasClientLoaded()) {
+         BlockPos var2 = var1.getPos();
+         this.player.resetLastActionTime();
+         ServerboundPlayerActionPacket.Action var3 = var1.getAction();
+         switch (var3) {
+            case SWAP_ITEM_WITH_OFFHAND:
+               if (!this.player.isSpectator()) {
+                  ItemStack var4 = this.player.getItemInHand(InteractionHand.OFF_HAND);
+                  this.player.setItemInHand(InteractionHand.OFF_HAND, this.player.getItemInHand(InteractionHand.MAIN_HAND));
+                  this.player.setItemInHand(InteractionHand.MAIN_HAND, var4);
+                  this.player.stopUsingItem();
+               }
 
-            return;
-         case DROP_ITEM:
-            if (!this.player.isSpectator()) {
-               this.player.drop(false);
-            }
+               return;
+            case DROP_ITEM:
+               if (!this.player.isSpectator()) {
+                  this.player.drop(false);
+               }
 
-            return;
-         case DROP_ALL_ITEMS:
-            if (!this.player.isSpectator()) {
-               this.player.drop(true);
-            }
+               return;
+            case DROP_ALL_ITEMS:
+               if (!this.player.isSpectator()) {
+                  this.player.drop(true);
+               }
 
-            return;
-         case RELEASE_USE_ITEM:
-            this.player.releaseUsingItem();
-            return;
-         case START_DESTROY_BLOCK:
-         case ABORT_DESTROY_BLOCK:
-         case STOP_DESTROY_BLOCK:
-            this.player.gameMode.handleBlockBreakAction(var2, var3, var1.getDirection(), this.player.level().getMaxY(), var1.getSequence());
-            this.player.connection.ackBlockChangesUpTo(var1.getSequence());
-            return;
-         default:
-            throw new IllegalArgumentException("Invalid player action");
+               return;
+            case RELEASE_USE_ITEM:
+               this.player.releaseUsingItem();
+               return;
+            case START_DESTROY_BLOCK:
+            case ABORT_DESTROY_BLOCK:
+            case STOP_DESTROY_BLOCK:
+               this.player.gameMode.handleBlockBreakAction(var2, var3, var1.getDirection(), this.player.level().getMaxY(), var1.getSequence());
+               this.player.connection.ackBlockChangesUpTo(var1.getSequence());
+               return;
+            default:
+               throw new IllegalArgumentException("Invalid player action");
+         }
       }
    }
 
@@ -1113,47 +1120,49 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleUseItemOn(ServerboundUseItemOnPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.serverLevel());
-      this.player.connection.ackBlockChangesUpTo(var1.getSequence());
-      ServerLevel var2 = this.player.serverLevel();
-      InteractionHand var3 = var1.getHand();
-      ItemStack var4 = this.player.getItemInHand(var3);
-      if (var4.isItemEnabled(var2.enabledFeatures())) {
-         BlockHitResult var5 = var1.getHitResult();
-         Vec3 var6 = var5.getLocation();
-         BlockPos var7 = var5.getBlockPos();
-         if (this.player.canInteractWithBlock(var7, 1.0)) {
-            Vec3 var8 = var6.subtract(Vec3.atCenterOf(var7));
-            double var9 = 1.0000001;
-            if (Math.abs(var8.x()) < 1.0000001 && Math.abs(var8.y()) < 1.0000001 && Math.abs(var8.z()) < 1.0000001) {
-               Direction var11 = var5.getDirection();
-               this.player.resetLastActionTime();
-               int var12 = this.player.level().getMaxY();
-               if (var7.getY() <= var12) {
-                  if (this.awaitingPositionFromClient == null && var2.mayInteract(this.player, var7)) {
-                     InteractionResult var13 = this.player.gameMode.useItemOn(this.player, var2, var4, var3, var5);
-                     if (var13.consumesAction()) {
-                        CriteriaTriggers.ANY_BLOCK_USE.trigger(this.player, var5.getBlockPos(), var4.copy());
-                     }
+      if (this.player.hasClientLoaded()) {
+         this.player.connection.ackBlockChangesUpTo(var1.getSequence());
+         ServerLevel var2 = this.player.serverLevel();
+         InteractionHand var3 = var1.getHand();
+         ItemStack var4 = this.player.getItemInHand(var3);
+         if (var4.isItemEnabled(var2.enabledFeatures())) {
+            BlockHitResult var5 = var1.getHitResult();
+            Vec3 var6 = var5.getLocation();
+            BlockPos var7 = var5.getBlockPos();
+            if (this.player.canInteractWithBlock(var7, 1.0)) {
+               Vec3 var8 = var6.subtract(Vec3.atCenterOf(var7));
+               double var9 = 1.0000001;
+               if (Math.abs(var8.x()) < 1.0000001 && Math.abs(var8.y()) < 1.0000001 && Math.abs(var8.z()) < 1.0000001) {
+                  Direction var11 = var5.getDirection();
+                  this.player.resetLastActionTime();
+                  int var12 = this.player.level().getMaxY();
+                  if (var7.getY() <= var12) {
+                     if (this.awaitingPositionFromClient == null && var2.mayInteract(this.player, var7)) {
+                        InteractionResult var13 = this.player.gameMode.useItemOn(this.player, var2, var4, var3, var5);
+                        if (var13.consumesAction()) {
+                           CriteriaTriggers.ANY_BLOCK_USE.trigger(this.player, var5.getBlockPos(), var4.copy());
+                        }
 
-                     if (var11 == Direction.UP && !var13.consumesAction() && var7.getY() >= var12 && wasBlockPlacementAttempt(this.player, var4)) {
-                        MutableComponent var15 = Component.translatable("build.tooHigh", var12).withStyle(ChatFormatting.RED);
-                        this.player.sendSystemMessage(var15, true);
-                     } else if (var13 instanceof InteractionResult.Success) {
-                        InteractionResult.Success var14 = (InteractionResult.Success)var13;
-                        if (var14.swingSource() == InteractionResult.SwingSource.SERVER) {
-                           this.player.swing(var3, true);
+                        if (var11 == Direction.UP && !var13.consumesAction() && var7.getY() >= var12 && wasBlockPlacementAttempt(this.player, var4)) {
+                           MutableComponent var15 = Component.translatable("build.tooHigh", var12).withStyle(ChatFormatting.RED);
+                           this.player.sendSystemMessage(var15, true);
+                        } else if (var13 instanceof InteractionResult.Success) {
+                           InteractionResult.Success var14 = (InteractionResult.Success)var13;
+                           if (var14.swingSource() == InteractionResult.SwingSource.SERVER) {
+                              this.player.swing(var3, true);
+                           }
                         }
                      }
+                  } else {
+                     MutableComponent var16 = Component.translatable("build.tooHigh", var12).withStyle(ChatFormatting.RED);
+                     this.player.sendSystemMessage(var16, true);
                   }
-               } else {
-                  MutableComponent var16 = Component.translatable("build.tooHigh", var12).withStyle(ChatFormatting.RED);
-                  this.player.sendSystemMessage(var16, true);
-               }
 
-               this.player.connection.send(new ClientboundBlockUpdatePacket(var2, var7));
-               this.player.connection.send(new ClientboundBlockUpdatePacket(var2, var7.relative(var11)));
-            } else {
-               LOGGER.warn("Rejecting UseItemOnPacket from {}: Location {} too far away from hit block {}.", new Object[]{this.player.getGameProfile().getName(), var6, var7});
+                  this.player.connection.send(new ClientboundBlockUpdatePacket(var2, var7));
+                  this.player.connection.send(new ClientboundBlockUpdatePacket(var2, var7.relative(var11)));
+               } else {
+                  LOGGER.warn("Rejecting UseItemOnPacket from {}: Location {} too far away from hit block {}.", new Object[]{this.player.getGameProfile().getName(), var6, var7});
+               }
             }
          }
       }
@@ -1161,26 +1170,28 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleUseItem(ServerboundUseItemPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.serverLevel());
-      this.ackBlockChangesUpTo(var1.getSequence());
-      ServerLevel var2 = this.player.serverLevel();
-      InteractionHand var3 = var1.getHand();
-      ItemStack var4 = this.player.getItemInHand(var3);
-      this.player.resetLastActionTime();
-      if (!var4.isEmpty() && var4.isItemEnabled(var2.enabledFeatures())) {
-         float var5 = Mth.wrapDegrees(var1.getYRot());
-         float var6 = Mth.wrapDegrees(var1.getXRot());
-         if (var6 != this.player.getXRot() || var5 != this.player.getYRot()) {
-            this.player.absRotateTo(var5, var6);
-         }
-
-         InteractionResult var7 = this.player.gameMode.useItem(this.player, var2, var4, var3);
-         if (var7 instanceof InteractionResult.Success) {
-            InteractionResult.Success var8 = (InteractionResult.Success)var7;
-            if (var8.swingSource() == InteractionResult.SwingSource.SERVER) {
-               this.player.swing(var3, true);
+      if (this.player.hasClientLoaded()) {
+         this.ackBlockChangesUpTo(var1.getSequence());
+         ServerLevel var2 = this.player.serverLevel();
+         InteractionHand var3 = var1.getHand();
+         ItemStack var4 = this.player.getItemInHand(var3);
+         this.player.resetLastActionTime();
+         if (!var4.isEmpty() && var4.isItemEnabled(var2.enabledFeatures())) {
+            float var5 = Mth.wrapDegrees(var1.getYRot());
+            float var6 = Mth.wrapDegrees(var1.getXRot());
+            if (var6 != this.player.getXRot() || var5 != this.player.getYRot()) {
+               this.player.absRotateTo(var5, var6);
             }
-         }
 
+            InteractionResult var7 = this.player.gameMode.useItem(this.player, var2, var4, var3);
+            if (var7 instanceof InteractionResult.Success) {
+               InteractionResult.Success var8 = (InteractionResult.Success)var7;
+               if (var8.swingSource() == InteractionResult.SwingSource.SERVER) {
+                  this.player.swing(var3, true);
+               }
+            }
+
+         }
       }
    }
 
@@ -1449,57 +1460,63 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handlePlayerCommand(ServerboundPlayerCommandPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.serverLevel());
-      this.player.resetLastActionTime();
-      Entity var3;
-      switch (var1.getAction()) {
-         case PRESS_SHIFT_KEY:
-            this.player.setShiftKeyDown(true);
-            break;
-         case RELEASE_SHIFT_KEY:
-            this.player.setShiftKeyDown(false);
-            break;
-         case START_SPRINTING:
-            this.player.setSprinting(true);
-            break;
-         case STOP_SPRINTING:
-            this.player.setSprinting(false);
-            break;
-         case STOP_SLEEPING:
-            if (this.player.isSleeping()) {
-               this.player.stopSleepInBed(false, true);
-               this.awaitingPositionFromClient = this.player.position();
-            }
-            break;
-         case START_RIDING_JUMP:
-            var3 = this.player.getControlledVehicle();
-            if (var3 instanceof PlayerRideableJumping var4) {
-               int var5 = var1.getData();
-               if (var4.canJump() && var5 > 0) {
-                  var4.handleStartJump(var5);
+      if (this.player.hasClientLoaded()) {
+         this.player.resetLastActionTime();
+         Entity var3;
+         PlayerRideableJumping var4;
+         switch (var1.getAction()) {
+            case PRESS_SHIFT_KEY:
+               this.player.setShiftKeyDown(true);
+               break;
+            case RELEASE_SHIFT_KEY:
+               this.player.setShiftKeyDown(false);
+               break;
+            case START_SPRINTING:
+               this.player.setSprinting(true);
+               break;
+            case STOP_SPRINTING:
+               this.player.setSprinting(false);
+               break;
+            case STOP_SLEEPING:
+               if (this.player.isSleeping()) {
+                  this.player.stopSleepInBed(false, true);
+                  this.awaitingPositionFromClient = this.player.position();
                }
-            }
-            break;
-         case STOP_RIDING_JUMP:
-            var3 = this.player.getControlledVehicle();
-            if (var3 instanceof PlayerRideableJumping var4) {
-               var4.handleStopJump();
-            }
-            break;
-         case OPEN_INVENTORY:
-            var3 = this.player.getVehicle();
-            if (var3 instanceof HasCustomInventoryScreen var2) {
-               var2.openCustomInventoryScreen(this.player);
-            }
-            break;
-         case START_FALL_FLYING:
-            if (!this.player.tryToStartFallFlying()) {
-               this.player.stopFallFlying();
-            }
-            break;
-         default:
-            throw new IllegalArgumentException("Invalid client command!");
-      }
+               break;
+            case START_RIDING_JUMP:
+               var3 = this.player.getControlledVehicle();
+               if (var3 instanceof PlayerRideableJumping) {
+                  var4 = (PlayerRideableJumping)var3;
+                  int var5 = var1.getData();
+                  if (var4.canJump() && var5 > 0) {
+                     var4.handleStartJump(var5);
+                  }
+               }
+               break;
+            case STOP_RIDING_JUMP:
+               var3 = this.player.getControlledVehicle();
+               if (var3 instanceof PlayerRideableJumping) {
+                  var4 = (PlayerRideableJumping)var3;
+                  var4.handleStopJump();
+               }
+               break;
+            case OPEN_INVENTORY:
+               var3 = this.player.getVehicle();
+               if (var3 instanceof HasCustomInventoryScreen) {
+                  HasCustomInventoryScreen var2 = (HasCustomInventoryScreen)var3;
+                  var2.openCustomInventoryScreen(this.player);
+               }
+               break;
+            case START_FALL_FLYING:
+               if (!this.player.tryToStartFallFlying()) {
+                  this.player.stopFallFlying();
+               }
+               break;
+            default:
+               throw new IllegalArgumentException("Invalid client command!");
+         }
 
+      }
    }
 
    public void addPendingMessage(PlayerChatMessage var1) {
@@ -1545,72 +1562,74 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
 
    public void handleInteract(ServerboundInteractPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (ServerLevel)this.player.serverLevel());
-      final ServerLevel var2 = this.player.serverLevel();
-      final Entity var3 = var1.getTarget(var2);
-      this.player.resetLastActionTime();
-      this.player.setShiftKeyDown(var1.isUsingSecondaryAction());
-      if (var3 != null) {
-         if (!var2.getWorldBorder().isWithinBounds(var3.blockPosition())) {
-            return;
-         }
+      if (this.player.hasClientLoaded()) {
+         final ServerLevel var2 = this.player.serverLevel();
+         final Entity var3 = var1.getTarget(var2);
+         this.player.resetLastActionTime();
+         this.player.setShiftKeyDown(var1.isUsingSecondaryAction());
+         if (var3 != null) {
+            if (!var2.getWorldBorder().isWithinBounds(var3.blockPosition())) {
+               return;
+            }
 
-         AABB var4 = var3.getBoundingBox();
-         if (this.player.canInteractWithEntity(var4, 3.0)) {
-            var1.dispatch(new ServerboundInteractPacket.Handler() {
-               private void performInteraction(InteractionHand var1, EntityInteraction var2x) {
-                  ItemStack var3x = ServerGamePacketListenerImpl.this.player.getItemInHand(var1);
-                  if (var3x.isItemEnabled(var2.enabledFeatures())) {
-                     ItemStack var4 = var3x.copy();
-                     InteractionResult var5 = var2x.run(ServerGamePacketListenerImpl.this.player, var3, var1);
-                     if (var5 instanceof InteractionResult.Success) {
-                        InteractionResult.Success var6 = (InteractionResult.Success)var5;
-                        ItemStack var7 = var6.wasItemInteraction() ? var4 : ItemStack.EMPTY;
-                        CriteriaTriggers.PLAYER_INTERACTED_WITH_ENTITY.trigger(ServerGamePacketListenerImpl.this.player, var7, var3);
-                        if (var6.swingSource() == InteractionResult.SwingSource.SERVER) {
-                           ServerGamePacketListenerImpl.this.player.swing(var1, true);
-                        }
-                     }
-
-                  }
-               }
-
-               public void onInteraction(InteractionHand var1) {
-                  this.performInteraction(var1, Player::interactOn);
-               }
-
-               public void onInteraction(InteractionHand var1, Vec3 var2x) {
-                  this.performInteraction(var1, (var1x, var2xx, var3x) -> {
-                     return var2xx.interactAt(var1x, var2x, var3x);
-                  });
-               }
-
-               public void onAttack() {
-                  if (!(var3 instanceof ItemEntity) && !(var3 instanceof ExperienceOrb) && var3 != ServerGamePacketListenerImpl.this.player) {
-                     label29: {
-                        if (var3 instanceof AbstractArrow) {
-                           AbstractArrow var1 = (AbstractArrow)var3;
-                           if (!var1.isAttackable()) {
-                              break label29;
+            AABB var4 = var3.getBoundingBox();
+            if (this.player.canInteractWithEntity(var4, 3.0)) {
+               var1.dispatch(new ServerboundInteractPacket.Handler() {
+                  private void performInteraction(InteractionHand var1, EntityInteraction var2x) {
+                     ItemStack var3x = ServerGamePacketListenerImpl.this.player.getItemInHand(var1);
+                     if (var3x.isItemEnabled(var2.enabledFeatures())) {
+                        ItemStack var4 = var3x.copy();
+                        InteractionResult var5 = var2x.run(ServerGamePacketListenerImpl.this.player, var3, var1);
+                        if (var5 instanceof InteractionResult.Success) {
+                           InteractionResult.Success var6 = (InteractionResult.Success)var5;
+                           ItemStack var7 = var6.wasItemInteraction() ? var4 : ItemStack.EMPTY;
+                           CriteriaTriggers.PLAYER_INTERACTED_WITH_ENTITY.trigger(ServerGamePacketListenerImpl.this.player, var7, var3);
+                           if (var6.swingSource() == InteractionResult.SwingSource.SERVER) {
+                              ServerGamePacketListenerImpl.this.player.swing(var1, true);
                            }
                         }
 
-                        ItemStack var2x = ServerGamePacketListenerImpl.this.player.getItemInHand(InteractionHand.MAIN_HAND);
-                        if (!var2x.isItemEnabled(var2.enabledFeatures())) {
-                           return;
-                        }
-
-                        ServerGamePacketListenerImpl.this.player.attack(var3);
-                        return;
                      }
                   }
 
-                  ServerGamePacketListenerImpl.this.disconnect(Component.translatable("multiplayer.disconnect.invalid_entity_attacked"));
-                  ServerGamePacketListenerImpl.LOGGER.warn("Player {} tried to attack an invalid entity", ServerGamePacketListenerImpl.this.player.getName().getString());
-               }
-            });
-         }
-      }
+                  public void onInteraction(InteractionHand var1) {
+                     this.performInteraction(var1, Player::interactOn);
+                  }
 
+                  public void onInteraction(InteractionHand var1, Vec3 var2x) {
+                     this.performInteraction(var1, (var1x, var2xx, var3x) -> {
+                        return var2xx.interactAt(var1x, var2x, var3x);
+                     });
+                  }
+
+                  public void onAttack() {
+                     if (!(var3 instanceof ItemEntity) && !(var3 instanceof ExperienceOrb) && var3 != ServerGamePacketListenerImpl.this.player) {
+                        label29: {
+                           if (var3 instanceof AbstractArrow) {
+                              AbstractArrow var1 = (AbstractArrow)var3;
+                              if (!var1.isAttackable()) {
+                                 break label29;
+                              }
+                           }
+
+                           ItemStack var2x = ServerGamePacketListenerImpl.this.player.getItemInHand(InteractionHand.MAIN_HAND);
+                           if (!var2x.isItemEnabled(var2.enabledFeatures())) {
+                              return;
+                           }
+
+                           ServerGamePacketListenerImpl.this.player.attack(var3);
+                           return;
+                        }
+                     }
+
+                     ServerGamePacketListenerImpl.this.disconnect(Component.translatable("multiplayer.disconnect.invalid_entity_attacked"));
+                     ServerGamePacketListenerImpl.LOGGER.warn("Player {} tried to attack an invalid entity", ServerGamePacketListenerImpl.this.player.getName().getString());
+                  }
+               });
+            }
+         }
+
+      }
    }
 
    public void handleClientCommand(ServerboundClientCommandPacket var1) {

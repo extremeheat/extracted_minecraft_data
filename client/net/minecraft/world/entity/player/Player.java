@@ -146,6 +146,7 @@ public abstract class Player extends LivingEntity {
    protected static final EntityDataAccessor<Byte> DATA_PLAYER_MAIN_HAND;
    protected static final EntityDataAccessor<CompoundTag> DATA_SHOULDER_LEFT;
    protected static final EntityDataAccessor<CompoundTag> DATA_SHOULDER_RIGHT;
+   public static final int CLIENT_LOADED_TIMEOUT_TIME = 60;
    private long timeEntitySatOnShoulder;
    final Inventory inventory = new Inventory(this);
    protected PlayerEnderChestContainer enderChestInventory = new PlayerEnderChestContainer();
@@ -153,6 +154,8 @@ public abstract class Player extends LivingEntity {
    public AbstractContainerMenu containerMenu;
    protected FoodData foodData = new FoodData();
    protected int jumpTriggerTime;
+   private boolean clientLoaded = false;
+   protected int clientLoadedTimeoutTimer = 60;
    public float oBob;
    public float bob;
    public int takeXpDelay;
@@ -228,7 +231,7 @@ public abstract class Player extends LivingEntity {
 
    public void tick() {
       this.noPhysics = this.isSpectator();
-      if (this.isSpectator()) {
+      if (this.isSpectator() || this.isPassenger()) {
          this.setOnGround(false);
       }
 
@@ -2004,6 +2007,25 @@ public abstract class Player extends LivingEntity {
       } else {
          return this.isSprinting() ? 0.025999999F : 0.02F;
       }
+   }
+
+   public boolean hasClientLoaded() {
+      return this.clientLoaded || this.clientLoadedTimeoutTimer <= 0;
+   }
+
+   public void tickClientLoadTimeout() {
+      if (!this.clientLoaded) {
+         --this.clientLoadedTimeoutTimer;
+      }
+
+   }
+
+   public void setClientLoaded(boolean var1) {
+      this.clientLoaded = var1;
+      if (!this.clientLoaded) {
+         this.clientLoadedTimeoutTimer = 60;
+      }
+
    }
 
    public double blockInteractionRange() {

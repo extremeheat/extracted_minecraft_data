@@ -20,14 +20,13 @@ import net.minecraft.client.renderer.entity.state.DisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.ItemDisplayEntityRenderState;
 import net.minecraft.client.renderer.entity.state.TextDisplayEntityRenderState;
+import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -250,11 +249,11 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
    }
 
    public static class ItemDisplayRenderer extends DisplayRenderer<Display.ItemDisplay, Display.ItemDisplay.ItemRenderState, ItemDisplayEntityRenderState> {
-      private final ItemRenderer itemRenderer;
+      private final ItemModelResolver itemModelResolver;
 
       protected ItemDisplayRenderer(EntityRendererProvider.Context var1) {
          super(var1);
-         this.itemRenderer = var1.getItemRenderer();
+         this.itemModelResolver = var1.getItemModelResolver();
       }
 
       public ItemDisplayEntityRenderState createRenderState() {
@@ -265,21 +264,17 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
          super.extractRenderState((Display)var1, (DisplayEntityRenderState)var2, var3);
          Display.ItemDisplay.ItemRenderState var4 = var1.itemRenderState();
          if (var4 != null) {
-            var2.itemRenderState = var4;
-            var2.itemModel = this.itemRenderer.getModel(var2.itemRenderState.itemStack(), var1.level(), (LivingEntity)null, var1.getId());
+            this.itemModelResolver.updateForNonLiving(var2.item, var4.itemStack(), var4.itemTransform(), var1);
          } else {
-            var2.itemRenderState = null;
-            var2.itemModel = null;
+            var2.item.clear();
          }
 
       }
 
       public void renderInner(ItemDisplayEntityRenderState var1, PoseStack var2, MultiBufferSource var3, int var4, float var5) {
-         Display.ItemDisplay.ItemRenderState var6 = var1.itemRenderState;
-         BakedModel var7 = var1.itemModel;
-         if (var6 != null && var7 != null) {
+         if (!var1.item.isEmpty()) {
             var2.mulPose(Axis.YP.rotation(3.1415927F));
-            this.itemRenderer.render(var6.itemStack(), var6.itemTransform(), false, var2, var3, var4, OverlayTexture.NO_OVERLAY, var7);
+            var1.item.render(var2, var3, var4, OverlayTexture.NO_OVERLAY);
          }
       }
 

@@ -94,7 +94,7 @@ public class HashCache {
       if (var3 == null) {
          throw new IllegalStateException("Provider not registered: " + var1);
       } else {
-         CacheUpdater var4 = new CacheUpdater(this, var1, this.versionId, var3);
+         CacheUpdater var4 = new CacheUpdater(var1, this.versionId, var3);
          return var2.update(var4).thenApply((var1x) -> {
             return var4.close();
          });
@@ -255,18 +255,18 @@ public class HashCache {
       }
    }
 
-   class CacheUpdater implements CachedOutput {
+   static class CacheUpdater implements CachedOutput {
       private final String provider;
       private final ProviderCache oldCache;
       private final ProviderCacheBuilder newCache;
       private final AtomicInteger writes = new AtomicInteger();
       private volatile boolean closed;
 
-      CacheUpdater(final HashCache var1, final String var2, final String var3, final ProviderCache var4) {
+      CacheUpdater(String var1, String var2, ProviderCache var3) {
          super();
-         this.provider = var2;
-         this.oldCache = var4;
-         this.newCache = new ProviderCacheBuilder(var3);
+         this.provider = var1;
+         this.oldCache = var3;
+         this.newCache = new ProviderCacheBuilder(var2);
       }
 
       private boolean shouldWrite(Path var1, HashCode var2) {

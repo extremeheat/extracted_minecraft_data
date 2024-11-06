@@ -57,8 +57,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.copy(BlockTags.SMALL_FLOWERS, ItemTags.SMALL_FLOWERS);
       this.copy(BlockTags.BEDS, ItemTags.BEDS);
       this.copy(BlockTags.FENCES, ItemTags.FENCES);
-      this.copy(BlockTags.TALL_FLOWERS, ItemTags.TALL_FLOWERS);
-      this.copy(BlockTags.FLOWERS, ItemTags.FLOWERS);
+      this.copy(BlockTags.BEE_ATTRACTIVE, ItemTags.BEE_FOOD);
       this.copy(BlockTags.SOUL_FIRE_BASE_BLOCKS, ItemTags.SOUL_FIRE_BASE_BLOCKS);
       this.copy(BlockTags.CANDLES, ItemTags.CANDLES);
       this.copy(BlockTags.DAMPENS_VIBRATIONS, ItemTags.DAMPENS_VIBRATIONS);
@@ -121,6 +120,10 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.SHOVELS).add((Object)Items.DIAMOND_SHOVEL).add((Object)Items.STONE_SHOVEL).add((Object)Items.GOLDEN_SHOVEL).add((Object)Items.NETHERITE_SHOVEL).add((Object)Items.WOODEN_SHOVEL).add((Object)Items.IRON_SHOVEL);
       this.tag(ItemTags.HOES).add((Object)Items.DIAMOND_HOE).add((Object)Items.STONE_HOE).add((Object)Items.GOLDEN_HOE).add((Object)Items.NETHERITE_HOE).add((Object)Items.WOODEN_HOE).add((Object)Items.IRON_HOE);
       this.tag(ItemTags.BREAKS_DECORATED_POTS).addTag(ItemTags.SWORDS).addTag(ItemTags.AXES).addTag(ItemTags.PICKAXES).addTag(ItemTags.SHOVELS).addTag(ItemTags.HOES).add((Object)Items.TRIDENT).add((Object)Items.MACE);
+      this.tag(ItemTags.SKELETON_PREFERRED_WEAPON).add((Object)Items.BOW);
+      this.tag(ItemTags.DROWNED_PREFERRED_WEAPON).add((Object)Items.TRIDENT);
+      this.tag(ItemTags.PIGLIN_PREFERRED_WEAPON).add((Object)Items.CROSSBOW);
+      this.tag(ItemTags.PILLAGER_PREFERRED_WEAPON).add((Object)Items.CROSSBOW);
       this.tag(ItemTags.DECORATED_POT_SHERDS).add((Object[])(Items.ANGLER_POTTERY_SHERD, Items.ARCHER_POTTERY_SHERD, Items.ARMS_UP_POTTERY_SHERD, Items.BLADE_POTTERY_SHERD, Items.BREWER_POTTERY_SHERD, Items.BURN_POTTERY_SHERD, Items.DANGER_POTTERY_SHERD, Items.EXPLORER_POTTERY_SHERD, Items.FRIEND_POTTERY_SHERD, Items.HEART_POTTERY_SHERD, Items.HEARTBREAK_POTTERY_SHERD, Items.HOWL_POTTERY_SHERD, Items.MINER_POTTERY_SHERD, Items.MOURNER_POTTERY_SHERD, Items.PLENTY_POTTERY_SHERD, Items.PRIZE_POTTERY_SHERD, Items.SHEAF_POTTERY_SHERD, Items.SHELTER_POTTERY_SHERD, Items.SKULL_POTTERY_SHERD, Items.SNORT_POTTERY_SHERD, Items.FLOW_POTTERY_SHERD, Items.GUSTER_POTTERY_SHERD, Items.SCRAPE_POTTERY_SHERD));
       this.tag(ItemTags.DECORATED_POT_INGREDIENTS).add((Object)Items.BRICK).addTag(ItemTags.DECORATED_POT_SHERDS);
       this.tag(ItemTags.FOOT_ARMOR).add((Object[])(Items.LEATHER_BOOTS, Items.CHAINMAIL_BOOTS, Items.GOLDEN_BOOTS, Items.IRON_BOOTS, Items.DIAMOND_BOOTS, Items.NETHERITE_BOOTS));
@@ -165,7 +168,6 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.HORSE_TEMPT_ITEMS).add((Object[])(Items.GOLDEN_CARROT, Items.GOLDEN_APPLE, Items.ENCHANTED_GOLDEN_APPLE));
       this.tag(ItemTags.CAMEL_FOOD).add((Object)Items.CACTUS);
       this.tag(ItemTags.ARMADILLO_FOOD).add((Object)Items.SPIDER_EYE);
-      this.tag(ItemTags.BEE_FOOD).addTag(ItemTags.FLOWERS);
       this.tag(ItemTags.CHICKEN_FOOD).add((Object[])(Items.WHEAT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS, Items.BEETROOT_SEEDS, Items.TORCHFLOWER_SEEDS, Items.PITCHER_POD));
       this.tag(ItemTags.FROG_FOOD).add((Object)Items.SLIME_BALL);
       this.tag(ItemTags.HOGLIN_FOOD).add((Object)Items.CRIMSON_FUNGUS);

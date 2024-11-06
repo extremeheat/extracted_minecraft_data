@@ -5,11 +5,11 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.equipment.EquipmentModel;
 import net.minecraft.world.item.equipment.Equippable;
 
 public class HumanoidArmorLayer<S extends HumanoidRenderState, M extends HumanoidModel<S>, A extends HumanoidModel<S>> extends RenderLayer<S, M> {
@@ -38,14 +38,14 @@ public class HumanoidArmorLayer<S extends HumanoidRenderState, M extends Humanoi
    }
 
    private static boolean shouldRender(Equippable var0, EquipmentSlot var1) {
-      return var0.model().isPresent() && var0.slot() == var1;
+      return var0.assetId().isPresent() && var0.slot() == var1;
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, S var4, float var5, float var6) {
-      this.renderArmorPiece(var1, var2, var4.chestItem, EquipmentSlot.CHEST, var3, this.getArmorModel(var4, EquipmentSlot.CHEST));
-      this.renderArmorPiece(var1, var2, var4.legsItem, EquipmentSlot.LEGS, var3, this.getArmorModel(var4, EquipmentSlot.LEGS));
-      this.renderArmorPiece(var1, var2, var4.feetItem, EquipmentSlot.FEET, var3, this.getArmorModel(var4, EquipmentSlot.FEET));
-      this.renderArmorPiece(var1, var2, var4.headItem, EquipmentSlot.HEAD, var3, this.getArmorModel(var4, EquipmentSlot.HEAD));
+      this.renderArmorPiece(var1, var2, var4.chestEquipment, EquipmentSlot.CHEST, var3, this.getArmorModel(var4, EquipmentSlot.CHEST));
+      this.renderArmorPiece(var1, var2, var4.legsEquipment, EquipmentSlot.LEGS, var3, this.getArmorModel(var4, EquipmentSlot.LEGS));
+      this.renderArmorPiece(var1, var2, var4.feetEquipment, EquipmentSlot.FEET, var3, this.getArmorModel(var4, EquipmentSlot.FEET));
+      this.renderArmorPiece(var1, var2, var4.headEquipment, EquipmentSlot.HEAD, var3, this.getArmorModel(var4, EquipmentSlot.HEAD));
    }
 
    private void renderArmorPiece(PoseStack var1, MultiBufferSource var2, ItemStack var3, EquipmentSlot var4, int var5, A var6) {
@@ -53,9 +53,8 @@ public class HumanoidArmorLayer<S extends HumanoidRenderState, M extends Humanoi
       if (var7 != null && shouldRender(var7, var4)) {
          ((HumanoidModel)this.getParentModel()).copyPropertiesTo(var6);
          this.setPartVisibility(var6, var4);
-         ResourceLocation var8 = (ResourceLocation)var7.model().orElseThrow();
-         EquipmentModel.LayerType var9 = this.usesInnerModel(var4) ? EquipmentModel.LayerType.HUMANOID_LEGGINGS : EquipmentModel.LayerType.HUMANOID;
-         this.equipmentRenderer.renderLayers(var9, var8, var6, var3, var1, var2, var5);
+         EquipmentClientInfo.LayerType var8 = this.usesInnerModel(var4) ? EquipmentClientInfo.LayerType.HUMANOID_LEGGINGS : EquipmentClientInfo.LayerType.HUMANOID;
+         this.equipmentRenderer.renderLayers(var8, (ResourceKey)var7.assetId().orElseThrow(), var6, var3, var1, var2, var5);
       }
    }
 

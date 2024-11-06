@@ -2,10 +2,7 @@ package net.minecraft.world.entity.animal;
 
 import com.google.common.collect.Maps;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -44,12 +41,8 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.item.crafting.CraftingRecipe;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
@@ -258,7 +251,9 @@ public class Sheep extends Animal implements Shearable {
    public Sheep getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Sheep var3 = (Sheep)EntityType.SHEEP.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
-         var3.setColor(this.getOffspringColor(var1, this, (Sheep)var2));
+         DyeColor var4 = this.getColor();
+         DyeColor var5 = ((Sheep)var2).getColor();
+         var3.setColor(DyeColor.getMixedColor(var1, var4, var5));
       }
 
       return var3;
@@ -277,25 +272,6 @@ public class Sheep extends Animal implements Shearable {
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setColor(getRandomSheepColor(var1.getRandom()));
       return super.finalizeSpawn(var1, var2, var3, var4);
-   }
-
-   private DyeColor getOffspringColor(ServerLevel var1, Sheep var2, Sheep var3) {
-      DyeColor var4 = var2.getColor();
-      DyeColor var5 = var3.getColor();
-      CraftingInput var6 = makeCraftInput(var4, var5);
-      Optional var10000 = var1.recipeAccess().getRecipeFor(RecipeType.CRAFTING, var6, var1).map((var2x) -> {
-         return ((CraftingRecipe)var2x.value()).assemble(var6, var1.registryAccess());
-      }).map(ItemStack::getItem);
-      Objects.requireNonNull(DyeItem.class);
-      var10000 = var10000.filter(DyeItem.class::isInstance);
-      Objects.requireNonNull(DyeItem.class);
-      return (DyeColor)var10000.map(DyeItem.class::cast).map(DyeItem::getDyeColor).orElseGet(() -> {
-         return var1.random.nextBoolean() ? var4 : var5;
-      });
-   }
-
-   private static CraftingInput makeCraftInput(DyeColor var0, DyeColor var1) {
-      return CraftingInput.of(2, 1, List.of(new ItemStack(DyeItem.byColor(var0)), new ItemStack(DyeItem.byColor(var1))));
    }
 
    // $FF: synthetic method

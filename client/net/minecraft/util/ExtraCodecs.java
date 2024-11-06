@@ -1,5 +1,7 @@
 package net.minecraft.util;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedBytes;
@@ -169,6 +171,20 @@ public class ExtraCodecs {
       });
    }
 
+   public static <I, E> Codec<E> idResolverCodec(Codec<I> var0, Function<I, E> var1, Function<E, I> var2) {
+      return var0.flatXmap((var1x) -> {
+         Object var2 = var1.apply(var1x);
+         return var2 == null ? DataResult.error(() -> {
+            return "Unknown element id: " + String.valueOf(var1x);
+         }) : DataResult.success(var2);
+      }, (var1x) -> {
+         Object var2x = var2.apply(var1x);
+         return var2x == null ? DataResult.error(() -> {
+            return "Element with unknown id: " + String.valueOf(var1x);
+         }) : DataResult.success(var2x);
+      });
+   }
+
    public static <E> Codec<E> orCompressed(final Codec<E> var0, final Codec<E> var1) {
       return new Codec<E>() {
          public <T> DataResult<T> encode(E var1x, DynamicOps<T> var2, T var3) {
@@ -234,6 +250,20 @@ public class ExtraCodecs {
       return new StrictUnboundedMapCodec(var0, var1);
    }
 
+   public static <E> Codec<List<E>> compactListCodec(Codec<E> var0) {
+      return compactListCodec(var0, var0.listOf());
+   }
+
+   public static <E> Codec<List<E>> compactListCodec(Codec<E> var0, Codec<List<E>> var1) {
+      return Codec.either(var1, var0).xmap((var0x) -> {
+         return (List)var0x.map((var0) -> {
+            return var0;
+         }, List::of);
+      }, (var0x) -> {
+         return var0x.size() == 1 ? Either.right(var0x.getFirst()) : Either.left(var0x);
+      });
+   }
+
    private static Codec<Integer> intRangeWithMessage(int var0, int var1, Function<Integer, String> var2) {
       return Codec.INT.validate((var3) -> {
          return var3.compareTo(var0) >= 0 && var3.compareTo(var1) <= 0 ? DataResult.success(var3) : DataResult.error(() -> {
@@ -261,6 +291,12 @@ public class ExtraCodecs {
          return var3.compareTo(var0) > 0 && var3.compareTo(var1) <= 0 ? DataResult.success(var3) : DataResult.error(() -> {
             return (String)var2.apply(var3);
          });
+      });
+   }
+
+   public static Codec<Float> floatRange(float var0, float var1) {
+      return floatRangeMinInclusiveWithMessage(var0, var1, (var2) -> {
+         return "Value must be within range [" + var0 + ";" + var1 + "]: " + var2;
       });
    }
 
@@ -720,6 +756,31 @@ public class ExtraCodecs {
 
       public boolean tag() {
          return this.tag;
+      }
+   }
+
+   public static class LateBoundIdMapper<I, V> {
+      private final BiMap<I, V> idToValue = HashBiMap.create();
+
+      public LateBoundIdMapper() {
+         super();
+      }
+
+      public Codec<V> codec(Codec<I> var1) {
+         BiMap var2 = this.idToValue.inverse();
+         BiMap var10001 = this.idToValue;
+         Objects.requireNonNull(var10001);
+         Function var3 = var10001::get;
+         Objects.requireNonNull(var2);
+         return ExtraCodecs.idResolverCodec(var1, var3, var2::get);
+      }
+
+      public LateBoundIdMapper<I, V> put(I var1, V var2) {
+         Objects.requireNonNull(var2, () -> {
+            return "Value for " + String.valueOf(var1) + " is null";
+         });
+         this.idToValue.put(var1, var2);
+         return this;
       }
    }
 }

@@ -242,6 +242,7 @@ import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundConfigurationAcknowledgedPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundMoveVehiclePacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
 import net.minecraft.network.protocol.game.VecDeltaCodec;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
 import net.minecraft.resources.ResourceKey;
@@ -601,7 +602,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             var2.positionRider(this.minecraft.player);
             this.minecraft.player.setOldPosAndRot();
             if (var2.isControlledByOrIsLocalPlayer()) {
-               this.connection.send(new ServerboundMoveVehiclePacket(var2));
+               this.connection.send(ServerboundMoveVehiclePacket.fromEntity(var2));
             }
          }
 
@@ -1878,14 +1879,14 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       Entity var2 = this.minecraft.player.getRootVehicle();
       if (var2 != this.minecraft.player && var2.isControlledByLocalInstance()) {
-         Vec3 var3 = new Vec3(var1.getX(), var1.getY(), var1.getZ());
+         Vec3 var3 = var1.position();
          Vec3 var4 = new Vec3(var2.lerpTargetX(), var2.lerpTargetY(), var2.lerpTargetZ());
          if (var3.distanceTo(var4) > 9.999999747378752E-6) {
             var2.cancelLerp();
-            var2.absMoveTo(var3.x(), var3.y(), var3.z(), var1.getYRot(), var1.getXRot());
+            var2.absMoveTo(var3.x(), var3.y(), var3.z(), var1.yRot(), var1.xRot());
          }
 
-         this.connection.send(new ServerboundMoveVehiclePacket(var2));
+         this.connection.send(ServerboundMoveVehiclePacket.fromEntity(var2));
       }
 
    }
@@ -2420,6 +2421,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.telemetryManager.tick();
       if (this.levelLoadStatusManager != null) {
          this.levelLoadStatusManager.tick();
+         if (this.levelLoadStatusManager.levelReady() && !this.minecraft.player.hasClientLoaded()) {
+            this.connection.send(new ServerboundPlayerLoadedPacket());
+            this.minecraft.player.setClientLoaded(true);
+         }
       }
 
    }

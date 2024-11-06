@@ -515,29 +515,39 @@ public class EnderDragon extends Mob implements Enemy {
          this.level().addParticle(ParticleTypes.EXPLOSION_EMITTER, this.getX() + (double)var1, this.getY() + 2.0 + (double)var2, this.getZ() + (double)var3, 0.0, 0.0, 0.0);
       }
 
-      short var4 = 500;
+      short var7 = 500;
       if (this.dragonFight != null && !this.dragonFight.hasPreviouslyKilledDragon()) {
-         var4 = 12000;
+         var7 = 12000;
       }
 
-      Level var6 = this.level();
-      if (var6 instanceof ServerLevel var5) {
-         if (this.dragonDeathTime > 150 && this.dragonDeathTime % 5 == 0 && var5.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
-            ExperienceOrb.award(var5, this.position(), Mth.floor((float)var4 * 0.08F));
+      Level var10 = this.level();
+      if (var10 instanceof ServerLevel var8) {
+         if (this.dragonDeathTime > 150 && this.dragonDeathTime % 5 == 0 && var8.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+            ExperienceOrb.award(var8, this.position(), Mth.floor((float)var7 * 0.08F));
          }
 
          if (this.dragonDeathTime == 1 && !this.isSilent()) {
-            var5.globalLevelEvent(1028, this.blockPosition(), 0);
+            var8.globalLevelEvent(1028, this.blockPosition(), 0);
          }
       }
 
-      this.move(MoverType.SELF, new Vec3(0.0, 0.10000000149011612, 0.0));
+      Vec3 var9 = new Vec3(0.0, 0.10000000149011612, 0.0);
+      this.move(MoverType.SELF, var9);
+      EnderDragonPart[] var11 = this.subEntities;
+      int var4 = var11.length;
+
+      for(int var5 = 0; var5 < var4; ++var5) {
+         EnderDragonPart var6 = var11[var5];
+         var6.setOldPosAndRot();
+         var6.setPos(var6.position().add(var9));
+      }
+
       if (this.dragonDeathTime == 200) {
-         var6 = this.level();
-         if (var6 instanceof ServerLevel) {
-            var5 = (ServerLevel)var6;
-            if (var5.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
-               ExperienceOrb.award(var5, this.position(), Mth.floor((float)var4 * 0.2F));
+         Level var13 = this.level();
+         if (var13 instanceof ServerLevel) {
+            ServerLevel var12 = (ServerLevel)var13;
+            if (var12.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+               ExperienceOrb.award(var12, this.position(), Mth.floor((float)var7 * 0.2F));
             }
 
             if (this.dragonFight != null) {

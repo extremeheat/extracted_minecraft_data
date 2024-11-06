@@ -5,6 +5,7 @@ import net.minecraft.client.model.IllagerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
+import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.IllagerRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -16,10 +17,10 @@ public class VindicatorRenderer extends IllagerRenderer<Vindicator, IllagerRende
 
    public VindicatorRenderer(EntityRendererProvider.Context var1) {
       super(var1, new IllagerModel(var1.bakeLayer(ModelLayers.VINDICATOR)), 0.5F);
-      this.addLayer(new ItemInHandLayer<IllagerRenderState, IllagerModel<IllagerRenderState>>(this, this, var1.getItemRenderer()) {
+      this.addLayer(new ItemInHandLayer<IllagerRenderState, IllagerModel<IllagerRenderState>>(this, this) {
          public void render(PoseStack var1, MultiBufferSource var2, int var3, IllagerRenderState var4, float var5, float var6) {
             if (var4.isAggressive) {
-               super.render(var1, var2, var3, (LivingEntityRenderState)var4, var5, var6);
+               super.render(var1, var2, var3, (ArmedEntityRenderState)var4, var5, var6);
             }
 
          }

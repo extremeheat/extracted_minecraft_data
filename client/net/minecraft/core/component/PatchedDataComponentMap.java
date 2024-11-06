@@ -230,6 +230,10 @@ public final class PatchedDataComponentMap implements DataComponentMap {
       return new PatchedDataComponentMap(this.prototype, this.patch, true);
    }
 
+   public DataComponentMap toImmutableMap() {
+      return (DataComponentMap)(this.patch.isEmpty() ? this.prototype : this.copy());
+   }
+
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;

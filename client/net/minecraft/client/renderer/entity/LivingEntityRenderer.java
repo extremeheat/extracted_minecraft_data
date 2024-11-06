@@ -13,24 +13,31 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.level.block.AbstractSkullBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
@@ -38,12 +45,12 @@ import net.minecraft.world.scores.Team;
 public abstract class LivingEntityRenderer<T extends LivingEntity, S extends LivingEntityRenderState, M extends EntityModel<? super S>> extends EntityRenderer<T, S> implements RenderLayerParent<S, M> {
    private static final float EYE_BED_OFFSET = 0.1F;
    protected M model;
-   protected final ItemRenderer itemRenderer;
+   protected final ItemModelResolver itemModelResolver;
    protected final List<RenderLayer<S, M>> layers = Lists.newArrayList();
 
    public LivingEntityRenderer(EntityRendererProvider.Context var1, M var2, float var3) {
       super(var1);
-      this.itemRenderer = var1.getItemRenderer();
+      this.itemModelResolver = var1.getItemModelResolver();
       this.model = var2;
       this.shadowRadius = var3;
    }
@@ -295,25 +302,37 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          var2.eyeHeight = var1.getEyeHeight(Pose.STANDING);
       }
 
-      var2.isFullyFrozen = var1.isFullyFrozen();
-      var2.isBaby = var1.isBaby();
-      var2.isInWater = var1.isInWater();
-      var2.isAutoSpinAttack = var1.isAutoSpinAttack();
-      var2.hasRedOverlay = var1.hurtTime > 0 || var1.deathTime > 0;
-      ItemStack var9 = var1.getItemBySlot(EquipmentSlot.HEAD);
-      var2.headItem = var9.copy();
-      var2.headItemModel = this.itemRenderer.resolveItemModel(var9, var1, ItemDisplayContext.HEAD);
-      var2.mainArm = var1.getMainArm();
-      ItemStack var10 = var1.getItemHeldByArm(HumanoidArm.RIGHT);
-      ItemStack var7 = var1.getItemHeldByArm(HumanoidArm.LEFT);
-      var2.rightHandItem = var10.copy();
-      var2.leftHandItem = var7.copy();
-      var2.rightHandItemModel = this.itemRenderer.resolveItemModel(var10, var1, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND);
-      var2.leftHandItemModel = this.itemRenderer.resolveItemModel(var7, var1, ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
+      label48: {
+         var2.isFullyFrozen = var1.isFullyFrozen();
+         var2.isBaby = var1.isBaby();
+         var2.isInWater = var1.isInWater();
+         var2.isAutoSpinAttack = var1.isAutoSpinAttack();
+         var2.hasRedOverlay = var1.hurtTime > 0 || var1.deathTime > 0;
+         ItemStack var9 = var1.getItemBySlot(EquipmentSlot.HEAD);
+         Item var8 = var9.getItem();
+         if (var8 instanceof BlockItem var10) {
+            Block var12 = var10.getBlock();
+            if (var12 instanceof AbstractSkullBlock var7) {
+               var2.wornHeadType = var7.getType();
+               var2.wornHeadProfile = (ResolvableProfile)var9.get(DataComponents.PROFILE);
+               var2.headItem.clear();
+               break label48;
+            }
+         }
+
+         var2.wornHeadType = null;
+         var2.wornHeadProfile = null;
+         if (!HumanoidArmorLayer.shouldRender(var9, EquipmentSlot.HEAD)) {
+            this.itemModelResolver.updateForLiving(var2.headItem, var9, ItemDisplayContext.HEAD, false, var1);
+         } else {
+            var2.headItem.clear();
+         }
+      }
+
       var2.deathTime = var1.deathTime > 0 ? (float)var1.deathTime + var3 : 0.0F;
-      Minecraft var8 = Minecraft.getInstance();
-      var2.isInvisibleToPlayer = var2.isInvisible && var1.isInvisibleTo(var8.player);
-      var2.appearsGlowing = var8.shouldEntityAppearGlowing(var1);
+      Minecraft var11 = Minecraft.getInstance();
+      var2.isInvisibleToPlayer = var2.isInvisible && var1.isInvisibleTo(var11.player);
+      var2.appearsGlowing = var11.shouldEntityAppearGlowing(var1);
    }
 
    private static float solveBodyRot(LivingEntity var0, float var1, float var2) {

@@ -523,7 +523,6 @@ public class Warden extends Monster implements VibrationSystem {
       return new GroundPathNavigation(this, this, var1) {
          protected PathFinder createPathFinder(int var1) {
             this.nodeEvaluator = new WalkNodeEvaluator();
-            this.nodeEvaluator.setCanPassDoors(true);
             return new PathFinder(this, this.nodeEvaluator, var1) {
                protected float distance(Node var1, Node var2) {
                   return var1.distanceToXZ(var2);

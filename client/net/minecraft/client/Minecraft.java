@@ -74,7 +74,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
 import net.minecraft.Util;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiSpriteManager;
@@ -126,7 +125,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.profiling.ClientMetricsSamplersProvider;
 import net.minecraft.client.quickplay.QuickPlay;
 import net.minecraft.client.quickplay.QuickPlayLog;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.FogParameters;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.GpuWarnlistManager;
@@ -142,6 +140,7 @@ import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -157,7 +156,7 @@ import net.minecraft.client.resources.SplashManager;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.EquipmentModelSet;
+import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.client.server.IntegratedServer;
@@ -270,6 +269,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final RenderBuffers renderBuffers;
    public final LevelRenderer levelRenderer;
    private final EntityRenderDispatcher entityRenderDispatcher;
+   private final ItemModelResolver itemModelResolver;
    private final ItemRenderer itemRenderer;
    private final MapRenderer mapRenderer;
    public final ParticleEngine particleEngine;
@@ -299,7 +299,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final PackRepository resourcePackRepository;
    private final LanguageManager languageManager;
    private final BlockColors blockColors;
-   private final ItemColors itemColors;
    private final RenderTarget mainRenderTarget;
    @Nullable
    private final TracyFrameCapture tracyFrameCapture;
@@ -316,7 +315,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final SkinManager skinManager;
    private final ModelManager modelManager;
    private final BlockRenderDispatcher blockRenderer;
-   private final EquipmentModelSet equipmentModels;
    private final PaintingTextureManager paintingTextures;
    private final MobEffectTextureManager mobEffectTextures;
    private final MapTextureManager mapTextureManager;
@@ -325,7 +323,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final ToastManager toastManager;
    private final Tutorial tutorial;
    private final PlayerSocialManager playerSocialManager;
-   private final EntityModelSet entityModels;
    private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
    private final ClientTelemetryManager telemetryManager;
    private final ProfileKeyPairManager profileKeyPairManager;
@@ -525,19 +522,12 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       RenderSystem.setupDefaultState(0, 0, this.window.getWidth(), this.window.getHeight());
       this.window.setErrorSection("Post startup");
       this.blockColors = BlockColors.createDefault();
-      this.itemColors = ItemColors.createDefault(this.blockColors);
       this.modelManager = new ModelManager(this.textureManager, this.blockColors, (Integer)this.options.mipmapLevels().get());
       this.resourceManager.registerReloadListener(this.modelManager);
-      this.entityModels = new EntityModelSet();
-      this.resourceManager.registerReloadListener(this.entityModels);
-      this.equipmentModels = new EquipmentModelSet();
-      this.resourceManager.registerReloadListener(this.equipmentModels);
-      this.blockEntityRenderDispatcher = new BlockEntityRenderDispatcher(this.font, this.entityModels, this::getBlockRenderer, this::getItemRenderer, this::getEntityRenderDispatcher);
-      this.resourceManager.registerReloadListener(this.blockEntityRenderDispatcher);
-      BlockEntityWithoutLevelRenderer var7 = new BlockEntityWithoutLevelRenderer(this.blockEntityRenderDispatcher, this.entityModels);
+      EquipmentAssetManager var7 = new EquipmentAssetManager();
       this.resourceManager.registerReloadListener(var7);
-      this.itemRenderer = new ItemRenderer(this.modelManager, this.itemColors, var7);
-      this.resourceManager.registerReloadListener(this.itemRenderer);
+      this.itemModelResolver = new ItemModelResolver(this.modelManager);
+      this.itemRenderer = new ItemRenderer(this.itemModelResolver);
       this.mapTextureManager = new MapTextureManager(this.textureManager);
       this.mapDecorationTextures = new MapDecorationTextureManager(this.textureManager);
       this.resourceManager.registerReloadListener(this.mapDecorationTextures);
@@ -553,10 +543,12 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       this.playerSocialManager = new PlayerSocialManager(this, this.userApiService);
-      this.blockRenderer = new BlockRenderDispatcher(this.modelManager.getBlockModelShaper(), var7, this.blockColors);
+      this.blockRenderer = new BlockRenderDispatcher(this.modelManager.getBlockModelShaper(), this.modelManager.specialBlockModelRenderer(), this.blockColors);
       this.resourceManager.registerReloadListener(this.blockRenderer);
-      this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, this.itemRenderer, this.mapRenderer, this.blockRenderer, this.font, this.options, this.entityModels, this.equipmentModels);
+      this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, this.itemModelResolver, this.itemRenderer, this.mapRenderer, this.blockRenderer, this.font, this.options, this.modelManager.entityModels(), var7);
       this.resourceManager.registerReloadListener(this.entityRenderDispatcher);
+      this.blockEntityRenderDispatcher = new BlockEntityRenderDispatcher(this.font, this.modelManager.entityModels(), this.blockRenderer, this.itemModelResolver, this.itemRenderer, this.entityRenderDispatcher);
+      this.resourceManager.registerReloadListener(this.blockEntityRenderDispatcher);
       this.particleEngine = new ParticleEngine(this.level, this.textureManager);
       this.resourceManager.registerReloadListener(this.particleEngine);
       this.paintingTextures = new PaintingTextureManager(this.textureManager);
@@ -2842,11 +2834,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public EntityModelSet getEntityModels() {
-      return this.entityModels;
-   }
-
-   public EquipmentModelSet getEquipmentModels() {
-      return this.equipmentModels;
+      return (EntityModelSet)this.modelManager.entityModels().get();
    }
 
    public boolean isTextFilteringEnabled() {
@@ -2912,6 +2900,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       return var1;
+   }
+
+   public ItemModelResolver getItemModelResolver() {
+      return this.itemModelResolver;
    }
 
    @Nullable

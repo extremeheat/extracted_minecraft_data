@@ -187,32 +187,35 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    public void tick() {
-      this.dropSpamThrottler.tick();
-      super.tick();
-      this.sendShiftKeyState();
-      if (!this.lastSentInput.equals(this.input.keyPresses)) {
-         this.connection.send(new ServerboundPlayerInputPacket(this.input.keyPresses));
-         this.lastSentInput = this.input.keyPresses;
-      }
-
-      if (this.isPassenger()) {
-         this.connection.send(new ServerboundMovePlayerPacket.Rot(this.getYRot(), this.getXRot(), this.onGround(), this.horizontalCollision));
-         Entity var1 = this.getRootVehicle();
-         if (var1 != this && var1.isControlledByLocalInstance()) {
-            this.connection.send(new ServerboundMoveVehiclePacket(var1));
-            this.sendIsSprintingIfNeeded();
+      this.tickClientLoadTimeout();
+      if (this.hasClientLoaded()) {
+         this.dropSpamThrottler.tick();
+         super.tick();
+         this.sendShiftKeyState();
+         if (!this.lastSentInput.equals(this.input.keyPresses)) {
+            this.connection.send(new ServerboundPlayerInputPacket(this.input.keyPresses));
+            this.lastSentInput = this.input.keyPresses;
          }
-      } else {
-         this.sendPosition();
+
+         if (this.isPassenger()) {
+            this.connection.send(new ServerboundMovePlayerPacket.Rot(this.getYRot(), this.getXRot(), this.onGround(), this.horizontalCollision));
+            Entity var1 = this.getRootVehicle();
+            if (var1 != this && var1.isControlledByLocalInstance()) {
+               this.connection.send(ServerboundMoveVehiclePacket.fromEntity(var1));
+               this.sendIsSprintingIfNeeded();
+            }
+         } else {
+            this.sendPosition();
+         }
+
+         Iterator var3 = this.ambientSoundHandlers.iterator();
+
+         while(var3.hasNext()) {
+            AmbientSoundHandler var2 = (AmbientSoundHandler)var3.next();
+            var2.tick();
+         }
+
       }
-
-      Iterator var3 = this.ambientSoundHandlers.iterator();
-
-      while(var3.hasNext()) {
-         AmbientSoundHandler var2 = (AmbientSoundHandler)var3.next();
-         var2.tick();
-      }
-
    }
 
    public float getCurrentMood() {
@@ -657,6 +660,8 @@ public class LocalPlayer extends AbstractClientPlayer {
          var10000.leftImpulse *= var5;
          var10000 = this.input;
          var10000.forwardImpulse *= var5;
+      } else if (this.isFallFlying() || this.isPassenger() || this.hasBlindness()) {
+         this.setSprinting(false);
       }
 
       boolean var11 = false;
@@ -796,6 +801,10 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.onUpdateAbilities();
       }
 
+   }
+
+   private boolean hasBlindness() {
+      return this.hasEffect(MobEffects.BLINDNESS);
    }
 
    public Portal.Transition getActivePortalLocalTransition() {
@@ -1014,7 +1023,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    private boolean canStartSprinting() {
-      return !this.isSprinting() && this.hasEnoughImpulseToStartSprinting() && this.hasEnoughFoodToStartSprinting() && !this.isUsingItem() && !this.hasEffect(MobEffects.BLINDNESS) && (!this.isPassenger() || this.vehicleCanSprint(this.getVehicle())) && !this.isFallFlying() && !this.isMovingSlowly();
+      return !this.isSprinting() && this.hasEnoughImpulseToStartSprinting() && this.hasEnoughFoodToStartSprinting() && !this.isUsingItem() && !this.hasBlindness() && (!this.isPassenger() || this.vehicleCanSprint(this.getVehicle())) && !this.isFallFlying() && (!this.isMovingSlowly() || this.isUnderWater());
    }
 
    private boolean vehicleCanSprint(Entity var1) {

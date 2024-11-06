@@ -31,7 +31,6 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -225,24 +224,6 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
 
    protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
-   }
-
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
-      ItemStack var4 = super.getCloneItemStack(var1, var2, var3);
-      var1.getBlockEntity(var2, BlockEntityType.SHULKER_BOX).ifPresent((var2x) -> {
-         var2x.saveToItem(var4, var1.registryAccess());
-      });
-      return var4;
-   }
-
-   @Nullable
-   public static DyeColor getColorFromItem(Item var0) {
-      return getColorFromBlock(Block.byItem(var0));
-   }
-
-   @Nullable
-   public static DyeColor getColorFromBlock(Block var0) {
-      return var0 instanceof ShulkerBoxBlock ? ((ShulkerBoxBlock)var0).getColor() : null;
    }
 
    public static Block getBlockByColor(@Nullable DyeColor var0) {

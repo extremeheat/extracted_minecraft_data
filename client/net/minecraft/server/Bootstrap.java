@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.SharedConstants;
+import net.minecraft.SuppressForbidden;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.selector.options.EntitySelectorOptions;
 import net.minecraft.core.cauldron.CauldronInteraction;
@@ -29,6 +30,9 @@ import net.minecraft.world.level.block.FireBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.slf4j.Logger;
 
+@SuppressForbidden(
+   a = "System.out setup"
+)
 public class Bootstrap {
    public static final PrintStream STDOUT;
    private static volatile boolean isBootstrapped;

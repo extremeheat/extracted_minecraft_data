@@ -131,7 +131,6 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       FlyingPathNavigation var2 = new FlyingPathNavigation(this, var1);
       var2.setCanOpenDoors(false);
       var2.setCanFloat(true);
-      var2.setCanPassDoors(true);
       var2.setRequiredPathLength(48.0F);
       return var2;
    }
@@ -162,15 +161,20 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      Entity var5 = var2.getEntity();
-      if (var5 instanceof Player var4) {
-         Optional var6 = this.getBrain().getMemory(MemoryModuleType.LIKED_PLAYER);
-         if (var6.isPresent() && var4.getUUID().equals(var6.get())) {
-            return false;
-         }
-      }
+      return this.isLikedPlayer(var2.getEntity()) ? false : super.hurtServer(var1, var2, var3);
+   }
 
-      return super.hurtServer(var1, var2, var3);
+   protected boolean considersEntityAsAlly(Entity var1) {
+      return this.isLikedPlayer(var1) || super.considersEntityAsAlly(var1);
+   }
+
+   private boolean isLikedPlayer(@Nullable Entity var1) {
+      if (!(var1 instanceof Player var2)) {
+         return false;
+      } else {
+         Optional var3 = this.getBrain().getMemory(MemoryModuleType.LIKED_PLAYER);
+         return var3.isPresent() && var2.getUUID().equals(var3.get());
+      }
    }
 
    protected void playStepSound(BlockPos var1, BlockState var2) {

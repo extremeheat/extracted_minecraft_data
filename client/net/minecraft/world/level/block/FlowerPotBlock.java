@@ -92,8 +92,8 @@ public class FlowerPotBlock extends Block {
       }
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
-      return this.isEmpty() ? super.getCloneItemStack(var1, var2, var3) : new ItemStack(this.potted);
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+      return this.isEmpty() ? super.getCloneItemStack(var1, var2, var3, var4) : new ItemStack(this.potted);
    }
 
    private boolean isEmpty() {
@@ -122,7 +122,7 @@ public class FlowerPotBlock extends Block {
          boolean var6 = CreakingHeartBlock.isNaturalNight(var2);
          if (var5 != var6) {
             var2.setBlock(var3, this.opposite(var1), 3);
-            EyeblossomBlock.Type var7 = EyeblossomBlock.Type.fromBoolean(var5);
+            EyeblossomBlock.Type var7 = EyeblossomBlock.Type.fromBoolean(var5).transform();
             var7.spawnTransformParticle(var2, var3, var4);
             var2.playSound((Player)null, var3, var7.longSwitchSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
          }

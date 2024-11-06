@@ -4,7 +4,7 @@ import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.common.ServerCommonPacketListener;
 import net.minecraft.network.protocol.ping.ServerPingPacketListener;
 
-public interface ServerGamePacketListener extends ServerCommonPacketListener, ServerPingPacketListener {
+public interface ServerGamePacketListener extends ServerPingPacketListener, ServerCommonPacketListener {
    default ConnectionProtocol protocol() {
       return ConnectionProtocol.PLAY;
    }
@@ -58,6 +58,8 @@ public interface ServerGamePacketListener extends ServerCommonPacketListener, Se
    void handleMoveVehicle(ServerboundMoveVehiclePacket var1);
 
    void handleAcceptTeleportPacket(ServerboundAcceptTeleportationPacket var1);
+
+   void handleAcceptPlayerLoad(ServerboundPlayerLoadedPacket var1);
 
    void handleRecipeBookSeenRecipePacket(ServerboundRecipeBookSeenRecipePacket var1);
 

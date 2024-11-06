@@ -15,7 +15,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.StringUtil;
 
-public class MultiLineEditBox extends AbstractScrollWidget {
+public class MultiLineEditBox extends AbstractTextAreaWidget {
    private static final int CURSOR_INSERT_WIDTH = 1;
    private static final int CURSOR_INSERT_COLOR = -3092272;
    private static final String CURSOR_APPEND_CHARACTER = "_";
@@ -55,27 +55,15 @@ public class MultiLineEditBox extends AbstractScrollWidget {
       var1.add(NarratedElementType.TITLE, (Component)Component.translatable("gui.narrate.editBox", this.getMessage(), this.getValue()));
    }
 
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      if (this.withinContentAreaPoint(var1, var3) && var5 == 0) {
-         this.textField.setSelecting(Screen.hasShiftDown());
-         this.seekCursorScreen(var1, var3);
-         return true;
-      } else {
-         return super.mouseClicked(var1, var3, var5);
-      }
+   public void onClick(double var1, double var3) {
+      this.textField.setSelecting(Screen.hasShiftDown());
+      this.seekCursorScreen(var1, var3);
    }
 
-   public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
-      if (super.mouseDragged(var1, var3, var5, var6, var8)) {
-         return true;
-      } else if (this.withinContentAreaPoint(var1, var3) && var5 == 0) {
-         this.textField.setSelecting(true);
-         this.seekCursorScreen(var1, var3);
-         this.textField.setSelecting(Screen.hasShiftDown());
-         return true;
-      } else {
-         return false;
-      }
+   protected void onDrag(double var1, double var3, double var5, double var7) {
+      this.textField.setSelecting(true);
+      this.seekCursorScreen(var1, var3);
+      this.textField.setSelecting(Screen.hasShiftDown());
    }
 
    public boolean keyPressed(int var1, int var2, int var3) {
@@ -94,14 +82,14 @@ public class MultiLineEditBox extends AbstractScrollWidget {
    protected void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
       String var5 = this.textField.value();
       if (var5.isEmpty() && !this.isFocused()) {
-         var1.drawWordWrap(this.font, this.placeholder, this.getX() + this.innerPadding(), this.getY() + this.innerPadding(), this.width - this.totalInnerPadding(), -857677600);
+         var1.drawWordWrap(this.font, this.placeholder, this.getInnerLeft(), this.getInnerTop(), this.width - this.totalInnerPadding(), -857677600);
       } else {
          int var6 = this.textField.cursor();
          boolean var7 = this.isFocused() && (Util.getMillis() - this.focusedTime) / 300L % 2L == 0L;
          boolean var8 = var6 < var5.length();
          int var9 = 0;
          int var10 = 0;
-         int var11 = this.getY() + this.innerPadding();
+         int var11 = this.getInnerTop();
 
          int var10002;
          int var10004;
@@ -111,7 +99,7 @@ public class MultiLineEditBox extends AbstractScrollWidget {
             boolean var14 = this.withinContentAreaTopBottom(var11, var11 + 9);
             if (var7 && var8 && var6 >= var13.beginIndex() && var6 <= var13.endIndex()) {
                if (var14) {
-                  var9 = var1.drawString(this.font, var5.substring(var13.beginIndex(), var6), this.getX() + this.innerPadding(), var11, -2039584) - 1;
+                  var9 = var1.drawString(this.font, var5.substring(var13.beginIndex(), var6), this.getInnerLeft(), var11, -2039584) - 1;
                   var10002 = var11 - 1;
                   int var10003 = var9 + 1;
                   var10004 = var11 + 1;
@@ -121,7 +109,7 @@ public class MultiLineEditBox extends AbstractScrollWidget {
                }
             } else {
                if (var14) {
-                  var9 = var1.drawString(this.font, var5.substring(var13.beginIndex(), var13.endIndex()), this.getX() + this.innerPadding(), var11, -2039584) - 1;
+                  var9 = var1.drawString(this.font, var5.substring(var13.beginIndex(), var13.endIndex()), this.getInnerLeft(), var11, -2039584) - 1;
                }
 
                var10 = var11;
@@ -139,8 +127,8 @@ public class MultiLineEditBox extends AbstractScrollWidget {
 
          if (this.textField.hasSelection()) {
             MultilineTextField.StringView var18 = this.textField.getSelected();
-            int var19 = this.getX() + this.innerPadding();
-            var11 = this.getY() + this.innerPadding();
+            int var19 = this.getInnerLeft();
+            var11 = this.getInnerTop();
             Iterator var20 = this.textField.iterateLines().iterator();
 
             while(var20.hasNext()) {
@@ -193,10 +181,6 @@ public class MultiLineEditBox extends AbstractScrollWidget {
       return 9 * this.textField.getLineCount();
    }
 
-   protected boolean scrollbarVisible() {
-      return (double)this.textField.getLineCount() > this.getDisplayableLineCount();
-   }
-
    protected double scrollRate() {
       Objects.requireNonNull(this.font);
       return 9.0 / 2.0;
@@ -231,12 +215,6 @@ public class MultiLineEditBox extends AbstractScrollWidget {
       }
 
       this.setScrollAmount(var1);
-   }
-
-   private double getDisplayableLineCount() {
-      double var10000 = (double)(this.height - this.totalInnerPadding());
-      Objects.requireNonNull(this.font);
-      return var10000 / 9.0;
    }
 
    private void seekCursorScreen(double var1, double var3) {

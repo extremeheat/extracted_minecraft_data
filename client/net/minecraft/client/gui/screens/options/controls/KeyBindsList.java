@@ -144,7 +144,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
       }
 
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         int var11 = KeyBindsList.this.getScrollbarPosition() - this.resetButton.getWidth() - 10;
+         int var11 = KeyBindsList.this.scrollBarX() - this.resetButton.getWidth() - 10;
          int var12 = var3 - 2;
          this.resetButton.setPosition(var11, var12);
          this.resetButton.render(var1, var7, var8, var10);

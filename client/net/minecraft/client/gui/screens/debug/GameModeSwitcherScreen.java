@@ -60,7 +60,7 @@ public class GameModeSwitcherScreen extends Screen {
 
       for(int var1 = 0; var1 < GameModeSwitcherScreen.GameModeIcon.VALUES.length; ++var1) {
          GameModeIcon var2 = GameModeSwitcherScreen.GameModeIcon.VALUES[var1];
-         this.slots.add(new GameModeSlot(this, var2, this.width / 2 - ALL_SLOTS_WIDTH / 2 + var1 * 31, this.height / 2 - 31));
+         this.slots.add(new GameModeSlot(var2, this.width / 2 - ALL_SLOTS_WIDTH / 2 + var1 * 31, this.height / 2 - 31));
       }
 
    }
@@ -204,13 +204,13 @@ public class GameModeSwitcherScreen extends Screen {
       }
    }
 
-   public class GameModeSlot extends AbstractWidget {
+   public static class GameModeSlot extends AbstractWidget {
       final GameModeIcon icon;
       private boolean isSelected;
 
-      public GameModeSlot(final GameModeSwitcherScreen var1, final GameModeIcon var2, final int var3, final int var4) {
-         super(var3, var4, 26, 26, var2.getName());
-         this.icon = var2;
+      public GameModeSlot(GameModeIcon var1, int var2, int var3) {
+         super(var2, var3, 26, 26, var1.getName());
+         this.icon = var1;
       }
 
       public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {

@@ -174,6 +174,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
                for(int var3 = 0; var3 < var4; ++var3) {
                   this.spreadResin().ifPresent((var1x) -> {
                      this.level.playSound((Player)null, (BlockPos)var1x, SoundEvents.RESIN_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                     this.level.gameEvent(GameEvent.BLOCK_PLACE, var1x, GameEvent.Context.of(this.level.getBlockState(var1x)));
                   });
                }
 

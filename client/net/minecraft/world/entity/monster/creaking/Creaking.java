@@ -103,6 +103,12 @@ public class Creaking extends Monster {
       return super.isPushable() && this.canMove();
    }
 
+   public void push(double var1, double var3, double var5) {
+      if (this.canMove()) {
+         super.push(var1, var3, var5);
+      }
+   }
+
    public Brain<Creaking> getBrain() {
       return super.getBrain();
    }

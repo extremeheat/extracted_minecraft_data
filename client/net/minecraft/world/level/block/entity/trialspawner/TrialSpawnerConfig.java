@@ -2,11 +2,15 @@ package net.minecraft.world.level.block.entity.trialspawner;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -45,6 +49,13 @@ public record TrialSpawnerConfig(int spawnRange, float totalMobs, float simultan
 
    public static Builder builder() {
       return new Builder();
+   }
+
+   public TrialSpawnerConfig withSpawning(EntityType<?> var1) {
+      CompoundTag var2 = new CompoundTag();
+      var2.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(var1).toString());
+      SpawnData var3 = new SpawnData(var2, Optional.empty(), Optional.empty());
+      return new TrialSpawnerConfig(this.spawnRange, this.totalMobs, this.simultaneousMobs, this.totalMobsAddedPerPlayer, this.simultaneousMobsAddedPerPlayer, this.ticksBetweenSpawn, SimpleWeightedRandomList.single(var3), this.lootTablesToEject, this.itemsToDropWhenOminous);
    }
 
    public int spawnRange() {

@@ -3,15 +3,22 @@ package net.minecraft.world.item;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.material.MapColor;
 import org.jetbrains.annotations.Contract;
 
@@ -103,6 +110,23 @@ public enum DyeColor implements StringRepresentable {
 
    public String getSerializedName() {
       return this.name;
+   }
+
+   public static DyeColor getMixedColor(ServerLevel var0, DyeColor var1, DyeColor var2) {
+      CraftingInput var3 = makeCraftColorInput(var1, var2);
+      Optional var10000 = var0.recipeAccess().getRecipeFor(RecipeType.CRAFTING, var3, var0).map((var2x) -> {
+         return ((CraftingRecipe)var2x.value()).assemble(var3, var0.registryAccess());
+      }).map(ItemStack::getItem);
+      Objects.requireNonNull(DyeItem.class);
+      var10000 = var10000.filter(DyeItem.class::isInstance);
+      Objects.requireNonNull(DyeItem.class);
+      return (DyeColor)var10000.map(DyeItem.class::cast).map(DyeItem::getDyeColor).orElseGet(() -> {
+         return var0.random.nextBoolean() ? var1 : var2;
+      });
+   }
+
+   private static CraftingInput makeCraftColorInput(DyeColor var0, DyeColor var1) {
+      return CraftingInput.of(2, 1, List.of(new ItemStack(DyeItem.byColor(var0)), new ItemStack(DyeItem.byColor(var1))));
    }
 
    // $FF: synthetic method

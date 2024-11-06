@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.components.TabOrderedElement;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
+import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 
 public interface GuiEventListener extends TabOrderedElement {
@@ -60,5 +61,9 @@ public interface GuiEventListener extends TabOrderedElement {
 
    default ScreenRectangle getRectangle() {
       return ScreenRectangle.empty();
+   }
+
+   default ScreenRectangle getBorderForArrowNavigation(ScreenDirection var1) {
+      return this.getRectangle().getBorder(var1);
    }
 }

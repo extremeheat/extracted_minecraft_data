@@ -78,28 +78,28 @@ public class FishingHook extends Projectile {
    }
 
    public FishingHook(EntityType<? extends FishingHook> var1, Level var2) {
-      this(var1, var2, 0, 0);
+      this((EntityType)var1, var2, 0, 0);
    }
 
-   public FishingHook(Player var1, Level var2, int var3, int var4, ItemStack var5) {
+   public FishingHook(Player var1, Level var2, int var3, int var4) {
       this(EntityType.FISHING_BOBBER, var2, var3, var4);
       this.setOwner(var1);
-      float var6 = var1.getXRot();
-      float var7 = var1.getYRot();
-      float var8 = Mth.cos(-var7 * 0.017453292F - 3.1415927F);
-      float var9 = Mth.sin(-var7 * 0.017453292F - 3.1415927F);
-      float var10 = -Mth.cos(-var6 * 0.017453292F);
-      float var11 = Mth.sin(-var6 * 0.017453292F);
-      double var12 = var1.getX() - (double)var9 * 0.3;
-      double var14 = var1.getEyeY();
-      double var16 = var1.getZ() - (double)var8 * 0.3;
-      this.moveTo(var12, var14, var16, var7, var6);
-      Vec3 var18 = new Vec3((double)(-var9), (double)Mth.clamp(-(var11 / var10), -5.0F, 5.0F), (double)(-var8));
-      double var19 = var18.length();
-      var18 = var18.multiply(0.6 / var19 + this.random.triangle(0.5, 0.0103365), 0.6 / var19 + this.random.triangle(0.5, 0.0103365), 0.6 / var19 + this.random.triangle(0.5, 0.0103365));
-      this.setDeltaMovement(var18);
-      this.setYRot((float)(Mth.atan2(var18.x, var18.z) * 57.2957763671875));
-      this.setXRot((float)(Mth.atan2(var18.y, var18.horizontalDistance()) * 57.2957763671875));
+      float var5 = var1.getXRot();
+      float var6 = var1.getYRot();
+      float var7 = Mth.cos(-var6 * 0.017453292F - 3.1415927F);
+      float var8 = Mth.sin(-var6 * 0.017453292F - 3.1415927F);
+      float var9 = -Mth.cos(-var5 * 0.017453292F);
+      float var10 = Mth.sin(-var5 * 0.017453292F);
+      double var11 = var1.getX() - (double)var8 * 0.3;
+      double var13 = var1.getEyeY();
+      double var15 = var1.getZ() - (double)var7 * 0.3;
+      this.moveTo(var11, var13, var15, var6, var5);
+      Vec3 var17 = new Vec3((double)(-var8), (double)Mth.clamp(-(var10 / var9), -5.0F, 5.0F), (double)(-var7));
+      double var18 = var17.length();
+      var17 = var17.multiply(0.6 / var18 + this.random.triangle(0.5, 0.0103365), 0.6 / var18 + this.random.triangle(0.5, 0.0103365), 0.6 / var18 + this.random.triangle(0.5, 0.0103365));
+      this.setDeltaMovement(var17);
+      this.setYRot((float)(Mth.atan2(var17.x, var17.z) * 57.2957763671875));
+      this.setXRot((float)(Mth.atan2(var17.y, var17.horizontalDistance()) * 57.2957763671875));
       this.yRotO = this.getYRot();
       this.xRotO = this.getXRot();
    }

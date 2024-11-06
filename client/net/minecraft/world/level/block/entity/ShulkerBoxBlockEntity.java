@@ -61,7 +61,15 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
       super(BlockEntityType.SHULKER_BOX, var1, var2);
       this.itemStacks = NonNullList.withSize(27, ItemStack.EMPTY);
       this.animationStatus = ShulkerBoxBlockEntity.AnimationStatus.CLOSED;
-      this.color = ShulkerBoxBlock.getColorFromBlock(var2.getBlock());
+      Block var4 = var2.getBlock();
+      DyeColor var10001;
+      if (var4 instanceof ShulkerBoxBlock var3) {
+         var10001 = var3.getColor();
+      } else {
+         var10001 = null;
+      }
+
+      this.color = var10001;
    }
 
    public static void tick(Level var0, BlockPos var1, BlockState var2, ShulkerBoxBlockEntity var3) {

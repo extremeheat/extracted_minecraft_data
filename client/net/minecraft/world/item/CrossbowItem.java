@@ -22,6 +22,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -290,6 +291,28 @@ public class CrossbowItem extends ProjectileWeaponItem {
 
       public Optional<Holder<SoundEvent>> end() {
          return this.end;
+      }
+   }
+
+   public static enum ChargeType implements StringRepresentable {
+      NONE("none"),
+      ARROW("arrow"),
+      ROCKET("rocket");
+
+      public static final Codec<ChargeType> CODEC = StringRepresentable.fromEnum(ChargeType::values);
+      private final String name;
+
+      private ChargeType(final String var3) {
+         this.name = var3;
+      }
+
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      // $FF: synthetic method
+      private static ChargeType[] $values() {
+         return new ChargeType[]{NONE, ARROW, ROCKET};
       }
    }
 }

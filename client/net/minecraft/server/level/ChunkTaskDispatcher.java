@@ -5,12 +5,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
+import javax.annotation.Nullable;
 import net.minecraft.util.Unit;
 import net.minecraft.util.thread.PriorityConsecutiveExecutor;
 import net.minecraft.util.thread.StrictQueue;
 import net.minecraft.util.thread.TaskScheduler;
 import net.minecraft.world.level.ChunkPos;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class ChunkTaskDispatcher implements ChunkHolder.LevelChangeListener, AutoCloseable {
@@ -95,7 +95,7 @@ public class ChunkTaskDispatcher implements ChunkHolder.LevelChangeListener, Aut
    }
 
    @Nullable
-   protected ChunkTaskPriorityQueue.@Nullable TasksForChunk popTasks() {
+   protected ChunkTaskPriorityQueue.TasksForChunk popTasks() {
       return this.queue.pop();
    }
 

@@ -8,6 +8,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -200,6 +202,10 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
 
    public boolean canFireProjectileWeapon(ProjectileWeaponItem var1) {
       return var1 == Items.BOW;
+   }
+
+   public TagKey<Item> getPreferredWeaponType() {
+      return ItemTags.SKELETON_PREFERRED_WEAPON;
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {

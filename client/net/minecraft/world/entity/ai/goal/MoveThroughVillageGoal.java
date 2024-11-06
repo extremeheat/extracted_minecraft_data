@@ -82,29 +82,28 @@ public class MoveThroughVillageGoal extends Goal {
                   } else {
                      this.poiPos = ((BlockPos)var4.get()).immutable();
                      GroundPathNavigation var5 = (GroundPathNavigation)this.mob.getNavigation();
-                     boolean var6 = var5.canOpenDoors();
                      var5.setCanOpenDoors(this.canDealWithDoors.getAsBoolean());
                      this.path = var5.createPath((BlockPos)this.poiPos, 0);
-                     var5.setCanOpenDoors(var6);
+                     var5.setCanOpenDoors(true);
                      if (this.path == null) {
-                        Vec3 var7 = DefaultRandomPos.getPosTowards(this.mob, 10, 7, Vec3.atBottomCenterOf(this.poiPos), 1.5707963705062866);
-                        if (var7 == null) {
+                        Vec3 var6 = DefaultRandomPos.getPosTowards(this.mob, 10, 7, Vec3.atBottomCenterOf(this.poiPos), 1.5707963705062866);
+                        if (var6 == null) {
                            return false;
                         }
 
                         var5.setCanOpenDoors(this.canDealWithDoors.getAsBoolean());
-                        this.path = this.mob.getNavigation().createPath(var7.x, var7.y, var7.z, 0);
-                        var5.setCanOpenDoors(var6);
+                        this.path = this.mob.getNavigation().createPath(var6.x, var6.y, var6.z, 0);
+                        var5.setCanOpenDoors(true);
                         if (this.path == null) {
                            return false;
                         }
                      }
 
-                     for(int var10 = 0; var10 < this.path.getNodeCount(); ++var10) {
-                        Node var8 = this.path.getNode(var10);
-                        BlockPos var9 = new BlockPos(var8.x, var8.y + 1, var8.z);
-                        if (DoorBlock.isWoodenDoor(this.mob.level(), var9)) {
-                           this.path = this.mob.getNavigation().createPath((double)var8.x, (double)var8.y, (double)var8.z, 0);
+                     for(int var9 = 0; var9 < this.path.getNodeCount(); ++var9) {
+                        Node var7 = this.path.getNode(var9);
+                        BlockPos var8 = new BlockPos(var7.x, var7.y + 1, var7.z);
+                        if (DoorBlock.isWoodenDoor(this.mob.level(), var8)) {
+                           this.path = this.mob.getNavigation().createPath((double)var7.x, (double)var7.y, (double)var7.z, 0);
                            break;
                         }
                      }

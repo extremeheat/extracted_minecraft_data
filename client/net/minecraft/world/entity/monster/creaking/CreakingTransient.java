@@ -67,25 +67,30 @@ public class CreakingTransient extends Creaking {
       } else if (var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
          return super.hurtServer(var1, var2, var3);
       } else if (!this.isInvulnerableTo(var1, var2) && this.invulnerabilityAnimationRemainingTicks <= 0) {
-         Entity var4 = var2.getDirectEntity();
-         if (!(var4 instanceof LivingEntity) && !(var4 instanceof Projectile)) {
+         if (this.isDeadOrDying()) {
             return false;
          } else {
-            this.invulnerabilityAnimationRemainingTicks = 8;
-            this.level().broadcastEntityEvent(this, (byte)66);
-            BlockEntity var6 = this.level().getBlockEntity(this.homePos);
-            if (var6 instanceof CreakingHeartBlockEntity) {
-               CreakingHeartBlockEntity var5 = (CreakingHeartBlockEntity)var6;
-               if (var5.isProtector(this)) {
-                  if (var2.getEntity() instanceof Player) {
-                     var5.creakingHurt();
+            Player var4 = this.resolvePlayerResponsibleForDamage(var2);
+            Entity var5 = var2.getDirectEntity();
+            if (!(var5 instanceof LivingEntity) && !(var5 instanceof Projectile) && var4 == null) {
+               return false;
+            } else {
+               this.invulnerabilityAnimationRemainingTicks = 8;
+               this.level().broadcastEntityEvent(this, (byte)66);
+               BlockEntity var7 = this.level().getBlockEntity(this.homePos);
+               if (var7 instanceof CreakingHeartBlockEntity) {
+                  CreakingHeartBlockEntity var6 = (CreakingHeartBlockEntity)var7;
+                  if (var6.isProtector(this)) {
+                     if (var4 != null) {
+                        var6.creakingHurt();
+                     }
+
+                     this.playHurtSound(var2);
                   }
-
-                  this.playHurtSound(var2);
                }
-            }
 
-            return true;
+               return true;
+            }
          }
       } else {
          return false;
@@ -118,7 +123,6 @@ public class CreakingTransient extends Creaking {
                }
             }
 
-            this.homePos = null;
             this.setHealth(0.0F);
          }
       }
@@ -176,11 +180,11 @@ public class CreakingTransient extends Creaking {
    }
 
    public void creakingDeathEffects(@Nullable DamageSource var1) {
-      if (this.deathScore >= 0 && var1 != null) {
+      if (var1 != null) {
          Entity var3 = var1.getEntity();
          if (var3 instanceof LivingEntity) {
             LivingEntity var2 = (LivingEntity)var3;
-            var2.awardKillScore(this, this.deathScore, var1);
+            var2.awardKillScore(this, var1);
          }
       }
 

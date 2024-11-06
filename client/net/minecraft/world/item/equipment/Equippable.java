@@ -10,6 +10,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -23,17 +24,17 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
-public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Optional<ResourceLocation> model, Optional<ResourceLocation> cameraOverlay, Optional<HolderSet<EntityType<?>>> allowedEntities, boolean dispensable, boolean swappable, boolean damageOnHurt) {
+public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Optional<ResourceKey<EquipmentAsset>> assetId, Optional<ResourceLocation> cameraOverlay, Optional<HolderSet<EntityType<?>>> allowedEntities, boolean dispensable, boolean swappable, boolean damageOnHurt) {
    public static final Codec<Equippable> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(EquipmentSlot.CODEC.fieldOf("slot").forGetter(Equippable::slot), SoundEvent.CODEC.optionalFieldOf("equip_sound", SoundEvents.ARMOR_EQUIP_GENERIC).forGetter(Equippable::equipSound), ResourceLocation.CODEC.optionalFieldOf("model").forGetter(Equippable::model), ResourceLocation.CODEC.optionalFieldOf("camera_overlay").forGetter(Equippable::cameraOverlay), RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE).optionalFieldOf("allowed_entities").forGetter(Equippable::allowedEntities), Codec.BOOL.optionalFieldOf("dispensable", true).forGetter(Equippable::dispensable), Codec.BOOL.optionalFieldOf("swappable", true).forGetter(Equippable::swappable), Codec.BOOL.optionalFieldOf("damage_on_hurt", true).forGetter(Equippable::damageOnHurt)).apply(var0, Equippable::new);
+      return var0.group(EquipmentSlot.CODEC.fieldOf("slot").forGetter(Equippable::slot), SoundEvent.CODEC.optionalFieldOf("equip_sound", SoundEvents.ARMOR_EQUIP_GENERIC).forGetter(Equippable::equipSound), ResourceKey.codec(EquipmentAssets.ROOT_ID).optionalFieldOf("asset_id").forGetter(Equippable::assetId), ResourceLocation.CODEC.optionalFieldOf("camera_overlay").forGetter(Equippable::cameraOverlay), RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE).optionalFieldOf("allowed_entities").forGetter(Equippable::allowedEntities), Codec.BOOL.optionalFieldOf("dispensable", true).forGetter(Equippable::dispensable), Codec.BOOL.optionalFieldOf("swappable", true).forGetter(Equippable::swappable), Codec.BOOL.optionalFieldOf("damage_on_hurt", true).forGetter(Equippable::damageOnHurt)).apply(var0, Equippable::new);
    });
    public static final StreamCodec<RegistryFriendlyByteBuf, Equippable> STREAM_CODEC;
 
-   public Equippable(EquipmentSlot var1, Holder<SoundEvent> var2, Optional<ResourceLocation> var3, Optional<ResourceLocation> var4, Optional<HolderSet<EntityType<?>>> var5, boolean var6, boolean var7, boolean var8) {
+   public Equippable(EquipmentSlot var1, Holder<SoundEvent> var2, Optional<ResourceKey<EquipmentAsset>> var3, Optional<ResourceLocation> var4, Optional<HolderSet<EntityType<?>>> var5, boolean var6, boolean var7, boolean var8) {
       super();
       this.slot = var1;
       this.equipSound = var2;
-      this.model = var3;
+      this.assetId = var3;
       this.cameraOverlay = var4;
       this.allowedEntities = var5;
       this.dispensable = var6;
@@ -42,7 +43,7 @@ public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Opti
    }
 
    public static Equippable llamaSwag(DyeColor var0) {
-      return builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.LLAMA_SWAG).setModel((ResourceLocation)EquipmentModels.CARPETS.get(var0)).setAllowedEntities(EntityType.LLAMA, EntityType.TRADER_LLAMA).build();
+      return builder(EquipmentSlot.BODY).setEquipSound(SoundEvents.LLAMA_SWAG).setAsset((ResourceKey)EquipmentAssets.CARPETS.get(var0)).setAllowedEntities(EntityType.LLAMA, EntityType.TRADER_LLAMA).build();
    }
 
    public static Builder builder(EquipmentSlot var0) {
@@ -94,8 +95,8 @@ public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Opti
       return this.equipSound;
    }
 
-   public Optional<ResourceLocation> model() {
-      return this.model;
+   public Optional<ResourceKey<EquipmentAsset>> assetId() {
+      return this.assetId;
    }
 
    public Optional<ResourceLocation> cameraOverlay() {
@@ -119,13 +120,13 @@ public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Opti
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(EquipmentSlot.STREAM_CODEC, Equippable::slot, SoundEvent.STREAM_CODEC, Equippable::equipSound, ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs::optional), Equippable::model, ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs::optional), Equippable::cameraOverlay, ByteBufCodecs.holderSet(Registries.ENTITY_TYPE).apply(ByteBufCodecs::optional), Equippable::allowedEntities, ByteBufCodecs.BOOL, Equippable::dispensable, ByteBufCodecs.BOOL, Equippable::swappable, ByteBufCodecs.BOOL, Equippable::damageOnHurt, Equippable::new);
+      STREAM_CODEC = StreamCodec.composite(EquipmentSlot.STREAM_CODEC, Equippable::slot, SoundEvent.STREAM_CODEC, Equippable::equipSound, ResourceKey.streamCodec(EquipmentAssets.ROOT_ID).apply(ByteBufCodecs::optional), Equippable::assetId, ResourceLocation.STREAM_CODEC.apply(ByteBufCodecs::optional), Equippable::cameraOverlay, ByteBufCodecs.holderSet(Registries.ENTITY_TYPE).apply(ByteBufCodecs::optional), Equippable::allowedEntities, ByteBufCodecs.BOOL, Equippable::dispensable, ByteBufCodecs.BOOL, Equippable::swappable, ByteBufCodecs.BOOL, Equippable::damageOnHurt, Equippable::new);
    }
 
    public static class Builder {
       private final EquipmentSlot slot;
       private Holder<SoundEvent> equipSound;
-      private Optional<ResourceLocation> model;
+      private Optional<ResourceKey<EquipmentAsset>> assetId;
       private Optional<ResourceLocation> cameraOverlay;
       private Optional<HolderSet<EntityType<?>>> allowedEntities;
       private boolean dispensable;
@@ -135,7 +136,7 @@ public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Opti
       Builder(EquipmentSlot var1) {
          super();
          this.equipSound = SoundEvents.ARMOR_EQUIP_GENERIC;
-         this.model = Optional.empty();
+         this.assetId = Optional.empty();
          this.cameraOverlay = Optional.empty();
          this.allowedEntities = Optional.empty();
          this.dispensable = true;
@@ -149,8 +150,8 @@ public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Opti
          return this;
       }
 
-      public Builder setModel(ResourceLocation var1) {
-         this.model = Optional.of(var1);
+      public Builder setAsset(ResourceKey<EquipmentAsset> var1) {
+         this.assetId = Optional.of(var1);
          return this;
       }
 
@@ -184,7 +185,7 @@ public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Opti
       }
 
       public Equippable build() {
-         return new Equippable(this.slot, this.equipSound, this.model, this.cameraOverlay, this.allowedEntities, this.dispensable, this.swappable, this.damageOnHurt);
+         return new Equippable(this.slot, this.equipSound, this.assetId, this.cameraOverlay, this.allowedEntities, this.dispensable, this.swappable, this.damageOnHurt);
       }
    }
 }

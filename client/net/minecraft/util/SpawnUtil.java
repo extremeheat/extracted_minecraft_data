@@ -33,6 +33,7 @@ public class SpawnUtil {
             if (var13 != null) {
                if (var13.checkSpawnRules(var2, var1) && var13.checkSpawnObstruction(var2)) {
                   var2.addFreshEntityWithPassengers(var13);
+                  var13.playAmbientSound();
                   return Optional.of(var13);
                }
 

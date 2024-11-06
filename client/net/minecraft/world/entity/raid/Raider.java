@@ -494,15 +494,15 @@ public abstract class Raider extends PatrollingMonster {
       }
    }
 
-   protected class HoldGroundAttackGoal extends Goal {
+   protected static class HoldGroundAttackGoal extends Goal {
       private final Raider mob;
       private final float hostileRadiusSqr;
       public final TargetingConditions shoutTargeting = TargetingConditions.forNonCombat().range(8.0).ignoreLineOfSight().ignoreInvisibilityTesting();
 
-      public HoldGroundAttackGoal(final Raider var1, final AbstractIllager var2, final float var3) {
+      public HoldGroundAttackGoal(AbstractIllager var1, float var2) {
          super();
-         this.mob = var2;
-         this.hostileRadiusSqr = var3 * var3;
+         this.mob = var1;
+         this.hostileRadiusSqr = var2 * var2;
          this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
       }
 

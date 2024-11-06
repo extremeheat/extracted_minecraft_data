@@ -36,7 +36,7 @@ public class FishingRodItem extends Item {
             ServerLevel var8 = (ServerLevel)var1;
             int var6 = (int)(EnchantmentHelper.getFishingTimeReduction(var8, var4, var2) * 20.0F);
             int var7 = EnchantmentHelper.getFishingLuckBonus(var8, var4, var2);
-            Projectile.spawnProjectile(new FishingHook(var2, var1, var7, var6, var4), var8, var4);
+            Projectile.spawnProjectile(new FishingHook(var2, var1, var7, var6), var8, var4);
          }
 
          var2.awardStat(Stats.ITEM_USED.get(this));

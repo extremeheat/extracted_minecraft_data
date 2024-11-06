@@ -21,6 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
 public class EyeblossomBlock extends FlowerBlock {
@@ -59,7 +60,7 @@ public class EyeblossomBlock extends FlowerBlock {
 
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (this.tryChangingState(var1, var2, var3, var4)) {
-         var2.playSound((Player)null, var3, this.type.longSwitchSound, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var2.playSound((Player)null, var3, this.type.transform().longSwitchSound, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
       super.randomTick(var1, var2, var3, var4);
@@ -67,7 +68,7 @@ public class EyeblossomBlock extends FlowerBlock {
 
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (this.tryChangingState(var1, var2, var3, var4)) {
-         var2.playSound((Player)null, var3, this.type.shortSwitchSound, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var2.playSound((Player)null, var3, this.type.transform().shortSwitchSound, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
       super.tick(var1, var2, var3, var4);
@@ -79,9 +80,10 @@ public class EyeblossomBlock extends FlowerBlock {
       } else if (var2.isDay() != this.type.open) {
          return false;
       } else {
-         BlockState var5 = this.type.oppositeState();
-         var2.setBlock(var3, var5, 3);
-         this.type.spawnTransformParticle(var2, var3, var4);
+         Type var5 = this.type.transform();
+         var2.setBlock(var3, var5.state(), 3);
+         var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var1));
+         var5.spawnTransformParticle(var2, var3, var4);
          BlockPos.betweenClosed(var3.offset(-3, -2, -3), var3.offset(3, 2, 3)).forEach((var4x) -> {
             BlockState var5 = var2.getBlockState(var4x);
             if (var5 == var1) {
@@ -109,8 +111,8 @@ public class EyeblossomBlock extends FlowerBlock {
    }
 
    public static enum Type {
-      OPEN(true, MobEffects.BLINDNESS, 7.0F, SoundEvents.EYEBLOSSOM_OPEN_LONG, SoundEvents.EYEBLOSSOM_OPEN, 6250335),
-      CLOSED(false, MobEffects.CONFUSION, 7.0F, SoundEvents.EYEBLOSSOM_CLOSE_LONG, SoundEvents.EYEBLOSSOM_CLOSE, 16545810);
+      OPEN(true, MobEffects.BLINDNESS, 7.0F, SoundEvents.EYEBLOSSOM_OPEN_LONG, SoundEvents.EYEBLOSSOM_OPEN, 16545810),
+      CLOSED(false, MobEffects.CONFUSION, 7.0F, SoundEvents.EYEBLOSSOM_CLOSE_LONG, SoundEvents.EYEBLOSSOM_CLOSE, 6250335);
 
       final boolean open;
       final Holder<MobEffect> effect;
@@ -130,6 +132,18 @@ public class EyeblossomBlock extends FlowerBlock {
 
       public BlockState oppositeState() {
          return this == OPEN ? Blocks.CLOSED_EYEBLOSSOM.defaultBlockState() : Blocks.OPEN_EYEBLOSSOM.defaultBlockState();
+      }
+
+      public Block block() {
+         return this.open ? Blocks.OPEN_EYEBLOSSOM : Blocks.CLOSED_EYEBLOSSOM;
+      }
+
+      public BlockState state() {
+         return this.block().defaultBlockState();
+      }
+
+      public Type transform() {
+         return fromBoolean(!this.open);
       }
 
       public boolean emitSounds() {

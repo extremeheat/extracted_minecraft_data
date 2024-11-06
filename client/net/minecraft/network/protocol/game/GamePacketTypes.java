@@ -157,6 +157,7 @@ public class GamePacketTypes {
    public static final PacketType<ServerboundPlayerActionPacket> SERVERBOUND_PLAYER_ACTION = createServerbound("player_action");
    public static final PacketType<ServerboundPlayerCommandPacket> SERVERBOUND_PLAYER_COMMAND = createServerbound("player_command");
    public static final PacketType<ServerboundPlayerInputPacket> SERVERBOUND_PLAYER_INPUT = createServerbound("player_input");
+   public static final PacketType<ServerboundPlayerLoadedPacket> SERVERBOUND_PLAYER_LOADED = createServerbound("player_loaded");
    public static final PacketType<ServerboundRecipeBookChangeSettingsPacket> SERVERBOUND_RECIPE_BOOK_CHANGE_SETTINGS = createServerbound("recipe_book_change_settings");
    public static final PacketType<ServerboundRecipeBookSeenRecipePacket> SERVERBOUND_RECIPE_BOOK_SEEN_RECIPE = createServerbound("recipe_book_seen_recipe");
    public static final PacketType<ServerboundRenameItemPacket> SERVERBOUND_RENAME_ITEM = createServerbound("rename_item");

@@ -37,9 +37,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 public class BlockItem extends Item {
-   private static final Component OP_NBT_WARNING_LINE_1;
-   private static final Component OP_NBT_WARNING_LINE_2;
-   private static final Component OP_NBT_WARNING_LINE_3;
+   public static final List<Component> OP_NBT_WARNING;
    /** @deprecated */
    @Deprecated
    private final Block block;
@@ -192,16 +190,18 @@ public class BlockItem extends Item {
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
       this.getBlock().appendHoverText(var1, var2, var3, var4);
-      CustomData var5 = (CustomData)var1.get(DataComponents.BLOCK_ENTITY_DATA);
-      if (var5 != null && var2.permissionLevel() >= 2) {
-         BlockEntityType var6 = getBlockEntityType(var2.registries(), var5);
-         if (var6 != null && var6.onlyOpCanSetNbt()) {
-            var3.add(OP_NBT_WARNING_LINE_1);
-            var3.add(OP_NBT_WARNING_LINE_2);
-            var3.add(OP_NBT_WARNING_LINE_3);
+   }
+
+   public static boolean shouldPrintOpWarning(ItemStack var0, @Nullable Player var1) {
+      if (var1 != null && var1.getPermissionLevel() >= 2) {
+         CustomData var2 = (CustomData)var0.get(DataComponents.BLOCK_ENTITY_DATA);
+         if (var2 != null) {
+            BlockEntityType var3 = getBlockEntityType(var1.level().registryAccess(), var2);
+            return var3 != null && var3.onlyOpCanSetNbt();
          }
       }
 
+      return false;
    }
 
    public Block getBlock() {
@@ -240,8 +240,6 @@ public class BlockItem extends Item {
    }
 
    static {
-      OP_NBT_WARNING_LINE_1 = Component.translatable("item.op_block_warning.line1").withStyle(ChatFormatting.RED, ChatFormatting.BOLD);
-      OP_NBT_WARNING_LINE_2 = Component.translatable("item.op_block_warning.line2").withStyle(ChatFormatting.RED);
-      OP_NBT_WARNING_LINE_3 = Component.translatable("item.op_block_warning.line3").withStyle(ChatFormatting.RED);
+      OP_NBT_WARNING = List.of(Component.translatable("item.op_block_warning.line1").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), Component.translatable("item.op_block_warning.line2").withStyle(ChatFormatting.RED), Component.translatable("item.op_block_warning.line3").withStyle(ChatFormatting.RED));
    }
 }

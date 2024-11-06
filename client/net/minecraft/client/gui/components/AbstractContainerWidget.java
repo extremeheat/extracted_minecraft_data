@@ -7,7 +7,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.network.chat.Component;
 
-public abstract class AbstractContainerWidget extends AbstractWidget implements ContainerEventHandler {
+public abstract class AbstractContainerWidget extends AbstractScrollArea implements ContainerEventHandler {
    @Nullable
    private GuiEventListener focused;
    private boolean isDragging;
@@ -47,14 +47,17 @@ public abstract class AbstractContainerWidget extends AbstractWidget implements 
    }
 
    public boolean mouseClicked(double var1, double var3, int var5) {
-      return ContainerEventHandler.super.mouseClicked(var1, var3, var5);
+      boolean var6 = this.updateScrolling(var1, var3, var5);
+      return ContainerEventHandler.super.mouseClicked(var1, var3, var5) || var6;
    }
 
    public boolean mouseReleased(double var1, double var3, int var5) {
+      super.mouseReleased(var1, var3, var5);
       return ContainerEventHandler.super.mouseReleased(var1, var3, var5);
    }
 
    public boolean mouseDragged(double var1, double var3, int var5, double var6, double var8) {
+      super.mouseDragged(var1, var3, var5, var6, var8);
       return ContainerEventHandler.super.mouseDragged(var1, var3, var5, var6, var8);
    }
 

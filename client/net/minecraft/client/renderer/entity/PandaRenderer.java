@@ -9,6 +9,7 @@ import net.minecraft.client.model.PandaModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.PandaHoldsItemLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.HoldingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PandaRenderState;
 import net.minecraft.resources.ResourceLocation;
@@ -28,7 +29,7 @@ public class PandaRenderer extends AgeableMobRenderer<Panda, PandaRenderState, P
 
    public PandaRenderer(EntityRendererProvider.Context var1) {
       super(var1, new PandaModel(var1.bakeLayer(ModelLayers.PANDA)), new PandaModel(var1.bakeLayer(ModelLayers.PANDA_BABY)), 0.9F);
-      this.addLayer(new PandaHoldsItemLayer(this, var1.getItemRenderer()));
+      this.addLayer(new PandaHoldsItemLayer(this));
    }
 
    public ResourceLocation getTextureLocation(PandaRenderState var1) {
@@ -41,6 +42,7 @@ public class PandaRenderer extends AgeableMobRenderer<Panda, PandaRenderState, P
 
    public void extractRenderState(Panda var1, PandaRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
+      HoldingEntityRenderState.extractHoldingEntityRenderState(var1, var2, this.itemModelResolver);
       var2.variant = var1.getVariant();
       var2.isUnhappy = var1.getUnhappyCounter() > 0;
       var2.isSneezing = var1.isSneezing();

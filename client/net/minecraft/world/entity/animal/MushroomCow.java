@@ -16,7 +16,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
@@ -82,21 +81,21 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.BOWL) && !this.isBaby()) {
-         boolean var12 = false;
-         ItemStack var10;
+         boolean var11 = false;
+         ItemStack var9;
          if (this.stewEffects != null) {
-            var12 = true;
-            var10 = new ItemStack(Items.SUSPICIOUS_STEW);
-            var10.set(DataComponents.SUSPICIOUS_STEW_EFFECTS, this.stewEffects);
+            var11 = true;
+            var9 = new ItemStack(Items.SUSPICIOUS_STEW);
+            var9.set(DataComponents.SUSPICIOUS_STEW_EFFECTS, this.stewEffects);
             this.stewEffects = null;
          } else {
-            var10 = new ItemStack(Items.MUSHROOM_STEW);
+            var9 = new ItemStack(Items.MUSHROOM_STEW);
          }
 
-         ItemStack var6 = ItemUtils.createFilledResult(var3, var1, var10, false);
+         ItemStack var6 = ItemUtils.createFilledResult(var3, var1, var9, false);
          var1.setItemInHand(var2, var6);
          SoundEvent var7;
-         if (var12) {
+         if (var11) {
             var7 = SoundEvents.MOOSHROOM_MILK_SUSPICIOUSLY;
          } else {
             var7 = SoundEvents.MOOSHROOM_MILK;
@@ -105,37 +104,38 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
          this.playSound(var7, 1.0F, 1.0F);
          return InteractionResult.SUCCESS;
       } else if (var3.is(Items.SHEARS) && this.readyForShearing()) {
-         Level var11 = this.level();
-         if (var11 instanceof ServerLevel) {
-            ServerLevel var9 = (ServerLevel)var11;
-            this.shear(var9, SoundSource.PLAYERS, var3);
+         Level var10 = this.level();
+         if (var10 instanceof ServerLevel) {
+            ServerLevel var8 = (ServerLevel)var10;
+            this.shear(var8, SoundSource.PLAYERS, var3);
             this.gameEvent(GameEvent.SHEAR, var1);
             var3.hurtAndBreak(1, var1, getSlotForHand(var2));
          }
 
          return InteractionResult.SUCCESS;
-      } else if (this.getVariant() == MushroomCow.Variant.BROWN && var3.is(ItemTags.SMALL_FLOWERS)) {
-         if (this.stewEffects != null) {
-            for(int var4 = 0; var4 < 2; ++var4) {
-               this.level().addParticle(ParticleTypes.SMOKE, this.getX() + this.random.nextDouble() / 2.0, this.getY(0.5), this.getZ() + this.random.nextDouble() / 2.0, 0.0, this.random.nextDouble() / 5.0, 0.0);
-            }
+      } else if (this.getVariant() == MushroomCow.Variant.BROWN) {
+         Optional var4 = this.getEffectsFromItemStack(var3);
+         if (var4.isEmpty()) {
+            return super.mobInteract(var1, var2);
          } else {
-            Optional var8 = this.getEffectsFromItemStack(var3);
-            if (var8.isEmpty()) {
-               return InteractionResult.PASS;
+            int var5;
+            if (this.stewEffects != null) {
+               for(var5 = 0; var5 < 2; ++var5) {
+                  this.level().addParticle(ParticleTypes.SMOKE, this.getX() + this.random.nextDouble() / 2.0, this.getY(0.5), this.getZ() + this.random.nextDouble() / 2.0, 0.0, this.random.nextDouble() / 5.0, 0.0);
+               }
+            } else {
+               var3.consume(1, var1);
+
+               for(var5 = 0; var5 < 4; ++var5) {
+                  this.level().addParticle(ParticleTypes.EFFECT, this.getX() + this.random.nextDouble() / 2.0, this.getY(0.5), this.getZ() + this.random.nextDouble() / 2.0, 0.0, this.random.nextDouble() / 5.0, 0.0);
+               }
+
+               this.stewEffects = (SuspiciousStewEffects)var4.get();
+               this.playSound(SoundEvents.MOOSHROOM_EAT, 2.0F, 1.0F);
             }
 
-            var3.consume(1, var1);
-
-            for(int var5 = 0; var5 < 4; ++var5) {
-               this.level().addParticle(ParticleTypes.EFFECT, this.getX() + this.random.nextDouble() / 2.0, this.getY(0.5), this.getZ() + this.random.nextDouble() / 2.0, 0.0, this.random.nextDouble() / 5.0, 0.0);
-            }
-
-            this.stewEffects = (SuspiciousStewEffects)var8.get();
-            this.playSound(SoundEvents.MOOSHROOM_EAT, 2.0F, 1.0F);
+            return InteractionResult.SUCCESS;
          }
-
-         return InteractionResult.SUCCESS;
       } else {
          return super.mobInteract(var1, var2);
       }

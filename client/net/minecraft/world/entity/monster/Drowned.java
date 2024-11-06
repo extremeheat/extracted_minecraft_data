@@ -9,6 +9,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
@@ -42,6 +44,7 @@ import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ThrownTrident;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -159,17 +162,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
    }
 
    protected boolean canReplaceCurrentItem(ItemStack var1, ItemStack var2, EquipmentSlot var3) {
-      if (var2.is(Items.NAUTILUS_SHELL)) {
-         return false;
-      } else if (var2.is(Items.TRIDENT)) {
-         if (var1.is(Items.TRIDENT)) {
-            return var1.getDamageValue() < var2.getDamageValue();
-         } else {
-            return false;
-         }
-      } else {
-         return var1.is(Items.TRIDENT) ? true : super.canReplaceCurrentItem(var1, var2, var3);
-      }
+      return var2.is(Items.NAUTILUS_SHELL) ? false : super.canReplaceCurrentItem(var1, var2, var3);
    }
 
    protected boolean convertsInWater() {
@@ -258,6 +251,10 @@ public class Drowned extends Zombie implements RangedAttackMob {
       }
 
       this.playSound(SoundEvents.DROWNED_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
+   }
+
+   public TagKey<Item> getPreferredWeaponType() {
+      return ItemTags.DROWNED_PREFERRED_WEAPON;
    }
 
    public void setSearchingForLand(boolean var1) {

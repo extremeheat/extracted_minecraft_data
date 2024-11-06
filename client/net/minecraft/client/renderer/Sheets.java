@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
@@ -56,7 +55,7 @@ public class Sheets {
    public static final Map<ResourceKey<DecoratedPotPattern>, Material> DECORATED_POT_MATERIALS;
    public static final Material DECORATED_POT_BASE;
    public static final Material DECORATED_POT_SIDE;
-   public static final Material[] BED_TEXTURES;
+   private static final Material[] BED_TEXTURES;
    public static final Material CHEST_TRAP_LOCATION;
    public static final Material CHEST_TRAP_LOCATION_LEFT;
    public static final Material CHEST_TRAP_LOCATION_RIGHT;
@@ -116,6 +115,38 @@ public class Sheets {
       return TRANSLUCENT_ITEM_CULL_BLOCK_SHEET;
    }
 
+   public static Material getBedMaterial(DyeColor var0) {
+      return BED_TEXTURES[var0.getId()];
+   }
+
+   public static ResourceLocation colorToResourceMaterial(DyeColor var0) {
+      return ResourceLocation.withDefaultNamespace(var0.getName());
+   }
+
+   public static Material createBedMaterial(DyeColor var0) {
+      return createBedMaterial(colorToResourceMaterial(var0));
+   }
+
+   public static Material createBedMaterial(ResourceLocation var0) {
+      return new Material(BED_SHEET, var0.withPrefix("entity/bed/"));
+   }
+
+   public static Material getShulkerBoxMaterial(DyeColor var0) {
+      return (Material)SHULKER_TEXTURE_LOCATION.get(var0.getId());
+   }
+
+   public static ResourceLocation colorToShulkerMaterial(DyeColor var0) {
+      return ResourceLocation.withDefaultNamespace("shulker_" + var0.getName());
+   }
+
+   public static Material createShulkerMaterial(DyeColor var0) {
+      return createShulkerMaterial(colorToShulkerMaterial(var0));
+   }
+
+   public static Material createShulkerMaterial(ResourceLocation var0) {
+      return new Material(SHULKER_SHEET, var0.withPrefix("entity/shulker/"));
+   }
+
    private static Material createSignMaterial(WoodType var0) {
       return new Material(SIGN_SHEET, ResourceLocation.withDefaultNamespace("entity/signs/" + var0.name()));
    }
@@ -148,6 +179,10 @@ public class Sheets {
 
    private static Material chestMaterial(String var0) {
       return new Material(CHEST_SHEET, ResourceLocation.withDefaultNamespace("entity/chest/" + var0));
+   }
+
+   public static Material chestMaterial(ResourceLocation var0) {
+      return new Material(CHEST_SHEET, var0.withPrefix("entity/chest/"));
    }
 
    private static Material createDecoratedPotMaterial(ResourceLocation var0) {
@@ -193,10 +228,8 @@ public class Sheets {
       SOLID_BLOCK_SHEET = RenderType.entitySolid(TextureAtlas.LOCATION_BLOCKS);
       CUTOUT_BLOCK_SHEET = RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS);
       TRANSLUCENT_ITEM_CULL_BLOCK_SHEET = RenderType.itemEntityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
-      DEFAULT_SHULKER_TEXTURE_LOCATION = new Material(SHULKER_SHEET, ResourceLocation.withDefaultNamespace("entity/shulker/shulker"));
-      SHULKER_TEXTURE_LOCATION = (List)Stream.of("white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black").map((var0) -> {
-         return new Material(SHULKER_SHEET, ResourceLocation.withDefaultNamespace("entity/shulker/shulker_" + var0));
-      }).collect(ImmutableList.toImmutableList());
+      DEFAULT_SHULKER_TEXTURE_LOCATION = createShulkerMaterial(ResourceLocation.withDefaultNamespace("shulker"));
+      SHULKER_TEXTURE_LOCATION = (List)Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createShulkerMaterial).collect(ImmutableList.toImmutableList());
       SIGN_MATERIALS = (Map)WoodType.values().collect(Collectors.toMap(Function.identity(), Sheets::createSignMaterial));
       HANGING_SIGN_MATERIALS = (Map)WoodType.values().collect(Collectors.toMap(Function.identity(), Sheets::createHangingSignMaterial));
       BANNER_BASE = new Material(BANNER_SHEET, ResourceLocation.withDefaultNamespace("entity/banner/base"));
@@ -208,9 +241,7 @@ public class Sheets {
       }));
       DECORATED_POT_BASE = createDecoratedPotMaterial(ResourceLocation.withDefaultNamespace("decorated_pot_base"));
       DECORATED_POT_SIDE = createDecoratedPotMaterial(ResourceLocation.withDefaultNamespace("decorated_pot_side"));
-      BED_TEXTURES = (Material[])Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map((var0) -> {
-         return new Material(BED_SHEET, ResourceLocation.withDefaultNamespace("entity/bed/" + var0.getName()));
-      }).toArray((var0) -> {
+      BED_TEXTURES = (Material[])Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createBedMaterial).toArray((var0) -> {
          return new Material[var0];
       });
       CHEST_TRAP_LOCATION = chestMaterial("trapped");

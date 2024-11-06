@@ -35,6 +35,7 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
+import net.minecraft.client.ClientBootstrap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.User;
@@ -126,6 +127,7 @@ public class Main {
          var35 = LogUtils.getLogger();
          var37 = "Bootstrap";
          Bootstrap.bootStrap();
+         ClientBootstrap.bootstrap();
          GameLoadTimesEvent.INSTANCE.setBootstrapTime(Bootstrap.bootstrapDuration.get());
          Bootstrap.validate();
          var37 = "Argument parsing";

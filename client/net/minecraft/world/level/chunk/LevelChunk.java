@@ -707,7 +707,7 @@ public class LevelChunk extends ChunkAccess {
                var4.rebind(var5);
                return var4;
             } else if (this.isInLevel()) {
-               RebindableTickingBlockEntityWrapper var6 = new RebindableTickingBlockEntityWrapper(this, var5);
+               RebindableTickingBlockEntityWrapper var6 = new RebindableTickingBlockEntityWrapper(var5);
                this.level.addBlockEntityTicker(var6);
                return var6;
             } else {
@@ -746,12 +746,12 @@ public class LevelChunk extends ChunkAccess {
       }
    }
 
-   class RebindableTickingBlockEntityWrapper implements TickingBlockEntity {
+   static class RebindableTickingBlockEntityWrapper implements TickingBlockEntity {
       private TickingBlockEntity ticker;
 
-      RebindableTickingBlockEntityWrapper(final LevelChunk var1, final TickingBlockEntity var2) {
+      RebindableTickingBlockEntityWrapper(TickingBlockEntity var1) {
          super();
-         this.ticker = var2;
+         this.ticker = var1;
       }
 
       void rebind(TickingBlockEntity var1) {

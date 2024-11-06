@@ -434,6 +434,10 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       Entity var7 = this.create(var1, var2, var3, var4, var5, var6);
       if (var7 != null) {
          var1.addFreshEntityWithPassengers(var7);
+         if (var7 instanceof Mob) {
+            Mob var8 = (Mob)var7;
+            var8.playAmbientSound();
+         }
       }
 
       return var7;
@@ -459,7 +463,6 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
             var10.yHeadRot = var10.getYRot();
             var10.yBodyRot = var10.getYRot();
             var10.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var10.blockPosition()), var4, (SpawnGroupData)null);
-            var10.playAmbientSound();
          }
 
          if (var2 != null) {

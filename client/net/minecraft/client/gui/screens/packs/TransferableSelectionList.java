@@ -32,12 +32,11 @@ public class TransferableSelectionList extends ObjectSelectionList<PackEntry> {
    final PackSelectionScreen screen;
 
    public TransferableSelectionList(Minecraft var1, PackSelectionScreen var2, int var3, int var4, Component var5) {
-      super(var1, var3, var4, 33, 36);
+      Objects.requireNonNull(var1.font);
+      super(var1, var3, var4, 33, 36, (int)(9.0F * 1.5F));
       this.screen = var2;
       this.title = var5;
       this.centerListVertically = false;
-      Objects.requireNonNull(var1.font);
-      this.setRenderHeader(true, (int)(9.0F * 1.5F));
    }
 
    protected void renderHeader(GuiGraphics var1, int var2, int var3) {
@@ -49,7 +48,7 @@ public class TransferableSelectionList extends ObjectSelectionList<PackEntry> {
       return this.width;
    }
 
-   protected int getScrollbarPosition() {
+   protected int scrollBarX() {
       return this.getRight() - 6;
    }
 

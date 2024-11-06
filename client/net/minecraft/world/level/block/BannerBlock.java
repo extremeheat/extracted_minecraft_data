@@ -71,6 +71,10 @@ public class BannerBlock extends AbstractBannerBlock {
       return (Block)BY_COLOR.getOrDefault(var0, Blocks.WHITE_BANNER);
    }
 
+   protected RenderShape getRenderShape(BlockState var1) {
+      return RenderShape.ENTITYBLOCK_ANIMATED;
+   }
+
    static {
       ROTATION = BlockStateProperties.ROTATION_16;
       BY_COLOR = Maps.newHashMap();

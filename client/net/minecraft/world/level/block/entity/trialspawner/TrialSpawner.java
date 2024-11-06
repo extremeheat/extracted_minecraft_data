@@ -56,8 +56,8 @@ public final class TrialSpawner {
    private static final int MAX_MOB_TRACKING_DISTANCE = 47;
    private static final int MAX_MOB_TRACKING_DISTANCE_SQR = Mth.square(47);
    private static final float SPAWNING_AMBIENT_SOUND_CHANCE = 0.02F;
-   private final Holder<TrialSpawnerConfig> normalConfig;
-   private final Holder<TrialSpawnerConfig> ominousConfig;
+   private Holder<TrialSpawnerConfig> normalConfig;
+   private Holder<TrialSpawnerConfig> ominousConfig;
    private final TrialSpawnerData data;
    private final int requiredPlayerRange;
    private final int targetCooldownLength;
@@ -347,6 +347,13 @@ public final class TrialSpawner {
          var0.addParticle(ParticleTypes.SMOKE, var4, var6, var8, var10, var12, var14);
       }
 
+   }
+
+   public void overrideEntityToSpawn(EntityType<?> var1, Level var2) {
+      this.data.reset();
+      this.normalConfig = Holder.direct(((TrialSpawnerConfig)this.normalConfig.value()).withSpawning(var1));
+      this.ominousConfig = Holder.direct(((TrialSpawnerConfig)this.ominousConfig.value()).withSpawning(var1));
+      this.setState(var2, TrialSpawnerState.INACTIVE);
    }
 
    /** @deprecated */

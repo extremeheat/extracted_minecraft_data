@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -147,9 +148,15 @@ public class CreakingHeartBlock extends BaseEntityBlock {
       BlockEntity var8 = var2.getBlockEntity(var3);
       if (var8 instanceof CreakingHeartBlockEntity var6) {
          if (var4 instanceof ServerExplosion var7) {
-            var6.removeProtector(var7.getDamageSource());
-            if (var4.getIndirectSourceEntity() instanceof Player && var4.getBlockInteraction().shouldAffectBlocklikeEntities()) {
-               this.tryAwardExperience(var1, var2, var3);
+            if (var4.getBlockInteraction().shouldAffectBlocklikeEntities()) {
+               var6.removeProtector(var7.getDamageSource());
+               LivingEntity var9 = var4.getIndirectSourceEntity();
+               if (var9 instanceof Player) {
+                  Player var10 = (Player)var9;
+                  if (var4.getBlockInteraction().shouldAffectBlocklikeEntities()) {
+                     this.tryAwardExperience(var10, var1, var2, var3);
+                  }
+               }
             }
          }
       }
@@ -161,15 +168,15 @@ public class CreakingHeartBlock extends BaseEntityBlock {
       BlockEntity var6 = var1.getBlockEntity(var2);
       if (var6 instanceof CreakingHeartBlockEntity var5) {
          var5.removeProtector(var4.damageSources().playerAttack(var4));
-         this.tryAwardExperience(var3, var1, var2);
+         this.tryAwardExperience(var4, var3, var1, var2);
       }
 
       return super.playerWillDestroy(var1, var2, var3, var4);
    }
 
-   private void tryAwardExperience(BlockState var1, Level var2, BlockPos var3) {
-      if ((Boolean)var1.getValue(NATURAL) && var2 instanceof ServerLevel var4) {
-         this.popExperience(var4, var3, var2.random.nextIntBetweenInclusive(20, 24));
+   private void tryAwardExperience(Player var1, BlockState var2, Level var3, BlockPos var4) {
+      if (!var1.isCreative() && !var1.isSpectator() && (Boolean)var2.getValue(NATURAL) && var3 instanceof ServerLevel var5) {
+         this.popExperience(var5, var4, var3.random.nextIntBetweenInclusive(20, 24));
       }
 
    }

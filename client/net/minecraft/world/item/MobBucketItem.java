@@ -12,9 +12,9 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Bucketable;
 import net.minecraft.world.entity.animal.TropicalFish;
 import net.minecraft.world.entity.player.Player;
@@ -26,10 +26,10 @@ import net.minecraft.world.level.material.Fluid;
 
 public class MobBucketItem extends BucketItem {
    private static final MapCodec<TropicalFish.Variant> VARIANT_FIELD_CODEC;
-   private final EntityType<?> type;
+   private final EntityType<? extends Mob> type;
    private final SoundEvent emptySound;
 
-   public MobBucketItem(EntityType<?> var1, Fluid var2, SoundEvent var3, Item.Properties var4) {
+   public MobBucketItem(EntityType<? extends Mob> var1, Fluid var2, SoundEvent var3, Item.Properties var4) {
       super(var2, var4);
       this.type = var1;
       this.emptySound = var3;
@@ -48,7 +48,7 @@ public class MobBucketItem extends BucketItem {
    }
 
    private void spawn(ServerLevel var1, ItemStack var2, BlockPos var3) {
-      Entity var4 = this.type.create(var1, EntityType.createDefaultStackConfig(var1, var2, (Player)null), var3, EntitySpawnReason.BUCKET, true, false);
+      Mob var4 = (Mob)this.type.create(var1, EntityType.createDefaultStackConfig(var1, var2, (Player)null), var3, EntitySpawnReason.BUCKET, true, false);
       if (var4 instanceof Bucketable var5) {
          CustomData var6 = (CustomData)var2.getOrDefault(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY);
          var5.loadFromBucketTag(var6.copyTag());
@@ -57,6 +57,7 @@ public class MobBucketItem extends BucketItem {
 
       if (var4 != null) {
          var1.addFreshEntityWithPassengers(var4);
+         var4.playAmbientSound();
       }
 
    }

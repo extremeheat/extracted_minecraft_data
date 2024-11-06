@@ -52,8 +52,8 @@ public final class BlockTags {
    public static final TagKey<Block> SMALL_FLOWERS = create("small_flowers");
    public static final TagKey<Block> BEDS = create("beds");
    public static final TagKey<Block> FENCES = create("fences");
-   public static final TagKey<Block> TALL_FLOWERS = create("tall_flowers");
    public static final TagKey<Block> FLOWERS = create("flowers");
+   public static final TagKey<Block> BEE_ATTRACTIVE = create("bee_attractive");
    public static final TagKey<Block> PIGLIN_REPELLENTS = create("piglin_repellents");
    public static final TagKey<Block> GOLD_ORES = create("gold_ores");
    public static final TagKey<Block> IRON_ORES = create("iron_ores");

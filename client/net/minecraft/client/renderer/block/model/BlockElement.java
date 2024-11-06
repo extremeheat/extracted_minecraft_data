@@ -25,6 +25,7 @@ public class BlockElement {
    public final Vector3f from;
    public final Vector3f to;
    public final Map<Direction, BlockElementFace> faces;
+   @Nullable
    public final BlockElementRotation rotation;
    public final boolean shade;
    public final int lightEmission;
@@ -56,21 +57,18 @@ public class BlockElement {
    }
 
    private float[] uvsByFace(Direction var1) {
+      float[] var10000;
       switch (var1) {
-         case DOWN:
-            return new float[]{this.from.x(), 16.0F - this.to.z(), this.to.x(), 16.0F - this.from.z()};
-         case UP:
-            return new float[]{this.from.x(), this.from.z(), this.to.x(), this.to.z()};
-         case NORTH:
-         default:
-            return new float[]{16.0F - this.to.x(), 16.0F - this.to.y(), 16.0F - this.from.x(), 16.0F - this.from.y()};
-         case SOUTH:
-            return new float[]{this.from.x(), 16.0F - this.to.y(), this.to.x(), 16.0F - this.from.y()};
-         case WEST:
-            return new float[]{this.from.z(), 16.0F - this.to.y(), this.to.z(), 16.0F - this.from.y()};
-         case EAST:
-            return new float[]{16.0F - this.to.z(), 16.0F - this.to.y(), 16.0F - this.from.z(), 16.0F - this.from.y()};
+         case DOWN -> var10000 = new float[]{this.from.x(), 16.0F - this.to.z(), this.to.x(), 16.0F - this.from.z()};
+         case UP -> var10000 = new float[]{this.from.x(), this.from.z(), this.to.x(), this.to.z()};
+         case NORTH -> var10000 = new float[]{16.0F - this.to.x(), 16.0F - this.to.y(), 16.0F - this.from.x(), 16.0F - this.from.y()};
+         case SOUTH -> var10000 = new float[]{this.from.x(), 16.0F - this.to.y(), this.to.x(), 16.0F - this.from.y()};
+         case WEST -> var10000 = new float[]{this.from.z(), 16.0F - this.to.y(), this.to.z(), 16.0F - this.from.y()};
+         case EAST -> var10000 = new float[]{16.0F - this.to.z(), 16.0F - this.to.y(), 16.0F - this.from.z(), 16.0F - this.from.y()};
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
+
+      return var10000;
    }
 
    protected static class Deserializer implements JsonDeserializer<BlockElement> {

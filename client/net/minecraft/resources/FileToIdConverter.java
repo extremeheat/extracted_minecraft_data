@@ -2,6 +2,8 @@ package net.minecraft.resources;
 
 import java.util.List;
 import java.util.Map;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -17,6 +19,10 @@ public class FileToIdConverter {
 
    public static FileToIdConverter json(String var0) {
       return new FileToIdConverter(var0, ".json");
+   }
+
+   public static FileToIdConverter registry(ResourceKey<? extends Registry<?>> var0) {
+      return json(Registries.elementsDirPath(var0));
    }
 
    public ResourceLocation idToFile(ResourceLocation var1) {

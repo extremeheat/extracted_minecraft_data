@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Map;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -25,11 +26,12 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.PlayerSkin;
-import net.minecraft.client.resources.model.EquipmentModelSet;
+import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
@@ -67,14 +69,14 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    public Camera camera;
    private Quaternionf cameraOrientation;
    public Entity crosshairPickEntity;
-   private final ItemRenderer itemRenderer;
+   private final ItemModelResolver itemModelResolver;
    private final MapRenderer mapRenderer;
    private final BlockRenderDispatcher blockRenderDispatcher;
    private final ItemInHandRenderer itemInHandRenderer;
    private final Font font;
    public final Options options;
-   private final EntityModelSet entityModels;
-   private final EquipmentModelSet equipmentModels;
+   private final Supplier<EntityModelSet> entityModels;
+   private final EquipmentAssetManager equipmentAssets;
    private boolean shouldRenderShadow = true;
    private boolean renderHitBoxes;
 
@@ -82,17 +84,17 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       return this.getRenderer(var1).getPackedLightCoords(var1, var2);
    }
 
-   public EntityRenderDispatcher(Minecraft var1, TextureManager var2, ItemRenderer var3, MapRenderer var4, BlockRenderDispatcher var5, Font var6, Options var7, EntityModelSet var8, EquipmentModelSet var9) {
+   public EntityRenderDispatcher(Minecraft var1, TextureManager var2, ItemModelResolver var3, ItemRenderer var4, MapRenderer var5, BlockRenderDispatcher var6, Font var7, Options var8, Supplier<EntityModelSet> var9, EquipmentAssetManager var10) {
       super();
       this.textureManager = var2;
-      this.itemRenderer = var3;
-      this.mapRenderer = var4;
-      this.itemInHandRenderer = new ItemInHandRenderer(var1, this, var3);
-      this.blockRenderDispatcher = var5;
-      this.font = var6;
-      this.options = var7;
-      this.entityModels = var8;
-      this.equipmentModels = var9;
+      this.itemModelResolver = var3;
+      this.mapRenderer = var5;
+      this.itemInHandRenderer = new ItemInHandRenderer(var1, this, var4);
+      this.blockRenderDispatcher = var6;
+      this.font = var7;
+      this.options = var8;
+      this.entityModels = var9;
+      this.equipmentAssets = var10;
    }
 
    public <T extends Entity> EntityRenderer<? super T, ?> getRenderer(T var1) {
@@ -395,7 +397,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    }
 
    public void onResourceManagerReload(ResourceManager var1) {
-      EntityRendererProvider.Context var2 = new EntityRendererProvider.Context(this, this.itemRenderer, this.mapRenderer, this.blockRenderDispatcher, var1, this.entityModels, this.equipmentModels, this.font);
+      EntityRendererProvider.Context var2 = new EntityRendererProvider.Context(this, this.itemModelResolver, this.mapRenderer, this.blockRenderDispatcher, var1, (EntityModelSet)this.entityModels.get(), this.equipmentAssets, this.font);
       this.renderers = EntityRenderers.createEntityRenderers(var2);
       this.playerRenderers = EntityRenderers.createPlayerRenderers(var2);
    }

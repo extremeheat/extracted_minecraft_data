@@ -431,7 +431,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    }
 
    protected AABB makeBoundingBox() {
-      return this.dimensions.makeBoundingBox(this.position);
+      return this.makeBoundingBox(this.position);
+   }
+
+   private AABB makeBoundingBox(Vec3 var1) {
+      return this.dimensions.makeBoundingBox(var1);
    }
 
    protected void reapplyPosition() {
@@ -617,6 +621,10 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.checkSupportingBlock(var1, (Vec3)null);
    }
 
+   public void setOnGroundWithMovement(boolean var1, Vec3 var2) {
+      this.setOnGroundWithMovement(var1, this.horizontalCollision, var2);
+   }
+
    public void setOnGroundWithMovement(boolean var1, boolean var2, Vec3 var3) {
       this.onGround = var1;
       this.horizontalCollision = var2;
@@ -695,15 +703,18 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          boolean var12 = !Mth.equal(var2.x, var4.x);
          boolean var8 = !Mth.equal(var2.z, var4.z);
          this.horizontalCollision = var12 || var8;
-         this.verticalCollision = var2.y != var4.y;
-         this.verticalCollisionBelow = this.verticalCollision && var2.y < 0.0;
+         if (Math.abs(var2.y) > 0.0 || this.isControlledByOrIsLocalPlayer()) {
+            this.verticalCollision = var2.y != var4.y;
+            this.verticalCollisionBelow = this.verticalCollision && var2.y < 0.0;
+            this.setOnGroundWithMovement(this.verticalCollisionBelow, this.horizontalCollision, var4);
+         }
+
          if (this.horizontalCollision) {
             this.minorHorizontalCollision = this.isHorizontalCollisionMinor(var4);
          } else {
             this.minorHorizontalCollision = false;
          }
 
-         this.setOnGroundWithMovement(this.verticalCollisionBelow, this.horizontalCollision, var4);
          BlockPos var9 = this.getOnPosLegacy();
          BlockState var10 = this.level().getBlockState(var9);
          if (!this.level().isClientSide() || this.isControlledByLocalInstance()) {
@@ -1091,16 +1102,16 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
    private void checkInsideBlocks(List<Movement> var1, Set<BlockState> var2) {
       if (this.isAffectedByBlocks()) {
-         AABB var3 = this.getBoundingBox().deflate(9.999999747378752E-6);
-         LongSet var4 = this.visitedBlocks;
-         Iterator var5 = var1.iterator();
+         LongSet var3 = this.visitedBlocks;
+         Iterator var4 = var1.iterator();
 
          label58:
-         while(var5.hasNext()) {
-            Movement var6 = (Movement)var5.next();
-            Vec3 var7 = var6.from();
-            Vec3 var8 = var6.to();
-            Iterator var9 = BlockGetter.boxTraverseBlocks(var7, var8, var3).iterator();
+         while(var4.hasNext()) {
+            Movement var5 = (Movement)var4.next();
+            Vec3 var6 = var5.from();
+            Vec3 var7 = var5.to();
+            AABB var8 = this.makeBoundingBox(var7).deflate(9.999999747378752E-6);
+            Iterator var9 = BlockGetter.boxTraverseBlocks(var6, var7, var8).iterator();
 
             while(true) {
                BlockPos var10;
@@ -1122,11 +1133,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
                         var11 = this.level().getBlockState(var10);
                      } while(var11.isAir());
-                  } while(!var4.add(var10.asLong()));
+                  } while(!var3.add(var10.asLong()));
 
                   try {
                      VoxelShape var12 = var11.getEntityInsideCollisionShape(this.level(), var10);
-                     if (var12 == Shapes.block() || this.collidedWithShapeMovingFrom(var7, var8, var10, var12)) {
+                     if (var12 == Shapes.block() || this.collidedWithShapeMovingFrom(var6, var7, var10, var12)) {
                         break;
                      }
                   } catch (Throwable var17) {
@@ -1155,14 +1166,14 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             }
          }
 
-         var4.clear();
+         var3.clear();
       }
    }
 
    private boolean collidedWithShapeMovingFrom(Vec3 var1, Vec3 var2, BlockPos var3, VoxelShape var4) {
-      AABB var5 = this.getBoundingBox().move(this.getBoundingBox().getCenter().scale(-1.0)).move(var2);
-      Vec3 var6 = var1.subtract(var5.getBottomCenter());
-      return this.getBoundingBox().collidedAlongVector(var6, var4.move(new Vec3(var3)).toAabbs());
+      AABB var5 = this.makeBoundingBox(var1);
+      Vec3 var6 = var2.subtract(var1);
+      return var5.collidedAlongVector(var6, var4.move(new Vec3(var3)).toAabbs());
    }
 
    protected void onInsideBlock(BlockState var1) {
@@ -1790,9 +1801,9 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return false;
    }
 
-   public void awardKillScore(Entity var1, int var2, DamageSource var3) {
+   public void awardKillScore(Entity var1, DamageSource var2) {
       if (var1 instanceof ServerPlayer) {
-         CriteriaTriggers.ENTITY_KILLED_PLAYER.trigger((ServerPlayer)var1, this, var3);
+         CriteriaTriggers.ENTITY_KILLED_PLAYER.trigger((ServerPlayer)var1, this, var2);
       }
 
    }

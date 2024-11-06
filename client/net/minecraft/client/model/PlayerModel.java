@@ -10,7 +10,6 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.util.RandomSource;
@@ -108,9 +107,5 @@ public class PlayerModel extends HumanoidModel<PlayerRenderState> {
 
    public ModelPart getRandomBodyPart(RandomSource var1) {
       return (ModelPart)Util.getRandom(this.bodyParts, var1);
-   }
-
-   protected HumanoidModel.ArmPose getArmPose(PlayerRenderState var1, HumanoidArm var2) {
-      return PlayerRenderer.getArmPose(var1, var2);
    }
 }

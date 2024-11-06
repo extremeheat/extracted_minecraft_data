@@ -1513,34 +1513,34 @@ public class Blocks {
          return new FlowerBlock(MobEffects.SATURATION, 0.35F, var0x);
       }, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
       ALLIUM = register("allium", (var0x) -> {
-         return new FlowerBlock(MobEffects.FIRE_RESISTANCE, 4.0F, var0x);
+         return new FlowerBlock(MobEffects.FIRE_RESISTANCE, 3.0F, var0x);
       }, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
       AZURE_BLUET = register("azure_bluet", (var0x) -> {
-         return new FlowerBlock(MobEffects.BLINDNESS, 8.0F, var0x);
+         return new FlowerBlock(MobEffects.BLINDNESS, 11.0F, var0x);
       }, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
       RED_TULIP = register("red_tulip", (var0x) -> {
-         return new FlowerBlock(MobEffects.WEAKNESS, 9.0F, var0x);
+         return new FlowerBlock(MobEffects.WEAKNESS, 7.0F, var0x);
       }, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
       ORANGE_TULIP = register("orange_tulip", (var0x) -> {
-         return new FlowerBlock(MobEffects.WEAKNESS, 9.0F, var0x);
+         return new FlowerBlock(MobEffects.WEAKNESS, 7.0F, var0x);
       }, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
       WHITE_TULIP = register("white_tulip", (var0x) -> {
-         return new FlowerBlock(MobEffects.WEAKNESS, 9.0F, var0x);
+         return new FlowerBlock(MobEffects.WEAKNESS, 7.0F, var0x);
       }, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
       PINK_TULIP = register("pink_tulip", (var0x) -> {
-         return new FlowerBlock(MobEffects.WEAKNESS, 9.0F, var0x);
+         return new FlowerBlock(MobEffects.WEAKNESS, 7.0F, var0x);
       }, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
       OXEYE_DAISY = register("oxeye_daisy", (var0x) -> {
-         return new FlowerBlock(MobEffects.REGENERATION, 8.0F, var0x);
+         return new FlowerBlock(MobEffects.REGENERATION, 7.0F, var0x);
       }, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
       CORNFLOWER = register("cornflower", (var0x) -> {
-         return new FlowerBlock(MobEffects.JUMP, 6.0F, var0x);
+         return new FlowerBlock(MobEffects.JUMP, 5.0F, var0x);
       }, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
       WITHER_ROSE = register("wither_rose", (var0x) -> {
-         return new WitherRoseBlock(MobEffects.WITHER, 8.0F, var0x);
+         return new WitherRoseBlock(MobEffects.WITHER, 7.0F, var0x);
       }, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
       LILY_OF_THE_VALLEY = register("lily_of_the_valley", (var0x) -> {
-         return new FlowerBlock(MobEffects.POISON, 12.0F, var0x);
+         return new FlowerBlock(MobEffects.POISON, 11.0F, var0x);
       }, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
       BROWN_MUSHROOM = register("brown_mushroom", (var0x) -> {
          return new MushroomBlock(TreeFeatures.HUGE_BROWN_MUSHROOM, var0x);
@@ -1909,7 +1909,7 @@ public class Blocks {
       }, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().randomTicks().instabreak().sound(SoundType.HARD_CROP).pushReaction(PushReaction.DESTROY));
       VINE = register("vine", VineBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollission().randomTicks().strength(0.2F).sound(SoundType.VINE).ignitedByLava().pushReaction(PushReaction.DESTROY));
       GLOW_LICHEN = register("glow_lichen", GlowLichenBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.GLOW_LICHEN).replaceable().noCollission().strength(0.2F).sound(SoundType.GLOW_LICHEN).lightLevel(GlowLichenBlock.emission(7)).ignitedByLava().pushReaction(PushReaction.DESTROY));
-      RESIN_CLUMP = register("resin_clump", MultifaceBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_ORANGE).noCollission().sound(SoundType.RESIN).ignitedByLava().pushReaction(PushReaction.DESTROY));
+      RESIN_CLUMP = register("resin_clump", MultifaceBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_ORANGE).replaceable().noCollission().sound(SoundType.RESIN).ignitedByLava().pushReaction(PushReaction.DESTROY));
       OAK_FENCE_GATE = register("oak_fence_gate", (var0x) -> {
          return new FenceGateBlock(WoodType.OAK, var0x);
       }, BlockBehaviour.Properties.of().mapColor(OAK_PLANKS.defaultMapColor()).forceSolidOn().instrument(NoteBlockInstrument.BASS).strength(2.0F, 3.0F).ignitedByLava());
@@ -3333,10 +3333,10 @@ public class Blocks {
       PALE_HANGING_MOSS = register("pale_hanging_moss", HangingMossBlock::new, BlockBehaviour.Properties.of().ignitedByLava().mapColor(PALE_MOSS_BLOCK.defaultMapColor()).noCollission().sound(SoundType.MOSS_CARPET).pushReaction(PushReaction.DESTROY));
       OPEN_EYEBLOSSOM = register("open_eyeblossom", (var0x) -> {
          return new EyeblossomBlock(EyeblossomBlock.Type.OPEN, var0x);
-      }, BlockBehaviour.Properties.of().mapColor(PALE_OAK_LEAVES.defaultMapColor()).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY).randomTicks());
+      }, BlockBehaviour.Properties.of().mapColor(CREAKING_HEART.defaultMapColor()).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY).randomTicks());
       CLOSED_EYEBLOSSOM = register("closed_eyeblossom", (var0x) -> {
          return new EyeblossomBlock(EyeblossomBlock.Type.CLOSED, var0x);
-      }, BlockBehaviour.Properties.of().mapColor(CREAKING_HEART.defaultMapColor()).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY).randomTicks());
+      }, BlockBehaviour.Properties.of().mapColor(PALE_OAK_LEAVES.defaultMapColor()).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY).randomTicks());
       POTTED_OPEN_EYEBLOSSOM = register("potted_open_eyeblossom", (var0x) -> {
          return new FlowerPotBlock(OPEN_EYEBLOSSOM, var0x);
       }, flowerPotProperties().randomTicks());

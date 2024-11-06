@@ -27,29 +27,29 @@ public class FaceBakery {
       super();
    }
 
-   public BakedQuad bakeQuad(Vector3f var1, Vector3f var2, BlockElementFace var3, TextureAtlasSprite var4, Direction var5, ModelState var6, @Nullable BlockElementRotation var7, boolean var8, int var9) {
-      BlockFaceUV var10 = var3.uv();
-      if (var6.isUvLocked()) {
-         var10 = recomputeUVs(var3.uv(), var5, var6.getRotation());
+   public static BakedQuad bakeQuad(Vector3f var0, Vector3f var1, BlockElementFace var2, TextureAtlasSprite var3, Direction var4, ModelState var5, @Nullable BlockElementRotation var6, boolean var7, int var8) {
+      BlockFaceUV var9 = var2.uv();
+      if (var5.isUvLocked()) {
+         var9 = recomputeUVs(var2.uv(), var4, var5.getRotation());
       }
 
-      float[] var11 = new float[var10.uvs.length];
-      System.arraycopy(var10.uvs, 0, var11, 0, var11.length);
-      float var12 = var4.uvShrinkRatio();
-      float var13 = (var10.uvs[0] + var10.uvs[0] + var10.uvs[2] + var10.uvs[2]) / 4.0F;
-      float var14 = (var10.uvs[1] + var10.uvs[1] + var10.uvs[3] + var10.uvs[3]) / 4.0F;
-      var10.uvs[0] = Mth.lerp(var12, var10.uvs[0], var13);
-      var10.uvs[2] = Mth.lerp(var12, var10.uvs[2], var13);
-      var10.uvs[1] = Mth.lerp(var12, var10.uvs[1], var14);
-      var10.uvs[3] = Mth.lerp(var12, var10.uvs[3], var14);
-      int[] var15 = this.makeVertices(var10, var4, var5, this.setupShape(var1, var2), var6.getRotation(), var7);
-      Direction var16 = calculateFacing(var15);
-      System.arraycopy(var11, 0, var10.uvs, 0, var11.length);
-      if (var7 == null) {
-         this.recalculateWinding(var15, var16);
+      float[] var10 = new float[var9.uvs.length];
+      System.arraycopy(var9.uvs, 0, var10, 0, var10.length);
+      float var11 = var3.uvShrinkRatio();
+      float var12 = (var9.uvs[0] + var9.uvs[0] + var9.uvs[2] + var9.uvs[2]) / 4.0F;
+      float var13 = (var9.uvs[1] + var9.uvs[1] + var9.uvs[3] + var9.uvs[3]) / 4.0F;
+      var9.uvs[0] = Mth.lerp(var11, var9.uvs[0], var12);
+      var9.uvs[2] = Mth.lerp(var11, var9.uvs[2], var12);
+      var9.uvs[1] = Mth.lerp(var11, var9.uvs[1], var13);
+      var9.uvs[3] = Mth.lerp(var11, var9.uvs[3], var13);
+      int[] var14 = makeVertices(var9, var3, var4, setupShape(var0, var1), var5.getRotation(), var6);
+      Direction var15 = calculateFacing(var14);
+      System.arraycopy(var10, 0, var9.uvs, 0, var10.length);
+      if (var6 == null) {
+         recalculateWinding(var14, var15);
       }
 
-      return new BakedQuad(var15, var3.tintIndex(), var16, var4, var8, var9);
+      return new BakedQuad(var14, var2.tintIndex(), var15, var3, var7, var8);
    }
 
    public static BlockFaceUV recomputeUVs(BlockFaceUV var0, Direction var1, Transformation var2) {
@@ -91,96 +91,96 @@ public class FaceBakery {
       return new BlockFaceUV(new float[]{var14, var16, var15, var17}, var21);
    }
 
-   private int[] makeVertices(BlockFaceUV var1, TextureAtlasSprite var2, Direction var3, float[] var4, Transformation var5, @Nullable BlockElementRotation var6) {
-      int[] var7 = new int[32];
+   private static int[] makeVertices(BlockFaceUV var0, TextureAtlasSprite var1, Direction var2, float[] var3, Transformation var4, @Nullable BlockElementRotation var5) {
+      int[] var6 = new int[32];
 
-      for(int var8 = 0; var8 < 4; ++var8) {
-         this.bakeVertex(var7, var8, var3, var1, var4, var2, var5, var6);
+      for(int var7 = 0; var7 < 4; ++var7) {
+         bakeVertex(var6, var7, var2, var0, var3, var1, var4, var5);
       }
 
-      return var7;
+      return var6;
    }
 
-   private float[] setupShape(Vector3f var1, Vector3f var2) {
-      float[] var3 = new float[Direction.values().length];
-      var3[FaceInfo.Constants.MIN_X] = var1.x() / 16.0F;
-      var3[FaceInfo.Constants.MIN_Y] = var1.y() / 16.0F;
-      var3[FaceInfo.Constants.MIN_Z] = var1.z() / 16.0F;
-      var3[FaceInfo.Constants.MAX_X] = var2.x() / 16.0F;
-      var3[FaceInfo.Constants.MAX_Y] = var2.y() / 16.0F;
-      var3[FaceInfo.Constants.MAX_Z] = var2.z() / 16.0F;
-      return var3;
+   private static float[] setupShape(Vector3f var0, Vector3f var1) {
+      float[] var2 = new float[Direction.values().length];
+      var2[FaceInfo.Constants.MIN_X] = var0.x() / 16.0F;
+      var2[FaceInfo.Constants.MIN_Y] = var0.y() / 16.0F;
+      var2[FaceInfo.Constants.MIN_Z] = var0.z() / 16.0F;
+      var2[FaceInfo.Constants.MAX_X] = var1.x() / 16.0F;
+      var2[FaceInfo.Constants.MAX_Y] = var1.y() / 16.0F;
+      var2[FaceInfo.Constants.MAX_Z] = var1.z() / 16.0F;
+      return var2;
    }
 
-   private void bakeVertex(int[] var1, int var2, Direction var3, BlockFaceUV var4, float[] var5, TextureAtlasSprite var6, Transformation var7, @Nullable BlockElementRotation var8) {
-      FaceInfo.VertexInfo var9 = FaceInfo.fromFacing(var3).getVertexInfo(var2);
-      Vector3f var10 = new Vector3f(var5[var9.xFace], var5[var9.yFace], var5[var9.zFace]);
-      this.applyElementRotation(var10, var8);
-      this.applyModelRotation(var10, var7);
-      this.fillVertex(var1, var2, var10, var6, var4);
+   private static void bakeVertex(int[] var0, int var1, Direction var2, BlockFaceUV var3, float[] var4, TextureAtlasSprite var5, Transformation var6, @Nullable BlockElementRotation var7) {
+      FaceInfo.VertexInfo var8 = FaceInfo.fromFacing(var2).getVertexInfo(var1);
+      Vector3f var9 = new Vector3f(var4[var8.xFace], var4[var8.yFace], var4[var8.zFace]);
+      applyElementRotation(var9, var7);
+      applyModelRotation(var9, var6);
+      fillVertex(var0, var1, var9, var5, var3);
    }
 
-   private void fillVertex(int[] var1, int var2, Vector3f var3, TextureAtlasSprite var4, BlockFaceUV var5) {
-      int var6 = var2 * 8;
-      var1[var6] = Float.floatToRawIntBits(var3.x());
-      var1[var6 + 1] = Float.floatToRawIntBits(var3.y());
-      var1[var6 + 2] = Float.floatToRawIntBits(var3.z());
-      var1[var6 + 3] = -1;
-      var1[var6 + 4] = Float.floatToRawIntBits(var4.getU(var5.getU(var2) / 16.0F));
-      var1[var6 + 4 + 1] = Float.floatToRawIntBits(var4.getV(var5.getV(var2) / 16.0F));
+   private static void fillVertex(int[] var0, int var1, Vector3f var2, TextureAtlasSprite var3, BlockFaceUV var4) {
+      int var5 = var1 * 8;
+      var0[var5] = Float.floatToRawIntBits(var2.x());
+      var0[var5 + 1] = Float.floatToRawIntBits(var2.y());
+      var0[var5 + 2] = Float.floatToRawIntBits(var2.z());
+      var0[var5 + 3] = -1;
+      var0[var5 + 4] = Float.floatToRawIntBits(var3.getU(var4.getU(var1) / 16.0F));
+      var0[var5 + 4 + 1] = Float.floatToRawIntBits(var3.getV(var4.getV(var1) / 16.0F));
    }
 
-   private void applyElementRotation(Vector3f var1, @Nullable BlockElementRotation var2) {
-      if (var2 != null) {
+   private static void applyElementRotation(Vector3f var0, @Nullable BlockElementRotation var1) {
+      if (var1 != null) {
+         Vector3f var2;
          Vector3f var3;
-         Vector3f var4;
-         switch (var2.axis()) {
+         switch (var1.axis()) {
             case X:
-               var3 = new Vector3f(1.0F, 0.0F, 0.0F);
-               var4 = new Vector3f(0.0F, 1.0F, 1.0F);
+               var2 = new Vector3f(1.0F, 0.0F, 0.0F);
+               var3 = new Vector3f(0.0F, 1.0F, 1.0F);
                break;
             case Y:
-               var3 = new Vector3f(0.0F, 1.0F, 0.0F);
-               var4 = new Vector3f(1.0F, 0.0F, 1.0F);
+               var2 = new Vector3f(0.0F, 1.0F, 0.0F);
+               var3 = new Vector3f(1.0F, 0.0F, 1.0F);
                break;
             case Z:
-               var3 = new Vector3f(0.0F, 0.0F, 1.0F);
-               var4 = new Vector3f(1.0F, 1.0F, 0.0F);
+               var2 = new Vector3f(0.0F, 0.0F, 1.0F);
+               var3 = new Vector3f(1.0F, 1.0F, 0.0F);
                break;
             default:
                throw new IllegalArgumentException("There are only 3 axes");
          }
 
-         Quaternionf var5 = (new Quaternionf()).rotationAxis(var2.angle() * 0.017453292F, var3);
-         if (var2.rescale()) {
-            if (Math.abs(var2.angle()) == 22.5F) {
-               var4.mul(RESCALE_22_5);
+         Quaternionf var4 = (new Quaternionf()).rotationAxis(var1.angle() * 0.017453292F, var2);
+         if (var1.rescale()) {
+            if (Math.abs(var1.angle()) == 22.5F) {
+               var3.mul(RESCALE_22_5);
             } else {
-               var4.mul(RESCALE_45);
+               var3.mul(RESCALE_45);
             }
 
-            var4.add(1.0F, 1.0F, 1.0F);
+            var3.add(1.0F, 1.0F, 1.0F);
          } else {
-            var4.set(1.0F, 1.0F, 1.0F);
+            var3.set(1.0F, 1.0F, 1.0F);
          }
 
-         this.rotateVertexBy(var1, new Vector3f(var2.origin()), (new Matrix4f()).rotation(var5), var4);
+         rotateVertexBy(var0, new Vector3f(var1.origin()), (new Matrix4f()).rotation(var4), var3);
       }
    }
 
-   public void applyModelRotation(Vector3f var1, Transformation var2) {
-      if (var2 != Transformation.identity()) {
-         this.rotateVertexBy(var1, new Vector3f(0.5F, 0.5F, 0.5F), var2.getMatrix(), new Vector3f(1.0F, 1.0F, 1.0F));
+   private static void applyModelRotation(Vector3f var0, Transformation var1) {
+      if (var1 != Transformation.identity()) {
+         rotateVertexBy(var0, new Vector3f(0.5F, 0.5F, 0.5F), var1.getMatrix(), new Vector3f(1.0F, 1.0F, 1.0F));
       }
    }
 
-   private void rotateVertexBy(Vector3f var1, Vector3f var2, Matrix4f var3, Vector3f var4) {
-      Vector4f var5 = var3.transform(new Vector4f(var1.x() - var2.x(), var1.y() - var2.y(), var1.z() - var2.z(), 1.0F));
-      var5.mul(new Vector4f(var4, 1.0F));
-      var1.set(var5.x() + var2.x(), var5.y() + var2.y(), var5.z() + var2.z());
+   private static void rotateVertexBy(Vector3f var0, Vector3f var1, Matrix4f var2, Vector3f var3) {
+      Vector4f var4 = var2.transform(new Vector4f(var0.x() - var1.x(), var0.y() - var1.y(), var0.z() - var1.z(), 1.0F));
+      var4.mul(new Vector4f(var3, 1.0F));
+      var0.set(var4.x() + var1.x(), var4.y() + var1.y(), var4.z() + var1.z());
    }
 
-   public static Direction calculateFacing(int[] var0) {
+   private static Direction calculateFacing(int[] var0) {
       Vector3f var1 = new Vector3f(Float.intBitsToFloat(var0[0]), Float.intBitsToFloat(var0[1]), Float.intBitsToFloat(var0[2]));
       Vector3f var2 = new Vector3f(Float.intBitsToFloat(var0[8]), Float.intBitsToFloat(var0[9]), Float.intBitsToFloat(var0[10]));
       Vector3f var3 = new Vector3f(Float.intBitsToFloat(var0[16]), Float.intBitsToFloat(var0[17]), Float.intBitsToFloat(var0[18]));
@@ -214,69 +214,69 @@ public class FaceBakery {
       }
    }
 
-   private void recalculateWinding(int[] var1, Direction var2) {
-      int[] var3 = new int[var1.length];
-      System.arraycopy(var1, 0, var3, 0, var1.length);
-      float[] var4 = new float[Direction.values().length];
-      var4[FaceInfo.Constants.MIN_X] = 999.0F;
-      var4[FaceInfo.Constants.MIN_Y] = 999.0F;
-      var4[FaceInfo.Constants.MIN_Z] = 999.0F;
-      var4[FaceInfo.Constants.MAX_X] = -999.0F;
-      var4[FaceInfo.Constants.MAX_Y] = -999.0F;
-      var4[FaceInfo.Constants.MAX_Z] = -999.0F;
+   private static void recalculateWinding(int[] var0, Direction var1) {
+      int[] var2 = new int[var0.length];
+      System.arraycopy(var0, 0, var2, 0, var0.length);
+      float[] var3 = new float[Direction.values().length];
+      var3[FaceInfo.Constants.MIN_X] = 999.0F;
+      var3[FaceInfo.Constants.MIN_Y] = 999.0F;
+      var3[FaceInfo.Constants.MIN_Z] = 999.0F;
+      var3[FaceInfo.Constants.MAX_X] = -999.0F;
+      var3[FaceInfo.Constants.MAX_Y] = -999.0F;
+      var3[FaceInfo.Constants.MAX_Z] = -999.0F;
 
-      int var6;
-      float var9;
-      for(int var5 = 0; var5 < 4; ++var5) {
-         var6 = 8 * var5;
-         float var7 = Float.intBitsToFloat(var3[var6]);
-         float var8 = Float.intBitsToFloat(var3[var6 + 1]);
-         var9 = Float.intBitsToFloat(var3[var6 + 2]);
-         if (var7 < var4[FaceInfo.Constants.MIN_X]) {
-            var4[FaceInfo.Constants.MIN_X] = var7;
+      int var5;
+      float var8;
+      for(int var4 = 0; var4 < 4; ++var4) {
+         var5 = 8 * var4;
+         float var6 = Float.intBitsToFloat(var2[var5]);
+         float var7 = Float.intBitsToFloat(var2[var5 + 1]);
+         var8 = Float.intBitsToFloat(var2[var5 + 2]);
+         if (var6 < var3[FaceInfo.Constants.MIN_X]) {
+            var3[FaceInfo.Constants.MIN_X] = var6;
          }
 
-         if (var8 < var4[FaceInfo.Constants.MIN_Y]) {
-            var4[FaceInfo.Constants.MIN_Y] = var8;
+         if (var7 < var3[FaceInfo.Constants.MIN_Y]) {
+            var3[FaceInfo.Constants.MIN_Y] = var7;
          }
 
-         if (var9 < var4[FaceInfo.Constants.MIN_Z]) {
-            var4[FaceInfo.Constants.MIN_Z] = var9;
+         if (var8 < var3[FaceInfo.Constants.MIN_Z]) {
+            var3[FaceInfo.Constants.MIN_Z] = var8;
          }
 
-         if (var7 > var4[FaceInfo.Constants.MAX_X]) {
-            var4[FaceInfo.Constants.MAX_X] = var7;
+         if (var6 > var3[FaceInfo.Constants.MAX_X]) {
+            var3[FaceInfo.Constants.MAX_X] = var6;
          }
 
-         if (var8 > var4[FaceInfo.Constants.MAX_Y]) {
-            var4[FaceInfo.Constants.MAX_Y] = var8;
+         if (var7 > var3[FaceInfo.Constants.MAX_Y]) {
+            var3[FaceInfo.Constants.MAX_Y] = var7;
          }
 
-         if (var9 > var4[FaceInfo.Constants.MAX_Z]) {
-            var4[FaceInfo.Constants.MAX_Z] = var9;
+         if (var8 > var3[FaceInfo.Constants.MAX_Z]) {
+            var3[FaceInfo.Constants.MAX_Z] = var8;
          }
       }
 
-      FaceInfo var17 = FaceInfo.fromFacing(var2);
+      FaceInfo var16 = FaceInfo.fromFacing(var1);
 
-      for(var6 = 0; var6 < 4; ++var6) {
-         int var18 = 8 * var6;
-         FaceInfo.VertexInfo var19 = var17.getVertexInfo(var6);
-         var9 = var4[var19.xFace];
-         float var10 = var4[var19.yFace];
-         float var11 = var4[var19.zFace];
-         var1[var18] = Float.floatToRawIntBits(var9);
-         var1[var18 + 1] = Float.floatToRawIntBits(var10);
-         var1[var18 + 2] = Float.floatToRawIntBits(var11);
+      for(var5 = 0; var5 < 4; ++var5) {
+         int var17 = 8 * var5;
+         FaceInfo.VertexInfo var18 = var16.getVertexInfo(var5);
+         var8 = var3[var18.xFace];
+         float var9 = var3[var18.yFace];
+         float var10 = var3[var18.zFace];
+         var0[var17] = Float.floatToRawIntBits(var8);
+         var0[var17 + 1] = Float.floatToRawIntBits(var9);
+         var0[var17 + 2] = Float.floatToRawIntBits(var10);
 
-         for(int var12 = 0; var12 < 4; ++var12) {
-            int var13 = 8 * var12;
-            float var14 = Float.intBitsToFloat(var3[var13]);
-            float var15 = Float.intBitsToFloat(var3[var13 + 1]);
-            float var16 = Float.intBitsToFloat(var3[var13 + 2]);
-            if (Mth.equal(var9, var14) && Mth.equal(var10, var15) && Mth.equal(var11, var16)) {
-               var1[var18 + 4] = var3[var13 + 4];
-               var1[var18 + 4 + 1] = var3[var13 + 4 + 1];
+         for(int var11 = 0; var11 < 4; ++var11) {
+            int var12 = 8 * var11;
+            float var13 = Float.intBitsToFloat(var2[var12]);
+            float var14 = Float.intBitsToFloat(var2[var12 + 1]);
+            float var15 = Float.intBitsToFloat(var2[var12 + 2]);
+            if (Mth.equal(var8, var13) && Mth.equal(var9, var14) && Mth.equal(var10, var15)) {
+               var0[var17 + 4] = var2[var12 + 4];
+               var0[var17 + 4 + 1] = var2[var12 + 4 + 1];
             }
          }
       }

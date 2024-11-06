@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -558,25 +557,28 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       };
       var2.setCanOpenDoors(false);
       var2.setCanFloat(false);
-      var2.setCanPassDoors(true);
       var2.setRequiredPathLength(48.0F);
       return var2;
    }
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
-      Item var6 = var3.getItem();
-      if (var6 instanceof BlockItem var4) {
-         Block var7 = var4.getBlock();
-         if (var7 instanceof FlowerBlock var5) {
-            MobEffectInstance var8 = var5.getBeeInteractionEffect();
-            if (var8 != null) {
-               this.usePlayerItem(var1, var2, var3);
-               if (!this.level().isClientSide) {
-                  this.addEffect(var8);
-               }
+      if (this.isFood(var3)) {
+         Item var6 = var3.getItem();
+         if (var6 instanceof BlockItem) {
+            BlockItem var4 = (BlockItem)var6;
+            Block var7 = var4.getBlock();
+            if (var7 instanceof FlowerBlock) {
+               FlowerBlock var5 = (FlowerBlock)var7;
+               MobEffectInstance var8 = var5.getBeeInteractionEffect();
+               if (var8 != null) {
+                  this.usePlayerItem(var1, var2, var3);
+                  if (!this.level().isClientSide) {
+                     this.addEffect(var8);
+                  }
 
-               return InteractionResult.SUCCESS;
+                  return InteractionResult.SUCCESS;
+               }
             }
          }
       }
@@ -651,6 +653,20 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    public void setHivePos(BlockPos var1) {
       this.hivePos = var1;
+   }
+
+   static boolean attractsBees(BlockState var0) {
+      if (var0.is(BlockTags.BEE_ATTRACTIVE)) {
+         if ((Boolean)var0.getValueOrElse(BlockStateProperties.WATERLOGGED, false)) {
+            return false;
+         } else if (var0.is(Blocks.SUNFLOWER)) {
+            return var0.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER;
+         } else {
+            return true;
+         }
+      } else {
+         return false;
+      }
    }
 
    // $FF: synthetic method
@@ -782,25 +798,12 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       }
 
       private boolean isFlower(BlockPos var1) {
-         return Bee.this.level().getBlockState(var1).is(BlockTags.FLOWERS);
+         return Bee.attractsBees(Bee.this.level().getBlockState(var1));
       }
    }
 
    private class BeePollinateGoal extends BaseBeeGoal {
       private static final int MIN_POLLINATION_TICKS = 400;
-      private final Predicate<BlockState> VALID_POLLINATION_BLOCKS = (var0) -> {
-         if (var0.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)var0.getValue(BlockStateProperties.WATERLOGGED)) {
-            return false;
-         } else if (var0.is(BlockTags.FLOWERS)) {
-            if (var0.is(Blocks.SUNFLOWER)) {
-               return var0.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER;
-            } else {
-               return true;
-            }
-         } else {
-            return false;
-         }
-      };
       private static final double ARRIVAL_THRESHOLD = 0.1;
       private static final int POSITION_CHANGE_CHANCE = 25;
       private static final float SPEED_MODIFIER = 0.35F;
@@ -957,7 +960,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
             long var5 = this.unreachableFlowerCache.getOrDefault(var4.asLong(), -9223372036854775808L);
             if (Bee.this.level().getGameTime() < var5) {
                var2.put(var4.asLong(), var5);
-            } else if (this.VALID_POLLINATION_BLOCKS.test(Bee.this.level().getBlockState(var4))) {
+            } else if (Bee.attractsBees(Bee.this.level().getBlockState(var4))) {
                Path var7 = Bee.this.navigation.createPath((BlockPos)var4, 1);
                if (var7 != null && var7.canReach()) {
                   return Optional.of(var4);

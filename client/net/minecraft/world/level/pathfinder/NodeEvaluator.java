@@ -18,7 +18,7 @@ public abstract class NodeEvaluator {
    protected int entityWidth;
    protected int entityHeight;
    protected int entityDepth;
-   protected boolean canPassDoors;
+   protected boolean canPassDoors = true;
    protected boolean canOpenDoors;
    protected boolean canFloat;
    protected boolean canWalkOverFences;

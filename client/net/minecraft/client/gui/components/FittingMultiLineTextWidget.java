@@ -7,7 +7,7 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
-public class FittingMultiLineTextWidget extends AbstractScrollWidget {
+public class FittingMultiLineTextWidget extends AbstractTextAreaWidget {
    private final Font font;
    private final MultiLineTextWidget multilineWidget;
 
@@ -66,7 +66,7 @@ public class FittingMultiLineTextWidget extends AbstractScrollWidget {
 
    protected void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
       var1.pose().pushPose();
-      var1.pose().translate((float)(this.getX() + this.innerPadding()), (float)(this.getY() + this.innerPadding()), 0.0F);
+      var1.pose().translate((float)this.getInnerLeft(), (float)this.getInnerTop(), 0.0F);
       this.multilineWidget.render(var1, var2, var3, var4);
       var1.pose().popPose();
    }

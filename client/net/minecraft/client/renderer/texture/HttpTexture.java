@@ -101,27 +101,27 @@ public class HttpTexture extends SimpleTexture {
                   var1.setDoInput(true);
                   var1.setDoOutput(false);
                   var1.connect();
-                  if (var1.getResponseCode() / 100 == 2) {
-                     Object var2;
-                     if (this.file != null) {
-                        FileUtils.copyInputStreamToFile(var1.getInputStream(), this.file);
-                        var2 = new FileInputStream(this.file);
-                     } else {
-                        var2 = var1.getInputStream();
-                     }
-
-                     Minecraft.getInstance().execute(() -> {
-                        NativeImage var2x = this.load(var2);
-                        if (var2x != null) {
-                           this.loadCallback(var2x);
-                        }
-
-                     });
+                  if (var1.getResponseCode() / 100 != 2) {
                      return;
                   }
+
+                  Object var2;
+                  if (this.file != null) {
+                     FileUtils.copyInputStreamToFile(var1.getInputStream(), this.file);
+                     var2 = new FileInputStream(this.file);
+                  } else {
+                     var2 = var1.getInputStream();
+                  }
+
+                  Minecraft.getInstance().execute(() -> {
+                     NativeImage var2x = this.load(var2);
+                     if (var2x != null) {
+                        this.loadCallback(var2x);
+                     }
+
+                  });
                } catch (Exception var6) {
                   LOGGER.error("Couldn't download http texture", var6);
-                  return;
                } finally {
                   if (var1 != null) {
                      var1.disconnect();

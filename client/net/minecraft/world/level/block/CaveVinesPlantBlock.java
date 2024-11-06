@@ -36,7 +36,7 @@ public class CaveVinesPlantBlock extends GrowingPlantBodyBlock implements CaveVi
       return (BlockState)var2.setValue(BERRIES, (Boolean)var1.getValue(BERRIES));
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return new ItemStack(Items.GLOW_BERRIES);
    }
 

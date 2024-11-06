@@ -25,7 +25,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.block.model.multipart.MultiPart;
 import net.minecraft.client.renderer.block.model.multipart.Selector;
-import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -109,7 +108,7 @@ public class BlockModelDefinition {
       this.variants.forEach((var6, var7) -> {
          try {
             var4.stream().filter(VariantSelector.predicate(var1, var6)).forEach((var4x) -> {
-               UnbakedModel var5x = (UnbakedModel)var3.put(var4x, var7);
+               UnbakedBlockStateModel var5x = (UnbakedBlockStateModel)var3.put(var4x, var7);
                if (var5x != null && var5x != var5) {
                   String var6 = (String)((Map.Entry)this.variants.entrySet().stream().filter((var1) -> {
                      return var1.getValue() == var5x;

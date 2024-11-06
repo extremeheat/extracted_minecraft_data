@@ -74,6 +74,7 @@ public class TridentItem extends Item implements ProjectileItem {
                return false;
             } else {
                Holder var8 = (Holder)EnchantmentHelper.pickHighestLevel(var1, EnchantmentEffectComponents.TRIDENT_SOUND).orElse(SoundEvents.TRIDENT_THROW);
+               var5.awardStat(Stats.ITEM_USED.get(this));
                if (var2 instanceof ServerLevel) {
                   ServerLevel var9 = (ServerLevel)var2;
                   var1.hurtWithoutBreaking(1, var5);
@@ -90,7 +91,6 @@ public class TridentItem extends Item implements ProjectileItem {
                   }
                }
 
-               var5.awardStat(Stats.ITEM_USED.get(this));
                if (var7 > 0.0F) {
                   float var16 = var5.getYRot();
                   float var10 = var5.getXRot();

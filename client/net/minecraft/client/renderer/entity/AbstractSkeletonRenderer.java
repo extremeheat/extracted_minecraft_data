@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.SkeletonRenderState;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
+import net.minecraft.world.item.Items;
 
 public abstract class AbstractSkeletonRenderer<T extends AbstractSkeleton, S extends SkeletonRenderState> extends HumanoidMobRenderer<T, S, SkeletonModel<S>> {
    public AbstractSkeletonRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, ModelLayerLocation var4) {
@@ -22,6 +23,7 @@ public abstract class AbstractSkeletonRenderer<T extends AbstractSkeleton, S ext
       super.extractRenderState((Mob)var1, (HumanoidRenderState)var2, var3);
       var2.isAggressive = var1.isAggressive();
       var2.isShaking = var1.isShaking();
+      var2.isHoldingBow = var1.getMainHandItem().is(Items.BOW);
    }
 
    protected boolean isShaking(S var1) {

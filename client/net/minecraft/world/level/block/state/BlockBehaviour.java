@@ -382,7 +382,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       return this.soundType;
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return new ItemStack(this.asItem());
    }
 
@@ -1274,8 +1274,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.cache != null ? this.cache.isCollisionShapeFullBlock : this.getBlock().isCollisionShapeFullBlock(this.asState(), var1, var2);
       }
 
-      public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2) {
-         return this.getBlock().getCloneItemStack(var1, var2, this.asState());
+      public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, boolean var3) {
+         return this.getBlock().getCloneItemStack(var1, var2, this.asState(), var3);
       }
 
       protected abstract BlockState asState();

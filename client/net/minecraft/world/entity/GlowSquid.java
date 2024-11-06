@@ -1,5 +1,6 @@
 package net.minecraft.world.entity;
 
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -16,7 +17,6 @@ import net.minecraft.world.entity.animal.Squid;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
-import org.jetbrains.annotations.Nullable;
 
 public class GlowSquid extends Squid {
    private static final EntityDataAccessor<Integer> DATA_DARK_TICKS_REMAINING;
@@ -34,7 +34,8 @@ public class GlowSquid extends Squid {
       var1.define(DATA_DARK_TICKS_REMAINING, 0);
    }
 
-   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+   @Nullable
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       return (AgeableMob)EntityType.GLOW_SQUID.create(var1, EntitySpawnReason.BREEDING);
    }
 

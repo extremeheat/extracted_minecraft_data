@@ -3,18 +3,16 @@ package net.minecraft.client.renderer.entity.layers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.model.WitchModel;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.WitchRenderState;
-import net.minecraft.world.item.Items;
 
 public class WitchItemLayer extends CrossedArmsItemLayer<WitchRenderState, WitchModel> {
-   public WitchItemLayer(RenderLayerParent<WitchRenderState, WitchModel> var1, ItemRenderer var2) {
-      super(var1, var2);
+   public WitchItemLayer(RenderLayerParent<WitchRenderState, WitchModel> var1) {
+      super(var1);
    }
 
    protected void applyTranslation(WitchRenderState var1, PoseStack var2) {
-      if (var1.rightHandItem.is(Items.POTION)) {
+      if (var1.isHoldingPotion) {
          ((WitchModel)this.getParentModel()).root().translateAndRotate(var2);
          ((WitchModel)this.getParentModel()).getHead().translateAndRotate(var2);
          ((WitchModel)this.getParentModel()).getNose().translateAndRotate(var2);

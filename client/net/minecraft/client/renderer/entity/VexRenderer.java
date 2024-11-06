@@ -3,6 +3,7 @@ package net.minecraft.client.renderer.entity;
 import net.minecraft.client.model.VexModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
+import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.VexRenderState;
@@ -16,7 +17,7 @@ public class VexRenderer extends MobRenderer<Vex, VexRenderState, VexModel> {
 
    public VexRenderer(EntityRendererProvider.Context var1) {
       super(var1, new VexModel(var1.bakeLayer(ModelLayers.VEX)), 0.3F);
-      this.addLayer(new ItemInHandLayer(this, var1.getItemRenderer()));
+      this.addLayer(new ItemInHandLayer(this));
    }
 
    protected int getBlockLightLevel(Vex var1, BlockPos var2) {
@@ -33,6 +34,7 @@ public class VexRenderer extends MobRenderer<Vex, VexRenderState, VexModel> {
 
    public void extractRenderState(Vex var1, VexRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
+      ArmedEntityRenderState.extractArmedEntityRenderState(var1, var2, this.itemModelResolver);
       var2.isCharging = var1.isCharging();
    }
 

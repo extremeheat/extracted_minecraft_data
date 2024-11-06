@@ -217,12 +217,13 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
 
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
-      BlockEntity var5 = var1.getBlockEntity(var2);
-      if (var5 instanceof DecoratedPotBlockEntity var4) {
-         return var4.getPotAsItem();
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+      BlockEntity var6 = var1.getBlockEntity(var2);
+      if (var6 instanceof DecoratedPotBlockEntity var5) {
+         PotDecorations var7 = var5.getDecorations();
+         return DecoratedPotBlockEntity.createDecoratedPotItem(var7);
       } else {
-         return super.getCloneItemStack(var1, var2, var3);
+         return super.getCloneItemStack(var1, var2, var3, var4);
       }
    }
 
@@ -240,6 +241,10 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
 
    protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation((Direction)var1.getValue(HORIZONTAL_FACING)));
+   }
+
+   protected RenderShape getRenderShape(BlockState var1) {
+      return RenderShape.ENTITYBLOCK_ANIMATED;
    }
 
    static {

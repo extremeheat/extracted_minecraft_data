@@ -45,7 +45,7 @@ public class BeaconMenu extends AbstractContainerMenu {
       checkContainerDataCount(var3, 3);
       this.beaconData = var3;
       this.access = var4;
-      this.paymentSlot = new PaymentSlot(this, this.beacon, 0, 136, 110);
+      this.paymentSlot = new PaymentSlot(this.beacon, 0, 136, 110);
       this.addSlot(this.paymentSlot);
       this.addDataSlots(var3);
       this.addStandardInventorySlots(var2, 36, 137);
@@ -152,9 +152,9 @@ public class BeaconMenu extends AbstractContainerMenu {
       return !this.beacon.getItem(0).isEmpty();
    }
 
-   private class PaymentSlot extends Slot {
-      public PaymentSlot(final BeaconMenu var1, final Container var2, final int var3, final int var4, final int var5) {
-         super(var2, var3, var4, var5);
+   private static class PaymentSlot extends Slot {
+      public PaymentSlot(Container var1, int var2, int var3, int var4) {
+         super(var1, var2, var3, var4);
       }
 
       public boolean mayPlace(ItemStack var1) {

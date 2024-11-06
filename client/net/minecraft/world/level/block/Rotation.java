@@ -24,54 +24,62 @@ public enum Rotation implements StringRepresentable {
    }
 
    public Rotation getRotated(Rotation var1) {
+      Rotation var10000;
       switch (var1.ordinal()) {
+         case 1:
+            switch (this.ordinal()) {
+               case 0:
+                  var10000 = CLOCKWISE_90;
+                  return var10000;
+               case 1:
+                  var10000 = CLOCKWISE_180;
+                  return var10000;
+               case 2:
+                  var10000 = COUNTERCLOCKWISE_90;
+                  return var10000;
+               case 3:
+                  var10000 = NONE;
+                  return var10000;
+               default:
+                  throw new MatchException((String)null, (Throwable)null);
+            }
          case 2:
             switch (this.ordinal()) {
-               case 0 -> {
-                  return CLOCKWISE_180;
-               }
-               case 1 -> {
-                  return COUNTERCLOCKWISE_90;
-               }
-               case 2 -> {
-                  return NONE;
-               }
-               case 3 -> {
-                  return CLOCKWISE_90;
-               }
+               case 0:
+                  var10000 = CLOCKWISE_180;
+                  return var10000;
+               case 1:
+                  var10000 = COUNTERCLOCKWISE_90;
+                  return var10000;
+               case 2:
+                  var10000 = NONE;
+                  return var10000;
+               case 3:
+                  var10000 = CLOCKWISE_90;
+                  return var10000;
+               default:
+                  throw new MatchException((String)null, (Throwable)null);
             }
          case 3:
             switch (this.ordinal()) {
-               case 0 -> {
-                  return COUNTERCLOCKWISE_90;
-               }
-               case 1 -> {
-                  return NONE;
-               }
-               case 2 -> {
-                  return CLOCKWISE_90;
-               }
-               case 3 -> {
-                  return CLOCKWISE_180;
-               }
-            }
-         case 1:
-            switch (this.ordinal()) {
-               case 0 -> {
-                  return CLOCKWISE_90;
-               }
-               case 1 -> {
-                  return CLOCKWISE_180;
-               }
-               case 2 -> {
-                  return COUNTERCLOCKWISE_90;
-               }
-               case 3 -> {
-                  return NONE;
-               }
+               case 0:
+                  var10000 = COUNTERCLOCKWISE_90;
+                  return var10000;
+               case 1:
+                  var10000 = NONE;
+                  return var10000;
+               case 2:
+                  var10000 = CLOCKWISE_90;
+                  return var10000;
+               case 3:
+                  var10000 = CLOCKWISE_180;
+                  return var10000;
+               default:
+                  throw new MatchException((String)null, (Throwable)null);
             }
          default:
-            return this;
+            var10000 = this;
+            return var10000;
       }
    }
 
@@ -83,38 +91,28 @@ public enum Rotation implements StringRepresentable {
       if (var1.getAxis() == Direction.Axis.Y) {
          return var1;
       } else {
+         Direction var10000;
          switch (this.ordinal()) {
-            case 1 -> {
-               return var1.getClockWise();
-            }
-            case 2 -> {
-               return var1.getOpposite();
-            }
-            case 3 -> {
-               return var1.getCounterClockWise();
-            }
-            default -> {
-               return var1;
-            }
+            case 1 -> var10000 = var1.getClockWise();
+            case 2 -> var10000 = var1.getOpposite();
+            case 3 -> var10000 = var1.getCounterClockWise();
+            default -> var10000 = var1;
          }
+
+         return var10000;
       }
    }
 
    public int rotate(int var1, int var2) {
+      int var10000;
       switch (this.ordinal()) {
-         case 1 -> {
-            return (var1 + var2 / 4) % var2;
-         }
-         case 2 -> {
-            return (var1 + var2 / 2) % var2;
-         }
-         case 3 -> {
-            return (var1 + var2 * 3 / 4) % var2;
-         }
-         default -> {
-            return var1;
-         }
+         case 1 -> var10000 = (var1 + var2 / 4) % var2;
+         case 2 -> var10000 = (var1 + var2 / 2) % var2;
+         case 3 -> var10000 = (var1 + var2 * 3 / 4) % var2;
+         default -> var10000 = var1;
       }
+
+      return var10000;
    }
 
    public static Rotation getRandom(RandomSource var0) {

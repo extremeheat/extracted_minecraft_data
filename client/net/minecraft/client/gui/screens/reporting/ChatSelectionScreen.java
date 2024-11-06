@@ -74,7 +74,7 @@ public class ChatSelectionScreen extends Screen {
       }).bounds(this.width / 2 - 155 + 160, this.height - 32, 150, 20).build());
       this.updateConfirmSelectedButton();
       this.extendLog();
-      this.chatSelectionList.setScrollAmount((double)this.chatSelectionList.getMaxScroll());
+      this.chatSelectionList.setScrollAmount((double)this.chatSelectionList.maxScrollAmount());
    }
 
    private boolean canReport(LoggedChatMessage var1) {
@@ -122,9 +122,9 @@ public class ChatSelectionScreen extends Screen {
       }
 
       public void setScrollAmount(double var1) {
-         double var3 = this.getScrollAmount();
+         double var3 = this.scrollAmount();
          super.setScrollAmount(var1);
-         if ((float)this.getMaxScroll() > 1.0E-5F && var1 <= 9.999999747378752E-6 && !Mth.equal(var1, var3)) {
+         if ((float)this.maxScrollAmount() > 1.0E-5F && var1 <= 9.999999747378752E-6 && !Mth.equal(var1, var3)) {
             ChatSelectionScreen.this.onReachedScrollTop();
          }
 
@@ -151,9 +151,9 @@ public class ChatSelectionScreen extends Screen {
       }
 
       public void acceptDivider(Component var1) {
-         this.addEntryToTop(new PaddingEntry(this));
+         this.addEntryToTop(new PaddingEntry());
          this.addEntryToTop(new DividerEntry(var1));
-         this.addEntryToTop(new PaddingEntry(this));
+         this.addEntryToTop(new PaddingEntry());
          this.previousHeading = null;
       }
 
@@ -236,7 +236,7 @@ public class ChatSelectionScreen extends Screen {
          private final boolean playerMessage;
 
          public MessageEntry(final int var2, final Component var3, final Component var4, @Nullable final GuiMessageTag var5, final boolean var6, final boolean var7) {
-            super(ChatSelectionList.this);
+            super();
             this.chatId = var2;
             this.tagIcon = (GuiMessageTag.Icon)Optionull.map(var5, GuiMessageTag::icon);
             this.tagHoverText = var5 != null && var5.text() != null ? ChatSelectionScreen.this.font.split(var5.text(), ChatSelectionList.this.getRowWidth()) : null;
@@ -341,7 +341,7 @@ public class ChatSelectionScreen extends Screen {
          private final boolean canReport;
 
          public MessageHeadingEntry(final GameProfile var2, final Component var3, final boolean var4) {
-            super(ChatSelectionList.this);
+            super();
             this.heading = var3;
             this.canReport = var4;
             this.skin = ChatSelectionList.this.minecraft.getSkinManager().lookupInsecure(var2);
@@ -378,8 +378,8 @@ public class ChatSelectionScreen extends Screen {
          }
       }
 
-      public abstract class Entry extends ObjectSelectionList.Entry<Entry> {
-         public Entry(final ChatSelectionList var1) {
+      public abstract static class Entry extends ObjectSelectionList.Entry<Entry> {
+         public Entry() {
             super();
          }
 
@@ -400,9 +400,9 @@ public class ChatSelectionScreen extends Screen {
          }
       }
 
-      public class PaddingEntry extends Entry {
-         public PaddingEntry(final ChatSelectionList var1) {
-            super(var1);
+      public static class PaddingEntry extends Entry {
+         public PaddingEntry() {
+            super();
          }
 
          public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
@@ -413,7 +413,7 @@ public class ChatSelectionScreen extends Screen {
          private final Component text;
 
          public DividerEntry(final Component var2) {
-            super(ChatSelectionList.this);
+            super();
             this.text = var2;
          }
 

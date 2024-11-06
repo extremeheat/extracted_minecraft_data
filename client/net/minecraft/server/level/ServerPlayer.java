@@ -97,7 +97,6 @@ import net.minecraft.stats.ServerRecipeBook;
 import net.minecraft.stats.ServerStatsCounter;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
-import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -211,7 +210,6 @@ public class ServerPlayer extends Player {
    private int lastSentFood = -99999999;
    private boolean lastFoodSaturationZero = true;
    private int lastSentExp = -99999999;
-   private int spawnInvulnerableTime = 60;
    private ChatVisiblity chatVisibility;
    private ParticleStatus particleStatus;
    private boolean canChatColor;
@@ -700,15 +698,15 @@ public class ServerPlayer extends Player {
    }
 
    public void tick() {
+      this.tickClientLoadTimeout();
       this.gameMode.tick();
       this.wardenSpawnTracker.tick();
-      --this.spawnInvulnerableTime;
       if (this.invulnerableTime > 0) {
          --this.invulnerableTime;
       }
 
       this.containerMenu.broadcastChanges();
-      if (!this.level().isClientSide && !this.containerMenu.stillValid(this)) {
+      if (!this.containerMenu.stillValid(this)) {
          this.closeContainer();
          this.containerMenu = this.inventoryMenu;
       }
@@ -938,7 +936,7 @@ public class ServerPlayer extends Player {
       LivingEntity var5 = this.getKillCredit();
       if (var5 != null) {
          this.awardStat(Stats.ENTITY_KILLED_BY.get(var5.getType()));
-         var5.awardKillScore(this, this.deathScore, var1);
+         var5.awardKillScore(this, var1);
          this.createWitherRose(var5);
       }
 
@@ -951,6 +949,7 @@ public class ServerPlayer extends Player {
       this.setSharedFlagOnFire(false);
       this.getCombatTracker().recheckStatus();
       this.setLastDeathLocation(Optional.of(GlobalPos.of(this.level().dimension(), this.blockPosition())));
+      this.setClientLoaded(false);
    }
 
    private void tellNeutralMobsThatIDied() {
@@ -962,10 +961,9 @@ public class ServerPlayer extends Player {
       });
    }
 
-   public void awardKillScore(Entity var1, int var2, DamageSource var3) {
+   public void awardKillScore(Entity var1, DamageSource var2) {
       if (var1 != this) {
-         super.awardKillScore(var1, var2, var3);
-         this.increaseScore(var2);
+         super.awardKillScore(var1, var2);
          this.getScoreboard().forAllObjectives(ObjectiveCriteria.KILL_COUNT_ALL, this, ScoreAccess::increment);
          if (var1 instanceof Player) {
             this.awardStat(Stats.PLAYER_KILLS);
@@ -976,7 +974,7 @@ public class ServerPlayer extends Player {
 
          this.handleTeamKill(this, var1, ObjectiveCriteria.TEAM_KILL);
          this.handleTeamKill(var1, this, ObjectiveCriteria.KILLED_BY_TEAM);
-         CriteriaTriggers.PLAYER_KILLED_ENTITY.trigger(this, var1, var3);
+         CriteriaTriggers.PLAYER_KILLED_ENTITY.trigger(this, var1, var2);
       }
    }
 
@@ -995,31 +993,26 @@ public class ServerPlayer extends Player {
       if (this.isInvulnerableTo(var1, var2)) {
          return false;
       } else {
-         boolean var4 = this.server.isDedicatedServer() && this.isPvpAllowed() && var2.is(DamageTypeTags.IS_FALL);
-         if (!var4 && this.spawnInvulnerableTime > 0 && !var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
-            return false;
-         } else {
-            Entity var5 = var2.getEntity();
-            if (var5 instanceof Player) {
-               Player var6 = (Player)var5;
-               if (!this.canHarmPlayer(var6)) {
+         Entity var4 = var2.getEntity();
+         if (var4 instanceof Player) {
+            Player var5 = (Player)var4;
+            if (!this.canHarmPlayer(var5)) {
+               return false;
+            }
+         }
+
+         if (var4 instanceof AbstractArrow) {
+            AbstractArrow var8 = (AbstractArrow)var4;
+            Entity var6 = var8.getOwner();
+            if (var6 instanceof Player) {
+               Player var7 = (Player)var6;
+               if (!this.canHarmPlayer(var7)) {
                   return false;
                }
             }
-
-            if (var5 instanceof AbstractArrow) {
-               AbstractArrow var9 = (AbstractArrow)var5;
-               Entity var7 = var9.getOwner();
-               if (var7 instanceof Player) {
-                  Player var8 = (Player)var7;
-                  if (!this.canHarmPlayer(var8)) {
-                     return false;
-                  }
-               }
-            }
-
-            return super.hurtServer(var1, var2, var3);
          }
+
+         return super.hurtServer(var1, var2, var3);
       }
    }
 
@@ -1255,7 +1248,7 @@ public class ServerPlayer extends Player {
    }
 
    public boolean isInvulnerableTo(ServerLevel var1, DamageSource var2) {
-      return super.isInvulnerableTo(var1, var2) || this.isChangingDimension() && !var2.is(DamageTypes.ENDER_PEARL);
+      return super.isInvulnerableTo(var1, var2) || this.isChangingDimension() && !var2.is(DamageTypes.ENDER_PEARL) || !this.hasClientLoaded();
    }
 
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {

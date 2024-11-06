@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -41,12 +40,7 @@ public class BoundingBox {
       this.maxY = var5;
       this.maxZ = var6;
       if (var4 < var1 || var5 < var2 || var6 < var3) {
-         String var7 = "Invalid bounding box data, inverted bounds for: " + String.valueOf(this);
-         if (SharedConstants.IS_RUNNING_IN_IDE) {
-            throw new IllegalStateException(var7);
-         }
-
-         LOGGER.error(var7);
+         Util.logAndPauseIfInIde("Invalid bounding box data, inverted bounds for: " + String.valueOf(this));
          this.minX = Math.min(var1, var4);
          this.minY = Math.min(var2, var5);
          this.minZ = Math.min(var3, var6);

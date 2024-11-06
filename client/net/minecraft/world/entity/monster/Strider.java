@@ -514,7 +514,6 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
 
       protected PathFinder createPathFinder(int var1) {
          this.nodeEvaluator = new WalkNodeEvaluator();
-         this.nodeEvaluator.setCanPassDoors(true);
          return new PathFinder(this.nodeEvaluator, var1);
       }
 

@@ -214,7 +214,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
    }
 
    private void notifyListUpdated() {
-      this.clampScrollAmount();
+      this.refreshScrollAmount();
       this.screen.triggerImmediateNarration(true);
    }
 

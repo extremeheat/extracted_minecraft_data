@@ -25,13 +25,7 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
 
    private static <E> Codec<List<Holder<E>>> homogenousList(Codec<Holder<E>> var0, boolean var1) {
       Codec var2 = var0.listOf().validate(ExtraCodecs.ensureHomogenous(Holder::kind));
-      return var1 ? var2 : Codec.either(var2, var0).xmap((var0x) -> {
-         return (List)var0x.map((var0) -> {
-            return var0;
-         }, List::of);
-      }, (var0x) -> {
-         return var0x.size() == 1 ? Either.right((Holder)var0x.get(0)) : Either.left(var0x);
-      });
+      return var1 ? var2 : ExtraCodecs.compactListCodec(var0, var2);
    }
 
    public static <E> Codec<HolderSet<E>> create(ResourceKey<? extends Registry<E>> var0, Codec<Holder<E>> var1, boolean var2) {

@@ -47,7 +47,7 @@ public abstract class GrowingPlantBodyBlock extends GrowingPlantBlock implements
       }
    }
 
-   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return new ItemStack(this.getHeadBlock());
    }
 

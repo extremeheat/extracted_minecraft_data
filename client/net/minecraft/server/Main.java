@@ -27,6 +27,7 @@ import joptsimple.util.PathProperties;
 import net.minecraft.CrashReport;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.SharedConstants;
+import net.minecraft.SuppressForbidden;
 import net.minecraft.Util;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
@@ -69,6 +70,9 @@ public class Main {
       super();
    }
 
+   @SuppressForbidden(
+      a = "System.out needed before bootstrap"
+   )
    @DontObfuscate
    public static void main(String[] var0) {
       SharedConstants.tryDetectVersion();

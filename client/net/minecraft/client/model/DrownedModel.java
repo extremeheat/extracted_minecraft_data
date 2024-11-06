@@ -9,9 +9,6 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.ZombieRenderState;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 public class DrownedModel extends ZombieModel<ZombieRenderState> {
    public DrownedModel(ModelPart var1) {
@@ -26,19 +23,14 @@ public class DrownedModel extends ZombieModel<ZombieRenderState> {
       return LayerDefinition.create(var1, 64, 64);
    }
 
-   protected HumanoidModel.ArmPose getArmPose(ZombieRenderState var1, HumanoidArm var2) {
-      ItemStack var3 = var2 == HumanoidArm.RIGHT ? var1.rightHandItem : var1.leftHandItem;
-      return var3.is(Items.TRIDENT) && var1.isAggressive && var1.mainArm == var2 ? HumanoidModel.ArmPose.THROW_SPEAR : HumanoidModel.ArmPose.EMPTY;
-   }
-
    public void setupAnim(ZombieRenderState var1) {
       super.setupAnim(var1);
-      if (this.getArmPose(var1, HumanoidArm.LEFT) == HumanoidModel.ArmPose.THROW_SPEAR) {
+      if (var1.leftArmPose == HumanoidModel.ArmPose.THROW_SPEAR) {
          this.leftArm.xRot = this.leftArm.xRot * 0.5F - 3.1415927F;
          this.leftArm.yRot = 0.0F;
       }
 
-      if (this.getArmPose(var1, HumanoidArm.RIGHT) == HumanoidModel.ArmPose.THROW_SPEAR) {
+      if (var1.rightArmPose == HumanoidModel.ArmPose.THROW_SPEAR) {
          this.rightArm.xRot = this.rightArm.xRot * 0.5F - 3.1415927F;
          this.rightArm.yRot = 0.0F;
       }

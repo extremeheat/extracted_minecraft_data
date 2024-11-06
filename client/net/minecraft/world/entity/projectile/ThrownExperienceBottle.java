@@ -7,8 +7,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 
@@ -36,7 +34,7 @@ public class ThrownExperienceBottle extends ThrowableItemProjectile {
    protected void onHit(HitResult var1) {
       super.onHit(var1);
       if (this.level() instanceof ServerLevel) {
-         this.level().levelEvent(2002, this.blockPosition(), PotionContents.getColor(Potions.WATER));
+         this.level().levelEvent(2002, this.blockPosition(), -13083194);
          int var2 = 3 + this.level().random.nextInt(5) + this.level().random.nextInt(5);
          ExperienceOrb.award((ServerLevel)this.level(), this.position(), var2);
          this.discard();

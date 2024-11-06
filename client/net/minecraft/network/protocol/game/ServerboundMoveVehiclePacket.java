@@ -1,43 +1,26 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
-public class ServerboundMoveVehiclePacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundMoveVehiclePacket> STREAM_CODEC = Packet.codec(ServerboundMoveVehiclePacket::write, ServerboundMoveVehiclePacket::new);
-   private final double x;
-   private final double y;
-   private final double z;
-   private final float yRot;
-   private final float xRot;
+public record ServerboundMoveVehiclePacket(Vec3 position, float yRot, float xRot, boolean onGround) implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundMoveVehiclePacket> STREAM_CODEC;
 
-   public ServerboundMoveVehiclePacket(Entity var1) {
+   public ServerboundMoveVehiclePacket(Vec3 var1, float var2, float var3, boolean var4) {
       super();
-      this.x = var1.lerpTargetX();
-      this.y = var1.lerpTargetY();
-      this.z = var1.lerpTargetZ();
-      this.yRot = var1.getYRot();
-      this.xRot = var1.getXRot();
+      this.position = var1;
+      this.yRot = var2;
+      this.xRot = var3;
+      this.onGround = var4;
    }
 
-   private ServerboundMoveVehiclePacket(FriendlyByteBuf var1) {
-      super();
-      this.x = var1.readDouble();
-      this.y = var1.readDouble();
-      this.z = var1.readDouble();
-      this.yRot = var1.readFloat();
-      this.xRot = var1.readFloat();
-   }
-
-   private void write(FriendlyByteBuf var1) {
-      var1.writeDouble(this.x);
-      var1.writeDouble(this.y);
-      var1.writeDouble(this.z);
-      var1.writeFloat(this.yRot);
-      var1.writeFloat(this.xRot);
+   public static ServerboundMoveVehiclePacket fromEntity(Entity var0) {
+      return new ServerboundMoveVehiclePacket(new Vec3(var0.lerpTargetX(), var0.lerpTargetY(), var0.lerpTargetZ()), var0.getYRot(), var0.getXRot(), var0.onGround());
    }
 
    public PacketType<ServerboundMoveVehiclePacket> type() {
@@ -48,23 +31,23 @@ public class ServerboundMoveVehiclePacket implements Packet<ServerGamePacketList
       var1.handleMoveVehicle(this);
    }
 
-   public double getX() {
-      return this.x;
+   public Vec3 position() {
+      return this.position;
    }
 
-   public double getY() {
-      return this.y;
-   }
-
-   public double getZ() {
-      return this.z;
-   }
-
-   public float getYRot() {
+   public float yRot() {
       return this.yRot;
    }
 
-   public float getXRot() {
+   public float xRot() {
       return this.xRot;
+   }
+
+   public boolean onGround() {
+      return this.onGround;
+   }
+
+   static {
+      STREAM_CODEC = StreamCodec.composite(Vec3.STREAM_CODEC, ServerboundMoveVehiclePacket::position, ByteBufCodecs.FLOAT, ServerboundMoveVehiclePacket::yRot, ByteBufCodecs.FLOAT, ServerboundMoveVehiclePacket::xRot, ByteBufCodecs.BOOL, ServerboundMoveVehiclePacket::onGround, ServerboundMoveVehiclePacket::new);
    }
 }

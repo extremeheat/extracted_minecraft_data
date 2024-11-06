@@ -22,7 +22,6 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -248,10 +247,6 @@ public class TrialSpawnerData {
 
    public boolean isCooldownFinished(ServerLevel var1) {
       return var1.getGameTime() >= this.cooldownEndsAt;
-   }
-
-   public void setEntityId(TrialSpawner var1, RandomSource var2, EntityType<?> var3) {
-      this.getOrCreateNextSpawnData(var1, var2).getEntityToSpawn().putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(var3).toString());
    }
 
    protected SpawnData getOrCreateNextSpawnData(TrialSpawner var1, RandomSource var2) {

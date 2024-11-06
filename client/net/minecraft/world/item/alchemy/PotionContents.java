@@ -40,7 +40,7 @@ import net.minecraft.world.level.Level;
 public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> customColor, List<MobEffectInstance> customEffects, Optional<String> customName) implements ConsumableListener {
    public static final PotionContents EMPTY = new PotionContents(Optional.empty(), Optional.empty(), List.of(), Optional.empty());
    private static final Component NO_EFFECT;
-   private static final int BASE_POTION_COLOR = -13083194;
+   public static final int BASE_POTION_COLOR = -13083194;
    private static final Codec<PotionContents> FULL_CODEC;
    public static final Codec<PotionContents> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, PotionContents> STREAM_CODEC;
@@ -105,15 +105,11 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
    }
 
    public int getColor() {
-      return this.customColor.isPresent() ? (Integer)this.customColor.get() : getColor(this.getAllEffects());
+      return this.getColorOr(-13083194);
    }
 
-   public static int getColor(Holder<Potion> var0) {
-      return getColor((Iterable)((Potion)var0.value()).getEffects());
-   }
-
-   public static int getColor(Iterable<MobEffectInstance> var0) {
-      return getColorOptional(var0).orElse(-13083194);
+   public int getColorOr(int var1) {
+      return this.customColor.isPresent() ? (Integer)this.customColor.get() : getColorOptional(this.getAllEffects()).orElse(var1);
    }
 
    public Component getName(String var1) {

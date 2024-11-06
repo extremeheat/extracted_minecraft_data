@@ -15,7 +15,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipProvider;
-import net.minecraft.world.item.equipment.EquipmentModel;
 
 public record ArmorTrim(Holder<TrimMaterial> material, Holder<TrimPattern> pattern, boolean showInTooltip) implements TooltipProvider {
    public static final Codec<ArmorTrim> CODEC = RecordCodecBuilder.create((var0) -> {
@@ -37,21 +36,8 @@ public record ArmorTrim(Holder<TrimMaterial> material, Holder<TrimPattern> patte
       this.showInTooltip = var3;
    }
 
-   private static String getColorPaletteSuffix(Holder<TrimMaterial> var0, ResourceLocation var1) {
-      String var2 = (String)((TrimMaterial)var0.value()).overrideArmorMaterials().get(var1);
-      return var2 != null ? var2 : ((TrimMaterial)var0.value()).assetName();
-   }
-
    public boolean hasPatternAndMaterial(Holder<TrimPattern> var1, Holder<TrimMaterial> var2) {
       return var1.equals(this.pattern) && var2.equals(this.material);
-   }
-
-   public ResourceLocation getTexture(EquipmentModel.LayerType var1, ResourceLocation var2) {
-      ResourceLocation var3 = ((TrimPattern)this.pattern.value()).assetId();
-      String var4 = getColorPaletteSuffix(this.material, var2);
-      return var3.withPath((var2x) -> {
-         return "trims/entity/" + var1.getSerializedName() + "/" + var2x + "_" + var4;
-      });
    }
 
    public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {

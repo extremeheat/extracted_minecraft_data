@@ -4,17 +4,11 @@ import java.util.Locale;
 import net.minecraft.resources.ResourceLocation;
 
 public record ModelResourceLocation(ResourceLocation id, String variant) {
-   public static final String INVENTORY_VARIANT = "inventory";
-
    public ModelResourceLocation(ResourceLocation var1, String var2) {
       super();
       var2 = lowercaseVariant(var2);
       this.id = var1;
       this.variant = var2;
-   }
-
-   public static ModelResourceLocation inventory(ResourceLocation var0) {
-      return new ModelResourceLocation(var0, "inventory");
    }
 
    private static String lowercaseVariant(String var0) {

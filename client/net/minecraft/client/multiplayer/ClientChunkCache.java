@@ -112,9 +112,8 @@ public class ClientChunkCache extends ChunkSource {
             var7.replaceWithPacketData(var3, var4, var5);
             this.storage.replace(var6, var7);
          } else {
-            this.storage.dropEmptySections(var7);
             var7.replaceWithPacketData(var3, var4, var5);
-            this.storage.addEmptySections(var7);
+            this.storage.refreshEmptySections(var7);
          }
 
          this.level.onChunkLoaded(var8);
@@ -240,7 +239,7 @@ public class ClientChunkCache extends ChunkSource {
          }
       }
 
-      void dropEmptySections(LevelChunk var1) {
+      private void dropEmptySections(LevelChunk var1) {
          LevelChunkSection[] var2 = var1.getSections();
 
          for(int var3 = 0; var3 < var2.length; ++var3) {
@@ -250,7 +249,7 @@ public class ClientChunkCache extends ChunkSource {
 
       }
 
-      void addEmptySections(LevelChunk var1) {
+      private void addEmptySections(LevelChunk var1) {
          LevelChunkSection[] var2 = var1.getSections();
 
          for(int var3 = 0; var3 < var2.length; ++var3) {
@@ -258,6 +257,22 @@ public class ClientChunkCache extends ChunkSource {
             if (var4.hasOnlyAir()) {
                ChunkPos var5 = var1.getPos();
                this.loadedEmptySections.add(SectionPos.asLong(var5.x, var1.getSectionYFromSectionIndex(var3), var5.z));
+            }
+         }
+
+      }
+
+      void refreshEmptySections(LevelChunk var1) {
+         ChunkPos var2 = var1.getPos();
+         LevelChunkSection[] var3 = var1.getSections();
+
+         for(int var4 = 0; var4 < var3.length; ++var4) {
+            LevelChunkSection var5 = var3[var4];
+            long var6 = SectionPos.asLong(var2.x, var1.getSectionYFromSectionIndex(var4), var2.z);
+            if (var5.hasOnlyAir()) {
+               this.loadedEmptySections.add(var6);
+            } else if (this.loadedEmptySections.remove(var6)) {
+               ClientChunkCache.this.level.onSectionBecomingNonEmpty(var6);
             }
          }
 

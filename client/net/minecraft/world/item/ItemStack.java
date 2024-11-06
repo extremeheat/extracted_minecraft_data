@@ -183,16 +183,16 @@ public final class ItemStack implements DataComponentHolder {
       return (DataComponentMap)(!this.isEmpty() ? this.components : DataComponentMap.EMPTY);
    }
 
-   public void clearComponents() {
-      this.components.clearPatch();
-   }
-
    public DataComponentMap getPrototype() {
       return !this.isEmpty() ? this.getItem().components() : DataComponentMap.EMPTY;
    }
 
    public DataComponentPatch getComponentsPatch() {
       return !this.isEmpty() ? this.components.asPatch() : DataComponentPatch.EMPTY;
+   }
+
+   public DataComponentMap immutableComponents() {
+      return !this.isEmpty() ? this.components.toImmutableMap() : DataComponentMap.EMPTY;
    }
 
    public ItemStack(ItemLike var1) {
@@ -802,65 +802,70 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public List<Component> getTooltipLines(Item.TooltipContext var1, @Nullable Player var2, TooltipFlag var3) {
+      boolean var4 = BlockItem.shouldPrintOpWarning(this, var2);
       if (!var3.isCreative() && this.has(DataComponents.HIDE_TOOLTIP)) {
-         return List.of();
+         return var4 ? BlockItem.OP_NBT_WARNING : List.of();
       } else {
-         ArrayList var4 = Lists.newArrayList();
-         var4.add(this.getStyledHoverName());
+         ArrayList var5 = Lists.newArrayList();
+         var5.add(this.getStyledHoverName());
          if (!var3.isAdvanced() && !this.has(DataComponents.CUSTOM_NAME)) {
-            MapId var5 = (MapId)this.get(DataComponents.MAP_ID);
-            if (var5 != null) {
-               var4.add(MapItem.getTooltipForId(var5));
+            MapId var6 = (MapId)this.get(DataComponents.MAP_ID);
+            if (var6 != null) {
+               var5.add(MapItem.getTooltipForId(var6));
             }
          }
 
-         Objects.requireNonNull(var4);
-         Consumer var9 = var4::add;
+         Objects.requireNonNull(var5);
+         Consumer var10 = var5::add;
          if (!this.has(DataComponents.HIDE_ADDITIONAL_TOOLTIP)) {
-            this.getItem().appendHoverText(this, var1, var4, var3);
+            this.getItem().appendHoverText(this, var1, var5, var3);
          }
 
-         this.addToTooltip(DataComponents.JUKEBOX_PLAYABLE, var1, var9, var3);
-         this.addToTooltip(DataComponents.TRIM, var1, var9, var3);
-         this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var9, var3);
-         this.addToTooltip(DataComponents.ENCHANTMENTS, var1, var9, var3);
-         this.addToTooltip(DataComponents.DYED_COLOR, var1, var9, var3);
-         this.addToTooltip(DataComponents.LORE, var1, var9, var3);
-         this.addAttributeTooltips(var9, var2);
-         this.addToTooltip(DataComponents.UNBREAKABLE, var1, var9, var3);
-         this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var1, var9, var3);
-         this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, var1, var9, var3);
-         AdventureModePredicate var6 = (AdventureModePredicate)this.get(DataComponents.CAN_BREAK);
-         if (var6 != null && var6.showInTooltip()) {
-            var9.accept(CommonComponents.EMPTY);
-            var9.accept(AdventureModePredicate.CAN_BREAK_HEADER);
-            var6.addToTooltip(var9);
-         }
-
-         AdventureModePredicate var7 = (AdventureModePredicate)this.get(DataComponents.CAN_PLACE_ON);
+         this.addToTooltip(DataComponents.JUKEBOX_PLAYABLE, var1, var10, var3);
+         this.addToTooltip(DataComponents.TRIM, var1, var10, var3);
+         this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var10, var3);
+         this.addToTooltip(DataComponents.ENCHANTMENTS, var1, var10, var3);
+         this.addToTooltip(DataComponents.DYED_COLOR, var1, var10, var3);
+         this.addToTooltip(DataComponents.LORE, var1, var10, var3);
+         this.addAttributeTooltips(var10, var2);
+         this.addToTooltip(DataComponents.UNBREAKABLE, var1, var10, var3);
+         this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var1, var10, var3);
+         this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, var1, var10, var3);
+         AdventureModePredicate var7 = (AdventureModePredicate)this.get(DataComponents.CAN_BREAK);
          if (var7 != null && var7.showInTooltip()) {
-            var9.accept(CommonComponents.EMPTY);
-            var9.accept(AdventureModePredicate.CAN_PLACE_HEADER);
-            var7.addToTooltip(var9);
+            var10.accept(CommonComponents.EMPTY);
+            var10.accept(AdventureModePredicate.CAN_BREAK_HEADER);
+            var7.addToTooltip(var10);
+         }
+
+         AdventureModePredicate var8 = (AdventureModePredicate)this.get(DataComponents.CAN_PLACE_ON);
+         if (var8 != null && var8.showInTooltip()) {
+            var10.accept(CommonComponents.EMPTY);
+            var10.accept(AdventureModePredicate.CAN_PLACE_HEADER);
+            var8.addToTooltip(var10);
          }
 
          if (var3.isAdvanced()) {
             if (this.isDamaged()) {
-               var4.add(Component.translatable("item.durability", this.getMaxDamage() - this.getDamageValue(), this.getMaxDamage()));
+               var5.add(Component.translatable("item.durability", this.getMaxDamage() - this.getDamageValue(), this.getMaxDamage()));
             }
 
-            var4.add(Component.literal(BuiltInRegistries.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
-            int var8 = this.components.size();
-            if (var8 > 0) {
-               var4.add(Component.translatable("item.components", var8).withStyle(ChatFormatting.DARK_GRAY));
+            var5.add(Component.literal(BuiltInRegistries.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
+            int var9 = this.components.size();
+            if (var9 > 0) {
+               var5.add(Component.translatable("item.components", var9).withStyle(ChatFormatting.DARK_GRAY));
             }
          }
 
          if (var2 != null && !this.getItem().isEnabled(var2.level().enabledFeatures())) {
-            var4.add(DISABLED_ITEM_TOOLTIP);
+            var5.add(DISABLED_ITEM_TOOLTIP);
          }
 
-         return var4;
+         if (var4) {
+            var5.addAll(BlockItem.OP_NBT_WARNING);
+         }
+
+         return var5;
       }
    }
 

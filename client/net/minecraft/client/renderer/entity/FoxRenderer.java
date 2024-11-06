@@ -7,6 +7,7 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.FoxHeldItemLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.FoxRenderState;
+import net.minecraft.client.renderer.entity.state.HoldingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.Fox;
@@ -19,7 +20,7 @@ public class FoxRenderer extends AgeableMobRenderer<Fox, FoxRenderState, FoxMode
 
    public FoxRenderer(EntityRendererProvider.Context var1) {
       super(var1, new FoxModel(var1.bakeLayer(ModelLayers.FOX)), new FoxModel(var1.bakeLayer(ModelLayers.FOX_BABY)), 0.4F);
-      this.addLayer(new FoxHeldItemLayer(this, var1.getItemRenderer()));
+      this.addLayer(new FoxHeldItemLayer(this));
    }
 
    protected void setupRotations(FoxRenderState var1, PoseStack var2, float var3, float var4) {
@@ -44,6 +45,7 @@ public class FoxRenderer extends AgeableMobRenderer<Fox, FoxRenderState, FoxMode
 
    public void extractRenderState(Fox var1, FoxRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
+      HoldingEntityRenderState.extractHoldingEntityRenderState(var1, var2, this.itemModelResolver);
       var2.headRollAngle = var1.getHeadRollAngle(var3);
       var2.isCrouching = var1.isCrouching();
       var2.crouchAmount = var1.getCrouchAmount(var3);

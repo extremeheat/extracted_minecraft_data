@@ -11,7 +11,6 @@ import net.minecraft.core.IdMapper;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -26,6 +25,8 @@ import net.minecraft.world.level.material.MapColor;
 
 public class BlockColors {
    private static final int DEFAULT = -1;
+   public static final int LILY_PAD_IN_WORLD = -14647248;
+   public static final int LILY_PAD_DEFAULT = -9321636;
    private final IdMapper<BlockColor> blockColors = new IdMapper(32);
    private final Map<Block, Set<Property<?>>> coloringStates = Maps.newHashMap();
 
@@ -50,13 +51,13 @@ public class BlockColors {
          }
       }, Blocks.PINK_PETALS);
       var0.register((var0x, var1, var2, var3) -> {
-         return FoliageColor.getEvergreenColor();
+         return -10380959;
       }, Blocks.SPRUCE_LEAVES);
       var0.register((var0x, var1, var2, var3) -> {
-         return FoliageColor.getBirchColor();
+         return -8345771;
       }, Blocks.BIRCH_LEAVES);
       var0.register((var0x, var1, var2, var3) -> {
-         return var1 != null && var2 != null ? BiomeColors.getAverageFoliageColor(var1, var2) : FoliageColor.getDefaultColor();
+         return var1 != null && var2 != null ? BiomeColors.getAverageFoliageColor(var1, var2) : -12012264;
       }, Blocks.OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.ACACIA_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.VINE, Blocks.MANGROVE_LEAVES);
       var0.register((var0x, var1, var2, var3) -> {
          return var1 != null && var2 != null ? BiomeColors.getAverageWaterColor(var1, var2) : -1;

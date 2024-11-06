@@ -98,16 +98,17 @@ public class ExperienceOrb extends Entity {
          }
       }
 
+      double var6 = this.getDeltaMovement().y;
       this.move(MoverType.SELF, this.getDeltaMovement());
       this.applyEffectsFromBlocks();
-      float var6 = 0.98F;
+      float var3 = 0.98F;
       if (this.onGround()) {
-         var6 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
+         var3 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
       }
 
-      this.setDeltaMovement(this.getDeltaMovement().multiply((double)var6, 0.98, (double)var6));
+      this.setDeltaMovement(this.getDeltaMovement().multiply((double)var3, 0.98, (double)var3));
       if (this.onGround()) {
-         this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, -0.9, 1.0));
+         this.setDeltaMovement(new Vec3(this.getDeltaMovement().x, -var6 * 0.4, this.getDeltaMovement().z));
       }
 
       ++this.age;

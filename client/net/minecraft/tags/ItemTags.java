@@ -49,8 +49,6 @@ public final class ItemTags {
    public static final TagKey<Item> SMALL_FLOWERS = bind("small_flowers");
    public static final TagKey<Item> BEDS = bind("beds");
    public static final TagKey<Item> FENCES = bind("fences");
-   public static final TagKey<Item> TALL_FLOWERS = bind("tall_flowers");
-   public static final TagKey<Item> FLOWERS = bind("flowers");
    public static final TagKey<Item> PIGLIN_REPELLENTS = bind("piglin_repellents");
    public static final TagKey<Item> PIGLIN_LOVED = bind("piglin_loved");
    public static final TagKey<Item> IGNORED_BY_PIGLIN_BABIES = bind("ignored_by_piglin_babies");
@@ -155,6 +153,10 @@ public final class ItemTags {
    public static final TagKey<Item> DYEABLE = bind("dyeable");
    public static final TagKey<Item> FURNACE_MINECART_FUEL = bind("furnace_minecart_fuel");
    public static final TagKey<Item> BUNDLES = bind("bundles");
+   public static final TagKey<Item> SKELETON_PREFERRED_WEAPON = bind("skeleton_preferred_weapon");
+   public static final TagKey<Item> DROWNED_PREFERRED_WEAPON = bind("drowned_preferred_weapon");
+   public static final TagKey<Item> PIGLIN_PREFERRED_WEAPON = bind("piglin_preferred_weapon");
+   public static final TagKey<Item> PILLAGER_PREFERRED_WEAPON = bind("pillager_preferred_weapon");
    public static final TagKey<Item> FOOT_ARMOR_ENCHANTABLE = bind("enchantable/foot_armor");
    public static final TagKey<Item> LEG_ARMOR_ENCHANTABLE = bind("enchantable/leg_armor");
    public static final TagKey<Item> CHEST_ARMOR_ENCHANTABLE = bind("enchantable/chest_armor");

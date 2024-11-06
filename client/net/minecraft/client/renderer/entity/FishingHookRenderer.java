@@ -15,8 +15,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.FishingHook;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.phys.Vec3;
 
 public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHookRenderState> {
@@ -59,26 +58,25 @@ public class FishingHookRenderer extends EntityRenderer<FishingHook, FishingHook
       super.render(var1, var2, var3, var4);
    }
 
-   private Vec3 getPlayerHandPos(Player var1, float var2, float var3) {
-      int var4 = var1.getMainArm() == HumanoidArm.RIGHT ? 1 : -1;
-      ItemStack var5 = var1.getMainHandItem();
-      if (!var5.is(Items.FISHING_ROD)) {
-         var4 = -var4;
-      }
+   public static HumanoidArm getHoldingArm(Player var0) {
+      return var0.getMainHandItem().getItem() instanceof FishingRodItem ? var0.getMainArm() : var0.getMainArm().getOpposite();
+   }
 
+   private Vec3 getPlayerHandPos(Player var1, float var2, float var3) {
+      int var4 = getHoldingArm(var1) == HumanoidArm.RIGHT ? 1 : -1;
       if (this.entityRenderDispatcher.options.getCameraType().isFirstPerson() && var1 == Minecraft.getInstance().player) {
-         double var17 = 960.0 / (double)(Integer)this.entityRenderDispatcher.options.fov().get();
-         Vec3 var8 = this.entityRenderDispatcher.camera.getNearPlane().getPointOnPlane((float)var4 * 0.525F, -0.1F).scale(var17).yRot(var2 * 0.5F).xRot(-var2 * 0.7F);
-         return var1.getEyePosition(var3).add(var8);
+         double var16 = 960.0 / (double)(Integer)this.entityRenderDispatcher.options.fov().get();
+         Vec3 var7 = this.entityRenderDispatcher.camera.getNearPlane().getPointOnPlane((float)var4 * 0.525F, -0.1F).scale(var16).yRot(var2 * 0.5F).xRot(-var2 * 0.7F);
+         return var1.getEyePosition(var3).add(var7);
       } else {
-         float var6 = Mth.lerp(var3, var1.yBodyRotO, var1.yBodyRot) * 0.017453292F;
-         double var7 = (double)Mth.sin(var6);
-         double var9 = (double)Mth.cos(var6);
-         float var11 = var1.getScale();
-         double var12 = (double)var4 * 0.35 * (double)var11;
-         double var14 = 0.8 * (double)var11;
-         float var16 = var1.isCrouching() ? -0.1875F : 0.0F;
-         return var1.getEyePosition(var3).add(-var9 * var12 - var7 * var14, (double)var16 - 0.45 * (double)var11, -var7 * var12 + var9 * var14);
+         float var5 = Mth.lerp(var3, var1.yBodyRotO, var1.yBodyRot) * 0.017453292F;
+         double var6 = (double)Mth.sin(var5);
+         double var8 = (double)Mth.cos(var5);
+         float var10 = var1.getScale();
+         double var11 = (double)var4 * 0.35 * (double)var10;
+         double var13 = 0.8 * (double)var10;
+         float var15 = var1.isCrouching() ? -0.1875F : 0.0F;
+         return var1.getEyePosition(var3).add(-var8 * var11 - var6 * var13, (double)var15 - 0.45 * (double)var10, -var6 * var11 + var8 * var13);
       }
    }
 

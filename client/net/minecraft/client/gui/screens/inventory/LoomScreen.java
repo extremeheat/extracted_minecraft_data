@@ -70,7 +70,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
 
    protected void init() {
       super.init();
-      this.flag = this.minecraft.getEntityModels().bakeLayer(ModelLayers.STANDING_BANNER).getChild("flag");
+      this.flag = this.minecraft.getEntityModels().bakeLayer(ModelLayers.STANDING_BANNER_FLAG).getChild("flag");
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
@@ -111,11 +111,9 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
          var1.pose().pushPose();
          var1.pose().translate((float)(var5 + 139), (float)(var6 + 52), 0.0F);
          var1.pose().scale(24.0F, 24.0F, 1.0F);
-         var1.pose().translate(0.5F, -0.5F, 0.5F);
+         var1.pose().translate(0.5F, 0.0F, 0.5F);
          float var13 = 0.6666667F;
          var1.pose().scale(0.6666667F, 0.6666667F, -0.6666667F);
-         this.flag.xRot = 0.0F;
-         this.flag.y = -32.0F;
          DyeColor var14 = ((BannerItem)var10.getItem().getItem()).getColor();
          var1.drawSpecial((var3x) -> {
             BannerRenderer.renderPatterns(var1.pose(), var3x, 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, var14, this.resultBannerPatterns);
@@ -166,12 +164,10 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       var5.pushPose();
       var5.translate((float)var3 + 0.5F, (float)(var4 + 16), 0.0F);
       var5.scale(6.0F, -6.0F, 1.0F);
-      var5.translate(0.5F, 0.5F, 0.0F);
+      var5.translate(0.5F, 0.0F, 0.0F);
       var5.translate(0.5F, 0.5F, 0.5F);
       float var6 = 0.6666667F;
       var5.scale(0.6666667F, -0.6666667F, -0.6666667F);
-      this.flag.xRot = 0.0F;
-      this.flag.y = -32.0F;
       BannerPatternLayers var7 = (new BannerPatternLayers.Builder()).add(var2, DyeColor.WHITE).build();
       var1.drawSpecial((var3x) -> {
          BannerRenderer.renderPatterns(var5, var3x, 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, DyeColor.GRAY, var7);

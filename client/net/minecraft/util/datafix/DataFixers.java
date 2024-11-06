@@ -75,6 +75,7 @@ import net.minecraft.util.datafix.fixes.ChunkToProtochunkFix;
 import net.minecraft.util.datafix.fixes.ColorlessShulkerEntityFix;
 import net.minecraft.util.datafix.fixes.ContainerBlockEntityLockPredicateFix;
 import net.minecraft.util.datafix.fixes.CriteriaRenameFix;
+import net.minecraft.util.datafix.fixes.CustomModelDataExpandFix;
 import net.minecraft.util.datafix.fixes.DecoratedPotFieldRenameFix;
 import net.minecraft.util.datafix.fixes.DropInvalidSignDataFix;
 import net.minecraft.util.datafix.fixes.DyeItemRenameFix;
@@ -117,6 +118,7 @@ import net.minecraft.util.datafix.fixes.EntityWolfColorFix;
 import net.minecraft.util.datafix.fixes.EntityZombieSplitFix;
 import net.minecraft.util.datafix.fixes.EntityZombieVillagerTypeFix;
 import net.minecraft.util.datafix.fixes.EntityZombifiedPiglinRenameFix;
+import net.minecraft.util.datafix.fixes.EquippableAssetRenameFix;
 import net.minecraft.util.datafix.fixes.FeatureFlagRemoveFix;
 import net.minecraft.util.datafix.fixes.FilteredBooksFix;
 import net.minecraft.util.datafix.fixes.FilteredSignsFix;
@@ -130,6 +132,8 @@ import net.minecraft.util.datafix.fixes.GossipUUIDFix;
 import net.minecraft.util.datafix.fixes.HeightmapRenamingFix;
 import net.minecraft.util.datafix.fixes.HorseBodyArmorItemFix;
 import net.minecraft.util.datafix.fixes.IglooMetadataRemovalFix;
+import net.minecraft.util.datafix.fixes.InvalidBlockEntityLockFix;
+import net.minecraft.util.datafix.fixes.InvalidLockComponentFix;
 import net.minecraft.util.datafix.fixes.ItemBannerColorFix;
 import net.minecraft.util.datafix.fixes.ItemCustomNameToComponentFix;
 import net.minecraft.util.datafix.fixes.ItemIdFix;
@@ -812,9 +816,9 @@ public class DataFixers {
       var0.addFixer(new CriteriaRenameFix(var172, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> {
          return (String)var173.getOrDefault(var1x, var1x);
       }));
-      Set var247 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var247);
-      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var247::contains));
+      Set var249 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var249);
+      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var249::contains));
       Schema var174 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var174));
       Schema var175 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -978,6 +982,12 @@ public class DataFixers {
       var0.addFixer(new EntitySalmonSizeFix(var245));
       Schema var246 = var0.addSchema(4173, SAME_NAMESPACED);
       var0.addFixer(new EntityFieldsRenameFix(var246, "Rename TNT Minecart fuse", "minecraft:tnt_minecart", Map.of("TNTFuse", "fuse")));
+      Schema var247 = var0.addSchema(4175, SAME_NAMESPACED);
+      var0.addFixer(new EquippableAssetRenameFix(var247));
+      var0.addFixer(new CustomModelDataExpandFix(var247));
+      Schema var248 = var0.addSchema(4176, SAME_NAMESPACED);
+      var0.addFixer(new InvalidBlockEntityLockFix(var248));
+      var0.addFixer(new InvalidLockComponentFix(var248));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

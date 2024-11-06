@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
@@ -27,18 +28,20 @@ import net.minecraft.world.phys.HitResult;
 public class BlockEntityRenderDispatcher implements ResourceManagerReloadListener {
    private Map<BlockEntityType<?>, BlockEntityRenderer<?>> renderers = ImmutableMap.of();
    private final Font font;
-   private final EntityModelSet entityModelSet;
+   private final Supplier<EntityModelSet> entityModelSet;
    public Level level;
    public Camera camera;
    public HitResult cameraHitResult;
-   private final Supplier<BlockRenderDispatcher> blockRenderDispatcher;
-   private final Supplier<ItemRenderer> itemRenderer;
-   private final Supplier<EntityRenderDispatcher> entityRenderer;
+   private final BlockRenderDispatcher blockRenderDispatcher;
+   private final ItemModelResolver itemModelResolver;
+   private final ItemRenderer itemRenderer;
+   private final EntityRenderDispatcher entityRenderer;
 
-   public BlockEntityRenderDispatcher(Font var1, EntityModelSet var2, Supplier<BlockRenderDispatcher> var3, Supplier<ItemRenderer> var4, Supplier<EntityRenderDispatcher> var5) {
+   public BlockEntityRenderDispatcher(Font var1, Supplier<EntityModelSet> var2, BlockRenderDispatcher var3, ItemModelResolver var4, ItemRenderer var5, EntityRenderDispatcher var6) {
       super();
-      this.itemRenderer = var4;
-      this.entityRenderer = var5;
+      this.itemRenderer = var5;
+      this.itemModelResolver = var4;
+      this.entityRenderer = var6;
       this.font = var1;
       this.entityModelSet = var2;
       this.blockRenderDispatcher = var3;
@@ -63,9 +66,14 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
       if (var5 != null) {
          if (var1.hasLevel() && var1.getType().isValid(var1.getBlockState())) {
             if (var5.shouldRender(var1, this.camera.getPosition())) {
-               tryRender(var1, () -> {
+               try {
                   setupAndRender(var5, var1, var2, var3, var4);
-               });
+               } catch (Throwable var9) {
+                  CrashReport var7 = CrashReport.forThrowable(var9, "Rendering Block Entity");
+                  CrashReportCategory var8 = var7.addCategory("Block Entity Details");
+                  var1.fillCrashReportCategory(var8);
+                  throw new ReportedException(var7);
+               }
             }
          }
       }
@@ -83,29 +91,6 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
       var0.render(var1, var2, var3, var4, var5, OverlayTexture.NO_OVERLAY);
    }
 
-   public <E extends BlockEntity> boolean renderItem(E var1, PoseStack var2, MultiBufferSource var3, int var4, int var5) {
-      BlockEntityRenderer var6 = this.getRenderer(var1);
-      if (var6 == null) {
-         return true;
-      } else {
-         tryRender(var1, () -> {
-            var6.render(var1, 0.0F, var2, var3, var4, var5);
-         });
-         return false;
-      }
-   }
-
-   private static void tryRender(BlockEntity var0, Runnable var1) {
-      try {
-         var1.run();
-      } catch (Throwable var5) {
-         CrashReport var3 = CrashReport.forThrowable(var5, "Rendering Block Entity");
-         CrashReportCategory var4 = var3.addCategory("Block Entity Details");
-         var0.fillCrashReportCategory(var4);
-         throw new ReportedException(var3);
-      }
-   }
-
    public void setLevel(@Nullable Level var1) {
       this.level = var1;
       if (var1 == null) {
@@ -115,7 +100,7 @@ public class BlockEntityRenderDispatcher implements ResourceManagerReloadListene
    }
 
    public void onResourceManagerReload(ResourceManager var1) {
-      BlockEntityRendererProvider.Context var2 = new BlockEntityRendererProvider.Context(this, (BlockRenderDispatcher)this.blockRenderDispatcher.get(), (ItemRenderer)this.itemRenderer.get(), (EntityRenderDispatcher)this.entityRenderer.get(), this.entityModelSet, this.font);
+      BlockEntityRendererProvider.Context var2 = new BlockEntityRendererProvider.Context(this, this.blockRenderDispatcher, this.itemModelResolver, this.itemRenderer, this.entityRenderer, (EntityModelSet)this.entityModelSet.get(), this.font);
       this.renderers = BlockEntityRenderers.createEntityRenderers(var2);
    }
 }

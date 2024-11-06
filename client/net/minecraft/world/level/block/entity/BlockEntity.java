@@ -20,7 +20,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -138,14 +137,6 @@ public abstract class BlockEntity {
 
    public static void addEntityType(CompoundTag var0, BlockEntityType<?> var1) {
       var0.putString("id", BlockEntityType.getKey(var1).toString());
-   }
-
-   public void saveToItem(ItemStack var1, HolderLookup.Provider var2) {
-      CompoundTag var3 = this.saveCustomOnly(var2);
-      this.removeComponentsFromTag(var3);
-      var1.clearComponents();
-      BlockItem.setBlockEntityData(var1, this.getType(), var3);
-      var1.applyComponents(this.collectComponents());
    }
 
    private void saveMetadata(CompoundTag var1) {
@@ -267,6 +258,7 @@ public abstract class BlockEntity {
    public final void applyComponents(DataComponentMap var1, DataComponentPatch var2) {
       final HashSet var3 = new HashSet();
       var3.add(DataComponents.BLOCK_ENTITY_DATA);
+      var3.add(DataComponents.BLOCK_STATE);
       final PatchedDataComponentMap var4 = PatchedDataComponentMap.fromPatch(var1, var2);
       this.applyImplicitComponents(new DataComponentInput(this) {
          @Nullable

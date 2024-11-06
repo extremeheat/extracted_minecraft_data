@@ -11,7 +11,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractScrollWidget;
+import net.minecraft.client.gui.components.AbstractTextAreaWidget;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -23,7 +23,7 @@ import net.minecraft.client.telemetry.TelemetryProperty;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-public class TelemetryEventWidget extends AbstractScrollWidget {
+public class TelemetryEventWidget extends AbstractTextAreaWidget {
    private static final int HEADER_HORIZONTAL_PADDING = 32;
    private static final String TELEMETRY_REQUIRED_TRANSLATION_KEY = "telemetry.event.required";
    private static final String TELEMETRY_OPTIONAL_TRANSLATION_KEY = "telemetry.event.optional";
@@ -42,12 +42,12 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
 
    public void onOptInChanged(boolean var1) {
       this.content = this.buildContent(var1);
-      this.setScrollAmount(this.scrollAmount());
+      this.refreshScrollAmount();
    }
 
    public void updateLayout() {
       this.content = this.buildContent(Minecraft.getInstance().telemetryOptInExtra());
-      this.setScrollAmount(this.scrollAmount());
+      this.refreshScrollAmount();
    }
 
    private Content buildContent(boolean var1) {
@@ -72,7 +72,7 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
       this.onScrolledListener = var1;
    }
 
-   protected void setScrollAmount(double var1) {
+   public void setScrollAmount(double var1) {
       super.setScrollAmount(var1);
       if (this.onScrolledListener != null) {
          this.onScrolledListener.accept(this.scrollAmount());
@@ -90,8 +90,8 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
    }
 
    protected void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
-      int var5 = this.getY() + this.innerPadding();
-      int var6 = this.getX() + this.innerPadding();
+      int var5 = this.getInnerTop();
+      int var6 = this.getInnerLeft();
       var1.pose().pushPose();
       var1.pose().translate((double)var6, (double)var5, 0.0);
       this.content.container().visitWidgets((var4x) -> {

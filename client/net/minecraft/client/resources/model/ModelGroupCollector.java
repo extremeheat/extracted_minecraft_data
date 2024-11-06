@@ -68,16 +68,9 @@ public class ModelGroupCollector {
          this.coloringValues = var2;
       }
 
-      public static GroupKey create(BlockState var0, UnbakedModel var1, List<Property<?>> var2) {
+      public static GroupKey create(BlockState var0, UnbakedBlockStateModel var1, List<Property<?>> var2) {
          List var3 = getColoringValues(var0, var2);
-         Object var10000;
-         if (var1 instanceof UnbakedBlockStateModel var5) {
-            var10000 = var5.visualEqualityGroup(var0);
-         } else {
-            var10000 = var1;
-         }
-
-         Object var4 = var10000;
+         Object var4 = var1.visualEqualityGroup(var0);
          return new GroupKey(var4, var3);
       }
 

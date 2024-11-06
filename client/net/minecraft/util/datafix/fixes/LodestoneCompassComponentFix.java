@@ -4,7 +4,7 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 
-public class LodestoneCompassComponentFix extends ItemStackComponentRemainderFix {
+public class LodestoneCompassComponentFix extends DataComponentRemainderFix {
    public LodestoneCompassComponentFix(Schema var1) {
       super(var1, "LodestoneCompassComponentFix", "minecraft:lodestone_target", "minecraft:lodestone_tracker");
    }

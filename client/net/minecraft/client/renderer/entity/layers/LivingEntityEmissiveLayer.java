@@ -20,17 +20,19 @@ public class LivingEntityEmissiveLayer<S extends LivingEntityRenderState, M exte
    private final AlphaFunction<S> alphaFunction;
    private final DrawSelector<S, M> drawSelector;
    private final Function<ResourceLocation, RenderType> bufferProvider;
+   private final boolean alwaysVisible;
 
-   public LivingEntityEmissiveLayer(RenderLayerParent<S, M> var1, ResourceLocation var2, AlphaFunction<S> var3, DrawSelector<S, M> var4, Function<ResourceLocation, RenderType> var5) {
+   public LivingEntityEmissiveLayer(RenderLayerParent<S, M> var1, ResourceLocation var2, AlphaFunction<S> var3, DrawSelector<S, M> var4, Function<ResourceLocation, RenderType> var5, boolean var6) {
       super(var1);
       this.texture = var2;
       this.alphaFunction = var3;
       this.drawSelector = var4;
       this.bufferProvider = var5;
+      this.alwaysVisible = var6;
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, S var4, float var5, float var6) {
-      if (!var4.isInvisible) {
+      if (!var4.isInvisible || this.alwaysVisible) {
          if (this.onlyDrawSelectedParts(var4)) {
             VertexConsumer var7 = var2.getBuffer((RenderType)this.bufferProvider.apply(this.texture));
             float var8 = this.alphaFunction.apply(var4, var4.ageInTicks);

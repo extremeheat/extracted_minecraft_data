@@ -212,7 +212,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
    protected float animStep;
    protected float animStepO;
    protected float rotOffs;
-   protected int deathScore;
    protected float lastHurt;
    protected boolean jumping;
    public float xxa;
@@ -1152,7 +1151,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
             var3 = 3.4028235E38F;
          }
 
-         boolean var15 = true;
+         boolean var14 = true;
          if ((float)this.invulnerableTime > 10.0F && !var2.is(DamageTypeTags.BYPASSES_COOLDOWN)) {
             if (var3 <= this.lastHurt) {
                return false;
@@ -1160,7 +1159,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
             this.actuallyHurt(var1, var2, var3 - this.lastHurt);
             this.lastHurt = var3;
-            var15 = false;
+            var14 = false;
          } else {
             this.lastHurt = var3;
             this.invulnerableTime = 20;
@@ -1169,35 +1168,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
             this.hurtTime = this.hurtDuration;
          }
 
-         Entity var16 = var2.getEntity();
-         if (var16 != null) {
-            if (var16 instanceof LivingEntity) {
-               LivingEntity var9 = (LivingEntity)var16;
-               if (!var2.is(DamageTypeTags.NO_ANGER) && (!var2.is(DamageTypes.WIND_CHARGE) || !this.getType().is(EntityTypeTags.NO_ANGER_FROM_WIND_CHARGE))) {
-                  this.setLastHurtByMob(var9);
-               }
-            }
-
-            if (var16 instanceof Player) {
-               Player var17 = (Player)var16;
-               this.lastHurtByPlayerTime = 100;
-               this.lastHurtByPlayer = var17;
-            } else if (var16 instanceof Wolf) {
-               Wolf var10 = (Wolf)var16;
-               if (var10.isTame()) {
-                  this.lastHurtByPlayerTime = 100;
-                  LivingEntity var12 = var10.getOwner();
-                  if (var12 instanceof Player) {
-                     Player var11 = (Player)var12;
-                     this.lastHurtByPlayer = var11;
-                  } else {
-                     this.lastHurtByPlayer = null;
-                  }
-               }
-            }
-         }
-
-         if (var15) {
+         this.resolveMobResponsibleForDamage(var2);
+         this.resolvePlayerResponsibleForDamage(var2);
+         if (var14) {
             if (var5) {
                var1.broadcastEntityEvent(this, (byte)29);
             } else {
@@ -1209,65 +1182,103 @@ public abstract class LivingEntity extends Entity implements Attackable {
             }
 
             if (!var2.is(DamageTypeTags.NO_KNOCKBACK)) {
-               double var18 = 0.0;
-               double var22 = 0.0;
-               Entity var14 = var2.getDirectEntity();
-               if (var14 instanceof Projectile) {
-                  Projectile var13 = (Projectile)var14;
-                  DoubleDoubleImmutablePair var24 = var13.calculateHorizontalHurtKnockbackDirection(this, var2);
-                  var18 = -var24.leftDouble();
-                  var22 = -var24.rightDouble();
+               double var15 = 0.0;
+               double var10 = 0.0;
+               Entity var13 = var2.getDirectEntity();
+               if (var13 instanceof Projectile) {
+                  Projectile var12 = (Projectile)var13;
+                  DoubleDoubleImmutablePair var20 = var12.calculateHorizontalHurtKnockbackDirection(this, var2);
+                  var15 = -var20.leftDouble();
+                  var10 = -var20.rightDouble();
                } else if (var2.getSourcePosition() != null) {
-                  var18 = var2.getSourcePosition().x() - this.getX();
-                  var22 = var2.getSourcePosition().z() - this.getZ();
+                  var15 = var2.getSourcePosition().x() - this.getX();
+                  var10 = var2.getSourcePosition().z() - this.getZ();
                }
 
-               this.knockback(0.4000000059604645, var18, var22);
+               this.knockback(0.4000000059604645, var15, var10);
                if (!var5) {
-                  this.indicateDamage(var18, var22);
+                  this.indicateDamage(var15, var10);
                }
             }
          }
 
          if (this.isDeadOrDying()) {
             if (!this.checkTotemDeathProtection(var2)) {
-               if (var15) {
+               if (var14) {
                   this.makeSound(this.getDeathSound());
                }
 
                this.die(var2);
             }
-         } else if (var15) {
+         } else if (var14) {
             this.playHurtSound(var2);
          }
 
-         boolean var21 = !var5 || var3 > 0.0F;
-         if (var21) {
+         boolean var17 = !var5 || var3 > 0.0F;
+         if (var17) {
             this.lastDamageSource = var2;
             this.lastDamageStamp = this.level().getGameTime();
-            Iterator var19 = this.getActiveEffects().iterator();
+            Iterator var9 = this.getActiveEffects().iterator();
 
-            while(var19.hasNext()) {
-               MobEffectInstance var23 = (MobEffectInstance)var19.next();
-               var23.onMobHurt(var1, this, var2, var3);
+            while(var9.hasNext()) {
+               MobEffectInstance var18 = (MobEffectInstance)var9.next();
+               var18.onMobHurt(var1, this, var2, var3);
             }
          }
 
-         ServerPlayer var20;
+         ServerPlayer var16;
          if (this instanceof ServerPlayer) {
-            var20 = (ServerPlayer)this;
-            CriteriaTriggers.ENTITY_HURT_PLAYER.trigger(var20, var2, var4, var3, var5);
+            var16 = (ServerPlayer)this;
+            CriteriaTriggers.ENTITY_HURT_PLAYER.trigger(var16, var2, var4, var3, var5);
             if (var6 > 0.0F && var6 < 3.4028235E37F) {
-               var20.awardStat(Stats.DAMAGE_BLOCKED_BY_SHIELD, Math.round(var6 * 10.0F));
+               var16.awardStat(Stats.DAMAGE_BLOCKED_BY_SHIELD, Math.round(var6 * 10.0F));
             }
          }
 
-         if (var16 instanceof ServerPlayer) {
-            var20 = (ServerPlayer)var16;
-            CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(var20, this, var2, var4, var3, var5);
+         Entity var19 = var2.getEntity();
+         if (var19 instanceof ServerPlayer) {
+            var16 = (ServerPlayer)var19;
+            CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(var16, this, var2, var4, var3, var5);
          }
 
-         return var21;
+         return var17;
+      }
+   }
+
+   private void resolveMobResponsibleForDamage(DamageSource var1) {
+      Entity var3 = var1.getEntity();
+      if (var3 instanceof LivingEntity var2) {
+         if (!var1.is(DamageTypeTags.NO_ANGER) && (!var1.is(DamageTypes.WIND_CHARGE) || !this.getType().is(EntityTypeTags.NO_ANGER_FROM_WIND_CHARGE))) {
+            this.setLastHurtByMob(var2);
+         }
+      }
+
+   }
+
+   @Nullable
+   protected Player resolvePlayerResponsibleForDamage(DamageSource var1) {
+      Entity var2 = var1.getEntity();
+      if (var2 instanceof Player var3) {
+         this.lastHurtByPlayerTime = 100;
+         this.lastHurtByPlayer = var3;
+         return var3;
+      } else {
+         if (var2 instanceof Wolf var4) {
+            if (var4.isTame()) {
+               this.lastHurtByPlayerTime = 100;
+               LivingEntity var6 = var4.getOwner();
+               if (var6 instanceof Player) {
+                  Player var5 = (Player)var6;
+                  this.lastHurtByPlayer = var5;
+               } else {
+                  this.lastHurtByPlayer = null;
+               }
+
+               return this.lastHurtByPlayer;
+            }
+         }
+
+         return null;
       }
    }
 
@@ -1374,8 +1385,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
       if (!this.isRemoved() && !this.dead) {
          Entity var2 = var1.getEntity();
          LivingEntity var3 = this.getKillCredit();
-         if (this.deathScore >= 0 && var3 != null) {
-            var3.awardKillScore(this, this.deathScore, var1);
+         if (var3 != null) {
+            var3.awardKillScore(this, var1);
          }
 
          if (this.isSleeping()) {

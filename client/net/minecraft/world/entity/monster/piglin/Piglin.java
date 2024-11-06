@@ -13,6 +13,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.Profiler;
@@ -45,6 +47,7 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
@@ -274,6 +277,10 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    private ItemStack createSpawnWeapon() {
       return (double)this.random.nextFloat() < 0.5 ? new ItemStack(Items.CROSSBOW) : new ItemStack(Items.GOLDEN_SWORD);
+   }
+
+   public TagKey<Item> getPreferredWeaponType() {
+      return ItemTags.PIGLIN_PREFERRED_WEAPON;
    }
 
    private boolean isChargingCrossbow() {

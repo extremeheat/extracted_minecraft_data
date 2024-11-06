@@ -540,11 +540,9 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
          if (this.isTame()) {
             var3.setOwnerUUID(this.getOwnerUUID());
             var3.setTame(true, true);
-            if (this.random.nextBoolean()) {
-               var3.setCollarColor(this.getCollarColor());
-            } else {
-               var3.setCollarColor(var4.getCollarColor());
-            }
+            DyeColor var5 = this.getCollarColor();
+            DyeColor var6 = var4.getCollarColor();
+            var3.setCollarColor(DyeColor.getMixedColor(var1, var5, var6));
          }
       }
 

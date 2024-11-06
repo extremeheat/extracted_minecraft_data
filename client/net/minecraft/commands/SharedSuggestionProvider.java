@@ -1,5 +1,6 @@
 package net.minecraft.commands;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.Message;
@@ -26,6 +27,8 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.Level;
 
 public interface SharedSuggestionProvider {
+   CharMatcher MATCH_SPLITTER = CharMatcher.anyOf("._/");
+
    Collection<String> getOnlinePlayerNames();
 
    default Collection<String> getCustomTabSugggestions() {
@@ -283,17 +286,11 @@ public interface SharedSuggestionProvider {
    }
 
    static boolean matchesSubStr(String var0, String var1) {
-      for(int var2 = 0; !var1.startsWith(var0, var2); ++var2) {
-         int var3 = var1.indexOf(46, var2);
-         int var4 = var1.indexOf(95, var2);
-         if (Math.max(var3, var4) < 0) {
+      int var3;
+      for(int var2 = 0; !var1.startsWith(var0, var2); var2 = var3 + 1) {
+         var3 = MATCH_SPLITTER.indexIn(var1, var2);
+         if (var3 < 0) {
             return false;
-         }
-
-         if (var3 >= 0 && var4 >= 0) {
-            var2 = Math.min(var4, var3);
-         } else {
-            var2 = var3 >= 0 ? var3 : var4;
          }
       }
 

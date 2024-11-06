@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
@@ -18,9 +19,9 @@ public class NoiseThresholdProvider extends NoiseBasedStateProvider {
          return var0x.highChance;
       }), BlockState.CODEC.fieldOf("default_state").forGetter((var0x) -> {
          return var0x.defaultState;
-      }), Codec.list(BlockState.CODEC).fieldOf("low_states").forGetter((var0x) -> {
+      }), ExtraCodecs.nonEmptyList(BlockState.CODEC.listOf()).fieldOf("low_states").forGetter((var0x) -> {
          return var0x.lowStates;
-      }), Codec.list(BlockState.CODEC).fieldOf("high_states").forGetter((var0x) -> {
+      }), ExtraCodecs.nonEmptyList(BlockState.CODEC.listOf()).fieldOf("high_states").forGetter((var0x) -> {
          return var0x.highStates;
       }))).apply(var0, NoiseThresholdProvider::new);
    });

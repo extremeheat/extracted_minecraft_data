@@ -16,7 +16,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
@@ -41,8 +43,21 @@ public interface DataProvider {
    String getName();
 
    static <T> CompletableFuture<?> saveAll(CachedOutput var0, Codec<T> var1, PackOutput.PathProvider var2, Map<ResourceLocation, T> var3) {
+      Objects.requireNonNull(var2);
+      return saveAll(var0, var1, var2::json, var3);
+   }
+
+   static <T, E> CompletableFuture<?> saveAll(CachedOutput var0, Codec<E> var1, Function<T, Path> var2, Map<T, E> var3) {
+      return saveAll(var0, (var1x) -> {
+         return (JsonElement)var1.encodeStart(JsonOps.INSTANCE, var1x).getOrThrow();
+      }, var2, var3);
+   }
+
+   static <T, E> CompletableFuture<?> saveAll(CachedOutput var0, Function<E, JsonElement> var1, Function<T, Path> var2, Map<T, E> var3) {
       return CompletableFuture.allOf((CompletableFuture[])var3.entrySet().stream().map((var3x) -> {
-         return saveStable(var0, var1, var3x.getValue(), var2.json((ResourceLocation)var3x.getKey()));
+         Path var4 = (Path)var2.apply(var3x.getKey());
+         JsonElement var5 = (JsonElement)var1.apply(var3x.getValue());
+         return saveStable(var0, var5, var4);
       }).toArray((var0x) -> {
          return new CompletableFuture[var0x];
       }));

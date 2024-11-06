@@ -75,7 +75,7 @@ public class AddRealmPopupScreen extends RealmsScreen {
       int var2 = 142 - (this.trialAvailable ? 40 : 20);
       FittingMultiLineTextWidget var3 = new FittingMultiLineTextWidget(this.right() - 10 - 100, this.top() + 10, 100, var2, POPUP_TEXT, this.font);
       if (var3.showingScrollBar()) {
-         var3.setWidth(100 - var3.scrollbarWidth());
+         var3.setWidth(94);
       }
 
       this.addRenderableWidget(var3);

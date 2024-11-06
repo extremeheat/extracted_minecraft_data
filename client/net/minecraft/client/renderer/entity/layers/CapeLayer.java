@@ -14,27 +14,27 @@ import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.PlayerSkin;
-import net.minecraft.client.resources.model.EquipmentModelSet;
+import net.minecraft.client.resources.model.EquipmentAssetManager;
+import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.equipment.EquipmentModel;
 import net.minecraft.world.item.equipment.Equippable;
 
 public class CapeLayer extends RenderLayer<PlayerRenderState, PlayerModel> {
    private final HumanoidModel<PlayerRenderState> model;
-   private final EquipmentModelSet equipmentModels;
+   private final EquipmentAssetManager equipmentAssets;
 
-   public CapeLayer(RenderLayerParent<PlayerRenderState, PlayerModel> var1, EntityModelSet var2, EquipmentModelSet var3) {
+   public CapeLayer(RenderLayerParent<PlayerRenderState, PlayerModel> var1, EntityModelSet var2, EquipmentAssetManager var3) {
       super(var1);
       this.model = new PlayerCapeModel(var2.bakeLayer(ModelLayers.PLAYER_CAPE));
-      this.equipmentModels = var3;
+      this.equipmentAssets = var3;
    }
 
-   private boolean hasLayer(ItemStack var1, EquipmentModel.LayerType var2) {
+   private boolean hasLayer(ItemStack var1, EquipmentClientInfo.LayerType var2) {
       Equippable var3 = (Equippable)var1.get(DataComponents.EQUIPPABLE);
-      if (var3 != null && !var3.model().isEmpty()) {
-         EquipmentModel var4 = this.equipmentModels.get((ResourceLocation)var3.model().get());
+      if (var3 != null && !var3.assetId().isEmpty()) {
+         EquipmentClientInfo var4 = this.equipmentAssets.get((ResourceKey)var3.assetId().get());
          return !var4.getLayers(var2).isEmpty();
       } else {
          return false;
@@ -45,9 +45,9 @@ public class CapeLayer extends RenderLayer<PlayerRenderState, PlayerModel> {
       if (!var4.isInvisible && var4.showCape) {
          PlayerSkin var7 = var4.skin;
          if (var7.capeTexture() != null) {
-            if (!this.hasLayer(var4.chestItem, EquipmentModel.LayerType.WINGS)) {
+            if (!this.hasLayer(var4.chestEquipment, EquipmentClientInfo.LayerType.WINGS)) {
                var1.pushPose();
-               if (this.hasLayer(var4.chestItem, EquipmentModel.LayerType.HUMANOID)) {
+               if (this.hasLayer(var4.chestEquipment, EquipmentClientInfo.LayerType.HUMANOID)) {
                   var1.translate(0.0F, -0.053125F, 0.06875F);
                }
 

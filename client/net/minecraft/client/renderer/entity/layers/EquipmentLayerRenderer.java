@@ -16,48 +16,51 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.EquipmentModelSet;
+import net.minecraft.client.resources.model.EquipmentAssetManager;
+import net.minecraft.client.resources.model.EquipmentClientInfo;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DyedItemColor;
-import net.minecraft.world.item.equipment.EquipmentModel;
+import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.trim.ArmorTrim;
+import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.item.equipment.trim.TrimPattern;
 
 public class EquipmentLayerRenderer {
    private static final int NO_LAYER_COLOR = 0;
-   private final EquipmentModelSet equipmentModels;
+   private final EquipmentAssetManager equipmentAssets;
    private final Function<LayerTextureKey, ResourceLocation> layerTextureLookup;
    private final Function<TrimSpriteKey, TextureAtlasSprite> trimSpriteLookup;
 
-   public EquipmentLayerRenderer(EquipmentModelSet var1, TextureAtlas var2) {
+   public EquipmentLayerRenderer(EquipmentAssetManager var1, TextureAtlas var2) {
       super();
-      this.equipmentModels = var1;
+      this.equipmentAssets = var1;
       this.layerTextureLookup = Util.memoize((var0) -> {
          return var0.layer.getTextureLocation(var0.layerType);
       });
       this.trimSpriteLookup = Util.memoize((var1x) -> {
-         ResourceLocation var2x = var1x.trim.getTexture(var1x.layerType, var1x.equipmentModelId);
-         return var2.getSprite(var2x);
+         return var2.getSprite(var1x.textureId());
       });
    }
 
-   public void renderLayers(EquipmentModel.LayerType var1, ResourceLocation var2, Model var3, ItemStack var4, PoseStack var5, MultiBufferSource var6, int var7) {
+   public void renderLayers(EquipmentClientInfo.LayerType var1, ResourceKey<EquipmentAsset> var2, Model var3, ItemStack var4, PoseStack var5, MultiBufferSource var6, int var7) {
       this.renderLayers(var1, var2, var3, var4, var5, var6, var7, (ResourceLocation)null);
    }
 
-   public void renderLayers(EquipmentModel.LayerType var1, ResourceLocation var2, Model var3, ItemStack var4, PoseStack var5, MultiBufferSource var6, int var7, @Nullable ResourceLocation var8) {
-      List var9 = this.equipmentModels.get(var2).getLayers(var1);
+   public void renderLayers(EquipmentClientInfo.LayerType var1, ResourceKey<EquipmentAsset> var2, Model var3, ItemStack var4, PoseStack var5, MultiBufferSource var6, int var7, @Nullable ResourceLocation var8) {
+      List var9 = this.equipmentAssets.get(var2).getLayers(var1);
       if (!var9.isEmpty()) {
          int var10 = var4.is(ItemTags.DYEABLE) ? DyedItemColor.getOrDefault(var4, 0) : 0;
          boolean var11 = var4.hasFoil();
          Iterator var12 = var9.iterator();
 
          while(true) {
-            EquipmentModel.Layer var13;
+            EquipmentClientInfo.Layer var13;
             int var14;
             do {
                if (!var12.hasNext()) {
@@ -71,7 +74,7 @@ public class EquipmentLayerRenderer {
                   return;
                }
 
-               var13 = (EquipmentModel.Layer)var12.next();
+               var13 = (EquipmentClientInfo.Layer)var12.next();
                var14 = getColorForLayer(var13, var10);
             } while(var14 == 0);
 
@@ -83,57 +86,66 @@ public class EquipmentLayerRenderer {
       }
    }
 
-   private static int getColorForLayer(EquipmentModel.Layer var0, int var1) {
+   private static int getColorForLayer(EquipmentClientInfo.Layer var0, int var1) {
       Optional var2 = var0.dyeable();
       if (var2.isPresent()) {
-         int var3 = (Integer)((EquipmentModel.Dyeable)var2.get()).colorWhenUndyed().map(ARGB::opaque).orElse(0);
+         int var3 = (Integer)((EquipmentClientInfo.Dyeable)var2.get()).colorWhenUndyed().map(ARGB::opaque).orElse(0);
          return var1 != 0 ? var1 : var3;
       } else {
          return -1;
       }
    }
 
-   static record LayerTextureKey(EquipmentModel.LayerType layerType, EquipmentModel.Layer layer) {
-      final EquipmentModel.LayerType layerType;
-      final EquipmentModel.Layer layer;
+   static record LayerTextureKey(EquipmentClientInfo.LayerType layerType, EquipmentClientInfo.Layer layer) {
+      final EquipmentClientInfo.LayerType layerType;
+      final EquipmentClientInfo.Layer layer;
 
-      LayerTextureKey(EquipmentModel.LayerType var1, EquipmentModel.Layer var2) {
+      LayerTextureKey(EquipmentClientInfo.LayerType var1, EquipmentClientInfo.Layer var2) {
          super();
          this.layerType = var1;
          this.layer = var2;
       }
 
-      public EquipmentModel.LayerType layerType() {
+      public EquipmentClientInfo.LayerType layerType() {
          return this.layerType;
       }
 
-      public EquipmentModel.Layer layer() {
+      public EquipmentClientInfo.Layer layer() {
          return this.layer;
       }
    }
 
-   static record TrimSpriteKey(ArmorTrim trim, EquipmentModel.LayerType layerType, ResourceLocation equipmentModelId) {
-      final ArmorTrim trim;
-      final EquipmentModel.LayerType layerType;
-      final ResourceLocation equipmentModelId;
-
-      TrimSpriteKey(ArmorTrim var1, EquipmentModel.LayerType var2, ResourceLocation var3) {
+   static record TrimSpriteKey(ArmorTrim trim, EquipmentClientInfo.LayerType layerType, ResourceKey<EquipmentAsset> equipmentAssetId) {
+      TrimSpriteKey(ArmorTrim var1, EquipmentClientInfo.LayerType var2, ResourceKey<EquipmentAsset> var3) {
          super();
          this.trim = var1;
          this.layerType = var2;
-         this.equipmentModelId = var3;
+         this.equipmentAssetId = var3;
+      }
+
+      private static String getColorPaletteSuffix(Holder<TrimMaterial> var0, ResourceKey<EquipmentAsset> var1) {
+         String var2 = (String)((TrimMaterial)var0.value()).overrideArmorAssets().get(var1);
+         return var2 != null ? var2 : ((TrimMaterial)var0.value()).assetName();
+      }
+
+      public ResourceLocation textureId() {
+         ResourceLocation var1 = ((TrimPattern)this.trim.pattern().value()).assetId();
+         String var2 = getColorPaletteSuffix(this.trim.material(), this.equipmentAssetId);
+         return var1.withPath((var2x) -> {
+            return "trims/entity/" + this.layerType.getSerializedName() + "/" + var2x + "_" + var2;
+         });
       }
 
       public ArmorTrim trim() {
          return this.trim;
       }
 
-      public EquipmentModel.LayerType layerType() {
+      public EquipmentClientInfo.LayerType layerType() {
          return this.layerType;
       }
 
-      public ResourceLocation equipmentModelId() {
-         return this.equipmentModelId;
+      public ResourceKey<EquipmentAsset> equipmentAssetId() {
+         return this.equipmentAssetId;
       }
    }
 }

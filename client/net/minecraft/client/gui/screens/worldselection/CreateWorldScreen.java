@@ -29,12 +29,11 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.tabs.GridLayoutTab;
 import net.minecraft.client.gui.components.tabs.TabManager;
 import net.minecraft.client.gui.components.tabs.TabNavigationBar;
@@ -44,7 +43,6 @@ import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
-import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.GenericMessageScreen;
@@ -104,7 +102,9 @@ public class CreateWorldScreen extends Screen {
    public static final ResourceLocation TAB_HEADER_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/tab_header_background.png");
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    final WorldCreationUiState uiState;
-   private final TabManager tabManager = new TabManager(this::addRenderableWidget, (var1x) -> {
+   private final TabManager tabManager = new TabManager((var1x) -> {
+      AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
+   }, (var1x) -> {
       this.removeWidget(var1x);
    });
    private boolean recreated;
@@ -312,14 +312,6 @@ public class CreateWorldScreen extends Screen {
    protected void renderMenuBackground(GuiGraphics var1) {
       var1.blit(RenderType::guiTextured, TAB_HEADER_BACKGROUND, 0, 0, 0.0F, 0.0F, this.width, this.layout.getHeaderHeight(), 16, 16);
       this.renderMenuBackground(var1, 0, this.layout.getHeaderHeight(), this.width, this.height);
-   }
-
-   protected <T extends GuiEventListener & NarratableEntry> T addWidget(T var1) {
-      return super.addWidget(var1);
-   }
-
-   protected <T extends GuiEventListener & Renderable & NarratableEntry> T addRenderableWidget(T var1) {
-      return super.addRenderableWidget(var1);
    }
 
    @Nullable
@@ -717,9 +709,8 @@ public class CreateWorldScreen extends Screen {
          var4.addSwitch(var10001, var6, var10003::setBonusChest).withIsActiveCondition(() -> {
             return !CreateWorldScreen.this.uiState.isHardcore() && !CreateWorldScreen.this.uiState.isDebug();
          });
-         SwitchGrid var5 = var4.build((var1x) -> {
-            var2.addChild(var1x, 2);
-         });
+         SwitchGrid var5 = var4.build();
+         var2.addChild(var5.layout(), 2);
          CreateWorldScreen.this.uiState.addListener((var1x) -> {
             var5.refreshStates();
          });

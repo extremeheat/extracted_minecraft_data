@@ -8,11 +8,10 @@ import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BedBlockEntity extends BlockEntity {
-   private DyeColor color;
+   private final DyeColor color;
 
    public BedBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.BED, var1, var2);
-      this.color = ((BedBlock)var2.getBlock()).getColor();
+      this(var1, var2, ((BedBlock)var2.getBlock()).getColor());
    }
 
    public BedBlockEntity(BlockPos var1, BlockState var2, DyeColor var3) {
@@ -26,10 +25,6 @@ public class BedBlockEntity extends BlockEntity {
 
    public DyeColor getColor() {
       return this.color;
-   }
-
-   public void setColor(DyeColor var1) {
-      this.color = var1;
    }
 
    // $FF: synthetic method

@@ -51,6 +51,7 @@ import net.minecraft.util.StringUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 
 public abstract class Screen extends AbstractContainerEventHandler implements Renderable {
@@ -263,7 +264,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    public static List<Component> getTooltipFromItem(Minecraft var0, ItemStack var1) {
-      return var1.getTooltipLines(Item.TooltipContext.of(var0.level, var0.player), var0.player, var0.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL);
+      return var1.getTooltipLines(Item.TooltipContext.of((Level)var0.level), var0.player, var0.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL);
    }
 
    protected void insertText(String var1, boolean var2) {
@@ -542,7 +543,9 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    protected void updateNarratedWidget(NarrationElementOutput var1) {
-      List var2 = this.narratables.stream().filter(NarratableEntry::isActive).sorted(Comparator.comparingInt(TabOrderedElement::getTabOrderGroup)).toList();
+      List var2 = this.narratables.stream().flatMap((var0) -> {
+         return var0.getNarratables().stream();
+      }).filter(NarratableEntry::isActive).sorted(Comparator.comparingInt(TabOrderedElement::getTabOrderGroup)).toList();
       NarratableSearchResult var3 = findNarratableWidget(var2, this.lastNarratable);
       if (var3 != null) {
          if (var3.priority.isTerminal()) {

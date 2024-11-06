@@ -4,17 +4,17 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 import joptsimple.AbstractOptionSpec;
 import joptsimple.ArgumentAcceptingOptionSpec;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpecBuilder;
 import net.minecraft.SharedConstants;
+import net.minecraft.SuppressForbidden;
 import net.minecraft.Util;
-import net.minecraft.WorldVersion;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.data.advancements.packs.VanillaAdvancementProvider;
@@ -28,8 +28,6 @@ import net.minecraft.data.info.RegistryDumpReport;
 import net.minecraft.data.loot.packs.TradeRebalanceLootTableProvider;
 import net.minecraft.data.loot.packs.VanillaLootTableProvider;
 import net.minecraft.data.metadata.PackMetadataGenerator;
-import net.minecraft.data.models.EquipmentModelProvider;
-import net.minecraft.data.models.ModelProvider;
 import net.minecraft.data.recipes.packs.VanillaRecipeProvider;
 import net.minecraft.data.registries.RegistriesDatapackGenerator;
 import net.minecraft.data.registries.TradeRebalanceRegistries;
@@ -66,32 +64,34 @@ public class Main {
       super();
    }
 
+   @SuppressForbidden(
+      a = "System.out needed before bootstrap"
+   )
    @DontObfuscate
    public static void main(String[] var0) throws IOException {
       SharedConstants.tryDetectVersion();
       OptionParser var1 = new OptionParser();
       AbstractOptionSpec var2 = var1.accepts("help", "Show the help menu").forHelp();
       OptionSpecBuilder var3 = var1.accepts("server", "Include server generators");
-      OptionSpecBuilder var4 = var1.accepts("client", "Include client generators");
-      OptionSpecBuilder var5 = var1.accepts("dev", "Include development tools");
-      OptionSpecBuilder var6 = var1.accepts("reports", "Include data reports");
-      OptionSpecBuilder var7 = var1.accepts("validate", "Validate inputs");
-      OptionSpecBuilder var8 = var1.accepts("all", "Include all generators");
-      ArgumentAcceptingOptionSpec var9 = var1.accepts("output", "Output folder").withRequiredArg().defaultsTo("generated", new String[0]);
-      ArgumentAcceptingOptionSpec var10 = var1.accepts("input", "Input folder").withRequiredArg();
-      OptionSet var11 = var1.parse(var0);
-      if (!var11.has(var2) && var11.hasOptions()) {
-         Path var12 = Paths.get((String)var9.value(var11));
-         boolean var13 = var11.has(var8);
-         boolean var14 = var13 || var11.has(var4);
-         boolean var15 = var13 || var11.has(var3);
-         boolean var16 = var13 || var11.has(var5);
-         boolean var17 = var13 || var11.has(var6);
-         boolean var18 = var13 || var11.has(var7);
-         DataGenerator var19 = createStandardGenerator(var12, (Collection)var11.valuesOf(var10).stream().map((var0x) -> {
+      OptionSpecBuilder var4 = var1.accepts("dev", "Include development tools");
+      OptionSpecBuilder var5 = var1.accepts("reports", "Include data reports");
+      var1.accepts("validate", "Validate inputs");
+      OptionSpecBuilder var6 = var1.accepts("all", "Include all generators");
+      ArgumentAcceptingOptionSpec var7 = var1.accepts("output", "Output folder").withRequiredArg().defaultsTo("generated", new String[0]);
+      ArgumentAcceptingOptionSpec var8 = var1.accepts("input", "Input folder").withRequiredArg();
+      OptionSet var9 = var1.parse(var0);
+      if (!var9.has(var2) && var9.hasOptions()) {
+         Path var10 = Paths.get((String)var7.value(var9));
+         boolean var11 = var9.has(var6);
+         boolean var12 = var11 || var9.has(var3);
+         boolean var13 = var11 || var9.has(var4);
+         boolean var14 = var11 || var9.has(var5);
+         List var15 = var9.valuesOf(var8).stream().map((var0x) -> {
             return Paths.get(var0x);
-         }).collect(Collectors.toList()), var14, var15, var16, var17, var18, SharedConstants.getCurrentVersion(), true);
-         var19.run();
+         }).toList();
+         DataGenerator var16 = new DataGenerator(var10, SharedConstants.getCurrentVersion(), true);
+         addServerProviders(var16, var15, var12, var13, var14);
+         var16.run();
       } else {
          var1.printHelpOn(System.out);
       }
@@ -103,69 +103,64 @@ public class Main {
       };
    }
 
-   public static DataGenerator createStandardGenerator(Path var0, Collection<Path> var1, boolean var2, boolean var3, boolean var4, boolean var5, boolean var6, WorldVersion var7, boolean var8) {
-      DataGenerator var9 = new DataGenerator(var0, var7, var8);
-      DataGenerator.PackGenerator var10 = var9.getVanillaPack(var2 || var3);
-      var10.addProvider((var1x) -> {
+   public static void addServerProviders(DataGenerator var0, Collection<Path> var1, boolean var2, boolean var3, boolean var4) {
+      DataGenerator.PackGenerator var5 = var0.getVanillaPack(var2);
+      var5.addProvider((var1x) -> {
          return (new SnbtToNbt(var1x, var1)).addFilter(new StructureUpdater());
       });
-      CompletableFuture var19 = CompletableFuture.supplyAsync(VanillaRegistries::createLookup, Util.backgroundExecutor());
-      DataGenerator.PackGenerator var11 = var9.getVanillaPack(var2);
-      var11.addProvider(ModelProvider::new);
-      var11.addProvider(EquipmentModelProvider::new);
-      DataGenerator.PackGenerator var16 = var9.getVanillaPack(var3);
-      var16.addProvider(bindRegistries(RegistriesDatapackGenerator::new, var19));
-      var16.addProvider(bindRegistries(VanillaAdvancementProvider::create, var19));
-      var16.addProvider(bindRegistries(VanillaLootTableProvider::create, var19));
-      var16.addProvider(bindRegistries(VanillaRecipeProvider.Runner::new, var19));
-      TagsProvider var20 = (TagsProvider)var16.addProvider(bindRegistries(VanillaBlockTagsProvider::new, var19));
-      TagsProvider var12 = (TagsProvider)var16.addProvider((var2x) -> {
-         return new VanillaItemTagsProvider(var2x, var19, var20.contentsGetter());
+      CompletableFuture var15 = CompletableFuture.supplyAsync(VanillaRegistries::createLookup, Util.backgroundExecutor());
+      DataGenerator.PackGenerator var11 = var0.getVanillaPack(var2);
+      var11.addProvider(bindRegistries(RegistriesDatapackGenerator::new, var15));
+      var11.addProvider(bindRegistries(VanillaAdvancementProvider::create, var15));
+      var11.addProvider(bindRegistries(VanillaLootTableProvider::create, var15));
+      var11.addProvider(bindRegistries(VanillaRecipeProvider.Runner::new, var15));
+      TagsProvider var6 = (TagsProvider)var11.addProvider(bindRegistries(VanillaBlockTagsProvider::new, var15));
+      TagsProvider var7 = (TagsProvider)var11.addProvider((var2x) -> {
+         return new VanillaItemTagsProvider(var2x, var15, var6.contentsGetter());
       });
-      TagsProvider var13 = (TagsProvider)var16.addProvider(bindRegistries(BiomeTagsProvider::new, var19));
-      TagsProvider var14 = (TagsProvider)var16.addProvider(bindRegistries(BannerPatternTagsProvider::new, var19));
-      TagsProvider var15 = (TagsProvider)var16.addProvider(bindRegistries(StructureTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(CatVariantTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(DamageTypeTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(EntityTypeTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(FlatLevelGeneratorPresetTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(FluidTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(GameEventTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(InstrumentTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(PaintingVariantTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(PoiTypeTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(WorldPresetTagsProvider::new, var19));
-      var16.addProvider(bindRegistries(VanillaEnchantmentTagsProvider::new, var19));
-      var16 = var9.getVanillaPack(var4);
-      var16.addProvider((var1x) -> {
+      TagsProvider var8 = (TagsProvider)var11.addProvider(bindRegistries(BiomeTagsProvider::new, var15));
+      TagsProvider var9 = (TagsProvider)var11.addProvider(bindRegistries(BannerPatternTagsProvider::new, var15));
+      TagsProvider var10 = (TagsProvider)var11.addProvider(bindRegistries(StructureTagsProvider::new, var15));
+      var11.addProvider(bindRegistries(CatVariantTagsProvider::new, var15));
+      var11.addProvider(bindRegistries(DamageTypeTagsProvider::new, var15));
+      var11.addProvider(bindRegistries(EntityTypeTagsProvider::new, var15));
+      var11.addProvider(bindRegistries(FlatLevelGeneratorPresetTagsProvider::new, var15));
+      var11.addProvider(bindRegistries(FluidTagsProvider::new, var15));
+      var11.addProvider(bindRegistries(GameEventTagsProvider::new, var15));
+      var11.addProvider(bindRegistries(InstrumentTagsProvider::new, var15));
+      var11.addProvider(bindRegistries(PaintingVariantTagsProvider::new, var15));
+      var11.addProvider(bindRegistries(PoiTypeTagsProvider::new, var15));
+      var11.addProvider(bindRegistries(WorldPresetTagsProvider::new, var15));
+      var11.addProvider(bindRegistries(VanillaEnchantmentTagsProvider::new, var15));
+      var11 = var0.getVanillaPack(var3);
+      var11.addProvider((var1x) -> {
          return new NbtToSnbt(var1x, var1);
       });
-      var16 = var9.getVanillaPack(var5);
-      var16.addProvider(bindRegistries(BiomeParametersDumpReport::new, var19));
-      var16.addProvider(bindRegistries(ItemListReport::new, var19));
-      var16.addProvider(bindRegistries(BlockListReport::new, var19));
-      var16.addProvider(bindRegistries(CommandsReport::new, var19));
-      var16.addProvider(RegistryDumpReport::new);
-      var16.addProvider(PacketReport::new);
-      var16.addProvider(DatapackStructureReport::new);
-      CompletableFuture var21 = TradeRebalanceRegistries.createLookup(var19);
-      CompletableFuture var17 = var21.thenApply(RegistrySetBuilder.PatchedRegistries::patches);
-      DataGenerator.PackGenerator var18 = var9.getBuiltinDatapack(var3, "trade_rebalance");
-      var18.addProvider(bindRegistries(RegistriesDatapackGenerator::new, var17));
-      var18.addProvider((var0x) -> {
+      var11 = var0.getVanillaPack(var4);
+      var11.addProvider(bindRegistries(BiomeParametersDumpReport::new, var15));
+      var11.addProvider(bindRegistries(ItemListReport::new, var15));
+      var11.addProvider(bindRegistries(BlockListReport::new, var15));
+      var11.addProvider(bindRegistries(CommandsReport::new, var15));
+      var11.addProvider(RegistryDumpReport::new);
+      var11.addProvider(PacketReport::new);
+      var11.addProvider(DatapackStructureReport::new);
+      CompletableFuture var14 = TradeRebalanceRegistries.createLookup(var15);
+      CompletableFuture var12 = var14.thenApply(RegistrySetBuilder.PatchedRegistries::patches);
+      DataGenerator.PackGenerator var13 = var0.getBuiltinDatapack(var2, "trade_rebalance");
+      var13.addProvider(bindRegistries(RegistriesDatapackGenerator::new, var12));
+      var13.addProvider((var0x) -> {
          return PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.trade_rebalance.description"), FeatureFlagSet.of(FeatureFlags.TRADE_REBALANCE));
       });
-      var18.addProvider(bindRegistries(TradeRebalanceLootTableProvider::create, var19));
-      var18.addProvider(bindRegistries(TradeRebalanceStructureTagsProvider::new, var19));
-      var18.addProvider(bindRegistries(TradeRebalanceEnchantmentTagsProvider::new, var19));
-      var16 = var9.getBuiltinDatapack(var3, "redstone_experiments");
-      var16.addProvider((var0x) -> {
+      var13.addProvider(bindRegistries(TradeRebalanceLootTableProvider::create, var15));
+      var13.addProvider(bindRegistries(TradeRebalanceStructureTagsProvider::new, var15));
+      var13.addProvider(bindRegistries(TradeRebalanceEnchantmentTagsProvider::new, var15));
+      var11 = var0.getBuiltinDatapack(var2, "redstone_experiments");
+      var11.addProvider((var0x) -> {
          return PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.redstone_experiments.description"), FeatureFlagSet.of(FeatureFlags.REDSTONE_EXPERIMENTS));
       });
-      var16 = var9.getBuiltinDatapack(var3, "minecart_improvements");
-      var16.addProvider((var0x) -> {
+      var11 = var0.getBuiltinDatapack(var2, "minecart_improvements");
+      var11.addProvider((var0x) -> {
          return PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.minecart_improvements.description"), FeatureFlagSet.of(FeatureFlags.MINECART_IMPROVEMENTS));
       });
-      return var9;
    }
 }

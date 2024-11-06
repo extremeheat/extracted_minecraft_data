@@ -3,7 +3,7 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 
-public class FireResistantToDamageResistantComponentFix extends ItemStackComponentRemainderFix {
+public class FireResistantToDamageResistantComponentFix extends DataComponentRemainderFix {
    public FireResistantToDamageResistantComponentFix(Schema var1) {
       super(var1, "FireResistantToDamageResistantComponentFix", "minecraft:fire_resistant", "minecraft:damage_resistant");
    }

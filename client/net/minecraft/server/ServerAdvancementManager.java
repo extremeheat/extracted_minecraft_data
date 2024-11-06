@@ -27,7 +27,7 @@ public class ServerAdvancementManager extends SimpleJsonResourceReloadListener<A
    private final HolderLookup.Provider registries;
 
    public ServerAdvancementManager(HolderLookup.Provider var1) {
-      super(var1, Advancement.CODEC, Registries.elementsDirPath(Registries.ADVANCEMENT));
+      super(var1, Advancement.CODEC, Registries.ADVANCEMENT);
       this.registries = var1;
    }
 

@@ -1,17 +1,30 @@
 package net.minecraft.client.resources.model;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
+import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
+import java.io.BufferedReader;
+import java.io.Reader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
+import java.util.stream.Stream;
+import net.minecraft.Util;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BlockModelDefinition;
+import net.minecraft.client.renderer.block.model.UnbakedBlockStateModel;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -21,6 +34,7 @@ import org.slf4j.Logger;
 
 public class BlockStateModelLoader {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final FileToIdConverter BLOCKSTATE_LISTER = FileToIdConverter.json("blockstates");
    private static final String FRAME_MAP_PROPERTY = "map";
    private static final String FRAME_MAP_PROPERTY_TRUE = "map=true";
    private static final String FRAME_MAP_PROPERTY_FALSE = "map=false";
@@ -32,14 +46,12 @@ public class BlockStateModelLoader {
    public static final ModelResourceLocation GLOW_FRAME_LOCATION;
    public static final ModelResourceLocation MAP_FRAME_LOCATION;
    public static final ModelResourceLocation FRAME_LOCATION;
-   private final UnbakedModel missingModel;
 
-   public BlockStateModelLoader(UnbakedModel var1) {
+   public BlockStateModelLoader() {
       super();
-      this.missingModel = var1;
    }
 
-   public static Function<ResourceLocation, StateDefinition<Block, BlockState>> definitionLocationToBlockMapper() {
+   private static Function<ResourceLocation, StateDefinition<Block, BlockState>> definitionLocationToBlockMapper() {
       HashMap var0 = new HashMap(STATIC_DEFINITIONS);
       Iterator var1 = BuiltInRegistries.BLOCK.iterator();
 
@@ -52,65 +64,98 @@ public class BlockStateModelLoader {
       return var0::get;
    }
 
-   public LoadedModels loadBlockStateDefinitionStack(ResourceLocation var1, StateDefinition<Block, BlockState> var2, List<LoadedBlockModelDefinition> var3) {
-      ImmutableList var4 = var2.getPossibleStates();
-      HashMap var5 = new HashMap();
-      HashMap var6 = new HashMap();
-      boolean var17 = false;
+   public static CompletableFuture<LoadedModels> loadBlockStates(UnbakedModel var0, ResourceManager var1, Executor var2) {
+      Function var3 = definitionLocationToBlockMapper();
+      return CompletableFuture.supplyAsync(() -> {
+         return BLOCKSTATE_LISTER.listMatchingResourceStacks(var1);
+      }, var2).thenCompose((var3x) -> {
+         ArrayList var4 = new ArrayList(var3x.size());
+         Iterator var5 = var3x.entrySet().iterator();
 
-      Iterator var7;
-      try {
-         var17 = true;
-         var7 = var3.iterator();
-
-         while(true) {
-            if (!var7.hasNext()) {
-               var17 = false;
-               break;
-            }
-
-            LoadedBlockModelDefinition var8 = (LoadedBlockModelDefinition)var7.next();
-            BlockModelDefinition var10000 = var8.contents;
-            String var10002 = String.valueOf(var1);
-            var10000.instantiate(var2, var10002 + "/" + var8.source).forEach((var1x, var2x) -> {
-               var5.put(var1x, new LoadedModel(var1x, var2x));
-            });
-         }
-      } finally {
-         if (var17) {
-            Iterator var12 = var4.iterator();
-
-            while(true) {
-               if (!var12.hasNext()) {
-                  ;
+         while(var5.hasNext()) {
+            Map.Entry var6 = (Map.Entry)var5.next();
+            var4.add(CompletableFuture.supplyAsync(() -> {
+               ResourceLocation var3x = BLOCKSTATE_LISTER.fileToId((ResourceLocation)var6.getKey());
+               StateDefinition var4 = (StateDefinition)var3.apply(var3x);
+               if (var4 == null) {
+                  LOGGER.debug("Discovered unknown block state definition {}, ignoring", var3x);
+                  return null;
                } else {
-                  BlockState var13 = (BlockState)var12.next();
-                  ModelResourceLocation var14 = BlockModelShaper.stateToModelLocation(var1, var13);
-                  LoadedModel var15 = (LoadedModel)var5.get(var13);
-                  if (var15 == null) {
-                     LOGGER.warn("Missing blockstate definition: '{}' missing model for variant: '{}'", var1, var14);
-                     var15 = new LoadedModel(var13, this.missingModel);
+                  List var5 = (List)var6.getValue();
+                  ArrayList var6x = new ArrayList(var5.size());
+                  Iterator var7 = var5.iterator();
+
+                  while(var7.hasNext()) {
+                     Resource var8 = (Resource)var7.next();
+
+                     try {
+                        BufferedReader var9 = var8.openAsReader();
+
+                        try {
+                           JsonObject var10 = GsonHelper.parse((Reader)var9);
+                           BlockModelDefinition var11 = BlockModelDefinition.fromJsonElement(var10);
+                           var6x.add(new LoadedBlockModelDefinition(var8.sourcePackId(), var11));
+                        } catch (Throwable var14) {
+                           if (var9 != null) {
+                              try {
+                                 ((Reader)var9).close();
+                              } catch (Throwable var13) {
+                                 var14.addSuppressed(var13);
+                              }
+                           }
+
+                           throw var14;
+                        }
+
+                        if (var9 != null) {
+                           ((Reader)var9).close();
+                        }
+                     } catch (Exception var15) {
+                        LOGGER.error("Failed to load blockstate definition {} from pack {}", new Object[]{var3x, var8.sourcePackId(), var15});
+                     }
                   }
 
-                  var6.put(var14, var15);
+                  try {
+                     return loadBlockStateDefinitionStack(var3x, var4, var6x, var0);
+                  } catch (Exception var12) {
+                     LOGGER.error("Failed to load blockstate definition {}", var3x, var12);
+                     return null;
+                  }
+               }
+            }, var2));
+         }
+
+         return Util.sequence(var4).thenApply((var0x) -> {
+            HashMap var1 = new HashMap();
+            Iterator var2 = var0x.iterator();
+
+            while(var2.hasNext()) {
+               LoadedModels var3 = (LoadedModels)var2.next();
+               if (var3 != null) {
+                  var1.putAll(var3.models());
                }
             }
-         }
+
+            return new LoadedModels(var1);
+         });
+      });
+   }
+
+   private static LoadedModels loadBlockStateDefinitionStack(ResourceLocation var0, StateDefinition<Block, BlockState> var1, List<LoadedBlockModelDefinition> var2, UnbakedModel var3) {
+      HashMap var4 = new HashMap();
+      Iterator var5 = var2.iterator();
+
+      while(var5.hasNext()) {
+         LoadedBlockModelDefinition var6 = (LoadedBlockModelDefinition)var5.next();
+         BlockModelDefinition var10000 = var6.contents;
+         String var10002 = String.valueOf(var0);
+         var10000.instantiate(var1, var10002 + "/" + var6.source).forEach((var2x, var3x) -> {
+            ModelResourceLocation var4x = BlockModelShaper.stateToModelLocation(var0, var2x);
+            var4.put(var4x, new LoadedModel(var2x, var3x));
+         });
       }
 
-      ModelResourceLocation var9;
-      LoadedModel var10;
-      for(var7 = var4.iterator(); var7.hasNext(); var6.put(var9, var10)) {
-         BlockState var19 = (BlockState)var7.next();
-         var9 = BlockModelShaper.stateToModelLocation(var1, var19);
-         var10 = (LoadedModel)var5.get(var19);
-         if (var10 == null) {
-            LOGGER.warn("Missing blockstate definition: '{}' missing model for variant: '{}'", var1, var9);
-            var10 = new LoadedModel(var19, this.missingModel);
-         }
-      }
-
-      return new LoadedModels(var6);
+      return new LoadedModels(var4);
    }
 
    static {
@@ -124,11 +169,11 @@ public class BlockStateModelLoader {
       FRAME_LOCATION = new ModelResourceLocation(ITEM_FRAME_LOCATION, "map=false");
    }
 
-   public static record LoadedBlockModelDefinition(String source, BlockModelDefinition contents) {
+   private static record LoadedBlockModelDefinition(String source, BlockModelDefinition contents) {
       final String source;
       final BlockModelDefinition contents;
 
-      public LoadedBlockModelDefinition(String var1, BlockModelDefinition var2) {
+      LoadedBlockModelDefinition(String var1, BlockModelDefinition var2) {
          super();
          this.source = var1;
          this.contents = var2;
@@ -143,8 +188,27 @@ public class BlockStateModelLoader {
       }
    }
 
-   public static record LoadedModel(BlockState state, UnbakedModel model) {
-      public LoadedModel(BlockState var1, UnbakedModel var2) {
+   public static record LoadedModels(Map<ModelResourceLocation, LoadedModel> models) {
+      public LoadedModels(Map<ModelResourceLocation, LoadedModel> var1) {
+         super();
+         this.models = var1;
+      }
+
+      public Stream<ResolvableModel> forResolving() {
+         return this.models.values().stream().map(LoadedModel::model);
+      }
+
+      public Map<ModelResourceLocation, UnbakedBlockStateModel> plainModels() {
+         return Maps.transformValues(this.models, LoadedModel::model);
+      }
+
+      public Map<ModelResourceLocation, LoadedModel> models() {
+         return this.models;
+      }
+   }
+
+   public static record LoadedModel(BlockState state, UnbakedBlockStateModel model) {
+      public LoadedModel(BlockState var1, UnbakedBlockStateModel var2) {
          super();
          this.state = var1;
          this.model = var2;
@@ -154,19 +218,8 @@ public class BlockStateModelLoader {
          return this.state;
       }
 
-      public UnbakedModel model() {
+      public UnbakedBlockStateModel model() {
          return this.model;
-      }
-   }
-
-   public static record LoadedModels(Map<ModelResourceLocation, LoadedModel> models) {
-      public LoadedModels(Map<ModelResourceLocation, LoadedModel> var1) {
-         super();
-         this.models = var1;
-      }
-
-      public Map<ModelResourceLocation, LoadedModel> models() {
-         return this.models;
       }
    }
 }

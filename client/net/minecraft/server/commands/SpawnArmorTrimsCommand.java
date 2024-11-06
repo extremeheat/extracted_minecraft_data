@@ -22,7 +22,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
@@ -63,9 +62,9 @@ public class SpawnArmorTrimsCommand {
       HolderLookup var6 = var2.holderLookup(Registries.ITEM);
       Map var7 = (Map)var6.listElements().map(Holder.Reference::value).filter((var0x) -> {
          Equippable var1 = (Equippable)var0x.components().get(DataComponents.EQUIPPABLE);
-         return var1 != null && var1.slot().getType() == EquipmentSlot.Type.HUMANOID_ARMOR && var1.model().isPresent();
+         return var1 != null && var1.slot().getType() == EquipmentSlot.Type.HUMANOID_ARMOR && var1.assetId().isPresent();
       }).collect(Collectors.groupingBy((var0x) -> {
-         return (ResourceLocation)((Equippable)var0x.components().get(DataComponents.EQUIPPABLE)).model().get();
+         return (ResourceKey)((Equippable)var0x.components().get(DataComponents.EQUIPPABLE)).assetId().get();
       }));
       var4.stream().sorted(Comparator.comparing((var1x) -> {
          return TRIM_PATTERN_ORDER.applyAsInt((ResourceKey)var4.getResourceKey(var1x).orElse((Object)null));
