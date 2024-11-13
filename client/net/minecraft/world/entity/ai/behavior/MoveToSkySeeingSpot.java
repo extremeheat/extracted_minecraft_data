@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import java.util.Optional;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -18,21 +19,15 @@ public class MoveToSkySeeingSpot {
    }
 
    public static OneShot<LivingEntity> create(float var0) {
-      return BehaviorBuilder.create((var1) -> {
-         return var1.group(var1.absent(MemoryModuleType.WALK_TARGET)).apply(var1, (var1x) -> {
-            return (var2, var3, var4) -> {
+      return BehaviorBuilder.create((Function)((var1) -> var1.group(var1.absent(MemoryModuleType.WALK_TARGET)).apply(var1, (var1x) -> (var2, var3, var4) -> {
                if (var2.canSeeSky(var3.blockPosition())) {
                   return false;
                } else {
                   Optional var6 = Optional.ofNullable(getOutdoorPosition(var2, var3));
-                  var6.ifPresent((var2x) -> {
-                     var1x.set(new WalkTarget(var2x, var0, 0));
-                  });
+                  var6.ifPresent((var2x) -> var1x.set(new WalkTarget(var2x, var0, 0)));
                   return true;
                }
-            };
-         });
-      });
+            })));
    }
 
    @Nullable

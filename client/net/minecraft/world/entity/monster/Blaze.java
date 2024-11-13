@@ -127,14 +127,14 @@ public class Blaze extends Monster {
       if (var1) {
          var2 = (byte)(var2 | 1);
       } else {
-         var2 &= -2;
+         var2 = (byte)(var2 & -2);
       }
 
       this.entityData.set(DATA_FLAGS_ID, var2);
    }
 
    static {
-      DATA_FLAGS_ID = SynchedEntityData.defineId(Blaze.class, EntityDataSerializers.BYTE);
+      DATA_FLAGS_ID = SynchedEntityData.<Byte>defineId(Blaze.class, EntityDataSerializers.BYTE);
    }
 
    static class BlazeAttackGoal extends Goal {

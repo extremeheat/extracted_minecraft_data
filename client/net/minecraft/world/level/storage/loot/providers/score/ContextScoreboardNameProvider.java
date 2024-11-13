@@ -10,9 +10,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.scores.ScoreHolder;
 
 public record ContextScoreboardNameProvider(LootContext.EntityTarget target) implements ScoreboardNameProvider {
-   public static final MapCodec<ContextScoreboardNameProvider> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(LootContext.EntityTarget.CODEC.fieldOf("target").forGetter(ContextScoreboardNameProvider::target)).apply(var0, ContextScoreboardNameProvider::new);
-   });
+   public static final MapCodec<ContextScoreboardNameProvider> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LootContext.EntityTarget.CODEC.fieldOf("target").forGetter(ContextScoreboardNameProvider::target)).apply(var0, ContextScoreboardNameProvider::new));
    public static final Codec<ContextScoreboardNameProvider> INLINE_CODEC;
 
    public ContextScoreboardNameProvider(LootContext.EntityTarget var1) {
@@ -35,10 +33,6 @@ public record ContextScoreboardNameProvider(LootContext.EntityTarget target) imp
 
    public Set<ContextKey<?>> getReferencedContextParams() {
       return Set.of(this.target.getParam());
-   }
-
-   public LootContext.EntityTarget target() {
-      return this.target;
    }
 
    static {

@@ -19,15 +19,11 @@ public class BrewedPotionTrigger extends SimpleCriterionTrigger<TriggerInstance>
    }
 
    public void trigger(ServerPlayer var1, Holder<Potion> var2) {
-      this.trigger(var1, (var1x) -> {
-         return var1x.matches(var2);
-      });
+      this.trigger(var1, (var1x) -> var1x.matches(var2));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<Holder<Potion>> potion) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), Potion.CODEC.optionalFieldOf("potion").forGetter(TriggerInstance::potion)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), Potion.CODEC.optionalFieldOf("potion").forGetter(TriggerInstance::potion)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<Holder<Potion>> var2) {
          super();
@@ -41,14 +37,6 @@ public class BrewedPotionTrigger extends SimpleCriterionTrigger<TriggerInstance>
 
       public boolean matches(Holder<Potion> var1) {
          return !this.potion.isPresent() || ((Holder)this.potion.get()).equals(var1);
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<Holder<Potion>> potion() {
-         return this.potion;
       }
    }
 }

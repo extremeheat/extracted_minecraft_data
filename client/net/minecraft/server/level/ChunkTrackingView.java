@@ -125,13 +125,5 @@ public interface ChunkTrackingView {
          }
 
       }
-
-      public ChunkPos center() {
-         return this.center;
-      }
-
-      public int viewDistance() {
-         return this.viewDistance;
-      }
    }
 }

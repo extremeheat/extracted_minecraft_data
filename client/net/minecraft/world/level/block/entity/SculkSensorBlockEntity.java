@@ -47,11 +47,7 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
       this.lastVibrationFrequency = var1.getInt("last_vibration_frequency");
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       if (var1.contains("listener", 10)) {
-         VibrationSystem.Data.CODEC.parse(var3, var1.getCompound("listener")).resultOrPartial((var0) -> {
-            LOGGER.error("Failed to parse vibration listener for Sculk Sensor: '{}'", var0);
-         }).ifPresent((var1x) -> {
-            this.vibrationData = var1x;
-         });
+         VibrationSystem.Data.CODEC.parse(var3, var1.getCompound("listener")).resultOrPartial((var0) -> LOGGER.error("Failed to parse vibration listener for Sculk Sensor: '{}'", var0)).ifPresent((var1x) -> this.vibrationData = var1x);
       }
 
    }
@@ -60,11 +56,7 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
       super.saveAdditional(var1, var2);
       var1.putInt("last_vibration_frequency", this.lastVibrationFrequency);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      VibrationSystem.Data.CODEC.encodeStart(var3, this.vibrationData).resultOrPartial((var0) -> {
-         LOGGER.error("Failed to encode vibration listener for Sculk Sensor: '{}'", var0);
-      }).ifPresent((var1x) -> {
-         var1.put("listener", var1x);
-      });
+      VibrationSystem.Data.CODEC.encodeStart(var3, this.vibrationData).resultOrPartial((var0) -> LOGGER.error("Failed to encode vibration listener for Sculk Sensor: '{}'", var0)).ifPresent((var1x) -> var1.put("listener", var1x));
    }
 
    public VibrationSystem.Data getVibrationData() {

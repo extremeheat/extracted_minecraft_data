@@ -11,7 +11,7 @@ public enum ArmorType implements StringRepresentable {
    BOOTS(EquipmentSlot.FEET, 13, "boots"),
    BODY(EquipmentSlot.BODY, 16, "body");
 
-   public static final Codec<ArmorType> CODEC = StringRepresentable.fromValues(ArmorType::values);
+   public static final Codec<ArmorType> CODEC = StringRepresentable.<ArmorType>fromValues(ArmorType::values);
    private final EquipmentSlot slot;
    private final String name;
    private final int unitDurability;

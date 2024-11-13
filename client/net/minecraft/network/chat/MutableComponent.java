@@ -83,7 +83,7 @@ public class MutableComponent implements Component {
    public FormattedCharSequence getVisualOrderText() {
       Language var1 = Language.getInstance();
       if (this.decomposedWith != var1) {
-         this.visualOrderText = var1.getVisualOrder((FormattedText)this);
+         this.visualOrderText = var1.getVisualOrder(this);
          this.decomposedWith = var1;
       }
 

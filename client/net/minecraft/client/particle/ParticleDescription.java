@@ -25,9 +25,7 @@ public class ParticleDescription {
       if (var1 == null) {
          return new ParticleDescription(List.of());
       } else {
-         List var2 = (List)Streams.stream(var1).map((var0x) -> {
-            return GsonHelper.convertToString(var0x, "texture");
-         }).map(ResourceLocation::parse).collect(ImmutableList.toImmutableList());
+         List var2 = (List)Streams.stream(var1).map((var0x) -> GsonHelper.convertToString(var0x, "texture")).map(ResourceLocation::parse).collect(ImmutableList.toImmutableList());
          return new ParticleDescription(var2);
       }
    }

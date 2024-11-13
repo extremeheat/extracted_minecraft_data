@@ -17,15 +17,7 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 public class PaleMossDecorator extends TreeDecorator {
-   public static final MapCodec<PaleMossDecorator> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.floatRange(0.0F, 1.0F).fieldOf("leaves_probability").forGetter((var0x) -> {
-         return var0x.leavesProbability;
-      }), Codec.floatRange(0.0F, 1.0F).fieldOf("trunk_probability").forGetter((var0x) -> {
-         return var0x.trunkProbability;
-      }), Codec.floatRange(0.0F, 1.0F).fieldOf("ground_probability").forGetter((var0x) -> {
-         return var0x.groundProbability;
-      })).apply(var0, PaleMossDecorator::new);
-   });
+   public static final MapCodec<PaleMossDecorator> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.floatRange(0.0F, 1.0F).fieldOf("leaves_probability").forGetter((var0x) -> var0x.leavesProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("trunk_probability").forGetter((var0x) -> var0x.trunkProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("ground_probability").forGetter((var0x) -> var0x.groundProbability)).apply(var0, PaleMossDecorator::new));
    private final float leavesProbability;
    private final float trunkProbability;
    private final float groundProbability;
@@ -55,11 +47,7 @@ public class PaleMossDecorator extends TreeDecorator {
          });
          BlockPos var6 = (BlockPos)var5.getValue();
          if (var2.nextFloat() < this.groundProbability) {
-            var3.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((var0) -> {
-               return var0.get(VegetationFeatures.PALE_MOSS_PATCH);
-            }).ifPresent((var3x) -> {
-               ((ConfiguredFeature)var3x.value()).place(var3, var3.getLevel().getChunkSource().getGenerator(), var2, var6.above());
-            });
+            var3.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((var0) -> var0.get(VegetationFeatures.PALE_MOSS_PATCH)).ifPresent((var3x) -> ((ConfiguredFeature)var3x.value()).place(var3, var3.getLevel().getChunkSource().getGenerator(), var2, var6.above()));
          }
 
          var1.logs().forEach((var3x) -> {

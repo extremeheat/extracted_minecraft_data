@@ -31,17 +31,13 @@ public abstract class LongRunningTask implements Runnable {
 
    public static void setScreen(Screen var0) {
       Minecraft var1 = Minecraft.getInstance();
-      var1.execute(() -> {
-         var1.setScreen(var0);
-      });
+      var1.execute(() -> var1.setScreen(var0));
    }
 
    protected void error(Component var1) {
       this.abortTask();
       Minecraft var2 = Minecraft.getInstance();
-      var2.execute(() -> {
-         var2.setScreen(new RealmsGenericErrorScreen(var1, new RealmsMainScreen(new TitleScreen())));
-      });
+      var2.execute(() -> var2.setScreen(new RealmsGenericErrorScreen(var1, new RealmsMainScreen(new TitleScreen()))));
    }
 
    protected void error(Exception var1) {

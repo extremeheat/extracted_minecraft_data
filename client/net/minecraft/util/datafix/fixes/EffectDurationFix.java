@@ -24,14 +24,8 @@ public class EffectDurationFix extends DataFix {
       Type var2 = this.getInputSchema().getType(References.ITEM_STACK);
       OpticFinder var3 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
       OpticFinder var4 = var2.findField("tag");
-      return TypeRewriteRule.seq(this.fixTypeEverywhereTyped("EffectDurationEntity", var1.getType(References.ENTITY), (var1x) -> {
-         return var1x.update(DSL.remainderFinder(), this::updateEntity);
-      }), new TypeRewriteRule[]{this.fixTypeEverywhereTyped("EffectDurationPlayer", var1.getType(References.PLAYER), (var1x) -> {
-         return var1x.update(DSL.remainderFinder(), this::updateEntity);
-      }), this.fixTypeEverywhereTyped("EffectDurationItem", var2, (var3x) -> {
-         if (var3x.getOptional(var3).filter((var0) -> {
-            return POTION_ITEMS.contains(var0.getSecond());
-         }).isPresent()) {
+      return TypeRewriteRule.seq(this.fixTypeEverywhereTyped("EffectDurationEntity", var1.getType(References.ENTITY), (var1x) -> var1x.update(DSL.remainderFinder(), this::updateEntity)), new TypeRewriteRule[]{this.fixTypeEverywhereTyped("EffectDurationPlayer", var1.getType(References.PLAYER), (var1x) -> var1x.update(DSL.remainderFinder(), this::updateEntity)), this.fixTypeEverywhereTyped("EffectDurationItem", var2, (var3x) -> {
+         if (var3x.getOptional(var3).filter((var0) -> POTION_ITEMS.contains(var0.getSecond())).isPresent()) {
             Optional var4x = var3x.getOptionalTyped(var4);
             if (var4x.isPresent()) {
                Dynamic var5 = (Dynamic)((Typed)var4x.get()).get(DSL.remainderFinder());

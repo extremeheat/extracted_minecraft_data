@@ -16,8 +16,8 @@ public enum GameType implements StringRepresentable {
    SPECTATOR(3, "spectator");
 
    public static final GameType DEFAULT_MODE = SURVIVAL;
-   public static final StringRepresentable.EnumCodec<GameType> CODEC = StringRepresentable.fromEnum(GameType::values);
-   private static final IntFunction<GameType> BY_ID = ByIdMap.continuous(GameType::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   public static final StringRepresentable.EnumCodec<GameType> CODEC = StringRepresentable.<GameType>fromEnum(GameType::values);
+   private static final IntFunction<GameType> BY_ID = ByIdMap.<GameType>continuous(GameType::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    private static final int NOT_SET = -1;
    private final int id;
    private final String name;
@@ -94,7 +94,7 @@ public enum GameType implements StringRepresentable {
    @Nullable
    @Contract("_,!null->!null;_,null->_")
    public static GameType byName(String var0, @Nullable GameType var1) {
-      GameType var2 = (GameType)CODEC.byName(var0);
+      GameType var2 = CODEC.byName(var0);
       return var2 != null ? var2 : var1;
    }
 
@@ -108,9 +108,7 @@ public enum GameType implements StringRepresentable {
    }
 
    public static boolean isValidId(int var0) {
-      return Arrays.stream(values()).anyMatch((var1) -> {
-         return var1.id == var0;
-      });
+      return Arrays.stream(values()).anyMatch((var1) -> var1.id == var0);
    }
 
    // $FF: synthetic method

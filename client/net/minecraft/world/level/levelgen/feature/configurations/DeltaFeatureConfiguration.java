@@ -6,17 +6,7 @@ import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class DeltaFeatureConfiguration implements FeatureConfiguration {
-   public static final Codec<DeltaFeatureConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(BlockState.CODEC.fieldOf("contents").forGetter((var0x) -> {
-         return var0x.contents;
-      }), BlockState.CODEC.fieldOf("rim").forGetter((var0x) -> {
-         return var0x.rim;
-      }), IntProvider.codec(0, 16).fieldOf("size").forGetter((var0x) -> {
-         return var0x.size;
-      }), IntProvider.codec(0, 16).fieldOf("rim_size").forGetter((var0x) -> {
-         return var0x.rimSize;
-      })).apply(var0, DeltaFeatureConfiguration::new);
-   });
+   public static final Codec<DeltaFeatureConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockState.CODEC.fieldOf("contents").forGetter((var0x) -> var0x.contents), BlockState.CODEC.fieldOf("rim").forGetter((var0x) -> var0x.rim), IntProvider.codec(0, 16).fieldOf("size").forGetter((var0x) -> var0x.size), IntProvider.codec(0, 16).fieldOf("rim_size").forGetter((var0x) -> var0x.rimSize)).apply(var0, DeltaFeatureConfiguration::new));
    private final BlockState contents;
    private final BlockState rim;
    private final IntProvider size;

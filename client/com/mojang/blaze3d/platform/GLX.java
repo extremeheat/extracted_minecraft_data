@@ -11,7 +11,6 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
@@ -73,13 +72,9 @@ public class GLX {
       if (!GLFW.glfwInit()) {
          throw new IllegalStateException("Failed to initialize GLFW, errors: " + Joiner.on(",").join(var0));
       } else {
-         LongSupplier var2 = () -> {
-            return (long)(GLFW.glfwGetTime() * 1.0E9);
-         };
-         Iterator var3 = var0.iterator();
+         LongSupplier var2 = () -> (long)(GLFW.glfwGetTime() * 1.0E9);
 
-         while(var3.hasNext()) {
-            String var4 = (String)var3.next();
+         for(String var4 : var0) {
             LOGGER.error("GLFW error collected during initialization: {}", var4);
          }
 
@@ -164,7 +159,7 @@ public class GLX {
    }
 
    public static <T> T make(Supplier<T> var0) {
-      return var0.get();
+      return (T)var0.get();
    }
 
    public static <T> T make(T var0, Consumer<T> var1) {

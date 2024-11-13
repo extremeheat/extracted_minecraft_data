@@ -43,9 +43,7 @@ public class HotbarManager {
          var1 = DataFixTypes.HOTBAR.updateToCurrentVersion(this.fixerUpper, var1, var2);
 
          for(int var3 = 0; var3 < 9; ++var3) {
-            this.hotbars[var3] = (Hotbar)Hotbar.CODEC.parse(NbtOps.INSTANCE, var1.get(String.valueOf(var3))).resultOrPartial((var0) -> {
-               LOGGER.warn("Failed to parse hotbar: {}", var0);
-            }).orElseGet(Hotbar::new);
+            this.hotbars[var3] = (Hotbar)Hotbar.CODEC.parse(NbtOps.INSTANCE, var1.get(String.valueOf(var3))).resultOrPartial((var0) -> LOGGER.warn("Failed to parse hotbar: {}", var0)).orElseGet(Hotbar::new);
          }
       } catch (Exception var4) {
          LOGGER.error("Failed to load creative mode options", var4);

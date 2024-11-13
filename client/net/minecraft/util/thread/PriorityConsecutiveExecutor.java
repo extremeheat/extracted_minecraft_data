@@ -17,9 +17,7 @@ public class PriorityConsecutiveExecutor extends AbstractConsecutiveExecutor<Str
 
    public <Source> CompletableFuture<Source> scheduleWithResult(int var1, Consumer<CompletableFuture<Source>> var2) {
       CompletableFuture var3 = new CompletableFuture();
-      this.schedule(new StrictQueue.RunnableWithPriority(var1, () -> {
-         var2.accept(var3);
-      }));
+      this.schedule(new StrictQueue.RunnableWithPriority(var1, () -> var2.accept(var3)));
       return var3;
    }
 

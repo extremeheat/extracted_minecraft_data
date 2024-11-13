@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import java.util.BitSet;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.LongStream;
@@ -66,10 +65,8 @@ public class PlayerChunkSender {
                   ServerGamePacketListenerImpl var6 = var1.connection;
                   ++this.unacknowledgedBatches;
                   var6.send(ClientboundChunkBatchStartPacket.INSTANCE);
-                  Iterator var7 = var5.iterator();
 
-                  while(var7.hasNext()) {
-                     LevelChunk var8 = (LevelChunk)var7.next();
+                  for(LevelChunk var8 : var5) {
                      sendChunk(var6, var3, var8);
                   }
 
@@ -89,26 +86,20 @@ public class PlayerChunkSender {
 
    private List<LevelChunk> collectChunksToSend(ChunkMap var1, ChunkPos var2) {
       int var4 = Mth.floor(this.batchQuota);
-      LongStream var10000;
       List var3;
       if (!this.memoryConnection && this.pendingChunks.size() > var4) {
          Stream var7 = this.pendingChunks.stream();
          Objects.requireNonNull(var2);
-         var10000 = ((List)var7.collect(Comparators.least(var4, Comparator.comparingInt(var2::distanceSquared)))).stream().mapToLong(Long::longValue);
+         LongStream var8 = ((List)var7.collect(Comparators.least(var4, Comparator.comparingInt(var2::distanceSquared)))).stream().mapToLong(Long::longValue);
          Objects.requireNonNull(var1);
-         var3 = var10000.mapToObj(var1::getChunkToSend).filter(Objects::nonNull).toList();
+         var3 = var8.mapToObj(var1::getChunkToSend).filter(Objects::nonNull).toList();
       } else {
-         var10000 = this.pendingChunks.longStream();
+         LongStream var10000 = this.pendingChunks.longStream();
          Objects.requireNonNull(var1);
-         var3 = var10000.mapToObj(var1::getChunkToSend).filter(Objects::nonNull).sorted(Comparator.comparingInt((var1x) -> {
-            return var2.distanceSquared(var1x.getPos());
-         })).toList();
+         var3 = var10000.mapToObj(var1::getChunkToSend).filter(Objects::nonNull).sorted(Comparator.comparingInt((var1x) -> var2.distanceSquared(var1x.getPos()))).toList();
       }
 
-      Iterator var5 = var3.iterator();
-
-      while(var5.hasNext()) {
-         LevelChunk var6 = (LevelChunk)var5.next();
+      for(LevelChunk var6 : var3) {
          this.pendingChunks.remove(var6.getPos().toLong());
       }
 

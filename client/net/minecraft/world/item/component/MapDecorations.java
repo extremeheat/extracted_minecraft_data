@@ -20,18 +20,12 @@ public record MapDecorations(Map<String, Entry> decorations) {
       return new MapDecorations(Util.copyAndPut(this.decorations, var1, var2));
    }
 
-   public Map<String, Entry> decorations() {
-      return this.decorations;
-   }
-
    static {
       CODEC = Codec.unboundedMap(Codec.STRING, MapDecorations.Entry.CODEC).xmap(MapDecorations::new, MapDecorations::decorations);
    }
 
    public static record Entry(Holder<MapDecorationType> type, double x, double z, float rotation) {
-      public static final Codec<Entry> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(MapDecorationType.CODEC.fieldOf("type").forGetter(Entry::type), Codec.DOUBLE.fieldOf("x").forGetter(Entry::x), Codec.DOUBLE.fieldOf("z").forGetter(Entry::z), Codec.FLOAT.fieldOf("rotation").forGetter(Entry::rotation)).apply(var0, Entry::new);
-      });
+      public static final Codec<Entry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(MapDecorationType.CODEC.fieldOf("type").forGetter(Entry::type), Codec.DOUBLE.fieldOf("x").forGetter(Entry::x), Codec.DOUBLE.fieldOf("z").forGetter(Entry::z), Codec.FLOAT.fieldOf("rotation").forGetter(Entry::rotation)).apply(var0, Entry::new));
 
       public Entry(Holder<MapDecorationType> var1, double var2, double var4, float var6) {
          super();
@@ -39,22 +33,6 @@ public record MapDecorations(Map<String, Entry> decorations) {
          this.x = var2;
          this.z = var4;
          this.rotation = var6;
-      }
-
-      public Holder<MapDecorationType> type() {
-         return this.type;
-      }
-
-      public double x() {
-         return this.x;
-      }
-
-      public double z() {
-         return this.z;
-      }
-
-      public float rotation() {
-         return this.rotation;
       }
    }
 }

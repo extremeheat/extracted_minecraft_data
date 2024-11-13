@@ -51,11 +51,11 @@ public class DimensionDataStorage implements AutoCloseable {
    public <T extends SavedData> T computeIfAbsent(SavedData.Factory<T> var1, String var2) {
       SavedData var3 = this.get(var1, var2);
       if (var3 != null) {
-         return var3;
+         return (T)var3;
       } else {
          SavedData var4 = (SavedData)var1.constructor().get();
          this.set(var2, var4);
-         return var4;
+         return (T)var4;
       }
    }
 
@@ -67,7 +67,7 @@ public class DimensionDataStorage implements AutoCloseable {
          this.cache.put(var2, var3);
       }
 
-      return (SavedData)var3.orElse((Object)null);
+      return (T)(var3.orElse((Object)null));
    }
 
    @Nullable
@@ -76,7 +76,7 @@ public class DimensionDataStorage implements AutoCloseable {
          Path var4 = this.getDataFile(var3);
          if (Files.exists(var4, new LinkOption[0])) {
             CompoundTag var5 = this.readTagFromDisk(var3, var2, SharedConstants.getCurrentVersion().getDataVersion().getVersion());
-            return (SavedData)var1.apply(var5.getCompound("data"), this.registries);
+            return (T)(var1.apply(var5.getCompound("data"), this.registries));
          }
       } catch (Exception var6) {
          LOGGER.error("Error loading saved data: {}", var3, var6);
@@ -174,24 +174,14 @@ public class DimensionDataStorage implements AutoCloseable {
       if (var1.isEmpty()) {
          return CompletableFuture.completedFuture((Object)null);
       } else {
-         this.pendingWriteFuture = this.pendingWriteFuture.thenCompose((var1x) -> {
-            return CompletableFuture.allOf((CompletableFuture[])var1.entrySet().stream().map((var0) -> {
-               return tryWriteAsync((Path)var0.getKey(), (CompoundTag)var0.getValue());
-            }).toArray((var0) -> {
-               return new CompletableFuture[var0];
-            }));
-         });
+         this.pendingWriteFuture = this.pendingWriteFuture.thenCompose((var1x) -> CompletableFuture.allOf((CompletableFuture[])var1.entrySet().stream().map((var0) -> tryWriteAsync((Path)var0.getKey(), (CompoundTag)var0.getValue())).toArray((var0) -> new CompletableFuture[var0])));
          return this.pendingWriteFuture;
       }
    }
 
    private Map<Path, CompoundTag> collectDirtyTagsToSave() {
       Object2ObjectArrayMap var1 = new Object2ObjectArrayMap();
-      this.cache.forEach((var2, var3) -> {
-         var3.filter(SavedData::isDirty).ifPresent((var3x) -> {
-            var1.put(this.getDataFile(var2), var3x.save(this.registries));
-         });
-      });
+      this.cache.forEach((var2, var3) -> var3.filter(SavedData::isDirty).ifPresent((var3x) -> var1.put(this.getDataFile(var2), var3x.save(this.registries))));
       return var1;
    }
 

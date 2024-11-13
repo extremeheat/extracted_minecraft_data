@@ -21,12 +21,8 @@ public class FixedFormat implements NumberFormat {
       }
 
       static {
-         CODEC = ComponentSerialization.CODEC.fieldOf("value").xmap(FixedFormat::new, (var0) -> {
-            return var0.value;
-         });
-         STREAM_CODEC = StreamCodec.composite(ComponentSerialization.TRUSTED_STREAM_CODEC, (var0) -> {
-            return var0.value;
-         }, FixedFormat::new);
+         CODEC = ComponentSerialization.CODEC.fieldOf("value").xmap(FixedFormat::new, (var0) -> var0.value);
+         STREAM_CODEC = StreamCodec.composite(ComponentSerialization.TRUSTED_STREAM_CODEC, (var0) -> var0.value, FixedFormat::new);
       }
    };
    final Component value;

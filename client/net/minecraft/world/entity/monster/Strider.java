@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -149,9 +148,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    protected void registerGoals() {
       this.goalSelector.addGoal(1, new PanicGoal(this, 1.65));
       this.goalSelector.addGoal(2, new BreedGoal(this, 1.0));
-      this.temptGoal = new TemptGoal(this, 1.4, (var0) -> {
-         return var0.is(ItemTags.STRIDER_TEMPT_ITEMS);
-      }, false);
+      this.temptGoal = new TemptGoal(this, 1.4, (var0) -> var0.is(ItemTags.STRIDER_TEMPT_ITEMS), false);
       this.goalSelector.addGoal(3, this.temptGoal);
       this.goalSelector.addGoal(4, new StriderGoToLavaGoal(this, 1.0));
       this.goalSelector.addGoal(5, new FollowParentGoal(this, 1.0));
@@ -214,11 +211,8 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       double var4 = this.getBoundingBox().maxY;
       double var6 = this.getBoundingBox().minY - 0.5;
       BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos();
-      Vec3[] var9 = var2;
-      int var10 = var2.length;
 
-      for(int var11 = 0; var11 < var10; ++var11) {
-         Vec3 var12 = var9[var11];
+      for(Vec3 var12 : var2) {
          var8.set(this.getX() + var12.x, var4, this.getZ() + var12.z);
 
          for(double var13 = var4; var13 > var6; --var13) {
@@ -227,35 +221,26 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
          }
       }
 
-      Iterator var17 = var3.iterator();
+      for(BlockPos var18 : var3) {
+         if (!this.level().getFluidState(var18).is(FluidTags.LAVA)) {
+            double var19 = this.level().getBlockFloorHeight(var18);
+            if (DismountHelper.isBlockFloorValid(var19)) {
+               Vec3 var20 = Vec3.upFromBottomCenterOf(var18, var19);
+               UnmodifiableIterator var14 = var1.getDismountPoses().iterator();
 
-      while(true) {
-         BlockPos var18;
-         double var19;
-         do {
-            do {
-               if (!var17.hasNext()) {
-                  return new Vec3(this.getX(), this.getBoundingBox().maxY, this.getZ());
+               while(var14.hasNext()) {
+                  Pose var15 = (Pose)var14.next();
+                  AABB var16 = var1.getLocalBoundsForPose(var15);
+                  if (DismountHelper.canDismountTo(this.level(), var1, var16.move(var20))) {
+                     var1.setPose(var15);
+                     return var20;
+                  }
                }
-
-               var18 = (BlockPos)var17.next();
-            } while(this.level().getFluidState(var18).is(FluidTags.LAVA));
-
-            var19 = this.level().getBlockFloorHeight(var18);
-         } while(!DismountHelper.isBlockFloorValid(var19));
-
-         Vec3 var20 = Vec3.upFromBottomCenterOf(var18, var19);
-         UnmodifiableIterator var14 = var1.getDismountPoses().iterator();
-
-         while(var14.hasNext()) {
-            Pose var15 = (Pose)var14.next();
-            AABB var16 = var1.getLocalBoundsForPose(var15);
-            if (DismountHelper.canDismountTo(this.level(), var1, var16.move(var20))) {
-               var1.setPose(var15);
-               return var20;
             }
          }
       }
+
+      return new Vec3(this.getX(), this.getBoundingBox().maxY, this.getZ());
    }
 
    protected void tickRidden(Player var1, Vec3 var2) {
@@ -301,8 +286,8 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       }
 
       if (!this.isNoAi()) {
-         boolean var10000;
          boolean var3;
+         boolean var10000;
          label36: {
             BlockState var1 = this.level().getBlockState(this.blockPosition());
             BlockState var2 = this.getBlockStateOnLegacy();
@@ -389,7 +374,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
 
    @Nullable
    public Strider getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (Strider)EntityType.STRIDER.create(var1, EntitySpawnReason.BREEDING);
+      return EntityType.STRIDER.create(var1, EntitySpawnReason.BREEDING);
    }
 
    public boolean isFood(ItemStack var1) {
@@ -419,7 +404,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
             return (InteractionResult)(var5.is(Items.SADDLE) ? var5.interactLivingEntity(var1, this, var2) : InteractionResult.PASS);
          } else {
             if (var3 && !this.isSilent()) {
-               this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)SoundEvents.STRIDER_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+               this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.STRIDER_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
             }
 
             return var4;
@@ -438,14 +423,14 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       } else {
          RandomSource var5 = var1.getRandom();
          if (var5.nextInt(30) == 0) {
-            Mob var6 = (Mob)EntityType.ZOMBIFIED_PIGLIN.create(var1.getLevel(), EntitySpawnReason.JOCKEY);
+            Mob var6 = EntityType.ZOMBIFIED_PIGLIN.create(var1.getLevel(), EntitySpawnReason.JOCKEY);
             if (var6 != null) {
                var4 = this.spawnJockey(var1, var2, var6, new Zombie.ZombieGroupData(Zombie.getSpawnAsBabyOdds(var5), false));
                var6.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WARPED_FUNGUS_ON_A_STICK));
                this.equipSaddle(new ItemStack(Items.SADDLE), (SoundSource)null);
             }
          } else if (var5.nextInt(10) == 0) {
-            AgeableMob var7 = (AgeableMob)EntityType.STRIDER.create(var1.getLevel(), EntitySpawnReason.JOCKEY);
+            AgeableMob var7 = EntityType.STRIDER.create(var1.getLevel(), EntitySpawnReason.JOCKEY);
             if (var7 != null) {
                var7.setAge(-24000);
                var4 = this.spawnJockey(var1, var2, var7, (SpawnGroupData)null);
@@ -473,12 +458,31 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
 
    static {
       SUFFOCATING_MODIFIER = new AttributeModifier(SUFFOCATING_MODIFIER_ID, -0.3400000035762787, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
-      DATA_BOOST_TIME = SynchedEntityData.defineId(Strider.class, EntityDataSerializers.INT);
-      DATA_SUFFOCATING = SynchedEntityData.defineId(Strider.class, EntityDataSerializers.BOOLEAN);
-      DATA_SADDLE_ID = SynchedEntityData.defineId(Strider.class, EntityDataSerializers.BOOLEAN);
+      DATA_BOOST_TIME = SynchedEntityData.<Integer>defineId(Strider.class, EntityDataSerializers.INT);
+      DATA_SUFFOCATING = SynchedEntityData.<Boolean>defineId(Strider.class, EntityDataSerializers.BOOLEAN);
+      DATA_SADDLE_ID = SynchedEntityData.<Boolean>defineId(Strider.class, EntityDataSerializers.BOOLEAN);
    }
 
-   private static class StriderGoToLavaGoal extends MoveToBlockGoal {
+   static class StriderPathNavigation extends GroundPathNavigation {
+      StriderPathNavigation(Strider var1, Level var2) {
+         super(var1, var2);
+      }
+
+      protected PathFinder createPathFinder(int var1) {
+         this.nodeEvaluator = new WalkNodeEvaluator();
+         return new PathFinder(this.nodeEvaluator, var1);
+      }
+
+      protected boolean hasValidPathType(PathType var1) {
+         return var1 != PathType.LAVA && var1 != PathType.DAMAGE_FIRE && var1 != PathType.DANGER_FIRE ? super.hasValidPathType(var1) : true;
+      }
+
+      public boolean isStableDestination(BlockPos var1) {
+         return this.level.getBlockState(var1).is(Blocks.LAVA) || super.isStableDestination(var1);
+      }
+   }
+
+   static class StriderGoToLavaGoal extends MoveToBlockGoal {
       private final Strider strider;
 
       StriderGoToLavaGoal(Strider var1, double var2) {
@@ -504,25 +508,6 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
 
       protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
          return var1.getBlockState(var2).is(Blocks.LAVA) && var1.getBlockState(var2.above()).isPathfindable(PathComputationType.LAND);
-      }
-   }
-
-   static class StriderPathNavigation extends GroundPathNavigation {
-      StriderPathNavigation(Strider var1, Level var2) {
-         super(var1, var2);
-      }
-
-      protected PathFinder createPathFinder(int var1) {
-         this.nodeEvaluator = new WalkNodeEvaluator();
-         return new PathFinder(this.nodeEvaluator, var1);
-      }
-
-      protected boolean hasValidPathType(PathType var1) {
-         return var1 != PathType.LAVA && var1 != PathType.DAMAGE_FIRE && var1 != PathType.DANGER_FIRE ? super.hasValidPathType(var1) : true;
-      }
-
-      public boolean isStableDestination(BlockPos var1) {
-         return this.level.getBlockState(var1).is(Blocks.LAVA) || super.isStableDestination(var1);
       }
    }
 }

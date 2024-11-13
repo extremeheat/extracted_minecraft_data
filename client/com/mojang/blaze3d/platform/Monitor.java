@@ -1,7 +1,6 @@
 package com.mojang.blaze3d.platform;
 
 import com.google.common.collect.Lists;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -46,10 +45,8 @@ public final class Monitor {
    public VideoMode getPreferredVidMode(Optional<VideoMode> var1) {
       if (var1.isPresent()) {
          VideoMode var2 = (VideoMode)var1.get();
-         Iterator var3 = this.videoModes.iterator();
 
-         while(var3.hasNext()) {
-            VideoMode var4 = (VideoMode)var3.next();
+         for(VideoMode var4 : this.videoModes) {
             if (var4.equals(var2)) {
                return var4;
             }

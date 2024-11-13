@@ -38,9 +38,7 @@ public class ChestSpecialRenderer implements NoDataSpecialModelRenderer {
    }
 
    public static record Unbaked(ResourceLocation texture, float openness) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(ResourceLocation.CODEC.fieldOf("texture").forGetter(Unbaked::texture), Codec.FLOAT.optionalFieldOf("openness", 0.0F).forGetter(Unbaked::openness)).apply(var0, Unbaked::new);
-      });
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("texture").forGetter(Unbaked::texture), Codec.FLOAT.optionalFieldOf("openness", 0.0F).forGetter(Unbaked::openness)).apply(var0, Unbaked::new));
 
       public Unbaked(ResourceLocation var1) {
          this(var1, 0.0F);
@@ -60,14 +58,6 @@ public class ChestSpecialRenderer implements NoDataSpecialModelRenderer {
          ChestModel var2 = new ChestModel(var1.bakeLayer(ModelLayers.CHEST));
          Material var3 = Sheets.chestMaterial(this.texture);
          return new ChestSpecialRenderer(var2, var3, this.openness);
-      }
-
-      public ResourceLocation texture() {
-         return this.texture;
-      }
-
-      public float openness() {
-         return this.openness;
       }
    }
 }

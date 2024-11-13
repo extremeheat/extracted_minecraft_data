@@ -21,13 +21,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetEnchantmentsFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetEnchantmentsFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(var0.group(Codec.unboundedMap(Enchantment.CODEC, NumberProviders.CODEC).optionalFieldOf("enchantments", Map.of()).forGetter((var0x) -> {
-         return var0x.enchantments;
-      }), Codec.BOOL.fieldOf("add").orElse(false).forGetter((var0x) -> {
-         return var0x.add;
-      }))).apply(var0, SetEnchantmentsFunction::new);
-   });
+   public static final MapCodec<SetEnchantmentsFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(Codec.unboundedMap(Enchantment.CODEC, NumberProviders.CODEC).optionalFieldOf("enchantments", Map.of()).forGetter((var0x) -> var0x.enchantments), Codec.BOOL.fieldOf("add").orElse(false).forGetter((var0x) -> var0x.add))).apply(var0, SetEnchantmentsFunction::new));
    private final Map<Holder<Enchantment>, NumberProvider> enchantments;
    private final boolean add;
 
@@ -42,9 +36,7 @@ public class SetEnchantmentsFunction extends LootItemConditionalFunction {
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return (Set)this.enchantments.values().stream().flatMap((var0) -> {
-         return var0.getReferencedContextParams().stream();
-      }).collect(ImmutableSet.toImmutableSet());
+      return (Set)this.enchantments.values().stream().flatMap((var0) -> var0.getReferencedContextParams().stream()).collect(ImmutableSet.toImmutableSet());
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
@@ -54,13 +46,9 @@ public class SetEnchantmentsFunction extends LootItemConditionalFunction {
 
       EnchantmentHelper.updateEnchantments(var1, (var2x) -> {
          if (this.add) {
-            this.enchantments.forEach((var2xx, var3) -> {
-               var2x.set(var2xx, Mth.clamp(var2x.getLevel(var2xx) + var3.getInt(var2), 0, 255));
-            });
+            this.enchantments.forEach((var2xx, var3) -> var2x.set(var2xx, Mth.clamp(var2x.getLevel(var2xx) + var3.getInt(var2), 0, 255)));
          } else {
-            this.enchantments.forEach((var2xx, var3) -> {
-               var2x.set(var2xx, Mth.clamp(var3.getInt(var2), 0, 255));
-            });
+            this.enchantments.forEach((var2xx, var3) -> var2x.set(var2xx, Mth.clamp(var3.getInt(var2), 0, 255)));
          }
 
       });

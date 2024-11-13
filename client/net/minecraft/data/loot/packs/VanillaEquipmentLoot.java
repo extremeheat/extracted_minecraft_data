@@ -43,8 +43,4 @@ public record VanillaEquipmentLoot(HolderLookup.Provider registries) implements 
    public static LootTable.Builder trialChamberEquipment(Item var0, Item var1, ArmorTrim var2, HolderLookup.RegistryLookup<Enchantment> var3) {
       return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).when(LootItemRandomChanceCondition.randomChance(0.5F)).add(LootItem.lootTableItem(var0).apply(SetComponentsFunction.setComponent(DataComponents.TRIM, var2)).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(var3.getOrThrow(Enchantments.PROTECTION), ConstantValue.exactly(4.0F)).withEnchantment(var3.getOrThrow(Enchantments.PROJECTILE_PROTECTION), ConstantValue.exactly(4.0F)).withEnchantment(var3.getOrThrow(Enchantments.FIRE_PROTECTION), ConstantValue.exactly(4.0F))))).withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).when(LootItemRandomChanceCondition.randomChance(0.5F)).add(LootItem.lootTableItem(var1).apply(SetComponentsFunction.setComponent(DataComponents.TRIM, var2)).apply((new SetEnchantmentsFunction.Builder()).withEnchantment(var3.getOrThrow(Enchantments.PROTECTION), ConstantValue.exactly(4.0F)).withEnchantment(var3.getOrThrow(Enchantments.PROJECTILE_PROTECTION), ConstantValue.exactly(4.0F)).withEnchantment(var3.getOrThrow(Enchantments.FIRE_PROTECTION), ConstantValue.exactly(4.0F)))));
    }
-
-   public HolderLookup.Provider registries() {
-      return this.registries;
-   }
 }

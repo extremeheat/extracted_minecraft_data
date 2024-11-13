@@ -31,7 +31,7 @@ public class DebugEntityNameGenerator {
    }
 
    private static String getRandomString(RandomSource var0, String[] var1) {
-      return (String)Util.getRandom((Object[])var1, var0);
+      return (String)Util.getRandom(var1, var0);
    }
 
    private static RandomSource getRandom(UUID var0) {

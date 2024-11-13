@@ -8,13 +8,7 @@ import java.util.regex.Pattern;
 import net.minecraft.resources.ResourceLocation;
 
 public class ResourceLocationPattern {
-   public static final Codec<ResourceLocationPattern> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ExtraCodecs.PATTERN.optionalFieldOf("namespace").forGetter((var0x) -> {
-         return var0x.namespacePattern;
-      }), ExtraCodecs.PATTERN.optionalFieldOf("path").forGetter((var0x) -> {
-         return var0x.pathPattern;
-      })).apply(var0, ResourceLocationPattern::new);
-   });
+   public static final Codec<ResourceLocationPattern> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.PATTERN.optionalFieldOf("namespace").forGetter((var0x) -> var0x.namespacePattern), ExtraCodecs.PATTERN.optionalFieldOf("path").forGetter((var0x) -> var0x.pathPattern)).apply(var0, ResourceLocationPattern::new));
    private final Optional<Pattern> namespacePattern;
    private final Predicate<String> namespacePredicate;
    private final Optional<Pattern> pathPattern;
@@ -24,16 +18,10 @@ public class ResourceLocationPattern {
    private ResourceLocationPattern(Optional<Pattern> var1, Optional<Pattern> var2) {
       super();
       this.namespacePattern = var1;
-      this.namespacePredicate = (Predicate)var1.map(Pattern::asPredicate).orElse((var0) -> {
-         return true;
-      });
+      this.namespacePredicate = (Predicate)var1.map(Pattern::asPredicate).orElse((Predicate)(var0) -> true);
       this.pathPattern = var2;
-      this.pathPredicate = (Predicate)var2.map(Pattern::asPredicate).orElse((var0) -> {
-         return true;
-      });
-      this.locationPredicate = (var1x) -> {
-         return this.namespacePredicate.test(var1x.getNamespace()) && this.pathPredicate.test(var1x.getPath());
-      };
+      this.pathPredicate = (Predicate)var2.map(Pattern::asPredicate).orElse((Predicate)(var0) -> true);
+      this.locationPredicate = (var1x) -> this.namespacePredicate.test(var1x.getNamespace()) && this.pathPredicate.test(var1x.getPath());
    }
 
    public Predicate<String> namespacePredicate() {

@@ -22,8 +22,6 @@ public class BlockStateMatchTest extends RuleTest {
    }
 
    static {
-      CODEC = BlockState.CODEC.fieldOf("block_state").xmap(BlockStateMatchTest::new, (var0) -> {
-         return var0.blockState;
-      });
+      CODEC = BlockState.CODEC.fieldOf("block_state").xmap(BlockStateMatchTest::new, (var0) -> var0.blockState);
    }
 }

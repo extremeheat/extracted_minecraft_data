@@ -22,6 +22,6 @@ public class ClientboundResetChatPacket implements Packet<ClientConfigurationPac
    }
 
    static {
-      STREAM_CODEC = StreamCodec.unit(INSTANCE);
+      STREAM_CODEC = StreamCodec.<ByteBuf, ClientboundResetChatPacket>unit(INSTANCE);
    }
 }

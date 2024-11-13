@@ -56,11 +56,7 @@ public class BlendingData {
 
    private BlendingData(int var1, int var2, Optional<double[]> var3) {
       super();
-      this.heights = (double[])var3.orElseGet(() -> {
-         return (double[])Util.make(new double[CELL_COLUMN_COUNT], (var0) -> {
-            Arrays.fill(var0, 1.7976931348623157E308);
-         });
-      });
+      this.heights = (double[])var3.orElseGet(() -> (double[])Util.make(new double[CELL_COLUMN_COUNT], (var0) -> Arrays.fill(var0, 1.7976931348623157E308)));
       this.densities = new double[CELL_COLUMN_COUNT][];
       ObjectArrayList var4 = new ObjectArrayList(CELL_COLUMN_COUNT);
       var4.size(CELL_COLUMN_COUNT);
@@ -77,11 +73,8 @@ public class BlendingData {
 
    public Packed pack() {
       boolean var1 = false;
-      double[] var2 = this.heights;
-      int var3 = var2.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         double var5 = var2[var4];
+      for(double var5 : this.heights) {
          if (var5 != 1.7976931348623157E308) {
             var1 = true;
             break;
@@ -105,11 +98,8 @@ public class BlendingData {
 
    public static Set<Direction8> sideByGenerationAge(WorldGenLevel var0, int var1, int var2, boolean var3) {
       EnumSet var4 = EnumSet.noneOf(Direction8.class);
-      Direction8[] var5 = Direction8.values();
-      int var6 = var5.length;
 
-      for(int var7 = 0; var7 < var6; ++var7) {
-         Direction8 var8 = var5[var7];
+      for(Direction8 var8 : Direction8.values()) {
          int var9 = var1 + var8.getStepX();
          int var10 = var2 + var8.getStepZ();
          if (var0.getChunk(var9, var10).isOldNoiseGeneration() == var3) {
@@ -126,28 +116,27 @@ public class BlendingData {
             this.addValuesForColumn(getInsideIndex(0, 0), var1, 0, 0);
          }
 
-         int var3;
          if (var2.contains(Direction8.NORTH)) {
-            for(var3 = 1; var3 < QUARTS_PER_SECTION; ++var3) {
+            for(int var3 = 1; var3 < QUARTS_PER_SECTION; ++var3) {
                this.addValuesForColumn(getInsideIndex(var3, 0), var1, 4 * var3, 0);
             }
          }
 
          if (var2.contains(Direction8.WEST)) {
-            for(var3 = 1; var3 < QUARTS_PER_SECTION; ++var3) {
-               this.addValuesForColumn(getInsideIndex(0, var3), var1, 0, 4 * var3);
+            for(int var4 = 1; var4 < QUARTS_PER_SECTION; ++var4) {
+               this.addValuesForColumn(getInsideIndex(0, var4), var1, 0, 4 * var4);
             }
          }
 
          if (var2.contains(Direction8.EAST)) {
-            for(var3 = 1; var3 < QUARTS_PER_SECTION; ++var3) {
-               this.addValuesForColumn(getOutsideIndex(CELL_HORIZONTAL_MAX_INDEX_OUTSIDE, var3), var1, 15, 4 * var3);
+            for(int var5 = 1; var5 < QUARTS_PER_SECTION; ++var5) {
+               this.addValuesForColumn(getOutsideIndex(CELL_HORIZONTAL_MAX_INDEX_OUTSIDE, var5), var1, 15, 4 * var5);
             }
          }
 
          if (var2.contains(Direction8.SOUTH)) {
-            for(var3 = 0; var3 < QUARTS_PER_SECTION; ++var3) {
-               this.addValuesForColumn(getOutsideIndex(var3, CELL_HORIZONTAL_MAX_INDEX_OUTSIDE), var1, 4 * var3, 15);
+            for(int var6 = 0; var6 < QUARTS_PER_SECTION; ++var6) {
+               this.addValuesForColumn(getOutsideIndex(var6, CELL_HORIZONTAL_MAX_INDEX_OUTSIDE), var1, 4 * var6, 15);
             }
          }
 
@@ -214,23 +203,20 @@ public class BlendingData {
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos(var2, this.areaWithOldGeneration.getMaxY() + 1, var3);
       double var7 = read7(var1, var6);
 
-      int var9;
-      double var10;
-      double var12;
-      for(var9 = var5.length - 2; var9 >= 0; --var9) {
-         var10 = read1(var1, var6);
-         var12 = read7(var1, var6);
+      for(int var9 = var5.length - 2; var9 >= 0; --var9) {
+         double var10 = read1(var1, var6);
+         double var12 = read7(var1, var6);
          var5[var9] = (var7 + var10 + var12) / 15.0;
          var7 = var12;
       }
 
-      var9 = this.getCellYIndex(Mth.floorDiv(var4, 8));
-      if (var9 >= 0 && var9 < var5.length - 1) {
-         var10 = ((double)var4 + 0.5) % 8.0 / 8.0;
-         var12 = (1.0 - var10) / var10;
-         double var14 = Math.max(var12, 1.0) * 0.25;
-         var5[var9 + 1] = -var12 / var14;
-         var5[var9] = 1.0 / var14;
+      int var16 = this.getCellYIndex(Mth.floorDiv(var4, 8));
+      if (var16 >= 0 && var16 < var5.length - 1) {
+         double var17 = ((double)var4 + 0.5) % 8.0 / 8.0;
+         double var18 = (1.0 - var17) / var17;
+         double var14 = Math.max(var18, 1.0) * 0.25;
+         var5[var16 + 1] = -var18 / var14;
+         var5[var16] = 1.0 / var14;
       }
 
       return var5;
@@ -410,28 +396,12 @@ public class BlendingData {
       }
 
       private static DataResult<Packed> validateArraySize(Packed var0) {
-         return var0.heights.isPresent() && ((double[])var0.heights.get()).length != BlendingData.CELL_COLUMN_COUNT ? DataResult.error(() -> {
-            return "heights has to be of length " + BlendingData.CELL_COLUMN_COUNT;
-         }) : DataResult.success(var0);
-      }
-
-      public int minSection() {
-         return this.minSection;
-      }
-
-      public int maxSection() {
-         return this.maxSection;
-      }
-
-      public Optional<double[]> heights() {
-         return this.heights;
+         return var0.heights.isPresent() && ((double[])var0.heights.get()).length != BlendingData.CELL_COLUMN_COUNT ? DataResult.error(() -> "heights has to be of length " + BlendingData.CELL_COLUMN_COUNT) : DataResult.success(var0);
       }
 
       static {
          DOUBLE_ARRAY_CODEC = Codec.DOUBLE.listOf().xmap(Doubles::toArray, Doubles::asList);
-         CODEC = RecordCodecBuilder.create((var0) -> {
-            return var0.group(Codec.INT.fieldOf("min_section").forGetter(Packed::minSection), Codec.INT.fieldOf("max_section").forGetter(Packed::maxSection), DOUBLE_ARRAY_CODEC.lenientOptionalFieldOf("heights").forGetter(Packed::heights)).apply(var0, Packed::new);
-         }).validate(Packed::validateArraySize);
+         CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("min_section").forGetter(Packed::minSection), Codec.INT.fieldOf("max_section").forGetter(Packed::maxSection), DOUBLE_ARRAY_CODEC.lenientOptionalFieldOf("heights").forGetter(Packed::heights)).apply(var0, Packed::new)).validate(Packed::validateArraySize);
       }
    }
 
@@ -439,11 +409,11 @@ public class BlendingData {
       void consume(int var1, int var2, Holder<Biome> var3);
    }
 
-   protected interface HeightConsumer {
-      void consume(int var1, int var2, double var3);
-   }
-
    protected interface DensityConsumer {
       void consume(int var1, int var2, int var3, double var4);
+   }
+
+   protected interface HeightConsumer {
+      void consume(int var1, int var2, double var3);
    }
 }

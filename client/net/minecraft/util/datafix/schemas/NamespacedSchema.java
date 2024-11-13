@@ -16,7 +16,7 @@ public class NamespacedSchema extends Schema {
       }
 
       public <T> T write(DynamicOps<T> var1, String var2) {
-         return var1.createString(var2);
+         return (T)var1.createString(var2);
       }
 
       public String toString() {

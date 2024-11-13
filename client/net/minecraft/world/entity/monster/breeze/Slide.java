@@ -38,7 +38,7 @@ public class Slide extends Behavior<Breeze> {
             var7 = var2.getRandom().nextBoolean() ? BreezeUtil.randomPointBehindTarget(var5, var2.getRandom()) : randomPointInMiddleCircle(var2, var5);
          }
 
-         var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(BlockPos.containing(var7), 0.6F, 1)));
+         var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(BlockPos.containing(var7), 0.6F, 1));
       }
    }
 

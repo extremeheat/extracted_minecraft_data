@@ -79,9 +79,7 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
       }
 
       if (var1.contains("ticks_since_song_started", 4)) {
-         JukeboxSong.fromStack(var2, this.item).ifPresent((var2x) -> {
-            this.jukeboxSongPlayer.setSongWithoutPlaying(var2x, var1.getLong("ticks_since_song_started"));
-         });
+         JukeboxSong.fromStack(var2, this.item).ifPresent((var2x) -> this.jukeboxSongPlayer.setSongWithoutPlaying(var2x, var1.getLong("ticks_since_song_started")));
       }
 
    }
@@ -140,17 +138,13 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
    @VisibleForTesting
    public void setSongItemWithoutPlaying(ItemStack var1) {
       this.item = var1;
-      JukeboxSong.fromStack(this.level.registryAccess(), var1).ifPresent((var1x) -> {
-         this.jukeboxSongPlayer.setSongWithoutPlaying(var1x, 0L);
-      });
+      JukeboxSong.fromStack(this.level.registryAccess(), var1).ifPresent((var1x) -> this.jukeboxSongPlayer.setSongWithoutPlaying(var1x, 0L));
       this.level.updateNeighborsAt(this.getBlockPos(), this.getBlockState().getBlock());
       this.setChanged();
    }
 
    @VisibleForTesting
    public void tryForcePlaySong() {
-      JukeboxSong.fromStack(this.level.registryAccess(), this.getTheItem()).ifPresent((var1) -> {
-         this.jukeboxSongPlayer.play(this.level, var1);
-      });
+      JukeboxSong.fromStack(this.level.registryAccess(), this.getTheItem()).ifPresent((var1) -> this.jukeboxSongPlayer.play(this.level, var1));
    }
 }

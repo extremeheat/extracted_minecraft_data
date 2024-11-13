@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.Iterator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -101,46 +100,34 @@ public class StructureBlockRenderer implements BlockEntityRenderer<StructureBloc
       VertexConsumer var5 = var2.getBuffer(RenderType.lines());
       BlockPos var6 = var1.getBlockPos();
       BlockPos var7 = StructureUtils.getStructureOrigin(var1);
-      Iterator var8 = BlockPos.betweenClosed(var7, var7.offset(var1.getStructureSize()).offset(-1, -1, -1)).iterator();
 
-      while(true) {
-         BlockPos var9;
-         boolean var11;
-         boolean var12;
-         boolean var13;
-         boolean var14;
-         boolean var15;
-         do {
-            if (!var8.hasNext()) {
-               return;
+      for(BlockPos var9 : BlockPos.betweenClosed(var7, var7.offset(var1.getStructureSize()).offset(-1, -1, -1))) {
+         BlockState var10 = var4.getBlockState(var9);
+         boolean var11 = var10.isAir();
+         boolean var12 = var10.is(Blocks.STRUCTURE_VOID);
+         boolean var13 = var10.is(Blocks.BARRIER);
+         boolean var14 = var10.is(Blocks.LIGHT);
+         boolean var15 = var12 || var13 || var14;
+         if (var11 || var15) {
+            float var16 = var11 ? 0.05F : 0.0F;
+            double var17 = (double)((float)(var9.getX() - var6.getX()) + 0.45F - var16);
+            double var19 = (double)((float)(var9.getY() - var6.getY()) + 0.45F - var16);
+            double var21 = (double)((float)(var9.getZ() - var6.getZ()) + 0.45F - var16);
+            double var23 = (double)((float)(var9.getX() - var6.getX()) + 0.55F + var16);
+            double var25 = (double)((float)(var9.getY() - var6.getY()) + 0.55F + var16);
+            double var27 = (double)((float)(var9.getZ() - var6.getZ()) + 0.55F + var16);
+            if (var11) {
+               ShapeRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 0.5F, 0.5F, 1.0F, 1.0F, 0.5F, 0.5F, 1.0F);
+            } else if (var12) {
+               ShapeRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 1.0F, 0.75F, 0.75F, 1.0F, 1.0F, 0.75F, 0.75F);
+            } else if (var13) {
+               ShapeRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F, 0.0F);
+            } else if (var14) {
+               ShapeRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 1.0F, 1.0F, 0.0F, 1.0F, 1.0F, 1.0F, 0.0F);
             }
-
-            var9 = (BlockPos)var8.next();
-            BlockState var10 = var4.getBlockState(var9);
-            var11 = var10.isAir();
-            var12 = var10.is(Blocks.STRUCTURE_VOID);
-            var13 = var10.is(Blocks.BARRIER);
-            var14 = var10.is(Blocks.LIGHT);
-            var15 = var12 || var13 || var14;
-         } while(!var11 && !var15);
-
-         float var16 = var11 ? 0.05F : 0.0F;
-         double var17 = (double)((float)(var9.getX() - var6.getX()) + 0.45F - var16);
-         double var19 = (double)((float)(var9.getY() - var6.getY()) + 0.45F - var16);
-         double var21 = (double)((float)(var9.getZ() - var6.getZ()) + 0.45F - var16);
-         double var23 = (double)((float)(var9.getX() - var6.getX()) + 0.55F + var16);
-         double var25 = (double)((float)(var9.getY() - var6.getY()) + 0.55F + var16);
-         double var27 = (double)((float)(var9.getZ() - var6.getZ()) + 0.55F + var16);
-         if (var11) {
-            ShapeRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 0.5F, 0.5F, 1.0F, 1.0F, 0.5F, 0.5F, 1.0F);
-         } else if (var12) {
-            ShapeRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 1.0F, 0.75F, 0.75F, 1.0F, 1.0F, 0.75F, 0.75F);
-         } else if (var13) {
-            ShapeRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.0F, 0.0F);
-         } else if (var14) {
-            ShapeRenderer.renderLineBox(var3, var5, var17, var19, var21, var23, var25, var27, 1.0F, 1.0F, 0.0F, 1.0F, 1.0F, 1.0F, 0.0F);
          }
       }
+
    }
 
    private void renderStructureVoids(StructureBlockEntity var1, VertexConsumer var2, PoseStack var3) {
@@ -150,10 +137,8 @@ public class StructureBlockRenderer implements BlockEntityRenderer<StructureBloc
          BlockPos var6 = StructureUtils.getStructureOrigin(var1);
          Vec3i var7 = var1.getStructureSize();
          BitSetDiscreteVoxelShape var8 = new BitSetDiscreteVoxelShape(var7.getX(), var7.getY(), var7.getZ());
-         Iterator var9 = BlockPos.betweenClosed(var6, var6.offset(var7).offset(-1, -1, -1)).iterator();
 
-         while(var9.hasNext()) {
-            BlockPos var10 = (BlockPos)var9.next();
+         for(BlockPos var10 : BlockPos.betweenClosed(var6, var6.offset(var7).offset(-1, -1, -1))) {
             if (var4.getBlockState(var10).is(Blocks.STRUCTURE_VOID)) {
                ((DiscreteVoxelShape)var8).fill(var10.getX() - var6.getX(), var10.getY() - var6.getY(), var10.getZ() - var6.getZ());
             }

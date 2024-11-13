@@ -41,18 +41,12 @@ public class ChunkProtoTickListFix extends DataFix {
       OpticFinder var6 = var4.type().findField("biomes");
       OpticFinder var7 = var5.type().findField("palette");
       OpticFinder var8 = var2.type().findField("TileTicks");
-      return this.fixTypeEverywhereTyped("ChunkProtoTickListFix", var1, (var8x) -> {
-         return var8x.updateTyped(var2, (var7x) -> {
-            var7x = var7x.update(DSL.remainderFinder(), (var0) -> {
-               return (Dynamic)DataFixUtils.orElse(var0.get("LiquidTicks").result().map((var1) -> {
-                  return var0.set("fluid_ticks", var1).remove("LiquidTicks");
-               }), var0);
-            });
+      return this.fixTypeEverywhereTyped("ChunkProtoTickListFix", var1, (var8x) -> var8x.updateTyped(var2, (var7x) -> {
+            var7x = var7x.update(DSL.remainderFinder(), (var0) -> (Dynamic)DataFixUtils.orElse(var0.get("LiquidTicks").result().map((var1) -> var0.set("fluid_ticks", var1).remove("LiquidTicks")), var0));
             Dynamic var8x = (Dynamic)var7x.get(DSL.remainderFinder());
             MutableInt var9 = new MutableInt();
             Int2ObjectArrayMap var10 = new Int2ObjectArrayMap();
-            var7x.getOptionalTyped(var3).ifPresent((var6x) -> {
-               var6x.getAllTyped(var4).forEach((var5x) -> {
+            var7x.getOptionalTyped(var3).ifPresent((var6x) -> var6x.getAllTyped(var4).forEach((var5x) -> {
                   Dynamic var6x = (Dynamic)var5x.get(DSL.remainderFinder());
                   int var7x = var6x.get("Y").asInt(2147483647);
                   if (var7x != 2147483647) {
@@ -60,26 +54,15 @@ public class ChunkProtoTickListFix extends DataFix {
                         var9.setValue(Math.min(var7x, var9.getValue()));
                      }
 
-                     var5x.getOptionalTyped(var5).ifPresent((var3) -> {
-                        var10.put(var7x, Suppliers.memoize(() -> {
-                           java.util.List var2 = (java.util.List)var3.getOptionalTyped(var7).map((var0) -> {
-                              return (java.util.List)var0.write().result().map((var0x) -> {
-                                 return var0x.asList(Function.identity());
-                              }).orElse(Collections.emptyList());
-                           }).orElse(Collections.emptyList());
+                     var5x.getOptionalTyped(var5).ifPresent((var3) -> var10.put(var7x, Suppliers.memoize(() -> {
+                           java.util.List var2 = (java.util.List)var3.getOptionalTyped(var7).map((var0) -> (java.util.List)var0.write().result().map((var0x) -> var0x.asList(Function.identity())).orElse(Collections.emptyList())).orElse(Collections.emptyList());
                            long[] var3x = ((Dynamic)var3.get(DSL.remainderFinder())).get("data").asLongStream().toArray();
                            return new PoorMansPalettedContainer(var2, var3x);
-                        }));
-                     });
+                        })));
                   }
-               });
-            });
+               }));
             byte var11 = var9.getValue().byteValue();
-            var7x = var7x.update(DSL.remainderFinder(), (var1) -> {
-               return var1.update("yPos", (var1x) -> {
-                  return var1x.createByte(var11);
-               });
-            });
+            var7x = var7x.update(DSL.remainderFinder(), (var1) -> var1.update("yPos", (var1x) -> var1x.createByte(var11)));
             if (!var7x.getOptionalTyped(var8).isPresent() && !var8x.get("fluid_ticks").result().isPresent()) {
                int var12 = var8x.get("xPos").asInt(0);
                int var13 = var8x.get("zPos").asInt(0);
@@ -90,14 +73,11 @@ public class ChunkProtoTickListFix extends DataFix {
                   var7x = var7x.set(var8, (Typed)((Pair)var16.get()).getFirst());
                }
 
-               return var7x.update(DSL.remainderFinder(), (var1) -> {
-                  return var1.remove("ToBeTicked").remove("LiquidsToBeTicked").set("fluid_ticks", var14);
-               });
+               return var7x.update(DSL.remainderFinder(), (var1) -> var1.remove("ToBeTicked").remove("LiquidsToBeTicked").set("fluid_ticks", var14));
             } else {
                return var7x;
             }
-         });
-      });
+         }));
    }
 
    private Dynamic<?> makeTickList(Dynamic<?> var1, Int2ObjectMap<Supplier<PoorMansPalettedContainer>> var2, byte var3, int var4, int var5, String var6, Function<Dynamic<?>, String> var7) {
@@ -107,13 +87,7 @@ public class ChunkProtoTickListFix extends DataFix {
       for(int var10 = 0; var10 < var9.size(); ++var10) {
          int var11 = var10 + var3;
          Supplier var12 = (Supplier)var2.get(var11);
-         Stream var13 = ((Dynamic)var9.get(var10)).asStream().mapToInt((var0) -> {
-            return var0.asShort((short)-1);
-         }).filter((var0) -> {
-            return var0 > 0;
-         }).mapToObj((var7x) -> {
-            return this.createTick(var1, var12, var4, var11, var5, var7x, var7);
-         });
+         Stream var13 = ((Dynamic)var9.get(var10)).asStream().mapToInt((var0) -> var0.asShort((short)-1)).filter((var0) -> var0 > 0).mapToObj((var7x) -> this.createTick(var1, var12, var4, var11, var5, var7x, var7));
          var8 = Stream.concat(var8, var13);
       }
 

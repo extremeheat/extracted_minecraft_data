@@ -86,11 +86,8 @@ public interface SignalGetter extends BlockGetter {
 
    default int getBestNeighborSignal(BlockPos var1) {
       int var2 = 0;
-      Direction[] var3 = DIRECTIONS;
-      int var4 = var3.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         Direction var6 = var3[var5];
+      for(Direction var6 : DIRECTIONS) {
          int var7 = this.getSignal(var1.relative(var6), var6);
          if (var7 >= 15) {
             return 15;

@@ -13,8 +13,6 @@ public class BlockStateConfiguration implements FeatureConfiguration {
    }
 
    static {
-      CODEC = BlockState.CODEC.fieldOf("state").xmap(BlockStateConfiguration::new, (var0) -> {
-         return var0.state;
-      }).codec();
+      CODEC = BlockState.CODEC.fieldOf("state").xmap(BlockStateConfiguration::new, (var0) -> var0.state).codec();
    }
 }

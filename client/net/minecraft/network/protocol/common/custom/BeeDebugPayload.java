@@ -15,7 +15,7 @@ import net.minecraft.world.phys.Vec3;
 
 public record BeeDebugPayload(BeeInfo beeInfo) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, BeeDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(BeeDebugPayload::write, BeeDebugPayload::new);
-   public static final CustomPacketPayload.Type<BeeDebugPayload> TYPE = CustomPacketPayload.createType("debug/bee");
+   public static final CustomPacketPayload.Type<BeeDebugPayload> TYPE = CustomPacketPayload.<BeeDebugPayload>createType("debug/bee");
 
    private BeeDebugPayload(FriendlyByteBuf var1) {
       this(new BeeInfo(var1));
@@ -32,10 +32,6 @@ public record BeeDebugPayload(BeeInfo beeInfo) implements CustomPacketPayload {
 
    public CustomPacketPayload.Type<BeeDebugPayload> type() {
       return TYPE;
-   }
-
-   public BeeInfo beeInfo() {
-      return this.beeInfo;
    }
 
    public static record BeeInfo(UUID uuid, int id, Vec3 pos, @Nullable Path path, @Nullable BlockPos hivePos, @Nullable BlockPos flowerPos, int travelTicks, Set<String> goals, List<BlockPos> blacklistedHives) {
@@ -60,9 +56,7 @@ public record BeeDebugPayload(BeeInfo beeInfo) implements CustomPacketPayload {
          var1.writeUUID(this.uuid);
          var1.writeInt(this.id);
          var1.writeVec3(this.pos);
-         var1.writeNullable(this.path, (var0, var1x) -> {
-            var1x.writeToStream(var0);
-         });
+         var1.writeNullable(this.path, (var0, var1x) -> var1x.writeToStream(var0));
          var1.writeNullable(this.hivePos, BlockPos.STREAM_CODEC);
          var1.writeNullable(this.flowerPos, BlockPos.STREAM_CODEC);
          var1.writeInt(this.travelTicks);
@@ -80,45 +74,6 @@ public record BeeDebugPayload(BeeInfo beeInfo) implements CustomPacketPayload {
 
       public String toString() {
          return this.generateName();
-      }
-
-      public UUID uuid() {
-         return this.uuid;
-      }
-
-      public int id() {
-         return this.id;
-      }
-
-      public Vec3 pos() {
-         return this.pos;
-      }
-
-      @Nullable
-      public Path path() {
-         return this.path;
-      }
-
-      @Nullable
-      public BlockPos hivePos() {
-         return this.hivePos;
-      }
-
-      @Nullable
-      public BlockPos flowerPos() {
-         return this.flowerPos;
-      }
-
-      public int travelTicks() {
-         return this.travelTicks;
-      }
-
-      public Set<String> goals() {
-         return this.goals;
-      }
-
-      public List<BlockPos> blacklistedHives() {
-         return this.blacklistedHives;
       }
    }
 }

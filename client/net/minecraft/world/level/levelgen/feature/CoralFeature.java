@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
-import java.util.Iterator;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -39,17 +38,12 @@ public abstract class CoralFeature extends Feature<NoneFeatureConfiguration> {
       if ((var6.is(Blocks.WATER) || var6.is(BlockTags.CORALS)) && var1.getBlockState(var5).is(Blocks.WATER)) {
          var1.setBlock(var3, var4, 3);
          if (var2.nextFloat() < 0.25F) {
-            BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.CORALS, var2).map(Holder::value).ifPresent((var2x) -> {
-               var1.setBlock(var5, var2x.defaultBlockState(), 2);
-            });
+            BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.CORALS, var2).map(Holder::value).ifPresent((var2x) -> var1.setBlock(var5, var2x.defaultBlockState(), 2));
          } else if (var2.nextFloat() < 0.05F) {
             var1.setBlock(var5, (BlockState)Blocks.SEA_PICKLE.defaultBlockState().setValue(SeaPickleBlock.PICKLES, var2.nextInt(4) + 1), 2);
          }
 
-         Iterator var7 = Direction.Plane.HORIZONTAL.iterator();
-
-         while(var7.hasNext()) {
-            Direction var8 = (Direction)var7.next();
+         for(Direction var8 : Direction.Plane.HORIZONTAL) {
             if (var2.nextFloat() < 0.2F) {
                BlockPos var9 = var3.relative(var8);
                if (var1.getBlockState(var9).is(Blocks.WATER)) {

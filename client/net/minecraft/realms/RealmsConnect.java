@@ -40,15 +40,15 @@ public class RealmsConnect {
       final int var5 = var2.getPort();
       (new Thread("Realms-connect-task") {
          public void run() {
-            InetSocketAddress var1x = null;
+            Object var1x = null;
 
             try {
-               var1x = new InetSocketAddress(var4, var5);
+               InetSocketAddress var6 = new InetSocketAddress(var4, var5);
                if (RealmsConnect.this.aborted) {
                   return;
                }
 
-               RealmsConnect.this.connection = Connection.connectToServer(var1x, var3.options.useNativeTransport(), var3.getDebugOverlay().getBandwidthLogger());
+               RealmsConnect.this.connection = Connection.connectToServer(var6, var3.options.useNativeTransport(), var3.getDebugOverlay().getBandwidthLogger());
                if (RealmsConnect.this.aborted) {
                   return;
                }
@@ -86,10 +86,8 @@ public class RealmsConnect {
                   var3x = var3x.replaceAll(var4x, "");
                }
 
-               DisconnectedRealmsScreen var6 = new DisconnectedRealmsScreen(RealmsConnect.this.onlineScreen, CommonComponents.CONNECT_FAILED, Component.translatable("disconnect.genericReason", var3x));
-               var3.execute(() -> {
-                  var3.setScreen(var6);
-               });
+               DisconnectedRealmsScreen var7 = new DisconnectedRealmsScreen(RealmsConnect.this.onlineScreen, CommonComponents.CONNECT_FAILED, Component.translatable("disconnect.genericReason", var3x));
+               var3.execute(() -> var3.setScreen(var7));
             }
 
          }

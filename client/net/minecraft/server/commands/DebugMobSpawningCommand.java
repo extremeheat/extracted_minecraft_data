@@ -15,17 +15,10 @@ public class DebugMobSpawningCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      LiteralArgumentBuilder var1 = (LiteralArgumentBuilder)Commands.literal("debugmobspawning").requires((var0x) -> {
-         return var0x.hasPermission(2);
-      });
-      MobCategory[] var2 = MobCategory.values();
-      int var3 = var2.length;
+      LiteralArgumentBuilder var1 = (LiteralArgumentBuilder)Commands.literal("debugmobspawning").requires((var0x) -> var0x.hasPermission(2));
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         MobCategory var5 = var2[var4];
-         var1.then(Commands.literal(var5.getName()).then(Commands.argument("at", BlockPosArgument.blockPos()).executes((var1x) -> {
-            return spawnMobs((CommandSourceStack)var1x.getSource(), var5, BlockPosArgument.getLoadedBlockPos(var1x, "at"));
-         })));
+      for(MobCategory var5 : MobCategory.values()) {
+         var1.then(Commands.literal(var5.getName()).then(Commands.argument("at", BlockPosArgument.blockPos()).executes((var1x) -> spawnMobs((CommandSourceStack)var1x.getSource(), var5, BlockPosArgument.getLoadedBlockPos(var1x, "at")))));
       }
 
       var0.register(var1);

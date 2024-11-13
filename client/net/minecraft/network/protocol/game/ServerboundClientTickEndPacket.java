@@ -22,6 +22,6 @@ public record ServerboundClientTickEndPacket() implements Packet<ServerGamePacke
    }
 
    static {
-      STREAM_CODEC = StreamCodec.unit(INSTANCE);
+      STREAM_CODEC = StreamCodec.<ByteBuf, ServerboundClientTickEndPacket>unit(INSTANCE);
    }
 }

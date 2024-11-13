@@ -9,7 +9,6 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.GoatRenderState;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 
 public class GoatModel extends QuadrupedModel<GoatRenderState> {
    public static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 19.0F, 1.0F, 2.5F, 2.0F, 24.0F, Set.of("head"));
@@ -34,7 +33,7 @@ public class GoatModel extends QuadrupedModel<GoatRenderState> {
    }
 
    public void setupAnim(GoatRenderState var1) {
-      super.setupAnim((LivingEntityRenderState)var1);
+      super.setupAnim(var1);
       this.head.getChild("left_horn").visible = var1.hasLeftHorn;
       this.head.getChild("right_horn").visible = var1.hasRightHorn;
       if (var1.rammingXHeadRot != 0.0F) {

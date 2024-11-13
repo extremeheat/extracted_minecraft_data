@@ -8,7 +8,6 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.SkeletonRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
@@ -33,7 +32,7 @@ public class SkeletonModel<S extends SkeletonRenderState> extends HumanoidModel<
    }
 
    public void setupAnim(S var1) {
-      super.setupAnim((HumanoidRenderState)var1);
+      super.setupAnim(var1);
       if (var1.isAggressive && !var1.isHoldingBow) {
          float var2 = var1.attackTime;
          float var3 = Mth.sin(var2 * 3.1415927F);

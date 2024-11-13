@@ -36,14 +36,10 @@ public class FileToIdConverter {
    }
 
    public Map<ResourceLocation, Resource> listMatchingResources(ResourceManager var1) {
-      return var1.listResources(this.prefix, (var1x) -> {
-         return var1x.getPath().endsWith(this.extension);
-      });
+      return var1.listResources(this.prefix, (var1x) -> var1x.getPath().endsWith(this.extension));
    }
 
    public Map<ResourceLocation, List<Resource>> listMatchingResourceStacks(ResourceManager var1) {
-      return var1.listResourceStacks(this.prefix, (var1x) -> {
-         return var1x.getPath().endsWith(this.extension);
-      });
+      return var1.listResourceStacks(this.prefix, (var1x) -> var1x.getPath().endsWith(this.extension));
    }
 }

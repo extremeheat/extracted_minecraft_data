@@ -10,8 +10,6 @@ public class FilteredSignsFix extends NamedEntityFix {
    }
 
    protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var0) -> {
-         return var0.remove("FilteredText1").remove("FilteredText2").remove("FilteredText3").remove("FilteredText4");
-      });
+      return var1.update(DSL.remainderFinder(), (var0) -> var0.remove("FilteredText1").remove("FilteredText2").remove("FilteredText3").remove("FilteredText4"));
    }
 }

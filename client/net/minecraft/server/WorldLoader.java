@@ -41,7 +41,7 @@ public class WorldLoader {
          WorldDataConfiguration var14 = (WorldDataConfiguration)var5.getFirst();
          HolderLookup.Provider var15 = HolderLookup.Provider.create(var12.stream());
          DataLoadOutput var16 = var1.get(new DataLoadContext(var6, var14, var15, var13));
-         LayeredRegistryAccess var17 = var7.replaceFrom(RegistryLayer.WORLDGEN, (RegistryAccess.Frozen[])(var11, var16.finalDimensions));
+         LayeredRegistryAccess var17 = var7.replaceFrom(RegistryLayer.WORLDGEN, var11, var16.finalDimensions);
          return ReloadableServerResources.loadResources(var6, var17, var8, var14.enabledFeatures(), var0.commandSelection(), var0.functionCompilationLevel(), var3, var4).whenComplete((var1x, var2x) -> {
             if (var2x != null) {
                var6.close();
@@ -56,26 +56,24 @@ public class WorldLoader {
       }
    }
 
-   public static record InitConfig(PackConfig packConfig, Commands.CommandSelection commandSelection, int functionCompilationLevel) {
-      final PackConfig packConfig;
-
-      public InitConfig(PackConfig var1, Commands.CommandSelection var2, int var3) {
+   public static record DataLoadContext(ResourceManager resources, WorldDataConfiguration dataConfiguration, HolderLookup.Provider datapackWorldgen, RegistryAccess.Frozen datapackDimensions) {
+      public DataLoadContext(ResourceManager var1, WorldDataConfiguration var2, HolderLookup.Provider var3, RegistryAccess.Frozen var4) {
          super();
-         this.packConfig = var1;
-         this.commandSelection = var2;
-         this.functionCompilationLevel = var3;
+         this.resources = var1;
+         this.dataConfiguration = var2;
+         this.datapackWorldgen = var3;
+         this.datapackDimensions = var4;
       }
+   }
 
-      public PackConfig packConfig() {
-         return this.packConfig;
-      }
+   public static record DataLoadOutput<D>(D cookie, RegistryAccess.Frozen finalDimensions) {
+      final D cookie;
+      final RegistryAccess.Frozen finalDimensions;
 
-      public Commands.CommandSelection commandSelection() {
-         return this.commandSelection;
-      }
-
-      public int functionCompilationLevel() {
-         return this.functionCompilationLevel;
+      public DataLoadOutput(D var1, RegistryAccess.Frozen var2) {
+         super();
+         this.cookie = var1;
+         this.finalDimensions = var2;
       }
    }
 
@@ -94,76 +92,26 @@ public class WorldLoader {
          MultiPackResourceManager var3 = new MultiPackResourceManager(PackType.SERVER_DATA, var2);
          return Pair.of(var1, var3);
       }
-
-      public PackRepository packRepository() {
-         return this.packRepository;
-      }
-
-      public WorldDataConfiguration initialDataConfig() {
-         return this.initialDataConfig;
-      }
-
-      public boolean safeMode() {
-         return this.safeMode;
-      }
-
-      public boolean initMode() {
-         return this.initMode;
-      }
    }
 
-   public static record DataLoadContext(ResourceManager resources, WorldDataConfiguration dataConfiguration, HolderLookup.Provider datapackWorldgen, RegistryAccess.Frozen datapackDimensions) {
-      public DataLoadContext(ResourceManager var1, WorldDataConfiguration var2, HolderLookup.Provider var3, RegistryAccess.Frozen var4) {
+   public static record InitConfig(PackConfig packConfig, Commands.CommandSelection commandSelection, int functionCompilationLevel) {
+      final PackConfig packConfig;
+
+      public InitConfig(PackConfig var1, Commands.CommandSelection var2, int var3) {
          super();
-         this.resources = var1;
-         this.dataConfiguration = var2;
-         this.datapackWorldgen = var3;
-         this.datapackDimensions = var4;
-      }
-
-      public ResourceManager resources() {
-         return this.resources;
-      }
-
-      public WorldDataConfiguration dataConfiguration() {
-         return this.dataConfiguration;
-      }
-
-      public HolderLookup.Provider datapackWorldgen() {
-         return this.datapackWorldgen;
-      }
-
-      public RegistryAccess.Frozen datapackDimensions() {
-         return this.datapackDimensions;
-      }
-   }
-
-   @FunctionalInterface
-   public interface WorldDataSupplier<D> {
-      DataLoadOutput<D> get(DataLoadContext var1);
-   }
-
-   public static record DataLoadOutput<D>(D cookie, RegistryAccess.Frozen finalDimensions) {
-      final D cookie;
-      final RegistryAccess.Frozen finalDimensions;
-
-      public DataLoadOutput(D var1, RegistryAccess.Frozen var2) {
-         super();
-         this.cookie = var1;
-         this.finalDimensions = var2;
-      }
-
-      public D cookie() {
-         return this.cookie;
-      }
-
-      public RegistryAccess.Frozen finalDimensions() {
-         return this.finalDimensions;
+         this.packConfig = var1;
+         this.commandSelection = var2;
+         this.functionCompilationLevel = var3;
       }
    }
 
    @FunctionalInterface
    public interface ResultFactory<D, R> {
       R create(CloseableResourceManager var1, ReloadableServerResources var2, LayeredRegistryAccess<RegistryLayer> var3, D var4);
+   }
+
+   @FunctionalInterface
+   public interface WorldDataSupplier<D> {
+      DataLoadOutput<D> get(DataLoadContext var1);
    }
 }

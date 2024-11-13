@@ -6,9 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 
 public record LightPredicate(MinMaxBounds.Ints composite) {
-   public static final Codec<LightPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("light", MinMaxBounds.Ints.ANY).forGetter(LightPredicate::composite)).apply(var0, LightPredicate::new);
-   });
+   public static final Codec<LightPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("light", MinMaxBounds.Ints.ANY).forGetter(LightPredicate::composite)).apply(var0, LightPredicate::new));
 
    public LightPredicate(MinMaxBounds.Ints var1) {
       super();
@@ -21,10 +19,6 @@ public record LightPredicate(MinMaxBounds.Ints composite) {
       } else {
          return this.composite.matches(var1.getMaxLocalRawBrightness(var2));
       }
-   }
-
-   public MinMaxBounds.Ints composite() {
-      return this.composite;
    }
 
    public static class Builder {

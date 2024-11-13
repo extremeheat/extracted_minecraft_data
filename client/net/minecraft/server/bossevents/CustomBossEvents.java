@@ -2,7 +2,6 @@ package net.minecraft.server.bossevents;
 
 import com.google.common.collect.Maps;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
@@ -43,10 +42,8 @@ public class CustomBossEvents {
 
    public CompoundTag save(HolderLookup.Provider var1) {
       CompoundTag var2 = new CompoundTag();
-      Iterator var3 = this.events.values().iterator();
 
-      while(var3.hasNext()) {
-         CustomBossEvent var4 = (CustomBossEvent)var3.next();
+      for(CustomBossEvent var4 : this.events.values()) {
          var2.put(var4.getTextId().toString(), var4.save(var1));
       }
 
@@ -54,10 +51,7 @@ public class CustomBossEvents {
    }
 
    public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      Iterator var3 = var1.getAllKeys().iterator();
-
-      while(var3.hasNext()) {
-         String var4 = (String)var3.next();
+      for(String var4 : var1.getAllKeys()) {
          ResourceLocation var5 = ResourceLocation.parse(var4);
          this.events.put(var5, CustomBossEvent.load(var1.getCompound(var4), var5, var2));
       }
@@ -65,20 +59,14 @@ public class CustomBossEvents {
    }
 
    public void onPlayerConnect(ServerPlayer var1) {
-      Iterator var2 = this.events.values().iterator();
-
-      while(var2.hasNext()) {
-         CustomBossEvent var3 = (CustomBossEvent)var2.next();
+      for(CustomBossEvent var3 : this.events.values()) {
          var3.onPlayerConnect(var1);
       }
 
    }
 
    public void onPlayerDisconnect(ServerPlayer var1) {
-      Iterator var2 = this.events.values().iterator();
-
-      while(var2.hasNext()) {
-         CustomBossEvent var3 = (CustomBossEvent)var2.next();
+      for(CustomBossEvent var3 : this.events.values()) {
          var3.onPlayerDisconnect(var1);
       }
 

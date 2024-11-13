@@ -38,8 +38,6 @@ public class V4067 extends NamespacedSchema {
    }
 
    private void registerChestBoat(Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      this.register(var1, var2, (var1x) -> {
-         return DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(this)));
-      });
+      this.register(var1, var2, (var1x) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(this))));
    }
 }

@@ -52,9 +52,7 @@ public class Spider extends Monster {
 
    protected void registerGoals() {
       this.goalSelector.addGoal(1, new FloatGoal(this));
-      this.goalSelector.addGoal(2, new AvoidEntityGoal(this, Armadillo.class, 6.0F, 1.0, 1.2, (var0) -> {
-         return !((Armadillo)var0).isScared();
-      }));
+      this.goalSelector.addGoal(2, new AvoidEntityGoal(this, Armadillo.class, 6.0F, 1.0, 1.2, (var0) -> !((Armadillo)var0).isScared()));
       this.goalSelector.addGoal(3, new LeapAtTargetGoal(this, 0.4F));
       this.goalSelector.addGoal(4, new SpiderAttackGoal(this));
       this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8));
@@ -126,7 +124,7 @@ public class Spider extends Monster {
       if (var1) {
          var2 = (byte)(var2 | 1);
       } else {
-         var2 &= -2;
+         var2 = (byte)(var2 & -2);
       }
 
       this.entityData.set(DATA_FLAGS_ID, var2);
@@ -134,10 +132,10 @@ public class Spider extends Monster {
 
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      Object var8 = super.finalizeSpawn(var1, var2, var3, var4);
+      var4 = super.finalizeSpawn(var1, var2, var3, var4);
       RandomSource var5 = var1.getRandom();
       if (var5.nextInt(100) == 0) {
-         Skeleton var6 = (Skeleton)EntityType.SKELETON.create(this.level(), EntitySpawnReason.JOCKEY);
+         Skeleton var6 = EntityType.SKELETON.create(this.level(), EntitySpawnReason.JOCKEY);
          if (var6 != null) {
             var6.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
             var6.finalizeSpawn(var1, var2, var3, (SpawnGroupData)null);
@@ -145,21 +143,21 @@ public class Spider extends Monster {
          }
       }
 
-      if (var8 == null) {
-         var8 = new SpiderEffectsGroupData();
+      if (var4 == null) {
+         var4 = new SpiderEffectsGroupData();
          if (var1.getDifficulty() == Difficulty.HARD && var5.nextFloat() < 0.1F * var2.getSpecialMultiplier()) {
-            ((SpiderEffectsGroupData)var8).setRandomEffect(var5);
+            ((SpiderEffectsGroupData)var4).setRandomEffect(var5);
          }
       }
 
-      if (var8 instanceof SpiderEffectsGroupData var9) {
+      if (var4 instanceof SpiderEffectsGroupData var9) {
          Holder var7 = var9.effect;
          if (var7 != null) {
             this.addEffect(new MobEffectInstance(var7, -1));
          }
       }
 
-      return (SpawnGroupData)var8;
+      return var4;
    }
 
    public Vec3 getVehicleAttachmentPoint(Entity var1) {
@@ -167,38 +165,7 @@ public class Spider extends Monster {
    }
 
    static {
-      DATA_FLAGS_ID = SynchedEntityData.defineId(Spider.class, EntityDataSerializers.BYTE);
-   }
-
-   static class SpiderAttackGoal extends MeleeAttackGoal {
-      public SpiderAttackGoal(Spider var1) {
-         super(var1, 1.0, true);
-      }
-
-      public boolean canUse() {
-         return super.canUse() && !this.mob.isVehicle();
-      }
-
-      public boolean canContinueToUse() {
-         float var1 = this.mob.getLightLevelDependentMagicValue();
-         if (var1 >= 0.5F && this.mob.getRandom().nextInt(100) == 0) {
-            this.mob.setTarget((LivingEntity)null);
-            return false;
-         } else {
-            return super.canContinueToUse();
-         }
-      }
-   }
-
-   private static class SpiderTargetGoal<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
-      public SpiderTargetGoal(Spider var1, Class<T> var2) {
-         super(var1, var2, true);
-      }
-
-      public boolean canUse() {
-         float var1 = this.mob.getLightLevelDependentMagicValue();
-         return var1 >= 0.5F ? false : super.canUse();
-      }
+      DATA_FLAGS_ID = SynchedEntityData.<Byte>defineId(Spider.class, EntityDataSerializers.BYTE);
    }
 
    public static class SpiderEffectsGroupData implements SpawnGroupData {
@@ -221,6 +188,37 @@ public class Spider extends Monster {
             this.effect = MobEffects.INVISIBILITY;
          }
 
+      }
+   }
+
+   static class SpiderAttackGoal extends MeleeAttackGoal {
+      public SpiderAttackGoal(Spider var1) {
+         super(var1, 1.0, true);
+      }
+
+      public boolean canUse() {
+         return super.canUse() && !this.mob.isVehicle();
+      }
+
+      public boolean canContinueToUse() {
+         float var1 = this.mob.getLightLevelDependentMagicValue();
+         if (var1 >= 0.5F && this.mob.getRandom().nextInt(100) == 0) {
+            this.mob.setTarget((LivingEntity)null);
+            return false;
+         } else {
+            return super.canContinueToUse();
+         }
+      }
+   }
+
+   static class SpiderTargetGoal<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
+      public SpiderTargetGoal(Spider var1, Class<T> var2) {
+         super(var1, var2, true);
+      }
+
+      public boolean canUse() {
+         float var1 = this.mob.getLightLevelDependentMagicValue();
+         return var1 >= 0.5F ? false : super.canUse();
       }
    }
 }

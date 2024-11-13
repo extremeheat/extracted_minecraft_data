@@ -15,9 +15,7 @@ import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.nbt.CompoundTag;
 
 public record EntityDataSource(String selectorPattern, @Nullable EntitySelector compiledSelector) implements DataSource {
-   public static final MapCodec<EntityDataSource> SUB_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.STRING.fieldOf("entity").forGetter(EntityDataSource::selectorPattern)).apply(var0, EntityDataSource::new);
-   });
+   public static final MapCodec<EntityDataSource> SUB_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("entity").forGetter(EntityDataSource::selectorPattern)).apply(var0, EntityDataSource::new));
    public static final DataSource.Type<EntityDataSource> TYPE;
 
    public EntityDataSource(String var1) {
@@ -79,16 +77,7 @@ public record EntityDataSource(String selectorPattern, @Nullable EntitySelector 
       return this.selectorPattern.hashCode();
    }
 
-   public String selectorPattern() {
-      return this.selectorPattern;
-   }
-
-   @Nullable
-   public EntitySelector compiledSelector() {
-      return this.compiledSelector;
-   }
-
    static {
-      TYPE = new DataSource.Type(SUB_CODEC, "entity");
+      TYPE = new DataSource.Type<EntityDataSource>(SUB_CODEC, "entity");
    }
 }

@@ -3,7 +3,6 @@ package net.minecraft.world.item.component;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.Util;
@@ -33,14 +32,11 @@ public record SuspiciousStewEffects(List<Entry> effects) implements ConsumableLi
    }
 
    public SuspiciousStewEffects withEffectAdded(Entry var1) {
-      return new SuspiciousStewEffects(Util.copyAndAdd((List)this.effects, (Object)var1));
+      return new SuspiciousStewEffects(Util.copyAndAdd(this.effects, var1));
    }
 
    public void onConsume(Level var1, LivingEntity var2, ItemStack var3, Consumable var4) {
-      Iterator var5 = this.effects.iterator();
-
-      while(var5.hasNext()) {
-         Entry var6 = (Entry)var5.next();
+      for(Entry var6 : this.effects) {
          var2.addEffect(var6.createEffectInstance());
       }
 
@@ -49,10 +45,8 @@ public record SuspiciousStewEffects(List<Entry> effects) implements ConsumableLi
    public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
       if (var3.isCreative()) {
          ArrayList var4 = new ArrayList();
-         Iterator var5 = this.effects.iterator();
 
-         while(var5.hasNext()) {
-            Entry var6 = (Entry)var5.next();
+         for(Entry var6 : this.effects) {
             var4.add(var6.createEffectInstance());
          }
 
@@ -61,19 +55,13 @@ public record SuspiciousStewEffects(List<Entry> effects) implements ConsumableLi
 
    }
 
-   public List<Entry> effects() {
-      return this.effects;
-   }
-
    static {
       CODEC = SuspiciousStewEffects.Entry.CODEC.listOf().xmap(SuspiciousStewEffects::new, SuspiciousStewEffects::effects);
       STREAM_CODEC = SuspiciousStewEffects.Entry.STREAM_CODEC.apply(ByteBufCodecs.list()).map(SuspiciousStewEffects::new, SuspiciousStewEffects::effects);
    }
 
    public static record Entry(Holder<MobEffect> effect, int duration) {
-      public static final Codec<Entry> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(MobEffect.CODEC.fieldOf("id").forGetter(Entry::effect), Codec.INT.lenientOptionalFieldOf("duration", 160).forGetter(Entry::duration)).apply(var0, Entry::new);
-      });
+      public static final Codec<Entry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(MobEffect.CODEC.fieldOf("id").forGetter(Entry::effect), Codec.INT.lenientOptionalFieldOf("duration", 160).forGetter(Entry::duration)).apply(var0, Entry::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, Entry> STREAM_CODEC;
 
       public Entry(Holder<MobEffect> var1, int var2) {
@@ -84,14 +72,6 @@ public record SuspiciousStewEffects(List<Entry> effects) implements ConsumableLi
 
       public MobEffectInstance createEffectInstance() {
          return new MobEffectInstance(this.effect, this.duration);
-      }
-
-      public Holder<MobEffect> effect() {
-         return this.effect;
-      }
-
-      public int duration() {
-         return this.duration;
       }
 
       static {

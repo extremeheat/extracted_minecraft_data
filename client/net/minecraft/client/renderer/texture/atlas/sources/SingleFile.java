@@ -14,13 +14,7 @@ import org.slf4j.Logger;
 
 public class SingleFile implements SpriteSource {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<SingleFile> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceLocation.CODEC.fieldOf("resource").forGetter((var0x) -> {
-         return var0x.resourceId;
-      }), ResourceLocation.CODEC.optionalFieldOf("sprite").forGetter((var0x) -> {
-         return var0x.spriteId;
-      })).apply(var0, SingleFile::new);
-   });
+   public static final MapCodec<SingleFile> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("resource").forGetter((var0x) -> var0x.resourceId), ResourceLocation.CODEC.optionalFieldOf("sprite").forGetter((var0x) -> var0x.spriteId)).apply(var0, SingleFile::new));
    private final ResourceLocation resourceId;
    private final Optional<ResourceLocation> spriteId;
 

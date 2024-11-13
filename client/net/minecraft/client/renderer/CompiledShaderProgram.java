@@ -13,7 +13,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -89,10 +88,8 @@ public class CompiledShaderProgram implements AutoCloseable {
 
    public void setupUniforms(List<ShaderProgramConfig.Uniform> var1, List<ShaderProgramConfig.Sampler> var2) {
       RenderSystem.assertOnRenderThread();
-      Iterator var3 = var1.iterator();
 
-      while(var3.hasNext()) {
-         ShaderProgramConfig.Uniform var4 = (ShaderProgramConfig.Uniform)var3.next();
+      for(ShaderProgramConfig.Uniform var4 : var1) {
          String var5 = var4.name();
          int var6 = Uniform.glGetUniformLocation(this.programId, var5);
          if (var6 != -1) {
@@ -104,14 +101,11 @@ public class CompiledShaderProgram implements AutoCloseable {
          }
       }
 
-      var3 = var2.iterator();
-
-      while(var3.hasNext()) {
-         ShaderProgramConfig.Sampler var8 = (ShaderProgramConfig.Sampler)var3.next();
-         int var9 = Uniform.glGetUniformLocation(this.programId, var8.name());
-         if (var9 != -1) {
-            this.samplers.add(var8);
-            this.samplerLocations.add(var9);
+      for(ShaderProgramConfig.Sampler var9 : var2) {
+         int var10 = Uniform.glGetUniformLocation(this.programId, var9.name());
+         if (var10 != -1) {
+            this.samplers.add(var9);
+            this.samplerLocations.add(var10);
          }
       }
 
@@ -170,10 +164,8 @@ public class CompiledShaderProgram implements AutoCloseable {
       }
 
       GlStateManager._activeTexture(var1);
-      Iterator var6 = this.uniforms.iterator();
 
-      while(var6.hasNext()) {
-         Uniform var7 = (Uniform)var6.next();
+      for(Uniform var7 : this.uniforms) {
          var7.upload();
       }
 

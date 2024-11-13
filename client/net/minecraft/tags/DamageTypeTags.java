@@ -41,6 +41,6 @@ public interface DamageTypeTags {
    TagKey<DamageType> IS_MACE_SMASH = create("mace_smash");
 
    private static TagKey<DamageType> create(String var0) {
-      return TagKey.create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<DamageType>create(Registries.DAMAGE_TYPE, ResourceLocation.withDefaultNamespace(var0));
    }
 }

@@ -26,13 +26,12 @@ public class PlayerEnderChestContainer extends SimpleContainer {
    }
 
    public void fromTag(ListTag var1, HolderLookup.Provider var2) {
-      int var3;
-      for(var3 = 0; var3 < this.getContainerSize(); ++var3) {
+      for(int var3 = 0; var3 < this.getContainerSize(); ++var3) {
          this.setItem(var3, ItemStack.EMPTY);
       }
 
-      for(var3 = 0; var3 < var1.size(); ++var3) {
-         CompoundTag var4 = var1.getCompound(var3);
+      for(int var6 = 0; var6 < var1.size(); ++var6) {
+         CompoundTag var4 = var1.getCompound(var6);
          int var5 = var4.getByte("Slot") & 255;
          if (var5 >= 0 && var5 < this.getContainerSize()) {
             this.setItem(var5, (ItemStack)ItemStack.parse(var2, var4).orElse(ItemStack.EMPTY));

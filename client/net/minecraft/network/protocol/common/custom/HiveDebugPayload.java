@@ -6,7 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 
 public record HiveDebugPayload(HiveInfo hiveInfo) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, HiveDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(HiveDebugPayload::write, HiveDebugPayload::new);
-   public static final CustomPacketPayload.Type<HiveDebugPayload> TYPE = CustomPacketPayload.createType("debug/hive");
+   public static final CustomPacketPayload.Type<HiveDebugPayload> TYPE = CustomPacketPayload.<HiveDebugPayload>createType("debug/hive");
 
    private HiveDebugPayload(FriendlyByteBuf var1) {
       this(new HiveInfo(var1));
@@ -23,10 +23,6 @@ public record HiveDebugPayload(HiveInfo hiveInfo) implements CustomPacketPayload
 
    public CustomPacketPayload.Type<HiveDebugPayload> type() {
       return TYPE;
-   }
-
-   public HiveInfo hiveInfo() {
-      return this.hiveInfo;
    }
 
    public static record HiveInfo(BlockPos pos, String hiveType, int occupantCount, int honeyLevel, boolean sedated) {
@@ -49,26 +45,6 @@ public record HiveDebugPayload(HiveInfo hiveInfo) implements CustomPacketPayload
          var1.writeInt(this.occupantCount);
          var1.writeInt(this.honeyLevel);
          var1.writeBoolean(this.sedated);
-      }
-
-      public BlockPos pos() {
-         return this.pos;
-      }
-
-      public String hiveType() {
-         return this.hiveType;
-      }
-
-      public int occupantCount() {
-         return this.occupantCount;
-      }
-
-      public int honeyLevel() {
-         return this.honeyLevel;
-      }
-
-      public boolean sedated() {
-         return this.sedated;
       }
    }
 }

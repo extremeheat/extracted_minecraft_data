@@ -38,19 +38,6 @@ public enum FaceInfo {
       return new FaceInfo[]{DOWN, UP, NORTH, SOUTH, WEST, EAST};
    }
 
-   public static class VertexInfo {
-      public final int xFace;
-      public final int yFace;
-      public final int zFace;
-
-      VertexInfo(int var1, int var2, int var3) {
-         super();
-         this.xFace = var1;
-         this.yFace = var2;
-         this.zFace = var3;
-      }
-   }
-
    public static final class Constants {
       public static final int MAX_Z;
       public static final int MAX_Y;
@@ -70,6 +57,19 @@ public enum FaceInfo {
          MIN_Z = Direction.NORTH.get3DDataValue();
          MIN_Y = Direction.DOWN.get3DDataValue();
          MIN_X = Direction.WEST.get3DDataValue();
+      }
+   }
+
+   public static class VertexInfo {
+      public final int xFace;
+      public final int yFace;
+      public final int zFace;
+
+      VertexInfo(int var1, int var2, int var3) {
+         super();
+         this.xFace = var1;
+         this.yFace = var2;
+         this.zFace = var3;
       }
    }
 }

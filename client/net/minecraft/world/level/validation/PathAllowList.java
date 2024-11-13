@@ -5,7 +5,6 @@ import java.io.BufferedReader;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,35 +26,24 @@ public class PathAllowList implements PathMatcher {
       return (PathMatcher)this.compiledPaths.computeIfAbsent(var1.provider().getScheme(), (var2) -> {
          List var3;
          try {
-            var3 = this.entries.stream().map((var1x) -> {
-               return var1x.compile(var1);
-            }).toList();
+            var3 = this.entries.stream().map((var1x) -> var1x.compile(var1)).toList();
          } catch (Exception var5) {
             LOGGER.error("Failed to compile file pattern list", var5);
-            return (var0) -> {
-               return false;
-            };
+            return (var0) -> false;
          }
 
          PathMatcher var10000;
          switch (var3.size()) {
-            case 0 -> var10000 = (var0) -> {
-   return false;
-};
+            case 0 -> var10000 = (var0) -> false;
             case 1 -> var10000 = (PathMatcher)var3.get(0);
             default -> var10000 = (var1x) -> {
-   Iterator var2 = var3.iterator();
-
-   PathMatcher var3x;
-   do {
-      if (!var2.hasNext()) {
-         return false;
+   for(PathMatcher var3x : var3) {
+      if (var3x.matches(var1x)) {
+         return true;
       }
+   }
 
-      var3x = (PathMatcher)var2.next();
-   } while(!var3x.matches(var1x));
-
-   return true;
+   return false;
 };
          }
 
@@ -68,9 +56,15 @@ public class PathAllowList implements PathMatcher {
    }
 
    public static PathAllowList readPlain(BufferedReader var0) {
-      return new PathAllowList(var0.lines().flatMap((var0x) -> {
-         return PathAllowList.ConfigEntry.parse(var0x).stream();
-      }).toList());
+      return new PathAllowList(var0.lines().flatMap((var0x) -> PathAllowList.ConfigEntry.parse(var0x).stream()).toList());
+   }
+
+   @FunctionalInterface
+   public interface EntryType {
+      EntryType FILESYSTEM = FileSystem::getPathMatcher;
+      EntryType PREFIX = (var0, var1) -> (var1x) -> var1x.toString().startsWith(var1);
+
+      PathMatcher compile(FileSystem var1, String var2);
    }
 
    public static record ConfigEntry(EntryType type, String pattern) {
@@ -127,25 +121,5 @@ public class PathAllowList implements PathMatcher {
       static ConfigEntry prefix(String var0) {
          return new ConfigEntry(PathAllowList.EntryType.PREFIX, var0);
       }
-
-      public EntryType type() {
-         return this.type;
-      }
-
-      public String pattern() {
-         return this.pattern;
-      }
-   }
-
-   @FunctionalInterface
-   public interface EntryType {
-      EntryType FILESYSTEM = FileSystem::getPathMatcher;
-      EntryType PREFIX = (var0, var1) -> {
-         return (var1x) -> {
-            return var1x.toString().startsWith(var1);
-         };
-      };
-
-      PathMatcher compile(FileSystem var1, String var2);
    }
 }

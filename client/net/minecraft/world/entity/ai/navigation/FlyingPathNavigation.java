@@ -44,11 +44,10 @@ public class FlyingPathNavigation extends PathNavigation {
       }
 
       if (!this.isDone()) {
-         Vec3 var1;
          if (this.canUpdatePath()) {
             this.followThePath();
          } else if (this.path != null && !this.path.isDone()) {
-            var1 = this.path.getNextEntityPos(this.mob);
+            Vec3 var1 = this.path.getNextEntityPos(this.mob);
             if (this.mob.getBlockX() == Mth.floor(var1.x) && this.mob.getBlockY() == Mth.floor(var1.y) && this.mob.getBlockZ() == Mth.floor(var1.z)) {
                this.path.advance();
             }
@@ -56,8 +55,8 @@ public class FlyingPathNavigation extends PathNavigation {
 
          DebugPackets.sendPathFindingPacket(this.level, this.mob, this.path, this.maxDistanceToWaypoint);
          if (!this.isDone()) {
-            var1 = this.path.getNextEntityPos(this.mob);
-            this.mob.getMoveControl().setWantedPosition(var1.x, var1.y, var1.z, this.speedModifier);
+            Vec3 var2 = this.path.getNextEntityPos(this.mob);
+            this.mob.getMoveControl().setWantedPosition(var2.x, var2.y, var2.z, this.speedModifier);
          }
       }
    }

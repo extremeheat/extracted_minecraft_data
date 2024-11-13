@@ -25,9 +25,7 @@ import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Optional<ResourceKey<EquipmentAsset>> assetId, Optional<ResourceLocation> cameraOverlay, Optional<HolderSet<EntityType<?>>> allowedEntities, boolean dispensable, boolean swappable, boolean damageOnHurt) {
-   public static final Codec<Equippable> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(EquipmentSlot.CODEC.fieldOf("slot").forGetter(Equippable::slot), SoundEvent.CODEC.optionalFieldOf("equip_sound", SoundEvents.ARMOR_EQUIP_GENERIC).forGetter(Equippable::equipSound), ResourceKey.codec(EquipmentAssets.ROOT_ID).optionalFieldOf("asset_id").forGetter(Equippable::assetId), ResourceLocation.CODEC.optionalFieldOf("camera_overlay").forGetter(Equippable::cameraOverlay), RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE).optionalFieldOf("allowed_entities").forGetter(Equippable::allowedEntities), Codec.BOOL.optionalFieldOf("dispensable", true).forGetter(Equippable::dispensable), Codec.BOOL.optionalFieldOf("swappable", true).forGetter(Equippable::swappable), Codec.BOOL.optionalFieldOf("damage_on_hurt", true).forGetter(Equippable::damageOnHurt)).apply(var0, Equippable::new);
-   });
+   public static final Codec<Equippable> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EquipmentSlot.CODEC.fieldOf("slot").forGetter(Equippable::slot), SoundEvent.CODEC.optionalFieldOf("equip_sound", SoundEvents.ARMOR_EQUIP_GENERIC).forGetter(Equippable::equipSound), ResourceKey.codec(EquipmentAssets.ROOT_ID).optionalFieldOf("asset_id").forGetter(Equippable::assetId), ResourceLocation.CODEC.optionalFieldOf("camera_overlay").forGetter(Equippable::cameraOverlay), RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE).optionalFieldOf("allowed_entities").forGetter(Equippable::allowedEntities), Codec.BOOL.optionalFieldOf("dispensable", true).forGetter(Equippable::dispensable), Codec.BOOL.optionalFieldOf("swappable", true).forGetter(Equippable::swappable), Codec.BOOL.optionalFieldOf("damage_on_hurt", true).forGetter(Equippable::damageOnHurt)).apply(var0, Equippable::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, Equippable> STREAM_CODEC;
 
    public Equippable(EquipmentSlot var1, Holder<SoundEvent> var2, Optional<ResourceKey<EquipmentAsset>> var3, Optional<ResourceLocation> var4, Optional<HolderSet<EntityType<?>>> var5, boolean var6, boolean var7, boolean var8) {
@@ -60,16 +58,14 @@ public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Opti
                var2.awardStat(Stats.ITEM_USED.get(var1.getItem()));
             }
 
-            ItemStack var4;
-            ItemStack var5;
             if (var1.getCount() <= 1) {
-               var4 = var3.isEmpty() ? var1 : var3.copyAndClear();
-               var5 = var2.isCreative() ? var1.copy() : var1.copyAndClear();
-               var2.setItemSlot(this.slot, var5);
-               return InteractionResult.SUCCESS.heldItemTransformedTo(var4);
+               ItemStack var6 = var3.isEmpty() ? var1 : var3.copyAndClear();
+               ItemStack var7 = var2.isCreative() ? var1.copy() : var1.copyAndClear();
+               var2.setItemSlot(this.slot, var7);
+               return InteractionResult.SUCCESS.heldItemTransformedTo(var6);
             } else {
-               var4 = var3.copyAndClear();
-               var5 = var1.consumeAndReturn(1, var2);
+               ItemStack var4 = var3.copyAndClear();
+               ItemStack var5 = var1.consumeAndReturn(1, var2);
                var2.setItemSlot(this.slot, var5);
                if (!var2.getInventory().add(var4)) {
                   var2.drop(var4, false);
@@ -85,38 +81,6 @@ public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Opti
 
    public boolean canBeEquippedBy(EntityType<?> var1) {
       return this.allowedEntities.isEmpty() || ((HolderSet)this.allowedEntities.get()).contains(var1.builtInRegistryHolder());
-   }
-
-   public EquipmentSlot slot() {
-      return this.slot;
-   }
-
-   public Holder<SoundEvent> equipSound() {
-      return this.equipSound;
-   }
-
-   public Optional<ResourceKey<EquipmentAsset>> assetId() {
-      return this.assetId;
-   }
-
-   public Optional<ResourceLocation> cameraOverlay() {
-      return this.cameraOverlay;
-   }
-
-   public Optional<HolderSet<EntityType<?>>> allowedEntities() {
-      return this.allowedEntities;
-   }
-
-   public boolean dispensable() {
-      return this.dispensable;
-   }
-
-   public boolean swappable() {
-      return this.swappable;
-   }
-
-   public boolean damageOnHurt() {
-      return this.damageOnHurt;
    }
 
    static {
@@ -161,7 +125,7 @@ public record Equippable(EquipmentSlot slot, Holder<SoundEvent> equipSound, Opti
       }
 
       public Builder setAllowedEntities(EntityType<?>... var1) {
-         return this.setAllowedEntities((HolderSet)HolderSet.direct(EntityType::builtInRegistryHolder, (Object[])var1));
+         return this.setAllowedEntities(HolderSet.direct(EntityType::builtInRegistryHolder, var1));
       }
 
       public Builder setAllowedEntities(HolderSet<EntityType<?>> var1) {

@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.shorts.ShortList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -126,11 +125,8 @@ public class ProtoChunk extends ChunkAccess {
 
             EnumSet var19 = this.getPersistedStatus().heightmapsAfter();
             EnumSet var15 = null;
-            Iterator var16 = var19.iterator();
 
-            Heightmap.Types var17;
-            while(var16.hasNext()) {
-               var17 = (Heightmap.Types)var16.next();
+            for(Heightmap.Types var17 : var19) {
                Heightmap var18 = (Heightmap)this.heightmaps.get(var17);
                if (var18 == null) {
                   if (var15 == null) {
@@ -145,11 +141,8 @@ public class ProtoChunk extends ChunkAccess {
                Heightmap.primeHeightmaps(this, var15);
             }
 
-            var16 = var19.iterator();
-
-            while(var16.hasNext()) {
-               var17 = (Heightmap.Types)var16.next();
-               ((Heightmap)this.heightmaps.get(var17)).update(var10, var5, var12, var2);
+            for(Heightmap.Types var21 : var19) {
+               ((Heightmap)this.heightmaps.get(var21)).update(var10, var5, var12, var2);
             }
 
             return var13;
@@ -294,7 +287,7 @@ public class ProtoChunk extends ChunkAccess {
    }
 
    private static <T> LevelChunkTicks<T> unpackTicks(ProtoChunkTicks<T> var0) {
-      return new LevelChunkTicks(var0.scheduledTicks());
+      return new LevelChunkTicks<T>(var0.scheduledTicks());
    }
 
    public LevelChunkTicks<Block> unpackBlockTicks() {

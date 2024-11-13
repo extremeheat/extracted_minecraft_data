@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -34,12 +33,14 @@ import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportType;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -197,8 +198,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    private final SleepStatus sleepStatus;
    private int emptyTime;
    private final PortalForcer portalForcer;
-   private final LevelTicks<Block> blockTicks = new LevelTicks(this::isPositionTickingWithEntitiesLoaded);
-   private final LevelTicks<Fluid> fluidTicks = new LevelTicks(this::isPositionTickingWithEntitiesLoaded);
+   private final LevelTicks<Block> blockTicks = new LevelTicks<Block>(this::isPositionTickingWithEntitiesLoaded);
+   private final LevelTicks<Fluid> fluidTicks = new LevelTicks<Fluid>(this::isPositionTickingWithEntitiesLoaded);
    private final PathTypeCache pathTypesByPosCache = new PathTypeCache();
    final Set<Mob> navigatingMobs = new ObjectOpenHashSet();
    volatile boolean isUpdatingNavigations;
@@ -225,15 +226,13 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       boolean var15 = var1.forceSynchronousWrites();
       DataFixer var16 = var1.getFixerUpper();
       EntityStorage var17 = new EntityStorage(new SimpleRegionStorage(new RegionStorageInfo(var3.getLevelId(), var5, "entities"), var3.getDimensionPath(var5).resolve("entities"), var16, var15, DataFixTypes.ENTITY_CHUNK), this, var1);
-      this.entityManager = new PersistentEntitySectionManager(Entity.class, new EntityCallbacks(), var17);
+      this.entityManager = new PersistentEntitySectionManager<Entity>(Entity.class, new EntityCallbacks(), var17);
       StructureTemplateManager var10006 = var1.getStructureManager();
       int var10009 = var1.getPlayerList().getViewDistance();
       int var10010 = var1.getPlayerList().getSimulationDistance();
       PersistentEntitySectionManager var10013 = this.entityManager;
       Objects.requireNonNull(var10013);
-      this.chunkSource = new ServerChunkCache(this, var3, var16, var10006, var2, var14, var10009, var10010, var15, var7, var10013::updateChunkStatus, () -> {
-         return var1.overworld().getDataStorage();
-      });
+      this.chunkSource = new ServerChunkCache(this, var3, var16, var10006, var2, var14, var10009, var10010, var15, var7, var10013::updateChunkStatus, () -> var1.overworld().getDataStorage());
       this.chunkSource.getGeneratorState().ensureStructuresGenerated();
       this.portalForcer = new PortalForcer(this);
       this.updateSkyBrightness();
@@ -255,9 +254,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       this.sleepStatus = new SleepStatus();
       this.gameEventDispatcher = new GameEventDispatcher(this);
-      this.randomSequences = (RandomSequences)Objects.requireNonNullElseGet(var13, () -> {
-         return (RandomSequences)this.getDataStorage().computeIfAbsent(RandomSequences.factory(var18), "random_sequences");
-      });
+      this.randomSequences = (RandomSequences)Objects.requireNonNullElseGet(var13, () -> (RandomSequences)this.getDataStorage().computeIfAbsent(RandomSequences.factory(var18), "random_sequences"));
    }
 
    /** @deprecated */
@@ -297,10 +294,9 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       }
 
       int var5 = this.getGameRules().getInt(GameRules.RULE_PLAYERS_SLEEPING_PERCENTAGE);
-      long var6;
       if (this.sleepStatus.areEnoughSleeping(var5) && this.sleepStatus.areEnoughDeepSleeping(var5, this.players)) {
          if (this.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
-            var6 = this.levelData.getDayTime() + 24000L;
+            long var6 = this.levelData.getDayTime() + 24000L;
             this.setDayTime(var6 - var6 % 24000L);
          }
 
@@ -317,11 +313,11 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       var2.push("tickPending");
       if (!this.isDebug() && var4) {
-         var6 = this.getGameTime();
+         long var8 = this.getGameTime();
          var2.push("blockTicks");
-         this.blockTicks.tick(var6, 65536, this::tickBlock);
+         this.blockTicks.tick(var8, 65536, this::tickBlock);
          var2.popPush("fluidTicks");
-         this.fluidTicks.tick(var6, 65536, this::tickFluid);
+         this.fluidTicks.tick(var8, 65536, this::tickFluid);
          var2.pop();
       }
 
@@ -339,12 +335,12 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       this.handlingTick = false;
       var2.pop();
-      boolean var8 = !this.players.isEmpty() || !this.getForcedChunks().isEmpty();
-      if (var8) {
+      boolean var9 = !this.players.isEmpty() || !this.getForcedChunks().isEmpty();
+      if (var9) {
          this.resetEmptyTime();
       }
 
-      if (var8 || this.emptyTime++ < 300) {
+      if (var9 || this.emptyTime++ < 300) {
          var2.push("entities");
          if (this.dragonFight != null && var4) {
             var2.push("dragonFight");
@@ -407,10 +403,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    }
 
    public void tickCustomSpawners(boolean var1, boolean var2) {
-      Iterator var3 = this.customSpawners.iterator();
-
-      while(var3.hasNext()) {
-         CustomSpawner var4 = (CustomSpawner)var3.next();
+      for(CustomSpawner var4 : this.customSpawners) {
          var4.tick(this, var1, var2);
       }
 
@@ -418,9 +411,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    private void wakeUpAllPlayers() {
       this.sleepStatus.removeAllSleepers();
-      ((List)this.players.stream().filter(LivingEntity::isSleeping).collect(Collectors.toList())).forEach((var0) -> {
-         var0.stopSleepInBed(false, false);
-      });
+      ((List)this.players.stream().filter(LivingEntity::isSleeping).collect(Collectors.toList())).forEach((var0) -> var0.stopSleepInBed(false, false));
    }
 
    public void tickChunk(LevelChunk var1, int var2) {
@@ -436,7 +427,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
             DifficultyInstance var9 = this.getCurrentDifficultyAt(var8);
             boolean var10 = this.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && this.random.nextDouble() < (double)var9.getEffectiveDifficulty() * 0.01 && !this.getBlockState(var8.below()).is(Blocks.LIGHTNING_ROD);
             if (var10) {
-               SkeletonHorse var11 = (SkeletonHorse)EntityType.SKELETON_HORSE.create(this, EntitySpawnReason.EVENT);
+               SkeletonHorse var11 = EntityType.SKELETON_HORSE.create(this, EntitySpawnReason.EVENT);
                if (var11 != null) {
                   var11.setTrap(true);
                   var11.setAge(0);
@@ -445,7 +436,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
                }
             }
 
-            LightningBolt var21 = (LightningBolt)EntityType.LIGHTNING_BOLT.create(this, EntitySpawnReason.EVENT);
+            LightningBolt var21 = EntityType.LIGHTNING_BOLT.create(this, EntitySpawnReason.EVENT);
             if (var21 != null) {
                var21.moveTo(Vec3.atBottomCenterOf(var8));
                var21.setVisualOnly(var10);
@@ -529,14 +520,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    }
 
    private Optional<BlockPos> findLightningRod(BlockPos var1) {
-      Optional var2 = this.getPoiManager().findClosest((var0) -> {
-         return var0.is(PoiTypes.LIGHTNING_ROD);
-      }, (var1x) -> {
-         return var1x.getY() == this.getHeight(Heightmap.Types.WORLD_SURFACE, var1x.getX(), var1x.getZ()) - 1;
-      }, var1, 128, PoiManager.Occupancy.ANY);
-      return var2.map((var0) -> {
-         return var0.above(1);
-      });
+      Optional var2 = this.getPoiManager().findClosest((var0) -> var0.is(PoiTypes.LIGHTNING_ROD), (var1x) -> var1x.getY() == this.getHeight(Heightmap.Types.WORLD_SURFACE, var1x.getX(), var1x.getZ()) - 1, var1, 128, PoiManager.Occupancy.ANY);
+      return var2.map((var0) -> var0.above(1));
    }
 
    protected BlockPos findLightningTargetAround(BlockPos var1) {
@@ -546,9 +531,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          return (BlockPos)var3.get();
       } else {
          AABB var4 = AABB.encapsulatingFullBlocks(var2, var2.atY(this.getMaxY() + 1)).inflate(3.0);
-         List var5 = this.getEntitiesOfClass(LivingEntity.class, var4, (var1x) -> {
-            return var1x != null && var1x.isAlive() && this.canSeeSky(var1x.blockPosition());
-         });
+         List var5 = this.getEntitiesOfClass(LivingEntity.class, var4, (var1x) -> var1x != null && var1x.isAlive() && this.canSeeSky(var1x.blockPosition()));
          if (!var5.isEmpty()) {
             return ((LivingEntity)var5.get(this.random.nextInt(var5.size()))).blockPosition();
          } else {
@@ -580,10 +563,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
                var2 = Component.translatable("sleep.players_sleeping", this.sleepStatus.amountSleeping(), this.sleepStatus.sleepersNeeded(var1));
             }
 
-            Iterator var3 = this.players.iterator();
-
-            while(var3.hasNext()) {
-               ServerPlayer var4 = (ServerPlayer)var3.next();
+            for(ServerPlayer var4 : this.players) {
                var4.displayClientMessage(var2, true);
             }
 
@@ -720,16 +700,12 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       var1.setOldPosAndRot();
       ProfilerFiller var2 = Profiler.get();
       ++var1.tickCount;
-      var2.push(() -> {
-         return BuiltInRegistries.ENTITY_TYPE.getKey(var1.getType()).toString();
-      });
+      var2.push((Supplier)(() -> BuiltInRegistries.ENTITY_TYPE.getKey(var1.getType()).toString()));
       var2.incrementCounter("tickNonPassenger");
       var1.tick();
       var2.pop();
-      Iterator var3 = var1.getPassengers().iterator();
 
-      while(var3.hasNext()) {
-         Entity var4 = (Entity)var3.next();
+      for(Entity var4 : var1.getPassengers()) {
          this.tickPassenger(var1, var4);
       }
 
@@ -741,16 +717,12 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
             var2.setOldPosAndRot();
             ++var2.tickCount;
             ProfilerFiller var3 = Profiler.get();
-            var3.push(() -> {
-               return BuiltInRegistries.ENTITY_TYPE.getKey(var2.getType()).toString();
-            });
+            var3.push((Supplier)(() -> BuiltInRegistries.ENTITY_TYPE.getKey(var2.getType()).toString()));
             var3.incrementCounter("tickPassenger");
             var2.rideTick();
             var3.pop();
-            Iterator var4 = var2.getPassengers().iterator();
 
-            while(var4.hasNext()) {
-               Entity var5 = (Entity)var4.next();
+            for(Entity var5 : var2.getPassengers()) {
                this.tickPassenger(var2, var5);
             }
 
@@ -811,7 +783,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    }
 
    public <T extends Entity> void getEntities(EntityTypeTest<Entity, T> var1, Predicate<? super T> var2, List<? super T> var3, int var4) {
-      this.getEntities().get(var1, (var3x) -> {
+      this.getEntities().get(var1, (AbortableIterationConsumer)((var3x) -> {
          if (var2.test(var3x)) {
             var3.add(var3x);
             if (var3.size() >= var4) {
@@ -820,11 +792,11 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          }
 
          return AbortableIterationConsumer.Continuation.CONTINUE;
-      });
+      }));
    }
 
    public List<? extends EnderDragon> getDragons() {
-      return this.getEntities(EntityType.ENDER_DRAGON, LivingEntity::isAlive);
+      return this.<EnderDragon>getEntities(EntityType.ENDER_DRAGON, LivingEntity::isAlive);
    }
 
    public List<ServerPlayer> getPlayers(Predicate<? super ServerPlayer> var1) {
@@ -833,10 +805,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    public List<ServerPlayer> getPlayers(Predicate<? super ServerPlayer> var1, int var2) {
       ArrayList var3 = Lists.newArrayList();
-      Iterator var4 = this.players.iterator();
 
-      while(var4.hasNext()) {
-         ServerPlayer var5 = (ServerPlayer)var4.next();
+      for(ServerPlayer var5 : this.players) {
          if (var1.test(var5)) {
             var3.add(var5);
             if (var3.size() >= var2) {
@@ -921,10 +891,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    }
 
    public void destroyBlockProgress(int var1, BlockPos var2, int var3) {
-      Iterator var4 = this.server.getPlayerList().getPlayers().iterator();
-
-      while(var4.hasNext()) {
-         ServerPlayer var5 = (ServerPlayer)var4.next();
+      for(ServerPlayer var5 : this.server.getPlayerList().getPlayers()) {
          if (var5 != null && var5.level() == this && var5.getId() != var1) {
             double var6 = (double)var2.getX() - var5.getX();
             double var8 = (double)var2.getY() - var5.getY();
@@ -993,10 +960,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       VoxelShape var6 = var3.getCollisionShape(this, var1);
       if (Shapes.joinIsNotEmpty(var14, var6, BooleanOp.NOT_SAME)) {
          ObjectArrayList var7 = new ObjectArrayList();
-         Iterator var8 = this.navigatingMobs.iterator();
 
-         while(var8.hasNext()) {
-            Mob var9 = (Mob)var8.next();
+         for(Mob var9 : this.navigatingMobs) {
             PathNavigation var10 = var9.getNavigation();
             if (var10.shouldRecomputePath(var1)) {
                var7.add(var10);
@@ -1005,11 +970,9 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
          try {
             this.isUpdatingNavigations = true;
-            var8 = var7.iterator();
 
-            while(var8.hasNext()) {
-               PathNavigation var15 = (PathNavigation)var8.next();
-               var15.recomputePath();
+            for(PathNavigation var16 : var7) {
+               var16.recomputePath();
             }
          } finally {
             this.isUpdatingNavigations = false;
@@ -1066,10 +1029,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       ServerExplosion var18 = new ServerExplosion(this, var1, var2, var3, var17, var10, var11, var16);
       var18.explode();
       ParticleOptions var19 = var18.isSmall() ? var13 : var14;
-      Iterator var20 = this.players.iterator();
 
-      while(var20.hasNext()) {
-         ServerPlayer var21 = (ServerPlayer)var20.next();
+      for(ServerPlayer var21 : this.players) {
          if (var21.distanceToSqr(var17) < 4096.0) {
             Optional var22 = Optional.ofNullable((Vec3)var18.getHitPlayers().get(var21));
             var21.connection.send(new ClientboundExplodePacket(var17, var22, var19, var15));
@@ -1293,18 +1254,14 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       Optional var5 = PoiTypes.forState(var3);
       if (!Objects.equals(var4, var5)) {
          BlockPos var6 = var1.immutable();
-         var4.ifPresent((var2x) -> {
-            this.getServer().execute(() -> {
+         var4.ifPresent((var2x) -> this.getServer().execute(() -> {
                this.getPoiManager().remove(var6);
                DebugPackets.sendPoiRemovedPacket(this, var6);
-            });
-         });
-         var5.ifPresent((var2x) -> {
-            this.getServer().execute(() -> {
+            }));
+         var5.ifPresent((var2x) -> this.getServer().execute(() -> {
                this.getPoiManager().add(var6, var2x);
                DebugPackets.sendPoiAddedPacket(this, var6);
-            });
-         });
+            }));
       }
    }
 
@@ -1397,8 +1354,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          if (var24 != null) {
             try {
                ((Writer)var24).close();
-            } catch (Throwable var13) {
-               var21.addSuppressed(var13);
+            } catch (Throwable var15) {
+               var21.addSuppressed(var15);
             }
          }
 
@@ -1414,16 +1371,16 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       try {
          var2.dumpChunks(var26);
-      } catch (Throwable var17) {
+      } catch (Throwable var20) {
          if (var26 != null) {
             try {
                ((Writer)var26).close();
             } catch (Throwable var14) {
-               var17.addSuppressed(var14);
+               var20.addSuppressed(var14);
             }
          }
 
-         throw var17;
+         throw var20;
       }
 
       if (var26 != null) {
@@ -1435,16 +1392,16 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       try {
          this.entityManager.dumpSections(var28);
-      } catch (Throwable var18) {
+      } catch (Throwable var19) {
          if (var28 != null) {
             try {
                ((Writer)var28).close();
-            } catch (Throwable var12) {
-               var18.addSuppressed(var12);
+            } catch (Throwable var13) {
+               var19.addSuppressed(var13);
             }
          }
 
-         throw var18;
+         throw var19;
       }
 
       if (var28 != null) {
@@ -1456,16 +1413,16 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       try {
          dumpEntities(var7, this.getEntities().getAll());
-      } catch (Throwable var20) {
+      } catch (Throwable var18) {
          if (var7 != null) {
             try {
                ((Writer)var7).close();
-            } catch (Throwable var15) {
-               var20.addSuppressed(var15);
+            } catch (Throwable var12) {
+               var18.addSuppressed(var12);
             }
          }
 
-         throw var20;
+         throw var18;
       }
 
       if (var7 != null) {
@@ -1477,16 +1434,16 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       try {
          this.dumpBlockEntityTickers(var8);
-      } catch (Throwable var19) {
+      } catch (Throwable var17) {
          if (var8 != null) {
             try {
                ((Writer)var8).close();
             } catch (Throwable var11) {
-               var19.addSuppressed(var11);
+               var17.addSuppressed(var11);
             }
          }
 
-         throw var19;
+         throw var17;
       }
 
       if (var8 != null) {
@@ -1497,10 +1454,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    private static void dumpEntities(Writer var0, Iterable<Entity> var1) throws IOException {
       CsvOutput var2 = CsvOutput.builder().addColumn("x").addColumn("y").addColumn("z").addColumn("uuid").addColumn("type").addColumn("alive").addColumn("display_name").addColumn("custom_name").build(var0);
-      Iterator var3 = var1.iterator();
 
-      while(var3.hasNext()) {
-         Entity var4 = (Entity)var3.next();
+      for(Entity var4 : var1) {
          Component var5 = var4.getCustomName();
          Component var6 = var4.getDisplayName();
          var2.writeRow(var4.getX(), var4.getY(), var4.getZ(), var4.getUUID(), BuiltInRegistries.ENTITY_TYPE.getKey(var4.getType()), var4.isAlive(), var6.getString(), var5 != null ? var5.getString() : null);
@@ -1510,10 +1465,8 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    private void dumpBlockEntityTickers(Writer var1) throws IOException {
       CsvOutput var2 = CsvOutput.builder().addColumn("x").addColumn("y").addColumn("z").addColumn("type").build(var1);
-      Iterator var3 = this.blockEntityTickers.iterator();
 
-      while(var3.hasNext()) {
-         TickingBlockEntity var4 = (TickingBlockEntity)var3.next();
+      for(TickingBlockEntity var4 : this.blockEntityTickers) {
          BlockPos var5 = var4.getPos();
          var2.writeRow(var5.getX(), var5.getY(), var5.getZ(), var4.getType());
       }
@@ -1522,9 +1475,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    @VisibleForTesting
    public void clearBlockEvents(BoundingBox var1) {
-      this.blockEvents.removeIf((var1x) -> {
-         return var1.isInside(var1x.pos());
-      });
+      this.blockEvents.removeIf((var1x) -> var1.isInside(var1x.pos()));
    }
 
    public void blockUpdated(BlockPos var1, Block var2) {
@@ -1565,18 +1516,14 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    @VisibleForTesting
    public String getWatchdogStats() {
-      return String.format(Locale.ROOT, "players: %s, entities: %s [%s], block_entities: %d [%s], block_ticks: %d, fluid_ticks: %d, chunk_source: %s", this.players.size(), this.entityManager.gatherStats(), getTypeCount(this.entityManager.getEntityGetter().getAll(), (var0) -> {
-         return BuiltInRegistries.ENTITY_TYPE.getKey(var0.getType()).toString();
-      }), this.blockEntityTickers.size(), getTypeCount(this.blockEntityTickers, TickingBlockEntity::getType), this.getBlockTicks().count(), this.getFluidTicks().count(), this.gatherChunkSourceStats());
+      return String.format(Locale.ROOT, "players: %s, entities: %s [%s], block_entities: %d [%s], block_ticks: %d, fluid_ticks: %d, chunk_source: %s", this.players.size(), this.entityManager.gatherStats(), getTypeCount(this.entityManager.getEntityGetter().getAll(), (var0) -> BuiltInRegistries.ENTITY_TYPE.getKey(var0.getType()).toString()), this.blockEntityTickers.size(), getTypeCount(this.blockEntityTickers, TickingBlockEntity::getType), this.getBlockTicks().count(), this.getFluidTicks().count(), this.gatherChunkSourceStats());
    }
 
    private static <T> String getTypeCount(Iterable<T> var0, Function<T, String> var1) {
       try {
          Object2IntOpenHashMap var2 = new Object2IntOpenHashMap();
-         Iterator var3 = var0.iterator();
 
-         while(var3.hasNext()) {
-            Object var4 = var3.next();
+         for(Object var4 : var0) {
             String var5 = (String)var1.apply(var4);
             var2.addTo(var5, 1);
          }
@@ -1607,9 +1554,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
    }
 
    public void onStructureStartsAvailable(ChunkAccess var1) {
-      this.server.execute(() -> {
-         this.structureCheck.onStructureLoad(var1.getPos(), var1.getAllStarts());
-      });
+      this.server.execute(() -> this.structureCheck.onStructureLoad(var1.getPos(), var1.getAllStarts()));
    }
 
    public PathTypeCache getPathTypeCache() {
@@ -1672,9 +1617,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    public CrashReportCategory fillReportDetails(CrashReport var1) {
       CrashReportCategory var2 = super.fillReportDetails(var1);
-      var2.setDetail("Loaded entity count", () -> {
-         return String.valueOf(this.entityManager.count());
-      });
+      var2.setDetail("Loaded entity count", (CrashReportDetail)(() -> String.valueOf(this.entityManager.count())));
       return var2;
    }
 
@@ -1744,11 +1687,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          }
 
          if (var1 instanceof EnderDragon var8) {
-            EnderDragonPart[] var9 = var8.getSubEntities();
-            int var4 = var9.length;
-
-            for(int var5 = 0; var5 < var4; ++var5) {
-               EnderDragonPart var6 = var9[var5];
+            for(EnderDragonPart var6 : var8.getSubEntities()) {
                ServerLevel.this.dragonParts.put(var6.getId(), var6);
             }
          }
@@ -1773,11 +1712,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
          }
 
          if (var1 instanceof EnderDragon var8) {
-            EnderDragonPart[] var9 = var8.getSubEntities();
-            int var4 = var9.length;
-
-            for(int var5 = 0; var5 < var4; ++var5) {
-               EnderDragonPart var6 = var9[var5];
+            for(EnderDragonPart var6 : var8.getSubEntities()) {
                ServerLevel.this.dragonParts.remove(var6.getId());
             }
          }

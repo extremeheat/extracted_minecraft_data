@@ -91,20 +91,14 @@ public class BookViewScreen extends Screen {
    }
 
    protected void createMenuControls() {
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> {
-         this.onClose();
-      }).bounds(this.width / 2 - 100, 196, 200, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onClose()).bounds(this.width / 2 - 100, 196, 200, 20).build());
    }
 
    protected void createPageControlButtons() {
       int var1 = (this.width - 192) / 2;
       boolean var2 = true;
-      this.forwardButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 116, 159, true, (var1x) -> {
-         this.pageForward();
-      }, this.playTurnSound));
-      this.backButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 43, 159, false, (var1x) -> {
-         this.pageBack();
-      }, this.playTurnSound));
+      this.forwardButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 116, 159, true, (var1x) -> this.pageForward(), this.playTurnSound));
+      this.backButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 43, 159, false, (var1x) -> this.pageBack(), this.playTurnSound));
       this.updateButtonVisibility();
    }
 
@@ -279,10 +273,6 @@ public class BookViewScreen extends Screen {
             WritableBookContent var3 = (WritableBookContent)var0.get(DataComponents.WRITABLE_BOOK_CONTENT);
             return var3 != null ? new BookAccess(var3.getPages(var1).map(Component::literal).toList()) : null;
          }
-      }
-
-      public List<Component> pages() {
-         return this.pages;
       }
    }
 }

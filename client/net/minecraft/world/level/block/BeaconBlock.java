@@ -52,8 +52,4 @@ public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
 
       return InteractionResult.SUCCESS;
    }
-
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
 }

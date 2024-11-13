@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.commands.CacheableFunction;
@@ -13,7 +12,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -26,9 +24,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> loot, List<ResourceKey<Recipe<?>>> recipes, Optional<CacheableFunction> function) {
-   public static final Codec<AdvancementRewards> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.INT.optionalFieldOf("experience", 0).forGetter(AdvancementRewards::experience), ResourceKey.codec(Registries.LOOT_TABLE).listOf().optionalFieldOf("loot", List.of()).forGetter(AdvancementRewards::loot), ResourceKey.codec(Registries.RECIPE).listOf().optionalFieldOf("recipes", List.of()).forGetter(AdvancementRewards::recipes), CacheableFunction.CODEC.optionalFieldOf("function").forGetter(AdvancementRewards::function)).apply(var0, AdvancementRewards::new);
-   });
+   public static final Codec<AdvancementRewards> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.optionalFieldOf("experience", 0).forGetter(AdvancementRewards::experience), ResourceKey.codec(Registries.LOOT_TABLE).listOf().optionalFieldOf("loot", List.of()).forGetter(AdvancementRewards::loot), ResourceKey.codec(Registries.RECIPE).listOf().optionalFieldOf("recipes", List.of()).forGetter(AdvancementRewards::recipes), CacheableFunction.CODEC.optionalFieldOf("function").forGetter(AdvancementRewards::function)).apply(var0, AdvancementRewards::new));
    public static final AdvancementRewards EMPTY = new AdvancementRewards(0, List.of(), List.of(), Optional.empty());
 
    public AdvancementRewards(int var1, List<ResourceKey<LootTable>> var2, List<ResourceKey<Recipe<?>>> var3, Optional<CacheableFunction> var4) {
@@ -43,16 +39,14 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
       var1.giveExperiencePoints(this.experience);
       LootParams var2 = (new LootParams.Builder(var1.serverLevel())).withParameter(LootContextParams.THIS_ENTITY, var1).withParameter(LootContextParams.ORIGIN, var1.position()).create(LootContextParamSets.ADVANCEMENT_REWARD);
       boolean var3 = false;
-      Iterator var4 = this.loot.iterator();
 
-      while(var4.hasNext()) {
-         ResourceKey var5 = (ResourceKey)var4.next();
+      for(ResourceKey var5 : this.loot) {
          ObjectListIterator var6 = var1.server.reloadableRegistries().getLootTable(var5).getRandomItems(var2).iterator();
 
          while(var6.hasNext()) {
             ItemStack var7 = (ItemStack)var6.next();
             if (var1.addItem(var7)) {
-               var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), (SoundEvent)SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var1.getRandom().nextFloat() - var1.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
+               var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((var1.getRandom().nextFloat() - var1.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F);
                var3 = true;
             } else {
                ItemEntity var8 = var1.drop(var7, false);
@@ -73,27 +67,7 @@ public record AdvancementRewards(int experience, List<ResourceKey<LootTable>> lo
       }
 
       MinecraftServer var9 = var1.server;
-      this.function.flatMap((var1x) -> {
-         return var1x.get(var9.getFunctions());
-      }).ifPresent((var2x) -> {
-         var9.getFunctions().execute(var2x, var1.createCommandSourceStack().withSuppressedOutput().withPermission(2));
-      });
-   }
-
-   public int experience() {
-      return this.experience;
-   }
-
-   public List<ResourceKey<LootTable>> loot() {
-      return this.loot;
-   }
-
-   public List<ResourceKey<Recipe<?>>> recipes() {
-      return this.recipes;
-   }
-
-   public Optional<CacheableFunction> function() {
-      return this.function;
+      this.function.flatMap((var1x) -> var1x.get(var9.getFunctions())).ifPresent((var2x) -> var9.getFunctions().execute(var2x, var1.createCommandSourceStack().withSuppressedOutput().withPermission(2)));
    }
 
    public static class Builder {

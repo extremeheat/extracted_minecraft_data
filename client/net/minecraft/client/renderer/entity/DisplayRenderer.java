@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import com.mojang.math.Transformation;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.client.Camera;
@@ -141,90 +140,25 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       return this.getSkyLightLevel((Display)var1, var2);
    }
 
-   public static class TextDisplayRenderer extends DisplayRenderer<Display.TextDisplay, Display.TextDisplay.TextRenderState, TextDisplayEntityRenderState> {
-      private final Font font;
+   public static class BlockDisplayRenderer extends DisplayRenderer<Display.BlockDisplay, Display.BlockDisplay.BlockRenderState, BlockDisplayEntityRenderState> {
+      private final BlockRenderDispatcher blockRenderer;
 
-      protected TextDisplayRenderer(EntityRendererProvider.Context var1) {
+      protected BlockDisplayRenderer(EntityRendererProvider.Context var1) {
          super(var1);
-         this.font = var1.getFont();
+         this.blockRenderer = var1.getBlockRenderDispatcher();
       }
 
-      public TextDisplayEntityRenderState createRenderState() {
-         return new TextDisplayEntityRenderState();
+      public BlockDisplayEntityRenderState createRenderState() {
+         return new BlockDisplayEntityRenderState();
       }
 
-      public void extractRenderState(Display.TextDisplay var1, TextDisplayEntityRenderState var2, float var3) {
-         super.extractRenderState((Display)var1, (DisplayEntityRenderState)var2, var3);
-         var2.textRenderState = var1.textRenderState();
-         var2.cachedInfo = var1.cacheDisplay(this::splitLines);
+      public void extractRenderState(Display.BlockDisplay var1, BlockDisplayEntityRenderState var2, float var3) {
+         super.extractRenderState(var1, var2, var3);
+         var2.blockRenderState = var1.blockRenderState();
       }
 
-      private Display.TextDisplay.CachedInfo splitLines(Component var1, int var2) {
-         List var3 = this.font.split(var1, var2);
-         ArrayList var4 = new ArrayList(var3.size());
-         int var5 = 0;
-         Iterator var6 = var3.iterator();
-
-         while(var6.hasNext()) {
-            FormattedCharSequence var7 = (FormattedCharSequence)var6.next();
-            int var8 = this.font.width(var7);
-            var5 = Math.max(var5, var8);
-            var4.add(new Display.TextDisplay.CachedLine(var7, var8));
-         }
-
-         return new Display.TextDisplay.CachedInfo(var4, var5);
-      }
-
-      public void renderInner(TextDisplayEntityRenderState var1, PoseStack var2, MultiBufferSource var3, int var4, float var5) {
-         Display.TextDisplay.TextRenderState var6 = var1.textRenderState;
-         byte var7 = var6.flags();
-         boolean var8 = (var7 & 2) != 0;
-         boolean var9 = (var7 & 4) != 0;
-         boolean var10 = (var7 & 1) != 0;
-         Display.TextDisplay.Align var11 = Display.TextDisplay.getAlign(var7);
-         byte var12 = (byte)var6.textOpacity().get(var5);
-         int var13;
-         float var14;
-         if (var9) {
-            var14 = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
-            var13 = (int)(var14 * 255.0F) << 24;
-         } else {
-            var13 = var6.backgroundColor().get(var5);
-         }
-
-         var14 = 0.0F;
-         Matrix4f var15 = var2.last().pose();
-         var15.rotate(3.1415927F, 0.0F, 1.0F, 0.0F);
-         var15.scale(-0.025F, -0.025F, -0.025F);
-         Display.TextDisplay.CachedInfo var16 = var1.cachedInfo;
-         boolean var17 = true;
-         Objects.requireNonNull(this.font);
-         int var18 = 9 + 1;
-         int var19 = var16.width();
-         int var20 = var16.lines().size() * var18 - 1;
-         var15.translate(1.0F - (float)var19 / 2.0F, (float)(-var20), 0.0F);
-         if (var13 != 0) {
-            VertexConsumer var21 = var3.getBuffer(var8 ? RenderType.textBackgroundSeeThrough() : RenderType.textBackground());
-            var21.addVertex(var15, -1.0F, -1.0F, 0.0F).setColor(var13).setLight(var4);
-            var21.addVertex(var15, -1.0F, (float)var20, 0.0F).setColor(var13).setLight(var4);
-            var21.addVertex(var15, (float)var19, (float)var20, 0.0F).setColor(var13).setLight(var4);
-            var21.addVertex(var15, (float)var19, -1.0F, 0.0F).setColor(var13).setLight(var4);
-         }
-
-         for(Iterator var24 = var16.lines().iterator(); var24.hasNext(); var14 += (float)var18) {
-            Display.TextDisplay.CachedLine var22 = (Display.TextDisplay.CachedLine)var24.next();
-            float var10000;
-            switch (var11) {
-               case LEFT -> var10000 = 0.0F;
-               case RIGHT -> var10000 = (float)(var19 - var22.width());
-               case CENTER -> var10000 = (float)var19 / 2.0F - (float)var22.width() / 2.0F;
-               default -> throw new MatchException((String)null, (Throwable)null);
-            }
-
-            float var23 = var10000;
-            this.font.drawInBatch((FormattedCharSequence)var22.contents(), var23, var14, var12 << 24 | 16777215, var10, var15, var3, var8 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET, 0, var4);
-         }
-
+      public void renderInner(BlockDisplayEntityRenderState var1, PoseStack var2, MultiBufferSource var3, int var4, float var5) {
+         this.blockRenderer.renderSingleBlock(var1.blockRenderState.blockState(), var2, var3, var4, OverlayTexture.NO_OVERLAY);
       }
 
       // $FF: synthetic method
@@ -261,7 +195,7 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       }
 
       public void extractRenderState(Display.ItemDisplay var1, ItemDisplayEntityRenderState var2, float var3) {
-         super.extractRenderState((Display)var1, (DisplayEntityRenderState)var2, var3);
+         super.extractRenderState(var1, var2, var3);
          Display.ItemDisplay.ItemRenderState var4 = var1.itemRenderState();
          if (var4 != null) {
             this.itemModelResolver.updateForNonLiving(var2.item, var4.itemStack(), var4.itemTransform(), var1);
@@ -299,25 +233,87 @@ public abstract class DisplayRenderer<T extends Display, S, ST extends DisplayEn
       }
    }
 
-   public static class BlockDisplayRenderer extends DisplayRenderer<Display.BlockDisplay, Display.BlockDisplay.BlockRenderState, BlockDisplayEntityRenderState> {
-      private final BlockRenderDispatcher blockRenderer;
+   public static class TextDisplayRenderer extends DisplayRenderer<Display.TextDisplay, Display.TextDisplay.TextRenderState, TextDisplayEntityRenderState> {
+      private final Font font;
 
-      protected BlockDisplayRenderer(EntityRendererProvider.Context var1) {
+      protected TextDisplayRenderer(EntityRendererProvider.Context var1) {
          super(var1);
-         this.blockRenderer = var1.getBlockRenderDispatcher();
+         this.font = var1.getFont();
       }
 
-      public BlockDisplayEntityRenderState createRenderState() {
-         return new BlockDisplayEntityRenderState();
+      public TextDisplayEntityRenderState createRenderState() {
+         return new TextDisplayEntityRenderState();
       }
 
-      public void extractRenderState(Display.BlockDisplay var1, BlockDisplayEntityRenderState var2, float var3) {
-         super.extractRenderState((Display)var1, (DisplayEntityRenderState)var2, var3);
-         var2.blockRenderState = var1.blockRenderState();
+      public void extractRenderState(Display.TextDisplay var1, TextDisplayEntityRenderState var2, float var3) {
+         super.extractRenderState(var1, var2, var3);
+         var2.textRenderState = var1.textRenderState();
+         var2.cachedInfo = var1.cacheDisplay(this::splitLines);
       }
 
-      public void renderInner(BlockDisplayEntityRenderState var1, PoseStack var2, MultiBufferSource var3, int var4, float var5) {
-         this.blockRenderer.renderSingleBlock(var1.blockRenderState.blockState(), var2, var3, var4, OverlayTexture.NO_OVERLAY);
+      private Display.TextDisplay.CachedInfo splitLines(Component var1, int var2) {
+         List var3 = this.font.split(var1, var2);
+         ArrayList var4 = new ArrayList(var3.size());
+         int var5 = 0;
+
+         for(FormattedCharSequence var7 : var3) {
+            int var8 = this.font.width(var7);
+            var5 = Math.max(var5, var8);
+            var4.add(new Display.TextDisplay.CachedLine(var7, var8));
+         }
+
+         return new Display.TextDisplay.CachedInfo(var4, var5);
+      }
+
+      public void renderInner(TextDisplayEntityRenderState var1, PoseStack var2, MultiBufferSource var3, int var4, float var5) {
+         Display.TextDisplay.TextRenderState var6 = var1.textRenderState;
+         byte var7 = var6.flags();
+         boolean var8 = (var7 & 2) != 0;
+         boolean var9 = (var7 & 4) != 0;
+         boolean var10 = (var7 & 1) != 0;
+         Display.TextDisplay.Align var11 = Display.TextDisplay.getAlign(var7);
+         byte var12 = (byte)var6.textOpacity().get(var5);
+         int var13;
+         if (var9) {
+            float var14 = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
+            var13 = (int)(var14 * 255.0F) << 24;
+         } else {
+            var13 = var6.backgroundColor().get(var5);
+         }
+
+         float var24 = 0.0F;
+         Matrix4f var15 = var2.last().pose();
+         var15.rotate(3.1415927F, 0.0F, 1.0F, 0.0F);
+         var15.scale(-0.025F, -0.025F, -0.025F);
+         Display.TextDisplay.CachedInfo var16 = var1.cachedInfo;
+         boolean var17 = true;
+         Objects.requireNonNull(this.font);
+         int var18 = 9 + 1;
+         int var19 = var16.width();
+         int var20 = var16.lines().size() * var18 - 1;
+         var15.translate(1.0F - (float)var19 / 2.0F, (float)(-var20), 0.0F);
+         if (var13 != 0) {
+            VertexConsumer var21 = var3.getBuffer(var8 ? RenderType.textBackgroundSeeThrough() : RenderType.textBackground());
+            var21.addVertex(var15, -1.0F, -1.0F, 0.0F).setColor(var13).setLight(var4);
+            var21.addVertex(var15, -1.0F, (float)var20, 0.0F).setColor(var13).setLight(var4);
+            var21.addVertex(var15, (float)var19, (float)var20, 0.0F).setColor(var13).setLight(var4);
+            var21.addVertex(var15, (float)var19, -1.0F, 0.0F).setColor(var13).setLight(var4);
+         }
+
+         for(Display.TextDisplay.CachedLine var22 : var16.lines()) {
+            float var10000;
+            switch (var11) {
+               case LEFT -> var10000 = 0.0F;
+               case RIGHT -> var10000 = (float)(var19 - var22.width());
+               case CENTER -> var10000 = (float)var19 / 2.0F - (float)var22.width() / 2.0F;
+               default -> throw new MatchException((String)null, (Throwable)null);
+            }
+
+            float var23 = var10000;
+            this.font.drawInBatch((FormattedCharSequence)var22.contents(), var23, var24, var12 << 24 | 16777215, var10, var15, var3, var8 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET, 0, var4);
+            var24 += (float)var18;
+         }
+
       }
 
       // $FF: synthetic method

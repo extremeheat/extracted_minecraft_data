@@ -35,14 +35,6 @@ public class BeehiveFieldRenameFix extends DataFix {
       OpticFinder var6 = DSL.typeFinder(var4);
       Type var7 = this.getInputSchema().getType(References.BLOCK_ENTITY);
       Type var8 = this.getOutputSchema().getType(References.BLOCK_ENTITY);
-      return this.fixTypeEverywhereTyped("BeehiveFieldRenameFix", var7, var8, (var5x) -> {
-         return ExtraDataFixUtils.cast(var8, var5x.updateTyped(var2, (var3) -> {
-            return var3.update(DSL.remainderFinder(), this::fixBeehive).updateTyped(var5, (var2) -> {
-               return var2.updateTyped(var6, (var1) -> {
-                  return var1.update(DSL.remainderFinder(), this::fixBee);
-               });
-            });
-         }));
-      });
+      return this.fixTypeEverywhereTyped("BeehiveFieldRenameFix", var7, var8, (var5x) -> ExtraDataFixUtils.cast(var8, var5x.updateTyped(var2, (var3) -> var3.update(DSL.remainderFinder(), this::fixBeehive).updateTyped(var5, (var2) -> var2.updateTyped(var6, (var1) -> var1.update(DSL.remainderFinder(), this::fixBee))))));
    }
 }

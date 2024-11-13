@@ -18,16 +18,15 @@ public final class ImprovedNoise {
       this.zo = var1.nextDouble() * 256.0;
       this.p = new byte[256];
 
-      int var2;
-      for(var2 = 0; var2 < 256; ++var2) {
+      for(int var2 = 0; var2 < 256; ++var2) {
          this.p[var2] = (byte)var2;
       }
 
-      for(var2 = 0; var2 < 256; ++var2) {
-         int var3 = var1.nextInt(256 - var2);
-         byte var4 = this.p[var2];
-         this.p[var2] = this.p[var2 + var3];
-         this.p[var2 + var3] = var4;
+      for(int var5 = 0; var5 < 256; ++var5) {
+         int var3 = var1.nextInt(256 - var5);
+         byte var4 = this.p[var5];
+         this.p[var5] = this.p[var5 + var3];
+         this.p[var5 + var3] = var4;
       }
 
    }

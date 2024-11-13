@@ -3,7 +3,6 @@ package net.minecraft.world.entity.raid;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -258,10 +257,8 @@ public abstract class Raider extends PatrollingMonster {
    public abstract SoundEvent getCelebrateSound();
 
    static {
-      IS_CELEBRATING = SynchedEntityData.defineId(Raider.class, EntityDataSerializers.BOOLEAN);
-      ALLOWED_ITEMS = (var0) -> {
-         return !var0.hasPickUpDelay() && var0.isAlive() && ItemStack.matches(var0.getItem(), Raid.getOminousBannerInstance(var0.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
-      };
+      IS_CELEBRATING = SynchedEntityData.<Boolean>defineId(Raider.class, EntityDataSerializers.BOOLEAN);
+      ALLOWED_ITEMS = (var0) -> !var0.hasPickUpDelay() && var0.isAlive() && ItemStack.matches(var0.getItem(), Raid.getOminousBannerInstance(var0.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
    }
 
    public class ObtainRaidLeaderBannerGoal<T extends Raider> extends Goal {
@@ -284,16 +281,13 @@ public abstract class Raider extends PatrollingMonster {
          } else {
             Int2LongOpenHashMap var1 = new Int2LongOpenHashMap();
             double var2 = Raider.this.getAttributeValue(Attributes.FOLLOW_RANGE);
-            List var4 = this.mob.level().getEntitiesOfClass(ItemEntity.class, this.mob.getBoundingBox().inflate(var2, 8.0, var2), Raider.ALLOWED_ITEMS);
-            Iterator var5 = var4.iterator();
 
-            while(var5.hasNext()) {
-               ItemEntity var6 = (ItemEntity)var5.next();
+            for(ItemEntity var6 : this.mob.level().getEntitiesOfClass(ItemEntity.class, this.mob.getBoundingBox().inflate(var2, 8.0, var2), Raider.ALLOWED_ITEMS)) {
                long var7 = this.unreachableBannerCache.getOrDefault(var6.getId(), -9223372036854775808L);
                if (Raider.this.level().getGameTime() < var7) {
                   var1.put(var6.getId(), var7);
                } else {
-                  Path var9 = this.mob.getNavigation().createPath((Entity)var6, 1);
+                  Path var9 = this.mob.getNavigation().createPath(var6, 1);
                   if (var9 != null && var9.canReach()) {
                      this.pathToBanner = var9;
                      this.pursuedBannerItemEntity = var6;
@@ -350,108 +344,6 @@ public abstract class Raider extends PatrollingMonster {
       public void tick() {
          if (this.pursuedBannerItemEntity != null && this.pursuedBannerItemEntity.closerThan(this.mob, 1.414)) {
             this.mob.pickUpItem(getServerLevel(Raider.this.level()), this.pursuedBannerItemEntity);
-         }
-
-      }
-   }
-
-   private static class RaiderMoveThroughVillageGoal extends Goal {
-      private final Raider raider;
-      private final double speedModifier;
-      private BlockPos poiPos;
-      private final List<BlockPos> visited = Lists.newArrayList();
-      private final int distanceToPoi;
-      private boolean stuck;
-
-      public RaiderMoveThroughVillageGoal(Raider var1, double var2, int var4) {
-         super();
-         this.raider = var1;
-         this.speedModifier = var2;
-         this.distanceToPoi = var4;
-         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
-      }
-
-      public boolean canUse() {
-         this.updateVisited();
-         return this.isValidRaid() && this.hasSuitablePoi() && this.raider.getTarget() == null;
-      }
-
-      private boolean isValidRaid() {
-         return this.raider.hasActiveRaid() && !this.raider.getCurrentRaid().isOver();
-      }
-
-      private boolean hasSuitablePoi() {
-         ServerLevel var1 = (ServerLevel)this.raider.level();
-         BlockPos var2 = this.raider.blockPosition();
-         Optional var3 = var1.getPoiManager().getRandom((var0) -> {
-            return var0.is(PoiTypes.HOME);
-         }, this::hasNotVisited, PoiManager.Occupancy.ANY, var2, 48, this.raider.random);
-         if (var3.isEmpty()) {
-            return false;
-         } else {
-            this.poiPos = ((BlockPos)var3.get()).immutable();
-            return true;
-         }
-      }
-
-      public boolean canContinueToUse() {
-         if (this.raider.getNavigation().isDone()) {
-            return false;
-         } else {
-            return this.raider.getTarget() == null && !this.poiPos.closerToCenterThan(this.raider.position(), (double)(this.raider.getBbWidth() + (float)this.distanceToPoi)) && !this.stuck;
-         }
-      }
-
-      public void stop() {
-         if (this.poiPos.closerToCenterThan(this.raider.position(), (double)this.distanceToPoi)) {
-            this.visited.add(this.poiPos);
-         }
-
-      }
-
-      public void start() {
-         super.start();
-         this.raider.setNoActionTime(0);
-         this.raider.getNavigation().moveTo((double)this.poiPos.getX(), (double)this.poiPos.getY(), (double)this.poiPos.getZ(), this.speedModifier);
-         this.stuck = false;
-      }
-
-      public void tick() {
-         if (this.raider.getNavigation().isDone()) {
-            Vec3 var1 = Vec3.atBottomCenterOf(this.poiPos);
-            Vec3 var2 = DefaultRandomPos.getPosTowards(this.raider, 16, 7, var1, 0.3141592741012573);
-            if (var2 == null) {
-               var2 = DefaultRandomPos.getPosTowards(this.raider, 8, 7, var1, 1.5707963705062866);
-            }
-
-            if (var2 == null) {
-               this.stuck = true;
-               return;
-            }
-
-            this.raider.getNavigation().moveTo(var2.x, var2.y, var2.z, this.speedModifier);
-         }
-
-      }
-
-      private boolean hasNotVisited(BlockPos var1) {
-         Iterator var2 = this.visited.iterator();
-
-         BlockPos var3;
-         do {
-            if (!var2.hasNext()) {
-               return true;
-            }
-
-            var3 = (BlockPos)var2.next();
-         } while(!Objects.equals(var1, var3));
-
-         return false;
-      }
-
-      private void updateVisited() {
-         if (this.visited.size() > 2) {
-            this.visited.remove(0);
          }
 
       }
@@ -514,11 +406,8 @@ public abstract class Raider extends PatrollingMonster {
       public void start() {
          super.start();
          this.mob.getNavigation().stop();
-         List var1 = getServerLevel(this.mob).getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0));
-         Iterator var2 = var1.iterator();
 
-         while(var2.hasNext()) {
-            Raider var3 = (Raider)var2.next();
+         for(Raider var3 : getServerLevel(this.mob).getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0))) {
             var3.setTarget(this.mob.getTarget());
          }
 
@@ -528,11 +417,7 @@ public abstract class Raider extends PatrollingMonster {
          super.stop();
          LivingEntity var1 = this.mob.getTarget();
          if (var1 != null) {
-            List var2 = getServerLevel(this.mob).getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0));
-            Iterator var3 = var2.iterator();
-
-            while(var3.hasNext()) {
-               Raider var4 = (Raider)var3.next();
+            for(Raider var4 : getServerLevel(this.mob).getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0))) {
                var4.setTarget(var1);
                var4.setAggressive(true);
             }
@@ -560,6 +445,101 @@ public abstract class Raider extends PatrollingMonster {
 
             super.tick();
          }
+      }
+   }
+
+   static class RaiderMoveThroughVillageGoal extends Goal {
+      private final Raider raider;
+      private final double speedModifier;
+      private BlockPos poiPos;
+      private final List<BlockPos> visited = Lists.newArrayList();
+      private final int distanceToPoi;
+      private boolean stuck;
+
+      public RaiderMoveThroughVillageGoal(Raider var1, double var2, int var4) {
+         super();
+         this.raider = var1;
+         this.speedModifier = var2;
+         this.distanceToPoi = var4;
+         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
+      }
+
+      public boolean canUse() {
+         this.updateVisited();
+         return this.isValidRaid() && this.hasSuitablePoi() && this.raider.getTarget() == null;
+      }
+
+      private boolean isValidRaid() {
+         return this.raider.hasActiveRaid() && !this.raider.getCurrentRaid().isOver();
+      }
+
+      private boolean hasSuitablePoi() {
+         ServerLevel var1 = (ServerLevel)this.raider.level();
+         BlockPos var2 = this.raider.blockPosition();
+         Optional var3 = var1.getPoiManager().getRandom((var0) -> var0.is(PoiTypes.HOME), this::hasNotVisited, PoiManager.Occupancy.ANY, var2, 48, this.raider.random);
+         if (var3.isEmpty()) {
+            return false;
+         } else {
+            this.poiPos = ((BlockPos)var3.get()).immutable();
+            return true;
+         }
+      }
+
+      public boolean canContinueToUse() {
+         if (this.raider.getNavigation().isDone()) {
+            return false;
+         } else {
+            return this.raider.getTarget() == null && !this.poiPos.closerToCenterThan(this.raider.position(), (double)(this.raider.getBbWidth() + (float)this.distanceToPoi)) && !this.stuck;
+         }
+      }
+
+      public void stop() {
+         if (this.poiPos.closerToCenterThan(this.raider.position(), (double)this.distanceToPoi)) {
+            this.visited.add(this.poiPos);
+         }
+
+      }
+
+      public void start() {
+         super.start();
+         this.raider.setNoActionTime(0);
+         this.raider.getNavigation().moveTo((double)this.poiPos.getX(), (double)this.poiPos.getY(), (double)this.poiPos.getZ(), this.speedModifier);
+         this.stuck = false;
+      }
+
+      public void tick() {
+         if (this.raider.getNavigation().isDone()) {
+            Vec3 var1 = Vec3.atBottomCenterOf(this.poiPos);
+            Vec3 var2 = DefaultRandomPos.getPosTowards(this.raider, 16, 7, var1, 0.3141592741012573);
+            if (var2 == null) {
+               var2 = DefaultRandomPos.getPosTowards(this.raider, 8, 7, var1, 1.5707963705062866);
+            }
+
+            if (var2 == null) {
+               this.stuck = true;
+               return;
+            }
+
+            this.raider.getNavigation().moveTo(var2.x, var2.y, var2.z, this.speedModifier);
+         }
+
+      }
+
+      private boolean hasNotVisited(BlockPos var1) {
+         for(BlockPos var3 : this.visited) {
+            if (Objects.equals(var1, var3)) {
+               return false;
+            }
+         }
+
+         return true;
+      }
+
+      private void updateVisited() {
+         if (this.visited.size() > 2) {
+            this.visited.remove(0);
+         }
+
       }
    }
 }

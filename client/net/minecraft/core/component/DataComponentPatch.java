@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMaps;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -141,10 +140,8 @@ public final class DataComponentPatch {
             return EMPTY;
          } else {
             Reference2ObjectArrayMap var1 = new Reference2ObjectArrayMap(var0.size());
-            Iterator var2 = var0.entrySet().iterator();
 
-            while(var2.hasNext()) {
-               Map.Entry var3 = (Map.Entry)var2.next();
+            for(Map.Entry var3 : var0.entrySet()) {
                PatchKey var4 = (PatchKey)var3.getKey();
                if (var4.removed()) {
                   var1.put(var4.type(), Optional.empty());
@@ -184,17 +181,15 @@ public final class DataComponentPatch {
                int var4 = var2 + var3;
                Reference2ObjectArrayMap var5 = new Reference2ObjectArrayMap(Math.min(var4, 65536));
 
-               int var6;
-               DataComponentType var7;
-               for(var6 = 0; var6 < var2; ++var6) {
-                  var7 = (DataComponentType)DataComponentType.STREAM_CODEC.decode(var1);
+               for(int var6 = 0; var6 < var2; ++var6) {
+                  DataComponentType var7 = (DataComponentType)DataComponentType.STREAM_CODEC.decode(var1);
                   Object var8 = var7.streamCodec().decode(var1);
                   var5.put(var7, Optional.of(var8));
                }
 
-               for(var6 = 0; var6 < var3; ++var6) {
-                  var7 = (DataComponentType)DataComponentType.STREAM_CODEC.decode(var1);
-                  var5.put(var7, Optional.empty());
+               for(int var9 = 0; var9 < var3; ++var9) {
+                  DataComponentType var10 = (DataComponentType)DataComponentType.STREAM_CODEC.decode(var1);
+                  var5.put(var10, Optional.empty());
                }
 
                return new DataComponentPatch(var5);
@@ -210,9 +205,8 @@ public final class DataComponentPatch {
                int var4 = 0;
                ObjectIterator var5 = Reference2ObjectMaps.fastIterable(var2.map).iterator();
 
-               Reference2ObjectMap.Entry var6;
                while(var5.hasNext()) {
-                  var6 = (Reference2ObjectMap.Entry)var5.next();
+                  Reference2ObjectMap.Entry var6 = (Reference2ObjectMap.Entry)var5.next();
                   if (((Optional)var6.getValue()).isPresent()) {
                      ++var3;
                   } else {
@@ -225,10 +219,10 @@ public final class DataComponentPatch {
                var5 = Reference2ObjectMaps.fastIterable(var2.map).iterator();
 
                while(var5.hasNext()) {
-                  var6 = (Reference2ObjectMap.Entry)var5.next();
-                  Optional var7 = (Optional)var6.getValue();
+                  Reference2ObjectMap.Entry var11 = (Reference2ObjectMap.Entry)var5.next();
+                  Optional var7 = (Optional)var11.getValue();
                   if (var7.isPresent()) {
-                     DataComponentType var8 = (DataComponentType)var6.getKey();
+                     DataComponentType var8 = (DataComponentType)var11.getKey();
                      DataComponentType.STREAM_CODEC.encode(var1, var8);
                      encodeComponent(var1, var8, var7.get());
                   }
@@ -237,10 +231,10 @@ public final class DataComponentPatch {
                var5 = Reference2ObjectMaps.fastIterable(var2.map).iterator();
 
                while(var5.hasNext()) {
-                  var6 = (Reference2ObjectMap.Entry)var5.next();
-                  if (((Optional)var6.getValue()).isEmpty()) {
-                     DataComponentType var9 = (DataComponentType)var6.getKey();
-                     DataComponentType.STREAM_CODEC.encode(var1, var9);
+                  Reference2ObjectMap.Entry var12 = (Reference2ObjectMap.Entry)var5.next();
+                  if (((Optional)var12.getValue()).isEmpty()) {
+                     DataComponentType var13 = (DataComponentType)var12.getKey();
+                     DataComponentType.STREAM_CODEC.encode(var1, var13);
                   }
                }
 
@@ -261,6 +255,55 @@ public final class DataComponentPatch {
             return this.decode((RegistryFriendlyByteBuf)var1);
          }
       };
+   }
+
+   public static record SplitResult(DataComponentMap added, Set<DataComponentType<?>> removed) {
+      public static final SplitResult EMPTY;
+
+      public SplitResult(DataComponentMap var1, Set<DataComponentType<?>> var2) {
+         super();
+         this.added = var1;
+         this.removed = var2;
+      }
+
+      static {
+         EMPTY = new SplitResult(DataComponentMap.EMPTY, Set.of());
+      }
+   }
+
+   static record PatchKey(DataComponentType<?> type, boolean removed) {
+      public static final Codec<PatchKey> CODEC;
+
+      PatchKey(DataComponentType<?> var1, boolean var2) {
+         super();
+         this.type = var1;
+         this.removed = var2;
+      }
+
+      public Codec<?> valueCodec() {
+         return this.removed ? Codec.EMPTY.codec() : this.type.codecOrThrow();
+      }
+
+      static {
+         CODEC = Codec.STRING.flatXmap((var0) -> {
+            boolean var1 = var0.startsWith("!");
+            if (var1) {
+               var0 = var0.substring("!".length());
+            }
+
+            ResourceLocation var2 = ResourceLocation.tryParse(var0);
+            DataComponentType var3 = (DataComponentType)BuiltInRegistries.DATA_COMPONENT_TYPE.getValue(var2);
+            if (var3 == null) {
+               return DataResult.error(() -> "No component with type: '" + String.valueOf(var2) + "'");
+            } else {
+               return var3.isTransient() ? DataResult.error(() -> "'" + String.valueOf(var2) + "' is not a persistent component") : DataResult.success(new PatchKey(var3, var1));
+            }
+         }, (var0) -> {
+            DataComponentType var1 = var0.type();
+            ResourceLocation var2 = BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(var1);
+            return var2 == null ? DataResult.error(() -> "Unregistered component: " + String.valueOf(var1)) : DataResult.success(var0.removed() ? "!" + String.valueOf(var2) : var2.toString());
+         });
+      }
    }
 
    public static class Builder {
@@ -286,77 +329,6 @@ public final class DataComponentPatch {
 
       public DataComponentPatch build() {
          return this.map.isEmpty() ? DataComponentPatch.EMPTY : new DataComponentPatch(this.map);
-      }
-   }
-
-   public static record SplitResult(DataComponentMap added, Set<DataComponentType<?>> removed) {
-      public static final SplitResult EMPTY;
-
-      public SplitResult(DataComponentMap var1, Set<DataComponentType<?>> var2) {
-         super();
-         this.added = var1;
-         this.removed = var2;
-      }
-
-      public DataComponentMap added() {
-         return this.added;
-      }
-
-      public Set<DataComponentType<?>> removed() {
-         return this.removed;
-      }
-
-      static {
-         EMPTY = new SplitResult(DataComponentMap.EMPTY, Set.of());
-      }
-   }
-
-   static record PatchKey(DataComponentType<?> type, boolean removed) {
-      public static final Codec<PatchKey> CODEC;
-
-      PatchKey(DataComponentType<?> var1, boolean var2) {
-         super();
-         this.type = var1;
-         this.removed = var2;
-      }
-
-      public Codec<?> valueCodec() {
-         return this.removed ? Codec.EMPTY.codec() : this.type.codecOrThrow();
-      }
-
-      public DataComponentType<?> type() {
-         return this.type;
-      }
-
-      public boolean removed() {
-         return this.removed;
-      }
-
-      static {
-         CODEC = Codec.STRING.flatXmap((var0) -> {
-            boolean var1 = var0.startsWith("!");
-            if (var1) {
-               var0 = var0.substring("!".length());
-            }
-
-            ResourceLocation var2 = ResourceLocation.tryParse(var0);
-            DataComponentType var3 = (DataComponentType)BuiltInRegistries.DATA_COMPONENT_TYPE.getValue(var2);
-            if (var3 == null) {
-               return DataResult.error(() -> {
-                  return "No component with type: '" + String.valueOf(var2) + "'";
-               });
-            } else {
-               return var3.isTransient() ? DataResult.error(() -> {
-                  return "'" + String.valueOf(var2) + "' is not a persistent component";
-               }) : DataResult.success(new PatchKey(var3, var1));
-            }
-         }, (var0) -> {
-            DataComponentType var1 = var0.type();
-            ResourceLocation var2 = BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(var1);
-            return var2 == null ? DataResult.error(() -> {
-               return "Unregistered component: " + String.valueOf(var1);
-            }) : DataResult.success(var0.removed() ? "!" + String.valueOf(var2) : var2.toString());
-         });
       }
    }
 }

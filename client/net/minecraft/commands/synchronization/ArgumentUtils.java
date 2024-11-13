@@ -12,7 +12,6 @@ import com.mojang.brigadier.tree.RootCommandNode;
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import net.minecraft.core.registries.BuiltInRegistries;
 import org.slf4j.Logger;
@@ -82,10 +81,8 @@ public class ArgumentUtils {
       }
 
       JsonObject var8 = new JsonObject();
-      Iterator var4 = var1.getChildren().iterator();
 
-      while(var4.hasNext()) {
-         CommandNode var5 = (CommandNode)var4.next();
+      for(CommandNode var5 : var1.getChildren()) {
          var8.add(var5.getName(), serializeNodeToJson(var0, var5));
       }
 
@@ -101,10 +98,8 @@ public class ArgumentUtils {
          Collection var9 = var0.getPath(var1.getRedirect());
          if (!var9.isEmpty()) {
             JsonArray var10 = new JsonArray();
-            Iterator var6 = var9.iterator();
 
-            while(var6.hasNext()) {
-               String var7 = (String)var6.next();
+            for(String var7 : var9) {
                var10.add(var7);
             }
 
@@ -129,9 +124,7 @@ public class ArgumentUtils {
             var1.add(var3.getType());
          }
 
-         var0.getChildren().forEach((var2x) -> {
-            findUsedArgumentTypes(var2x, var1, var2);
-         });
+         var0.getChildren().forEach((var2x) -> findUsedArgumentTypes(var2x, var1, var2));
          CommandNode var4 = var0.getRedirect();
          if (var4 != null) {
             findUsedArgumentTypes(var4, var1, var2);

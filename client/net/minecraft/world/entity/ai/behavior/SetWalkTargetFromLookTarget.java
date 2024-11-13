@@ -13,25 +13,17 @@ public class SetWalkTargetFromLookTarget {
    }
 
    public static OneShot<LivingEntity> create(float var0, int var1) {
-      return create((var0x) -> {
-         return true;
-      }, (var1x) -> {
-         return var0;
-      }, var1);
+      return create((var0x) -> true, (var1x) -> var0, var1);
    }
 
    public static OneShot<LivingEntity> create(Predicate<LivingEntity> var0, Function<LivingEntity, Float> var1, int var2) {
-      return BehaviorBuilder.create((var3) -> {
-         return var3.group(var3.absent(MemoryModuleType.WALK_TARGET), var3.present(MemoryModuleType.LOOK_TARGET)).apply(var3, (var4, var5) -> {
-            return (var6, var7, var8) -> {
+      return BehaviorBuilder.create((Function)((var3) -> var3.group(var3.absent(MemoryModuleType.WALK_TARGET), var3.present(MemoryModuleType.LOOK_TARGET)).apply(var3, (var4, var5) -> (var6, var7, var8) -> {
                if (!var0.test(var7)) {
                   return false;
                } else {
                   var4.set(new WalkTarget((PositionTracker)var3.get(var5), (Float)var1.apply(var7), var2));
                   return true;
                }
-            };
-         });
-      });
+            })));
    }
 }

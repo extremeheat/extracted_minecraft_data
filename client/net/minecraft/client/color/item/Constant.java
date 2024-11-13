@@ -7,9 +7,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 
 public record Constant(int value) implements ItemTintSource {
-   public static final MapCodec<Constant> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("value").forGetter(Constant::value)).apply(var0, Constant::new);
-   });
+   public static final MapCodec<Constant> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("value").forGetter(Constant::value)).apply(var0, Constant::new));
 
    public Constant(int var1) {
       super();
@@ -23,9 +21,5 @@ public record Constant(int value) implements ItemTintSource {
 
    public MapCodec<Constant> type() {
       return MAP_CODEC;
-   }
-
-   public int value() {
-      return this.value;
    }
 }

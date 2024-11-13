@@ -8,10 +8,10 @@ import net.minecraft.client.resources.metadata.animation.AnimationMetadataSectio
 import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
+import net.minecraft.server.packs.metadata.MetadataSectionType;
 
 public class GuiSpriteManager extends TextureAtlasHolder {
-   private static final Set<MetadataSectionSerializer<?>> METADATA_SECTIONS;
+   private static final Set<MetadataSectionType<?>> METADATA_SECTIONS;
 
    public GuiSpriteManager(TextureManager var1) {
       super(var1, ResourceLocation.withDefaultNamespace("textures/atlas/gui.png"), ResourceLocation.withDefaultNamespace("gui"), METADATA_SECTIONS);
@@ -30,6 +30,6 @@ public class GuiSpriteManager extends TextureAtlasHolder {
    }
 
    static {
-      METADATA_SECTIONS = Set.of(AnimationMetadataSection.SERIALIZER, GuiMetadataSection.TYPE);
+      METADATA_SECTIONS = Set.of(AnimationMetadataSection.TYPE, GuiMetadataSection.TYPE);
    }
 }

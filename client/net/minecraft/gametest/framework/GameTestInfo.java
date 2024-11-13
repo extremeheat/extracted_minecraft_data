@@ -97,21 +97,15 @@ public class GameTestInfo {
             this.fail(new IllegalStateException("Running test without structure block entity"));
          }
 
-         if (this.chunksLoaded || StructureUtils.getStructureBoundingBox(this.structureBlockEntity).intersectingChunks().allMatch((var1x) -> {
-            return this.level.isPositionEntityTicking(var1x.getWorldPosition());
-         })) {
+         if (this.chunksLoaded || StructureUtils.getStructureBoundingBox(this.structureBlockEntity).intersectingChunks().allMatch((var1x) -> this.level.isPositionEntityTicking(var1x.getWorldPosition()))) {
             this.chunksLoaded = true;
             if (this.ensureStructureIsPlaced()) {
                this.tickInternal();
                if (this.isDone()) {
                   if (this.error != null) {
-                     this.listeners.forEach((var2) -> {
-                        var2.testFailed(this, var1);
-                     });
+                     this.listeners.forEach((var2) -> var2.testFailed(this, var1));
                   } else {
-                     this.listeners.forEach((var2) -> {
-                        var2.testPassed(this, var1);
-                     });
+                     this.listeners.forEach((var2) -> var2.testPassed(this, var1));
                   }
                }
 
@@ -146,17 +140,13 @@ public class GameTestInfo {
             if (this.sequences.isEmpty()) {
                this.fail(new GameTestTimeoutException("Didn't succeed or fail within " + this.testFunction.maxTicks() + " ticks"));
             } else {
-               this.sequences.forEach((var1x) -> {
-                  var1x.tickAndFailIfNotComplete(this.tickCount);
-               });
+               this.sequences.forEach((var1x) -> var1x.tickAndFailIfNotComplete(this.tickCount));
                if (this.error == null) {
                   this.fail(new GameTestTimeoutException("No sequences finished"));
                }
             }
          } else {
-            this.sequences.forEach((var1x) -> {
-               var1x.tickAndContinue(this.tickCount);
-            });
+            this.sequences.forEach((var1x) -> var1x.tickAndContinue(this.tickCount));
          }
 
       }
@@ -250,12 +240,8 @@ public class GameTestInfo {
       if (this.error == null) {
          this.finish();
          AABB var1 = this.getStructureBounds();
-         List var2 = this.getLevel().getEntitiesOfClass(Entity.class, var1.inflate(1.0), (var0) -> {
-            return !(var0 instanceof Player);
-         });
-         var2.forEach((var0) -> {
-            var0.remove(Entity.RemovalReason.DISCARDED);
-         });
+         List var2 = this.getLevel().getEntitiesOfClass(Entity.class, var1.inflate(1.0), (var0) -> !(var0 instanceof Player));
+         var2.forEach((var0) -> var0.remove(Entity.RemovalReason.DISCARDED));
       }
 
    }
@@ -284,9 +270,7 @@ public class GameTestInfo {
       this.structureBlockPos = this.structureBlockEntity.getBlockPos();
       StructureUtils.addCommandBlockAndButtonToStartTest(this.structureBlockPos, new BlockPos(1, 0, -1), this.getRotation(), this.level);
       StructureUtils.encaseStructure(this.getStructureBounds(), this.level, !this.testFunction.skyAccess());
-      this.listeners.forEach((var1x) -> {
-         var1x.testStructureLoaded(this);
-      });
+      this.listeners.forEach((var1x) -> var1x.testStructureLoaded(this));
       return this;
    }
 

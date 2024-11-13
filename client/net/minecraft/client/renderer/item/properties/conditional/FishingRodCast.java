@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.entity.FishingHookRenderer;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 public record FishingRodCast() implements ConditionalItemModelProperty {
@@ -16,11 +17,11 @@ public record FishingRodCast() implements ConditionalItemModelProperty {
       super();
    }
 
-   public boolean get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4) {
-      if (var3 instanceof Player var5) {
-         if (var5.fishing != null) {
-            HumanoidArm var6 = FishingHookRenderer.getHoldingArm(var5);
-            return var3.getItemHeldByArm(var6) == var1;
+   public boolean get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
+      if (var3 instanceof Player var6) {
+         if (var6.fishing != null) {
+            HumanoidArm var7 = FishingHookRenderer.getHoldingArm(var6);
+            return var3.getItemHeldByArm(var7) == var1;
          }
       }
 

@@ -2,7 +2,6 @@ package net.minecraft.client.data.models;
 
 import com.mojang.serialization.Codec;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -37,10 +36,8 @@ public class EquipmentAssetProvider implements DataProvider {
       var0.accept(EquipmentAssets.NETHERITE, onlyHumanoid("netherite"));
       var0.accept(EquipmentAssets.ARMADILLO_SCUTE, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.WOLF_BODY, EquipmentClientInfo.Layer.onlyIfDyed(ResourceLocation.withDefaultNamespace("armadillo_scute"), false)).addLayers(EquipmentClientInfo.LayerType.WOLF_BODY, EquipmentClientInfo.Layer.onlyIfDyed(ResourceLocation.withDefaultNamespace("armadillo_scute_overlay"), true)).build());
       var0.accept(EquipmentAssets.ELYTRA, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.WINGS, new EquipmentClientInfo.Layer(ResourceLocation.withDefaultNamespace("elytra"), Optional.empty(), true)).build());
-      Iterator var1 = EquipmentAssets.CARPETS.entrySet().iterator();
 
-      while(var1.hasNext()) {
-         Map.Entry var2 = (Map.Entry)var1.next();
+      for(Map.Entry var2 : EquipmentAssets.CARPETS.entrySet()) {
          DyeColor var3 = (DyeColor)var2.getKey();
          ResourceKey var4 = (ResourceKey)var2.getValue();
          var0.accept(var4, EquipmentClientInfo.builder().addLayers(EquipmentClientInfo.LayerType.LLAMA_BODY, new EquipmentClientInfo.Layer(ResourceLocation.withDefaultNamespace(var3.getSerializedName()))).build());
@@ -67,7 +64,7 @@ public class EquipmentAssetProvider implements DataProvider {
       Codec var10001 = EquipmentClientInfo.CODEC;
       PackOutput.PathProvider var10002 = this.pathProvider;
       Objects.requireNonNull(var10002);
-      return DataProvider.saveAll(var1, (Codec)var10001, (Function)(var10002::json), var2);
+      return DataProvider.saveAll(var1, var10001, (Function)(var10002::json), var2);
    }
 
    public String getName() {

@@ -13,7 +13,7 @@ public class PerlinSimplexNoise {
    private final double highestFreqInputFactor;
 
    public PerlinSimplexNoise(RandomSource var1, List<Integer> var2) {
-      this(var1, (IntSortedSet)(new IntRBTreeSet(var2)));
+      this(var1, new IntRBTreeSet(var2));
    }
 
    private PerlinSimplexNoise(RandomSource var1, IntSortedSet var2) {
@@ -65,11 +65,8 @@ public class PerlinSimplexNoise {
       double var6 = 0.0;
       double var8 = this.highestFreqInputFactor;
       double var10 = this.highestFreqValueFactor;
-      SimplexNoise[] var12 = this.noiseLevels;
-      int var13 = var12.length;
 
-      for(int var14 = 0; var14 < var13; ++var14) {
-         SimplexNoise var15 = var12[var14];
+      for(SimplexNoise var15 : this.noiseLevels) {
          if (var15 != null) {
             var6 += var15.getValue(var1 * var8 + (var5 ? var15.xo : 0.0), var3 * var8 + (var5 ? var15.yo : 0.0)) * var10;
          }

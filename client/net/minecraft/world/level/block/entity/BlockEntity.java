@@ -77,11 +77,7 @@ public abstract class BlockEntity {
 
    public final void loadWithComponents(CompoundTag var1, HolderLookup.Provider var2) {
       this.loadAdditional(var1, var2);
-      BlockEntity.ComponentHelper.COMPONENTS_CODEC.parse(var2.createSerializationContext(NbtOps.INSTANCE), var1).resultOrPartial((var0) -> {
-         LOGGER.warn("Failed to load components: {}", var0);
-      }).ifPresent((var1x) -> {
-         this.components = var1x;
-      });
+      BlockEntity.ComponentHelper.COMPONENTS_CODEC.parse(var2.createSerializationContext(NbtOps.INSTANCE), var1).resultOrPartial((var0) -> LOGGER.warn("Failed to load components: {}", var0)).ifPresent((var1x) -> this.components = var1x);
    }
 
    public final void loadCustomOnly(CompoundTag var1, HolderLookup.Provider var2) {
@@ -106,11 +102,7 @@ public abstract class BlockEntity {
    public final CompoundTag saveWithoutMetadata(HolderLookup.Provider var1) {
       CompoundTag var2 = new CompoundTag();
       this.saveAdditional(var2, var1);
-      BlockEntity.ComponentHelper.COMPONENTS_CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this.components).resultOrPartial((var0) -> {
-         LOGGER.warn("Failed to save components: {}", var0);
-      }).ifPresent((var1x) -> {
-         var2.merge((CompoundTag)var1x);
-      });
+      BlockEntity.ComponentHelper.COMPONENTS_CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this.components).resultOrPartial((var0) -> LOGGER.warn("Failed to save components: {}", var0)).ifPresent((var1x) -> var2.merge((CompoundTag)var1x));
       return var2;
    }
 
@@ -260,16 +252,16 @@ public abstract class BlockEntity {
       var3.add(DataComponents.BLOCK_ENTITY_DATA);
       var3.add(DataComponents.BLOCK_STATE);
       final PatchedDataComponentMap var4 = PatchedDataComponentMap.fromPatch(var1, var2);
-      this.applyImplicitComponents(new DataComponentInput(this) {
+      this.applyImplicitComponents(new DataComponentInput() {
          @Nullable
          public <T> T get(DataComponentType<T> var1) {
             var3.add(var1);
-            return var4.get(var1);
+            return (T)var4.get(var1);
          }
 
          public <T> T getOrDefault(DataComponentType<? extends T> var1, T var2) {
             var3.add(var1);
-            return var4.getOrDefault(var1, var2);
+            return (T)var4.getOrDefault(var1, var2);
          }
       });
       Objects.requireNonNull(var3);

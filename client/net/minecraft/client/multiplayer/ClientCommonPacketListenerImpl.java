@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportType;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -115,9 +116,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       Path var4 = this.minecraft.gameDirectory.toPath().resolve("debug");
       Path var5 = var4.resolve("disconnect-" + Util.getFilenameFormattedDateTime() + "-client.txt");
       Optional var6 = this.serverLinks.findKnownType(ServerLinks.KnownLinkType.BUG_REPORT);
-      List var7 = (List)var6.map((var0) -> {
-         return List.of("Server bug reporting link: " + String.valueOf(var0.link()));
-      }).orElse(List.of());
+      List var7 = (List)var6.map((var0) -> List.of("Server bug reporting link: " + String.valueOf(var0.link()))).orElse(List.of());
       return var3.saveToFile(var5, ReportType.NETWORK_PROTOCOL_ERROR, var7) ? Optional.of(var5) : Optional.empty();
    }
 
@@ -130,9 +129,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    public void handleKeepAlive(ClientboundKeepAlivePacket var1) {
-      this.sendWhen(new ServerboundKeepAlivePacket(var1.getId()), () -> {
-         return !RenderSystem.isFrozenAtPollEvents();
-      }, Duration.ofMinutes(1L));
+      this.sendWhen(new ServerboundKeepAlivePacket(var1.getId()), () -> !RenderSystem.isFrozenAtPollEvents(), Duration.ofMinutes(1L));
    }
 
    public void handlePing(ClientboundPingPacket var1) {
@@ -178,11 +175,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
    public void handleResourcePackPop(ClientboundResourcePackPopPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      var1.id().ifPresentOrElse((var1x) -> {
-         this.minecraft.getDownloadedPackSource().popPack(var1x);
-      }, () -> {
-         this.minecraft.getDownloadedPackSource().popAll();
-      });
+      var1.id().ifPresentOrElse((var1x) -> this.minecraft.getDownloadedPackSource().popPack(var1x), () -> this.minecraft.getDownloadedPackSource().popAll());
    }
 
    static Component preparePackPrompt(Component var0, @Nullable Component var1) {
@@ -219,11 +212,8 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       List var2 = var1.links();
       ImmutableList.Builder var3 = ImmutableList.builderWithExpectedSize(var2.size());
-      Iterator var4 = var2.iterator();
 
-      while(var4.hasNext()) {
-         ServerLinks.UntrustedEntry var5 = (ServerLinks.UntrustedEntry)var4.next();
-
+      for(ServerLinks.UntrustedEntry var5 : var2) {
          try {
             URI var6 = Util.parseAndValidateUntrustedUri(var5.link());
             var3.add(new ServerLinks.Entry(var5.type(), var6));
@@ -279,15 +269,9 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    public void fillListenerSpecificCrashDetails(CrashReport var1, CrashReportCategory var2) {
-      var2.setDetail("Is Local", () -> {
-         return String.valueOf(this.connection.isMemoryConnection());
-      });
-      var2.setDetail("Server type", () -> {
-         return this.serverData != null ? this.serverData.type().toString() : "<none>";
-      });
-      var2.setDetail("Server brand", () -> {
-         return this.serverBrand;
-      });
+      var2.setDetail("Is Local", (CrashReportDetail)(() -> String.valueOf(this.connection.isMemoryConnection())));
+      var2.setDetail("Server type", (CrashReportDetail)(() -> this.serverData != null ? this.serverData.type().toString() : "<none>"));
+      var2.setDetail("Server brand", (CrashReportDetail)(() -> this.serverBrand));
       if (!this.customReportDetails.isEmpty()) {
          CrashReportCategory var3 = var1.addCategory("Custom Server Details");
          Map var10000 = this.customReportDetails;
@@ -298,9 +282,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    protected Screen createDisconnectScreen(DisconnectionDetails var1) {
-      Screen var2 = (Screen)Objects.requireNonNullElseGet(this.postDisconnectScreen, () -> {
-         return new JoinMultiplayerScreen(new TitleScreen());
-      });
+      Screen var2 = (Screen)Objects.requireNonNullElseGet(this.postDisconnectScreen, () -> new JoinMultiplayerScreen(new TitleScreen()));
       return (Screen)(this.serverData != null && this.serverData.isRealm() ? new DisconnectedRealmsScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1.reason()) : new DisconnectedScreen(var2, GENERIC_DISCONNECT_MESSAGE, var1));
    }
 
@@ -327,7 +309,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       }
    }
 
-   private static record DeferredPacket(Packet<? extends ServerboundPacketListener> packet, BooleanSupplier sendCondition, long expirationTime) {
+   static record DeferredPacket(Packet<? extends ServerboundPacketListener> packet, BooleanSupplier sendCondition, long expirationTime) {
       final Packet<? extends ServerboundPacketListener> packet;
 
       DeferredPacket(Packet<? extends ServerboundPacketListener> var1, BooleanSupplier var2, long var3) {
@@ -336,21 +318,9 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          this.sendCondition = var2;
          this.expirationTime = var3;
       }
-
-      public Packet<? extends ServerboundPacketListener> packet() {
-         return this.packet;
-      }
-
-      public BooleanSupplier sendCondition() {
-         return this.sendCondition;
-      }
-
-      public long expirationTime() {
-         return this.expirationTime;
-      }
    }
 
-   private class PackConfirmScreen extends ConfirmScreen {
+   class PackConfirmScreen extends ConfirmScreen {
       private final List<PendingRequest> requests;
       @Nullable
       private final Screen parentScreen;
@@ -374,10 +344,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
                }
             }
 
-            Iterator var7 = var4.iterator();
-
-            while(var7.hasNext()) {
-               PendingRequest var8 = (PendingRequest)var7.next();
+            for(PendingRequest var8 : var4) {
                var6.pushPack(var8.id, var8.url, var8.hash);
             }
 
@@ -395,7 +362,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          return ClientCommonPacketListenerImpl.this.new PackConfirmScreen(var1, this.parentScreen, var7, var5, var6);
       }
 
-      private static record PendingRequest(UUID id, URL url, String hash) {
+      static record PendingRequest(UUID id, URL url, String hash) {
          final UUID id;
          final URL url;
          final String hash;
@@ -405,18 +372,6 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
             this.id = var1;
             this.url = var2;
             this.hash = var3;
-         }
-
-         public UUID id() {
-            return this.id;
-         }
-
-         public URL url() {
-            return this.url;
-         }
-
-         public String hash() {
-            return this.hash;
          }
       }
    }

@@ -7,7 +7,6 @@ import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -29,30 +28,28 @@ public class EntityUUIDFix extends AbstractUUIDFix {
       return this.fixTypeEverywhereTyped("EntityUUIDFixes", this.getInputSchema().getType(this.typeReference), (var1) -> {
          var1 = var1.update(DSL.remainderFinder(), EntityUUIDFix::updateEntityUUID);
 
-         Iterator var2;
-         String var3;
-         for(var2 = ABSTRACT_HORSES.iterator(); var2.hasNext(); var1 = this.updateNamedChoice(var1, var3, EntityUUIDFix::updateAnimalOwner)) {
-            var3 = (String)var2.next();
+         for(String var3 : ABSTRACT_HORSES) {
+            var1 = this.updateNamedChoice(var1, var3, EntityUUIDFix::updateAnimalOwner);
          }
 
-         for(var2 = TAMEABLE_ANIMALS.iterator(); var2.hasNext(); var1 = this.updateNamedChoice(var1, var3, EntityUUIDFix::updateAnimalOwner)) {
-            var3 = (String)var2.next();
+         for(String var19 : TAMEABLE_ANIMALS) {
+            var1 = this.updateNamedChoice(var1, var19, EntityUUIDFix::updateAnimalOwner);
          }
 
-         for(var2 = ANIMALS.iterator(); var2.hasNext(); var1 = this.updateNamedChoice(var1, var3, EntityUUIDFix::updateAnimal)) {
-            var3 = (String)var2.next();
+         for(String var20 : ANIMALS) {
+            var1 = this.updateNamedChoice(var1, var20, EntityUUIDFix::updateAnimal);
          }
 
-         for(var2 = MOBS.iterator(); var2.hasNext(); var1 = this.updateNamedChoice(var1, var3, EntityUUIDFix::updateMob)) {
-            var3 = (String)var2.next();
+         for(String var21 : MOBS) {
+            var1 = this.updateNamedChoice(var1, var21, EntityUUIDFix::updateMob);
          }
 
-         for(var2 = LIVING_ENTITIES.iterator(); var2.hasNext(); var1 = this.updateNamedChoice(var1, var3, EntityUUIDFix::updateLivingEntity)) {
-            var3 = (String)var2.next();
+         for(String var22 : LIVING_ENTITIES) {
+            var1 = this.updateNamedChoice(var1, var22, EntityUUIDFix::updateLivingEntity);
          }
 
-         for(var2 = PROJECTILES.iterator(); var2.hasNext(); var1 = this.updateNamedChoice(var1, var3, EntityUUIDFix::updateProjectile)) {
-            var3 = (String)var2.next();
+         for(String var23 : PROJECTILES) {
+            var1 = this.updateNamedChoice(var1, var23, EntityUUIDFix::updateProjectile);
          }
 
          var1 = this.updateNamedChoice(var1, "minecraft:bee", EntityUUIDFix::updateHurtBy);
@@ -69,16 +66,10 @@ public class EntityUUIDFix extends AbstractUUIDFix {
    }
 
    private static Dynamic<?> updatePiglin(Dynamic<?> var0) {
-      return var0.update("Brain", (var0x) -> {
-         return var0x.update("memories", (var0) -> {
-            return var0.update("minecraft:angry_at", (var0x) -> {
-               return (Dynamic)replaceUUIDString(var0x, "value", "value").orElseGet(() -> {
+      return var0.update("Brain", (var0x) -> var0x.update("memories", (var0) -> var0.update("minecraft:angry_at", (var0x) -> (Dynamic)replaceUUIDString(var0x, "value", "value").orElseGet(() -> {
                   LOGGER.warn("angry_at has no value.");
                   return var0x;
-               });
-            });
-         });
-      });
+               }))));
    }
 
    private static Dynamic<?> updateEvokerFangs(Dynamic<?> var0) {
@@ -104,17 +95,11 @@ public class EntityUUIDFix extends AbstractUUIDFix {
    }
 
    private static Dynamic<?> updateFox(Dynamic<?> var0) {
-      Optional var1 = var0.get("TrustedUUIDs").result().map((var1x) -> {
-         return var0.createList(var1x.asStream().map((var0x) -> {
-            return (Dynamic)createUUIDFromML(var0x).orElseGet(() -> {
+      Optional var1 = var0.get("TrustedUUIDs").result().map((var1x) -> var0.createList(var1x.asStream().map((var0x) -> (Dynamic)createUUIDFromML(var0x).orElseGet(() -> {
                LOGGER.warn("Trusted contained invalid data.");
                return var0x;
-            });
-         }));
-      });
-      return (Dynamic)DataFixUtils.orElse(var1.map((var1x) -> {
-         return var0.remove("TrustedUUIDs").set("Trusted", var1x);
-      }), var0);
+            }))));
+      return (Dynamic)DataFixUtils.orElse(var1.map((var1x) -> var0.remove("TrustedUUIDs").set("Trusted", var1x)), var0);
    }
 
    private static Dynamic<?> updateHurtBy(Dynamic<?> var0) {
@@ -132,27 +117,15 @@ public class EntityUUIDFix extends AbstractUUIDFix {
    }
 
    private static Dynamic<?> updateMob(Dynamic<?> var0) {
-      return updateLivingEntity(var0).update("Leash", (var0x) -> {
-         return (Dynamic)replaceUUIDLeastMost(var0x, "UUID", "UUID").orElse(var0x);
-      });
+      return updateLivingEntity(var0).update("Leash", (var0x) -> (Dynamic)replaceUUIDLeastMost(var0x, "UUID", "UUID").orElse(var0x));
    }
 
    public static Dynamic<?> updateLivingEntity(Dynamic<?> var0) {
-      return var0.update("Attributes", (var1) -> {
-         return var0.createList(var1.asStream().map((var0x) -> {
-            return var0x.update("Modifiers", (var1) -> {
-               return var0x.createList(var1.asStream().map((var0) -> {
-                  return (Dynamic)replaceUUIDLeastMost(var0, "UUID", "UUID").orElse(var0);
-               }));
-            });
-         }));
-      });
+      return var0.update("Attributes", (var1) -> var0.createList(var1.asStream().map((var0x) -> var0x.update("Modifiers", (var1) -> var0x.createList(var1.asStream().map((var0) -> (Dynamic)replaceUUIDLeastMost(var0, "UUID", "UUID").orElse(var0)))))));
    }
 
    private static Dynamic<?> updateProjectile(Dynamic<?> var0) {
-      return (Dynamic)DataFixUtils.orElse(var0.get("OwnerUUID").result().map((var1) -> {
-         return var0.remove("OwnerUUID").set("Owner", var1);
-      }), var0);
+      return (Dynamic)DataFixUtils.orElse(var0.get("OwnerUUID").result().map((var1) -> var0.remove("OwnerUUID").set("Owner", var1)), var0);
    }
 
    public static Dynamic<?> updateEntityUUID(Dynamic<?> var0) {

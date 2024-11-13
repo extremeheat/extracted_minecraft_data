@@ -94,17 +94,16 @@ public class FlyTowardsPositionParticle extends TextureSheetParticle {
       super.render(var1, var2, var3);
    }
 
-   public static class VaultConnectionProvider implements ParticleProvider<SimpleParticleType> {
+   public static class EnchantProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public VaultConnectionProvider(SpriteSet var1) {
+      public EnchantProvider(SpriteSet var1) {
          super();
          this.sprite = var1;
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         FlyTowardsPositionParticle var15 = new FlyTowardsPositionParticle(var2, var3, var5, var7, var9, var11, var13, true, new Particle.LifetimeAlpha(0.0F, 0.6F, 0.25F, 1.0F));
-         var15.scale(1.5F);
+         FlyTowardsPositionParticle var15 = new FlyTowardsPositionParticle(var2, var3, var5, var7, var9, var11, var13);
          var15.pickSprite(this.sprite);
          return var15;
       }
@@ -135,16 +134,17 @@ public class FlyTowardsPositionParticle extends TextureSheetParticle {
       }
    }
 
-   public static class EnchantProvider implements ParticleProvider<SimpleParticleType> {
+   public static class VaultConnectionProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public EnchantProvider(SpriteSet var1) {
+      public VaultConnectionProvider(SpriteSet var1) {
          super();
          this.sprite = var1;
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         FlyTowardsPositionParticle var15 = new FlyTowardsPositionParticle(var2, var3, var5, var7, var9, var11, var13);
+         FlyTowardsPositionParticle var15 = new FlyTowardsPositionParticle(var2, var3, var5, var7, var9, var11, var13, true, new Particle.LifetimeAlpha(0.0F, 0.6F, 0.25F, 1.0F));
+         var15.scale(1.5F);
          var15.pickSprite(this.sprite);
          return var15;
       }

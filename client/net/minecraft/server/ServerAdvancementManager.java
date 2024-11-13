@@ -3,7 +3,6 @@ package net.minecraft.server;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
@@ -40,10 +39,8 @@ public class ServerAdvancementManager extends SimpleJsonResourceReloadListener<A
       this.advancements = var4.buildOrThrow();
       AdvancementTree var5 = new AdvancementTree();
       var5.addAll(this.advancements.values());
-      Iterator var6 = var5.roots().iterator();
 
-      while(var6.hasNext()) {
-         AdvancementNode var7 = (AdvancementNode)var6.next();
+      for(AdvancementNode var7 : var5.roots()) {
          if (var7.holder().value().display().isPresent()) {
             TreeNodePosition.run(var7);
          }
@@ -55,9 +52,7 @@ public class ServerAdvancementManager extends SimpleJsonResourceReloadListener<A
    private void validate(ResourceLocation var1, Advancement var2) {
       ProblemReporter.Collector var3 = new ProblemReporter.Collector();
       var2.validate(var3, this.registries);
-      var3.getReport().ifPresent((var1x) -> {
-         LOGGER.warn("Found validation problems in advancement {}: \n{}", var1, var1x);
-      });
+      var3.getReport().ifPresent((var1x) -> LOGGER.warn("Found validation problems in advancement {}: \n{}", var1, var1x));
    }
 
    @Nullable

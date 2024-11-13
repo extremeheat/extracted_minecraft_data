@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
@@ -102,10 +101,7 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       }
 
       if (this.shouldRenderLayers(var1)) {
-         Iterator var15 = this.layers.iterator();
-
-         while(var15.hasNext()) {
-            RenderLayer var16 = (RenderLayer)var15.next();
+         for(RenderLayer var16 : this.layers) {
             var16.render(var2, var3, var4, var1, var1.yRot, var1.xRot);
          }
       }
@@ -189,8 +185,8 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
          var2.mulPose(Axis.XP.rotationDegrees(-90.0F - var1.xRot));
          var2.mulPose(Axis.YP.rotationDegrees(var1.ageInTicks * -75.0F));
       } else if (var1.hasPose(Pose.SLEEPING)) {
-         Direction var7 = var1.bedOrientation;
-         float var6 = var7 != null ? sleepDirectionToRotation(var7) : var3;
+         Direction var8 = var1.bedOrientation;
+         float var6 = var8 != null ? sleepDirectionToRotation(var8) : var3;
          var2.mulPose(Axis.YP.rotationDegrees(var6));
          var2.mulPose(Axis.ZP.rotationDegrees(this.getFlipDegrees()));
          var2.mulPose(Axis.YP.rotationDegrees(270.0F));

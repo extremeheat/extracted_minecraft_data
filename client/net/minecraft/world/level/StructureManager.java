@@ -3,7 +3,6 @@ package net.minecraft.world.level;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -54,10 +53,8 @@ public class StructureManager {
    public List<StructureStart> startsForStructure(ChunkPos var1, Predicate<Structure> var2) {
       Map var3 = this.level.getChunk(var1.x, var1.z, ChunkStatus.STRUCTURE_REFERENCES).getAllReferences();
       ImmutableList.Builder var4 = ImmutableList.builder();
-      Iterator var5 = var3.entrySet().iterator();
 
-      while(var5.hasNext()) {
-         Map.Entry var6 = (Map.Entry)var5.next();
+      for(Map.Entry var6 : var3.entrySet()) {
          Structure var7 = (Structure)var6.getKey();
          if (var2.test(var7)) {
             LongSet var10002 = (LongSet)var6.getValue();
@@ -109,24 +106,17 @@ public class StructureManager {
    }
 
    public StructureStart getStructureAt(BlockPos var1, Structure var2) {
-      Iterator var3 = this.startsForStructure(SectionPos.of(var1), var2).iterator();
-
-      StructureStart var4;
-      do {
-         if (!var3.hasNext()) {
-            return StructureStart.INVALID_START;
+      for(StructureStart var4 : this.startsForStructure(SectionPos.of(var1), var2)) {
+         if (var4.getBoundingBox().isInside(var1)) {
+            return var4;
          }
+      }
 
-         var4 = (StructureStart)var3.next();
-      } while(!var4.getBoundingBox().isInside(var1));
-
-      return var4;
+      return StructureStart.INVALID_START;
    }
 
    public StructureStart getStructureWithPieceAt(BlockPos var1, TagKey<Structure> var2) {
-      return this.getStructureWithPieceAt(var1, (var1x) -> {
-         return var1x.is(var2);
-      });
+      return this.getStructureWithPieceAt(var1, (Predicate)((var1x) -> var1x.is(var2)));
    }
 
    public StructureStart getStructureWithPieceAt(BlockPos var1, HolderSet<Structure> var2) {
@@ -136,52 +126,38 @@ public class StructureManager {
 
    public StructureStart getStructureWithPieceAt(BlockPos var1, Predicate<Holder<Structure>> var2) {
       Registry var3 = this.registryAccess().lookupOrThrow(Registries.STRUCTURE);
-      Iterator var4 = this.startsForStructure(new ChunkPos(var1), (var2x) -> {
+
+      for(StructureStart var5 : this.startsForStructure((ChunkPos)(new ChunkPos(var1)), (Predicate)((var2x) -> {
          Optional var10000 = var3.get(var3.getId(var2x));
          Objects.requireNonNull(var2);
          return (Boolean)var10000.map(var2::test).orElse(false);
-      }).iterator();
-
-      StructureStart var5;
-      do {
-         if (!var4.hasNext()) {
-            return StructureStart.INVALID_START;
+      }))) {
+         if (this.structureHasPieceAt(var1, var5)) {
+            return var5;
          }
+      }
 
-         var5 = (StructureStart)var4.next();
-      } while(!this.structureHasPieceAt(var1, var5));
-
-      return var5;
+      return StructureStart.INVALID_START;
    }
 
    public StructureStart getStructureWithPieceAt(BlockPos var1, Structure var2) {
-      Iterator var3 = this.startsForStructure(SectionPos.of(var1), var2).iterator();
-
-      StructureStart var4;
-      do {
-         if (!var3.hasNext()) {
-            return StructureStart.INVALID_START;
+      for(StructureStart var4 : this.startsForStructure(SectionPos.of(var1), var2)) {
+         if (this.structureHasPieceAt(var1, var4)) {
+            return var4;
          }
+      }
 
-         var4 = (StructureStart)var3.next();
-      } while(!this.structureHasPieceAt(var1, var4));
-
-      return var4;
+      return StructureStart.INVALID_START;
    }
 
    public boolean structureHasPieceAt(BlockPos var1, StructureStart var2) {
-      Iterator var3 = var2.getPieces().iterator();
-
-      StructurePiece var4;
-      do {
-         if (!var3.hasNext()) {
-            return false;
+      for(StructurePiece var4 : var2.getPieces()) {
+         if (var4.getBoundingBox().isInside(var1)) {
+            return true;
          }
+      }
 
-         var4 = (StructurePiece)var3.next();
-      } while(!var4.getBoundingBox().isInside(var1));
-
-      return true;
+      return false;
    }
 
    public boolean hasAnyStructureAt(BlockPos var1) {

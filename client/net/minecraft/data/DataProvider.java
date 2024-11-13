@@ -33,9 +33,7 @@ public interface DataProvider {
       var0.put("parent", 1);
       var0.defaultReturnValue(2);
    });
-   Comparator<String> KEY_COMPARATOR = Comparator.comparingInt(FIXED_ORDER_FIELDS).thenComparing((var0) -> {
-      return var0;
-   });
+   Comparator<String> KEY_COMPARATOR = Comparator.comparingInt(FIXED_ORDER_FIELDS).thenComparing((var0) -> var0);
    Logger LOGGER = LogUtils.getLogger();
 
    CompletableFuture<?> run(CachedOutput var1);
@@ -48,9 +46,7 @@ public interface DataProvider {
    }
 
    static <T, E> CompletableFuture<?> saveAll(CachedOutput var0, Codec<E> var1, Function<T, Path> var2, Map<T, E> var3) {
-      return saveAll(var0, (var1x) -> {
-         return (JsonElement)var1.encodeStart(JsonOps.INSTANCE, var1x).getOrThrow();
-      }, var2, var3);
+      return saveAll(var0, (Function)((var1x) -> (JsonElement)var1.encodeStart(JsonOps.INSTANCE, var1x).getOrThrow()), (Function)var2, var3);
    }
 
    static <T, E> CompletableFuture<?> saveAll(CachedOutput var0, Function<E, JsonElement> var1, Function<T, Path> var2, Map<T, E> var3) {
@@ -58,9 +54,7 @@ public interface DataProvider {
          Path var4 = (Path)var2.apply(var3x.getKey());
          JsonElement var5 = (JsonElement)var1.apply(var3x.getValue());
          return saveStable(var0, var5, var4);
-      }).toArray((var0x) -> {
-         return new CompletableFuture[var0x];
-      }));
+      }).toArray((var0x) -> new CompletableFuture[var0x]));
    }
 
    static <T> CompletableFuture<?> saveStable(CachedOutput var0, HolderLookup.Provider var1, Codec<T> var2, T var3, Path var4) {

@@ -18,13 +18,7 @@ import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetContainerContents extends LootItemConditionalFunction {
-   public static final MapCodec<SetContainerContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(var0.group(ContainerComponentManipulators.CODEC.fieldOf("component").forGetter((var0x) -> {
-         return var0x.component;
-      }), LootPoolEntries.CODEC.listOf().fieldOf("entries").forGetter((var0x) -> {
-         return var0x.entries;
-      }))).apply(var0, SetContainerContents::new);
-   });
+   public static final MapCodec<SetContainerContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(ContainerComponentManipulators.CODEC.fieldOf("component").forGetter((var0x) -> var0x.component), LootPoolEntries.CODEC.listOf().fieldOf("entries").forGetter((var0x) -> var0x.entries))).apply(var0, SetContainerContents::new));
    private final ContainerComponentManipulator<?> component;
    private final List<LootPoolEntryContainer> entries;
 
@@ -43,13 +37,11 @@ public class SetContainerContents extends LootItemConditionalFunction {
          return var1;
       } else {
          Stream.Builder var3 = Stream.builder();
-         this.entries.forEach((var2x) -> {
-            var2x.expand(var2, (var2xx) -> {
+         this.entries.forEach((var2x) -> var2x.expand(var2, (var2xx) -> {
                ServerLevel var10001 = var2.getLevel();
                Objects.requireNonNull(var3);
                var2xx.createItemStack(LootTable.createStackSplitter(var10001, var3::add), var2);
-            });
-         });
+            }));
          this.component.setContents(var1, var3.build());
          return var1;
       }

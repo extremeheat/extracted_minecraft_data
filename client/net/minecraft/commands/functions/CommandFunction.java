@@ -33,25 +33,22 @@ public interface CommandFunction<T> {
          int var6 = var5 + 1;
          String var7 = ((String)var3.get(var5)).trim();
          String var8;
-         String var10;
          if (shouldConcatenateNextLine(var7)) {
             StringBuilder var9 = new StringBuilder(var7);
 
-            while(true) {
+            do {
                ++var5;
                if (var5 == var3.size()) {
                   throw new IllegalArgumentException("Line continuation at end of file");
                }
 
                var9.deleteCharAt(var9.length() - 1);
-               var10 = ((String)var3.get(var5)).trim();
+               String var10 = ((String)var3.get(var5)).trim();
                var9.append(var10);
                checkCommandLineLength(var9);
-               if (!shouldConcatenateNextLine(var9)) {
-                  var8 = var9.toString();
-                  break;
-               }
-            }
+            } while(shouldConcatenateNextLine(var9));
+
+            var8 = var9.toString();
          } else {
             var8 = var7;
          }
@@ -65,8 +62,8 @@ public interface CommandFunction<T> {
                   throw new IllegalArgumentException("Unknown or invalid command '" + var8 + "' on line " + var6 + " (if you intended to make a comment, use '#' not '//')");
                }
 
-               var10 = var12.readUnquotedString();
-               throw new IllegalArgumentException("Unknown or invalid command '" + var8 + "' on line " + var6 + " (did you mean '" + var10 + "'? Do not use a preceding forwards slash.)");
+               String var13 = var12.readUnquotedString();
+               throw new IllegalArgumentException("Unknown or invalid command '" + var8 + "' on line " + var6 + " (did you mean '" + var13 + "'? Do not use a preceding forwards slash.)");
             }
 
             if (var12.peek() == '$') {
@@ -99,7 +96,7 @@ public interface CommandFunction<T> {
       if (var4.isEmpty()) {
          throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(var3.getReader());
       } else {
-         return new BuildContexts.Unbound(var2.getString(), (ContextChain)var4.get());
+         return new BuildContexts.Unbound<T>(var2.getString(), (ContextChain)var4.get());
       }
    }
 }

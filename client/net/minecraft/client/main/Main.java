@@ -106,7 +106,6 @@ public class Main {
 
       Logger var35;
       GameConfig var36;
-      CrashReport var39;
       try {
          if (var32.has(var2)) {
             JvmProfiler.INSTANCE.start(Environment.CLIENT);
@@ -117,12 +116,12 @@ public class Main {
          }
 
          Stopwatch var38 = Stopwatch.createStarted(Ticker.systemTicker());
-         Stopwatch var84 = Stopwatch.createStarted(Ticker.systemTicker());
+         Stopwatch var86 = Stopwatch.createStarted(Ticker.systemTicker());
          GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_TOTAL_TIME_MS, var38);
-         GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_PRE_WINDOW_MS, var84);
+         GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_PRE_WINDOW_MS, var86);
          SharedConstants.tryDetectVersion();
          TracyClient.reportAppInfo("Minecraft Java Edition " + SharedConstants.getCurrentVersion().getName());
-         CompletableFuture var86 = DataFixers.optimize(DataFixTypes.TYPES_FOR_LEVEL_LIST);
+         CompletableFuture var89 = DataFixers.optimize(DataFixTypes.TYPES_FOR_LEVEL_LIST);
          CrashReport.preload();
          var35 = LogUtils.getLogger();
          var37 = "Bootstrap";
@@ -187,9 +186,9 @@ public class Main {
          User var71 = new User((String)var16.value(var32), var63, (String)var20.value(var32), emptyStringToEmptyOptional(var65), emptyStringToEmptyOptional(var66), var43);
          var36 = new GameConfig(new GameConfig.UserData(var71, var58, var59, var45), new DisplayData(var48, var49, var50, var51, var52), new GameConfig.FolderData(var33, var62, var61, var64), new GameConfig.GameData(var53, var34, var60, var54, var55, var56), new GameConfig.QuickPlayData(var67, var68, var69, var70));
          Util.startTimerHackThread();
-         var86.join();
+         var89.join();
       } catch (Throwable var82) {
-         var39 = CrashReport.forThrowable(var82, var37);
+         CrashReport var39 = CrashReport.forThrowable(var82, var37);
          CrashReportCategory var40 = var39.addCategory("Initialization");
          NativeModuleLister.addCrashSection(var40);
          Minecraft.fillReport((Minecraft)null, (LanguageManager)null, var34, (Options)null, var39);
@@ -197,7 +196,7 @@ public class Main {
          return;
       }
 
-      Thread var83 = new Thread("Client Shutdown Thread") {
+      Thread var85 = new Thread("Client Shutdown Thread") {
          public void run() {
             Minecraft var1 = Minecraft.getInstance();
             if (var1 != null) {
@@ -209,38 +208,37 @@ public class Main {
             }
          }
       };
-      var83.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(var35));
-      Runtime.getRuntime().addShutdownHook(var83);
-      var39 = null;
+      var85.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(var35));
+      Runtime.getRuntime().addShutdownHook(var85);
+      Minecraft var87 = null;
 
-      Minecraft var85;
       try {
          Thread.currentThread().setName("Render thread");
          RenderSystem.initRenderThread();
          RenderSystem.beginInitialization();
-         var85 = new Minecraft(var36);
+         var87 = new Minecraft(var36);
          RenderSystem.finishInitialization();
       } catch (SilentInitException var79) {
          Util.shutdownExecutors();
          var35.warn("Failed to create window: ", var79);
          return;
       } catch (Throwable var80) {
-         CrashReport var88 = CrashReport.forThrowable(var80, "Initializing game");
-         CrashReportCategory var89 = var88.addCategory("Initialization");
-         NativeModuleLister.addCrashSection(var89);
-         Minecraft.fillReport(var39, (LanguageManager)null, var36.game.launchVersion, (Options)null, var88);
-         Minecraft.crash(var39, var36.location.gameDirectory, var88);
+         CrashReport var91 = CrashReport.forThrowable(var80, "Initializing game");
+         CrashReportCategory var92 = var91.addCategory("Initialization");
+         NativeModuleLister.addCrashSection(var92);
+         Minecraft.fillReport(var87, (LanguageManager)null, var36.game.launchVersion, (Options)null, var91);
+         Minecraft.crash(var87, var36.location.gameDirectory, var91);
          return;
       }
 
-      Minecraft var87 = var85;
-      var85.run();
+      Minecraft var90 = var87;
+      var87.run();
       BufferUploader.reset();
 
       try {
-         var87.stop();
+         var90.stop();
       } finally {
-         var85.destroy();
+         var87.destroy();
       }
 
    }
@@ -261,12 +259,12 @@ public class Main {
    @Nullable
    private static <T> T parseArgument(OptionSet var0, OptionSpec<T> var1) {
       try {
-         return var0.valueOf(var1);
+         return (T)var0.valueOf(var1);
       } catch (Throwable var5) {
          if (var1 instanceof ArgumentAcceptingOptionSpec var3) {
             List var4 = var3.defaultValues();
             if (!var4.isEmpty()) {
-               return var4.get(0);
+               return (T)var4.get(0);
             }
          }
 

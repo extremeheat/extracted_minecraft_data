@@ -22,22 +22,12 @@ public class EntityVariantFix extends NamedEntityFix {
    private static <T> Dynamic<T> updateAndRename(Dynamic<T> var0, String var1, String var2, Function<Dynamic<T>, Dynamic<T>> var3) {
       return var0.map((var4) -> {
          DynamicOps var5 = var0.getOps();
-         Function var6 = (var2x) -> {
-            return ((Dynamic)var3.apply(new Dynamic(var5, var2x))).getValue();
-         };
-         return var5.get(var4, var1).map((var4x) -> {
-            return var5.set(var4, var2, var6.apply(var4x));
-         }).result().orElse(var4);
+         Function var6 = (var2x) -> ((Dynamic)var3.apply(new Dynamic(var5, var2x))).getValue();
+         return var5.get(var4, var1).map((var4x) -> var5.set(var4, var2, var6.apply(var4x))).result().orElse(var4);
       });
    }
 
    protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var1x) -> {
-         return updateAndRename(var1x, this.fieldName, "variant", (var1) -> {
-            return (Dynamic)DataFixUtils.orElse(var1.asNumber().map((var2) -> {
-               return var1.createString((String)this.idConversions.apply(var2.intValue()));
-            }).result(), var1);
-         });
-      });
+      return var1.update(DSL.remainderFinder(), (var1x) -> updateAndRename(var1x, this.fieldName, "variant", (var1) -> (Dynamic)DataFixUtils.orElse(var1.asNumber().map((var2) -> var1.createString((String)this.idConversions.apply(var2.intValue()))).result(), var1)));
    }
 }

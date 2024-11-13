@@ -12,9 +12,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 
 public record FluidPredicate(Optional<HolderSet<Fluid>> fluids, Optional<StatePropertiesPredicate> properties) {
-   public static final Codec<FluidPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(RegistryCodecs.homogeneousList(Registries.FLUID).optionalFieldOf("fluids").forGetter(FluidPredicate::fluids), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(FluidPredicate::properties)).apply(var0, FluidPredicate::new);
-   });
+   public static final Codec<FluidPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.FLUID).optionalFieldOf("fluids").forGetter(FluidPredicate::fluids), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(FluidPredicate::properties)).apply(var0, FluidPredicate::new));
 
    public FluidPredicate(Optional<HolderSet<Fluid>> var1, Optional<StatePropertiesPredicate> var2) {
       super();
@@ -33,14 +31,6 @@ public record FluidPredicate(Optional<HolderSet<Fluid>> fluids, Optional<StatePr
             return !this.properties.isPresent() || ((StatePropertiesPredicate)this.properties.get()).matches(var3);
          }
       }
-   }
-
-   public Optional<HolderSet<Fluid>> fluids() {
-      return this.fluids;
-   }
-
-   public Optional<StatePropertiesPredicate> properties() {
-      return this.properties;
    }
 
    public static class Builder {

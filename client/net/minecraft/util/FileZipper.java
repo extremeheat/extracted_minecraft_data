@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -61,48 +60,37 @@ public class FileZipper implements Closeable {
    }
 
    public void add(Path var1) {
-      Path var2;
       try {
-         var2 = this.fs.getPath(File.separator);
+         Path var2 = this.fs.getPath(File.separator);
          if (Files.isRegularFile(var1, new LinkOption[0])) {
-            Path var11 = var2.resolve(var1.getParent().relativize(var1).toString());
-            Files.copy(var11, var1);
-            return;
-         }
-      } catch (IOException var10) {
-         throw new UncheckedIOException(var10);
-      }
+            Path var10 = var2.resolve(var1.getParent().relativize(var1).toString());
+            Files.copy(var10, var1);
+         } else {
+            Stream var3 = Files.find(var1, 2147483647, (var0, var1x) -> var1x.isRegularFile(), new FileVisitOption[0]);
 
-      try {
-         Stream var3 = Files.find(var1, 2147483647, (var0, var1x) -> {
-            return var1x.isRegularFile();
-         }, new FileVisitOption[0]);
-
-         try {
-            Iterator var4 = ((List)var3.collect(Collectors.toList())).iterator();
-
-            while(var4.hasNext()) {
-               Path var5 = (Path)var4.next();
-               Path var6 = var2.resolve(var1.relativize(var5).toString());
-               Files.createDirectories(var6.getParent());
-               Files.copy(var5, var6);
-            }
-         } catch (Throwable var8) {
-            if (var3 != null) {
-               try {
-                  var3.close();
-               } catch (Throwable var7) {
-                  var8.addSuppressed(var7);
+            try {
+               for(Path var5 : (List)var3.collect(Collectors.toList())) {
+                  Path var6 = var2.resolve(var1.relativize(var5).toString());
+                  Files.createDirectories(var6.getParent());
+                  Files.copy(var5, var6);
                }
+            } catch (Throwable var8) {
+               if (var3 != null) {
+                  try {
+                     var3.close();
+                  } catch (Throwable var7) {
+                     var8.addSuppressed(var7);
+                  }
+               }
+
+               throw var8;
             }
 
-            throw var8;
-         }
+            if (var3 != null) {
+               var3.close();
+            }
 
-         if (var3 != null) {
-            var3.close();
          }
-
       } catch (IOException var9) {
          throw new UncheckedIOException(var9);
       }

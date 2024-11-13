@@ -9,7 +9,7 @@ public enum GraphicsStatus implements OptionEnum {
    FANCY(1, "options.graphics.fancy"),
    FABULOUS(2, "options.graphics.fabulous");
 
-   private static final IntFunction<GraphicsStatus> BY_ID = ByIdMap.continuous(GraphicsStatus::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   private static final IntFunction<GraphicsStatus> BY_ID = ByIdMap.<GraphicsStatus>continuous(GraphicsStatus::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    private final int id;
    private final String key;
 

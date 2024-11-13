@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -83,7 +82,7 @@ public class TntBlock extends Block {
       if (!var0.isClientSide) {
          PrimedTnt var3 = new PrimedTnt(var0, (double)var1.getX() + 0.5, (double)var1.getY(), (double)var1.getZ() + 0.5, var2);
          var0.addFreshEntity(var3);
-         var0.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), (SoundEvent)SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var0.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
          var0.gameEvent(var2, GameEvent.PRIME_FUSE, var1);
       }
    }

@@ -26,16 +26,14 @@ public class RuleProcessor extends StructureProcessor {
       BlockState var8 = var1.getBlockState(var5.pos());
       UnmodifiableIterator var9 = this.rules.iterator();
 
-      ProcessorRule var10;
-      do {
-         if (!var9.hasNext()) {
-            return var5;
+      while(var9.hasNext()) {
+         ProcessorRule var10 = (ProcessorRule)var9.next();
+         if (var10.test(var5.state(), var8, var4.pos(), var5.pos(), var3, var7)) {
+            return new StructureTemplate.StructureBlockInfo(var5.pos(), var10.getOutputState(), var10.getOutputTag(var7, var5.nbt()));
          }
+      }
 
-         var10 = (ProcessorRule)var9.next();
-      } while(!var10.test(var5.state(), var8, var4.pos(), var5.pos(), var3, var7));
-
-      return new StructureTemplate.StructureBlockInfo(var5.pos(), var10.getOutputState(), var10.getOutputTag(var7, var5.nbt()));
+      return var5;
    }
 
    protected StructureProcessorType<?> getType() {
@@ -43,8 +41,6 @@ public class RuleProcessor extends StructureProcessor {
    }
 
    static {
-      CODEC = ProcessorRule.CODEC.listOf().fieldOf("rules").xmap(RuleProcessor::new, (var0) -> {
-         return var0.rules;
-      });
+      CODEC = ProcessorRule.CODEC.listOf().fieldOf("rules").xmap(RuleProcessor::new, (var0) -> var0.rules);
    }
 }

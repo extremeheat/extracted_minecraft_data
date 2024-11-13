@@ -81,12 +81,10 @@ public class BlockTintCache {
       long var3 = ChunkPos.asLong(var1, var2);
       this.lock.readLock().lock();
 
-      CacheData var5;
-      CacheData var6;
       try {
-         var5 = (CacheData)this.cache.get(var3);
+         CacheData var5 = (CacheData)this.cache.get(var3);
          if (var5 != null) {
-            var6 = var5;
+            CacheData var6 = var5;
             return var6;
          }
       } finally {
@@ -95,43 +93,32 @@ public class BlockTintCache {
 
       this.lock.writeLock().lock();
 
-      CacheData var7;
+      CacheData var16;
       try {
-         var5 = (CacheData)this.cache.get(var3);
-         if (var5 != null) {
-            var6 = var5;
-            return var6;
-         }
-
-         var6 = new CacheData();
-         if (this.cache.size() >= 256) {
-            var7 = (CacheData)this.cache.removeFirst();
-            if (var7 != null) {
-               var7.invalidate();
+         CacheData var15 = (CacheData)this.cache.get(var3);
+         if (var15 == null) {
+            var16 = new CacheData();
+            if (this.cache.size() >= 256) {
+               CacheData var7 = (CacheData)this.cache.removeFirst();
+               if (var7 != null) {
+                  var7.invalidate();
+               }
             }
+
+            this.cache.put(var3, var16);
+            CacheData var18 = var16;
+            return var18;
          }
 
-         this.cache.put(var3, var6);
-         var7 = var6;
+         var16 = var15;
       } finally {
          this.lock.writeLock().unlock();
       }
 
-      return var7;
+      return var16;
    }
 
-   static class LatestCacheInfo {
-      public int x = -2147483648;
-      public int z = -2147483648;
-      @Nullable
-      CacheData cache;
-
-      private LatestCacheInfo() {
-         super();
-      }
-   }
-
-   private static class CacheData {
+   static class CacheData {
       private final Int2ObjectArrayMap<int[]> cache = new Int2ObjectArrayMap(16);
       private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
       private static final int BLOCKS_PER_LAYER = Mth.square(16);
@@ -144,9 +131,8 @@ public class BlockTintCache {
       public int[] getLayer(int var1) {
          this.lock.readLock().lock();
 
-         int[] var2;
          try {
-            var2 = (int[])this.cache.get(var1);
+            int[] var2 = (int[])this.cache.get(var1);
             if (var2 != null) {
                int[] var3 = var2;
                return var3;
@@ -157,15 +143,14 @@ public class BlockTintCache {
 
          this.lock.writeLock().lock();
 
+         int[] var12;
          try {
-            var2 = (int[])this.cache.computeIfAbsent(var1, (var1x) -> {
-               return this.allocateLayer();
-            });
+            var12 = (int[])this.cache.computeIfAbsent(var1, (var1x) -> this.allocateLayer());
          } finally {
             this.lock.writeLock().unlock();
          }
 
-         return var2;
+         return var12;
       }
 
       private int[] allocateLayer() {
@@ -180,6 +165,17 @@ public class BlockTintCache {
 
       public void invalidate() {
          this.invalidated = true;
+      }
+   }
+
+   static class LatestCacheInfo {
+      public int x = -2147483648;
+      public int z = -2147483648;
+      @Nullable
+      CacheData cache;
+
+      private LatestCacheInfo() {
+         super();
       }
    }
 }

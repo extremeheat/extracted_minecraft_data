@@ -56,10 +56,8 @@ public class Witch extends Raider implements RangedAttackMob {
 
    protected void registerGoals() {
       super.registerGoals();
-      this.healRaidersGoal = new NearestHealableRaiderTargetGoal(this, Raider.class, true, (var1, var2) -> {
-         return this.hasActiveRaid() && var1.getType() != EntityType.WITCH;
-      });
-      this.attackPlayersGoal = new NearestAttackableWitchTargetGoal(this, Player.class, 10, true, false, (TargetingConditions.Selector)null);
+      this.healRaidersGoal = new NearestHealableRaiderTargetGoal<Raider>(this, Raider.class, true, (var1, var2) -> this.hasActiveRaid() && var1.getType() != EntityType.WITCH);
+      this.attackPlayersGoal = new NearestAttackableWitchTargetGoal<Player>(this, Player.class, 10, true, false, (TargetingConditions.Selector)null);
       this.goalSelector.addGoal(1, new FloatGoal(this));
       this.goalSelector.addGoal(2, new RangedAttackGoal(this, 1.0, 60, 10.0F));
       this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 1.0));
@@ -111,11 +109,11 @@ public class Witch extends Raider implements RangedAttackMob {
          if (this.isDrinkingPotion()) {
             if (this.usingTime-- <= 0) {
                this.setUsingItem(false);
-               ItemStack var4 = this.getMainHandItem();
+               ItemStack var3 = this.getMainHandItem();
                this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-               PotionContents var3 = (PotionContents)var4.get(DataComponents.POTION_CONTENTS);
-               if (var4.is(Items.POTION) && var3 != null) {
-                  var3.forEachEffect(this::addEffect);
+               PotionContents var4 = (PotionContents)var3.get(DataComponents.POTION_CONTENTS);
+               if (var3.is(Items.POTION) && var4 != null) {
+                  var4.forEachEffect(this::addEffect);
                }
 
                this.gameEvent(GameEvent.DRINK);
@@ -138,7 +136,7 @@ public class Witch extends Raider implements RangedAttackMob {
                this.usingTime = this.getMainHandItem().getUseDuration(this);
                this.setUsingItem(true);
                if (!this.isSilent()) {
-                  this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)SoundEvents.WITCH_DRINK, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
+                  this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.WITCH_DRINK, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
                }
 
                AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
@@ -215,7 +213,7 @@ public class Witch extends Raider implements RangedAttackMob {
          }
 
          if (!this.isSilent()) {
-            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)SoundEvents.WITCH_THROW, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
+            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.WITCH_THROW, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F);
          }
 
       }
@@ -230,6 +228,6 @@ public class Witch extends Raider implements RangedAttackMob {
 
    static {
       SPEED_MODIFIER_DRINKING = new AttributeModifier(SPEED_MODIFIER_DRINKING_ID, -0.25, AttributeModifier.Operation.ADD_VALUE);
-      DATA_USING_ITEM = SynchedEntityData.defineId(Witch.class, EntityDataSerializers.BOOLEAN);
+      DATA_USING_ITEM = SynchedEntityData.<Boolean>defineId(Witch.class, EntityDataSerializers.BOOLEAN);
    }
 }

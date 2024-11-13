@@ -76,6 +76,6 @@ public abstract class Fireball extends AbstractHurtingProjectile implements Item
    }
 
    static {
-      DATA_ITEM_STACK = SynchedEntityData.defineId(Fireball.class, EntityDataSerializers.ITEM_STACK);
+      DATA_ITEM_STACK = SynchedEntityData.<ItemStack>defineId(Fireball.class, EntityDataSerializers.ITEM_STACK);
    }
 }

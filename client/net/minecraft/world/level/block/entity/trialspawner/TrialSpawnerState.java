@@ -128,9 +128,7 @@ public enum TrialSpawnerState implements StringRepresentable {
                   var4.ejectingLootTable = var5.lootTablesToEject().getRandomValue(var3.getRandom());
                }
 
-               var4.ejectingLootTable.ifPresent((var3x) -> {
-                  var2.ejectReward(var3, var1, var3x);
-               });
+               var4.ejectingLootTable.ifPresent((var3x) -> var2.ejectReward(var3, var1, var3x));
                var4.detectedPlayers.remove(var4.detectedPlayers.iterator().next());
                var10000 = this;
             }
@@ -178,9 +176,7 @@ public enum TrialSpawnerState implements StringRepresentable {
    private static Optional<Vec3> calculatePositionToSpawnSpawner(ServerLevel var0, BlockPos var1, TrialSpawner var2, TrialSpawnerData var3) {
       Stream var10000 = var3.detectedPlayers.stream();
       Objects.requireNonNull(var0);
-      List var4 = var10000.map(var0::getPlayerByUUID).filter(Objects::nonNull).filter((var2x) -> {
-         return !var2x.isCreative() && !var2x.isSpectator() && var2x.isAlive() && var2x.distanceToSqr(var1.getCenter()) <= (double)Mth.square(var2.getRequiredPlayerRange());
-      }).toList();
+      List var4 = var10000.map(var0::getPlayerByUUID).filter(Objects::nonNull).filter((var2x) -> !var2x.isCreative() && !var2x.isSpectator() && var2x.isAlive() && var2x.distanceToSqr(var1.getCenter()) <= (double)Mth.square(var2.getRequiredPlayerRange())).toList();
       if (var4.isEmpty()) {
          return Optional.empty();
       } else {
@@ -202,9 +198,7 @@ public enum TrialSpawnerState implements StringRepresentable {
    private static Entity selectEntityToSpawnItemAbove(List<Player> var0, Set<UUID> var1, TrialSpawner var2, BlockPos var3, ServerLevel var4) {
       Stream var10000 = var1.stream();
       Objects.requireNonNull(var4);
-      Stream var5 = var10000.map(var4::getEntity).filter(Objects::nonNull).filter((var2x) -> {
-         return var2x.isAlive() && var2x.distanceToSqr(var3.getCenter()) <= (double)Mth.square(var2.getRequiredPlayerRange());
-      });
+      Stream var5 = var10000.map(var4::getEntity).filter(Objects::nonNull).filter((var2x) -> var2x.isAlive() && var2x.distanceToSqr(var3.getCenter()) <= (double)Mth.square(var2.getRequiredPlayerRange()));
       List var6 = var4.random.nextBoolean() ? var5.toList() : var0;
       if (var6.isEmpty()) {
          return null;
@@ -246,6 +240,26 @@ public enum TrialSpawnerState implements StringRepresentable {
       return new TrialSpawnerState[]{INACTIVE, WAITING_FOR_PLAYERS, ACTIVE, WAITING_FOR_REWARD_EJECTION, EJECTING_REWARD, COOLDOWN};
    }
 
+   static class LightLevel {
+      private static final int UNLIT = 0;
+      private static final int HALF_LIT = 4;
+      private static final int LIT = 8;
+
+      private LightLevel() {
+         super();
+      }
+   }
+
+   static class SpinningMob {
+      private static final double NONE = -1.0;
+      private static final double SLOW = 200.0;
+      private static final double FAST = 1000.0;
+
+      private SpinningMob() {
+         super();
+      }
+   }
+
    interface ParticleEmission {
       ParticleEmission NONE = (var0, var1, var2, var3) -> {
       };
@@ -283,25 +297,5 @@ public enum TrialSpawnerState implements StringRepresentable {
       }
 
       void emit(Level var1, RandomSource var2, BlockPos var3, boolean var4);
-   }
-
-   static class LightLevel {
-      private static final int UNLIT = 0;
-      private static final int HALF_LIT = 4;
-      private static final int LIT = 8;
-
-      private LightLevel() {
-         super();
-      }
-   }
-
-   static class SpinningMob {
-      private static final double NONE = -1.0;
-      private static final double SLOW = 200.0;
-      private static final double FAST = 1000.0;
-
-      private SpinningMob() {
-         super();
-      }
    }
 }

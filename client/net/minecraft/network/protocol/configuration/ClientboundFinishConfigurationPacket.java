@@ -26,6 +26,6 @@ public class ClientboundFinishConfigurationPacket implements Packet<ClientConfig
    }
 
    static {
-      STREAM_CODEC = StreamCodec.unit(INSTANCE);
+      STREAM_CODEC = StreamCodec.<ByteBuf, ClientboundFinishConfigurationPacket>unit(INSTANCE);
    }
 }

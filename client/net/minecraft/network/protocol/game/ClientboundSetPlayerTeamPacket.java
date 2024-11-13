@@ -15,7 +15,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.scores.PlayerTeam;
 
 public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetPlayerTeamPacket> STREAM_CODEC = Packet.codec(ClientboundSetPlayerTeamPacket::write, ClientboundSetPlayerTeamPacket::new);
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetPlayerTeamPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundSetPlayerTeamPacket>codec(ClientboundSetPlayerTeamPacket::write, ClientboundSetPlayerTeamPacket::new);
    private static final int METHOD_ADD = 0;
    private static final int METHOD_REMOVE = 1;
    private static final int METHOD_CHANGE = 2;
@@ -70,9 +70,7 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       var1.writeUtf(this.name);
       var1.writeByte(this.method);
       if (shouldHaveParameters(this.method)) {
-         ((Parameters)this.parameters.orElseThrow(() -> {
-            return new IllegalStateException("Parameters not present, but method is" + this.method);
-         })).write(var1);
+         ((Parameters)this.parameters.orElseThrow(() -> new IllegalStateException("Parameters not present, but method is" + this.method))).write(var1);
       }
 
       if (shouldHavePlayerList(this.method)) {
@@ -139,6 +137,19 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
 
    public Optional<Parameters> getParameters() {
       return this.parameters;
+   }
+
+   public static enum Action {
+      ADD,
+      REMOVE;
+
+      private Action() {
+      }
+
+      // $FF: synthetic method
+      private static Action[] $values() {
+         return new Action[]{ADD, REMOVE};
+      }
    }
 
    public static class Parameters {
@@ -208,19 +219,6 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
          var1.writeEnum(this.color);
          ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.playerPrefix);
          ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.playerSuffix);
-      }
-   }
-
-   public static enum Action {
-      ADD,
-      REMOVE;
-
-      private Action() {
-      }
-
-      // $FF: synthetic method
-      private static Action[] $values() {
-         return new Action[]{ADD, REMOVE};
       }
    }
 }

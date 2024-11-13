@@ -14,13 +14,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetFireworksFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetFireworksFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(var0.group(ListOperation.StandAlone.codec(FireworkExplosion.CODEC, 256).optionalFieldOf("explosions").forGetter((var0x) -> {
-         return var0x.explosions;
-      }), ExtraCodecs.UNSIGNED_BYTE.optionalFieldOf("flight_duration").forGetter((var0x) -> {
-         return var0x.flightDuration;
-      }))).apply(var0, SetFireworksFunction::new);
-   });
+   public static final MapCodec<SetFireworksFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(ListOperation.StandAlone.codec(FireworkExplosion.CODEC, 256).optionalFieldOf("explosions").forGetter((var0x) -> var0x.explosions), ExtraCodecs.UNSIGNED_BYTE.optionalFieldOf("flight_duration").forGetter((var0x) -> var0x.flightDuration))).apply(var0, SetFireworksFunction::new));
    public static final Fireworks DEFAULT_VALUE = new Fireworks(0, List.of());
    private final Optional<ListOperation.StandAlone<FireworkExplosion>> explosions;
    private final Optional<Integer> flightDuration;
@@ -39,9 +33,7 @@ public class SetFireworksFunction extends LootItemConditionalFunction {
    private Fireworks apply(Fireworks var1) {
       Optional var10002 = this.flightDuration;
       Objects.requireNonNull(var1);
-      return new Fireworks((Integer)var10002.orElseGet(var1::flightDuration), (List)this.explosions.map((var1x) -> {
-         return var1x.apply(var1.explosions());
-      }).orElse(var1.explosions()));
+      return new Fireworks((Integer)var10002.orElseGet(var1::flightDuration), (List)this.explosions.map((var1x) -> var1x.apply(var1.explosions())).orElse(var1.explosions()));
    }
 
    public LootItemFunctionType<SetFireworksFunction> getType() {

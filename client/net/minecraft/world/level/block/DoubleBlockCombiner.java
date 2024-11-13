@@ -26,7 +26,7 @@ public class DoubleBlockCombiner {
          boolean var10 = var9 == DoubleBlockCombiner.BlockType.SINGLE;
          boolean var11 = var9 == DoubleBlockCombiner.BlockType.FIRST;
          if (var10) {
-            return new NeighborCombineResult.Single(var8);
+            return new NeighborCombineResult.Single<S>(var8);
          } else {
             BlockPos var12 = var6.relative((Direction)var2.apply(var4));
             BlockState var13 = var5.getBlockState(var12);
@@ -41,44 +41,12 @@ public class DoubleBlockCombiner {
                   if (var15 != null) {
                      BlockEntity var16 = var11 ? var8 : var15;
                      BlockEntity var17 = var11 ? var15 : var8;
-                     return new NeighborCombineResult.Double(var16, var17);
+                     return new NeighborCombineResult.Double<S>(var16, var17);
                   }
                }
             }
 
-            return new NeighborCombineResult.Single(var8);
-         }
-      }
-   }
-
-   public interface NeighborCombineResult<S> {
-      <T> T apply(Combiner<? super S, T> var1);
-
-      public static final class Single<S> implements NeighborCombineResult<S> {
-         private final S single;
-
-         public Single(S var1) {
-            super();
-            this.single = var1;
-         }
-
-         public <T> T apply(Combiner<? super S, T> var1) {
-            return var1.acceptSingle(this.single);
-         }
-      }
-
-      public static final class Double<S> implements NeighborCombineResult<S> {
-         private final S first;
-         private final S second;
-
-         public Double(S var1, S var2) {
-            super();
-            this.first = var1;
-            this.second = var2;
-         }
-
-         public <T> T apply(Combiner<? super S, T> var1) {
-            return var1.acceptDouble(this.first, this.second);
+            return new NeighborCombineResult.Single<S>(var8);
          }
       }
    }
@@ -103,5 +71,37 @@ public class DoubleBlockCombiner {
       T acceptSingle(S var1);
 
       T acceptNone();
+   }
+
+   public interface NeighborCombineResult<S> {
+      <T> T apply(Combiner<? super S, T> var1);
+
+      public static final class Double<S> implements NeighborCombineResult<S> {
+         private final S first;
+         private final S second;
+
+         public Double(S var1, S var2) {
+            super();
+            this.first = var1;
+            this.second = var2;
+         }
+
+         public <T> T apply(Combiner<? super S, T> var1) {
+            return (T)var1.acceptDouble(this.first, this.second);
+         }
+      }
+
+      public static final class Single<S> implements NeighborCombineResult<S> {
+         private final S single;
+
+         public Single(S var1) {
+            super();
+            this.single = var1;
+         }
+
+         public <T> T apply(Combiner<? super S, T> var1) {
+            return (T)var1.acceptSingle(this.single);
+         }
+      }
    }
 }

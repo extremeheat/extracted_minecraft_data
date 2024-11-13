@@ -49,9 +49,7 @@ public class TrimMaterials {
    }
 
    public static Optional<Holder.Reference<TrimMaterial>> getFromIngredient(HolderLookup.Provider var0, ItemStack var1) {
-      return var0.lookupOrThrow(Registries.TRIM_MATERIAL).listElements().filter((var1x) -> {
-         return var1.is(((TrimMaterial)var1x.value()).ingredient());
-      }).findFirst();
+      return var0.lookupOrThrow(Registries.TRIM_MATERIAL).listElements().filter((var1x) -> var1.is(((TrimMaterial)var1x.value()).ingredient())).findFirst();
    }
 
    private static void register(BootstrapContext<TrimMaterial> var0, ResourceKey<TrimMaterial> var1, Item var2, Style var3) {

@@ -53,9 +53,7 @@ public class ClipContext {
       COLLIDER(BlockBehaviour.BlockStateBase::getCollisionShape),
       OUTLINE(BlockBehaviour.BlockStateBase::getShape),
       VISUAL(BlockBehaviour.BlockStateBase::getVisualShape),
-      FALLDAMAGE_RESETTING((var0, var1, var2, var3) -> {
-         return var0.is(BlockTags.FALL_DAMAGE_RESETTING) ? Shapes.block() : Shapes.empty();
-      });
+      FALLDAMAGE_RESETTING((var0, var1, var2, var3) -> var0.is(BlockTags.FALL_DAMAGE_RESETTING) ? Shapes.block() : Shapes.empty());
 
       private final ShapeGetter shapeGetter;
 
@@ -74,20 +72,14 @@ public class ClipContext {
    }
 
    public static enum Fluid {
-      NONE((var0) -> {
-         return false;
-      }),
+      NONE((var0) -> false),
       SOURCE_ONLY(FluidState::isSource),
-      ANY((var0) -> {
-         return !var0.isEmpty();
-      }),
-      WATER((var0) -> {
-         return var0.is(FluidTags.WATER);
-      });
+      ANY((var0) -> !var0.isEmpty()),
+      WATER((var0) -> var0.is(FluidTags.WATER));
 
       private final Predicate<FluidState> canPick;
 
-      private Fluid(final Predicate var3) {
+      private Fluid(final Predicate<FluidState> var3) {
          this.canPick = var3;
       }
 

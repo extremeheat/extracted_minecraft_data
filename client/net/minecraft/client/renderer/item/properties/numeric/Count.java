@@ -10,9 +10,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 public record Count(boolean normalize) implements RangeSelectItemModelProperty {
-   public static final MapCodec<Count> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.BOOL.optionalFieldOf("normalize", true).forGetter(Count::normalize)).apply(var0, Count::new);
-   });
+   public static final MapCodec<Count> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("normalize", true).forGetter(Count::normalize)).apply(var0, Count::new));
 
    public Count(boolean var1) {
       super();
@@ -27,9 +25,5 @@ public record Count(boolean normalize) implements RangeSelectItemModelProperty {
 
    public MapCodec<Count> type() {
       return MAP_CODEC;
-   }
-
-   public boolean normalize() {
-      return this.normalize;
    }
 }

@@ -36,7 +36,7 @@ public class GlowSquid extends Squid {
 
    @Nullable
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (AgeableMob)EntityType.GLOW_SQUID.create(var1, EntitySpawnReason.BREEDING);
+      return EntityType.GLOW_SQUID.create(var1, EntitySpawnReason.BREEDING);
    }
 
    protected SoundEvent getSquirtSound() {
@@ -97,6 +97,6 @@ public class GlowSquid extends Squid {
    }
 
    static {
-      DATA_DARK_TICKS_REMAINING = SynchedEntityData.defineId(GlowSquid.class, EntityDataSerializers.INT);
+      DATA_DARK_TICKS_REMAINING = SynchedEntityData.<Integer>defineId(GlowSquid.class, EntityDataSerializers.INT);
    }
 }

@@ -17,34 +17,20 @@ public interface GlyphProviderDefinition {
 
    Either<Loader, Reference> unpack();
 
-   public static record Conditional(GlyphProviderDefinition definition, FontOption.Filter filter) {
-      public static final Codec<Conditional> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(GlyphProviderDefinition.MAP_CODEC.forGetter(Conditional::definition), FontOption.Filter.CODEC.optionalFieldOf("filter", FontOption.Filter.ALWAYS_PASS).forGetter(Conditional::filter)).apply(var0, Conditional::new);
-      });
-
-      public Conditional(GlyphProviderDefinition var1, FontOption.Filter var2) {
-         super();
-         this.definition = var1;
-         this.filter = var2;
-      }
-
-      public GlyphProviderDefinition definition() {
-         return this.definition;
-      }
-
-      public FontOption.Filter filter() {
-         return this.filter;
-      }
-   }
-
    public static record Reference(ResourceLocation id) {
       public Reference(ResourceLocation var1) {
          super();
          this.id = var1;
       }
+   }
 
-      public ResourceLocation id() {
-         return this.id;
+   public static record Conditional(GlyphProviderDefinition definition, FontOption.Filter filter) {
+      public static final Codec<Conditional> CODEC = RecordCodecBuilder.create((var0) -> var0.group(GlyphProviderDefinition.MAP_CODEC.forGetter(Conditional::definition), FontOption.Filter.CODEC.optionalFieldOf("filter", FontOption.Filter.ALWAYS_PASS).forGetter(Conditional::filter)).apply(var0, Conditional::new));
+
+      public Conditional(GlyphProviderDefinition var1, FontOption.Filter var2) {
+         super();
+         this.definition = var1;
+         this.filter = var2;
       }
    }
 

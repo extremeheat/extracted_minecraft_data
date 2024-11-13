@@ -8,7 +8,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelBaker;
@@ -32,9 +31,7 @@ public record MultiVariant(List<Variant> variants) implements UnbakedBlockStateM
    }
 
    public void resolveDependencies(ResolvableModel.Resolver var1) {
-      this.variants.forEach((var1x) -> {
-         var1.resolve(var1x.modelLocation());
-      });
+      this.variants.forEach((var1x) -> var1.resolve(var1x.modelLocation()));
    }
 
    public BakedModel bake(ModelBaker var1) {
@@ -43,20 +40,14 @@ public record MultiVariant(List<Variant> variants) implements UnbakedBlockStateM
          return var1.bake(var6.modelLocation(), var6);
       } else {
          SimpleWeightedRandomList.Builder var2 = SimpleWeightedRandomList.builder();
-         Iterator var3 = this.variants.iterator();
 
-         while(var3.hasNext()) {
-            Variant var4 = (Variant)var3.next();
+         for(Variant var4 : this.variants) {
             BakedModel var5 = var1.bake(var4.modelLocation(), var4);
             var2.add(var5, var4.weight());
          }
 
          return new WeightedBakedModel(var2.build());
       }
-   }
-
-   public List<Variant> variants() {
-      return this.variants;
    }
 
    public static class Deserializer implements JsonDeserializer<MultiVariant> {
@@ -72,10 +63,7 @@ public record MultiVariant(List<Variant> variants) implements UnbakedBlockStateM
                throw new JsonParseException("Empty variant array");
             }
 
-            Iterator var6 = var5.iterator();
-
-            while(var6.hasNext()) {
-               JsonElement var7 = (JsonElement)var6.next();
+            for(JsonElement var7 : var5) {
                var4.add((Variant)var3.deserialize(var7, Variant.class));
             }
          } else {

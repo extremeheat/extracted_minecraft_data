@@ -54,14 +54,13 @@ public class ChunkSkyLightSources {
 
       for(int var9 = var2; var9 >= 0; --var9) {
          LevelChunkSection var10 = var1.getSection(var9);
-         int var11;
          if (var10.hasOnlyAir()) {
             var8 = Blocks.AIR.defaultBlockState();
-            var11 = var1.getSectionYFromSectionIndex(var9);
-            var6.setY(SectionPos.sectionToBlockCoord(var11));
+            int var13 = var1.getSectionYFromSectionIndex(var9);
+            var6.setY(SectionPos.sectionToBlockCoord(var13));
             var7.setY(var6.getY() - 1);
          } else {
-            for(var11 = 15; var11 >= 0; --var11) {
+            for(int var11 = 15; var11 >= 0; --var11) {
                BlockState var12 = var10.getBlockState(var3, var11, var4);
                if (isEdgeOccluded(var8, var12)) {
                   return var6.getY();

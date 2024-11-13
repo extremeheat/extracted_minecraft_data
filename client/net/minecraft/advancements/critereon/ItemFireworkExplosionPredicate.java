@@ -25,18 +25,12 @@ public record ItemFireworkExplosionPredicate(FireworkPredicate predicate) implem
       return this.predicate.test(var2);
    }
 
-   public FireworkPredicate predicate() {
-      return this.predicate;
-   }
-
    static {
       CODEC = ItemFireworkExplosionPredicate.FireworkPredicate.CODEC.xmap(ItemFireworkExplosionPredicate::new, ItemFireworkExplosionPredicate::predicate);
    }
 
    public static record FireworkPredicate(Optional<FireworkExplosion.Shape> shape, Optional<Boolean> twinkle, Optional<Boolean> trail) implements Predicate<FireworkExplosion> {
-      public static final Codec<FireworkPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(FireworkExplosion.Shape.CODEC.optionalFieldOf("shape").forGetter(FireworkPredicate::shape), Codec.BOOL.optionalFieldOf("has_twinkle").forGetter(FireworkPredicate::twinkle), Codec.BOOL.optionalFieldOf("has_trail").forGetter(FireworkPredicate::trail)).apply(var0, FireworkPredicate::new);
-      });
+      public static final Codec<FireworkPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(FireworkExplosion.Shape.CODEC.optionalFieldOf("shape").forGetter(FireworkPredicate::shape), Codec.BOOL.optionalFieldOf("has_twinkle").forGetter(FireworkPredicate::twinkle), Codec.BOOL.optionalFieldOf("has_trail").forGetter(FireworkPredicate::trail)).apply(var0, FireworkPredicate::new));
 
       public FireworkPredicate(Optional<FireworkExplosion.Shape> var1, Optional<Boolean> var2, Optional<Boolean> var3) {
          super();
@@ -53,18 +47,6 @@ public record ItemFireworkExplosionPredicate(FireworkPredicate predicate) implem
          } else {
             return !this.trail.isPresent() || (Boolean)this.trail.get() == var1.hasTrail();
          }
-      }
-
-      public Optional<FireworkExplosion.Shape> shape() {
-         return this.shape;
-      }
-
-      public Optional<Boolean> twinkle() {
-         return this.twinkle;
-      }
-
-      public Optional<Boolean> trail() {
-         return this.trail;
       }
 
       // $FF: synthetic method

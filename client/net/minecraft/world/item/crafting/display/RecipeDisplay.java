@@ -29,13 +29,5 @@ public interface RecipeDisplay {
          this.codec = var1;
          this.streamCodec = var2;
       }
-
-      public MapCodec<T> codec() {
-         return this.codec;
-      }
-
-      public StreamCodec<RegistryFriendlyByteBuf, T> streamCodec() {
-         return this.streamCodec;
-      }
    }
 }

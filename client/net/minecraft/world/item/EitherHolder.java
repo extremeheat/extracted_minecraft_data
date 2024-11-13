@@ -29,11 +29,7 @@ public record EitherHolder<T>(Optional<Holder<T>> holder, ResourceKey<T> key) {
    }
 
    public static <T> Codec<EitherHolder<T>> codec(ResourceKey<Registry<T>> var0, Codec<Holder<T>> var1) {
-      return Codec.either(var1, ResourceKey.codec(var0).comapFlatMap((var0x) -> {
-         return DataResult.error(() -> {
-            return "Cannot parse as key without registry";
-         });
-      }, Function.identity())).xmap(EitherHolder::fromEither, EitherHolder::asEither);
+      return Codec.either(var1, ResourceKey.codec(var0).comapFlatMap((var0x) -> DataResult.error(() -> "Cannot parse as key without registry"), Function.identity())).xmap(EitherHolder::fromEither, EitherHolder::asEither);
    }
 
    public static <T> StreamCodec<RegistryFriendlyByteBuf, EitherHolder<T>> streamCodec(ResourceKey<Registry<T>> var0, StreamCodec<RegistryFriendlyByteBuf, Holder<T>> var1) {
@@ -41,9 +37,7 @@ public record EitherHolder<T>(Optional<Holder<T>> holder, ResourceKey<T> key) {
    }
 
    public Either<Holder<T>, ResourceKey<T>> asEither() {
-      return (Either)this.holder.map(Either::left).orElseGet(() -> {
-         return Either.right(this.key);
-      });
+      return (Either)this.holder.map(Either::left).orElseGet(() -> Either.right(this.key));
    }
 
    public static <T> EitherHolder<T> fromEither(Either<Holder<T>, ResourceKey<T>> var0) {
@@ -51,22 +45,10 @@ public record EitherHolder<T>(Optional<Holder<T>> holder, ResourceKey<T> key) {
    }
 
    public Optional<T> unwrap(Registry<T> var1) {
-      return this.holder.map(Holder::value).or(() -> {
-         return var1.getOptional(this.key);
-      });
+      return this.holder.map(Holder::value).or(() -> var1.getOptional(this.key));
    }
 
    public Optional<Holder<T>> unwrap(HolderLookup.Provider var1) {
-      return this.holder.or(() -> {
-         return var1.lookupOrThrow(this.key.registryKey()).get(this.key);
-      });
-   }
-
-   public Optional<Holder<T>> holder() {
-      return this.holder;
-   }
-
-   public ResourceKey<T> key() {
-      return this.key;
+      return this.holder.or(() -> var1.lookupOrThrow(this.key.registryKey()).get(this.key));
    }
 }

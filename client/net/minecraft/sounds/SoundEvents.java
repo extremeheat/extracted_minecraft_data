@@ -1332,7 +1332,6 @@ public class SoundEvents {
    public static final SoundEvent SPAWNER_STEP = register("block.spawner.step");
    public static final SoundEvent RESIN_BREAK = register("block.resin.break");
    public static final SoundEvent RESIN_FALL = register("block.resin.fall");
-   public static final SoundEvent RESIN_HIT = register("block.resin.hit");
    public static final SoundEvent RESIN_PLACE = register("block.resin.place");
    public static final SoundEvent RESIN_STEP = register("block.resin.step");
    public static final SoundEvent RESIN_BRICKS_BREAK = register("block.resin_bricks.break");
@@ -1660,7 +1659,7 @@ public class SoundEvents {
    }
 
    private static Holder<SoundEvent> register(ResourceLocation var0, ResourceLocation var1, float var2) {
-      return Registry.registerForHolder(BuiltInRegistries.SOUND_EVENT, (ResourceLocation)var0, SoundEvent.createFixedRangeEvent(var1, var2));
+      return Registry.registerForHolder(BuiltInRegistries.SOUND_EVENT, var0, SoundEvent.createFixedRangeEvent(var1, var2));
    }
 
    private static SoundEvent register(String var0) {
@@ -1684,12 +1683,10 @@ public class SoundEvents {
    }
 
    private static Holder.Reference<SoundEvent> registerForHolder(ResourceLocation var0, ResourceLocation var1) {
-      return Registry.registerForHolder(BuiltInRegistries.SOUND_EVENT, (ResourceLocation)var0, SoundEvent.createVariableRangeEvent(var1));
+      return Registry.registerForHolder(BuiltInRegistries.SOUND_EVENT, var0, SoundEvent.createVariableRangeEvent(var1));
    }
 
    private static ImmutableList<Holder.Reference<SoundEvent>> registerGoatHornSoundVariants() {
-      return (ImmutableList)IntStream.range(0, 8).mapToObj((var0) -> {
-         return registerForHolder("item.goat_horn.sound." + var0);
-      }).collect(ImmutableList.toImmutableList());
+      return (ImmutableList)IntStream.range(0, 8).mapToObj((var0) -> registerForHolder("item.goat_horn.sound." + var0)).collect(ImmutableList.toImmutableList());
    }
 }

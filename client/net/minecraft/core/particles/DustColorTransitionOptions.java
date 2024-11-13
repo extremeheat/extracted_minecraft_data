@@ -12,13 +12,7 @@ import org.joml.Vector3f;
 public class DustColorTransitionOptions extends ScalableParticleOptionsBase {
    public static final int SCULK_PARTICLE_COLOR = 3790560;
    public static final DustColorTransitionOptions SCULK_TO_REDSTONE = new DustColorTransitionOptions(3790560, 16711680, 1.0F);
-   public static final MapCodec<DustColorTransitionOptions> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("from_color").forGetter((var0x) -> {
-         return var0x.fromColor;
-      }), ExtraCodecs.RGB_COLOR_CODEC.fieldOf("to_color").forGetter((var0x) -> {
-         return var0x.toColor;
-      }), SCALE.fieldOf("scale").forGetter(ScalableParticleOptionsBase::getScale)).apply(var0, DustColorTransitionOptions::new);
-   });
+   public static final MapCodec<DustColorTransitionOptions> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("from_color").forGetter((var0x) -> var0x.fromColor), ExtraCodecs.RGB_COLOR_CODEC.fieldOf("to_color").forGetter((var0x) -> var0x.toColor), SCALE.fieldOf("scale").forGetter(ScalableParticleOptionsBase::getScale)).apply(var0, DustColorTransitionOptions::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, DustColorTransitionOptions> STREAM_CODEC;
    private final int fromColor;
    private final int toColor;
@@ -42,10 +36,6 @@ public class DustColorTransitionOptions extends ScalableParticleOptionsBase {
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.INT, (var0) -> {
-         return var0.fromColor;
-      }, ByteBufCodecs.INT, (var0) -> {
-         return var0.toColor;
-      }, ByteBufCodecs.FLOAT, ScalableParticleOptionsBase::getScale, DustColorTransitionOptions::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.INT, (var0) -> var0.fromColor, ByteBufCodecs.INT, (var0) -> var0.toColor, ByteBufCodecs.FLOAT, ScalableParticleOptionsBase::getScale, DustColorTransitionOptions::new);
    }
 }

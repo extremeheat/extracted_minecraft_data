@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal;
 
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -137,27 +136,17 @@ public class Fox extends Animal implements VariantHolder<Variant> {
    }
 
    protected void registerGoals() {
-      this.landTargetGoal = new NearestAttackableTargetGoal(this, Animal.class, 10, false, false, (var0, var1) -> {
-         return var0 instanceof Chicken || var0 instanceof Rabbit;
-      });
+      this.landTargetGoal = new NearestAttackableTargetGoal(this, Animal.class, 10, false, false, (var0, var1) -> var0 instanceof Chicken || var0 instanceof Rabbit);
       this.turtleEggTargetGoal = new NearestAttackableTargetGoal(this, Turtle.class, 10, false, false, Turtle.BABY_ON_LAND_SELECTOR);
-      this.fishTargetGoal = new NearestAttackableTargetGoal(this, AbstractFish.class, 20, false, false, (var0, var1) -> {
-         return var0 instanceof AbstractSchoolingFish;
-      });
+      this.fishTargetGoal = new NearestAttackableTargetGoal(this, AbstractFish.class, 20, false, false, (var0, var1) -> var0 instanceof AbstractSchoolingFish);
       this.goalSelector.addGoal(0, new FoxFloatGoal());
       this.goalSelector.addGoal(0, new ClimbOnTopOfPowderSnowGoal(this, this.level()));
       this.goalSelector.addGoal(1, new FaceplantGoal());
       this.goalSelector.addGoal(2, new FoxPanicGoal(2.2));
-      this.goalSelector.addGoal(3, new FoxBreedGoal(this, 1.0));
-      this.goalSelector.addGoal(4, new AvoidEntityGoal(this, Player.class, 16.0F, 1.6, 1.4, (var1) -> {
-         return AVOID_PLAYERS.test(var1) && !this.trusts(var1.getUUID()) && !this.isDefending();
-      }));
-      this.goalSelector.addGoal(4, new AvoidEntityGoal(this, Wolf.class, 8.0F, 1.6, 1.4, (var1) -> {
-         return !((Wolf)var1).isTame() && !this.isDefending();
-      }));
-      this.goalSelector.addGoal(4, new AvoidEntityGoal(this, PolarBear.class, 8.0F, 1.6, 1.4, (var1) -> {
-         return !this.isDefending();
-      }));
+      this.goalSelector.addGoal(3, new FoxBreedGoal(1.0));
+      this.goalSelector.addGoal(4, new AvoidEntityGoal(this, Player.class, 16.0F, 1.6, 1.4, (var1) -> AVOID_PLAYERS.test(var1) && !this.trusts(var1.getUUID()) && !this.isDefending()));
+      this.goalSelector.addGoal(4, new AvoidEntityGoal(this, Wolf.class, 8.0F, 1.6, 1.4, (var1) -> !((Wolf)var1).isTame() && !this.isDefending()));
+      this.goalSelector.addGoal(4, new AvoidEntityGoal(this, PolarBear.class, 8.0F, 1.6, 1.4, (var1) -> !this.isDefending()));
       this.goalSelector.addGoal(5, new StalkPreyGoal());
       this.goalSelector.addGoal(6, new FoxPounceGoal());
       this.goalSelector.addGoal(6, new SeekShelterGoal(1.25));
@@ -171,9 +160,7 @@ public class Fox extends Animal implements VariantHolder<Variant> {
       this.goalSelector.addGoal(11, new FoxSearchForItemsGoal());
       this.goalSelector.addGoal(12, new FoxLookAtPlayerGoal(this, Player.class, 24.0F));
       this.goalSelector.addGoal(13, new PerchAndSearchGoal());
-      this.targetSelector.addGoal(3, new DefendTrustedTargetGoal(LivingEntity.class, false, false, (var1, var2) -> {
-         return TRUSTED_TARGET_SELECTOR.test(var1) && !this.trusts(var1.getUUID());
-      }));
+      this.targetSelector.addGoal(3, new DefendTrustedTargetGoal(LivingEntity.class, false, false, (var1, var2) -> TRUSTED_TARGET_SELECTOR.test(var1) && !this.trusts(var1.getUUID())));
    }
 
    public void aiStep() {
@@ -266,7 +253,7 @@ public class Fox extends Animal implements VariantHolder<Variant> {
 
    @Nullable
    public Fox getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Fox var3 = (Fox)EntityType.FOX.create(var1, EntitySpawnReason.BREEDING);
+      Fox var3 = EntityType.FOX.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          var3.setVariant(this.random.nextBoolean() ? this.getVariant() : ((Fox)var2).getVariant());
       }
@@ -359,10 +346,8 @@ public class Fox extends Animal implements VariantHolder<Variant> {
       super.addAdditionalSaveData(var1);
       List var2 = this.getTrustedUUIDs();
       ListTag var3 = new ListTag();
-      Iterator var4 = var2.iterator();
 
-      while(var4.hasNext()) {
-         UUID var5 = (UUID)var4.next();
+      for(UUID var5 : var2) {
          var3.add(NbtUtils.createUUID(var5));
       }
 
@@ -375,11 +360,8 @@ public class Fox extends Animal implements VariantHolder<Variant> {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      ListTag var2 = var1.getList("Trusted", 11);
-      Iterator var3 = var2.iterator();
 
-      while(var3.hasNext()) {
-         Tag var4 = (Tag)var3.next();
+      for(Tag var4 : var1.getList("Trusted", 11)) {
          this.addTrustedUUID(NbtUtils.loadUUID(var4));
       }
 
@@ -678,13 +660,11 @@ public class Fox extends Animal implements VariantHolder<Variant> {
    }
 
    static {
-      DATA_TYPE_ID = SynchedEntityData.defineId(Fox.class, EntityDataSerializers.INT);
-      DATA_FLAGS_ID = SynchedEntityData.defineId(Fox.class, EntityDataSerializers.BYTE);
-      DATA_TRUSTED_ID_0 = SynchedEntityData.defineId(Fox.class, EntityDataSerializers.OPTIONAL_UUID);
-      DATA_TRUSTED_ID_1 = SynchedEntityData.defineId(Fox.class, EntityDataSerializers.OPTIONAL_UUID);
-      ALLOWED_ITEMS = (var0) -> {
-         return !var0.hasPickUpDelay() && var0.isAlive();
-      };
+      DATA_TYPE_ID = SynchedEntityData.<Integer>defineId(Fox.class, EntityDataSerializers.INT);
+      DATA_FLAGS_ID = SynchedEntityData.<Byte>defineId(Fox.class, EntityDataSerializers.BYTE);
+      DATA_TRUSTED_ID_0 = SynchedEntityData.<Optional<UUID>>defineId(Fox.class, EntityDataSerializers.OPTIONAL_UUID);
+      DATA_TRUSTED_ID_1 = SynchedEntityData.<Optional<UUID>>defineId(Fox.class, EntityDataSerializers.OPTIONAL_UUID);
+      ALLOWED_ITEMS = (var0) -> !var0.hasPickUpDelay() && var0.isAlive();
       TRUSTED_TARGET_SELECTOR = (var0) -> {
          if (!(var0 instanceof LivingEntity var1)) {
             return false;
@@ -692,33 +672,93 @@ public class Fox extends Animal implements VariantHolder<Variant> {
             return var1.getLastHurtMob() != null && var1.getLastHurtMobTimestamp() < var1.tickCount + 600;
          }
       };
-      STALKABLE_PREY = (var0) -> {
-         return var0 instanceof Chicken || var0 instanceof Rabbit;
-      };
-      AVOID_PLAYERS = (var0) -> {
-         return !var0.isDiscrete() && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(var0);
-      };
+      STALKABLE_PREY = (var0) -> var0 instanceof Chicken || var0 instanceof Rabbit;
+      AVOID_PLAYERS = (var0) -> !var0.isDiscrete() && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(var0);
       BABY_DIMENSIONS = EntityType.FOX.getDimensions().scale(0.5F).withEyeHeight(0.2975F);
    }
 
-   public class FoxLookControl extends LookControl {
-      public FoxLookControl() {
-         super(Fox.this);
+   public static enum Variant implements StringRepresentable {
+      RED(0, "red"),
+      SNOW(1, "snow");
+
+      public static final StringRepresentable.EnumCodec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+      private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      private final int id;
+      private final String name;
+
+      private Variant(final int var3, final String var4) {
+         this.id = var3;
+         this.name = var4;
+      }
+
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      public int getId() {
+         return this.id;
+      }
+
+      public static Variant byName(String var0) {
+         return (Variant)CODEC.byName(var0, RED);
+      }
+
+      public static Variant byId(int var0) {
+         return (Variant)BY_ID.apply(var0);
+      }
+
+      public static Variant byBiome(Holder<Biome> var0) {
+         return var0.is(BiomeTags.SPAWNS_SNOW_FOXES) ? SNOW : RED;
+      }
+
+      // $FF: synthetic method
+      private static Variant[] $values() {
+         return new Variant[]{RED, SNOW};
+      }
+   }
+
+   class FoxSearchForItemsGoal extends Goal {
+      public FoxSearchForItemsGoal() {
+         super();
+         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
+      }
+
+      public boolean canUse() {
+         if (!Fox.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty()) {
+            return false;
+         } else if (Fox.this.getTarget() == null && Fox.this.getLastHurtByMob() == null) {
+            if (!Fox.this.canMove()) {
+               return false;
+            } else if (Fox.this.getRandom().nextInt(reducedTickDelay(10)) != 0) {
+               return false;
+            } else {
+               List var1 = Fox.this.level().getEntitiesOfClass(ItemEntity.class, Fox.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Fox.ALLOWED_ITEMS);
+               return !var1.isEmpty() && Fox.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty();
+            }
+         } else {
+            return false;
+         }
       }
 
       public void tick() {
-         if (!Fox.this.isSleeping()) {
-            super.tick();
+         List var1 = Fox.this.level().getEntitiesOfClass(ItemEntity.class, Fox.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Fox.ALLOWED_ITEMS);
+         ItemStack var2 = Fox.this.getItemBySlot(EquipmentSlot.MAINHAND);
+         if (var2.isEmpty() && !var1.isEmpty()) {
+            Fox.this.getNavigation().moveTo((Entity)var1.get(0), 1.2000000476837158);
          }
 
       }
 
-      protected boolean resetXRotOnTick() {
-         return !Fox.this.isPouncing() && !Fox.this.isCrouching() && !Fox.this.isInterested() && !Fox.this.isFaceplanted();
+      public void start() {
+         List var1 = Fox.this.level().getEntitiesOfClass(ItemEntity.class, Fox.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Fox.ALLOWED_ITEMS);
+         if (!var1.isEmpty()) {
+            Fox.this.getNavigation().moveTo((Entity)var1.get(0), 1.2000000476837158);
+         }
+
       }
    }
 
-   private class FoxMoveControl extends MoveControl {
+   class FoxMoveControl extends MoveControl {
       public FoxMoveControl() {
          super(Fox.this);
       }
@@ -731,110 +771,7 @@ public class Fox extends Animal implements VariantHolder<Variant> {
       }
    }
 
-   private class FoxFloatGoal extends FloatGoal {
-      public FoxFloatGoal() {
-         super(Fox.this);
-      }
-
-      public void start() {
-         super.start();
-         Fox.this.clearStates();
-      }
-
-      public boolean canUse() {
-         return Fox.this.isInWater() && Fox.this.getFluidHeight(FluidTags.WATER) > 0.25 || Fox.this.isInLava();
-      }
-   }
-
-   private class FaceplantGoal extends Goal {
-      int countdown;
-
-      public FaceplantGoal() {
-         super();
-         this.setFlags(EnumSet.of(Goal.Flag.LOOK, Goal.Flag.JUMP, Goal.Flag.MOVE));
-      }
-
-      public boolean canUse() {
-         return Fox.this.isFaceplanted();
-      }
-
-      public boolean canContinueToUse() {
-         return this.canUse() && this.countdown > 0;
-      }
-
-      public void start() {
-         this.countdown = this.adjustedTickDelay(40);
-      }
-
-      public void stop() {
-         Fox.this.setFaceplanted(false);
-      }
-
-      public void tick() {
-         --this.countdown;
-      }
-   }
-
-   private class FoxPanicGoal extends PanicGoal {
-      public FoxPanicGoal(final double var2) {
-         super(Fox.this, var2);
-      }
-
-      public boolean shouldPanic() {
-         return !Fox.this.isDefending() && super.shouldPanic();
-      }
-   }
-
-   private class FoxBreedGoal extends BreedGoal {
-      public FoxBreedGoal(final Fox var1, final double var2) {
-         super(var1, var2);
-      }
-
-      public void start() {
-         ((Fox)this.animal).clearStates();
-         ((Fox)this.partner).clearStates();
-         super.start();
-      }
-
-      protected void breed() {
-         ServerLevel var1 = this.level;
-         Fox var2 = (Fox)this.animal.getBreedOffspring(var1, this.partner);
-         if (var2 != null) {
-            ServerPlayer var3 = this.animal.getLoveCause();
-            ServerPlayer var4 = this.partner.getLoveCause();
-            ServerPlayer var5 = var3;
-            if (var3 != null) {
-               var2.addTrustedUUID(var3.getUUID());
-            } else {
-               var5 = var4;
-            }
-
-            if (var4 != null && var3 != var4) {
-               var2.addTrustedUUID(var4.getUUID());
-            }
-
-            if (var5 != null) {
-               var5.awardStat(Stats.ANIMALS_BRED);
-               CriteriaTriggers.BRED_ANIMALS.trigger(var5, this.animal, this.partner, var2);
-            }
-
-            this.animal.setAge(6000);
-            this.partner.setAge(6000);
-            this.animal.resetLove();
-            this.partner.resetLove();
-            var2.setAge(-24000);
-            var2.moveTo(this.animal.getX(), this.animal.getY(), this.animal.getZ(), 0.0F, 0.0F);
-            var1.addFreshEntityWithPassengers(var2);
-            this.level.broadcastEntityEvent(this.animal, (byte)18);
-            if (var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
-               this.level.addFreshEntity(new ExperienceOrb(this.level, this.animal.getX(), this.animal.getY(), this.animal.getZ(), this.animal.getRandom().nextInt(7) + 1));
-            }
-
-         }
-      }
-   }
-
-   private class StalkPreyGoal extends Goal {
+   class StalkPreyGoal extends Goal {
       public StalkPreyGoal() {
          super();
          this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
@@ -884,100 +821,126 @@ public class Fox extends Animal implements VariantHolder<Variant> {
       }
    }
 
-   public class FoxPounceGoal extends JumpGoal {
-      public FoxPounceGoal() {
-         super();
+   class FoxMeleeAttackGoal extends MeleeAttackGoal {
+      public FoxMeleeAttackGoal(final double var2, final boolean var4) {
+         super(Fox.this, var2, var4);
       }
 
-      public boolean canUse() {
-         if (!Fox.this.isFullyCrouched()) {
-            return false;
-         } else {
-            LivingEntity var1 = Fox.this.getTarget();
-            if (var1 != null && var1.isAlive()) {
-               if (var1.getMotionDirection() != var1.getDirection()) {
-                  return false;
-               } else {
-                  boolean var2 = Fox.isPathClear(Fox.this, var1);
-                  if (!var2) {
-                     Fox.this.getNavigation().createPath((Entity)var1, 0);
-                     Fox.this.setIsCrouching(false);
-                     Fox.this.setIsInterested(false);
-                  }
-
-                  return var2;
-               }
-            } else {
-               return false;
-            }
+      protected void checkAndPerformAttack(LivingEntity var1) {
+         if (this.canPerformAttack(var1)) {
+            this.resetAttackCooldown();
+            this.mob.doHurtTarget(getServerLevel(this.mob), var1);
+            Fox.this.playSound(SoundEvents.FOX_BITE, 1.0F, 1.0F);
          }
-      }
 
-      public boolean canContinueToUse() {
-         LivingEntity var1 = Fox.this.getTarget();
-         if (var1 != null && var1.isAlive()) {
-            double var2 = Fox.this.getDeltaMovement().y;
-            return (!(var2 * var2 < 0.05000000074505806) || !(Math.abs(Fox.this.getXRot()) < 15.0F) || !Fox.this.onGround()) && !Fox.this.isFaceplanted();
-         } else {
-            return false;
-         }
-      }
-
-      public boolean isInterruptable() {
-         return false;
       }
 
       public void start() {
-         Fox.this.setJumping(true);
-         Fox.this.setIsPouncing(true);
          Fox.this.setIsInterested(false);
-         LivingEntity var1 = Fox.this.getTarget();
-         if (var1 != null) {
-            Fox.this.getLookControl().setLookAt(var1, 60.0F, 30.0F);
-            Vec3 var2 = (new Vec3(var1.getX() - Fox.this.getX(), var1.getY() - Fox.this.getY(), var1.getZ() - Fox.this.getZ())).normalize();
-            Fox.this.setDeltaMovement(Fox.this.getDeltaMovement().add(var2.x * 0.8, 0.9, var2.z * 0.8));
-         }
-
-         Fox.this.getNavigation().stop();
+         super.start();
       }
 
-      public void stop() {
-         Fox.this.setIsCrouching(false);
-         Fox.this.crouchAmount = 0.0F;
-         Fox.this.crouchAmountO = 0.0F;
-         Fox.this.setIsInterested(false);
-         Fox.this.setIsPouncing(false);
-      }
-
-      public void tick() {
-         LivingEntity var1 = Fox.this.getTarget();
-         if (var1 != null) {
-            Fox.this.getLookControl().setLookAt(var1, 60.0F, 30.0F);
-         }
-
-         if (!Fox.this.isFaceplanted()) {
-            Vec3 var2 = Fox.this.getDeltaMovement();
-            if (var2.y * var2.y < 0.029999999329447746 && Fox.this.getXRot() != 0.0F) {
-               Fox.this.setXRot(Mth.rotLerp(0.2F, Fox.this.getXRot(), 0.0F));
-            } else {
-               double var3 = var2.horizontalDistance();
-               double var5 = Math.signum(-var2.y) * Math.acos(var3 / var2.length()) * 57.2957763671875;
-               Fox.this.setXRot((float)var5);
-            }
-         }
-
-         if (var1 != null && Fox.this.distanceTo(var1) <= 2.0F) {
-            Fox.this.doHurtTarget(getServerLevel(Fox.this.level()), var1);
-         } else if (Fox.this.getXRot() > 0.0F && Fox.this.onGround() && (float)Fox.this.getDeltaMovement().y != 0.0F && Fox.this.level().getBlockState(Fox.this.blockPosition()).is(Blocks.SNOW)) {
-            Fox.this.setXRot(60.0F);
-            Fox.this.setTarget((LivingEntity)null);
-            Fox.this.setFaceplanted(true);
-         }
-
+      public boolean canUse() {
+         return !Fox.this.isSitting() && !Fox.this.isSleeping() && !Fox.this.isCrouching() && !Fox.this.isFaceplanted() && super.canUse();
       }
    }
 
-   private class SeekShelterGoal extends FleeSunGoal {
+   class FoxBreedGoal extends BreedGoal {
+      public FoxBreedGoal(final double var2) {
+         super(Fox.this, var2);
+      }
+
+      public void start() {
+         ((Fox)this.animal).clearStates();
+         ((Fox)this.partner).clearStates();
+         super.start();
+      }
+
+      protected void breed() {
+         ServerLevel var1 = this.level;
+         Fox var2 = (Fox)this.animal.getBreedOffspring(var1, this.partner);
+         if (var2 != null) {
+            ServerPlayer var3 = this.animal.getLoveCause();
+            ServerPlayer var4 = this.partner.getLoveCause();
+            ServerPlayer var5 = var3;
+            if (var3 != null) {
+               var2.addTrustedUUID(var3.getUUID());
+            } else {
+               var5 = var4;
+            }
+
+            if (var4 != null && var3 != var4) {
+               var2.addTrustedUUID(var4.getUUID());
+            }
+
+            if (var5 != null) {
+               var5.awardStat(Stats.ANIMALS_BRED);
+               CriteriaTriggers.BRED_ANIMALS.trigger(var5, this.animal, this.partner, var2);
+            }
+
+            this.animal.setAge(6000);
+            this.partner.setAge(6000);
+            this.animal.resetLove();
+            this.partner.resetLove();
+            var2.setAge(-24000);
+            var2.moveTo(this.animal.getX(), this.animal.getY(), this.animal.getZ(), 0.0F, 0.0F);
+            var1.addFreshEntityWithPassengers(var2);
+            this.level.broadcastEntityEvent(this.animal, (byte)18);
+            if (var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+               this.level.addFreshEntity(new ExperienceOrb(this.level, this.animal.getX(), this.animal.getY(), this.animal.getZ(), this.animal.getRandom().nextInt(7) + 1));
+            }
+
+         }
+      }
+   }
+
+   class DefendTrustedTargetGoal extends NearestAttackableTargetGoal<LivingEntity> {
+      @Nullable
+      private LivingEntity trustedLastHurtBy;
+      @Nullable
+      private LivingEntity trustedLastHurt;
+      private int timestamp;
+
+      public DefendTrustedTargetGoal(final Class<LivingEntity> var2, final boolean var3, final boolean var4, @Nullable final TargetingConditions.Selector var5) {
+         super(Fox.this, var2, 10, var3, var4, var5);
+      }
+
+      public boolean canUse() {
+         if (this.randomInterval > 0 && this.mob.getRandom().nextInt(this.randomInterval) != 0) {
+            return false;
+         } else {
+            ServerLevel var1 = getServerLevel(Fox.this.level());
+
+            for(UUID var3 : Fox.this.getTrustedUUIDs()) {
+               Entity var4 = var1.getEntity(var3);
+               if (var4 instanceof LivingEntity) {
+                  LivingEntity var5 = (LivingEntity)var4;
+                  this.trustedLastHurt = var5;
+                  this.trustedLastHurtBy = var5.getLastHurtByMob();
+                  int var6 = var5.getLastHurtByMobTimestamp();
+                  return var6 != this.timestamp && this.canAttack(this.trustedLastHurtBy, this.targetConditions);
+               }
+            }
+
+            return false;
+         }
+      }
+
+      public void start() {
+         this.setTarget(this.trustedLastHurtBy);
+         this.target = this.trustedLastHurtBy;
+         if (this.trustedLastHurt != null) {
+            this.timestamp = this.trustedLastHurt.getLastHurtByMobTimestamp();
+         }
+
+         Fox.this.playSound(SoundEvents.FOX_AGGRO, 1.0F, 1.0F);
+         Fox.this.setDefending(true);
+         Fox.this.wakeUp();
+         super.start();
+      }
+   }
+
+   class SeekShelterGoal extends FleeSunGoal {
       private int interval = reducedTickDelay(100);
 
       public SeekShelterGoal(final double var2) {
@@ -1007,31 +970,50 @@ public class Fox extends Animal implements VariantHolder<Variant> {
       }
    }
 
-   private class FoxMeleeAttackGoal extends MeleeAttackGoal {
-      public FoxMeleeAttackGoal(final double var2, final boolean var4) {
-         super(Fox.this, var2, var4);
+   public class FoxAlertableEntitiesSelector implements TargetingConditions.Selector {
+      public FoxAlertableEntitiesSelector() {
+         super();
       }
 
-      protected void checkAndPerformAttack(LivingEntity var1) {
-         if (this.canPerformAttack(var1)) {
-            this.resetAttackCooldown();
-            this.mob.doHurtTarget(getServerLevel(this.mob), var1);
-            Fox.this.playSound(SoundEvents.FOX_BITE, 1.0F, 1.0F);
+      public boolean test(LivingEntity var1, ServerLevel var2) {
+         if (var1 instanceof Fox) {
+            return false;
+         } else if (!(var1 instanceof Chicken) && !(var1 instanceof Rabbit) && !(var1 instanceof Monster)) {
+            if (var1 instanceof TamableAnimal) {
+               return !((TamableAnimal)var1).isTame();
+            } else if (!(var1 instanceof Player) || !var1.isSpectator() && !((Player)var1).isCreative()) {
+               if (Fox.this.trusts(var1.getUUID())) {
+                  return false;
+               } else {
+                  return !var1.isSleeping() && !var1.isDiscrete();
+               }
+            } else {
+               return false;
+            }
+         } else {
+            return true;
          }
-
-      }
-
-      public void start() {
-         Fox.this.setIsInterested(false);
-         super.start();
-      }
-
-      public boolean canUse() {
-         return !Fox.this.isSitting() && !Fox.this.isSleeping() && !Fox.this.isCrouching() && !Fox.this.isFaceplanted() && super.canUse();
       }
    }
 
-   private class SleepGoal extends FoxBehaviorGoal {
+   abstract class FoxBehaviorGoal extends Goal {
+      private final TargetingConditions alertableTargeting = TargetingConditions.forCombat().range(12.0).ignoreLineOfSight().selector(Fox.this.new FoxAlertableEntitiesSelector());
+
+      FoxBehaviorGoal() {
+         super();
+      }
+
+      protected boolean hasShelter() {
+         BlockPos var1 = BlockPos.containing(Fox.this.getX(), Fox.this.getBoundingBox().maxY, Fox.this.getZ());
+         return !Fox.this.level().canSeeSky(var1) && Fox.this.getWalkTargetValue(var1) >= 0.0F;
+      }
+
+      protected boolean alertable() {
+         return !getServerLevel(Fox.this.level()).getNearbyEntities(LivingEntity.class, this.alertableTargeting, Fox.this, Fox.this.getBoundingBox().inflate(12.0, 6.0, 12.0)).isEmpty();
+      }
+   }
+
+   class SleepGoal extends FoxBehaviorGoal {
       private static final int WAIT_TIME_BEFORE_SLEEP = reducedTickDelay(140);
       private int countdown;
 
@@ -1078,48 +1060,51 @@ public class Fox extends Animal implements VariantHolder<Variant> {
       }
    }
 
-   private static class FoxFollowParentGoal extends FollowParentGoal {
-      private final Fox fox;
+   class PerchAndSearchGoal extends FoxBehaviorGoal {
+      private double relX;
+      private double relZ;
+      private int lookTime;
+      private int looksRemaining;
 
-      public FoxFollowParentGoal(Fox var1, double var2) {
-         super(var1, var2);
-         this.fox = var1;
+      public PerchAndSearchGoal() {
+         super();
+         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
       }
 
       public boolean canUse() {
-         return !this.fox.isDefending() && super.canUse();
+         return Fox.this.getLastHurtByMob() == null && Fox.this.getRandom().nextFloat() < 0.02F && !Fox.this.isSleeping() && Fox.this.getTarget() == null && Fox.this.getNavigation().isDone() && !this.alertable() && !Fox.this.isPouncing() && !Fox.this.isCrouching();
       }
 
       public boolean canContinueToUse() {
-         return !this.fox.isDefending() && super.canContinueToUse();
+         return this.looksRemaining > 0;
       }
 
       public void start() {
-         this.fox.clearStates();
-         super.start();
-      }
-   }
-
-   private class FoxStrollThroughVillageGoal extends StrollThroughVillageGoal {
-      public FoxStrollThroughVillageGoal(final int var2, final int var3) {
-         super(Fox.this, var3);
+         this.resetLook();
+         this.looksRemaining = 2 + Fox.this.getRandom().nextInt(3);
+         Fox.this.setSitting(true);
+         Fox.this.getNavigation().stop();
       }
 
-      public void start() {
-         Fox.this.clearStates();
-         super.start();
+      public void stop() {
+         Fox.this.setSitting(false);
       }
 
-      public boolean canUse() {
-         return super.canUse() && this.canFoxMove();
+      public void tick() {
+         --this.lookTime;
+         if (this.lookTime <= 0) {
+            --this.looksRemaining;
+            this.resetLook();
+         }
+
+         Fox.this.getLookControl().setLookAt(Fox.this.getX() + this.relX, Fox.this.getEyeY(), Fox.this.getZ() + this.relZ, (float)Fox.this.getMaxHeadYRot(), (float)Fox.this.getMaxHeadXRot());
       }
 
-      public boolean canContinueToUse() {
-         return super.canContinueToUse() && this.canFoxMove();
-      }
-
-      private boolean canFoxMove() {
-         return !Fox.this.isSleeping() && !Fox.this.isSitting() && !Fox.this.isDefending() && Fox.this.getTarget() == null;
+      private void resetLook() {
+         double var1 = 6.283185307179586 * Fox.this.getRandom().nextDouble();
+         this.relX = Math.cos(var1);
+         this.relZ = Math.sin(var1);
+         this.lookTime = this.adjustedTickDelay(80 + Fox.this.getRandom().nextInt(20));
       }
    }
 
@@ -1204,48 +1189,225 @@ public class Fox extends Animal implements VariantHolder<Variant> {
       }
    }
 
-   private class FoxSearchForItemsGoal extends Goal {
-      public FoxSearchForItemsGoal() {
+   public static class FoxGroupData extends AgeableMob.AgeableMobGroupData {
+      public final Variant variant;
+
+      public FoxGroupData(Variant var1) {
+         super(false);
+         this.variant = var1;
+      }
+   }
+
+   class FaceplantGoal extends Goal {
+      int countdown;
+
+      public FaceplantGoal() {
          super();
-         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
+         this.setFlags(EnumSet.of(Goal.Flag.LOOK, Goal.Flag.JUMP, Goal.Flag.MOVE));
       }
 
       public boolean canUse() {
-         if (!Fox.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty()) {
+         return Fox.this.isFaceplanted();
+      }
+
+      public boolean canContinueToUse() {
+         return this.canUse() && this.countdown > 0;
+      }
+
+      public void start() {
+         this.countdown = this.adjustedTickDelay(40);
+      }
+
+      public void stop() {
+         Fox.this.setFaceplanted(false);
+      }
+
+      public void tick() {
+         --this.countdown;
+      }
+   }
+
+   class FoxPanicGoal extends PanicGoal {
+      public FoxPanicGoal(final double var2) {
+         super(Fox.this, var2);
+      }
+
+      public boolean shouldPanic() {
+         return !Fox.this.isDefending() && super.shouldPanic();
+      }
+   }
+
+   class FoxStrollThroughVillageGoal extends StrollThroughVillageGoal {
+      public FoxStrollThroughVillageGoal(final int var2, final int var3) {
+         super(Fox.this, var3);
+      }
+
+      public void start() {
+         Fox.this.clearStates();
+         super.start();
+      }
+
+      public boolean canUse() {
+         return super.canUse() && this.canFoxMove();
+      }
+
+      public boolean canContinueToUse() {
+         return super.canContinueToUse() && this.canFoxMove();
+      }
+
+      private boolean canFoxMove() {
+         return !Fox.this.isSleeping() && !Fox.this.isSitting() && !Fox.this.isDefending() && Fox.this.getTarget() == null;
+      }
+   }
+
+   class FoxFloatGoal extends FloatGoal {
+      public FoxFloatGoal() {
+         super(Fox.this);
+      }
+
+      public void start() {
+         super.start();
+         Fox.this.clearStates();
+      }
+
+      public boolean canUse() {
+         return Fox.this.isInWater() && Fox.this.getFluidHeight(FluidTags.WATER) > 0.25 || Fox.this.isInLava();
+      }
+   }
+
+   public class FoxPounceGoal extends JumpGoal {
+      public FoxPounceGoal() {
+         super();
+      }
+
+      public boolean canUse() {
+         if (!Fox.this.isFullyCrouched()) {
             return false;
-         } else if (Fox.this.getTarget() == null && Fox.this.getLastHurtByMob() == null) {
-            if (!Fox.this.canMove()) {
-               return false;
-            } else if (Fox.this.getRandom().nextInt(reducedTickDelay(10)) != 0) {
-               return false;
+         } else {
+            LivingEntity var1 = Fox.this.getTarget();
+            if (var1 != null && var1.isAlive()) {
+               if (var1.getMotionDirection() != var1.getDirection()) {
+                  return false;
+               } else {
+                  boolean var2 = Fox.isPathClear(Fox.this, var1);
+                  if (!var2) {
+                     Fox.this.getNavigation().createPath(var1, 0);
+                     Fox.this.setIsCrouching(false);
+                     Fox.this.setIsInterested(false);
+                  }
+
+                  return var2;
+               }
             } else {
-               List var1 = Fox.this.level().getEntitiesOfClass(ItemEntity.class, Fox.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Fox.ALLOWED_ITEMS);
-               return !var1.isEmpty() && Fox.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty();
+               return false;
             }
+         }
+      }
+
+      public boolean canContinueToUse() {
+         LivingEntity var1 = Fox.this.getTarget();
+         if (var1 != null && var1.isAlive()) {
+            double var2 = Fox.this.getDeltaMovement().y;
+            return (!(var2 * var2 < 0.05000000074505806) || !(Math.abs(Fox.this.getXRot()) < 15.0F) || !Fox.this.onGround()) && !Fox.this.isFaceplanted();
          } else {
             return false;
          }
       }
 
-      public void tick() {
-         List var1 = Fox.this.level().getEntitiesOfClass(ItemEntity.class, Fox.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Fox.ALLOWED_ITEMS);
-         ItemStack var2 = Fox.this.getItemBySlot(EquipmentSlot.MAINHAND);
-         if (var2.isEmpty() && !var1.isEmpty()) {
-            Fox.this.getNavigation().moveTo((Entity)var1.get(0), 1.2000000476837158);
-         }
-
+      public boolean isInterruptable() {
+         return false;
       }
 
       public void start() {
-         List var1 = Fox.this.level().getEntitiesOfClass(ItemEntity.class, Fox.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Fox.ALLOWED_ITEMS);
-         if (!var1.isEmpty()) {
-            Fox.this.getNavigation().moveTo((Entity)var1.get(0), 1.2000000476837158);
+         Fox.this.setJumping(true);
+         Fox.this.setIsPouncing(true);
+         Fox.this.setIsInterested(false);
+         LivingEntity var1 = Fox.this.getTarget();
+         if (var1 != null) {
+            Fox.this.getLookControl().setLookAt(var1, 60.0F, 30.0F);
+            Vec3 var2 = (new Vec3(var1.getX() - Fox.this.getX(), var1.getY() - Fox.this.getY(), var1.getZ() - Fox.this.getZ())).normalize();
+            Fox.this.setDeltaMovement(Fox.this.getDeltaMovement().add(var2.x * 0.8, 0.9, var2.z * 0.8));
+         }
+
+         Fox.this.getNavigation().stop();
+      }
+
+      public void stop() {
+         Fox.this.setIsCrouching(false);
+         Fox.this.crouchAmount = 0.0F;
+         Fox.this.crouchAmountO = 0.0F;
+         Fox.this.setIsInterested(false);
+         Fox.this.setIsPouncing(false);
+      }
+
+      public void tick() {
+         LivingEntity var1 = Fox.this.getTarget();
+         if (var1 != null) {
+            Fox.this.getLookControl().setLookAt(var1, 60.0F, 30.0F);
+         }
+
+         if (!Fox.this.isFaceplanted()) {
+            Vec3 var2 = Fox.this.getDeltaMovement();
+            if (var2.y * var2.y < 0.029999999329447746 && Fox.this.getXRot() != 0.0F) {
+               Fox.this.setXRot(Mth.rotLerp(0.2F, Fox.this.getXRot(), 0.0F));
+            } else {
+               double var3 = var2.horizontalDistance();
+               double var5 = Math.signum(-var2.y) * Math.acos(var3 / var2.length()) * 57.2957763671875;
+               Fox.this.setXRot((float)var5);
+            }
+         }
+
+         if (var1 != null && Fox.this.distanceTo(var1) <= 2.0F) {
+            Fox.this.doHurtTarget(getServerLevel(Fox.this.level()), var1);
+         } else if (Fox.this.getXRot() > 0.0F && Fox.this.onGround() && (float)Fox.this.getDeltaMovement().y != 0.0F && Fox.this.level().getBlockState(Fox.this.blockPosition()).is(Blocks.SNOW)) {
+            Fox.this.setXRot(60.0F);
+            Fox.this.setTarget((LivingEntity)null);
+            Fox.this.setFaceplanted(true);
          }
 
       }
    }
 
-   private class FoxLookAtPlayerGoal extends LookAtPlayerGoal {
+   public class FoxLookControl extends LookControl {
+      public FoxLookControl() {
+         super(Fox.this);
+      }
+
+      public void tick() {
+         if (!Fox.this.isSleeping()) {
+            super.tick();
+         }
+
+      }
+
+      protected boolean resetXRotOnTick() {
+         return !Fox.this.isPouncing() && !Fox.this.isCrouching() && !Fox.this.isInterested() && !Fox.this.isFaceplanted();
+      }
+   }
+
+   static class FoxFollowParentGoal extends FollowParentGoal {
+      private final Fox fox;
+
+      public FoxFollowParentGoal(Fox var1, double var2) {
+         super(var1, var2);
+         this.fox = var1;
+      }
+
+      public boolean canUse() {
+         return !this.fox.isDefending() && super.canUse();
+      }
+
+      public boolean canContinueToUse() {
+         return !this.fox.isDefending() && super.canContinueToUse();
+      }
+
+      public void start() {
+         this.fox.clearStates();
+         super.start();
+      }
+   }
+
+   class FoxLookAtPlayerGoal extends LookAtPlayerGoal {
       public FoxLookAtPlayerGoal(final Mob var2, final Class<? extends LivingEntity> var3, final float var4) {
          super(var2, var3, var4);
       }
@@ -1256,194 +1418,6 @@ public class Fox extends Animal implements VariantHolder<Variant> {
 
       public boolean canContinueToUse() {
          return super.canContinueToUse() && !Fox.this.isFaceplanted() && !Fox.this.isInterested();
-      }
-   }
-
-   private class PerchAndSearchGoal extends FoxBehaviorGoal {
-      private double relX;
-      private double relZ;
-      private int lookTime;
-      private int looksRemaining;
-
-      public PerchAndSearchGoal() {
-         super();
-         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-      }
-
-      public boolean canUse() {
-         return Fox.this.getLastHurtByMob() == null && Fox.this.getRandom().nextFloat() < 0.02F && !Fox.this.isSleeping() && Fox.this.getTarget() == null && Fox.this.getNavigation().isDone() && !this.alertable() && !Fox.this.isPouncing() && !Fox.this.isCrouching();
-      }
-
-      public boolean canContinueToUse() {
-         return this.looksRemaining > 0;
-      }
-
-      public void start() {
-         this.resetLook();
-         this.looksRemaining = 2 + Fox.this.getRandom().nextInt(3);
-         Fox.this.setSitting(true);
-         Fox.this.getNavigation().stop();
-      }
-
-      public void stop() {
-         Fox.this.setSitting(false);
-      }
-
-      public void tick() {
-         --this.lookTime;
-         if (this.lookTime <= 0) {
-            --this.looksRemaining;
-            this.resetLook();
-         }
-
-         Fox.this.getLookControl().setLookAt(Fox.this.getX() + this.relX, Fox.this.getEyeY(), Fox.this.getZ() + this.relZ, (float)Fox.this.getMaxHeadYRot(), (float)Fox.this.getMaxHeadXRot());
-      }
-
-      private void resetLook() {
-         double var1 = 6.283185307179586 * Fox.this.getRandom().nextDouble();
-         this.relX = Math.cos(var1);
-         this.relZ = Math.sin(var1);
-         this.lookTime = this.adjustedTickDelay(80 + Fox.this.getRandom().nextInt(20));
-      }
-   }
-
-   private class DefendTrustedTargetGoal extends NearestAttackableTargetGoal<LivingEntity> {
-      @Nullable
-      private LivingEntity trustedLastHurtBy;
-      @Nullable
-      private LivingEntity trustedLastHurt;
-      private int timestamp;
-
-      public DefendTrustedTargetGoal(final Class<LivingEntity> var2, final boolean var3, final boolean var4, @Nullable final TargetingConditions.Selector var5) {
-         super(Fox.this, var2, 10, var3, var4, var5);
-      }
-
-      public boolean canUse() {
-         if (this.randomInterval > 0 && this.mob.getRandom().nextInt(this.randomInterval) != 0) {
-            return false;
-         } else {
-            ServerLevel var1 = getServerLevel(Fox.this.level());
-            Iterator var2 = Fox.this.getTrustedUUIDs().iterator();
-
-            Entity var4;
-            do {
-               if (!var2.hasNext()) {
-                  return false;
-               }
-
-               UUID var3 = (UUID)var2.next();
-               var4 = var1.getEntity(var3);
-            } while(!(var4 instanceof LivingEntity));
-
-            LivingEntity var5 = (LivingEntity)var4;
-            this.trustedLastHurt = var5;
-            this.trustedLastHurtBy = var5.getLastHurtByMob();
-            int var6 = var5.getLastHurtByMobTimestamp();
-            return var6 != this.timestamp && this.canAttack(this.trustedLastHurtBy, this.targetConditions);
-         }
-      }
-
-      public void start() {
-         this.setTarget(this.trustedLastHurtBy);
-         this.target = this.trustedLastHurtBy;
-         if (this.trustedLastHurt != null) {
-            this.timestamp = this.trustedLastHurt.getLastHurtByMobTimestamp();
-         }
-
-         Fox.this.playSound(SoundEvents.FOX_AGGRO, 1.0F, 1.0F);
-         Fox.this.setDefending(true);
-         Fox.this.wakeUp();
-         super.start();
-      }
-   }
-
-   public static enum Variant implements StringRepresentable {
-      RED(0, "red"),
-      SNOW(1, "snow");
-
-      public static final StringRepresentable.EnumCodec<Variant> CODEC = StringRepresentable.fromEnum(Variant::values);
-      private static final IntFunction<Variant> BY_ID = ByIdMap.continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      private final int id;
-      private final String name;
-
-      private Variant(final int var3, final String var4) {
-         this.id = var3;
-         this.name = var4;
-      }
-
-      public String getSerializedName() {
-         return this.name;
-      }
-
-      public int getId() {
-         return this.id;
-      }
-
-      public static Variant byName(String var0) {
-         return (Variant)CODEC.byName(var0, (Enum)RED);
-      }
-
-      public static Variant byId(int var0) {
-         return (Variant)BY_ID.apply(var0);
-      }
-
-      public static Variant byBiome(Holder<Biome> var0) {
-         return var0.is(BiomeTags.SPAWNS_SNOW_FOXES) ? SNOW : RED;
-      }
-
-      // $FF: synthetic method
-      private static Variant[] $values() {
-         return new Variant[]{RED, SNOW};
-      }
-   }
-
-   public static class FoxGroupData extends AgeableMob.AgeableMobGroupData {
-      public final Variant variant;
-
-      public FoxGroupData(Variant var1) {
-         super(false);
-         this.variant = var1;
-      }
-   }
-
-   private abstract class FoxBehaviorGoal extends Goal {
-      private final TargetingConditions alertableTargeting = TargetingConditions.forCombat().range(12.0).ignoreLineOfSight().selector(Fox.this.new FoxAlertableEntitiesSelector());
-
-      FoxBehaviorGoal() {
-         super();
-      }
-
-      protected boolean hasShelter() {
-         BlockPos var1 = BlockPos.containing(Fox.this.getX(), Fox.this.getBoundingBox().maxY, Fox.this.getZ());
-         return !Fox.this.level().canSeeSky(var1) && Fox.this.getWalkTargetValue(var1) >= 0.0F;
-      }
-
-      protected boolean alertable() {
-         return !getServerLevel(Fox.this.level()).getNearbyEntities(LivingEntity.class, this.alertableTargeting, Fox.this, Fox.this.getBoundingBox().inflate(12.0, 6.0, 12.0)).isEmpty();
-      }
-   }
-
-   public class FoxAlertableEntitiesSelector implements TargetingConditions.Selector {
-      public FoxAlertableEntitiesSelector() {
-         super();
-      }
-
-      public boolean test(LivingEntity var1, ServerLevel var2) {
-         if (var1 instanceof Fox) {
-            return false;
-         } else if (!(var1 instanceof Chicken) && !(var1 instanceof Rabbit) && !(var1 instanceof Monster)) {
-            if (var1 instanceof TamableAnimal) {
-               return !((TamableAnimal)var1).isTame();
-            } else if (var1 instanceof Player && (var1.isSpectator() || ((Player)var1).isCreative())) {
-               return false;
-            } else if (Fox.this.trusts(var1.getUUID())) {
-               return false;
-            } else {
-               return !var1.isSleeping() && !var1.isDiscrete();
-            }
-         } else {
-            return true;
-         }
       }
    }
 }

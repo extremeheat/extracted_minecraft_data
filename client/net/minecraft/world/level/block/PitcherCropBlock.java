@@ -197,13 +197,5 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
          this.pos = var1;
          this.state = var2;
       }
-
-      public BlockPos pos() {
-         return this.pos;
-      }
-
-      public BlockState state() {
-         return this.state;
-      }
    }
 }

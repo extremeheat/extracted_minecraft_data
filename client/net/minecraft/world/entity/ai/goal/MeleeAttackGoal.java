@@ -43,7 +43,7 @@ public class MeleeAttackGoal extends Goal {
          } else if (!var3.isAlive()) {
             return false;
          } else {
-            this.path = this.mob.getNavigation().createPath((Entity)var3, 0);
+            this.path = this.mob.getNavigation().createPath(var3, 0);
             if (this.path != null) {
                return true;
             } else {

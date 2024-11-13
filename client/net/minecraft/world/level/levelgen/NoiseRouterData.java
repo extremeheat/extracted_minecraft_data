@@ -218,12 +218,8 @@ public class NoiseRouterData {
       DensityFunction var17 = DensityFunctions.rangeChoice(var15, -1000000.0, 1.5625, var16, underground(var0, var1, var15));
       DensityFunction var18 = DensityFunctions.min(postProcess(slideOverworld(var3, var17)), getFunction(var0, NOODLE));
       DensityFunction var19 = getFunction(var0, Y);
-      int var20 = Stream.of(OreVeinifier.VeinType.values()).mapToInt((var0x) -> {
-         return var0x.minY;
-      }).min().orElse(-DimensionType.MIN_Y * 2);
-      int var21 = Stream.of(OreVeinifier.VeinType.values()).mapToInt((var0x) -> {
-         return var0x.maxY;
-      }).max().orElse(-DimensionType.MIN_Y * 2);
+      int var20 = Stream.of(OreVeinifier.VeinType.values()).mapToInt((var0x) -> var0x.minY).min().orElse(-DimensionType.MIN_Y * 2);
+      int var21 = Stream.of(OreVeinifier.VeinType.values()).mapToInt((var0x) -> var0x.maxY).max().orElse(-DimensionType.MIN_Y * 2);
       DensityFunction var22 = yLimitedInterpolatable(var19, DensityFunctions.noise(var1.getOrThrow(Noises.ORE_VEININESS), 1.5, 1.5), var20, var21, 0);
       float var23 = 4.0F;
       DensityFunction var24 = yLimitedInterpolatable(var19, DensityFunctions.noise(var1.getOrThrow(Noises.ORE_VEIN_A), 4.0, 4.0), var20, var21, 0).abs();

@@ -14,9 +14,7 @@ public class V3683 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       Map var2 = super.registerEntities(var1);
-      var1.register(var2, "minecraft:tnt", () -> {
-         return DSL.optionalFields("block_state", References.BLOCK_STATE.in(var1));
-      });
+      var1.register(var2, "minecraft:tnt", () -> DSL.optionalFields("block_state", References.BLOCK_STATE.in(var1)));
       return var2;
    }
 }

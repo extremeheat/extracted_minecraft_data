@@ -3,7 +3,6 @@ package net.minecraft.server.packs.resources;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -26,36 +25,17 @@ public class MultiPackResourceManager implements CloseableResourceManager {
       super();
       this.packs = List.copyOf(var2);
       HashMap var3 = new HashMap();
-      List var4 = var2.stream().flatMap((var1x) -> {
-         return var1x.getNamespaces(var1).stream();
-      }).distinct().toList();
-      Iterator var5 = var2.iterator();
+      List var4 = var2.stream().flatMap((var1x) -> var1x.getNamespaces(var1).stream()).distinct().toList();
 
-      label57:
-      while(var5.hasNext()) {
-         PackResources var6 = (PackResources)var5.next();
+      for(PackResources var6 : var2) {
          ResourceFilterSection var7 = this.getPackFilterSection(var6);
          Set var8 = var6.getNamespaces(var1);
-         Predicate var9 = var7 != null ? (var1x) -> {
-            return var7.isPathFiltered(var1x.getPath());
-         } : null;
-         Iterator var10 = var4.iterator();
+         Predicate var9 = var7 != null ? (var1x) -> var7.isPathFiltered(var1x.getPath()) : null;
 
-         while(true) {
-            while(true) {
-               String var11;
-               boolean var12;
-               boolean var13;
-               do {
-                  if (!var10.hasNext()) {
-                     continue label57;
-                  }
-
-                  var11 = (String)var10.next();
-                  var12 = var8.contains(var11);
-                  var13 = var7 != null && var7.isNamespaceFiltered(var11);
-               } while(!var12 && !var13);
-
+         for(String var11 : var4) {
+            boolean var12 = var8.contains(var11);
+            boolean var13 = var7 != null && var7.isNamespaceFiltered(var11);
+            if (var12 || var13) {
                FallbackResourceManager var14 = (FallbackResourceManager)var3.get(var11);
                if (var14 == null) {
                   var14 = new FallbackResourceManager(var1, var11);
@@ -103,10 +83,8 @@ public class MultiPackResourceManager implements CloseableResourceManager {
    public Map<ResourceLocation, Resource> listResources(String var1, Predicate<ResourceLocation> var2) {
       checkTrailingDirectoryPath(var1);
       TreeMap var3 = new TreeMap();
-      Iterator var4 = this.namespacedManagers.values().iterator();
 
-      while(var4.hasNext()) {
-         FallbackResourceManager var5 = (FallbackResourceManager)var4.next();
+      for(FallbackResourceManager var5 : this.namespacedManagers.values()) {
          var3.putAll(var5.listResources(var1, var2));
       }
 
@@ -116,10 +94,8 @@ public class MultiPackResourceManager implements CloseableResourceManager {
    public Map<ResourceLocation, List<Resource>> listResourceStacks(String var1, Predicate<ResourceLocation> var2) {
       checkTrailingDirectoryPath(var1);
       TreeMap var3 = new TreeMap();
-      Iterator var4 = this.namespacedManagers.values().iterator();
 
-      while(var4.hasNext()) {
-         FallbackResourceManager var5 = (FallbackResourceManager)var4.next();
+      for(FallbackResourceManager var5 : this.namespacedManagers.values()) {
          var3.putAll(var5.listResourceStacks(var1, var2));
       }
 

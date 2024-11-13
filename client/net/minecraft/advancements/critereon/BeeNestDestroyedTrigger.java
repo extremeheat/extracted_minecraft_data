@@ -22,15 +22,11 @@ public class BeeNestDestroyedTrigger extends SimpleCriterionTrigger<TriggerInsta
    }
 
    public void trigger(ServerPlayer var1, BlockState var2, ItemStack var3, int var4) {
-      this.trigger(var1, (var3x) -> {
-         return var3x.matches(var2, var3, var4);
-      });
+      this.trigger(var1, (var3x) -> var3x.matches(var2, var3, var4));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<Holder<Block>> block, Optional<ItemPredicate> item, MinMaxBounds.Ints beesInside) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), BuiltInRegistries.BLOCK.holderByNameCodec().optionalFieldOf("block").forGetter(TriggerInstance::block), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item), MinMaxBounds.Ints.CODEC.optionalFieldOf("num_bees_inside", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::beesInside)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), BuiltInRegistries.BLOCK.holderByNameCodec().optionalFieldOf("block").forGetter(TriggerInstance::block), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item), MinMaxBounds.Ints.CODEC.optionalFieldOf("num_bees_inside", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::beesInside)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<Holder<Block>> var2, Optional<ItemPredicate> var3, MinMaxBounds.Ints var4) {
          super();
@@ -50,22 +46,6 @@ public class BeeNestDestroyedTrigger extends SimpleCriterionTrigger<TriggerInsta
          } else {
             return this.item.isPresent() && !((ItemPredicate)this.item.get()).test(var2) ? false : this.beesInside.matches(var3);
          }
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<Holder<Block>> block() {
-         return this.block;
-      }
-
-      public Optional<ItemPredicate> item() {
-         return this.item;
-      }
-
-      public MinMaxBounds.Ints beesInside() {
-         return this.beesInside;
       }
    }
 }

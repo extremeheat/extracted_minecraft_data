@@ -10,7 +10,6 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.HumanoidArm;
@@ -43,24 +42,22 @@ public class PlayerModel extends HumanoidModel<PlayerRenderState> {
       MeshDefinition var2 = HumanoidModel.createMesh(var0, 0.0F);
       PartDefinition var3 = var2.getRoot();
       float var4 = 0.25F;
-      PartDefinition var5;
-      PartDefinition var6;
       if (var1) {
-         var5 = var3.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(32, 48).addBox(-1.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, var0), PartPose.offset(5.0F, 2.0F, 0.0F));
-         var6 = var3.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(40, 16).addBox(-2.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, var0), PartPose.offset(-5.0F, 2.0F, 0.0F));
+         PartDefinition var5 = var3.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(32, 48).addBox(-1.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, var0), PartPose.offset(5.0F, 2.0F, 0.0F));
+         PartDefinition var6 = var3.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(40, 16).addBox(-2.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, var0), PartPose.offset(-5.0F, 2.0F, 0.0F));
          var5.addOrReplaceChild("left_sleeve", CubeListBuilder.create().texOffs(48, 48).addBox(-1.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, var0.extend(0.25F)), PartPose.ZERO);
          var6.addOrReplaceChild("right_sleeve", CubeListBuilder.create().texOffs(40, 32).addBox(-2.0F, -2.0F, -2.0F, 3.0F, 12.0F, 4.0F, var0.extend(0.25F)), PartPose.ZERO);
       } else {
-         var5 = var3.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(32, 48).addBox(-1.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0), PartPose.offset(5.0F, 2.0F, 0.0F));
-         var6 = var3.getChild("right_arm");
-         var5.addOrReplaceChild("left_sleeve", CubeListBuilder.create().texOffs(48, 48).addBox(-1.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(0.25F)), PartPose.ZERO);
-         var6.addOrReplaceChild("right_sleeve", CubeListBuilder.create().texOffs(40, 32).addBox(-3.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(0.25F)), PartPose.ZERO);
+         PartDefinition var8 = var3.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(32, 48).addBox(-1.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0), PartPose.offset(5.0F, 2.0F, 0.0F));
+         PartDefinition var10 = var3.getChild("right_arm");
+         var8.addOrReplaceChild("left_sleeve", CubeListBuilder.create().texOffs(48, 48).addBox(-1.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(0.25F)), PartPose.ZERO);
+         var10.addOrReplaceChild("right_sleeve", CubeListBuilder.create().texOffs(40, 32).addBox(-3.0F, -2.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(0.25F)), PartPose.ZERO);
       }
 
-      var5 = var3.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(16, 48).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0), PartPose.offset(1.9F, 12.0F, 0.0F));
-      var6 = var3.getChild("right_leg");
-      var5.addOrReplaceChild("left_pants", CubeListBuilder.create().texOffs(0, 48).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(0.25F)), PartPose.ZERO);
-      var6.addOrReplaceChild("right_pants", CubeListBuilder.create().texOffs(0, 32).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(0.25F)), PartPose.ZERO);
+      PartDefinition var9 = var3.addOrReplaceChild("left_leg", CubeListBuilder.create().texOffs(16, 48).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0), PartPose.offset(1.9F, 12.0F, 0.0F));
+      PartDefinition var11 = var3.getChild("right_leg");
+      var9.addOrReplaceChild("left_pants", CubeListBuilder.create().texOffs(0, 48).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(0.25F)), PartPose.ZERO);
+      var11.addOrReplaceChild("right_pants", CubeListBuilder.create().texOffs(0, 32).addBox(-2.0F, 0.0F, -2.0F, 4.0F, 12.0F, 4.0F, var0.extend(0.25F)), PartPose.ZERO);
       PartDefinition var7 = var3.getChild("body");
       var7.addOrReplaceChild("jacket", CubeListBuilder.create().texOffs(16, 32).addBox(-4.0F, 0.0F, -2.0F, 8.0F, 12.0F, 4.0F, var0.extend(0.25F)), PartPose.ZERO);
       return var2;
@@ -79,7 +76,7 @@ public class PlayerModel extends HumanoidModel<PlayerRenderState> {
       this.rightPants.visible = var1.showRightPants;
       this.leftSleeve.visible = var1.showLeftSleeve;
       this.rightSleeve.visible = var1.showRightSleeve;
-      super.setupAnim((HumanoidRenderState)var1);
+      super.setupAnim(var1);
    }
 
    public void setAllVisible(boolean var1) {

@@ -43,24 +43,76 @@ public class GlowParticle extends TextureSheetParticle {
       this.setSpriteFromAge(this.sprites);
    }
 
-   public static class ScrapeProvider implements ParticleProvider<SimpleParticleType> {
+   public static class GlowSquidProvider implements ParticleProvider<SimpleParticleType> {
+      private final SpriteSet sprite;
+
+      public GlowSquidProvider(SpriteSet var1) {
+         super();
+         this.sprite = var1;
+      }
+
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         GlowParticle var15 = new GlowParticle(var2, var3, var5, var7, 0.5 - GlowParticle.RANDOM.nextDouble(), var11, 0.5 - GlowParticle.RANDOM.nextDouble(), this.sprite);
+         if (var2.random.nextBoolean()) {
+            var15.setColor(0.6F, 1.0F, 0.8F);
+         } else {
+            var15.setColor(0.08F, 0.4F, 0.4F);
+         }
+
+         var15.yd *= 0.20000000298023224;
+         if (var9 == 0.0 && var13 == 0.0) {
+            var15.xd *= 0.10000000149011612;
+            var15.zd *= 0.10000000149011612;
+         }
+
+         var15.setLifetime((int)(8.0 / (var2.random.nextDouble() * 0.8 + 0.2)));
+         return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
+   }
+
+   public static class WaxOnProvider implements ParticleProvider<SimpleParticleType> {
       private final double SPEED_FACTOR = 0.01;
       private final SpriteSet sprite;
 
-      public ScrapeProvider(SpriteSet var1) {
+      public WaxOnProvider(SpriteSet var1) {
          super();
          this.sprite = var1;
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          GlowParticle var15 = new GlowParticle(var2, var3, var5, var7, 0.0, 0.0, 0.0, this.sprite);
-         if (var2.random.nextBoolean()) {
-            var15.setColor(0.29F, 0.58F, 0.51F);
-         } else {
-            var15.setColor(0.43F, 0.77F, 0.62F);
-         }
+         var15.setColor(0.91F, 0.55F, 0.08F);
+         var15.setParticleSpeed(var9 * 0.01 / 2.0, var11 * 0.01, var13 * 0.01 / 2.0);
+         boolean var16 = true;
+         boolean var17 = true;
+         var15.setLifetime(var2.random.nextInt(30) + 10);
+         return var15;
+      }
 
-         var15.setParticleSpeed(var9 * 0.01, var11 * 0.01, var13 * 0.01);
+      // $FF: synthetic method
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
+   }
+
+   public static class WaxOffProvider implements ParticleProvider<SimpleParticleType> {
+      private final double SPEED_FACTOR = 0.01;
+      private final SpriteSet sprite;
+
+      public WaxOffProvider(SpriteSet var1) {
+         super();
+         this.sprite = var1;
+      }
+
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         GlowParticle var15 = new GlowParticle(var2, var3, var5, var7, 0.0, 0.0, 0.0, this.sprite);
+         var15.setColor(1.0F, 0.9F, 1.0F);
+         var15.setParticleSpeed(var9 * 0.01 / 2.0, var11 * 0.01, var13 * 0.01 / 2.0);
          boolean var16 = true;
          boolean var17 = true;
          var15.setLifetime(var2.random.nextInt(30) + 10);
@@ -98,79 +150,27 @@ public class GlowParticle extends TextureSheetParticle {
       }
    }
 
-   public static class WaxOffProvider implements ParticleProvider<SimpleParticleType> {
+   public static class ScrapeProvider implements ParticleProvider<SimpleParticleType> {
       private final double SPEED_FACTOR = 0.01;
       private final SpriteSet sprite;
 
-      public WaxOffProvider(SpriteSet var1) {
+      public ScrapeProvider(SpriteSet var1) {
          super();
          this.sprite = var1;
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          GlowParticle var15 = new GlowParticle(var2, var3, var5, var7, 0.0, 0.0, 0.0, this.sprite);
-         var15.setColor(1.0F, 0.9F, 1.0F);
-         var15.setParticleSpeed(var9 * 0.01 / 2.0, var11 * 0.01, var13 * 0.01 / 2.0);
-         boolean var16 = true;
-         boolean var17 = true;
-         var15.setLifetime(var2.random.nextInt(30) + 10);
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
-      }
-   }
-
-   public static class WaxOnProvider implements ParticleProvider<SimpleParticleType> {
-      private final double SPEED_FACTOR = 0.01;
-      private final SpriteSet sprite;
-
-      public WaxOnProvider(SpriteSet var1) {
-         super();
-         this.sprite = var1;
-      }
-
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         GlowParticle var15 = new GlowParticle(var2, var3, var5, var7, 0.0, 0.0, 0.0, this.sprite);
-         var15.setColor(0.91F, 0.55F, 0.08F);
-         var15.setParticleSpeed(var9 * 0.01 / 2.0, var11 * 0.01, var13 * 0.01 / 2.0);
-         boolean var16 = true;
-         boolean var17 = true;
-         var15.setLifetime(var2.random.nextInt(30) + 10);
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
-      }
-   }
-
-   public static class GlowSquidProvider implements ParticleProvider<SimpleParticleType> {
-      private final SpriteSet sprite;
-
-      public GlowSquidProvider(SpriteSet var1) {
-         super();
-         this.sprite = var1;
-      }
-
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         GlowParticle var15 = new GlowParticle(var2, var3, var5, var7, 0.5 - GlowParticle.RANDOM.nextDouble(), var11, 0.5 - GlowParticle.RANDOM.nextDouble(), this.sprite);
          if (var2.random.nextBoolean()) {
-            var15.setColor(0.6F, 1.0F, 0.8F);
+            var15.setColor(0.29F, 0.58F, 0.51F);
          } else {
-            var15.setColor(0.08F, 0.4F, 0.4F);
+            var15.setColor(0.43F, 0.77F, 0.62F);
          }
 
-         var15.yd *= 0.20000000298023224;
-         if (var9 == 0.0 && var13 == 0.0) {
-            var15.xd *= 0.10000000149011612;
-            var15.zd *= 0.10000000149011612;
-         }
-
-         var15.setLifetime((int)(8.0 / (var2.random.nextDouble() * 0.8 + 0.2)));
+         var15.setParticleSpeed(var9 * 0.01, var11 * 0.01, var13 * 0.01);
+         boolean var16 = true;
+         boolean var17 = true;
+         var15.setLifetime(var2.random.nextInt(30) + 10);
          return var15;
       }
 

@@ -37,7 +37,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 
 public class ClientboundCommandsPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundCommandsPacket> STREAM_CODEC = Packet.codec(ClientboundCommandsPacket::write, ClientboundCommandsPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundCommandsPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundCommandsPacket>codec(ClientboundCommandsPacket::write, ClientboundCommandsPacket::new);
    private static final byte MASK_TYPE = 3;
    private static final byte FLAG_EXECUTABLE = 4;
    private static final byte FLAG_REDIRECT = 8;
@@ -57,33 +57,26 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
 
    private ClientboundCommandsPacket(FriendlyByteBuf var1) {
       super();
-      this.entries = var1.readList(ClientboundCommandsPacket::readNode);
+      this.entries = var1.<Entry>readList(ClientboundCommandsPacket::readNode);
       this.rootIndex = var1.readVarInt();
       validateEntries(this.entries);
    }
 
    private void write(FriendlyByteBuf var1) {
-      var1.writeCollection(this.entries, (var0, var1x) -> {
-         var1x.write(var0);
-      });
+      var1.writeCollection(this.entries, (var0, var1x) -> var1x.write(var0));
       var1.writeVarInt(this.rootIndex);
    }
 
    private static void validateEntries(List<Entry> var0, BiPredicate<Entry, IntSet> var1) {
       IntOpenHashSet var2 = new IntOpenHashSet(IntSets.fromTo(0, var0.size()));
 
-      boolean var3;
-      do {
-         if (var2.isEmpty()) {
-            return;
+      while(!var2.isEmpty()) {
+         boolean var3 = var2.removeIf((var3x) -> var1.test((Entry)var0.get(var3x), var2));
+         if (!var3) {
+            throw new IllegalStateException("Server sent an impossible command tree");
          }
+      }
 
-         var3 = var2.removeIf((var3x) -> {
-            return var1.test((Entry)var0.get(var3x), var2);
-         });
-      } while(var3);
-
-      throw new IllegalStateException("Server sent an impossible command tree");
    }
 
    private static void validateEntries(List<Entry> var0) {
@@ -135,9 +128,8 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
    @Nullable
    private static NodeStub read(FriendlyByteBuf var0, byte var1) {
       int var2 = var1 & 3;
-      String var3;
       if (var2 == 2) {
-         var3 = var0.readUtf();
+         String var8 = var0.readUtf();
          int var4 = var0.readVarInt();
          ArgumentTypeInfo var5 = (ArgumentTypeInfo)BuiltInRegistries.COMMAND_ARGUMENT_TYPE.byId(var4);
          if (var5 == null) {
@@ -145,10 +137,10 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
          } else {
             ArgumentTypeInfo.Template var6 = var5.deserializeFromNetwork(var0);
             ResourceLocation var7 = (var1 & 16) != 0 ? var0.readResourceLocation() : null;
-            return new ArgumentNodeStub(var3, var6, var7);
+            return new ArgumentNodeStub(var8, var6, var7);
          }
       } else if (var2 == 1) {
-         var3 = var0.readUtf();
+         String var3 = var0.readUtf();
          return new LiteralNodeStub(var3);
       } else {
          return null;
@@ -192,8 +184,8 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
 
       Stream var10000 = var0.getChildren().stream();
       Objects.requireNonNull(var1);
-      int[] var7 = var10000.mapToInt(var1::getInt).toArray();
-      return new Entry((NodeStub)var4, var2, var3, var7);
+      int[] var8 = var10000.mapToInt(var1::getInt).toArray();
+      return new Entry((NodeStub)var4, var2, var3, var8);
    }
 
    public PacketType<ClientboundCommandsPacket> type() {
@@ -208,61 +200,21 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
       return (RootCommandNode)(new NodeResolver(var1, this.entries)).resolve(this.rootIndex);
    }
 
-   static class Entry {
-      @Nullable
-      final NodeStub stub;
-      final int flags;
-      final int redirect;
-      final int[] children;
+   static class LiteralNodeStub implements NodeStub {
+      private final String id;
 
-      Entry(@Nullable NodeStub var1, int var2, int var3, int[] var4) {
+      LiteralNodeStub(String var1) {
          super();
-         this.stub = var1;
-         this.flags = var2;
-         this.redirect = var3;
-         this.children = var4;
+         this.id = var1;
+      }
+
+      public ArgumentBuilder<SharedSuggestionProvider, ?> build(CommandBuildContext var1) {
+         return LiteralArgumentBuilder.literal(this.id);
       }
 
       public void write(FriendlyByteBuf var1) {
-         var1.writeByte(this.flags);
-         var1.writeVarIntArray(this.children);
-         if ((this.flags & 8) != 0) {
-            var1.writeVarInt(this.redirect);
-         }
-
-         if (this.stub != null) {
-            this.stub.write(var1);
-         }
-
+         var1.writeUtf(this.id);
       }
-
-      public boolean canBuild(IntSet var1) {
-         if ((this.flags & 8) != 0) {
-            return !var1.contains(this.redirect);
-         } else {
-            return true;
-         }
-      }
-
-      public boolean canResolve(IntSet var1) {
-         int[] var2 = this.children;
-         int var3 = var2.length;
-
-         for(int var4 = 0; var4 < var3; ++var4) {
-            int var5 = var2[var4];
-            if (var1.contains(var5)) {
-               return false;
-            }
-         }
-
-         return true;
-      }
-   }
-
-   private interface NodeStub {
-      ArgumentBuilder<SharedSuggestionProvider, ?> build(CommandBuildContext var1);
-
-      void write(FriendlyByteBuf var1);
    }
 
    static class ArgumentNodeStub implements NodeStub {
@@ -316,20 +268,50 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
       }
    }
 
-   static class LiteralNodeStub implements NodeStub {
-      private final String id;
+   static class Entry {
+      @Nullable
+      final NodeStub stub;
+      final int flags;
+      final int redirect;
+      final int[] children;
 
-      LiteralNodeStub(String var1) {
+      Entry(@Nullable NodeStub var1, int var2, int var3, int[] var4) {
          super();
-         this.id = var1;
-      }
-
-      public ArgumentBuilder<SharedSuggestionProvider, ?> build(CommandBuildContext var1) {
-         return LiteralArgumentBuilder.literal(this.id);
+         this.stub = var1;
+         this.flags = var2;
+         this.redirect = var3;
+         this.children = var4;
       }
 
       public void write(FriendlyByteBuf var1) {
-         var1.writeUtf(this.id);
+         var1.writeByte(this.flags);
+         var1.writeVarIntArray(this.children);
+         if ((this.flags & 8) != 0) {
+            var1.writeVarInt(this.redirect);
+         }
+
+         if (this.stub != null) {
+            this.stub.write(var1);
+         }
+
+      }
+
+      public boolean canBuild(IntSet var1) {
+         if ((this.flags & 8) != 0) {
+            return !var1.contains(this.redirect);
+         } else {
+            return true;
+         }
+      }
+
+      public boolean canResolve(IntSet var1) {
+         for(int var5 : this.children) {
+            if (var1.contains(var5)) {
+               return false;
+            }
+         }
+
+         return true;
       }
    }
 
@@ -363,28 +345,29 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
                }
 
                if ((var3.flags & 4) != 0) {
-                  var5.executes((var0) -> {
-                     return 0;
-                  });
+                  var5.executes((var0) -> 0);
                }
 
                var4 = var5.build();
             }
 
             this.nodes.set(var1, var4);
-            int[] var10 = var3.children;
-            int var6 = var10.length;
 
-            for(int var7 = 0; var7 < var6; ++var7) {
-               int var8 = var10[var7];
+            for(int var8 : var3.children) {
                CommandNode var9 = this.resolve(var8);
                if (!(var9 instanceof RootCommandNode)) {
                   ((CommandNode)var4).addChild(var9);
                }
             }
 
-            return (CommandNode)var4;
+            return (CommandNode<SharedSuggestionProvider>)var4;
          }
       }
+   }
+
+   interface NodeStub {
+      ArgumentBuilder<SharedSuggestionProvider, ?> build(CommandBuildContext var1);
+
+      void write(FriendlyByteBuf var1);
    }
 }

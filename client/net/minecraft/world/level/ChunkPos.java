@@ -226,13 +226,7 @@ public class ChunkPos {
    }
 
    static {
-      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> {
-         return Util.fixedSize((IntStream)var0, 2).map((var0x) -> {
-            return new ChunkPos(var0x[0], var0x[1]);
-         });
-      }, (var0) -> {
-         return IntStream.of(new int[]{var0.x, var0.z});
-      }).stable();
+      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> Util.fixedSize((IntStream)var0, 2).map((var0x) -> new ChunkPos(var0x[0], var0x[1])), (var0) -> IntStream.of(new int[]{var0.x, var0.z})).stable();
       STREAM_CODEC = new StreamCodec<ByteBuf, ChunkPos>() {
          public ChunkPos decode(ByteBuf var1) {
             return FriendlyByteBuf.readChunkPos(var1);

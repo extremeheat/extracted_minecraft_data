@@ -120,13 +120,11 @@ public final class CustomData {
    }
 
    public <T> DataResult<CustomData> update(DynamicOps<Tag> var1, MapEncoder<T> var2, T var3) {
-      return var2.encode(var3, var1, var1.mapBuilder()).build(this.tag).map((var0) -> {
-         return new CustomData((CompoundTag)var0);
-      });
+      return var2.encode(var3, var1, var1.mapBuilder()).build(this.tag).map((var0) -> new CustomData((CompoundTag)var0));
    }
 
    public <T> DataResult<T> read(MapDecoder<T> var1) {
-      return this.read(NbtOps.INSTANCE, var1);
+      return this.<T>read(NbtOps.INSTANCE, var1);
    }
 
    public <T> DataResult<T> read(DynamicOps<Tag> var1, MapDecoder<T> var2) {
@@ -176,16 +174,8 @@ public final class CustomData {
    }
 
    static {
-      CODEC = Codec.withAlternative(CompoundTag.CODEC, TagParser.AS_CODEC).xmap(CustomData::new, (var0) -> {
-         return var0.tag;
-      });
-      CODEC_WITH_ID = CODEC.validate((var0) -> {
-         return var0.getUnsafe().contains("id", 8) ? DataResult.success(var0) : DataResult.error(() -> {
-            return "Missing id for entity in: " + String.valueOf(var0);
-         });
-      });
-      STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(CustomData::new, (var0) -> {
-         return var0.tag;
-      });
+      CODEC = Codec.withAlternative(CompoundTag.CODEC, TagParser.AS_CODEC).xmap(CustomData::new, (var0) -> var0.tag);
+      CODEC_WITH_ID = CODEC.validate((var0) -> var0.getUnsafe().contains("id", 8) ? DataResult.success(var0) : DataResult.error(() -> "Missing id for entity in: " + String.valueOf(var0)));
+      STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(CustomData::new, (var0) -> var0.tag);
    }
 }

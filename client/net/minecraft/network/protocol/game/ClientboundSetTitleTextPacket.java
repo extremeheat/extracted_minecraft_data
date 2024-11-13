@@ -23,10 +23,6 @@ public record ClientboundSetTitleTextPacket(Component text) implements Packet<Cl
       var1.setTitleText(this);
    }
 
-   public Component text() {
-      return this.text;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ComponentSerialization.TRUSTED_STREAM_CODEC, ClientboundSetTitleTextPacket::text, ClientboundSetTitleTextPacket::new);
    }

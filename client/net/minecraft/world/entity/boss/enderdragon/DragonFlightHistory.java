@@ -51,13 +51,5 @@ public class DragonFlightHistory {
          this.y = var1;
          this.yRot = var3;
       }
-
-      public double y() {
-         return this.y;
-      }
-
-      public float yRot() {
-         return this.yRot;
-      }
    }
 }

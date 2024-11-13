@@ -124,13 +124,9 @@ public class Bootstrap {
    }
 
    public static void validate() {
-      checkBootstrapCalled(() -> {
-         return "validate";
-      });
+      checkBootstrapCalled(() -> "validate");
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         getMissingTranslations().forEach((var0) -> {
-            LOGGER.error("Missing translations: {}", var0);
-         });
+         getMissingTranslations().forEach((var0) -> LOGGER.error("Missing translations: {}", var0));
          Commands.validate();
       }
 

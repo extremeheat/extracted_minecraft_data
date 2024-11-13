@@ -64,9 +64,7 @@ public class ReloadableServerResources {
    public static CompletableFuture<ReloadableServerResources> loadResources(ResourceManager var0, LayeredRegistryAccess<RegistryLayer> var1, List<Registry.PendingTags<?>> var2, FeatureFlagSet var3, Commands.CommandSelection var4, int var5, Executor var6, Executor var7) {
       return ReloadableServerRegistries.reload(var1, var2, var0, var6).thenCompose((var7x) -> {
          ReloadableServerResources var8 = new ReloadableServerResources(var7x.layers(), var7x.lookupWithUpdatedTags(), var3, var4, var2, var5);
-         return SimpleReloadInstance.create(var0, var8.listeners(), var6, var7, DATA_RELOAD_INITIAL_TASK, LOGGER.isDebugEnabled()).done().thenApply((var1) -> {
-            return var8;
-         });
+         return SimpleReloadInstance.create(var0, var8.listeners(), var6, var7, DATA_RELOAD_INITIAL_TASK, LOGGER.isDebugEnabled()).done().thenApply((var1) -> var8);
       });
    }
 

@@ -44,6 +44,18 @@ public class NetworkSummaryEvent extends Event {
       this.remoteAddress = var1;
    }
 
+   public static final class Fields {
+      public static final String REMOTE_ADDRESS = "remoteAddress";
+      public static final String SENT_BYTES = "sentBytes";
+      private static final String SENT_PACKETS = "sentPackets";
+      public static final String RECEIVED_BYTES = "receivedBytes";
+      private static final String RECEIVED_PACKETS = "receivedPackets";
+
+      private Fields() {
+         super();
+      }
+   }
+
    public static final class SumAggregation {
       private final AtomicLong sentBytes = new AtomicLong();
       private final AtomicInteger sentPackets = new AtomicInteger();
@@ -73,18 +85,6 @@ public class NetworkSummaryEvent extends Event {
          this.event.receivedBytes = this.receivedBytes.get();
          this.event.receivedPackets = this.receivedPackets.get();
          this.event.commit();
-      }
-   }
-
-   public static final class Fields {
-      public static final String REMOTE_ADDRESS = "remoteAddress";
-      public static final String SENT_BYTES = "sentBytes";
-      private static final String SENT_PACKETS = "sentPackets";
-      public static final String RECEIVED_BYTES = "receivedBytes";
-      private static final String RECEIVED_PACKETS = "receivedPackets";
-
-      private Fields() {
-         super();
       }
    }
 }

@@ -38,16 +38,10 @@ public class DirectJoinServerScreen extends Screen {
       this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 116, 200, 20, Component.translatable("addServer.enterIp"));
       this.ipEdit.setMaxLength(128);
       this.ipEdit.setValue(this.minecraft.options.lastMpIp);
-      this.ipEdit.setResponder((var1) -> {
-         this.updateSelectButtonStatus();
-      });
+      this.ipEdit.setResponder((var1) -> this.updateSelectButtonStatus());
       this.addWidget(this.ipEdit);
-      this.selectButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectServer.select"), (var1) -> {
-         this.onSelect();
-      }).bounds(this.width / 2 - 100, this.height / 4 + 96 + 12, 200, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> {
-         this.callback.accept(false);
-      }).bounds(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20).build());
+      this.selectButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectServer.select"), (var1) -> this.onSelect()).bounds(this.width / 2 - 100, this.height / 4 + 96 + 12, 200, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.callback.accept(false)).bounds(this.width / 2 - 100, this.height / 4 + 120 + 12, 200, 20).build());
       this.updateSelectButtonStatus();
    }
 

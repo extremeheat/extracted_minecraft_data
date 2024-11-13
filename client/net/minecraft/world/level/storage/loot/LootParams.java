@@ -45,11 +45,6 @@ public class LootParams {
       return this.luck;
    }
 
-   @FunctionalInterface
-   public interface DynamicDrop {
-      void add(Consumer<ItemStack> var1);
-   }
-
    public static class Builder {
       private final ServerLevel level;
       private final ContextMap.Builder params = new ContextMap.Builder();
@@ -76,12 +71,12 @@ public class LootParams {
       }
 
       public <T> T getParameter(ContextKey<T> var1) {
-         return this.params.getParameter(var1);
+         return (T)this.params.getParameter(var1);
       }
 
       @Nullable
       public <T> T getOptionalParameter(ContextKey<T> var1) {
-         return this.params.getOptionalParameter(var1);
+         return (T)this.params.getOptionalParameter(var1);
       }
 
       public Builder withDynamicDrop(ResourceLocation var1, DynamicDrop var2) {
@@ -102,5 +97,10 @@ public class LootParams {
          ContextMap var2 = this.params.create(var1);
          return new LootParams(this.level, var2, this.dynamicDrops, this.luck);
       }
+   }
+
+   @FunctionalInterface
+   public interface DynamicDrop {
+      void add(Consumer<ItemStack> var1);
    }
 }

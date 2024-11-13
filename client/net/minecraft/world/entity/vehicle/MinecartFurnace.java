@@ -137,6 +137,6 @@ public class MinecartFurnace extends AbstractMinecart {
    }
 
    static {
-      DATA_ID_FUEL = SynchedEntityData.defineId(MinecartFurnace.class, EntityDataSerializers.BOOLEAN);
+      DATA_ID_FUEL = SynchedEntityData.<Boolean>defineId(MinecartFurnace.class, EntityDataSerializers.BOOLEAN);
    }
 }

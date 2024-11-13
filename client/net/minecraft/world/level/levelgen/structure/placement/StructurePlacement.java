@@ -111,13 +111,29 @@ public abstract class StructurePlacement {
       CODEC = BuiltInRegistries.STRUCTURE_PLACEMENT.byNameCodec().dispatch(StructurePlacement::type, StructurePlacementType::codec);
    }
 
+   /** @deprecated */
+   @Deprecated
+   public static record ExclusionZone(Holder<StructureSet> otherSet, int chunkCount) {
+      public static final Codec<ExclusionZone> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryFileCodec.create(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC, false).fieldOf("other_set").forGetter(ExclusionZone::otherSet), Codec.intRange(1, 16).fieldOf("chunk_count").forGetter(ExclusionZone::chunkCount)).apply(var0, ExclusionZone::new));
+
+      public ExclusionZone(Holder<StructureSet> var1, int var2) {
+         super();
+         this.otherSet = var1;
+         this.chunkCount = var2;
+      }
+
+      boolean isPlacementForbidden(ChunkGeneratorStructureState var1, int var2, int var3) {
+         return var1.hasStructureChunkInRange(this.otherSet, var2, var3, this.chunkCount);
+      }
+   }
+
    public static enum FrequencyReductionMethod implements StringRepresentable {
       DEFAULT("default", StructurePlacement::probabilityReducer),
       LEGACY_TYPE_1("legacy_type_1", StructurePlacement::legacyPillagerOutpostReducer),
       LEGACY_TYPE_2("legacy_type_2", StructurePlacement::legacyArbitrarySaltProbabilityReducer),
       LEGACY_TYPE_3("legacy_type_3", StructurePlacement::legacyProbabilityReducerWithDouble);
 
-      public static final Codec<FrequencyReductionMethod> CODEC = StringRepresentable.fromEnum(FrequencyReductionMethod::values);
+      public static final Codec<FrequencyReductionMethod> CODEC = StringRepresentable.<FrequencyReductionMethod>fromEnum(FrequencyReductionMethod::values);
       private final String name;
       private final FrequencyReducer reducer;
 
@@ -137,32 +153,6 @@ public abstract class StructurePlacement {
       // $FF: synthetic method
       private static FrequencyReductionMethod[] $values() {
          return new FrequencyReductionMethod[]{DEFAULT, LEGACY_TYPE_1, LEGACY_TYPE_2, LEGACY_TYPE_3};
-      }
-   }
-
-   /** @deprecated */
-   @Deprecated
-   public static record ExclusionZone(Holder<StructureSet> otherSet, int chunkCount) {
-      public static final Codec<ExclusionZone> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(RegistryFileCodec.create(Registries.STRUCTURE_SET, StructureSet.DIRECT_CODEC, false).fieldOf("other_set").forGetter(ExclusionZone::otherSet), Codec.intRange(1, 16).fieldOf("chunk_count").forGetter(ExclusionZone::chunkCount)).apply(var0, ExclusionZone::new);
-      });
-
-      public ExclusionZone(Holder<StructureSet> var1, int var2) {
-         super();
-         this.otherSet = var1;
-         this.chunkCount = var2;
-      }
-
-      boolean isPlacementForbidden(ChunkGeneratorStructureState var1, int var2, int var3) {
-         return var1.hasStructureChunkInRange(this.otherSet, var2, var3, this.chunkCount);
-      }
-
-      public Holder<StructureSet> otherSet() {
-         return this.otherSet;
-      }
-
-      public int chunkCount() {
-         return this.chunkCount;
       }
    }
 

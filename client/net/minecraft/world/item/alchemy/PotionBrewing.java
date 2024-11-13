@@ -1,7 +1,6 @@
 package net.minecraft.world.item.alchemy;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.Holder;
@@ -34,63 +33,43 @@ public class PotionBrewing {
    }
 
    private boolean isContainer(ItemStack var1) {
-      Iterator var2 = this.containers.iterator();
-
-      Ingredient var3;
-      do {
-         if (!var2.hasNext()) {
-            return false;
+      for(Ingredient var3 : this.containers) {
+         if (var3.test(var1)) {
+            return true;
          }
+      }
 
-         var3 = (Ingredient)var2.next();
-      } while(!var3.test(var1));
-
-      return true;
+      return false;
    }
 
    public boolean isContainerIngredient(ItemStack var1) {
-      Iterator var2 = this.containerMixes.iterator();
-
-      Mix var3;
-      do {
-         if (!var2.hasNext()) {
-            return false;
+      for(Mix var3 : this.containerMixes) {
+         if (var3.ingredient.test(var1)) {
+            return true;
          }
+      }
 
-         var3 = (Mix)var2.next();
-      } while(!var3.ingredient.test(var1));
-
-      return true;
+      return false;
    }
 
    public boolean isPotionIngredient(ItemStack var1) {
-      Iterator var2 = this.potionMixes.iterator();
-
-      Mix var3;
-      do {
-         if (!var2.hasNext()) {
-            return false;
+      for(Mix var3 : this.potionMixes) {
+         if (var3.ingredient.test(var1)) {
+            return true;
          }
+      }
 
-         var3 = (Mix)var2.next();
-      } while(!var3.ingredient.test(var1));
-
-      return true;
+      return false;
    }
 
    public boolean isBrewablePotion(Holder<Potion> var1) {
-      Iterator var2 = this.potionMixes.iterator();
-
-      Mix var3;
-      do {
-         if (!var2.hasNext()) {
-            return false;
+      for(Mix var3 : this.potionMixes) {
+         if (var3.to.is(var1)) {
+            return true;
          }
+      }
 
-         var3 = (Mix)var2.next();
-      } while(!var3.to.is(var1));
-
-      return true;
+      return false;
    }
 
    public boolean hasMix(ItemStack var1, ItemStack var2) {
@@ -102,18 +81,13 @@ public class PotionBrewing {
    }
 
    public boolean hasContainerMix(ItemStack var1, ItemStack var2) {
-      Iterator var3 = this.containerMixes.iterator();
-
-      Mix var4;
-      do {
-         if (!var3.hasNext()) {
-            return false;
+      for(Mix var4 : this.containerMixes) {
+         if (var1.is(var4.from) && var4.ingredient.test(var2)) {
+            return true;
          }
+      }
 
-         var4 = (Mix)var3.next();
-      } while(!var1.is(var4.from) || !var4.ingredient.test(var2));
-
-      return true;
+      return false;
    }
 
    public boolean hasPotionMix(ItemStack var1, ItemStack var2) {
@@ -121,18 +95,13 @@ public class PotionBrewing {
       if (var3.isEmpty()) {
          return false;
       } else {
-         Iterator var4 = this.potionMixes.iterator();
-
-         Mix var5;
-         do {
-            if (!var4.hasNext()) {
-               return false;
+         for(Mix var5 : this.potionMixes) {
+            if (var5.from.is((Holder)var3.get()) && var5.ingredient.test(var2)) {
+               return true;
             }
+         }
 
-            var5 = (Mix)var4.next();
-         } while(!var5.from.is((Holder)var3.get()) || !var5.ingredient.test(var2));
-
-         return true;
+         return false;
       }
    }
 
@@ -144,28 +113,19 @@ public class PotionBrewing {
          if (var3.isEmpty()) {
             return var2;
          } else {
-            Iterator var4 = this.containerMixes.iterator();
-
-            Mix var5;
-            do {
-               if (!var4.hasNext()) {
-                  var4 = this.potionMixes.iterator();
-
-                  do {
-                     if (!var4.hasNext()) {
-                        return var2;
-                     }
-
-                     var5 = (Mix)var4.next();
-                  } while(!var5.from.is((Holder)var3.get()) || !var5.ingredient.test(var1));
-
-                  return PotionContents.createItemStack(var2.getItem(), var5.to);
+            for(Mix var5 : this.containerMixes) {
+               if (var2.is(var5.from) && var5.ingredient.test(var1)) {
+                  return PotionContents.createItemStack((Item)var5.to.value(), (Holder)var3.get());
                }
+            }
 
-               var5 = (Mix)var4.next();
-            } while(!var2.is(var5.from) || !var5.ingredient.test(var1));
+            for(Mix var7 : this.potionMixes) {
+               if (var7.from.is((Holder)var3.get()) && var7.ingredient.test(var1)) {
+                  return PotionContents.createItemStack(var2.getItem(), var7.to);
+               }
+            }
 
-            return PotionContents.createItemStack((Item)var5.to.value(), (Holder)var3.get());
+            return var2;
          }
       }
    }
@@ -236,31 +196,6 @@ public class PotionBrewing {
       var0.addMix(Potions.SLOW_FALLING, Items.REDSTONE, Potions.LONG_SLOW_FALLING);
    }
 
-   static record Mix<T>(Holder<T> from, Ingredient ingredient, Holder<T> to) {
-      final Holder<T> from;
-      final Ingredient ingredient;
-      final Holder<T> to;
-
-      Mix(Holder<T> var1, Ingredient var2, Holder<T> var3) {
-         super();
-         this.from = var1;
-         this.ingredient = var2;
-         this.to = var3;
-      }
-
-      public Holder<T> from() {
-         return this.from;
-      }
-
-      public Ingredient ingredient() {
-         return this.ingredient;
-      }
-
-      public Holder<T> to() {
-         return this.to;
-      }
-   }
-
    public static class Builder {
       private final List<Ingredient> containers = new ArrayList();
       private final List<Mix<Potion>> potionMixes = new ArrayList();
@@ -310,6 +245,19 @@ public class PotionBrewing {
 
       public PotionBrewing build() {
          return new PotionBrewing(List.copyOf(this.containers), List.copyOf(this.potionMixes), List.copyOf(this.containerMixes));
+      }
+   }
+
+   static record Mix<T>(Holder<T> from, Ingredient ingredient, Holder<T> to) {
+      final Holder<T> from;
+      final Ingredient ingredient;
+      final Holder<T> to;
+
+      Mix(Holder<T> var1, Ingredient var2, Holder<T> var3) {
+         super();
+         this.from = var1;
+         this.ingredient = var2;
+         this.to = var3;
       }
    }
 }

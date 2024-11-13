@@ -37,8 +37,6 @@ public class ThrottlingChunkTaskDispatcher extends ChunkTaskDispatcher {
    @VisibleForTesting
    public String getDebugStatus() {
       String var10000 = this.executorSchedulerName;
-      return var10000 + "=[" + (String)this.chunkPositionsInExecution.longStream().mapToObj((var0) -> {
-         return "" + var0 + ":" + String.valueOf(new ChunkPos(var0));
-      }).collect(Collectors.joining(",")) + "], s=" + this.sleeping;
+      return var10000 + "=[" + (String)this.chunkPositionsInExecution.longStream().mapToObj((var0) -> var0 + ":" + String.valueOf(new ChunkPos(var0))).collect(Collectors.joining(",")) + "], s=" + this.sleeping;
    }
 }

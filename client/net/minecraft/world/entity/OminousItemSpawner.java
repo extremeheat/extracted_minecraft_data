@@ -96,9 +96,7 @@ public class OminousItemSpawner extends Entity {
 
    private Entity spawnProjectile(ServerLevel var1, ProjectileItem var2, ItemStack var3) {
       ProjectileItem.DispenseConfig var4 = var2.createDispenseConfig();
-      var4.overrideDispenseEvent().ifPresent((var2x) -> {
-         var1.levelEvent(var2x, this.blockPosition(), 0);
-      });
+      var4.overrideDispenseEvent().ifPresent((var2x) -> var1.levelEvent(var2x, this.blockPosition(), 0));
       Direction var5 = Direction.DOWN;
       Projectile var6 = Projectile.spawnProjectileUsingShoot(var2.asProjectile(var1, this.position(), var3, var5), var1, var3, (double)var5.getStepX(), (double)var5.getStepY(), (double)var5.getStepZ(), var4.power(), var4.uncertainty());
       var6.setOwner(this);
@@ -169,6 +167,6 @@ public class OminousItemSpawner extends Entity {
    }
 
    static {
-      DATA_ITEM = SynchedEntityData.defineId(OminousItemSpawner.class, EntityDataSerializers.ITEM_STACK);
+      DATA_ITEM = SynchedEntityData.<ItemStack>defineId(OminousItemSpawner.class, EntityDataSerializers.ITEM_STACK);
    }
 }

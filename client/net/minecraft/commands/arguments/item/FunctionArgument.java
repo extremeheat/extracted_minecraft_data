@@ -18,12 +18,8 @@ import net.minecraft.resources.ResourceLocation;
 
 public class FunctionArgument implements ArgumentType<Result> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "#foo");
-   private static final DynamicCommandExceptionType ERROR_UNKNOWN_TAG = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("arguments.function.tag.unknown", var0);
-   });
-   private static final DynamicCommandExceptionType ERROR_UNKNOWN_FUNCTION = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("arguments.function.unknown", var0);
-   });
+   private static final DynamicCommandExceptionType ERROR_UNKNOWN_TAG = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("arguments.function.tag.unknown", var0));
+   private static final DynamicCommandExceptionType ERROR_UNKNOWN_FUNCTION = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("arguments.function.unknown", var0));
 
    public FunctionArgument() {
       super();
@@ -34,26 +30,25 @@ public class FunctionArgument implements ArgumentType<Result> {
    }
 
    public Result parse(StringReader var1) throws CommandSyntaxException {
-      final ResourceLocation var2;
       if (var1.canRead() && var1.peek() == '#') {
          var1.skip();
-         var2 = ResourceLocation.read(var1);
-         return new Result(this) {
+         final ResourceLocation var3 = ResourceLocation.read(var1);
+         return new Result() {
             public Collection<CommandFunction<CommandSourceStack>> create(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
-               return FunctionArgument.getFunctionTag(var1, var2);
+               return FunctionArgument.getFunctionTag(var1, var3);
             }
 
             public Pair<ResourceLocation, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> unwrap(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
-               return Pair.of(var2, Either.right(FunctionArgument.getFunctionTag(var1, var2)));
+               return Pair.of(var3, Either.right(FunctionArgument.getFunctionTag(var1, var3)));
             }
 
             public Pair<ResourceLocation, Collection<CommandFunction<CommandSourceStack>>> unwrapToCollection(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
-               return Pair.of(var2, FunctionArgument.getFunctionTag(var1, var2));
+               return Pair.of(var3, FunctionArgument.getFunctionTag(var1, var3));
             }
          };
       } else {
-         var2 = ResourceLocation.read(var1);
-         return new Result(this) {
+         final ResourceLocation var2 = ResourceLocation.read(var1);
+         return new Result() {
             public Collection<CommandFunction<CommandSourceStack>> create(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
                return Collections.singleton(FunctionArgument.getFunction(var1, var2));
             }
@@ -70,9 +65,7 @@ public class FunctionArgument implements ArgumentType<Result> {
    }
 
    static CommandFunction<CommandSourceStack> getFunction(CommandContext<CommandSourceStack> var0, ResourceLocation var1) throws CommandSyntaxException {
-      return (CommandFunction)((CommandSourceStack)var0.getSource()).getServer().getFunctions().get(var1).orElseThrow(() -> {
-         return ERROR_UNKNOWN_FUNCTION.create(var1.toString());
-      });
+      return (CommandFunction)((CommandSourceStack)var0.getSource()).getServer().getFunctions().get(var1).orElseThrow(() -> ERROR_UNKNOWN_FUNCTION.create(var1.toString()));
    }
 
    static Collection<CommandFunction<CommandSourceStack>> getFunctionTag(CommandContext<CommandSourceStack> var0, ResourceLocation var1) throws CommandSyntaxException {

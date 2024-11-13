@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ByteLinkedOpenHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -65,7 +64,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    public static final MapCodec<Block> CODEC = simpleCodec(Block::new);
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Holder.Reference<Block> builtInRegistryHolder;
-   public static final IdMapper<BlockState> BLOCK_STATE_REGISTRY = new IdMapper();
+   public static final IdMapper<BlockState> BLOCK_STATE_REGISTRY = new IdMapper<BlockState>();
    private static final LoadingCache<VoxelShape, Boolean> SHAPE_FULL_BLOCK_CACHE = CacheBuilder.newBuilder().maximumSize(512L).weakKeys().build(new CacheLoader<VoxelShape, Boolean>() {
       public Boolean load(VoxelShape var1) {
          return !Shapes.joinIsNotEmpty(Shapes.block(), var1, BooleanOp.NOT_SAME);
@@ -118,7 +117,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public static BlockState stateById(int var0) {
-      BlockState var1 = (BlockState)BLOCK_STATE_REGISTRY.byId(var0);
+      BlockState var1 = BLOCK_STATE_REGISTRY.byId(var0);
       return var1 == null ? Blocks.AIR.defaultBlockState() : var1;
    }
 
@@ -131,11 +130,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       if (var4.isEmpty()) {
          return var1;
       } else {
-         List var5 = var2.getEntities((Entity)null, var4.bounds());
-         Iterator var6 = var5.iterator();
-
-         while(var6.hasNext()) {
-            Entity var7 = (Entity)var6.next();
+         for(Entity var7 : var2.getEntities((Entity)null, var4.bounds())) {
             double var8 = Shapes.collide(Direction.Axis.Y, var7.getBoundingBox().move(0.0, 1.0, 0.0), List.of(var4), -1.0);
             var7.teleportRelative(0.0, 1.0 + var8, 0.0);
          }
@@ -151,11 +146,8 @@ public class Block extends BlockBehaviour implements ItemLike {
    public static BlockState updateFromNeighbourShapes(BlockState var0, LevelAccessor var1, BlockPos var2) {
       BlockState var3 = var0;
       BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
-      Direction[] var5 = UPDATE_SHAPE_ORDER;
-      int var6 = var5.length;
 
-      for(int var7 = 0; var7 < var6; ++var7) {
-         Direction var8 = var5[var7];
+      for(Direction var8 : UPDATE_SHAPE_ORDER) {
          var4.setWithOffset(var2, (Direction)var8);
          var3 = var3.updateShape(var1, var1, var2, var8, var4, var1.getBlockState(var4), var1.getRandom());
       }
@@ -186,7 +178,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       StateDefinition.Builder var2 = new StateDefinition.Builder(this);
       this.createBlockStateDefinition(var2);
       this.stateDefinition = var2.create(Block::defaultBlockState, BlockState::new);
-      this.registerDefaultState((BlockState)this.stateDefinition.any());
+      this.registerDefaultState(this.stateDefinition.any());
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          String var3 = this.getClass().getSimpleName();
          if (!var3.endsWith("Block")) {
@@ -267,9 +259,7 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    public static void dropResources(BlockState var0, Level var1, BlockPos var2) {
       if (var1 instanceof ServerLevel) {
-         getDrops(var0, (ServerLevel)var1, var2, (BlockEntity)null).forEach((var2x) -> {
-            popResource(var1, var2, var2x);
-         });
+         getDrops(var0, (ServerLevel)var1, var2, (BlockEntity)null).forEach((var2x) -> popResource(var1, var2, var2x));
          var0.spawnAfterBreak((ServerLevel)var1, var2, ItemStack.EMPTY, true);
       }
 
@@ -277,9 +267,7 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    public static void dropResources(BlockState var0, LevelAccessor var1, BlockPos var2, @Nullable BlockEntity var3) {
       if (var1 instanceof ServerLevel) {
-         getDrops(var0, (ServerLevel)var1, var2, var3).forEach((var2x) -> {
-            popResource((ServerLevel)var1, (BlockPos)var2, var2x);
-         });
+         getDrops(var0, (ServerLevel)var1, var2, var3).forEach((var2x) -> popResource((ServerLevel)var1, var2, var2x));
          var0.spawnAfterBreak((ServerLevel)var1, var2, ItemStack.EMPTY, true);
       }
 
@@ -287,9 +275,7 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    public static void dropResources(BlockState var0, Level var1, BlockPos var2, @Nullable BlockEntity var3, @Nullable Entity var4, ItemStack var5) {
       if (var1 instanceof ServerLevel) {
-         getDrops(var0, (ServerLevel)var1, var2, var3, var4, var5).forEach((var2x) -> {
-            popResource(var1, var2, var2x);
-         });
+         getDrops(var0, (ServerLevel)var1, var2, var3, var4, var5).forEach((var2x) -> popResource(var1, var2, var2x));
          var0.spawnAfterBreak((ServerLevel)var1, var2, var5, true);
       }
 
@@ -300,9 +286,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       double var5 = (double)var1.getX() + 0.5 + Mth.nextDouble(var0.random, -0.25, 0.25);
       double var7 = (double)var1.getY() + 0.5 + Mth.nextDouble(var0.random, -0.25, 0.25) - var3;
       double var9 = (double)var1.getZ() + 0.5 + Mth.nextDouble(var0.random, -0.25, 0.25);
-      popResource(var0, () -> {
-         return new ItemEntity(var0, var5, var7, var9, var2);
-      }, var2);
+      popResource(var0, (Supplier)(() -> new ItemEntity(var0, var5, var7, var9, var2)), var2);
    }
 
    public static void popResourceFromFace(Level var0, BlockPos var1, Direction var2, ItemStack var3) {
@@ -317,9 +301,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       double var17 = var4 == 0 ? Mth.nextDouble(var0.random, -0.1, 0.1) : (double)var4 * 0.1;
       double var19 = var5 == 0 ? Mth.nextDouble(var0.random, 0.0, 0.1) : (double)var5 * 0.1 + 0.1;
       double var21 = var6 == 0 ? Mth.nextDouble(var0.random, -0.1, 0.1) : (double)var6 * 0.1;
-      popResource(var0, () -> {
-         return new ItemEntity(var0, var11, var13, var15, var3, var17, var19, var21);
-      }, var3);
+      popResource(var0, (Supplier)(() -> new ItemEntity(var0, var11, var13, var15, var3, var17, var19, var21)), var3);
    }
 
    private static void popResource(Level var0, Supplier<ItemEntity> var1, ItemStack var2) {
@@ -431,10 +413,8 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    public final BlockState withPropertiesOf(BlockState var1) {
       BlockState var2 = this.defaultBlockState();
-      Iterator var3 = var1.getBlock().getStateDefinition().getProperties().iterator();
 
-      while(var3.hasNext()) {
-         Property var4 = (Property)var3.next();
+      for(Property var4 : var1.getBlock().getStateDefinition().getProperties()) {
          if (var2.hasProperty(var4)) {
             var2 = copyProperty(var1, var2, var4);
          }
@@ -510,14 +490,6 @@ public class Block extends BlockBehaviour implements ItemLike {
 
       public int hashCode() {
          return System.identityHashCode(this.first) * 31 + System.identityHashCode(this.second);
-      }
-
-      public VoxelShape first() {
-         return this.first;
-      }
-
-      public VoxelShape second() {
-         return this.second;
       }
    }
 }

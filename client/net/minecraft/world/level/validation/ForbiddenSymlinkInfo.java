@@ -8,12 +8,4 @@ public record ForbiddenSymlinkInfo(Path link, Path target) {
       this.link = var1;
       this.target = var2;
    }
-
-   public Path link() {
-      return this.link;
-   }
-
-   public Path target() {
-      return this.target;
-   }
 }

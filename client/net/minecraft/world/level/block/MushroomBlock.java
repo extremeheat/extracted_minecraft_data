@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -21,11 +20,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class MushroomBlock extends BushBlock implements BonemealableBlock {
-   public static final MapCodec<MushroomBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter((var0x) -> {
-         return var0x.feature;
-      }), propertiesCodec()).apply(var0, MushroomBlock::new);
-   });
+   public static final MapCodec<MushroomBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter((var0x) -> var0x.feature), propertiesCodec()).apply(var0, MushroomBlock::new));
    protected static final float AABB_OFFSET = 3.0F;
    protected static final VoxelShape SHAPE = Block.box(5.0, 0.0, 5.0, 11.0, 6.0, 11.0);
    private final ResourceKey<ConfiguredFeature<?, ?>> feature;
@@ -47,10 +42,8 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
       if (var4.nextInt(25) == 0) {
          int var5 = 5;
          boolean var6 = true;
-         Iterator var7 = BlockPos.betweenClosed(var3.offset(-4, -1, -4), var3.offset(4, 1, 4)).iterator();
 
-         while(var7.hasNext()) {
-            BlockPos var8 = (BlockPos)var7.next();
+         for(BlockPos var8 : BlockPos.betweenClosed(var3.offset(-4, -1, -4), var3.offset(4, 1, 4))) {
             if (var2.getBlockState(var8).is(this)) {
                --var5;
                if (var5 <= 0) {

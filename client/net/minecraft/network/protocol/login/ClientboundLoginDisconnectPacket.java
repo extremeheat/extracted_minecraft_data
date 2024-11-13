@@ -8,7 +8,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundLoginDisconnectPacket implements Packet<ClientLoginPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundLoginDisconnectPacket> STREAM_CODEC = Packet.codec(ClientboundLoginDisconnectPacket::write, ClientboundLoginDisconnectPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundLoginDisconnectPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundLoginDisconnectPacket>codec(ClientboundLoginDisconnectPacket::write, ClientboundLoginDisconnectPacket::new);
    private final Component reason;
 
    public ClientboundLoginDisconnectPacket(Component var1) {

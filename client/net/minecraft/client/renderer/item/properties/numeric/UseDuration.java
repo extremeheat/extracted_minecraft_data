@@ -9,9 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 public record UseDuration(boolean remaining) implements RangeSelectItemModelProperty {
-   public static final MapCodec<UseDuration> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.BOOL.optionalFieldOf("remaining", false).forGetter(UseDuration::remaining)).apply(var0, UseDuration::new);
-   });
+   public static final MapCodec<UseDuration> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("remaining", false).forGetter(UseDuration::remaining)).apply(var0, UseDuration::new));
 
    public UseDuration(boolean var1) {
       super();
@@ -32,9 +30,5 @@ public record UseDuration(boolean remaining) implements RangeSelectItemModelProp
 
    public static int useDuration(ItemStack var0, LivingEntity var1) {
       return var0.getUseDuration(var1) - var1.getUseItemRemainingTicks();
-   }
-
-   public boolean remaining() {
-      return this.remaining;
    }
 }

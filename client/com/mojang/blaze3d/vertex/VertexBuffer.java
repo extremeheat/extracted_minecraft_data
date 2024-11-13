@@ -89,10 +89,10 @@ public class VertexBuffer implements AutoCloseable {
    public void uploadIndexBuffer(ByteBufferBuilder.Result var1) {
       ByteBufferBuilder.Result var2 = var1;
 
-      label45: {
+      label46: {
          try {
             if (this.isInvalid()) {
-               break label45;
+               break label46;
             }
 
             RenderSystem.assertOnRenderThread();

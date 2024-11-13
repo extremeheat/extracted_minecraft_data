@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -94,10 +93,8 @@ public class VineBlock extends Block {
 
    private int countFaces(BlockState var1) {
       int var2 = 0;
-      Iterator var3 = PROPERTY_BY_DIRECTION.values().iterator();
 
-      while(var3.hasNext()) {
-         BooleanProperty var4 = (BooleanProperty)var3.next();
+      for(BooleanProperty var4 : PROPERTY_BY_DIRECTION.values()) {
          if ((Boolean)var1.getValue(var4)) {
             ++var2;
          }
@@ -134,31 +131,24 @@ public class VineBlock extends Block {
       }
 
       BlockState var5 = null;
-      Iterator var6 = Direction.Plane.HORIZONTAL.iterator();
 
-      while(true) {
-         Direction var7;
-         BooleanProperty var8;
-         do {
-            if (!var6.hasNext()) {
-               return var1;
+      for(Direction var7 : Direction.Plane.HORIZONTAL) {
+         BooleanProperty var8 = getPropertyForFace(var7);
+         if ((Boolean)var1.getValue(var8)) {
+            boolean var9 = this.canSupportAtFace(var2, var3, var7);
+            if (!var9) {
+               if (var5 == null) {
+                  var5 = var2.getBlockState(var4);
+               }
+
+               var9 = var5.is(this) && (Boolean)var5.getValue(var8);
             }
 
-            var7 = (Direction)var6.next();
-            var8 = getPropertyForFace(var7);
-         } while(!(Boolean)var1.getValue(var8));
-
-         boolean var9 = this.canSupportAtFace(var2, var3, var7);
-         if (!var9) {
-            if (var5 == null) {
-               var5 = var2.getBlockState(var4);
-            }
-
-            var9 = var5.is(this) && (Boolean)var5.getValue(var8);
+            var1 = (BlockState)var1.setValue(var8, var9);
          }
-
-         var1 = (BlockState)var1.setValue(var8, var9);
       }
+
+      return var1;
    }
 
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
@@ -175,35 +165,32 @@ public class VineBlock extends Block {
          if (var4.nextInt(4) == 0) {
             Direction var5 = Direction.getRandom(var4);
             BlockPos var6 = var3.above();
-            BlockPos var7;
-            BlockState var8;
-            Direction var18;
             if (var5.getAxis().isHorizontal() && !(Boolean)var1.getValue(getPropertyForFace(var5))) {
                if (this.canSpread(var2, var3)) {
-                  var7 = var3.relative(var5);
-                  var8 = var2.getBlockState(var7);
-                  if (var8.isAir()) {
-                     var18 = var5.getClockWise();
-                     Direction var19 = var5.getCounterClockWise();
-                     boolean var11 = (Boolean)var1.getValue(getPropertyForFace(var18));
-                     boolean var12 = (Boolean)var1.getValue(getPropertyForFace(var19));
-                     BlockPos var13 = var7.relative(var18);
-                     BlockPos var14 = var7.relative(var19);
-                     if (var11 && isAcceptableNeighbour(var2, var13, var18)) {
-                        var2.setBlock(var7, (BlockState)this.defaultBlockState().setValue(getPropertyForFace(var18), true), 2);
-                     } else if (var12 && isAcceptableNeighbour(var2, var14, var19)) {
-                        var2.setBlock(var7, (BlockState)this.defaultBlockState().setValue(getPropertyForFace(var19), true), 2);
+                  BlockPos var17 = var3.relative(var5);
+                  BlockState var19 = var2.getBlockState(var17);
+                  if (var19.isAir()) {
+                     Direction var21 = var5.getClockWise();
+                     Direction var22 = var5.getCounterClockWise();
+                     boolean var11 = (Boolean)var1.getValue(getPropertyForFace(var21));
+                     boolean var12 = (Boolean)var1.getValue(getPropertyForFace(var22));
+                     BlockPos var13 = var17.relative(var21);
+                     BlockPos var14 = var17.relative(var22);
+                     if (var11 && isAcceptableNeighbour(var2, var13, var21)) {
+                        var2.setBlock(var17, (BlockState)this.defaultBlockState().setValue(getPropertyForFace(var21), true), 2);
+                     } else if (var12 && isAcceptableNeighbour(var2, var14, var22)) {
+                        var2.setBlock(var17, (BlockState)this.defaultBlockState().setValue(getPropertyForFace(var22), true), 2);
                      } else {
                         Direction var15 = var5.getOpposite();
-                        if (var11 && var2.isEmptyBlock(var13) && isAcceptableNeighbour(var2, var3.relative(var18), var15)) {
+                        if (var11 && var2.isEmptyBlock(var13) && isAcceptableNeighbour(var2, var3.relative(var21), var15)) {
                            var2.setBlock(var13, (BlockState)this.defaultBlockState().setValue(getPropertyForFace(var15), true), 2);
-                        } else if (var12 && var2.isEmptyBlock(var14) && isAcceptableNeighbour(var2, var3.relative(var19), var15)) {
+                        } else if (var12 && var2.isEmptyBlock(var14) && isAcceptableNeighbour(var2, var3.relative(var22), var15)) {
                            var2.setBlock(var14, (BlockState)this.defaultBlockState().setValue(getPropertyForFace(var15), true), 2);
-                        } else if ((double)var4.nextFloat() < 0.05 && isAcceptableNeighbour(var2, var7.above(), Direction.UP)) {
-                           var2.setBlock(var7, (BlockState)this.defaultBlockState().setValue(UP, true), 2);
+                        } else if ((double)var4.nextFloat() < 0.05 && isAcceptableNeighbour(var2, var17.above(), Direction.UP)) {
+                           var2.setBlock(var17, (BlockState)this.defaultBlockState().setValue(UP, true), 2);
                         }
                      }
-                  } else if (isAcceptableNeighbour(var2, var7, var5)) {
+                  } else if (isAcceptableNeighbour(var2, var17, var5)) {
                      var2.setBlock(var3, (BlockState)var1.setValue(getPropertyForFace(var5), true), 2);
                   }
 
@@ -221,29 +208,24 @@ public class VineBlock extends Block {
                      }
 
                      BlockState var16 = var1;
-                     Iterator var17 = Direction.Plane.HORIZONTAL.iterator();
 
-                     while(true) {
-                        do {
-                           if (!var17.hasNext()) {
-                              if (this.hasHorizontalConnection(var16)) {
-                                 var2.setBlock(var6, var16, 2);
-                              }
-
-                              return;
-                           }
-
-                           var18 = (Direction)var17.next();
-                        } while(!var4.nextBoolean() && isAcceptableNeighbour(var2, var6.relative(var18), var18));
-
-                        var16 = (BlockState)var16.setValue(getPropertyForFace(var18), false);
+                     for(Direction var20 : Direction.Plane.HORIZONTAL) {
+                        if (var4.nextBoolean() || !isAcceptableNeighbour(var2, var6.relative(var20), var20)) {
+                           var16 = (BlockState)var16.setValue(getPropertyForFace(var20), false);
+                        }
                      }
+
+                     if (this.hasHorizontalConnection(var16)) {
+                        var2.setBlock(var6, var16, 2);
+                     }
+
+                     return;
                   }
                }
 
                if (var3.getY() > var2.getMinY()) {
-                  var7 = var3.below();
-                  var8 = var2.getBlockState(var7);
+                  BlockPos var7 = var3.below();
+                  BlockState var8 = var2.getBlockState(var7);
                   if (var8.isAir() || var8.is(this)) {
                      BlockState var9 = var8.isAir() ? this.defaultBlockState() : var8;
                      BlockState var10 = this.copyRandomFaces(var1, var9, var4);
@@ -259,10 +241,7 @@ public class VineBlock extends Block {
    }
 
    private BlockState copyRandomFaces(BlockState var1, BlockState var2, RandomSource var3) {
-      Iterator var4 = Direction.Plane.HORIZONTAL.iterator();
-
-      while(var4.hasNext()) {
-         Direction var5 = (Direction)var4.next();
+      for(Direction var5 : Direction.Plane.HORIZONTAL) {
          if (var3.nextBoolean()) {
             BooleanProperty var6 = getPropertyForFace(var5);
             if ((Boolean)var1.getValue(var6)) {
@@ -282,10 +261,8 @@ public class VineBlock extends Block {
       boolean var3 = true;
       Iterable var4 = BlockPos.betweenClosed(var2.getX() - 4, var2.getY() - 1, var2.getZ() - 4, var2.getX() + 4, var2.getY() + 1, var2.getZ() + 4);
       int var5 = 5;
-      Iterator var6 = var4.iterator();
 
-      while(var6.hasNext()) {
-         BlockPos var7 = (BlockPos)var6.next();
+      for(BlockPos var7 : var4) {
          if (var1.getBlockState(var7).is(this)) {
             --var5;
             if (var5 <= 0) {
@@ -311,11 +288,8 @@ public class VineBlock extends Block {
       BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos());
       boolean var3 = var2.is(this);
       BlockState var4 = var3 ? var2 : this.defaultBlockState();
-      Direction[] var5 = var1.getNearestLookingDirections();
-      int var6 = var5.length;
 
-      for(int var7 = 0; var7 < var6; ++var7) {
-         Direction var8 = var5[var7];
+      for(Direction var8 : var1.getNearestLookingDirections()) {
          if (var8 != Direction.DOWN) {
             BooleanProperty var9 = getPropertyForFace(var8);
             boolean var10 = var3 && (Boolean)var2.getValue(var9);
@@ -373,9 +347,7 @@ public class VineBlock extends Block {
       EAST = PipeBlock.EAST;
       SOUTH = PipeBlock.SOUTH;
       WEST = PipeBlock.WEST;
-      PROPERTY_BY_DIRECTION = (Map)PipeBlock.PROPERTY_BY_DIRECTION.entrySet().stream().filter((var0) -> {
-         return var0.getKey() != Direction.DOWN;
-      }).collect(Util.toMap());
+      PROPERTY_BY_DIRECTION = (Map)PipeBlock.PROPERTY_BY_DIRECTION.entrySet().stream().filter((var0) -> var0.getKey() != Direction.DOWN).collect(Util.toMap());
       UP_AABB = Block.box(0.0, 15.0, 0.0, 16.0, 16.0, 16.0);
       WEST_AABB = Block.box(0.0, 0.0, 0.0, 1.0, 16.0, 16.0);
       EAST_AABB = Block.box(15.0, 0.0, 0.0, 16.0, 16.0, 16.0);

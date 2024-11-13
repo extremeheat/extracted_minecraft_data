@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Iterator;
 import net.minecraft.util.ArrayListDeque;
 import org.slf4j.Logger;
 
@@ -18,7 +17,7 @@ public class CommandHistory {
    private static final int MAX_PERSISTED_COMMAND_HISTORY = 50;
    private static final String PERSISTED_COMMANDS_FILE_NAME = "command_history.txt";
    private final Path commandsPath;
-   private final ArrayListDeque<String> lastCommands = new ArrayListDeque(50);
+   private final ArrayListDeque<String> lastCommands = new ArrayListDeque<String>(50);
 
    public CommandHistory(Path var1) {
       super();
@@ -68,10 +67,7 @@ public class CommandHistory {
          BufferedWriter var1 = Files.newBufferedWriter(this.commandsPath, Charsets.UTF_8);
 
          try {
-            Iterator var2 = this.lastCommands.iterator();
-
-            while(var2.hasNext()) {
-               String var3 = (String)var2.next();
+            for(String var3 : this.lastCommands) {
                var1.write(var3);
                var1.newLine();
             }

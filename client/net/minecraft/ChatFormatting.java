@@ -37,13 +37,9 @@ public enum ChatFormatting implements StringRepresentable {
    ITALIC("ITALIC", 'o', true),
    RESET("RESET", 'r', -1, (Integer)null);
 
-   public static final Codec<ChatFormatting> CODEC = StringRepresentable.fromEnum(ChatFormatting::values);
+   public static final Codec<ChatFormatting> CODEC = StringRepresentable.<ChatFormatting>fromEnum(ChatFormatting::values);
    public static final char PREFIX_CODE = '\u00a7';
-   private static final Map<String, ChatFormatting> FORMATTING_BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> {
-      return cleanName(var0.name);
-   }, (var0) -> {
-      return var0;
-   }));
+   private static final Map<String, ChatFormatting> FORMATTING_BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> cleanName(var0.name), (var0) -> var0));
    private static final Pattern STRIP_FORMATTING_PATTERN = Pattern.compile("(?i)\u00a7[0-9A-FK-OR]");
    private final String name;
    private final char code;
@@ -119,11 +115,7 @@ public enum ChatFormatting implements StringRepresentable {
       if (var0 < 0) {
          return RESET;
       } else {
-         ChatFormatting[] var1 = values();
-         int var2 = var1.length;
-
-         for(int var3 = 0; var3 < var2; ++var3) {
-            ChatFormatting var4 = var1[var3];
+         for(ChatFormatting var4 : values()) {
             if (var4.getId() == var0) {
                return var4;
             }
@@ -136,11 +128,8 @@ public enum ChatFormatting implements StringRepresentable {
    @Nullable
    public static ChatFormatting getByCode(char var0) {
       char var1 = Character.toLowerCase(var0);
-      ChatFormatting[] var2 = values();
-      int var3 = var2.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         ChatFormatting var5 = var2[var4];
+      for(ChatFormatting var5 : values()) {
          if (var5.code == var1) {
             return var5;
          }
@@ -151,11 +140,8 @@ public enum ChatFormatting implements StringRepresentable {
 
    public static Collection<String> getNames(boolean var0, boolean var1) {
       ArrayList var2 = Lists.newArrayList();
-      ChatFormatting[] var3 = values();
-      int var4 = var3.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         ChatFormatting var6 = var3[var5];
+      for(ChatFormatting var6 : values()) {
          if ((!var6.isColor() || var0) && (!var6.isFormat() || var1)) {
             var2.add(var6.getName());
          }

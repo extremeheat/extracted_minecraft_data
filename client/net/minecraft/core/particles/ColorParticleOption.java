@@ -12,19 +12,11 @@ public class ColorParticleOption implements ParticleOptions {
    private final int color;
 
    public static MapCodec<ColorParticleOption> codec(ParticleType<ColorParticleOption> var0) {
-      return ExtraCodecs.ARGB_COLOR_CODEC.xmap((var1) -> {
-         return new ColorParticleOption(var0, var1);
-      }, (var0x) -> {
-         return var0x.color;
-      }).fieldOf("color");
+      return ExtraCodecs.ARGB_COLOR_CODEC.xmap((var1) -> new ColorParticleOption(var0, var1), (var0x) -> var0x.color).fieldOf("color");
    }
 
    public static StreamCodec<? super ByteBuf, ColorParticleOption> streamCodec(ParticleType<ColorParticleOption> var0) {
-      return ByteBufCodecs.INT.map((var1) -> {
-         return new ColorParticleOption(var0, var1);
-      }, (var0x) -> {
-         return var0x.color;
-      });
+      return ByteBufCodecs.INT.map((var1) -> new ColorParticleOption(var0, var1), (var0x) -> var0x.color);
    }
 
    private ColorParticleOption(ParticleType<ColorParticleOption> var1, int var2) {

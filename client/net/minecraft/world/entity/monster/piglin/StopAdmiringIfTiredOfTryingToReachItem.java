@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster.piglin;
 
 import java.util.Optional;
+import java.util.function.Function;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -12,9 +13,7 @@ public class StopAdmiringIfTiredOfTryingToReachItem {
    }
 
    public static BehaviorControl<LivingEntity> create(int var0, int var1) {
-      return BehaviorBuilder.create((var2) -> {
-         return var2.group(var2.present(MemoryModuleType.ADMIRING_ITEM), var2.present(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM), var2.registered(MemoryModuleType.TIME_TRYING_TO_REACH_ADMIRE_ITEM), var2.registered(MemoryModuleType.DISABLE_WALK_TO_ADMIRE_ITEM)).apply(var2, (var3, var4, var5, var6) -> {
-            return (var6x, var7, var8) -> {
+      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.present(MemoryModuleType.ADMIRING_ITEM), var2.present(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM), var2.registered(MemoryModuleType.TIME_TRYING_TO_REACH_ADMIRE_ITEM), var2.registered(MemoryModuleType.DISABLE_WALK_TO_ADMIRE_ITEM)).apply(var2, (var3, var4, var5, var6) -> (var6x, var7, var8) -> {
                if (!var7.getOffhandItem().isEmpty()) {
                   return false;
                } else {
@@ -34,8 +33,6 @@ public class StopAdmiringIfTiredOfTryingToReachItem {
 
                   return true;
                }
-            };
-         });
-      });
+            })));
    }
 }

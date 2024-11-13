@@ -1,6 +1,5 @@
 package net.minecraft.world.entity;
 
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -18,14 +17,11 @@ public enum ConversionType {
          Entity var4 = var1.getFirstPassenger();
          var2.copyPosition(var1);
          var2.setDeltaMovement(var1.getDeltaMovement());
-         Entity var6;
          if (var4 != null) {
             var4.stopRiding();
             var4.boardingCooldown = 0;
-            Iterator var5 = var2.getPassengers().iterator();
 
-            while(var5.hasNext()) {
-               var6 = (Entity)var5.next();
+            for(Entity var6 : var2.getPassengers()) {
                var6.stopRiding();
                var6.remove(Entity.RemovalReason.DISCARDED);
             }
@@ -40,10 +36,7 @@ public enum ConversionType {
          }
 
          if (var3.keepEquipment()) {
-            Iterator var10 = EquipmentSlot.VALUES.iterator();
-
-            while(var10.hasNext()) {
-               EquipmentSlot var7 = (EquipmentSlot)var10.next();
+            for(EquipmentSlot var7 : EquipmentSlot.VALUES) {
                ItemStack var8 = var1.getItemBySlot(var7);
                if (!var8.isEmpty()) {
                   var2.setItemSlot(var7, var8.copyAndClear());
@@ -61,9 +54,9 @@ public enum ConversionType {
          Optional var10000 = var1.getSleepingPos();
          Objects.requireNonNull(var2);
          var10000.ifPresent(var2::setSleepingPos);
-         var6 = var1.getLeashHolder();
-         if (var6 != null) {
-            var2.setLeashedTo(var6, true);
+         Entity var11 = var1.getLeashHolder();
+         if (var11 != null) {
+            var2.setLeashedTo(var11, true);
          }
 
          this.convertCommon(var1, var2, var3);
@@ -99,10 +92,8 @@ public enum ConversionType {
 
    void convertCommon(Mob var1, Mob var2, ConversionParams var3) {
       var2.setAbsorptionAmount(var1.getAbsorptionAmount());
-      Iterator var4 = var1.getActiveEffects().iterator();
 
-      while(var4.hasNext()) {
-         MobEffectInstance var5 = (MobEffectInstance)var4.next();
+      for(MobEffectInstance var5 : var1.getActiveEffects()) {
          var2.addEffect(new MobEffectInstance(var5));
       }
 

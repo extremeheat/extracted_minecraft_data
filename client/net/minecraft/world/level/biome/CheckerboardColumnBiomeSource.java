@@ -8,13 +8,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 
 public class CheckerboardColumnBiomeSource extends BiomeSource {
-   public static final MapCodec<CheckerboardColumnBiomeSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Biome.LIST_CODEC.fieldOf("biomes").forGetter((var0x) -> {
-         return var0x.allowedBiomes;
-      }), Codec.intRange(0, 62).fieldOf("scale").orElse(2).forGetter((var0x) -> {
-         return var0x.size;
-      })).apply(var0, CheckerboardColumnBiomeSource::new);
-   });
+   public static final MapCodec<CheckerboardColumnBiomeSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Biome.LIST_CODEC.fieldOf("biomes").forGetter((var0x) -> var0x.allowedBiomes), Codec.intRange(0, 62).fieldOf("scale").orElse(2).forGetter((var0x) -> var0x.size)).apply(var0, CheckerboardColumnBiomeSource::new));
    private final HolderSet<Biome> allowedBiomes;
    private final int bitShift;
    private final int size;

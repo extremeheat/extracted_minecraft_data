@@ -16,34 +16,6 @@ public record FogParameters(float start, float end, FogShape shape, float red, f
       this.alpha = var7;
    }
 
-   public float start() {
-      return this.start;
-   }
-
-   public float end() {
-      return this.end;
-   }
-
-   public FogShape shape() {
-      return this.shape;
-   }
-
-   public float red() {
-      return this.red;
-   }
-
-   public float green() {
-      return this.green;
-   }
-
-   public float blue() {
-      return this.blue;
-   }
-
-   public float alpha() {
-      return this.alpha;
-   }
-
    static {
       NO_FOG = new FogParameters(3.4028235E38F, 0.0F, FogShape.SPHERE, 0.0F, 0.0F, 0.0F, 0.0F);
    }

@@ -28,17 +28,11 @@ public record WritableBookContent(List<Filterable<String>> pages) implements Boo
    }
 
    public Stream<String> getPages(boolean var1) {
-      return this.pages.stream().map((var1x) -> {
-         return (String)var1x.get(var1);
-      });
+      return this.pages.stream().map((var1x) -> (String)var1x.get(var1));
    }
 
    public WritableBookContent withReplacedPages(List<Filterable<String>> var1) {
       return new WritableBookContent(var1);
-   }
-
-   public List<Filterable<String>> pages() {
-      return this.pages;
    }
 
    // $FF: synthetic method
@@ -48,9 +42,7 @@ public record WritableBookContent(List<Filterable<String>> pages) implements Boo
 
    static {
       PAGES_CODEC = PAGE_CODEC.sizeLimitedListOf(100);
-      CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(PAGES_CODEC.optionalFieldOf("pages", List.of()).forGetter(WritableBookContent::pages)).apply(var0, WritableBookContent::new);
-      });
+      CODEC = RecordCodecBuilder.create((var0) -> var0.group(PAGES_CODEC.optionalFieldOf("pages", List.of()).forGetter(WritableBookContent::pages)).apply(var0, WritableBookContent::new));
       STREAM_CODEC = Filterable.streamCodec(ByteBufCodecs.stringUtf8(1024)).apply(ByteBufCodecs.list(100)).map(WritableBookContent::new, WritableBookContent::pages);
    }
 }

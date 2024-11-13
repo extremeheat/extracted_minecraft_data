@@ -45,11 +45,8 @@ public final class BlockLightEngine extends LightEngine<BlockLightSectionStorage
 
    protected void propagateIncrease(long var1, long var3, int var5) {
       BlockState var6 = null;
-      Direction[] var7 = PROPAGATION_DIRECTIONS;
-      int var8 = var7.length;
 
-      for(int var9 = 0; var9 < var8; ++var9) {
-         Direction var10 = var7[var9];
+      for(Direction var10 : PROPAGATION_DIRECTIONS) {
          if (LightEngine.QueueEntry.shouldPropagateInDirection(var3, var10)) {
             long var11 = BlockPos.offset(var1, var10);
             if (((BlockLightSectionStorage)this.storage).storingLightForSection(SectionPos.blockToSection(var11))) {
@@ -80,11 +77,8 @@ public final class BlockLightEngine extends LightEngine<BlockLightSectionStorage
 
    protected void propagateDecrease(long var1, long var3) {
       int var5 = LightEngine.QueueEntry.getFromLevel(var3);
-      Direction[] var6 = PROPAGATION_DIRECTIONS;
-      int var7 = var6.length;
 
-      for(int var8 = 0; var8 < var7; ++var8) {
-         Direction var9 = var6[var8];
+      for(Direction var9 : PROPAGATION_DIRECTIONS) {
          if (LightEngine.QueueEntry.shouldPropagateInDirection(var3, var9)) {
             long var10 = BlockPos.offset(var1, var9);
             if (((BlockLightSectionStorage)this.storage).storingLightForSection(SectionPos.blockToSection(var10))) {

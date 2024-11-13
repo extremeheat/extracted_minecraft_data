@@ -31,16 +31,4 @@ public record GlyphRenderTypes(RenderType normal, RenderType seeThrough, RenderT
 
       return var10000;
    }
-
-   public RenderType normal() {
-      return this.normal;
-   }
-
-   public RenderType seeThrough() {
-      return this.seeThrough;
-   }
-
-   public RenderType polygonOffset() {
-      return this.polygonOffset;
-   }
 }

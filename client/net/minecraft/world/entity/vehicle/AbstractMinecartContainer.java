@@ -5,7 +5,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -29,7 +28,7 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
 
    protected AbstractMinecartContainer(EntityType<?> var1, Level var2) {
       super(var1, var2);
-      this.itemStacks = NonNullList.withSize(36, ItemStack.EMPTY);
+      this.itemStacks = NonNullList.<ItemStack>withSize(36, ItemStack.EMPTY);
    }
 
    public void destroy(ServerLevel var1, DamageSource var2) {
@@ -66,7 +65,7 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
 
    public void remove(Entity.RemovalReason var1) {
       if (!this.level().isClientSide && var1.shouldDestroy()) {
-         Containers.dropContents(this.level(), (Entity)this, (Container)this);
+         Containers.dropContents(this.level(), (Entity)this, this);
       }
 
       super.remove(var1);
@@ -143,6 +142,6 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
    }
 
    public void clearItemStacks() {
-      this.itemStacks = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+      this.itemStacks = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
    }
 }

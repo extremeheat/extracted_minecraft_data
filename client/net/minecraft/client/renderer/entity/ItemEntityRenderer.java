@@ -62,12 +62,10 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity, ItemEntityRen
       float var8 = var6.transform().scale.x();
       float var9 = var6.transform().scale.y();
       float var10 = var6.transform().scale.z();
-      float var12;
-      float var13;
       if (!var7) {
          float var11 = -0.0F * (float)(var5 - 1) * 0.5F * var8;
-         var12 = -0.0F * (float)(var5 - 1) * 0.5F * var9;
-         var13 = -0.09375F * (float)(var5 - 1) * 0.5F * var10;
+         float var12 = -0.0F * (float)(var5 - 1) * 0.5F * var9;
+         float var13 = -0.09375F * (float)(var5 - 1) * 0.5F * var10;
          var0.translate(var11, var12, var13);
       }
 
@@ -75,14 +73,14 @@ public class ItemEntityRenderer extends EntityRenderer<ItemEntity, ItemEntityRen
          var0.pushPose();
          if (var15 > 0) {
             if (var7) {
-               var12 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
-               var13 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
+               float var16 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
+               float var18 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
                float var14 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F;
-               var0.translate(var12, var13, var14);
+               var0.translate(var16, var18, var14);
             } else {
-               var12 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
-               var13 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
-               var0.translate(var12, var13, 0.0F);
+               float var17 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
+               float var19 = (var4.nextFloat() * 2.0F - 1.0F) * 0.15F * 0.5F;
+               var0.translate(var17, var19, 0.0F);
             }
          }
 

@@ -14,12 +14,4 @@ public record TickTimeStat(Instant timestamp, Duration currentAverage) {
    public static TickTimeStat from(RecordedEvent var0) {
       return new TickTimeStat(var0.getStartTime(), var0.getDuration("averageTickDuration"));
    }
-
-   public Instant timestamp() {
-      return this.timestamp;
-   }
-
-   public Duration currentAverage() {
-      return this.currentAverage;
-   }
 }

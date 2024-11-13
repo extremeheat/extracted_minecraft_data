@@ -7,9 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 
 public record DamagePredicate(MinMaxBounds.Doubles dealtDamage, MinMaxBounds.Doubles takenDamage, Optional<EntityPredicate> sourceEntity, Optional<Boolean> blocked, Optional<DamageSourcePredicate> type) {
-   public static final Codec<DamagePredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(MinMaxBounds.Doubles.CODEC.optionalFieldOf("dealt", MinMaxBounds.Doubles.ANY).forGetter(DamagePredicate::dealtDamage), MinMaxBounds.Doubles.CODEC.optionalFieldOf("taken", MinMaxBounds.Doubles.ANY).forGetter(DamagePredicate::takenDamage), EntityPredicate.CODEC.optionalFieldOf("source_entity").forGetter(DamagePredicate::sourceEntity), Codec.BOOL.optionalFieldOf("blocked").forGetter(DamagePredicate::blocked), DamageSourcePredicate.CODEC.optionalFieldOf("type").forGetter(DamagePredicate::type)).apply(var0, DamagePredicate::new);
-   });
+   public static final Codec<DamagePredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(MinMaxBounds.Doubles.CODEC.optionalFieldOf("dealt", MinMaxBounds.Doubles.ANY).forGetter(DamagePredicate::dealtDamage), MinMaxBounds.Doubles.CODEC.optionalFieldOf("taken", MinMaxBounds.Doubles.ANY).forGetter(DamagePredicate::takenDamage), EntityPredicate.CODEC.optionalFieldOf("source_entity").forGetter(DamagePredicate::sourceEntity), Codec.BOOL.optionalFieldOf("blocked").forGetter(DamagePredicate::blocked), DamageSourcePredicate.CODEC.optionalFieldOf("type").forGetter(DamagePredicate::type)).apply(var0, DamagePredicate::new));
 
    public DamagePredicate(MinMaxBounds.Doubles var1, MinMaxBounds.Doubles var2, Optional<EntityPredicate> var3, Optional<Boolean> var4, Optional<DamageSourcePredicate> var5) {
       super();
@@ -32,26 +30,6 @@ public record DamagePredicate(MinMaxBounds.Doubles dealtDamage, MinMaxBounds.Dou
       } else {
          return !this.type.isPresent() || ((DamageSourcePredicate)this.type.get()).matches(var1, var2);
       }
-   }
-
-   public MinMaxBounds.Doubles dealtDamage() {
-      return this.dealtDamage;
-   }
-
-   public MinMaxBounds.Doubles takenDamage() {
-      return this.takenDamage;
-   }
-
-   public Optional<EntityPredicate> sourceEntity() {
-      return this.sourceEntity;
-   }
-
-   public Optional<Boolean> blocked() {
-      return this.blocked;
-   }
-
-   public Optional<DamageSourcePredicate> type() {
-      return this.type;
    }
 
    public static class Builder {

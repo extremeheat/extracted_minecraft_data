@@ -22,9 +22,7 @@ public class RegistryDumpReport implements DataProvider {
 
    public CompletableFuture<?> run(CachedOutput var1) {
       JsonObject var2 = new JsonObject();
-      BuiltInRegistries.REGISTRY.listElements().forEach((var1x) -> {
-         var2.add(var1x.key().location().toString(), dumpRegistry((Registry)var1x.value()));
-      });
+      BuiltInRegistries.REGISTRY.listElements().forEach((var1x) -> var2.add(var1x.key().location().toString(), dumpRegistry((Registry)var1x.value())));
       Path var3 = this.output.getOutputFolder(PackOutput.Target.REPORTS).resolve("registries.json");
       return DataProvider.saveStable(var1, var2, var3);
    }

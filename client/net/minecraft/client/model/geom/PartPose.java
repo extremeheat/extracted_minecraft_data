@@ -43,40 +43,4 @@ public record PartPose(float x, float y, float z, float xRot, float yRot, float 
    public PartPose scaled(float var1, float var2, float var3) {
       return new PartPose(this.x * var1, this.y * var2, this.z * var3, this.xRot, this.yRot, this.zRot, this.xScale * var1, this.yScale * var2, this.zScale * var3);
    }
-
-   public float x() {
-      return this.x;
-   }
-
-   public float y() {
-      return this.y;
-   }
-
-   public float z() {
-      return this.z;
-   }
-
-   public float xRot() {
-      return this.xRot;
-   }
-
-   public float yRot() {
-      return this.yRot;
-   }
-
-   public float zRot() {
-      return this.zRot;
-   }
-
-   public float xScale() {
-      return this.xScale;
-   }
-
-   public float yScale() {
-      return this.yScale;
-   }
-
-   public float zScale() {
-      return this.zScale;
-   }
 }

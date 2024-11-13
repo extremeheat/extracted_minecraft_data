@@ -9,9 +9,7 @@ import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public record UniformGenerator(NumberProvider min, NumberProvider max) implements NumberProvider {
-   public static final MapCodec<UniformGenerator> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(NumberProviders.CODEC.fieldOf("min").forGetter(UniformGenerator::min), NumberProviders.CODEC.fieldOf("max").forGetter(UniformGenerator::max)).apply(var0, UniformGenerator::new);
-   });
+   public static final MapCodec<UniformGenerator> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(NumberProviders.CODEC.fieldOf("min").forGetter(UniformGenerator::min), NumberProviders.CODEC.fieldOf("max").forGetter(UniformGenerator::max)).apply(var0, UniformGenerator::new));
 
    public UniformGenerator(NumberProvider var1, NumberProvider var2) {
       super();
@@ -37,13 +35,5 @@ public record UniformGenerator(NumberProvider min, NumberProvider max) implement
 
    public Set<ContextKey<?>> getReferencedContextParams() {
       return Sets.union(this.min.getReferencedContextParams(), this.max.getReferencedContextParams());
-   }
-
-   public NumberProvider min() {
-      return this.min;
-   }
-
-   public NumberProvider max() {
-      return this.max;
    }
 }

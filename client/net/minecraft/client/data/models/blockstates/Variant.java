@@ -38,9 +38,7 @@ public class Variant implements Supplier<JsonElement> {
 
    public JsonElement get() {
       JsonObject var1 = new JsonObject();
-      this.values.values().forEach((var1x) -> {
-         var1x.addToVariant(var1);
-      });
+      this.values.values().forEach((var1x) -> var1x.addToVariant(var1));
       return var1;
    }
 
@@ -49,9 +47,7 @@ public class Variant implements Supplier<JsonElement> {
          return ((Variant)var0.get(0)).get();
       } else {
          JsonArray var1 = new JsonArray();
-         var0.forEach((var1x) -> {
-            var1.add(var1x.get());
-         });
+         var0.forEach((var1x) -> var1.add(var1x.get()));
          return var1;
       }
    }

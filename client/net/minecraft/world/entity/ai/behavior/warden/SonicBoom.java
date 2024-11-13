@@ -47,16 +47,12 @@ public class SonicBoom extends Behavior<Warden> {
    }
 
    protected void tick(ServerLevel var1, Warden var2, long var3) {
-      var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent((var1x) -> {
-         var2.getLookControl().setLookAt(var1x.position());
-      });
+      var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent((var1x) -> var2.getLookControl().setLookAt(var1x.position()));
       if (!var2.getBrain().hasMemoryValue(MemoryModuleType.SONIC_BOOM_SOUND_DELAY) && !var2.getBrain().hasMemoryValue(MemoryModuleType.SONIC_BOOM_SOUND_COOLDOWN)) {
          var2.getBrain().setMemoryWithExpiry(MemoryModuleType.SONIC_BOOM_SOUND_COOLDOWN, Unit.INSTANCE, (long)(DURATION - TICKS_BEFORE_PLAYING_SOUND));
          Optional var10000 = var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET);
          Objects.requireNonNull(var2);
-         var10000.filter(var2::canTargetEntity).filter((var1x) -> {
-            return var2.closerThan(var1x, 15.0, 20.0);
-         }).ifPresent((var2x) -> {
+         var10000.filter(var2::canTargetEntity).filter((var1x) -> var2.closerThan(var1x, 15.0, 20.0)).ifPresent((var2x) -> {
             Vec3 var3 = var2.position().add(var2.getAttachments().get(EntityAttachment.WARDEN_CHEST, 0, var2.getYRot()));
             Vec3 var4 = var2x.getEyePosition().subtract(var3);
             Vec3 var5 = var4.normalize();

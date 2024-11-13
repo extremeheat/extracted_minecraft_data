@@ -99,9 +99,7 @@ public class HangingEntityItem extends Item {
                Objects.requireNonNull(var3);
                var10000.ifPresent(var3::add);
                var3.add(Component.translatable("painting.dimensions", ((PaintingVariant)var1x.value()).width(), ((PaintingVariant)var1x.value()).height()));
-            }, () -> {
-               var3.add(TOOLTIP_RANDOM_VARIANT);
-            });
+            }, () -> var3.add(TOOLTIP_RANDOM_VARIANT));
          } else if (var4.isCreative()) {
             var3.add(TOOLTIP_RANDOM_VARIANT);
          }

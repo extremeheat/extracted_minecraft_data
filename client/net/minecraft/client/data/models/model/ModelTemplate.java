@@ -49,16 +49,12 @@ public class ModelTemplate {
 
    public ResourceLocation create(ResourceLocation var1, TextureMapping var2, BiConsumer<ResourceLocation, ModelInstance> var3) {
       Map var4 = this.createMap(var2);
-      var3.accept(var1, () -> {
+      var3.accept(var1, (ModelInstance)() -> {
          JsonObject var2 = new JsonObject();
-         this.model.ifPresent((var1) -> {
-            var2.addProperty("parent", var1.toString());
-         });
+         this.model.ifPresent((var1) -> var2.addProperty("parent", var1.toString()));
          if (!var4.isEmpty()) {
             JsonObject var3 = new JsonObject();
-            var4.forEach((var1, var2x) -> {
-               var3.addProperty(var1.getId(), var2x.toString());
-            });
+            var4.forEach((var1, var2x) -> var3.addProperty(var1.getId(), var2x.toString()));
             var2.add("textures", var3);
          }
 

@@ -9,9 +9,7 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class DarkOakFoliagePlacer extends FoliagePlacer {
-   public static final MapCodec<DarkOakFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return foliagePlacerParts(var0).apply(var0, DarkOakFoliagePlacer::new);
-   });
+   public static final MapCodec<DarkOakFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> foliagePlacerParts(var0).apply(var0, DarkOakFoliagePlacer::new));
 
    public DarkOakFoliagePlacer(IntProvider var1, IntProvider var2) {
       super(var1, var2);

@@ -31,9 +31,7 @@ public class TextFieldHelper {
    }
 
    public static Supplier<String> createClipboardGetter(Minecraft var0) {
-      return () -> {
-         return getClipboardContents(var0);
-      };
+      return () -> getClipboardContents(var0);
    }
 
    public static String getClipboardContents(Minecraft var0) {
@@ -41,9 +39,7 @@ public class TextFieldHelper {
    }
 
    public static Consumer<String> createClipboardSetter(Minecraft var0) {
-      return (var1) -> {
-         setClipboardContents(var0, var1);
-      };
+      return (var1) -> setClipboardContents(var0, var1);
    }
 
    public static void setClipboardContents(Minecraft var0, String var1) {

@@ -6,7 +6,7 @@ import net.minecraft.commands.execution.ExecutionContext;
 import net.minecraft.commands.execution.Frame;
 
 public class FallthroughTask<T extends ExecutionCommandSource<T>> implements EntryAction<T> {
-   private static final FallthroughTask<? extends ExecutionCommandSource<?>> INSTANCE = new FallthroughTask();
+   private static final FallthroughTask<? extends ExecutionCommandSource<?>> INSTANCE = new FallthroughTask<ExecutionCommandSource<?>>();
 
    public FallthroughTask() {
       super();

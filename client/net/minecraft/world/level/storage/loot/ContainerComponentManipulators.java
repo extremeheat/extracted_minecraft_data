@@ -84,13 +84,9 @@ public interface ContainerComponentManipulators {
          return this.empty();
       }
    };
-   Map<DataComponentType<?>, ContainerComponentManipulator<?>> ALL_MANIPULATORS = (Map)Stream.of(CONTAINER, BUNDLE_CONTENTS, CHARGED_PROJECTILES).collect(Collectors.toMap(ContainerComponentManipulator::type, (var0) -> {
-      return var0;
-   }));
+   Map<DataComponentType<?>, ContainerComponentManipulator<?>> ALL_MANIPULATORS = (Map)Stream.of(CONTAINER, BUNDLE_CONTENTS, CHARGED_PROJECTILES).collect(Collectors.toMap(ContainerComponentManipulator::type, (var0) -> var0));
    Codec<ContainerComponentManipulator<?>> CODEC = BuiltInRegistries.DATA_COMPONENT_TYPE.byNameCodec().comapFlatMap((var0) -> {
       ContainerComponentManipulator var1 = (ContainerComponentManipulator)ALL_MANIPULATORS.get(var0);
-      return var1 != null ? DataResult.success(var1) : DataResult.error(() -> {
-         return "No items in component";
-      });
+      return var1 != null ? DataResult.success(var1) : DataResult.error(() -> "No items in component");
    }, ContainerComponentManipulator::type);
 }

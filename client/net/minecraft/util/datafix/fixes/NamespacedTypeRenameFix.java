@@ -26,11 +26,7 @@ public class NamespacedTypeRenameFix extends DataFix {
       if (!Objects.equals(var1, this.getInputSchema().getType(this.type))) {
          throw new IllegalStateException("\"" + this.type.typeName() + "\" is not what was expected.");
       } else {
-         return this.fixTypeEverywhere(this.name, var1, (var1x) -> {
-            return (var1) -> {
-               return var1.mapSecond(this.renamer);
-            };
-         });
+         return this.fixTypeEverywhere(this.name, var1, (var1x) -> (var1) -> var1.mapSecond(this.renamer));
       }
    }
 }

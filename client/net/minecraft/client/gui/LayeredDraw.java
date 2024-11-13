@@ -1,7 +1,6 @@
 package net.minecraft.client.gui;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import net.minecraft.client.DeltaTracker;
@@ -35,10 +34,7 @@ public class LayeredDraw {
    }
 
    private void renderInner(GuiGraphics var1, DeltaTracker var2) {
-      Iterator var3 = this.layers.iterator();
-
-      while(var3.hasNext()) {
-         Layer var4 = (Layer)var3.next();
+      for(Layer var4 : this.layers) {
          var4.render(var1, var2);
          var1.pose().translate(0.0F, 0.0F, 200.0F);
       }

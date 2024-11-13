@@ -2,7 +2,6 @@ package net.minecraft.world.entity.vehicle;
 
 import com.mojang.datafixers.util.Pair;
 import io.netty.buffer.ByteBuf;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -75,9 +74,8 @@ public class NewMinecartBehavior extends MinecartBehavior {
             this.lerpSteps.clear();
             this.currentLerpStepsTotalWeight = 0.0;
 
-            MinecartStep var2;
-            for(Iterator var1 = this.currentLerpSteps.iterator(); var1.hasNext(); this.currentLerpStepsTotalWeight += (double)var2.weight) {
-               var2 = (MinecartStep)var1.next();
+            for(MinecartStep var2 : this.currentLerpSteps) {
+               this.currentLerpStepsTotalWeight += (double)var2.weight;
             }
 
             this.lerpDelay = this.currentLerpStepsTotalWeight == 0.0 ? 0 : 3;
@@ -176,37 +174,36 @@ public class NewMinecartBehavior extends MinecartBehavior {
          Vec3 var11 = this.position();
          boolean var13 = var6.x() != var7.x() && var6.z() != var7.z();
          Vec3 var12;
-         Vec3 var14;
          if (var13) {
-            var14 = var7.subtract(var6);
+            Vec3 var14 = var7.subtract(var6);
             Vec3 var15 = var11.subtract(var1.getBottomCenter()).subtract(var6);
             Vec3 var16 = var14.scale(var14.dot(var15) / var14.dot(var14));
             var12 = var1.getBottomCenter().add(var6).add(var16);
             var20 = 180.0F - (float)(Math.atan2(var16.z, var16.x) * 180.0 / 3.141592653589793);
             var20 += this.minecart.isFlipped() ? 180.0F : 0.0F;
          } else {
-            boolean var21 = var6.subtract(var7).x != 0.0;
-            boolean var22 = var6.subtract(var7).z != 0.0;
-            var12 = new Vec3(var22 ? var1.getCenter().x : var11.x, (double)var1.getY(), var21 ? var1.getCenter().z : var11.z);
+            boolean var23 = var6.subtract(var7).x != 0.0;
+            boolean var25 = var6.subtract(var7).z != 0.0;
+            var12 = new Vec3(var25 ? var1.getCenter().x : var11.x, (double)var1.getY(), var23 ? var1.getCenter().z : var11.z);
          }
 
-         var14 = var12.subtract(var11);
-         this.setPos(var11.add(var14));
-         float var23 = 0.0F;
-         boolean var24 = var6.y() != var7.y();
-         if (var24) {
+         Vec3 var24 = var12.subtract(var11);
+         this.setPos(var11.add(var24));
+         float var26 = 0.0F;
+         boolean var27 = var6.y() != var7.y();
+         if (var27) {
             Vec3 var17 = var1.getBottomCenter().add(var9);
             double var18 = var17.distanceTo(this.position());
             this.setPos(this.position().add(0.0, var18 + 0.1, 0.0));
-            var23 = this.minecart.isFlipped() ? 45.0F : -45.0F;
+            var26 = this.minecart.isFlipped() ? 45.0F : -45.0F;
          } else {
             this.setPos(this.position().add(0.0, 0.1, 0.0));
          }
 
-         this.setRotation(var20, var23);
-         double var25 = var11.distanceTo(this.position());
-         if (var25 > 0.0) {
-            this.lerpSteps.add(new MinecartStep(this.position(), this.getDeltaMovement(), this.getYRot(), this.getXRot(), var3 ? 0.0F : (float)var25));
+         this.setRotation(var20, var26);
+         double var28 = var11.distanceTo(this.position());
+         if (var28 > 0.0) {
+            this.lerpSteps.add(new MinecartStep(this.position(), this.getDeltaMovement(), this.getYRot(), this.getXRot(), var3 ? 0.0F : (float)var28));
          }
 
       }
@@ -236,7 +233,6 @@ public class NewMinecartBehavior extends MinecartBehavior {
             this.adjustToRails(var4, var5, false);
          }
 
-         Vec3 var8;
          if (var6) {
             this.minecart.resetFallDistance();
             this.minecart.setOldPosAndRot();
@@ -245,7 +241,7 @@ public class NewMinecartBehavior extends MinecartBehavior {
             }
 
             RailShape var7 = (RailShape)var5.getValue(((BaseRailBlock)var5.getBlock()).getShapeProperty());
-            var8 = this.calculateTrackSpeed(var1, var3.horizontal(), var2, var4, var5, var7);
+            Vec3 var8 = this.calculateTrackSpeed(var1, var3.horizontal(), var2, var4, var5, var7);
             if (var2.firstIteration) {
                var2.movementLeft = var8.horizontalDistance();
             } else {
@@ -260,16 +256,16 @@ public class NewMinecartBehavior extends MinecartBehavior {
          }
 
          Vec3 var13 = this.position();
-         var8 = var13.subtract(this.minecart.oldPosition());
-         double var9 = var8.length();
+         Vec3 var14 = var13.subtract(this.minecart.oldPosition());
+         double var9 = var14.length();
          if (var9 > 9.999999747378752E-6) {
-            if (!(var8.horizontalDistanceSqr() > 9.999999747378752E-6)) {
+            if (!(var14.horizontalDistanceSqr() > 9.999999747378752E-6)) {
                if (!this.minecart.isOnRails()) {
                   this.setXRot(this.minecart.onGround() ? 0.0F : Mth.rotLerp(0.2F, this.getXRot(), 0.0F));
                }
             } else {
-               float var11 = 180.0F - (float)(Math.atan2(var8.z, var8.x) * 180.0 / 3.141592653589793);
-               float var12 = this.minecart.onGround() && !this.minecart.isOnRails() ? 0.0F : 90.0F - (float)(Math.atan2(var8.horizontalDistance(), var8.y) * 180.0 / 3.141592653589793);
+               float var11 = 180.0F - (float)(Math.atan2(var14.z, var14.x) * 180.0 / 3.141592653589793);
+               float var12 = this.minecart.onGround() && !this.minecart.isOnRails() ? 0.0F : 90.0F - (float)(Math.atan2(var14.horizontalDistance(), var14.y) * 180.0 / 3.141592653589793);
                var11 += this.minecart.isFlipped() ? 180.0F : 0.0F;
                var12 *= this.minecart.isFlipped() ? -1.0F : 1.0F;
                this.setRotation(var11, var12);
@@ -290,9 +286,8 @@ public class NewMinecartBehavior extends MinecartBehavior {
 
    private Vec3 calculateTrackSpeed(ServerLevel var1, Vec3 var2, TrackIteration var3, BlockPos var4, BlockState var5, RailShape var6) {
       Vec3 var7 = var2;
-      Vec3 var8;
       if (!var3.hasGainedSlopeSpeed) {
-         var8 = this.calculateSlopeSpeed(var2, var6);
+         Vec3 var8 = this.calculateSlopeSpeed(var2, var6);
          if (var8.horizontalDistanceSqr() != var2.horizontalDistanceSqr()) {
             var3.hasGainedSlopeSpeed = true;
             var7 = var8;
@@ -300,34 +295,34 @@ public class NewMinecartBehavior extends MinecartBehavior {
       }
 
       if (var3.firstIteration) {
-         var8 = this.calculatePlayerInputSpeed(var7);
-         if (var8.horizontalDistanceSqr() != var7.horizontalDistanceSqr()) {
+         Vec3 var10 = this.calculatePlayerInputSpeed(var7);
+         if (var10.horizontalDistanceSqr() != var7.horizontalDistanceSqr()) {
             var3.hasHalted = true;
-            var7 = var8;
+            var7 = var10;
          }
       }
 
       if (!var3.hasHalted) {
-         var8 = this.calculateHaltTrackSpeed(var7, var5);
-         if (var8.horizontalDistanceSqr() != var7.horizontalDistanceSqr()) {
+         Vec3 var11 = this.calculateHaltTrackSpeed(var7, var5);
+         if (var11.horizontalDistanceSqr() != var7.horizontalDistanceSqr()) {
             var3.hasHalted = true;
-            var7 = var8;
+            var7 = var11;
          }
       }
 
       if (var3.firstIteration) {
          var7 = this.minecart.applyNaturalSlowdown(var7);
          if (var7.lengthSqr() > 0.0) {
-            double var10 = Math.min(var7.length(), this.minecart.getMaxSpeed(var1));
-            var7 = var7.normalize().scale(var10);
+            double var12 = Math.min(var7.length(), this.minecart.getMaxSpeed(var1));
+            var7 = var7.normalize().scale(var12);
          }
       }
 
       if (!var3.hasBoosted) {
-         var8 = this.calculateBoostTrackSpeed(var7, var4, var5);
-         if (var8.horizontalDistanceSqr() != var7.horizontalDistanceSqr()) {
+         Vec3 var13 = this.calculateBoostTrackSpeed(var7, var4, var5);
+         if (var13.horizontalDistanceSqr() != var7.horizontalDistanceSqr()) {
             var3.hasBoosted = true;
-            var7 = var8;
+            var7 = var13;
          }
       }
 
@@ -436,8 +431,8 @@ public class NewMinecartBehavior extends MinecartBehavior {
                   }
                }
 
-               double var21 = var13.horizontal().distanceTo(this.position().horizontal());
-               double var19 = var13.y + (this.isDecending(var9, var2) ? var21 : -var21);
+               double var23 = var13.horizontal().distanceTo(this.position().horizontal());
+               double var19 = var13.y + (this.isDecending(var9, var2) ? var23 : -var23);
                if (this.position().y < var19) {
                   this.setPos(this.position().x, var19, this.position().z);
                }
@@ -496,12 +491,9 @@ public class NewMinecartBehavior extends MinecartBehavior {
 
    public boolean pickupEntities(AABB var1) {
       if (this.minecart.isRideable() && !this.minecart.isVehicle()) {
-         List var2 = this.level().getEntities((Entity)this.minecart, var1, EntitySelector.pushableBy(this.minecart));
+         List var2 = this.level().getEntities(this.minecart, var1, EntitySelector.pushableBy(this.minecart));
          if (!var2.isEmpty()) {
-            Iterator var3 = var2.iterator();
-
-            while(var3.hasNext()) {
-               Entity var4 = (Entity)var3.next();
+            for(Entity var4 : var2) {
                if (!(var4 instanceof Player) && !(var4 instanceof IronGolem) && !(var4 instanceof AbstractMinecart) && !this.minecart.isVehicle() && !var4.isPassenger()) {
                   boolean var5 = var4.startRiding(this.minecart);
                   if (var5) {
@@ -518,29 +510,17 @@ public class NewMinecartBehavior extends MinecartBehavior {
    public boolean pushEntities(AABB var1) {
       boolean var2 = false;
       if (this.minecart.isRideable()) {
-         List var3 = this.level().getEntities((Entity)this.minecart, var1, EntitySelector.pushableBy(this.minecart));
+         List var3 = this.level().getEntities(this.minecart, var1, EntitySelector.pushableBy(this.minecart));
          if (!var3.isEmpty()) {
-            Iterator var4 = var3.iterator();
-
-            while(true) {
-               Entity var5;
-               do {
-                  if (!var4.hasNext()) {
-                     return var2;
-                  }
-
-                  var5 = (Entity)var4.next();
-               } while(!(var5 instanceof Player) && !(var5 instanceof IronGolem) && !(var5 instanceof AbstractMinecart) && !this.minecart.isVehicle() && !var5.isPassenger());
-
-               var5.push((Entity)this.minecart);
-               var2 = true;
+            for(Entity var5 : var3) {
+               if (var5 instanceof Player || var5 instanceof IronGolem || var5 instanceof AbstractMinecart || this.minecart.isVehicle() || var5.isPassenger()) {
+                  var5.push((Entity)this.minecart);
+                  var2 = true;
+               }
             }
          }
       } else {
-         Iterator var6 = this.level().getEntities(this.minecart, var1).iterator();
-
-         while(var6.hasNext()) {
-            Entity var7 = (Entity)var6.next();
+         for(Entity var7 : this.level().getEntities(this.minecart, var1)) {
             if (!this.minecart.hasPassenger(var7) && var7.isPushable() && var7 instanceof AbstractMinecart) {
                var7.push((Entity)this.minecart);
                var2 = true;
@@ -569,54 +549,9 @@ public class NewMinecartBehavior extends MinecartBehavior {
          this.weight = var5;
       }
 
-      public Vec3 position() {
-         return this.position;
-      }
-
-      public Vec3 movement() {
-         return this.movement;
-      }
-
-      public float yRot() {
-         return this.yRot;
-      }
-
-      public float xRot() {
-         return this.xRot;
-      }
-
-      public float weight() {
-         return this.weight;
-      }
-
       static {
          STREAM_CODEC = StreamCodec.composite(Vec3.STREAM_CODEC, MinecartStep::position, Vec3.STREAM_CODEC, MinecartStep::movement, ByteBufCodecs.ROTATION_BYTE, MinecartStep::yRot, ByteBufCodecs.ROTATION_BYTE, MinecartStep::xRot, ByteBufCodecs.FLOAT, MinecartStep::weight, MinecartStep::new);
          ZERO = new MinecartStep(Vec3.ZERO, Vec3.ZERO, 0.0F, 0.0F, 0.0F);
-      }
-   }
-
-   static record StepPartialTicks(float partialTicksInStep, MinecartStep currentStep, MinecartStep previousStep) {
-      final float partialTicksInStep;
-      final MinecartStep currentStep;
-      final MinecartStep previousStep;
-
-      StepPartialTicks(float var1, MinecartStep var2, MinecartStep var3) {
-         super();
-         this.partialTicksInStep = var1;
-         this.currentStep = var2;
-         this.previousStep = var3;
-      }
-
-      public float partialTicksInStep() {
-         return this.partialTicksInStep;
-      }
-
-      public MinecartStep currentStep() {
-         return this.currentStep;
-      }
-
-      public MinecartStep previousStep() {
-         return this.previousStep;
       }
    }
 
@@ -633,6 +568,19 @@ public class NewMinecartBehavior extends MinecartBehavior {
 
       public boolean shouldIterate() {
          return this.firstIteration || this.movementLeft > 9.999999747378752E-6;
+      }
+   }
+
+   static record StepPartialTicks(float partialTicksInStep, MinecartStep currentStep, MinecartStep previousStep) {
+      final float partialTicksInStep;
+      final MinecartStep currentStep;
+      final MinecartStep previousStep;
+
+      StepPartialTicks(float var1, MinecartStep var2, MinecartStep var3) {
+         super();
+         this.partialTicksInStep = var1;
+         this.currentStep = var2;
+         this.previousStep = var3;
       }
    }
 }

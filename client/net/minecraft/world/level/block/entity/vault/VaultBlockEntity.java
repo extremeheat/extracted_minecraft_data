@@ -5,7 +5,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -65,9 +64,7 @@ public class VaultBlockEntity extends BlockEntity {
    }
 
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return (CompoundTag)Util.make(new CompoundTag(), (var2) -> {
-         var2.put("shared_data", encode(VaultSharedData.CODEC, this.sharedData, var1));
-      });
+      return (CompoundTag)Util.make(new CompoundTag(), (var2) -> var2.put("shared_data", encode(VaultSharedData.CODEC, this.sharedData, var1)));
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
@@ -84,36 +81,31 @@ public class VaultBlockEntity extends BlockEntity {
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      DataResult var10000;
-      Logger var10001;
-      Optional var4;
       if (var1.contains("server_data")) {
-         var10000 = VaultServerData.CODEC.parse(var3, var1.get("server_data"));
-         var10001 = LOGGER;
+         DataResult var10000 = VaultServerData.CODEC.parse(var3, var1.get("server_data"));
+         Logger var10001 = LOGGER;
          Objects.requireNonNull(var10001);
-         var4 = var10000.resultOrPartial(var10001::error);
-         VaultServerData var5 = this.serverData;
-         Objects.requireNonNull(var5);
-         var4.ifPresent(var5::set);
+         Optional var4 = var10000.resultOrPartial(var10001::error);
+         VaultServerData var8 = this.serverData;
+         Objects.requireNonNull(var8);
+         var4.ifPresent(var8::set);
       }
 
       if (var1.contains("config")) {
-         var10000 = VaultConfig.CODEC.parse(var3, var1.get("config"));
-         var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-            this.config = var1x;
-         });
+         DataResult var5 = VaultConfig.CODEC.parse(var3, var1.get("config"));
+         Logger var9 = LOGGER;
+         Objects.requireNonNull(var9);
+         var5.resultOrPartial(var9::error).ifPresent((var1x) -> this.config = var1x);
       }
 
       if (var1.contains("shared_data")) {
-         var10000 = VaultSharedData.CODEC.parse(var3, var1.get("shared_data"));
-         var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var4 = var10000.resultOrPartial(var10001::error);
-         VaultSharedData var6 = this.sharedData;
-         Objects.requireNonNull(var6);
-         var4.ifPresent(var6::set);
+         DataResult var6 = VaultSharedData.CODEC.parse(var3, var1.get("shared_data"));
+         Logger var10 = LOGGER;
+         Objects.requireNonNull(var10);
+         Optional var7 = var6.resultOrPartial(var10::error);
+         VaultSharedData var11 = this.sharedData;
+         Objects.requireNonNull(var11);
+         var7.ifPresent(var11::set);
       }
 
    }
@@ -138,122 +130,6 @@ public class VaultBlockEntity extends BlockEntity {
    @VisibleForTesting
    public void setConfig(VaultConfig var1) {
       this.config = var1;
-   }
-
-   public static final class Client {
-      private static final int PARTICLE_TICK_RATE = 20;
-      private static final float IDLE_PARTICLE_CHANCE = 0.5F;
-      private static final float AMBIENT_SOUND_CHANCE = 0.02F;
-      private static final int ACTIVATION_PARTICLE_COUNT = 20;
-      private static final int DEACTIVATION_PARTICLE_COUNT = 20;
-
-      public Client() {
-         super();
-      }
-
-      public static void tick(Level var0, BlockPos var1, BlockState var2, VaultClientData var3, VaultSharedData var4) {
-         var3.updateDisplayItemSpin();
-         if (var0.getGameTime() % 20L == 0L) {
-            emitConnectionParticlesForNearbyPlayers(var0, var1, var2, var4);
-         }
-
-         emitIdleParticles(var0, var1, var4, (Boolean)var2.getValue(VaultBlock.OMINOUS) ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.SMALL_FLAME);
-         playIdleSounds(var0, var1, var4);
-      }
-
-      public static void emitActivationParticles(Level var0, BlockPos var1, BlockState var2, VaultSharedData var3, ParticleOptions var4) {
-         emitConnectionParticlesForNearbyPlayers(var0, var1, var2, var3);
-         RandomSource var5 = var0.random;
-
-         for(int var6 = 0; var6 < 20; ++var6) {
-            Vec3 var7 = randomPosInsideCage(var1, var5);
-            var0.addParticle(ParticleTypes.SMOKE, var7.x(), var7.y(), var7.z(), 0.0, 0.0, 0.0);
-            var0.addParticle(var4, var7.x(), var7.y(), var7.z(), 0.0, 0.0, 0.0);
-         }
-
-      }
-
-      public static void emitDeactivationParticles(Level var0, BlockPos var1, ParticleOptions var2) {
-         RandomSource var3 = var0.random;
-
-         for(int var4 = 0; var4 < 20; ++var4) {
-            Vec3 var5 = randomPosCenterOfCage(var1, var3);
-            Vec3 var6 = new Vec3(var3.nextGaussian() * 0.02, var3.nextGaussian() * 0.02, var3.nextGaussian() * 0.02);
-            var0.addParticle(var2, var5.x(), var5.y(), var5.z(), var6.x(), var6.y(), var6.z());
-         }
-
-      }
-
-      private static void emitIdleParticles(Level var0, BlockPos var1, VaultSharedData var2, ParticleOptions var3) {
-         RandomSource var4 = var0.getRandom();
-         if (var4.nextFloat() <= 0.5F) {
-            Vec3 var5 = randomPosInsideCage(var1, var4);
-            var0.addParticle(ParticleTypes.SMOKE, var5.x(), var5.y(), var5.z(), 0.0, 0.0, 0.0);
-            if (shouldDisplayActiveEffects(var2)) {
-               var0.addParticle(var3, var5.x(), var5.y(), var5.z(), 0.0, 0.0, 0.0);
-            }
-         }
-
-      }
-
-      private static void emitConnectionParticlesForPlayer(Level var0, Vec3 var1, Player var2) {
-         RandomSource var3 = var0.random;
-         Vec3 var4 = var1.vectorTo(var2.position().add(0.0, (double)(var2.getBbHeight() / 2.0F), 0.0));
-         int var5 = Mth.nextInt(var3, 2, 5);
-
-         for(int var6 = 0; var6 < var5; ++var6) {
-            Vec3 var7 = var4.offsetRandom(var3, 1.0F);
-            var0.addParticle(ParticleTypes.VAULT_CONNECTION, var1.x(), var1.y(), var1.z(), var7.x(), var7.y(), var7.z());
-         }
-
-      }
-
-      private static void emitConnectionParticlesForNearbyPlayers(Level var0, BlockPos var1, BlockState var2, VaultSharedData var3) {
-         Set var4 = var3.getConnectedPlayers();
-         if (!var4.isEmpty()) {
-            Vec3 var5 = keyholePos(var1, (Direction)var2.getValue(VaultBlock.FACING));
-            Iterator var6 = var4.iterator();
-
-            while(var6.hasNext()) {
-               UUID var7 = (UUID)var6.next();
-               Player var8 = var0.getPlayerByUUID(var7);
-               if (var8 != null && isWithinConnectionRange(var1, var3, var8)) {
-                  emitConnectionParticlesForPlayer(var0, var5, var8);
-               }
-            }
-
-         }
-      }
-
-      private static boolean isWithinConnectionRange(BlockPos var0, VaultSharedData var1, Player var2) {
-         return var2.blockPosition().distSqr(var0) <= Mth.square(var1.connectedParticlesRange());
-      }
-
-      private static void playIdleSounds(Level var0, BlockPos var1, VaultSharedData var2) {
-         if (shouldDisplayActiveEffects(var2)) {
-            RandomSource var3 = var0.getRandom();
-            if (var3.nextFloat() <= 0.02F) {
-               var0.playLocalSound(var1, SoundEvents.VAULT_AMBIENT, SoundSource.BLOCKS, var3.nextFloat() * 0.25F + 0.75F, var3.nextFloat() + 0.5F, false);
-            }
-
-         }
-      }
-
-      public static boolean shouldDisplayActiveEffects(VaultSharedData var0) {
-         return var0.hasDisplayItem();
-      }
-
-      private static Vec3 randomPosCenterOfCage(BlockPos var0, RandomSource var1) {
-         return Vec3.atLowerCornerOf(var0).add(Mth.nextDouble(var1, 0.4, 0.6), Mth.nextDouble(var1, 0.4, 0.6), Mth.nextDouble(var1, 0.4, 0.6));
-      }
-
-      private static Vec3 randomPosInsideCage(BlockPos var0, RandomSource var1) {
-         return Vec3.atLowerCornerOf(var0).add(Mth.nextDouble(var1, 0.1, 0.9), Mth.nextDouble(var1, 0.25, 0.75), Mth.nextDouble(var1, 0.1, 0.9));
-      }
-
-      private static Vec3 keyholePos(BlockPos var0, Direction var1) {
-         return Vec3.atBottomCenterOf(var0).add((double)var1.getStepX() * 0.5, 1.75, (double)var1.getStepZ() * 0.5);
-      }
    }
 
    public static final class Server {
@@ -331,7 +207,7 @@ public class VaultBlockEntity extends BlockEntity {
          LootTable var3 = var0.getServer().reloadableRegistries().getLootTable(var2);
          LootParams var4 = (new LootParams.Builder(var0)).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var1)).create(LootContextParamSets.VAULT);
          ObjectArrayList var5 = var3.getRandomItems(var4, var0.getRandom());
-         return var5.isEmpty() ? ItemStack.EMPTY : (ItemStack)Util.getRandom((List)var5, var0.getRandom());
+         return var5.isEmpty() ? ItemStack.EMPTY : (ItemStack)Util.getRandom(var5, var0.getRandom());
       }
 
       private static void unlock(ServerLevel var0, BlockState var1, BlockPos var2, VaultConfig var3, VaultServerData var4, VaultSharedData var5, List<ItemStack> var6) {
@@ -365,6 +241,120 @@ public class VaultBlockEntity extends BlockEntity {
             var1.setLastInsertFailTimestamp(var0.getGameTime());
          }
 
+      }
+   }
+
+   public static final class Client {
+      private static final int PARTICLE_TICK_RATE = 20;
+      private static final float IDLE_PARTICLE_CHANCE = 0.5F;
+      private static final float AMBIENT_SOUND_CHANCE = 0.02F;
+      private static final int ACTIVATION_PARTICLE_COUNT = 20;
+      private static final int DEACTIVATION_PARTICLE_COUNT = 20;
+
+      public Client() {
+         super();
+      }
+
+      public static void tick(Level var0, BlockPos var1, BlockState var2, VaultClientData var3, VaultSharedData var4) {
+         var3.updateDisplayItemSpin();
+         if (var0.getGameTime() % 20L == 0L) {
+            emitConnectionParticlesForNearbyPlayers(var0, var1, var2, var4);
+         }
+
+         emitIdleParticles(var0, var1, var4, (Boolean)var2.getValue(VaultBlock.OMINOUS) ? ParticleTypes.SOUL_FIRE_FLAME : ParticleTypes.SMALL_FLAME);
+         playIdleSounds(var0, var1, var4);
+      }
+
+      public static void emitActivationParticles(Level var0, BlockPos var1, BlockState var2, VaultSharedData var3, ParticleOptions var4) {
+         emitConnectionParticlesForNearbyPlayers(var0, var1, var2, var3);
+         RandomSource var5 = var0.random;
+
+         for(int var6 = 0; var6 < 20; ++var6) {
+            Vec3 var7 = randomPosInsideCage(var1, var5);
+            var0.addParticle(ParticleTypes.SMOKE, var7.x(), var7.y(), var7.z(), 0.0, 0.0, 0.0);
+            var0.addParticle(var4, var7.x(), var7.y(), var7.z(), 0.0, 0.0, 0.0);
+         }
+
+      }
+
+      public static void emitDeactivationParticles(Level var0, BlockPos var1, ParticleOptions var2) {
+         RandomSource var3 = var0.random;
+
+         for(int var4 = 0; var4 < 20; ++var4) {
+            Vec3 var5 = randomPosCenterOfCage(var1, var3);
+            Vec3 var6 = new Vec3(var3.nextGaussian() * 0.02, var3.nextGaussian() * 0.02, var3.nextGaussian() * 0.02);
+            var0.addParticle(var2, var5.x(), var5.y(), var5.z(), var6.x(), var6.y(), var6.z());
+         }
+
+      }
+
+      private static void emitIdleParticles(Level var0, BlockPos var1, VaultSharedData var2, ParticleOptions var3) {
+         RandomSource var4 = var0.getRandom();
+         if (var4.nextFloat() <= 0.5F) {
+            Vec3 var5 = randomPosInsideCage(var1, var4);
+            var0.addParticle(ParticleTypes.SMOKE, var5.x(), var5.y(), var5.z(), 0.0, 0.0, 0.0);
+            if (shouldDisplayActiveEffects(var2)) {
+               var0.addParticle(var3, var5.x(), var5.y(), var5.z(), 0.0, 0.0, 0.0);
+            }
+         }
+
+      }
+
+      private static void emitConnectionParticlesForPlayer(Level var0, Vec3 var1, Player var2) {
+         RandomSource var3 = var0.random;
+         Vec3 var4 = var1.vectorTo(var2.position().add(0.0, (double)(var2.getBbHeight() / 2.0F), 0.0));
+         int var5 = Mth.nextInt(var3, 2, 5);
+
+         for(int var6 = 0; var6 < var5; ++var6) {
+            Vec3 var7 = var4.offsetRandom(var3, 1.0F);
+            var0.addParticle(ParticleTypes.VAULT_CONNECTION, var1.x(), var1.y(), var1.z(), var7.x(), var7.y(), var7.z());
+         }
+
+      }
+
+      private static void emitConnectionParticlesForNearbyPlayers(Level var0, BlockPos var1, BlockState var2, VaultSharedData var3) {
+         Set var4 = var3.getConnectedPlayers();
+         if (!var4.isEmpty()) {
+            Vec3 var5 = keyholePos(var1, (Direction)var2.getValue(VaultBlock.FACING));
+
+            for(UUID var7 : var4) {
+               Player var8 = var0.getPlayerByUUID(var7);
+               if (var8 != null && isWithinConnectionRange(var1, var3, var8)) {
+                  emitConnectionParticlesForPlayer(var0, var5, var8);
+               }
+            }
+
+         }
+      }
+
+      private static boolean isWithinConnectionRange(BlockPos var0, VaultSharedData var1, Player var2) {
+         return var2.blockPosition().distSqr(var0) <= Mth.square(var1.connectedParticlesRange());
+      }
+
+      private static void playIdleSounds(Level var0, BlockPos var1, VaultSharedData var2) {
+         if (shouldDisplayActiveEffects(var2)) {
+            RandomSource var3 = var0.getRandom();
+            if (var3.nextFloat() <= 0.02F) {
+               var0.playLocalSound(var1, SoundEvents.VAULT_AMBIENT, SoundSource.BLOCKS, var3.nextFloat() * 0.25F + 0.75F, var3.nextFloat() + 0.5F, false);
+            }
+
+         }
+      }
+
+      public static boolean shouldDisplayActiveEffects(VaultSharedData var0) {
+         return var0.hasDisplayItem();
+      }
+
+      private static Vec3 randomPosCenterOfCage(BlockPos var0, RandomSource var1) {
+         return Vec3.atLowerCornerOf(var0).add(Mth.nextDouble(var1, 0.4, 0.6), Mth.nextDouble(var1, 0.4, 0.6), Mth.nextDouble(var1, 0.4, 0.6));
+      }
+
+      private static Vec3 randomPosInsideCage(BlockPos var0, RandomSource var1) {
+         return Vec3.atLowerCornerOf(var0).add(Mth.nextDouble(var1, 0.1, 0.9), Mth.nextDouble(var1, 0.25, 0.75), Mth.nextDouble(var1, 0.1, 0.9));
+      }
+
+      private static Vec3 keyholePos(BlockPos var0, Direction var1) {
+         return Vec3.atBottomCenterOf(var0).add((double)var1.getStepX() * 0.5, 1.75, (double)var1.getStepZ() * 0.5);
       }
    }
 }

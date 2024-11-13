@@ -197,6 +197,6 @@ public final class BlockTags {
    }
 
    private static TagKey<Block> create(String var0) {
-      return TagKey.create(Registries.BLOCK, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<Block>create(Registries.BLOCK, ResourceLocation.withDefaultNamespace(var0));
    }
 }

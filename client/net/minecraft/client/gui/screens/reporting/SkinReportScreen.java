@@ -40,21 +40,17 @@ public class SkinReportScreen extends AbstractReportScreen<SkinReport.Builder> {
       var1.defaultCellSetting().alignVerticallyMiddle();
       var1.addChild(new PlayerSkinWidget(85, 120, this.minecraft.getEntityModels(), ((SkinReport)((SkinReport.Builder)this.reportBuilder).report()).getSkinGetter()));
       LinearLayout var2 = (LinearLayout)var1.addChild(LinearLayout.vertical().spacing(8));
-      this.selectReasonButton = Button.builder(SELECT_REASON, (var1x) -> {
-         this.minecraft.setScreen(new ReportReasonSelectionScreen(this, ((SkinReport.Builder)this.reportBuilder).reason(), ReportType.SKIN, (var1) -> {
+      this.selectReasonButton = Button.builder(SELECT_REASON, (var1x) -> this.minecraft.setScreen(new ReportReasonSelectionScreen(this, ((SkinReport.Builder)this.reportBuilder).reason(), ReportType.SKIN, (var1) -> {
             ((SkinReport.Builder)this.reportBuilder).setReason(var1);
             this.onReportChanged();
-         }));
-      }).width(178).build();
+         }))).width(178).build();
       var2.addChild(CommonLayouts.labeledElement(this.font, this.selectReasonButton, OBSERVED_WHAT_LABEL));
       Objects.requireNonNull(this.font);
       this.commentBox = this.createCommentBox(178, 9 * 8, (var1x) -> {
          ((SkinReport.Builder)this.reportBuilder).setComments(var1x);
          this.onReportChanged();
       });
-      var2.addChild(CommonLayouts.labeledElement(this.font, this.commentBox, MORE_COMMENTS_LABEL, (var0) -> {
-         var0.paddingBottom(12);
-      }));
+      var2.addChild(CommonLayouts.labeledElement(this.font, this.commentBox, MORE_COMMENTS_LABEL, (var0) -> var0.paddingBottom(12)));
    }
 
    protected void onReportChanged() {

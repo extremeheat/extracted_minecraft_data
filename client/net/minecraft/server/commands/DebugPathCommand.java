@@ -26,11 +26,7 @@ public class DebugPathCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debugpath").requires((var0x) -> {
-         return var0x.hasPermission(2);
-      })).then(Commands.argument("to", BlockPosArgument.blockPos()).executes((var0x) -> {
-         return fillBlocks((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "to"));
-      })));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debugpath").requires((var0x) -> var0x.hasPermission(2))).then(Commands.argument("to", BlockPosArgument.blockPos()).executes((var0x) -> fillBlocks((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "to")))));
    }
 
    private static int fillBlocks(CommandSourceStack var0, BlockPos var1) throws CommandSyntaxException {
@@ -39,16 +35,14 @@ public class DebugPathCommand {
          throw ERROR_NOT_MOB.create();
       } else {
          GroundPathNavigation var4 = new GroundPathNavigation(var3, var0.getLevel());
-         Path var5 = ((PathNavigation)var4).createPath((BlockPos)var1, 0);
+         Path var5 = ((PathNavigation)var4).createPath(var1, 0);
          DebugPackets.sendPathFindingPacket(var0.getLevel(), var3, var5, ((PathNavigation)var4).getMaxDistanceToWaypoint());
          if (var5 == null) {
             throw ERROR_NO_PATH.create();
          } else if (!var5.canReach()) {
             throw ERROR_NOT_COMPLETE.create();
          } else {
-            var0.sendSuccess(() -> {
-               return Component.literal("Made path");
-            }, true);
+            var0.sendSuccess(() -> Component.literal("Made path"), true);
             return 1;
          }
       }

@@ -14,8 +14,8 @@ public enum Variant implements StringRepresentable {
    GRAY(5, "gray"),
    DARK_BROWN(6, "dark_brown");
 
-   public static final Codec<Variant> CODEC = StringRepresentable.fromEnum(Variant::values);
-   private static final IntFunction<Variant> BY_ID = ByIdMap.continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+   private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    private final int id;
    private final String name;
 

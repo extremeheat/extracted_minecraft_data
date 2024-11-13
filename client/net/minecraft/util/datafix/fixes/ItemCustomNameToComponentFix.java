@@ -33,10 +33,6 @@ public class ItemCustomNameToComponentFix extends DataFix {
    public TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
       OpticFinder var2 = var1.findField("tag");
-      return this.fixTypeEverywhereTyped("ItemCustomNameToComponentFix", var1, (var2x) -> {
-         return var2x.updateTyped(var2, (var1) -> {
-            return var1.update(DSL.remainderFinder(), this::fixTag);
-         });
-      });
+      return this.fixTypeEverywhereTyped("ItemCustomNameToComponentFix", var1, (var2x) -> var2x.updateTyped(var2, (var1) -> var1.update(DSL.remainderFinder(), this::fixTag)));
    }
 }

@@ -8,7 +8,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -27,9 +26,7 @@ public class VertexFormat {
       this.elements = var1;
       this.names = var2;
       this.vertexSize = var4;
-      this.elementsMask = var1.stream().mapToInt(VertexFormatElement::mask).reduce(0, (var0, var1x) -> {
-         return var0 | var1x;
-      });
+      this.elementsMask = var1.stream().mapToInt(VertexFormatElement::mask).reduce(0, (var0, var1x) -> var0 | var1x);
 
       for(int var5 = 0; var5 < this.offsetsByElement.length; ++var5) {
          VertexFormatElement var6 = VertexFormatElement.byId(var5);
@@ -46,9 +43,9 @@ public class VertexFormat {
    public void bindAttributes(int var1) {
       int var2 = 0;
 
-      for(Iterator var3 = this.getElementAttributeNames().iterator(); var3.hasNext(); ++var2) {
-         String var4 = (String)var3.next();
+      for(String var4 : this.getElementAttributeNames()) {
          GlStateManager._glBindAttribLocation(var1, var2, var4);
+         ++var2;
       }
 
    }
@@ -175,6 +172,28 @@ public class VertexFormat {
       }
    }
 
+   public static enum IndexType {
+      SHORT(5123, 2),
+      INT(5125, 4);
+
+      public final int asGLType;
+      public final int bytes;
+
+      private IndexType(final int var3, final int var4) {
+         this.asGLType = var3;
+         this.bytes = var4;
+      }
+
+      public static IndexType least(int var0) {
+         return (var0 & -65536) != 0 ? INT : SHORT;
+      }
+
+      // $FF: synthetic method
+      private static IndexType[] $values() {
+         return new IndexType[]{SHORT, INT};
+      }
+   }
+
    public static enum Mode {
       LINES(4, 2, 2, false),
       LINE_STRIP(5, 2, 1, true),
@@ -222,28 +241,6 @@ public class VertexFormat {
       // $FF: synthetic method
       private static Mode[] $values() {
          return new Mode[]{LINES, LINE_STRIP, DEBUG_LINES, DEBUG_LINE_STRIP, TRIANGLES, TRIANGLE_STRIP, TRIANGLE_FAN, QUADS};
-      }
-   }
-
-   public static enum IndexType {
-      SHORT(5123, 2),
-      INT(5125, 4);
-
-      public final int asGLType;
-      public final int bytes;
-
-      private IndexType(final int var3, final int var4) {
-         this.asGLType = var3;
-         this.bytes = var4;
-      }
-
-      public static IndexType least(int var0) {
-         return (var0 & -65536) != 0 ? INT : SHORT;
-      }
-
-      // $FF: synthetic method
-      private static IndexType[] $values() {
-         return new IndexType[]{SHORT, INT};
       }
    }
 }

@@ -10,7 +10,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.level.block.Block;
 
 public class ClientboundBlockEventPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundBlockEventPacket> STREAM_CODEC = Packet.codec(ClientboundBlockEventPacket::write, ClientboundBlockEventPacket::new);
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundBlockEventPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundBlockEventPacket>codec(ClientboundBlockEventPacket::write, ClientboundBlockEventPacket::new);
    private final BlockPos pos;
    private final int b0;
    private final int b1;

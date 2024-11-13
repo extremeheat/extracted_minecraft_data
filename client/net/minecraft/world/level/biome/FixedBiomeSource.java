@@ -56,8 +56,6 @@ public class FixedBiomeSource extends BiomeSource implements BiomeManager.NoiseB
    }
 
    static {
-      CODEC = Biome.CODEC.fieldOf("biome").xmap(FixedBiomeSource::new, (var0) -> {
-         return var0.biome;
-      }).stable();
+      CODEC = Biome.CODEC.fieldOf("biome").xmap(FixedBiomeSource::new, (var0) -> var0.biome).stable();
    }
 }

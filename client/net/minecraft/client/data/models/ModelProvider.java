@@ -58,7 +58,65 @@ public class ModelProvider implements DataProvider {
       return "Model Definitions";
    }
 
-   private static class ItemInfoCollector implements ItemModelOutput {
+   static class SimpleModelCollector implements BiConsumer<ResourceLocation, ModelInstance> {
+      private final Map<ResourceLocation, ModelInstance> models = new HashMap();
+
+      SimpleModelCollector() {
+         super();
+      }
+
+      public void accept(ResourceLocation var1, ModelInstance var2) {
+         Supplier var3 = (Supplier)this.models.put(var1, var2);
+         if (var3 != null) {
+            throw new IllegalStateException("Duplicate model definition for " + String.valueOf(var1));
+         }
+      }
+
+      public CompletableFuture<?> save(CachedOutput var1, PackOutput.PathProvider var2) {
+         Objects.requireNonNull(var2);
+         return ModelProvider.saveAll(var1, var2::json, this.models);
+      }
+
+      // $FF: synthetic method
+      public void accept(final Object var1, final Object var2) {
+         this.accept((ResourceLocation)var1, (ModelInstance)var2);
+      }
+   }
+
+   static class BlockStateGeneratorCollector implements Consumer<BlockStateGenerator> {
+      private final Map<Block, BlockStateGenerator> generators = new HashMap();
+
+      BlockStateGeneratorCollector() {
+         super();
+      }
+
+      public void accept(BlockStateGenerator var1) {
+         Block var2 = var1.getBlock();
+         BlockStateGenerator var3 = (BlockStateGenerator)this.generators.put(var2, var1);
+         if (var3 != null) {
+            throw new IllegalStateException("Duplicate blockstate definition for " + String.valueOf(var2));
+         }
+      }
+
+      public void validate() {
+         Stream var1 = BuiltInRegistries.BLOCK.listElements().filter((var0) -> true);
+         List var2 = var1.filter((var1x) -> !this.generators.containsKey(var1x.value())).map((var0) -> var0.key().location()).toList();
+         if (!var2.isEmpty()) {
+            throw new IllegalStateException("Missing blockstate definitions for: " + String.valueOf(var2));
+         }
+      }
+
+      public CompletableFuture<?> save(CachedOutput var1, PackOutput.PathProvider var2) {
+         return ModelProvider.saveAll(var1, (var1x) -> var2.json(var1x.builtInRegistryHolder().key().location()), this.generators);
+      }
+
+      // $FF: synthetic method
+      public void accept(final Object var1) {
+         this.accept((BlockStateGenerator)var1);
+      }
+   }
+
+   static class ItemInfoCollector implements ItemModelOutput {
       private final Map<Item, ClientItem> itemInfos = new HashMap();
       private final Map<Item, Item> copies = new HashMap();
 
@@ -103,86 +161,14 @@ public class ModelProvider implements DataProvider {
                this.register(var1x, var3);
             }
          });
-         List var1 = BuiltInRegistries.ITEM.listElements().filter((var1x) -> {
-            return !this.itemInfos.containsKey(var1x.value());
-         }).map((var0) -> {
-            return var0.key().location();
-         }).toList();
+         List var1 = BuiltInRegistries.ITEM.listElements().filter((var1x) -> !this.itemInfos.containsKey(var1x.value())).map((var0) -> var0.key().location()).toList();
          if (!var1.isEmpty()) {
             throw new IllegalStateException("Missing item model definitions for: " + String.valueOf(var1));
          }
       }
 
       public CompletableFuture<?> save(CachedOutput var1, PackOutput.PathProvider var2) {
-         return DataProvider.saveAll(var1, ClientItem.CODEC, (var1x) -> {
-            return var2.json(var1x.builtInRegistryHolder().key().location());
-         }, this.itemInfos);
-      }
-   }
-
-   private static class BlockStateGeneratorCollector implements Consumer<BlockStateGenerator> {
-      private final Map<Block, BlockStateGenerator> generators = new HashMap();
-
-      BlockStateGeneratorCollector() {
-         super();
-      }
-
-      public void accept(BlockStateGenerator var1) {
-         Block var2 = var1.getBlock();
-         BlockStateGenerator var3 = (BlockStateGenerator)this.generators.put(var2, var1);
-         if (var3 != null) {
-            throw new IllegalStateException("Duplicate blockstate definition for " + String.valueOf(var2));
-         }
-      }
-
-      public void validate() {
-         Stream var1 = BuiltInRegistries.BLOCK.listElements().filter((var0) -> {
-            return true;
-         });
-         List var2 = var1.filter((var1x) -> {
-            return !this.generators.containsKey(var1x.value());
-         }).map((var0) -> {
-            return var0.key().location();
-         }).toList();
-         if (!var2.isEmpty()) {
-            throw new IllegalStateException("Missing blockstate definitions for: " + String.valueOf(var2));
-         }
-      }
-
-      public CompletableFuture<?> save(CachedOutput var1, PackOutput.PathProvider var2) {
-         return ModelProvider.saveAll(var1, (var1x) -> {
-            return var2.json(var1x.builtInRegistryHolder().key().location());
-         }, this.generators);
-      }
-
-      // $FF: synthetic method
-      public void accept(final Object var1) {
-         this.accept((BlockStateGenerator)var1);
-      }
-   }
-
-   private static class SimpleModelCollector implements BiConsumer<ResourceLocation, ModelInstance> {
-      private final Map<ResourceLocation, ModelInstance> models = new HashMap();
-
-      SimpleModelCollector() {
-         super();
-      }
-
-      public void accept(ResourceLocation var1, ModelInstance var2) {
-         Supplier var3 = (Supplier)this.models.put(var1, var2);
-         if (var3 != null) {
-            throw new IllegalStateException("Duplicate model definition for " + String.valueOf(var1));
-         }
-      }
-
-      public CompletableFuture<?> save(CachedOutput var1, PackOutput.PathProvider var2) {
-         Objects.requireNonNull(var2);
-         return ModelProvider.saveAll(var1, var2::json, this.models);
-      }
-
-      // $FF: synthetic method
-      public void accept(final Object var1, final Object var2) {
-         this.accept((ResourceLocation)var1, (ModelInstance)var2);
+         return DataProvider.saveAll(var1, ClientItem.CODEC, (Function)((var1x) -> var2.json(var1x.builtInRegistryHolder().key().location())), this.itemInfos);
       }
    }
 }

@@ -35,15 +35,13 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
    }
 
    public static <T> ResourceOrTagKeyArgument<T> resourceOrTagKey(ResourceKey<? extends Registry<T>> var0) {
-      return new ResourceOrTagKeyArgument(var0);
+      return new ResourceOrTagKeyArgument<T>(var0);
    }
 
    public static <T> Result<T> getResourceOrTagKey(CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2, DynamicCommandExceptionType var3) throws CommandSyntaxException {
       Result var4 = (Result)var0.getArgument(var1, Result.class);
       Optional var5 = var4.cast(var2);
-      return (Result)var5.orElseThrow(() -> {
-         return var3.create(var4);
-      });
+      return (Result)var5.orElseThrow(() -> var3.create(var4));
    }
 
    public Result<T> parse(StringReader var1) throws CommandSyntaxException {
@@ -53,14 +51,14 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
          try {
             var1.skip();
             ResourceLocation var3 = ResourceLocation.read(var1);
-            return new TagResult(TagKey.create(this.registryKey, var3));
+            return new TagResult<T>(TagKey.create(this.registryKey, var3));
          } catch (CommandSyntaxException var4) {
             var1.setCursor(var5);
             throw var4;
          }
       } else {
          ResourceLocation var2 = ResourceLocation.read(var1);
-         return new ResourceResult(ResourceKey.create(this.registryKey, var2));
+         return new ResourceResult<T>(ResourceKey.create(this.registryKey, var2));
       }
    }
 
@@ -82,12 +80,32 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
       return this.parse(var1);
    }
 
-   public interface Result<T> extends Predicate<Holder<T>> {
-      Either<ResourceKey<T>, TagKey<T>> unwrap();
+   static record ResourceResult<T>(ResourceKey<T> key) implements Result<T> {
+      ResourceResult(ResourceKey<T> var1) {
+         super();
+         this.key = var1;
+      }
 
-      <E> Optional<Result<E>> cast(ResourceKey<? extends Registry<E>> var1);
+      public Either<ResourceKey<T>, TagKey<T>> unwrap() {
+         return Either.left(this.key);
+      }
 
-      String asPrintable();
+      public <E> Optional<Result<E>> cast(ResourceKey<? extends Registry<E>> var1) {
+         return this.key.cast(var1).map(ResourceResult::new);
+      }
+
+      public boolean test(Holder<T> var1) {
+         return var1.is(this.key);
+      }
+
+      public String asPrintable() {
+         return this.key.location().toString();
+      }
+
+      // $FF: synthetic method
+      public boolean test(final Object var1) {
+         return this.test((Holder)var1);
+      }
    }
 
    static record TagResult<T>(TagKey<T> key) implements Result<T> {
@@ -110,42 +128,6 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
 
       public String asPrintable() {
          return "#" + String.valueOf(this.key.location());
-      }
-
-      public TagKey<T> key() {
-         return this.key;
-      }
-
-      // $FF: synthetic method
-      public boolean test(final Object var1) {
-         return this.test((Holder)var1);
-      }
-   }
-
-   private static record ResourceResult<T>(ResourceKey<T> key) implements Result<T> {
-      ResourceResult(ResourceKey<T> var1) {
-         super();
-         this.key = var1;
-      }
-
-      public Either<ResourceKey<T>, TagKey<T>> unwrap() {
-         return Either.left(this.key);
-      }
-
-      public <E> Optional<Result<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-         return this.key.cast(var1).map(ResourceResult::new);
-      }
-
-      public boolean test(Holder<T> var1) {
-         return var1.is(this.key);
-      }
-
-      public String asPrintable() {
-         return this.key.location().toString();
-      }
-
-      public ResourceKey<T> key() {
-         return this.key;
       }
 
       // $FF: synthetic method
@@ -189,7 +171,7 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
          }
 
          public ResourceOrTagKeyArgument<T> instantiate(CommandBuildContext var1) {
-            return new ResourceOrTagKeyArgument(this.registryKey);
+            return new ResourceOrTagKeyArgument<T>(this.registryKey);
          }
 
          public ArgumentTypeInfo<ResourceOrTagKeyArgument<T>, ?> type() {
@@ -201,5 +183,13 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<Result<T>> {
             return this.instantiate(var1);
          }
       }
+   }
+
+   public interface Result<T> extends Predicate<Holder<T>> {
+      Either<ResourceKey<T>, TagKey<T>> unwrap();
+
+      <E> Optional<Result<E>> cast(ResourceKey<? extends Registry<E>> var1);
+
+      String asPrintable();
    }
 }

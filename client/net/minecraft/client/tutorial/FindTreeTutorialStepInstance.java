@@ -1,6 +1,5 @@
 package net.minecraft.client.tutorial;
 
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
@@ -80,24 +79,17 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
    }
 
    private static boolean hasCollectedTreeItems(LocalPlayer var0) {
-      return var0.getInventory().hasAnyMatching((var0x) -> {
-         return var0x.is(ItemTags.COMPLETES_FIND_TREE_TUTORIAL);
-      });
+      return var0.getInventory().hasAnyMatching((var0x) -> var0x.is(ItemTags.COMPLETES_FIND_TREE_TUTORIAL));
    }
 
    public static boolean hasPunchedTreesPreviously(LocalPlayer var0) {
-      Iterator var1 = BuiltInRegistries.BLOCK.getTagOrEmpty(BlockTags.COMPLETES_FIND_TREE_TUTORIAL).iterator();
-
-      Block var3;
-      do {
-         if (!var1.hasNext()) {
-            return false;
+      for(Holder var2 : BuiltInRegistries.BLOCK.getTagOrEmpty(BlockTags.COMPLETES_FIND_TREE_TUTORIAL)) {
+         Block var3 = (Block)var2.value();
+         if (var0.getStats().getValue(Stats.BLOCK_MINED.get(var3)) > 0) {
+            return true;
          }
+      }
 
-         Holder var2 = (Holder)var1.next();
-         var3 = (Block)var2.value();
-      } while(var0.getStats().getValue(Stats.BLOCK_MINED.get(var3)) <= 0);
-
-      return true;
+      return false;
    }
 }

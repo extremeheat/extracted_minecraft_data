@@ -62,62 +62,6 @@ public record BlockSetType(String name, boolean canOpenByHand, boolean canOpenBy
       return TYPES.values().stream();
    }
 
-   public String name() {
-      return this.name;
-   }
-
-   public boolean canOpenByHand() {
-      return this.canOpenByHand;
-   }
-
-   public boolean canOpenByWindCharge() {
-      return this.canOpenByWindCharge;
-   }
-
-   public boolean canButtonBeActivatedByArrows() {
-      return this.canButtonBeActivatedByArrows;
-   }
-
-   public PressurePlateSensitivity pressurePlateSensitivity() {
-      return this.pressurePlateSensitivity;
-   }
-
-   public SoundType soundType() {
-      return this.soundType;
-   }
-
-   public SoundEvent doorClose() {
-      return this.doorClose;
-   }
-
-   public SoundEvent doorOpen() {
-      return this.doorOpen;
-   }
-
-   public SoundEvent trapdoorClose() {
-      return this.trapdoorClose;
-   }
-
-   public SoundEvent trapdoorOpen() {
-      return this.trapdoorOpen;
-   }
-
-   public SoundEvent pressurePlateClickOff() {
-      return this.pressurePlateClickOff;
-   }
-
-   public SoundEvent pressurePlateClickOn() {
-      return this.pressurePlateClickOn;
-   }
-
-   public SoundEvent buttonClickOff() {
-      return this.buttonClickOff;
-   }
-
-   public SoundEvent buttonClickOn() {
-      return this.buttonClickOn;
-   }
-
    static {
       Function var10000 = BlockSetType::name;
       Map var10001 = TYPES;

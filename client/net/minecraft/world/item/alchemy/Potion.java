@@ -1,7 +1,6 @@
 package net.minecraft.world.item.alchemy;
 
 import com.mojang.serialization.Codec;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -48,18 +47,13 @@ public class Potion implements FeatureElement {
    }
 
    public boolean hasInstantEffects() {
-      Iterator var1 = this.effects.iterator();
-
-      MobEffectInstance var2;
-      do {
-         if (!var1.hasNext()) {
-            return false;
+      for(MobEffectInstance var2 : this.effects) {
+         if (((MobEffect)var2.getEffect().value()).isInstantenous()) {
+            return true;
          }
+      }
 
-         var2 = (MobEffectInstance)var1.next();
-      } while(!((MobEffect)var2.getEffect().value()).isInstantenous());
-
-      return true;
+      return false;
    }
 
    static {

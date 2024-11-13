@@ -31,9 +31,7 @@ public class StatType<T> implements Iterable<Stat<T>> {
    }
 
    public Stat<T> get(T var1, StatFormatter var2) {
-      return (Stat)this.map.computeIfAbsent(var1, (var2x) -> {
-         return new Stat(this, var2x, var2);
-      });
+      return (Stat)this.map.computeIfAbsent(var1, (var2x) -> new Stat(this, var2x, var2));
    }
 
    public Registry<T> getRegistry() {

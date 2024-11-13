@@ -21,9 +21,7 @@ public abstract class NamedEntityFix extends DataFix {
 
    public TypeRewriteRule makeRule() {
       OpticFinder var1 = DSL.namedChoice(this.entityName, this.getInputSchema().getChoiceType(this.type, this.entityName));
-      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(this.type), this.getOutputSchema().getType(this.type), (var2) -> {
-         return var2.updateTyped(var1, this.getOutputSchema().getChoiceType(this.type, this.entityName), this::fix);
-      });
+      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(this.type), this.getOutputSchema().getType(this.type), (var2) -> var2.updateTyped(var1, this.getOutputSchema().getChoiceType(this.type, this.entityName), this::fix));
    }
 
    protected abstract Typed<?> fix(Typed<?> var1);

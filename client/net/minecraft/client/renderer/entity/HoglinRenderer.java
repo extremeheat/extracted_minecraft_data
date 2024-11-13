@@ -4,7 +4,6 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.state.HoglinRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.hoglin.Hoglin;
 
 public class HoglinRenderer extends AbstractHoglinRenderer<Hoglin> {
@@ -19,7 +18,7 @@ public class HoglinRenderer extends AbstractHoglinRenderer<Hoglin> {
    }
 
    public void extractRenderState(Hoglin var1, HoglinRenderState var2, float var3) {
-      super.extractRenderState((Mob)var1, (HoglinRenderState)var2, var3);
+      super.extractRenderState(var1, (HoglinRenderState)var2, var3);
       var2.isConverting = var1.isConverting();
    }
 

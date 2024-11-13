@@ -8,7 +8,6 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
@@ -21,6 +20,50 @@ public class LanServerDetection {
 
    public LanServerDetection() {
       super();
+   }
+
+   public static class LanServerList {
+      private final List<LanServer> servers = Lists.newArrayList();
+      private boolean isDirty;
+
+      public LanServerList() {
+         super();
+      }
+
+      @Nullable
+      public synchronized List<LanServer> takeDirtyServers() {
+         if (this.isDirty) {
+            List var1 = List.copyOf(this.servers);
+            this.isDirty = false;
+            return var1;
+         } else {
+            return null;
+         }
+      }
+
+      public synchronized void addServer(String var1, InetAddress var2) {
+         String var3 = LanServerPinger.parseMotd(var1);
+         String var4 = LanServerPinger.parseAddress(var1);
+         if (var4 != null) {
+            String var10000 = var2.getHostAddress();
+            var4 = var10000 + ":" + var4;
+            boolean var5 = false;
+
+            for(LanServer var7 : this.servers) {
+               if (var7.getAddress().equals(var4)) {
+                  var7.updatePingTime();
+                  var5 = true;
+                  break;
+               }
+            }
+
+            if (!var5) {
+               this.servers.add(new LanServer(var3, var4));
+               this.isDirty = true;
+            }
+
+         }
+      }
    }
 
    public static class LanServerDetector extends Thread {
@@ -65,52 +108,6 @@ public class LanServerDetection {
          }
 
          this.socket.close();
-      }
-   }
-
-   public static class LanServerList {
-      private final List<LanServer> servers = Lists.newArrayList();
-      private boolean isDirty;
-
-      public LanServerList() {
-         super();
-      }
-
-      @Nullable
-      public synchronized List<LanServer> takeDirtyServers() {
-         if (this.isDirty) {
-            List var1 = List.copyOf(this.servers);
-            this.isDirty = false;
-            return var1;
-         } else {
-            return null;
-         }
-      }
-
-      public synchronized void addServer(String var1, InetAddress var2) {
-         String var3 = LanServerPinger.parseMotd(var1);
-         String var4 = LanServerPinger.parseAddress(var1);
-         if (var4 != null) {
-            String var10000 = var2.getHostAddress();
-            var4 = var10000 + ":" + var4;
-            boolean var5 = false;
-            Iterator var6 = this.servers.iterator();
-
-            while(var6.hasNext()) {
-               LanServer var7 = (LanServer)var6.next();
-               if (var7.getAddress().equals(var4)) {
-                  var7.updatePingTime();
-                  var5 = true;
-                  break;
-               }
-            }
-
-            if (!var5) {
-               this.servers.add(new LanServer(var3, var4));
-               this.isDirty = true;
-            }
-
-         }
       }
    }
 }

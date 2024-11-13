@@ -79,16 +79,10 @@ public class ChunkTaskDispatcher implements ChunkHolder.LevelChangeListener, Aut
    }
 
    protected void scheduleForExecution(ChunkTaskPriorityQueue.TasksForChunk var1) {
-      CompletableFuture.allOf((CompletableFuture[])var1.tasks().stream().map((var1x) -> {
-         return this.executor.scheduleWithResult((var1) -> {
+      CompletableFuture.allOf((CompletableFuture[])var1.tasks().stream().map((var1x) -> this.executor.scheduleWithResult((var1) -> {
             var1x.run();
             var1.complete(Unit.INSTANCE);
-         });
-      }).toArray((var0) -> {
-         return new CompletableFuture[var0];
-      })).thenAccept((var1x) -> {
-         this.pollTask();
-      });
+         })).toArray((var0) -> new CompletableFuture[var0])).thenAccept((var1x) -> this.pollTask());
    }
 
    protected void onRelease(long var1) {

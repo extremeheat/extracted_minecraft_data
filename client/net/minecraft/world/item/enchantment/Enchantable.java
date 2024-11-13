@@ -8,9 +8,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 
 public record Enchantable(int value) {
-   public static final Codec<Enchantable> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("value").forGetter(Enchantable::value)).apply(var0, Enchantable::new);
-   });
+   public static final Codec<Enchantable> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("value").forGetter(Enchantable::value)).apply(var0, Enchantable::new));
    public static final StreamCodec<ByteBuf, Enchantable> STREAM_CODEC;
 
    public Enchantable(int var1) {
@@ -20,10 +18,6 @@ public record Enchantable(int value) {
       } else {
          this.value = var1;
       }
-   }
-
-   public int value() {
-      return this.value;
    }
 
    static {

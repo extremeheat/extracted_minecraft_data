@@ -73,7 +73,7 @@ public class Zoglin extends Monster implements HoglinBase {
    }
 
    protected Brain.Provider<Zoglin> brainProvider() {
-      return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
+      return Brain.<Zoglin>provider(MEMORY_TYPES, SENSOR_TYPES);
    }
 
    protected Brain<?> makeBrain(Dynamic<?> var1) {
@@ -92,9 +92,7 @@ public class Zoglin extends Monster implements HoglinBase {
    }
 
    private static void initIdleActivity(Brain<Zoglin> var0) {
-      var0.addActivity(Activity.IDLE, 10, ImmutableList.of(StartAttacking.create((var0x, var1) -> {
-         return var1.findNearestValidAttackTarget(var0x);
-      }), SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.4F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.4F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
+      var0.addActivity(Activity.IDLE, 10, ImmutableList.of(StartAttacking.create((var0x, var1) -> var1.findNearestValidAttackTarget(var0x)), SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.4F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.4F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
    }
 
    private static void initFightActivity(Brain<Zoglin> var0) {
@@ -102,9 +100,7 @@ public class Zoglin extends Monster implements HoglinBase {
    }
 
    private Optional<? extends LivingEntity> findNearestValidAttackTarget(ServerLevel var1) {
-      return ((NearestVisibleLivingEntities)this.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty())).findClosest((var2) -> {
-         return this.isTargetable(var1, var2);
-      });
+      return ((NearestVisibleLivingEntities)this.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty())).findClosest((var2) -> this.isTargetable(var1, var2));
    }
 
    private boolean isTargetable(ServerLevel var1, LivingEntity var2) {
@@ -294,7 +290,7 @@ public class Zoglin extends Monster implements HoglinBase {
    }
 
    static {
-      DATA_BABY_ID = SynchedEntityData.defineId(Zoglin.class, EntityDataSerializers.BOOLEAN);
+      DATA_BABY_ID = SynchedEntityData.<Boolean>defineId(Zoglin.class, EntityDataSerializers.BOOLEAN);
       SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS);
       MEMORY_TYPES = ImmutableList.of(MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER, MemoryModuleType.LOOK_TARGET, MemoryModuleType.WALK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.ATTACK_COOLING_DOWN);
    }

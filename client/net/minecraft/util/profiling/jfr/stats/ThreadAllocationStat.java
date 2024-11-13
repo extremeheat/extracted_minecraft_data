@@ -28,9 +28,7 @@ public record ThreadAllocationStat(Instant timestamp, String threadName, long to
 
    public static Summary summary(List<ThreadAllocationStat> var0) {
       TreeMap var1 = new TreeMap();
-      Map var2 = (Map)var0.stream().collect(Collectors.groupingBy((var0x) -> {
-         return var0x.threadName;
-      }));
+      Map var2 = (Map)var0.stream().collect(Collectors.groupingBy((var0x) -> var0x.threadName));
       var2.forEach((var1x, var2x) -> {
          if (var2x.size() >= 2) {
             ThreadAllocationStat var3 = (ThreadAllocationStat)var2x.get(0);
@@ -43,26 +41,10 @@ public record ThreadAllocationStat(Instant timestamp, String threadName, long to
       return new Summary(var1);
    }
 
-   public Instant timestamp() {
-      return this.timestamp;
-   }
-
-   public String threadName() {
-      return this.threadName;
-   }
-
-   public long totalBytes() {
-      return this.totalBytes;
-   }
-
    public static record Summary(Map<String, Double> allocationsPerSecondByThread) {
       public Summary(Map<String, Double> var1) {
          super();
          this.allocationsPerSecondByThread = var1;
-      }
-
-      public Map<String, Double> allocationsPerSecondByThread() {
-         return this.allocationsPerSecondByThread;
       }
    }
 }

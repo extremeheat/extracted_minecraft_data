@@ -19,9 +19,7 @@ import net.minecraft.world.item.component.ConsumableListener;
 import net.minecraft.world.level.Level;
 
 public record FoodProperties(int nutrition, float saturation, boolean canAlwaysEat) implements ConsumableListener {
-   public static final Codec<FoodProperties> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("nutrition").forGetter(FoodProperties::nutrition), Codec.FLOAT.fieldOf("saturation").forGetter(FoodProperties::saturation), Codec.BOOL.optionalFieldOf("can_always_eat", false).forGetter(FoodProperties::canAlwaysEat)).apply(var0, FoodProperties::new);
-   });
+   public static final Codec<FoodProperties> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("nutrition").forGetter(FoodProperties::nutrition), Codec.FLOAT.fieldOf("saturation").forGetter(FoodProperties::saturation), Codec.BOOL.optionalFieldOf("can_always_eat", false).forGetter(FoodProperties::canAlwaysEat)).apply(var0, FoodProperties::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, FoodProperties> DIRECT_STREAM_CODEC;
 
    public FoodProperties(int var1, float var2, boolean var3) {
@@ -33,24 +31,12 @@ public record FoodProperties(int nutrition, float saturation, boolean canAlwaysE
 
    public void onConsume(Level var1, LivingEntity var2, ItemStack var3, Consumable var4) {
       RandomSource var5 = var2.getRandom();
-      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)((SoundEvent)var4.sound().value()), SoundSource.NEUTRAL, 1.0F, var5.triangle(1.0F, 0.4F));
+      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)var4.sound().value(), SoundSource.NEUTRAL, 1.0F, var5.triangle(1.0F, 0.4F));
       if (var2 instanceof Player var6) {
          var6.getFoodData().eat(this);
-         var1.playSound((Player)null, var6.getX(), var6.getY(), var6.getZ(), (SoundEvent)SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, Mth.randomBetween(var5, 0.9F, 1.0F));
+         var1.playSound((Player)null, var6.getX(), var6.getY(), var6.getZ(), SoundEvents.PLAYER_BURP, SoundSource.PLAYERS, 0.5F, Mth.randomBetween(var5, 0.9F, 1.0F));
       }
 
-   }
-
-   public int nutrition() {
-      return this.nutrition;
-   }
-
-   public float saturation() {
-      return this.saturation;
-   }
-
-   public boolean canAlwaysEat() {
-      return this.canAlwaysEat;
    }
 
    static {

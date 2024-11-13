@@ -32,9 +32,7 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
    public void init() {
       this.layout.addTitleHeader(TITLE, this.font);
       this.backupInfoList = (BackupInfoList)this.layout.addToContents(new BackupInfoList(this.minecraft));
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1) -> {
-         this.onClose();
-      }).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).build());
       this.repositionElements();
       this.layout.visitWidgets((var1) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
@@ -75,19 +73,7 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
       }
    }
 
-   private class BackupInfoList extends ObjectSelectionList<BackupInfoListEntry> {
-      public BackupInfoList(final Minecraft var2) {
-         super(var2, RealmsBackupInfoScreen.this.width, RealmsBackupInfoScreen.this.layout.getContentHeight(), RealmsBackupInfoScreen.this.layout.getHeaderHeight(), 36);
-         if (RealmsBackupInfoScreen.this.backup.changeList != null) {
-            RealmsBackupInfoScreen.this.backup.changeList.forEach((var1x, var2x) -> {
-               this.addEntry(RealmsBackupInfoScreen.this.new BackupInfoListEntry(var1x, var2x));
-            });
-         }
-
-      }
-   }
-
-   private class BackupInfoListEntry extends ObjectSelectionList.Entry<BackupInfoListEntry> {
+   class BackupInfoListEntry extends ObjectSelectionList.Entry<BackupInfoListEntry> {
       private static final Component TEMPLATE_NAME = Component.translatable("mco.backup.entry.templateName");
       private static final Component GAME_DIFFICULTY = Component.translatable("mco.backup.entry.gameDifficulty");
       private static final Component NAME = Component.translatable("mco.backup.entry.name");
@@ -134,6 +120,16 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
 
       public Component getNarration() {
          return Component.translatable("narrator.select", this.key + " " + this.value);
+      }
+   }
+
+   class BackupInfoList extends ObjectSelectionList<BackupInfoListEntry> {
+      public BackupInfoList(final Minecraft var2) {
+         super(var2, RealmsBackupInfoScreen.this.width, RealmsBackupInfoScreen.this.layout.getContentHeight(), RealmsBackupInfoScreen.this.layout.getHeaderHeight(), 36);
+         if (RealmsBackupInfoScreen.this.backup.changeList != null) {
+            RealmsBackupInfoScreen.this.backup.changeList.forEach((var1x, var2x) -> this.addEntry(RealmsBackupInfoScreen.this.new BackupInfoListEntry(var1x, var2x)));
+         }
+
       }
    }
 }

@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.SheetedDecalTextureGenerator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexMultiConsumer;
 import com.mojang.math.MatrixUtil;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -47,11 +46,8 @@ public class ItemRenderer {
    private static void renderModelLists(BakedModel var0, int[] var1, int var2, int var3, PoseStack var4, VertexConsumer var5) {
       RandomSource var6 = RandomSource.create();
       long var7 = 42L;
-      Direction[] var9 = Direction.values();
-      int var10 = var9.length;
 
-      for(int var11 = 0; var11 < var10; ++var11) {
-         Direction var12 = var9[var11];
+      for(Direction var12 : Direction.values()) {
          var6.setSeed(42L);
          renderQuadList(var4, var5, var0.getQuads((BlockState)null, var12, var6), var1, var2, var3);
       }
@@ -101,13 +97,11 @@ public class ItemRenderer {
    private static void renderQuadList(PoseStack var0, VertexConsumer var1, List<BakedQuad> var2, int[] var3, int var4, int var5) {
       PoseStack.Pose var6 = var0.last();
 
-      BakedQuad var8;
-      float var9;
-      float var10;
-      float var11;
-      float var12;
-      for(Iterator var7 = var2.iterator(); var7.hasNext(); var1.putBulkData(var6, var8, var10, var11, var12, var9, var4, var5)) {
-         var8 = (BakedQuad)var7.next();
+      for(BakedQuad var8 : var2) {
+         float var9;
+         float var10;
+         float var11;
+         float var12;
          if (var8.isTinted()) {
             int var13 = getLayerColorSafe(var3, var8.getTintIndex());
             var9 = (float)ARGB.alpha(var13) / 255.0F;
@@ -120,6 +114,8 @@ public class ItemRenderer {
             var11 = 1.0F;
             var12 = 1.0F;
          }
+
+         var1.putBulkData(var6, var8, var10, var11, var12, var9, var4, var5);
       }
 
    }

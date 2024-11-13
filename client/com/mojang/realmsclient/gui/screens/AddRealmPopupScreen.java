@@ -53,12 +53,8 @@ public class AddRealmPopupScreen extends RealmsScreen {
    }
 
    public static void updateCarouselImages(ResourceManager var0) {
-      Set var1 = var0.listResources("textures/gui/images", (var0x) -> {
-         return var0x.getPath().endsWith(".png");
-      }).keySet();
-      carouselImages = var1.stream().filter((var0x) -> {
-         return var0x.getNamespace().equals("realms");
-      }).toList();
+      Set var1 = var0.listResources("textures/gui/images", (var0x) -> var0x.getPath().endsWith(".png")).keySet();
+      carouselImages = var1.stream().filter((var0x) -> var0x.getNamespace().equals("realms")).toList();
    }
 
    protected void init() {
@@ -68,9 +64,7 @@ public class AddRealmPopupScreen extends RealmsScreen {
       }
 
       this.addRenderableWidget(Button.builder(Component.translatable("mco.selectServer.buy"), ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.BUY_REALMS)).bounds(this.right() - 10 - 99, this.bottom() - 10 - 20, 99, 20).build());
-      ImageButton var1 = (ImageButton)this.addRenderableWidget(new ImageButton(this.left() + 4, this.top() + 4, 14, 14, CROSS_BUTTON_SPRITES, (var1x) -> {
-         this.onClose();
-      }, CLOSE_TEXT));
+      ImageButton var1 = (ImageButton)this.addRenderableWidget(new ImageButton(this.left() + 4, this.top() + 4, 14, 14, CROSS_BUTTON_SPRITES, (var1x) -> this.onClose(), CLOSE_TEXT));
       var1.setTooltip(Tooltip.create(CLOSE_TEXT));
       int var2 = 142 - (this.trialAvailable ? 40 : 20);
       FittingMultiLineTextWidget var3 = new FittingMultiLineTextWidget(this.right() - 10 - 100, this.top() + 10, 100, var2, POPUP_TEXT, this.font);

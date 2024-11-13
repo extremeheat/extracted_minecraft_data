@@ -76,11 +76,8 @@ public class Crypt {
 
    private static byte[] digestData(byte[]... var0) throws Exception {
       MessageDigest var1 = MessageDigest.getInstance("SHA-1");
-      byte[][] var2 = var0;
-      int var3 = var0.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         byte[] var5 = var2[var4];
+      for(byte[] var5 : var0) {
          var1.update(var5);
       }
 
@@ -96,7 +93,7 @@ public class Crypt {
       }
 
       try {
-         return var3.apply(Base64.getMimeDecoder().decode(var0));
+         return (T)var3.apply(Base64.getMimeDecoder().decode(var0));
       } catch (IllegalArgumentException var6) {
          throw new CryptException(var6);
       }
@@ -210,8 +207,16 @@ public class Crypt {
       }, Crypt::pemRsaPrivateKeyToString);
    }
 
-   private interface ByteArrayToKeyFunction<T extends Key> {
-      T apply(byte[] var1) throws CryptException;
+   public static class SaltSupplier {
+      private static final SecureRandom secureRandom = new SecureRandom();
+
+      public SaltSupplier() {
+         super();
+      }
+
+      public static long getLong() {
+         return secureRandom.nextLong();
+      }
    }
 
    public static record SaltSignaturePair(long salt, byte[] signature) {
@@ -240,28 +245,12 @@ public class Crypt {
          return Longs.toByteArray(this.salt);
       }
 
-      public long salt() {
-         return this.salt;
-      }
-
-      public byte[] signature() {
-         return this.signature;
-      }
-
       static {
          EMPTY = new SaltSignaturePair(0L, ByteArrays.EMPTY_ARRAY);
       }
    }
 
-   public static class SaltSupplier {
-      private static final SecureRandom secureRandom = new SecureRandom();
-
-      public SaltSupplier() {
-         super();
-      }
-
-      public static long getLong() {
-         return secureRandom.nextLong();
-      }
+   interface ByteArrayToKeyFunction<T extends Key> {
+      T apply(byte[] var1) throws CryptException;
    }
 }

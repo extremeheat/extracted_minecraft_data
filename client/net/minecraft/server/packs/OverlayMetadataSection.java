@@ -10,9 +10,7 @@ import net.minecraft.util.InclusiveRange;
 
 public record OverlayMetadataSection(List<OverlayEntry> overlays) {
    private static final Pattern DIR_VALIDATOR = Pattern.compile("[-_a-zA-Z0-9.]+");
-   private static final Codec<OverlayMetadataSection> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(OverlayMetadataSection.OverlayEntry.CODEC.listOf().fieldOf("entries").forGetter(OverlayMetadataSection::overlays)).apply(var0, OverlayMetadataSection::new);
-   });
+   private static final Codec<OverlayMetadataSection> CODEC = RecordCodecBuilder.create((var0) -> var0.group(OverlayMetadataSection.OverlayEntry.CODEC.listOf().fieldOf("entries").forGetter(OverlayMetadataSection::overlays)).apply(var0, OverlayMetadataSection::new));
    public static final MetadataSectionType<OverlayMetadataSection> TYPE;
 
    public OverlayMetadataSection(List<OverlayEntry> var1) {
@@ -21,29 +19,19 @@ public record OverlayMetadataSection(List<OverlayEntry> overlays) {
    }
 
    private static DataResult<String> validateOverlayDir(String var0) {
-      return !DIR_VALIDATOR.matcher(var0).matches() ? DataResult.error(() -> {
-         return var0 + " is not accepted directory name";
-      }) : DataResult.success(var0);
+      return !DIR_VALIDATOR.matcher(var0).matches() ? DataResult.error(() -> var0 + " is not accepted directory name") : DataResult.success(var0);
    }
 
    public List<String> overlaysForVersion(int var1) {
-      return this.overlays.stream().filter((var1x) -> {
-         return var1x.isApplicable(var1);
-      }).map(OverlayEntry::overlay).toList();
-   }
-
-   public List<OverlayEntry> overlays() {
-      return this.overlays;
+      return this.overlays.stream().filter((var1x) -> var1x.isApplicable(var1)).map(OverlayEntry::overlay).toList();
    }
 
    static {
-      TYPE = MetadataSectionType.fromCodec("overlays", CODEC);
+      TYPE = new MetadataSectionType<OverlayMetadataSection>("overlays", CODEC);
    }
 
    public static record OverlayEntry(InclusiveRange<Integer> format, String overlay) {
-      static final Codec<OverlayEntry> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(InclusiveRange.codec(Codec.INT).fieldOf("formats").forGetter(OverlayEntry::format), Codec.STRING.validate(OverlayMetadataSection::validateOverlayDir).fieldOf("directory").forGetter(OverlayEntry::overlay)).apply(var0, OverlayEntry::new);
-      });
+      static final Codec<OverlayEntry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(InclusiveRange.codec(Codec.INT).fieldOf("formats").forGetter(OverlayEntry::format), Codec.STRING.validate(OverlayMetadataSection::validateOverlayDir).fieldOf("directory").forGetter(OverlayEntry::overlay)).apply(var0, OverlayEntry::new));
 
       public OverlayEntry(InclusiveRange<Integer> var1, String var2) {
          super();
@@ -53,14 +41,6 @@ public record OverlayMetadataSection(List<OverlayEntry> overlays) {
 
       public boolean isApplicable(int var1) {
          return this.format.isValueInRange(var1);
-      }
-
-      public InclusiveRange<Integer> format() {
-         return this.format;
-      }
-
-      public String overlay() {
-         return this.overlay;
       }
    }
 }

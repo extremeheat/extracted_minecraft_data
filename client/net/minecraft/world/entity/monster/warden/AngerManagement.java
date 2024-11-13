@@ -35,9 +35,7 @@ public class AngerManagement {
    private static final int DEFAULT_ANGER_DECREASE = 1;
    private int conversionDelay = Mth.randomBetweenInclusive(RandomSource.create(), 0, 2);
    int highestAnger;
-   private static final Codec<Pair<UUID, Integer>> SUSPECT_ANGER_PAIR = RecordCodecBuilder.create((var0) -> {
-      return var0.group(UUIDUtil.CODEC.fieldOf("uuid").forGetter(Pair::getFirst), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("anger").forGetter(Pair::getSecond)).apply(var0, Pair::of);
-   });
+   private static final Codec<Pair<UUID, Integer>> SUSPECT_ANGER_PAIR = RecordCodecBuilder.create((var0) -> var0.group(UUIDUtil.CODEC.fieldOf("uuid").forGetter(Pair::getFirst), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("anger").forGetter(Pair::getSecond)).apply(var0, Pair::of));
    private final Predicate<Entity> filter;
    @VisibleForTesting
    protected final ArrayList<Entity> suspects;
@@ -48,11 +46,7 @@ public class AngerManagement {
    protected final Object2IntMap<UUID> angerByUuid;
 
    public static Codec<AngerManagement> codec(Predicate<Entity> var0) {
-      return RecordCodecBuilder.create((var1) -> {
-         return var1.group(SUSPECT_ANGER_PAIR.listOf().fieldOf("suspects").orElse(Collections.emptyList()).forGetter(AngerManagement::createUuidAngerPairs)).apply(var1, (var1x) -> {
-            return new AngerManagement(var0, var1x);
-         });
-      });
+      return RecordCodecBuilder.create((var1) -> var1.group(SUSPECT_ANGER_PAIR.listOf().fieldOf("suspects").orElse(Collections.emptyList()).forGetter(AngerManagement::createUuidAngerPairs)).apply(var1, (var1x) -> new AngerManagement(var0, var1x)));
    }
 
    public AngerManagement(Predicate<Entity> var1, List<Pair<UUID, Integer>> var2) {
@@ -62,17 +56,11 @@ public class AngerManagement {
       this.suspectSorter = new Sorter(this);
       this.angerBySuspect = new Object2IntOpenHashMap();
       this.angerByUuid = new Object2IntOpenHashMap(var2.size());
-      var2.forEach((var1x) -> {
-         this.angerByUuid.put((UUID)var1x.getFirst(), (Integer)var1x.getSecond());
-      });
+      var2.forEach((var1x) -> this.angerByUuid.put((UUID)var1x.getFirst(), (Integer)var1x.getSecond()));
    }
 
    private List<Pair<UUID, Integer>> createUuidAngerPairs() {
-      return (List)Streams.concat(new Stream[]{this.suspects.stream().map((var1) -> {
-         return Pair.of(var1.getUUID(), this.angerBySuspect.getInt(var1));
-      }), this.angerByUuid.object2IntEntrySet().stream().map((var0) -> {
-         return Pair.of((UUID)var0.getKey(), var0.getIntValue());
-      })}).collect(Collectors.toList());
+      return (List)Streams.concat(new Stream[]{this.suspects.stream().map((var1) -> Pair.of(var1.getUUID(), this.angerBySuspect.getInt(var1))), this.angerByUuid.object2IntEntrySet().stream().map((var0) -> Pair.of((UUID)var0.getKey(), var0.getIntValue()))}).collect(Collectors.toList());
    }
 
    public void tick(ServerLevel var1, Predicate<Entity> var2) {
@@ -96,31 +84,28 @@ public class AngerManagement {
 
       ObjectIterator var9 = this.angerBySuspect.object2IntEntrySet().iterator();
 
-      while(true) {
-         while(var9.hasNext()) {
-            Object2IntMap.Entry var10 = (Object2IntMap.Entry)var9.next();
-            int var6 = var10.getIntValue();
-            Entity var7 = (Entity)var10.getKey();
-            Entity.RemovalReason var8 = var7.getRemovalReason();
-            if (var6 > 1 && var2.test(var7) && var8 == null) {
-               var10.setValue(var6 - 1);
-            } else {
-               this.suspects.remove(var7);
-               var9.remove();
-               if (var6 > 1 && var8 != null) {
-                  switch (var8) {
-                     case CHANGED_DIMENSION:
-                     case UNLOADED_TO_CHUNK:
-                     case UNLOADED_WITH_PLAYER:
-                        this.angerByUuid.put(var7.getUUID(), var6 - 1);
-                  }
+      while(var9.hasNext()) {
+         Object2IntMap.Entry var10 = (Object2IntMap.Entry)var9.next();
+         int var6 = var10.getIntValue();
+         Entity var7 = (Entity)var10.getKey();
+         Entity.RemovalReason var8 = var7.getRemovalReason();
+         if (var6 > 1 && var2.test(var7) && var8 == null) {
+            var10.setValue(var6 - 1);
+         } else {
+            this.suspects.remove(var7);
+            var9.remove();
+            if (var6 > 1 && var8 != null) {
+               switch (var8) {
+                  case CHANGED_DIMENSION:
+                  case UNLOADED_TO_CHUNK:
+                  case UNLOADED_WITH_PLAYER:
+                     this.angerByUuid.put(var7.getUUID(), var6 - 1);
                }
             }
          }
-
-         this.sortAndUpdateHighestAnger();
-         return;
       }
+
+      this.sortAndUpdateHighestAnger();
    }
 
    private void sortAndUpdateHighestAnger() {
@@ -150,9 +135,7 @@ public class AngerManagement {
 
    public int increaseAnger(Entity var1, int var2) {
       boolean var3 = !this.angerBySuspect.containsKey(var1);
-      int var4 = this.angerBySuspect.computeInt(var1, (var1x, var2x) -> {
-         return Math.min(150, (var2x == null ? 0 : var2x) + var2);
-      });
+      int var4 = this.angerBySuspect.computeInt(var1, (var1x, var2x) -> Math.min(150, (var2x == null ? 0 : var2x) + var2));
       if (var3) {
          int var5 = this.angerByUuid.removeInt(var1.getUUID());
          var4 += var5;
@@ -180,11 +163,7 @@ public class AngerManagement {
    }
 
    public Optional<LivingEntity> getActiveEntity() {
-      return Optional.ofNullable(this.getTopSuspect()).filter((var0) -> {
-         return var0 instanceof LivingEntity;
-      }).map((var0) -> {
-         return (LivingEntity)var0;
-      });
+      return Optional.ofNullable(this.getTopSuspect()).filter((var0) -> var0 instanceof LivingEntity).map((var0) -> (LivingEntity)var0);
    }
 
    @VisibleForTesting
@@ -215,10 +194,6 @@ public class AngerManagement {
                }
             }
          }
-      }
-
-      public AngerManagement angerManagement() {
-         return this.angerManagement;
       }
 
       // $FF: synthetic method

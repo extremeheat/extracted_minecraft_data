@@ -62,17 +62,13 @@ public class RepairItemRecipe extends CustomRecipe {
          var10.setDamageValue(Math.max(var6 - var9, 0));
          ItemEnchantments var11 = EnchantmentHelper.getEnchantmentsForCrafting(var4);
          ItemEnchantments var12 = EnchantmentHelper.getEnchantmentsForCrafting(var5);
-         EnchantmentHelper.updateEnchantments(var10, (var3x) -> {
-            var2.lookupOrThrow(Registries.ENCHANTMENT).listElements().filter((var0) -> {
-               return var0.is(EnchantmentTags.CURSE);
-            }).forEach((var3) -> {
+         EnchantmentHelper.updateEnchantments(var10, (var3x) -> var2.lookupOrThrow(Registries.ENCHANTMENT).listElements().filter((var0) -> var0.is(EnchantmentTags.CURSE)).forEach((var3) -> {
                int var4 = Math.max(var11.getLevel(var3), var12.getLevel(var3));
                if (var4 > 0) {
                   var3x.upgrade(var3, var4);
                }
 
-            });
-         });
+            }));
          return var10;
       }
    }

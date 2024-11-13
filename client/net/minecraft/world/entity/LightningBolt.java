@@ -1,7 +1,6 @@
 package net.minecraft.world.entity;
 
 import com.google.common.collect.Sets;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -94,20 +93,12 @@ public class LightningBolt extends Entity {
       }
 
       --this.life;
-      Iterator var2;
-      List var4;
       if (this.life < 0) {
          if (this.flashes == 0) {
             if (this.level() instanceof ServerLevel) {
-               var4 = this.level().getEntities((Entity)this, new AABB(this.getX() - 15.0, this.getY() - 15.0, this.getZ() - 15.0, this.getX() + 15.0, this.getY() + 6.0 + 15.0, this.getZ() + 15.0), (var1x) -> {
-                  return var1x.isAlive() && !this.hitEntities.contains(var1x);
-               });
-               var2 = ((ServerLevel)this.level()).getPlayers((var1x) -> {
-                  return var1x.distanceTo(this) < 256.0F;
-               }).iterator();
+               List var4 = this.level().getEntities(this, new AABB(this.getX() - 15.0, this.getY() - 15.0, this.getZ() - 15.0, this.getX() + 15.0, this.getY() + 6.0 + 15.0, this.getZ() + 15.0), (var1x) -> var1x.isAlive() && !this.hitEntities.contains(var1x));
 
-               while(var2.hasNext()) {
-                  ServerPlayer var3 = (ServerPlayer)var2.next();
+               for(ServerPlayer var3 : ((ServerLevel)this.level()).getPlayers((var1x) -> var1x.distanceTo(this) < 256.0F)) {
                   CriteriaTriggers.LIGHTNING_STRIKE.trigger(var3, this, var4);
                }
             }
@@ -125,17 +116,15 @@ public class LightningBolt extends Entity {
          if (!(this.level() instanceof ServerLevel)) {
             this.level().setSkyFlashTime(2);
          } else if (!this.visualOnly) {
-            var4 = this.level().getEntities((Entity)this, new AABB(this.getX() - 3.0, this.getY() - 3.0, this.getZ() - 3.0, this.getX() + 3.0, this.getY() + 6.0 + 3.0, this.getZ() + 3.0), Entity::isAlive);
-            var2 = var4.iterator();
+            List var5 = this.level().getEntities(this, new AABB(this.getX() - 3.0, this.getY() - 3.0, this.getZ() - 3.0, this.getX() + 3.0, this.getY() + 6.0 + 3.0, this.getZ() + 3.0), Entity::isAlive);
 
-            while(var2.hasNext()) {
-               Entity var5 = (Entity)var2.next();
-               var5.thunderHit((ServerLevel)this.level(), this);
+            for(Entity var7 : var5) {
+               var7.thunderHit((ServerLevel)this.level(), this);
             }
 
-            this.hitEntities.addAll(var4);
+            this.hitEntities.addAll(var5);
             if (this.cause != null) {
-               CriteriaTriggers.CHANNELED_LIGHTNING.trigger(this.cause, var4);
+               CriteriaTriggers.CHANNELED_LIGHTNING.trigger(this.cause, var5);
             }
          }
       }
@@ -216,24 +205,16 @@ public class LightningBolt extends Entity {
    }
 
    private static Optional<BlockPos> randomStepCleaningCopper(Level var0, BlockPos var1) {
-      Iterator var2 = BlockPos.randomInCube(var0.random, 10, var1, 1).iterator();
-
-      BlockPos var3;
-      BlockState var4;
-      do {
-         if (!var2.hasNext()) {
-            return Optional.empty();
+      for(BlockPos var3 : BlockPos.randomInCube(var0.random, 10, var1, 1)) {
+         BlockState var4 = var0.getBlockState(var3);
+         if (var4.getBlock() instanceof WeatheringCopper) {
+            WeatheringCopper.getPrevious(var4).ifPresent((var2) -> var0.setBlockAndUpdate(var3, var2));
+            var0.levelEvent(3002, var3, -1);
+            return Optional.of(var3);
          }
+      }
 
-         var3 = (BlockPos)var2.next();
-         var4 = var0.getBlockState(var3);
-      } while(!(var4.getBlock() instanceof WeatheringCopper));
-
-      WeatheringCopper.getPrevious(var4).ifPresent((var2x) -> {
-         var0.setBlockAndUpdate(var3, var2x);
-      });
-      var0.levelEvent(3002, var3, -1);
-      return Optional.of(var3);
+      return Optional.empty();
    }
 
    public boolean shouldRenderAtSqrDistance(double var1) {

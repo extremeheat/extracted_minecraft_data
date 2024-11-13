@@ -65,11 +65,7 @@ public class PistonHeadBlock extends DirectionalBlock {
    }
 
    private static VoxelShape[] makeShapes(boolean var0) {
-      return (VoxelShape[])Arrays.stream(Direction.values()).map((var1) -> {
-         return calculateShape(var1, var0);
-      }).toArray((var0x) -> {
-         return new VoxelShape[var0x];
-      });
+      return (VoxelShape[])Arrays.stream(Direction.values()).map((var1) -> calculateShape(var1, var0)).toArray((var0x) -> new VoxelShape[var0x]);
    }
 
    private static VoxelShape calculateShape(Direction var0, boolean var1) {

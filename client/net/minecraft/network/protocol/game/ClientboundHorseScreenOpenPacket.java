@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundHorseScreenOpenPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundHorseScreenOpenPacket> STREAM_CODEC = Packet.codec(ClientboundHorseScreenOpenPacket::write, ClientboundHorseScreenOpenPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundHorseScreenOpenPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundHorseScreenOpenPacket>codec(ClientboundHorseScreenOpenPacket::write, ClientboundHorseScreenOpenPacket::new);
    private final int containerId;
    private final int inventoryColumns;
    private final int entityId;

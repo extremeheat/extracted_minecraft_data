@@ -14,16 +14,4 @@ public record RegionStorageInfo(String level, ResourceKey<Level> dimension, Stri
    public RegionStorageInfo withTypeSuffix(String var1) {
       return new RegionStorageInfo(this.level, this.dimension, this.type + var1);
    }
-
-   public String level() {
-      return this.level;
-   }
-
-   public ResourceKey<Level> dimension() {
-      return this.dimension;
-   }
-
-   public String type() {
-      return this.type;
-   }
 }

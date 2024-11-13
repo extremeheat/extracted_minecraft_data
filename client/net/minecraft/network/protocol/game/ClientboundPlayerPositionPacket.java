@@ -31,18 +31,6 @@ public record ClientboundPlayerPositionPacket(int id, PositionMoveRotation chang
       var1.handleMovePlayer(this);
    }
 
-   public int id() {
-      return this.id;
-   }
-
-   public PositionMoveRotation change() {
-      return this.change;
-   }
-
-   public Set<Relative> relatives() {
-      return this.relatives;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundPlayerPositionPacket::id, PositionMoveRotation.STREAM_CODEC, ClientboundPlayerPositionPacket::change, Relative.SET_STREAM_CODEC, ClientboundPlayerPositionPacket::relatives, ClientboundPlayerPositionPacket::new);
    }

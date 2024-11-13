@@ -15,7 +15,7 @@ public record TypedDataComponent<T>(DataComponentType<T> type, T value) {
       }
 
       private static <T> TypedDataComponent<T> decodeTyped(RegistryFriendlyByteBuf var0, DataComponentType<T> var1) {
-         return new TypedDataComponent(var1, var1.streamCodec().decode(var0));
+         return new TypedDataComponent<T>(var1, var1.streamCodec().decode(var0));
       }
 
       public void encode(RegistryFriendlyByteBuf var1, TypedDataComponent<?> var2) {
@@ -49,7 +49,7 @@ public record TypedDataComponent<T>(DataComponentType<T> type, T value) {
    }
 
    public static <T> TypedDataComponent<T> createUnchecked(DataComponentType<T> var0, Object var1) {
-      return new TypedDataComponent(var0, var1);
+      return new TypedDataComponent<T>(var0, var1);
    }
 
    public void applyTo(PatchedDataComponentMap var1) {
@@ -58,21 +58,11 @@ public record TypedDataComponent<T>(DataComponentType<T> type, T value) {
 
    public <D> DataResult<D> encodeValue(DynamicOps<D> var1) {
       Codec var2 = this.type.codec();
-      return var2 == null ? DataResult.error(() -> {
-         return "Component of type " + String.valueOf(this.type) + " is not encodable";
-      }) : var2.encodeStart(var1, this.value);
+      return var2 == null ? DataResult.error(() -> "Component of type " + String.valueOf(this.type) + " is not encodable") : var2.encodeStart(var1, this.value);
    }
 
    public String toString() {
       String var10000 = String.valueOf(this.type);
       return var10000 + "=>" + String.valueOf(this.value);
-   }
-
-   public DataComponentType<T> type() {
-      return this.type;
-   }
-
-   public T value() {
-      return this.value;
    }
 }

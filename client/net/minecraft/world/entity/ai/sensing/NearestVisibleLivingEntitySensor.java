@@ -26,14 +26,10 @@ public abstract class NearestVisibleLivingEntitySensor extends Sensor<LivingEnti
    }
 
    private Optional<LivingEntity> getNearestEntity(ServerLevel var1, LivingEntity var2) {
-      return this.getVisibleEntities(var2).flatMap((var3) -> {
-         return var3.findClosest((var3x) -> {
-            return this.isMatchingEntity(var1, var2, var3x);
-         });
-      });
+      return this.getVisibleEntities(var2).flatMap((var3) -> var3.findClosest((var3x) -> this.isMatchingEntity(var1, var2, var3x)));
    }
 
    protected Optional<NearestVisibleLivingEntities> getVisibleEntities(LivingEntity var1) {
-      return var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
+      return var1.getBrain().<NearestVisibleLivingEntities>getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
    }
 }

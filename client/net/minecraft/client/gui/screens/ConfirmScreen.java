@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import net.minecraft.client.gui.GuiGraphics;
@@ -49,12 +48,8 @@ public class ConfirmScreen extends Screen {
    }
 
    protected void addButtons(int var1) {
-      this.addExitButton(Button.builder(this.yesButton, (var1x) -> {
-         this.callback.accept(true);
-      }).bounds(this.width / 2 - 155, var1, 150, 20).build());
-      this.addExitButton(Button.builder(this.noButton, (var1x) -> {
-         this.callback.accept(false);
-      }).bounds(this.width / 2 - 155 + 160, var1, 150, 20).build());
+      this.addExitButton(Button.builder(this.yesButton, (var1x) -> this.callback.accept(true)).bounds(this.width / 2 - 155, var1, 150, 20).build());
+      this.addExitButton(Button.builder(this.noButton, (var1x) -> this.callback.accept(false)).bounds(this.width / 2 - 155 + 160, var1, 150, 20).build());
    }
 
    protected void addExitButton(Button var1) {
@@ -87,19 +82,17 @@ public class ConfirmScreen extends Screen {
    public void setDelay(int var1) {
       this.delayTicker = var1;
 
-      Button var3;
-      for(Iterator var2 = this.exitButtons.iterator(); var2.hasNext(); var3.active = false) {
-         var3 = (Button)var2.next();
+      for(Button var3 : this.exitButtons) {
+         var3.active = false;
       }
 
    }
 
    public void tick() {
       super.tick();
-      Button var2;
       if (--this.delayTicker == 0) {
-         for(Iterator var1 = this.exitButtons.iterator(); var1.hasNext(); var2.active = true) {
-            var2 = (Button)var1.next();
+         for(Button var2 : this.exitButtons) {
+            var2.active = true;
          }
       }
 

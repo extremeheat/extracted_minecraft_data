@@ -6,7 +6,6 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -30,9 +29,7 @@ public class StructureTemplatePool {
    public static final Codec<StructureTemplatePool> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
       MutableObject var10001 = CODEC_REFERENCE;
       Objects.requireNonNull(var10001);
-      return var0.group(Codec.lazyInitialized(var10001::getValue).fieldOf("fallback").forGetter(StructureTemplatePool::getFallback), Codec.mapPair(StructurePoolElement.CODEC.fieldOf("element"), Codec.intRange(1, 150).fieldOf("weight")).codec().listOf().fieldOf("elements").forGetter((var0x) -> {
-         return var0x.rawTemplates;
-      })).apply(var0, StructureTemplatePool::new);
+      return var0.group(Codec.lazyInitialized(var10001::getValue).fieldOf("fallback").forGetter(StructureTemplatePool::getFallback), Codec.mapPair(StructurePoolElement.CODEC.fieldOf("element"), Codec.intRange(1, 150).fieldOf("weight")).codec().listOf().fieldOf("elements").forGetter((var0x) -> var0x.rawTemplates)).apply(var0, StructureTemplatePool::new);
    });
    public static final Codec<Holder<StructureTemplatePool>> CODEC;
    private final List<Pair<StructurePoolElement, Integer>> rawTemplates;
@@ -44,10 +41,8 @@ public class StructureTemplatePool {
       super();
       this.rawTemplates = var2;
       this.templates = new ObjectArrayList();
-      Iterator var3 = var2.iterator();
 
-      while(var3.hasNext()) {
-         Pair var4 = (Pair)var3.next();
+      for(Pair var4 : var2) {
          StructurePoolElement var5 = (StructurePoolElement)var4.getFirst();
 
          for(int var6 = 0; var6 < (Integer)var4.getSecond(); ++var6) {
@@ -62,10 +57,8 @@ public class StructureTemplatePool {
       super();
       this.rawTemplates = Lists.newArrayList();
       this.templates = new ObjectArrayList();
-      Iterator var4 = var2.iterator();
 
-      while(var4.hasNext()) {
-         Pair var5 = (Pair)var4.next();
+      for(Pair var5 : var2) {
          StructurePoolElement var6 = (StructurePoolElement)((Function)var5.getFirst()).apply(var3);
          this.rawTemplates.add(Pair.of(var6, (Integer)var5.getSecond()));
 
@@ -79,11 +72,7 @@ public class StructureTemplatePool {
 
    public int getMaxSize(StructureTemplateManager var1) {
       if (this.maxSize == -2147483648) {
-         this.maxSize = this.templates.stream().filter((var0) -> {
-            return var0 != EmptyPoolElement.INSTANCE;
-         }).mapToInt((var1x) -> {
-            return var1x.getBoundingBox(var1, BlockPos.ZERO, Rotation.NONE).getYSpan();
-         }).max().orElse(0);
+         this.maxSize = this.templates.stream().filter((var0) -> var0 != EmptyPoolElement.INSTANCE).mapToInt((var1x) -> var1x.getBoundingBox(var1, BlockPos.ZERO, Rotation.NONE).getYSpan()).max().orElse(0);
       }
 
       return this.maxSize;
@@ -116,11 +105,11 @@ public class StructureTemplatePool {
       TERRAIN_MATCHING("terrain_matching", ImmutableList.of(new GravityProcessor(Heightmap.Types.WORLD_SURFACE_WG, -1))),
       RIGID("rigid", ImmutableList.of());
 
-      public static final StringRepresentable.EnumCodec<Projection> CODEC = StringRepresentable.fromEnum(Projection::values);
+      public static final StringRepresentable.EnumCodec<Projection> CODEC = StringRepresentable.<Projection>fromEnum(Projection::values);
       private final String name;
       private final ImmutableList<StructureProcessor> processors;
 
-      private Projection(final String var3, final ImmutableList var4) {
+      private Projection(final String var3, final ImmutableList<StructureProcessor> var4) {
          this.name = var3;
          this.processors = var4;
       }
@@ -130,7 +119,7 @@ public class StructureTemplatePool {
       }
 
       public static Projection byName(String var0) {
-         return (Projection)CODEC.byName(var0);
+         return CODEC.byName(var0);
       }
 
       public ImmutableList<StructureProcessor> getProcessors() {

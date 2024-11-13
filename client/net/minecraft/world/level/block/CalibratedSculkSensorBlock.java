@@ -38,9 +38,7 @@ public class CalibratedSculkSensorBlock extends SculkSensorBlock {
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return !var1.isClientSide ? createTickerHelper(var3, BlockEntityType.CALIBRATED_SCULK_SENSOR, (var0, var1x, var2x, var3x) -> {
-         VibrationSystem.Ticker.tick(var0, var3x.getVibrationData(), var3x.getVibrationUser());
-      }) : null;
+      return !var1.isClientSide ? createTickerHelper(var3, BlockEntityType.CALIBRATED_SCULK_SENSOR, (var0, var1x, var2x, var3x) -> VibrationSystem.Ticker.tick(var0, var3x.getVibrationData(), var3x.getVibrationUser())) : null;
    }
 
    @Nullable

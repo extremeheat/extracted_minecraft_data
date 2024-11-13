@@ -14,16 +14,10 @@ public class GossipUUIDFix extends NamedEntityFix {
    }
 
    protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var0) -> {
-         return var0.update("Gossips", (var0x) -> {
-            Optional var10000 = var0x.asStreamOpt().result().map((var0) -> {
-               return var0.map((var0x) -> {
-                  return (Dynamic)AbstractUUIDFix.replaceUUIDLeastMost(var0x, "Target", "Target").orElse(var0x);
-               });
-            });
+      return var1.update(DSL.remainderFinder(), (var0) -> var0.update("Gossips", (var0x) -> {
+            Optional var10000 = var0x.asStreamOpt().result().map((var0) -> var0.map((var0x) -> (Dynamic)AbstractUUIDFix.replaceUUIDLeastMost(var0x, "Target", "Target").orElse(var0x)));
             Objects.requireNonNull(var0x);
             return (Dynamic)DataFixUtils.orElse(var10000.map(var0x::createList), var0x);
-         });
-      });
+         }));
    }
 }

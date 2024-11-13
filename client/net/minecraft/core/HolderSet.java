@@ -51,11 +51,11 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
 
    @SafeVarargs
    static <T> Direct<T> direct(Holder<T>... var0) {
-      return new Direct(List.of(var0));
+      return new Direct<T>(List.of(var0));
    }
 
    static <T> Direct<T> direct(List<? extends Holder<T>> var0) {
-      return new Direct(List.copyOf(var0));
+      return new Direct<T>(List.copyOf(var0));
    }
 
    @SafeVarargs
@@ -65,6 +65,42 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
 
    static <E, T> Direct<T> direct(Function<E, Holder<T>> var0, Collection<E> var1) {
       return direct(var1.stream().map(var0).toList());
+   }
+
+   public abstract static class ListBacked<T> implements HolderSet<T> {
+      public ListBacked() {
+         super();
+      }
+
+      protected abstract List<Holder<T>> contents();
+
+      public int size() {
+         return this.contents().size();
+      }
+
+      public Spliterator<Holder<T>> spliterator() {
+         return this.contents().spliterator();
+      }
+
+      public Iterator<Holder<T>> iterator() {
+         return this.contents().iterator();
+      }
+
+      public Stream<Holder<T>> stream() {
+         return this.contents().stream();
+      }
+
+      public Optional<Holder<T>> getRandomElement(RandomSource var1) {
+         return Util.<Holder<T>>getRandomSafe(this.contents(), var1);
+      }
+
+      public Holder<T> get(int var1) {
+         return (Holder)this.contents().get(var1);
+      }
+
+      public boolean canSerializeIn(HolderOwner<T> var1) {
+         return true;
+      }
    }
 
    public static final class Direct<T> extends ListBacked<T> {
@@ -181,42 +217,6 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
 
       public boolean canSerializeIn(HolderOwner<T> var1) {
          return this.owner.canSerializeIn(var1);
-      }
-   }
-
-   public abstract static class ListBacked<T> implements HolderSet<T> {
-      public ListBacked() {
-         super();
-      }
-
-      protected abstract List<Holder<T>> contents();
-
-      public int size() {
-         return this.contents().size();
-      }
-
-      public Spliterator<Holder<T>> spliterator() {
-         return this.contents().spliterator();
-      }
-
-      public Iterator<Holder<T>> iterator() {
-         return this.contents().iterator();
-      }
-
-      public Stream<Holder<T>> stream() {
-         return this.contents().stream();
-      }
-
-      public Optional<Holder<T>> getRandomElement(RandomSource var1) {
-         return Util.getRandomSafe(this.contents(), var1);
-      }
-
-      public Holder<T> get(int var1) {
-         return (Holder)this.contents().get(var1);
-      }
-
-      public boolean canSerializeIn(HolderOwner<T> var1) {
-         return true;
       }
    }
 }

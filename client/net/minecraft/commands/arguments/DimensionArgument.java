@@ -61,11 +61,7 @@ public class DimensionArgument implements ArgumentType<ResourceLocation> {
    }
 
    static {
-      EXAMPLES = (Collection)Stream.of(Level.OVERWORLD, Level.NETHER).map((var0) -> {
-         return var0.location().toString();
-      }).collect(Collectors.toList());
-      ERROR_INVALID_VALUE = new DynamicCommandExceptionType((var0) -> {
-         return Component.translatableEscape("argument.dimension.invalid", var0);
-      });
+      EXAMPLES = (Collection)Stream.of(Level.OVERWORLD, Level.NETHER).map((var0) -> var0.location().toString()).collect(Collectors.toList());
+      ERROR_INVALID_VALUE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.dimension.invalid", var0));
    }
 }

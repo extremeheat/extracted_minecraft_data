@@ -40,11 +40,7 @@ public class ChannelAccess {
    }
 
    public void executeOnChannels(Consumer<Stream<Channel>> var1) {
-      this.executor.execute(() -> {
-         var1.accept(this.channels.stream().map((var0) -> {
-            return var0.channel;
-         }).filter(Objects::nonNull));
-      });
+      this.executor.execute(() -> var1.accept(this.channels.stream().map((var0) -> var0.channel).filter(Objects::nonNull)));
    }
 
    public void scheduleTick() {

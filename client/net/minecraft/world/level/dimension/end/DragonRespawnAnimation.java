@@ -1,7 +1,6 @@
 package net.minecraft.world.level.dimension.end;
 
 import com.google.common.collect.ImmutableList;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -17,10 +16,8 @@ public enum DragonRespawnAnimation {
    START {
       public void tick(ServerLevel var1, EndDragonFight var2, List<EndCrystal> var3, int var4, BlockPos var5) {
          BlockPos var6 = new BlockPos(0, 128, 0);
-         Iterator var7 = var3.iterator();
 
-         while(var7.hasNext()) {
-            EndCrystal var8 = (EndCrystal)var7.next();
+         for(EndCrystal var8 : var3) {
             var8.setBeamTarget(var6);
          }
 
@@ -50,18 +47,13 @@ public enum DragonRespawnAnimation {
             if (var10 < var9.size()) {
                SpikeFeature.EndSpike var11 = (SpikeFeature.EndSpike)var9.get(var10);
                if (var7) {
-                  Iterator var12 = var3.iterator();
-
-                  while(var12.hasNext()) {
-                     EndCrystal var13 = (EndCrystal)var12.next();
+                  for(EndCrystal var13 : var3) {
                      var13.setBeamTarget(new BlockPos(var11.getCenterX(), var11.getHeight() + 1, var11.getCenterZ()));
                   }
                } else {
                   boolean var15 = true;
-                  Iterator var16 = BlockPos.betweenClosed(new BlockPos(var11.getCenterX() - 10, var11.getHeight() - 10, var11.getCenterZ() - 10), new BlockPos(var11.getCenterX() + 10, var11.getHeight() + 10, var11.getCenterZ() + 10)).iterator();
 
-                  while(var16.hasNext()) {
-                     BlockPos var14 = (BlockPos)var16.next();
+                  for(BlockPos var14 : BlockPos.betweenClosed(new BlockPos(var11.getCenterX() - 10, var11.getHeight() - 10, var11.getCenterZ() - 10), new BlockPos(var11.getCenterX() + 10, var11.getHeight() + 10, var11.getCenterZ() + 10))) {
                      var1.removeBlock(var14, false);
                   }
 
@@ -78,15 +70,11 @@ public enum DragonRespawnAnimation {
    },
    SUMMONING_DRAGON {
       public void tick(ServerLevel var1, EndDragonFight var2, List<EndCrystal> var3, int var4, BlockPos var5) {
-         Iterator var6;
-         EndCrystal var7;
          if (var4 >= 100) {
             var2.setRespawnStage(END);
             var2.resetSpikeCrystals();
-            var6 = var3.iterator();
 
-            while(var6.hasNext()) {
-               var7 = (EndCrystal)var6.next();
+            for(EndCrystal var7 : var3) {
                var7.setBeamTarget((BlockPos)null);
                var1.explode(var7, var7.getX(), var7.getY(), var7.getZ(), 6.0F, Level.ExplosionInteraction.NONE);
                var7.discard();
@@ -94,11 +82,8 @@ public enum DragonRespawnAnimation {
          } else if (var4 >= 80) {
             var1.levelEvent(3001, new BlockPos(0, 128, 0), 0);
          } else if (var4 == 0) {
-            var6 = var3.iterator();
-
-            while(var6.hasNext()) {
-               var7 = (EndCrystal)var6.next();
-               var7.setBeamTarget(new BlockPos(0, 128, 0));
+            for(EndCrystal var9 : var3) {
+               var9.setBeamTarget(new BlockPos(0, 128, 0));
             }
          } else if (var4 < 5) {
             var1.levelEvent(3001, new BlockPos(0, 128, 0), 0);

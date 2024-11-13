@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
-import java.util.Iterator;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -46,10 +45,8 @@ public class PointedDripstoneFeature extends Feature<PointedDripstoneConfigurati
 
    private static void createPatchOfDripstoneBlocks(LevelAccessor var0, RandomSource var1, BlockPos var2, PointedDripstoneConfiguration var3) {
       DripstoneUtils.placeDripstoneBlockIfPossible(var0, var2);
-      Iterator var4 = Direction.Plane.HORIZONTAL.iterator();
 
-      while(var4.hasNext()) {
-         Direction var5 = (Direction)var4.next();
+      for(Direction var5 : Direction.Plane.HORIZONTAL) {
          if (!(var1.nextFloat() > var3.chanceOfDirectionalSpread)) {
             BlockPos var6 = var2.relative(var5);
             DripstoneUtils.placeDripstoneBlockIfPossible(var0, var6);

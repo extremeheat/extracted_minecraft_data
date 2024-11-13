@@ -145,11 +145,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       if (canDrip(var1)) {
          float var5 = var4.nextFloat();
          if (!(var5 > 0.12F)) {
-            getFluidAboveStalactite(var2, var3, var1).filter((var1x) -> {
-               return var5 < 0.02F || canFillCauldron(var1x.fluid);
-            }).ifPresent((var3x) -> {
-               spawnDripParticle(var2, var3, var1, var3x.fluid);
-            });
+            getFluidAboveStalactite(var2, var3, var1).filter((var1x) -> var5 < 0.02F || canFillCauldron(var1x.fluid)).ifPresent((var3x) -> spawnDripParticle(var2, var3, var1, var3x.fluid));
          }
       }
    }
@@ -376,9 +372,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
    }
 
    public static void spawnDripParticle(Level var0, BlockPos var1, BlockState var2) {
-      getFluidAboveStalactite(var0, var1, var2).ifPresent((var3) -> {
-         spawnDripParticle(var0, var1, var2, var3.fluid);
-      });
+      getFluidAboveStalactite(var0, var1, var2).ifPresent((var3) -> spawnDripParticle(var0, var1, var2, var3.fluid));
    }
 
    private static void spawnDripParticle(Level var0, BlockPos var1, BlockState var2, Fluid var3) {
@@ -398,12 +392,8 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
          return var2;
       } else {
          Direction var5 = (Direction)var0.getValue(TIP_DIRECTION);
-         BiPredicate var6 = (var1x, var2x) -> {
-            return var2x.is(Blocks.POINTED_DRIPSTONE) && var2x.getValue(TIP_DIRECTION) == var5;
-         };
-         return (BlockPos)findBlockVertical(var1, var2, var5.getAxisDirection(), var6, (var1x) -> {
-            return isTip(var1x, var4);
-         }, var3).orElse((Object)null);
+         BiPredicate var6 = (var1x, var2x) -> var2x.is(Blocks.POINTED_DRIPSTONE) && var2x.getValue(TIP_DIRECTION) == var5;
+         return (BlockPos)findBlockVertical(var1, var2, var5.getAxisDirection(), var6, (var1x) -> isTip(var1x, var4), var3).orElse((Object)null);
       }
    }
 
@@ -458,12 +448,8 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
 
    private static Optional<BlockPos> findRootBlock(Level var0, BlockPos var1, BlockState var2, int var3) {
       Direction var4 = (Direction)var2.getValue(TIP_DIRECTION);
-      BiPredicate var5 = (var1x, var2x) -> {
-         return var2x.is(Blocks.POINTED_DRIPSTONE) && var2x.getValue(TIP_DIRECTION) == var4;
-      };
-      return findBlockVertical(var0, var1, var4.getOpposite().getAxisDirection(), var5, (var0x) -> {
-         return !var0x.is(Blocks.POINTED_DRIPSTONE);
-      }, var3);
+      BiPredicate var5 = (var1x, var2x) -> var2x.is(Blocks.POINTED_DRIPSTONE) && var2x.getValue(TIP_DIRECTION) == var4;
+      return findBlockVertical(var0, var1, var4.getOpposite().getAxisDirection(), var5, (var0x) -> !var0x.is(Blocks.POINTED_DRIPSTONE), var3);
    }
 
    private static boolean isValidPointedDripstonePlacement(LevelReader var0, BlockPos var1, Direction var2) {
@@ -507,27 +493,19 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
 
    @Nullable
    private static BlockPos findFillableCauldronBelowStalactiteTip(Level var0, BlockPos var1, Fluid var2) {
-      Predicate var3 = (var1x) -> {
-         return var1x.getBlock() instanceof AbstractCauldronBlock && ((AbstractCauldronBlock)var1x.getBlock()).canReceiveStalactiteDrip(var2);
-      };
-      BiPredicate var4 = (var1x, var2x) -> {
-         return canDripThrough(var0, var1x, var2x);
-      };
+      Predicate var3 = (var1x) -> var1x.getBlock() instanceof AbstractCauldronBlock && ((AbstractCauldronBlock)var1x.getBlock()).canReceiveStalactiteDrip(var2);
+      BiPredicate var4 = (var1x, var2x) -> canDripThrough(var0, var1x, var2x);
       return (BlockPos)findBlockVertical(var0, var1, Direction.DOWN.getAxisDirection(), var4, var3, 11).orElse((Object)null);
    }
 
    @Nullable
    public static BlockPos findStalactiteTipAboveCauldron(Level var0, BlockPos var1) {
-      BiPredicate var2 = (var1x, var2x) -> {
-         return canDripThrough(var0, var1x, var2x);
-      };
+      BiPredicate var2 = (var1x, var2x) -> canDripThrough(var0, var1x, var2x);
       return (BlockPos)findBlockVertical(var0, var1, Direction.UP.getAxisDirection(), var2, PointedDripstoneBlock::canDrip, 11).orElse((Object)null);
    }
 
    public static Fluid getCauldronFillFluidType(ServerLevel var0, BlockPos var1) {
-      return (Fluid)getFluidAboveStalactite(var0, var1, var0.getBlockState(var1)).map((var0x) -> {
-         return var0x.fluid;
-      }).filter(PointedDripstoneBlock::canFillCauldron).orElse(Fluids.EMPTY);
+      return (Fluid)getFluidAboveStalactite(var0, var1, var0.getBlockState(var1)).map((var0x) -> var0x.fluid).filter(PointedDripstoneBlock::canFillCauldron).orElse(Fluids.EMPTY);
    }
 
    private static Optional<FluidInfo> getFluidAboveStalactite(Level var0, BlockPos var1, BlockState var2) {
@@ -616,18 +594,6 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
          this.pos = var1;
          this.fluid = var2;
          this.sourceState = var3;
-      }
-
-      public BlockPos pos() {
-         return this.pos;
-      }
-
-      public Fluid fluid() {
-         return this.fluid;
-      }
-
-      public BlockState sourceState() {
-         return this.sourceState;
       }
    }
 }

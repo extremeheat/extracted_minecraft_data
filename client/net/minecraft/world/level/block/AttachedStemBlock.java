@@ -26,15 +26,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class AttachedStemBlock extends BushBlock {
-   public static final MapCodec<AttachedStemBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceKey.codec(Registries.BLOCK).fieldOf("fruit").forGetter((var0x) -> {
-         return var0x.fruit;
-      }), ResourceKey.codec(Registries.BLOCK).fieldOf("stem").forGetter((var0x) -> {
-         return var0x.stem;
-      }), ResourceKey.codec(Registries.ITEM).fieldOf("seed").forGetter((var0x) -> {
-         return var0x.seed;
-      }), propertiesCodec()).apply(var0, AttachedStemBlock::new);
-   });
+   public static final MapCodec<AttachedStemBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.BLOCK).fieldOf("fruit").forGetter((var0x) -> var0x.fruit), ResourceKey.codec(Registries.BLOCK).fieldOf("stem").forGetter((var0x) -> var0x.stem), ResourceKey.codec(Registries.ITEM).fieldOf("seed").forGetter((var0x) -> var0x.seed), propertiesCodec()).apply(var0, AttachedStemBlock::new));
    public static final EnumProperty<Direction> FACING;
    protected static final float AABB_OFFSET = 2.0F;
    private static final Map<Direction, VoxelShape> AABBS;

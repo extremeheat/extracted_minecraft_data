@@ -60,9 +60,7 @@ public class TrimPatterns {
    }
 
    public static Optional<Holder.Reference<TrimPattern>> getFromTemplate(HolderLookup.Provider var0, ItemStack var1) {
-      return var0.lookupOrThrow(Registries.TRIM_PATTERN).listElements().filter((var1x) -> {
-         return var1.is(((TrimPattern)var1x.value()).templateItem());
-      }).findFirst();
+      return var0.lookupOrThrow(Registries.TRIM_PATTERN).listElements().filter((var1x) -> var1.is(((TrimPattern)var1x.value()).templateItem())).findFirst();
    }
 
    public static void register(BootstrapContext<TrimPattern> var0, Item var1, ResourceKey<TrimPattern> var2) {

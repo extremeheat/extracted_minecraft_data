@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -55,20 +54,14 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
 
    protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
       Brain var5 = var2.getBrain();
-      var5.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).flatMap((var3x) -> {
-         return var3x.findClosest((var3) -> {
-            return this.ramTargeting.test(var1, var2, var3);
-         });
-      }).ifPresent((var2x) -> {
-         this.chooseRamPosition(var2, var2x);
-      });
+      var5.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).flatMap((var3x) -> var3x.findClosest((var3) -> this.ramTargeting.test(var1, var2, var3))).ifPresent((var2x) -> this.chooseRamPosition(var2, var2x));
    }
 
    protected void stop(ServerLevel var1, E var2, long var3) {
       Brain var5 = var2.getBrain();
       if (!var5.hasMemoryValue(MemoryModuleType.RAM_TARGET)) {
          var1.broadcastEntityEvent(var2, (byte)59);
-         var5.setMemory(MemoryModuleType.RAM_COOLDOWN_TICKS, (Object)this.getCooldownOnFail.applyAsInt(var2));
+         var5.setMemory(MemoryModuleType.RAM_COOLDOWN_TICKS, this.getCooldownOnFail.applyAsInt(var2));
       }
 
    }
@@ -79,8 +72,8 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
 
    protected void tick(ServerLevel var1, E var2, long var3) {
       if (!this.ramCandidate.isEmpty()) {
-         var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(((RamCandidate)this.ramCandidate.get()).getStartPosition(), this.walkSpeed, 0)));
-         var2.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityTracker(((RamCandidate)this.ramCandidate.get()).getTarget(), true)));
+         var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(((RamCandidate)this.ramCandidate.get()).getStartPosition(), this.walkSpeed, 0));
+         var2.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(((RamCandidate)this.ramCandidate.get()).getTarget(), true));
          boolean var5 = !((RamCandidate)this.ramCandidate.get()).getTarget().blockPosition().equals(((RamCandidate)this.ramCandidate.get()).getTargetPosition());
          if (var5) {
             var1.broadcastEntityEvent(var2, (byte)59);
@@ -95,7 +88,7 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
                }
 
                if (var3 - (Long)this.reachedRamPositionTimestamp.get() >= (long)this.ramPrepareTime) {
-                  var2.getBrain().setMemory(MemoryModuleType.RAM_TARGET, (Object)this.getEdgeOfBlock(var6, ((RamCandidate)this.ramCandidate.get()).getTargetPosition()));
+                  var2.getBrain().setMemory(MemoryModuleType.RAM_TARGET, this.getEdgeOfBlock(var6, ((RamCandidate)this.ramCandidate.get()).getTargetPosition()));
                   var1.playSound((Player)null, var2, (SoundEvent)this.getPrepareRamSound.apply(var2), SoundSource.NEUTRAL, 1.0F, var2.getVoicePitch());
                   this.ramCandidate = Optional.empty();
                }
@@ -119,10 +112,8 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
       } else {
          ArrayList var4 = Lists.newArrayList();
          BlockPos.MutableBlockPos var5 = var3.mutable();
-         Iterator var6 = Direction.Plane.HORIZONTAL.iterator();
 
-         while(var6.hasNext()) {
-            Direction var7 = (Direction)var6.next();
+         for(Direction var7 : Direction.Plane.HORIZONTAL) {
             var5.set(var3);
 
             for(int var8 = 0; var8 < this.maxRamDistance; ++var8) {
@@ -142,7 +133,7 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
          BlockPos var10001 = var1.blockPosition();
          Objects.requireNonNull(var10001);
          return var10000.sorted(Comparator.comparingDouble(var10001::distSqr)).filter((var1x) -> {
-            Path var2 = var9.createPath((BlockPos)var1x, 0);
+            Path var2 = var9.createPath(var1x, 0);
             return var2 != null && var2.canReach();
          }).findFirst();
       }
@@ -154,9 +145,7 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
 
    private void chooseRamPosition(PathfinderMob var1, LivingEntity var2) {
       this.reachedRamPositionTimestamp = Optional.empty();
-      this.ramCandidate = this.calculateRammingStartPosition(var1, var2).map((var1x) -> {
-         return new RamCandidate(var1x, var2.blockPosition(), var2);
-      });
+      this.ramCandidate = this.calculateRammingStartPosition(var1, var2).map((var1x) -> new RamCandidate(var1x, var2.blockPosition(), var2));
    }
 
    // $FF: synthetic method

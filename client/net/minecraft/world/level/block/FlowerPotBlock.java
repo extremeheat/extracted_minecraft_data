@@ -30,11 +30,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FlowerPotBlock extends Block {
-   public static final MapCodec<FlowerPotBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("potted").forGetter((var0x) -> {
-         return var0x.potted;
-      }), propertiesCodec()).apply(var0, FlowerPotBlock::new);
-   });
+   public static final MapCodec<FlowerPotBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("potted").forGetter((var0x) -> var0x.potted), propertiesCodec()).apply(var0, FlowerPotBlock::new));
    private static final Map<Block, Block> POTTED_BY_CONTENT = Maps.newHashMap();
    public static final float AABB_SIZE = 3.0F;
    protected static final VoxelShape SHAPE = Block.box(5.0, 0.0, 5.0, 11.0, 6.0, 11.0);

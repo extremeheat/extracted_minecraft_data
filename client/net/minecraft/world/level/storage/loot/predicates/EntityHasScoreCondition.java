@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -19,9 +18,7 @@ import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.Scoreboard;
 
 public record EntityHasScoreCondition(Map<String, IntRange> scores, LootContext.EntityTarget entityTarget) implements LootItemCondition {
-   public static final MapCodec<EntityHasScoreCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.unboundedMap(Codec.STRING, IntRange.CODEC).fieldOf("scores").forGetter(EntityHasScoreCondition::scores), LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(EntityHasScoreCondition::entityTarget)).apply(var0, EntityHasScoreCondition::new);
-   });
+   public static final MapCodec<EntityHasScoreCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.unboundedMap(Codec.STRING, IntRange.CODEC).fieldOf("scores").forGetter(EntityHasScoreCondition::scores), LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(EntityHasScoreCondition::entityTarget)).apply(var0, EntityHasScoreCondition::new));
 
    public EntityHasScoreCondition(Map<String, IntRange> var1, LootContext.EntityTarget var2) {
       super();
@@ -34,9 +31,7 @@ public record EntityHasScoreCondition(Map<String, IntRange> scores, LootContext.
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return (Set)Stream.concat(Stream.of(this.entityTarget.getParam()), this.scores.values().stream().flatMap((var0) -> {
-         return var0.getReferencedContextParams().stream();
-      })).collect(ImmutableSet.toImmutableSet());
+      return (Set)Stream.concat(Stream.of(this.entityTarget.getParam()), this.scores.values().stream().flatMap((var0) -> var0.getReferencedContextParams().stream())).collect(ImmutableSet.toImmutableSet());
    }
 
    public boolean test(LootContext var1) {
@@ -45,18 +40,14 @@ public record EntityHasScoreCondition(Map<String, IntRange> scores, LootContext.
          return false;
       } else {
          ServerScoreboard var3 = var1.getLevel().getScoreboard();
-         Iterator var4 = this.scores.entrySet().iterator();
 
-         Map.Entry var5;
-         do {
-            if (!var4.hasNext()) {
-               return true;
+         for(Map.Entry var5 : this.scores.entrySet()) {
+            if (!this.hasScore(var1, var2, var3, (String)var5.getKey(), (IntRange)var5.getValue())) {
+               return false;
             }
+         }
 
-            var5 = (Map.Entry)var4.next();
-         } while(this.hasScore(var1, var2, var3, (String)var5.getKey(), (IntRange)var5.getValue()));
-
-         return false;
+         return true;
       }
    }
 
@@ -72,14 +63,6 @@ public record EntityHasScoreCondition(Map<String, IntRange> scores, LootContext.
 
    public static Builder hasScores(LootContext.EntityTarget var0) {
       return new Builder(var0);
-   }
-
-   public Map<String, IntRange> scores() {
-      return this.scores;
-   }
-
-   public LootContext.EntityTarget entityTarget() {
-      return this.entityTarget;
    }
 
    // $FF: synthetic method

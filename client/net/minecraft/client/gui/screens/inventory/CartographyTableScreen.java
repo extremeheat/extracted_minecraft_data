@@ -104,9 +104,7 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
          var1.pose().scale(var6, var6, 1.0F);
          MapRenderer var7 = this.minecraft.getMapRenderer();
          var7.extractRenderState(var2, var3, this.mapRenderState);
-         var1.drawSpecial((var3x) -> {
-            var7.render(this.mapRenderState, var1.pose(), var3x, true, 15728880);
-         });
+         var1.drawSpecial((var3x) -> var7.render(this.mapRenderState, var1.pose(), var3x, true, 15728880));
          var1.pose().popPose();
       }
 

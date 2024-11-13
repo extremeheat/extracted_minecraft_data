@@ -124,12 +124,8 @@ public class BundleItem extends Item {
    }
 
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      if (var1.isClientSide) {
-         return InteractionResult.CONSUME;
-      } else {
-         var2.startUsingItem(var3);
-         return InteractionResult.SUCCESS_SERVER;
-      }
+      var2.startUsingItem(var3);
+      return InteractionResult.SUCCESS;
    }
 
    private void dropContent(Level var1, Player var2, ItemStack var3) {
@@ -212,7 +208,7 @@ public class BundleItem extends Item {
    }
 
    public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
-      if (!var1.isClientSide && var2 instanceof Player var5) {
+      if (var2 instanceof Player var5) {
          int var6 = this.getUseDuration(var3, var2);
          boolean var7 = var4 == var6;
          if (var7 || var4 < var6 - 10 && var4 % 2 == 0) {
@@ -224,6 +220,10 @@ public class BundleItem extends Item {
 
    public int getUseDuration(ItemStack var1, LivingEntity var2) {
       return 200;
+   }
+
+   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+      return ItemUseAnimation.BUNDLE;
    }
 
    public Optional<TooltipComponent> getTooltipImage(ItemStack var1) {
@@ -239,9 +239,7 @@ public class BundleItem extends Item {
    }
 
    public static List<BundleItem> getAllBundleItemColors() {
-      return Stream.of(Items.BUNDLE, Items.WHITE_BUNDLE, Items.ORANGE_BUNDLE, Items.MAGENTA_BUNDLE, Items.LIGHT_BLUE_BUNDLE, Items.YELLOW_BUNDLE, Items.LIME_BUNDLE, Items.PINK_BUNDLE, Items.GRAY_BUNDLE, Items.LIGHT_GRAY_BUNDLE, Items.CYAN_BUNDLE, Items.BLACK_BUNDLE, Items.BROWN_BUNDLE, Items.GREEN_BUNDLE, Items.RED_BUNDLE, Items.BLUE_BUNDLE, Items.PURPLE_BUNDLE).map((var0) -> {
-         return (BundleItem)var0;
-      }).toList();
+      return Stream.of(Items.BUNDLE, Items.WHITE_BUNDLE, Items.ORANGE_BUNDLE, Items.MAGENTA_BUNDLE, Items.LIGHT_BLUE_BUNDLE, Items.YELLOW_BUNDLE, Items.LIME_BUNDLE, Items.PINK_BUNDLE, Items.GRAY_BUNDLE, Items.LIGHT_GRAY_BUNDLE, Items.CYAN_BUNDLE, Items.BLACK_BUNDLE, Items.BROWN_BUNDLE, Items.GREEN_BUNDLE, Items.RED_BUNDLE, Items.BLUE_BUNDLE, Items.PURPLE_BUNDLE).map((var0) -> (BundleItem)var0).toList();
    }
 
    public static Item getByColor(DyeColor var0) {

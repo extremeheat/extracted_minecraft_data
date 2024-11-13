@@ -19,9 +19,7 @@ public class ItemWrittenBookPagesStrictJsonFix extends DataFix {
 
    public Dynamic<?> fixTag(Dynamic<?> var1) {
       return var1.update("pages", (var1x) -> {
-         DataResult var10000 = var1x.asStreamOpt().map((var0) -> {
-            return var0.map(ComponentDataFixUtils::rewriteFromLenient);
-         });
+         DataResult var10000 = var1x.asStreamOpt().map((var0) -> var0.map(ComponentDataFixUtils::rewriteFromLenient));
          Objects.requireNonNull(var1);
          return (Dynamic)DataFixUtils.orElse(var10000.map(var1::createList).result(), var1.emptyList());
       });
@@ -30,10 +28,6 @@ public class ItemWrittenBookPagesStrictJsonFix extends DataFix {
    public TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
       OpticFinder var2 = var1.findField("tag");
-      return this.fixTypeEverywhereTyped("ItemWrittenBookPagesStrictJsonFix", var1, (var2x) -> {
-         return var2x.updateTyped(var2, (var1) -> {
-            return var1.update(DSL.remainderFinder(), this::fixTag);
-         });
-      });
+      return this.fixTypeEverywhereTyped("ItemWrittenBookPagesStrictJsonFix", var1, (var2x) -> var2x.updateTyped(var2, (var1) -> var1.update(DSL.remainderFinder(), this::fixTag)));
    }
 }

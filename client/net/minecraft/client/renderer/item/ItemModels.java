@@ -6,7 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 
 public class ItemModels {
-   private static final ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends ItemModel.Unbaked>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper();
+   private static final ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends ItemModel.Unbaked>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends ItemModel.Unbaked>>();
    public static final Codec<ItemModel.Unbaked> CODEC;
 
    public ItemModels() {
@@ -24,8 +24,6 @@ public class ItemModels {
    }
 
    static {
-      CODEC = ID_MAPPER.codec(ResourceLocation.CODEC).dispatch(ItemModel.Unbaked::type, (var0) -> {
-         return var0;
-      });
+      CODEC = ID_MAPPER.codec(ResourceLocation.CODEC).dispatch(ItemModel.Unbaked::type, (var0) -> var0);
    }
 }

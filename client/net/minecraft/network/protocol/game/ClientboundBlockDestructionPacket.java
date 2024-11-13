@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundBlockDestructionPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundBlockDestructionPacket> STREAM_CODEC = Packet.codec(ClientboundBlockDestructionPacket::write, ClientboundBlockDestructionPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundBlockDestructionPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundBlockDestructionPacket>codec(ClientboundBlockDestructionPacket::write, ClientboundBlockDestructionPacket::new);
    private final int id;
    private final BlockPos pos;
    private final int progress;

@@ -23,14 +23,6 @@ public record ServerboundContainerButtonClickPacket(int containerId, int buttonI
       var1.handleContainerButtonClick(this);
    }
 
-   public int containerId() {
-      return this.containerId;
-   }
-
-   public int buttonId() {
-      return this.buttonId;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.CONTAINER_ID, ServerboundContainerButtonClickPacket::containerId, ByteBufCodecs.VAR_INT, ServerboundContainerButtonClickPacket::buttonId, ServerboundContainerButtonClickPacket::new);
    }

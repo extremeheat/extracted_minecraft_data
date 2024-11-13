@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.components;
 
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Consumer;
 import net.minecraft.Util;
@@ -91,18 +90,15 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
          int var10 = 0;
          int var11 = this.getInnerTop();
 
-         int var10002;
-         int var10004;
-         for(Iterator var12 = this.textField.iterateLines().iterator(); var12.hasNext(); var11 += 9) {
-            MultilineTextField.StringView var13 = (MultilineTextField.StringView)var12.next();
+         for(MultilineTextField.StringView var13 : this.textField.iterateLines()) {
             Objects.requireNonNull(this.font);
             boolean var14 = this.withinContentAreaTopBottom(var11, var11 + 9);
             if (var7 && var8 && var6 >= var13.beginIndex() && var6 <= var13.endIndex()) {
                if (var14) {
                   var9 = var1.drawString(this.font, var5.substring(var13.beginIndex(), var6), this.getInnerLeft(), var11, -2039584) - 1;
-                  var10002 = var11 - 1;
+                  int var10002 = var11 - 1;
                   int var10003 = var9 + 1;
-                  var10004 = var11 + 1;
+                  int var10004 = var11 + 1;
                   Objects.requireNonNull(this.font);
                   var1.fill(var9, var10002, var10003, var10004 + 9, -3092272);
                   var1.drawString(this.font, var5.substring(var6, var13.endIndex()), var9, var11, -2039584);
@@ -116,6 +112,7 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
             }
 
             Objects.requireNonNull(this.font);
+            var11 += 9;
          }
 
          if (var7 && !var8) {
@@ -126,35 +123,33 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
          }
 
          if (this.textField.hasSelection()) {
-            MultilineTextField.StringView var18 = this.textField.getSelected();
-            int var19 = this.getInnerLeft();
+            MultilineTextField.StringView var19 = this.textField.getSelected();
+            int var20 = this.getInnerLeft();
             var11 = this.getInnerTop();
-            Iterator var20 = this.textField.iterateLines().iterator();
 
-            while(var20.hasNext()) {
-               MultilineTextField.StringView var15 = (MultilineTextField.StringView)var20.next();
-               if (var18.beginIndex() > var15.endIndex()) {
+            for(MultilineTextField.StringView var15 : this.textField.iterateLines()) {
+               if (var19.beginIndex() > var15.endIndex()) {
                   Objects.requireNonNull(this.font);
                   var11 += 9;
                } else {
-                  if (var15.beginIndex() > var18.endIndex()) {
+                  if (var15.beginIndex() > var19.endIndex()) {
                      break;
                   }
 
                   Objects.requireNonNull(this.font);
                   if (this.withinContentAreaTopBottom(var11, var11 + 9)) {
-                     int var16 = this.font.width(var5.substring(var15.beginIndex(), Math.max(var18.beginIndex(), var15.beginIndex())));
+                     int var16 = this.font.width(var5.substring(var15.beginIndex(), Math.max(var19.beginIndex(), var15.beginIndex())));
                      int var17;
-                     if (var18.endIndex() > var15.endIndex()) {
+                     if (var19.endIndex() > var15.endIndex()) {
                         var17 = this.width - this.innerPadding();
                      } else {
-                        var17 = this.font.width(var5.substring(var15.beginIndex(), var18.endIndex()));
+                        var17 = this.font.width(var5.substring(var15.beginIndex(), var19.endIndex()));
                      }
 
-                     var10002 = var19 + var16;
-                     var10004 = var19 + var17;
+                     int var22 = var20 + var16;
+                     int var23 = var20 + var17;
                      Objects.requireNonNull(this.font);
-                     this.renderHighlight(var1, var10002, var11, var10004, var11 + 9);
+                     this.renderHighlight(var1, var22, var11, var23, var11 + 9);
                   }
 
                   Objects.requireNonNull(this.font);
@@ -195,9 +190,8 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
       MultilineTextField var10000 = this.textField;
       Objects.requireNonNull(this.font);
       MultilineTextField.StringView var3 = var10000.getLineView((int)(var1 / 9.0));
-      int var5;
       if (this.textField.cursor() <= var3.beginIndex()) {
-         var5 = this.textField.getLineAtCursor();
+         int var5 = this.textField.getLineAtCursor();
          Objects.requireNonNull(this.font);
          var1 = (double)(var5 * 9);
       } else {
@@ -206,11 +200,11 @@ public class MultiLineEditBox extends AbstractTextAreaWidget {
          Objects.requireNonNull(this.font);
          MultilineTextField.StringView var4 = var10000.getLineView((int)(var10001 / 9.0) - 1);
          if (this.textField.cursor() > var4.endIndex()) {
-            var5 = this.textField.getLineAtCursor();
+            int var7 = this.textField.getLineAtCursor();
             Objects.requireNonNull(this.font);
-            var5 = var5 * 9 - this.height;
+            var7 = var7 * 9 - this.height;
             Objects.requireNonNull(this.font);
-            var1 = (double)(var5 + 9 + this.totalInnerPadding());
+            var1 = (double)(var7 + 9 + this.totalInnerPadding());
          }
       }
 

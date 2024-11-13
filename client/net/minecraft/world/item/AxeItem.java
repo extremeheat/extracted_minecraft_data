@@ -76,9 +76,7 @@ public class AxeItem extends DiggerItem {
             var1.levelEvent(var3, 3005, var2, 0);
             return var6;
          } else {
-            Optional var7 = Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(var4.getBlock())).map((var1x) -> {
-               return var1x.withPropertiesOf(var4);
-            });
+            Optional var7 = Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(var4.getBlock())).map((var1x) -> var1x.withPropertiesOf(var4));
             if (var7.isPresent()) {
                var1.playSound(var3, var2, SoundEvents.AXE_WAX_OFF, SoundSource.BLOCKS, 1.0F, 1.0F);
                var1.levelEvent(var3, 3004, var2, 0);
@@ -91,9 +89,7 @@ public class AxeItem extends DiggerItem {
    }
 
    private Optional<BlockState> getStripped(BlockState var1) {
-      return Optional.ofNullable((Block)STRIPPABLES.get(var1.getBlock())).map((var1x) -> {
-         return (BlockState)var1x.defaultBlockState().setValue(RotatedPillarBlock.AXIS, (Direction.Axis)var1.getValue(RotatedPillarBlock.AXIS));
-      });
+      return Optional.ofNullable((Block)STRIPPABLES.get(var1.getBlock())).map((var1x) -> (BlockState)var1x.defaultBlockState().setValue(RotatedPillarBlock.AXIS, (Direction.Axis)var1.getValue(RotatedPillarBlock.AXIS)));
    }
 
    static {

@@ -24,9 +24,7 @@ public abstract class RenderStateShard {
    protected final String name;
    private final Runnable setupState;
    private final Runnable clearState;
-   protected static final TransparencyStateShard NO_TRANSPARENCY = new TransparencyStateShard("no_transparency", () -> {
-      RenderSystem.disableBlend();
-   }, () -> {
+   protected static final TransparencyStateShard NO_TRANSPARENCY = new TransparencyStateShard("no_transparency", () -> RenderSystem.disableBlend(), () -> {
    });
    protected static final TransparencyStateShard ADDITIVE_TRANSPARENCY = new TransparencyStateShard("additive_transparency", () -> {
       RenderSystem.enableBlend();
@@ -277,16 +275,8 @@ public abstract class RenderStateShard {
       DEFAULT_TEXTURING = new TexturingStateShard("default_texturing", () -> {
       }, () -> {
       });
-      GLINT_TEXTURING = new TexturingStateShard("glint_texturing", () -> {
-         setupGlintTexturing(8.0F);
-      }, () -> {
-         RenderSystem.resetTextureMatrix();
-      });
-      ENTITY_GLINT_TEXTURING = new TexturingStateShard("entity_glint_texturing", () -> {
-         setupGlintTexturing(0.16F);
-      }, () -> {
-         RenderSystem.resetTextureMatrix();
-      });
+      GLINT_TEXTURING = new TexturingStateShard("glint_texturing", () -> setupGlintTexturing(8.0F), () -> RenderSystem.resetTextureMatrix());
+      ENTITY_GLINT_TEXTURING = new TexturingStateShard("entity_glint_texturing", () -> setupGlintTexturing(0.16F), () -> RenderSystem.resetTextureMatrix());
       LIGHTMAP = new LightmapStateShard(true);
       NO_LIGHTMAP = new LightmapStateShard(false);
       OVERLAY = new OverlayStateShard(true);
@@ -333,9 +323,7 @@ public abstract class RenderStateShard {
          RenderSystem.polygonOffset(0.0F, 0.0F);
          RenderSystem.disablePolygonOffset();
       });
-      MAIN_TARGET = new OutputStateShard("main_target", () -> {
-         Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-      }, () -> {
+      MAIN_TARGET = new OutputStateShard("main_target", () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false), () -> {
       });
       OUTLINE_TARGET = new OutputStateShard("outline_target", () -> {
          RenderTarget var0 = Minecraft.getInstance().levelRenderer.entityOutlineTarget();
@@ -345,9 +333,7 @@ public abstract class RenderStateShard {
             Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
          }
 
-      }, () -> {
-         Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-      });
+      }, () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false));
       TRANSLUCENT_TARGET = new OutputStateShard("translucent_target", () -> {
          RenderTarget var0 = Minecraft.getInstance().levelRenderer.getTranslucentTarget();
          if (var0 != null) {
@@ -356,9 +342,7 @@ public abstract class RenderStateShard {
             Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
          }
 
-      }, () -> {
-         Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-      });
+      }, () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false));
       PARTICLES_TARGET = new OutputStateShard("particles_target", () -> {
          RenderTarget var0 = Minecraft.getInstance().levelRenderer.getParticlesTarget();
          if (var0 != null) {
@@ -367,9 +351,7 @@ public abstract class RenderStateShard {
             Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
          }
 
-      }, () -> {
-         Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-      });
+      }, () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false));
       WEATHER_TARGET = new OutputStateShard("weather_target", () -> {
          RenderTarget var0 = Minecraft.getInstance().levelRenderer.getWeatherTarget();
          if (var0 != null) {
@@ -378,9 +360,7 @@ public abstract class RenderStateShard {
             Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
          }
 
-      }, () -> {
-         Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-      });
+      }, () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false));
       CLOUDS_TARGET = new OutputStateShard("clouds_target", () -> {
          RenderTarget var0 = Minecraft.getInstance().levelRenderer.getCloudsTarget();
          if (var0 != null) {
@@ -389,9 +369,7 @@ public abstract class RenderStateShard {
             Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
          }
 
-      }, () -> {
-         Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-      });
+      }, () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false));
       ITEM_ENTITY_TARGET = new OutputStateShard("item_entity_target", () -> {
          RenderTarget var0 = Minecraft.getInstance().levelRenderer.getItemEntityTarget();
          if (var0 != null) {
@@ -400,20 +378,14 @@ public abstract class RenderStateShard {
             Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
          }
 
-      }, () -> {
-         Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-      });
+      }, () -> Minecraft.getInstance().getMainRenderTarget().bindWrite(false));
       DEFAULT_LINE = new LineStateShard(OptionalDouble.of(1.0));
-      NO_COLOR_LOGIC = new ColorLogicStateShard("no_color_logic", () -> {
-         RenderSystem.disableColorLogicOp();
-      }, () -> {
+      NO_COLOR_LOGIC = new ColorLogicStateShard("no_color_logic", () -> RenderSystem.disableColorLogicOp(), () -> {
       });
       OR_REVERSE_COLOR_LOGIC = new ColorLogicStateShard("or_reverse", () -> {
          RenderSystem.enableColorLogicOp();
          RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-      }, () -> {
-         RenderSystem.disableColorLogicOp();
-      });
+      }, () -> RenderSystem.disableColorLogicOp());
    }
 
    protected static class TransparencyStateShard extends RenderStateShard {
@@ -426,9 +398,7 @@ public abstract class RenderStateShard {
       private final Optional<ShaderProgram> shader;
 
       public ShaderStateShard(ShaderProgram var1) {
-         super("shader", () -> {
-            RenderSystem.setShader(var1);
-         }, () -> {
+         super("shader", () -> RenderSystem.setShader(var1), () -> {
          });
          this.shader = Optional.of(var1);
       }
@@ -442,6 +412,68 @@ public abstract class RenderStateShard {
       public String toString() {
          String var10000 = this.name;
          return var10000 + "[" + String.valueOf(this.shader) + "]";
+      }
+   }
+
+   protected static class EmptyTextureStateShard extends RenderStateShard {
+      public EmptyTextureStateShard(Runnable var1, Runnable var2) {
+         super("texture", var1, var2);
+      }
+
+      EmptyTextureStateShard() {
+         super("texture", () -> {
+         }, () -> {
+         });
+      }
+
+      protected Optional<ResourceLocation> cutoutTexture() {
+         return Optional.empty();
+      }
+   }
+
+   protected static class MultiTextureStateShard extends EmptyTextureStateShard {
+      private final Optional<ResourceLocation> cutoutTexture;
+
+      MultiTextureStateShard(ImmutableList<Triple<ResourceLocation, Boolean, Boolean>> var1) {
+         super(() -> {
+            int var1x = 0;
+            UnmodifiableIterator var2 = var1.iterator();
+
+            while(var2.hasNext()) {
+               Triple var3 = (Triple)var2.next();
+               TextureManager var4 = Minecraft.getInstance().getTextureManager();
+               var4.getTexture((ResourceLocation)var3.getLeft()).setFilter((Boolean)var3.getMiddle(), (Boolean)var3.getRight());
+               RenderSystem.setShaderTexture(var1x++, (ResourceLocation)var3.getLeft());
+            }
+
+         }, () -> {
+         });
+         this.cutoutTexture = var1.stream().findFirst().map(Triple::getLeft);
+      }
+
+      protected Optional<ResourceLocation> cutoutTexture() {
+         return this.cutoutTexture;
+      }
+
+      public static Builder builder() {
+         return new Builder();
+      }
+
+      public static final class Builder {
+         private final ImmutableList.Builder<Triple<ResourceLocation, Boolean, Boolean>> builder = new ImmutableList.Builder();
+
+         public Builder() {
+            super();
+         }
+
+         public Builder add(ResourceLocation var1, boolean var2, boolean var3) {
+            this.builder.add(Triple.of(var1, var2, var3));
+            return this;
+         }
+
+         public MultiTextureStateShard build() {
+            return new MultiTextureStateShard(this.builder.build());
+         }
       }
    }
 
@@ -473,25 +505,28 @@ public abstract class RenderStateShard {
       }
    }
 
-   protected static class EmptyTextureStateShard extends RenderStateShard {
-      public EmptyTextureStateShard(Runnable var1, Runnable var2) {
-         super("texture", var1, var2);
-      }
-
-      EmptyTextureStateShard() {
-         super("texture", () -> {
-         }, () -> {
-         });
-      }
-
-      protected Optional<ResourceLocation> cutoutTexture() {
-         return Optional.empty();
-      }
-   }
-
    protected static class TexturingStateShard extends RenderStateShard {
       public TexturingStateShard(String var1, Runnable var2, Runnable var3) {
          super(var1, var2, var3);
+      }
+   }
+
+   protected static final class OffsetTexturingStateShard extends TexturingStateShard {
+      public OffsetTexturingStateShard(float var1, float var2) {
+         super("offset_texturing", () -> RenderSystem.setTextureMatrix((new Matrix4f()).translation(var1, var2, 0.0F)), () -> RenderSystem.resetTextureMatrix());
+      }
+   }
+
+   static class BooleanStateShard extends RenderStateShard {
+      private final boolean enabled;
+
+      public BooleanStateShard(String var1, Runnable var2, Runnable var3, boolean var4) {
+         super(var1, var2, var3);
+         this.enabled = var4;
+      }
+
+      public String toString() {
+         return this.name + "[" + this.enabled + "]";
       }
    }
 
@@ -644,75 +679,6 @@ public abstract class RenderStateShard {
    protected static class ColorLogicStateShard extends RenderStateShard {
       public ColorLogicStateShard(String var1, Runnable var2, Runnable var3) {
          super(var1, var2, var3);
-      }
-   }
-
-   private static class BooleanStateShard extends RenderStateShard {
-      private final boolean enabled;
-
-      public BooleanStateShard(String var1, Runnable var2, Runnable var3, boolean var4) {
-         super(var1, var2, var3);
-         this.enabled = var4;
-      }
-
-      public String toString() {
-         return this.name + "[" + this.enabled + "]";
-      }
-   }
-
-   protected static final class OffsetTexturingStateShard extends TexturingStateShard {
-      public OffsetTexturingStateShard(float var1, float var2) {
-         super("offset_texturing", () -> {
-            RenderSystem.setTextureMatrix((new Matrix4f()).translation(var1, var2, 0.0F));
-         }, () -> {
-            RenderSystem.resetTextureMatrix();
-         });
-      }
-   }
-
-   protected static class MultiTextureStateShard extends EmptyTextureStateShard {
-      private final Optional<ResourceLocation> cutoutTexture;
-
-      MultiTextureStateShard(ImmutableList<Triple<ResourceLocation, Boolean, Boolean>> var1) {
-         super(() -> {
-            int var1x = 0;
-            UnmodifiableIterator var2 = var1.iterator();
-
-            while(var2.hasNext()) {
-               Triple var3 = (Triple)var2.next();
-               TextureManager var4 = Minecraft.getInstance().getTextureManager();
-               var4.getTexture((ResourceLocation)var3.getLeft()).setFilter((Boolean)var3.getMiddle(), (Boolean)var3.getRight());
-               RenderSystem.setShaderTexture(var1x++, (ResourceLocation)var3.getLeft());
-            }
-
-         }, () -> {
-         });
-         this.cutoutTexture = var1.stream().findFirst().map(Triple::getLeft);
-      }
-
-      protected Optional<ResourceLocation> cutoutTexture() {
-         return this.cutoutTexture;
-      }
-
-      public static Builder builder() {
-         return new Builder();
-      }
-
-      public static final class Builder {
-         private final ImmutableList.Builder<Triple<ResourceLocation, Boolean, Boolean>> builder = new ImmutableList.Builder();
-
-         public Builder() {
-            super();
-         }
-
-         public Builder add(ResourceLocation var1, boolean var2, boolean var3) {
-            this.builder.add(Triple.of(var1, var2, var3));
-            return this;
-         }
-
-         public MultiTextureStateShard build() {
-            return new MultiTextureStateShard(this.builder.build());
-         }
       }
    }
 }

@@ -103,11 +103,11 @@ public class HeaderAndFooterLayout implements Layout {
    }
 
    public <T extends LayoutElement> T addToHeader(T var1) {
-      return this.headerFrame.addChild(var1);
+      return (T)this.headerFrame.addChild(var1);
    }
 
    public <T extends LayoutElement> T addToHeader(T var1, Consumer<LayoutSettings> var2) {
-      return this.headerFrame.addChild(var1, var2);
+      return (T)this.headerFrame.addChild(var1, var2);
    }
 
    public void addTitleHeader(Component var1, Font var2) {
@@ -115,18 +115,18 @@ public class HeaderAndFooterLayout implements Layout {
    }
 
    public <T extends LayoutElement> T addToFooter(T var1) {
-      return this.footerFrame.addChild(var1);
+      return (T)this.footerFrame.addChild(var1);
    }
 
    public <T extends LayoutElement> T addToFooter(T var1, Consumer<LayoutSettings> var2) {
-      return this.footerFrame.addChild(var1, var2);
+      return (T)this.footerFrame.addChild(var1, var2);
    }
 
    public <T extends LayoutElement> T addToContents(T var1) {
-      return this.contentsFrame.addChild(var1);
+      return (T)this.contentsFrame.addChild(var1);
    }
 
    public <T extends LayoutElement> T addToContents(T var1, Consumer<LayoutSettings> var2) {
-      return this.contentsFrame.addChild(var1, var2);
+      return (T)this.contentsFrame.addChild(var1, var2);
    }
 }

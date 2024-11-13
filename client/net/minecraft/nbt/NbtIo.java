@@ -398,7 +398,7 @@ public class NbtIo {
       } catch (IOException var6) {
          CrashReport var4 = CrashReport.forThrowable(var6, "Loading NBT data");
          CrashReportCategory var5 = var4.addCategory("NBT Tag");
-         var5.setDetail("Tag type", (Object)var2);
+         var5.setDetail("Tag type", var2);
          throw new ReportedNbtException(var4);
       }
    }

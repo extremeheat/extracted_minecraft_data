@@ -2,6 +2,7 @@ package net.minecraft.data.metadata;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -28,17 +29,13 @@ public class PackMetadataGenerator implements DataProvider {
    }
 
    public <T> PackMetadataGenerator add(MetadataSectionType<T> var1, T var2) {
-      this.elements.put(var1.getMetadataSectionName(), () -> {
-         return var1.toJson(var2);
-      });
+      this.elements.put(var1.name(), (Supplier)() -> ((JsonElement)var1.codec().encodeStart(JsonOps.INSTANCE, var2).getOrThrow(IllegalArgumentException::new)).getAsJsonObject());
       return this;
    }
 
    public CompletableFuture<?> run(CachedOutput var1) {
       JsonObject var2 = new JsonObject();
-      this.elements.forEach((var1x, var2x) -> {
-         var2.add(var1x, (JsonElement)var2x.get());
-      });
+      this.elements.forEach((var1x, var2x) -> var2.add(var1x, (JsonElement)var2x.get()));
       return DataProvider.saveStable(var1, var2, this.output.getOutputFolder().resolve("pack.mcmeta"));
    }
 

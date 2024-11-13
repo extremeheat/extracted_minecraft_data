@@ -13,13 +13,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetItemCountFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetItemCountFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(var0.group(NumberProviders.CODEC.fieldOf("count").forGetter((var0x) -> {
-         return var0x.value;
-      }), Codec.BOOL.fieldOf("add").orElse(false).forGetter((var0x) -> {
-         return var0x.add;
-      }))).apply(var0, SetItemCountFunction::new);
-   });
+   public static final MapCodec<SetItemCountFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(NumberProviders.CODEC.fieldOf("count").forGetter((var0x) -> var0x.value), Codec.BOOL.fieldOf("add").orElse(false).forGetter((var0x) -> var0x.add))).apply(var0, SetItemCountFunction::new));
    private final NumberProvider value;
    private final boolean add;
 
@@ -44,14 +38,10 @@ public class SetItemCountFunction extends LootItemConditionalFunction {
    }
 
    public static LootItemConditionalFunction.Builder<?> setCount(NumberProvider var0) {
-      return simpleBuilder((var1) -> {
-         return new SetItemCountFunction(var1, var0, false);
-      });
+      return simpleBuilder((var1) -> new SetItemCountFunction(var1, var0, false));
    }
 
    public static LootItemConditionalFunction.Builder<?> setCount(NumberProvider var0, boolean var1) {
-      return simpleBuilder((var2) -> {
-         return new SetItemCountFunction(var2, var0, var1);
-      });
+      return simpleBuilder((var2) -> new SetItemCountFunction(var2, var0, var1));
    }
 }

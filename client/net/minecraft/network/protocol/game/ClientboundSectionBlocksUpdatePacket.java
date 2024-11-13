@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 
 public class ClientboundSectionBlocksUpdatePacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSectionBlocksUpdatePacket> STREAM_CODEC = Packet.codec(ClientboundSectionBlocksUpdatePacket::write, ClientboundSectionBlocksUpdatePacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSectionBlocksUpdatePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSectionBlocksUpdatePacket>codec(ClientboundSectionBlocksUpdatePacket::write, ClientboundSectionBlocksUpdatePacket::new);
    private static final int POS_IN_SECTION_BITS = 12;
    private final SectionPos sectionPos;
    private final short[] positions;
@@ -46,7 +46,7 @@ public class ClientboundSectionBlocksUpdatePacket implements Packet<ClientGamePa
       for(int var3 = 0; var3 < var2; ++var3) {
          long var4 = var1.readVarLong();
          this.positions[var3] = (short)((int)(var4 & 4095L));
-         this.states[var3] = (BlockState)Block.BLOCK_STATE_REGISTRY.byId((int)(var4 >>> 12));
+         this.states[var3] = Block.BLOCK_STATE_REGISTRY.byId((int)(var4 >>> 12));
       }
 
    }

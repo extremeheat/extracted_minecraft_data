@@ -15,9 +15,7 @@ public class LavaSlimeModel extends EntityModel<SlimeRenderState> {
 
    public LavaSlimeModel(ModelPart var1) {
       super(var1);
-      Arrays.setAll(this.bodyCubes, (var1x) -> {
-         return var1.getChild(getSegmentName(var1x));
-      });
+      Arrays.setAll(this.bodyCubes, (var1x) -> var1.getChild(getSegmentName(var1x)));
    }
 
    private static String getSegmentName(int var0) {

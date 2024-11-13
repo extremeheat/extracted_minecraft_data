@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -55,19 +54,15 @@ public class LegacyStructureDataHandler {
       this.populateCaches(var1);
       boolean var4 = false;
 
-      String var6;
-      for(Iterator var5 = this.currentKeys.iterator(); var5.hasNext(); var4 |= this.dataMap.get(var6) != null) {
-         var6 = (String)var5.next();
+      for(String var6 : this.currentKeys) {
+         var4 |= this.dataMap.get(var6) != null;
       }
 
       this.hasLegacyData = var4;
    }
 
    public void removeIndex(long var1) {
-      Iterator var3 = this.legacyKeys.iterator();
-
-      while(var3.hasNext()) {
-         String var4 = (String)var3.next();
+      for(String var4 : this.legacyKeys) {
          StructureFeatureIndexSavedData var5 = (StructureFeatureIndexSavedData)this.indexMap.get(var4);
          if (var5 != null && var5.hasUnhandledIndex(var1)) {
             var5.removeIndex(var1);
@@ -85,38 +80,29 @@ public class LegacyStructureDataHandler {
 
       CompoundTag var4 = var2.getCompound("Structures");
       CompoundTag var5 = var4.getCompound("References");
-      Iterator var6 = this.currentKeys.iterator();
 
-      while(true) {
-         String var7;
-         boolean var8;
-         do {
-            do {
-               if (!var6.hasNext()) {
-                  var4.put("References", var5);
-                  var2.put("Structures", var4);
-                  var1.put("Level", var2);
-                  return var1;
-               }
+      for(String var7 : this.currentKeys) {
+         boolean var8 = OLD_STRUCTURE_REGISTRY_KEYS.contains(var7.toLowerCase(Locale.ROOT));
+         if (!var5.contains(var7, 12) && var8) {
+            boolean var9 = true;
+            LongArrayList var10 = new LongArrayList();
 
-               var7 = (String)var6.next();
-               var8 = OLD_STRUCTURE_REGISTRY_KEYS.contains(var7.toLowerCase(Locale.ROOT));
-            } while(var5.contains(var7, 12));
-         } while(!var8);
-
-         boolean var9 = true;
-         LongArrayList var10 = new LongArrayList();
-
-         for(int var11 = var3.x - 8; var11 <= var3.x + 8; ++var11) {
-            for(int var12 = var3.z - 8; var12 <= var3.z + 8; ++var12) {
-               if (this.hasLegacyStart(var11, var12, var7)) {
-                  var10.add(ChunkPos.asLong(var11, var12));
+            for(int var11 = var3.x - 8; var11 <= var3.x + 8; ++var11) {
+               for(int var12 = var3.z - 8; var12 <= var3.z + 8; ++var12) {
+                  if (this.hasLegacyStart(var11, var12, var7)) {
+                     var10.add(ChunkPos.asLong(var11, var12));
+                  }
                }
             }
-         }
 
-         var5.putLongArray(var7, (List)var10);
+            var5.putLongArray(var7, (List)var10);
+         }
       }
+
+      var4.put("References", var5);
+      var2.put("Structures", var4);
+      var1.put("Level", var2);
+      return var1;
    }
 
    private boolean hasLegacyStart(int var1, int var2, String var3) {
@@ -131,18 +117,13 @@ public class LegacyStructureDataHandler {
       if (!this.hasLegacyData) {
          return false;
       } else {
-         Iterator var3 = this.currentKeys.iterator();
-
-         String var4;
-         do {
-            if (!var3.hasNext()) {
-               return false;
+         for(String var4 : this.currentKeys) {
+            if (this.dataMap.get(var4) != null && ((StructureFeatureIndexSavedData)this.indexMap.get(CURRENT_TO_LEGACY_MAP.get(var4))).hasUnhandledIndex(ChunkPos.asLong(var1, var2))) {
+               return true;
             }
+         }
 
-            var4 = (String)var3.next();
-         } while(this.dataMap.get(var4) == null || !((StructureFeatureIndexSavedData)this.indexMap.get(CURRENT_TO_LEGACY_MAP.get(var4))).hasUnhandledIndex(ChunkPos.asLong(var1, var2)));
-
-         return true;
+         return false;
       }
    }
 
@@ -150,10 +131,8 @@ public class LegacyStructureDataHandler {
       CompoundTag var3 = var1.getCompound("Level");
       CompoundTag var4 = var3.getCompound("Structures");
       CompoundTag var5 = var4.getCompound("Starts");
-      Iterator var6 = this.currentKeys.iterator();
 
-      while(var6.hasNext()) {
-         String var7 = (String)var6.next();
+      for(String var7 : this.currentKeys) {
          Long2ObjectMap var8 = (Long2ObjectMap)this.dataMap.get(var7);
          if (var8 != null) {
             long var9 = var2.toLong();
@@ -174,10 +153,7 @@ public class LegacyStructureDataHandler {
 
    private void populateCaches(@Nullable DimensionDataStorage var1) {
       if (var1 != null) {
-         Iterator var2 = this.legacyKeys.iterator();
-
-         while(var2.hasNext()) {
-            String var3 = (String)var2.next();
+         for(String var3 : this.legacyKeys) {
             CompoundTag var4 = new CompoundTag();
 
             try {
@@ -188,26 +164,20 @@ public class LegacyStructureDataHandler {
             } catch (IOException var13) {
             }
 
-            Iterator var5 = var4.getAllKeys().iterator();
-
-            while(var5.hasNext()) {
-               String var6 = (String)var5.next();
+            for(String var6 : var4.getAllKeys()) {
                CompoundTag var7 = var4.getCompound(var6);
                long var8 = ChunkPos.asLong(var7.getInt("ChunkX"), var7.getInt("ChunkZ"));
                ListTag var10 = var7.getList("Children", 10);
-               String var11;
                if (!var10.isEmpty()) {
-                  var11 = var10.getCompound(0).getString("id");
+                  String var11 = var10.getCompound(0).getString("id");
                   String var12 = (String)LEGACY_TO_CURRENT_MAP.get(var11);
                   if (var12 != null) {
                      var7.putString("id", var12);
                   }
                }
 
-               var11 = var7.getString("id");
-               ((Long2ObjectMap)this.dataMap.computeIfAbsent(var11, (var0) -> {
-                  return new Long2ObjectOpenHashMap();
-               })).put(var8, var7);
+               String var19 = var7.getString("id");
+               ((Long2ObjectMap)this.dataMap.computeIfAbsent(var19, (var0) -> new Long2ObjectOpenHashMap())).put(var8, var7);
             }
 
             String var14 = var3 + "_index";
@@ -215,10 +185,8 @@ public class LegacyStructureDataHandler {
             if (var15.getAll().isEmpty()) {
                StructureFeatureIndexSavedData var16 = new StructureFeatureIndexSavedData();
                this.indexMap.put(var3, var16);
-               Iterator var17 = var4.getAllKeys().iterator();
 
-               while(var17.hasNext()) {
-                  String var9 = (String)var17.next();
+               for(String var9 : var4.getAllKeys()) {
                   CompoundTag var18 = var4.getCompound(var9);
                   var16.addIndex(ChunkPos.asLong(var18.getInt("ChunkX"), var18.getInt("ChunkZ")));
                }
@@ -233,17 +201,14 @@ public class LegacyStructureDataHandler {
    public static LegacyStructureDataHandler getLegacyStructureHandler(ResourceKey<Level> var0, @Nullable DimensionDataStorage var1) {
       if (var0 == Level.OVERWORLD) {
          return new LegacyStructureDataHandler(var1, ImmutableList.of("Monument", "Stronghold", "Village", "Mineshaft", "Temple", "Mansion"), ImmutableList.of("Village", "Mineshaft", "Mansion", "Igloo", "Desert_Pyramid", "Jungle_Pyramid", "Swamp_Hut", "Stronghold", "Monument"));
+      } else if (var0 == Level.NETHER) {
+         ImmutableList var3 = ImmutableList.of("Fortress");
+         return new LegacyStructureDataHandler(var1, var3, var3);
+      } else if (var0 == Level.END) {
+         ImmutableList var2 = ImmutableList.of("EndCity");
+         return new LegacyStructureDataHandler(var1, var2, var2);
       } else {
-         ImmutableList var2;
-         if (var0 == Level.NETHER) {
-            var2 = ImmutableList.of("Fortress");
-            return new LegacyStructureDataHandler(var1, var2, var2);
-         } else if (var0 == Level.END) {
-            var2 = ImmutableList.of("EndCity");
-            return new LegacyStructureDataHandler(var1, var2, var2);
-         } else {
-            throw new RuntimeException(String.format(Locale.ROOT, "Unknown dimension type : %s", var0));
-         }
+         throw new RuntimeException(String.format(Locale.ROOT, "Unknown dimension type : %s", var0));
       }
    }
 }

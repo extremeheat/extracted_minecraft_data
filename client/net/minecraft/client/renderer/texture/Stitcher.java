@@ -4,20 +4,13 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
-public class Stitcher<T extends Entry> {
-   private static final Comparator<Holder<?>> HOLDER_COMPARATOR = Comparator.comparing((var0) -> {
-      return -var0.height;
-   }).thenComparing((var0) -> {
-      return -var0.width;
-   }).thenComparing((var0) -> {
-      return var0.entry.name();
-   });
+public class Stitcher<T extends Stitcher.Entry> {
+   private static final Comparator<Holder<?>> HOLDER_COMPARATOR = Comparator.comparing((var0) -> -var0.height).thenComparing((var0) -> -var0.width).thenComparing((var0) -> var0.entry.name());
    private final int mipLevel;
    private final List<Holder<T>> texturesToBeStitched = new ArrayList();
    private final List<Region<T>> storage = new ArrayList();
@@ -49,27 +42,17 @@ public class Stitcher<T extends Entry> {
    public void stitch() {
       ArrayList var1 = new ArrayList(this.texturesToBeStitched);
       var1.sort(HOLDER_COMPARATOR);
-      Iterator var2 = var1.iterator();
 
-      Holder var3;
-      do {
-         if (!var2.hasNext()) {
-            return;
+      for(Holder var3 : var1) {
+         if (!this.addToStorage(var3)) {
+            throw new StitcherException(var3.entry, (Collection)var1.stream().map((var0) -> var0.entry).collect(ImmutableList.toImmutableList()));
          }
+      }
 
-         var3 = (Holder)var2.next();
-      } while(this.addToStorage(var3));
-
-      throw new StitcherException(var3.entry, (Collection)var1.stream().map((var0) -> {
-         return var0.entry;
-      }).collect(ImmutableList.toImmutableList()));
    }
 
    public void gatherSprites(SpriteLoader<T> var1) {
-      Iterator var2 = this.storage.iterator();
-
-      while(var2.hasNext()) {
-         Region var3 = (Region)var2.next();
+      for(Region var3 : this.storage) {
          var3.walk(var1);
       }
 
@@ -80,18 +63,13 @@ public class Stitcher<T extends Entry> {
    }
 
    private boolean addToStorage(Holder<T> var1) {
-      Iterator var2 = this.storage.iterator();
-
-      Region var3;
-      do {
-         if (!var2.hasNext()) {
-            return this.expand(var1);
+      for(Region var3 : this.storage) {
+         if (var3.add(var1)) {
+            return true;
          }
+      }
 
-         var3 = (Region)var2.next();
-      } while(!var3.add(var1));
-
-      return true;
+      return this.expand(var1);
    }
 
    private boolean expand(Holder<T> var1) {
@@ -132,7 +110,7 @@ public class Stitcher<T extends Entry> {
       }
    }
 
-   private static record Holder<T extends Entry>(T entry, int width, int height) {
+   static record Holder<T extends Entry>(T entry, int width, int height) {
       final T entry;
       final int width;
       final int height;
@@ -147,26 +125,6 @@ public class Stitcher<T extends Entry> {
          this.width = var2;
          this.height = var3;
       }
-
-      public T entry() {
-         return this.entry;
-      }
-
-      public int width() {
-         return this.width;
-      }
-
-      public int height() {
-         return this.height;
-      }
-   }
-
-   public interface Entry {
-      int width();
-
-      int height();
-
-      ResourceLocation name();
    }
 
    public static class Region<T extends Entry> {
@@ -228,18 +186,13 @@ public class Stitcher<T extends Entry> {
                      }
                   }
 
-                  Iterator var8 = this.subSlots.iterator();
-
-                  Region var9;
-                  do {
-                     if (!var8.hasNext()) {
-                        return false;
+                  for(Region var9 : this.subSlots) {
+                     if (var9.add(var1)) {
+                        return true;
                      }
+                  }
 
-                     var9 = (Region)var8.next();
-                  } while(!var9.add(var1));
-
-                  return true;
+                  return false;
                }
             } else {
                return false;
@@ -251,10 +204,7 @@ public class Stitcher<T extends Entry> {
          if (this.holder != null) {
             var1.load(this.holder.entry, this.getX(), this.getY());
          } else if (this.subSlots != null) {
-            Iterator var2 = this.subSlots.iterator();
-
-            while(var2.hasNext()) {
-               Region var3 = (Region)var2.next();
+            for(Region var3 : this.subSlots) {
                var3.walk(var1);
             }
          }
@@ -265,6 +215,14 @@ public class Stitcher<T extends Entry> {
          int var10000 = this.originX;
          return "Slot{originX=" + var10000 + ", originY=" + this.originY + ", width=" + this.width + ", height=" + this.height + ", texture=" + String.valueOf(this.holder) + ", subSlots=" + String.valueOf(this.subSlots) + "}";
       }
+   }
+
+   public interface Entry {
+      int width();
+
+      int height();
+
+      ResourceLocation name();
    }
 
    public interface SpriteLoader<T extends Entry> {

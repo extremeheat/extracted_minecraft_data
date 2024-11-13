@@ -17,9 +17,7 @@ import net.minecraft.network.chat.Component;
 
 public class ColorArgument implements ArgumentType<ChatFormatting> {
    private static final Collection<String> EXAMPLES = Arrays.asList("red", "green");
-   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("argument.color.invalid", var0);
-   });
+   public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.color.invalid", var0));
 
    private ColorArgument() {
       super();
@@ -44,7 +42,7 @@ public class ColorArgument implements ArgumentType<ChatFormatting> {
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return SharedSuggestionProvider.suggest((Iterable)ChatFormatting.getNames(true, false), var2);
+      return SharedSuggestionProvider.suggest(ChatFormatting.getNames(true, false), var2);
    }
 
    public Collection<String> getExamples() {

@@ -2,7 +2,6 @@ package net.minecraft.world.level.block.entity;
 
 import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -37,9 +36,9 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
 
    public CrafterBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.CRAFTER, var1, var2);
-      this.items = NonNullList.withSize(9, ItemStack.EMPTY);
+      this.items = NonNullList.<ItemStack>withSize(9, ItemStack.EMPTY);
       this.craftingTicksRemaining = 0;
-      this.containerData = new ContainerData(this) {
+      this.containerData = new ContainerData() {
          private final int[] slotStates = new int[9];
          private int triggered = 0;
 
@@ -89,7 +88,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
       if (this.containerData.get(var1) == 1) {
          return false;
       } else {
-         ItemStack var3 = (ItemStack)this.items.get(var1);
+         ItemStack var3 = this.items.get(var1);
          int var4 = var3.getCount();
          if (var4 >= var3.getMaxStackSize()) {
             return false;
@@ -117,7 +116,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       this.craftingTicksRemaining = var1.getInt("crafting_ticks_remaining");
-      this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+      this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
          ContainerHelper.loadAllItems(var1, this.items, var2);
       }
@@ -128,11 +127,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
          this.containerData.set(var4, 0);
       }
 
-      int[] var8 = var3;
-      int var5 = var3.length;
-
-      for(int var6 = 0; var6 < var5; ++var6) {
-         int var7 = var8[var6];
+      for(int var7 : var3) {
          if (this.slotCanBeDisabled(var7)) {
             this.containerData.set(var7, 1);
          }
@@ -157,22 +152,17 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    }
 
    public boolean isEmpty() {
-      Iterator var1 = this.items.iterator();
-
-      ItemStack var2;
-      do {
-         if (!var1.hasNext()) {
-            return true;
+      for(ItemStack var2 : this.items) {
+         if (!var2.isEmpty()) {
+            return false;
          }
+      }
 
-         var2 = (ItemStack)var1.next();
-      } while(var2.isEmpty());
-
-      return false;
+      return true;
    }
 
    public ItemStack getItem(int var1) {
-      return (ItemStack)this.items.get(var1);
+      return this.items.get(var1);
    }
 
    public void setItem(int var1, ItemStack var2) {
@@ -204,10 +194,7 @@ public class CrafterBlockEntity extends RandomizableContainerBlockEntity impleme
    }
 
    public void fillStackedContents(StackedItemContents var1) {
-      Iterator var2 = this.items.iterator();
-
-      while(var2.hasNext()) {
-         ItemStack var3 = (ItemStack)var2.next();
+      for(ItemStack var3 : this.items) {
          var1.accountSimpleStack(var3);
       }
 

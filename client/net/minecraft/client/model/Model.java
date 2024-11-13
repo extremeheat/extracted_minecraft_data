@@ -2,7 +2,6 @@ package net.minecraft.client.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -44,11 +43,7 @@ public abstract class Model {
    }
 
    public Optional<ModelPart> getAnyDescendantWithName(String var1) {
-      return var1.equals("root") ? Optional.of(this.root()) : this.root().getAllParts().filter((var1x) -> {
-         return var1x.hasChild(var1);
-      }).findFirst().map((var1x) -> {
-         return var1x.getChild(var1);
-      });
+      return var1.equals("root") ? Optional.of(this.root()) : this.root().getAllParts().filter((var1x) -> var1x.hasChild(var1)).findFirst().map((var1x) -> var1x.getChild(var1));
    }
 
    public final List<ModelPart> allParts() {
@@ -56,10 +51,7 @@ public abstract class Model {
    }
 
    public final void resetPose() {
-      Iterator var1 = this.allParts.iterator();
-
-      while(var1.hasNext()) {
-         ModelPart var2 = (ModelPart)var1.next();
+      for(ModelPart var2 : this.allParts) {
          var2.resetPose();
       }
 
@@ -76,9 +68,7 @@ public abstract class Model {
    }
 
    protected void animate(AnimationState var1, AnimationDefinition var2, float var3, float var4) {
-      var1.ifStarted((var4x) -> {
-         KeyframeAnimations.animate(this, var2, (long)((float)var4x.getTimeInMillis(var3) * var4), 1.0F, ANIMATION_VECTOR_CACHE);
-      });
+      var1.ifStarted((var4x) -> KeyframeAnimations.animate(this, var2, (long)((float)var4x.getTimeInMillis(var3) * var4), 1.0F, ANIMATION_VECTOR_CACHE));
    }
 
    protected void applyStatic(AnimationDefinition var1) {

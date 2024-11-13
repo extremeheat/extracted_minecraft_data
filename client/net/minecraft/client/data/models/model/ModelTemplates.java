@@ -286,11 +286,7 @@ public class ModelTemplates {
       CHISELED_BOOKSHELF_SLOT_BOTTOM_MID = create("template_chiseled_bookshelf_slot_bottom_mid", "_slot_bottom_mid", TextureSlot.TEXTURE);
       CHISELED_BOOKSHELF_SLOT_BOTTOM_RIGHT = create("template_chiseled_bookshelf_slot_bottom_right", "_slot_bottom_right", TextureSlot.TEXTURE);
       ANVIL = create("template_anvil", TextureSlot.TOP);
-      STEMS = (ModelTemplate[])IntStream.range(0, 8).mapToObj((var0) -> {
-         return create("stem_growth" + var0, "_stage" + var0, TextureSlot.STEM);
-      }).toArray((var0) -> {
-         return new ModelTemplate[var0];
-      });
+      STEMS = (ModelTemplate[])IntStream.range(0, 8).mapToObj((var0) -> create("stem_growth" + var0, "_stage" + var0, TextureSlot.STEM)).toArray((var0) -> new ModelTemplate[var0]);
       ATTACHED_STEM = create("stem_fruit", TextureSlot.STEM, TextureSlot.UPPER_STEM);
       CROP = create("crop", TextureSlot.CROP);
       FARMLAND = create("template_farmland", TextureSlot.DIRT, TextureSlot.TOP);

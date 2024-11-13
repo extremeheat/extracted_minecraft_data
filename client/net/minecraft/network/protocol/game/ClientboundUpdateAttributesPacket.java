@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -26,10 +25,8 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
       super();
       this.entityId = var1;
       this.attributes = Lists.newArrayList();
-      Iterator var3 = var2.iterator();
 
-      while(var3.hasNext()) {
-         AttributeInstance var4 = (AttributeInstance)var3.next();
+      for(AttributeInstance var4 : var2) {
          this.attributes.add(new AttributeSnapshot(var4.getAttribute(), var4.getBaseValue(), var4.getModifiers()));
       }
 
@@ -70,18 +67,6 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
          this.attribute = var1;
          this.base = var2;
          this.modifiers = var4;
-      }
-
-      public Holder<Attribute> attribute() {
-         return this.attribute;
-      }
-
-      public double base() {
-         return this.base;
-      }
-
-      public Collection<AttributeModifier> modifiers() {
-         return this.modifiers;
       }
 
       static {

@@ -8,15 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 
 public class OreConfiguration implements FeatureConfiguration {
-   public static final Codec<OreConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.list(OreConfiguration.TargetBlockState.CODEC).fieldOf("targets").forGetter((var0x) -> {
-         return var0x.targetStates;
-      }), Codec.intRange(0, 64).fieldOf("size").forGetter((var0x) -> {
-         return var0x.size;
-      }), Codec.floatRange(0.0F, 1.0F).fieldOf("discard_chance_on_air_exposure").forGetter((var0x) -> {
-         return var0x.discardChanceOnAirExposure;
-      })).apply(var0, OreConfiguration::new);
-   });
+   public static final Codec<OreConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.list(OreConfiguration.TargetBlockState.CODEC).fieldOf("targets").forGetter((var0x) -> var0x.targetStates), Codec.intRange(0, 64).fieldOf("size").forGetter((var0x) -> var0x.size), Codec.floatRange(0.0F, 1.0F).fieldOf("discard_chance_on_air_exposure").forGetter((var0x) -> var0x.discardChanceOnAirExposure)).apply(var0, OreConfiguration::new));
    public final List<TargetBlockState> targetStates;
    public final int size;
    public final float discardChanceOnAirExposure;
@@ -45,13 +37,7 @@ public class OreConfiguration implements FeatureConfiguration {
    }
 
    public static class TargetBlockState {
-      public static final Codec<TargetBlockState> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(RuleTest.CODEC.fieldOf("target").forGetter((var0x) -> {
-            return var0x.target;
-         }), BlockState.CODEC.fieldOf("state").forGetter((var0x) -> {
-            return var0x.state;
-         })).apply(var0, TargetBlockState::new);
-      });
+      public static final Codec<TargetBlockState> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RuleTest.CODEC.fieldOf("target").forGetter((var0x) -> var0x.target), BlockState.CODEC.fieldOf("state").forGetter((var0x) -> var0x.state)).apply(var0, TargetBlockState::new));
       public final RuleTest target;
       public final BlockState state;
 

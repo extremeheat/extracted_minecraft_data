@@ -50,6 +50,42 @@ public class BlockFamily {
       return StringUtil.isBlank(this.recipeUnlockedBy) ? Optional.empty() : Optional.of(this.recipeUnlockedBy);
    }
 
+   public static enum Variant {
+      BUTTON("button"),
+      CHISELED("chiseled"),
+      CRACKED("cracked"),
+      CUT("cut"),
+      DOOR("door"),
+      CUSTOM_FENCE("fence"),
+      FENCE("fence"),
+      CUSTOM_FENCE_GATE("fence_gate"),
+      FENCE_GATE("fence_gate"),
+      MOSAIC("mosaic"),
+      SIGN("sign"),
+      SLAB("slab"),
+      STAIRS("stairs"),
+      PRESSURE_PLATE("pressure_plate"),
+      POLISHED("polished"),
+      TRAPDOOR("trapdoor"),
+      WALL("wall"),
+      WALL_SIGN("wall_sign");
+
+      private final String recipeGroup;
+
+      private Variant(final String var3) {
+         this.recipeGroup = var3;
+      }
+
+      public String getRecipeGroup() {
+         return this.recipeGroup;
+      }
+
+      // $FF: synthetic method
+      private static Variant[] $values() {
+         return new Variant[]{BUTTON, CHISELED, CRACKED, CUT, DOOR, CUSTOM_FENCE, FENCE, CUSTOM_FENCE_GATE, FENCE_GATE, MOSAIC, SIGN, SLAB, STAIRS, PRESSURE_PLATE, POLISHED, TRAPDOOR, WALL, WALL_SIGN};
+      }
+   }
+
    public static class Builder {
       private final BlockFamily family;
 
@@ -166,42 +202,6 @@ public class BlockFamily {
       public Builder recipeUnlockedBy(String var1) {
          this.family.recipeUnlockedBy = var1;
          return this;
-      }
-   }
-
-   public static enum Variant {
-      BUTTON("button"),
-      CHISELED("chiseled"),
-      CRACKED("cracked"),
-      CUT("cut"),
-      DOOR("door"),
-      CUSTOM_FENCE("fence"),
-      FENCE("fence"),
-      CUSTOM_FENCE_GATE("fence_gate"),
-      FENCE_GATE("fence_gate"),
-      MOSAIC("mosaic"),
-      SIGN("sign"),
-      SLAB("slab"),
-      STAIRS("stairs"),
-      PRESSURE_PLATE("pressure_plate"),
-      POLISHED("polished"),
-      TRAPDOOR("trapdoor"),
-      WALL("wall"),
-      WALL_SIGN("wall_sign");
-
-      private final String recipeGroup;
-
-      private Variant(final String var3) {
-         this.recipeGroup = var3;
-      }
-
-      public String getRecipeGroup() {
-         return this.recipeGroup;
-      }
-
-      // $FF: synthetic method
-      private static Variant[] $values() {
-         return new Variant[]{BUTTON, CHISELED, CRACKED, CUT, DOOR, CUSTOM_FENCE, FENCE, CUSTOM_FENCE_GATE, FENCE_GATE, MOSAIC, SIGN, SLAB, STAIRS, PRESSURE_PLATE, POLISHED, TRAPDOOR, WALL, WALL_SIGN};
       }
    }
 }

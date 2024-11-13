@@ -24,14 +24,6 @@ public record ClientboundTabListPacket(Component header, Component footer) imple
       var1.handleTabListCustomisation(this);
    }
 
-   public Component header() {
-      return this.header;
-   }
-
-   public Component footer() {
-      return this.footer;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ComponentSerialization.TRUSTED_STREAM_CODEC, ClientboundTabListPacket::header, ComponentSerialization.TRUSTED_STREAM_CODEC, ClientboundTabListPacket::footer, ClientboundTabListPacket::new);
    }

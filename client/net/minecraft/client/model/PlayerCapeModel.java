@@ -7,7 +7,6 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import org.joml.Quaternionf;
 
@@ -35,7 +34,7 @@ public class PlayerCapeModel<T extends PlayerRenderState> extends HumanoidModel<
    }
 
    public void setupAnim(T var1) {
-      super.setupAnim((HumanoidRenderState)var1);
+      super.setupAnim(var1);
       this.cape.rotateBy((new Quaternionf()).rotateY(-3.1415927F).rotateX((6.0F + var1.capeLean / 2.0F + var1.capeFlap) * 0.017453292F).rotateZ(var1.capeLean2 / 2.0F * 0.017453292F).rotateY((180.0F - var1.capeLean2 / 2.0F) * 0.017453292F));
    }
 }

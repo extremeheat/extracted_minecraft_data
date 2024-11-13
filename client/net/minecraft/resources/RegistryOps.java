@@ -23,7 +23,7 @@ public class RegistryOps<T> extends DelegatingOps<T> {
    }
 
    public static <T> RegistryOps<T> create(DynamicOps<T> var0, RegistryInfoLookup var1) {
-      return new RegistryOps(var0, var1);
+      return new RegistryOps<T>(var0, var1);
    }
 
    public static <T> Dynamic<T> injectRegistryContext(Dynamic<T> var0, HolderLookup.Provider var1) {
@@ -65,45 +65,38 @@ public class RegistryOps<T> extends DelegatingOps<T> {
    public static <E, O> RecordCodecBuilder<O, HolderGetter<E>> retrieveGetter(ResourceKey<? extends Registry<? extends E>> var0) {
       return ExtraCodecs.retrieveContext((var1) -> {
          if (var1 instanceof RegistryOps var2) {
-            return (DataResult)var2.lookupProvider.lookup(var0).map((var0x) -> {
-               return DataResult.success(var0x.getter(), var0x.elementsLifecycle());
-            }).orElseGet(() -> {
-               return DataResult.error(() -> {
-                  return "Unknown registry: " + String.valueOf(var0);
-               });
-            });
+            return (DataResult)var2.lookupProvider.lookup(var0).map((var0x) -> DataResult.success(var0x.getter(), var0x.elementsLifecycle())).orElseGet(() -> DataResult.error(() -> "Unknown registry: " + String.valueOf(var0)));
          } else {
-            return DataResult.error(() -> {
-               return "Not a registry ops";
-            });
+            return DataResult.error(() -> "Not a registry ops");
          }
-      }).forGetter((var0x) -> {
-         return null;
-      });
+      }).forGetter((var0x) -> null);
    }
 
    public static <E, O> RecordCodecBuilder<O, Holder.Reference<E>> retrieveElement(ResourceKey<E> var0) {
       ResourceKey var1 = ResourceKey.createRegistryKey(var0.registry());
       return ExtraCodecs.retrieveContext((var2) -> {
          if (var2 instanceof RegistryOps var3) {
-            return (DataResult)var3.lookupProvider.lookup(var1).flatMap((var1x) -> {
-               return var1x.getter().get(var0);
-            }).map(DataResult::success).orElseGet(() -> {
-               return DataResult.error(() -> {
-                  return "Can't find value: " + String.valueOf(var0);
-               });
-            });
+            return (DataResult)var3.lookupProvider.lookup(var1).flatMap((var1x) -> var1x.getter().get(var0)).map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Can't find value: " + String.valueOf(var0)));
          } else {
-            return DataResult.error(() -> {
-               return "Not a registry ops";
-            });
+            return DataResult.error(() -> "Not a registry ops");
          }
-      }).forGetter((var0x) -> {
-         return null;
-      });
+      }).forGetter((var0x) -> null);
    }
 
-   private static final class HolderLookupAdapter implements RegistryInfoLookup {
+   public static record RegistryInfo<T>(HolderOwner<T> owner, HolderGetter<T> getter, Lifecycle elementsLifecycle) {
+      public RegistryInfo(HolderOwner<T> var1, HolderGetter<T> var2, Lifecycle var3) {
+         super();
+         this.owner = var1;
+         this.getter = var2;
+         this.elementsLifecycle = var3;
+      }
+
+      public static <T> RegistryInfo<T> fromRegistryLookup(HolderLookup.RegistryLookup<T> var0) {
+         return new RegistryInfo<T>(var0, var0, var0.registryLifecycle());
+      }
+   }
+
+   static final class HolderLookupAdapter implements RegistryInfoLookup {
       private final HolderLookup.Provider lookupProvider;
       private final Map<ResourceKey<? extends Registry<?>>, Optional<? extends RegistryInfo<?>>> lookups = new ConcurrentHashMap();
 
@@ -145,30 +138,5 @@ public class RegistryOps<T> extends DelegatingOps<T> {
 
    public interface RegistryInfoLookup {
       <T> Optional<RegistryInfo<T>> lookup(ResourceKey<? extends Registry<? extends T>> var1);
-   }
-
-   public static record RegistryInfo<T>(HolderOwner<T> owner, HolderGetter<T> getter, Lifecycle elementsLifecycle) {
-      public RegistryInfo(HolderOwner<T> var1, HolderGetter<T> var2, Lifecycle var3) {
-         super();
-         this.owner = var1;
-         this.getter = var2;
-         this.elementsLifecycle = var3;
-      }
-
-      public static <T> RegistryInfo<T> fromRegistryLookup(HolderLookup.RegistryLookup<T> var0) {
-         return new RegistryInfo(var0, var0, var0.registryLifecycle());
-      }
-
-      public HolderOwner<T> owner() {
-         return this.owner;
-      }
-
-      public HolderGetter<T> getter() {
-         return this.getter;
-      }
-
-      public Lifecycle elementsLifecycle() {
-         return this.elementsLifecycle;
-      }
    }
 }

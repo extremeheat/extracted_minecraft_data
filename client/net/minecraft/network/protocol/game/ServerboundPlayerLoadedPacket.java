@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ServerboundPlayerLoadedPacket() implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<ByteBuf, ServerboundPlayerLoadedPacket> STREAM_CODEC = StreamCodec.unit(new ServerboundPlayerLoadedPacket());
+   public static final StreamCodec<ByteBuf, ServerboundPlayerLoadedPacket> STREAM_CODEC = StreamCodec.<ByteBuf, ServerboundPlayerLoadedPacket>unit(new ServerboundPlayerLoadedPacket());
 
    public ServerboundPlayerLoadedPacket() {
       super();

@@ -83,7 +83,7 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
 
    }
 
-   private static final class LargeDripstone {
+   static final class LargeDripstone {
       private BlockPos root;
       private final boolean pointingUp;
       private int radius;
@@ -178,7 +178,7 @@ public class LargeDripstoneFeature extends Feature<LargeDripstoneConfiguration> 
       }
    }
 
-   private static final class WindOffsetter {
+   static final class WindOffsetter {
       private final int originY;
       @Nullable
       private final Vec3 windSpeed;

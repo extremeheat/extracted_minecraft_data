@@ -46,11 +46,8 @@ public class WeepingVinesFeature extends Feature<NoneFeatureConfiguration> {
          var4.setWithOffset(var3, var2.nextInt(6) - var2.nextInt(6), var2.nextInt(2) - var2.nextInt(5), var2.nextInt(6) - var2.nextInt(6));
          if (var1.isEmptyBlock(var4)) {
             int var7 = 0;
-            Direction[] var8 = DIRECTIONS;
-            int var9 = var8.length;
 
-            for(int var10 = 0; var10 < var9; ++var10) {
-               Direction var11 = var8[var10];
+            for(Direction var11 : DIRECTIONS) {
                BlockState var12 = var1.getBlockState(var5.setWithOffset(var4, (Direction)var11));
                if (var12.is(Blocks.NETHERRACK) || var12.is(Blocks.NETHER_WART_BLOCK)) {
                   ++var7;

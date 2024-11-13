@@ -9,12 +9,4 @@ public record DataPackReloadCookie(WorldGenSettings worldGenSettings, WorldDataC
       this.worldGenSettings = var1;
       this.dataConfiguration = var2;
    }
-
-   public WorldGenSettings worldGenSettings() {
-      return this.worldGenSettings;
-   }
-
-   public WorldDataConfiguration dataConfiguration() {
-      return this.dataConfiguration;
-   }
 }

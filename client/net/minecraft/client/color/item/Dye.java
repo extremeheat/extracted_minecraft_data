@@ -7,9 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DyedItemColor;
 
 public record Dye(int defaultColor) implements ItemTintSource {
-   public static final MapCodec<Dye> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(Dye::defaultColor)).apply(var0, Dye::new);
-   });
+   public static final MapCodec<Dye> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(Dye::defaultColor)).apply(var0, Dye::new));
 
    public Dye(int var1) {
       super();
@@ -22,9 +20,5 @@ public record Dye(int defaultColor) implements ItemTintSource {
 
    public MapCodec<Dye> type() {
       return MAP_CODEC;
-   }
-
-   public int defaultColor() {
-      return this.defaultColor;
    }
 }

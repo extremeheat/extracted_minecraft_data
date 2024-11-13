@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.projectile;
 
-import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.EntityType;
@@ -82,10 +81,7 @@ public abstract class ThrowableProjectile extends Projectile {
 
    private void handleFirstTickBubbleColumn() {
       if (this.firstTick) {
-         Iterator var1 = BlockPos.betweenClosed(this.getBoundingBox()).iterator();
-
-         while(var1.hasNext()) {
-            BlockPos var2 = (BlockPos)var1.next();
+         for(BlockPos var2 : BlockPos.betweenClosed(this.getBoundingBox())) {
             BlockState var3 = this.level().getBlockState(var2);
             if (var3.is(Blocks.BUBBLE_COLUMN)) {
                var3.entityInside(this.level(), var2, this);

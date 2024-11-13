@@ -110,7 +110,7 @@ public class Warden extends Monster implements VibrationSystem {
    public AnimationState diggingAnimationState = new AnimationState();
    public AnimationState attackAnimationState = new AnimationState();
    public AnimationState sonicBoomAnimationState = new AnimationState();
-   private final DynamicGameEventListener<VibrationSystem.Listener> dynamicGameEventListener = new DynamicGameEventListener(new VibrationSystem.Listener(this));
+   private final DynamicGameEventListener<VibrationSystem.Listener> dynamicGameEventListener = new DynamicGameEventListener<VibrationSystem.Listener>(new VibrationSystem.Listener(this));
    private final VibrationSystem.User vibrationUser = new VibrationUser();
    private VibrationSystem.Data vibrationData = new VibrationSystem.Data();
    AngerManagement angerManagement = new AngerManagement(this::canTargetEntity, Collections.emptyList());
@@ -373,36 +373,20 @@ public class Warden extends Monster implements VibrationSystem {
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      AngerManagement.codec(this::canTargetEntity).encodeStart(var2, this.angerManagement).resultOrPartial((var0) -> {
-         LOGGER.error("Failed to encode anger state for Warden: '{}'", var0);
-      }).ifPresent((var1x) -> {
-         var1.put("anger", var1x);
-      });
-      VibrationSystem.Data.CODEC.encodeStart(var2, this.vibrationData).resultOrPartial((var0) -> {
-         LOGGER.error("Failed to encode vibration listener for Warden: '{}'", var0);
-      }).ifPresent((var1x) -> {
-         var1.put("listener", var1x);
-      });
+      AngerManagement.codec(this::canTargetEntity).encodeStart(var2, this.angerManagement).resultOrPartial((var0) -> LOGGER.error("Failed to encode anger state for Warden: '{}'", var0)).ifPresent((var1x) -> var1.put("anger", var1x));
+      VibrationSystem.Data.CODEC.encodeStart(var2, this.vibrationData).resultOrPartial((var0) -> LOGGER.error("Failed to encode vibration listener for Warden: '{}'", var0)).ifPresent((var1x) -> var1.put("listener", var1x));
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       if (var1.contains("anger")) {
-         AngerManagement.codec(this::canTargetEntity).parse(var2, var1.get("anger")).resultOrPartial((var0) -> {
-            LOGGER.error("Failed to parse anger state for Warden: '{}'", var0);
-         }).ifPresent((var1x) -> {
-            this.angerManagement = var1x;
-         });
+         AngerManagement.codec(this::canTargetEntity).parse(var2, var1.get("anger")).resultOrPartial((var0) -> LOGGER.error("Failed to parse anger state for Warden: '{}'", var0)).ifPresent((var1x) -> this.angerManagement = var1x);
          this.syncClientAngerLevel();
       }
 
       if (var1.contains("listener", 10)) {
-         VibrationSystem.Data.CODEC.parse(var2, var1.getCompound("listener")).resultOrPartial((var0) -> {
-            LOGGER.error("Failed to parse vibration listener for Warden: '{}'", var0);
-         }).ifPresent((var1x) -> {
-            this.vibrationData = var1x;
-         });
+         VibrationSystem.Data.CODEC.parse(var2, var1.getCompound("listener")).resultOrPartial((var0) -> LOGGER.error("Failed to parse vibration listener for Warden: '{}'", var0)).ifPresent((var1x) -> this.vibrationData = var1x);
       }
 
    }
@@ -490,7 +474,7 @@ public class Warden extends Monster implements VibrationSystem {
 
    public void setAttackTarget(LivingEntity var1) {
       this.getBrain().eraseMemory(MemoryModuleType.ROAR_TARGET);
-      this.getBrain().setMemory(MemoryModuleType.ATTACK_TARGET, (Object)var1);
+      this.getBrain().setMemory(MemoryModuleType.ATTACK_TARGET, var1);
       this.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
       SonicBoom.setCooldown(this, 200);
    }
@@ -520,10 +504,10 @@ public class Warden extends Monster implements VibrationSystem {
    }
 
    protected PathNavigation createNavigation(Level var1) {
-      return new GroundPathNavigation(this, this, var1) {
+      return new GroundPathNavigation(this, var1) {
          protected PathFinder createPathFinder(int var1) {
             this.nodeEvaluator = new WalkNodeEvaluator();
-            return new PathFinder(this, this.nodeEvaluator, var1) {
+            return new PathFinder(this.nodeEvaluator, var1) {
                protected float distance(Node var1, Node var2) {
                   return var1.distanceToXZ(var2);
                }
@@ -541,10 +525,10 @@ public class Warden extends Monster implements VibrationSystem {
    }
 
    static {
-      CLIENT_ANGER_LEVEL = SynchedEntityData.defineId(Warden.class, EntityDataSerializers.INT);
+      CLIENT_ANGER_LEVEL = SynchedEntityData.<Integer>defineId(Warden.class, EntityDataSerializers.INT);
    }
 
-   private class VibrationUser implements VibrationSystem.User {
+   class VibrationUser implements VibrationSystem.User {
       private static final int GAME_EVENT_LISTENER_RANGE = 16;
       private final PositionSource positionSource = new EntityPositionSource(Warden.this, Warden.this.getEyeHeight());
 

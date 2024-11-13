@@ -76,7 +76,7 @@ public class JumpOnBed extends Behavior<Mob> {
    }
 
    private void startWalkingTowardsBed(Mob var1, BlockPos var2) {
-      var1.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var2, this.speedModifier, 0)));
+      var1.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var2, this.speedModifier, 0));
    }
 
    private boolean nearBed(ServerLevel var1, Mob var2) {
@@ -98,7 +98,7 @@ public class JumpOnBed extends Behavior<Mob> {
    }
 
    private Optional<BlockPos> getNearestBed(Mob var1) {
-      return var1.getBrain().getMemory(MemoryModuleType.NEAREST_BED);
+      return var1.getBrain().<BlockPos>getMemory(MemoryModuleType.NEAREST_BED);
    }
 
    private boolean tiredOfWalking(ServerLevel var1, Mob var2) {

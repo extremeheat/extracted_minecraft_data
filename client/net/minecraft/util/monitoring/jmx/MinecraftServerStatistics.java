@@ -35,13 +35,9 @@ public final class MinecraftServerStatistics implements DynamicMBean {
 
    private MinecraftServerStatistics(MinecraftServer var1) {
       super();
-      this.attributeDescriptionByName = (Map)Stream.of(new AttributeDescription("tickTimes", this::getTickTimes, "Historical tick times (ms)", long[].class), new AttributeDescription("averageTickTime", this::getAverageTickTime, "Current average tick time (ms)", Long.TYPE)).collect(Collectors.toMap((var0) -> {
-         return var0.name;
-      }, Function.identity()));
+      this.attributeDescriptionByName = (Map)Stream.of(new AttributeDescription("tickTimes", this::getTickTimes, "Historical tick times (ms)", long[].class), new AttributeDescription("averageTickTime", this::getAverageTickTime, "Current average tick time (ms)", Long.TYPE)).collect(Collectors.toMap((var0) -> var0.name, Function.identity()));
       this.server = var1;
-      MBeanAttributeInfo[] var2 = (MBeanAttributeInfo[])this.attributeDescriptionByName.values().stream().map(AttributeDescription::asMBeanAttributeInfo).toArray((var0) -> {
-         return new MBeanAttributeInfo[var0];
-      });
+      MBeanAttributeInfo[] var2 = (MBeanAttributeInfo[])this.attributeDescriptionByName.values().stream().map(AttributeDescription::asMBeanAttributeInfo).toArray((var0) -> new MBeanAttributeInfo[var0]);
       this.mBeanInfo = new MBeanInfo(MinecraftServerStatistics.class.getSimpleName(), "metrics for dedicated server", var2, (MBeanConstructorInfo[])null, (MBeanOperationInfo[])null, new MBeanNotificationInfo[0]);
    }
 
@@ -75,9 +71,7 @@ public final class MinecraftServerStatistics implements DynamicMBean {
       Stream var10000 = Arrays.stream(var1);
       Map var10001 = this.attributeDescriptionByName;
       Objects.requireNonNull(var10001);
-      List var2 = (List)var10000.map(var10001::get).filter(Objects::nonNull).map((var0) -> {
-         return new Attribute(var0.name, var0.getter.get());
-      }).collect(Collectors.toList());
+      List var2 = (List)var10000.map(var10001::get).filter(Objects::nonNull).map((var0) -> new Attribute(var0.name, var0.getter.get())).collect(Collectors.toList());
       return new AttributeList(var2);
    }
 
@@ -94,7 +88,7 @@ public final class MinecraftServerStatistics implements DynamicMBean {
       return this.mBeanInfo;
    }
 
-   private static final class AttributeDescription {
+   static final class AttributeDescription {
       final String name;
       final Supplier<Object> getter;
       private final String description;

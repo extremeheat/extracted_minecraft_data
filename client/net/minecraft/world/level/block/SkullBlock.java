@@ -22,9 +22,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SkullBlock extends AbstractSkullBlock {
-   public static final MapCodec<SkullBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(SkullBlock.Type.CODEC.fieldOf("kind").forGetter(AbstractSkullBlock::getType), propertiesCodec()).apply(var0, SkullBlock::new);
-   });
+   public static final MapCodec<SkullBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SkullBlock.Type.CODEC.fieldOf("kind").forGetter(AbstractSkullBlock::getType), propertiesCodec()).apply(var0, SkullBlock::new));
    public static final int MAX = RotationSegment.getMaxSegmentIndex();
    private static final int ROTATIONS;
    public static final IntegerProperty ROTATION;
@@ -63,10 +61,6 @@ public class SkullBlock extends AbstractSkullBlock {
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       super.createBlockStateDefinition(var1);
       var1.add(ROTATION);
-   }
-
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.ENTITYBLOCK_ANIMATED;
    }
 
    static {

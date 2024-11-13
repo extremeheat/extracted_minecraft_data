@@ -21,12 +21,8 @@ public class DatapackLoadFailureScreen extends Screen {
    protected void init() {
       super.init();
       this.message = MultiLineLabel.create(this.font, this.getTitle(), this.width - 50);
-      this.addRenderableWidget(Button.builder(Component.translatable("datapackFailure.safeMode"), (var1) -> {
-         this.safeModeCallback.run();
-      }).bounds(this.width / 2 - 155, this.height / 6 + 96, 150, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1) -> {
-         this.cancelCallback.run();
-      }).bounds(this.width / 2 - 155 + 160, this.height / 6 + 96, 150, 20).build());
+      this.addRenderableWidget(Button.builder(Component.translatable("datapackFailure.safeMode"), (var1) -> this.safeModeCallback.run()).bounds(this.width / 2 - 155, this.height / 6 + 96, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.cancelCallback.run()).bounds(this.width / 2 - 155 + 160, this.height / 6 + 96, 150, 20).build());
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

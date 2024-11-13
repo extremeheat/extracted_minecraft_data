@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -163,10 +162,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
       BlockEntity var3 = (BlockEntity)var2.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
       if (var3 instanceof DecoratedPotBlockEntity var4) {
          var2.withDynamicDrop(SHERDS_DYNAMIC_DROP_ID, (var1x) -> {
-            Iterator var2 = var4.getDecorations().ordered().iterator();
-
-            while(var2.hasNext()) {
-               Item var3 = (Item)var2.next();
+            for(Item var3 : var4.getDecorations().ordered()) {
                var1x.accept(var3.getDefaultInstance());
             }
 
@@ -200,9 +196,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
       PotDecorations var5 = (PotDecorations)var1.getOrDefault(DataComponents.POT_DECORATIONS, PotDecorations.EMPTY);
       if (!var5.equals(PotDecorations.EMPTY)) {
          var3.add(CommonComponents.EMPTY);
-         Stream.of(var5.front(), var5.left(), var5.right(), var5.back()).forEach((var1x) -> {
-            var3.add((new ItemStack((ItemLike)var1x.orElse(Items.BRICK), 1)).getHoverName().plainCopy().withStyle(ChatFormatting.GRAY));
-         });
+         Stream.of(var5.front(), var5.left(), var5.right(), var5.back()).forEach((var1x) -> var3.add((new ItemStack((ItemLike)var1x.orElse(Items.BRICK), 1)).getHoverName().plainCopy().withStyle(ChatFormatting.GRAY)));
       }
    }
 
@@ -241,10 +235,6 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
 
    protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation((Direction)var1.getValue(HORIZONTAL_FACING)));
-   }
-
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.ENTITYBLOCK_ANIMATED;
    }
 
    static {

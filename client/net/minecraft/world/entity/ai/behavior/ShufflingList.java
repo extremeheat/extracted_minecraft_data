@@ -30,9 +30,7 @@ public class ShufflingList<U> implements Iterable<U> {
    }
 
    public static <U> Codec<ShufflingList<U>> codec(Codec<U> var0) {
-      return ShufflingList.WeightedEntry.codec(var0).listOf().xmap(ShufflingList::new, (var0x) -> {
-         return var0x.entries;
-      });
+      return ShufflingList.WeightedEntry.codec(var0).listOf().xmap(ShufflingList::new, (var0x) -> var0x.entries);
    }
 
    public ShufflingList<U> add(U var1, int var2) {
@@ -41,9 +39,7 @@ public class ShufflingList<U> implements Iterable<U> {
    }
 
    public ShufflingList<U> shuffle() {
-      this.entries.forEach((var1) -> {
-         var1.setRandom(this.random.nextFloat());
-      });
+      this.entries.forEach((var1) -> var1.setRandom(this.random.nextFloat()));
       this.entries.sort(Comparator.comparingDouble(WeightedEntry::getRandWeight));
       return this;
    }
@@ -89,7 +85,7 @@ public class ShufflingList<U> implements Iterable<U> {
 
       public String toString() {
          int var10000 = this.weight;
-         return "" + var10000 + ":" + String.valueOf(this.data);
+         return var10000 + ":" + String.valueOf(this.data);
       }
 
       public static <E> Codec<WeightedEntry<E>> codec(final Codec<E> var0) {
@@ -99,11 +95,7 @@ public class ShufflingList<U> implements Iterable<U> {
                OptionalDynamic var10000 = var3.get("data");
                Codec var10001 = var0;
                Objects.requireNonNull(var10001);
-               return var10000.flatMap(var10001::parse).map((var1x) -> {
-                  return new WeightedEntry(var1x, var3.get("weight").asInt(1));
-               }).map((var1x) -> {
-                  return Pair.of(var1x, var1.empty());
-               });
+               return var10000.flatMap(var10001::parse).map((var1x) -> new WeightedEntry(var1x, var3.get("weight").asInt(1))).map((var1x) -> Pair.of(var1x, var1.empty()));
             }
 
             public <T> DataResult<T> encode(WeightedEntry<E> var1, DynamicOps<T> var2, T var3) {

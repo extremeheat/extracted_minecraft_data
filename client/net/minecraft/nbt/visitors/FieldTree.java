@@ -22,9 +22,7 @@ public record FieldTree(int depth, Map<String, TagType<?>> selectedFields, Map<S
 
    public void addEntry(FieldSelector var1) {
       if (this.depth <= var1.path().size()) {
-         ((FieldTree)this.fieldsToRecurse.computeIfAbsent((String)var1.path().get(this.depth - 1), (var1x) -> {
-            return new FieldTree(this.depth + 1);
-         })).addEntry(var1);
+         ((FieldTree)this.fieldsToRecurse.computeIfAbsent((String)var1.path().get(this.depth - 1), (var1x) -> new FieldTree(this.depth + 1))).addEntry(var1);
       } else {
          this.selectedFields.put(var1.name(), var1.type());
       }
@@ -33,17 +31,5 @@ public record FieldTree(int depth, Map<String, TagType<?>> selectedFields, Map<S
 
    public boolean isSelected(TagType<?> var1, String var2) {
       return var1.equals(this.selectedFields().get(var2));
-   }
-
-   public int depth() {
-      return this.depth;
-   }
-
-   public Map<String, TagType<?>> selectedFields() {
-      return this.selectedFields;
-   }
-
-   public Map<String, FieldTree> fieldsToRecurse() {
-      return this.fieldsToRecurse;
    }
 }

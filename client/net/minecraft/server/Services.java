@@ -36,20 +36,4 @@ public record Services(MinecraftSessionService sessionService, ServicesKeySet se
    public boolean canValidateProfileKeys() {
       return !this.servicesKeySet.keys(ServicesKeyType.PROFILE_KEY).isEmpty();
    }
-
-   public MinecraftSessionService sessionService() {
-      return this.sessionService;
-   }
-
-   public ServicesKeySet servicesKeySet() {
-      return this.servicesKeySet;
-   }
-
-   public GameProfileRepository profileRepository() {
-      return this.profileRepository;
-   }
-
-   public GameProfileCache profileCache() {
-      return this.profileCache;
-   }
 }

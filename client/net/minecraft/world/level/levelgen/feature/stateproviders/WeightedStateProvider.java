@@ -12,9 +12,7 @@ public class WeightedStateProvider extends BlockStateProvider {
    private final SimpleWeightedRandomList<BlockState> weightedList;
 
    private static DataResult<WeightedStateProvider> create(SimpleWeightedRandomList<BlockState> var0) {
-      return var0.isEmpty() ? DataResult.error(() -> {
-         return "WeightedStateProvider with no states";
-      }) : DataResult.success(new WeightedStateProvider(var0));
+      return var0.isEmpty() ? DataResult.error(() -> "WeightedStateProvider with no states") : DataResult.success(new WeightedStateProvider(var0));
    }
 
    public WeightedStateProvider(SimpleWeightedRandomList<BlockState> var1) {
@@ -35,8 +33,6 @@ public class WeightedStateProvider extends BlockStateProvider {
    }
 
    static {
-      CODEC = SimpleWeightedRandomList.wrappedCodec(BlockState.CODEC).comapFlatMap(WeightedStateProvider::create, (var0) -> {
-         return var0.weightedList;
-      }).fieldOf("entries");
+      CODEC = SimpleWeightedRandomList.wrappedCodec(BlockState.CODEC).comapFlatMap(WeightedStateProvider::create, (var0) -> var0.weightedList).fieldOf("entries");
    }
 }

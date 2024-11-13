@@ -16,9 +16,7 @@ import net.minecraft.network.chat.Style;
 
 public class StyleArgument implements ArgumentType<Style> {
    private static final Collection<String> EXAMPLES = List.of("{\"bold\": true}\n");
-   public static final DynamicCommandExceptionType ERROR_INVALID_JSON = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("argument.style.invalid", var0);
-   });
+   public static final DynamicCommandExceptionType ERROR_INVALID_JSON = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.style.invalid", var0));
    private final HolderLookup.Provider registries;
 
    private StyleArgument(HolderLookup.Provider var1) {

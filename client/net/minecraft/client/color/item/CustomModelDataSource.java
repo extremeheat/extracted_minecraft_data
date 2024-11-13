@@ -9,9 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomModelData;
 
 public record CustomModelDataSource(int index, int defaultColor) implements ItemTintSource {
-   public static final MapCodec<CustomModelDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("index", 0).forGetter(CustomModelDataSource::index), ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(CustomModelDataSource::defaultColor)).apply(var0, CustomModelDataSource::new);
-   });
+   public static final MapCodec<CustomModelDataSource> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("index", 0).forGetter(CustomModelDataSource::index), ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(CustomModelDataSource::defaultColor)).apply(var0, CustomModelDataSource::new));
 
    public CustomModelDataSource(int var1, int var2) {
       super();
@@ -33,13 +31,5 @@ public record CustomModelDataSource(int index, int defaultColor) implements Item
 
    public MapCodec<CustomModelDataSource> type() {
       return MAP_CODEC;
-   }
-
-   public int index() {
-      return this.index;
-   }
-
-   public int defaultColor() {
-      return this.defaultColor;
    }
 }

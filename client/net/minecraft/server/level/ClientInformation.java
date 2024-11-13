@@ -40,40 +40,4 @@ public record ClientInformation(String language, int viewDistance, ChatVisiblity
    public static ClientInformation createDefault() {
       return new ClientInformation("en_us", 2, ChatVisiblity.FULL, true, 0, Player.DEFAULT_MAIN_HAND, false, false, ParticleStatus.ALL);
    }
-
-   public String language() {
-      return this.language;
-   }
-
-   public int viewDistance() {
-      return this.viewDistance;
-   }
-
-   public ChatVisiblity chatVisibility() {
-      return this.chatVisibility;
-   }
-
-   public boolean chatColors() {
-      return this.chatColors;
-   }
-
-   public int modelCustomisation() {
-      return this.modelCustomisation;
-   }
-
-   public HumanoidArm mainHand() {
-      return this.mainHand;
-   }
-
-   public boolean textFilteringEnabled() {
-      return this.textFilteringEnabled;
-   }
-
-   public boolean allowsListing() {
-      return this.allowsListing;
-   }
-
-   public ParticleStatus particleStatus() {
-      return this.particleStatus;
-   }
 }

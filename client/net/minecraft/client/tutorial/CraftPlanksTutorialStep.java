@@ -1,6 +1,5 @@
 package net.minecraft.client.tutorial;
 
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
@@ -73,17 +72,12 @@ public class CraftPlanksTutorialStep implements TutorialStepInstance {
    }
 
    public static boolean hasCraftedPlanksPreviously(LocalPlayer var0, TagKey<Item> var1) {
-      Iterator var2 = BuiltInRegistries.ITEM.getTagOrEmpty(var1).iterator();
-
-      Holder var3;
-      do {
-         if (!var2.hasNext()) {
-            return false;
+      for(Holder var3 : BuiltInRegistries.ITEM.getTagOrEmpty(var1)) {
+         if (var0.getStats().getValue(Stats.ITEM_CRAFTED.get((Item)var3.value())) > 0) {
+            return true;
          }
+      }
 
-         var3 = (Holder)var2.next();
-      } while(var0.getStats().getValue(Stats.ITEM_CRAFTED.get((Item)var3.value())) <= 0);
-
-      return true;
+      return false;
    }
 }

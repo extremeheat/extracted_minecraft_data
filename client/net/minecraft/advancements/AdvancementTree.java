@@ -5,7 +5,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,10 +26,7 @@ public class AdvancementTree {
    }
 
    private void remove(AdvancementNode var1) {
-      Iterator var2 = var1.children().iterator();
-
-      while(var2.hasNext()) {
-         AdvancementNode var3 = (AdvancementNode)var2.next();
+      for(AdvancementNode var3 : var1.children()) {
          this.remove(var3);
       }
 
@@ -51,10 +47,7 @@ public class AdvancementTree {
    }
 
    public void remove(Set<ResourceLocation> var1) {
-      Iterator var2 = var1.iterator();
-
-      while(var2.hasNext()) {
-         ResourceLocation var3 = (ResourceLocation)var2.next();
+      for(ResourceLocation var3 : var1) {
          AdvancementNode var4 = (AdvancementNode)this.nodes.get(var3);
          if (var4 == null) {
             LOGGER.warn("Told to remove advancement {} but I don't know what that is", var3);
@@ -139,19 +132,12 @@ public class AdvancementTree {
    public void setListener(@Nullable Listener var1) {
       this.listener = var1;
       if (var1 != null) {
-         Iterator var2 = this.roots.iterator();
-
-         AdvancementNode var3;
-         while(var2.hasNext()) {
-            var3 = (AdvancementNode)var2.next();
+         for(AdvancementNode var3 : this.roots) {
             var1.onAddAdvancementRoot(var3);
          }
 
-         var2 = this.tasks.iterator();
-
-         while(var2.hasNext()) {
-            var3 = (AdvancementNode)var2.next();
-            var1.onAddAdvancementTask(var3);
+         for(AdvancementNode var5 : this.tasks) {
+            var1.onAddAdvancementTask(var5);
          }
       }
 

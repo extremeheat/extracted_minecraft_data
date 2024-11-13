@@ -13,16 +13,4 @@ public record PacketIdentification(String direction, String protocolId, String p
    public static PacketIdentification from(RecordedEvent var0) {
       return new PacketIdentification(var0.getString("packetDirection"), var0.getString("protocolId"), var0.getString("packetId"));
    }
-
-   public String direction() {
-      return this.direction;
-   }
-
-   public String protocolId() {
-      return this.protocolId;
-   }
-
-   public String packetId() {
-      return this.packetId;
-   }
 }

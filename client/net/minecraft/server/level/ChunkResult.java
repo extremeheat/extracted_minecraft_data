@@ -7,17 +7,15 @@ import javax.annotation.Nullable;
 
 public interface ChunkResult<T> {
    static <T> ChunkResult<T> of(T var0) {
-      return new Success(var0);
+      return new Success<T>(var0);
    }
 
    static <T> ChunkResult<T> error(String var0) {
-      return error(() -> {
-         return var0;
-      });
+      return error((Supplier)(() -> var0));
    }
 
    static <T> ChunkResult<T> error(Supplier<String> var0) {
-      return new Fail(var0);
+      return new Fail<T>(var0);
    }
 
    boolean isSuccess();
@@ -27,8 +25,7 @@ public interface ChunkResult<T> {
 
    @Nullable
    static <R> R orElse(ChunkResult<? extends R> var0, @Nullable R var1) {
-      Object var2 = var0.orElse((Object)null);
-      return var2 != null ? var2 : var1;
+      // $FF: Couldn't be decompiled
    }
 
    @Nullable
@@ -65,14 +62,10 @@ public interface ChunkResult<T> {
       }
 
       public <R> ChunkResult<R> map(Function<T, R> var1) {
-         return new Success(var1.apply(this.value));
+         return new Success<R>(var1.apply(this.value));
       }
 
       public <E extends Throwable> T orElseThrow(Supplier<E> var1) throws E {
-         return this.value;
-      }
-
-      public T value() {
          return this.value;
       }
    }
@@ -101,15 +94,11 @@ public interface ChunkResult<T> {
       }
 
       public <R> ChunkResult<R> map(Function<T, R> var1) {
-         return new Fail(this.error);
+         return new Fail<R>(this.error);
       }
 
       public <E extends Throwable> T orElseThrow(Supplier<E> var1) throws E {
          throw (Throwable)var1.get();
-      }
-
-      public Supplier<String> error() {
-         return this.error;
       }
    }
 }

@@ -32,22 +32,6 @@ public record ClientboundTeleportEntityPacket(int id, PositionMoveRotation chang
       var1.handleTeleportEntity(this);
    }
 
-   public int id() {
-      return this.id;
-   }
-
-   public PositionMoveRotation change() {
-      return this.change;
-   }
-
-   public Set<Relative> relatives() {
-      return this.relatives;
-   }
-
-   public boolean onGround() {
-      return this.onGround;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundTeleportEntityPacket::id, PositionMoveRotation.STREAM_CODEC, ClientboundTeleportEntityPacket::change, Relative.SET_STREAM_CODEC, ClientboundTeleportEntityPacket::relatives, ByteBufCodecs.BOOL, ClientboundTeleportEntityPacket::onGround, ClientboundTeleportEntityPacket::new);
    }

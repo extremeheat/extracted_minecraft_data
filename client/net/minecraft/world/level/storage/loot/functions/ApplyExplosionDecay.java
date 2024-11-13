@@ -10,9 +10,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class ApplyExplosionDecay extends LootItemConditionalFunction {
-   public static final MapCodec<ApplyExplosionDecay> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).apply(var0, ApplyExplosionDecay::new);
-   });
+   public static final MapCodec<ApplyExplosionDecay> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).apply(var0, ApplyExplosionDecay::new));
 
    private ApplyExplosionDecay(List<LootItemCondition> var1) {
       super(var1);

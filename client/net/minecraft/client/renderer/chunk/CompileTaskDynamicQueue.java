@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.chunk;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import javax.annotation.Nullable;
@@ -68,10 +67,7 @@ public class CompileTaskDynamicQueue {
    }
 
    public synchronized void clear() {
-      Iterator var1 = this.tasks.iterator();
-
-      while(var1.hasNext()) {
-         SectionRenderDispatcher.RenderSection.CompileTask var2 = (SectionRenderDispatcher.RenderSection.CompileTask)var1.next();
+      for(SectionRenderDispatcher.RenderSection.CompileTask var2 : this.tasks) {
          var2.cancel();
       }
 

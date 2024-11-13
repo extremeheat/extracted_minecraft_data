@@ -17,24 +17,4 @@ public record StructureGenStat(Duration duration, ChunkPos chunkPos, String stru
    public static StructureGenStat from(RecordedEvent var0) {
       return new StructureGenStat(var0.getDuration(), new ChunkPos(var0.getInt("chunkPosX"), var0.getInt("chunkPosX")), var0.getString("structure"), var0.getString("level"), var0.getBoolean("success"));
    }
-
-   public Duration duration() {
-      return this.duration;
-   }
-
-   public ChunkPos chunkPos() {
-      return this.chunkPos;
-   }
-
-   public String structureName() {
-      return this.structureName;
-   }
-
-   public String level() {
-      return this.level;
-   }
-
-   public boolean success() {
-      return this.success;
-   }
 }

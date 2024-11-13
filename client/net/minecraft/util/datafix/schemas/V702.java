@@ -14,12 +14,8 @@ public class V702 extends Schema {
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       Map var2 = super.registerEntities(var1);
-      var1.register(var2, "ZombieVillager", (var1x) -> {
-         return DSL.optionalFields("Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1))), V100.equipment(var1));
-      });
-      var1.register(var2, "Husk", () -> {
-         return V100.equipment(var1);
-      });
+      var1.register(var2, "ZombieVillager", (var1x) -> DSL.optionalFields("Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1))), V100.equipment(var1)));
+      var1.register(var2, "Husk", () -> V100.equipment(var1));
       return var2;
    }
 }

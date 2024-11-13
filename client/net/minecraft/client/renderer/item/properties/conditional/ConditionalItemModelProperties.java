@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 
 public class ConditionalItemModelProperties {
-   private static final ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends ConditionalItemModelProperty>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper();
+   private static final ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends ConditionalItemModelProperty>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends ConditionalItemModelProperty>>();
    public static final MapCodec<ConditionalItemModelProperty> MAP_CODEC;
 
    public ConditionalItemModelProperties() {
@@ -20,15 +20,13 @@ public class ConditionalItemModelProperties {
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("fishing_rod/cast"), FishingRodCast.MAP_CODEC);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("has_component"), HasComponent.MAP_CODEC);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("bundle/has_selected_item"), BundleHasSelectedItem.MAP_CODEC);
-      ID_MAPPER.put(ResourceLocation.withDefaultNamespace("xmas"), IsXmas.MAP_CODEC);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("selected"), IsSelected.MAP_CODEC);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("carried"), IsCarried.MAP_CODEC);
-      ID_MAPPER.put(ResourceLocation.withDefaultNamespace("shift_down"), IsShiftDown.MAP_CODEC);
+      ID_MAPPER.put(ResourceLocation.withDefaultNamespace("extended_view"), ExtendedView.MAP_CODEC);
+      ID_MAPPER.put(ResourceLocation.withDefaultNamespace("keybind_down"), IsKeybindDown.MAP_CODEC);
    }
 
    static {
-      MAP_CODEC = ID_MAPPER.codec(ResourceLocation.CODEC).dispatchMap("property", ConditionalItemModelProperty::type, (var0) -> {
-         return var0;
-      });
+      MAP_CODEC = ID_MAPPER.codec(ResourceLocation.CODEC).dispatchMap("property", ConditionalItemModelProperty::type, (var0) -> var0);
    }
 }

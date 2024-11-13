@@ -88,11 +88,8 @@ public class CreakingHeartBlock extends BaseEntityBlock {
 
    public static boolean hasRequiredLogs(BlockState var0, LevelReader var1, BlockPos var2) {
       Direction.Axis var3 = (Direction.Axis)var0.getValue(AXIS);
-      Direction[] var4 = var3.getDirections();
-      int var5 = var4.length;
 
-      for(int var6 = 0; var6 < var5; ++var6) {
-         Direction var7 = var4[var6];
+      for(Direction var7 : var3.getDirections()) {
          BlockState var8 = var1.getBlockState(var2.relative(var7));
          if (!var8.is(BlockTags.PALE_OAK_LOGS) || var8.getValue(AXIS) != var3) {
             return false;
@@ -103,11 +100,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
    }
 
    private static boolean isSurroundedByLogs(LevelAccessor var0, BlockPos var1) {
-      Direction[] var2 = Direction.values();
-      int var3 = var2.length;
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         Direction var5 = var2[var4];
+      for(Direction var5 : Direction.values()) {
          BlockPos var6 = var1.relative(var5);
          BlockState var7 = var0.getBlockState(var6);
          if (!var7.is(BlockTags.PALE_OAK_LOGS)) {
@@ -121,10 +114,6 @@ public class CreakingHeartBlock extends BaseEntityBlock {
    @Nullable
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       return updateState((BlockState)this.defaultBlockState().setValue(AXIS, var1.getClickedFace().getAxis()), var1.getLevel(), var1.getClickedPos());
-   }
-
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
    }
 
    protected BlockState rotate(BlockState var1, Rotation var2) {

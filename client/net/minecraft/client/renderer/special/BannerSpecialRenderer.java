@@ -40,9 +40,7 @@ public class BannerSpecialRenderer implements SpecialModelRenderer<BannerPattern
    }
 
    public static record Unbaked(DyeColor baseColor) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(DyeColor.CODEC.fieldOf("color").forGetter(Unbaked::baseColor)).apply(var0, Unbaked::new);
-      });
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DyeColor.CODEC.fieldOf("color").forGetter(Unbaked::baseColor)).apply(var0, Unbaked::new));
 
       public Unbaked(DyeColor var1) {
          super();
@@ -55,10 +53,6 @@ public class BannerSpecialRenderer implements SpecialModelRenderer<BannerPattern
 
       public SpecialModelRenderer<?> bake(EntityModelSet var1) {
          return new BannerSpecialRenderer(this.baseColor, new BannerRenderer(var1));
-      }
-
-      public DyeColor baseColor() {
-         return this.baseColor;
       }
    }
 }

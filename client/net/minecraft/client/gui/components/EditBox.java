@@ -70,9 +70,7 @@ public class EditBox extends AbstractWidget {
       this.textColor = 14737632;
       this.textColorUneditable = 7368816;
       this.filter = Objects::nonNull;
-      this.formatter = (var0, var1x) -> {
-         return FormattedCharSequence.forward(var0, Style.EMPTY);
-      };
+      this.formatter = (var0, var1x) -> FormattedCharSequence.forward(var0, Style.EMPTY);
       this.focusedTime = Util.getMillis();
       this.font = var1;
       if (var6 != null) {
@@ -411,15 +409,12 @@ public class EditBox extends AbstractWidget {
             var1.drawString(this.font, this.suggestion, var15 - 1, var11, -8355712);
          }
 
-         int var10003;
-         int var10004;
-         int var10005;
          if (var9) {
             if (var18) {
                RenderType var10001 = RenderType.guiOverlay();
-               var10003 = var11 - 1;
-               var10004 = var15 + 1;
-               var10005 = var11 + 1;
+               int var10003 = var11 - 1;
+               int var10004 = var15 + 1;
+               int var10005 = var11 + 1;
                Objects.requireNonNull(this.font);
                var1.fill(var10001, var15, var10003, var10004, var10005 + 9, -3092272);
             } else {
@@ -429,28 +424,27 @@ public class EditBox extends AbstractWidget {
 
          if (var13 != var6) {
             int var16 = var10 + this.font.width(var7.substring(0, var13));
-            var10003 = var11 - 1;
-            var10004 = var16 - 1;
-            var10005 = var11 + 1;
+            int var19 = var11 - 1;
+            int var20 = var16 - 1;
+            int var21 = var11 + 1;
             Objects.requireNonNull(this.font);
-            this.renderHighlight(var1, var15, var10003, var10004, var10005 + 9);
+            this.renderHighlight(var1, var15, var19, var20, var21 + 9);
          }
 
       }
    }
 
    private void renderHighlight(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      int var6;
       if (var2 < var4) {
-         var6 = var2;
+         int var6 = var2;
          var2 = var4;
          var4 = var6;
       }
 
       if (var3 < var5) {
-         var6 = var3;
+         int var7 = var3;
          var3 = var5;
-         var5 = var6;
+         var5 = var7;
       }
 
       if (var4 > this.getX() + this.width) {

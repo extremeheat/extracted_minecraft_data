@@ -50,11 +50,6 @@ public abstract class AbstractCookingRecipe extends SingleItemRecipe {
       return List.of(new FurnaceRecipeDisplay(this.input().display(), SlotDisplay.AnyFuel.INSTANCE, new SlotDisplay.ItemStackSlotDisplay(this.result()), new SlotDisplay.ItemSlotDisplay(this.furnaceIcon()), this.cookingTime, this.experience));
    }
 
-   @FunctionalInterface
-   public interface Factory<T extends AbstractCookingRecipe> {
-      T create(String var1, CookingBookCategory var2, Ingredient var3, ItemStack var4, float var5, int var6);
-   }
-
    public static class Serializer<T extends AbstractCookingRecipe> implements RecipeSerializer<T> {
       private final MapCodec<T> codec;
       private final StreamCodec<RegistryFriendlyByteBuf, T> streamCodec;
@@ -89,5 +84,10 @@ public abstract class AbstractCookingRecipe extends SingleItemRecipe {
       public StreamCodec<RegistryFriendlyByteBuf, T> streamCodec() {
          return this.streamCodec;
       }
+   }
+
+   @FunctionalInterface
+   public interface Factory<T extends AbstractCookingRecipe> {
+      T create(String var1, CookingBookCategory var2, Ingredient var3, ItemStack var4, float var5, int var6);
    }
 }

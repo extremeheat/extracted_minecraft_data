@@ -19,7 +19,6 @@ import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -212,9 +211,8 @@ class LinkFSPath implements Path {
    private LinkFSPath resolve(List<String> var1) {
       LinkFSPath var2 = this;
 
-      String var4;
-      for(Iterator var3 = var1.iterator(); var3.hasNext(); var2 = var2.resolveName(var4)) {
-         var4 = (String)var3.next();
+      for(String var4 : var1) {
+         var2 = var2.resolveName(var4);
       }
 
       return var2;
@@ -271,7 +269,7 @@ class LinkFSPath implements Path {
    }
 
    public LinkFSPath toAbsolutePath() {
-      return this.isAbsolute() ? this : this.fileSystem.rootPath().resolve((Path)this);
+      return this.isAbsolute() ? this : this.fileSystem.rootPath().resolve(this);
    }
 
    public LinkFSPath toRealPath(LinkOption... var1) {

@@ -96,8 +96,8 @@ public class MinecartCommandBlock extends AbstractMinecart {
    }
 
    static {
-      DATA_ID_COMMAND_NAME = SynchedEntityData.defineId(MinecartCommandBlock.class, EntityDataSerializers.STRING);
-      DATA_ID_LAST_OUTPUT = SynchedEntityData.defineId(MinecartCommandBlock.class, EntityDataSerializers.COMPONENT);
+      DATA_ID_COMMAND_NAME = SynchedEntityData.<String>defineId(MinecartCommandBlock.class, EntityDataSerializers.STRING);
+      DATA_ID_LAST_OUTPUT = SynchedEntityData.<Component>defineId(MinecartCommandBlock.class, EntityDataSerializers.COMPONENT);
    }
 
    public class MinecartCommandBase extends BaseCommandBlock {

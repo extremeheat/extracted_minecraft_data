@@ -4,7 +4,6 @@ import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.ToIntFunction;
 import javax.annotation.Nullable;
@@ -46,31 +45,13 @@ public class OptimizeWorldScreen extends Screen {
       try {
          WorldOpenFlows var5 = var0.createWorldOpenFlows();
          PackRepository var6 = ServerPacksSource.createPackRepository(var3);
-         WorldStem var7 = var5.loadWorldStem(var3.getDataTag(), false, var6);
 
-         OptimizeWorldScreen var10;
-         try {
+         try (WorldStem var7 = var5.loadWorldStem(var3.getDataTag(), false, var6)) {
             WorldData var8 = var7.worldData();
             RegistryAccess.Frozen var9 = var7.registries().compositeAccess();
             var3.saveDataTag(var9, var8);
-            var10 = new OptimizeWorldScreen(var1, var2, var3, var8.getLevelSettings(), var4, var9);
-         } catch (Throwable var12) {
-            if (var7 != null) {
-               try {
-                  var7.close();
-               } catch (Throwable var11) {
-                  var12.addSuppressed(var11);
-               }
-            }
-
-            throw var12;
+            return new OptimizeWorldScreen(var1, var2, var3, var8.getLevelSettings(), var4, var9);
          }
-
-         if (var7 != null) {
-            var7.close();
-         }
-
-         return var10;
       } catch (Exception var13) {
          LOGGER.warn("Failed to load datapacks, can't optimize world", var13);
          return null;
@@ -123,20 +104,19 @@ public class OptimizeWorldScreen extends Screen {
          var1.fill(var5 - 1, var7 - 1, var6 + 1, var8 + 1, -16777216);
          var1.drawString(this.font, (Component)Component.translatable("optimizeWorld.info.converted", this.upgrader.getConverted()), var5, 40, 10526880);
          var10001 = this.font;
-         MutableComponent var16 = Component.translatable("optimizeWorld.info.skipped", this.upgrader.getSkipped());
+         MutableComponent var20 = Component.translatable("optimizeWorld.info.skipped", this.upgrader.getSkipped());
          Objects.requireNonNull(this.font);
-         var1.drawString(var10001, (Component)var16, var5, 40 + 9 + 3, 10526880);
+         var1.drawString(var10001, (Component)var20, var5, 40 + 9 + 3, 10526880);
          var10001 = this.font;
-         var16 = Component.translatable("optimizeWorld.info.total", this.upgrader.getTotalChunks());
+         var20 = Component.translatable("optimizeWorld.info.total", this.upgrader.getTotalChunks());
          Objects.requireNonNull(this.font);
-         var1.drawString(var10001, (Component)var16, var5, 40 + (9 + 3) * 2, 10526880);
+         var1.drawString(var10001, (Component)var20, var5, 40 + (9 + 3) * 2, 10526880);
          int var9 = 0;
 
-         int var12;
-         for(Iterator var10 = this.upgrader.levels().iterator(); var10.hasNext(); var9 += var12) {
-            ResourceKey var11 = (ResourceKey)var10.next();
-            var12 = Mth.floor(this.upgrader.dimensionProgress(var11) * (float)(var6 - var5));
+         for(ResourceKey var11 : this.upgrader.levels()) {
+            int var12 = Mth.floor(this.upgrader.dimensionProgress(var11) * (float)(var6 - var5));
             var1.fill(var5 + var9, var7, var5 + var9 + var12, var8, DIMENSION_COLORS.applyAsInt(var11));
+            var9 += var12;
          }
 
          int var13 = this.upgrader.getConverted() + this.upgrader.getSkipped();

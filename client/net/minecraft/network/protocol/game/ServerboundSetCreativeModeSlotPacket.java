@@ -28,14 +28,6 @@ public record ServerboundSetCreativeModeSlotPacket(short slotNum, ItemStack item
       var1.handleSetCreativeModeSlot(this);
    }
 
-   public short slotNum() {
-      return this.slotNum;
-   }
-
-   public ItemStack itemStack() {
-      return this.itemStack;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.SHORT, ServerboundSetCreativeModeSlotPacket::slotNum, ItemStack.validatedStreamCodec(ItemStack.OPTIONAL_STREAM_CODEC), ServerboundSetCreativeModeSlotPacket::itemStack, ServerboundSetCreativeModeSlotPacket::new);
    }

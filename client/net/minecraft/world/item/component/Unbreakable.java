@@ -12,9 +12,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 
 public record Unbreakable(boolean showInTooltip) implements TooltipProvider {
-   public static final Codec<Unbreakable> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(Unbreakable::showInTooltip)).apply(var0, Unbreakable::new);
-   });
+   public static final Codec<Unbreakable> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(Unbreakable::showInTooltip)).apply(var0, Unbreakable::new));
    public static final StreamCodec<ByteBuf, Unbreakable> STREAM_CODEC;
    private static final Component TOOLTIP;
 
@@ -32,10 +30,6 @@ public record Unbreakable(boolean showInTooltip) implements TooltipProvider {
 
    public Unbreakable withTooltip(boolean var1) {
       return new Unbreakable(var1);
-   }
-
-   public boolean showInTooltip() {
-      return this.showInTooltip;
    }
 
    static {

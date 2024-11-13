@@ -11,9 +11,7 @@ import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceLocation;
 
 public record BannerPattern(ResourceLocation assetId, String translationKey) {
-   public static final Codec<BannerPattern> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ResourceLocation.CODEC.fieldOf("asset_id").forGetter(BannerPattern::assetId), Codec.STRING.fieldOf("translation_key").forGetter(BannerPattern::translationKey)).apply(var0, BannerPattern::new);
-   });
+   public static final Codec<BannerPattern> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("asset_id").forGetter(BannerPattern::assetId), Codec.STRING.fieldOf("translation_key").forGetter(BannerPattern::translationKey)).apply(var0, BannerPattern::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, BannerPattern> DIRECT_STREAM_CODEC;
    public static final Codec<Holder<BannerPattern>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<BannerPattern>> STREAM_CODEC;
@@ -24,17 +22,9 @@ public record BannerPattern(ResourceLocation assetId, String translationKey) {
       this.translationKey = var2;
    }
 
-   public ResourceLocation assetId() {
-      return this.assetId;
-   }
-
-   public String translationKey() {
-      return this.translationKey;
-   }
-
    static {
       DIRECT_STREAM_CODEC = StreamCodec.composite(ResourceLocation.STREAM_CODEC, BannerPattern::assetId, ByteBufCodecs.STRING_UTF8, BannerPattern::translationKey, BannerPattern::new);
-      CODEC = RegistryFileCodec.create(Registries.BANNER_PATTERN, DIRECT_CODEC);
+      CODEC = RegistryFileCodec.<Holder<BannerPattern>>create(Registries.BANNER_PATTERN, DIRECT_CODEC);
       STREAM_CODEC = ByteBufCodecs.holder(Registries.BANNER_PATTERN, DIRECT_STREAM_CODEC);
    }
 }

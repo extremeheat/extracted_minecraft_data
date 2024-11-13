@@ -20,11 +20,8 @@ public class SnbtDatafixer {
    public static void main(String[] var0) throws IOException {
       SharedConstants.setVersion(DetectedVersion.BUILT_IN);
       Bootstrap.bootStrap();
-      String[] var1 = var0;
-      int var2 = var0.length;
 
-      for(int var3 = 0; var3 < var2; ++var3) {
-         String var4 = var1[var3];
+      for(String var4 : var0) {
          updateInDirectory(var4);
       }
 
@@ -34,9 +31,7 @@ public class SnbtDatafixer {
       Stream var1 = Files.walk(Paths.get(var0));
 
       try {
-         var1.filter((var0x) -> {
-            return var0x.toString().endsWith(".snbt");
-         }).forEach((var0x) -> {
+         var1.filter((var0x) -> var0x.toString().endsWith(".snbt")).forEach((var0x) -> {
             try {
                String var1 = Files.readString(var0x);
                CompoundTag var2 = NbtUtils.snbtToStructure(var1);

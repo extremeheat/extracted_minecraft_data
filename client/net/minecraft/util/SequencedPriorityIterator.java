@@ -24,9 +24,7 @@ public final class SequencedPriorityIterator<T> extends AbstractIterator<T> {
       if (var2 == this.highestPrio && this.highestPrioQueue != null) {
          this.highestPrioQueue.addLast(var1);
       } else {
-         Deque var3 = (Deque)this.queuesByPriority.computeIfAbsent(var2, (var0) -> {
-            return Queues.newArrayDeque();
-         });
+         Deque var3 = (Deque)this.queuesByPriority.computeIfAbsent(var2, (var0) -> Queues.newArrayDeque());
          var3.addLast(var1);
          if (var2 >= this.highestPrio) {
             this.highestPrioQueue = var3;
@@ -39,17 +37,17 @@ public final class SequencedPriorityIterator<T> extends AbstractIterator<T> {
    @Nullable
    protected T computeNext() {
       if (this.highestPrioQueue == null) {
-         return this.endOfData();
+         return (T)this.endOfData();
       } else {
          Object var1 = this.highestPrioQueue.removeFirst();
          if (var1 == null) {
-            return this.endOfData();
+            return (T)this.endOfData();
          } else {
             if (this.highestPrioQueue.isEmpty()) {
                this.switchCacheToNextHighestPrioQueue();
             }
 
-            return var1;
+            return (T)var1;
          }
       }
    }

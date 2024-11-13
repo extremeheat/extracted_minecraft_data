@@ -26,14 +26,6 @@ public record ServerboundSetBeaconPacket(Optional<Holder<MobEffect>> primary, Op
       var1.handleSetBeaconPacket(this);
    }
 
-   public Optional<Holder<MobEffect>> primary() {
-      return this.primary;
-   }
-
-   public Optional<Holder<MobEffect>> secondary() {
-      return this.secondary;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(MobEffect.STREAM_CODEC.apply(ByteBufCodecs::optional), ServerboundSetBeaconPacket::primary, MobEffect.STREAM_CODEC.apply(ByteBufCodecs::optional), ServerboundSetBeaconPacket::secondary, ServerboundSetBeaconPacket::new);
    }

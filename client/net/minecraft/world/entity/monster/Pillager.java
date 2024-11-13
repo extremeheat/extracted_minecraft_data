@@ -103,7 +103,7 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    }
 
    public TagKey<Item> getPreferredWeaponType() {
-      return ItemTags.PILLAGER_PREFERRED_WEAPON;
+      return ItemTags.PILLAGER_PREFERRED_WEAPONS;
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
@@ -230,6 +230,6 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    }
 
    static {
-      IS_CHARGING_CROSSBOW = SynchedEntityData.defineId(Pillager.class, EntityDataSerializers.BOOLEAN);
+      IS_CHARGING_CROSSBOW = SynchedEntityData.<Boolean>defineId(Pillager.class, EntityDataSerializers.BOOLEAN);
    }
 }

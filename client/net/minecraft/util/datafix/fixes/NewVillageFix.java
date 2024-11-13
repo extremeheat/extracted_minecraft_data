@@ -33,35 +33,9 @@ public class NewVillageFix extends DataFix {
       OpticFinder var5 = var4.type().findField("Structures");
       OpticFinder var6 = var5.type().findField("Starts");
       OpticFinder var7 = var1.finder();
-      return TypeRewriteRule.seq(this.fixTypeEverywhereTyped("NewVillageFix", var2, (var4x) -> {
-         return var4x.updateTyped(var4, (var3) -> {
-            return var3.updateTyped(var5, (var2) -> {
-               return var2.updateTyped(var6, (var1) -> {
-                  return var1.update(var7, (var0) -> {
-                     return (List)var0.stream().filter((var0x) -> {
-                        return !Objects.equals(var0x.getFirst(), "Village");
-                     }).map((var0x) -> {
-                        return var0x.mapFirst((var0) -> {
-                           return var0.equals("New_Village") ? "Village" : var0;
-                        });
-                     }).collect(Collectors.toList());
-                  });
-               }).update(DSL.remainderFinder(), (var0) -> {
-                  return var0.update("References", (var0x) -> {
+      return TypeRewriteRule.seq(this.fixTypeEverywhereTyped("NewVillageFix", var2, (var4x) -> var4x.updateTyped(var4, (var3) -> var3.updateTyped(var5, (var2) -> var2.updateTyped(var6, (var1) -> var1.update(var7, (var0) -> (List)var0.stream().filter((var0x) -> !Objects.equals(var0x.getFirst(), "Village")).map((var0x) -> var0x.mapFirst((var0) -> var0.equals("New_Village") ? "Village" : var0)).collect(Collectors.toList()))).update(DSL.remainderFinder(), (var0) -> var0.update("References", (var0x) -> {
                      Optional var1 = var0x.get("New_Village").result();
-                     return ((Dynamic)DataFixUtils.orElse(var1.map((var1x) -> {
-                        return var0x.remove("New_Village").set("Village", var1x);
-                     }), var0x)).remove("Village");
-                  });
-               });
-            });
-         });
-      }), this.fixTypeEverywhereTyped("NewVillageStartFix", var3, (var0) -> {
-         return var0.update(DSL.remainderFinder(), (var0x) -> {
-            return var0x.update("id", (var0) -> {
-               return Objects.equals(NamespacedSchema.ensureNamespaced(var0.asString("")), "minecraft:new_village") ? var0.createString("minecraft:village") : var0;
-            });
-         });
-      }));
+                     return ((Dynamic)DataFixUtils.orElse(var1.map((var1x) -> var0x.remove("New_Village").set("Village", var1x)), var0x)).remove("Village");
+                  }))))), this.fixTypeEverywhereTyped("NewVillageStartFix", var3, (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> var0x.update("id", (var0) -> Objects.equals(NamespacedSchema.ensureNamespaced(var0.asString("")), "minecraft:new_village") ? var0.createString("minecraft:village") : var0))));
    }
 }

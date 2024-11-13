@@ -16,13 +16,7 @@ public abstract class NoiseBasedStateProvider extends BlockStateProvider {
    protected final NormalNoise noise;
 
    protected static <P extends NoiseBasedStateProvider> Products.P3<RecordCodecBuilder.Mu<P>, Long, NormalNoise.NoiseParameters, Float> noiseCodec(RecordCodecBuilder.Instance<P> var0) {
-      return var0.group(Codec.LONG.fieldOf("seed").forGetter((var0x) -> {
-         return var0x.seed;
-      }), NormalNoise.NoiseParameters.DIRECT_CODEC.fieldOf("noise").forGetter((var0x) -> {
-         return var0x.parameters;
-      }), ExtraCodecs.POSITIVE_FLOAT.fieldOf("scale").forGetter((var0x) -> {
-         return var0x.scale;
-      }));
+      return var0.group(Codec.LONG.fieldOf("seed").forGetter((var0x) -> var0x.seed), NormalNoise.NoiseParameters.DIRECT_CODEC.fieldOf("noise").forGetter((var0x) -> var0x.parameters), ExtraCodecs.POSITIVE_FLOAT.fieldOf("scale").forGetter((var0x) -> var0x.scale));
    }
 
    protected NoiseBasedStateProvider(long var1, NormalNoise.NoiseParameters var3, float var4) {

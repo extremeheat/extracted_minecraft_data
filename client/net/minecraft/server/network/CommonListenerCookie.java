@@ -15,20 +15,4 @@ public record CommonListenerCookie(GameProfile gameProfile, int latency, ClientI
    public static CommonListenerCookie createInitial(GameProfile var0, boolean var1) {
       return new CommonListenerCookie(var0, 0, ClientInformation.createDefault(), var1);
    }
-
-   public GameProfile gameProfile() {
-      return this.gameProfile;
-   }
-
-   public int latency() {
-      return this.latency;
-   }
-
-   public ClientInformation clientInformation() {
-      return this.clientInformation;
-   }
-
-   public boolean transferred() {
-      return this.transferred;
-   }
 }

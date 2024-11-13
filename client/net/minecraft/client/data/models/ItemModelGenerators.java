@@ -1,7 +1,6 @@
 package net.minecraft.client.data.models;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -20,7 +19,6 @@ import net.minecraft.client.data.models.model.TextureMapping;
 import net.minecraft.client.renderer.item.BundleSelectedItemSpecialRenderer;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.RangeSelectItemModel;
-import net.minecraft.client.renderer.item.SelectItemModel;
 import net.minecraft.client.renderer.item.properties.conditional.Broken;
 import net.minecraft.client.renderer.item.properties.conditional.BundleHasSelectedItem;
 import net.minecraft.client.renderer.item.properties.conditional.ConditionalItemModelProperty;
@@ -154,12 +152,10 @@ public class ItemModelGenerators {
       ResourceLocation var7 = TextureMapping.getItemTexture(var1, "_overlay");
       ArrayList var8 = new ArrayList(TRIM_MATERIAL_MODELS.size());
 
-      TrimMaterialData var10;
-      ItemModel.Unbaked var13;
-      for(Iterator var9 = TRIM_MATERIAL_MODELS.iterator(); var9.hasNext(); var8.add(ItemModelUtils.when((Object)var10.materialKey, var13))) {
-         var10 = (TrimMaterialData)var9.next();
+      for(TrimMaterialData var10 : TRIM_MATERIAL_MODELS) {
          ResourceLocation var11 = var5.withSuffix("_" + var10.name() + "_trim");
          ResourceLocation var12 = ResourceLocation.withDefaultNamespace("trims/items/" + var3 + "_trim_" + var10.textureName(var2));
+         ItemModel.Unbaked var13;
          if (var4) {
             this.generateLayeredItem(var11, var6, var7, var12);
             var13 = ItemModelUtils.tintedModel(var11, new Dye(-6265536));
@@ -167,6 +163,8 @@ public class ItemModelGenerators {
             this.generateLayeredItem(var11, var6, var12);
             var13 = ItemModelUtils.plainModel(var11);
          }
+
+         var8.add(ItemModelUtils.when(var10.materialKey, var13));
       }
 
       ItemModel.Unbaked var14;
@@ -178,7 +176,7 @@ public class ItemModelGenerators {
          var14 = ItemModelUtils.plainModel(var5);
       }
 
-      this.itemModelOutput.accept(var1, ItemModelUtils.select(new TrimMaterialProperty(), var14, (List)var8));
+      this.itemModelOutput.accept(var1, ItemModelUtils.select(new TrimMaterialProperty(), var14, var8));
    }
 
    private void generateBundleModels(Item var1) {
@@ -187,7 +185,7 @@ public class ItemModelGenerators {
       ResourceLocation var4 = this.generateBundleCoverModel(var1, ModelTemplates.BUNDLE_OPEN_FRONT_INVENTORY, "_open_front");
       ItemModel.Unbaked var5 = ItemModelUtils.composite(ItemModelUtils.plainModel(var3), new BundleSelectedItemSpecialRenderer.Unbaked(), ItemModelUtils.plainModel(var4));
       ItemModel.Unbaked var6 = ItemModelUtils.conditional(new BundleHasSelectedItem(), var5, var2);
-      this.itemModelOutput.accept(var1, ItemModelUtils.select(new DisplayContext(), var2, (SelectItemModel.SwitchCase[])(ItemModelUtils.when((Object)ItemDisplayContext.GUI, var6))));
+      this.itemModelOutput.accept(var1, ItemModelUtils.select(new DisplayContext(), var2, ItemModelUtils.when(ItemDisplayContext.GUI, var6)));
    }
 
    private ResourceLocation generateBundleCoverModel(Item var1, ModelTemplate var2, String var3) {
@@ -210,7 +208,7 @@ public class ItemModelGenerators {
       ItemModel.Unbaked var5 = ItemModelUtils.plainModel(this.createFlatItemModel(var1, "_pulling_2", ModelTemplates.CROSSBOW));
       ItemModel.Unbaked var6 = ItemModelUtils.plainModel(this.createFlatItemModel(var1, "_arrow", ModelTemplates.CROSSBOW));
       ItemModel.Unbaked var7 = ItemModelUtils.plainModel(this.createFlatItemModel(var1, "_firework", ModelTemplates.CROSSBOW));
-      this.itemModelOutput.accept(var1, ItemModelUtils.conditional(ItemModelUtils.isUsingItem(), ItemModelUtils.rangeSelect(new CrossbowPull(), var3, (RangeSelectItemModel.Entry[])(ItemModelUtils.override(var4, 0.58F), ItemModelUtils.override(var5, 1.0F))), ItemModelUtils.select(new Charge(), var2, (SelectItemModel.SwitchCase[])(ItemModelUtils.when((Object)CrossbowItem.ChargeType.ARROW, var6), ItemModelUtils.when((Object)CrossbowItem.ChargeType.ROCKET, var7)))));
+      this.itemModelOutput.accept(var1, ItemModelUtils.conditional(ItemModelUtils.isUsingItem(), ItemModelUtils.rangeSelect(new CrossbowPull(), var3, ItemModelUtils.override(var4, 0.58F), ItemModelUtils.override(var5, 1.0F)), ItemModelUtils.select(new Charge(), var2, ItemModelUtils.when(CrossbowItem.ChargeType.ARROW, var6), ItemModelUtils.when(CrossbowItem.ChargeType.ROCKET, var7))));
    }
 
    private void generateBooleanDispatch(Item var1, ConditionalItemModelProperty var2, ItemModel.Unbaked var3, ItemModel.Unbaked var4) {
@@ -250,7 +248,7 @@ public class ItemModelGenerators {
    }
 
    private static ItemModel.Unbaked createFlatModelDispatch(ItemModel.Unbaked var0, ItemModel.Unbaked var1) {
-      return ItemModelUtils.select(new DisplayContext(), var1, (SelectItemModel.SwitchCase[])(ItemModelUtils.when(List.of(ItemDisplayContext.GUI, ItemDisplayContext.GROUND, ItemDisplayContext.FIXED), var0)));
+      return ItemModelUtils.select(new DisplayContext(), var1, ItemModelUtils.when(List.of(ItemDisplayContext.GUI, ItemDisplayContext.GROUND, ItemDisplayContext.FIXED), var0));
    }
 
    private void generateSpyglass(Item var1) {
@@ -748,7 +746,7 @@ public class ItemModelGenerators {
       TRIM_MATERIAL_MODELS = List.of(new TrimMaterialData("quartz", TrimMaterials.QUARTZ, Map.of()), new TrimMaterialData("iron", TrimMaterials.IRON, Map.of(EquipmentAssets.IRON, "iron_darker")), new TrimMaterialData("netherite", TrimMaterials.NETHERITE, Map.of(EquipmentAssets.NETHERITE, "netherite_darker")), new TrimMaterialData("redstone", TrimMaterials.REDSTONE, Map.of()), new TrimMaterialData("copper", TrimMaterials.COPPER, Map.of()), new TrimMaterialData("gold", TrimMaterials.GOLD, Map.of(EquipmentAssets.GOLD, "gold_darker")), new TrimMaterialData("emerald", TrimMaterials.EMERALD, Map.of()), new TrimMaterialData("diamond", TrimMaterials.DIAMOND, Map.of(EquipmentAssets.DIAMOND, "diamond_darker")), new TrimMaterialData("lapis", TrimMaterials.LAPIS, Map.of()), new TrimMaterialData("amethyst", TrimMaterials.AMETHYST, Map.of()), new TrimMaterialData("resin", TrimMaterials.RESIN, Map.of()));
    }
 
-   private static record TrimMaterialData(String name, ResourceKey<TrimMaterial> materialKey, Map<ResourceKey<EquipmentAsset>, String> overrideArmorMaterials) {
+   static record TrimMaterialData(String name, ResourceKey<TrimMaterial> materialKey, Map<ResourceKey<EquipmentAsset>, String> overrideArmorMaterials) {
       final ResourceKey<TrimMaterial> materialKey;
 
       TrimMaterialData(String var1, ResourceKey<TrimMaterial> var2, Map<ResourceKey<EquipmentAsset>, String> var3) {
@@ -760,18 +758,6 @@ public class ItemModelGenerators {
 
       public String textureName(ResourceKey<EquipmentAsset> var1) {
          return (String)this.overrideArmorMaterials.getOrDefault(var1, this.name);
-      }
-
-      public String name() {
-         return this.name;
-      }
-
-      public ResourceKey<TrimMaterial> materialKey() {
-         return this.materialKey;
-      }
-
-      public Map<ResourceKey<EquipmentAsset>, String> overrideArmorMaterials() {
-         return this.overrideArmorMaterials;
       }
    }
 }

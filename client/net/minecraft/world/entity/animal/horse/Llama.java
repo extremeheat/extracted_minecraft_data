@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal.horse;
 
 import com.mojang.serialization.Codec;
-import java.util.Iterator;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -113,9 +112,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       this.goalSelector.addGoal(3, new RangedAttackGoal(this, 1.25, 40, 20.0F));
       this.goalSelector.addGoal(3, new PanicGoal(this, 1.2));
       this.goalSelector.addGoal(4, new BreedGoal(this, 1.0));
-      this.goalSelector.addGoal(5, new TemptGoal(this, 1.25, (var0) -> {
-         return var0.is(ItemTags.LLAMA_TEMPT_ITEMS);
-      }, false));
+      this.goalSelector.addGoal(5, new TemptGoal(this, 1.25, (var0) -> var0.is(ItemTags.LLAMA_TEMPT_ITEMS), false));
       this.goalSelector.addGoal(6, new FollowParentGoal(this, 1.0));
       this.goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 0.7));
       this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 6.0F));
@@ -189,7 +186,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       if (var6 && !this.isSilent()) {
          SoundEvent var7 = this.getEatingSound();
          if (var7 != null) {
-            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)this.getEatingSound(), this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), this.getEatingSound(), this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
          }
       }
 
@@ -208,7 +205,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       if (var4 instanceof LlamaGroupData) {
          var6 = ((LlamaGroupData)var4).variant;
       } else {
-         var6 = (Variant)Util.getRandom((Object[])Llama.Variant.values(), var5);
+         var6 = (Variant)Util.getRandom(Llama.Variant.values(), var5);
          var4 = new LlamaGroupData(var6);
       }
 
@@ -289,7 +286,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
 
    @Nullable
    protected Llama makeNewLlama() {
-      return (Llama)EntityType.LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
+      return EntityType.LLAMA.create(this.level(), EntitySpawnReason.BREEDING);
    }
 
    private void spit(LivingEntity var1) {
@@ -304,7 +301,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       }
 
       if (!this.isSilent()) {
-         this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)SoundEvents.LLAMA_SPIT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+         this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.LLAMA_SPIT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
       }
 
       this.didSpit = true;
@@ -322,10 +319,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
          if (var1 >= 6.0F) {
             this.hurt(var3, (float)var4);
             if (this.isVehicle()) {
-               Iterator var5 = this.getIndirectPassengers().iterator();
-
-               while(var5.hasNext()) {
-                  Entity var6 = (Entity)var5.next();
+               for(Entity var6 : this.getIndirectPassengers()) {
                   var6.hurt(var3, (float)var4);
                }
             }
@@ -405,8 +399,8 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
    }
 
    static {
-      DATA_STRENGTH_ID = SynchedEntityData.defineId(Llama.class, EntityDataSerializers.INT);
-      DATA_VARIANT_ID = SynchedEntityData.defineId(Llama.class, EntityDataSerializers.INT);
+      DATA_STRENGTH_ID = SynchedEntityData.<Integer>defineId(Llama.class, EntityDataSerializers.INT);
+      DATA_VARIANT_ID = SynchedEntityData.<Integer>defineId(Llama.class, EntityDataSerializers.INT);
       BABY_DIMENSIONS = EntityType.LLAMA.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.LLAMA.getHeight() - 0.8125F, -0.3F)).scale(0.5F);
    }
 
@@ -416,8 +410,8 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       BROWN(2, "brown"),
       GRAY(3, "gray");
 
-      public static final Codec<Variant> CODEC = StringRepresentable.fromEnum(Variant::values);
-      private static final IntFunction<Variant> BY_ID = ByIdMap.continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
+      public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+      private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
       final int id;
       private final String name;
 
@@ -444,6 +438,15 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       }
    }
 
+   static class LlamaGroupData extends AgeableMob.AgeableMobGroupData {
+      public final Variant variant;
+
+      LlamaGroupData(Variant var1) {
+         super(true);
+         this.variant = var1;
+      }
+   }
+
    static class LlamaHurtByTargetGoal extends HurtByTargetGoal {
       public LlamaHurtByTargetGoal(Llama var1) {
          super(var1);
@@ -462,24 +465,13 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       }
    }
 
-   private static class LlamaAttackWolfGoal extends NearestAttackableTargetGoal<Wolf> {
+   static class LlamaAttackWolfGoal extends NearestAttackableTargetGoal<Wolf> {
       public LlamaAttackWolfGoal(Llama var1) {
-         super(var1, Wolf.class, 16, false, true, (var0, var1x) -> {
-            return !((Wolf)var0).isTame();
-         });
+         super(var1, Wolf.class, 16, false, true, (var0, var1x) -> !((Wolf)var0).isTame());
       }
 
       protected double getFollowDistance() {
          return super.getFollowDistance() * 0.25;
-      }
-   }
-
-   static class LlamaGroupData extends AgeableMob.AgeableMobGroupData {
-      public final Variant variant;
-
-      LlamaGroupData(Variant var1) {
-         super(true);
-         this.variant = var1;
       }
    }
 }

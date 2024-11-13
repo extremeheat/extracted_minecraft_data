@@ -11,7 +11,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
@@ -55,9 +54,7 @@ public abstract class AbstractCandleBlock extends Block {
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       if ((Boolean)var1.getValue(LIT)) {
-         this.getParticleOffsets(var1).forEach((var3x) -> {
-            addParticlesAndSound(var2, var3x.add((double)var3.getX(), (double)var3.getY(), (double)var3.getZ()), var4);
-         });
+         this.getParticleOffsets(var1).forEach((var3x) -> addParticlesAndSound(var2, var3x.add((double)var3.getX(), (double)var3.getY(), (double)var3.getZ()), var4));
       }
    }
 
@@ -76,13 +73,11 @@ public abstract class AbstractCandleBlock extends Block {
    public static void extinguish(@Nullable Player var0, BlockState var1, LevelAccessor var2, BlockPos var3) {
       setLit(var2, var1, var3, false);
       if (var1.getBlock() instanceof AbstractCandleBlock) {
-         ((AbstractCandleBlock)var1.getBlock()).getParticleOffsets(var1).forEach((var2x) -> {
-            var2.addParticle(ParticleTypes.SMOKE, (double)var3.getX() + var2x.x(), (double)var3.getY() + var2x.y(), (double)var3.getZ() + var2x.z(), 0.0, 0.10000000149011612, 0.0);
-         });
+         ((AbstractCandleBlock)var1.getBlock()).getParticleOffsets(var1).forEach((var2x) -> var2.addParticle(ParticleTypes.SMOKE, (double)var3.getX() + var2x.x(), (double)var3.getY() + var2x.y(), (double)var3.getZ() + var2x.z(), 0.0, 0.10000000149011612, 0.0));
       }
 
       var2.playSound((Player)null, var3, SoundEvents.CANDLE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, 1.0F);
-      var2.gameEvent((Entity)var0, (Holder)GameEvent.BLOCK_CHANGE, (BlockPos)var3);
+      var2.gameEvent(var0, (Holder)GameEvent.BLOCK_CHANGE, (BlockPos)var3);
    }
 
    private static void setLit(LevelAccessor var0, BlockState var1, BlockPos var2, boolean var3) {

@@ -23,9 +23,7 @@ public class OctreeDebugRenderer {
    public void render(PoseStack var1, Frustum var2, MultiBufferSource var3, double var4, double var6, double var8) {
       Octree var10 = this.minecraft.levelRenderer.getSectionOcclusionGraph().getOctree();
       MutableInt var11 = new MutableInt(0);
-      var10.visitNodes((var10x, var11x, var12, var13) -> {
-         this.renderNode(var10x, var1, var3, var4, var6, var8, var12, var11x, var11, var13);
-      }, var2, 32);
+      var10.visitNodes((var10x, var11x, var12, var13) -> this.renderNode(var10x, var1, var3, var4, var6, var8, var12, var11x, var11, var13), var2, 32);
    }
 
    private void renderNode(Octree.Node var1, PoseStack var2, MultiBufferSource var3, double var4, double var6, double var8, int var10, boolean var11, MutableInt var12, boolean var13) {

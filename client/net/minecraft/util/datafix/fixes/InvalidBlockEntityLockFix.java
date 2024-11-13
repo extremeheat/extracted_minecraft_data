@@ -13,8 +13,7 @@ public class InvalidBlockEntityLockFix extends DataFix {
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("BlockEntityLockToComponentFix", this.getInputSchema().getType(References.BLOCK_ENTITY), (var0) -> {
-         return var0.update(DSL.remainderFinder(), (var0x) -> {
+      return this.fixTypeEverywhereTyped("BlockEntityLockToComponentFix", this.getInputSchema().getType(References.BLOCK_ENTITY), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> {
             Optional var1 = var0x.get("lock").result();
             if (var1.isEmpty()) {
                return var0x;
@@ -22,7 +21,6 @@ public class InvalidBlockEntityLockFix extends DataFix {
                Dynamic var2 = InvalidLockComponentFix.fixLock((Dynamic)var1.get());
                return var2 != null ? var0x.set("lock", var2) : var0x.remove("lock");
             }
-         });
-      });
+         }));
    }
 }

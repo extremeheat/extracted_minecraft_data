@@ -114,10 +114,6 @@ public class JukeboxBlock extends BaseEntityBlock {
       }
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
-
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(HAS_RECORD);
    }

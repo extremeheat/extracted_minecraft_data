@@ -13,9 +13,7 @@ import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.phys.Vec3;
 
 public record PlaySoundEffect(Holder<SoundEvent> soundEvent, FloatProvider volume, FloatProvider pitch) implements EnchantmentEntityEffect {
-   public static final MapCodec<PlaySoundEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(SoundEvent.CODEC.fieldOf("sound").forGetter(PlaySoundEffect::soundEvent), FloatProvider.codec(1.0E-5F, 10.0F).fieldOf("volume").forGetter(PlaySoundEffect::volume), FloatProvider.codec(1.0E-5F, 2.0F).fieldOf("pitch").forGetter(PlaySoundEffect::pitch)).apply(var0, PlaySoundEffect::new);
-   });
+   public static final MapCodec<PlaySoundEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SoundEvent.CODEC.fieldOf("sound").forGetter(PlaySoundEffect::soundEvent), FloatProvider.codec(1.0E-5F, 10.0F).fieldOf("volume").forGetter(PlaySoundEffect::volume), FloatProvider.codec(1.0E-5F, 2.0F).fieldOf("pitch").forGetter(PlaySoundEffect::pitch)).apply(var0, PlaySoundEffect::new));
 
    public PlaySoundEffect(Holder<SoundEvent> var1, FloatProvider var2, FloatProvider var3) {
       super();
@@ -34,17 +32,5 @@ public record PlaySoundEffect(Holder<SoundEvent> soundEvent, FloatProvider volum
 
    public MapCodec<PlaySoundEffect> codec() {
       return CODEC;
-   }
-
-   public Holder<SoundEvent> soundEvent() {
-      return this.soundEvent;
-   }
-
-   public FloatProvider volume() {
-      return this.volume;
-   }
-
-   public FloatProvider pitch() {
-      return this.pitch;
    }
 }

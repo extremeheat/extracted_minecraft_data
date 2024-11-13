@@ -22,10 +22,6 @@ public record ClientboundSetHeldSlotPacket(int slot) implements Packet<ClientGam
       var1.handleSetHeldSlot(this);
    }
 
-   public int slot() {
-      return this.slot;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundSetHeldSlotPacket::slot, ClientboundSetHeldSlotPacket::new);
    }

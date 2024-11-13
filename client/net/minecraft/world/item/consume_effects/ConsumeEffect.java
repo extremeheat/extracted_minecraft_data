@@ -37,14 +37,6 @@ public interface ConsumeEffect {
          return (Type)Registry.register(BuiltInRegistries.CONSUME_EFFECT_TYPE, (String)var0, new Type(var1, var2));
       }
 
-      public MapCodec<T> codec() {
-         return this.codec;
-      }
-
-      public StreamCodec<RegistryFriendlyByteBuf, T> streamCodec() {
-         return this.streamCodec;
-      }
-
       static {
          APPLY_EFFECTS = register("apply_effects", ApplyStatusEffectsConsumeEffect.CODEC, ApplyStatusEffectsConsumeEffect.STREAM_CODEC);
          REMOVE_EFFECTS = register("remove_effects", RemoveStatusEffectsConsumeEffect.CODEC, RemoveStatusEffectsConsumeEffect.STREAM_CODEC);

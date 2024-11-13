@@ -13,9 +13,7 @@ public class V808 extends NamespacedSchema {
    }
 
    protected static void registerInventory(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      var0.register(var1, var2, () -> {
-         return DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var0)));
-      });
+      var0.register(var1, var2, () -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var0))));
    }
 
    public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {

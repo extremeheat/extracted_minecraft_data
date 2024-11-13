@@ -84,26 +84,11 @@ public class TracyFrameCapture implements AutoCloseable {
       if (this.fence != null) {
          if (this.fence.awaitCompletion(0L)) {
             this.fence = null;
-            GpuBuffer.ReadView var1 = this.pixelbuffer.read();
 
-            try {
+            try (GpuBuffer.ReadView var1 = this.pixelbuffer.read()) {
                if (var1 != null) {
                   TracyClient.frameImage(var1.data(), this.width, this.height, this.lastCaptureDelay, true);
                }
-            } catch (Throwable var5) {
-               if (var1 != null) {
-                  try {
-                     var1.close();
-                  } catch (Throwable var4) {
-                     var5.addSuppressed(var4);
-                  }
-               }
-
-               throw var5;
-            }
-
-            if (var1 != null) {
-               var1.close();
             }
 
          }

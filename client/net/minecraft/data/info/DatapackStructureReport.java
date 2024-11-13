@@ -54,18 +54,10 @@ public class DatapackStructureReport implements DataProvider {
 
    private Map<ResourceKey<? extends Registry<?>>, Entry> listRegistries() {
       HashMap var1 = new HashMap();
-      BuiltInRegistries.REGISTRY.forEach((var2) -> {
-         this.putIfNotPresent(var1, var2.key(), BUILT_IN_REGISTRY);
-      });
-      RegistryDataLoader.WORLDGEN_REGISTRIES.forEach((var2) -> {
-         this.putIfNotPresent(var1, var2.key(), UNSTABLE_DYNAMIC_REGISTRY);
-      });
-      RegistryDataLoader.DIMENSION_REGISTRIES.forEach((var2) -> {
-         this.putIfNotPresent(var1, var2.key(), UNSTABLE_DYNAMIC_REGISTRY);
-      });
-      MANUAL_ENTRIES.forEach((var2, var3) -> {
-         this.putIfNotPresent(var1, var2, var3);
-      });
+      BuiltInRegistries.REGISTRY.forEach((var2) -> this.putIfNotPresent(var1, var2.key(), BUILT_IN_REGISTRY));
+      RegistryDataLoader.WORLDGEN_REGISTRIES.forEach((var2) -> this.putIfNotPresent(var1, var2.key(), UNSTABLE_DYNAMIC_REGISTRY));
+      RegistryDataLoader.DIMENSION_REGISTRIES.forEach((var2) -> this.putIfNotPresent(var1, var2.key(), UNSTABLE_DYNAMIC_REGISTRY));
+      MANUAL_ENTRIES.forEach((var2, var3) -> this.putIfNotPresent(var1, var2, var3));
       return var1;
    }
 
@@ -76,29 +68,17 @@ public class DatapackStructureReport implements DataProvider {
    }
 
    static record Report(Map<ResourceKey<? extends Registry<?>>, Entry> registries, Map<String, CustomPackEntry> others) {
-      public static final Codec<Report> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Codec.unboundedMap(DatapackStructureReport.REGISTRY_KEY_CODEC, DatapackStructureReport.Entry.CODEC).fieldOf("registries").forGetter(Report::registries), Codec.unboundedMap(Codec.STRING, DatapackStructureReport.CustomPackEntry.CODEC).fieldOf("others").forGetter(Report::others)).apply(var0, Report::new);
-      });
+      public static final Codec<Report> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.unboundedMap(DatapackStructureReport.REGISTRY_KEY_CODEC, DatapackStructureReport.Entry.CODEC).fieldOf("registries").forGetter(Report::registries), Codec.unboundedMap(Codec.STRING, DatapackStructureReport.CustomPackEntry.CODEC).fieldOf("others").forGetter(Report::others)).apply(var0, Report::new));
 
       Report(Map<ResourceKey<? extends Registry<?>>, Entry> var1, Map<String, CustomPackEntry> var2) {
          super();
          this.registries = var1;
          this.others = var2;
       }
-
-      public Map<ResourceKey<? extends Registry<?>>, Entry> registries() {
-         return this.registries;
-      }
-
-      public Map<String, CustomPackEntry> others() {
-         return this.others;
-      }
    }
 
-   private static record Entry(boolean elements, boolean tags, boolean stable) {
-      public static final MapCodec<Entry> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(Codec.BOOL.fieldOf("elements").forGetter(Entry::elements), Codec.BOOL.fieldOf("tags").forGetter(Entry::tags), Codec.BOOL.fieldOf("stable").forGetter(Entry::stable)).apply(var0, Entry::new);
-      });
+   static record Entry(boolean elements, boolean tags, boolean stable) {
+      public static final MapCodec<Entry> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("elements").forGetter(Entry::elements), Codec.BOOL.fieldOf("tags").forGetter(Entry::tags), Codec.BOOL.fieldOf("stable").forGetter(Entry::stable)).apply(var0, Entry::new));
       public static final Codec<Entry> CODEC;
 
       Entry(boolean var1, boolean var2, boolean var3) {
@@ -108,40 +88,8 @@ public class DatapackStructureReport implements DataProvider {
          this.stable = var3;
       }
 
-      public boolean elements() {
-         return this.elements;
-      }
-
-      public boolean tags() {
-         return this.tags;
-      }
-
-      public boolean stable() {
-         return this.stable;
-      }
-
       static {
          CODEC = MAP_CODEC.codec();
-      }
-   }
-
-   private static record CustomPackEntry(Format format, Entry entry) {
-      public static final Codec<CustomPackEntry> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(DatapackStructureReport.Format.CODEC.fieldOf("format").forGetter(CustomPackEntry::format), DatapackStructureReport.Entry.MAP_CODEC.forGetter(CustomPackEntry::entry)).apply(var0, CustomPackEntry::new);
-      });
-
-      CustomPackEntry(Format var1, Entry var2) {
-         super();
-         this.format = var1;
-         this.entry = var2;
-      }
-
-      public Format format() {
-         return this.format;
-      }
-
-      public Entry entry() {
-         return this.entry;
       }
    }
 
@@ -149,7 +97,7 @@ public class DatapackStructureReport implements DataProvider {
       STRUCTURE("structure"),
       MCFUNCTION("mcfunction");
 
-      public static final Codec<Format> CODEC = StringRepresentable.fromEnum(Format::values);
+      public static final Codec<Format> CODEC = StringRepresentable.<Format>fromEnum(Format::values);
       private final String name;
 
       private Format(final String var3) {
@@ -163,6 +111,16 @@ public class DatapackStructureReport implements DataProvider {
       // $FF: synthetic method
       private static Format[] $values() {
          return new Format[]{STRUCTURE, MCFUNCTION};
+      }
+   }
+
+   static record CustomPackEntry(Format format, Entry entry) {
+      public static final Codec<CustomPackEntry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(DatapackStructureReport.Format.CODEC.fieldOf("format").forGetter(CustomPackEntry::format), DatapackStructureReport.Entry.MAP_CODEC.forGetter(CustomPackEntry::entry)).apply(var0, CustomPackEntry::new));
+
+      CustomPackEntry(Format var1, Entry var2) {
+         super();
+         this.format = var1;
+         this.entry = var2;
       }
    }
 }

@@ -21,33 +21,10 @@ public class VariantSelector {
 
    public static <O, S extends StateHolder<O, S>> Predicate<StateHolder<O, S>> predicate(StateDefinition<O, S> var0, String var1) {
       HashMap var2 = new HashMap();
-      Iterator var3 = COMMA_SPLITTER.split(var1).iterator();
 
-      while(true) {
-         while(true) {
-            Iterator var5;
-            do {
-               if (!var3.hasNext()) {
-                  return (var1x) -> {
-                     Iterator var2x = var2.entrySet().iterator();
-
-                     Map.Entry var3;
-                     do {
-                        if (!var2x.hasNext()) {
-                           return true;
-                        }
-
-                        var3 = (Map.Entry)var2x.next();
-                     } while(Objects.equals(var1x.getValue((Property)var3.getKey()), var3.getValue()));
-
-                     return false;
-                  };
-               }
-
-               String var4 = (String)var3.next();
-               var5 = EQUAL_SPLITTER.split(var4).iterator();
-            } while(!var5.hasNext());
-
+      for(String var4 : COMMA_SPLITTER.split(var1)) {
+         Iterator var5 = EQUAL_SPLITTER.split(var4).iterator();
+         if (var5.hasNext()) {
             String var6 = (String)var5.next();
             Property var7 = var0.getProperty(var6);
             if (var7 != null && var5.hasNext()) {
@@ -63,10 +40,20 @@ public class VariantSelector {
             }
          }
       }
+
+      return (var1x) -> {
+         for(Map.Entry var3 : var2.entrySet()) {
+            if (!Objects.equals(var1x.getValue((Property)var3.getKey()), var3.getValue())) {
+               return false;
+            }
+         }
+
+         return true;
+      };
    }
 
    @Nullable
    private static <T extends Comparable<T>> T getValueHelper(Property<T> var0, String var1) {
-      return (Comparable)var0.getValue(var1).orElse((Object)null);
+      return (T)(var0.getValue(var1).orElse((Object)null));
    }
 }

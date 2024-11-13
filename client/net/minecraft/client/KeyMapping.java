@@ -3,11 +3,11 @@ package net.minecraft.client;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.InputConstants;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
@@ -56,10 +56,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    public static void setAll() {
-      Iterator var0 = ALL.values().iterator();
-
-      while(var0.hasNext()) {
-         KeyMapping var1 = (KeyMapping)var0.next();
+      for(KeyMapping var1 : ALL.values()) {
          if (var1.key.getType() == InputConstants.Type.KEYSYM && var1.key.getValue() != InputConstants.UNKNOWN.getValue()) {
             var1.setDown(InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), var1.key.getValue()));
          }
@@ -68,20 +65,14 @@ public class KeyMapping implements Comparable<KeyMapping> {
    }
 
    public static void releaseAll() {
-      Iterator var0 = ALL.values().iterator();
-
-      while(var0.hasNext()) {
-         KeyMapping var1 = (KeyMapping)var0.next();
+      for(KeyMapping var1 : ALL.values()) {
          var1.release();
       }
 
    }
 
    public static void resetToggleKeys() {
-      Iterator var0 = ALL.values().iterator();
-
-      while(var0.hasNext()) {
-         KeyMapping var1 = (KeyMapping)var0.next();
+      for(KeyMapping var1 : ALL.values()) {
          if (var1 instanceof ToggleKeyMapping var2) {
             var2.reset();
          }
@@ -91,10 +82,8 @@ public class KeyMapping implements Comparable<KeyMapping> {
 
    public static void resetMapping() {
       MAP.clear();
-      Iterator var0 = ALL.values().iterator();
 
-      while(var0.hasNext()) {
-         KeyMapping var1 = (KeyMapping)var0.next();
+      for(KeyMapping var1 : ALL.values()) {
          MAP.put(var1.key, var1);
       }
 
@@ -156,9 +145,7 @@ public class KeyMapping implements Comparable<KeyMapping> {
    public static Supplier<Component> createNameSupplier(String var0) {
       KeyMapping var1 = (KeyMapping)ALL.get(var0);
       if (var1 == null) {
-         return () -> {
-            return Component.translatable(var0);
-         };
+         return () -> Component.translatable(var0);
       } else {
          Objects.requireNonNull(var1);
          return var1::getTranslatedKeyMessage;
@@ -199,6 +186,11 @@ public class KeyMapping implements Comparable<KeyMapping> {
 
    public void setDown(boolean var1) {
       this.isDown = var1;
+   }
+
+   @Nullable
+   public static KeyMapping get(String var0) {
+      return (KeyMapping)ALL.get(var0);
    }
 
    // $FF: synthetic method

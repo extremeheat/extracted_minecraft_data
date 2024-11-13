@@ -11,9 +11,7 @@ import net.minecraft.util.ExtraCodecs;
 
 public record CustomModelData(List<Float> floats, List<Boolean> flags, List<String> strings, List<Integer> colors) {
    public static final CustomModelData EMPTY = new CustomModelData(List.of(), List.of(), List.of(), List.of());
-   public static final Codec<CustomModelData> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.FLOAT.listOf().optionalFieldOf("floats", List.of()).forGetter(CustomModelData::floats), Codec.BOOL.listOf().optionalFieldOf("flags", List.of()).forGetter(CustomModelData::flags), Codec.STRING.listOf().optionalFieldOf("strings", List.of()).forGetter(CustomModelData::strings), ExtraCodecs.RGB_COLOR_CODEC.listOf().optionalFieldOf("colors", List.of()).forGetter(CustomModelData::colors)).apply(var0, CustomModelData::new);
-   });
+   public static final Codec<CustomModelData> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.FLOAT.listOf().optionalFieldOf("floats", List.of()).forGetter(CustomModelData::floats), Codec.BOOL.listOf().optionalFieldOf("flags", List.of()).forGetter(CustomModelData::flags), Codec.STRING.listOf().optionalFieldOf("strings", List.of()).forGetter(CustomModelData::strings), ExtraCodecs.RGB_COLOR_CODEC.listOf().optionalFieldOf("colors", List.of()).forGetter(CustomModelData::colors)).apply(var0, CustomModelData::new));
    public static final StreamCodec<ByteBuf, CustomModelData> STREAM_CODEC;
 
    public CustomModelData(List<Float> var1, List<Boolean> var2, List<String> var3, List<Integer> var4) {
@@ -26,7 +24,7 @@ public record CustomModelData(List<Float> floats, List<Boolean> flags, List<Stri
 
    @Nullable
    private static <T> T getSafe(List<T> var0, int var1) {
-      return var1 >= 0 && var1 < var0.size() ? var0.get(var1) : null;
+      return (T)(var1 >= 0 && var1 < var0.size() ? var0.get(var1) : null);
    }
 
    @Nullable
@@ -47,22 +45,6 @@ public record CustomModelData(List<Float> floats, List<Boolean> flags, List<Stri
    @Nullable
    public Integer getColor(int var1) {
       return (Integer)getSafe(this.colors, var1);
-   }
-
-   public List<Float> floats() {
-      return this.floats;
-   }
-
-   public List<Boolean> flags() {
-      return this.flags;
-   }
-
-   public List<String> strings() {
-      return this.strings;
-   }
-
-   public List<Integer> colors() {
-      return this.colors;
    }
 
    static {

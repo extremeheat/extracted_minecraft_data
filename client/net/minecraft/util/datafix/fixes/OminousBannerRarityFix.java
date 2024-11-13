@@ -34,13 +34,9 @@ public class OminousBannerRarityFix extends DataFix {
    }
 
    private Typed<?> fix(Typed<?> var1, OpticFinder<?> var2) {
-      return var1.updateTyped(var2, (var0) -> {
-         return var0.update(DSL.remainderFinder(), (var0x) -> {
-            boolean var1 = var0x.get("minecraft:item_name").asString().result().flatMap(ComponentDataFixUtils::extractTranslationString).filter((var0) -> {
-               return var0.equals("block.minecraft.ominous_banner");
-            }).isPresent();
+      return var1.updateTyped(var2, (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> {
+            boolean var1 = var0x.get("minecraft:item_name").asString().result().flatMap(ComponentDataFixUtils::extractTranslationString).filter((var0) -> var0.equals("block.minecraft.ominous_banner")).isPresent();
             return var1 ? var0x.set("minecraft:rarity", var0x.createString("uncommon")).set("minecraft:item_name", ComponentDataFixUtils.createTranslatableComponent(var0x.getOps(), "block.minecraft.ominous_banner")) : var0x;
-         });
-      });
+         }));
    }
 }

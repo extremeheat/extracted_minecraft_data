@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.NativeImage;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
@@ -12,15 +11,14 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.SimpleTexture;
+import net.minecraft.client.renderer.texture.ReloadableTexture;
+import net.minecraft.client.renderer.texture.TextureContents;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.VanillaPackResources;
-import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.server.packs.resources.ReloadInstance;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 
@@ -28,9 +26,7 @@ public class LoadingOverlay extends Overlay {
    public static final ResourceLocation MOJANG_STUDIOS_LOGO_LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/title/mojangstudios.png");
    private static final int LOGO_BACKGROUND_COLOR = ARGB.color(255, 239, 50, 61);
    private static final int LOGO_BACKGROUND_COLOR_DARK = ARGB.color(255, 0, 0, 0);
-   private static final IntSupplier BRAND_BACKGROUND = () -> {
-      return (Boolean)Minecraft.getInstance().options.darkMojangStudiosBackground().get() ? LOGO_BACKGROUND_COLOR_DARK : LOGO_BACKGROUND_COLOR;
-   };
+   private static final IntSupplier BRAND_BACKGROUND = () -> (Boolean)Minecraft.getInstance().options.darkMojangStudiosBackground().get() ? LOGO_BACKGROUND_COLOR_DARK : LOGO_BACKGROUND_COLOR;
    private static final int LOGO_SCALE = 240;
    private static final float LOGO_QUARTER_FLOAT = 60.0F;
    private static final int LOGO_QUARTER = 60;
@@ -55,8 +51,8 @@ public class LoadingOverlay extends Overlay {
       this.fadeIn = var4;
    }
 
-   public static void registerTextures(Minecraft var0) {
-      var0.getTextureManager().register((ResourceLocation)MOJANG_STUDIOS_LOGO_LOCATION, (AbstractTexture)(new LogoTexture()));
+   public static void registerTextures(TextureManager var0) {
+      var0.registerAndLoad(MOJANG_STUDIOS_LOGO_LOCATION, new LogoTexture());
    }
 
    private static int replaceAlpha(int var0, int var1) {
@@ -74,13 +70,12 @@ public class LoadingOverlay extends Overlay {
       float var9 = this.fadeOutStart > -1L ? (float)(var7 - this.fadeOutStart) / 1000.0F : -1.0F;
       float var10 = this.fadeInStart > -1L ? (float)(var7 - this.fadeInStart) / 500.0F : -1.0F;
       float var11;
-      int var12;
       if (var9 >= 1.0F) {
          if (this.minecraft.screen != null) {
             this.minecraft.screen.render(var1, 0, 0, var4);
          }
 
-         var12 = Mth.ceil((1.0F - Mth.clamp(var9 - 1.0F, 0.0F, 1.0F)) * 255.0F);
+         int var12 = Mth.ceil((1.0F - Mth.clamp(var9 - 1.0F, 0.0F, 1.0F)) * 255.0F);
          var1.fill(RenderType.guiOverlay(), 0, 0, var5, var6, replaceAlpha(BRAND_BACKGROUND.getAsInt(), var12));
          var11 = 1.0F - Mth.clamp(var9 - 1.0F, 0.0F, 1.0F);
       } else if (this.fadeIn) {
@@ -88,32 +83,28 @@ public class LoadingOverlay extends Overlay {
             this.minecraft.screen.render(var1, var2, var3, var4);
          }
 
-         var12 = Mth.ceil(Mth.clamp((double)var10, 0.15, 1.0) * 255.0);
-         var1.fill(RenderType.guiOverlay(), 0, 0, var5, var6, replaceAlpha(BRAND_BACKGROUND.getAsInt(), var12));
+         int var25 = Mth.ceil(Mth.clamp((double)var10, 0.15, 1.0) * 255.0);
+         var1.fill(RenderType.guiOverlay(), 0, 0, var5, var6, replaceAlpha(BRAND_BACKGROUND.getAsInt(), var25));
          var11 = Mth.clamp(var10, 0.0F, 1.0F);
       } else {
-         var12 = BRAND_BACKGROUND.getAsInt();
-         float var13 = (float)(var12 >> 16 & 255) / 255.0F;
-         float var14 = (float)(var12 >> 8 & 255) / 255.0F;
-         float var15 = (float)(var12 & 255) / 255.0F;
+         int var26 = BRAND_BACKGROUND.getAsInt();
+         float var13 = (float)(var26 >> 16 & 255) / 255.0F;
+         float var14 = (float)(var26 >> 8 & 255) / 255.0F;
+         float var15 = (float)(var26 & 255) / 255.0F;
          GlStateManager._clearColor(var13, var14, var15, 1.0F);
          GlStateManager._clear(16384);
          var11 = 1.0F;
       }
 
-      var12 = (int)((double)var1.guiWidth() * 0.5);
-      int var25 = (int)((double)var1.guiHeight() * 0.5);
-      double var26 = Math.min((double)var1.guiWidth() * 0.75, (double)var1.guiHeight()) * 0.25;
-      int var16 = (int)(var26 * 0.5);
-      double var17 = var26 * 4.0;
+      int var27 = (int)((double)var1.guiWidth() * 0.5);
+      int var28 = (int)((double)var1.guiHeight() * 0.5);
+      double var29 = Math.min((double)var1.guiWidth() * 0.75, (double)var1.guiHeight()) * 0.25;
+      int var16 = (int)(var29 * 0.5);
+      double var17 = var29 * 4.0;
       int var19 = (int)(var17 * 0.5);
       int var20 = ARGB.white(var11);
-      var1.blit((var0) -> {
-         return RenderType.mojangLogo();
-      }, MOJANG_STUDIOS_LOGO_LOCATION, var12 - var19, var25 - var16, -0.0625F, 0.0F, var19, (int)var26, 120, 60, 120, 120, var20);
-      var1.blit((var0) -> {
-         return RenderType.mojangLogo();
-      }, MOJANG_STUDIOS_LOGO_LOCATION, var12, var25 - var16, 0.0625F, 60.0F, var19, (int)var26, 120, 60, 120, 120, var20);
+      var1.blit((var0) -> RenderType.mojangLogo(), MOJANG_STUDIOS_LOGO_LOCATION, var27 - var19, var28 - var16, -0.0625F, 0.0F, var19, (int)var29, 120, 60, 120, 120, var20);
+      var1.blit((var0) -> RenderType.mojangLogo(), MOJANG_STUDIOS_LOGO_LOCATION, var27, var28 - var16, 0.0625F, 60.0F, var19, (int)var29, 120, 60, 120, 120, var20);
       int var21 = (int)((double)var1.guiHeight() * 0.8325);
       float var22 = this.reload.getActualProgress();
       this.currentProgress = Mth.clamp(this.currentProgress * 0.95F + var22 * 0.050000012F, 0.0F, 1.0F);
@@ -156,44 +147,35 @@ public class LoadingOverlay extends Overlay {
       return true;
    }
 
-   private static class LogoTexture extends SimpleTexture {
+   static class LogoTexture extends ReloadableTexture {
       public LogoTexture() {
          super(LoadingOverlay.MOJANG_STUDIOS_LOGO_LOCATION);
       }
 
-      protected SimpleTexture.TextureImage getTextureImage(ResourceManager var1) {
-         VanillaPackResources var2 = Minecraft.getInstance().getVanillaPackResources();
-         IoSupplier var3 = var2.getResource(PackType.CLIENT_RESOURCES, LoadingOverlay.MOJANG_STUDIOS_LOGO_LOCATION);
-         if (var3 == null) {
-            return new SimpleTexture.TextureImage(new FileNotFoundException(LoadingOverlay.MOJANG_STUDIOS_LOGO_LOCATION.toString()));
-         } else {
-            try {
-               InputStream var4 = (InputStream)var3.get();
+      public TextureContents loadContents(ResourceManager var1) throws IOException {
+         ResourceProvider var2 = Minecraft.getInstance().getVanillaPackResources().asProvider();
+         InputStream var3 = var2.open(LoadingOverlay.MOJANG_STUDIOS_LOGO_LOCATION);
 
-               SimpleTexture.TextureImage var5;
+         TextureContents var4;
+         try {
+            var4 = new TextureContents(NativeImage.read(var3), new TextureMetadataSection(true, true));
+         } catch (Throwable var7) {
+            if (var3 != null) {
                try {
-                  var5 = new SimpleTexture.TextureImage(new TextureMetadataSection(true, true), NativeImage.read(var4));
-               } catch (Throwable var8) {
-                  if (var4 != null) {
-                     try {
-                        var4.close();
-                     } catch (Throwable var7) {
-                        var8.addSuppressed(var7);
-                     }
-                  }
-
-                  throw var8;
+                  var3.close();
+               } catch (Throwable var6) {
+                  var7.addSuppressed(var6);
                }
-
-               if (var4 != null) {
-                  var4.close();
-               }
-
-               return var5;
-            } catch (IOException var9) {
-               return new SimpleTexture.TextureImage(var9);
             }
+
+            throw var7;
          }
+
+         if (var3 != null) {
+            var3.close();
+         }
+
+         return var4;
       }
    }
 }

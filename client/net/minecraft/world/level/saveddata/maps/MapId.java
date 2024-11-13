@@ -18,10 +18,6 @@ public record MapId(int id) {
       return "map_" + this.id;
    }
 
-   public int id() {
-      return this.id;
-   }
-
    static {
       CODEC = Codec.INT.xmap(MapId::new, MapId::id);
       STREAM_CODEC = ByteBufCodecs.VAR_INT.map(MapId::new, MapId::id);

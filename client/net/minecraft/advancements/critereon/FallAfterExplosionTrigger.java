@@ -24,15 +24,11 @@ public class FallAfterExplosionTrigger extends SimpleCriterionTrigger<TriggerIns
    public void trigger(ServerPlayer var1, Vec3 var2, @Nullable Entity var3) {
       Vec3 var4 = var1.position();
       LootContext var5 = var3 != null ? EntityPredicate.createContext(var1, var3) : null;
-      this.trigger(var1, (var4x) -> {
-         return var4x.matches(var1.serverLevel(), var2, var4, var5);
-      });
+      this.trigger(var1, (var4x) -> var4x.matches(var1.serverLevel(), var2, var4, var5));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<LocationPredicate> startPosition, Optional<DistancePredicate> distance, Optional<ContextAwarePredicate> cause) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LocationPredicate.CODEC.optionalFieldOf("start_position").forGetter(TriggerInstance::startPosition), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(TriggerInstance::distance), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("cause").forGetter(TriggerInstance::cause)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LocationPredicate.CODEC.optionalFieldOf("start_position").forGetter(TriggerInstance::startPosition), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(TriggerInstance::distance), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("cause").forGetter(TriggerInstance::cause)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<LocationPredicate> var2, Optional<DistancePredicate> var3, Optional<ContextAwarePredicate> var4) {
          super();
@@ -59,22 +55,6 @@ public class FallAfterExplosionTrigger extends SimpleCriterionTrigger<TriggerIns
          } else {
             return !this.cause.isPresent() || var4 != null && ((ContextAwarePredicate)this.cause.get()).matches(var4);
          }
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<LocationPredicate> startPosition() {
-         return this.startPosition;
-      }
-
-      public Optional<DistancePredicate> distance() {
-         return this.distance;
-      }
-
-      public Optional<ContextAwarePredicate> cause() {
-         return this.cause;
       }
    }
 }

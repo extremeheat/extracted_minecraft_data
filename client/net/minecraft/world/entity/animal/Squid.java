@@ -90,7 +90,7 @@ public class Squid extends AgeableWaterCreature {
 
    @Nullable
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (AgeableMob)EntityType.SQUID.create(var1, EntitySpawnReason.BREEDING);
+      return EntityType.SQUID.create(var1, EntitySpawnReason.BREEDING);
    }
 
    protected double getDefaultGravity() {
@@ -217,13 +217,11 @@ public class Squid extends AgeableWaterCreature {
 
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      SpawnGroupData var5 = (SpawnGroupData)Objects.requireNonNullElseGet(var4, () -> {
-         return new AgeableMob.AgeableMobGroupData(0.05F);
-      });
+      SpawnGroupData var5 = (SpawnGroupData)Objects.requireNonNullElseGet(var4, () -> new AgeableMob.AgeableMobGroupData(0.05F));
       return super.finalizeSpawn(var1, var2, var3, var5);
    }
 
-   private static class SquidRandomMovementGoal extends Goal {
+   static class SquidRandomMovementGoal extends Goal {
       private final Squid squid;
 
       public SquidRandomMovementGoal(Squid var1) {
@@ -247,7 +245,7 @@ public class Squid extends AgeableWaterCreature {
       }
    }
 
-   private class SquidFleeGoal extends Goal {
+   class SquidFleeGoal extends Goal {
       private static final float SQUID_FLEE_SPEED = 3.0F;
       private static final float SQUID_FLEE_MIN_DISTANCE = 5.0F;
       private static final float SQUID_FLEE_MAX_DISTANCE = 10.0F;

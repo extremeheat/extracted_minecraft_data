@@ -20,7 +20,7 @@ public class VillagerBabiesSensor extends Sensor<LivingEntity> {
    }
 
    protected void doTick(ServerLevel var1, LivingEntity var2) {
-      var2.getBrain().setMemory(MemoryModuleType.VISIBLE_VILLAGER_BABIES, (Object)this.getNearestVillagerBabies(var2));
+      var2.getBrain().setMemory(MemoryModuleType.VISIBLE_VILLAGER_BABIES, this.getNearestVillagerBabies(var2));
    }
 
    private List<LivingEntity> getNearestVillagerBabies(LivingEntity var1) {

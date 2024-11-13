@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.ai.behavior;
 
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -19,9 +20,7 @@ public class RingBell {
    }
 
    public static BehaviorControl<LivingEntity> create() {
-      return BehaviorBuilder.create((var0) -> {
-         return var0.group(var0.present(MemoryModuleType.MEETING_POINT)).apply(var0, (var1) -> {
-            return (var2, var3, var4) -> {
+      return BehaviorBuilder.create((Function)((var0) -> var0.group(var0.present(MemoryModuleType.MEETING_POINT)).apply(var0, (var1) -> (var2, var3, var4) -> {
                if (var2.random.nextFloat() <= 0.95F) {
                   return false;
                } else {
@@ -36,8 +35,6 @@ public class RingBell {
 
                   return true;
                }
-            };
-         });
-      });
+            })));
    }
 }

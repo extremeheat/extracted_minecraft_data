@@ -40,12 +40,10 @@ public class RenderRegionCache {
    }
 
    private ChunkInfo getChunkInfo(Level var1, int var2, int var3) {
-      return (ChunkInfo)this.chunkInfoCache.computeIfAbsent(ChunkPos.asLong(var2, var3), (var1x) -> {
-         return new ChunkInfo(var1.getChunk(ChunkPos.getX(var1x), ChunkPos.getZ(var1x)));
-      });
+      return (ChunkInfo)this.chunkInfoCache.computeIfAbsent(ChunkPos.asLong(var2, var3), (var1x) -> new ChunkInfo(var1.getChunk(ChunkPos.getX(var1x), ChunkPos.getZ(var1x))));
    }
 
-   private static final class ChunkInfo {
+   static final class ChunkInfo {
       private final LevelChunk chunk;
       @Nullable
       private RenderChunk renderChunk;

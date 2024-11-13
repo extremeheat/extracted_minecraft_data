@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
+import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.resources.IoSupplier;
 
@@ -26,7 +26,7 @@ public interface PackResources extends AutoCloseable {
    Set<String> getNamespaces(PackType var1);
 
    @Nullable
-   <T> T getMetadataSection(MetadataSectionSerializer<T> var1) throws IOException;
+   <T> T getMetadataSection(MetadataSectionType<T> var1) throws IOException;
 
    PackLocationInfo location();
 

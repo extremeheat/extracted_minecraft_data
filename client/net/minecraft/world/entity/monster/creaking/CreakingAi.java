@@ -41,11 +41,7 @@ public class CreakingAi {
    }
 
    static void initIdleActivity(Brain<Creaking> var0) {
-      var0.addActivity(Activity.IDLE, 10, ImmutableList.of(StartAttacking.create((var0x, var1) -> {
-         return var1.isActive();
-      }, (var0x, var1) -> {
-         return var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER);
-      }), SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.3F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.3F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
+      var0.addActivity(Activity.IDLE, 10, ImmutableList.of(StartAttacking.create((var0x, var1) -> var1.isActive(), (var0x, var1) -> var1.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER)), SetEntityLookTargetSometimes.create(8.0F, UniformInt.of(30, 60)), new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.3F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.3F, 3), 2), Pair.of(new DoNothing(30, 60), 1)))));
    }
 
    static void initFightActivity(Brain<Creaking> var0) {
@@ -53,7 +49,7 @@ public class CreakingAi {
    }
 
    public static Brain.Provider<Creaking> brainProvider() {
-      return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
+      return Brain.<Creaking>provider(MEMORY_TYPES, SENSOR_TYPES);
    }
 
    public static Brain<Creaking> makeBrain(Brain<Creaking> var0) {

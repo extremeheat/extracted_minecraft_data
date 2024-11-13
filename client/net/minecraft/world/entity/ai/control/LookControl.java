@@ -53,12 +53,8 @@ public class LookControl implements Control {
 
       if (this.lookAtCooldown > 0) {
          --this.lookAtCooldown;
-         this.getYRotD().ifPresent((var1) -> {
-            this.mob.yHeadRot = this.rotateTowards(this.mob.yHeadRot, var1, this.yMaxRotSpeed);
-         });
-         this.getXRotD().ifPresent((var1) -> {
-            this.mob.setXRot(this.rotateTowards(this.mob.getXRot(), var1, this.xMaxRotAngle));
-         });
+         this.getYRotD().ifPresent((var1) -> this.mob.yHeadRot = this.rotateTowards(this.mob.yHeadRot, var1, this.yMaxRotSpeed));
+         this.getXRotD().ifPresent((var1) -> this.mob.setXRot(this.rotateTowards(this.mob.getXRot(), var1, this.xMaxRotAngle)));
       } else {
          this.mob.yHeadRot = this.rotateTowards(this.mob.yHeadRot, this.mob.yBodyRot, 10.0F);
       }

@@ -74,7 +74,7 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
 
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = (Slot)this.slots.get(var2);
+      Slot var4 = this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -111,9 +111,7 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
       if (var2 instanceof ServerPlayer var1) {
          ServerLevel var5 = var1.serverLevel();
          CraftingInput var3 = this.container.asCraftInput();
-         ItemStack var4 = (ItemStack)CrafterBlock.getPotentialResults(var5, var3).map((var2x) -> {
-            return ((CraftingRecipe)var2x.value()).assemble(var3, var5.registryAccess());
-         }).orElse(ItemStack.EMPTY);
+         ItemStack var4 = (ItemStack)CrafterBlock.getPotentialResults(var5, var3).map((var2x) -> ((CraftingRecipe)var2x.value()).assemble(var3, var5.registryAccess())).orElse(ItemStack.EMPTY);
          this.resultContainer.setItem(0, var4);
       }
 

@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.DefaultUncaughtExceptionHandlerWithName;
@@ -221,12 +222,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    }
 
    public SystemReport fillServerSystemReport(SystemReport var1) {
-      var1.setDetail("Is Modded", () -> {
-         return this.getModdedStatus().fullDescription();
-      });
-      var1.setDetail("Type", () -> {
-         return "Dedicated Server (map_server.txt)";
-      });
+      var1.setDetail("Is Modded", (Supplier)(() -> this.getModdedStatus().fullDescription()));
+      var1.setDetail("Type", (Supplier)(() -> "Dedicated Server (map_server.txt)"));
       return var1;
    }
 
@@ -390,9 +387,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
    public void setPlayerIdleTimeout(int var1) {
       super.setPlayerIdleTimeout(var1);
-      this.settings.update((var2) -> {
-         return (DedicatedServerProperties)var2.playerIdleTimeout.update(this.registryAccess(), var1);
-      });
+      this.settings.update((var2) -> (DedicatedServerProperties)var2.playerIdleTimeout.update(this.registryAccess(), var1));
    }
 
    public boolean shouldRconBroadcast() {
@@ -423,8 +418,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    protected boolean convertOldUsers() {
       boolean var2 = false;
 
-      int var1;
-      for(var1 = 0; !var2 && var1 <= 2; ++var1) {
+      for(int var1 = 0; !var2 && var1 <= 2; ++var1) {
          if (var1 > 0) {
             LOGGER.warn("Encountered a problem while converting the user banlist, retrying in a few seconds");
             this.waitForRetry();
@@ -435,8 +429,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
       boolean var3 = false;
 
-      for(var1 = 0; !var3 && var1 <= 2; ++var1) {
-         if (var1 > 0) {
+      for(int var7 = 0; !var3 && var7 <= 2; ++var7) {
+         if (var7 > 0) {
             LOGGER.warn("Encountered a problem while converting the ip banlist, retrying in a few seconds");
             this.waitForRetry();
          }
@@ -446,8 +440,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
       boolean var4 = false;
 
-      for(var1 = 0; !var4 && var1 <= 2; ++var1) {
-         if (var1 > 0) {
+      for(int var8 = 0; !var4 && var8 <= 2; ++var8) {
+         if (var8 > 0) {
             LOGGER.warn("Encountered a problem while converting the op list, retrying in a few seconds");
             this.waitForRetry();
          }
@@ -457,8 +451,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
       boolean var5 = false;
 
-      for(var1 = 0; !var5 && var1 <= 2; ++var1) {
-         if (var1 > 0) {
+      for(int var9 = 0; !var5 && var9 <= 2; ++var9) {
+         if (var9 > 0) {
             LOGGER.warn("Encountered a problem while converting the whitelist, retrying in a few seconds");
             this.waitForRetry();
          }
@@ -468,8 +462,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
       boolean var6 = false;
 
-      for(var1 = 0; !var6 && var1 <= 2; ++var1) {
-         if (var1 > 0) {
+      for(int var10 = 0; !var6 && var10 <= 2; ++var10) {
+         if (var10 > 0) {
             LOGGER.warn("Encountered a problem while converting the player save files, retrying in a few seconds");
             this.waitForRetry();
          }
@@ -501,16 +495,12 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
    public String runCommand(String var1) {
       this.rconConsoleSource.prepareForCommand();
-      this.executeBlocking(() -> {
-         this.getCommands().performPrefixedCommand(this.rconConsoleSource.createCommandSourceStack(), var1);
-      });
+      this.executeBlocking(() -> this.getCommands().performPrefixedCommand(this.rconConsoleSource.createCommandSourceStack(), var1));
       return this.rconConsoleSource.getCommandResponse();
    }
 
    public void storeUsingWhiteList(boolean var1) {
-      this.settings.update((var2) -> {
-         return (DedicatedServerProperties)var2.whiteList.update(this.registryAccess(), var1);
-      });
+      this.settings.update((var2) -> (DedicatedServerProperties)var2.whiteList.update(this.registryAccess(), var1));
    }
 
    public void stopServer() {
@@ -579,9 +569,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
 
    private static ServerLinks createServerLinks(DedicatedServerSettings var0) {
       Optional var1 = parseBugReportLink(var0.getProperties());
-      return (ServerLinks)var1.map((var0x) -> {
-         return new ServerLinks(List.of(ServerLinks.KnownLinkType.BUG_REPORT.create(var0x)));
-      }).orElse(ServerLinks.EMPTY);
+      return (ServerLinks)var1.map((var0x) -> new ServerLinks(List.of(ServerLinks.KnownLinkType.BUG_REPORT.create(var0x)))).orElse(ServerLinks.EMPTY);
    }
 
    private static Optional<URI> parseBugReportLink(DedicatedServerProperties var0) {

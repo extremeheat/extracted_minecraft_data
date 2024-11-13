@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.goal;
 
 import com.google.common.collect.Lists;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -63,20 +62,14 @@ public class MoveThroughVillageGoal extends Goal {
                   if (!var1.isVillage(var3x)) {
                      return -1.0 / 0.0;
                   } else {
-                     Optional var4 = var1.getPoiManager().find((var0) -> {
-                        return var0.is(PoiTypeTags.VILLAGE);
-                     }, this::hasNotVisited, var3x, 10, PoiManager.Occupancy.IS_OCCUPIED);
-                     return (Double)var4.map((var1x) -> {
-                        return -var1x.distSqr(var2);
-                     }).orElse(-1.0 / 0.0);
+                     Optional var4 = var1.getPoiManager().find((var0) -> var0.is(PoiTypeTags.VILLAGE), this::hasNotVisited, var3x, 10, PoiManager.Occupancy.IS_OCCUPIED);
+                     return (Double)var4.map((var1x) -> -var1x.distSqr(var2)).orElse(-1.0 / 0.0);
                   }
                });
                if (var3 == null) {
                   return false;
                } else {
-                  Optional var4 = var1.getPoiManager().find((var0) -> {
-                     return var0.is(PoiTypeTags.VILLAGE);
-                  }, this::hasNotVisited, BlockPos.containing(var3), 10, PoiManager.Occupancy.IS_OCCUPIED);
+                  Optional var4 = var1.getPoiManager().find((var0) -> var0.is(PoiTypeTags.VILLAGE), this::hasNotVisited, BlockPos.containing(var3), 10, PoiManager.Occupancy.IS_OCCUPIED);
                   if (var4.isEmpty()) {
                      return false;
                   } else {
@@ -136,18 +129,13 @@ public class MoveThroughVillageGoal extends Goal {
    }
 
    private boolean hasNotVisited(BlockPos var1) {
-      Iterator var2 = this.visited.iterator();
-
-      BlockPos var3;
-      do {
-         if (!var2.hasNext()) {
-            return true;
+      for(BlockPos var3 : this.visited) {
+         if (Objects.equals(var1, var3)) {
+            return false;
          }
+      }
 
-         var3 = (BlockPos)var2.next();
-      } while(!Objects.equals(var1, var3));
-
-      return false;
+      return true;
    }
 
    private void updateVisited() {

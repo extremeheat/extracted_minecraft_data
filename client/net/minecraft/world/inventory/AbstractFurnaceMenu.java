@@ -64,7 +64,7 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
    }
 
    public Slot getResultSlot() {
-      return (Slot)this.slots.get(2);
+      return this.slots.get(2);
    }
 
    public boolean stillValid(Player var1) {
@@ -73,7 +73,7 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
 
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = (Slot)this.slots.get(var2);
+      Slot var4 = this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -158,9 +158,7 @@ public abstract class AbstractFurnaceMenu extends RecipeBookMenu {
          }
 
          public void clearCraftingContent() {
-            var6.forEach((var0) -> {
-               var0.set(ItemStack.EMPTY);
-            });
+            var6.forEach((var0) -> var0.set(ItemStack.EMPTY));
          }
 
          public boolean recipeMatches(RecipeHolder<AbstractCookingRecipe> var1) {

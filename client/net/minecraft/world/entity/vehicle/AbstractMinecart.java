@@ -93,7 +93,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
          }
       }
 
-      return var11;
+      return (T)var11;
    }
 
    public MinecartBehavior getBehavior() {
@@ -147,15 +147,10 @@ public abstract class AbstractMinecart extends VehicleEntity {
 
             while(var11.hasNext()) {
                int var12 = (Integer)var11.next();
-               int[][] var13 = var3;
-               int var14 = var3.length;
 
-               for(int var15 = 0; var15 < var14; ++var15) {
-                  int[] var16 = var13[var15];
+               for(int[] var16 : var3) {
                   var5.set(var4.getX() + var16[0], var4.getY() + var12, var4.getZ() + var16[1]);
-                  double var17 = this.level().getBlockFloorHeight(DismountHelper.nonClimbableShape(this.level(), var5), () -> {
-                     return DismountHelper.nonClimbableShape(this.level(), var5.below());
-                  });
+                  double var17 = this.level().getBlockFloorHeight(DismountHelper.nonClimbableShape(this.level(), var5), () -> DismountHelper.nonClimbableShape(this.level(), var5.below()));
                   if (DismountHelper.isBlockFloorValid(var17)) {
                      AABB var19 = new AABB((double)(-var10), 0.0, (double)(-var10), (double)var10, (double)var9.height(), (double)var10);
                      Vec3 var20 = Vec3.upFromBottomCenterOf(var5, var17);
@@ -176,9 +171,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
             Pose var23 = (Pose)var22.next();
             double var24 = (double)var1.getDimensions(var23).height();
             int var25 = Mth.ceil(var21 - (double)var5.getY() + var24);
-            double var26 = DismountHelper.findCeilingFrom(var5, var25, (var1x) -> {
-               return this.level().getBlockState(var1x).getCollisionShape(this.level(), var1x);
-            });
+            double var26 = DismountHelper.findCeilingFrom(var5, var25, (var1x) -> this.level().getBlockState(var1x).getCollisionShape(this.level(), var1x));
             if (var21 + var24 <= var26) {
                var1.setPose(var23);
                break;
@@ -568,9 +561,9 @@ public abstract class AbstractMinecart extends VehicleEntity {
    }
 
    static {
-      DATA_ID_DISPLAY_BLOCK = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.INT);
-      DATA_ID_DISPLAY_OFFSET = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.INT);
-      DATA_ID_CUSTOM_DISPLAY = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.BOOLEAN);
+      DATA_ID_DISPLAY_BLOCK = SynchedEntityData.<Integer>defineId(AbstractMinecart.class, EntityDataSerializers.INT);
+      DATA_ID_DISPLAY_OFFSET = SynchedEntityData.<Integer>defineId(AbstractMinecart.class, EntityDataSerializers.INT);
+      DATA_ID_CUSTOM_DISPLAY = SynchedEntityData.<Boolean>defineId(AbstractMinecart.class, EntityDataSerializers.BOOLEAN);
       POSE_DISMOUNT_HEIGHTS = ImmutableMap.of(Pose.STANDING, ImmutableList.of(0, 1, -1), Pose.CROUCHING, ImmutableList.of(0, 1, -1), Pose.SWIMMING, ImmutableList.of(0, 1));
       EXITS = (Map)Util.make(Maps.newEnumMap(RailShape.class), (var0) -> {
          Vec3i var1 = Direction.WEST.getUnitVec3i();

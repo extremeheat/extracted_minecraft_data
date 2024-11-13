@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.npc;
 
 import java.util.EnumSet;
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -60,12 +59,8 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
 
    protected void registerGoals() {
       this.goalSelector.addGoal(0, new FloatGoal(this));
-      this.goalSelector.addGoal(0, new UseItemGoal(this, PotionContents.createItemStack(Items.POTION, Potions.INVISIBILITY), SoundEvents.WANDERING_TRADER_DISAPPEARED, (var1) -> {
-         return this.level().isNight() && !var1.isInvisible();
-      }));
-      this.goalSelector.addGoal(0, new UseItemGoal(this, new ItemStack(Items.MILK_BUCKET), SoundEvents.WANDERING_TRADER_REAPPEARED, (var1) -> {
-         return this.level().isDay() && var1.isInvisible();
-      }));
+      this.goalSelector.addGoal(0, new UseItemGoal(this, PotionContents.createItemStack(Items.POTION, Potions.INVISIBILITY), SoundEvents.WANDERING_TRADER_DISAPPEARED, (var1) -> this.level().isNight() && !var1.isInvisible()));
+      this.goalSelector.addGoal(0, new UseItemGoal(this, new ItemStack(Items.MILK_BUCKET), SoundEvents.WANDERING_TRADER_REAPPEARED, (var1) -> this.level().isDay() && var1.isInvisible()));
       this.goalSelector.addGoal(1, new TradeWithPlayerGoal(this));
       this.goalSelector.addGoal(1, new AvoidEntityGoal(this, Zombie.class, 8.0F, 0.5, 0.5));
       this.goalSelector.addGoal(1, new AvoidEntityGoal(this, Evoker.class, 12.0F, 0.5, 0.5));
@@ -136,10 +131,8 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
 
    private void experimentalUpdateTrades() {
       MerchantOffers var1 = this.getOffers();
-      Iterator var2 = VillagerTrades.EXPERIMENTAL_WANDERING_TRADER_TRADES.iterator();
 
-      while(var2.hasNext()) {
-         Pair var3 = (Pair)var2.next();
+      for(Pair var3 : VillagerTrades.EXPERIMENTAL_WANDERING_TRADER_TRADES) {
          VillagerTrades.ItemListing[] var4 = (VillagerTrades.ItemListing[])var3.getLeft();
          this.addOffersFromItemListings(var1, var4, (Integer)var3.getRight());
       }
@@ -161,9 +154,7 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
          this.despawnDelay = var1.getInt("DespawnDelay");
       }
 
-      NbtUtils.readBlockPos(var1, "wander_target").ifPresent((var1x) -> {
-         this.wanderTarget = var1x;
-      });
+      NbtUtils.readBlockPos(var1, "wander_target").ifPresent((var1x) -> this.wanderTarget = var1x);
       this.setAge(Math.max(0, this.getAge()));
    }
 
@@ -235,7 +226,7 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
       return this.wanderTarget;
    }
 
-   private class WanderToPositionGoal extends Goal {
+   class WanderToPositionGoal extends Goal {
       final WanderingTrader trader;
       final double stopDistance;
       final double speedModifier;

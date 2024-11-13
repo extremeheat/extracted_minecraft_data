@@ -17,11 +17,8 @@ public class ByIdMap {
          throw new IllegalArgumentException("Empty value list");
       } else {
          Int2ObjectOpenHashMap var2 = new Int2ObjectOpenHashMap();
-         Object[] var3 = var1;
-         int var4 = var1.length;
 
-         for(int var5 = 0; var5 < var4; ++var5) {
-            Object var6 = var3[var5];
+         for(Object var6 : var1) {
             int var7 = var0.applyAsInt(var6);
             Object var8 = var2.put(var7, var6);
             if (var8 != null) {
@@ -35,9 +32,7 @@ public class ByIdMap {
 
    public static <T> IntFunction<T> sparse(ToIntFunction<T> var0, T[] var1, T var2) {
       IntFunction var3 = createMap(var0, var1);
-      return (var2x) -> {
-         return Objects.requireNonNullElse(var3.apply(var2x), var2);
-      };
+      return (var2x) -> Objects.requireNonNullElse(var3.apply(var2x), var2);
    }
 
    private static <T> T[] createSortedArray(ToIntFunction<T> var0, T[] var1) {
@@ -45,13 +40,10 @@ public class ByIdMap {
       if (var2 == 0) {
          throw new IllegalArgumentException("Empty value list");
       } else {
-         Object[] var3 = (Object[])((Object;)var1).clone();
+         Object[] var3 = ((Object;)var1).clone();
          Arrays.fill(var3, (Object)null);
-         Object[] var4 = var1;
-         int var5 = var1.length;
 
-         for(int var6 = 0; var6 < var5; ++var6) {
-            Object var7 = var4[var6];
+         for(Object var7 : var1) {
             int var8 = var0.applyAsInt(var7);
             if (var8 < 0 || var8 >= var2) {
                throw new IllegalArgumentException("Values are not continous, found index " + var8 + " for value " + String.valueOf(var7));
@@ -71,7 +63,7 @@ public class ByIdMap {
             }
          }
 
-         return var3;
+         return (T[])var3;
       }
    }
 
@@ -82,19 +74,13 @@ public class ByIdMap {
       switch (var2.ordinal()) {
          case 0:
             Object var5 = var3[0];
-            var10000 = (var3x) -> {
-               return var3x >= 0 && var3x < var4 ? var3[var3x] : var5;
-            };
+            var10000 = (var3x) -> var3x >= 0 && var3x < var4 ? var3[var3x] : var5;
             break;
          case 1:
-            var10000 = (var2x) -> {
-               return var3[Mth.positiveModulo(var2x, var4)];
-            };
+            var10000 = (var2x) -> var3[Mth.positiveModulo(var2x, var4)];
             break;
          case 2:
-            var10000 = (var2x) -> {
-               return var3[Mth.clamp(var2x, 0, var4 - 1)];
-            };
+            var10000 = (var2x) -> var3[Mth.clamp(var2x, 0, var4 - 1)];
             break;
          default:
             throw new MatchException((String)null, (Throwable)null);

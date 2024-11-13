@@ -22,7 +22,7 @@ public class V1451_6 extends NamespacedSchema {
    protected static final Hook.HookFunction UNPACK_OBJECTIVE_ID = new Hook.HookFunction() {
       public <T> T apply(DynamicOps<T> var1, T var2) {
          Dynamic var3 = new Dynamic(var1, var2);
-         return ((Dynamic)DataFixUtils.orElse(var3.get("CriteriaName").asString().result().map((var0) -> {
+         return (T)((Dynamic)DataFixUtils.orElse(var3.get("CriteriaName").asString().result().map((var0) -> {
             int var1 = var0.indexOf(58);
             if (var1 < 0) {
                return Pair.of("_special", var0);
@@ -35,9 +35,7 @@ public class V1451_6 extends NamespacedSchema {
                   return Pair.of("_special", var0);
                }
             }
-         }).map((var1x) -> {
-            return var3.set("CriteriaType", var3.createMap(ImmutableMap.of(var3.createString("type"), var3.createString((String)var1x.getFirst()), var3.createString("id"), var3.createString((String)var1x.getSecond()))));
-         }), var3)).getValue();
+         }).map((var1x) -> var3.set("CriteriaType", var3.createMap(ImmutableMap.of(var3.createString("type"), var3.createString((String)var1x.getFirst()), var3.createString("id"), var3.createString((String)var1x.getSecond()))))), var3)).getValue();
       }
    };
    protected static final Hook.HookFunction REPACK_OBJECTIVE_ID = new Hook.HookFunction() {
@@ -58,9 +56,7 @@ public class V1451_6 extends NamespacedSchema {
                return Optional.empty();
             }
          });
-         return ((Dynamic)DataFixUtils.orElse(var4.map((var1x) -> {
-            return var3.set("CriteriaName", var1x).remove("CriteriaType");
-         }), var3)).getValue();
+         return (T)((Dynamic)DataFixUtils.orElse(var4.map((var1x) -> var3.set("CriteriaName", var1x).remove("CriteriaType")), var3)).getValue();
       }
    };
 
@@ -70,28 +66,16 @@ public class V1451_6 extends NamespacedSchema {
 
    public void registerTypes(Schema var1, Map<String, Supplier<TypeTemplate>> var2, Map<String, Supplier<TypeTemplate>> var3) {
       super.registerTypes(var1, var2, var3);
-      Supplier var4 = () -> {
-         return DSL.compoundList(References.ITEM_NAME.in(var1), DSL.constType(DSL.intType()));
-      };
-      var1.registerType(false, References.STATS, () -> {
-         return DSL.optionalFields("stats", DSL.optionalFields(new Pair[]{Pair.of("minecraft:mined", DSL.compoundList(References.BLOCK_NAME.in(var1), DSL.constType(DSL.intType()))), Pair.of("minecraft:crafted", (TypeTemplate)var4.get()), Pair.of("minecraft:used", (TypeTemplate)var4.get()), Pair.of("minecraft:broken", (TypeTemplate)var4.get()), Pair.of("minecraft:picked_up", (TypeTemplate)var4.get()), Pair.of("minecraft:dropped", (TypeTemplate)var4.get()), Pair.of("minecraft:killed", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))), Pair.of("minecraft:killed_by", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))), Pair.of("minecraft:custom", DSL.compoundList(DSL.constType(namespacedString()), DSL.constType(DSL.intType())))}));
-      });
+      Supplier var4 = () -> DSL.compoundList(References.ITEM_NAME.in(var1), DSL.constType(DSL.intType()));
+      var1.registerType(false, References.STATS, () -> DSL.optionalFields("stats", DSL.optionalFields(new Pair[]{Pair.of("minecraft:mined", DSL.compoundList(References.BLOCK_NAME.in(var1), DSL.constType(DSL.intType()))), Pair.of("minecraft:crafted", (TypeTemplate)var4.get()), Pair.of("minecraft:used", (TypeTemplate)var4.get()), Pair.of("minecraft:broken", (TypeTemplate)var4.get()), Pair.of("minecraft:picked_up", (TypeTemplate)var4.get()), Pair.of("minecraft:dropped", (TypeTemplate)var4.get()), Pair.of("minecraft:killed", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))), Pair.of("minecraft:killed_by", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))), Pair.of("minecraft:custom", DSL.compoundList(DSL.constType(namespacedString()), DSL.constType(DSL.intType())))})));
       Map var5 = createCriterionTypes(var1);
-      var1.registerType(false, References.OBJECTIVE, () -> {
-         return DSL.hook(DSL.optionalFields("CriteriaType", DSL.taggedChoiceLazy("type", DSL.string(), var5)), UNPACK_OBJECTIVE_ID, REPACK_OBJECTIVE_ID);
-      });
+      var1.registerType(false, References.OBJECTIVE, () -> DSL.hook(DSL.optionalFields("CriteriaType", DSL.taggedChoiceLazy("type", DSL.string(), var5)), UNPACK_OBJECTIVE_ID, REPACK_OBJECTIVE_ID));
    }
 
    protected static Map<String, Supplier<TypeTemplate>> createCriterionTypes(Schema var0) {
-      Supplier var1 = () -> {
-         return DSL.optionalFields("id", References.ITEM_NAME.in(var0));
-      };
-      Supplier var2 = () -> {
-         return DSL.optionalFields("id", References.BLOCK_NAME.in(var0));
-      };
-      Supplier var3 = () -> {
-         return DSL.optionalFields("id", References.ENTITY_NAME.in(var0));
-      };
+      Supplier var1 = () -> DSL.optionalFields("id", References.ITEM_NAME.in(var0));
+      Supplier var2 = () -> DSL.optionalFields("id", References.BLOCK_NAME.in(var0));
+      Supplier var3 = () -> DSL.optionalFields("id", References.ENTITY_NAME.in(var0));
       HashMap var4 = Maps.newHashMap();
       var4.put("minecraft:mined", var2);
       var4.put("minecraft:crafted", var1);
@@ -101,12 +85,8 @@ public class V1451_6 extends NamespacedSchema {
       var4.put("minecraft:dropped", var1);
       var4.put("minecraft:killed", var3);
       var4.put("minecraft:killed_by", var3);
-      var4.put("minecraft:custom", () -> {
-         return DSL.optionalFields("id", DSL.constType(namespacedString()));
-      });
-      var4.put("_special", () -> {
-         return DSL.optionalFields("id", DSL.constType(DSL.string()));
-      });
+      var4.put("minecraft:custom", (Supplier)() -> DSL.optionalFields("id", DSL.constType(namespacedString())));
+      var4.put("_special", (Supplier)() -> DSL.optionalFields("id", DSL.constType(DSL.string())));
       return var4;
    }
 

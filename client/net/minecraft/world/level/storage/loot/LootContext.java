@@ -37,12 +37,12 @@ public class LootContext {
    }
 
    public <T> T getParameter(ContextKey<T> var1) {
-      return this.params.contextMap().getOrThrow(var1);
+      return (T)this.params.contextMap().getOrThrow(var1);
    }
 
    @Nullable
    public <T> T getOptionalParameter(ContextKey<T> var1) {
-      return this.params.contextMap().getOptional(var1);
+      return (T)this.params.contextMap().getOptional(var1);
    }
 
    public void addDynamicDrops(ResourceLocation var1, Consumer<ItemStack> var2) {
@@ -78,69 +78,15 @@ public class LootContext {
    }
 
    public static VisitedEntry<LootTable> createVisitedEntry(LootTable var0) {
-      return new VisitedEntry(LootDataType.TABLE, var0);
+      return new VisitedEntry<LootTable>(LootDataType.TABLE, var0);
    }
 
    public static VisitedEntry<LootItemCondition> createVisitedEntry(LootItemCondition var0) {
-      return new VisitedEntry(LootDataType.PREDICATE, var0);
+      return new VisitedEntry<LootItemCondition>(LootDataType.PREDICATE, var0);
    }
 
    public static VisitedEntry<LootItemFunction> createVisitedEntry(LootItemFunction var0) {
-      return new VisitedEntry(LootDataType.MODIFIER, var0);
-   }
-
-   public static record VisitedEntry<T>(LootDataType<T> type, T value) {
-      public VisitedEntry(LootDataType<T> var1, T var2) {
-         super();
-         this.type = var1;
-         this.value = var2;
-      }
-
-      public LootDataType<T> type() {
-         return this.type;
-      }
-
-      public T value() {
-         return this.value;
-      }
-   }
-
-   public static enum EntityTarget implements StringRepresentable {
-      THIS("this", LootContextParams.THIS_ENTITY),
-      ATTACKER("attacker", LootContextParams.ATTACKING_ENTITY),
-      DIRECT_ATTACKER("direct_attacker", LootContextParams.DIRECT_ATTACKING_ENTITY),
-      ATTACKING_PLAYER("attacking_player", LootContextParams.LAST_DAMAGE_PLAYER);
-
-      public static final StringRepresentable.EnumCodec<EntityTarget> CODEC = StringRepresentable.fromEnum(EntityTarget::values);
-      private final String name;
-      private final ContextKey<? extends Entity> param;
-
-      private EntityTarget(final String var3, final ContextKey var4) {
-         this.name = var3;
-         this.param = var4;
-      }
-
-      public ContextKey<? extends Entity> getParam() {
-         return this.param;
-      }
-
-      public static EntityTarget getByName(String var0) {
-         EntityTarget var1 = (EntityTarget)CODEC.byName(var0);
-         if (var1 != null) {
-            return var1;
-         } else {
-            throw new IllegalArgumentException("Invalid entity target " + var0);
-         }
-      }
-
-      public String getSerializedName() {
-         return this.name;
-      }
-
-      // $FF: synthetic method
-      private static EntityTarget[] $values() {
-         return new EntityTarget[]{THIS, ATTACKER, DIRECT_ATTACKER, ATTACKING_PLAYER};
-      }
+      return new VisitedEntry<LootItemFunction>(LootDataType.MODIFIER, var0);
    }
 
    public static class Builder {
@@ -180,6 +126,52 @@ public class LootContext {
          Objects.requireNonNull(var2);
          RandomSource var4 = (RandomSource)var10000.orElseGet(var2::getRandom);
          return new LootContext(this.params, var4, var3.reloadableRegistries().lookup());
+      }
+   }
+
+   public static enum EntityTarget implements StringRepresentable {
+      THIS("this", LootContextParams.THIS_ENTITY),
+      ATTACKER("attacker", LootContextParams.ATTACKING_ENTITY),
+      DIRECT_ATTACKER("direct_attacker", LootContextParams.DIRECT_ATTACKING_ENTITY),
+      ATTACKING_PLAYER("attacking_player", LootContextParams.LAST_DAMAGE_PLAYER);
+
+      public static final StringRepresentable.EnumCodec<EntityTarget> CODEC = StringRepresentable.<EntityTarget>fromEnum(EntityTarget::values);
+      private final String name;
+      private final ContextKey<? extends Entity> param;
+
+      private EntityTarget(final String var3, final ContextKey<? extends Entity> var4) {
+         this.name = var3;
+         this.param = var4;
+      }
+
+      public ContextKey<? extends Entity> getParam() {
+         return this.param;
+      }
+
+      public static EntityTarget getByName(String var0) {
+         EntityTarget var1 = CODEC.byName(var0);
+         if (var1 != null) {
+            return var1;
+         } else {
+            throw new IllegalArgumentException("Invalid entity target " + var0);
+         }
+      }
+
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      // $FF: synthetic method
+      private static EntityTarget[] $values() {
+         return new EntityTarget[]{THIS, ATTACKER, DIRECT_ATTACKER, ATTACKING_PLAYER};
+      }
+   }
+
+   public static record VisitedEntry<T>(LootDataType<T> type, T value) {
+      public VisitedEntry(LootDataType<T> var1, T var2) {
+         super();
+         this.type = var1;
+         this.value = var2;
       }
    }
 }

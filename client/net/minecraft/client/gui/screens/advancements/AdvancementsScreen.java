@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.advancements;
 
 import com.google.common.collect.Maps;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -75,9 +74,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
          this.advancements.setSelectedTab(this.selectedTab == null ? null : this.selectedTab.getRootNode().holder(), true);
       }
 
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
-         this.onClose();
-      }).width(200).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).width(200).build());
       this.layout.visitWidgets((var1x) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });
@@ -105,10 +102,8 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       if (var5 == 0) {
          int var6 = (this.width - 252) / 2;
          int var7 = (this.height - 140) / 2;
-         Iterator var8 = this.tabs.values().iterator();
 
-         while(var8.hasNext()) {
-            AdvancementTab var9 = (AdvancementTab)var8.next();
+         for(AdvancementTab var9 : this.tabs.values()) {
             if (var9.isMouseOver(var6, var7, var1, var3)) {
                this.advancements.setSelectedTab(var9.getRootNode().holder(), true);
                break;
@@ -185,19 +180,12 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    public void renderWindow(GuiGraphics var1, int var2, int var3) {
       var1.blit(RenderType::guiTextured, WINDOW_LOCATION, var2, var3, 0.0F, 0.0F, 252, 140, 256, 256);
       if (this.tabs.size() > 1) {
-         Iterator var4 = this.tabs.values().iterator();
-
-         AdvancementTab var5;
-         while(var4.hasNext()) {
-            var5 = (AdvancementTab)var4.next();
+         for(AdvancementTab var5 : this.tabs.values()) {
             var5.drawTab(var1, var2, var3, var5 == this.selectedTab);
          }
 
-         var4 = this.tabs.values().iterator();
-
-         while(var4.hasNext()) {
-            var5 = (AdvancementTab)var4.next();
-            var5.drawIcon(var1, var2, var3);
+         for(AdvancementTab var7 : this.tabs.values()) {
+            var7.drawIcon(var1, var2, var3);
          }
       }
 
@@ -213,10 +201,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       }
 
       if (this.tabs.size() > 1) {
-         Iterator var6 = this.tabs.values().iterator();
-
-         while(var6.hasNext()) {
-            AdvancementTab var7 = (AdvancementTab)var6.next();
+         for(AdvancementTab var7 : this.tabs.values()) {
             if (var7.isMouseOver(var4, var5, (double)var2, (double)var3)) {
                var1.renderTooltip(this.font, var7.getTitle(), var2, var3);
             }

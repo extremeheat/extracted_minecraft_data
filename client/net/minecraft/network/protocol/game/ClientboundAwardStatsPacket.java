@@ -26,10 +26,6 @@ public record ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> stats) implemen
       var1.handleAwardStats(this);
    }
 
-   public Object2IntMap<Stat<?>> stats() {
-      return this.stats;
-   }
-
    static {
       STAT_VALUES_STREAM_CODEC = ByteBufCodecs.map(Object2IntOpenHashMap::new, Stat.STREAM_CODEC, ByteBufCodecs.VAR_INT);
       STREAM_CODEC = STAT_VALUES_STREAM_CODEC.map(ClientboundAwardStatsPacket::new, ClientboundAwardStatsPacket::stats);

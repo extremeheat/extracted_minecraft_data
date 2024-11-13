@@ -42,18 +42,12 @@ public class RecipePropertySet {
    }
 
    static RecipePropertySet create(Collection<Ingredient> var0) {
-      Set var1 = (Set)var0.stream().flatMap((var0x) -> {
-         return var0x.items().stream();
-      }).collect(Collectors.toUnmodifiableSet());
+      Set var1 = (Set)var0.stream().flatMap(Ingredient::items).collect(Collectors.toUnmodifiableSet());
       return new RecipePropertySet(var1);
    }
 
    static {
-      STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.ITEM).apply(ByteBufCodecs.list()).map((var0) -> {
-         return new RecipePropertySet(Set.copyOf(var0));
-      }, (var0) -> {
-         return List.copyOf(var0.items);
-      });
+      STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.ITEM).apply(ByteBufCodecs.list()).map((var0) -> new RecipePropertySet(Set.copyOf(var0)), (var0) -> List.copyOf(var0.items));
       EMPTY = new RecipePropertySet(Set.of());
    }
 }

@@ -158,7 +158,7 @@ public class ClientChunkCache extends ChunkSource {
 
    public String gatherStats() {
       int var10000 = this.storage.chunks.length();
-      return "" + var10000 + ", " + this.getLoadedChunksCount();
+      return var10000 + ", " + this.getLoadedChunksCount();
    }
 
    public int getLoadedChunksCount() {
@@ -183,7 +183,7 @@ public class ClientChunkCache extends ChunkSource {
       return this.getChunk(var1, var2, var3, var4);
    }
 
-   private final class Storage {
+   final class Storage {
       final AtomicReferenceArray<LevelChunk> chunks;
       final LongOpenHashSet loadedEmptySections = new LongOpenHashSet();
       final int chunkRadius;

@@ -2,11 +2,14 @@ package net.minecraft.client.renderer.blockentity;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 import net.minecraft.client.model.Model;
+import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
@@ -19,14 +22,12 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.CeilingHangingSignBlock;
-import net.minecraft.world.level.block.SignBlock;
-import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.Vec3;
 
-public class HangingSignRenderer extends SignRenderer {
+public class HangingSignRenderer extends AbstractSignRenderer {
    private static final String PLANK = "plank";
    private static final String V_CHAINS = "vChains";
    private static final String NORMAL_CHAINS = "normalChains";
@@ -42,47 +43,53 @@ public class HangingSignRenderer extends SignRenderer {
 
    public HangingSignRenderer(BlockEntityRendererProvider.Context var1) {
       super(var1);
-      Stream var2 = WoodType.values().flatMap((var0) -> {
-         return Arrays.stream(HangingSignRenderer.AttachmentType.values()).map((var1) -> {
-            return new ModelKey(var0, var1);
-         });
-      });
-      this.hangingSignModels = (Map)var2.collect(ImmutableMap.toImmutableMap((var0) -> {
-         return var0;
-      }, (var1x) -> {
-         return new Model.Simple(var1.bakeLayer(ModelLayers.createHangingSignModelName(var1x.woodType, var1x.attachmentType)), RenderType::entityCutoutNoCull);
-      }));
+      Stream var2 = WoodType.values().flatMap((var0) -> Arrays.stream(HangingSignRenderer.AttachmentType.values()).map((var1) -> new ModelKey(var0, var1)));
+      this.hangingSignModels = (Map)var2.collect(ImmutableMap.toImmutableMap((var0) -> var0, (var1x) -> createSignModel(var1.getModelSet(), var1x.woodType, var1x.attachmentType)));
    }
 
-   public float getSignModelRenderScale() {
+   public static Model createSignModel(EntityModelSet var0, WoodType var1, AttachmentType var2) {
+      return new Model.Simple(var0.bakeLayer(ModelLayers.createHangingSignModelName(var1, var2)), RenderType::entityCutoutNoCull);
+   }
+
+   protected float getSignModelRenderScale() {
       return 1.0F;
    }
 
-   public float getSignTextRenderScale() {
+   protected float getSignTextRenderScale() {
       return 0.9F;
    }
 
-   public void render(SignBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      BlockState var7 = var1.getBlockState();
-      SignBlock var8 = (SignBlock)var7.getBlock();
-      WoodType var9 = SignBlock.getWoodType(var8);
-      AttachmentType var10 = HangingSignRenderer.AttachmentType.byBlockState(var7);
-      Model var11 = (Model)this.hangingSignModels.get(new ModelKey(var9, var10));
-      this.renderSignWithText(var1, var3, var4, var5, var6, var7, var8, var9, var11);
+   private static void translateBase(PoseStack var0, float var1) {
+      var0.translate(0.5, 0.9375, 0.5);
+      var0.mulPose(Axis.YP.rotationDegrees(var1));
+      var0.translate(0.0F, -0.3125F, 0.0F);
    }
 
-   void translateSign(PoseStack var1, float var2, BlockState var3) {
-      var1.translate(0.5, 0.9375, 0.5);
-      var1.mulPose(Axis.YP.rotationDegrees(var2));
-      var1.translate(0.0F, -0.3125F, 0.0F);
+   protected void translateSign(PoseStack var1, float var2, BlockState var3) {
+      translateBase(var1, var2);
    }
 
-   Material getSignMaterial(WoodType var1) {
+   protected Model getSignModel(BlockState var1, WoodType var2) {
+      AttachmentType var3 = HangingSignRenderer.AttachmentType.byBlockState(var1);
+      return (Model)this.hangingSignModels.get(new ModelKey(var2, var3));
+   }
+
+   protected Material getSignMaterial(WoodType var1) {
       return Sheets.getHangingSignMaterial(var1);
    }
 
-   Vec3 getTextOffset() {
+   protected Vec3 getTextOffset() {
       return TEXT_OFFSET;
+   }
+
+   public static void renderInHand(PoseStack var0, MultiBufferSource var1, int var2, int var3, Model var4, Material var5) {
+      var0.pushPose();
+      translateBase(var0, 0.0F);
+      var0.scale(1.0F, -1.0F, -1.0F);
+      Objects.requireNonNull(var4);
+      VertexConsumer var6 = var5.buffer(var1, var4::renderType);
+      var4.renderToBuffer(var0, var6, var2, var3);
+      var0.popPose();
    }
 
    public static LayerDefinition createHangingSignLayer(AttachmentType var0) {
@@ -145,14 +152,6 @@ public class HangingSignRenderer extends SignRenderer {
          super();
          this.woodType = var1;
          this.attachmentType = var2;
-      }
-
-      public WoodType woodType() {
-         return this.woodType;
-      }
-
-      public AttachmentType attachmentType() {
-         return this.attachmentType;
       }
    }
 }

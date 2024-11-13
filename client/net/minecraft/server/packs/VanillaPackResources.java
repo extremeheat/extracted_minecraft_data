@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -17,7 +16,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
+import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceProvider;
@@ -44,35 +43,27 @@ public class VanillaPackResources implements PackResources {
    public IoSupplier<InputStream> getRootResource(String... var1) {
       FileUtil.validatePath(var1);
       List var2 = List.of(var1);
-      Iterator var3 = this.rootPaths.iterator();
 
-      Path var5;
-      do {
-         if (!var3.hasNext()) {
-            return null;
+      for(Path var4 : this.rootPaths) {
+         Path var5 = FileUtil.resolvePath(var4, var2);
+         if (Files.exists(var5, new LinkOption[0]) && PathPackResources.validatePath(var5)) {
+            return IoSupplier.create(var5);
          }
+      }
 
-         Path var4 = (Path)var3.next();
-         var5 = FileUtil.resolvePath(var4, var2);
-      } while(!Files.exists(var5, new LinkOption[0]) || !PathPackResources.validatePath(var5));
-
-      return IoSupplier.create(var5);
+      return null;
    }
 
    public void listRawPaths(PackType var1, ResourceLocation var2, Consumer<Path> var3) {
       FileUtil.decomposePath(var2.getPath()).ifSuccess((var4) -> {
          String var5 = var2.getNamespace();
-         Iterator var6 = ((List)this.pathsForType.get(var1)).iterator();
 
-         while(var6.hasNext()) {
-            Path var7 = (Path)var6.next();
+         for(Path var7 : (List)this.pathsForType.get(var1)) {
             Path var8 = var7.resolve(var5);
             var3.accept(FileUtil.resolvePath(var8, var4));
          }
 
-      }).ifError((var1x) -> {
-         LOGGER.error("Invalid path {}: {}", var2, var1x.message());
-      });
+      }).ifError((var1x) -> LOGGER.error("Invalid path {}: {}", var2, var1x.message()));
    }
 
    public void listResources(PackType var1, String var2, String var3, PackResources.ResourceOutput var4) {
@@ -99,9 +90,7 @@ public class VanillaPackResources implements PackResources {
             }
          }
 
-      }).ifError((var1x) -> {
-         LOGGER.error("Invalid path {}: {}", var3, var1x.message());
-      });
+      }).ifError((var1x) -> LOGGER.error("Invalid path {}: {}", var3, var1x.message()));
    }
 
    private static void getResources(PackResources.ResourceOutput var0, String var1, Path var2, List<String> var3) {
@@ -113,19 +102,15 @@ public class VanillaPackResources implements PackResources {
    public IoSupplier<InputStream> getResource(PackType var1, ResourceLocation var2) {
       return (IoSupplier)FileUtil.decomposePath(var2.getPath()).mapOrElse((var3) -> {
          String var4 = var2.getNamespace();
-         Iterator var5 = ((List)this.pathsForType.get(var1)).iterator();
 
-         Path var7;
-         do {
-            if (!var5.hasNext()) {
-               return null;
+         for(Path var6 : (List)this.pathsForType.get(var1)) {
+            Path var7 = FileUtil.resolvePath(var6.resolve(var4), var3);
+            if (Files.exists(var7, new LinkOption[0]) && PathPackResources.validatePath(var7)) {
+               return IoSupplier.create(var7);
             }
+         }
 
-            Path var6 = (Path)var5.next();
-            var7 = FileUtil.resolvePath(var6.resolve(var4), var3);
-         } while(!Files.exists(var7, new LinkOption[0]) || !PathPackResources.validatePath(var7));
-
-         return IoSupplier.create(var7);
+         return null;
       }, (var1x) -> {
          LOGGER.error("Invalid path {}: {}", var2, var1x.message());
          return null;
@@ -137,7 +122,7 @@ public class VanillaPackResources implements PackResources {
    }
 
    @Nullable
-   public <T> T getMetadataSection(MetadataSectionSerializer<T> var1) {
+   public <T> T getMetadataSection(MetadataSectionType<T> var1) {
       IoSupplier var2 = this.getRootResource("pack.mcmeta");
       if (var2 != null) {
          try {
@@ -167,19 +152,19 @@ public class VanillaPackResources implements PackResources {
                   var3.close();
                }
 
-               return this.metadata.get(var1);
+               return (T)this.metadata.get(var1);
             }
 
             if (var3 != null) {
                var3.close();
             }
 
-            return var5;
+            return (T)var5;
          } catch (IOException var8) {
          }
       }
 
-      return this.metadata.get(var1);
+      return (T)this.metadata.get(var1);
    }
 
    public PackLocationInfo location() {
@@ -190,10 +175,6 @@ public class VanillaPackResources implements PackResources {
    }
 
    public ResourceProvider asProvider() {
-      return (var1) -> {
-         return Optional.ofNullable(this.getResource(PackType.CLIENT_RESOURCES, var1)).map((var1x) -> {
-            return new Resource(this, var1x);
-         });
-      };
+      return (var1) -> Optional.ofNullable(this.getResource(PackType.CLIENT_RESOURCES, var1)).map((var1x) -> new Resource(this, var1x));
    }
 }

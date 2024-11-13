@@ -60,7 +60,7 @@ public class ShootTongue extends Behavior<Frog> {
       LivingEntity var5 = (LivingEntity)var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).get();
       BehaviorUtils.lookAtEntity(var2, var5);
       var2.setTongueTarget(var5);
-      var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var5.position(), 2.0F, 0)));
+      var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var5.position(), 2.0F, 0));
       this.calculatePathCounter = 10;
       this.state = ShootTongue.State.MOVE_TO_TARGET;
    }
@@ -99,7 +99,7 @@ public class ShootTongue extends Behavior<Frog> {
                this.eatAnimationTimer = 0;
                this.state = ShootTongue.State.CATCH_ANIMATION;
             } else if (this.calculatePathCounter <= 0) {
-               var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var5.position(), 2.0F, 0)));
+               var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var5.position(), 2.0F, 0));
                this.calculatePathCounter = 10;
             } else {
                --this.calculatePathCounter;
@@ -123,7 +123,7 @@ public class ShootTongue extends Behavior<Frog> {
    }
 
    private boolean canPathfindToTarget(Frog var1, LivingEntity var2) {
-      Path var3 = var1.getNavigation().createPath((Entity)var2, 0);
+      Path var3 = var1.getNavigation().createPath(var2, 0);
       return var3 != null && var3.getDistToTarget() < 1.75F;
    }
 

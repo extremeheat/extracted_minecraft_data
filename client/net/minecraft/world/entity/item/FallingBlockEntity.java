@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.item;
 
 import com.mojang.logging.LogUtils;
-import java.util.Iterator;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
@@ -184,10 +183,8 @@ public class FallingBlockEntity extends Entity {
                                  BlockEntity var12 = this.level().getBlockEntity(var17);
                                  if (var12 != null) {
                                     CompoundTag var13 = var12.saveWithoutMetadata(this.level().registryAccess());
-                                    Iterator var14 = this.blockData.getAllKeys().iterator();
 
-                                    while(var14.hasNext()) {
-                                       String var15 = (String)var14.next();
+                                    for(String var15 : this.blockData.getAllKeys()) {
                                        var13.put(var15, this.blockData.get(var15).copy());
                                     }
 
@@ -252,9 +249,7 @@ public class FallingBlockEntity extends Entity {
 
             DamageSource var6 = var10000;
             float var10 = (float)Math.min(Mth.floor((float)var4 * this.fallDamagePerDistance), this.fallDamageMax);
-            this.level().getEntities((Entity)this, this.getBoundingBox(), var5).forEach((var2x) -> {
-               var2x.hurt(var6, var10);
-            });
+            this.level().getEntities(this, this.getBoundingBox(), var5).forEach((var2x) -> var2x.hurt(var6, var10));
             boolean var11 = this.blockState.is(BlockTags.ANVIL);
             if (var11 && var10 > 0.0F && this.random.nextFloat() < 0.05F + (float)var4 * 0.05F) {
                BlockState var9 = AnvilBlock.damage(this.blockState);
@@ -326,7 +321,7 @@ public class FallingBlockEntity extends Entity {
 
    public void fillCrashReportCategory(CrashReportCategory var1) {
       super.fillCrashReportCategory(var1);
-      var1.setDetail("Immitating BlockState", (Object)this.blockState.toString());
+      var1.setDetail("Immitating BlockState", this.blockState.toString());
    }
 
    public BlockState getBlockState() {
@@ -367,6 +362,6 @@ public class FallingBlockEntity extends Entity {
    }
 
    static {
-      DATA_START_POS = SynchedEntityData.defineId(FallingBlockEntity.class, EntityDataSerializers.BLOCK_POS);
+      DATA_START_POS = SynchedEntityData.<BlockPos>defineId(FallingBlockEntity.class, EntityDataSerializers.BLOCK_POS);
    }
 }

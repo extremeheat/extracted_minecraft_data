@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.item.properties.conditional.HasComponent;
 import net.minecraft.client.renderer.item.properties.conditional.IsUsingItem;
 import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperty;
 import net.minecraft.client.renderer.item.properties.select.ItemBlockState;
+import net.minecraft.client.renderer.item.properties.select.LocalTime;
 import net.minecraft.client.renderer.item.properties.select.SelectItemModelProperty;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.core.component.DataComponentType;
@@ -78,11 +79,11 @@ public class ItemModelUtils {
    }
 
    public static <T> SelectItemModel.SwitchCase<T> when(T var0, ItemModel.Unbaked var1) {
-      return new SelectItemModel.SwitchCase(List.of(var0), var1);
+      return new SelectItemModel.SwitchCase<T>(List.of(var0), var1);
    }
 
    public static <T> SelectItemModel.SwitchCase<T> when(List<T> var0, ItemModel.Unbaked var1) {
-      return new SelectItemModel.SwitchCase(var0, var1);
+      return new SelectItemModel.SwitchCase<T>(var0, var1);
    }
 
    @SafeVarargs
@@ -108,7 +109,7 @@ public class ItemModelUtils {
    }
 
    public static ConditionalItemModelProperty hasComponent(DataComponentType<?> var0) {
-      return new HasComponent(var0);
+      return new HasComponent(var0, false);
    }
 
    public static <T extends Comparable<T>> ItemModel.Unbaked selectBlockItemProperty(Property<T> var0, ItemModel.Unbaked var1, Map<T, ItemModel.Unbaked> var2) {
@@ -116,6 +117,10 @@ public class ItemModelUtils {
          String var2 = var0.getName((Comparable)var1x.getKey());
          return new SelectItemModel.SwitchCase(List.of(var2), (ItemModel.Unbaked)var1x.getValue());
       }).toList();
-      return select(new ItemBlockState(var0.getName()), var1, (List)var3);
+      return select(new ItemBlockState(var0.getName()), var1, var3);
+   }
+
+   public static ItemModel.Unbaked isXmas(ItemModel.Unbaked var0, ItemModel.Unbaked var1) {
+      return select(LocalTime.create("MM-dd", "", Optional.empty()), var1, List.of(when(List.of("12-24", "12-25", "12-26"), var0)));
    }
 }

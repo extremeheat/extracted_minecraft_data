@@ -78,9 +78,7 @@ public class BoatSplitFix extends DataFix {
                var6 = (String)var5.map(BoatSplitFix::mapVariantToNormalBoat).orElse("minecraft:oak_boat");
             }
 
-            return ExtraDataFixUtils.cast(var3, var2x).update(DSL.remainderFinder(), (var0) -> {
-               return var0.remove("Type");
-            }).set(var1, var6);
+            return ExtraDataFixUtils.cast(var3, var2x).update(DSL.remainderFinder(), (var0) -> var0.remove("Type")).set(var1, var6);
          } else {
             return ExtraDataFixUtils.cast(var3, var2x);
          }

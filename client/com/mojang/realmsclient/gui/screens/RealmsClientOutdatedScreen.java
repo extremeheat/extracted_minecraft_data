@@ -26,9 +26,7 @@ public class RealmsClientOutdatedScreen extends RealmsScreen {
    public void init() {
       this.layout.addTitleHeader(INCOMPATIBLE_TITLE, this.font);
       this.layout.addToContents((new MultiLineTextWidget(this.getErrorMessage(), this.font)).setCentered(true));
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1) -> {
-         this.onClose();
-      }).width(200).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).width(200).build());
       this.layout.visitWidgets((var1) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
       });

@@ -1,6 +1,6 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import java.util.Iterator;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.PathfinderMob;
@@ -18,9 +18,7 @@ public class TryFindWater {
 
    public static BehaviorControl<PathfinderMob> create(int var0, float var1) {
       MutableLong var2 = new MutableLong(0L);
-      return BehaviorBuilder.create((var3) -> {
-         return var3.group(var3.absent(MemoryModuleType.ATTACK_TARGET), var3.absent(MemoryModuleType.WALK_TARGET), var3.registered(MemoryModuleType.LOOK_TARGET)).apply(var3, (var3x, var4, var5) -> {
-            return (var5x, var6, var7) -> {
+      return BehaviorBuilder.create((Function)((var3) -> var3.group(var3.absent(MemoryModuleType.ATTACK_TARGET), var3.absent(MemoryModuleType.WALK_TARGET), var3.registered(MemoryModuleType.LOOK_TARGET)).apply(var3, (var3x, var4, var5) -> (var5x, var6, var7) -> {
                if (var5x.getFluidState(var6.blockPosition()).is(FluidTags.WATER)) {
                   return false;
                } else if (var7 < var2.getValue()) {
@@ -30,11 +28,8 @@ public class TryFindWater {
                   BlockPos var9 = null;
                   BlockPos var10 = null;
                   BlockPos var11 = var6.blockPosition();
-                  Iterable var12 = BlockPos.withinManhattan(var11, var0, var0, var0);
-                  Iterator var13 = var12.iterator();
 
-                  while(var13.hasNext()) {
-                     BlockPos var14 = (BlockPos)var13.next();
+                  for(BlockPos var14 : BlockPos.withinManhattan(var11, var0, var0, var0)) {
                      if (var14.getX() != var11.getX() || var14.getZ() != var11.getZ()) {
                         BlockState var15 = var6.level().getBlockState(var14.above());
                         BlockState var16 = var6.level().getBlockState(var14);
@@ -63,8 +58,6 @@ public class TryFindWater {
                   var2.setValue(var7 + 40L);
                   return true;
                }
-            };
-         });
-      });
+            })));
    }
 }

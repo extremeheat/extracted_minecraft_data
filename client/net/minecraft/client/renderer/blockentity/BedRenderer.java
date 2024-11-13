@@ -63,9 +63,7 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
       if (var7 != null) {
          Material var8 = Sheets.getBedMaterial(var1.getColor());
          BlockState var9 = var1.getBlockState();
-         DoubleBlockCombiner.NeighborCombineResult var10 = DoubleBlockCombiner.combineWithNeigbour(BlockEntityType.BED, BedBlock::getBlockType, BedBlock::getConnectedDirection, ChestBlock.FACING, var9, var7, var1.getBlockPos(), (var0, var1x) -> {
-            return false;
-         });
+         DoubleBlockCombiner.NeighborCombineResult var10 = DoubleBlockCombiner.combineWithNeigbour(BlockEntityType.BED, BedBlock::getBlockType, BedBlock::getConnectedDirection, ChestBlock.FACING, var9, var7, var1.getBlockPos(), (var0, var1x) -> false);
          int var11 = ((Int2IntFunction)var10.apply(new BrightnessCombiner())).get(var5);
          this.renderPiece(var3, var4, var9.getValue(BedBlock.PART) == BedPart.HEAD ? this.headModel : this.footModel, (Direction)var9.getValue(BedBlock.FACING), var8, var11, var6, false);
       }

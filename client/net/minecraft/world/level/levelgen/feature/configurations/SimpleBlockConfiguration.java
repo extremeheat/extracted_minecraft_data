@@ -5,13 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public record SimpleBlockConfiguration(BlockStateProvider toPlace, boolean scheduleTick) implements FeatureConfiguration {
-   public static final Codec<SimpleBlockConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(BlockStateProvider.CODEC.fieldOf("to_place").forGetter((var0x) -> {
-         return var0x.toPlace;
-      }), Codec.BOOL.optionalFieldOf("schedule_tick", false).forGetter((var0x) -> {
-         return var0x.scheduleTick;
-      })).apply(var0, SimpleBlockConfiguration::new);
-   });
+   public static final Codec<SimpleBlockConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockStateProvider.CODEC.fieldOf("to_place").forGetter((var0x) -> var0x.toPlace), Codec.BOOL.optionalFieldOf("schedule_tick", false).forGetter((var0x) -> var0x.scheduleTick)).apply(var0, SimpleBlockConfiguration::new));
 
    public SimpleBlockConfiguration(BlockStateProvider var1) {
       this(var1, false);
@@ -21,13 +15,5 @@ public record SimpleBlockConfiguration(BlockStateProvider toPlace, boolean sched
       super();
       this.toPlace = var1;
       this.scheduleTick = var2;
-   }
-
-   public BlockStateProvider toPlace() {
-      return this.toPlace;
-   }
-
-   public boolean scheduleTick() {
-      return this.scheduleTick;
    }
 }

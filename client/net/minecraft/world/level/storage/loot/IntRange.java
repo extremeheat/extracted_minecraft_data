@@ -17,13 +17,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class IntRange {
-   private static final Codec<IntRange> RECORD_CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(NumberProviders.CODEC.optionalFieldOf("min").forGetter((var0x) -> {
-         return Optional.ofNullable(var0x.min);
-      }), NumberProviders.CODEC.optionalFieldOf("max").forGetter((var0x) -> {
-         return Optional.ofNullable(var0x.max);
-      })).apply(var0, IntRange::new);
-   });
+   private static final Codec<IntRange> RECORD_CODEC = RecordCodecBuilder.create((var0) -> var0.group(NumberProviders.CODEC.optionalFieldOf("min").forGetter((var0x) -> Optional.ofNullable(var0x.min)), NumberProviders.CODEC.optionalFieldOf("max").forGetter((var0x) -> Optional.ofNullable(var0x.max))).apply(var0, IntRange::new));
    public static final Codec<IntRange> CODEC;
    @Nullable
    private final NumberProvider min;
@@ -55,34 +49,18 @@ public class IntRange {
       this.max = var2;
       if (var1 == null) {
          if (var2 == null) {
-            this.limiter = (var0, var1x) -> {
-               return var1x;
-            };
-            this.predicate = (var0, var1x) -> {
-               return true;
-            };
+            this.limiter = (var0, var1x) -> var1x;
+            this.predicate = (var0, var1x) -> true;
          } else {
-            this.limiter = (var1x, var2x) -> {
-               return Math.min(var2.getInt(var1x), var2x);
-            };
-            this.predicate = (var1x, var2x) -> {
-               return var2x <= var2.getInt(var1x);
-            };
+            this.limiter = (var1x, var2x) -> Math.min(var2.getInt(var1x), var2x);
+            this.predicate = (var1x, var2x) -> var2x <= var2.getInt(var1x);
          }
       } else if (var2 == null) {
-         this.limiter = (var1x, var2x) -> {
-            return Math.max(var1.getInt(var1x), var2x);
-         };
-         this.predicate = (var1x, var2x) -> {
-            return var2x >= var1.getInt(var1x);
-         };
+         this.limiter = (var1x, var2x) -> Math.max(var1.getInt(var1x), var2x);
+         this.predicate = (var1x, var2x) -> var2x >= var1.getInt(var1x);
       } else {
-         this.limiter = (var2x, var3) -> {
-            return Mth.clamp(var3, var1.getInt(var2x), var2.getInt(var2x));
-         };
-         this.predicate = (var2x, var3) -> {
-            return var3 >= var1.getInt(var2x) && var3 <= var2.getInt(var2x);
-         };
+         this.limiter = (var2x, var3) -> Mth.clamp(var3, var1.getInt(var2x), var2.getInt(var2x));
+         this.predicate = (var2x, var3) -> var3 >= var1.getInt(var2x) && var3 <= var2.getInt(var2x);
       }
 
    }
@@ -127,21 +105,19 @@ public class IntRange {
    }
 
    static {
-      CODEC = Codec.either(Codec.INT, RECORD_CODEC).xmap((var0) -> {
-         return (IntRange)var0.map(IntRange::exact, Function.identity());
-      }, (var0) -> {
+      CODEC = Codec.either(Codec.INT, RECORD_CODEC).xmap((var0) -> (IntRange)var0.map(IntRange::exact, Function.identity()), (var0) -> {
          OptionalInt var1 = var0.unpackExact();
          return var1.isPresent() ? Either.left(var1.getAsInt()) : Either.right(var0);
       });
    }
 
    @FunctionalInterface
-   private interface IntLimiter {
-      int apply(LootContext var1, int var2);
+   interface IntChecker {
+      boolean test(LootContext var1, int var2);
    }
 
    @FunctionalInterface
-   interface IntChecker {
-      boolean test(LootContext var1, int var2);
+   interface IntLimiter {
+      int apply(LootContext var1, int var2);
    }
 }

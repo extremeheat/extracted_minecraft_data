@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
 import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
-import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
 import javax.annotation.Nullable;
@@ -13,7 +12,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
@@ -100,7 +98,6 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
    public void tick() {
       super.tick();
       HitResult var1;
-      Vec3 var2;
       if (this.isAttachedToEntity()) {
          if (this.attachedToEntity == null) {
             ((OptionalInt)this.entityData.get(DATA_ATTACHED_TO_TARGET)).ifPresent((var1x) -> {
@@ -113,6 +110,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
          }
 
          if (this.attachedToEntity != null) {
+            Vec3 var2;
             if (this.attachedToEntity.isFallFlying()) {
                Vec3 var3 = this.attachedToEntity.getLookAngle();
                double var4 = 1.5;
@@ -135,11 +133,11 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
             this.setDeltaMovement(this.getDeltaMovement().multiply(var9, 1.0, var9).add(0.0, 0.04, 0.0));
          }
 
-         var2 = this.getDeltaMovement();
+         Vec3 var10 = this.getDeltaMovement();
          var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
-         this.move(MoverType.SELF, var2);
+         this.move(MoverType.SELF, var10);
          this.applyEffectsFromBlocks();
-         this.setDeltaMovement(var2);
+         this.setDeltaMovement(var10);
       }
 
       if (!this.noPhysics && this.isAlive() && var1.getType() != HitResult.Type.MISS) {
@@ -149,7 +147,7 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
       this.updateRotation();
       if (this.life == 0 && !this.isSilent()) {
-         this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.AMBIENT, 3.0F, 1.0F);
+         this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.AMBIENT, 3.0F, 1.0F);
       }
 
       ++this.life;
@@ -158,9 +156,9 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       }
 
       if (this.life > this.lifetime) {
-         Level var10 = this.level();
-         if (var10 instanceof ServerLevel) {
-            ServerLevel var11 = (ServerLevel)var10;
+         Level var12 = this.level();
+         if (var12 instanceof ServerLevel) {
+            ServerLevel var11 = (ServerLevel)var12;
             this.explode(var11);
          }
       }
@@ -214,38 +212,28 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
 
          double var4 = 5.0;
          Vec3 var6 = this.position();
-         List var7 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(5.0));
-         Iterator var8 = var7.iterator();
 
-         while(true) {
-            LivingEntity var9;
-            do {
-               do {
-                  if (!var8.hasNext()) {
-                     return;
+         for(LivingEntity var9 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(5.0))) {
+            if (var9 != this.attachedToEntity && !(this.distanceToSqr(var9) > 25.0)) {
+               boolean var10 = false;
+
+               for(int var11 = 0; var11 < 2; ++var11) {
+                  Vec3 var12 = new Vec3(var9.getX(), var9.getY(0.5 * (double)var11), var9.getZ());
+                  BlockHitResult var13 = this.level().clip(new ClipContext(var6, var12, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+                  if (((HitResult)var13).getType() == HitResult.Type.MISS) {
+                     var10 = true;
+                     break;
                   }
-
-                  var9 = (LivingEntity)var8.next();
-               } while(var9 == this.attachedToEntity);
-            } while(this.distanceToSqr(var9) > 25.0);
-
-            boolean var10 = false;
-
-            for(int var11 = 0; var11 < 2; ++var11) {
-               Vec3 var12 = new Vec3(var9.getX(), var9.getY(0.5 * (double)var11), var9.getZ());
-               BlockHitResult var13 = this.level().clip(new ClipContext(var6, var12, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
-               if (((HitResult)var13).getType() == HitResult.Type.MISS) {
-                  var10 = true;
-                  break;
                }
-            }
 
-            if (var10) {
-               float var14 = var2 * (float)Math.sqrt((5.0 - (double)this.distanceTo(var9)) / 5.0);
-               var9.hurtServer(var1, this.damageSources().fireworks(this, this.getOwner()), var14);
+               if (var10) {
+                  float var14 = var2 * (float)Math.sqrt((5.0 - (double)this.distanceTo(var9)) / 5.0);
+                  var9.hurtServer(var1, this.damageSources().fireworks(this, this.getOwner()), var14);
+               }
             }
          }
       }
+
    }
 
    private boolean isAttachedToEntity() {
@@ -314,8 +302,8 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
    }
 
    static {
-      DATA_ID_FIREWORKS_ITEM = SynchedEntityData.defineId(FireworkRocketEntity.class, EntityDataSerializers.ITEM_STACK);
-      DATA_ATTACHED_TO_TARGET = SynchedEntityData.defineId(FireworkRocketEntity.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);
-      DATA_SHOT_AT_ANGLE = SynchedEntityData.defineId(FireworkRocketEntity.class, EntityDataSerializers.BOOLEAN);
+      DATA_ID_FIREWORKS_ITEM = SynchedEntityData.<ItemStack>defineId(FireworkRocketEntity.class, EntityDataSerializers.ITEM_STACK);
+      DATA_ATTACHED_TO_TARGET = SynchedEntityData.<OptionalInt>defineId(FireworkRocketEntity.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);
+      DATA_SHOT_AT_ANGLE = SynchedEntityData.<Boolean>defineId(FireworkRocketEntity.class, EntityDataSerializers.BOOLEAN);
    }
 }

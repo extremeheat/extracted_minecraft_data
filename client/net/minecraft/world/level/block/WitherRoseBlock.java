@@ -23,9 +23,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WitherRoseBlock extends FlowerBlock {
-   public static final MapCodec<WitherRoseBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(EFFECTS_FIELD.forGetter(FlowerBlock::getSuspiciousEffects), propertiesCodec()).apply(var0, WitherRoseBlock::new);
-   });
+   public static final MapCodec<WitherRoseBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(EFFECTS_FIELD.forGetter(FlowerBlock::getSuspiciousEffects), propertiesCodec()).apply(var0, WitherRoseBlock::new));
 
    public MapCodec<WitherRoseBlock> codec() {
       return CODEC;

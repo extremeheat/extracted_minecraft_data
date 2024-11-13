@@ -33,7 +33,7 @@ public class BeaconMenu extends AbstractContainerMenu {
 
    public BeaconMenu(int var1, Container var2, ContainerData var3, ContainerLevelAccess var4) {
       super(MenuType.BEACON, var1);
-      this.beacon = new SimpleContainer(this, 1) {
+      this.beacon = new SimpleContainer(1) {
          public boolean canPlaceItem(int var1, ItemStack var2) {
             return var2.is(ItemTags.BEACON_PAYMENT_ITEMS);
          }
@@ -73,7 +73,7 @@ public class BeaconMenu extends AbstractContainerMenu {
 
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = (Slot)this.slots.get(var2);
+      Slot var4 = this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -152,7 +152,7 @@ public class BeaconMenu extends AbstractContainerMenu {
       return !this.beacon.getItem(0).isEmpty();
    }
 
-   private static class PaymentSlot extends Slot {
+   static class PaymentSlot extends Slot {
       public PaymentSlot(Container var1, int var2, int var3, int var4) {
          super(var1, var2, var3, var4);
       }

@@ -176,19 +176,13 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putByte("CollarColor", (byte)this.getCollarColor().getId());
-      this.getVariant().unwrapKey().ifPresent((var1x) -> {
-         var1.putString("variant", var1x.location().toString());
-      });
+      this.getVariant().unwrapKey().ifPresent((var1x) -> var1.putString("variant", var1x.location().toString()));
       this.addPersistentAngerSaveData(var1);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant"))).map((var0) -> {
-         return ResourceKey.create(Registries.WOLF_VARIANT, var0);
-      }).flatMap((var1x) -> {
-         return this.registryAccess().lookupOrThrow(Registries.WOLF_VARIANT).get(var1x);
-      }).ifPresent(this::setVariant);
+      Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant"))).map((var0) -> ResourceKey.create(Registries.WOLF_VARIANT, var0)).flatMap((var1x) -> this.registryAccess().lookupOrThrow(Registries.WOLF_VARIANT).get(var1x)).ifPresent(this::setVariant);
       if (var1.contains("CollarColor", 99)) {
          this.setCollarColor(DyeColor.byId(var1.getInt("CollarColor")));
       }
@@ -373,82 +367,74 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    }
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
-      ItemStack var3;
-      label90: {
-         var3 = var1.getItemInHand(var2);
-         Item var4 = var3.getItem();
-         if (this.isTame()) {
-            if (this.isFood(var3) && this.getHealth() < this.getMaxHealth()) {
-               this.usePlayerItem(var1, var2, var3);
-               FoodProperties var11 = (FoodProperties)var3.get(DataComponents.FOOD);
-               float var13 = var11 != null ? (float)var11.nutrition() : 1.0F;
-               this.heal(2.0F * var13);
-               return InteractionResult.SUCCESS;
-            }
+      ItemStack var3 = var1.getItemInHand(var2);
+      Item var4 = var3.getItem();
+      if (this.isTame()) {
+         if (this.isFood(var3) && this.getHealth() < this.getMaxHealth()) {
+            this.usePlayerItem(var1, var2, var3);
+            FoodProperties var12 = (FoodProperties)var3.get(DataComponents.FOOD);
+            float var14 = var12 != null ? (float)var12.nutrition() : 1.0F;
+            this.heal(2.0F * var14);
+            return InteractionResult.SUCCESS;
+         } else {
+            if (var4 instanceof DyeItem) {
+               DyeItem var5 = (DyeItem)var4;
+               if (this.isOwnedBy(var1)) {
+                  DyeColor var11 = var5.getDyeColor();
+                  if (var11 != this.getCollarColor()) {
+                     this.setCollarColor(var11);
+                     var3.consume(1, var1);
+                     return InteractionResult.SUCCESS;
+                  }
 
-            if (!(var4 instanceof DyeItem)) {
-               break label90;
-            }
-
-            DyeItem var5 = (DyeItem)var4;
-            if (!this.isOwnedBy(var1)) {
-               break label90;
-            }
-
-            DyeColor var6 = var5.getDyeColor();
-            if (var6 != this.getCollarColor()) {
-               this.setCollarColor(var6);
-               var3.consume(1, var1);
-               return InteractionResult.SUCCESS;
-            }
-         } else if (!this.level().isClientSide && var3.is(Items.BONE) && !this.isAngry()) {
-            var3.consume(1, var1);
-            this.tryToTame(var1);
-            return InteractionResult.SUCCESS_SERVER;
-         }
-
-         return super.mobInteract(var1, var2);
-      }
-
-      if (this.isEquippableInSlot(var3, EquipmentSlot.BODY) && !this.isWearingBodyArmor() && this.isOwnedBy(var1) && !this.isBaby()) {
-         this.setBodyArmorItem(var3.copyWithCount(1));
-         var3.consume(1, var1);
-         return InteractionResult.SUCCESS;
-      } else {
-         ItemStack var9;
-         if (!var3.is(Items.SHEARS) || !this.isOwnedBy(var1) || !this.isWearingBodyArmor() || EnchantmentHelper.has(this.getBodyArmorItem(), EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) && !var1.isCreative()) {
-            if (this.isInSittingPose() && this.isWearingBodyArmor() && this.isOwnedBy(var1) && this.getBodyArmorItem().isDamaged() && this.getBodyArmorItem().isValidRepairItem(var3)) {
-               var3.shrink(1);
-               this.playSound(SoundEvents.WOLF_ARMOR_REPAIR);
-               var9 = this.getBodyArmorItem();
-               int var12 = (int)((float)var9.getMaxDamage() * 0.125F);
-               var9.setDamageValue(Math.max(0, var9.getDamageValue() - var12));
-               return InteractionResult.SUCCESS;
-            } else {
-               InteractionResult var10 = super.mobInteract(var1, var2);
-               if (!var10.consumesAction() && this.isOwnedBy(var1)) {
-                  this.setOrderedToSit(!this.isOrderedToSit());
-                  this.jumping = false;
-                  this.navigation.stop();
-                  this.setTarget((LivingEntity)null);
-                  return InteractionResult.SUCCESS.withoutItem();
-               } else {
-                  return var10;
+                  return super.mobInteract(var1, var2);
                }
             }
-         } else {
-            var3.hurtAndBreak(1, var1, getSlotForHand(var2));
-            this.playSound(SoundEvents.ARMOR_UNEQUIP_WOLF);
-            var9 = this.getBodyArmorItem();
-            this.setBodyArmorItem(ItemStack.EMPTY);
-            Level var8 = this.level();
-            if (var8 instanceof ServerLevel) {
-               ServerLevel var7 = (ServerLevel)var8;
-               this.spawnAtLocation(var7, var9);
-            }
 
-            return InteractionResult.SUCCESS;
+            if (this.isEquippableInSlot(var3, EquipmentSlot.BODY) && !this.isWearingBodyArmor() && this.isOwnedBy(var1) && !this.isBaby()) {
+               this.setBodyArmorItem(var3.copyWithCount(1));
+               var3.consume(1, var1);
+               return InteractionResult.SUCCESS;
+            } else if (!var3.is(Items.SHEARS) || !this.isOwnedBy(var1) || !this.isWearingBodyArmor() || EnchantmentHelper.has(this.getBodyArmorItem(), EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) && !var1.isCreative()) {
+               if (this.isInSittingPose() && this.isWearingBodyArmor() && this.isOwnedBy(var1) && this.getBodyArmorItem().isDamaged() && this.getBodyArmorItem().isValidRepairItem(var3)) {
+                  var3.shrink(1);
+                  this.playSound(SoundEvents.WOLF_ARMOR_REPAIR);
+                  ItemStack var10 = this.getBodyArmorItem();
+                  int var13 = (int)((float)var10.getMaxDamage() * 0.125F);
+                  var10.setDamageValue(Math.max(0, var10.getDamageValue() - var13));
+                  return InteractionResult.SUCCESS;
+               } else {
+                  InteractionResult var9 = super.mobInteract(var1, var2);
+                  if (!var9.consumesAction() && this.isOwnedBy(var1)) {
+                     this.setOrderedToSit(!this.isOrderedToSit());
+                     this.jumping = false;
+                     this.navigation.stop();
+                     this.setTarget((LivingEntity)null);
+                     return InteractionResult.SUCCESS.withoutItem();
+                  } else {
+                     return var9;
+                  }
+               }
+            } else {
+               var3.hurtAndBreak(1, var1, getSlotForHand(var2));
+               this.playSound(SoundEvents.ARMOR_UNEQUIP_WOLF);
+               ItemStack var6 = this.getBodyArmorItem();
+               this.setBodyArmorItem(ItemStack.EMPTY);
+               Level var8 = this.level();
+               if (var8 instanceof ServerLevel) {
+                  ServerLevel var7 = (ServerLevel)var8;
+                  this.spawnAtLocation(var7, var6);
+               }
+
+               return InteractionResult.SUCCESS;
+            }
          }
+      } else if (!this.level().isClientSide && var3.is(Items.BONE) && !this.isAngry()) {
+         var3.consume(1, var1);
+         this.tryToTame(var1);
+         return InteractionResult.SUCCESS_SERVER;
+      } else {
+         return super.mobInteract(var1, var2);
       }
    }
 
@@ -529,7 +515,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
 
    @Nullable
    public Wolf getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Wolf var3 = (Wolf)EntityType.WOLF.create(var1, EntitySpawnReason.BREEDING);
+      Wolf var3 = EntityType.WOLF.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null && var2 instanceof Wolf var4) {
          if (this.random.nextBoolean()) {
             var3.setVariant(this.getVariant());
@@ -645,10 +631,10 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    }
 
    static {
-      DATA_INTERESTED_ID = SynchedEntityData.defineId(Wolf.class, EntityDataSerializers.BOOLEAN);
-      DATA_COLLAR_COLOR = SynchedEntityData.defineId(Wolf.class, EntityDataSerializers.INT);
-      DATA_REMAINING_ANGER_TIME = SynchedEntityData.defineId(Wolf.class, EntityDataSerializers.INT);
-      DATA_VARIANT_ID = SynchedEntityData.defineId(Wolf.class, EntityDataSerializers.WOLF_VARIANT);
+      DATA_INTERESTED_ID = SynchedEntityData.<Boolean>defineId(Wolf.class, EntityDataSerializers.BOOLEAN);
+      DATA_COLLAR_COLOR = SynchedEntityData.<Integer>defineId(Wolf.class, EntityDataSerializers.INT);
+      DATA_REMAINING_ANGER_TIME = SynchedEntityData.<Integer>defineId(Wolf.class, EntityDataSerializers.INT);
+      DATA_VARIANT_ID = SynchedEntityData.<Holder<WolfVariant>>defineId(Wolf.class, EntityDataSerializers.WOLF_VARIANT);
       PREY_SELECTOR = (var0, var1) -> {
          EntityType var2 = var0.getType();
          return var2 == EntityType.SHEEP || var2 == EntityType.RABBIT || var2 == EntityType.FOX;
@@ -656,7 +642,16 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
       PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
    }
 
-   private class WolfAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
+   public static class WolfPackData extends AgeableMob.AgeableMobGroupData {
+      public final Holder<WolfVariant> type;
+
+      public WolfPackData(Holder<WolfVariant> var1) {
+         super(false);
+         this.type = var1;
+      }
+   }
+
+   class WolfAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
       private final Wolf wolf;
 
       public WolfAvoidEntityGoal(final Wolf var2, final Class<T> var3, final float var4, final double var5, final double var7) {
@@ -684,15 +679,6 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
       public void tick() {
          Wolf.this.setTarget((LivingEntity)null);
          super.tick();
-      }
-   }
-
-   public static class WolfPackData extends AgeableMob.AgeableMobGroupData {
-      public final Holder<WolfVariant> type;
-
-      public WolfPackData(Holder<WolfVariant> var1) {
-         super(false);
-         this.type = var1;
       }
    }
 }

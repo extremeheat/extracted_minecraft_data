@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.pieces;
 
 import com.google.common.collect.Lists;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.util.RandomSource;
@@ -28,10 +27,7 @@ public class StructurePiecesBuilder implements StructurePieceAccessor {
    /** @deprecated */
    @Deprecated
    public void offsetPiecesVertically(int var1) {
-      Iterator var2 = this.pieces.iterator();
-
-      while(var2.hasNext()) {
-         StructurePiece var3 = (StructurePiece)var2.next();
+      for(StructurePiece var3 : this.pieces) {
          var3.move(0, var1, 0);
       }
 

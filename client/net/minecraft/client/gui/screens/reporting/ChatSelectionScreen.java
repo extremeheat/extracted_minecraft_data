@@ -65,9 +65,7 @@ public class ChatSelectionScreen extends Screen {
       int var10006 = this.contextInfoLabel.getLineCount() + 1;
       Objects.requireNonNull(this.font);
       this.chatSelectionList = (ChatSelectionList)this.addRenderableWidget(new ChatSelectionList(var10005, var10006 * 9));
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1) -> {
-         this.onClose();
-      }).bounds(this.width / 2 - 155, this.height - 32, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).bounds(this.width / 2 - 155, this.height - 32, 150, 20).build());
       this.confirmSelectedButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> {
          this.onSelected.accept(this.report);
          this.onClose();
@@ -218,6 +216,40 @@ public class ChatSelectionScreen extends Screen {
          return this.nextEntry(var1);
       }
 
+      static record Heading(UUID sender, Entry entry) {
+         Heading(UUID var1, Entry var2) {
+            super();
+            this.sender = var1;
+            this.entry = var2;
+         }
+
+         public boolean canCombine(Heading var1) {
+            return var1.sender.equals(this.sender);
+         }
+      }
+
+      public abstract static class Entry extends ObjectSelectionList.Entry<Entry> {
+         public Entry() {
+            super();
+         }
+
+         public Component getNarration() {
+            return CommonComponents.EMPTY;
+         }
+
+         public boolean isSelected() {
+            return false;
+         }
+
+         public boolean canSelect() {
+            return false;
+         }
+
+         public boolean canReport() {
+            return this.canSelect();
+         }
+      }
+
       public class MessageEntry extends Entry {
          private static final int CHECKMARK_WIDTH = 9;
          private static final int CHECKMARK_HEIGHT = 8;
@@ -358,57 +390,6 @@ public class ChatSelectionScreen extends Screen {
          }
       }
 
-      private static record Heading(UUID sender, Entry entry) {
-         Heading(UUID var1, Entry var2) {
-            super();
-            this.sender = var1;
-            this.entry = var2;
-         }
-
-         public boolean canCombine(Heading var1) {
-            return var1.sender.equals(this.sender);
-         }
-
-         public UUID sender() {
-            return this.sender;
-         }
-
-         public Entry entry() {
-            return this.entry;
-         }
-      }
-
-      public abstract static class Entry extends ObjectSelectionList.Entry<Entry> {
-         public Entry() {
-            super();
-         }
-
-         public Component getNarration() {
-            return CommonComponents.EMPTY;
-         }
-
-         public boolean isSelected() {
-            return false;
-         }
-
-         public boolean canSelect() {
-            return false;
-         }
-
-         public boolean canReport() {
-            return this.canSelect();
-         }
-      }
-
-      public static class PaddingEntry extends Entry {
-         public PaddingEntry() {
-            super();
-         }
-
-         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         }
-      }
-
       public class DividerEntry extends Entry {
          private final Component text;
 
@@ -429,6 +410,15 @@ public class ChatSelectionScreen extends Screen {
 
          public Component getNarration() {
             return this.text;
+         }
+      }
+
+      public static class PaddingEntry extends Entry {
+         public PaddingEntry() {
+            super();
+         }
+
+         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          }
       }
    }

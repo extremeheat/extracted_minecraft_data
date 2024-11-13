@@ -129,12 +129,10 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
          this.hasInconsistencies = false;
          LongIterator var2 = this.toRemove.iterator();
 
-         long var3;
-         DataLayer var6;
          while(var2.hasNext()) {
-            var3 = (Long)var2.next();
+            long var3 = (Long)var2.next();
             DataLayer var5 = (DataLayer)this.queuedSections.remove(var3);
-            var6 = this.updatingSectionData.removeLayer(var3);
+            DataLayer var6 = this.updatingSectionData.removeLayer(var3);
             if (this.columnsToRetainQueuedDataFor.contains(SectionPos.getZeroNode(var3))) {
                if (var5 != null) {
                   this.queuedSections.put(var3, var5);
@@ -148,25 +146,25 @@ public abstract class LayerLightSectionStorage<M extends DataLayerStorageMap<M>>
          var2 = this.toRemove.iterator();
 
          while(var2.hasNext()) {
-            var3 = (Long)var2.next();
-            this.onNodeRemoved(var3);
-            this.changedSections.add(var3);
+            long var9 = (Long)var2.next();
+            this.onNodeRemoved(var9);
+            this.changedSections.add(var9);
          }
 
          this.toRemove.clear();
-         ObjectIterator var7 = Long2ObjectMaps.fastIterator(this.queuedSections);
+         ObjectIterator var8 = Long2ObjectMaps.fastIterator(this.queuedSections);
 
-         while(var7.hasNext()) {
-            Long2ObjectMap.Entry var8 = (Long2ObjectMap.Entry)var7.next();
-            long var4 = var8.getLongKey();
+         while(var8.hasNext()) {
+            Long2ObjectMap.Entry var10 = (Long2ObjectMap.Entry)var8.next();
+            long var4 = var10.getLongKey();
             if (this.storingLightForSection(var4)) {
-               var6 = (DataLayer)var8.getValue();
-               if (this.updatingSectionData.getLayer(var4) != var6) {
-                  this.updatingSectionData.setLayer(var4, var6);
+               DataLayer var11 = (DataLayer)var10.getValue();
+               if (this.updatingSectionData.getLayer(var4) != var11) {
+                  this.updatingSectionData.setLayer(var4, var11);
                   this.changedSections.add(var4);
                }
 
-               var7.remove();
+               var8.remove();
             }
          }
 

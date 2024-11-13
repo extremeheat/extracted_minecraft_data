@@ -1,7 +1,6 @@
 package net.minecraft.network.chat;
 
 import com.google.common.collect.ImmutableList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.util.Unit;
@@ -53,35 +52,25 @@ public interface FormattedText {
    static FormattedText composite(final List<? extends FormattedText> var0) {
       return new FormattedText() {
          public <T> Optional<T> visit(ContentConsumer<T> var1) {
-            Iterator var2 = var0.iterator();
-
-            Optional var4;
-            do {
-               if (!var2.hasNext()) {
-                  return Optional.empty();
+            for(FormattedText var3 : var0) {
+               Optional var4 = var3.visit(var1);
+               if (var4.isPresent()) {
+                  return var4;
                }
+            }
 
-               FormattedText var3 = (FormattedText)var2.next();
-               var4 = var3.visit(var1);
-            } while(!var4.isPresent());
-
-            return var4;
+            return Optional.empty();
          }
 
          public <T> Optional<T> visit(StyledContentConsumer<T> var1, Style var2) {
-            Iterator var3 = var0.iterator();
-
-            Optional var5;
-            do {
-               if (!var3.hasNext()) {
-                  return Optional.empty();
+            for(FormattedText var4 : var0) {
+               Optional var5 = var4.visit(var1, var2);
+               if (var5.isPresent()) {
+                  return var5;
                }
+            }
 
-               FormattedText var4 = (FormattedText)var3.next();
-               var5 = var4.visit(var1, var2);
-            } while(!var5.isPresent());
-
-            return var5;
+            return Optional.empty();
          }
       };
    }

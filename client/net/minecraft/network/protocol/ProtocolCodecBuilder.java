@@ -6,7 +6,7 @@ import net.minecraft.network.codec.IdDispatchCodec;
 import net.minecraft.network.codec.StreamCodec;
 
 public class ProtocolCodecBuilder<B extends ByteBuf, L extends PacketListener> {
-   private final IdDispatchCodec.Builder<B, Packet<? super L>, PacketType<? extends Packet<? super L>>> dispatchBuilder = IdDispatchCodec.builder(Packet::type);
+   private final IdDispatchCodec.Builder<B, Packet<? super L>, PacketType<? extends Packet<? super L>>> dispatchBuilder = IdDispatchCodec.<B, Packet<? super L>, PacketType<? extends Packet<? super L>>>builder(Packet::type);
    private final PacketFlow flow;
 
    public ProtocolCodecBuilder(PacketFlow var1) {

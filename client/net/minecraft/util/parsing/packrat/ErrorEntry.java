@@ -7,16 +7,4 @@ public record ErrorEntry<S>(int cursor, SuggestionSupplier<S> suggestions, Objec
       this.suggestions = var2;
       this.reason = var3;
    }
-
-   public int cursor() {
-      return this.cursor;
-   }
-
-   public SuggestionSupplier<S> suggestions() {
-      return this.suggestions;
-   }
-
-   public Object reason() {
-      return this.reason;
-   }
 }

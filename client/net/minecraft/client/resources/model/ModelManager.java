@@ -10,7 +10,6 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -93,50 +92,30 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       CompletableFuture var8 = loadBlockModels(var2, var3);
       CompletableFuture var9 = BlockStateModelLoader.loadBlockStates(var5, var2, var3);
       CompletableFuture var10 = ItemStackModelLoader.loadItemStackModels(var2, var3);
-      CompletableFuture var11 = CompletableFuture.allOf(var8, var9, var10).thenApplyAsync((var4x) -> {
-         return discoverModelDependencies(var5, (Map)var8.join(), (BlockStateModelLoader.LoadedModels)var9.join(), (ItemStackModelLoader.LoadedModels)var10.join());
-      }, var3);
-      CompletableFuture var12 = var9.thenApplyAsync((var1x) -> {
-         return buildModelGroups(this.blockColors, var1x);
-      }, var3);
+      CompletableFuture var11 = CompletableFuture.allOf(var8, var9, var10).thenApplyAsync((var4x) -> discoverModelDependencies(var5, (Map)var8.join(), (BlockStateModelLoader.LoadedModels)var9.join(), (ItemStackModelLoader.LoadedModels)var10.join()), var3);
+      CompletableFuture var12 = var9.thenApplyAsync((var1x) -> buildModelGroups(this.blockColors, var1x), var3);
       Map var13 = this.atlases.scheduleLoad(var2, this.maxMipmapLevels, var3);
-      CompletableFuture var10000 = CompletableFuture.allOf((CompletableFuture[])Stream.concat(var13.values().stream(), Stream.of(var11, var12, var9, var10, var6, var7)).toArray((var0) -> {
-         return new CompletableFuture[var0];
-      })).thenApplyAsync((var8x) -> {
-         Map var9x = (Map)var13.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (var0) -> {
-            return (AtlasSet.StitchResult)((CompletableFuture)var0.getValue()).join();
-         }));
+      CompletableFuture var10000 = CompletableFuture.allOf((CompletableFuture[])Stream.concat(var13.values().stream(), Stream.of(var11, var12, var9, var10, var6, var7)).toArray((var0) -> new CompletableFuture[var0])).thenApplyAsync((var8x) -> {
+         Map var9x = (Map)var13.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (var0) -> (AtlasSet.StitchResult)((CompletableFuture)var0.getValue()).join()));
          ModelDiscovery var10x = (ModelDiscovery)var11.join();
          Object2IntMap var11x = (Object2IntMap)var12.join();
          Set var12x = var10x.getUnreferencedModels();
          if (!var12x.isEmpty()) {
-            LOGGER.debug("Unreferenced models: \n{}", var12x.stream().sorted().map((var0) -> {
-               return "\t" + String.valueOf(var0) + "\n";
-            }).collect(Collectors.joining()));
+            LOGGER.debug("Unreferenced models: \n{}", var12x.stream().sorted().map((var0) -> "\t" + String.valueOf(var0) + "\n").collect(Collectors.joining()));
          }
 
          ModelBakery var13x = new ModelBakery((EntityModelSet)var6.join(), ((BlockStateModelLoader.LoadedModels)var9.join()).plainModels(), ((ItemStackModelLoader.LoadedModels)var10.join()).models(), var10x.getReferencedModels(), var5);
          return loadModels(Profiler.get(), var9x, var13x, var11x, (EntityModelSet)var6.join(), (SpecialBlockModelRenderer)var7.join());
-      }, var3).thenCompose((var0) -> {
-         return var0.readyForUpload.thenApply((var1) -> {
-            return var0;
-         });
-      });
+      }, var3).thenCompose((var0) -> var0.readyForUpload.thenApply((var1) -> var0));
       Objects.requireNonNull(var1);
-      return var10000.thenCompose(var1::wait).thenAcceptAsync((var1x) -> {
-         this.apply(var1x, Profiler.get());
-      }, var4);
+      return var10000.thenCompose(var1::wait).thenAcceptAsync((var1x) -> this.apply(var1x, Profiler.get()), var4);
    }
 
    private static CompletableFuture<Map<ResourceLocation, UnbakedModel>> loadBlockModels(ResourceManager var0, Executor var1) {
-      return CompletableFuture.supplyAsync(() -> {
-         return MODEL_LISTER.listMatchingResources(var0);
-      }, var1).thenCompose((var1x) -> {
+      return CompletableFuture.supplyAsync(() -> MODEL_LISTER.listMatchingResources(var0), var1).thenCompose((var1x) -> {
          ArrayList var2 = new ArrayList(var1x.size());
-         Iterator var3 = var1x.entrySet().iterator();
 
-         while(var3.hasNext()) {
-            Map.Entry var4 = (Map.Entry)var3.next();
+         for(Map.Entry var4 : var1x.entrySet()) {
             var2.add(CompletableFuture.supplyAsync(() -> {
                ResourceLocation var1 = MODEL_LISTER.fileToId((ResourceLocation)var4.getKey());
 
@@ -170,9 +149,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
             }, var1));
          }
 
-         return Util.sequence(var2).thenApply((var0) -> {
-            return (Map)var0.stream().filter(Objects::nonNull).collect(Collectors.toUnmodifiableMap(Pair::getFirst, Pair::getSecond));
-         });
+         return Util.sequence(var2).thenApply((var0) -> (Map)var0.stream().filter(Objects::nonNull).collect(Collectors.toUnmodifiableMap(Pair::getFirst, Pair::getSecond)));
       });
    }
 
@@ -211,41 +188,31 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
             return var8;
          }
       });
-      var6.asMap().forEach((var0x, var1x) -> {
-         LOGGER.warn("Missing textures in model {}:\n{}", var0x, var1x.stream().sorted(Material.COMPARATOR).map((var0) -> {
+      var6.asMap().forEach((var0x, var1x) -> LOGGER.warn("Missing textures in model {}:\n{}", var0x, var1x.stream().sorted(Material.COMPARATOR).map((var0) -> {
             String var10000 = String.valueOf(var0.atlasLocation());
             return "    " + var10000 + ":" + String.valueOf(var0.texture());
-         }).collect(Collectors.joining("\n")));
-      });
-      var7.asMap().forEach((var0x, var1x) -> {
-         LOGGER.warn("Missing texture references in model {}:\n{}", var0x, var1x.stream().sorted().map((var0) -> {
-            return "    " + var0;
-         }).collect(Collectors.joining("\n")));
-      });
+         }).collect(Collectors.joining("\n"))));
+      var7.asMap().forEach((var0x, var1x) -> LOGGER.warn("Missing texture references in model {}:\n{}", var0x, var1x.stream().sorted().map((var0) -> "    " + var0).collect(Collectors.joining("\n"))));
       var0.popPush("dispatch");
       Map var10 = createBlockStateToModelDispatch(var9.blockStateModels(), var9.missingModel());
-      CompletableFuture var11 = CompletableFuture.allOf((CompletableFuture[])var1.values().stream().map(AtlasSet.StitchResult::readyForUpload).toArray((var0x) -> {
-         return new CompletableFuture[var0x];
-      }));
+      CompletableFuture var11 = CompletableFuture.allOf((CompletableFuture[])var1.values().stream().map(AtlasSet.StitchResult::readyForUpload).toArray((var0x) -> new CompletableFuture[var0x]));
       var0.pop();
       return new ReloadState(var9, var3, var10, var1, var4, var5, var11);
    }
 
    private static Map<BlockState, BakedModel> createBlockStateToModelDispatch(Map<ModelResourceLocation, BakedModel> var0, BakedModel var1) {
       IdentityHashMap var2 = new IdentityHashMap();
-      Iterator var3 = BuiltInRegistries.BLOCK.iterator();
 
-      while(var3.hasNext()) {
-         Block var4 = (Block)var3.next();
-         var4.getStateDefinition().getPossibleStates().forEach((var3x) -> {
-            ResourceLocation var4 = var3x.getBlock().builtInRegistryHolder().key().location();
-            ModelResourceLocation var5 = BlockModelShaper.stateToModelLocation(var4, var3x);
+      for(Block var4 : BuiltInRegistries.BLOCK) {
+         var4.getStateDefinition().getPossibleStates().forEach((var3) -> {
+            ResourceLocation var4 = var3.getBlock().builtInRegistryHolder().key().location();
+            ModelResourceLocation var5 = BlockModelShaper.stateToModelLocation(var4, var3);
             BakedModel var6 = (BakedModel)var0.get(var5);
             if (var6 == null) {
                LOGGER.warn("Missing model for variant: '{}'", var5);
-               var2.putIfAbsent(var3x, var1);
+               var2.putIfAbsent(var3, var1);
             } else {
-               var2.put(var3x, var6);
+               var2.put(var3, var6);
             }
 
          });
@@ -305,22 +272,18 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
    }
 
    public Supplier<SpecialBlockModelRenderer> specialBlockModelRenderer() {
-      return () -> {
-         return this.specialBlockModelRenderer;
-      };
+      return () -> this.specialBlockModelRenderer;
    }
 
    public Supplier<EntityModelSet> entityModels() {
-      return () -> {
-         return this.entityModelSet;
-      };
+      return () -> this.entityModelSet;
    }
 
    static {
       VANILLA_ATLASES = Map.of(Sheets.BANNER_SHEET, ResourceLocation.withDefaultNamespace("banner_patterns"), Sheets.BED_SHEET, ResourceLocation.withDefaultNamespace("beds"), Sheets.CHEST_SHEET, ResourceLocation.withDefaultNamespace("chests"), Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("shield_patterns"), Sheets.SIGN_SHEET, ResourceLocation.withDefaultNamespace("signs"), Sheets.SHULKER_SHEET, ResourceLocation.withDefaultNamespace("shulker_boxes"), Sheets.ARMOR_TRIMS_SHEET, ResourceLocation.withDefaultNamespace("armor_trims"), Sheets.DECORATED_POT_SHEET, ResourceLocation.withDefaultNamespace("decorated_pot"), TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("blocks"));
    }
 
-   private static record ReloadState(ModelBakery.BakingResult bakedModels, Object2IntMap<BlockState> modelGroups, Map<BlockState, BakedModel> modelCache, Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations, EntityModelSet entityModelSet, SpecialBlockModelRenderer specialBlockModelRenderer, CompletableFuture<Void> readyForUpload) {
+   static record ReloadState(ModelBakery.BakingResult bakedModels, Object2IntMap<BlockState> modelGroups, Map<BlockState, BakedModel> modelCache, Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations, EntityModelSet entityModelSet, SpecialBlockModelRenderer specialBlockModelRenderer, CompletableFuture<Void> readyForUpload) {
       final ModelBakery.BakingResult bakedModels;
       final Object2IntMap<BlockState> modelGroups;
       final Map<BlockState, BakedModel> modelCache;
@@ -338,34 +301,6 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
          this.entityModelSet = var5;
          this.specialBlockModelRenderer = var6;
          this.readyForUpload = var7;
-      }
-
-      public ModelBakery.BakingResult bakedModels() {
-         return this.bakedModels;
-      }
-
-      public Object2IntMap<BlockState> modelGroups() {
-         return this.modelGroups;
-      }
-
-      public Map<BlockState, BakedModel> modelCache() {
-         return this.modelCache;
-      }
-
-      public Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations() {
-         return this.atlasPreparations;
-      }
-
-      public EntityModelSet entityModelSet() {
-         return this.entityModelSet;
-      }
-
-      public SpecialBlockModelRenderer specialBlockModelRenderer() {
-         return this.specialBlockModelRenderer;
-      }
-
-      public CompletableFuture<Void> readyForUpload() {
-         return this.readyForUpload;
       }
    }
 }

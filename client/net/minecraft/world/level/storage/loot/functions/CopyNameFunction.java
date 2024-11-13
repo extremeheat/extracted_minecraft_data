@@ -15,11 +15,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class CopyNameFunction extends LootItemConditionalFunction {
-   public static final MapCodec<CopyNameFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(CopyNameFunction.NameSource.CODEC.fieldOf("source").forGetter((var0x) -> {
-         return var0x.source;
-      })).apply(var0, CopyNameFunction::new);
-   });
+   public static final MapCodec<CopyNameFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(CopyNameFunction.NameSource.CODEC.fieldOf("source").forGetter((var0x) -> var0x.source)).apply(var0, CopyNameFunction::new));
    private final NameSource source;
 
    private CopyNameFunction(List<LootItemCondition> var1, NameSource var2) {
@@ -45,9 +41,7 @@ public class CopyNameFunction extends LootItemConditionalFunction {
    }
 
    public static LootItemConditionalFunction.Builder<?> copyName(NameSource var0) {
-      return simpleBuilder((var1) -> {
-         return new CopyNameFunction(var1, var0);
-      });
+      return simpleBuilder((var1) -> new CopyNameFunction(var1, var0));
    }
 
    public static enum NameSource implements StringRepresentable {
@@ -56,11 +50,11 @@ public class CopyNameFunction extends LootItemConditionalFunction {
       LAST_DAMAGE_PLAYER("last_damage_player", LootContextParams.LAST_DAMAGE_PLAYER),
       BLOCK_ENTITY("block_entity", LootContextParams.BLOCK_ENTITY);
 
-      public static final Codec<NameSource> CODEC = StringRepresentable.fromEnum(NameSource::values);
+      public static final Codec<NameSource> CODEC = StringRepresentable.<NameSource>fromEnum(NameSource::values);
       private final String name;
       final ContextKey<?> param;
 
-      private NameSource(final String var3, final ContextKey var4) {
+      private NameSource(final String var3, final ContextKey<?> var4) {
          this.name = var3;
          this.param = var4;
       }

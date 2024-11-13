@@ -47,7 +47,7 @@ public class GiveGiftToHero extends Behavior<Villager> {
       this.giftGivenDuringThisRun = false;
       this.timeSinceStart = var3;
       Player var5 = (Player)this.getNearestTargetableHero(var2).get();
-      var2.getBrain().setMemory(MemoryModuleType.INTERACTION_TARGET, (Object)var5);
+      var2.getBrain().setMemory(MemoryModuleType.INTERACTION_TARGET, var5);
       BehaviorUtils.lookAtEntity(var2, var5);
    }
 
@@ -77,9 +77,7 @@ public class GiveGiftToHero extends Behavior<Villager> {
    }
 
    private void throwGift(ServerLevel var1, Villager var2, LivingEntity var3) {
-      var2.dropFromGiftLootTable(var1, getLootTableToThrow(var2), (var2x, var3x) -> {
-         BehaviorUtils.throwItem(var2, var3x, var3.position());
-      });
+      var2.dropFromGiftLootTable(var1, getLootTableToThrow(var2), (var2x, var3x) -> BehaviorUtils.throwItem(var2, var3x, var3.position()));
    }
 
    private static ResourceKey<LootTable> getLootTableToThrow(Villager var0) {

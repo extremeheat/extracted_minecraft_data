@@ -21,17 +21,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
-   public static final MapCodec<UpwardsBranchingTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return trunkPlacerParts(var0).and(var0.group(IntProvider.POSITIVE_CODEC.fieldOf("extra_branch_steps").forGetter((var0x) -> {
-         return var0x.extraBranchSteps;
-      }), Codec.floatRange(0.0F, 1.0F).fieldOf("place_branch_per_log_probability").forGetter((var0x) -> {
-         return var0x.placeBranchPerLogProbability;
-      }), IntProvider.NON_NEGATIVE_CODEC.fieldOf("extra_branch_length").forGetter((var0x) -> {
-         return var0x.extraBranchLength;
-      }), RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("can_grow_through").forGetter((var0x) -> {
-         return var0x.canGrowThrough;
-      }))).apply(var0, UpwardsBranchingTrunkPlacer::new);
-   });
+   public static final MapCodec<UpwardsBranchingTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> trunkPlacerParts(var0).and(var0.group(IntProvider.POSITIVE_CODEC.fieldOf("extra_branch_steps").forGetter((var0x) -> var0x.extraBranchSteps), Codec.floatRange(0.0F, 1.0F).fieldOf("place_branch_per_log_probability").forGetter((var0x) -> var0x.placeBranchPerLogProbability), IntProvider.NON_NEGATIVE_CODEC.fieldOf("extra_branch_length").forGetter((var0x) -> var0x.extraBranchLength), RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("can_grow_through").forGetter((var0x) -> var0x.canGrowThrough))).apply(var0, UpwardsBranchingTrunkPlacer::new));
    private final IntProvider extraBranchSteps;
    private final float placeBranchPerLogProbability;
    private final IntProvider extraBranchLength;
@@ -101,8 +91,6 @@ public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
    }
 
    protected boolean validTreePos(LevelSimulatedReader var1, BlockPos var2) {
-      return super.validTreePos(var1, var2) || var1.isStateAtPosition(var2, (var1x) -> {
-         return var1x.is(this.canGrowThrough);
-      });
+      return super.validTreePos(var1, var2) || var1.isStateAtPosition(var2, (var1x) -> var1x.is(this.canGrowThrough));
    }
 }

@@ -7,8 +7,4 @@ public record LootItemFunctionType<T extends LootItemFunction>(MapCodec<T> codec
       super();
       this.codec = var1;
    }
-
-   public MapCodec<T> codec() {
-      return this.codec;
-   }
 }

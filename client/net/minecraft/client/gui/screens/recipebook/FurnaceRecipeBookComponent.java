@@ -42,8 +42,8 @@ public class FurnaceRecipeBookComponent extends RecipeBookComponent<AbstractFurn
    protected void fillGhostRecipe(GhostSlots var1, RecipeDisplay var2, ContextMap var3) {
       var1.setResult(((AbstractFurnaceMenu)this.menu).getResultSlot(), var3, var2.result());
       if (var2 instanceof FurnaceRecipeDisplay var4) {
-         var1.setInput((Slot)((AbstractFurnaceMenu)this.menu).slots.get(0), var3, var4.ingredient());
-         Slot var5 = (Slot)((AbstractFurnaceMenu)this.menu).slots.get(1);
+         var1.setInput((this.menu).slots.get(0), var3, var4.ingredient());
+         Slot var5 = (this.menu).slots.get(1);
          if (var5.getItem().isEmpty()) {
             var1.setInput(var5, var3, var4.fuel());
          }
@@ -56,8 +56,6 @@ public class FurnaceRecipeBookComponent extends RecipeBookComponent<AbstractFurn
    }
 
    protected void selectMatchingRecipes(RecipeCollection var1, StackedItemContents var2) {
-      var1.selectRecipes(var2, (var0) -> {
-         return var0 instanceof FurnaceRecipeDisplay;
-      });
+      var1.selectRecipes(var2, (var0) -> var0 instanceof FurnaceRecipeDisplay);
    }
 }

@@ -9,7 +9,6 @@ import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.Dumpable;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 
 public class FontTexture extends AbstractTexture implements Dumpable {
    private static final int SIZE = 256;
@@ -23,9 +22,6 @@ public class FontTexture extends AbstractTexture implements Dumpable {
       this.root = new Node(0, 0, 256, 256);
       TextureUtil.prepareImage(var2 ? NativeImage.InternalGlFormat.RGBA : NativeImage.InternalGlFormat.RED, this.getId(), 256, 256);
       this.renderTypes = var1;
-   }
-
-   public void load(ResourceManager var1) {
    }
 
    public void close() {
@@ -53,9 +49,7 @@ public class FontTexture extends AbstractTexture implements Dumpable {
 
    public void dumpContents(ResourceLocation var1, Path var2) {
       String var3 = var1.toDebugFileName();
-      TextureUtil.writeAsPNG(var2, var3, this.getId(), 0, 256, 256, (var0) -> {
-         return (var0 & -16777216) == 0 ? -16777216 : var0;
-      });
+      TextureUtil.writeAsPNG(var2, var3, this.getId(), 0, 256, 256, (var0) -> (var0 & -16777216) == 0 ? -16777216 : var0);
    }
 
    static class Node {

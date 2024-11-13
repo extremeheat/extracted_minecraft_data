@@ -57,11 +57,10 @@ public class SpawnEggItem extends Item {
          Direction var5 = var1.getClickedFace();
          BlockState var6 = var2.getBlockState(var4);
          BlockEntity var8 = var2.getBlockEntity(var4);
-         EntityType var10;
          if (var8 instanceof Spawner) {
             Spawner var9 = (Spawner)var8;
-            var10 = this.getType(var3);
-            var9.setEntityId(var10, var2.getRandom());
+            EntityType var11 = this.getType(var3);
+            var9.setEntityId(var11, var2.getRandom());
             var2.sendBlockUpdated(var4, var6, var6, 3);
             var2.gameEvent(var1.getPlayer(), GameEvent.BLOCK_CHANGE, var4);
             var3.shrink(1);
@@ -74,7 +73,7 @@ public class SpawnEggItem extends Item {
                var7 = var4.relative(var5);
             }
 
-            var10 = this.getType(var3);
+            EntityType var10 = this.getType(var3);
             if (var10.spawn((ServerLevel)var2, var3, var1.getPlayer(), var7, EntitySpawnReason.SPAWN_ITEM_USE, true, !Objects.equals(var4, var7) && var5 == Direction.UP) != null) {
                var3.shrink(1);
                var2.gameEvent(var1.getPlayer(), GameEvent.ENTITY_PLACE, var4);

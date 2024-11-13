@@ -1,11 +1,9 @@
 package net.minecraft.world.item;
 
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.MapEncoder;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -73,9 +71,7 @@ public class CreativeModeTabs {
    }
 
    public static CreativeModeTab bootstrap(Registry<CreativeModeTab> var0) {
-      Registry.register(var0, (ResourceKey)BUILDING_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 0).title(Component.translatable("itemGroup.buildingBlocks")).icon(() -> {
-         return new ItemStack(Blocks.BRICKS);
-      }).displayItems((var0x, var1) -> {
+      Registry.register(var0, (ResourceKey)BUILDING_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 0).title(Component.translatable("itemGroup.buildingBlocks")).icon(() -> new ItemStack(Blocks.BRICKS)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.OAK_LOG);
          var1.accept((ItemLike)Items.OAK_WOOD);
          var1.accept((ItemLike)Items.STRIPPED_OAK_LOG);
@@ -497,9 +493,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.WAXED_OXIDIZED_COPPER_TRAPDOOR);
          var1.accept((ItemLike)Items.WAXED_OXIDIZED_COPPER_BULB);
       }).build());
-      Registry.register(var0, (ResourceKey)COLORED_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 1).title(Component.translatable("itemGroup.coloredBlocks")).icon(() -> {
-         return new ItemStack(Blocks.CYAN_WOOL);
-      }).displayItems((var0x, var1) -> {
+      Registry.register(var0, (ResourceKey)COLORED_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 1).title(Component.translatable("itemGroup.coloredBlocks")).icon(() -> new ItemStack(Blocks.CYAN_WOOL)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.WHITE_WOOL);
          var1.accept((ItemLike)Items.LIGHT_GRAY_WOOL);
          var1.accept((ItemLike)Items.GRAY_WOOL);
@@ -699,9 +693,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.MAGENTA_BANNER);
          var1.accept((ItemLike)Items.PINK_BANNER);
       }).build());
-      Registry.register(var0, (ResourceKey)NATURAL_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 2).title(Component.translatable("itemGroup.natural")).icon(() -> {
-         return new ItemStack(Blocks.GRASS_BLOCK);
-      }).displayItems((var0x, var1) -> {
+      Registry.register(var0, (ResourceKey)NATURAL_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 2).title(Component.translatable("itemGroup.natural")).icon(() -> new ItemStack(Blocks.GRASS_BLOCK)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.GRASS_BLOCK);
          var1.accept((ItemLike)Items.PODZOL);
          var1.accept((ItemLike)Items.MYCELIUM);
@@ -938,9 +930,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.COBWEB);
          var1.accept((ItemLike)Items.BEDROCK);
       }).build());
-      Registry.register(var0, (ResourceKey)FUNCTIONAL_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 3).title(Component.translatable("itemGroup.functional")).icon(() -> {
-         return new ItemStack(Items.OAK_SIGN);
-      }).displayItems((var0x, var1) -> {
+      Registry.register(var0, (ResourceKey)FUNCTIONAL_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 3).title(Component.translatable("itemGroup.functional")).icon(() -> new ItemStack(Items.OAK_SIGN)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.TORCH);
          var1.accept((ItemLike)Items.SOUL_TORCH);
          var1.accept((ItemLike)Items.REDSTONE_TORCH);
@@ -1005,11 +995,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.ITEM_FRAME);
          var1.accept((ItemLike)Items.GLOW_ITEM_FRAME);
          var1.accept((ItemLike)Items.PAINTING);
-         var0x.holders().lookup(Registries.PAINTING_VARIANT).ifPresent((var2) -> {
-            generatePresetPaintings(var1, var0x.holders(), var2, (var0) -> {
-               return var0.is(PaintingVariantTags.PLACEABLE);
-            }, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-         });
+         var0x.holders().lookup(Registries.PAINTING_VARIANT).ifPresent((var2) -> generatePresetPaintings(var1, var0x.holders(), var2, (var0) -> var0.is(PaintingVariantTags.PLACEABLE), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
          var1.accept((ItemLike)Items.BOOKSHELF);
          var1.accept((ItemLike)Items.CHISELED_BOOKSHELF);
          var1.accept((ItemLike)Items.LECTERN);
@@ -1128,9 +1114,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.INFESTED_CHISELED_STONE_BRICKS);
          var1.accept((ItemLike)Items.INFESTED_DEEPSLATE);
       }).build());
-      Registry.register(var0, (ResourceKey)REDSTONE_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 4).title(Component.translatable("itemGroup.redstone")).icon(() -> {
-         return new ItemStack(Items.REDSTONE);
-      }).displayItems((var0x, var1) -> {
+      Registry.register(var0, (ResourceKey)REDSTONE_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 4).title(Component.translatable("itemGroup.redstone")).icon(() -> new ItemStack(Items.REDSTONE)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.REDSTONE);
          var1.accept((ItemLike)Items.REDSTONE_TORCH);
          var1.accept((ItemLike)Items.REDSTONE_BLOCK);
@@ -1200,17 +1184,11 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.ARMOR_STAND);
          var1.accept((ItemLike)Items.REDSTONE_ORE);
       }).build());
-      Registry.register(var0, (ResourceKey)HOTBAR, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 5).title(Component.translatable("itemGroup.hotbar")).icon(() -> {
-         return new ItemStack(Blocks.BOOKSHELF);
-      }).alignedRight().type(CreativeModeTab.Type.HOTBAR).build());
-      Registry.register(var0, (ResourceKey)SEARCH, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 6).title(Component.translatable("itemGroup.search")).icon(() -> {
-         return new ItemStack(Items.COMPASS);
-      }).displayItems((var1, var2) -> {
+      Registry.register(var0, (ResourceKey)HOTBAR, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 5).title(Component.translatable("itemGroup.hotbar")).icon(() -> new ItemStack(Blocks.BOOKSHELF)).alignedRight().type(CreativeModeTab.Type.HOTBAR).build());
+      Registry.register(var0, (ResourceKey)SEARCH, CreativeModeTab.builder(CreativeModeTab.Row.TOP, 6).title(Component.translatable("itemGroup.search")).icon(() -> new ItemStack(Items.COMPASS)).displayItems((var1, var2) -> {
          Set var3 = ItemStackLinkedSet.createTypeAndComponentsSet();
-         Iterator var4 = var0.iterator();
 
-         while(var4.hasNext()) {
-            CreativeModeTab var5 = (CreativeModeTab)var4.next();
+         for(CreativeModeTab var5 : var0) {
             if (var5.getType() != CreativeModeTab.Type.SEARCH) {
                var3.addAll(var5.getSearchTabDisplayItems());
             }
@@ -1218,9 +1196,7 @@ public class CreativeModeTabs {
 
          var2.acceptAll(var3);
       }).backgroundTexture(SEARCH_BACKGROUND).alignedRight().type(CreativeModeTab.Type.SEARCH).build());
-      Registry.register(var0, (ResourceKey)TOOLS_AND_UTILITIES, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 0).title(Component.translatable("itemGroup.tools")).icon(() -> {
-         return new ItemStack(Items.DIAMOND_PICKAXE);
-      }).displayItems((var0x, var1) -> {
+      Registry.register(var0, (ResourceKey)TOOLS_AND_UTILITIES, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 0).title(Component.translatable("itemGroup.tools")).icon(() -> new ItemStack(Items.DIAMOND_PICKAXE)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.WOODEN_SHOVEL);
          var1.accept((ItemLike)Items.WOODEN_PICKAXE);
          var1.accept((ItemLike)Items.WOODEN_AXE);
@@ -1324,9 +1300,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.CHEST_MINECART);
          var1.accept((ItemLike)Items.FURNACE_MINECART);
          var1.accept((ItemLike)Items.TNT_MINECART);
-         var0x.holders().lookup(Registries.INSTRUMENT).ifPresent((var1x) -> {
-            generateInstrumentTypes(var1, var1x, Items.GOAT_HORN, InstrumentTags.GOAT_HORNS, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-         });
+         var0x.holders().lookup(Registries.INSTRUMENT).ifPresent((var1x) -> generateInstrumentTypes(var1, var1x, Items.GOAT_HORN, InstrumentTags.GOAT_HORNS, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
          var1.accept((ItemLike)Items.MUSIC_DISC_13);
          var1.accept((ItemLike)Items.MUSIC_DISC_CAT);
          var1.accept((ItemLike)Items.MUSIC_DISC_BLOCKS);
@@ -1347,9 +1321,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.MUSIC_DISC_5);
          var1.accept((ItemLike)Items.MUSIC_DISC_PIGSTEP);
       }).build());
-      Registry.register(var0, (ResourceKey)COMBAT, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 1).title(Component.translatable("itemGroup.combat")).icon(() -> {
-         return new ItemStack(Items.NETHERITE_SWORD);
-      }).displayItems((var0x, var1) -> {
+      Registry.register(var0, (ResourceKey)COMBAT, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 1).title(Component.translatable("itemGroup.combat")).icon(() -> new ItemStack(Items.NETHERITE_SWORD)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.WOODEN_SWORD);
          var1.accept((ItemLike)Items.STONE_SWORD);
          var1.accept((ItemLike)Items.IRON_SWORD);
@@ -1406,13 +1378,9 @@ public class CreativeModeTabs {
          generateFireworksAllDurations(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
          var1.accept((ItemLike)Items.ARROW);
          var1.accept((ItemLike)Items.SPECTRAL_ARROW);
-         var0x.holders().lookup(Registries.POTION).ifPresent((var2) -> {
-            generatePotionEffectTypes(var1, var2, Items.TIPPED_ARROW, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, var0x.enabledFeatures());
-         });
+         var0x.holders().lookup(Registries.POTION).ifPresent((var2) -> generatePotionEffectTypes(var1, var2, Items.TIPPED_ARROW, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, var0x.enabledFeatures()));
       }).build());
-      Registry.register(var0, (ResourceKey)FOOD_AND_DRINKS, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 2).title(Component.translatable("itemGroup.foodAndDrink")).icon(() -> {
-         return new ItemStack(Items.GOLDEN_APPLE);
-      }).displayItems((var0x, var1) -> {
+      Registry.register(var0, (ResourceKey)FOOD_AND_DRINKS, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 2).title(Component.translatable("itemGroup.foodAndDrink")).icon(() -> new ItemStack(Items.GOLDEN_APPLE)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.APPLE);
          var1.accept((ItemLike)Items.GOLDEN_APPLE);
          var1.accept((ItemLike)Items.ENCHANTED_GOLDEN_APPLE);
@@ -1462,9 +1430,7 @@ public class CreativeModeTabs {
             generatePotionEffectTypes(var1, var2, Items.LINGERING_POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, var0x.enabledFeatures());
          });
       }).build());
-      Registry.register(var0, (ResourceKey)INGREDIENTS, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 3).title(Component.translatable("itemGroup.ingredients")).icon(() -> {
-         return new ItemStack(Items.IRON_INGOT);
-      }).displayItems((var0x, var1) -> {
+      Registry.register(var0, (ResourceKey)INGREDIENTS, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 3).title(Component.translatable("itemGroup.ingredients")).icon(() -> new ItemStack(Items.IRON_INGOT)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.COAL);
          var1.accept((ItemLike)Items.CHARCOAL);
          var1.accept((ItemLike)Items.RAW_IRON);
@@ -1476,7 +1442,6 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.ANCIENT_DEBRIS);
          var1.accept((ItemLike)Items.QUARTZ);
          var1.accept((ItemLike)Items.AMETHYST_SHARD);
-         var1.accept((ItemLike)Items.RESIN_CLUMP);
          var1.accept((ItemLike)Items.IRON_NUGGET);
          var1.accept((ItemLike)Items.GOLD_NUGGET);
          var1.accept((ItemLike)Items.IRON_INGOT);
@@ -1496,6 +1461,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.LEATHER);
          var1.accept((ItemLike)Items.RABBIT_HIDE);
          var1.accept((ItemLike)Items.HONEYCOMB);
+         var1.accept((ItemLike)Items.RESIN_CLUMP);
          var1.accept((ItemLike)Items.INK_SAC);
          var1.accept((ItemLike)Items.GLOW_INK_SAC);
          var1.accept((ItemLike)Items.TURTLE_SCUTE);
@@ -1618,9 +1584,7 @@ public class CreativeModeTabs {
             generateEnchantmentBookTypesAllLevels(var1, var1x, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY);
          });
       }).build());
-      Registry.register(var0, (ResourceKey)SPAWN_EGGS, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 4).title(Component.translatable("itemGroup.spawnEggs")).icon(() -> {
-         return new ItemStack(Items.PIG_SPAWN_EGG);
-      }).displayItems((var0x, var1) -> {
+      Registry.register(var0, (ResourceKey)SPAWN_EGGS, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 4).title(Component.translatable("itemGroup.spawnEggs")).icon(() -> new ItemStack(Items.PIG_SPAWN_EGG)).displayItems((var0x, var1) -> {
          var1.accept((ItemLike)Items.SPAWNER);
          var1.accept((ItemLike)Items.TRIAL_SPAWNER);
          var1.accept((ItemLike)Items.CREAKING_HEART);
@@ -1704,9 +1668,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.ZOMBIE_VILLAGER_SPAWN_EGG);
          var1.accept((ItemLike)Items.ZOMBIFIED_PIGLIN_SPAWN_EGG);
       }).build());
-      Registry.register(var0, (ResourceKey)OP_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 5).title(Component.translatable("itemGroup.op")).icon(() -> {
-         return new ItemStack(Items.COMMAND_BLOCK);
-      }).alignedRight().displayItems((var0x, var1) -> {
+      Registry.register(var0, (ResourceKey)OP_BLOCKS, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 5).title(Component.translatable("itemGroup.op")).icon(() -> new ItemStack(Items.COMMAND_BLOCK)).alignedRight().displayItems((var0x, var1) -> {
          if (var0x.hasPermissions()) {
             var1.accept((ItemLike)Items.COMMAND_BLOCK);
             var1.accept((ItemLike)Items.CHAIN_COMMAND_BLOCK);
@@ -1722,88 +1684,52 @@ public class CreativeModeTabs {
                var1.accept(LightBlock.setLightOnStack(new ItemStack(Items.LIGHT), var2));
             }
 
-            var0x.holders().lookup(Registries.PAINTING_VARIANT).ifPresent((var2x) -> {
-               generatePresetPaintings(var1, var0x.holders(), var2x, (var0) -> {
-                  return !var0.is(PaintingVariantTags.PLACEABLE);
-               }, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-            });
+            var0x.holders().lookup(Registries.PAINTING_VARIANT).ifPresent((var2x) -> generatePresetPaintings(var1, var0x.holders(), var2x, (var0) -> !var0.is(PaintingVariantTags.PLACEABLE), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
          }
 
       }).build());
-      return (CreativeModeTab)Registry.register(var0, (ResourceKey)INVENTORY, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 6).title(Component.translatable("itemGroup.inventory")).icon(() -> {
-         return new ItemStack(Blocks.CHEST);
-      }).backgroundTexture(INVENTORY_BACKGROUND).hideTitle().alignedRight().type(CreativeModeTab.Type.INVENTORY).noScrollBar().build());
+      return (CreativeModeTab)Registry.register(var0, (ResourceKey)INVENTORY, CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 6).title(Component.translatable("itemGroup.inventory")).icon(() -> new ItemStack(Blocks.CHEST)).backgroundTexture(INVENTORY_BACKGROUND).hideTitle().alignedRight().type(CreativeModeTab.Type.INVENTORY).noScrollBar().build());
    }
 
    public static void validate() {
       HashMap var0 = new HashMap();
-      Iterator var1 = BuiltInRegistries.CREATIVE_MODE_TAB.registryKeySet().iterator();
 
-      String var4;
-      String var5;
-      do {
-         if (!var1.hasNext()) {
-            return;
+      for(ResourceKey var2 : BuiltInRegistries.CREATIVE_MODE_TAB.registryKeySet()) {
+         CreativeModeTab var3 = BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(var2);
+         String var4 = var3.getDisplayName().getString();
+         String var5 = (String)var0.put(Pair.of(var3.row(), var3.column()), var4);
+         if (var5 != null) {
+            throw new IllegalArgumentException("Duplicate position: " + var4 + " vs. " + var5);
          }
+      }
 
-         ResourceKey var2 = (ResourceKey)var1.next();
-         CreativeModeTab var3 = (CreativeModeTab)BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(var2);
-         var4 = var3.getDisplayName().getString();
-         var5 = (String)var0.put(Pair.of(var3.row(), var3.column()), var4);
-      } while(var5 == null);
-
-      throw new IllegalArgumentException("Duplicate position: " + var4 + " vs. " + var5);
    }
 
    public static CreativeModeTab getDefaultTab() {
-      return (CreativeModeTab)BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(BUILDING_BLOCKS);
+      return BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(BUILDING_BLOCKS);
    }
 
    private static void generatePotionEffectTypes(CreativeModeTab.Output var0, HolderLookup<Potion> var1, Item var2, CreativeModeTab.TabVisibility var3, FeatureFlagSet var4) {
-      var1.listElements().filter((var1x) -> {
-         return ((Potion)var1x.value()).isEnabled(var4);
-      }).map((var1x) -> {
-         return PotionContents.createItemStack(var2, var1x);
-      }).forEach((var2x) -> {
-         var0.accept(var2x, var3);
-      });
+      var1.listElements().filter((var1x) -> ((Potion)var1x.value()).isEnabled(var4)).map((var1x) -> PotionContents.createItemStack(var2, var1x)).forEach((var2x) -> var0.accept(var2x, var3));
    }
 
    private static void generateEnchantmentBookTypesOnlyMaxLevel(CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, CreativeModeTab.TabVisibility var2) {
-      var1.listElements().map((var0x) -> {
-         return EnchantmentHelper.createBook(new EnchantmentInstance(var0x, ((Enchantment)var0x.value()).getMaxLevel()));
-      }).forEach((var2x) -> {
-         var0.accept(var2x, var2);
-      });
+      var1.listElements().map((var0x) -> EnchantmentHelper.createBook(new EnchantmentInstance(var0x, ((Enchantment)var0x.value()).getMaxLevel()))).forEach((var2x) -> var0.accept(var2x, var2));
    }
 
    private static void generateEnchantmentBookTypesAllLevels(CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, CreativeModeTab.TabVisibility var2) {
-      var1.listElements().flatMap((var0x) -> {
-         return IntStream.rangeClosed(((Enchantment)var0x.value()).getMinLevel(), ((Enchantment)var0x.value()).getMaxLevel()).mapToObj((var1) -> {
-            return EnchantmentHelper.createBook(new EnchantmentInstance(var0x, var1));
-         });
-      }).forEach((var2x) -> {
-         var0.accept(var2x, var2);
-      });
+      var1.listElements().flatMap((var0x) -> IntStream.rangeClosed(((Enchantment)var0x.value()).getMinLevel(), ((Enchantment)var0x.value()).getMaxLevel()).mapToObj((var1) -> EnchantmentHelper.createBook(new EnchantmentInstance(var0x, var1)))).forEach((var2x) -> var0.accept(var2x, var2));
    }
 
    private static void generateInstrumentTypes(CreativeModeTab.Output var0, HolderLookup<Instrument> var1, Item var2, TagKey<Instrument> var3, CreativeModeTab.TabVisibility var4) {
-      var1.get(var3).ifPresent((var3x) -> {
-         var3x.stream().map((var1) -> {
-            return InstrumentItem.create(var2, var1);
-         }).forEach((var2x) -> {
-            var0.accept(var2x, var4);
-         });
-      });
+      var1.get(var3).ifPresent((var3x) -> var3x.stream().map((var1) -> InstrumentItem.create(var2, var1)).forEach((var2x) -> var0.accept(var2x, var4)));
    }
 
    private static void generateSuspiciousStews(CreativeModeTab.Output var0, CreativeModeTab.TabVisibility var1) {
       List var2 = SuspiciousEffectHolder.getAllEffectHolders();
       Set var3 = ItemStackLinkedSet.createTypeAndComponentsSet();
-      Iterator var4 = var2.iterator();
 
-      while(var4.hasNext()) {
-         SuspiciousEffectHolder var5 = (SuspiciousEffectHolder)var4.next();
+      for(SuspiciousEffectHolder var5 : var2) {
          ItemStack var6 = new ItemStack(Items.SUSPICIOUS_STEW);
          var6.set(DataComponents.SUSPICIOUS_STEW_EFFECTS, var5.getSuspiciousEffects());
          var3.add(var6);
@@ -1822,11 +1748,7 @@ public class CreativeModeTabs {
    }
 
    private static void generateFireworksAllDurations(CreativeModeTab.Output var0, CreativeModeTab.TabVisibility var1) {
-      byte[] var2 = FireworkRocketItem.CRAFTABLE_DURATIONS;
-      int var3 = var2.length;
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         byte var5 = var2[var4];
+      for(byte var5 : FireworkRocketItem.CRAFTABLE_DURATIONS) {
          ItemStack var6 = new ItemStack(Items.FIREWORK_ROCKET);
          var6.set(DataComponents.FIREWORKS, new Fireworks(var5, List.of()));
          var0.accept(var6, var1);
@@ -1837,9 +1759,7 @@ public class CreativeModeTabs {
    private static void generatePresetPaintings(CreativeModeTab.Output var0, HolderLookup.Provider var1, HolderLookup.RegistryLookup<PaintingVariant> var2, Predicate<Holder<PaintingVariant>> var3, CreativeModeTab.TabVisibility var4) {
       RegistryOps var5 = var1.createSerializationContext(NbtOps.INSTANCE);
       var2.listElements().filter(var3).sorted(PAINTING_COMPARATOR).forEach((var3x) -> {
-         CustomData var4x = ((CustomData)CustomData.EMPTY.update((DynamicOps)var5, (MapEncoder)Painting.VARIANT_MAP_CODEC, (Object)var3x).getOrThrow()).update((var0x) -> {
-            var0x.putString("id", "minecraft:painting");
-         });
+         CustomData var4x = ((CustomData)CustomData.EMPTY.update(var5, (MapEncoder)Painting.VARIANT_MAP_CODEC, var3x).getOrThrow()).update((var0x) -> var0x.putString("id", "minecraft:painting"));
          ItemStack var5x = new ItemStack(Items.PAINTING);
          var5x.set(DataComponents.ENTITY_DATA, var4x);
          var0.accept(var5x, var4);
@@ -1859,20 +1779,12 @@ public class CreativeModeTabs {
    }
 
    public static CreativeModeTab searchTab() {
-      return (CreativeModeTab)BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(SEARCH);
+      return BuiltInRegistries.CREATIVE_MODE_TAB.getValueOrThrow(SEARCH);
    }
 
    private static void buildAllTabContents(CreativeModeTab.ItemDisplayParameters var0) {
-      streamAllTabs().filter((var0x) -> {
-         return var0x.getType() == CreativeModeTab.Type.CATEGORY;
-      }).forEach((var1) -> {
-         var1.buildContents(var0);
-      });
-      streamAllTabs().filter((var0x) -> {
-         return var0x.getType() != CreativeModeTab.Type.CATEGORY;
-      }).forEach((var1) -> {
-         var1.buildContents(var0);
-      });
+      streamAllTabs().filter((var0x) -> var0x.getType() == CreativeModeTab.Type.CATEGORY).forEach((var1) -> var1.buildContents(var0));
+      streamAllTabs().filter((var0x) -> var0x.getType() != CreativeModeTab.Type.CATEGORY).forEach((var1) -> var1.buildContents(var0));
    }
 
    public static boolean tryRebuildTabContents(FeatureFlagSet var0, boolean var1, HolderLookup.Provider var2) {

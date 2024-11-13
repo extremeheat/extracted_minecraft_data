@@ -307,20 +307,20 @@ public class Library {
       return this.supportsDisconnections && ALC11.alcGetInteger(this.currentDevice, 787) == 0;
    }
 
-   private interface ChannelPool {
-      @Nullable
-      Channel acquire();
+   public static enum Pool {
+      STATIC,
+      STREAMING;
 
-      boolean release(Channel var1);
+      private Pool() {
+      }
 
-      void cleanup();
-
-      int getMaxCount();
-
-      int getUsedCount();
+      // $FF: synthetic method
+      private static Pool[] $values() {
+         return new Pool[]{STATIC, STREAMING};
+      }
    }
 
-   private static class CountingChannelPool implements ChannelPool {
+   static class CountingChannelPool implements ChannelPool {
       private final int limit;
       private final Set<Channel> activeChannels = Sets.newIdentityHashSet();
 
@@ -370,16 +370,16 @@ public class Library {
       }
    }
 
-   public static enum Pool {
-      STATIC,
-      STREAMING;
+   interface ChannelPool {
+      @Nullable
+      Channel acquire();
 
-      private Pool() {
-      }
+      boolean release(Channel var1);
 
-      // $FF: synthetic method
-      private static Pool[] $values() {
-         return new Pool[]{STATIC, STREAMING};
-      }
+      void cleanup();
+
+      int getMaxCount();
+
+      int getUsedCount();
    }
 }

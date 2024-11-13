@@ -7,7 +7,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -45,13 +44,9 @@ public class PackRepository {
 
    private Map<String, Pack> discoverAvailable() {
       TreeMap var1 = Maps.newTreeMap();
-      Iterator var2 = this.sources.iterator();
 
-      while(var2.hasNext()) {
-         RepositorySource var3 = (RepositorySource)var2.next();
-         var3.loadPacks((var1x) -> {
-            var1.put(var1x.getId(), var1x);
-         });
+      for(RepositorySource var3 : this.sources) {
+         var3.loadPacks((var1x) -> var1.put(var1x.getId(), var1x));
       }
 
       return ImmutableMap.copyOf(var1);
@@ -92,10 +87,8 @@ public class PackRepository {
 
    private List<Pack> rebuildSelected(Collection<String> var1) {
       List var2 = (List)this.getAvailablePacks(var1).collect(Util.toMutableList());
-      Iterator var3 = this.available.values().iterator();
 
-      while(var3.hasNext()) {
-         Pack var4 = (Pack)var3.next();
+      for(Pack var4 : this.available.values()) {
          if (var4.isRequired() && !var2.contains(var4)) {
             var4.getDefaultPosition().insert(var2, var4, Pack::selectionConfig, false);
          }

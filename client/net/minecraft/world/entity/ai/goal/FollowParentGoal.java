@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.ai.goal;
 
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.world.entity.Entity;
@@ -29,10 +28,8 @@ public class FollowParentGoal extends Goal {
          List var1 = this.animal.level().getEntitiesOfClass(this.animal.getClass(), this.animal.getBoundingBox().inflate(8.0, 4.0, 8.0));
          Animal var2 = null;
          double var3 = 1.7976931348623157E308;
-         Iterator var5 = var1.iterator();
 
-         while(var5.hasNext()) {
-            Animal var6 = (Animal)var5.next();
+         for(Animal var6 : var1) {
             if (var6.getAge() >= 0) {
                double var7 = this.animal.distanceToSqr(var6);
                if (!(var7 > var3)) {

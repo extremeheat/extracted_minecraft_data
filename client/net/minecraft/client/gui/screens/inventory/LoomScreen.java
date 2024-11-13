@@ -115,9 +115,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
          float var13 = 0.6666667F;
          var1.pose().scale(0.6666667F, 0.6666667F, -0.6666667F);
          DyeColor var14 = ((BannerItem)var10.getItem().getItem()).getColor();
-         var1.drawSpecial((var3x) -> {
-            BannerRenderer.renderPatterns(var1.pose(), var3x, 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, var14, this.resultBannerPatterns);
-         });
+         var1.drawSpecial((var3x) -> BannerRenderer.renderPatterns(var1.pose(), var3x, 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, var14, this.resultBannerPatterns));
          var1.pose().popPose();
       } else if (this.hasMaxPatterns) {
          var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ERROR_SPRITE, var5 + var10.x - 5, var6 + var10.y - 5, 26, 26);
@@ -126,15 +124,15 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       if (this.displayPatterns) {
          int var24 = var5 + 60;
          int var25 = var6 + 13;
-         List var15 = ((LoomMenu)this.menu).getSelectablePatterns();
+         List var15 = (this.menu).getSelectablePatterns();
 
-         label63:
+         label64:
          for(int var16 = 0; var16 < 4; ++var16) {
             for(int var17 = 0; var17 < 4; ++var17) {
                int var18 = var16 + this.startRow;
                int var19 = var18 * 4 + var17;
                if (var19 >= var15.size()) {
-                  break label63;
+                  break label64;
                }
 
                int var20 = var24 + var17 * 14;
@@ -169,9 +167,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       float var6 = 0.6666667F;
       var5.scale(0.6666667F, -0.6666667F, -0.6666667F);
       BannerPatternLayers var7 = (new BannerPatternLayers.Builder()).add(var2, DyeColor.WHITE).build();
-      var1.drawSpecial((var3x) -> {
-         BannerRenderer.renderPatterns(var5, var3x, 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, DyeColor.GRAY, var7);
-      });
+      var1.drawSpecial((var3x) -> BannerRenderer.renderPatterns(var5, var3x, 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, DyeColor.GRAY, var7));
       var5.popPose();
       var1.flush();
    }
@@ -190,7 +186,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
                int var15 = var14 * 4 + var9;
                if (var10 >= 0.0 && var12 >= 0.0 && var10 < 14.0 && var12 < 14.0 && ((LoomMenu)this.menu).clickMenuButton(this.minecraft.player, var15)) {
                   Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_LOOM_SELECT_PATTERN, 1.0F));
-                  this.minecraft.gameMode.handleInventoryButtonClick(((LoomMenu)this.menu).containerId, var15);
+                  this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var15);
                   return true;
                }
             }

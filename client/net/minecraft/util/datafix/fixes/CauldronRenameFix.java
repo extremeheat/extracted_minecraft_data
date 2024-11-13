@@ -23,8 +23,6 @@ public class CauldronRenameFix extends DataFix {
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("cauldron_rename_fix", this.getInputSchema().getType(References.BLOCK_STATE), (var0) -> {
-         return var0.update(DSL.remainderFinder(), CauldronRenameFix::fix);
-      });
+      return this.fixTypeEverywhereTyped("cauldron_rename_fix", this.getInputSchema().getType(References.BLOCK_STATE), (var0) -> var0.update(DSL.remainderFinder(), CauldronRenameFix::fix));
    }
 }

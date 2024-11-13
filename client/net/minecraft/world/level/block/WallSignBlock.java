@@ -26,9 +26,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WallSignBlock extends SignBlock {
-   public static final MapCodec<WallSignBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(var0, WallSignBlock::new);
-   });
+   public static final MapCodec<WallSignBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(var0, WallSignBlock::new));
    public static final EnumProperty<Direction> FACING;
    protected static final float AABB_THICKNESS = 2.0F;
    protected static final float AABB_BOTTOM = 4.5F;
@@ -59,11 +57,8 @@ public class WallSignBlock extends SignBlock {
       Level var4 = var1.getLevel();
       BlockPos var5 = var1.getClickedPos();
       Direction[] var6 = var1.getNearestLookingDirections();
-      Direction[] var7 = var6;
-      int var8 = var6.length;
 
-      for(int var9 = 0; var9 < var8; ++var9) {
-         Direction var10 = var7[var9];
+      for(Direction var10 : var6) {
          if (var10.getAxis().isHorizontal()) {
             Direction var11 = var10.getOpposite();
             var2 = (BlockState)var2.setValue(FACING, var11);

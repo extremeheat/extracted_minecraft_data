@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.item.trading.MerchantOffers;
 
 public class ClientboundMerchantOffersPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundMerchantOffersPacket> STREAM_CODEC = Packet.codec(ClientboundMerchantOffersPacket::write, ClientboundMerchantOffersPacket::new);
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundMerchantOffersPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundMerchantOffersPacket>codec(ClientboundMerchantOffersPacket::write, ClientboundMerchantOffersPacket::new);
    private final int containerId;
    private final MerchantOffers offers;
    private final int villagerLevel;

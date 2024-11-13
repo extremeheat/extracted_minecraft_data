@@ -96,9 +96,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
       this.goalSelector.addGoal(1, new ClimbOnTopOfPowderSnowGoal(this, this.level()));
       this.goalSelector.addGoal(1, new RabbitPanicGoal(this, 2.2));
       this.goalSelector.addGoal(2, new BreedGoal(this, 0.8));
-      this.goalSelector.addGoal(3, new TemptGoal(this, 1.0, (var0) -> {
-         return var0.is(ItemTags.RABBIT_FOOD);
-      }, false));
+      this.goalSelector.addGoal(3, new TemptGoal(this, 1.0, (var0) -> var0.is(ItemTags.RABBIT_FOOD), false));
       this.goalSelector.addGoal(4, new RabbitAvoidEntityGoal(this, Player.class, 8.0F, 2.2, 2.2));
       this.goalSelector.addGoal(4, new RabbitAvoidEntityGoal(this, Wolf.class, 10.0F, 2.2, 2.2));
       this.goalSelector.addGoal(4, new RabbitAvoidEntityGoal(this, Monster.class, 4.0F, 2.2, 2.2));
@@ -109,8 +107,8 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
 
    protected float getJumpPower() {
       float var1 = 0.3F;
-      if (this.horizontalCollision || this.moveControl.hasWanted() && this.moveControl.getWantedY() > this.getY() + 0.5) {
-         var1 = 0.5F;
+      if (this.moveControl.getSpeedModifier() <= 0.6) {
+         var1 = 0.2F;
       }
 
       Path var2 = this.navigation.getPath();
@@ -121,8 +119,8 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
          }
       }
 
-      if (this.moveControl.getSpeedModifier() <= 0.6) {
-         var1 = 0.2F;
+      if (this.horizontalCollision || this.jumping && this.moveControl.getWantedY() > this.getY() + 0.5) {
+         var1 = 0.5F;
       }
 
       return super.getJumpPower(var1 / 0.42F);
@@ -307,7 +305,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
 
    @Nullable
    public Rabbit getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Rabbit var3 = (Rabbit)EntityType.RABBIT.create(var1, EntitySpawnReason.BREEDING);
+      Rabbit var3 = EntityType.RABBIT.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          Variant var4 = getRandomRabbitVariant(var1, this.blockPosition());
          if (this.random.nextInt(20) != 0) {
@@ -416,9 +414,55 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
    }
 
    static {
-      DATA_TYPE_ID = SynchedEntityData.defineId(Rabbit.class, EntityDataSerializers.INT);
+      DATA_TYPE_ID = SynchedEntityData.<Integer>defineId(Rabbit.class, EntityDataSerializers.INT);
       KILLER_BUNNY = ResourceLocation.withDefaultNamespace("killer_bunny");
       EVIL_ATTACK_POWER_MODIFIER = ResourceLocation.withDefaultNamespace("evil");
+   }
+
+   public static enum Variant implements StringRepresentable {
+      BROWN(0, "brown"),
+      WHITE(1, "white"),
+      BLACK(2, "black"),
+      WHITE_SPLOTCHED(3, "white_splotched"),
+      GOLD(4, "gold"),
+      SALT(5, "salt"),
+      EVIL(99, "evil");
+
+      private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>sparse(Variant::id, values(), BROWN);
+      public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+      final int id;
+      private final String name;
+
+      private Variant(final int var3, final String var4) {
+         this.id = var3;
+         this.name = var4;
+      }
+
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      public int id() {
+         return this.id;
+      }
+
+      public static Variant byId(int var0) {
+         return (Variant)BY_ID.apply(var0);
+      }
+
+      // $FF: synthetic method
+      private static Variant[] $values() {
+         return new Variant[]{BROWN, WHITE, BLACK, WHITE_SPLOTCHED, GOLD, SALT, EVIL};
+      }
+   }
+
+   public static class RabbitGroupData extends AgeableMob.AgeableMobGroupData {
+      public final Variant variant;
+
+      public RabbitGroupData(Variant var1) {
+         super(1.0F);
+         this.variant = var1;
+      }
    }
 
    public static class RabbitJumpControl extends JumpControl {
@@ -451,7 +495,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
       }
    }
 
-   private static class RabbitMoveControl extends MoveControl {
+   static class RabbitMoveControl extends MoveControl {
       private final Rabbit rabbit;
       private double nextJumpSpeed;
 
@@ -463,7 +507,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
       public void tick() {
          if (this.rabbit.onGround() && !this.rabbit.jumping && !((RabbitJumpControl)this.rabbit.jumpControl).wantJump()) {
             this.rabbit.setSpeedModifier(0.0);
-         } else if (this.hasWanted()) {
+         } else if (this.hasWanted() || this.operation == MoveControl.Operation.JUMPING) {
             this.rabbit.setSpeedModifier(this.nextJumpSpeed);
          }
 
@@ -483,21 +527,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
       }
    }
 
-   static class RabbitPanicGoal extends PanicGoal {
-      private final Rabbit rabbit;
-
-      public RabbitPanicGoal(Rabbit var1, double var2) {
-         super(var1, var2);
-         this.rabbit = var1;
-      }
-
-      public void tick() {
-         super.tick();
-         this.rabbit.setSpeedModifier(this.speedModifier);
-      }
-   }
-
-   private static class RabbitAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
+   static class RabbitAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
       private final Rabbit rabbit;
 
       public RabbitAvoidEntityGoal(Rabbit var1, Class<T> var2, float var3, double var4, double var6) {
@@ -510,7 +540,7 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
       }
    }
 
-   private static class RaidGardenGoal extends MoveToBlockGoal {
+   static class RaidGardenGoal extends MoveToBlockGoal {
       private final Rabbit rabbit;
       private boolean wantsToRaid;
       private boolean canRaid;
@@ -579,49 +609,17 @@ public class Rabbit extends Animal implements VariantHolder<Variant> {
       }
    }
 
-   public static enum Variant implements StringRepresentable {
-      BROWN(0, "brown"),
-      WHITE(1, "white"),
-      BLACK(2, "black"),
-      WHITE_SPLOTCHED(3, "white_splotched"),
-      GOLD(4, "gold"),
-      SALT(5, "salt"),
-      EVIL(99, "evil");
+   static class RabbitPanicGoal extends PanicGoal {
+      private final Rabbit rabbit;
 
-      private static final IntFunction<Variant> BY_ID = ByIdMap.sparse(Variant::id, values(), BROWN);
-      public static final Codec<Variant> CODEC = StringRepresentable.fromEnum(Variant::values);
-      final int id;
-      private final String name;
-
-      private Variant(final int var3, final String var4) {
-         this.id = var3;
-         this.name = var4;
+      public RabbitPanicGoal(Rabbit var1, double var2) {
+         super(var1, var2);
+         this.rabbit = var1;
       }
 
-      public String getSerializedName() {
-         return this.name;
-      }
-
-      public int id() {
-         return this.id;
-      }
-
-      public static Variant byId(int var0) {
-         return (Variant)BY_ID.apply(var0);
-      }
-
-      // $FF: synthetic method
-      private static Variant[] $values() {
-         return new Variant[]{BROWN, WHITE, BLACK, WHITE_SPLOTCHED, GOLD, SALT, EVIL};
-      }
-   }
-
-   public static class RabbitGroupData extends AgeableMob.AgeableMobGroupData {
-      public final Variant variant;
-
-      public RabbitGroupData(Variant var1) {
-         super(1.0F);
-         this.variant = var1;
+      public void tick() {
+         super.tick();
+         this.rabbit.setSpeedModifier(this.speedModifier);
       }
    }
 }

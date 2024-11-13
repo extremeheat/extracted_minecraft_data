@@ -3,7 +3,6 @@ package net.minecraft.advancements.critereon;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -39,76 +38,18 @@ public record MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredic
    }
 
    public boolean matches(Map<Holder<MobEffect>, MobEffectInstance> var1) {
-      Iterator var2 = this.effectMap.entrySet().iterator();
-
-      Map.Entry var3;
-      MobEffectInstance var4;
-      do {
-         if (!var2.hasNext()) {
-            return true;
+      for(Map.Entry var3 : this.effectMap.entrySet()) {
+         MobEffectInstance var4 = (MobEffectInstance)var1.get(var3.getKey());
+         if (!((MobEffectInstancePredicate)var3.getValue()).matches(var4)) {
+            return false;
          }
+      }
 
-         var3 = (Map.Entry)var2.next();
-         var4 = (MobEffectInstance)var1.get(var3.getKey());
-      } while(((MobEffectInstancePredicate)var3.getValue()).matches(var4));
-
-      return false;
-   }
-
-   public Map<Holder<MobEffect>, MobEffectInstancePredicate> effectMap() {
-      return this.effectMap;
+      return true;
    }
 
    static {
       CODEC = Codec.unboundedMap(MobEffect.CODEC, MobEffectsPredicate.MobEffectInstancePredicate.CODEC).xmap(MobEffectsPredicate::new, MobEffectsPredicate::effectMap);
-   }
-
-   public static record MobEffectInstancePredicate(MinMaxBounds.Ints amplifier, MinMaxBounds.Ints duration, Optional<Boolean> ambient, Optional<Boolean> visible) {
-      public static final Codec<MobEffectInstancePredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("amplifier", MinMaxBounds.Ints.ANY).forGetter(MobEffectInstancePredicate::amplifier), MinMaxBounds.Ints.CODEC.optionalFieldOf("duration", MinMaxBounds.Ints.ANY).forGetter(MobEffectInstancePredicate::duration), Codec.BOOL.optionalFieldOf("ambient").forGetter(MobEffectInstancePredicate::ambient), Codec.BOOL.optionalFieldOf("visible").forGetter(MobEffectInstancePredicate::visible)).apply(var0, MobEffectInstancePredicate::new);
-      });
-
-      public MobEffectInstancePredicate() {
-         this(MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, Optional.empty(), Optional.empty());
-      }
-
-      public MobEffectInstancePredicate(MinMaxBounds.Ints var1, MinMaxBounds.Ints var2, Optional<Boolean> var3, Optional<Boolean> var4) {
-         super();
-         this.amplifier = var1;
-         this.duration = var2;
-         this.ambient = var3;
-         this.visible = var4;
-      }
-
-      public boolean matches(@Nullable MobEffectInstance var1) {
-         if (var1 == null) {
-            return false;
-         } else if (!this.amplifier.matches(var1.getAmplifier())) {
-            return false;
-         } else if (!this.duration.matches(var1.getDuration())) {
-            return false;
-         } else if (this.ambient.isPresent() && (Boolean)this.ambient.get() != var1.isAmbient()) {
-            return false;
-         } else {
-            return !this.visible.isPresent() || (Boolean)this.visible.get() == var1.isVisible();
-         }
-      }
-
-      public MinMaxBounds.Ints amplifier() {
-         return this.amplifier;
-      }
-
-      public MinMaxBounds.Ints duration() {
-         return this.duration;
-      }
-
-      public Optional<Boolean> ambient() {
-         return this.ambient;
-      }
-
-      public Optional<Boolean> visible() {
-         return this.visible;
-      }
    }
 
    public static class Builder {
@@ -134,6 +75,36 @@ public record MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectInstancePredic
 
       public Optional<MobEffectsPredicate> build() {
          return Optional.of(new MobEffectsPredicate(this.effectMap.build()));
+      }
+   }
+
+   public static record MobEffectInstancePredicate(MinMaxBounds.Ints amplifier, MinMaxBounds.Ints duration, Optional<Boolean> ambient, Optional<Boolean> visible) {
+      public static final Codec<MobEffectInstancePredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("amplifier", MinMaxBounds.Ints.ANY).forGetter(MobEffectInstancePredicate::amplifier), MinMaxBounds.Ints.CODEC.optionalFieldOf("duration", MinMaxBounds.Ints.ANY).forGetter(MobEffectInstancePredicate::duration), Codec.BOOL.optionalFieldOf("ambient").forGetter(MobEffectInstancePredicate::ambient), Codec.BOOL.optionalFieldOf("visible").forGetter(MobEffectInstancePredicate::visible)).apply(var0, MobEffectInstancePredicate::new));
+
+      public MobEffectInstancePredicate() {
+         this(MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, Optional.empty(), Optional.empty());
+      }
+
+      public MobEffectInstancePredicate(MinMaxBounds.Ints var1, MinMaxBounds.Ints var2, Optional<Boolean> var3, Optional<Boolean> var4) {
+         super();
+         this.amplifier = var1;
+         this.duration = var2;
+         this.ambient = var3;
+         this.visible = var4;
+      }
+
+      public boolean matches(@Nullable MobEffectInstance var1) {
+         if (var1 == null) {
+            return false;
+         } else if (!this.amplifier.matches(var1.getAmplifier())) {
+            return false;
+         } else if (!this.duration.matches(var1.getDuration())) {
+            return false;
+         } else if (this.ambient.isPresent() && (Boolean)this.ambient.get() != var1.isAmbient()) {
+            return false;
+         } else {
+            return !this.visible.isPresent() || (Boolean)this.visible.get() == var1.isVisible();
+         }
       }
    }
 }

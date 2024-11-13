@@ -18,8 +18,7 @@ public class ChunkStatusFix extends DataFix {
       Type var1 = this.getInputSchema().getType(References.CHUNK);
       Type var2 = var1.findFieldType("Level");
       OpticFinder var3 = DSL.fieldFinder("Level", var2);
-      return this.fixTypeEverywhereTyped("ChunkStatusFix", var1, this.getOutputSchema().getType(References.CHUNK), (var1x) -> {
-         return var1x.updateTyped(var3, (var0) -> {
+      return this.fixTypeEverywhereTyped("ChunkStatusFix", var1, this.getOutputSchema().getType(References.CHUNK), (var1x) -> var1x.updateTyped(var3, (var0) -> {
             Dynamic var1 = (Dynamic)var0.get(DSL.remainderFinder());
             String var2 = var1.get("Status").asString("empty");
             if (Objects.equals(var2, "postprocessed")) {
@@ -27,7 +26,6 @@ public class ChunkStatusFix extends DataFix {
             }
 
             return var0.set(DSL.remainderFinder(), var1);
-         });
-      });
+         }));
    }
 }

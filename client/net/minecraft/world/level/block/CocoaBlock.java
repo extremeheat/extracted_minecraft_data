@@ -87,11 +87,8 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
       BlockState var2 = this.defaultBlockState();
       Level var3 = var1.getLevel();
       BlockPos var4 = var1.getClickedPos();
-      Direction[] var5 = var1.getNearestLookingDirections();
-      int var6 = var5.length;
 
-      for(int var7 = 0; var7 < var6; ++var7) {
-         Direction var8 = var5[var7];
+      for(Direction var8 : var1.getNearestLookingDirections()) {
          if (var8.getAxis().isHorizontal()) {
             var2 = (BlockState)var2.setValue(FACING, var8);
             if (var2.canSurvive(var3, var4)) {

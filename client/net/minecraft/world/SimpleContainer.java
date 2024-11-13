@@ -1,7 +1,6 @@
 package net.minecraft.world;
 
 import com.google.common.collect.Lists;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -23,13 +22,13 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    public SimpleContainer(int var1) {
       super();
       this.size = var1;
-      this.items = NonNullList.withSize(var1, ItemStack.EMPTY);
+      this.items = NonNullList.<ItemStack>withSize(var1, ItemStack.EMPTY);
    }
 
    public SimpleContainer(ItemStack... var1) {
       super();
       this.size = var1.length;
-      this.items = NonNullList.of(ItemStack.EMPTY, var1);
+      this.items = NonNullList.<ItemStack>of(ItemStack.EMPTY, var1);
    }
 
    public void addListener(ContainerListener var1) {
@@ -52,9 +51,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    }
 
    public List<ItemStack> removeAllItems() {
-      List var1 = (List)this.items.stream().filter((var0) -> {
-         return !var0.isEmpty();
-      }).collect(Collectors.toList());
+      List var1 = (List)this.items.stream().filter((var0) -> !var0.isEmpty()).collect(Collectors.toList());
       this.clearContent();
       return var1;
    }
@@ -107,10 +104,8 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
 
    public boolean canAddItem(ItemStack var1) {
       boolean var2 = false;
-      Iterator var3 = this.items.iterator();
 
-      while(var3.hasNext()) {
-         ItemStack var4 = (ItemStack)var3.next();
+      for(ItemStack var4 : this.items) {
          if (var4.isEmpty() || ItemStack.isSameItemSameComponents(var4, var1) && var4.getCount() < var4.getMaxStackSize()) {
             var2 = true;
             break;
@@ -121,7 +116,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    }
 
    public ItemStack removeItemNoUpdate(int var1) {
-      ItemStack var2 = (ItemStack)this.items.get(var1);
+      ItemStack var2 = this.items.get(var1);
       if (var2.isEmpty()) {
          return ItemStack.EMPTY;
       } else {
@@ -141,26 +136,18 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    }
 
    public boolean isEmpty() {
-      Iterator var1 = this.items.iterator();
-
-      ItemStack var2;
-      do {
-         if (!var1.hasNext()) {
-            return true;
+      for(ItemStack var2 : this.items) {
+         if (!var2.isEmpty()) {
+            return false;
          }
+      }
 
-         var2 = (ItemStack)var1.next();
-      } while(var2.isEmpty());
-
-      return false;
+      return true;
    }
 
    public void setChanged() {
       if (this.listeners != null) {
-         Iterator var1 = this.listeners.iterator();
-
-         while(var1.hasNext()) {
-            ContainerListener var2 = (ContainerListener)var1.next();
+         for(ContainerListener var2 : this.listeners) {
             var2.containerChanged(this);
          }
       }
@@ -177,19 +164,14 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    }
 
    public void fillStackedContents(StackedItemContents var1) {
-      Iterator var2 = this.items.iterator();
-
-      while(var2.hasNext()) {
-         ItemStack var3 = (ItemStack)var2.next();
+      for(ItemStack var3 : this.items) {
          var1.accountStack(var3);
       }
 
    }
 
    public String toString() {
-      return ((List)this.items.stream().filter((var0) -> {
-         return !var0.isEmpty();
-      }).collect(Collectors.toList())).toString();
+      return ((List)this.items.stream().filter((var0) -> !var0.isEmpty()).collect(Collectors.toList())).toString();
    }
 
    private void moveItemToEmptySlots(ItemStack var1) {

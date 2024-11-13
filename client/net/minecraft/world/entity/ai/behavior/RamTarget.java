@@ -62,7 +62,7 @@ public class RamTarget extends Behavior<Goat> {
       Brain var6 = var2.getBrain();
       Vec3 var7 = (Vec3)var6.getMemory(MemoryModuleType.RAM_TARGET).get();
       this.ramDirection = (new Vec3((double)var5.getX() - var7.x(), 0.0, (double)var5.getZ() - var7.z())).normalize();
-      var6.setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var7, this.speed, 0)));
+      var6.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var7, this.speed, 0));
    }
 
    protected void tick(ServerLevel var1, Goat var2, long var3) {
@@ -110,7 +110,7 @@ public class RamTarget extends Behavior<Goat> {
 
    protected void finishRam(ServerLevel var1, Goat var2) {
       var1.broadcastEntityEvent(var2, (byte)59);
-      var2.getBrain().setMemory(MemoryModuleType.RAM_COOLDOWN_TICKS, (Object)((UniformInt)this.getTimeBetweenRams.apply(var2)).sample(var1.random));
+      var2.getBrain().setMemory(MemoryModuleType.RAM_COOLDOWN_TICKS, ((UniformInt)this.getTimeBetweenRams.apply(var2)).sample(var1.random));
       var2.getBrain().eraseMemory(MemoryModuleType.RAM_TARGET);
    }
 

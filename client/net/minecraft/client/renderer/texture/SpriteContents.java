@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.texture;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -12,7 +11,9 @@ import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
+import net.minecraft.client.resources.metadata.animation.AnimationFrame;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
 import net.minecraft.resources.ResourceLocation;
@@ -37,8 +38,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       this.width = var2.width();
       this.height = var2.height();
       this.metadata = var4;
-      AnimationMetadataSection var5 = (AnimationMetadataSection)var4.getSection(AnimationMetadataSection.SERIALIZER).orElse(AnimationMetadataSection.EMPTY);
-      this.animatedTexture = this.createAnimatedTexture(var2, var3.getWidth(), var3.getHeight(), var5);
+      this.animatedTexture = (AnimatedTexture)var4.getSection(AnimationMetadataSection.TYPE).map((var3x) -> this.createAnimatedTexture(var2, var3.getWidth(), var3.getHeight(), var3x)).orElse((Object)null);
       this.originalImage = var3;
       this.byMipLevel = new NativeImage[]{this.originalImage};
    }
@@ -49,7 +49,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       } catch (Throwable var6) {
          CrashReport var3 = CrashReport.forThrowable(var6, "Generating mipmaps for frame");
          CrashReportCategory var4 = var3.addCategory("Sprite being mipmapped");
-         var4.setDetail("First frame", () -> {
+         var4.setDetail("First frame", (CrashReportDetail)(() -> {
             StringBuilder var1 = new StringBuilder();
             if (var1.length() > 0) {
                var1.append(", ");
@@ -57,16 +57,12 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
 
             var1.append(this.originalImage.getWidth()).append("x").append(this.originalImage.getHeight());
             return var1.toString();
-         });
+         }));
          CrashReportCategory var5 = var3.addCategory("Frame being iterated");
-         var5.setDetail("Sprite name", (Object)this.name);
-         var5.setDetail("Sprite size", () -> {
-            return this.width + " x " + this.height;
-         });
-         var5.setDetail("Sprite frames", () -> {
-            return this.getFrameCount() + " frames";
-         });
-         var5.setDetail("Mipmap levels", (Object)var1);
+         var5.setDetail("Sprite name", this.name);
+         var5.setDetail("Sprite size", (CrashReportDetail)(() -> this.width + " x " + this.height));
+         var5.setDetail("Sprite frames", (CrashReportDetail)(() -> this.getFrameCount() + " frames"));
+         var5.setDetail("Mipmap levels", var1);
          throw new ReportedException(var3);
       }
    }
@@ -80,48 +76,52 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       int var5 = var2 / var1.width();
       int var6 = var3 / var1.height();
       int var7 = var5 * var6;
-      ArrayList var8 = new ArrayList();
-      var4.forEachFrame((var1x, var2x) -> {
-         var8.add(new FrameInfo(var1x, var2x));
-      });
-      int var9;
-      if (var8.isEmpty()) {
-         for(var9 = 0; var9 < var7; ++var9) {
-            var8.add(new FrameInfo(var9, var4.getDefaultFrameTime()));
+      int var8 = var4.defaultFrameTime();
+      ArrayList var9;
+      if (var4.frames().isEmpty()) {
+         var9 = new ArrayList(var7);
+
+         for(int var10 = 0; var10 < var7; ++var10) {
+            var9.add(new FrameInfo(var10, var8));
          }
       } else {
-         var9 = 0;
-         IntOpenHashSet var10 = new IntOpenHashSet();
+         List var16 = (List)var4.frames().get();
+         var9 = new ArrayList(var16.size());
 
-         for(Iterator var11 = var8.iterator(); var11.hasNext(); ++var9) {
-            FrameInfo var12 = (FrameInfo)var11.next();
-            boolean var13 = true;
-            if (var12.time <= 0) {
-               LOGGER.warn("Invalid frame duration on sprite {} frame {}: {}", new Object[]{this.name, var9, var12.time});
-               var13 = false;
+         for(AnimationFrame var12 : var16) {
+            var9.add(new FrameInfo(var12.index(), var12.timeOr(var8)));
+         }
+
+         int var17 = 0;
+         IntOpenHashSet var18 = new IntOpenHashSet();
+
+         for(Iterator var13 = var9.iterator(); var13.hasNext(); ++var17) {
+            FrameInfo var14 = (FrameInfo)var13.next();
+            boolean var15 = true;
+            if (var14.time <= 0) {
+               LOGGER.warn("Invalid frame duration on sprite {} frame {}: {}", new Object[]{this.name, var17, var14.time});
+               var15 = false;
             }
 
-            if (var12.index < 0 || var12.index >= var7) {
-               LOGGER.warn("Invalid frame index on sprite {} frame {}: {}", new Object[]{this.name, var9, var12.index});
-               var13 = false;
+            if (var14.index < 0 || var14.index >= var7) {
+               LOGGER.warn("Invalid frame index on sprite {} frame {}: {}", new Object[]{this.name, var17, var14.index});
+               var15 = false;
             }
 
-            if (var13) {
-               var10.add(var12.index);
+            if (var15) {
+               var18.add(var14.index);
             } else {
-               var11.remove();
+               var13.remove();
             }
          }
 
-         int[] var14 = IntStream.range(0, var7).filter((var1x) -> {
-            return !var10.contains(var1x);
-         }).toArray();
-         if (var14.length > 0) {
-            LOGGER.warn("Unused frames in sprite {}: {}", this.name, Arrays.toString(var14));
+         int[] var19 = IntStream.range(0, var7).filter((var1x) -> !var18.contains(var1x)).toArray();
+         if (var19.length > 0) {
+            LOGGER.warn("Unused frames in sprite {}: {}", this.name, Arrays.toString(var19));
          }
       }
 
-      return var8.size() <= 1 ? null : new AnimatedTexture(ImmutableList.copyOf(var8), var5, var4.isInterpolatedFrames());
+      return var9.size() <= 1 ? null : new AnimatedTexture(List.copyOf(var9), var5, var4.interpolatedFrames());
    }
 
    void upload(int var1, int var2, int var3, int var4, NativeImage[] var5) {
@@ -157,11 +157,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
    }
 
    public void close() {
-      NativeImage[] var1 = this.byMipLevel;
-      int var2 = var1.length;
-
-      for(int var3 = 0; var3 < var2; ++var3) {
-         NativeImage var4 = var1[var3];
+      for(NativeImage var4 : this.byMipLevel) {
          var4.close();
       }
 
@@ -192,97 +188,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
 
    }
 
-   private class AnimatedTexture {
-      final List<FrameInfo> frames;
-      private final int frameRowSize;
-      private final boolean interpolateFrames;
-
-      AnimatedTexture(final List<FrameInfo> var2, final int var3, final boolean var4) {
-         super();
-         this.frames = var2;
-         this.frameRowSize = var3;
-         this.interpolateFrames = var4;
-      }
-
-      int getFrameX(int var1) {
-         return var1 % this.frameRowSize;
-      }
-
-      int getFrameY(int var1) {
-         return var1 / this.frameRowSize;
-      }
-
-      void uploadFrame(int var1, int var2, int var3) {
-         int var4 = this.getFrameX(var3) * SpriteContents.this.width;
-         int var5 = this.getFrameY(var3) * SpriteContents.this.height;
-         SpriteContents.this.upload(var1, var2, var4, var5, SpriteContents.this.byMipLevel);
-      }
-
-      public SpriteTicker createTicker() {
-         return SpriteContents.this.new Ticker(SpriteContents.this, this, this.interpolateFrames ? SpriteContents.this.new InterpolationData() : null);
-      }
-
-      public void uploadFirstFrame(int var1, int var2) {
-         this.uploadFrame(var1, var2, ((FrameInfo)this.frames.get(0)).index);
-      }
-
-      public IntStream getUniqueFrames() {
-         return this.frames.stream().mapToInt((var0) -> {
-            return var0.index;
-         }).distinct();
-      }
-   }
-
-   private static class FrameInfo {
-      final int index;
-      final int time;
-
-      FrameInfo(int var1, int var2) {
-         super();
-         this.index = var1;
-         this.time = var2;
-      }
-   }
-
-   private class Ticker implements SpriteTicker {
-      int frame;
-      int subFrame;
-      final AnimatedTexture animationInfo;
-      @Nullable
-      private final InterpolationData interpolationData;
-
-      Ticker(final SpriteContents var1, @Nullable final AnimatedTexture var2, final InterpolationData var3) {
-         super();
-         this.animationInfo = var2;
-         this.interpolationData = var3;
-      }
-
-      public void tickAndUpload(int var1, int var2) {
-         ++this.subFrame;
-         FrameInfo var3 = (FrameInfo)this.animationInfo.frames.get(this.frame);
-         if (this.subFrame >= var3.time) {
-            int var4 = var3.index;
-            this.frame = (this.frame + 1) % this.animationInfo.frames.size();
-            this.subFrame = 0;
-            int var5 = ((FrameInfo)this.animationInfo.frames.get(this.frame)).index;
-            if (var4 != var5) {
-               this.animationInfo.uploadFrame(var1, var2, var5);
-            }
-         } else if (this.interpolationData != null) {
-            this.interpolationData.uploadInterpolatedFrame(var1, var2, this);
-         }
-
-      }
-
-      public void close() {
-         if (this.interpolationData != null) {
-            this.interpolationData.close();
-         }
-
-      }
-   }
-
-   private final class InterpolationData implements AutoCloseable {
+   final class InterpolationData implements AutoCloseable {
       private final NativeImage[] activeFrame;
 
       InterpolationData() {
@@ -328,12 +234,96 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
       }
 
       public void close() {
-         NativeImage[] var1 = this.activeFrame;
-         int var2 = var1.length;
-
-         for(int var3 = 0; var3 < var2; ++var3) {
-            NativeImage var4 = var1[var3];
+         for(NativeImage var4 : this.activeFrame) {
             var4.close();
+         }
+
+      }
+   }
+
+   static record FrameInfo(int index, int time) {
+      final int index;
+      final int time;
+
+      FrameInfo(int var1, int var2) {
+         super();
+         this.index = var1;
+         this.time = var2;
+      }
+   }
+
+   class AnimatedTexture {
+      final List<FrameInfo> frames;
+      private final int frameRowSize;
+      private final boolean interpolateFrames;
+
+      AnimatedTexture(final List<FrameInfo> var2, final int var3, final boolean var4) {
+         super();
+         this.frames = var2;
+         this.frameRowSize = var3;
+         this.interpolateFrames = var4;
+      }
+
+      int getFrameX(int var1) {
+         return var1 % this.frameRowSize;
+      }
+
+      int getFrameY(int var1) {
+         return var1 / this.frameRowSize;
+      }
+
+      void uploadFrame(int var1, int var2, int var3) {
+         int var4 = this.getFrameX(var3) * SpriteContents.this.width;
+         int var5 = this.getFrameY(var3) * SpriteContents.this.height;
+         SpriteContents.this.upload(var1, var2, var4, var5, SpriteContents.this.byMipLevel);
+      }
+
+      public SpriteTicker createTicker() {
+         return SpriteContents.this.new Ticker(this, this.interpolateFrames ? SpriteContents.this.new InterpolationData() : null);
+      }
+
+      public void uploadFirstFrame(int var1, int var2) {
+         this.uploadFrame(var1, var2, ((FrameInfo)this.frames.get(0)).index);
+      }
+
+      public IntStream getUniqueFrames() {
+         return this.frames.stream().mapToInt((var0) -> var0.index).distinct();
+      }
+   }
+
+   class Ticker implements SpriteTicker {
+      int frame;
+      int subFrame;
+      final AnimatedTexture animationInfo;
+      @Nullable
+      private final InterpolationData interpolationData;
+
+      Ticker(final AnimatedTexture var2, @Nullable final InterpolationData var3) {
+         super();
+         this.animationInfo = var2;
+         this.interpolationData = var3;
+      }
+
+      public void tickAndUpload(int var1, int var2) {
+         ++this.subFrame;
+         FrameInfo var3 = (FrameInfo)this.animationInfo.frames.get(this.frame);
+         if (this.subFrame >= var3.time) {
+            int var4 = var3.index;
+            this.frame = (this.frame + 1) % this.animationInfo.frames.size();
+            this.subFrame = 0;
+            int var5 = ((FrameInfo)this.animationInfo.frames.get(this.frame)).index;
+            if (var4 != var5) {
+               this.animationInfo.uploadFrame(var1, var2, var5);
+            }
+         } else if (this.interpolationData != null) {
+            this.interpolationData.uploadInterpolatedFrame(var1, var2, this);
+         }
+
+      }
+
+      public void close() {
+         if (this.interpolationData != null) {
+            this.interpolationData.close();
          }
 
       }

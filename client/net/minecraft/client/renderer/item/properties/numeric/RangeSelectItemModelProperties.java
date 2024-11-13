@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 
 public class RangeSelectItemModelProperties {
-   private static final ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends RangeSelectItemModelProperty>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper();
+   private static final ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends RangeSelectItemModelProperty>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<ResourceLocation, MapCodec<? extends RangeSelectItemModelProperty>>();
    public static final MapCodec<RangeSelectItemModelProperty> MAP_CODEC;
 
    public RangeSelectItemModelProperties() {
@@ -26,8 +26,6 @@ public class RangeSelectItemModelProperties {
    }
 
    static {
-      MAP_CODEC = ID_MAPPER.codec(ResourceLocation.CODEC).dispatchMap("property", RangeSelectItemModelProperty::type, (var0) -> {
-         return var0;
-      });
+      MAP_CODEC = ID_MAPPER.codec(ResourceLocation.CODEC).dispatchMap("property", RangeSelectItemModelProperty::type, (var0) -> var0);
    }
 }

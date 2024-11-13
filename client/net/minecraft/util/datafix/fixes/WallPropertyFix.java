@@ -19,9 +19,7 @@ public class WallPropertyFix extends DataFix {
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("WallPropertyFix", this.getInputSchema().getType(References.BLOCK_STATE), (var0) -> {
-         return var0.update(DSL.remainderFinder(), WallPropertyFix::upgradeBlockStateTag);
-      });
+      return this.fixTypeEverywhereTyped("WallPropertyFix", this.getInputSchema().getType(References.BLOCK_STATE), (var0) -> var0.update(DSL.remainderFinder(), WallPropertyFix::upgradeBlockStateTag));
    }
 
    private static String mapProperty(String var0) {

@@ -36,6 +36,6 @@ public record TrimMaterialProperty() implements SelectItemModelProperty<Resource
    }
 
    static {
-      TYPE = SelectItemModelProperty.Type.create(MapCodec.unit(new TrimMaterialProperty()), ResourceKey.codec(Registries.TRIM_MATERIAL));
+      TYPE = SelectItemModelProperty.Type.<TrimMaterialProperty, ResourceKey<TrimMaterial>>create(MapCodec.unit(new TrimMaterialProperty()), ResourceKey.codec(Registries.TRIM_MATERIAL));
    }
 }

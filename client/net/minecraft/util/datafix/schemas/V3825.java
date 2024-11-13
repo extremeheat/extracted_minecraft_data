@@ -14,9 +14,7 @@ public class V3825 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       Map var2 = super.registerEntities(var1);
-      var1.register(var2, "minecraft:ominous_item_spawner", () -> {
-         return DSL.optionalFields("item", References.ITEM_STACK.in(var1));
-      });
+      var1.register(var2, "minecraft:ominous_item_spawner", () -> DSL.optionalFields("item", References.ITEM_STACK.in(var1)));
       return var2;
    }
 }

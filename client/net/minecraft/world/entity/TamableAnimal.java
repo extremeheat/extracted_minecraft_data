@@ -302,13 +302,13 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
    }
 
    static {
-      DATA_FLAGS_ID = SynchedEntityData.defineId(TamableAnimal.class, EntityDataSerializers.BYTE);
-      DATA_OWNERUUID_ID = SynchedEntityData.defineId(TamableAnimal.class, EntityDataSerializers.OPTIONAL_UUID);
+      DATA_FLAGS_ID = SynchedEntityData.<Byte>defineId(TamableAnimal.class, EntityDataSerializers.BYTE);
+      DATA_OWNERUUID_ID = SynchedEntityData.<Optional<UUID>>defineId(TamableAnimal.class, EntityDataSerializers.OPTIONAL_UUID);
    }
 
    public class TamableAnimalPanicGoal extends PanicGoal {
       public TamableAnimalPanicGoal(final double var2, final TagKey<DamageType> var4) {
-         super(TamableAnimal.this, var2, (TagKey)var4);
+         super(TamableAnimal.this, var2, var4);
       }
 
       public TamableAnimalPanicGoal(final double var2) {

@@ -6,9 +6,7 @@ import java.util.Optional;
 
 public class OminousBannerRenameFix extends ItemStackTagFix {
    public OminousBannerRenameFix(Schema var1) {
-      super(var1, "OminousBannerRenameFix", (var0) -> {
-         return var0.equals("minecraft:white_banner");
-      });
+      super(var1, "OminousBannerRenameFix", (var0) -> var0.equals("minecraft:white_banner"));
    }
 
    protected <T> Dynamic<T> fixItemStackTag(Dynamic<T> var1) {

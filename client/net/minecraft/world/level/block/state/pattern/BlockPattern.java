@@ -5,7 +5,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import java.util.Iterator;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -80,20 +79,10 @@ public class BlockPattern {
    public BlockPatternMatch find(LevelReader var1, BlockPos var2) {
       LoadingCache var3 = createLevelCache(var1, false);
       int var4 = Math.max(Math.max(this.width, this.height), this.depth);
-      Iterator var5 = BlockPos.betweenClosed(var2, var2.offset(var4 - 1, var4 - 1, var4 - 1)).iterator();
 
-      while(var5.hasNext()) {
-         BlockPos var6 = (BlockPos)var5.next();
-         Direction[] var7 = Direction.values();
-         int var8 = var7.length;
-
-         for(int var9 = 0; var9 < var8; ++var9) {
-            Direction var10 = var7[var9];
-            Direction[] var11 = Direction.values();
-            int var12 = var11.length;
-
-            for(int var13 = 0; var13 < var12; ++var13) {
-               Direction var14 = var11[var13];
+      for(BlockPos var6 : BlockPos.betweenClosed(var2, var2.offset(var4 - 1, var4 - 1, var4 - 1))) {
+         for(Direction var10 : Direction.values()) {
+            for(Direction var14 : Direction.values()) {
                if (var14 != var10 && var14 != var10.getOpposite()) {
                   BlockPatternMatch var15 = this.matches(var6, var10, var14, var3);
                   if (var15 != null) {
@@ -119,6 +108,26 @@ public class BlockPattern {
          return var0.offset(var7.getX() * -var4 + var8.getX() * var3 + var6.getX() * var5, var7.getY() * -var4 + var8.getY() * var3 + var6.getY() * var5, var7.getZ() * -var4 + var8.getZ() * var3 + var6.getZ() * var5);
       } else {
          throw new IllegalArgumentException("Invalid forwards & up combination");
+      }
+   }
+
+   static class BlockCacheLoader extends CacheLoader<BlockPos, BlockInWorld> {
+      private final LevelReader level;
+      private final boolean loadChunks;
+
+      public BlockCacheLoader(LevelReader var1, boolean var2) {
+         super();
+         this.level = var1;
+         this.loadChunks = var2;
+      }
+
+      public BlockInWorld load(BlockPos var1) {
+         return new BlockInWorld(this.level, var1, this.loadChunks);
+      }
+
+      // $FF: synthetic method
+      public Object load(final Object var1) throws Exception {
+         return this.load((BlockPos)var1);
       }
    }
 
@@ -172,26 +181,6 @@ public class BlockPattern {
 
       public String toString() {
          return MoreObjects.toStringHelper(this).add("up", this.up).add("forwards", this.forwards).add("frontTopLeft", this.frontTopLeft).toString();
-      }
-   }
-
-   static class BlockCacheLoader extends CacheLoader<BlockPos, BlockInWorld> {
-      private final LevelReader level;
-      private final boolean loadChunks;
-
-      public BlockCacheLoader(LevelReader var1, boolean var2) {
-         super();
-         this.level = var1;
-         this.loadChunks = var2;
-      }
-
-      public BlockInWorld load(BlockPos var1) {
-         return new BlockInWorld(this.level, var1, this.loadChunks);
-      }
-
-      // $FF: synthetic method
-      public Object load(final Object var1) throws Exception {
-         return this.load((BlockPos)var1);
       }
    }
 }

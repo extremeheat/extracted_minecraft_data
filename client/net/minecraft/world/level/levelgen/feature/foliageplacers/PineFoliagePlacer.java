@@ -8,11 +8,7 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class PineFoliagePlacer extends FoliagePlacer {
-   public static final MapCodec<PineFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return foliagePlacerParts(var0).and(IntProvider.codec(0, 24).fieldOf("height").forGetter((var0x) -> {
-         return var0x.height;
-      })).apply(var0, PineFoliagePlacer::new);
-   });
+   public static final MapCodec<PineFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> foliagePlacerParts(var0).and(IntProvider.codec(0, 24).fieldOf("height").forGetter((var0x) -> var0x.height)).apply(var0, PineFoliagePlacer::new));
    private final IntProvider height;
 
    public PineFoliagePlacer(IntProvider var1, IntProvider var2, IntProvider var3) {

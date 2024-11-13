@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.shorts.Short2BooleanOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -51,10 +50,8 @@ public abstract class FlowingFluid extends Fluid {
       double var4 = 0.0;
       double var6 = 0.0;
       BlockPos.MutableBlockPos var8 = new BlockPos.MutableBlockPos();
-      Iterator var9 = Direction.Plane.HORIZONTAL.iterator();
 
-      while(var9.hasNext()) {
-         Direction var10 = (Direction)var9.next();
+      for(Direction var10 : Direction.Plane.HORIZONTAL) {
          var8.setWithOffset(var2, (Direction)var10);
          FluidState var11 = var1.getFluidState(var8);
          if (this.affectsFlow(var11)) {
@@ -84,19 +81,13 @@ public abstract class FlowingFluid extends Fluid {
 
       Vec3 var16 = new Vec3(var4, 0.0, var6);
       if ((Boolean)var3.getValue(FALLING)) {
-         Iterator var17 = Direction.Plane.HORIZONTAL.iterator();
-
-         Direction var18;
-         do {
-            if (!var17.hasNext()) {
-               return var16.normalize();
-            }
-
-            var18 = (Direction)var17.next();
+         for(Direction var18 : Direction.Plane.HORIZONTAL) {
             var8.setWithOffset(var2, (Direction)var18);
-         } while(!this.isSolidFace(var1, var8, var18) && !this.isSolidFace(var1, var8.above(), var18));
-
-         var16 = var16.normalize().add(0.0, -6.0, 0.0);
+            if (this.isSolidFace(var1, var8, var18) || this.isSolidFace(var1, var8.above(), var18)) {
+               var16 = var16.normalize().add(0.0, -6.0, 0.0);
+               break;
+            }
+         }
       }
 
       return var16.normalize();
@@ -151,10 +142,8 @@ public abstract class FlowingFluid extends Fluid {
 
       if (var5 > 0) {
          Map var6 = this.getSpread(var1, var2, var4);
-         Iterator var7 = var6.entrySet().iterator();
 
-         while(var7.hasNext()) {
-            Map.Entry var8 = (Map.Entry)var7.next();
+         for(Map.Entry var8 : var6.entrySet()) {
             Direction var9 = (Direction)var8.getKey();
             FluidState var10 = (FluidState)var8.getValue();
             BlockPos var11 = var2.relative(var9);
@@ -168,10 +157,8 @@ public abstract class FlowingFluid extends Fluid {
       int var4 = 0;
       int var5 = 0;
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
-      Iterator var7 = Direction.Plane.HORIZONTAL.iterator();
 
-      while(var7.hasNext()) {
-         Direction var8 = (Direction)var7.next();
+      for(Direction var8 : Direction.Plane.HORIZONTAL) {
          BlockPos.MutableBlockPos var9 = var6.setWithOffset(var2, (Direction)var8);
          BlockState var10 = var1.getBlockState(var9);
          FluidState var11 = var10.getFluidState();
@@ -282,10 +269,8 @@ public abstract class FlowingFluid extends Fluid {
 
    protected int getSlopeDistance(LevelReader var1, BlockPos var2, int var3, Direction var4, BlockState var5, SpreadContext var6) {
       int var7 = 1000;
-      Iterator var8 = Direction.Plane.HORIZONTAL.iterator();
 
-      while(var8.hasNext()) {
-         Direction var9 = (Direction)var8.next();
+      for(Direction var9 : Direction.Plane.HORIZONTAL) {
          if (var9 != var4) {
             BlockPos var10 = var2.relative(var9);
             BlockState var11 = var6.getBlockState(var10);
@@ -332,10 +317,8 @@ public abstract class FlowingFluid extends Fluid {
 
    private int sourceNeighborCount(LevelReader var1, BlockPos var2) {
       int var3 = 0;
-      Iterator var4 = Direction.Plane.HORIZONTAL.iterator();
 
-      while(var4.hasNext()) {
-         Direction var5 = (Direction)var4.next();
+      for(Direction var5 : Direction.Plane.HORIZONTAL) {
          BlockPos var6 = var2.relative(var5);
          FluidState var7 = var1.getFluidState(var6);
          if (this.isSourceBlockOfThisType(var7)) {
@@ -350,10 +333,8 @@ public abstract class FlowingFluid extends Fluid {
       int var4 = 1000;
       EnumMap var5 = Maps.newEnumMap(Direction.class);
       SpreadContext var6 = null;
-      Iterator var7 = Direction.Plane.HORIZONTAL.iterator();
 
-      while(var7.hasNext()) {
-         Direction var8 = (Direction)var7.next();
+      for(Direction var8 : Direction.Plane.HORIZONTAL) {
          BlockPos var9 = var2.relative(var8);
          BlockState var10 = var1.getBlockState(var9);
          FluidState var11 = var10.getFluidState();
@@ -457,9 +438,7 @@ public abstract class FlowingFluid extends Fluid {
    public abstract int getAmount(FluidState var1);
 
    public VoxelShape getShape(FluidState var1, BlockGetter var2, BlockPos var3) {
-      return var1.getAmount() == 9 && hasSameAbove(var1, var2, var3) ? Shapes.block() : (VoxelShape)this.shapes.computeIfAbsent(var1, (var2x) -> {
-         return Shapes.box(0.0, 0.0, 0.0, 1.0, (double)var2x.getHeight(var2, var3), 1.0);
-      });
+      return var1.getAmount() == 9 && hasSameAbove(var1, var2, var3) ? Shapes.block() : (VoxelShape)this.shapes.computeIfAbsent(var1, (var2x) -> Shapes.box(0.0, 0.0, 0.0, 1.0, (double)var2x.getHeight(var2, var3), 1.0));
    }
 
    static {
@@ -502,18 +481,6 @@ public abstract class FlowingFluid extends Fluid {
          var1 = 31 * var1 + this.direction.hashCode();
          return var1;
       }
-
-      public BlockState first() {
-         return this.first;
-      }
-
-      public BlockState second() {
-         return this.second;
-      }
-
-      public Direction direction() {
-         return this.direction;
-      }
    }
 
    protected class SpreadContext {
@@ -533,9 +500,7 @@ public abstract class FlowingFluid extends Fluid {
       }
 
       private BlockState getBlockState(BlockPos var1, short var2) {
-         return (BlockState)this.stateCache.computeIfAbsent(var2, (var2x) -> {
-            return this.level.getBlockState(var1);
-         });
+         return (BlockState)this.stateCache.computeIfAbsent(var2, (var2x) -> this.level.getBlockState(var1));
       }
 
       public boolean isHole(BlockPos var1) {

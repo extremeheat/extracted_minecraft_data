@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import java.util.Iterator;
 import java.util.Map;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
@@ -87,21 +86,15 @@ public abstract class Behavior<E extends LivingEntity> implements BehaviorContro
    }
 
    protected boolean hasRequiredMemories(E var1) {
-      Iterator var2 = this.entryCondition.entrySet().iterator();
-
-      MemoryModuleType var4;
-      MemoryStatus var5;
-      do {
-         if (!var2.hasNext()) {
-            return true;
+      for(Map.Entry var3 : this.entryCondition.entrySet()) {
+         MemoryModuleType var4 = (MemoryModuleType)var3.getKey();
+         MemoryStatus var5 = (MemoryStatus)var3.getValue();
+         if (!var1.getBrain().checkMemory(var4, var5)) {
+            return false;
          }
+      }
 
-         Map.Entry var3 = (Map.Entry)var2.next();
-         var4 = (MemoryModuleType)var3.getKey();
-         var5 = (MemoryStatus)var3.getValue();
-      } while(var1.getBrain().checkMemory(var4, var5));
-
-      return false;
+      return true;
    }
 
    public static enum Status {

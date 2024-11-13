@@ -34,7 +34,6 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -86,24 +85,20 @@ public class FriendlyByteBuf extends ByteBuf {
    /** @deprecated */
    @Deprecated
    public <T> T readWithCodecTrusted(DynamicOps<Tag> var1, Codec<T> var2) {
-      return this.readWithCodec(var1, var2, NbtAccounter.unlimitedHeap());
+      return (T)this.readWithCodec(var1, var2, NbtAccounter.unlimitedHeap());
    }
 
    /** @deprecated */
    @Deprecated
    public <T> T readWithCodec(DynamicOps<Tag> var1, Codec<T> var2, NbtAccounter var3) {
       Tag var4 = this.readNbt(var3);
-      return var2.parse(var1, var4).getOrThrow((var1x) -> {
-         return new DecoderException("Failed to decode: " + var1x + " " + String.valueOf(var4));
-      });
+      return (T)var2.parse(var1, var4).getOrThrow((var1x) -> new DecoderException("Failed to decode: " + var1x + " " + String.valueOf(var4)));
    }
 
    /** @deprecated */
    @Deprecated
    public <T> FriendlyByteBuf writeWithCodec(DynamicOps<Tag> var1, Codec<T> var2, T var3) {
-      Tag var4 = (Tag)var2.encodeStart(var1, var3).getOrThrow((var1x) -> {
-         return new EncoderException("Failed to encode: " + var1x + " " + String.valueOf(var3));
-      });
+      Tag var4 = (Tag)var2.encodeStart(var1, var3).getOrThrow((var1x) -> new EncoderException("Failed to encode: " + var1x + " " + String.valueOf(var3)));
       this.writeNbt(var4);
       return this;
    }
@@ -111,16 +106,12 @@ public class FriendlyByteBuf extends ByteBuf {
    public <T> T readJsonWithCodec(Codec<T> var1) {
       JsonElement var2 = (JsonElement)GsonHelper.fromJson(GSON, this.readUtf(), JsonElement.class);
       DataResult var3 = var1.parse(JsonOps.INSTANCE, var2);
-      return var3.getOrThrow((var0) -> {
-         return new DecoderException("Failed to decode json: " + var0);
-      });
+      return (T)var3.getOrThrow((var0) -> new DecoderException("Failed to decode json: " + var0));
    }
 
    public <T> void writeJsonWithCodec(Codec<T> var1, T var2) {
       DataResult var3 = var1.encodeStart(JsonOps.INSTANCE, var2);
-      this.writeUtf(GSON.toJson((JsonElement)var3.getOrThrow((var1x) -> {
-         return new EncoderException("Failed to encode: " + var1x + " " + String.valueOf(var2));
-      })));
+      this.writeUtf(GSON.toJson((JsonElement)var3.getOrThrow((var1x) -> new EncoderException("Failed to encode: " + var1x + " " + String.valueOf(var2)))));
    }
 
    public static <T> IntFunction<T> limitValue(IntFunction<T> var0, int var1) {
@@ -141,15 +132,13 @@ public class FriendlyByteBuf extends ByteBuf {
          var4.add(var2.decode(this));
       }
 
-      return var4;
+      return (C)var4;
    }
 
    public <T> void writeCollection(Collection<T> var1, StreamEncoder<? super FriendlyByteBuf, T> var2) {
       this.writeVarInt(var1.size());
-      Iterator var3 = var1.iterator();
 
-      while(var3.hasNext()) {
-         Object var4 = var3.next();
+      for(Object var4 : var1) {
          var2.encode(this, var4);
       }
 
@@ -185,7 +174,7 @@ public class FriendlyByteBuf extends ByteBuf {
          var5.put(var7, var8);
       }
 
-      return var5;
+      return (M)var5;
    }
 
    public <K, V> Map<K, V> readMap(StreamDecoder<? super FriendlyByteBuf, K> var1, StreamDecoder<? super FriendlyByteBuf, V> var2) {
@@ -250,12 +239,12 @@ public class FriendlyByteBuf extends ByteBuf {
 
    @Nullable
    public <T> T readNullable(StreamDecoder<? super FriendlyByteBuf, T> var1) {
-      return readNullable(this, var1);
+      return (T)readNullable(this, var1);
    }
 
    @Nullable
    public static <T, B extends ByteBuf> T readNullable(B var0, StreamDecoder<? super B, T> var1) {
-      return var0.readBoolean() ? var1.decode(var0) : null;
+      return (T)(var0.readBoolean() ? var1.decode(var0) : null);
    }
 
    public <T> void writeNullable(@Nullable T var1, StreamEncoder<? super FriendlyByteBuf, T> var2) {
@@ -307,11 +296,8 @@ public class FriendlyByteBuf extends ByteBuf {
 
    public FriendlyByteBuf writeVarIntArray(int[] var1) {
       this.writeVarInt(var1.length);
-      int[] var2 = var1;
-      int var3 = var1.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         int var5 = var2[var4];
+      for(int var5 : var1) {
          this.writeVarInt(var5);
       }
 
@@ -339,11 +325,8 @@ public class FriendlyByteBuf extends ByteBuf {
 
    public FriendlyByteBuf writeLongArray(long[] var1) {
       this.writeVarInt(var1.length);
-      long[] var2 = var1;
-      int var3 = var1.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         long var5 = var2[var4];
+      for(long var5 : var1) {
          this.writeLong(var5);
       }
 
@@ -485,7 +468,7 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    public <T extends Enum<T>> T readEnum(Class<T> var1) {
-      return ((Enum[])var1.getEnumConstants())[this.readVarInt()];
+      return (T)((Enum[])var1.getEnumConstants())[this.readVarInt()];
    }
 
    public FriendlyByteBuf writeEnum(Enum<?> var1) {
@@ -494,7 +477,7 @@ public class FriendlyByteBuf extends ByteBuf {
 
    public <T> T readById(IntFunction<T> var1) {
       int var2 = this.readVarInt();
-      return var1.apply(var2);
+      return (T)var1.apply(var2);
    }
 
    public <T> FriendlyByteBuf writeById(ToIntFunction<T> var1, T var2) {
@@ -572,18 +555,9 @@ public class FriendlyByteBuf extends ByteBuf {
 
    @Nullable
    public static Tag readNbt(ByteBuf var0, NbtAccounter var1) {
-      Tag var2;
       try {
-         var2 = NbtIo.readAnyTag(new ByteBufInputStream(var0), var1);
-         if (var2.getId() == 0) {
-            return null;
-         }
-      } catch (IOException var4) {
-         throw new EncoderException(var4);
-      }
-
-      try {
-         return var2;
+         Tag var2 = NbtIo.readAnyTag(new ByteBufInputStream(var0), var1);
+         return var2.getId() == 0 ? null : var2;
       } catch (IOException var3) {
          throw new EncoderException(var3);
       }

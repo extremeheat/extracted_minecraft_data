@@ -182,9 +182,7 @@ public class BlockItem extends Item {
    @Nullable
    private static BlockEntityType<?> getBlockEntityType(HolderLookup.Provider var0, CustomData var1) {
       ResourceLocation var2 = var1.parseEntityId();
-      return var2 == null ? null : (BlockEntityType)var0.lookup(Registries.BLOCK_ENTITY_TYPE).flatMap((var1x) -> {
-         return var1x.get(ResourceKey.create(Registries.BLOCK_ENTITY_TYPE, var2));
-      }).map(Holder::value).orElse((Object)null);
+      return var2 == null ? null : (BlockEntityType)var0.lookup(Registries.BLOCK_ENTITY_TYPE).flatMap((var1x) -> var1x.get(ResourceKey.create(Registries.BLOCK_ENTITY_TYPE, var2))).map(Holder::value).orElse((Object)null);
    }
 
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {

@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.projectile;
 
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -68,41 +67,37 @@ public final class ProjectileUtil {
       double var8 = var5;
       Entity var10 = null;
       Vec3 var11 = null;
-      Iterator var12 = var7.getEntities(var0, var3, var4).iterator();
 
-      while(true) {
-         while(var12.hasNext()) {
-            Entity var13 = (Entity)var12.next();
-            AABB var14 = var13.getBoundingBox().inflate((double)var13.getPickRadius());
-            Optional var15 = var14.clip(var1, var2);
-            if (var14.contains(var1)) {
-               if (var8 >= 0.0) {
-                  var10 = var13;
-                  var11 = (Vec3)var15.orElse(var1);
-                  var8 = 0.0;
-               }
-            } else if (var15.isPresent()) {
-               Vec3 var16 = (Vec3)var15.get();
-               double var17 = var1.distanceToSqr(var16);
-               if (var17 < var8 || var8 == 0.0) {
-                  if (var13.getRootVehicle() == var0.getRootVehicle()) {
-                     if (var8 == 0.0) {
-                        var10 = var13;
-                        var11 = var16;
-                     }
-                  } else {
+      for(Entity var13 : var7.getEntities(var0, var3, var4)) {
+         AABB var14 = var13.getBoundingBox().inflate((double)var13.getPickRadius());
+         Optional var15 = var14.clip(var1, var2);
+         if (var14.contains(var1)) {
+            if (var8 >= 0.0) {
+               var10 = var13;
+               var11 = (Vec3)var15.orElse(var1);
+               var8 = 0.0;
+            }
+         } else if (var15.isPresent()) {
+            Vec3 var16 = (Vec3)var15.get();
+            double var17 = var1.distanceToSqr(var16);
+            if (var17 < var8 || var8 == 0.0) {
+               if (var13.getRootVehicle() == var0.getRootVehicle()) {
+                  if (var8 == 0.0) {
                      var10 = var13;
                      var11 = var16;
-                     var8 = var17;
                   }
+               } else {
+                  var10 = var13;
+                  var11 = var16;
+                  var8 = var17;
                }
             }
          }
+      }
 
-         if (var10 == null) {
-            return null;
-         }
-
+      if (var10 == null) {
+         return null;
+      } else {
          return new EntityHitResult(var10, var11);
       }
    }
@@ -117,10 +112,8 @@ public final class ProjectileUtil {
       double var7 = 1.7976931348623157E308;
       Optional var9 = Optional.empty();
       Entity var10 = null;
-      Iterator var11 = var0.getEntities(var1, var4, var5).iterator();
 
-      while(var11.hasNext()) {
-         Entity var12 = (Entity)var11.next();
+      for(Entity var12 : var0.getEntities(var1, var4, var5)) {
          AABB var13 = var12.getBoundingBox().inflate((double)var6);
          Optional var14 = var13.clip(var2, var3);
          if (var14.isPresent()) {

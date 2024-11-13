@@ -14,7 +14,6 @@ import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -74,18 +73,14 @@ public class PathPackResources extends AbstractPackResources {
       FileUtil.decomposePath(var3).ifSuccess((var4x) -> {
          Path var5 = this.root.resolve(var1.getDirectory()).resolve(var2);
          listPath(var2, var5, var4x, var4);
-      }).ifError((var1x) -> {
-         LOGGER.error("Invalid path {}: {}", var3, var1x.message());
-      });
+      }).ifError((var1x) -> LOGGER.error("Invalid path {}: {}", var3, var1x.message()));
    }
 
    public static void listPath(String var0, Path var1, List<String> var2, PackResources.ResourceOutput var3) {
       Path var4 = FileUtil.resolvePath(var1, var2);
 
       try {
-         Stream var5 = Files.find(var4, 2147483647, (var0x, var1x) -> {
-            return var1x.isRegularFile();
-         }, new FileVisitOption[0]);
+         Stream var5 = Files.find(var4, 2147483647, (var0x, var1x) -> var1x.isRegularFile(), new FileVisitOption[0]);
 
          try {
             var5.forEach((var3x) -> {
@@ -128,10 +123,7 @@ public class PathPackResources extends AbstractPackResources {
          DirectoryStream var4 = Files.newDirectoryStream(var3);
 
          try {
-            Iterator var5 = var4.iterator();
-
-            while(var5.hasNext()) {
-               Path var6 = (Path)var5.next();
+            for(Path var6 : var4) {
                String var7 = var6.getFileName().toString();
                if (ResourceLocation.isValidNamespace(var7)) {
                   var2.add(var7);
@@ -184,10 +176,8 @@ public class PathPackResources extends AbstractPackResources {
             return var3;
          } else {
             ArrayList var5 = new ArrayList(var4.size());
-            Iterator var6 = var4.iterator();
 
-            while(var6.hasNext()) {
-               String var7 = (String)var6.next();
+            for(String var7 : var4) {
                Path var8 = this.content.resolve(var7);
                var5.add(new PathPackResources(var1, var8));
             }

@@ -23,9 +23,7 @@ import net.minecraft.network.chat.Component;
 public class TimeArgument implements ArgumentType<Integer> {
    private static final Collection<String> EXAMPLES = Arrays.asList("0d", "0s", "0t", "0");
    private static final SimpleCommandExceptionType ERROR_INVALID_UNIT = new SimpleCommandExceptionType(Component.translatable("argument.time.invalid_unit"));
-   private static final Dynamic2CommandExceptionType ERROR_TICK_COUNT_TOO_LOW = new Dynamic2CommandExceptionType((var0, var1) -> {
-      return Component.translatableEscape("argument.time.tick_count_too_low", var1, var0);
-   });
+   private static final Dynamic2CommandExceptionType ERROR_TICK_COUNT_TOO_LOW = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("argument.time.tick_count_too_low", var1, var0));
    private static final Object2IntMap<String> UNITS = new Object2IntOpenHashMap();
    final int minimum;
 
@@ -67,7 +65,7 @@ public class TimeArgument implements ArgumentType<Integer> {
          return var2.buildFuture();
       }
 
-      return SharedSuggestionProvider.suggest((Iterable)UNITS.keySet(), var2.createOffset(var2.getStart() + var3.getCursor()));
+      return SharedSuggestionProvider.suggest(UNITS.keySet(), var2.createOffset(var2.getStart() + var3.getCursor()));
    }
 
    public Collection<String> getExamples() {

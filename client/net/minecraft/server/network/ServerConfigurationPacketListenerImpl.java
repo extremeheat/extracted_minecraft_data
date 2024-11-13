@@ -74,9 +74,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
       }
 
       LayeredRegistryAccess var2 = this.server.registries();
-      List var3 = this.server.getResourceManager().listPacks().flatMap((var0) -> {
-         return var0.location().knownPackInfo().stream();
-      }).toList();
+      List var3 = this.server.getResourceManager().listPacks().flatMap((var0) -> var0.location().knownPackInfo().stream()).toList();
       this.send(new ClientboundUpdateEnabledFeaturesPacket(FeatureFlags.REGISTRY.toNames(this.server.getWorldData().enabledFeatures())));
       this.synchronizeRegistriesTask = new SynchronizeRegistriesTask(var3, var2);
       this.configurationTasks.add(this.synchronizeRegistriesTask);
@@ -91,9 +89,7 @@ public class ServerConfigurationPacketListenerImpl extends ServerCommonPacketLis
    }
 
    private void addOptionalTasks() {
-      this.server.getServerResourcePack().ifPresent((var1) -> {
-         this.configurationTasks.add(new ServerResourcePackConfigurationTask(var1));
-      });
+      this.server.getServerResourcePack().ifPresent((var1) -> this.configurationTasks.add(new ServerResourcePackConfigurationTask(var1)));
    }
 
    public void handleClientInformation(ServerboundClientInformationPacket var1) {

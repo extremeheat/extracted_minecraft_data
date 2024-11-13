@@ -18,61 +18,9 @@ public record ChunkPyramid(ImmutableList<ChunkStep> steps) {
       return (ChunkStep)this.steps.get(var1.getIndex());
    }
 
-   public ImmutableList<ChunkStep> steps() {
-      return this.steps;
-   }
-
    static {
-      GENERATION_PYRAMID = (new Builder()).step(ChunkStatus.EMPTY, (var0) -> {
-         return var0;
-      }).step(ChunkStatus.STRUCTURE_STARTS, (var0) -> {
-         return var0.setTask(ChunkStatusTasks::generateStructureStarts);
-      }).step(ChunkStatus.STRUCTURE_REFERENCES, (var0) -> {
-         return var0.addRequirement(ChunkStatus.STRUCTURE_STARTS, 8).setTask(ChunkStatusTasks::generateStructureReferences);
-      }).step(ChunkStatus.BIOMES, (var0) -> {
-         return var0.addRequirement(ChunkStatus.STRUCTURE_STARTS, 8).setTask(ChunkStatusTasks::generateBiomes);
-      }).step(ChunkStatus.NOISE, (var0) -> {
-         return var0.addRequirement(ChunkStatus.STRUCTURE_STARTS, 8).addRequirement(ChunkStatus.BIOMES, 1).blockStateWriteRadius(0).setTask(ChunkStatusTasks::generateNoise);
-      }).step(ChunkStatus.SURFACE, (var0) -> {
-         return var0.addRequirement(ChunkStatus.STRUCTURE_STARTS, 8).addRequirement(ChunkStatus.BIOMES, 1).blockStateWriteRadius(0).setTask(ChunkStatusTasks::generateSurface);
-      }).step(ChunkStatus.CARVERS, (var0) -> {
-         return var0.addRequirement(ChunkStatus.STRUCTURE_STARTS, 8).blockStateWriteRadius(0).setTask(ChunkStatusTasks::generateCarvers);
-      }).step(ChunkStatus.FEATURES, (var0) -> {
-         return var0.addRequirement(ChunkStatus.STRUCTURE_STARTS, 8).addRequirement(ChunkStatus.CARVERS, 1).blockStateWriteRadius(1).setTask(ChunkStatusTasks::generateFeatures);
-      }).step(ChunkStatus.INITIALIZE_LIGHT, (var0) -> {
-         return var0.setTask(ChunkStatusTasks::initializeLight);
-      }).step(ChunkStatus.LIGHT, (var0) -> {
-         return var0.addRequirement(ChunkStatus.INITIALIZE_LIGHT, 1).setTask(ChunkStatusTasks::light);
-      }).step(ChunkStatus.SPAWN, (var0) -> {
-         return var0.addRequirement(ChunkStatus.BIOMES, 1).setTask(ChunkStatusTasks::generateSpawn);
-      }).step(ChunkStatus.FULL, (var0) -> {
-         return var0.setTask(ChunkStatusTasks::full);
-      }).build();
-      LOADING_PYRAMID = (new Builder()).step(ChunkStatus.EMPTY, (var0) -> {
-         return var0;
-      }).step(ChunkStatus.STRUCTURE_STARTS, (var0) -> {
-         return var0.setTask(ChunkStatusTasks::loadStructureStarts);
-      }).step(ChunkStatus.STRUCTURE_REFERENCES, (var0) -> {
-         return var0;
-      }).step(ChunkStatus.BIOMES, (var0) -> {
-         return var0;
-      }).step(ChunkStatus.NOISE, (var0) -> {
-         return var0;
-      }).step(ChunkStatus.SURFACE, (var0) -> {
-         return var0;
-      }).step(ChunkStatus.CARVERS, (var0) -> {
-         return var0;
-      }).step(ChunkStatus.FEATURES, (var0) -> {
-         return var0;
-      }).step(ChunkStatus.INITIALIZE_LIGHT, (var0) -> {
-         return var0.setTask(ChunkStatusTasks::initializeLight);
-      }).step(ChunkStatus.LIGHT, (var0) -> {
-         return var0.addRequirement(ChunkStatus.INITIALIZE_LIGHT, 1).setTask(ChunkStatusTasks::light);
-      }).step(ChunkStatus.SPAWN, (var0) -> {
-         return var0;
-      }).step(ChunkStatus.FULL, (var0) -> {
-         return var0.setTask(ChunkStatusTasks::full);
-      }).build();
+      GENERATION_PYRAMID = (new Builder()).step(ChunkStatus.EMPTY, (var0) -> var0).step(ChunkStatus.STRUCTURE_STARTS, (var0) -> var0.setTask(ChunkStatusTasks::generateStructureStarts)).step(ChunkStatus.STRUCTURE_REFERENCES, (var0) -> var0.addRequirement(ChunkStatus.STRUCTURE_STARTS, 8).setTask(ChunkStatusTasks::generateStructureReferences)).step(ChunkStatus.BIOMES, (var0) -> var0.addRequirement(ChunkStatus.STRUCTURE_STARTS, 8).setTask(ChunkStatusTasks::generateBiomes)).step(ChunkStatus.NOISE, (var0) -> var0.addRequirement(ChunkStatus.STRUCTURE_STARTS, 8).addRequirement(ChunkStatus.BIOMES, 1).blockStateWriteRadius(0).setTask(ChunkStatusTasks::generateNoise)).step(ChunkStatus.SURFACE, (var0) -> var0.addRequirement(ChunkStatus.STRUCTURE_STARTS, 8).addRequirement(ChunkStatus.BIOMES, 1).blockStateWriteRadius(0).setTask(ChunkStatusTasks::generateSurface)).step(ChunkStatus.CARVERS, (var0) -> var0.addRequirement(ChunkStatus.STRUCTURE_STARTS, 8).blockStateWriteRadius(0).setTask(ChunkStatusTasks::generateCarvers)).step(ChunkStatus.FEATURES, (var0) -> var0.addRequirement(ChunkStatus.STRUCTURE_STARTS, 8).addRequirement(ChunkStatus.CARVERS, 1).blockStateWriteRadius(1).setTask(ChunkStatusTasks::generateFeatures)).step(ChunkStatus.INITIALIZE_LIGHT, (var0) -> var0.setTask(ChunkStatusTasks::initializeLight)).step(ChunkStatus.LIGHT, (var0) -> var0.addRequirement(ChunkStatus.INITIALIZE_LIGHT, 1).setTask(ChunkStatusTasks::light)).step(ChunkStatus.SPAWN, (var0) -> var0.addRequirement(ChunkStatus.BIOMES, 1).setTask(ChunkStatusTasks::generateSpawn)).step(ChunkStatus.FULL, (var0) -> var0.setTask(ChunkStatusTasks::full)).build();
+      LOADING_PYRAMID = (new Builder()).step(ChunkStatus.EMPTY, (var0) -> var0).step(ChunkStatus.STRUCTURE_STARTS, (var0) -> var0.setTask(ChunkStatusTasks::loadStructureStarts)).step(ChunkStatus.STRUCTURE_REFERENCES, (var0) -> var0).step(ChunkStatus.BIOMES, (var0) -> var0).step(ChunkStatus.NOISE, (var0) -> var0).step(ChunkStatus.SURFACE, (var0) -> var0).step(ChunkStatus.CARVERS, (var0) -> var0).step(ChunkStatus.FEATURES, (var0) -> var0).step(ChunkStatus.INITIALIZE_LIGHT, (var0) -> var0.setTask(ChunkStatusTasks::initializeLight)).step(ChunkStatus.LIGHT, (var0) -> var0.addRequirement(ChunkStatus.INITIALIZE_LIGHT, 1).setTask(ChunkStatusTasks::light)).step(ChunkStatus.SPAWN, (var0) -> var0).step(ChunkStatus.FULL, (var0) -> var0.setTask(ChunkStatusTasks::full)).build();
    }
 
    public static class Builder {

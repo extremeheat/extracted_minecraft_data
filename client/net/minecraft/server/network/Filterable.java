@@ -16,9 +16,7 @@ public record Filterable<T>(T raw, Optional<T> filtered) {
    }
 
    public static <T> Codec<Filterable<T>> codec(Codec<T> var0) {
-      Codec var1 = RecordCodecBuilder.create((var1x) -> {
-         return var1x.group(var0.fieldOf("raw").forGetter(Filterable::raw), var0.optionalFieldOf("filtered").forGetter(Filterable::filtered)).apply(var1x, Filterable::new);
-      });
+      Codec var1 = RecordCodecBuilder.create((var1x) -> var1x.group(var0.fieldOf("raw").forGetter(Filterable::raw), var0.optionalFieldOf("filtered").forGetter(Filterable::filtered)).apply(var1x, Filterable::new));
       Codec var2 = var0.xmap(Filterable::passThrough, Filterable::raw);
       return Codec.withAlternative(var1, var2);
    }
@@ -28,19 +26,19 @@ public record Filterable<T>(T raw, Optional<T> filtered) {
    }
 
    public static <T> Filterable<T> passThrough(T var0) {
-      return new Filterable(var0, Optional.empty());
+      return new Filterable<T>(var0, Optional.empty());
    }
 
    public static Filterable<String> from(FilteredText var0) {
-      return new Filterable(var0.raw(), var0.isFiltered() ? Optional.of(var0.filteredOrEmpty()) : Optional.empty());
+      return new Filterable<String>(var0.raw(), var0.isFiltered() ? Optional.of(var0.filteredOrEmpty()) : Optional.empty());
    }
 
    public T get(boolean var1) {
-      return var1 ? this.filtered.orElse(this.raw) : this.raw;
+      return (T)(var1 ? this.filtered.orElse(this.raw) : this.raw);
    }
 
    public <U> Filterable<U> map(Function<T, U> var1) {
-      return new Filterable(var1.apply(this.raw), this.filtered.map(var1));
+      return new Filterable<U>(var1.apply(this.raw), this.filtered.map(var1));
    }
 
    public <U> Optional<Filterable<U>> resolve(Function<T, Optional<U>> var1) {
@@ -53,13 +51,5 @@ public record Filterable<T>(T raw, Optional<T> filtered) {
       } else {
          return Optional.of(new Filterable(var2.get(), Optional.empty()));
       }
-   }
-
-   public T raw() {
-      return this.raw;
-   }
-
-   public Optional<T> filtered() {
-      return this.filtered;
    }
 }

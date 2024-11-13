@@ -9,11 +9,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
 public class Time extends NeedleDirectionHelper implements RangeSelectItemModelProperty {
-   public static final MapCodec<Time> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.BOOL.optionalFieldOf("wobble", true).forGetter(NeedleDirectionHelper::wobble), Codec.BOOL.optionalFieldOf("natural_only", true).forGetter((var0x) -> {
-         return var0x.naturalOnly;
-      })).apply(var0, Time::new);
-   });
+   public static final MapCodec<Time> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("wobble", true).forGetter(NeedleDirectionHelper::wobble), Codec.BOOL.optionalFieldOf("natural_only", true).forGetter((var0x) -> var0x.naturalOnly)).apply(var0, Time::new));
    private final boolean naturalOnly;
    private final RandomSource randomSource = RandomSource.create();
    private final NeedleDirectionHelper.Wobbler wobbler;

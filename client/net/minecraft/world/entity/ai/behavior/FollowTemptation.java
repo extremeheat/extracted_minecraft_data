@@ -23,9 +23,7 @@ public class FollowTemptation extends Behavior<PathfinderMob> {
    private final Function<LivingEntity, Double> closeEnoughDistance;
 
    public FollowTemptation(Function<LivingEntity, Float> var1) {
-      this(var1, (var0) -> {
-         return 2.5;
-      });
+      this(var1, (var0) -> 2.5);
    }
 
    public FollowTemptation(Function<LivingEntity, Float> var1, Function<LivingEntity, Double> var2) {
@@ -49,7 +47,7 @@ public class FollowTemptation extends Behavior<PathfinderMob> {
    }
 
    private Optional<Player> getTemptingPlayer(PathfinderMob var1) {
-      return var1.getBrain().getMemory(MemoryModuleType.TEMPTING_PLAYER);
+      return var1.getBrain().<Player>getMemory(MemoryModuleType.TEMPTING_PLAYER);
    }
 
    protected boolean timedOut(long var1) {
@@ -61,13 +59,13 @@ public class FollowTemptation extends Behavior<PathfinderMob> {
    }
 
    protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
-      var2.getBrain().setMemory(MemoryModuleType.IS_TEMPTED, (Object)true);
+      var2.getBrain().setMemory(MemoryModuleType.IS_TEMPTED, true);
    }
 
    protected void stop(ServerLevel var1, PathfinderMob var2, long var3) {
       Brain var5 = var2.getBrain();
-      var5.setMemory(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, (int)100);
-      var5.setMemory(MemoryModuleType.IS_TEMPTED, (Object)false);
+      var5.setMemory(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, 100);
+      var5.setMemory(MemoryModuleType.IS_TEMPTED, false);
       var5.eraseMemory(MemoryModuleType.WALK_TARGET);
       var5.eraseMemory(MemoryModuleType.LOOK_TARGET);
    }
@@ -75,12 +73,12 @@ public class FollowTemptation extends Behavior<PathfinderMob> {
    protected void tick(ServerLevel var1, PathfinderMob var2, long var3) {
       Player var5 = (Player)this.getTemptingPlayer(var2).get();
       Brain var6 = var2.getBrain();
-      var6.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityTracker(var5, true)));
+      var6.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var5, true));
       double var7 = (Double)this.closeEnoughDistance.apply(var2);
       if (var2.distanceToSqr(var5) < Mth.square(var7)) {
          var6.eraseMemory(MemoryModuleType.WALK_TARGET);
       } else {
-         var6.setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(new EntityTracker(var5, false), this.getSpeedModifier(var2), 2)));
+         var6.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(var5, false), this.getSpeedModifier(var2), 2));
       }
 
    }

@@ -38,9 +38,7 @@ public class FeatureCountTracker {
 
    public static void featurePlaced(ServerLevel var0, ConfiguredFeature<?, ?> var1, Optional<PlacedFeature> var2) {
       try {
-         ((LevelData)data.get(var0)).featureData().computeInt(new FeatureData(var1, var2), (var0x, var1x) -> {
-            return var1x == null ? 1 : var1x + 1;
-         });
+         ((LevelData)data.get(var0)).featureData().computeInt(new FeatureData(var1, var2), (var0x, var1x) -> var1x == null ? 1 : var1x + 1);
       } catch (Exception var4) {
          LOGGER.error("Failed to increment feature count", var4);
       }
@@ -85,35 +83,19 @@ public class FeatureCountTracker {
       });
    }
 
-   static record LevelData(Object2IntMap<FeatureData> featureData, MutableInt chunksWithFeatures) {
-      LevelData(Object2IntMap<FeatureData> var1, MutableInt var2) {
-         super();
-         this.featureData = var1;
-         this.chunksWithFeatures = var2;
-      }
-
-      public Object2IntMap<FeatureData> featureData() {
-         return this.featureData;
-      }
-
-      public MutableInt chunksWithFeatures() {
-         return this.chunksWithFeatures;
-      }
-   }
-
-   private static record FeatureData(ConfiguredFeature<?, ?> feature, Optional<PlacedFeature> topFeature) {
+   static record FeatureData(ConfiguredFeature<?, ?> feature, Optional<PlacedFeature> topFeature) {
       FeatureData(ConfiguredFeature<?, ?> var1, Optional<PlacedFeature> var2) {
          super();
          this.feature = var1;
          this.topFeature = var2;
       }
+   }
 
-      public ConfiguredFeature<?, ?> feature() {
-         return this.feature;
-      }
-
-      public Optional<PlacedFeature> topFeature() {
-         return this.topFeature;
+   static record LevelData(Object2IntMap<FeatureData> featureData, MutableInt chunksWithFeatures) {
+      LevelData(Object2IntMap<FeatureData> var1, MutableInt var2) {
+         super();
+         this.featureData = var1;
+         this.chunksWithFeatures = var2;
       }
    }
 }

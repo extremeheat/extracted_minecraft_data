@@ -42,9 +42,7 @@ public class KeyValueCondition implements Condition {
             if (var5.size() == 1) {
                var6 = this.getBlockStatePredicate(var1, var2, var3);
             } else {
-               var6 = Util.anyOf(var5.stream().map((var3x) -> {
-                  return this.getBlockStatePredicate(var1, var2, var3x);
-               }).toList());
+               var6 = Util.anyOf(var5.stream().map((var3x) -> this.getBlockStatePredicate(var1, var2, var3x)).toList());
             }
 
             return var4 ? var6.negate() : var6;
@@ -57,9 +55,7 @@ public class KeyValueCondition implements Condition {
       if (var4.isEmpty()) {
          throw new RuntimeException(String.format(Locale.ROOT, "Unknown value '%s' for property '%s' on '%s' in '%s'", var3, this.key, var1.getOwner(), this.value));
       } else {
-         return (var2x) -> {
-            return var2x.getValue(var2).equals(var4.get());
-         };
+         return (var2x) -> var2x.getValue(var2).equals(var4.get());
       }
    }
 

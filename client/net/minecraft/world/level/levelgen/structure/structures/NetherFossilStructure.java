@@ -16,11 +16,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 
 public class NetherFossilStructure extends Structure {
-   public static final MapCodec<NetherFossilStructure> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(settingsCodec(var0), HeightProvider.CODEC.fieldOf("height").forGetter((var0x) -> {
-         return var0x.height;
-      })).apply(var0, NetherFossilStructure::new);
-   });
+   public static final MapCodec<NetherFossilStructure> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(settingsCodec(var0), HeightProvider.CODEC.fieldOf("height").forGetter((var0x) -> var0x.height)).apply(var0, NetherFossilStructure::new));
    public final HeightProvider height;
 
    public NetherFossilStructure(Structure.StructureSettings var1, HeightProvider var2) {
@@ -51,9 +47,7 @@ public class NetherFossilStructure extends Structure {
          return Optional.empty();
       } else {
          BlockPos var12 = new BlockPos(var3, var7, var4);
-         return Optional.of(new Structure.GenerationStub(var12, (var3x) -> {
-            NetherFossilPieces.addPieces(var1.structureTemplateManager(), var3x, var2, var12);
-         }));
+         return Optional.of(new Structure.GenerationStub(var12, (var3x) -> NetherFossilPieces.addPieces(var1.structureTemplateManager(), var3x, var2, var12)));
       }
    }
 

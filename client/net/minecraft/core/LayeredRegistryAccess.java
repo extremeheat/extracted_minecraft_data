@@ -59,7 +59,7 @@ public class LayeredRegistryAccess<T> {
    }
 
    public LayeredRegistryAccess<T> replaceFrom(T var1, RegistryAccess.Frozen... var2) {
-      return this.replaceFrom(var1, Arrays.asList(var2));
+      return this.replaceFrom(var1, (List)Arrays.asList(var2));
    }
 
    public LayeredRegistryAccess<T> replaceFrom(T var1, List<RegistryAccess.Frozen> var2) {
@@ -79,7 +79,7 @@ public class LayeredRegistryAccess<T> {
             var4.add(RegistryAccess.EMPTY);
          }
 
-         return new LayeredRegistryAccess(this.keys, var4);
+         return new LayeredRegistryAccess<T>(this.keys, var4);
       }
    }
 
@@ -89,13 +89,11 @@ public class LayeredRegistryAccess<T> {
 
    private static Map<ResourceKey<? extends Registry<?>>, Registry<?>> collectRegistries(Stream<? extends RegistryAccess> var0) {
       HashMap var1 = new HashMap();
-      var0.forEach((var1x) -> {
-         var1x.registries().forEach((var1xx) -> {
+      var0.forEach((var1x) -> var1x.registries().forEach((var1xx) -> {
             if (var1.put(var1xx.key(), var1xx.value()) != null) {
                throw new IllegalStateException("Duplicated registry " + String.valueOf(var1xx.key()));
             }
-         });
-      });
+         }));
       return var1;
    }
 }

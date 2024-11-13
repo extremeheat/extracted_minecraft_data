@@ -14,15 +14,9 @@ public record GuiMetadataSection(GuiSpriteScaling scaling) {
       this.scaling = var1;
    }
 
-   public GuiSpriteScaling scaling() {
-      return this.scaling;
-   }
-
    static {
       DEFAULT = new GuiMetadataSection(GuiSpriteScaling.DEFAULT);
-      CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(GuiSpriteScaling.CODEC.optionalFieldOf("scaling", GuiSpriteScaling.DEFAULT).forGetter(GuiMetadataSection::scaling)).apply(var0, GuiMetadataSection::new);
-      });
-      TYPE = MetadataSectionType.fromCodec("gui", CODEC);
+      CODEC = RecordCodecBuilder.create((var0) -> var0.group(GuiSpriteScaling.CODEC.optionalFieldOf("scaling", GuiSpriteScaling.DEFAULT).forGetter(GuiMetadataSection::scaling)).apply(var0, GuiMetadataSection::new));
+      TYPE = new MetadataSectionType<GuiMetadataSection>("gui", CODEC);
    }
 }

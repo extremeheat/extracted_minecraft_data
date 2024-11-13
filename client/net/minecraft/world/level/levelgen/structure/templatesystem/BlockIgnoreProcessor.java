@@ -33,9 +33,7 @@ public class BlockIgnoreProcessor extends StructureProcessor {
    }
 
    static {
-      CODEC = BlockState.CODEC.xmap(BlockBehaviour.BlockStateBase::getBlock, Block::defaultBlockState).listOf().fieldOf("blocks").xmap(BlockIgnoreProcessor::new, (var0) -> {
-         return var0.toIgnore;
-      });
+      CODEC = BlockState.CODEC.xmap(BlockBehaviour.BlockStateBase::getBlock, Block::defaultBlockState).listOf().fieldOf("blocks").xmap(BlockIgnoreProcessor::new, (var0) -> var0.toIgnore);
       STRUCTURE_BLOCK = new BlockIgnoreProcessor(ImmutableList.of(Blocks.STRUCTURE_BLOCK));
       AIR = new BlockIgnoreProcessor(ImmutableList.of(Blocks.AIR));
       STRUCTURE_AND_AIR = new BlockIgnoreProcessor(ImmutableList.of(Blocks.AIR, Blocks.STRUCTURE_BLOCK));

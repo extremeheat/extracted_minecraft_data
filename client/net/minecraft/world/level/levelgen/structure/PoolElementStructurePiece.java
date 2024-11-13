@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -55,16 +54,12 @@ public class PoolElementStructurePiece extends StructurePiece {
       this.position = new BlockPos(var2.getInt("PosX"), var2.getInt("PosY"), var2.getInt("PosZ"));
       this.groundLevelDelta = var2.getInt("ground_level_delta");
       RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.element = (StructurePoolElement)StructurePoolElement.CODEC.parse(var3, var2.getCompound("pool_element")).getPartialOrThrow((var0) -> {
-         return new IllegalStateException("Invalid pool element found: " + var0);
-      });
+      this.element = (StructurePoolElement)StructurePoolElement.CODEC.parse(var3, var2.getCompound("pool_element")).getPartialOrThrow((var0) -> new IllegalStateException("Invalid pool element found: " + var0));
       this.rotation = Rotation.valueOf(var2.getString("rotation"));
       this.boundingBox = this.element.getBoundingBox(this.structureTemplateManager, this.position, this.rotation);
       ListTag var4 = var2.getList("junctions", 10);
       this.junctions.clear();
-      var4.forEach((var2x) -> {
-         this.junctions.add(JigsawJunction.deserialize(new Dynamic(var3, var2x)));
-      });
+      var4.forEach((var2x) -> this.junctions.add(JigsawJunction.deserialize(new Dynamic(var3, var2x))));
       this.liquidSettings = (LiquidSettings)LiquidSettings.CODEC.parse(NbtOps.INSTANCE, var2.get("liquid_settings")).result().orElse(JigsawStructure.DEFAULT_LIQUID_SETTINGS);
    }
 
@@ -77,15 +72,11 @@ public class PoolElementStructurePiece extends StructurePiece {
       DataResult var10000 = StructurePoolElement.CODEC.encodeStart(var3, this.element);
       Logger var10001 = LOGGER;
       Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         var2.put("pool_element", var1x);
-      });
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var2.put("pool_element", var1x));
       var2.putString("rotation", this.rotation.name());
       ListTag var4 = new ListTag();
-      Iterator var5 = this.junctions.iterator();
 
-      while(var5.hasNext()) {
-         JigsawJunction var6 = (JigsawJunction)var5.next();
+      for(JigsawJunction var6 : this.junctions) {
          var4.add((Tag)var6.serialize(var3).getValue());
       }
 

@@ -26,9 +26,7 @@ public class MenuType<T extends AbstractContainerMenu> implements FeatureElement
    public static final MenuType<FurnaceMenu> FURNACE = register("furnace", FurnaceMenu::new);
    public static final MenuType<GrindstoneMenu> GRINDSTONE = register("grindstone", GrindstoneMenu::new);
    public static final MenuType<HopperMenu> HOPPER = register("hopper", HopperMenu::new);
-   public static final MenuType<LecternMenu> LECTERN = register("lectern", (var0, var1) -> {
-      return new LecternMenu(var0);
-   });
+   public static final MenuType<LecternMenu> LECTERN = register("lectern", (var0, var1) -> new LecternMenu(var0));
    public static final MenuType<LoomMenu> LOOM = register("loom", LoomMenu::new);
    public static final MenuType<MerchantMenu> MERCHANT = register("merchant", MerchantMenu::new);
    public static final MenuType<ShulkerBoxMenu> SHULKER_BOX = register("shulker_box", ShulkerBoxMenu::new);
@@ -61,7 +59,7 @@ public class MenuType<T extends AbstractContainerMenu> implements FeatureElement
       return this.requiredFeatures;
    }
 
-   private interface MenuSupplier<T extends AbstractContainerMenu> {
+   interface MenuSupplier<T extends AbstractContainerMenu> {
       T create(int var1, Inventory var2);
    }
 }

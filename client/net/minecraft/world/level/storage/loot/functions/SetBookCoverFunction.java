@@ -15,15 +15,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetBookCoverFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetBookCoverFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(var0.group(Filterable.codec(Codec.string(0, 32)).optionalFieldOf("title").forGetter((var0x) -> {
-         return var0x.title;
-      }), Codec.STRING.optionalFieldOf("author").forGetter((var0x) -> {
-         return var0x.author;
-      }), ExtraCodecs.intRange(0, 3).optionalFieldOf("generation").forGetter((var0x) -> {
-         return var0x.generation;
-      }))).apply(var0, SetBookCoverFunction::new);
-   });
+   public static final MapCodec<SetBookCoverFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(Filterable.codec(Codec.string(0, 32)).optionalFieldOf("title").forGetter((var0x) -> var0x.title), Codec.STRING.optionalFieldOf("author").forGetter((var0x) -> var0x.author), ExtraCodecs.intRange(0, 3).optionalFieldOf("generation").forGetter((var0x) -> var0x.generation))).apply(var0, SetBookCoverFunction::new));
    private final Optional<String> author;
    private final Optional<Filterable<String>> title;
    private final Optional<Integer> generation;

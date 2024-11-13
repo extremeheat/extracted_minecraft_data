@@ -13,12 +13,4 @@ public record ModelLayerLocation(ResourceLocation model, String layer) {
       String var10000 = String.valueOf(this.model);
       return var10000 + "#" + this.layer;
    }
-
-   public ResourceLocation model() {
-      return this.model;
-   }
-
-   public String layer() {
-      return this.layer;
-   }
 }

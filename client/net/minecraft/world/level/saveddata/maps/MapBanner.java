@@ -15,9 +15,7 @@ import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 public record MapBanner(BlockPos pos, DyeColor color, Optional<Component> name) {
-   public static final Codec<MapBanner> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(MapBanner::pos), DyeColor.CODEC.lenientOptionalFieldOf("color", DyeColor.WHITE).forGetter(MapBanner::color), ComponentSerialization.FLAT_CODEC.lenientOptionalFieldOf("name").forGetter(MapBanner::name)).apply(var0, MapBanner::new);
-   });
+   public static final Codec<MapBanner> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(MapBanner::pos), DyeColor.CODEC.lenientOptionalFieldOf("color", DyeColor.WHITE).forGetter(MapBanner::color), ComponentSerialization.FLAT_CODEC.lenientOptionalFieldOf("name").forGetter(MapBanner::name)).apply(var0, MapBanner::new));
    public static final Codec<List<MapBanner>> LIST_CODEC;
 
    public MapBanner(BlockPos var1, DyeColor var2, Optional<Component> var3) {
@@ -67,18 +65,6 @@ public record MapBanner(BlockPos pos, DyeColor color, Optional<Component> name) 
    public String getId() {
       int var10000 = this.pos.getX();
       return "banner-" + var10000 + "," + this.pos.getY() + "," + this.pos.getZ();
-   }
-
-   public BlockPos pos() {
-      return this.pos;
-   }
-
-   public DyeColor color() {
-      return this.color;
-   }
-
-   public Optional<Component> name() {
-      return this.name;
    }
 
    static {

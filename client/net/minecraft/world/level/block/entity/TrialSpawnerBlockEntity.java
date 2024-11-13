@@ -38,9 +38,7 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, Tri
       DataResult var10000 = this.trialSpawner.codec().parse(var2.createSerializationContext(NbtOps.INSTANCE), var1);
       Logger var10001 = LOGGER;
       Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         this.trialSpawner = var1x;
-      });
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> this.trialSpawner = var1x);
       if (this.level != null) {
          this.markUpdated();
       }
@@ -49,11 +47,7 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, Tri
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
-      this.trialSpawner.codec().encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), this.trialSpawner).ifSuccess((var1x) -> {
-         var1.merge((CompoundTag)var1x);
-      }).ifError((var0) -> {
-         LOGGER.warn("Failed to encode TrialSpawner {}", var0.message());
-      });
+      this.trialSpawner.codec().encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), this.trialSpawner).ifSuccess((var1x) -> var1.merge((CompoundTag)var1x)).ifError((var0) -> LOGGER.warn("Failed to encode TrialSpawner {}", var0.message()));
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {

@@ -33,7 +33,6 @@ import com.mojang.realmsclient.util.UploadTokenCache;
 import com.mojang.util.UndashedUuid;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -144,10 +143,8 @@ public class RealmsClient {
 
    private static JsonArray uuidListToJsonArray(List<UUID> var0) {
       JsonArray var1 = new JsonArray();
-      Iterator var2 = var0.iterator();
 
-      while(var2.hasNext()) {
-         UUID var3 = (UUID)var2.next();
+      for(UUID var3 : var0) {
          if (var3 != null) {
             var1.add(var3.toString());
          }
@@ -424,25 +421,9 @@ public class RealmsClient {
    }
 
    static {
-      ENVIRONMENT = (Environment)Optional.ofNullable(System.getenv("realms.environment")).or(() -> {
-         return Optional.ofNullable(System.getProperty("realms.environment"));
-      }).flatMap(Environment::byName).orElse(RealmsClient.Environment.PRODUCTION);
+      ENVIRONMENT = (Environment)Optional.ofNullable(System.getenv("realms.environment")).or(() -> Optional.ofNullable(System.getProperty("realms.environment"))).flatMap(Environment::byName).orElse(RealmsClient.Environment.PRODUCTION);
       LOGGER = LogUtils.getLogger();
       GSON = new GuardedSerializer();
-   }
-
-   public static enum CompatibleVersionResponse {
-      COMPATIBLE,
-      OUTDATED,
-      OTHER;
-
-      private CompatibleVersionResponse() {
-      }
-
-      // $FF: synthetic method
-      private static CompatibleVersionResponse[] $values() {
-         return new CompatibleVersionResponse[]{COMPATIBLE, OUTDATED, OTHER};
-      }
    }
 
    public static enum Environment {
@@ -481,6 +462,20 @@ public class RealmsClient {
       // $FF: synthetic method
       private static Environment[] $values() {
          return new Environment[]{PRODUCTION, STAGE, LOCAL};
+      }
+   }
+
+   public static enum CompatibleVersionResponse {
+      COMPATIBLE,
+      OUTDATED,
+      OTHER;
+
+      private CompatibleVersionResponse() {
+      }
+
+      // $FF: synthetic method
+      private static CompatibleVersionResponse[] $values() {
+         return new CompatibleVersionResponse[]{COMPATIBLE, OUTDATED, OTHER};
       }
    }
 }

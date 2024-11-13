@@ -10,9 +10,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 public record Damage(boolean normalize) implements RangeSelectItemModelProperty {
-   public static final MapCodec<Damage> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.BOOL.optionalFieldOf("normalize", true).forGetter(Damage::normalize)).apply(var0, Damage::new);
-   });
+   public static final MapCodec<Damage> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("normalize", true).forGetter(Damage::normalize)).apply(var0, Damage::new));
 
    public Damage(boolean var1) {
       super();
@@ -27,9 +25,5 @@ public record Damage(boolean normalize) implements RangeSelectItemModelProperty 
 
    public MapCodec<Damage> type() {
       return MAP_CODEC;
-   }
-
-   public boolean normalize() {
-      return this.normalize;
    }
 }

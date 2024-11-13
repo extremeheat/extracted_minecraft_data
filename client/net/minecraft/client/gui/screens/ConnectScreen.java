@@ -84,7 +84,7 @@ public class ConnectScreen extends Screen {
       LOGGER.info("Connecting to {}, {}", var2.getHost(), var2.getPort());
       Thread var5 = new Thread("Server Connector #" + UNIQUE_THREAD_ID.incrementAndGet()) {
          public void run() {
-            InetSocketAddress var1x = null;
+            Object var1x = null;
 
             try {
                if (ConnectScreen.this.aborted) {
@@ -97,13 +97,11 @@ public class ConnectScreen extends Screen {
                }
 
                if (var2x.isEmpty()) {
-                  var1.execute(() -> {
-                     var1.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, ConnectScreen.UNKNOWN_HOST_MESSAGE));
-                  });
+                  var1.execute(() -> var1.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, ConnectScreen.UNKNOWN_HOST_MESSAGE)));
                   return;
                }
 
-               var1x = (InetSocketAddress)var2x.get();
+               InetSocketAddress var10 = (InetSocketAddress)var2x.get();
                Connection var11;
                synchronized(ConnectScreen.this) {
                   if (ConnectScreen.this.aborted) {
@@ -112,7 +110,7 @@ public class ConnectScreen extends Screen {
 
                   var11 = new Connection(PacketFlow.CLIENTBOUND);
                   var11.setBandwidthLogger(var1.getDebugOverlay().getBandwidthLogger());
-                  ConnectScreen.this.channelFuture = Connection.connect(var1x, var1.options.useNativeTransport(), var11);
+                  ConnectScreen.this.channelFuture = Connection.connect(var10, var1.options.useNativeTransport(), var11);
                }
 
                ConnectScreen.this.channelFuture.syncUninterruptibly();
@@ -127,8 +125,8 @@ public class ConnectScreen extends Screen {
                }
 
                Connection var10000 = ConnectScreen.this.connection;
-               String var10001 = var1x.getHostName();
-               int var10002 = var1x.getPort();
+               String var10001 = var10.getHostName();
+               int var10002 = var10.getPort();
                ConnectScreen var10013 = ConnectScreen.this;
                var10000.initiateServerboundPlayConnection(var10001, var10002, LoginProtocols.SERVERBOUND, LoginProtocols.CLIENTBOUND, new ClientHandshakePacketListenerImpl(ConnectScreen.this.connection, var1, var3, ConnectScreen.this.parent, false, (Duration)null, var10013::updateStatus, var4), var4 != null);
                ConnectScreen.this.connection.send(new ServerboundHelloPacket(var1.getUser().getName(), var1.getUser().getProfileId()));
@@ -146,10 +144,8 @@ public class ConnectScreen extends Screen {
                }
 
                ConnectScreen.LOGGER.error("Couldn't connect to server", var9);
-               String var10 = var1x == null ? var3x.getMessage() : var3x.getMessage().replaceAll(var1x.getHostName() + ":" + var1x.getPort(), "").replaceAll(var1x.toString(), "");
-               var1.execute(() -> {
-                  var1.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, Component.translatable("disconnect.genericReason", var10)));
-               });
+               String var12 = var1x == null ? var3x.getMessage() : var3x.getMessage().replaceAll(((InetSocketAddress)var1x).getHostName() + ":" + ((InetSocketAddress)var1x).getPort(), "").replaceAll(((InetSocketAddress)var1x).toString(), "");
+               var1.execute(() -> var1.setScreen(new DisconnectedScreen(ConnectScreen.this.parent, ConnectScreen.this.connectFailedTitle, Component.translatable("disconnect.genericReason", var12))));
             }
 
          }

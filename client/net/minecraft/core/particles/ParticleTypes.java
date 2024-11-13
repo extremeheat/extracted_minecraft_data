@@ -24,16 +24,8 @@ public class ParticleTypes {
    public static final SimpleParticleType LANDING_LAVA = register("landing_lava", false);
    public static final SimpleParticleType DRIPPING_WATER = register("dripping_water", false);
    public static final SimpleParticleType FALLING_WATER = register("falling_water", false);
-   public static final ParticleType<DustParticleOptions> DUST = register("dust", false, (var0) -> {
-      return DustParticleOptions.CODEC;
-   }, (var0) -> {
-      return DustParticleOptions.STREAM_CODEC;
-   });
-   public static final ParticleType<DustColorTransitionOptions> DUST_COLOR_TRANSITION = register("dust_color_transition", false, (var0) -> {
-      return DustColorTransitionOptions.CODEC;
-   }, (var0) -> {
-      return DustColorTransitionOptions.STREAM_CODEC;
-   });
+   public static final ParticleType<DustParticleOptions> DUST = register("dust", false, (var0) -> DustParticleOptions.CODEC, (var0) -> DustParticleOptions.STREAM_CODEC);
+   public static final ParticleType<DustColorTransitionOptions> DUST_COLOR_TRANSITION = register("dust_color_transition", false, (var0) -> DustColorTransitionOptions.CODEC, (var0) -> DustColorTransitionOptions.STREAM_CODEC);
    public static final SimpleParticleType EFFECT = register("effect", false);
    public static final SimpleParticleType ELDER_GUARDIAN = register("elder_guardian", true);
    public static final SimpleParticleType ENCHANTED_HIT = register("enchanted_hit", false);
@@ -55,11 +47,7 @@ public class ParticleTypes {
    public static final SimpleParticleType CHERRY_LEAVES = register("cherry_leaves", false);
    public static final SimpleParticleType PALE_OAK_LEAVES = register("pale_oak_leaves", false);
    public static final SimpleParticleType SCULK_SOUL = register("sculk_soul", false);
-   public static final ParticleType<SculkChargeParticleOptions> SCULK_CHARGE = register("sculk_charge", true, (var0) -> {
-      return SculkChargeParticleOptions.CODEC;
-   }, (var0) -> {
-      return SculkChargeParticleOptions.STREAM_CODEC;
-   });
+   public static final ParticleType<SculkChargeParticleOptions> SCULK_CHARGE = register("sculk_charge", true, (var0) -> SculkChargeParticleOptions.CODEC, (var0) -> SculkChargeParticleOptions.STREAM_CODEC);
    public static final SimpleParticleType SCULK_CHARGE_POP = register("sculk_charge_pop", true);
    public static final SimpleParticleType SOUL_FIRE_FLAME = register("soul_fire_flame", false);
    public static final SimpleParticleType SOUL = register("soul", false);
@@ -69,16 +57,8 @@ public class ParticleTypes {
    public static final SimpleParticleType HEART = register("heart", false);
    public static final SimpleParticleType INSTANT_EFFECT = register("instant_effect", false);
    public static final ParticleType<ItemParticleOption> ITEM = register("item", false, ItemParticleOption::codec, ItemParticleOption::streamCodec);
-   public static final ParticleType<VibrationParticleOption> VIBRATION = register("vibration", true, (var0) -> {
-      return VibrationParticleOption.CODEC;
-   }, (var0) -> {
-      return VibrationParticleOption.STREAM_CODEC;
-   });
-   public static final ParticleType<TrailParticleOption> TRAIL = register("trail", false, (var0) -> {
-      return TrailParticleOption.CODEC;
-   }, (var0) -> {
-      return TrailParticleOption.STREAM_CODEC;
-   });
+   public static final ParticleType<VibrationParticleOption> VIBRATION = register("vibration", true, (var0) -> VibrationParticleOption.CODEC, (var0) -> VibrationParticleOption.STREAM_CODEC);
+   public static final ParticleType<TrailParticleOption> TRAIL = register("trail", false, (var0) -> TrailParticleOption.CODEC, (var0) -> TrailParticleOption.STREAM_CODEC);
    public static final SimpleParticleType ITEM_SLIME = register("item_slime", false);
    public static final SimpleParticleType ITEM_COBWEB = register("item_cobweb", false);
    public static final SimpleParticleType ITEM_SNOWBALL = register("item_snowball", false);
@@ -132,11 +112,7 @@ public class ParticleTypes {
    public static final SimpleParticleType WAX_OFF = register("wax_off", true);
    public static final SimpleParticleType ELECTRIC_SPARK = register("electric_spark", true);
    public static final SimpleParticleType SCRAPE = register("scrape", true);
-   public static final ParticleType<ShriekParticleOption> SHRIEK = register("shriek", false, (var0) -> {
-      return ShriekParticleOption.CODEC;
-   }, (var0) -> {
-      return ShriekParticleOption.STREAM_CODEC;
-   });
+   public static final ParticleType<ShriekParticleOption> SHRIEK = register("shriek", false, (var0) -> ShriekParticleOption.CODEC, (var0) -> ShriekParticleOption.STREAM_CODEC);
    public static final SimpleParticleType EGG_CRACK = register("egg_crack", false);
    public static final SimpleParticleType DUST_PLUME = register("dust_plume", false);
    public static final SimpleParticleType TRIAL_SPAWNER_DETECTED_PLAYER = register("trial_spawner_detection", true);

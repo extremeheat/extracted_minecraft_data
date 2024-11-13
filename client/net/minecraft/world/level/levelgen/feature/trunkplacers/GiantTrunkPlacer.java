@@ -13,9 +13,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class GiantTrunkPlacer extends TrunkPlacer {
-   public static final MapCodec<GiantTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return trunkPlacerParts(var0).apply(var0, GiantTrunkPlacer::new);
-   });
+   public static final MapCodec<GiantTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> trunkPlacerParts(var0).apply(var0, GiantTrunkPlacer::new));
 
    public GiantTrunkPlacer(int var1, int var2, int var3) {
       super(var1, var2, var3);

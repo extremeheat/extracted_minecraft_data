@@ -13,7 +13,7 @@ public enum DamageEffects implements StringRepresentable {
    POKING("poking", SoundEvents.PLAYER_HURT_SWEET_BERRY_BUSH),
    FREEZING("freezing", SoundEvents.PLAYER_HURT_FREEZE);
 
-   public static final Codec<DamageEffects> CODEC = StringRepresentable.fromEnum(DamageEffects::values);
+   public static final Codec<DamageEffects> CODEC = StringRepresentable.<DamageEffects>fromEnum(DamageEffects::values);
    private final String id;
    private final SoundEvent sound;
 

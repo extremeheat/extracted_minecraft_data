@@ -88,9 +88,7 @@ public class Ocelot extends Animal {
    }
 
    protected void registerGoals() {
-      this.temptGoal = new OcelotTemptGoal(this, 0.6, (var0) -> {
-         return var0.is(ItemTags.OCELOT_FOOD);
-      }, true);
+      this.temptGoal = new OcelotTemptGoal(this, 0.6, (var0) -> var0.is(ItemTags.OCELOT_FOOD), true);
       this.goalSelector.addGoal(1, new FloatGoal(this));
       this.goalSelector.addGoal(3, this.temptGoal);
       this.goalSelector.addGoal(7, new LeapAtTargetGoal(this, 0.3F));
@@ -196,7 +194,7 @@ public class Ocelot extends Animal {
 
    protected void reassessTrustingGoals() {
       if (this.ocelotAvoidPlayersGoal == null) {
-         this.ocelotAvoidPlayersGoal = new OcelotAvoidEntityGoal(this, Player.class, 16.0F, 0.8, 1.33);
+         this.ocelotAvoidPlayersGoal = new OcelotAvoidEntityGoal<Player>(this, Player.class, 16.0F, 0.8, 1.33);
       }
 
       this.goalSelector.removeGoal(this.ocelotAvoidPlayersGoal);
@@ -208,7 +206,7 @@ public class Ocelot extends Animal {
 
    @Nullable
    public Ocelot getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (Ocelot)EntityType.OCELOT.create(var1, EntitySpawnReason.BREEDING);
+      return EntityType.OCELOT.create(var1, EntitySpawnReason.BREEDING);
    }
 
    public boolean isFood(ItemStack var1) {
@@ -259,20 +257,7 @@ public class Ocelot extends Animal {
    }
 
    static {
-      DATA_TRUSTING = SynchedEntityData.defineId(Ocelot.class, EntityDataSerializers.BOOLEAN);
-   }
-
-   static class OcelotTemptGoal extends TemptGoal {
-      private final Ocelot ocelot;
-
-      public OcelotTemptGoal(Ocelot var1, double var2, Predicate<ItemStack> var4, boolean var5) {
-         super(var1, var2, var4, var5);
-         this.ocelot = var1;
-      }
-
-      protected boolean canScare() {
-         return super.canScare() && !this.ocelot.isTrusting();
-      }
+      DATA_TRUSTING = SynchedEntityData.<Boolean>defineId(Ocelot.class, EntityDataSerializers.BOOLEAN);
    }
 
    static class OcelotAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
@@ -291,6 +276,19 @@ public class Ocelot extends Animal {
 
       public boolean canContinueToUse() {
          return !this.ocelot.isTrusting() && super.canContinueToUse();
+      }
+   }
+
+   static class OcelotTemptGoal extends TemptGoal {
+      private final Ocelot ocelot;
+
+      public OcelotTemptGoal(Ocelot var1, double var2, Predicate<ItemStack> var4, boolean var5) {
+         super(var1, var2, var4, var5);
+         this.ocelot = var1;
+      }
+
+      protected boolean canScare() {
+         return super.canScare() && !this.ocelot.isTrusting();
       }
    }
 }

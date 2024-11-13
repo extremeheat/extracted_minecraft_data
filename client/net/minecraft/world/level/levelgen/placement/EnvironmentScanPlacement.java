@@ -15,17 +15,7 @@ public class EnvironmentScanPlacement extends PlacementModifier {
    private final BlockPredicate targetCondition;
    private final BlockPredicate allowedSearchCondition;
    private final int maxSteps;
-   public static final MapCodec<EnvironmentScanPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Direction.VERTICAL_CODEC.fieldOf("direction_of_search").forGetter((var0x) -> {
-         return var0x.directionOfSearch;
-      }), BlockPredicate.CODEC.fieldOf("target_condition").forGetter((var0x) -> {
-         return var0x.targetCondition;
-      }), BlockPredicate.CODEC.optionalFieldOf("allowed_search_condition", BlockPredicate.alwaysTrue()).forGetter((var0x) -> {
-         return var0x.allowedSearchCondition;
-      }), Codec.intRange(1, 32).fieldOf("max_steps").forGetter((var0x) -> {
-         return var0x.maxSteps;
-      })).apply(var0, EnvironmentScanPlacement::new);
-   });
+   public static final MapCodec<EnvironmentScanPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Direction.VERTICAL_CODEC.fieldOf("direction_of_search").forGetter((var0x) -> var0x.directionOfSearch), BlockPredicate.CODEC.fieldOf("target_condition").forGetter((var0x) -> var0x.targetCondition), BlockPredicate.CODEC.optionalFieldOf("allowed_search_condition", BlockPredicate.alwaysTrue()).forGetter((var0x) -> var0x.allowedSearchCondition), Codec.intRange(1, 32).fieldOf("max_steps").forGetter((var0x) -> var0x.maxSteps)).apply(var0, EnvironmentScanPlacement::new));
 
    private EnvironmentScanPlacement(Direction var1, BlockPredicate var2, BlockPredicate var3, int var4) {
       super();

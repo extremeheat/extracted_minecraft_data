@@ -9,7 +9,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 public class ClientboundSetEntityMotionPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetEntityMotionPacket> STREAM_CODEC = Packet.codec(ClientboundSetEntityMotionPacket::write, ClientboundSetEntityMotionPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetEntityMotionPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSetEntityMotionPacket>codec(ClientboundSetEntityMotionPacket::write, ClientboundSetEntityMotionPacket::new);
    private final int id;
    private final int xa;
    private final int ya;

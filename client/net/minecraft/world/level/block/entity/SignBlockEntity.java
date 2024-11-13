@@ -100,39 +100,29 @@ public class SignBlockEntity extends BlockEntity {
       DataResult var10000 = SignText.DIRECT_CODEC.encodeStart(var3, this.frontText);
       Logger var10001 = LOGGER;
       Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         var1.put("front_text", var1x);
-      });
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("front_text", var1x));
       var10000 = SignText.DIRECT_CODEC.encodeStart(var3, this.backText);
       var10001 = LOGGER;
       Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         var1.put("back_text", var1x);
-      });
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("back_text", var1x));
       var1.putBoolean("is_waxed", this.isWaxed);
    }
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      DataResult var10000;
-      Logger var10001;
       if (var1.contains("front_text")) {
-         var10000 = SignText.DIRECT_CODEC.parse(var3, var1.getCompound("front_text"));
-         var10001 = LOGGER;
+         DataResult var10000 = SignText.DIRECT_CODEC.parse(var3, var1.getCompound("front_text"));
+         Logger var10001 = LOGGER;
          Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-            this.frontText = this.loadLines(var1x);
-         });
+         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> this.frontText = this.loadLines(var1x));
       }
 
       if (var1.contains("back_text")) {
-         var10000 = SignText.DIRECT_CODEC.parse(var3, var1.getCompound("back_text"));
-         var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-            this.backText = this.loadLines(var1x);
-         });
+         DataResult var4 = SignText.DIRECT_CODEC.parse(var3, var1.getCompound("back_text"));
+         Logger var5 = LOGGER;
+         Objects.requireNonNull(var5);
+         var4.resultOrPartial(var5::error).ifPresent((var1x) -> this.backText = this.loadLines(var1x));
       }
 
       this.isWaxed = var1.getBoolean("is_waxed");
@@ -152,7 +142,7 @@ public class SignBlockEntity extends BlockEntity {
       Level var3 = this.level;
       if (var3 instanceof ServerLevel var2) {
          try {
-            return ComponentUtils.updateForEntity(createCommandSourceStack((Player)null, var2, this.worldPosition), (Component)var1, (Entity)null, 0);
+            return ComponentUtils.updateForEntity(createCommandSourceStack((Player)null, var2, this.worldPosition), var1, (Entity)null, 0);
          } catch (CommandSyntaxException var4) {
          }
       }
@@ -162,9 +152,7 @@ public class SignBlockEntity extends BlockEntity {
 
    public void updateSignText(Player var1, boolean var2, List<FilteredText> var3) {
       if (!this.isWaxed() && var1.getUUID().equals(this.getPlayerWhoMayEdit()) && this.level != null) {
-         this.updateText((var3x) -> {
-            return this.setMessages(var1, var3, var3x);
-         }, var2);
+         this.updateText((var3x) -> this.setMessages(var1, var3, var3x), var2);
          this.setAllowedPlayerEditor((UUID)null);
          this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
       } else {
@@ -221,11 +209,8 @@ public class SignBlockEntity extends BlockEntity {
 
    public boolean executeClickCommandsIfPresent(Player var1, Level var2, BlockPos var3, boolean var4) {
       boolean var5 = false;
-      Component[] var6 = this.getText(var4).getMessages(var1.isTextFilteringEnabled());
-      int var7 = var6.length;
 
-      for(int var8 = 0; var8 < var7; ++var8) {
-         Component var9 = var6[var8];
+      for(Component var9 : this.getText(var4).getMessages(var1.isTextFilteringEnabled())) {
          Style var10 = var9.getStyle();
          ClickEvent var11 = var10.getClickEvent();
          if (var11 != null && var11.getAction() == ClickEvent.Action.RUN_COMMAND) {

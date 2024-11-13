@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -14,7 +13,7 @@ public class SplashPotionItem extends ThrowablePotionItem {
    }
 
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)SoundEvents.SPLASH_POTION_THROW, SoundSource.PLAYERS, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
+      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.SPLASH_POTION_THROW, SoundSource.PLAYERS, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
       return super.use(var1, var2, var3);
    }
 }

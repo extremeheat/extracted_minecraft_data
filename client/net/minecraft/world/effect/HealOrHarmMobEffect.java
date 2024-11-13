@@ -24,16 +24,15 @@ class HealOrHarmMobEffect extends InstantenousMobEffect {
    }
 
    public void applyInstantenousEffect(ServerLevel var1, @Nullable Entity var2, @Nullable Entity var3, LivingEntity var4, int var5, double var6) {
-      int var8;
       if (this.isHarm == var4.isInvertedHealAndHarm()) {
-         var8 = (int)(var6 * (double)(4 << var5) + 0.5);
+         int var8 = (int)(var6 * (double)(4 << var5) + 0.5);
          var4.heal((float)var8);
       } else {
-         var8 = (int)(var6 * (double)(6 << var5) + 0.5);
+         int var9 = (int)(var6 * (double)(6 << var5) + 0.5);
          if (var2 == null) {
-            var4.hurtServer(var1, var4.damageSources().magic(), (float)var8);
+            var4.hurtServer(var1, var4.damageSources().magic(), (float)var9);
          } else {
-            var4.hurtServer(var1, var4.damageSources().indirectMagic(var2, var3), (float)var8);
+            var4.hurtServer(var1, var4.damageSources().indirectMagic(var2, var3), (float)var9);
          }
       }
 

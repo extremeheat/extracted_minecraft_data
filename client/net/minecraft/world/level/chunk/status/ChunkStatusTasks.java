@@ -138,9 +138,7 @@ public class ChunkStatusTasks {
          if (var3x instanceof ImposterProtoChunk var6) {
             var4 = var6.getWrapped();
          } else {
-            var4 = new LevelChunk(var5x, var3x, (var2) -> {
-               postLoadProtoChunk(var5x, var3x.getEntities());
-            });
+            var4 = new LevelChunk(var5x, var3x, (var2) -> postLoadProtoChunk(var5x, var3x.getEntities()));
             var5.replaceProtoChunk(new ImposterProtoChunk(var4, false));
          }
 

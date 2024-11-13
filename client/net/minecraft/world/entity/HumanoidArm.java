@@ -10,8 +10,8 @@ public enum HumanoidArm implements OptionEnum, StringRepresentable {
    LEFT(0, "left", "options.mainHand.left"),
    RIGHT(1, "right", "options.mainHand.right");
 
-   public static final Codec<HumanoidArm> CODEC = StringRepresentable.fromEnum(HumanoidArm::values);
-   public static final IntFunction<HumanoidArm> BY_ID = ByIdMap.continuous(HumanoidArm::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   public static final Codec<HumanoidArm> CODEC = StringRepresentable.<HumanoidArm>fromEnum(HumanoidArm::values);
+   public static final IntFunction<HumanoidArm> BY_ID = ByIdMap.<HumanoidArm>continuous(HumanoidArm::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    private final int id;
    private final String name;
    private final String translationKey;

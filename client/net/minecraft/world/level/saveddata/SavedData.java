@@ -43,17 +43,5 @@ public abstract class SavedData {
          this.deserializer = var2;
          this.type = var3;
       }
-
-      public Supplier<T> constructor() {
-         return this.constructor;
-      }
-
-      public BiFunction<CompoundTag, HolderLookup.Provider, T> deserializer() {
-         return this.deserializer;
-      }
-
-      public DataFixTypes type() {
-         return this.type;
-      }
    }
 }

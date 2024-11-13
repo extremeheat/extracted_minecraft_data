@@ -31,9 +31,7 @@ public class Containers {
    }
 
    public static void dropContents(Level var0, BlockPos var1, NonNullList<ItemStack> var2) {
-      var2.forEach((var2x) -> {
-         dropItemStack(var0, (double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), var2x);
-      });
+      var2.forEach((var2x) -> dropItemStack(var0, (double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), var2x));
    }
 
    public static void dropItemStack(Level var0, double var1, double var3, double var5, ItemStack var7) {

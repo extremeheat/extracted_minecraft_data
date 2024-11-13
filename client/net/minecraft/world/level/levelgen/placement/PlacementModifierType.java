@@ -24,8 +24,6 @@ public interface PlacementModifierType<P extends PlacementModifier> {
    MapCodec<P> codec();
 
    private static <P extends PlacementModifier> PlacementModifierType<P> register(String var0, MapCodec<P> var1) {
-      return (PlacementModifierType)Registry.register(BuiltInRegistries.PLACEMENT_MODIFIER_TYPE, (String)var0, () -> {
-         return var1;
-      });
+      return (PlacementModifierType)Registry.register(BuiltInRegistries.PLACEMENT_MODIFIER_TYPE, (String)var0, (PlacementModifierType)() -> var1);
    }
 }

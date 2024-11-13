@@ -10,9 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 
 public class WeatheringCopperTrapDoorBlock extends TrapDoorBlock implements WeatheringCopper {
-   public static final MapCodec<WeatheringCopperTrapDoorBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter(TrapDoorBlock::getType), WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(WeatheringCopperTrapDoorBlock::getAge), propertiesCodec()).apply(var0, WeatheringCopperTrapDoorBlock::new);
-   });
+   public static final MapCodec<WeatheringCopperTrapDoorBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter(TrapDoorBlock::getType), WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(WeatheringCopperTrapDoorBlock::getAge), propertiesCodec()).apply(var0, WeatheringCopperTrapDoorBlock::new));
    private final WeatheringCopper.WeatherState weatherState;
 
    public MapCodec<WeatheringCopperTrapDoorBlock> codec() {

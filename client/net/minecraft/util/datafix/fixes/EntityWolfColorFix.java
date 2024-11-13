@@ -11,9 +11,7 @@ public class EntityWolfColorFix extends NamedEntityFix {
    }
 
    public Dynamic<?> fixTag(Dynamic<?> var1) {
-      return var1.update("CollarColor", (var0) -> {
-         return var0.createByte((byte)(15 - var0.asInt(0)));
-      });
+      return var1.update("CollarColor", (var0) -> var0.createByte((byte)(15 - var0.asInt(0))));
    }
 
    protected Typed<?> fix(Typed<?> var1) {

@@ -65,9 +65,7 @@ public final class BelowZeroRetrogen {
       for(int var5 = 0; var5 < 16; ++var5) {
          for(int var6 = 0; var6 < 16; ++var6) {
             if (this.hasBedrockHole(var5, var6)) {
-               BlockPos.betweenClosed(var5, var3, var6, var5, var4, var6).forEach((var1x) -> {
-                  var1.setBlockState(var1x, Blocks.AIR.defaultBlockState(), false);
-               });
+               BlockPos.betweenClosed(var5, var3, var6, var5, var4, var6).forEach((var1x) -> var1.setBlockState(var1x, Blocks.AIR.defaultBlockState(), false));
             }
          }
       }
@@ -101,21 +99,9 @@ public final class BelowZeroRetrogen {
    }
 
    static {
-      BITSET_CODEC = Codec.LONG_STREAM.xmap((var0) -> {
-         return BitSet.valueOf(var0.toArray());
-      }, (var0) -> {
-         return LongStream.of(var0.toLongArray());
-      });
-      NON_EMPTY_CHUNK_STATUS = BuiltInRegistries.CHUNK_STATUS.byNameCodec().comapFlatMap((var0) -> {
-         return var0 == ChunkStatus.EMPTY ? DataResult.error(() -> {
-            return "target_status cannot be empty";
-         }) : DataResult.success(var0);
-      }, Function.identity());
-      CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(NON_EMPTY_CHUNK_STATUS.fieldOf("target_status").forGetter(BelowZeroRetrogen::targetStatus), BITSET_CODEC.lenientOptionalFieldOf("missing_bedrock").forGetter((var0x) -> {
-            return var0x.missingBedrock.isEmpty() ? Optional.empty() : Optional.of(var0x.missingBedrock);
-         })).apply(var0, BelowZeroRetrogen::new);
-      });
+      BITSET_CODEC = Codec.LONG_STREAM.xmap((var0) -> BitSet.valueOf(var0.toArray()), (var0) -> LongStream.of(var0.toLongArray()));
+      NON_EMPTY_CHUNK_STATUS = BuiltInRegistries.CHUNK_STATUS.byNameCodec().comapFlatMap((var0) -> var0 == ChunkStatus.EMPTY ? DataResult.error(() -> "target_status cannot be empty") : DataResult.success(var0), Function.identity());
+      CODEC = RecordCodecBuilder.create((var0) -> var0.group(NON_EMPTY_CHUNK_STATUS.fieldOf("target_status").forGetter(BelowZeroRetrogen::targetStatus), BITSET_CODEC.lenientOptionalFieldOf("missing_bedrock").forGetter((var0x) -> var0x.missingBedrock.isEmpty() ? Optional.empty() : Optional.of(var0x.missingBedrock))).apply(var0, BelowZeroRetrogen::new));
       RETAINED_RETROGEN_BIOMES = Set.of(Biomes.LUSH_CAVES, Biomes.DRIPSTONE_CAVES, Biomes.DEEP_DARK);
       UPGRADE_HEIGHT_ACCESSOR = new LevelHeightAccessor() {
          public int getHeight() {

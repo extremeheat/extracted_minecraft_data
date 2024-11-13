@@ -28,6 +28,6 @@ public record DisplayContext() implements SelectItemModelProperty<ItemDisplayCon
    }
 
    static {
-      TYPE = SelectItemModelProperty.Type.create(MapCodec.unit(new DisplayContext()), ItemDisplayContext.CODEC);
+      TYPE = SelectItemModelProperty.Type.<DisplayContext, ItemDisplayContext>create(MapCodec.unit(new DisplayContext()), ItemDisplayContext.CODEC);
    }
 }

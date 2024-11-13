@@ -20,13 +20,9 @@ public enum EquipmentSlot implements StringRepresentable {
 
    public static final int NO_COUNT_LIMIT = 0;
    public static final List<EquipmentSlot> VALUES = List.of(values());
-   public static final IntFunction<EquipmentSlot> BY_ID = ByIdMap.continuous((var0) -> {
-      return var0.id;
-   }, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-   public static final StringRepresentable.EnumCodec<EquipmentSlot> CODEC = StringRepresentable.fromEnum(EquipmentSlot::values);
-   public static final StreamCodec<ByteBuf, EquipmentSlot> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> {
-      return var0.id;
-   });
+   public static final IntFunction<EquipmentSlot> BY_ID = ByIdMap.<EquipmentSlot>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   public static final StringRepresentable.EnumCodec<EquipmentSlot> CODEC = StringRepresentable.<EquipmentSlot>fromEnum(EquipmentSlot::values);
+   public static final StreamCodec<ByteBuf, EquipmentSlot> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
    private final Type type;
    private final int index;
    private final int countLimit;
@@ -82,7 +78,7 @@ public enum EquipmentSlot implements StringRepresentable {
    }
 
    public static EquipmentSlot byName(String var0) {
-      EquipmentSlot var1 = (EquipmentSlot)CODEC.byName(var0);
+      EquipmentSlot var1 = CODEC.byName(var0);
       if (var1 != null) {
          return var1;
       } else {

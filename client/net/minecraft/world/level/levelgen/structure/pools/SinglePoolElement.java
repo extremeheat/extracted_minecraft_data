@@ -12,7 +12,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -50,27 +49,19 @@ public class SinglePoolElement extends StructurePoolElement {
 
    private static <T> DataResult<T> encodeTemplate(Either<ResourceLocation, StructureTemplate> var0, DynamicOps<T> var1, T var2) {
       Optional var3 = var0.left();
-      return var3.isEmpty() ? DataResult.error(() -> {
-         return "Can not serialize a runtime pool element";
-      }) : ResourceLocation.CODEC.encode((ResourceLocation)var3.get(), var1, var2);
+      return var3.isEmpty() ? DataResult.error(() -> "Can not serialize a runtime pool element") : ResourceLocation.CODEC.encode((ResourceLocation)var3.get(), var1, var2);
    }
 
    protected static <E extends SinglePoolElement> RecordCodecBuilder<E, Holder<StructureProcessorList>> processorsCodec() {
-      return StructureProcessorType.LIST_CODEC.fieldOf("processors").forGetter((var0) -> {
-         return var0.processors;
-      });
+      return StructureProcessorType.LIST_CODEC.fieldOf("processors").forGetter((var0) -> var0.processors);
    }
 
    protected static <E extends SinglePoolElement> RecordCodecBuilder<E, Optional<LiquidSettings>> overrideLiquidSettingsCodec() {
-      return LiquidSettings.CODEC.optionalFieldOf("override_liquid_settings").forGetter((var0) -> {
-         return var0.overrideLiquidSettings;
-      });
+      return LiquidSettings.CODEC.optionalFieldOf("override_liquid_settings").forGetter((var0) -> var0.overrideLiquidSettings);
    }
 
    protected static <E extends SinglePoolElement> RecordCodecBuilder<E, Either<ResourceLocation, StructureTemplate>> templateCodec() {
-      return TEMPLATE_CODEC.fieldOf("location").forGetter((var0) -> {
-         return var0.template;
-      });
+      return TEMPLATE_CODEC.fieldOf("location").forGetter((var0) -> var0.template);
    }
 
    protected SinglePoolElement(Either<ResourceLocation, StructureTemplate> var1, Holder<StructureProcessorList> var2, StructureTemplatePool.Projection var3, Optional<LiquidSettings> var4) {
@@ -95,10 +86,8 @@ public class SinglePoolElement extends StructurePoolElement {
       StructureTemplate var5 = this.getTemplate(var1);
       ObjectArrayList var6 = var5.filterBlocks(var2, (new StructurePlaceSettings()).setRotation(var3), Blocks.STRUCTURE_BLOCK, var4);
       ArrayList var7 = Lists.newArrayList();
-      Iterator var8 = var6.iterator();
 
-      while(var8.hasNext()) {
-         StructureTemplate.StructureBlockInfo var9 = (StructureTemplate.StructureBlockInfo)var8.next();
+      for(StructureTemplate.StructureBlockInfo var9 : var6) {
          CompoundTag var10 = var9.nbt();
          if (var10 != null) {
             StructureMode var11 = StructureMode.valueOf(var10.getString("mode"));
@@ -134,11 +123,7 @@ public class SinglePoolElement extends StructurePoolElement {
       if (!var12.placeInWorld(var2, var5, var6, var13, var9, 18)) {
          return false;
       } else {
-         List var14 = StructureTemplate.processBlockInfos(var2, var5, var6, var13, this.getDataMarkers(var1, var5, var7, false));
-         Iterator var15 = var14.iterator();
-
-         while(var15.hasNext()) {
-            StructureTemplate.StructureBlockInfo var16 = (StructureTemplate.StructureBlockInfo)var15.next();
+         for(StructureTemplate.StructureBlockInfo var16 : StructureTemplate.processBlockInfos(var2, var5, var6, var13, this.getDataMarkers(var1, var5, var7, false))) {
             this.handleDataMarker(var2, var16, var5, var7, var9, var8);
          }
 
@@ -159,7 +144,7 @@ public class SinglePoolElement extends StructurePoolElement {
          var5.addProcessor(JigsawReplacementProcessor.INSTANCE);
       }
 
-      List var10000 = ((StructureProcessorList)this.processors.value()).list();
+      List var10000 = (this.processors.value()).list();
       Objects.requireNonNull(var5);
       var10000.forEach(var5::addProcessor);
       ImmutableList var6 = this.getProjection().getProcessors();
@@ -178,8 +163,6 @@ public class SinglePoolElement extends StructurePoolElement {
 
    static {
       TEMPLATE_CODEC = Codec.of(SinglePoolElement::encodeTemplate, ResourceLocation.CODEC.map(Either::left));
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(templateCodec(), processorsCodec(), projectionCodec(), overrideLiquidSettingsCodec()).apply(var0, SinglePoolElement::new);
-      });
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(templateCodec(), processorsCodec(), projectionCodec(), overrideLiquidSettingsCodec()).apply(var0, SinglePoolElement::new));
    }
 }

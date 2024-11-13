@@ -2,7 +2,6 @@ package net.minecraft.world.entity;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -27,10 +26,8 @@ public class EntityAttachments {
 
    public EntityAttachments scale(float var1, float var2, float var3) {
       EnumMap var4 = new EnumMap(EntityAttachment.class);
-      Iterator var5 = this.attachments.entrySet().iterator();
 
-      while(var5.hasNext()) {
-         Map.Entry var6 = (Map.Entry)var5.next();
+      for(Map.Entry var6 : this.attachments.entrySet()) {
          var4.put((EntityAttachment)var6.getKey(), scalePoints((List)var6.getValue(), var1, var2, var3));
       }
 
@@ -39,10 +36,8 @@ public class EntityAttachments {
 
    private static List<Vec3> scalePoints(List<Vec3> var0, float var1, float var2, float var3) {
       ArrayList var4 = new ArrayList(var0.size());
-      Iterator var5 = var0.iterator();
 
-      while(var5.hasNext()) {
-         Vec3 var6 = (Vec3)var5.next();
+      for(Vec3 var6 : var0) {
          var4.add(var6.multiply((double)var1, (double)var2, (double)var3));
       }
 
@@ -91,19 +86,14 @@ public class EntityAttachments {
       }
 
       public Builder attach(EntityAttachment var1, Vec3 var2) {
-         ((List)this.attachments.computeIfAbsent(var1, (var0) -> {
-            return new ArrayList(1);
-         })).add(var2);
+         ((List)this.attachments.computeIfAbsent(var1, (var0) -> new ArrayList(1))).add(var2);
          return this;
       }
 
       public EntityAttachments build(float var1, float var2) {
          EnumMap var3 = new EnumMap(EntityAttachment.class);
-         EntityAttachment[] var4 = EntityAttachment.values();
-         int var5 = var4.length;
 
-         for(int var6 = 0; var6 < var5; ++var6) {
-            EntityAttachment var7 = var4[var6];
+         for(EntityAttachment var7 : EntityAttachment.values()) {
             List var8 = (List)this.attachments.get(var7);
             var3.put(var7, var8 != null ? List.copyOf(var8) : var7.createFallbackPoints(var1, var2));
          }

@@ -52,9 +52,7 @@ public class ItemModelResolver {
             ResolvableProfile var3 = (ResolvableProfile)var0.get(DataComponents.PROFILE);
             if (var3 != null && !var3.isResolved()) {
                var0.remove(DataComponents.PROFILE);
-               var3.resolve().thenAcceptAsync((var1x) -> {
-                  var0.set(DataComponents.PROFILE, var1x);
-               }, Minecraft.getInstance());
+               var3.resolve().thenAcceptAsync((var1x) -> var0.set(DataComponents.PROFILE, var1x), Minecraft.getInstance());
             }
          }
       }

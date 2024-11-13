@@ -26,6 +26,6 @@ public class ServerboundLoginAcknowledgedPacket implements Packet<ServerLoginPac
    }
 
    static {
-      STREAM_CODEC = StreamCodec.unit(INSTANCE);
+      STREAM_CODEC = StreamCodec.<ByteBuf, ServerboundLoginAcknowledgedPacket>unit(INSTANCE);
    }
 }

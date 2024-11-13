@@ -49,7 +49,7 @@ public class IdMapper<T> implements IdMap<T> {
 
    @Nullable
    public final T byId(int var1) {
-      return var1 >= 0 && var1 < this.idToT.size() ? this.idToT.get(var1) : null;
+      return (T)(var1 >= 0 && var1 < this.idToT.size() ? this.idToT.get(var1) : null);
    }
 
    public Iterator<T> iterator() {

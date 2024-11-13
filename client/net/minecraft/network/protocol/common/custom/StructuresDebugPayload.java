@@ -10,7 +10,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 public record StructuresDebugPayload(ResourceKey<Level> dimension, BoundingBox mainBB, List<PieceInfo> pieces) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, StructuresDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(StructuresDebugPayload::write, StructuresDebugPayload::new);
-   public static final CustomPacketPayload.Type<StructuresDebugPayload> TYPE = CustomPacketPayload.createType("debug/structures");
+   public static final CustomPacketPayload.Type<StructuresDebugPayload> TYPE = CustomPacketPayload.<StructuresDebugPayload>createType("debug/structures");
 
    private StructuresDebugPayload(FriendlyByteBuf var1) {
       this(var1.readResourceKey(Registries.DIMENSION), readBoundingBox(var1), var1.readList(PieceInfo::new));
@@ -26,9 +26,7 @@ public record StructuresDebugPayload(ResourceKey<Level> dimension, BoundingBox m
    private void write(FriendlyByteBuf var1) {
       var1.writeResourceKey(this.dimension);
       writeBoundingBox(var1, this.mainBB);
-      var1.writeCollection(this.pieces, (var1x, var2) -> {
-         var2.write(var1);
-      });
+      var1.writeCollection(this.pieces, (var1x, var2) -> var2.write(var1));
    }
 
    public CustomPacketPayload.Type<StructuresDebugPayload> type() {
@@ -48,18 +46,6 @@ public record StructuresDebugPayload(ResourceKey<Level> dimension, BoundingBox m
       var0.writeInt(var1.maxZ());
    }
 
-   public ResourceKey<Level> dimension() {
-      return this.dimension;
-   }
-
-   public BoundingBox mainBB() {
-      return this.mainBB;
-   }
-
-   public List<PieceInfo> pieces() {
-      return this.pieces;
-   }
-
    public static record PieceInfo(BoundingBox boundingBox, boolean isStart) {
       public PieceInfo(FriendlyByteBuf var1) {
          this(StructuresDebugPayload.readBoundingBox(var1), var1.readBoolean());
@@ -74,14 +60,6 @@ public record StructuresDebugPayload(ResourceKey<Level> dimension, BoundingBox m
       public void write(FriendlyByteBuf var1) {
          StructuresDebugPayload.writeBoundingBox(var1, this.boundingBox);
          var1.writeBoolean(this.isStart);
-      }
-
-      public BoundingBox boundingBox() {
-         return this.boundingBox;
-      }
-
-      public boolean isStart() {
-         return this.isStart;
       }
    }
 }

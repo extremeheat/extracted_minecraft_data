@@ -93,7 +93,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
    }
 
    protected Brain.Provider<Frog> brainProvider() {
-      return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
+      return Brain.<Frog>provider(MEMORY_TYPES, SENSOR_TYPES);
    }
 
    protected Brain<?> makeBrain(Dynamic<?> var1) {
@@ -148,9 +148,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      Optional var10000 = Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant"))).map((var0) -> {
-         return ResourceKey.create(Registries.FROG_VARIANT, var0);
-      });
+      Optional var10000 = Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant"))).map((var0) -> ResourceKey.create(Registries.FROG_VARIANT, var0));
       Registry var10001 = BuiltInRegistries.FROG_VARIANT;
       Objects.requireNonNull(var10001);
       var10000.flatMap(var10001::get).ifPresent(this::setVariant);
@@ -217,7 +215,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
 
    @Nullable
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Frog var3 = (Frog)EntityType.FROG.create(var1, EntitySpawnReason.BREEDING);
+      Frog var3 = EntityType.FROG.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          FrogAi.initMemories(var3, var1.getRandom());
       }
@@ -234,17 +232,17 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
 
    public void spawnChildFromBreeding(ServerLevel var1, Animal var2) {
       this.finalizeSpawnChildFromBreeding(var1, var2, (AgeableMob)null);
-      this.getBrain().setMemory(MemoryModuleType.IS_PREGNANT, (Object)Unit.INSTANCE);
+      this.getBrain().setMemory(MemoryModuleType.IS_PREGNANT, Unit.INSTANCE);
    }
 
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       Holder var5 = var1.getBiome(this.blockPosition());
       if (var5.is(BiomeTags.SPAWNS_COLD_VARIANT_FROGS)) {
-         this.setVariant((Holder)BuiltInRegistries.FROG_VARIANT.getOrThrow(FrogVariant.COLD));
+         this.setVariant(BuiltInRegistries.FROG_VARIANT.getOrThrow(FrogVariant.COLD));
       } else if (var5.is(BiomeTags.SPAWNS_WARM_VARIANT_FROGS)) {
-         this.setVariant((Holder)BuiltInRegistries.FROG_VARIANT.getOrThrow(FrogVariant.WARM));
+         this.setVariant(BuiltInRegistries.FROG_VARIANT.getOrThrow(FrogVariant.WARM));
       } else {
-         this.setVariant((Holder)BuiltInRegistries.FROG_VARIANT.getOrThrow(DEFAULT_VARIANT));
+         this.setVariant(BuiltInRegistries.FROG_VARIANT.getOrThrow(DEFAULT_VARIANT));
       }
 
       FrogAi.initMemories(this, var1.getRandom());
@@ -338,12 +336,12 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
    static {
       SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.FROG_ATTACKABLES, SensorType.FROG_TEMPTATIONS, SensorType.IS_IN_WATER);
       MEMORY_TYPES = ImmutableList.of(MemoryModuleType.LOOK_TARGET, MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.WALK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.BREED_TARGET, MemoryModuleType.LONG_JUMP_COOLDOWN_TICKS, MemoryModuleType.LONG_JUMP_MID_JUMP, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.TEMPTING_PLAYER, MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, new MemoryModuleType[]{MemoryModuleType.IS_TEMPTED, MemoryModuleType.HURT_BY, MemoryModuleType.HURT_BY_ENTITY, MemoryModuleType.NEAREST_ATTACKABLE, MemoryModuleType.IS_IN_WATER, MemoryModuleType.IS_PREGNANT, MemoryModuleType.IS_PANICKING, MemoryModuleType.UNREACHABLE_TONGUE_TARGETS});
-      DATA_VARIANT_ID = SynchedEntityData.defineId(Frog.class, EntityDataSerializers.FROG_VARIANT);
-      DATA_TONGUE_TARGET_ID = SynchedEntityData.defineId(Frog.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);
+      DATA_VARIANT_ID = SynchedEntityData.<Holder<FrogVariant>>defineId(Frog.class, EntityDataSerializers.FROG_VARIANT);
+      DATA_TONGUE_TARGET_ID = SynchedEntityData.<OptionalInt>defineId(Frog.class, EntityDataSerializers.OPTIONAL_UNSIGNED_INT);
       DEFAULT_VARIANT = FrogVariant.TEMPERATE;
    }
 
-   private class FrogLookControl extends LookControl {
+   class FrogLookControl extends LookControl {
       FrogLookControl(final Mob var2) {
          super(var2);
       }
@@ -353,7 +351,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
       }
    }
 
-   private static class FrogPathNavigation extends AmphibiousPathNavigation {
+   static class FrogPathNavigation extends AmphibiousPathNavigation {
       FrogPathNavigation(Frog var1, Level var2) {
          super(var1, var2);
       }
@@ -368,7 +366,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
       }
    }
 
-   private static class FrogNodeEvaluator extends AmphibiousNodeEvaluator {
+   static class FrogNodeEvaluator extends AmphibiousNodeEvaluator {
       private final BlockPos.MutableBlockPos belowPos = new BlockPos.MutableBlockPos();
 
       public FrogNodeEvaluator(boolean var1) {

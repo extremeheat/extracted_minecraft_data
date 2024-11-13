@@ -21,13 +21,7 @@ public class PardonIpCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("pardon-ip").requires((var0x) -> {
-         return var0x.hasPermission(3);
-      })).then(Commands.argument("target", StringArgumentType.word()).suggests((var0x, var1) -> {
-         return SharedSuggestionProvider.suggest(((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getIpBans().getUserList(), var1);
-      }).executes((var0x) -> {
-         return unban((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "target"));
-      })));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("pardon-ip").requires((var0x) -> var0x.hasPermission(3))).then(Commands.argument("target", StringArgumentType.word()).suggests((var0x, var1) -> SharedSuggestionProvider.suggest(((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getIpBans().getUserList(), var1)).executes((var0x) -> unban((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "target")))));
    }
 
    private static int unban(CommandSourceStack var0, String var1) throws CommandSyntaxException {
@@ -39,9 +33,7 @@ public class PardonIpCommand {
             throw ERROR_NOT_BANNED.create();
          } else {
             var2.remove(var1);
-            var0.sendSuccess(() -> {
-               return Component.translatable("commands.pardonip.success", var1);
-            }, true);
+            var0.sendSuccess(() -> Component.translatable("commands.pardonip.success", var1), true);
             return 1;
          }
       }

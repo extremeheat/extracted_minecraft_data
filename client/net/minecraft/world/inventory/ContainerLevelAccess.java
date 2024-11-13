@@ -24,7 +24,7 @@ public interface ContainerLevelAccess {
    <T> Optional<T> evaluate(BiFunction<Level, BlockPos, T> var1);
 
    default <T> T evaluate(BiFunction<Level, BlockPos, T> var1, T var2) {
-      return this.evaluate(var1).orElse(var2);
+      return (T)this.evaluate(var1).orElse(var2);
    }
 
    default void execute(BiConsumer<Level, BlockPos> var1) {

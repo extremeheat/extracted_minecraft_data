@@ -20,8 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class BlockDataAccessor implements DataAccessor {
    static final SimpleCommandExceptionType ERROR_NOT_A_BLOCK_ENTITY = new SimpleCommandExceptionType(Component.translatable("commands.data.block.invalid"));
-   public static final Function<String, DataCommands.DataProvider> PROVIDER = (var0) -> {
-      return new DataCommands.DataProvider() {
+   public static final Function<String, DataCommands.DataProvider> PROVIDER = (var0) -> new DataCommands.DataProvider() {
          public DataAccessor access(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
             BlockPos var2 = BlockPosArgument.getLoadedBlockPos(var1, var0 + "Pos");
             BlockEntity var3 = ((CommandSourceStack)var1.getSource()).getLevel().getBlockEntity(var2);
@@ -36,7 +35,6 @@ public class BlockDataAccessor implements DataAccessor {
             return var1.then(Commands.literal("block").then((ArgumentBuilder)var2.apply(Commands.argument(var0 + "Pos", BlockPosArgument.blockPos()))));
          }
       };
-   };
    private final BlockEntity entity;
    private final BlockPos pos;
 

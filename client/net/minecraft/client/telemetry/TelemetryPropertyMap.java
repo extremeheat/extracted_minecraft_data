@@ -6,7 +6,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,9 +30,8 @@ public class TelemetryPropertyMap {
          public <T> RecordBuilder<T> encode(TelemetryPropertyMap var1, DynamicOps<T> var2, RecordBuilder<T> var3) {
             RecordBuilder var4 = var3;
 
-            TelemetryProperty var6;
-            for(Iterator var5 = var0.iterator(); var5.hasNext(); var4 = this.encodeProperty(var1, var4, var6)) {
-               var6 = (TelemetryProperty)var5.next();
+            for(TelemetryProperty var6 : var0) {
+               var4 = this.encodeProperty(var1, var4, var6);
             }
 
             return var4;
@@ -47,9 +45,8 @@ public class TelemetryPropertyMap {
          public <T> DataResult<TelemetryPropertyMap> decode(DynamicOps<T> var1, MapLike<T> var2) {
             DataResult var3 = DataResult.success(new Builder());
 
-            TelemetryProperty var5;
-            for(Iterator var4 = var0.iterator(); var4.hasNext(); var3 = this.decodeProperty(var3, var1, var2, var5)) {
-               var5 = (TelemetryProperty)var4.next();
+            for(TelemetryProperty var5 : var0) {
+               var3 = this.decodeProperty(var3, var1, var2, var5);
             }
 
             return var3.map(Builder::build);
@@ -59,9 +56,7 @@ public class TelemetryPropertyMap {
             Object var5 = var3.get(var4.id());
             if (var5 != null) {
                DataResult var6 = var4.codec().parse(var2, var5);
-               return var1.apply2stable((var1x, var2x) -> {
-                  return var1x.put(var4, var2x);
-               }, var6);
+               return var1.apply2stable((var1x, var2x) -> var1x.put(var4, var2x), var6);
             } else {
                return var1;
             }
@@ -82,7 +77,7 @@ public class TelemetryPropertyMap {
 
    @Nullable
    public <T> T get(TelemetryProperty<T> var1) {
-      return this.entries.get(var1);
+      return (T)this.entries.get(var1);
    }
 
    public String toString() {

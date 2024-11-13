@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -137,10 +136,7 @@ public class ScaffoldingBlock extends Block implements SimpleWaterloggedBlock {
          return 0;
       }
 
-      Iterator var5 = Direction.Plane.HORIZONTAL.iterator();
-
-      while(var5.hasNext()) {
-         Direction var6 = (Direction)var5.next();
+      for(Direction var6 : Direction.Plane.HORIZONTAL) {
          BlockState var7 = var0.getBlockState(var2.setWithOffset(var1, (Direction)var6));
          if (var7.is(Blocks.SCAFFOLDING)) {
             var4 = Math.min(var4, (Integer)var7.getValue(DISTANCE) + 1);

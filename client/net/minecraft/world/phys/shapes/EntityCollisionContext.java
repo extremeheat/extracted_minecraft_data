@@ -39,17 +39,13 @@ public class EntityCollisionContext implements CollisionContext {
       ItemStack var10003 = var1 instanceof LivingEntity ? ((LivingEntity)var1).getMainHandItem() : ItemStack.EMPTY;
       Predicate var10004;
       if (var2) {
-         var10004 = (var0) -> {
-            return true;
-         };
+         var10004 = (var0) -> true;
       } else if (var1 instanceof LivingEntity) {
          LivingEntity var3 = (LivingEntity)var1;
          Objects.requireNonNull((LivingEntity)var1);
          var10004 = var3::canStandOnFluid;
       } else {
-         var10004 = (var0) -> {
-            return false;
-         };
+         var10004 = (var0) -> false;
       }
 
       this(var10001, var10002, var10003, var10004, var1);
@@ -81,9 +77,7 @@ public class EntityCollisionContext implements CollisionContext {
    }
 
    static {
-      EMPTY = new EntityCollisionContext(false, -1.7976931348623157E308, ItemStack.EMPTY, (var0) -> {
-         return false;
-      }, (Entity)null) {
+      EMPTY = new EntityCollisionContext(false, -1.7976931348623157E308, ItemStack.EMPTY, (var0) -> false, (Entity)null) {
          public boolean isAbove(VoxelShape var1, BlockPos var2, boolean var3) {
             return var3;
          }

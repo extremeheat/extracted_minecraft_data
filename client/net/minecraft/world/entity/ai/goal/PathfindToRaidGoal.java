@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.goal;
 import com.google.common.collect.Sets;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -54,14 +53,10 @@ public class PathfindToRaidGoal<T extends Raider> extends Goal {
    private void recruitNearby(Raid var1) {
       if (var1.isActive()) {
          HashSet var2 = Sets.newHashSet();
-         List var3 = this.mob.level().getEntitiesOfClass(Raider.class, this.mob.getBoundingBox().inflate(16.0), (var1x) -> {
-            return !var1x.hasActiveRaid() && Raids.canJoinRaid(var1x, var1);
-         });
+         List var3 = this.mob.level().getEntitiesOfClass(Raider.class, this.mob.getBoundingBox().inflate(16.0), (var1x) -> !var1x.hasActiveRaid() && Raids.canJoinRaid(var1x, var1));
          var2.addAll(var3);
-         Iterator var4 = var2.iterator();
 
-         while(var4.hasNext()) {
-            Raider var5 = (Raider)var4.next();
+         for(Raider var5 : var2) {
             var1.joinRaid(var1.getGroupsSpawned(), var5, (BlockPos)null, true);
          }
       }

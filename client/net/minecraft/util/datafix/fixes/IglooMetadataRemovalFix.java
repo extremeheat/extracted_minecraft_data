@@ -16,24 +16,16 @@ public class IglooMetadataRemovalFix extends DataFix {
 
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.STRUCTURE_FEATURE);
-      return this.fixTypeEverywhereTyped("IglooMetadataRemovalFix", var1, (var0) -> {
-         return var0.update(DSL.remainderFinder(), IglooMetadataRemovalFix::fixTag);
-      });
+      return this.fixTypeEverywhereTyped("IglooMetadataRemovalFix", var1, (var0) -> var0.update(DSL.remainderFinder(), IglooMetadataRemovalFix::fixTag));
    }
 
    private static <T> Dynamic<T> fixTag(Dynamic<T> var0) {
-      boolean var1 = (Boolean)var0.get("Children").asStreamOpt().map((var0x) -> {
-         return var0x.allMatch(IglooMetadataRemovalFix::isIglooPiece);
-      }).result().orElse(false);
+      boolean var1 = (Boolean)var0.get("Children").asStreamOpt().map((var0x) -> var0x.allMatch(IglooMetadataRemovalFix::isIglooPiece)).result().orElse(false);
       return var1 ? var0.set("id", var0.createString("Igloo")).remove("Children") : var0.update("Children", IglooMetadataRemovalFix::removeIglooPieces);
    }
 
    private static <T> Dynamic<T> removeIglooPieces(Dynamic<T> var0) {
-      DataResult var10000 = var0.asStreamOpt().map((var0x) -> {
-         return var0x.filter((var0) -> {
-            return !isIglooPiece(var0);
-         });
-      });
+      DataResult var10000 = var0.asStreamOpt().map((var0x) -> var0x.filter((var0) -> !isIglooPiece(var0)));
       Objects.requireNonNull(var0);
       return (Dynamic)var10000.map(var0::createList).result().orElse(var0);
    }

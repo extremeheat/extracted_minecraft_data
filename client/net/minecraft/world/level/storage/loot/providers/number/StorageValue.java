@@ -12,9 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public record StorageValue(ResourceLocation storage, NbtPathArgument.NbtPath path) implements NumberProvider {
-   public static final MapCodec<StorageValue> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceLocation.CODEC.fieldOf("storage").forGetter(StorageValue::storage), NbtPathArgument.NbtPath.CODEC.fieldOf("path").forGetter(StorageValue::path)).apply(var0, StorageValue::new);
-   });
+   public static final MapCodec<StorageValue> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("storage").forGetter(StorageValue::storage), NbtPathArgument.NbtPath.CODEC.fieldOf("path").forGetter(StorageValue::path)).apply(var0, StorageValue::new));
 
    public StorageValue(ResourceLocation var1, NbtPathArgument.NbtPath var2) {
       super();
@@ -50,13 +48,5 @@ public record StorageValue(ResourceLocation storage, NbtPathArgument.NbtPath pat
 
    public int getInt(LootContext var1) {
       return (Integer)this.getNumericTag(var1).map(NumericTag::getAsInt).orElse(0);
-   }
-
-   public ResourceLocation storage() {
-      return this.storage;
-   }
-
-   public NbtPathArgument.NbtPath path() {
-      return this.path;
    }
 }

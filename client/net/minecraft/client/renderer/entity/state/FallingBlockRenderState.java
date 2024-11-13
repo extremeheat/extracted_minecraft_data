@@ -39,7 +39,7 @@ public class FallingBlockRenderState extends EntityRenderState implements BlockA
    }
 
    public int getBlockTint(BlockPos var1, ColorResolver var2) {
-      return this.biome == null ? -1 : var2.getColor((Biome)this.biome.value(), (double)var1.getX(), (double)var1.getZ());
+      return this.biome == null ? -1 : var2.getColor(this.biome.value(), (double)var1.getX(), (double)var1.getZ());
    }
 
    @Nullable

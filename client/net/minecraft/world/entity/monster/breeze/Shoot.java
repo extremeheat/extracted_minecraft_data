@@ -31,9 +31,7 @@ public class Shoot extends Behavior<Breeze> {
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Breeze var2) {
-      return var2.getPose() != Pose.STANDING ? false : (Boolean)var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).map((var1x) -> {
-         return isTargetWithinRange(var2, var1x);
-      }).map((var1x) -> {
+      return var2.getPose() != Pose.STANDING ? false : (Boolean)var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).map((var1x) -> isTargetWithinRange(var2, var1x)).map((var1x) -> {
          if (!var1x) {
             var2.getBrain().eraseMemory(MemoryModuleType.BREEZE_SHOOT);
          }
@@ -47,9 +45,7 @@ public class Shoot extends Behavior<Breeze> {
    }
 
    protected void start(ServerLevel var1, Breeze var2, long var3) {
-      var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent((var1x) -> {
-         var2.setPose(Pose.SHOOTING);
-      });
+      var2.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent((var1x) -> var2.setPose(Pose.SHOOTING));
       var2.getBrain().setMemoryWithExpiry(MemoryModuleType.BREEZE_SHOOT_CHARGING, Unit.INSTANCE, (long)SHOOT_INITIAL_DELAY_TICKS);
       var2.playSound(SoundEvents.BREEZE_INHALE, 1.0F, 1.0F);
    }

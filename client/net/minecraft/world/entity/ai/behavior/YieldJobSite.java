@@ -2,6 +2,7 @@ package net.minecraft.world.entity.ai.behavior;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
@@ -21,9 +22,7 @@ public class YieldJobSite {
    }
 
    public static BehaviorControl<Villager> create(float var0) {
-      return BehaviorBuilder.create((var1) -> {
-         return var1.group(var1.present(MemoryModuleType.POTENTIAL_JOB_SITE), var1.absent(MemoryModuleType.JOB_SITE), var1.present(MemoryModuleType.NEAREST_LIVING_ENTITIES), var1.registered(MemoryModuleType.WALK_TARGET), var1.registered(MemoryModuleType.LOOK_TARGET)).apply(var1, (var2, var3, var4, var5, var6) -> {
-            return (var6x, var7, var8) -> {
+      return BehaviorBuilder.create((Function)((var1) -> var1.group(var1.present(MemoryModuleType.POTENTIAL_JOB_SITE), var1.absent(MemoryModuleType.JOB_SITE), var1.present(MemoryModuleType.NEAREST_LIVING_ENTITIES), var1.registered(MemoryModuleType.WALK_TARGET), var1.registered(MemoryModuleType.LOOK_TARGET)).apply(var1, (var2, var3, var4, var5, var6) -> (var6x, var7, var8) -> {
                if (var7.isBaby()) {
                   return false;
                } else if (var7.getVillagerData().getProfession() != VillagerProfession.NONE) {
@@ -34,19 +33,13 @@ public class YieldJobSite {
                   if (var11.isEmpty()) {
                      return true;
                   } else {
-                     ((List)var1.get(var4)).stream().filter((var1x) -> {
-                        return var1x instanceof Villager && var1x != var7;
-                     }).map((var0x) -> {
-                        return (Villager)var0x;
-                     }).filter(LivingEntity::isAlive).filter((var2x) -> {
-                        return nearbyWantsJobsite((Holder)var11.get(), var2x, var10);
-                     }).findFirst().ifPresent((var6xx) -> {
+                     ((List)var1.get(var4)).stream().filter((var1x) -> var1x instanceof Villager && var1x != var7).map((var0x) -> (Villager)var0x).filter(LivingEntity::isAlive).filter((var2x) -> nearbyWantsJobsite((Holder)var11.get(), var2x, var10)).findFirst().ifPresent((var6xx) -> {
                         var5.erase();
                         var6.erase();
                         var2.erase();
                         if (var6xx.getBrain().getMemory(MemoryModuleType.JOB_SITE).isEmpty()) {
                            BehaviorUtils.setWalkAndLookTargetMemories(var6xx, (BlockPos)var10, var0, 1);
-                           var6xx.getBrain().setMemory(MemoryModuleType.POTENTIAL_JOB_SITE, (Object)GlobalPos.of(var6x.dimension(), var10));
+                           var6xx.getBrain().setMemory(MemoryModuleType.POTENTIAL_JOB_SITE, GlobalPos.of(var6x.dimension(), var10));
                            DebugPackets.sendPoiTicketCountPacket(var6x, var10);
                         }
 
@@ -54,9 +47,7 @@ public class YieldJobSite {
                      return true;
                   }
                }
-            };
-         });
-      });
+            })));
    }
 
    private static boolean nearbyWantsJobsite(Holder<PoiType> var0, Villager var1, BlockPos var2) {

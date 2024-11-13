@@ -66,9 +66,7 @@ public class ChatListener {
    }
 
    public boolean removeFromDelayedMessageQueue(MessageSignature var1) {
-      return this.delayedMessageQueue.removeIf((var1x) -> {
-         return var1.equals(var1x.signature());
-      });
+      return this.delayedMessageQueue.removeIf((var1x) -> var1.equals(var1x.signature()));
    }
 
    private boolean willDelayMessages() {
@@ -202,7 +200,7 @@ public class ChatListener {
       CHAT_VALIDATION_ERROR = Component.translatable("chat.validation_error").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC);
    }
 
-   private static record Message(@Nullable MessageSignature signature, BooleanSupplier handler) {
+   static record Message(@Nullable MessageSignature signature, BooleanSupplier handler) {
       Message(@Nullable MessageSignature var1, BooleanSupplier var2) {
          super();
          this.signature = var1;
@@ -211,15 +209,6 @@ public class ChatListener {
 
       public boolean accept() {
          return this.handler.getAsBoolean();
-      }
-
-      @Nullable
-      public MessageSignature signature() {
-         return this.signature;
-      }
-
-      public BooleanSupplier handler() {
-         return this.handler;
       }
    }
 }

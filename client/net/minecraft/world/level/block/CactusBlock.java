@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -86,21 +85,15 @@ public class CactusBlock extends Block {
    }
 
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      Iterator var4 = Direction.Plane.HORIZONTAL.iterator();
-
-      Direction var5;
-      BlockState var6;
-      do {
-         if (!var4.hasNext()) {
-            BlockState var7 = var2.getBlockState(var3.below());
-            return (var7.is(Blocks.CACTUS) || var7.is(BlockTags.SAND)) && !var2.getBlockState(var3.above()).liquid();
+      for(Direction var5 : Direction.Plane.HORIZONTAL) {
+         BlockState var6 = var2.getBlockState(var3.relative(var5));
+         if (var6.isSolid() || var2.getFluidState(var3.relative(var5)).is(FluidTags.LAVA)) {
+            return false;
          }
+      }
 
-         var5 = (Direction)var4.next();
-         var6 = var2.getBlockState(var3.relative(var5));
-      } while(!var6.isSolid() && !var2.getFluidState(var3.relative(var5)).is(FluidTags.LAVA));
-
-      return false;
+      BlockState var7 = var2.getBlockState(var3.below());
+      return (var7.is(Blocks.CACTUS) || var7.is(BlockTags.SAND)) && !var2.getBlockState(var3.above()).liquid();
    }
 
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {

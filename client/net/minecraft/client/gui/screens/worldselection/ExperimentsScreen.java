@@ -5,7 +5,6 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -49,10 +48,8 @@ public class ExperimentsScreen extends Screen {
       this.parent = var1;
       this.packRepository = var2;
       this.output = var3;
-      Iterator var4 = var2.getAvailablePacks().iterator();
 
-      while(var4.hasNext()) {
-         Pack var5 = (Pack)var4.next();
+      for(Pack var5 : var2.getAvailablePacks()) {
          if (var5.getPackSource() == PackSource.FEATURE) {
             this.packs.put(var5, var2.getSelectedPacks().contains(var5));
          }
@@ -63,27 +60,15 @@ public class ExperimentsScreen extends Screen {
    protected void init() {
       this.layout.addTitleHeader(TITLE, this.font);
       LinearLayout var1 = (LinearLayout)this.layout.addToContents(LinearLayout.vertical());
-      var1.addChild((new MultiLineTextWidget(INFO, this.font)).setMaxWidth(310), (Consumer)((var0) -> {
-         var0.paddingBottom(15);
-      }));
+      var1.addChild((new MultiLineTextWidget(INFO, this.font)).setMaxWidth(310), (Consumer)((var0) -> var0.paddingBottom(15)));
       SwitchGrid.Builder var2 = SwitchGrid.builder(299).withInfoUnderneath(2, true).withRowSpacing(4);
-      this.packs.forEach((var2x, var3x) -> {
-         var2.addSwitch(getHumanReadableTitle(var2x), () -> {
-            return this.packs.getBoolean(var2x);
-         }, (var2xx) -> {
-            this.packs.put(var2x, var2xx);
-         }).withInfo(var2x.getDescription());
-      });
+      this.packs.forEach((var2x, var3x) -> var2.addSwitch(getHumanReadableTitle(var2x), () -> this.packs.getBoolean(var2x), (var2xx) -> this.packs.put(var2x, var2xx)).withInfo(var2x.getDescription()));
       Layout var3 = var2.build().layout();
-      this.scrollArea = new ScrollArea(this, var3, 310, 130);
+      this.scrollArea = new ScrollArea(var3, 310, 130);
       var1.addChild(this.scrollArea);
       LinearLayout var4 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      var4.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
-         this.onDone();
-      }).build());
-      var4.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
-         this.onClose();
-      }).build());
+      var4.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onDone()).build());
+      var4.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).build());
       this.layout.visitWidgets((var1x) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });
@@ -134,7 +119,7 @@ public class ExperimentsScreen extends Screen {
       private final List<AbstractWidget> children = new ArrayList();
       private final Layout layout;
 
-      public ScrollArea(final ExperimentsScreen var1, final Layout var2, final int var3, final int var4) {
+      public ScrollArea(final Layout var2, final int var3, final int var4) {
          super(0, 0, var3, var4, CommonComponents.EMPTY);
          this.layout = var2;
          var2.visitWidgets(this::addWidget);
@@ -156,10 +141,8 @@ public class ExperimentsScreen extends Screen {
          var1.enableScissor(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height);
          var1.pose().pushPose();
          var1.pose().translate(0.0, -this.scrollAmount(), 0.0);
-         Iterator var5 = this.children.iterator();
 
-         while(var5.hasNext()) {
-            AbstractWidget var6 = (AbstractWidget)var5.next();
+         for(AbstractWidget var6 : this.children) {
             var6.render(var1, var2, var3, var4);
          }
 

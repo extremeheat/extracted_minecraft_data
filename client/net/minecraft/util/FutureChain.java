@@ -20,9 +20,7 @@ public class FutureChain implements TaskChainer, AutoCloseable {
    }
 
    public <T> void append(CompletableFuture<T> var1, Consumer<T> var2) {
-      this.head = this.head.thenCombine(var1, (var0, var1x) -> {
-         return var1x;
-      }).thenAcceptAsync((var2x) -> {
+      this.head = this.head.thenCombine(var1, (var0, var1x) -> var1x).thenAcceptAsync((var2x) -> {
          if (!this.closed) {
             var2.accept(var2x);
          }

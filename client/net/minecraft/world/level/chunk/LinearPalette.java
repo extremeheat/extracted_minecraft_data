@@ -17,7 +17,7 @@ public class LinearPalette<T> implements Palette<T> {
    private LinearPalette(IdMap<T> var1, int var2, PaletteResize<T> var3, List<T> var4) {
       super();
       this.registry = var1;
-      this.values = new Object[1 << var2];
+      this.values = (T[])(new Object[1 << var2]);
       this.bits = var2;
       this.resizeHandler = var3;
       Validate.isTrue(var4.size() <= this.values.length, "Can't initialize LinearPalette of size %d with %d entries", new Object[]{this.values.length, var4.size()});
@@ -32,29 +32,28 @@ public class LinearPalette<T> implements Palette<T> {
    private LinearPalette(IdMap<T> var1, T[] var2, PaletteResize<T> var3, int var4, int var5) {
       super();
       this.registry = var1;
-      this.values = var2;
+      this.values = (T[])var2;
       this.resizeHandler = var3;
       this.bits = var4;
       this.size = var5;
    }
 
    public static <A> Palette<A> create(int var0, IdMap<A> var1, PaletteResize<A> var2, List<A> var3) {
-      return new LinearPalette(var1, var0, var2, var3);
+      return new LinearPalette<A>(var1, var0, var2, var3);
    }
 
    public int idFor(T var1) {
-      int var2;
-      for(var2 = 0; var2 < this.size; ++var2) {
+      for(int var2 = 0; var2 < this.size; ++var2) {
          if (this.values[var2] == var1) {
             return var2;
          }
       }
 
-      var2 = this.size;
-      if (var2 < this.values.length) {
-         this.values[var2] = var1;
+      int var3 = this.size;
+      if (var3 < this.values.length) {
+         this.values[var3] = var1;
          ++this.size;
-         return var2;
+         return var3;
       } else {
          return this.resizeHandler.onResize(this.bits + 1, var1);
       }
@@ -72,7 +71,7 @@ public class LinearPalette<T> implements Palette<T> {
 
    public T valueFor(int var1) {
       if (var1 >= 0 && var1 < this.size) {
-         return this.values[var1];
+         return (T)this.values[var1];
       } else {
          throw new MissingPaletteEntryException(var1);
       }
@@ -111,6 +110,6 @@ public class LinearPalette<T> implements Palette<T> {
    }
 
    public Palette<T> copy(PaletteResize<T> var1) {
-      return new LinearPalette(this.registry, (Object[])this.values.clone(), var1, this.bits, this.size);
+      return new LinearPalette<T>(this.registry, this.values.clone(), var1, this.bits, this.size);
    }
 }

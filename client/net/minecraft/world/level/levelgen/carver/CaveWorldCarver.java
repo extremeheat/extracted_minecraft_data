@@ -33,25 +33,22 @@ public class CaveWorldCarver extends WorldCarver<CaveCarverConfiguration> {
          double var18 = (double)var2.horizontalRadiusMultiplier.sample(var5);
          double var20 = (double)var2.verticalRadiusMultiplier.sample(var5);
          double var22 = (double)var2.floorLevel.sample(var5);
-         WorldCarver.CarveSkipChecker var24 = (var2x, var3x, var5x, var7x, var9x) -> {
-            return shouldSkip(var3x, var5x, var7x, var22);
-         };
+         WorldCarver.CarveSkipChecker var24 = (var2x, var3x, var5x, var7x, var9x) -> shouldSkip(var3x, var5x, var7x, var22);
          int var25 = 1;
-         float var28;
          if (var5.nextInt(4) == 0) {
             double var26 = (double)var2.yScale.sample(var5);
-            var28 = 1.0F + var5.nextFloat() * 6.0F;
+            float var28 = 1.0F + var5.nextFloat() * 6.0F;
             this.createRoom(var1, var2, var3, var4, var6, var12, var14, var16, var28, var26, var8, var24);
             var25 += var5.nextInt(4);
          }
 
          for(int var32 = 0; var32 < var25; ++var32) {
             float var27 = var5.nextFloat() * 6.2831855F;
-            var28 = (var5.nextFloat() - 0.5F) / 4.0F;
+            float var33 = (var5.nextFloat() - 0.5F) / 4.0F;
             float var29 = this.getThickness(var5);
             int var30 = var9 - var5.nextInt(var9 / 4);
             boolean var31 = false;
-            this.createTunnel(var1, var2, var3, var4, var5.nextLong(), var6, var12, var14, var16, var18, var20, var29, var27, var28, 0, var30, this.getYScale(), var8, var24);
+            this.createTunnel(var1, var2, var3, var4, var5.nextLong(), var6, var12, var14, var16, var18, var20, var29, var27, var33, 0, var30, this.getYScale(), var8, var24);
          }
       }
 

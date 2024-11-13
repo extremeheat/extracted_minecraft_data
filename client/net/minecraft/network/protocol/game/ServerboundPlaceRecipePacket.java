@@ -25,18 +25,6 @@ public record ServerboundPlaceRecipePacket(int containerId, RecipeDisplayId reci
       var1.handlePlaceRecipe(this);
    }
 
-   public int containerId() {
-      return this.containerId;
-   }
-
-   public RecipeDisplayId recipe() {
-      return this.recipe;
-   }
-
-   public boolean useMaxItems() {
-      return this.useMaxItems;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.CONTAINER_ID, ServerboundPlaceRecipePacket::containerId, RecipeDisplayId.STREAM_CODEC, ServerboundPlaceRecipePacket::recipe, ByteBufCodecs.BOOL, ServerboundPlaceRecipePacket::useMaxItems, ServerboundPlaceRecipePacket::new);
    }

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.redstone;
 
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,26 +27,21 @@ public abstract class RedstoneWireEvaluator {
 
    protected int getIncomingWireSignal(Level var1, BlockPos var2) {
       int var3 = 0;
-      Iterator var4 = Direction.Plane.HORIZONTAL.iterator();
 
-      while(true) {
-         while(var4.hasNext()) {
-            Direction var5 = (Direction)var4.next();
-            BlockPos var6 = var2.relative(var5);
-            BlockState var7 = var1.getBlockState(var6);
-            var3 = Math.max(var3, this.getWireSignal(var6, var7));
-            BlockPos var8 = var2.above();
-            BlockPos var9;
-            if (var7.isRedstoneConductor(var1, var6) && !var1.getBlockState(var8).isRedstoneConductor(var1, var8)) {
-               var9 = var6.above();
-               var3 = Math.max(var3, this.getWireSignal(var9, var1.getBlockState(var9)));
-            } else if (!var7.isRedstoneConductor(var1, var6)) {
-               var9 = var6.below();
-               var3 = Math.max(var3, this.getWireSignal(var9, var1.getBlockState(var9)));
-            }
+      for(Direction var5 : Direction.Plane.HORIZONTAL) {
+         BlockPos var6 = var2.relative(var5);
+         BlockState var7 = var1.getBlockState(var6);
+         var3 = Math.max(var3, this.getWireSignal(var6, var7));
+         BlockPos var8 = var2.above();
+         if (var7.isRedstoneConductor(var1, var6) && !var1.getBlockState(var8).isRedstoneConductor(var1, var8)) {
+            BlockPos var10 = var6.above();
+            var3 = Math.max(var3, this.getWireSignal(var10, var1.getBlockState(var10)));
+         } else if (!var7.isRedstoneConductor(var1, var6)) {
+            BlockPos var9 = var6.below();
+            var3 = Math.max(var3, this.getWireSignal(var9, var1.getBlockState(var9)));
          }
-
-         return Math.max(0, var3 - 1);
       }
+
+      return Math.max(0, var3 - 1);
    }
 }

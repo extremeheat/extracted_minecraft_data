@@ -12,9 +12,7 @@ public interface Signer {
    byte[] sign(SignatureUpdater var1);
 
    default byte[] sign(byte[] var1) {
-      return this.sign((var1x) -> {
-         var1x.update(var1);
-      });
+      return this.sign((SignatureUpdater)((var1x) -> var1x.update(var1)));
    }
 
    static Signer from(PrivateKey var0, String var1) {

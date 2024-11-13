@@ -99,7 +99,7 @@ public class EnchantingTableBlockEntity extends BlockEntity implements Nameable 
       ++var3.time;
       var3.oFlip = var3.flip;
       float var6 = (var3.flipT - var3.flip) * 0.4F;
-      float var11 = 0.2F;
+      float var12 = 0.2F;
       var6 = Mth.clamp(var6, -0.2F, 0.2F);
       var3.flipA += (var6 - var3.flipA) * 0.9F;
       var3.flip += var3.flipA;

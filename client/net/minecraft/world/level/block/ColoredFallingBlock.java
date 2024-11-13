@@ -9,11 +9,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class ColoredFallingBlock extends FallingBlock {
-   public static final MapCodec<ColoredFallingBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ColorRGBA.CODEC.fieldOf("falling_dust_color").forGetter((var0x) -> {
-         return var0x.dustColor;
-      }), propertiesCodec()).apply(var0, ColoredFallingBlock::new);
-   });
+   public static final MapCodec<ColoredFallingBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ColorRGBA.CODEC.fieldOf("falling_dust_color").forGetter((var0x) -> var0x.dustColor), propertiesCodec()).apply(var0, ColoredFallingBlock::new));
    private final ColorRGBA dustColor;
 
    public MapCodec<ColoredFallingBlock> codec() {

@@ -16,8 +16,8 @@ public enum ItemDisplayContext implements StringRepresentable {
    GROUND(7, "ground"),
    FIXED(8, "fixed");
 
-   public static final Codec<ItemDisplayContext> CODEC = StringRepresentable.fromEnum(ItemDisplayContext::values);
-   public static final IntFunction<ItemDisplayContext> BY_ID = ByIdMap.continuous(ItemDisplayContext::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   public static final Codec<ItemDisplayContext> CODEC = StringRepresentable.<ItemDisplayContext>fromEnum(ItemDisplayContext::values);
+   public static final IntFunction<ItemDisplayContext> BY_ID = ByIdMap.<ItemDisplayContext>continuous(ItemDisplayContext::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    private final byte id;
    private final String name;
 

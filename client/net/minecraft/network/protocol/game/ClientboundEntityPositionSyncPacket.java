@@ -30,18 +30,6 @@ public record ClientboundEntityPositionSyncPacket(int id, PositionMoveRotation v
       var1.handleEntityPositionSync(this);
    }
 
-   public int id() {
-      return this.id;
-   }
-
-   public PositionMoveRotation values() {
-      return this.values;
-   }
-
-   public boolean onGround() {
-      return this.onGround;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundEntityPositionSyncPacket::id, PositionMoveRotation.STREAM_CODEC, ClientboundEntityPositionSyncPacket::values, ByteBufCodecs.BOOL, ClientboundEntityPositionSyncPacket::onGround, ClientboundEntityPositionSyncPacket::new);
    }

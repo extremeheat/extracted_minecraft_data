@@ -10,7 +10,6 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.server.packs.linkfs.LinkFileSystem;
@@ -37,10 +36,7 @@ public class IndexedAssetSource {
             JsonObject var6 = GsonHelper.parse((Reader)var5);
             JsonObject var7 = GsonHelper.getAsJsonObject(var6, "objects", (JsonObject)null);
             if (var7 != null) {
-               Iterator var8 = var7.entrySet().iterator();
-
-               while(var8.hasNext()) {
-                  Map.Entry var9 = (Map.Entry)var8.next();
+               for(Map.Entry var9 : var7.entrySet()) {
                   JsonObject var10 = (JsonObject)var9.getValue();
                   String var11 = (String)var9.getKey();
                   List var12 = PATH_SPLITTER.splitToList(var11);

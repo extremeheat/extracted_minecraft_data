@@ -41,11 +41,7 @@ public abstract class DiscreteVoxelShape {
    public abstract void fill(int var1, int var2, int var3);
 
    public boolean isEmpty() {
-      Direction.Axis[] var1 = AXIS_VALUES;
-      int var2 = var1.length;
-
-      for(int var3 = 0; var3 < var2; ++var3) {
-         Direction.Axis var4 = var1[var3];
+      for(Direction.Axis var4 : AXIS_VALUES) {
          if (this.firstFull(var4) >= this.lastFull(var4)) {
             return true;
          }
@@ -207,11 +203,11 @@ public abstract class DiscreteVoxelShape {
 
    }
 
-   public interface IntLineConsumer {
-      void consume(int var1, int var2, int var3, int var4, int var5, int var6);
-   }
-
    public interface IntFaceConsumer {
       void consume(Direction var1, int var2, int var3, int var4);
+   }
+
+   public interface IntLineConsumer {
+      void consume(int var1, int var2, int var3, int var4, int var5, int var6);
    }
 }

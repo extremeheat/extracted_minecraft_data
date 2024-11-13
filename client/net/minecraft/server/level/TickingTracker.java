@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.ArrayList;
-import java.util.Iterator;
 import net.minecraft.util.SortedArraySet;
 import net.minecraft.world.level.ChunkPos;
 
@@ -24,9 +23,7 @@ public class TickingTracker extends ChunkTracker {
    }
 
    private SortedArraySet<Ticket<?>> getTickets(long var1) {
-      return (SortedArraySet)this.tickets.computeIfAbsent(var1, (var0) -> {
-         return SortedArraySet.create(4);
-      });
+      return (SortedArraySet)this.tickets.computeIfAbsent(var1, (var0) -> SortedArraySet.create(4));
    }
 
    private int getTicketLevelAt(SortedArraySet<Ticket<?>> var1) {
@@ -66,28 +63,22 @@ public class TickingTracker extends ChunkTracker {
       ArrayList var2 = new ArrayList();
       ObjectIterator var3 = this.tickets.long2ObjectEntrySet().iterator();
 
-      Ticket var6;
       while(var3.hasNext()) {
          Long2ObjectMap.Entry var4 = (Long2ObjectMap.Entry)var3.next();
-         Iterator var5 = ((SortedArraySet)var4.getValue()).iterator();
 
-         while(var5.hasNext()) {
-            var6 = (Ticket)var5.next();
+         for(Ticket var6 : (SortedArraySet)var4.getValue()) {
             if (var6.getType() == TicketType.PLAYER) {
                var2.add(Pair.of(var6, var4.getLongKey()));
             }
          }
       }
 
-      Iterator var9 = var2.iterator();
-
-      while(var9.hasNext()) {
-         Pair var10 = (Pair)var9.next();
+      for(Pair var10 : var2) {
          Long var11 = (Long)var10.getSecond();
-         var6 = (Ticket)var10.getFirst();
-         this.removeTicket(var11, var6);
+         Ticket var12 = (Ticket)var10.getFirst();
+         this.removeTicket(var11, var12);
          ChunkPos var7 = new ChunkPos(var11);
-         TicketType var8 = var6.getType();
+         TicketType var8 = var12.getType();
          this.addTicket(var8, var7, var1, var7);
       }
 

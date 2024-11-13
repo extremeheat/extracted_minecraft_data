@@ -16,8 +16,6 @@ public class ContainerBlockEntityLockPredicateFix extends DataFix {
    }
 
    private static Typed<?> fixBlockEntity(Typed<?> var0) {
-      return var0.update(DSL.remainderFinder(), (var0x) -> {
-         return var0x.renameAndFixField("Lock", "lock", LockComponentPredicateFix::fixLock);
-      });
+      return var0.update(DSL.remainderFinder(), (var0x) -> var0x.renameAndFixField("Lock", "lock", LockComponentPredicateFix::fixLock));
    }
 }

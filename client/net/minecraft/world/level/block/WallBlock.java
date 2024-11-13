@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -86,26 +85,12 @@ public class WallBlock extends Block implements SimpleWaterloggedBlock {
       VoxelShape var18 = Block.box(0.0, (double)var4, (double)var9, (double)var10, (double)var6, (double)var10);
       VoxelShape var19 = Block.box((double)var9, (double)var4, (double)var9, 16.0, (double)var6, (double)var10);
       ImmutableMap.Builder var20 = ImmutableMap.builder();
-      Iterator var21 = UP.getPossibleValues().iterator();
 
-      while(var21.hasNext()) {
-         Boolean var22 = (Boolean)var21.next();
-         Iterator var23 = EAST_WALL.getPossibleValues().iterator();
-
-         while(var23.hasNext()) {
-            WallSide var24 = (WallSide)var23.next();
-            Iterator var25 = NORTH_WALL.getPossibleValues().iterator();
-
-            while(var25.hasNext()) {
-               WallSide var26 = (WallSide)var25.next();
-               Iterator var27 = WEST_WALL.getPossibleValues().iterator();
-
-               while(var27.hasNext()) {
-                  WallSide var28 = (WallSide)var27.next();
-                  Iterator var29 = SOUTH_WALL.getPossibleValues().iterator();
-
-                  while(var29.hasNext()) {
-                     WallSide var30 = (WallSide)var29.next();
+      for(Boolean var22 : UP.getPossibleValues()) {
+         for(WallSide var24 : EAST_WALL.getPossibleValues()) {
+            for(WallSide var26 : NORTH_WALL.getPossibleValues()) {
+               for(WallSide var28 : WEST_WALL.getPossibleValues()) {
+                  for(WallSide var30 : SOUTH_WALL.getPossibleValues()) {
                      VoxelShape var31 = Shapes.empty();
                      var31 = applyWallShape(var31, var24, var15, var19);
                      var31 = applyWallShape(var31, var28, var14, var18);

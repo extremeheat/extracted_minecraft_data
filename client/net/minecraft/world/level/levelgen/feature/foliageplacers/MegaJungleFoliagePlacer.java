@@ -9,11 +9,7 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class MegaJungleFoliagePlacer extends FoliagePlacer {
-   public static final MapCodec<MegaJungleFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return foliagePlacerParts(var0).and(Codec.intRange(0, 16).fieldOf("height").forGetter((var0x) -> {
-         return var0x.height;
-      })).apply(var0, MegaJungleFoliagePlacer::new);
-   });
+   public static final MapCodec<MegaJungleFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> foliagePlacerParts(var0).and(Codec.intRange(0, 16).fieldOf("height").forGetter((var0x) -> var0x.height)).apply(var0, MegaJungleFoliagePlacer::new));
    protected final int height;
 
    public MegaJungleFoliagePlacer(IntProvider var1, IntProvider var2, int var3) {

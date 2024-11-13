@@ -1,7 +1,6 @@
 package net.minecraft.world.level;
 
 import com.google.common.collect.Iterables;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
@@ -51,11 +50,7 @@ public interface CollisionGetter extends BlockGetter {
    }
 
    default boolean noCollision(@Nullable Entity var1, AABB var2, boolean var3) {
-      Iterable var4 = var3 ? this.getBlockAndLiquidCollisions(var1, var2) : this.getBlockCollisions(var1, var2);
-      Iterator var5 = var4.iterator();
-
-      while(var5.hasNext()) {
-         VoxelShape var6 = (VoxelShape)var5.next();
+      for(VoxelShape var6 : var3 ? this.getBlockAndLiquidCollisions(var1, var2) : this.getBlockCollisions(var1, var2)) {
          if (!var6.isEmpty()) {
             return false;
          }
@@ -72,18 +67,13 @@ public interface CollisionGetter extends BlockGetter {
    }
 
    default boolean noBlockCollision(@Nullable Entity var1, AABB var2) {
-      Iterator var3 = this.getBlockCollisions(var1, var2).iterator();
-
-      VoxelShape var4;
-      do {
-         if (!var3.hasNext()) {
-            return true;
+      for(VoxelShape var4 : this.getBlockCollisions(var1, var2)) {
+         if (!var4.isEmpty()) {
+            return false;
          }
+      }
 
-         var4 = (VoxelShape)var3.next();
-      } while(var4.isEmpty());
-
-      return false;
+      return true;
    }
 
    List<VoxelShape> getEntityCollisions(@Nullable Entity var1, AABB var2);
@@ -95,19 +85,11 @@ public interface CollisionGetter extends BlockGetter {
    }
 
    default Iterable<VoxelShape> getBlockCollisions(@Nullable Entity var1, AABB var2) {
-      return () -> {
-         return new BlockCollisions(this, var1, var2, false, (var0, var1x) -> {
-            return var1x;
-         });
-      };
+      return () -> new BlockCollisions(this, var1, var2, false, (var0, var1x) -> var1x);
    }
 
    default Iterable<VoxelShape> getBlockAndLiquidCollisions(@Nullable Entity var1, AABB var2) {
-      return () -> {
-         return new BlockCollisions(this, CollisionContext.of(var1, true), var2, false, (var0, var1x) -> {
-            return var1x;
-         });
-      };
+      return () -> new BlockCollisions(this, CollisionContext.of(var1, true), var2, false, (var0, var1x) -> var1x);
    }
 
    @Nullable
@@ -130,41 +112,32 @@ public interface CollisionGetter extends BlockGetter {
    }
 
    default boolean collidesWithSuffocatingBlock(@Nullable Entity var1, AABB var2) {
-      BlockCollisions var3 = new BlockCollisions(this, var1, var2, true, (var0, var1x) -> {
-         return var1x;
-      });
+      BlockCollisions var3 = new BlockCollisions(this, var1, var2, true, (var0, var1x) -> var1x);
 
-      do {
-         if (!var3.hasNext()) {
-            return false;
+      while(var3.hasNext()) {
+         if (!((VoxelShape)var3.next()).isEmpty()) {
+            return true;
          }
-      } while(((VoxelShape)var3.next()).isEmpty());
+      }
 
-      return true;
+      return false;
    }
 
    default Optional<BlockPos> findSupportingBlock(Entity var1, AABB var2) {
       BlockPos var3 = null;
       double var4 = 1.7976931348623157E308;
-      BlockCollisions var6 = new BlockCollisions(this, var1, var2, false, (var0, var1x) -> {
-         return var0;
-      });
+      BlockCollisions var6 = new BlockCollisions(this, var1, var2, false, (var0, var1x) -> var0);
 
-      while(true) {
-         BlockPos var7;
-         double var8;
-         do {
-            if (!var6.hasNext()) {
-               return Optional.ofNullable(var3);
-            }
-
-            var7 = (BlockPos)var6.next();
-            var8 = var7.distToCenterSqr(var1.position());
-         } while(!(var8 < var4) && (var8 != var4 || var3 != null && var3.compareTo(var7) >= 0));
-
-         var3 = var7.immutable();
-         var4 = var8;
+      while(var6.hasNext()) {
+         BlockPos var7 = (BlockPos)var6.next();
+         double var8 = var7.distToCenterSqr(var1.position());
+         if (var8 < var4 || var8 == var4 && (var3 == null || var3.compareTo(var7) < 0)) {
+            var3 = var7.immutable();
+            var4 = var8;
+         }
       }
+
+      return Optional.ofNullable(var3);
    }
 
    default Optional<Vec3> findFreePosition(@Nullable Entity var1, VoxelShape var2, Vec3 var3, double var4, double var6, double var8) {
@@ -172,13 +145,7 @@ public interface CollisionGetter extends BlockGetter {
          return Optional.empty();
       } else {
          AABB var10 = var2.bounds().inflate(var4, var6, var8);
-         VoxelShape var11 = (VoxelShape)StreamSupport.stream(this.getBlockCollisions(var1, var10).spliterator(), false).filter((var1x) -> {
-            return this.getWorldBorder() == null || this.getWorldBorder().isWithinBounds(var1x.bounds());
-         }).flatMap((var0) -> {
-            return var0.toAabbs().stream();
-         }).map((var6x) -> {
-            return var6x.inflate(var4 / 2.0, var6 / 2.0, var8 / 2.0);
-         }).map(Shapes::create).reduce(Shapes.empty(), Shapes::or);
+         VoxelShape var11 = (VoxelShape)StreamSupport.stream(this.getBlockCollisions(var1, var10).spliterator(), false).filter((var1x) -> this.getWorldBorder() == null || this.getWorldBorder().isWithinBounds(var1x.bounds())).flatMap((var0) -> var0.toAabbs().stream()).map((var6x) -> var6x.inflate(var4 / 2.0, var6 / 2.0, var8 / 2.0)).map(Shapes::create).reduce(Shapes.empty(), Shapes::or);
          VoxelShape var12 = Shapes.join(var2, var11, BooleanOp.ONLY_FIRST);
          return var12.closestPointTo(var3);
       }

@@ -147,37 +147,33 @@ public class BlockStateProperties {
    }
 
    static {
-      HORIZONTAL_AXIS = EnumProperty.create("axis", Direction.Axis.class, (Enum[])(Direction.Axis.X, Direction.Axis.Z));
-      AXIS = EnumProperty.create("axis", Direction.Axis.class);
+      HORIZONTAL_AXIS = EnumProperty.create("axis", Direction.Axis.class, Direction.Axis.X, Direction.Axis.Z);
+      AXIS = EnumProperty.<Direction.Axis>create("axis", Direction.Axis.class);
       UP = BooleanProperty.create("up");
       DOWN = BooleanProperty.create("down");
       NORTH = BooleanProperty.create("north");
       EAST = BooleanProperty.create("east");
       SOUTH = BooleanProperty.create("south");
       WEST = BooleanProperty.create("west");
-      FACING = EnumProperty.create("facing", Direction.class, (Enum[])(Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN));
-      FACING_HOPPER = EnumProperty.create("facing", Direction.class, (var0) -> {
-         return var0 != Direction.UP;
-      });
-      HORIZONTAL_FACING = EnumProperty.create("facing", Direction.class, (Predicate)Direction.Plane.HORIZONTAL);
+      FACING = EnumProperty.create("facing", Direction.class, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.UP, Direction.DOWN);
+      FACING_HOPPER = EnumProperty.create("facing", Direction.class, (Predicate)((var0) -> var0 != Direction.UP));
+      HORIZONTAL_FACING = EnumProperty.create("facing", Direction.class, Direction.Plane.HORIZONTAL);
       FLOWER_AMOUNT = IntegerProperty.create("flower_amount", 1, 4);
-      ORIENTATION = EnumProperty.create("orientation", FrontAndTop.class);
-      ATTACH_FACE = EnumProperty.create("face", AttachFace.class);
-      BELL_ATTACHMENT = EnumProperty.create("attachment", BellAttachType.class);
-      EAST_WALL = EnumProperty.create("east", WallSide.class);
-      NORTH_WALL = EnumProperty.create("north", WallSide.class);
-      SOUTH_WALL = EnumProperty.create("south", WallSide.class);
-      WEST_WALL = EnumProperty.create("west", WallSide.class);
-      EAST_REDSTONE = EnumProperty.create("east", RedstoneSide.class);
-      NORTH_REDSTONE = EnumProperty.create("north", RedstoneSide.class);
-      SOUTH_REDSTONE = EnumProperty.create("south", RedstoneSide.class);
-      WEST_REDSTONE = EnumProperty.create("west", RedstoneSide.class);
-      DOUBLE_BLOCK_HALF = EnumProperty.create("half", DoubleBlockHalf.class);
-      HALF = EnumProperty.create("half", Half.class);
-      RAIL_SHAPE = EnumProperty.create("shape", RailShape.class);
-      RAIL_SHAPE_STRAIGHT = EnumProperty.create("shape", RailShape.class, (var0) -> {
-         return var0 != RailShape.NORTH_EAST && var0 != RailShape.NORTH_WEST && var0 != RailShape.SOUTH_EAST && var0 != RailShape.SOUTH_WEST;
-      });
+      ORIENTATION = EnumProperty.<FrontAndTop>create("orientation", FrontAndTop.class);
+      ATTACH_FACE = EnumProperty.<AttachFace>create("face", AttachFace.class);
+      BELL_ATTACHMENT = EnumProperty.<BellAttachType>create("attachment", BellAttachType.class);
+      EAST_WALL = EnumProperty.<WallSide>create("east", WallSide.class);
+      NORTH_WALL = EnumProperty.<WallSide>create("north", WallSide.class);
+      SOUTH_WALL = EnumProperty.<WallSide>create("south", WallSide.class);
+      WEST_WALL = EnumProperty.<WallSide>create("west", WallSide.class);
+      EAST_REDSTONE = EnumProperty.<RedstoneSide>create("east", RedstoneSide.class);
+      NORTH_REDSTONE = EnumProperty.<RedstoneSide>create("north", RedstoneSide.class);
+      SOUTH_REDSTONE = EnumProperty.<RedstoneSide>create("south", RedstoneSide.class);
+      WEST_REDSTONE = EnumProperty.<RedstoneSide>create("west", RedstoneSide.class);
+      DOUBLE_BLOCK_HALF = EnumProperty.<DoubleBlockHalf>create("half", DoubleBlockHalf.class);
+      HALF = EnumProperty.<Half>create("half", Half.class);
+      RAIL_SHAPE = EnumProperty.<RailShape>create("shape", RailShape.class);
+      RAIL_SHAPE_STRAIGHT = EnumProperty.create("shape", RailShape.class, (Predicate)((var0) -> var0 != RailShape.NORTH_EAST && var0 != RailShape.NORTH_WEST && var0 != RailShape.SOUTH_EAST && var0 != RailShape.SOUTH_WEST));
       AGE_1 = IntegerProperty.create("age", 0, 1);
       AGE_2 = IntegerProperty.create("age", 0, 2);
       AGE_3 = IntegerProperty.create("age", 0, 3);
@@ -206,20 +202,20 @@ public class BlockStateProperties {
       STABILITY_DISTANCE = IntegerProperty.create("distance", 0, 7);
       RESPAWN_ANCHOR_CHARGES = IntegerProperty.create("charges", 0, 4);
       ROTATION_16 = IntegerProperty.create("rotation", 0, RotationSegment.getMaxSegmentIndex());
-      BED_PART = EnumProperty.create("part", BedPart.class);
-      CHEST_TYPE = EnumProperty.create("type", ChestType.class);
-      MODE_COMPARATOR = EnumProperty.create("mode", ComparatorMode.class);
-      DOOR_HINGE = EnumProperty.create("hinge", DoorHingeSide.class);
-      NOTEBLOCK_INSTRUMENT = EnumProperty.create("instrument", NoteBlockInstrument.class);
-      PISTON_TYPE = EnumProperty.create("type", PistonType.class);
-      SLAB_TYPE = EnumProperty.create("type", SlabType.class);
-      STAIRS_SHAPE = EnumProperty.create("shape", StairsShape.class);
-      STRUCTUREBLOCK_MODE = EnumProperty.create("mode", StructureMode.class);
-      BAMBOO_LEAVES = EnumProperty.create("leaves", BambooLeaves.class);
-      TILT = EnumProperty.create("tilt", Tilt.class);
-      VERTICAL_DIRECTION = EnumProperty.create("vertical_direction", Direction.class, (Enum[])(Direction.UP, Direction.DOWN));
-      DRIPSTONE_THICKNESS = EnumProperty.create("thickness", DripstoneThickness.class);
-      SCULK_SENSOR_PHASE = EnumProperty.create("sculk_sensor_phase", SculkSensorPhase.class);
+      BED_PART = EnumProperty.<BedPart>create("part", BedPart.class);
+      CHEST_TYPE = EnumProperty.<ChestType>create("type", ChestType.class);
+      MODE_COMPARATOR = EnumProperty.<ComparatorMode>create("mode", ComparatorMode.class);
+      DOOR_HINGE = EnumProperty.<DoorHingeSide>create("hinge", DoorHingeSide.class);
+      NOTEBLOCK_INSTRUMENT = EnumProperty.<NoteBlockInstrument>create("instrument", NoteBlockInstrument.class);
+      PISTON_TYPE = EnumProperty.<PistonType>create("type", PistonType.class);
+      SLAB_TYPE = EnumProperty.<SlabType>create("type", SlabType.class);
+      STAIRS_SHAPE = EnumProperty.<StairsShape>create("shape", StairsShape.class);
+      STRUCTUREBLOCK_MODE = EnumProperty.<StructureMode>create("mode", StructureMode.class);
+      BAMBOO_LEAVES = EnumProperty.<BambooLeaves>create("leaves", BambooLeaves.class);
+      TILT = EnumProperty.<Tilt>create("tilt", Tilt.class);
+      VERTICAL_DIRECTION = EnumProperty.create("vertical_direction", Direction.class, Direction.UP, Direction.DOWN);
+      DRIPSTONE_THICKNESS = EnumProperty.<DripstoneThickness>create("thickness", DripstoneThickness.class);
+      SCULK_SENSOR_PHASE = EnumProperty.<SculkSensorPhase>create("sculk_sensor_phase", SculkSensorPhase.class);
       CHISELED_BOOKSHELF_SLOT_0_OCCUPIED = BooleanProperty.create("slot_0_occupied");
       CHISELED_BOOKSHELF_SLOT_1_OCCUPIED = BooleanProperty.create("slot_1_occupied");
       CHISELED_BOOKSHELF_SLOT_2_OCCUPIED = BooleanProperty.create("slot_2_occupied");
@@ -229,8 +225,8 @@ public class BlockStateProperties {
       DUSTED = IntegerProperty.create("dusted", 0, 3);
       CRACKED = BooleanProperty.create("cracked");
       CRAFTING = BooleanProperty.create("crafting");
-      TRIAL_SPAWNER_STATE = EnumProperty.create("trial_spawner_state", TrialSpawnerState.class);
-      VAULT_STATE = EnumProperty.create("vault_state", VaultState.class);
+      TRIAL_SPAWNER_STATE = EnumProperty.<TrialSpawnerState>create("trial_spawner_state", TrialSpawnerState.class);
+      VAULT_STATE = EnumProperty.<VaultState>create("vault_state", VaultState.class);
       OMINOUS = BooleanProperty.create("ominous");
    }
 }

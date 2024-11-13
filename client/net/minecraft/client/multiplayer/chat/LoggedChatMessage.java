@@ -33,9 +33,7 @@ public interface LoggedChatMessage extends LoggedChatEvent {
    boolean canReport(UUID var1);
 
    public static record Player(GameProfile profile, PlayerChatMessage message, ChatTrustLevel trustLevel) implements LoggedChatMessage {
-      public static final MapCodec<Player> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(ExtraCodecs.GAME_PROFILE.fieldOf("profile").forGetter(Player::profile), PlayerChatMessage.MAP_CODEC.forGetter(Player::message), ChatTrustLevel.CODEC.optionalFieldOf("trust_level", ChatTrustLevel.SECURE).forGetter(Player::trustLevel)).apply(var0, Player::new);
-      });
+      public static final MapCodec<Player> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.GAME_PROFILE.fieldOf("profile").forGetter(Player::profile), PlayerChatMessage.MAP_CODEC.forGetter(Player::message), ChatTrustLevel.CODEC.optionalFieldOf("trust_level", ChatTrustLevel.SECURE).forGetter(Player::trustLevel)).apply(var0, Player::new));
       private static final DateTimeFormatter TIME_FORMATTER;
 
       public Player(GameProfile var1, PlayerChatMessage var2, ChatTrustLevel var3) {
@@ -82,27 +80,13 @@ public interface LoggedChatMessage extends LoggedChatEvent {
          return LoggedChatEvent.Type.PLAYER;
       }
 
-      public GameProfile profile() {
-         return this.profile;
-      }
-
-      public PlayerChatMessage message() {
-         return this.message;
-      }
-
-      public ChatTrustLevel trustLevel() {
-         return this.trustLevel;
-      }
-
       static {
          TIME_FORMATTER = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT);
       }
    }
 
    public static record System(Component message, Instant timeStamp) implements LoggedChatMessage {
-      public static final MapCodec<System> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(ComponentSerialization.CODEC.fieldOf("message").forGetter(System::message), ExtraCodecs.INSTANT_ISO8601.fieldOf("time_stamp").forGetter(System::timeStamp)).apply(var0, System::new);
-      });
+      public static final MapCodec<System> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ComponentSerialization.CODEC.fieldOf("message").forGetter(System::message), ExtraCodecs.INSTANT_ISO8601.fieldOf("time_stamp").forGetter(System::timeStamp)).apply(var0, System::new));
 
       public System(Component var1, Instant var2) {
          super();
@@ -120,14 +104,6 @@ public interface LoggedChatMessage extends LoggedChatEvent {
 
       public LoggedChatEvent.Type type() {
          return LoggedChatEvent.Type.SYSTEM;
-      }
-
-      public Component message() {
-         return this.message;
-      }
-
-      public Instant timeStamp() {
-         return this.timeStamp;
       }
    }
 }

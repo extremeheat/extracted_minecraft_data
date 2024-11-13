@@ -114,24 +114,12 @@ enum AdvancementTabType {
       return new AdvancementTabType[]{ABOVE, BELOW, LEFT, RIGHT};
    }
 
-   private static record Sprites(ResourceLocation first, ResourceLocation middle, ResourceLocation last) {
+   static record Sprites(ResourceLocation first, ResourceLocation middle, ResourceLocation last) {
       Sprites(ResourceLocation var1, ResourceLocation var2, ResourceLocation var3) {
          super();
          this.first = var1;
          this.middle = var2;
          this.last = var3;
-      }
-
-      public ResourceLocation first() {
-         return this.first;
-      }
-
-      public ResourceLocation middle() {
-         return this.middle;
-      }
-
-      public ResourceLocation last() {
-         return this.last;
       }
    }
 }

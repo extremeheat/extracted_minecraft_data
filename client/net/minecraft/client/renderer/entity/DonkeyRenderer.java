@@ -4,11 +4,9 @@ import net.minecraft.client.model.DonkeyModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.state.DonkeyRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.EquineRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
 
 public class DonkeyRenderer<T extends AbstractChestedHorse> extends AbstractHorseRenderer<T, DonkeyRenderState, DonkeyModel> {
    public static final ResourceLocation DONKEY_TEXTURE = ResourceLocation.withDefaultNamespace("textures/entity/horse/donkey.png");
@@ -29,7 +27,7 @@ public class DonkeyRenderer<T extends AbstractChestedHorse> extends AbstractHors
    }
 
    public void extractRenderState(T var1, DonkeyRenderState var2, float var3) {
-      super.extractRenderState((AbstractHorse)var1, (EquineRenderState)var2, var3);
+      super.extractRenderState(var1, var2, var3);
       var2.hasChest = var1.hasChest();
    }
 

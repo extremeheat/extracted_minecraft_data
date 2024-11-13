@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -85,18 +84,13 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
    protected abstract void setItems(NonNullList<ItemStack> var1);
 
    public boolean isEmpty() {
-      Iterator var1 = this.getItems().iterator();
-
-      ItemStack var2;
-      do {
-         if (!var1.hasNext()) {
-            return true;
+      for(ItemStack var2 : this.getItems()) {
+         if (!var2.isEmpty()) {
+            return false;
          }
+      }
 
-         var2 = (ItemStack)var1.next();
-      } while(var2.isEmpty());
-
-      return false;
+      return true;
    }
 
    public ItemStack getItem(int var1) {

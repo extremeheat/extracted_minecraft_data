@@ -33,12 +33,4 @@ public record FilteredText(String raw, FilterMask mask) {
    public boolean isFiltered() {
       return !this.mask.isEmpty();
    }
-
-   public String raw() {
-      return this.raw;
-   }
-
-   public FilterMask mask() {
-      return this.mask;
-   }
 }

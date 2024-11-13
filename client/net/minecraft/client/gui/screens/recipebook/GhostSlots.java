@@ -75,7 +75,7 @@ public class GhostSlots {
       }
    }
 
-   private static record GhostSlot(List<ItemStack> items, boolean isResultSlot) {
+   static record GhostSlot(List<ItemStack> items, boolean isResultSlot) {
       final boolean isResultSlot;
 
       GhostSlot(List<ItemStack> var1, boolean var2) {
@@ -87,14 +87,6 @@ public class GhostSlots {
       public ItemStack getItem(int var1) {
          int var2 = this.items.size();
          return var2 == 0 ? ItemStack.EMPTY : (ItemStack)this.items.get(var1 % var2);
-      }
-
-      public List<ItemStack> items() {
-         return this.items;
-      }
-
-      public boolean isResultSlot() {
-         return this.isResultSlot;
       }
    }
 }

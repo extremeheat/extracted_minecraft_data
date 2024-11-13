@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.feature.foliageplacers;
 import com.mojang.datafixers.Products;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -22,11 +21,7 @@ public abstract class FoliagePlacer {
    protected final IntProvider offset;
 
    protected static <P extends FoliagePlacer> Products.P2<RecordCodecBuilder.Mu<P>, IntProvider, IntProvider> foliagePlacerParts(RecordCodecBuilder.Instance<P> var0) {
-      return var0.group(IntProvider.codec(0, 16).fieldOf("radius").forGetter((var0x) -> {
-         return var0x.radius;
-      }), IntProvider.codec(0, 16).fieldOf("offset").forGetter((var0x) -> {
-         return var0x.offset;
-      }));
+      return var0.group(IntProvider.codec(0, 16).fieldOf("radius").forGetter((var0x) -> var0x.radius), IntProvider.codec(0, 16).fieldOf("offset").forGetter((var0x) -> var0x.offset));
    }
 
    public FoliagePlacer(IntProvider var1, IntProvider var2) {
@@ -89,10 +84,8 @@ public abstract class FoliagePlacer {
       int var11 = var8 ? 1 : 0;
       BlockPos var12 = var5.below();
       BlockPos.MutableBlockPos var13 = new BlockPos.MutableBlockPos();
-      Iterator var14 = Direction.Plane.HORIZONTAL.iterator();
 
-      while(var14.hasNext()) {
-         Direction var15 = (Direction)var14.next();
+      for(Direction var15 : Direction.Plane.HORIZONTAL) {
          Direction var16 = var15.getClockWise();
          int var17 = var16.getAxisDirection() == Direction.AxisDirection.POSITIVE ? var6 + var11 : var6;
          var13.setWithOffset(var5, 0, var7 - 1, 0).move(var16, var17).move(var15, -var6);
@@ -123,15 +116,11 @@ public abstract class FoliagePlacer {
    }
 
    protected static boolean tryPlaceLeaf(LevelSimulatedReader var0, FoliageSetter var1, RandomSource var2, TreeConfiguration var3, BlockPos var4) {
-      boolean var5 = var0.isStateAtPosition(var4, (var0x) -> {
-         return (Boolean)var0x.getValueOrElse(BlockStateProperties.PERSISTENT, false);
-      });
+      boolean var5 = var0.isStateAtPosition(var4, (var0x) -> (Boolean)var0x.getValueOrElse(BlockStateProperties.PERSISTENT, false));
       if (!var5 && TreeFeature.validTreePos(var0, var4)) {
          BlockState var6 = var3.foliageProvider.getState(var2, var4);
          if (var6.hasProperty(BlockStateProperties.WATERLOGGED)) {
-            var6 = (BlockState)var6.setValue(BlockStateProperties.WATERLOGGED, var0.isFluidAtPosition(var4, (var0x) -> {
-               return var0x.isSourceOfType(Fluids.WATER);
-            }));
+            var6 = (BlockState)var6.setValue(BlockStateProperties.WATERLOGGED, var0.isFluidAtPosition(var4, (var0x) -> var0x.isSourceOfType(Fluids.WATER)));
          }
 
          var1.set(var4, var6);
@@ -143,12 +132,6 @@ public abstract class FoliagePlacer {
 
    static {
       CODEC = BuiltInRegistries.FOLIAGE_PLACER_TYPE.byNameCodec().dispatch(FoliagePlacer::type, FoliagePlacerType::codec);
-   }
-
-   public interface FoliageSetter {
-      void set(BlockPos var1, BlockState var2);
-
-      boolean isSet(BlockPos var1);
    }
 
    public static final class FoliageAttachment {
@@ -174,5 +157,11 @@ public abstract class FoliagePlacer {
       public boolean doubleTrunk() {
          return this.doubleTrunk;
       }
+   }
+
+   public interface FoliageSetter {
+      void set(BlockPos var1, BlockState var2);
+
+      boolean isSet(BlockPos var1);
    }
 }

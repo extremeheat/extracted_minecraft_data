@@ -111,7 +111,7 @@ public class EntitySubPredicates {
 
          return var10000;
       }));
-      FOX = register("fox", EntitySubPredicates.EntityVariantPredicateType.create((Codec)Fox.Variant.CODEC, (var0) -> {
+      FOX = register("fox", EntitySubPredicates.EntityVariantPredicateType.create(Fox.Variant.CODEC, (var0) -> {
          Optional var10000;
          if (var0 instanceof Fox var1) {
             var10000 = Optional.of(var1.getVariant());
@@ -121,7 +121,7 @@ public class EntitySubPredicates {
 
          return var10000;
       }));
-      MOOSHROOM = register("mooshroom", EntitySubPredicates.EntityVariantPredicateType.create((Codec)MushroomCow.Variant.CODEC, (var0) -> {
+      MOOSHROOM = register("mooshroom", EntitySubPredicates.EntityVariantPredicateType.create(MushroomCow.Variant.CODEC, (var0) -> {
          Optional var10000;
          if (var0 instanceof MushroomCow var1) {
             var10000 = Optional.of(var1.getVariant());
@@ -181,7 +181,7 @@ public class EntitySubPredicates {
 
          return var10000;
       }));
-      SALMON = register("salmon", EntitySubPredicates.EntityVariantPredicateType.create((Codec)Salmon.Variant.CODEC, (var0) -> {
+      SALMON = register("salmon", EntitySubPredicates.EntityVariantPredicateType.create(Salmon.Variant.CODEC, (var0) -> {
          Optional var10000;
          if (var0 instanceof Salmon var1) {
             var10000 = Optional.of(var1.getVariant());
@@ -248,30 +248,24 @@ public class EntitySubPredicates {
       final Function<Entity, Optional<V>> getter;
 
       public static <V> EntityVariantPredicateType<V> create(Registry<V> var0, Function<Entity, Optional<V>> var1) {
-         return new EntityVariantPredicateType(var0.byNameCodec(), var1);
+         return new EntityVariantPredicateType<V>(var0.byNameCodec(), var1);
       }
 
       public static <V> EntityVariantPredicateType<V> create(Codec<V> var0, Function<Entity, Optional<V>> var1) {
-         return new EntityVariantPredicateType(var0, var1);
+         return new EntityVariantPredicateType<V>(var0, var1);
       }
 
       public EntityVariantPredicateType(Codec<V> var1, Function<Entity, Optional<V>> var2) {
          super();
          this.getter = var2;
-         this.codec = RecordCodecBuilder.mapCodec((var2x) -> {
-            return var2x.group(var1.fieldOf("variant").forGetter((var0) -> {
-               return var0.variant;
-            })).apply(var2x, (var1x) -> {
-               return new Instance(var1x);
-            });
-         });
+         this.codec = RecordCodecBuilder.mapCodec((var2x) -> var2x.group(var1.fieldOf("variant").forGetter((var0) -> var0.variant)).apply(var2x, (var1x) -> new Instance(var1x)));
       }
 
       public EntitySubPredicate createPredicate(V var1) {
          return new Instance(var1);
       }
 
-      private class Instance implements EntitySubPredicate {
+      class Instance implements EntitySubPredicate {
          final V variant;
 
          Instance(final V var2) {
@@ -297,26 +291,20 @@ public class EntitySubPredicates {
       final Function<Entity, Optional<Holder<V>>> getter;
 
       public static <V> EntityHolderVariantPredicateType<V> create(ResourceKey<? extends Registry<V>> var0, Function<Entity, Optional<Holder<V>>> var1) {
-         return new EntityHolderVariantPredicateType(var0, var1);
+         return new EntityHolderVariantPredicateType<V>(var0, var1);
       }
 
       public EntityHolderVariantPredicateType(ResourceKey<? extends Registry<V>> var1, Function<Entity, Optional<Holder<V>>> var2) {
          super();
          this.getter = var2;
-         this.codec = RecordCodecBuilder.mapCodec((var2x) -> {
-            return var2x.group(RegistryCodecs.homogeneousList(var1).fieldOf("variant").forGetter((var0) -> {
-               return var0.variants;
-            })).apply(var2x, (var1x) -> {
-               return new Instance(var1x);
-            });
-         });
+         this.codec = RecordCodecBuilder.mapCodec((var2x) -> var2x.group(RegistryCodecs.homogeneousList(var1).fieldOf("variant").forGetter((var0) -> var0.variants)).apply(var2x, (var1x) -> new Instance(var1x)));
       }
 
       public EntitySubPredicate createPredicate(HolderSet<V> var1) {
          return new Instance(var1);
       }
 
-      private class Instance implements EntitySubPredicate {
+      class Instance implements EntitySubPredicate {
          final HolderSet<V> variants;
 
          Instance(final HolderSet<V> var2) {

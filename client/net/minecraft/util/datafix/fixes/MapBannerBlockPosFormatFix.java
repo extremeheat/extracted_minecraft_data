@@ -13,18 +13,10 @@ public class MapBannerBlockPosFormatFix extends DataFix {
    }
 
    private static <T> Dynamic<T> fixMapSavedData(Dynamic<T> var0) {
-      return var0.update("banners", (var0x) -> {
-         return var0x.createList(var0x.asStream().map((var0) -> {
-            return var0.update("Pos", ExtraDataFixUtils::fixBlockPos);
-         }));
-      });
+      return var0.update("banners", (var0x) -> var0x.createList(var0x.asStream().map((var0) -> var0.update("Pos", ExtraDataFixUtils::fixBlockPos))));
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("MapBannerBlockPosFormatFix", this.getInputSchema().getType(References.SAVED_DATA_MAP_DATA), (var0) -> {
-         return var0.update(DSL.remainderFinder(), (var0x) -> {
-            return var0x.update("data", MapBannerBlockPosFormatFix::fixMapSavedData);
-         });
-      });
+      return this.fixTypeEverywhereTyped("MapBannerBlockPosFormatFix", this.getInputSchema().getType(References.SAVED_DATA_MAP_DATA), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> var0x.update("data", MapBannerBlockPosFormatFix::fixMapSavedData)));
    }
 }

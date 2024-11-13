@@ -9,7 +9,7 @@ import net.minecraft.world.phys.Vec3;
 
 public record GameEventDebugPayload(ResourceKey<GameEvent> gameEventType, Vec3 pos) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, GameEventDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(GameEventDebugPayload::write, GameEventDebugPayload::new);
-   public static final CustomPacketPayload.Type<GameEventDebugPayload> TYPE = CustomPacketPayload.createType("debug/game_event");
+   public static final CustomPacketPayload.Type<GameEventDebugPayload> TYPE = CustomPacketPayload.<GameEventDebugPayload>createType("debug/game_event");
 
    private GameEventDebugPayload(FriendlyByteBuf var1) {
       this(var1.readResourceKey(Registries.GAME_EVENT), var1.readVec3());
@@ -28,13 +28,5 @@ public record GameEventDebugPayload(ResourceKey<GameEvent> gameEventType, Vec3 p
 
    public CustomPacketPayload.Type<GameEventDebugPayload> type() {
       return TYPE;
-   }
-
-   public ResourceKey<GameEvent> gameEventType() {
-      return this.gameEventType;
-   }
-
-   public Vec3 pos() {
-      return this.pos;
    }
 }

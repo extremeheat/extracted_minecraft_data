@@ -23,14 +23,6 @@ public record ClientboundPlayerRotationPacket(float yRot, float xRot) implements
       var1.handleRotatePlayer(this);
    }
 
-   public float yRot() {
-      return this.yRot;
-   }
-
-   public float xRot() {
-      return this.xRot;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.FLOAT, ClientboundPlayerRotationPacket::yRot, ByteBufCodecs.FLOAT, ClientboundPlayerRotationPacket::xRot, ClientboundPlayerRotationPacket::new);
    }

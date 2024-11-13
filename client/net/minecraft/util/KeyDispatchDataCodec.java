@@ -9,10 +9,6 @@ public record KeyDispatchDataCodec<A>(MapCodec<A> codec) {
    }
 
    public static <A> KeyDispatchDataCodec<A> of(MapCodec<A> var0) {
-      return new KeyDispatchDataCodec(var0);
-   }
-
-   public MapCodec<A> codec() {
-      return this.codec;
+      return new KeyDispatchDataCodec<A>(var0);
    }
 }

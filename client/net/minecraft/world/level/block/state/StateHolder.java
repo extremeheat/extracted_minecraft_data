@@ -51,12 +51,12 @@ public abstract class StateHolder<O, S> {
    }
 
    public <T extends Comparable<T>> S cycle(Property<T> var1) {
-      return this.setValue(var1, (Comparable)findNextInCollection(var1.getPossibleValues(), this.getValue(var1)));
+      return (S)this.setValue(var1, (Comparable)findNextInCollection(var1.getPossibleValues(), this.getValue(var1)));
    }
 
    protected static <T> T findNextInCollection(List<T> var0, T var1) {
       int var2 = var0.indexOf(var1) + 1;
-      return var2 == var0.size() ? var0.getFirst() : var0.get(var2);
+      return (T)(var2 == var0.size() ? var0.getFirst() : var0.get(var2));
    }
 
    public String toString() {
@@ -85,7 +85,7 @@ public abstract class StateHolder<O, S> {
          String var10002 = String.valueOf(var1);
          throw new IllegalArgumentException("Cannot get property " + var10002 + " as it does not exist in " + String.valueOf(this.owner));
       } else {
-         return (Comparable)var1.getValueClass().cast(var2);
+         return (T)(var1.getValueClass().cast(var2));
       }
    }
 
@@ -94,13 +94,13 @@ public abstract class StateHolder<O, S> {
    }
 
    public <T extends Comparable<T>> T getValueOrElse(Property<T> var1, T var2) {
-      return (Comparable)Objects.requireNonNullElse(this.getNullableValue(var1), var2);
+      return (T)(Objects.requireNonNullElse(this.getNullableValue(var1), var2));
    }
 
    @Nullable
    public <T extends Comparable<T>> T getNullableValue(Property<T> var1) {
       Comparable var2 = (Comparable)this.values.get(var1);
-      return var2 == null ? null : (Comparable)var1.getValueClass().cast(var2);
+      return (T)(var2 == null ? null : (Comparable)var1.getValueClass().cast(var2));
    }
 
    public <T extends Comparable<T>, V extends T> S setValue(Property<T> var1, V var2) {
@@ -109,25 +109,25 @@ public abstract class StateHolder<O, S> {
          String var10002 = String.valueOf(var1);
          throw new IllegalArgumentException("Cannot set property " + var10002 + " as it does not exist in " + String.valueOf(this.owner));
       } else {
-         return this.setValueInternal(var1, var2, var3);
+         return (S)this.setValueInternal(var1, var2, var3);
       }
    }
 
    public <T extends Comparable<T>, V extends T> S trySetValue(Property<T> var1, V var2) {
       Comparable var3 = (Comparable)this.values.get(var1);
-      return var3 == null ? this : this.setValueInternal(var1, var2, var3);
+      return (S)(var3 == null ? this : this.setValueInternal(var1, var2, var3));
    }
 
    private <T extends Comparable<T>, V extends T> S setValueInternal(Property<T> var1, V var2, Comparable<?> var3) {
       if (var3.equals(var2)) {
-         return this;
+         return (S)this;
       } else {
          int var4 = var1.getInternalIndex(var2);
          if (var4 < 0) {
             String var10002 = String.valueOf(var1);
             throw new IllegalArgumentException("Cannot set property " + var10002 + " to " + String.valueOf(var2) + " on " + String.valueOf(this.owner) + ", it is not an allowed value");
          } else {
-            return ((Object[])this.neighbours.get(var1))[var4];
+            return (S)((Object[])this.neighbours.get(var1))[var4];
          }
       }
    }
@@ -142,9 +142,7 @@ public abstract class StateHolder<O, S> {
          while(var3.hasNext()) {
             Map.Entry var4 = (Map.Entry)var3.next();
             Property var5 = (Property)var4.getKey();
-            var2.put(var5, var5.getPossibleValues().stream().map((var3x) -> {
-               return var1.get(this.makeNeighbourValues(var5, var3x));
-            }).toArray());
+            var2.put(var5, var5.getPossibleValues().stream().map((var3x) -> var1.get(this.makeNeighbourValues(var5, var3x))).toArray());
          }
 
          this.neighbours = var2;
@@ -162,13 +160,9 @@ public abstract class StateHolder<O, S> {
    }
 
    protected static <O, S extends StateHolder<O, S>> Codec<S> codec(Codec<O> var0, Function<O, S> var1) {
-      return var0.dispatch("Name", (var0x) -> {
-         return var0x.owner;
-      }, (var1x) -> {
+      return var0.dispatch("Name", (var0x) -> var0x.owner, (var1x) -> {
          StateHolder var2 = (StateHolder)var1.apply(var1x);
-         return var2.getValues().isEmpty() ? MapCodec.unit(var2) : var2.propertiesCodec.codec().lenientOptionalFieldOf("Properties").xmap((var1xx) -> {
-            return (StateHolder)var1xx.orElse(var2);
-         }, Optional::of);
+         return var2.getValues().isEmpty() ? MapCodec.unit(var2) : var2.propertiesCodec.codec().lenientOptionalFieldOf("Properties").xmap((var1xx) -> (StateHolder)var1xx.orElse(var2), Optional::of);
       });
    }
 }

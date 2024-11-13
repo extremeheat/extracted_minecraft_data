@@ -56,57 +56,70 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
    }
 
    public static LootItemConditionalFunction.Builder<?> addBonusBinomialDistributionCount(Holder<Enchantment> var0, float var1, int var2) {
-      return simpleBuilder((var3) -> {
-         return new ApplyBonusCount(var3, var0, new BinomialWithBonusCount(var2, var1));
-      });
+      return simpleBuilder((var3) -> new ApplyBonusCount(var3, var0, new BinomialWithBonusCount(var2, var1)));
    }
 
    public static LootItemConditionalFunction.Builder<?> addOreBonusCount(Holder<Enchantment> var0) {
-      return simpleBuilder((var1) -> {
-         return new ApplyBonusCount(var1, var0, new OreDrops());
-      });
+      return simpleBuilder((var1) -> new ApplyBonusCount(var1, var0, new OreDrops()));
    }
 
    public static LootItemConditionalFunction.Builder<?> addUniformBonusCount(Holder<Enchantment> var0) {
-      return simpleBuilder((var1) -> {
-         return new ApplyBonusCount(var1, var0, new UniformBonusCount(1));
-      });
+      return simpleBuilder((var1) -> new ApplyBonusCount(var1, var0, new UniformBonusCount(1)));
    }
 
    public static LootItemConditionalFunction.Builder<?> addUniformBonusCount(Holder<Enchantment> var0, int var1) {
-      return simpleBuilder((var2) -> {
-         return new ApplyBonusCount(var2, var0, new UniformBonusCount(var1));
-      });
+      return simpleBuilder((var2) -> new ApplyBonusCount(var2, var0, new UniformBonusCount(var1)));
    }
 
    static {
       FORMULAS = (Map)Stream.of(ApplyBonusCount.BinomialWithBonusCount.TYPE, ApplyBonusCount.OreDrops.TYPE, ApplyBonusCount.UniformBonusCount.TYPE).collect(Collectors.toMap(FormulaType::id, Function.identity()));
       FORMULA_TYPE_CODEC = ResourceLocation.CODEC.comapFlatMap((var0) -> {
          FormulaType var1 = (FormulaType)FORMULAS.get(var0);
-         return var1 != null ? DataResult.success(var1) : DataResult.error(() -> {
-            return "No formula type with id: '" + String.valueOf(var0) + "'";
-         });
+         return var1 != null ? DataResult.success(var1) : DataResult.error(() -> "No formula type with id: '" + String.valueOf(var0) + "'");
       }, FormulaType::id);
       FORMULA_CODEC = ExtraCodecs.dispatchOptionalValue("formula", "parameters", FORMULA_TYPE_CODEC, Formula::getType, FormulaType::codec);
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return commonFields(var0).and(var0.group(Enchantment.CODEC.fieldOf("enchantment").forGetter((var0x) -> {
-            return var0x.enchantment;
-         }), FORMULA_CODEC.forGetter((var0x) -> {
-            return var0x.formula;
-         }))).apply(var0, ApplyBonusCount::new);
-      });
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(Enchantment.CODEC.fieldOf("enchantment").forGetter((var0x) -> var0x.enchantment), FORMULA_CODEC.forGetter((var0x) -> var0x.formula))).apply(var0, ApplyBonusCount::new));
    }
 
-   interface Formula {
-      int calculateNewCount(RandomSource var1, int var2, int var3);
+   static record FormulaType(ResourceLocation id, Codec<? extends Formula> codec) {
+      FormulaType(ResourceLocation var1, Codec<? extends Formula> var2) {
+         super();
+         this.id = var1;
+         this.codec = var2;
+      }
+   }
 
-      FormulaType getType();
+   static record BinomialWithBonusCount(int extraRounds, float probability) implements Formula {
+      private static final Codec<BinomialWithBonusCount> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("extra").forGetter(BinomialWithBonusCount::extraRounds), Codec.FLOAT.fieldOf("probability").forGetter(BinomialWithBonusCount::probability)).apply(var0, BinomialWithBonusCount::new));
+      public static final FormulaType TYPE;
+
+      BinomialWithBonusCount(int var1, float var2) {
+         super();
+         this.extraRounds = var1;
+         this.probability = var2;
+      }
+
+      public int calculateNewCount(RandomSource var1, int var2, int var3) {
+         for(int var4 = 0; var4 < var3 + this.extraRounds; ++var4) {
+            if (var1.nextFloat() < this.probability) {
+               ++var2;
+            }
+         }
+
+         return var2;
+      }
+
+      public FormulaType getType() {
+         return TYPE;
+      }
+
+      static {
+         TYPE = new FormulaType(ResourceLocation.withDefaultNamespace("binomial_with_bonus_count"), CODEC);
+      }
    }
 
    static record UniformBonusCount(int bonusMultiplier) implements Formula {
-      public static final Codec<UniformBonusCount> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Codec.INT.fieldOf("bonusMultiplier").forGetter(UniformBonusCount::bonusMultiplier)).apply(var0, UniformBonusCount::new);
-      });
+      public static final Codec<UniformBonusCount> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("bonusMultiplier").forGetter(UniformBonusCount::bonusMultiplier)).apply(var0, UniformBonusCount::new));
       public static final FormulaType TYPE;
 
       UniformBonusCount(int var1) {
@@ -122,16 +135,12 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
          return TYPE;
       }
 
-      public int bonusMultiplier() {
-         return this.bonusMultiplier;
-      }
-
       static {
          TYPE = new FormulaType(ResourceLocation.withDefaultNamespace("uniform_bonus_count"), CODEC);
       }
    }
 
-   private static record OreDrops() implements Formula {
+   static record OreDrops() implements Formula {
       public static final Codec<OreDrops> CODEC = Codec.unit(OreDrops::new);
       public static final FormulaType TYPE;
 
@@ -161,58 +170,9 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       }
    }
 
-   private static record BinomialWithBonusCount(int extraRounds, float probability) implements Formula {
-      private static final Codec<BinomialWithBonusCount> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Codec.INT.fieldOf("extra").forGetter(BinomialWithBonusCount::extraRounds), Codec.FLOAT.fieldOf("probability").forGetter(BinomialWithBonusCount::probability)).apply(var0, BinomialWithBonusCount::new);
-      });
-      public static final FormulaType TYPE;
+   interface Formula {
+      int calculateNewCount(RandomSource var1, int var2, int var3);
 
-      BinomialWithBonusCount(int var1, float var2) {
-         super();
-         this.extraRounds = var1;
-         this.probability = var2;
-      }
-
-      public int calculateNewCount(RandomSource var1, int var2, int var3) {
-         for(int var4 = 0; var4 < var3 + this.extraRounds; ++var4) {
-            if (var1.nextFloat() < this.probability) {
-               ++var2;
-            }
-         }
-
-         return var2;
-      }
-
-      public FormulaType getType() {
-         return TYPE;
-      }
-
-      public int extraRounds() {
-         return this.extraRounds;
-      }
-
-      public float probability() {
-         return this.probability;
-      }
-
-      static {
-         TYPE = new FormulaType(ResourceLocation.withDefaultNamespace("binomial_with_bonus_count"), CODEC);
-      }
-   }
-
-   private static record FormulaType(ResourceLocation id, Codec<? extends Formula> codec) {
-      FormulaType(ResourceLocation var1, Codec<? extends Formula> var2) {
-         super();
-         this.id = var1;
-         this.codec = var2;
-      }
-
-      public ResourceLocation id() {
-         return this.id;
-      }
-
-      public Codec<? extends Formula> codec() {
-         return this.codec;
-      }
+      FormulaType getType();
    }
 }

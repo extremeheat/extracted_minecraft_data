@@ -41,19 +41,13 @@ public class BiomeParametersDumpReport implements DataProvider {
       return this.registries.thenCompose((var2) -> {
          RegistryOps var3 = var2.createSerializationContext(JsonOps.INSTANCE);
          ArrayList var4 = new ArrayList();
-         MultiNoiseBiomeSourceParameterList.knownPresets().forEach((var4x, var5) -> {
-            var4.add(dumpValue(this.createPath(var4x.id()), var1, var3, CODEC, var5));
-         });
-         return CompletableFuture.allOf((CompletableFuture[])var4.toArray((var0) -> {
-            return new CompletableFuture[var0];
-         }));
+         MultiNoiseBiomeSourceParameterList.knownPresets().forEach((var4x, var5) -> var4.add(dumpValue(this.createPath(var4x.id()), var1, var3, CODEC, var5)));
+         return CompletableFuture.allOf((CompletableFuture[])var4.toArray((var0) -> new CompletableFuture[var0]));
       });
    }
 
    private static <E> CompletableFuture<?> dumpValue(Path var0, CachedOutput var1, DynamicOps<JsonElement> var2, Encoder<E> var3, E var4) {
-      Optional var5 = var3.encodeStart(var2, var4).resultOrPartial((var1x) -> {
-         LOGGER.error("Couldn't serialize element {}: {}", var0, var1x);
-      });
+      Optional var5 = var3.encodeStart(var2, var4).resultOrPartial((var1x) -> LOGGER.error("Couldn't serialize element {}: {}", var0, var1x));
       return var5.isPresent() ? DataProvider.saveStable(var1, (JsonElement)var5.get(), var0) : CompletableFuture.completedFuture((Object)null);
    }
 

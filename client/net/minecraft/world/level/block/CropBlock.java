@@ -121,14 +121,14 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
 
       BlockPos var12 = var2.north();
       BlockPos var13 = var2.south();
-      BlockPos var15 = var2.west();
-      BlockPos var14 = var2.east();
-      boolean var9 = var1.getBlockState(var15).is(var0) || var1.getBlockState(var14).is(var0);
+      BlockPos var14 = var2.west();
+      BlockPos var15 = var2.east();
+      boolean var9 = var1.getBlockState(var14).is(var0) || var1.getBlockState(var15).is(var0);
       boolean var10 = var1.getBlockState(var12).is(var0) || var1.getBlockState(var13).is(var0);
       if (var9 && var10) {
          var3 /= 2.0F;
       } else {
-         boolean var11 = var1.getBlockState(var15.north()).is(var0) || var1.getBlockState(var14.north()).is(var0) || var1.getBlockState(var14.south()).is(var0) || var1.getBlockState(var15.south()).is(var0);
+         boolean var11 = var1.getBlockState(var14.north()).is(var0) || var1.getBlockState(var15.north()).is(var0) || var1.getBlockState(var15.south()).is(var0) || var1.getBlockState(var14.south()).is(var0);
          if (var11) {
             var3 /= 2.0F;
          }

@@ -24,10 +24,6 @@ public record ServerboundSelectKnownPacks(List<KnownPack> knownPacks) implements
       var1.handleSelectKnownPacks(this);
    }
 
-   public List<KnownPack> knownPacks() {
-      return this.knownPacks;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(KnownPack.STREAM_CODEC.apply(ByteBufCodecs.list(64)), ServerboundSelectKnownPacks::knownPacks, ServerboundSelectKnownPacks::new);
    }

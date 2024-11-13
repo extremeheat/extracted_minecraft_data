@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal.horse;
 
 import com.google.common.collect.UnmodifiableIterator;
-import java.util.Iterator;
 import java.util.UUID;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntUnaryOperator;
@@ -85,24 +84,12 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    public static final int CHEST_SLOT_OFFSET = 499;
    public static final int INVENTORY_SLOT_OFFSET = 500;
    public static final double BREEDING_CROSS_FACTOR = 0.15;
-   private static final float MIN_MOVEMENT_SPEED = (float)generateSpeed(() -> {
-      return 0.0;
-   });
-   private static final float MAX_MOVEMENT_SPEED = (float)generateSpeed(() -> {
-      return 1.0;
-   });
-   private static final float MIN_JUMP_STRENGTH = (float)generateJumpStrength(() -> {
-      return 0.0;
-   });
-   private static final float MAX_JUMP_STRENGTH = (float)generateJumpStrength(() -> {
-      return 1.0;
-   });
-   private static final float MIN_HEALTH = generateMaxHealth((var0) -> {
-      return 0;
-   });
-   private static final float MAX_HEALTH = generateMaxHealth((var0) -> {
-      return var0 - 1;
-   });
+   private static final float MIN_MOVEMENT_SPEED = (float)generateSpeed(() -> 0.0);
+   private static final float MAX_MOVEMENT_SPEED = (float)generateSpeed(() -> 1.0);
+   private static final float MIN_JUMP_STRENGTH = (float)generateJumpStrength(() -> 0.0);
+   private static final float MAX_JUMP_STRENGTH = (float)generateJumpStrength(() -> 1.0);
+   private static final float MIN_HEALTH = generateMaxHealth((var0) -> 0);
+   private static final float MAX_HEALTH = generateMaxHealth((var0) -> var0 - 1);
    private static final float BACKWARDS_MOVE_SPEED_FACTOR = 0.25F;
    private static final float SIDEWAYS_MOVE_SPEED_FACTOR = 0.5F;
    private static final TargetingConditions.Selector PARENT_HORSE_SELECTOR = (var0, var1) -> {
@@ -187,9 +174,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
 
    protected void addBehaviourGoals() {
       this.goalSelector.addGoal(0, new FloatGoal(this));
-      this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, (var0) -> {
-         return var0.is(ItemTags.HORSE_TEMPT_ITEMS);
-      }, false));
+      this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, (var0) -> var0.is(ItemTags.HORSE_TEMPT_ITEMS), false));
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -306,7 +291,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       if (!this.isSilent()) {
          SoundEvent var1 = this.getEatingSound();
          if (var1 != null) {
-            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)var1, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
          }
       }
 
@@ -323,10 +308,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       } else {
          this.hurt(var3, (float)var4);
          if (this.isVehicle()) {
-            Iterator var5 = this.getIndirectPassengers().iterator();
-
-            while(var5.hasNext()) {
-               Entity var6 = (Entity)var5.next();
+            for(Entity var6 : this.getIndirectPassengers()) {
                var6.hurt(var3, (float)var4);
             }
          }
@@ -604,7 +586,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       if (this.isBred() && this.isBaby() && !this.isEating()) {
          LivingEntity var2 = var1.getNearestEntity(AbstractHorse.class, MOMMY_TARGETING, this, this.getX(), this.getY(), this.getZ(), this.getBoundingBox().inflate(16.0));
          if (var2 != null && this.distanceToSqr(var2) > 4.0) {
-            this.navigation.createPath((Entity)var2, 0);
+            this.navigation.createPath(var2, 0);
          }
       }
 
@@ -901,12 +883,11 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
          double var13 = (var0 + var2) / 2.0;
          double var15 = (var8.nextDouble() + var8.nextDouble() + var8.nextDouble()) / 3.0 - 0.5;
          double var17 = var13 + var11 * var15;
-         double var19;
          if (var17 > var6) {
-            var19 = var17 - var6;
-            return var6 - var19;
+            double var23 = var17 - var6;
+            return var6 - var23;
          } else if (var17 < var4) {
-            var19 = var4 - var17;
+            double var19 = var4 - var17;
             return var4 + var19;
          } else {
             return var17;
@@ -1131,6 +1112,6 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
 
    static {
       MOMMY_TARGETING = TargetingConditions.forNonCombat().range(16.0).ignoreLineOfSight().selector(PARENT_HORSE_SELECTOR);
-      DATA_ID_FLAGS = SynchedEntityData.defineId(AbstractHorse.class, EntityDataSerializers.BYTE);
+      DATA_ID_FLAGS = SynchedEntityData.<Byte>defineId(AbstractHorse.class, EntityDataSerializers.BYTE);
    }
 }

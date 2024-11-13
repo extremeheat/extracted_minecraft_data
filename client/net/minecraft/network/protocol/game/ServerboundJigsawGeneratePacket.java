@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundJigsawGeneratePacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundJigsawGeneratePacket> STREAM_CODEC = Packet.codec(ServerboundJigsawGeneratePacket::write, ServerboundJigsawGeneratePacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundJigsawGeneratePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundJigsawGeneratePacket>codec(ServerboundJigsawGeneratePacket::write, ServerboundJigsawGeneratePacket::new);
    private final BlockPos pos;
    private final int levels;
    private final boolean keepJigsaws;

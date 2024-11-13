@@ -15,9 +15,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
 public record SetBlockProperties(BlockItemStateProperties properties, Vec3i offset, Optional<Holder<GameEvent>> triggerGameEvent) implements EnchantmentEntityEffect {
-   public static final MapCodec<SetBlockProperties> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BlockItemStateProperties.CODEC.fieldOf("properties").forGetter(SetBlockProperties::properties), Vec3i.CODEC.optionalFieldOf("offset", Vec3i.ZERO).forGetter(SetBlockProperties::offset), GameEvent.CODEC.optionalFieldOf("trigger_game_event").forGetter(SetBlockProperties::triggerGameEvent)).apply(var0, SetBlockProperties::new);
-   });
+   public static final MapCodec<SetBlockProperties> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockItemStateProperties.CODEC.fieldOf("properties").forGetter(SetBlockProperties::properties), Vec3i.CODEC.optionalFieldOf("offset", Vec3i.ZERO).forGetter(SetBlockProperties::offset), GameEvent.CODEC.optionalFieldOf("trigger_game_event").forGetter(SetBlockProperties::triggerGameEvent)).apply(var0, SetBlockProperties::new));
 
    public SetBlockProperties(BlockItemStateProperties var1) {
       this(var1, Vec3i.ZERO, Optional.of(GameEvent.BLOCK_CHANGE));
@@ -35,26 +33,12 @@ public record SetBlockProperties(BlockItemStateProperties properties, Vec3i offs
       BlockState var7 = var4.level().getBlockState(var6);
       BlockState var8 = this.properties.apply(var7);
       if (!var7.equals(var8) && var4.level().setBlock(var6, var8, 3)) {
-         this.triggerGameEvent.ifPresent((var3x) -> {
-            var1.gameEvent(var4, var3x, var6);
-         });
+         this.triggerGameEvent.ifPresent((var3x) -> var1.gameEvent(var4, var3x, var6));
       }
 
    }
 
    public MapCodec<SetBlockProperties> codec() {
       return CODEC;
-   }
-
-   public BlockItemStateProperties properties() {
-      return this.properties;
-   }
-
-   public Vec3i offset() {
-      return this.offset;
-   }
-
-   public Optional<Holder<GameEvent>> triggerGameEvent() {
-      return this.triggerGameEvent;
    }
 }

@@ -6,7 +6,7 @@ import net.minecraft.world.level.pathfinder.Path;
 
 public record PathfindingDebugPayload(int entityId, Path path, float maxNodeDistance) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, PathfindingDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(PathfindingDebugPayload::write, PathfindingDebugPayload::new);
-   public static final CustomPacketPayload.Type<PathfindingDebugPayload> TYPE = CustomPacketPayload.createType("debug/path");
+   public static final CustomPacketPayload.Type<PathfindingDebugPayload> TYPE = CustomPacketPayload.<PathfindingDebugPayload>createType("debug/path");
 
    private PathfindingDebugPayload(FriendlyByteBuf var1) {
       this(var1.readInt(), Path.createFromStream(var1), var1.readFloat());
@@ -27,17 +27,5 @@ public record PathfindingDebugPayload(int entityId, Path path, float maxNodeDist
 
    public CustomPacketPayload.Type<PathfindingDebugPayload> type() {
       return TYPE;
-   }
-
-   public int entityId() {
-      return this.entityId;
-   }
-
-   public Path path() {
-      return this.path;
-   }
-
-   public float maxNodeDistance() {
-      return this.maxNodeDistance;
    }
 }

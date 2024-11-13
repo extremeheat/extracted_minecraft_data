@@ -105,23 +105,22 @@ public class PistonStructureResolver {
                }
             }
 
-            int var11 = 0;
+            int var12 = 0;
 
-            int var12;
-            for(var12 = var4 - 1; var12 >= 0; --var12) {
-               this.toPush.add(var1.relative(this.pushDirection.getOpposite(), var12));
-               ++var11;
+            for(int var13 = var4 - 1; var13 >= 0; --var13) {
+               this.toPush.add(var1.relative(this.pushDirection.getOpposite(), var13));
+               ++var12;
             }
 
-            var12 = 1;
+            int var14 = 1;
 
             while(true) {
-               BlockPos var7 = var1.relative(this.pushDirection, var12);
+               BlockPos var7 = var1.relative(this.pushDirection, var14);
                int var8 = this.toPush.indexOf(var7);
                if (var8 > -1) {
-                  this.reorderListAtCollision(var11, var8);
+                  this.reorderListAtCollision(var12, var8);
 
-                  for(int var9 = 0; var9 <= var8 + var11; ++var9) {
+                  for(int var9 = 0; var9 <= var8 + var12; ++var9) {
                      BlockPos var10 = (BlockPos)this.toPush.get(var9);
                      if (isSticky(this.level.getBlockState(var10)) && !this.addBranchingBlocks(var10)) {
                         return false;
@@ -150,8 +149,8 @@ public class PistonStructureResolver {
                }
 
                this.toPush.add(var7);
-               ++var11;
                ++var12;
+               ++var14;
             }
          }
       }
@@ -172,11 +171,8 @@ public class PistonStructureResolver {
 
    private boolean addBranchingBlocks(BlockPos var1) {
       BlockState var2 = this.level.getBlockState(var1);
-      Direction[] var3 = Direction.values();
-      int var4 = var3.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         Direction var6 = var3[var5];
+      for(Direction var6 : Direction.values()) {
          if (var6.getAxis() != this.pushDirection.getAxis()) {
             BlockPos var7 = var1.relative(var6);
             BlockState var8 = this.level.getBlockState(var7);

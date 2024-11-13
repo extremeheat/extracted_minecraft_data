@@ -21,11 +21,7 @@ public class BlockMath {
       var0.put(Direction.DOWN, new Transformation((Vector3f)null, (new Quaternionf()).rotateX(1.5707964F), (Vector3f)null, (Quaternionf)null));
    });
    public static final Map<Direction, Transformation> VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL = (Map)Util.make(Maps.newEnumMap(Direction.class), (var0) -> {
-      Direction[] var1 = Direction.values();
-      int var2 = var1.length;
-
-      for(int var3 = 0; var3 < var2; ++var3) {
-         Direction var4 = var1[var3];
+      for(Direction var4 : Direction.values()) {
          var0.put(var4, ((Transformation)VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL.get(var4)).inverse());
       }
 

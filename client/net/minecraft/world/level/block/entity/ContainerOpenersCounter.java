@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
@@ -61,9 +60,8 @@ public abstract class ContainerOpenersCounter {
       List var4 = this.getPlayersWithContainerOpen(var1, var2);
       this.maxInteractionRange = 0.0;
 
-      Player var6;
-      for(Iterator var5 = var4.iterator(); var5.hasNext(); this.maxInteractionRange = Math.max(var6.blockInteractionRange(), this.maxInteractionRange)) {
-         var6 = (Player)var5.next();
+      for(Player var6 : var4) {
+         this.maxInteractionRange = Math.max(var6.blockInteractionRange(), this.maxInteractionRange);
       }
 
       int var9 = var4.size();

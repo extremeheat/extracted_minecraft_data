@@ -29,10 +29,6 @@ public record CustomModelDataProperty(int index) implements SelectItemModelPrope
       return TYPE;
    }
 
-   public int index() {
-      return this.index;
-   }
-
    // $FF: synthetic method
    @Nullable
    public Object get(final ItemStack var1, @Nullable final ClientLevel var2, @Nullable final LivingEntity var3, final int var4, final ItemDisplayContext var5) {
@@ -40,8 +36,6 @@ public record CustomModelDataProperty(int index) implements SelectItemModelPrope
    }
 
    static {
-      TYPE = SelectItemModelProperty.Type.create(RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("index", 0).forGetter(CustomModelDataProperty::index)).apply(var0, CustomModelDataProperty::new);
-      }), Codec.STRING);
+      TYPE = SelectItemModelProperty.Type.<CustomModelDataProperty, String>create(RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("index", 0).forGetter(CustomModelDataProperty::index)).apply(var0, CustomModelDataProperty::new)), Codec.STRING);
    }
 }

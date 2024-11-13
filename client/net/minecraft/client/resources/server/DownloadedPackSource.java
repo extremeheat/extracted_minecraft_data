@@ -13,7 +13,6 @@ import java.net.Proxy;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -101,9 +100,7 @@ public class DownloadedPackSource implements AutoCloseable {
          private OptionalLong totalBytes = OptionalLong.empty();
 
          private void updateToast() {
-            DownloadedPackSource.this.minecraft.execute(() -> {
-               SystemToast.addOrUpdate(DownloadedPackSource.this.minecraft.getToastManager(), this.toastId, this.title, this.message);
-            });
+            DownloadedPackSource.this.minecraft.execute(() -> SystemToast.addOrUpdate(DownloadedPackSource.this.minecraft.getToastManager(), this.toastId, this.title, this.message));
          }
 
          private void updateProgress(long var1x) {
@@ -204,10 +201,8 @@ public class DownloadedPackSource implements AutoCloseable {
    @Nullable
    private List<Pack> loadRequestedPacks(List<PackReloadConfig.IdAndPath> var1) {
       ArrayList var2 = new ArrayList(var1.size());
-      Iterator var3 = Lists.reverse(var1).iterator();
 
-      while(var3.hasNext()) {
-         PackReloadConfig.IdAndPath var4 = (PackReloadConfig.IdAndPath)var3.next();
+      for(PackReloadConfig.IdAndPath var4 : Lists.reverse(var1)) {
          String var5 = String.format(Locale.ROOT, "server/%08X/%s", this.packIdSerialNumber++, var4.id());
          Path var6 = var4.path();
          PackLocationInfo var7 = new PackLocationInfo(var5, SERVER_NAME, this.packType, Optional.empty());
@@ -226,9 +221,7 @@ public class DownloadedPackSource implements AutoCloseable {
    }
 
    public RepositorySource createRepositorySource() {
-      return (var1) -> {
-         this.packSource.loadPacks(var1);
-      };
+      return (var1) -> this.packSource.loadPacks(var1);
    }
 
    private static RepositorySource configureSource(List<Pack> var0) {

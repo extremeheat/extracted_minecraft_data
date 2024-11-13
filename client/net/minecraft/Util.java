@@ -149,7 +149,7 @@ public class Util {
             final String var3x = "Worker-" + var0 + "-" + var3.getAndIncrement();
             ForkJoinWorkerThread var4 = new ForkJoinWorkerThread(var2x) {
                protected void onStart() {
-                  TracyClient.setThreadName(var3, var0.hashCode());
+                  TracyClient.setThreadName(var3x, var0.hashCode());
                   super.onStart();
                }
 
@@ -317,9 +317,7 @@ public class Util {
    }
 
    public static <T> Predicate<T> allOf() {
-      return (var0) -> {
-         return true;
-      };
+      return (var0) -> true;
    }
 
    public static <T> Predicate<T> allOf(Predicate<? super T> var0) {
@@ -327,37 +325,25 @@ public class Util {
    }
 
    public static <T> Predicate<T> allOf(Predicate<? super T> var0, Predicate<? super T> var1) {
-      return (var2) -> {
-         return var0.test(var2) && var1.test(var2);
-      };
+      return (var2) -> var0.test(var2) && var1.test(var2);
    }
 
    public static <T> Predicate<T> allOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2) {
-      return (var3) -> {
-         return var0.test(var3) && var1.test(var3) && var2.test(var3);
-      };
+      return (var3) -> var0.test(var3) && var1.test(var3) && var2.test(var3);
    }
 
    public static <T> Predicate<T> allOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3) {
-      return (var4) -> {
-         return var0.test(var4) && var1.test(var4) && var2.test(var4) && var3.test(var4);
-      };
+      return (var4) -> var0.test(var4) && var1.test(var4) && var2.test(var4) && var3.test(var4);
    }
 
    public static <T> Predicate<T> allOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3, Predicate<? super T> var4) {
-      return (var5) -> {
-         return var0.test(var5) && var1.test(var5) && var2.test(var5) && var3.test(var5) && var4.test(var5);
-      };
+      return (var5) -> var0.test(var5) && var1.test(var5) && var2.test(var5) && var3.test(var5) && var4.test(var5);
    }
 
    @SafeVarargs
    public static <T> Predicate<T> allOf(Predicate<? super T>... var0) {
       return (var1) -> {
-         Predicate[] var2 = var0;
-         int var3 = var0.length;
-
-         for(int var4 = 0; var4 < var3; ++var4) {
-            Predicate var5 = var2[var4];
+         for(Predicate var5 : var0) {
             if (!var5.test(var1)) {
                return false;
             }
@@ -389,9 +375,7 @@ public class Util {
             var10000 = allOf((Predicate)var0.get(0), (Predicate)var0.get(1), (Predicate)var0.get(2), (Predicate)var0.get(3), (Predicate)var0.get(4));
             break;
          default:
-            Predicate[] var1 = (Predicate[])var0.toArray((var0x) -> {
-               return new Predicate[var0x];
-            });
+            Predicate[] var1 = (Predicate[])var0.toArray((var0x) -> new Predicate[var0x]);
             var10000 = allOf(var1);
       }
 
@@ -399,9 +383,7 @@ public class Util {
    }
 
    public static <T> Predicate<T> anyOf() {
-      return (var0) -> {
-         return false;
-      };
+      return (var0) -> false;
    }
 
    public static <T> Predicate<T> anyOf(Predicate<? super T> var0) {
@@ -409,37 +391,25 @@ public class Util {
    }
 
    public static <T> Predicate<T> anyOf(Predicate<? super T> var0, Predicate<? super T> var1) {
-      return (var2) -> {
-         return var0.test(var2) || var1.test(var2);
-      };
+      return (var2) -> var0.test(var2) || var1.test(var2);
    }
 
    public static <T> Predicate<T> anyOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2) {
-      return (var3) -> {
-         return var0.test(var3) || var1.test(var3) || var2.test(var3);
-      };
+      return (var3) -> var0.test(var3) || var1.test(var3) || var2.test(var3);
    }
 
    public static <T> Predicate<T> anyOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3) {
-      return (var4) -> {
-         return var0.test(var4) || var1.test(var4) || var2.test(var4) || var3.test(var4);
-      };
+      return (var4) -> var0.test(var4) || var1.test(var4) || var2.test(var4) || var3.test(var4);
    }
 
    public static <T> Predicate<T> anyOf(Predicate<? super T> var0, Predicate<? super T> var1, Predicate<? super T> var2, Predicate<? super T> var3, Predicate<? super T> var4) {
-      return (var5) -> {
-         return var0.test(var5) || var1.test(var5) || var2.test(var5) || var3.test(var5) || var4.test(var5);
-      };
+      return (var5) -> var0.test(var5) || var1.test(var5) || var2.test(var5) || var3.test(var5) || var4.test(var5);
    }
 
    @SafeVarargs
    public static <T> Predicate<T> anyOf(Predicate<? super T>... var0) {
       return (var1) -> {
-         Predicate[] var2 = var0;
-         int var3 = var0.length;
-
-         for(int var4 = 0; var4 < var3; ++var4) {
-            Predicate var5 = var2[var4];
+         for(Predicate var5 : var0) {
             if (var5.test(var1)) {
                return true;
             }
@@ -471,9 +441,7 @@ public class Util {
             var10000 = anyOf((Predicate)var0.get(0), (Predicate)var0.get(1), (Predicate)var0.get(2), (Predicate)var0.get(3), (Predicate)var0.get(4));
             break;
          default:
-            Predicate[] var1 = (Predicate[])var0.toArray((var0x) -> {
-               return new Predicate[var0x];
-            });
+            Predicate[] var1 = (Predicate[])var0.toArray((var0x) -> new Predicate[var0x]);
             var10000 = anyOf(var1);
       }
 
@@ -535,13 +503,11 @@ public class Util {
 
    public static Stream<String> getVmArguments() {
       RuntimeMXBean var0 = ManagementFactory.getRuntimeMXBean();
-      return var0.getInputArguments().stream().filter((var0x) -> {
-         return var0x.startsWith("-X");
-      });
+      return var0.getInputArguments().stream().filter((var0x) -> var0x.startsWith("-X"));
    }
 
    public static <T> T lastOf(List<T> var0) {
-      return var0.get(var0.size() - 1);
+      return (T)var0.get(var0.size() - 1);
    }
 
    public static <T> T findNextInIterable(Iterable<T> var0, @Nullable T var1) {
@@ -557,33 +523,19 @@ public class Util {
          }
 
          if (var2.hasNext()) {
-            return var2.next();
+            return (T)var2.next();
          }
       }
 
-      return var3;
+      return (T)var3;
    }
 
    public static <T> T findPreviousInIterable(Iterable<T> var0, @Nullable T var1) {
-      Iterator var2 = var0.iterator();
-
-      Object var3;
-      Object var4;
-      for(var3 = null; var2.hasNext(); var3 = var4) {
-         var4 = var2.next();
-         if (var4 == var1) {
-            if (var3 == null) {
-               var3 = var2.hasNext() ? Iterators.getLast(var2) : var1;
-            }
-            break;
-         }
-      }
-
-      return var3;
+      // $FF: Couldn't be decompiled
    }
 
    public static <T> T make(Supplier<T> var0) {
-      return var0.get();
+      return (T)var0.get();
    }
 
    public static <T> T make(T var0, Consumer<? super T> var1) {
@@ -593,11 +545,8 @@ public class Util {
 
    public static <K extends Enum<K>, V> EnumMap<K, V> makeEnumMap(Class<K> var0, Function<K, V> var1) {
       EnumMap var2 = new EnumMap(var0);
-      Enum[] var3 = (Enum[])var0.getEnumConstants();
-      int var4 = var3.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         Enum var6 = var3[var5];
+      for(Enum var6 : (Enum[])var0.getEnumConstants()) {
          var2.put(var6, var1.apply(var6));
       }
 
@@ -611,9 +560,7 @@ public class Util {
          return ((CompletableFuture)var0.get(0)).thenApply(List::of);
       } else {
          CompletableFuture var1 = CompletableFuture.allOf((CompletableFuture[])var0.toArray(new CompletableFuture[0]));
-         return var1.thenApply((var1x) -> {
-            return var0.stream().map(CompletableFuture::join).toList();
-         });
+         return var1.thenApply((var1x) -> var0.stream().map(CompletableFuture::join).toList());
       }
    }
 
@@ -627,10 +574,7 @@ public class Util {
       CompletableFuture var1 = new CompletableFuture();
       return fallibleSequence(var0, (var2) -> {
          if (var1.completeExceptionally(var2)) {
-            Iterator var3 = var0.iterator();
-
-            while(var3.hasNext()) {
-               CompletableFuture var4 = (CompletableFuture)var3.next();
+            for(CompletableFuture var4 : var0) {
                var4.cancel(true);
             }
          }
@@ -653,9 +597,7 @@ public class Util {
 
          });
       });
-      return CompletableFuture.allOf(var3).thenApply((var1x) -> {
-         return var2;
-      });
+      return CompletableFuture.allOf(var3).thenApply((var1x) -> var2);
    }
 
    public static <T> Optional<T> ifElse(Optional<T> var0, Consumer<T> var1, Runnable var2) {
@@ -698,7 +640,7 @@ public class Util {
          doPause(var0.getMessage());
       }
 
-      return var0;
+      return (T)var0;
    }
 
    public static void setPause(Consumer<String> var0) {
@@ -724,7 +666,7 @@ public class Util {
    }
 
    public static <T> T getRandom(T[] var0, RandomSource var1) {
-      return var0[var1.nextInt(var0.length)];
+      return (T)var0[var1.nextInt(var0.length)];
    }
 
    public static int getRandom(int[] var0, RandomSource var1) {
@@ -732,7 +674,7 @@ public class Util {
    }
 
    public static <T> T getRandom(List<T> var0, RandomSource var1) {
-      return var0.get(var1.nextInt(var0.size()));
+      return (T)var0.get(var1.nextInt(var0.size()));
    }
 
    public static <T> Optional<T> getRandomSafe(List<T> var0, RandomSource var1) {
@@ -801,11 +743,7 @@ public class Util {
    }
 
    private static boolean executeInSequence(BooleanSupplier... var0) {
-      BooleanSupplier[] var1 = var0;
-      int var2 = var0.length;
-
-      for(int var3 = 0; var3 < var2; ++var3) {
-         BooleanSupplier var4 = var1[var3];
+      for(BooleanSupplier var4 : var0) {
          if (!var4.getAsBoolean()) {
             LOGGER.warn("Failed to execute {}", var4);
             return false;
@@ -847,15 +785,14 @@ public class Util {
 
    public static int offsetByCodepoints(String var0, int var1, int var2) {
       int var3 = var0.length();
-      int var4;
       if (var2 >= 0) {
-         for(var4 = 0; var1 < var3 && var4 < var2; ++var4) {
+         for(int var4 = 0; var1 < var3 && var4 < var2; ++var4) {
             if (Character.isHighSurrogate(var0.charAt(var1++)) && var1 < var3 && Character.isLowSurrogate(var0.charAt(var1))) {
                ++var1;
             }
          }
       } else {
-         for(var4 = var2; var1 > 0 && var4 < 0; ++var4) {
+         for(int var5 = var2; var1 > 0 && var5 < 0; ++var5) {
             --var1;
             if (Character.isLowSurrogate(var0.charAt(var1)) && var1 > 0 && Character.isHighSurrogate(var0.charAt(var1 - 1))) {
                --var1;
@@ -867,17 +804,13 @@ public class Util {
    }
 
    public static Consumer<String> prefix(String var0, Consumer<String> var1) {
-      return (var2) -> {
-         var1.accept(var0 + var2);
-      };
+      return (var2) -> var1.accept(var0 + var2);
    }
 
    public static DataResult<int[]> fixedSize(IntStream var0, int var1) {
       int[] var2 = var0.limit((long)(var1 + 1)).toArray();
       if (var2.length != var1) {
-         Supplier var3 = () -> {
-            return "Input is not a list of " + var1 + " ints";
-         };
+         Supplier var3 = () -> "Input is not a list of " + var1 + " ints";
          return var2.length >= var1 ? DataResult.error(var3, Arrays.copyOf(var2, var1)) : DataResult.error(var3);
       } else {
          return DataResult.success(var2);
@@ -887,9 +820,7 @@ public class Util {
    public static DataResult<long[]> fixedSize(LongStream var0, int var1) {
       long[] var2 = var0.limit((long)(var1 + 1)).toArray();
       if (var2.length != var1) {
-         Supplier var3 = () -> {
-            return "Input is not a list of " + var1 + " longs";
-         };
+         Supplier var3 = () -> "Input is not a list of " + var1 + " longs";
          return var2.length >= var1 ? DataResult.error(var3, Arrays.copyOf(var2, var1)) : DataResult.error(var3);
       } else {
          return DataResult.success(var2);
@@ -898,9 +829,7 @@ public class Util {
 
    public static <T> DataResult<List<T>> fixedSize(List<T> var0, int var1) {
       if (var0.size() != var1) {
-         Supplier var2 = () -> {
-            return "Input is not a list of " + var1 + " elements";
-         };
+         Supplier var2 = () -> "Input is not a list of " + var1 + " elements";
          return var0.size() >= var1 ? DataResult.error(var2, var0.subList(0, var1)) : DataResult.error(var2);
       } else {
          return DataResult.success(var0);
@@ -932,13 +861,11 @@ public class Util {
    }
 
    public static String sanitizeName(String var0, CharPredicate var1) {
-      return (String)var0.toLowerCase(Locale.ROOT).chars().mapToObj((var1x) -> {
-         return var1.test((char)var1x) ? Character.toString((char)var1x) : "_";
-      }).collect(Collectors.joining());
+      return (String)var0.toLowerCase(Locale.ROOT).chars().mapToObj((var1x) -> var1.test((char)var1x) ? Character.toString((char)var1x) : "_").collect(Collectors.joining());
    }
 
    public static <K, V> SingleKeyCache<K, V> singleKeyCache(Function<K, V> var0) {
-      return new SingleKeyCache(var0);
+      return new SingleKeyCache<K, V>(var0);
    }
 
    public static <T, R> Function<T, R> memoize(final Function<T, R> var0) {
@@ -946,7 +873,7 @@ public class Util {
          private final Map<T, R> cache = new ConcurrentHashMap();
 
          public R apply(T var1) {
-            return this.cache.computeIfAbsent(var1, var0);
+            return (R)this.cache.computeIfAbsent(var1, var0);
          }
 
          public String toString() {
@@ -961,9 +888,7 @@ public class Util {
          private final Map<Pair<T, U>, R> cache = new ConcurrentHashMap();
 
          public R apply(T var1, U var2) {
-            return this.cache.computeIfAbsent(Pair.of(var1, var2), (var1x) -> {
-               return var0.apply(var1x.getFirst(), var1x.getSecond());
-            });
+            return (R)this.cache.computeIfAbsent(Pair.of(var1, var2), (var1x) -> var0.apply(var1x.getFirst(), var1x.getSecond()));
          }
 
          public String toString() {
@@ -1039,7 +964,7 @@ public class Util {
          LOGGER.warn("Tasks left in queue: {}", var6);
       }
 
-      return var3;
+      return (T)var3;
    }
 
    public static <T> ToIntFunction<T> createIndexLookup(List<T> var0) {
@@ -1089,27 +1014,13 @@ public class Util {
    public static <T> Typed<T> readTypedOrThrow(Type<T> var0, Dynamic<?> var1, boolean var2) {
       DataResult var3 = var0.readTyped(var1).map(Pair::getFirst);
 
-      CrashReport var5;
-      CrashReportCategory var6;
       try {
-         if (var2) {
-            return (Typed)var3.getPartialOrThrow(IllegalStateException::new);
-         }
-      } catch (IllegalStateException var8) {
-         var5 = CrashReport.forThrowable(var8, "Reading type");
-         var6 = var5.addCategory("Info");
-         var6.setDetail("Data", (Object)var1);
-         var6.setDetail("Type", (Object)var0);
-         throw new ReportedException(var5);
-      }
-
-      try {
-         return (Typed)var3.getOrThrow(IllegalStateException::new);
+         return var2 ? (Typed)var3.getPartialOrThrow(IllegalStateException::new) : (Typed)var3.getOrThrow(IllegalStateException::new);
       } catch (IllegalStateException var7) {
-         var5 = CrashReport.forThrowable(var7, "Reading type");
-         var6 = var5.addCategory("Info");
-         var6.setDetail("Data", (Object)var1);
-         var6.setDetail("Type", (Object)var0);
+         CrashReport var5 = CrashReport.forThrowable(var7, "Reading type");
+         CrashReportCategory var6 = var5.addCategory("Info");
+         var6.setDetail("Data", var1);
+         var6.setDetail("Type", var0);
          throw new ReportedException(var5);
       }
    }
@@ -1136,11 +1047,7 @@ public class Util {
          }
       };
       NIL_UUID = new UUID(0L, 0L);
-      ZIP_FILE_SYSTEM_PROVIDER = (FileSystemProvider)FileSystemProvider.installedProviders().stream().filter((var0) -> {
-         return var0.getScheme().equalsIgnoreCase("jar");
-      }).findFirst().orElseThrow(() -> {
-         return new IllegalStateException("No jar file system provider found");
-      });
+      ZIP_FILE_SYSTEM_PROVIDER = (FileSystemProvider)FileSystemProvider.installedProviders().stream().filter((var0) -> var0.getScheme().equalsIgnoreCase("jar")).findFirst().orElseThrow(() -> new IllegalStateException("No jar file system provider found"));
       thePauser = (var0) -> {
       };
    }
@@ -1168,9 +1075,7 @@ public class Util {
 
       public void openUri(URI var1) {
          try {
-            Process var2 = (Process)AccessController.doPrivileged(() -> {
-               return Runtime.getRuntime().exec(this.getOpenUriArguments(var1));
-            });
+            Process var2 = (Process)AccessController.doPrivileged(() -> Runtime.getRuntime().exec(this.getOpenUriArguments(var1)));
             var2.getInputStream().close();
             var2.getErrorStream().close();
             var2.getOutputStream().close();

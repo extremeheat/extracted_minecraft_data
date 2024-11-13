@@ -41,10 +41,6 @@ public class TrialSpawnerBlock extends BaseEntityBlock {
       var1.add(STATE, OMINOUS);
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
-
    @Nullable
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new TrialSpawnerBlockEntity(var1, var2);
@@ -54,13 +50,9 @@ public class TrialSpawnerBlock extends BaseEntityBlock {
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       BlockEntityTicker var10000;
       if (var1 instanceof ServerLevel var4) {
-         var10000 = createTickerHelper(var3, BlockEntityType.TRIAL_SPAWNER, (var1x, var2x, var3x, var4x) -> {
-            var4x.getTrialSpawner().tickServer(var4, var2x, (Boolean)var3x.getOptionalValue(BlockStateProperties.OMINOUS).orElse(false));
-         });
+         var10000 = createTickerHelper(var3, BlockEntityType.TRIAL_SPAWNER, (var1x, var2x, var3x, var4x) -> var4x.getTrialSpawner().tickServer(var4, var2x, (Boolean)var3x.getOptionalValue(BlockStateProperties.OMINOUS).orElse(false)));
       } else {
-         var10000 = createTickerHelper(var3, BlockEntityType.TRIAL_SPAWNER, (var0, var1x, var2x, var3x) -> {
-            var3x.getTrialSpawner().tickClient(var0, var1x, (Boolean)var2x.getOptionalValue(BlockStateProperties.OMINOUS).orElse(false));
-         });
+         var10000 = createTickerHelper(var3, BlockEntityType.TRIAL_SPAWNER, (var0, var1x, var2x, var3x) -> var3x.getTrialSpawner().tickClient(var0, var1x, (Boolean)var2x.getOptionalValue(BlockStateProperties.OMINOUS).orElse(false)));
       }
 
       return var10000;

@@ -42,15 +42,14 @@ public interface AbuseReportSender {
          return CompletableFuture.supplyAsync(() -> {
             AbuseReportRequest var4 = new AbuseReportRequest(1, var1, var3, this.environment.clientInfo(), this.environment.thirdPartyServerInfo(), this.environment.realmInfo(), var2.backendName());
 
-            Component var6;
             try {
                this.userApiService.reportAbuse(var4);
                return Unit.INSTANCE;
             } catch (MinecraftClientHttpException var7) {
-               var6 = this.getHttpErrorDescription(var7);
-               throw new CompletionException(new SendException(var6, var7));
+               Component var9 = this.getHttpErrorDescription(var7);
+               throw new CompletionException(new SendException(var9, var7));
             } catch (MinecraftClientException var8) {
-               var6 = this.getErrorDescription(var8);
+               Component var6 = this.getErrorDescription(var8);
                throw new CompletionException(new SendException(var6, var8));
             }
          }, Util.ioPool());
@@ -78,14 +77,6 @@ public interface AbuseReportSender {
 
       public AbuseReportLimits reportLimits() {
          return this.userApiService.getAbuseReportLimits();
-      }
-
-      public ReportEnvironment environment() {
-         return this.environment;
-      }
-
-      public UserApiService userApiService() {
-         return this.userApiService;
       }
    }
 

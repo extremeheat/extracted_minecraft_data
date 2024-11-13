@@ -26,17 +26,12 @@ public class LegacyQueryHandler extends ChannelInboundHandlerAdapter {
       boolean var4 = true;
 
       try {
-         try {
-            if (var3.readUnsignedByte() != 254) {
-               return;
-            }
-
+         if (var3.readUnsignedByte() == 254) {
             SocketAddress var5 = var1.channel().remoteAddress();
             int var6 = var3.readableBytes();
-            String var7;
             if (var6 == 0) {
                LOGGER.debug("Ping: (<1.3.x) from {}", var5);
-               var7 = createVersion0Response(this.server);
+               String var7 = createVersion0Response(this.server);
                sendFlushAndClose(var1, createLegacyDisconnectPacket(var1.alloc(), var7));
             } else {
                if (var3.readUnsignedByte() != 1) {
@@ -53,15 +48,16 @@ public class LegacyQueryHandler extends ChannelInboundHandlerAdapter {
                   LOGGER.debug("Ping: (1.4-1.5.x) from {}", var5);
                }
 
-               var7 = createVersion1Response(this.server);
-               sendFlushAndClose(var1, createLegacyDisconnectPacket(var1.alloc(), var7));
+               String var13 = createVersion1Response(this.server);
+               sendFlushAndClose(var1, createLegacyDisconnectPacket(var1.alloc(), var13));
             }
 
             var3.release();
             var4 = false;
-         } catch (RuntimeException var11) {
+            return;
          }
-
+      } catch (RuntimeException var11) {
+         return;
       } finally {
          if (var4) {
             var3.resetReaderIndex();
@@ -70,6 +66,7 @@ public class LegacyQueryHandler extends ChannelInboundHandlerAdapter {
          }
 
       }
+
    }
 
    private static boolean readCustomPayloadPacket(ByteBuf var0) {

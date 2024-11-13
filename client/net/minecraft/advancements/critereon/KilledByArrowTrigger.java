@@ -33,23 +33,17 @@ public class KilledByArrowTrigger extends SimpleCriterionTrigger<TriggerInstance
    public void trigger(ServerPlayer var1, Collection<Entity> var2, @Nullable ItemStack var3) {
       ArrayList var4 = Lists.newArrayList();
       HashSet var5 = Sets.newHashSet();
-      Iterator var6 = var2.iterator();
 
-      while(var6.hasNext()) {
-         Entity var7 = (Entity)var6.next();
+      for(Entity var7 : var2) {
          var5.add(var7.getType());
          var4.add(EntityPredicate.createContext(var1, var7));
       }
 
-      this.trigger(var1, (var3x) -> {
-         return var3x.matches(var4, var5.size(), var3);
-      });
+      this.trigger(var1, (var3x) -> var3x.matches(var4, var5.size(), var3));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, List<ContextAwarePredicate> victims, MinMaxBounds.Ints uniqueEntityTypes, Optional<ItemPredicate> firedFromWeapon) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.listOf().optionalFieldOf("victims", List.of()).forGetter(TriggerInstance::victims), MinMaxBounds.Ints.CODEC.optionalFieldOf("unique_entity_types", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::uniqueEntityTypes), ItemPredicate.CODEC.optionalFieldOf("fired_from_weapon").forGetter(TriggerInstance::firedFromWeapon)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.listOf().optionalFieldOf("victims", List.of()).forGetter(TriggerInstance::victims), MinMaxBounds.Ints.CODEC.optionalFieldOf("unique_entity_types", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::uniqueEntityTypes), ItemPredicate.CODEC.optionalFieldOf("fired_from_weapon").forGetter(TriggerInstance::firedFromWeapon)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, List<ContextAwarePredicate> var2, MinMaxBounds.Ints var3, Optional<ItemPredicate> var4) {
          super();
@@ -68,15 +62,11 @@ public class KilledByArrowTrigger extends SimpleCriterionTrigger<TriggerInstance
       }
 
       public boolean matches(Collection<LootContext> var1, int var2, @Nullable ItemStack var3) {
-         if (this.firedFromWeapon.isPresent() && (var3 == null || !((ItemPredicate)this.firedFromWeapon.get()).test(var3))) {
-            return false;
-         } else {
+         if (!this.firedFromWeapon.isPresent() || var3 != null && ((ItemPredicate)this.firedFromWeapon.get()).test(var3)) {
             if (!this.victims.isEmpty()) {
                ArrayList var4 = Lists.newArrayList(var1);
-               Iterator var5 = this.victims.iterator();
 
-               while(var5.hasNext()) {
-                  ContextAwarePredicate var6 = (ContextAwarePredicate)var5.next();
+               for(ContextAwarePredicate var6 : this.victims) {
                   boolean var7 = false;
                   Iterator var8 = var4.iterator();
 
@@ -96,28 +86,14 @@ public class KilledByArrowTrigger extends SimpleCriterionTrigger<TriggerInstance
             }
 
             return this.uniqueEntityTypes.matches(var2);
+         } else {
+            return false;
          }
       }
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
          var1.validateEntities(this.victims, ".victims");
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public List<ContextAwarePredicate> victims() {
-         return this.victims;
-      }
-
-      public MinMaxBounds.Ints uniqueEntityTypes() {
-         return this.uniqueEntityTypes;
-      }
-
-      public Optional<ItemPredicate> firedFromWeapon() {
-         return this.firedFromWeapon;
       }
    }
 }

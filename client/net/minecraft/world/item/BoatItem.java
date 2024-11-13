@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
@@ -37,13 +36,11 @@ public class BoatItem extends Item {
       } else {
          Vec3 var6 = var2.getViewVector(1.0F);
          double var7 = 5.0;
-         List var9 = var1.getEntities((Entity)var2, var2.getBoundingBox().expandTowards(var6.scale(5.0)).inflate(1.0), EntitySelector.CAN_BE_PICKED);
+         List var9 = var1.getEntities(var2, var2.getBoundingBox().expandTowards(var6.scale(5.0)).inflate(1.0), EntitySelector.CAN_BE_PICKED);
          if (!var9.isEmpty()) {
             Vec3 var10 = var2.getEyePosition();
-            Iterator var11 = var9.iterator();
 
-            while(var11.hasNext()) {
-               Entity var12 = (Entity)var11.next();
+            for(Entity var12 : var9) {
                AABB var13 = var12.getBoundingBox().inflate((double)var12.getPickRadius());
                if (var13.contains(var10)) {
                   return InteractionResult.PASS;
@@ -78,7 +75,7 @@ public class BoatItem extends Item {
 
    @Nullable
    private AbstractBoat getBoat(Level var1, HitResult var2, ItemStack var3, Player var4) {
-      AbstractBoat var5 = (AbstractBoat)this.entityType.create(var1, EntitySpawnReason.SPAWN_ITEM_USE);
+      AbstractBoat var5 = this.entityType.create(var1, EntitySpawnReason.SPAWN_ITEM_USE);
       if (var5 != null) {
          Vec3 var6 = var2.getLocation();
          var5.setInitialPos(var6.x, var6.y, var6.z);

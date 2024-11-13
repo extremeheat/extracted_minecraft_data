@@ -21,16 +21,8 @@ public class HorseBodyArmorItemFix extends NamedEntityWriteReadFix {
          Dynamic var3 = (Dynamic)var2.get();
          Dynamic var4 = var1.remove(this.previousBodyArmorTag);
          if (this.clearArmorItems) {
-            var4 = var4.update("ArmorItems", (var0) -> {
-               return var0.createList(Streams.mapWithIndex(var0.asStream(), (var0x, var1) -> {
-                  return var1 == 2L ? var0x.emptyMap() : var0x;
-               }));
-            });
-            var4 = var4.update("ArmorDropChances", (var0) -> {
-               return var0.createList(Streams.mapWithIndex(var0.asStream(), (var0x, var1) -> {
-                  return var1 == 2L ? var0x.createFloat(0.085F) : var0x;
-               }));
-            });
+            var4 = var4.update("ArmorItems", (var0) -> var0.createList(Streams.mapWithIndex(var0.asStream(), (var0x, var1) -> var1 == 2L ? var0x.emptyMap() : var0x)));
+            var4 = var4.update("ArmorDropChances", (var0) -> var0.createList(Streams.mapWithIndex(var0.asStream(), (var0x, var1) -> var1 == 2L ? var0x.createFloat(0.085F) : var0x)));
          }
 
          var4 = var4.set("body_armor_item", var3);

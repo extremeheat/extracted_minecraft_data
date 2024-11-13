@@ -39,9 +39,7 @@ public class LoomBlock extends HorizontalDirectionalBlock {
    }
 
    protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
-      return new SimpleMenuProvider((var2x, var3x, var4) -> {
-         return new LoomMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3));
-      }, CONTAINER_TITLE);
+      return new SimpleMenuProvider((var2x, var3x, var4) -> new LoomMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), CONTAINER_TITLE);
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {

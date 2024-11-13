@@ -12,19 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 
 public class NoiseThresholdProvider extends NoiseBasedStateProvider {
-   public static final MapCodec<NoiseThresholdProvider> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return noiseCodec(var0).and(var0.group(Codec.floatRange(-1.0F, 1.0F).fieldOf("threshold").forGetter((var0x) -> {
-         return var0x.threshold;
-      }), Codec.floatRange(0.0F, 1.0F).fieldOf("high_chance").forGetter((var0x) -> {
-         return var0x.highChance;
-      }), BlockState.CODEC.fieldOf("default_state").forGetter((var0x) -> {
-         return var0x.defaultState;
-      }), ExtraCodecs.nonEmptyList(BlockState.CODEC.listOf()).fieldOf("low_states").forGetter((var0x) -> {
-         return var0x.lowStates;
-      }), ExtraCodecs.nonEmptyList(BlockState.CODEC.listOf()).fieldOf("high_states").forGetter((var0x) -> {
-         return var0x.highStates;
-      }))).apply(var0, NoiseThresholdProvider::new);
-   });
+   public static final MapCodec<NoiseThresholdProvider> CODEC = RecordCodecBuilder.mapCodec((var0) -> noiseCodec(var0).and(var0.group(Codec.floatRange(-1.0F, 1.0F).fieldOf("threshold").forGetter((var0x) -> var0x.threshold), Codec.floatRange(0.0F, 1.0F).fieldOf("high_chance").forGetter((var0x) -> var0x.highChance), BlockState.CODEC.fieldOf("default_state").forGetter((var0x) -> var0x.defaultState), ExtraCodecs.nonEmptyList(BlockState.CODEC.listOf()).fieldOf("low_states").forGetter((var0x) -> var0x.lowStates), ExtraCodecs.nonEmptyList(BlockState.CODEC.listOf()).fieldOf("high_states").forGetter((var0x) -> var0x.highStates))).apply(var0, NoiseThresholdProvider::new));
    private final float threshold;
    private final float highChance;
    private final BlockState defaultState;

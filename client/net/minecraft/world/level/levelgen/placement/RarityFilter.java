@@ -27,8 +27,6 @@ public class RarityFilter extends PlacementFilter {
    }
 
    static {
-      CODEC = ExtraCodecs.POSITIVE_INT.fieldOf("chance").xmap(RarityFilter::new, (var0) -> {
-         return var0.chance;
-      });
+      CODEC = ExtraCodecs.POSITIVE_INT.fieldOf("chance").xmap(RarityFilter::new, (var0) -> var0.chance);
    }
 }

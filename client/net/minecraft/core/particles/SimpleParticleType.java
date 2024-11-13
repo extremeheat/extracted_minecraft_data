@@ -6,7 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 
 public class SimpleParticleType extends ParticleType<SimpleParticleType> implements ParticleOptions {
    private final MapCodec<SimpleParticleType> codec = MapCodec.unit(this::getType);
-   private final StreamCodec<RegistryFriendlyByteBuf, SimpleParticleType> streamCodec = StreamCodec.unit(this);
+   private final StreamCodec<RegistryFriendlyByteBuf, SimpleParticleType> streamCodec = StreamCodec.<RegistryFriendlyByteBuf, SimpleParticleType>unit(this);
 
    protected SimpleParticleType(boolean var1) {
       super(var1);

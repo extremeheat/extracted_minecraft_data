@@ -30,9 +30,9 @@ public class MobSpawnerEntityIdentifiersFix extends DataFix {
             var1 = var1.remove("EntityId");
          }
 
-         Optional var4 = var1.get("SpawnPotentials").asStreamOpt().result();
-         if (var4.isPresent()) {
-            var1 = var1.set("SpawnPotentials", var1.createList(((Stream)var4.get()).map((var0) -> {
+         Optional var6 = var1.get("SpawnPotentials").asStreamOpt().result();
+         if (var6.isPresent()) {
+            var1 = var1.set("SpawnPotentials", var1.createList(((Stream)var6.get()).map((var0) -> {
                Optional var1 = var0.get("Type").asString().result();
                if (var1.isPresent()) {
                   Dynamic var2 = ((Dynamic)DataFixUtils.orElse(var0.get("Properties").result(), var0.emptyMap())).set("id", var0.createString((String)var1.get()));

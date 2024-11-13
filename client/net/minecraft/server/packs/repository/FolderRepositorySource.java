@@ -8,7 +8,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -72,11 +71,7 @@ public class FolderRepositorySource implements RepositorySource {
       DirectoryStream var4 = Files.newDirectoryStream(var0);
 
       try {
-         Iterator var5 = var4.iterator();
-
-         while(var5.hasNext()) {
-            Path var6 = (Path)var5.next();
-
+         for(Path var6 : var4) {
             try {
                ArrayList var7 = new ArrayList();
                Pack.ResourcesSupplier var8 = (Pack.ResourcesSupplier)var3.detectPackResources(var6, var7);

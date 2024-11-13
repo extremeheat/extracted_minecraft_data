@@ -4,17 +4,11 @@ import com.google.gson.JsonPrimitive;
 import net.minecraft.resources.ResourceLocation;
 
 public class VariantProperties {
-   public static final VariantProperty<Rotation> X_ROT = new VariantProperty("x", (var0) -> {
-      return new JsonPrimitive(var0.value);
-   });
-   public static final VariantProperty<Rotation> Y_ROT = new VariantProperty("y", (var0) -> {
-      return new JsonPrimitive(var0.value);
-   });
-   public static final VariantProperty<ResourceLocation> MODEL = new VariantProperty("model", (var0) -> {
-      return new JsonPrimitive(var0.toString());
-   });
-   public static final VariantProperty<Boolean> UV_LOCK = new VariantProperty("uvlock", JsonPrimitive::new);
-   public static final VariantProperty<Integer> WEIGHT = new VariantProperty("weight", JsonPrimitive::new);
+   public static final VariantProperty<Rotation> X_ROT = new VariantProperty<Rotation>("x", (var0) -> new JsonPrimitive(var0.value));
+   public static final VariantProperty<Rotation> Y_ROT = new VariantProperty<Rotation>("y", (var0) -> new JsonPrimitive(var0.value));
+   public static final VariantProperty<ResourceLocation> MODEL = new VariantProperty<ResourceLocation>("model", (var0) -> new JsonPrimitive(var0.toString()));
+   public static final VariantProperty<Boolean> UV_LOCK = new VariantProperty<Boolean>("uvlock", JsonPrimitive::new);
+   public static final VariantProperty<Integer> WEIGHT = new VariantProperty<Integer>("weight", JsonPrimitive::new);
 
    public VariantProperties() {
       super();

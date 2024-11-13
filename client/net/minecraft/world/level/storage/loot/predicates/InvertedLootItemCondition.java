@@ -8,9 +8,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 
 public record InvertedLootItemCondition(LootItemCondition term) implements LootItemCondition {
-   public static final MapCodec<InvertedLootItemCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(LootItemCondition.DIRECT_CODEC.fieldOf("term").forGetter(InvertedLootItemCondition::term)).apply(var0, InvertedLootItemCondition::new);
-   });
+   public static final MapCodec<InvertedLootItemCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LootItemCondition.DIRECT_CODEC.fieldOf("term").forGetter(InvertedLootItemCondition::term)).apply(var0, InvertedLootItemCondition::new));
 
    public InvertedLootItemCondition(LootItemCondition var1) {
       super();
@@ -36,13 +34,7 @@ public record InvertedLootItemCondition(LootItemCondition term) implements LootI
 
    public static LootItemCondition.Builder invert(LootItemCondition.Builder var0) {
       InvertedLootItemCondition var1 = new InvertedLootItemCondition(var0.build());
-      return () -> {
-         return var1;
-      };
-   }
-
-   public LootItemCondition term() {
-      return this.term;
+      return () -> var1;
    }
 
    // $FF: synthetic method

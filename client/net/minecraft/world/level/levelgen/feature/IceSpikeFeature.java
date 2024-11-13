@@ -32,11 +32,9 @@ public class IceSpikeFeature extends Feature<NoneFeatureConfiguration> {
             var2 = var2.above(10 + var3.nextInt(30));
          }
 
-         int var7;
-         int var9;
-         for(var7 = 0; var7 < var5; ++var7) {
+         for(int var7 = 0; var7 < var5; ++var7) {
             float var8 = (1.0F - (float)var7 / (float)var5) * (float)var6;
-            var9 = Mth.ceil(var8);
+            int var9 = Mth.ceil(var8);
 
             for(int var10 = -var9; var10 <= var9; ++var10) {
                float var11 = (float)Mth.abs(var10) - 0.25F;
@@ -60,33 +58,33 @@ public class IceSpikeFeature extends Feature<NoneFeatureConfiguration> {
             }
          }
 
-         var7 = var6 - 1;
-         if (var7 < 0) {
-            var7 = 0;
-         } else if (var7 > 1) {
-            var7 = 1;
+         int var16 = var6 - 1;
+         if (var16 < 0) {
+            var16 = 0;
+         } else if (var16 > 1) {
+            var16 = 1;
          }
 
-         for(int var15 = -var7; var15 <= var7; ++var15) {
-            for(var9 = -var7; var9 <= var7; ++var9) {
-               BlockPos var16 = var2.offset(var15, -1, var9);
-               int var17 = 50;
-               if (Math.abs(var15) == 1 && Math.abs(var9) == 1) {
-                  var17 = var3.nextInt(5);
+         for(int var17 = -var16; var17 <= var16; ++var17) {
+            for(int var18 = -var16; var18 <= var16; ++var18) {
+               BlockPos var19 = var2.offset(var17, -1, var18);
+               int var20 = 50;
+               if (Math.abs(var17) == 1 && Math.abs(var18) == 1) {
+                  var20 = var3.nextInt(5);
                }
 
-               while(var16.getY() > 50) {
-                  BlockState var18 = var4.getBlockState(var16);
-                  if (!var18.isAir() && !isDirt(var18) && !var18.is(Blocks.SNOW_BLOCK) && !var18.is(Blocks.ICE) && !var18.is(Blocks.PACKED_ICE)) {
+               while(var19.getY() > 50) {
+                  BlockState var21 = var4.getBlockState(var19);
+                  if (!var21.isAir() && !isDirt(var21) && !var21.is(Blocks.SNOW_BLOCK) && !var21.is(Blocks.ICE) && !var21.is(Blocks.PACKED_ICE)) {
                      break;
                   }
 
-                  this.setBlock(var4, var16, Blocks.PACKED_ICE.defaultBlockState());
-                  var16 = var16.below();
-                  --var17;
-                  if (var17 <= 0) {
-                     var16 = var16.below(var3.nextInt(5) + 1);
-                     var17 = var3.nextInt(5);
+                  this.setBlock(var4, var19, Blocks.PACKED_ICE.defaultBlockState());
+                  var19 = var19.below();
+                  --var20;
+                  if (var20 <= 0) {
+                     var19 = var19.below(var3.nextInt(5) + 1);
+                     var20 = var3.nextInt(5);
                   }
                }
             }

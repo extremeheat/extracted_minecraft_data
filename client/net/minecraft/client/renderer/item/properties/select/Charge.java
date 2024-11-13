@@ -37,6 +37,6 @@ public record Charge() implements SelectItemModelProperty<CrossbowItem.ChargeTyp
    }
 
    static {
-      TYPE = SelectItemModelProperty.Type.create(MapCodec.unit(new Charge()), CrossbowItem.ChargeType.CODEC);
+      TYPE = SelectItemModelProperty.Type.<Charge, CrossbowItem.ChargeType>create(MapCodec.unit(new Charge()), CrossbowItem.ChargeType.CODEC);
    }
 }

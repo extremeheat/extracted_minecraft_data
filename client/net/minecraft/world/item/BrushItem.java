@@ -158,17 +158,5 @@ public class BrushItem extends Item {
 
          return var10000;
       }
-
-      public double xd() {
-         return this.xd;
-      }
-
-      public double yd() {
-         return this.yd;
-      }
-
-      public double zd() {
-         return this.zd;
-      }
    }
 }

@@ -29,6 +29,52 @@ public interface Condition extends Supplier<JsonElement> {
       return new CompositeCondition(Condition.Operation.OR, Arrays.asList(var0));
    }
 
+   public static enum Operation {
+      AND("AND"),
+      OR("OR");
+
+      final String id;
+
+      private Operation(final String var3) {
+         this.id = var3;
+      }
+
+      // $FF: synthetic method
+      private static Operation[] $values() {
+         return new Operation[]{AND, OR};
+      }
+   }
+
+   public static class CompositeCondition implements Condition {
+      private final Operation operation;
+      private final List<Condition> subconditions;
+
+      CompositeCondition(Operation var1, List<Condition> var2) {
+         super();
+         this.operation = var1;
+         this.subconditions = var2;
+      }
+
+      public void validate(StateDefinition<?, ?> var1) {
+         this.subconditions.forEach((var1x) -> var1x.validate(var1));
+      }
+
+      public JsonElement get() {
+         JsonArray var1 = new JsonArray();
+         Stream var10000 = this.subconditions.stream().map(Supplier::get);
+         Objects.requireNonNull(var1);
+         var10000.forEach(var1::add);
+         JsonObject var2 = new JsonObject();
+         var2.add(this.operation.id, var1);
+         return var2;
+      }
+
+      // $FF: synthetic method
+      public Object get() {
+         return this.get();
+      }
+   }
+
    public static class TerminalCondition implements Condition {
       private final Map<Property<?>, String> terms = Maps.newHashMap();
 
@@ -78,16 +124,12 @@ public interface Condition extends Supplier<JsonElement> {
 
       public JsonElement get() {
          JsonObject var1 = new JsonObject();
-         this.terms.forEach((var1x, var2) -> {
-            var1.addProperty(var1x.getName(), var2);
-         });
+         this.terms.forEach((var1x, var2) -> var1.addProperty(var1x.getName(), var2));
          return var1;
       }
 
       public void validate(StateDefinition<?, ?> var1) {
-         List var2 = (List)this.terms.keySet().stream().filter((var1x) -> {
-            return var1.getProperty(var1x.getName()) != var1x;
-         }).collect(Collectors.toList());
+         List var2 = (List)this.terms.keySet().stream().filter((var1x) -> var1.getProperty(var1x.getName()) != var1x).collect(Collectors.toList());
          if (!var2.isEmpty()) {
             String var10002 = String.valueOf(var2);
             throw new IllegalStateException("Properties " + var10002 + " are missing from " + String.valueOf(var1));
@@ -97,54 +139,6 @@ public interface Condition extends Supplier<JsonElement> {
       // $FF: synthetic method
       public Object get() {
          return this.get();
-      }
-   }
-
-   public static class CompositeCondition implements Condition {
-      private final Operation operation;
-      private final List<Condition> subconditions;
-
-      CompositeCondition(Operation var1, List<Condition> var2) {
-         super();
-         this.operation = var1;
-         this.subconditions = var2;
-      }
-
-      public void validate(StateDefinition<?, ?> var1) {
-         this.subconditions.forEach((var1x) -> {
-            var1x.validate(var1);
-         });
-      }
-
-      public JsonElement get() {
-         JsonArray var1 = new JsonArray();
-         Stream var10000 = this.subconditions.stream().map(Supplier::get);
-         Objects.requireNonNull(var1);
-         var10000.forEach(var1::add);
-         JsonObject var2 = new JsonObject();
-         var2.add(this.operation.id, var1);
-         return var2;
-      }
-
-      // $FF: synthetic method
-      public Object get() {
-         return this.get();
-      }
-   }
-
-   public static enum Operation {
-      AND("AND"),
-      OR("OR");
-
-      final String id;
-
-      private Operation(final String var3) {
-         this.id = var3;
-      }
-
-      // $FF: synthetic method
-      private static Operation[] $values() {
-         return new Operation[]{AND, OR};
       }
    }
 }

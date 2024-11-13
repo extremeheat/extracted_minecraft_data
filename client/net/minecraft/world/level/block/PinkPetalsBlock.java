@@ -85,7 +85,7 @@ public class PinkPetalsBlock extends BushBlock implements BonemealableBlock {
    static {
       FACING = BlockStateProperties.HORIZONTAL_FACING;
       AMOUNT = BlockStateProperties.FLOWER_AMOUNT;
-      SHAPE_BY_PROPERTIES = Util.memoize((var0, var1) -> {
+      SHAPE_BY_PROPERTIES = Util.memoize((BiFunction)((var0, var1) -> {
          VoxelShape[] var2 = new VoxelShape[]{Block.box(8.0, 0.0, 8.0, 16.0, 3.0, 16.0), Block.box(8.0, 0.0, 0.0, 16.0, 3.0, 8.0), Block.box(0.0, 0.0, 0.0, 8.0, 3.0, 8.0), Block.box(0.0, 0.0, 8.0, 8.0, 3.0, 16.0)};
          VoxelShape var3 = Shapes.empty();
 
@@ -95,6 +95,6 @@ public class PinkPetalsBlock extends BushBlock implements BonemealableBlock {
          }
 
          return var3.singleEncompassing();
-      });
+      }));
    }
 }

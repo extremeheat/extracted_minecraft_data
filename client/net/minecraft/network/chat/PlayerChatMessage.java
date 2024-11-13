@@ -15,15 +15,7 @@ import net.minecraft.util.SignatureUpdater;
 import net.minecraft.util.SignatureValidator;
 
 public record PlayerChatMessage(SignedMessageLink link, @Nullable MessageSignature signature, SignedMessageBody signedBody, @Nullable Component unsignedContent, FilterMask filterMask) {
-   public static final MapCodec<PlayerChatMessage> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(SignedMessageLink.CODEC.fieldOf("link").forGetter(PlayerChatMessage::link), MessageSignature.CODEC.optionalFieldOf("signature").forGetter((var0x) -> {
-         return Optional.ofNullable(var0x.signature);
-      }), SignedMessageBody.MAP_CODEC.forGetter(PlayerChatMessage::signedBody), ComponentSerialization.CODEC.optionalFieldOf("unsigned_content").forGetter((var0x) -> {
-         return Optional.ofNullable(var0x.unsignedContent);
-      }), FilterMask.CODEC.optionalFieldOf("filter_mask", FilterMask.PASS_THROUGH).forGetter(PlayerChatMessage::filterMask)).apply(var0, (var0x, var1, var2, var3, var4) -> {
-         return new PlayerChatMessage(var0x, (MessageSignature)var1.orElse((Object)null), var2, (Component)var3.orElse((Object)null), var4);
-      });
-   });
+   public static final MapCodec<PlayerChatMessage> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SignedMessageLink.CODEC.fieldOf("link").forGetter(PlayerChatMessage::link), MessageSignature.CODEC.optionalFieldOf("signature").forGetter((var0x) -> Optional.ofNullable(var0x.signature)), SignedMessageBody.MAP_CODEC.forGetter(PlayerChatMessage::signedBody), ComponentSerialization.CODEC.optionalFieldOf("unsigned_content").forGetter((var0x) -> Optional.ofNullable(var0x.unsignedContent)), FilterMask.CODEC.optionalFieldOf("filter_mask", FilterMask.PASS_THROUGH).forGetter(PlayerChatMessage::filterMask)).apply(var0, (var0x, var1, var2, var3, var4) -> new PlayerChatMessage(var0x, (MessageSignature)var1.orElse((Object)null), var2, (Component)var3.orElse((Object)null), var4)));
    private static final UUID SYSTEM_SENDER;
    public static final Duration MESSAGE_EXPIRES_AFTER_SERVER;
    public static final Duration MESSAGE_EXPIRES_AFTER_CLIENT;
@@ -77,9 +69,7 @@ public record PlayerChatMessage(SignedMessageLink link, @Nullable MessageSignatu
    }
 
    public boolean verify(SignatureValidator var1) {
-      return this.signature != null && this.signature.verify(var1, (var1x) -> {
-         updateSignature(var1x, this.link, this.signedBody);
-      });
+      return this.signature != null && this.signature.verify(var1, (var1x) -> updateSignature(var1x, this.link, this.signedBody));
    }
 
    public String signedContent() {
@@ -87,9 +77,7 @@ public record PlayerChatMessage(SignedMessageLink link, @Nullable MessageSignatu
    }
 
    public Component decoratedContent() {
-      return (Component)Objects.requireNonNullElseGet(this.unsignedContent, () -> {
-         return Component.literal(this.signedContent());
-      });
+      return (Component)Objects.requireNonNullElseGet(this.unsignedContent, () -> Component.literal(this.signedContent()));
    }
 
    public Instant timeStamp() {
@@ -126,28 +114,6 @@ public record PlayerChatMessage(SignedMessageLink link, @Nullable MessageSignatu
 
    public boolean isFullyFiltered() {
       return this.filterMask.isFullyFiltered();
-   }
-
-   public SignedMessageLink link() {
-      return this.link;
-   }
-
-   @Nullable
-   public MessageSignature signature() {
-      return this.signature;
-   }
-
-   public SignedMessageBody signedBody() {
-      return this.signedBody;
-   }
-
-   @Nullable
-   public Component unsignedContent() {
-      return this.unsignedContent;
-   }
-
-   public FilterMask filterMask() {
-      return this.filterMask;
    }
 
    static {

@@ -17,9 +17,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.world.entity.Entity;
 
 public record SelectorContents(SelectorPattern selector, Optional<Component> separator) implements ComponentContents {
-   public static final MapCodec<SelectorContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(SelectorPattern.CODEC.fieldOf("selector").forGetter(SelectorContents::selector), ComponentSerialization.CODEC.optionalFieldOf("separator").forGetter(SelectorContents::separator)).apply(var0, SelectorContents::new);
-   });
+   public static final MapCodec<SelectorContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SelectorPattern.CODEC.fieldOf("selector").forGetter(SelectorContents::selector), ComponentSerialization.CODEC.optionalFieldOf("separator").forGetter(SelectorContents::separator)).apply(var0, SelectorContents::new));
    public static final ComponentContents.Type<SelectorContents> TYPE;
 
    public SelectorContents(SelectorPattern var1, Optional<Component> var2) {
@@ -37,7 +35,7 @@ public record SelectorContents(SelectorPattern selector, Optional<Component> sep
          return Component.empty();
       } else {
          Optional var4 = ComponentUtils.updateForEntity(var1, this.separator, var2, var3);
-         return ComponentUtils.formatList(this.selector.resolved().findEntities(var1), (Optional)var4, Entity::getDisplayName);
+         return ComponentUtils.formatList(this.selector.resolved().findEntities(var1), var4, Entity::getDisplayName);
       }
    }
 
@@ -53,15 +51,7 @@ public record SelectorContents(SelectorPattern selector, Optional<Component> sep
       return "pattern{" + String.valueOf(this.selector) + "}";
    }
 
-   public SelectorPattern selector() {
-      return this.selector;
-   }
-
-   public Optional<Component> separator() {
-      return this.separator;
-   }
-
    static {
-      TYPE = new ComponentContents.Type(CODEC, "selector");
+      TYPE = new ComponentContents.Type<SelectorContents>(CODEC, "selector");
    }
 }

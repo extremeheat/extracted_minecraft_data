@@ -16,7 +16,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -53,9 +52,7 @@ public class PlayerSafetyServiceTextFilter extends ServerTextFilter {
       int var12 = GsonHelper.getAsInt(var1, "maxConcurrentRequests", 7);
       JsonArray var13 = GsonHelper.getAsJsonArray(var1, "fullyFilteredEvents");
       HashSet var14 = new HashSet();
-      var13.forEach((var1x) -> {
-         var14.add(GsonHelper.convertToString(var1x, "filteredEvent"));
-      });
+      var13.forEach((var1x) -> var14.add(GsonHelper.convertToString(var1x, "filteredEvent")));
       int var15 = GsonHelper.getAsInt(var1, "connectionReadTimeoutMs", 2000);
 
       URL var16;
@@ -135,22 +132,16 @@ public class PlayerSafetyServiceTextFilter extends ServerTextFilter {
          if (!var5) {
             return FilteredText.passThrough(var1);
          } else {
-            JsonArray var6 = GsonHelper.getAsJsonArray(var4, "events", new JsonArray());
-            Iterator var7 = var6.iterator();
-
-            String var10;
-            do {
-               if (!var7.hasNext()) {
-                  JsonArray var11 = GsonHelper.getAsJsonArray(var4, "redactedTextIndex", new JsonArray());
-                  return new FilteredText(var1, this.parseMask(var1, var11, var2));
-               }
-
-               JsonElement var8 = (JsonElement)var7.next();
+            for(JsonElement var8 : GsonHelper.getAsJsonArray(var4, "events", new JsonArray())) {
                JsonObject var9 = var8.getAsJsonObject();
-               var10 = GsonHelper.getAsString(var9, "id", "");
-            } while(!this.fullyFilteredEvents.contains(var10));
+               String var10 = GsonHelper.getAsString(var9, "id", "");
+               if (this.fullyFilteredEvents.contains(var10)) {
+                  return FilteredText.fullyFiltered(var1);
+               }
+            }
 
-            return FilteredText.fullyFiltered(var1);
+            JsonArray var11 = GsonHelper.getAsJsonArray(var4, "redactedTextIndex", new JsonArray());
+            return new FilteredText(var1, this.parseMask(var1, var11, var2));
          }
       }
    }

@@ -14,33 +14,6 @@ public record PlayerSkin(ResourceLocation texture, @Nullable String textureUrl, 
       this.secure = var6;
    }
 
-   public ResourceLocation texture() {
-      return this.texture;
-   }
-
-   @Nullable
-   public String textureUrl() {
-      return this.textureUrl;
-   }
-
-   @Nullable
-   public ResourceLocation capeTexture() {
-      return this.capeTexture;
-   }
-
-   @Nullable
-   public ResourceLocation elytraTexture() {
-      return this.elytraTexture;
-   }
-
-   public Model model() {
-      return this.model;
-   }
-
-   public boolean secure() {
-      return this.secure;
-   }
-
    public static enum Model {
       SLIM("slim"),
       WIDE("default");

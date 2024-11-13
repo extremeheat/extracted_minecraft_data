@@ -27,15 +27,13 @@ public class AddNewChoices extends DataFix {
       if (var1.getKeyType() != var2.getKeyType()) {
          throw new IllegalStateException("Could not inject: key type is not the same");
       } else {
-         return this.fixTypeEverywhere(this.name, var1, var2, (var2x) -> {
-            return (var2xx) -> {
+         return this.fixTypeEverywhere(this.name, var1, var2, (var2x) -> (var2xx) -> {
                if (!var2.hasType(var2xx.getFirst())) {
                   throw new IllegalArgumentException(String.format(Locale.ROOT, "%s: Unknown type %s in '%s'", this.name, var2xx.getFirst(), this.type.typeName()));
                } else {
                   return var2xx;
                }
-            };
-         });
+            });
       }
    }
 }

@@ -73,9 +73,7 @@ public class JoinMultiplayerScreen extends Screen {
       }
 
       this.addRenderableWidget(this.serverSelectionList);
-      this.selectButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectServer.select"), (var1x) -> {
-         this.joinSelectedServer();
-      }).width(100).build());
+      this.selectButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectServer.select"), (var1x) -> this.joinSelectedServer()).width(100).build());
       Button var1 = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectServer.direct"), (var1x) -> {
          this.editingServer = new ServerData(I18n.get("selectServer.defaultName"), "", ServerData.Type.OTHER);
          this.minecraft.setScreen(new DirectJoinServerScreen(this, this::directJoinCallback, this.editingServer));
@@ -108,12 +106,8 @@ public class JoinMultiplayerScreen extends Screen {
          }
 
       }).width(74).build());
-      Button var3 = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectServer.refresh"), (var1x) -> {
-         this.refreshServerList();
-      }).width(74).build());
-      Button var4 = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
-         this.onClose();
-      }).width(74).build());
+      Button var3 = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectServer.refresh"), (var1x) -> this.refreshServerList()).width(74).build());
+      Button var4 = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).width(74).build());
       LinearLayout var5 = LinearLayout.vertical();
       EqualSpacingLayout var6 = (EqualSpacingLayout)var5.addChild(new EqualSpacingLayout(308, 20, EqualSpacingLayout.Orientation.HORIZONTAL));
       var6.addChild(this.selectButton);

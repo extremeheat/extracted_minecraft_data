@@ -58,7 +58,7 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       var1.popPose();
    }
 
-   private static class ShulkerBoxModel extends Model {
+   static class ShulkerBoxModel extends Model {
       private final ModelPart lid;
 
       public ShulkerBoxModel(ModelPart var1) {

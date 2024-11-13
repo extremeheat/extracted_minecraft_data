@@ -9,11 +9,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ResourceLocationPattern;
 
 public class SourceFilter implements SpriteSource {
-   public static final MapCodec<SourceFilter> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceLocationPattern.CODEC.fieldOf("pattern").forGetter((var0x) -> {
-         return var0x.filter;
-      })).apply(var0, SourceFilter::new);
-   });
+   public static final MapCodec<SourceFilter> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocationPattern.CODEC.fieldOf("pattern").forGetter((var0x) -> var0x.filter)).apply(var0, SourceFilter::new));
    private final ResourceLocationPattern filter;
 
    public SourceFilter(ResourceLocationPattern var1) {

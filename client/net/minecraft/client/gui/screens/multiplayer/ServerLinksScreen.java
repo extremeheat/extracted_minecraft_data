@@ -35,9 +35,7 @@ public class ServerLinksScreen extends Screen {
    protected void init() {
       this.layout.addTitleHeader(this.title, this.font);
       this.list = (LinkList)this.layout.addToContents(new LinkList(this.minecraft, this.width, this));
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1) -> {
-         this.onClose();
-      }).width(200).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).width(200).build());
       this.layout.visitWidgets((var1) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
       });
@@ -56,12 +54,10 @@ public class ServerLinksScreen extends Screen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   private static class LinkList extends ContainerObjectSelectionList<LinkListEntry> {
+   static class LinkList extends ContainerObjectSelectionList<LinkListEntry> {
       public LinkList(Minecraft var1, int var2, ServerLinksScreen var3) {
          super(var1, var2, var3.layout.getContentHeight(), var3.layout.getHeaderHeight(), 25);
-         var3.links.entries().forEach((var2x) -> {
-            this.addEntry(new LinkListEntry(var3, var2x));
-         });
+         var3.links.entries().forEach((var2x) -> this.addEntry(new LinkListEntry(var3, var2x)));
       }
 
       public int getRowWidth() {
@@ -71,13 +67,11 @@ public class ServerLinksScreen extends Screen {
       public void updateSize(int var1, HeaderAndFooterLayout var2) {
          super.updateSize(var1, var2);
          int var3 = var1 / 2 - 155;
-         this.children().forEach((var1x) -> {
-            var1x.button.setX(var3);
-         });
+         this.children().forEach((var1x) -> var1x.button.setX(var3));
       }
    }
 
-   private static class LinkListEntry extends ContainerObjectSelectionList.Entry<LinkListEntry> {
+   static class LinkListEntry extends ContainerObjectSelectionList.Entry<LinkListEntry> {
       final AbstractWidget button;
 
       LinkListEntry(Screen var1, ServerLinks.Entry var2) {

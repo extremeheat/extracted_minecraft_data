@@ -48,12 +48,8 @@ public class Orientation {
       }
 
       this.neighbors = List.of(this.front.getOpposite(), this.front, this.side, this.side.getOpposite(), this.up.getOpposite(), this.up);
-      this.horizontalNeighbors = this.neighbors.stream().filter((var1x) -> {
-         return var1x.getAxis() != this.up.getAxis();
-      }).toList();
-      this.verticalNeighbors = this.neighbors.stream().filter((var1x) -> {
-         return var1x.getAxis() == this.up.getAxis();
-      }).toList();
+      this.horizontalNeighbors = this.neighbors.stream().filter((var1x) -> var1x.getAxis() != this.up.getAxis()).toList();
+      this.verticalNeighbors = this.neighbors.stream().filter((var1x) -> var1x.getAxis() == this.up.getAxis()).toList();
    }
 
    public static Orientation of(Direction var0, Direction var1, SideBias var2) {
@@ -127,7 +123,7 @@ public class Orientation {
    }
 
    public static Orientation random(RandomSource var0) {
-      return (Orientation)Util.getRandom((Object[])ORIENTATIONS, var0);
+      return (Orientation)Util.getRandom(ORIENTATIONS, var0);
    }
 
    private static Orientation generateContext(Orientation var0, Orientation[] var1) {
@@ -135,49 +131,35 @@ public class Orientation {
          return var1[var0.getIndex()];
       } else {
          var1[var0.getIndex()] = var0;
-         SideBias[] var2 = Orientation.SideBias.values();
-         int var3 = var2.length;
 
-         int var4;
-         for(var4 = 0; var4 < var3; ++var4) {
-            SideBias var5 = var2[var4];
+         for(SideBias var5 : Orientation.SideBias.values()) {
             var0.withSideBias.put(var5, generateContext(new Orientation(var0.up, var0.front, var5), var1));
          }
 
-         Direction[] var7 = Direction.values();
-         var3 = var7.length;
-
-         Direction var6;
-         Direction var8;
-         for(var4 = 0; var4 < var3; ++var4) {
-            var8 = var7[var4];
-            var6 = var0.up;
-            if (var8 == var0.up) {
+         for(Direction var13 : Direction.values()) {
+            Direction var6 = var0.up;
+            if (var13 == var0.up) {
                var6 = var0.front.getOpposite();
             }
 
-            if (var8 == var0.up.getOpposite()) {
+            if (var13 == var0.up.getOpposite()) {
                var6 = var0.front;
             }
 
-            var0.withFront.put(var8, generateContext(new Orientation(var6, var8, var0.sideBias), var1));
+            var0.withFront.put(var13, generateContext(new Orientation(var6, var13, var0.sideBias), var1));
          }
 
-         var7 = Direction.values();
-         var3 = var7.length;
-
-         for(var4 = 0; var4 < var3; ++var4) {
-            var8 = var7[var4];
-            var6 = var0.front;
-            if (var8 == var0.front) {
-               var6 = var0.up.getOpposite();
+         for(Direction var14 : Direction.values()) {
+            Direction var15 = var0.front;
+            if (var14 == var0.front) {
+               var15 = var0.up.getOpposite();
             }
 
-            if (var8 == var0.front.getOpposite()) {
-               var6 = var0.up;
+            if (var14 == var0.front.getOpposite()) {
+               var15 = var0.up;
             }
 
-            var0.withUp.put(var8, generateContext(new Orientation(var8, var6, var0.sideBias), var1));
+            var0.withUp.put(var14, generateContext(new Orientation(var14, var15, var0.sideBias), var1));
          }
 
          return var0;

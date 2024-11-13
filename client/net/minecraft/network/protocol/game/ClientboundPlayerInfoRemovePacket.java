@@ -9,7 +9,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ClientboundPlayerInfoRemovePacket(List<UUID> profileIds) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerInfoRemovePacket> STREAM_CODEC = Packet.codec(ClientboundPlayerInfoRemovePacket::write, ClientboundPlayerInfoRemovePacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerInfoRemovePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundPlayerInfoRemovePacket>codec(ClientboundPlayerInfoRemovePacket::write, ClientboundPlayerInfoRemovePacket::new);
 
    private ClientboundPlayerInfoRemovePacket(FriendlyByteBuf var1) {
       this(var1.readList(UUIDUtil.STREAM_CODEC));
@@ -30,9 +30,5 @@ public record ClientboundPlayerInfoRemovePacket(List<UUID> profileIds) implement
 
    public void handle(ClientGamePacketListener var1) {
       var1.handlePlayerInfoRemove(this);
-   }
-
-   public List<UUID> profileIds() {
-      return this.profileIds;
    }
 }

@@ -10,9 +10,7 @@ import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 @FunctionalInterface
 public interface PoolAliasLookup {
-   PoolAliasLookup EMPTY = (var0) -> {
-      return var0;
-   };
+   PoolAliasLookup EMPTY = (var0) -> var0;
 
    ResourceKey<StructureTemplatePool> lookup(ResourceKey<StructureTemplatePool> var1);
 
@@ -27,11 +25,7 @@ public interface PoolAliasLookup {
             var2x.forEachResolved(var4, var5::put);
          });
          ImmutableMap var6 = var5.build();
-         return (var1x) -> {
-            return (ResourceKey)Objects.requireNonNull((ResourceKey)var6.getOrDefault(var1x, var1x), () -> {
-               return "alias " + String.valueOf(var1x.location()) + " was mapped to null value";
-            });
-         };
+         return (var1x) -> (ResourceKey)Objects.requireNonNull((ResourceKey)var6.getOrDefault(var1x, var1x), () -> "alias " + String.valueOf(var1x.location()) + " was mapped to null value");
       }
    }
 }

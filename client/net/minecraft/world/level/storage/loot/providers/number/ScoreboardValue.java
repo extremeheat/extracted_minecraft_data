@@ -16,9 +16,7 @@ import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 
 public record ScoreboardValue(ScoreboardNameProvider target, String score, float scale) implements NumberProvider {
-   public static final MapCodec<ScoreboardValue> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ScoreboardNameProviders.CODEC.fieldOf("target").forGetter(ScoreboardValue::target), Codec.STRING.fieldOf("score").forGetter(ScoreboardValue::score), Codec.FLOAT.fieldOf("scale").orElse(1.0F).forGetter(ScoreboardValue::scale)).apply(var0, ScoreboardValue::new);
-   });
+   public static final MapCodec<ScoreboardValue> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ScoreboardNameProviders.CODEC.fieldOf("target").forGetter(ScoreboardValue::target), Codec.STRING.fieldOf("score").forGetter(ScoreboardValue::score), Codec.FLOAT.fieldOf("scale").orElse(1.0F).forGetter(ScoreboardValue::scale)).apply(var0, ScoreboardValue::new));
 
    public ScoreboardValue(ScoreboardNameProvider var1, String var2, float var3) {
       super();
@@ -57,17 +55,5 @@ public record ScoreboardValue(ScoreboardNameProvider target, String score, float
             return var5 == null ? 0.0F : (float)var5.value() * this.scale;
          }
       }
-   }
-
-   public ScoreboardNameProvider target() {
-      return this.target;
-   }
-
-   public String score() {
-      return this.score;
-   }
-
-   public float scale() {
-      return this.scale;
    }
 }

@@ -24,9 +24,7 @@ public class Percentiles {
    }
 
    private static Map<Integer, Double> sorted(Map<Integer, Double> var0) {
-      Int2DoubleSortedMap var1 = (Int2DoubleSortedMap)Util.make(new Int2DoubleRBTreeMap(Comparator.reverseOrder()), (var1x) -> {
-         var1x.putAll(var0);
-      });
+      Int2DoubleSortedMap var1 = (Int2DoubleSortedMap)Util.make(new Int2DoubleRBTreeMap(Comparator.reverseOrder()), (var1x) -> var1x.putAll(var0));
       return Int2DoubleSortedMaps.unmodifiable(var1);
    }
 }

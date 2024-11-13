@@ -67,11 +67,7 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
       }
 
       if (var1.contains("patterns")) {
-         BannerPatternLayers.CODEC.parse(var2.createSerializationContext(NbtOps.INSTANCE), var1.get("patterns")).resultOrPartial((var0) -> {
-            LOGGER.error("Failed to parse banner patterns: '{}'", var0);
-         }).ifPresent((var1x) -> {
-            this.patterns = var1x;
-         });
+         BannerPatternLayers.CODEC.parse(var2.createSerializationContext(NbtOps.INSTANCE), var1.get("patterns")).resultOrPartial((var0) -> LOGGER.error("Failed to parse banner patterns: '{}'", var0)).ifPresent((var1x) -> this.patterns = var1x);
       }
 
    }

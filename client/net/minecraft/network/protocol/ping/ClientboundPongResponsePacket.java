@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ClientboundPongResponsePacket(long time) implements Packet<ClientPongPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundPongResponsePacket> STREAM_CODEC = Packet.codec(ClientboundPongResponsePacket::write, ClientboundPongResponsePacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundPongResponsePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundPongResponsePacket>codec(ClientboundPongResponsePacket::write, ClientboundPongResponsePacket::new);
 
    private ClientboundPongResponsePacket(FriendlyByteBuf var1) {
       this(var1.readLong());
@@ -27,9 +27,5 @@ public record ClientboundPongResponsePacket(long time) implements Packet<ClientP
 
    public void handle(ClientPongPacketListener var1) {
       var1.handlePongResponse(this);
-   }
-
-   public long time() {
-      return this.time;
    }
 }

@@ -28,18 +28,6 @@ public record KnownPack(String namespace, String id, String version) {
       return this.namespace + ":" + this.id + ":" + this.version;
    }
 
-   public String namespace() {
-      return this.namespace;
-   }
-
-   public String id() {
-      return this.id;
-   }
-
-   public String version() {
-      return this.version;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8, KnownPack::namespace, ByteBufCodecs.STRING_UTF8, KnownPack::id, ByteBufCodecs.STRING_UTF8, KnownPack::version, KnownPack::new);
    }

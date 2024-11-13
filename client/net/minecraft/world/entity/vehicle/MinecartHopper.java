@@ -1,7 +1,5 @@
 package net.minecraft.world.entity.vehicle;
 
-import java.util.Iterator;
-import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntitySelector;
@@ -96,19 +94,13 @@ public class MinecartHopper extends AbstractMinecartContainer implements Hopper 
       if (HopperBlockEntity.suckInItems(this.level(), this)) {
          return true;
       } else {
-         List var1 = this.level().getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.25, 0.0, 0.25), EntitySelector.ENTITY_STILL_ALIVE);
-         Iterator var2 = var1.iterator();
-
-         ItemEntity var3;
-         do {
-            if (!var2.hasNext()) {
-               return false;
+         for(ItemEntity var3 : this.level().getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.25, 0.0, 0.25), EntitySelector.ENTITY_STILL_ALIVE)) {
+            if (HopperBlockEntity.addItem(this, var3)) {
+               return true;
             }
+         }
 
-            var3 = (ItemEntity)var2.next();
-         } while(!HopperBlockEntity.addItem(this, var3));
-
-         return true;
+         return false;
       }
    }
 

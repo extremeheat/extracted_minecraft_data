@@ -36,7 +36,7 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
    final Set<UUID> knownUuids = Sets.newHashSet();
    final LevelCallback<T> callbacks;
    private final EntityPersistentStorage<T> permanentStorage;
-   private final EntityLookup<T> visibleEntityStorage = new EntityLookup();
+   private final EntityLookup<T> visibleEntityStorage = new EntityLookup<T>();
    final EntitySectionStorage<T> sectionStorage;
    private final LevelEntityGetter<T> entityGetter;
    private final Long2ObjectMap<Visibility> chunkVisibility = new Long2ObjectOpenHashMap();
@@ -46,12 +46,12 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
 
    public PersistentEntitySectionManager(Class<T> var1, LevelCallback<T> var2, EntityPersistentStorage<T> var3) {
       super();
-      this.sectionStorage = new EntitySectionStorage(var1, this.chunkVisibility);
+      this.sectionStorage = new EntitySectionStorage<T>(var1, this.chunkVisibility);
       this.chunkVisibility.defaultReturnValue(Visibility.HIDDEN);
       this.chunkLoadStatuses.defaultReturnValue(PersistentEntitySectionManager.ChunkLoadStatus.FRESH);
       this.callbacks = var2;
       this.permanentStorage = var3;
-      this.entityGetter = new LevelEntityGetterAdapter(this.visibleEntityStorage, this.sectionStorage);
+      this.entityGetter = new LevelEntityGetterAdapter<T>(this.visibleEntityStorage, this.sectionStorage);
    }
 
    void removeSectionIfEmpty(long var1, EntitySection<T> var3) {
@@ -104,15 +104,11 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
    }
 
    public void addLegacyChunkEntities(Stream<T> var1) {
-      var1.forEach((var1x) -> {
-         this.addEntity(var1x, true);
-      });
+      var1.forEach((var1x) -> this.addEntity(var1x, true));
    }
 
    public void addWorldGenChunkEntities(Stream<T> var1) {
-      var1.forEach((var1x) -> {
-         this.addEntity(var1x, false);
-      });
+      var1.forEach((var1x) -> this.addEntity(var1x, false));
    }
 
    void startTicking(T var1) {
@@ -156,25 +152,17 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
          boolean var6 = var3.isTicking();
          boolean var7 = var2.isTicking();
          if (var6 && !var7) {
-            var2x.getEntities().filter((var0) -> {
-               return !var0.isAlwaysTicking();
-            }).forEach(this::stopTicking);
+            var2x.getEntities().filter((var0) -> !var0.isAlwaysTicking()).forEach(this::stopTicking);
          }
 
          if (var4 && !var5) {
-            var2x.getEntities().filter((var0) -> {
-               return !var0.isAlwaysTicking();
-            }).forEach(this::stopTracking);
+            var2x.getEntities().filter((var0) -> !var0.isAlwaysTicking()).forEach(this::stopTracking);
          } else if (!var4 && var5) {
-            var2x.getEntities().filter((var0) -> {
-               return !var0.isAlwaysTicking();
-            }).forEach(this::startTracking);
+            var2x.getEntities().filter((var0) -> !var0.isAlwaysTicking()).forEach(this::startTracking);
          }
 
          if (!var6 && var7) {
-            var2x.getEntities().filter((var0) -> {
-               return !var0.isAlwaysTicking();
-            }).forEach(this::startTicking);
+            var2x.getEntities().filter((var0) -> !var0.isAlwaysTicking()).forEach(this::startTicking);
          }
 
       });
@@ -193,9 +181,7 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
       if (var4 == PersistentEntitySectionManager.ChunkLoadStatus.PENDING) {
          return false;
       } else {
-         List var5 = (List)this.sectionStorage.getExistingSectionsInChunk(var1).flatMap((var0) -> {
-            return var0.getEntities().filter(EntityAccess::shouldBeSaved);
-         }).collect(Collectors.toList());
+         List var5 = (List)this.sectionStorage.getExistingSectionsInChunk(var1).flatMap((var0) -> var0.getEntities().filter(EntityAccess::shouldBeSaved)).collect(Collectors.toList());
          if (var5.isEmpty()) {
             if (var4 == PersistentEntitySectionManager.ChunkLoadStatus.LOADED) {
                this.permanentStorage.storeEntities(new ChunkEntities(new ChunkPos(var1), ImmutableList.of()));
@@ -226,9 +212,7 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
    }
 
    private boolean processChunkUnload(long var1) {
-      boolean var3 = this.storeChunkSections(var1, (var1x) -> {
-         var1x.getPassengersAndSelf().forEach(this::unloadEntity);
-      });
+      boolean var3 = this.storeChunkSections(var1, (var1x) -> var1x.getPassengersAndSelf().forEach(this::unloadEntity));
       if (!var3) {
          return false;
       } else {
@@ -243,17 +227,13 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
    }
 
    private void processUnloads() {
-      this.chunksToUnload.removeIf((var1) -> {
-         return this.chunkVisibility.get(var1) != Visibility.HIDDEN ? true : this.processChunkUnload(var1);
-      });
+      this.chunksToUnload.removeIf((var1) -> this.chunkVisibility.get(var1) != Visibility.HIDDEN ? true : this.processChunkUnload(var1));
    }
 
    private void processPendingLoads() {
       ChunkEntities var1;
       while((var1 = (ChunkEntities)this.loadingInbox.poll()) != null) {
-         var1.getEntities().forEach((var1x) -> {
-            this.addEntity(var1x, true);
-         });
+         var1.getEntities().forEach((var1x) -> this.addEntity(var1x, true));
          this.chunkLoadStatuses.put(var1.getPos().toLong(), PersistentEntitySectionManager.ChunkLoadStatus.LOADED);
       }
 
@@ -353,7 +333,7 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
    @VisibleForDebug
    public String gatherStats() {
       int var10000 = this.knownUuids.size();
-      return "" + var10000 + "," + this.visibleEntityStorage.count() + "," + this.sectionStorage.count() + "," + this.chunkLoadStatuses.size() + "," + this.chunkVisibility.size() + "," + this.loadingInbox.size() + "," + this.chunksToUnload.size();
+      return var10000 + "," + this.visibleEntityStorage.count() + "," + this.sectionStorage.count() + "," + this.chunkLoadStatuses.size() + "," + this.chunkVisibility.size() + "," + this.loadingInbox.size() + "," + this.chunksToUnload.size();
    }
 
    @VisibleForDebug
@@ -382,7 +362,7 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
 
       Callback(final T var2, final long var3, final EntitySection<T> var5) {
          super();
-         this.entity = var2;
+         this.entity = (T)var2;
          this.currentSectionKey = var3;
          this.currentSection = var5;
       }

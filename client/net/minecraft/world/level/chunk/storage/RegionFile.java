@@ -310,9 +310,7 @@ public class RegionFile implements AutoCloseable {
          this.file.write(var12, (long)(var9 * 4096));
       } else {
          var9 = this.usedSectors.allocate(var8);
-         var10 = () -> {
-            Files.deleteIfExists(this.getExternalChunkPath(var1));
-         };
+         var10 = () -> Files.deleteIfExists(this.getExternalChunkPath(var1));
          this.file.write(var2, (long)(var9 * 4096));
       }
 
@@ -357,9 +355,7 @@ public class RegionFile implements AutoCloseable {
          var4.close();
       }
 
-      return () -> {
-         Files.move(var3, var1, StandardCopyOption.REPLACE_EXISTING);
-      };
+      return () -> Files.move(var3, var1, StandardCopyOption.REPLACE_EXISTING);
    }
 
    private void writeHeader() throws IOException {
@@ -403,7 +399,7 @@ public class RegionFile implements AutoCloseable {
 
    }
 
-   private class ChunkBuffer extends ByteArrayOutputStream {
+   class ChunkBuffer extends ByteArrayOutputStream {
       private final ChunkPos pos;
 
       public ChunkBuffer(final ChunkPos var2) {

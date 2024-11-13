@@ -25,11 +25,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public class FeaturePoolElement extends StructurePoolElement {
-   public static final MapCodec<FeaturePoolElement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((var0x) -> {
-         return var0x.feature;
-      }), projectionCodec()).apply(var0, FeaturePoolElement::new);
-   });
+   public static final MapCodec<FeaturePoolElement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((var0x) -> var0x.feature), projectionCodec()).apply(var0, FeaturePoolElement::new));
    private final Holder<PlacedFeature> feature;
    private final CompoundTag defaultJigsawNBT;
 

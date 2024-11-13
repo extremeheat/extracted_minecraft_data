@@ -13,23 +13,15 @@ public class SetPlayerIdleTimeoutCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setidletimeout").requires((var0x) -> {
-         return var0x.hasPermission(3);
-      })).then(Commands.argument("minutes", IntegerArgumentType.integer(0)).executes((var0x) -> {
-         return setIdleTimeout((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "minutes"));
-      })));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setidletimeout").requires((var0x) -> var0x.hasPermission(3))).then(Commands.argument("minutes", IntegerArgumentType.integer(0)).executes((var0x) -> setIdleTimeout((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "minutes")))));
    }
 
    private static int setIdleTimeout(CommandSourceStack var0, int var1) {
       var0.getServer().setPlayerIdleTimeout(var1);
       if (var1 > 0) {
-         var0.sendSuccess(() -> {
-            return Component.translatable("commands.setidletimeout.success", var1);
-         }, true);
+         var0.sendSuccess(() -> Component.translatable("commands.setidletimeout.success", var1), true);
       } else {
-         var0.sendSuccess(() -> {
-            return Component.translatable("commands.setidletimeout.success.disabled");
-         }, true);
+         var0.sendSuccess(() -> Component.translatable("commands.setidletimeout.success.disabled"), true);
       }
 
       return var1;

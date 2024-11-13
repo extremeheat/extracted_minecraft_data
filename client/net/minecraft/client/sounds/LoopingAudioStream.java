@@ -41,17 +41,17 @@ public class LoopingAudioStream implements AudioStream {
       this.bufferedInputStream.close();
    }
 
-   @FunctionalInterface
-   public interface AudioStreamProvider {
-      AudioStream create(InputStream var1) throws IOException;
-   }
-
-   private static class NoCloseBuffer extends FilterInputStream {
+   static class NoCloseBuffer extends FilterInputStream {
       NoCloseBuffer(InputStream var1) {
          super(var1);
       }
 
       public void close() {
       }
+   }
+
+   @FunctionalInterface
+   public interface AudioStreamProvider {
+      AudioStream create(InputStream var1) throws IOException;
    }
 }

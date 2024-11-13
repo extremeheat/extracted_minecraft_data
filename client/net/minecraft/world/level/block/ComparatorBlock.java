@@ -104,9 +104,7 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
 
    @Nullable
    private ItemFrame getItemFrame(Level var1, Direction var2, BlockPos var3) {
-      List var4 = var1.getEntitiesOfClass(ItemFrame.class, new AABB((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), (double)(var3.getX() + 1), (double)(var3.getY() + 1), (double)(var3.getZ() + 1)), (var1x) -> {
-         return var1x != null && var1x.getDirection() == var2;
-      });
+      List var4 = var1.getEntitiesOfClass(ItemFrame.class, new AABB((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), (double)(var3.getX() + 1), (double)(var3.getY() + 1), (double)(var3.getZ() + 1)), (var1x) -> var1x != null && var1x.getDirection() == var2);
       return var4.size() == 1 ? (ItemFrame)var4.get(0) : null;
    }
 

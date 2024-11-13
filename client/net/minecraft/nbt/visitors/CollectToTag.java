@@ -129,9 +129,7 @@ public class CollectToTag implements StreamTagVisitor {
       } else if (var1 == CompoundTag.TYPE) {
          CompoundTag var3 = new CompoundTag();
          this.appendEntry(var3);
-         this.consumerStack.addLast((var2x) -> {
-            var3.put(this.lastId, var2x);
-         });
+         this.consumerStack.addLast((Consumer)(var2x) -> var3.put(this.lastId, var2x));
       }
 
    }
@@ -151,13 +149,9 @@ public class CollectToTag implements StreamTagVisitor {
       } else if (var1 == CompoundTag.TYPE) {
          CompoundTag var3 = new CompoundTag();
          this.rootTag = var3;
-         this.consumerStack.addLast((var2x) -> {
-            var3.put(this.lastId, var2x);
-         });
+         this.consumerStack.addLast((Consumer)(var2x) -> var3.put(this.lastId, var2x));
       } else {
-         this.consumerStack.addLast((var1x) -> {
-            this.rootTag = var1x;
-         });
+         this.consumerStack.addLast((Consumer)(var1x) -> this.rootTag = var1x);
       }
 
       return StreamTagVisitor.ValueResult.CONTINUE;

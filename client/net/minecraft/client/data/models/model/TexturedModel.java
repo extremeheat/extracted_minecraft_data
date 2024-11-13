@@ -64,9 +64,7 @@ public class TexturedModel {
    }
 
    private static Provider createDefault(Function<Block, TextureMapping> var0, ModelTemplate var1) {
-      return (var2) -> {
-         return new TexturedModel((TextureMapping)var0.apply(var2), var1);
-      };
+      return (var2) -> new TexturedModel((TextureMapping)var0.apply(var2), var1);
    }
 
    public static TexturedModel createAllSame(ResourceLocation var0) {
@@ -115,9 +113,7 @@ public class TexturedModel {
       }
 
       default Provider updateTexture(Consumer<TextureMapping> var1) {
-         return (var2) -> {
-            return this.get(var2).updateTextures(var1);
-         };
+         return (var2) -> this.get(var2).updateTextures(var1);
       }
    }
 }

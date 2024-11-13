@@ -91,6 +91,20 @@ public class ItemStackRenderState {
 
    }
 
+   public static enum FoilType {
+      NONE,
+      STANDARD,
+      SPECIAL;
+
+      private FoilType() {
+      }
+
+      // $FF: synthetic method
+      private static FoilType[] $values() {
+         return new FoilType[]{NONE, STANDARD, SPECIAL};
+      }
+   }
+
    public class LayerRenderState {
       @Nullable
       BakedModel model;
@@ -169,20 +183,6 @@ public class ItemStackRenderState {
 
       boolean usesBlockLight() {
          return this.model != null && this.model.usesBlockLight();
-      }
-   }
-
-   public static enum FoilType {
-      NONE,
-      STANDARD,
-      SPECIAL;
-
-      private FoilType() {
-      }
-
-      // $FF: synthetic method
-      private static FoilType[] $values() {
-         return new FoilType[]{NONE, STANDARD, SPECIAL};
       }
    }
 }

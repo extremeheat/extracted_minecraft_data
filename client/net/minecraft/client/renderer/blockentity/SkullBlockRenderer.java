@@ -18,7 +18,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.DefaultPlayerSkin;
-import net.minecraft.client.resources.SkinManager;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.component.ResolvableProfile;
@@ -66,9 +65,7 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
    public SkullBlockRenderer(BlockEntityRendererProvider.Context var1) {
       super();
       EntityModelSet var2 = var1.getModelSet();
-      this.modelByType = Util.memoize((var1x) -> {
-         return createModel(var2, var1x);
-      });
+      this.modelByType = Util.memoize((Function)((var1x) -> createModel(var2, var1x)));
    }
 
    public void render(SkullBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
@@ -101,12 +98,10 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
    }
 
    public static RenderType getRenderType(SkullBlock.Type var0, @Nullable ResolvableProfile var1) {
-      ResourceLocation var2 = (ResourceLocation)SKIN_BY_TYPE.get(var0);
-      if (var0 == SkullBlock.Types.PLAYER && var1 != null) {
-         SkinManager var3 = Minecraft.getInstance().getSkinManager();
-         return RenderType.entityTranslucent(var3.getInsecureSkin(var1.gameProfile()).texture());
-      } else {
-         return RenderType.entityCutoutNoCullZOffset(var2);
-      }
+      return getRenderType(var0, var1, (ResourceLocation)null);
+   }
+
+   public static RenderType getRenderType(SkullBlock.Type var0, @Nullable ResolvableProfile var1, @Nullable ResourceLocation var2) {
+      return var0 == SkullBlock.Types.PLAYER && var1 != null ? RenderType.entityTranslucent(var2 != null ? var2 : Minecraft.getInstance().getSkinManager().getInsecureSkin(var1.gameProfile()).texture()) : RenderType.entityCutoutNoCullZOffset(var2 != null ? var2 : (ResourceLocation)SKIN_BY_TYPE.get(var0));
    }
 }

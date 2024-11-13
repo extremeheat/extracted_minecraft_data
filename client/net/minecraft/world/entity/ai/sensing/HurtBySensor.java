@@ -22,10 +22,10 @@ public class HurtBySensor extends Sensor<LivingEntity> {
       Brain var3 = var2.getBrain();
       DamageSource var4 = var2.getLastDamageSource();
       if (var4 != null) {
-         var3.setMemory(MemoryModuleType.HURT_BY, (Object)var2.getLastDamageSource());
+         var3.setMemory(MemoryModuleType.HURT_BY, var2.getLastDamageSource());
          Entity var5 = var4.getEntity();
          if (var5 instanceof LivingEntity) {
-            var3.setMemory(MemoryModuleType.HURT_BY_ENTITY, (Object)((LivingEntity)var5));
+            var3.setMemory(MemoryModuleType.HURT_BY_ENTITY, (LivingEntity)var5);
          }
       } else {
          var3.eraseMemory(MemoryModuleType.HURT_BY);

@@ -11,9 +11,7 @@ public abstract class StateTestingPredicate implements BlockPredicate {
    protected final Vec3i offset;
 
    protected static <P extends StateTestingPredicate> Products.P1<RecordCodecBuilder.Mu<P>, Vec3i> stateTestingCodec(RecordCodecBuilder.Instance<P> var0) {
-      return var0.group(Vec3i.offsetCodec(16).optionalFieldOf("offset", Vec3i.ZERO).forGetter((var0x) -> {
-         return var0x.offset;
-      }));
+      return var0.group(Vec3i.offsetCodec(16).optionalFieldOf("offset", Vec3i.ZERO).forGetter((var0x) -> var0x.offset));
    }
 
    protected StateTestingPredicate(Vec3i var1) {

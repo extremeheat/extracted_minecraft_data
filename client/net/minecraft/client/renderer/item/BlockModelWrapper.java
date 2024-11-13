@@ -50,9 +50,7 @@ public class BlockModelWrapper implements ItemModel {
    }
 
    public static record Unbaked(ResourceLocation model, List<ItemTintSource> tints) implements ItemModel.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(ResourceLocation.CODEC.fieldOf("model").forGetter(Unbaked::model), ItemTintSources.CODEC.listOf().optionalFieldOf("tints", List.of()).forGetter(Unbaked::tints)).apply(var0, Unbaked::new);
-      });
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("model").forGetter(Unbaked::model), ItemTintSources.CODEC.listOf().optionalFieldOf("tints", List.of()).forGetter(Unbaked::tints)).apply(var0, Unbaked::new));
 
       public Unbaked(ResourceLocation var1, List<ItemTintSource> var2) {
          super();
@@ -71,14 +69,6 @@ public class BlockModelWrapper implements ItemModel {
 
       public MapCodec<Unbaked> type() {
          return MAP_CODEC;
-      }
-
-      public ResourceLocation model() {
-         return this.model;
-      }
-
-      public List<ItemTintSource> tints() {
-         return this.tints;
       }
    }
 }

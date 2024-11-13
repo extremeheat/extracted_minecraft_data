@@ -117,29 +117,15 @@ public class TextureUtil {
          int var8 = var4 >> var7;
          int var9 = var5 >> var7;
 
-         try {
-            NativeImage var10 = new NativeImage(var8, var9, false);
-
-            try {
-               var10.downloadTexture(var7, false);
-               if (var6 != null) {
-                  var10.applyToAllPixels(var6);
-               }
-
-               Path var11 = var0.resolve(var1 + "_" + var7 + ".png");
-               var10.writeToFile(var11);
-               LOGGER.debug("Exported png to: {}", var11.toAbsolutePath());
-            } catch (Throwable var14) {
-               try {
-                  var10.close();
-               } catch (Throwable var13) {
-                  var14.addSuppressed(var13);
-               }
-
-               throw var14;
+         try (NativeImage var10 = new NativeImage(var8, var9, false)) {
+            var10.downloadTexture(var7, false);
+            if (var6 != null) {
+               var10.applyToAllPixels(var6);
             }
 
-            var10.close();
+            Path var11 = var0.resolve(var1 + "_" + var7 + ".png");
+            var10.writeToFile(var11);
+            LOGGER.debug("Exported png to: {}", var11.toAbsolutePath());
          } catch (IOException var15) {
             LOGGER.debug("Unable to write: ", var15);
          }

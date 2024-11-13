@@ -17,15 +17,6 @@ public record ParticleRenderType(String name, @Nullable RenderType renderType) {
       this.renderType = var2;
    }
 
-   public String name() {
-      return this.name;
-   }
-
-   @Nullable
-   public RenderType renderType() {
-      return this.renderType;
-   }
-
    static {
       TERRAIN_SHEET = new ParticleRenderType("TERRAIN_SHEET", RenderType.translucentParticle(TextureAtlas.LOCATION_BLOCKS));
       PARTICLE_SHEET_OPAQUE = new ParticleRenderType("PARTICLE_SHEET_OPAQUE", RenderType.opaqueParticle(TextureAtlas.LOCATION_PARTICLES));

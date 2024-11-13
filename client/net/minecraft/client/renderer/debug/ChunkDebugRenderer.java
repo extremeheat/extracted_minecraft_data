@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.debug;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
@@ -37,7 +36,7 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          this.lastUpdateTime = var9;
          IntegratedServer var11 = this.minecraft.getSingleplayerServer();
          if (var11 != null) {
-            this.data = new ChunkData(this, var11, var3, var7);
+            this.data = new ChunkData(var11, var3, var7);
          } else {
             this.data = null;
          }
@@ -46,10 +45,8 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       if (this.data != null) {
          Map var24 = (Map)this.data.serverData.getNow((Object)null);
          double var12 = this.minecraft.gameRenderer.getMainCamera().getPosition().y * 0.85;
-         Iterator var14 = this.data.clientData.entrySet().iterator();
 
-         while(var14.hasNext()) {
-            Map.Entry var15 = (Map.Entry)var14.next();
+         for(Map.Entry var15 : this.data.clientData.entrySet()) {
             ChunkPos var16 = (ChunkPos)var15.getKey();
             String var17 = (String)var15.getValue();
             if (var24 != null) {
@@ -58,11 +55,8 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
             String[] var18 = var17.split("\n");
             int var19 = 0;
-            String[] var20 = var18;
-            int var21 = var18.length;
 
-            for(int var22 = 0; var22 < var21; ++var22) {
-               String var23 = var20[var22];
+            for(String var23 : var18) {
                DebugRenderer.renderFloatingText(var1, var2, var23, (double)SectionPos.sectionToBlockCoord(var16.x, 8), var12 + (double)var19, (double)SectionPos.sectionToBlockCoord(var16.z, 8), -1, 0.15F, true, 0.0F, true);
                var19 -= 2;
             }
@@ -71,13 +65,13 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
    }
 
-   private final class ChunkData {
+   final class ChunkData {
       final Map<ChunkPos, String> clientData;
       final CompletableFuture<Map<ChunkPos, String>> serverData;
 
-      ChunkData(final ChunkDebugRenderer var1, final IntegratedServer var2, final double var3, final double var5) {
+      ChunkData(final IntegratedServer var2, final double var3, final double var5) {
          super();
-         ClientLevel var7 = var1.minecraft.level;
+         ClientLevel var7 = ChunkDebugRenderer.this.minecraft.level;
          ResourceKey var8 = var7.dimension();
          int var9 = SectionPos.posToSectionCoord(var3);
          int var10 = SectionPos.posToSectionCoord(var5);

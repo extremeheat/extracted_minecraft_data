@@ -71,42 +71,6 @@ public record TeleportTransition(ServerLevel newLevel, Vec3 position, Vec3 delta
       return new TeleportTransition(this.newLevel(), this.position(), this.deltaMovement(), this.yRot(), this.xRot(), this.missingRespawnBlock(), true, this.relatives(), this.postTeleportTransition());
    }
 
-   public ServerLevel newLevel() {
-      return this.newLevel;
-   }
-
-   public Vec3 position() {
-      return this.position;
-   }
-
-   public Vec3 deltaMovement() {
-      return this.deltaMovement;
-   }
-
-   public float yRot() {
-      return this.yRot;
-   }
-
-   public float xRot() {
-      return this.xRot;
-   }
-
-   public boolean missingRespawnBlock() {
-      return this.missingRespawnBlock;
-   }
-
-   public boolean asPassenger() {
-      return this.asPassenger;
-   }
-
-   public Set<Relative> relatives() {
-      return this.relatives;
-   }
-
-   public PostTeleportTransition postTeleportTransition() {
-      return this.postTeleportTransition;
-   }
-
    @FunctionalInterface
    public interface PostTeleportTransition {
       void onTransition(Entity var1);

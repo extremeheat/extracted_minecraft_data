@@ -9,30 +9,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 
 public class MerchantOffer {
-   public static final Codec<MerchantOffer> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ItemCost.CODEC.fieldOf("buy").forGetter((var0x) -> {
-         return var0x.baseCostA;
-      }), ItemCost.CODEC.lenientOptionalFieldOf("buyB").forGetter((var0x) -> {
-         return var0x.costB;
-      }), ItemStack.CODEC.fieldOf("sell").forGetter((var0x) -> {
-         return var0x.result;
-      }), Codec.INT.lenientOptionalFieldOf("uses", 0).forGetter((var0x) -> {
-         return var0x.uses;
-      }), Codec.INT.lenientOptionalFieldOf("maxUses", 4).forGetter((var0x) -> {
-         return var0x.maxUses;
-      }), Codec.BOOL.lenientOptionalFieldOf("rewardExp", true).forGetter((var0x) -> {
-         return var0x.rewardExp;
-      }), Codec.INT.lenientOptionalFieldOf("specialPrice", 0).forGetter((var0x) -> {
-         return var0x.specialPriceDiff;
-      }), Codec.INT.lenientOptionalFieldOf("demand", 0).forGetter((var0x) -> {
-         return var0x.demand;
-      }), Codec.FLOAT.lenientOptionalFieldOf("priceMultiplier", 0.0F).forGetter((var0x) -> {
-         return var0x.priceMultiplier;
-      }), Codec.INT.lenientOptionalFieldOf("xp", 1).forGetter((var0x) -> {
-         return var0x.xp;
-      })).apply(var0, MerchantOffer::new);
-   });
-   public static final StreamCodec<RegistryFriendlyByteBuf, MerchantOffer> STREAM_CODEC = StreamCodec.of(MerchantOffer::writeToStream, MerchantOffer::createFromStream);
+   public static final Codec<MerchantOffer> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ItemCost.CODEC.fieldOf("buy").forGetter((var0x) -> var0x.baseCostA), ItemCost.CODEC.lenientOptionalFieldOf("buyB").forGetter((var0x) -> var0x.costB), ItemStack.CODEC.fieldOf("sell").forGetter((var0x) -> var0x.result), Codec.INT.lenientOptionalFieldOf("uses", 0).forGetter((var0x) -> var0x.uses), Codec.INT.lenientOptionalFieldOf("maxUses", 4).forGetter((var0x) -> var0x.maxUses), Codec.BOOL.lenientOptionalFieldOf("rewardExp", true).forGetter((var0x) -> var0x.rewardExp), Codec.INT.lenientOptionalFieldOf("specialPrice", 0).forGetter((var0x) -> var0x.specialPriceDiff), Codec.INT.lenientOptionalFieldOf("demand", 0).forGetter((var0x) -> var0x.demand), Codec.FLOAT.lenientOptionalFieldOf("priceMultiplier", 0.0F).forGetter((var0x) -> var0x.priceMultiplier), Codec.INT.lenientOptionalFieldOf("xp", 1).forGetter((var0x) -> var0x.xp)).apply(var0, MerchantOffer::new));
+   public static final StreamCodec<RegistryFriendlyByteBuf, MerchantOffer> STREAM_CODEC = StreamCodec.<RegistryFriendlyByteBuf, MerchantOffer>of(MerchantOffer::writeToStream, MerchantOffer::createFromStream);
    private final ItemCost baseCostA;
    private final Optional<ItemCost> costB;
    private final ItemStack result;

@@ -145,7 +145,7 @@ public class JigsawBlockEntity extends BlockEntity {
       ROLLABLE("rollable"),
       ALIGNED("aligned");
 
-      public static final StringRepresentable.EnumCodec<JointType> CODEC = StringRepresentable.fromEnum(JointType::values);
+      public static final StringRepresentable.EnumCodec<JointType> CODEC = StringRepresentable.<JointType>fromEnum(JointType::values);
       private final String name;
 
       private JointType(final String var3) {

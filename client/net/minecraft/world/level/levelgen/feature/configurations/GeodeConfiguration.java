@@ -10,35 +10,7 @@ import net.minecraft.world.level.levelgen.GeodeLayerSettings;
 
 public class GeodeConfiguration implements FeatureConfiguration {
    public static final Codec<Double> CHANCE_RANGE = Codec.doubleRange(0.0, 1.0);
-   public static final Codec<GeodeConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(GeodeBlockSettings.CODEC.fieldOf("blocks").forGetter((var0x) -> {
-         return var0x.geodeBlockSettings;
-      }), GeodeLayerSettings.CODEC.fieldOf("layers").forGetter((var0x) -> {
-         return var0x.geodeLayerSettings;
-      }), GeodeCrackSettings.CODEC.fieldOf("crack").forGetter((var0x) -> {
-         return var0x.geodeCrackSettings;
-      }), CHANCE_RANGE.fieldOf("use_potential_placements_chance").orElse(0.35).forGetter((var0x) -> {
-         return var0x.usePotentialPlacementsChance;
-      }), CHANCE_RANGE.fieldOf("use_alternate_layer0_chance").orElse(0.0).forGetter((var0x) -> {
-         return var0x.useAlternateLayer0Chance;
-      }), Codec.BOOL.fieldOf("placements_require_layer0_alternate").orElse(true).forGetter((var0x) -> {
-         return var0x.placementsRequireLayer0Alternate;
-      }), IntProvider.codec(1, 20).fieldOf("outer_wall_distance").orElse(UniformInt.of(4, 5)).forGetter((var0x) -> {
-         return var0x.outerWallDistance;
-      }), IntProvider.codec(1, 20).fieldOf("distribution_points").orElse(UniformInt.of(3, 4)).forGetter((var0x) -> {
-         return var0x.distributionPoints;
-      }), IntProvider.codec(0, 10).fieldOf("point_offset").orElse(UniformInt.of(1, 2)).forGetter((var0x) -> {
-         return var0x.pointOffset;
-      }), Codec.INT.fieldOf("min_gen_offset").orElse(-16).forGetter((var0x) -> {
-         return var0x.minGenOffset;
-      }), Codec.INT.fieldOf("max_gen_offset").orElse(16).forGetter((var0x) -> {
-         return var0x.maxGenOffset;
-      }), CHANCE_RANGE.fieldOf("noise_multiplier").orElse(0.05).forGetter((var0x) -> {
-         return var0x.noiseMultiplier;
-      }), Codec.INT.fieldOf("invalid_blocks_threshold").forGetter((var0x) -> {
-         return var0x.invalidBlocksThreshold;
-      })).apply(var0, GeodeConfiguration::new);
-   });
+   public static final Codec<GeodeConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(GeodeBlockSettings.CODEC.fieldOf("blocks").forGetter((var0x) -> var0x.geodeBlockSettings), GeodeLayerSettings.CODEC.fieldOf("layers").forGetter((var0x) -> var0x.geodeLayerSettings), GeodeCrackSettings.CODEC.fieldOf("crack").forGetter((var0x) -> var0x.geodeCrackSettings), CHANCE_RANGE.fieldOf("use_potential_placements_chance").orElse(0.35).forGetter((var0x) -> var0x.usePotentialPlacementsChance), CHANCE_RANGE.fieldOf("use_alternate_layer0_chance").orElse(0.0).forGetter((var0x) -> var0x.useAlternateLayer0Chance), Codec.BOOL.fieldOf("placements_require_layer0_alternate").orElse(true).forGetter((var0x) -> var0x.placementsRequireLayer0Alternate), IntProvider.codec(1, 20).fieldOf("outer_wall_distance").orElse(UniformInt.of(4, 5)).forGetter((var0x) -> var0x.outerWallDistance), IntProvider.codec(1, 20).fieldOf("distribution_points").orElse(UniformInt.of(3, 4)).forGetter((var0x) -> var0x.distributionPoints), IntProvider.codec(0, 10).fieldOf("point_offset").orElse(UniformInt.of(1, 2)).forGetter((var0x) -> var0x.pointOffset), Codec.INT.fieldOf("min_gen_offset").orElse(-16).forGetter((var0x) -> var0x.minGenOffset), Codec.INT.fieldOf("max_gen_offset").orElse(16).forGetter((var0x) -> var0x.maxGenOffset), CHANCE_RANGE.fieldOf("noise_multiplier").orElse(0.05).forGetter((var0x) -> var0x.noiseMultiplier), Codec.INT.fieldOf("invalid_blocks_threshold").forGetter((var0x) -> var0x.invalidBlocksThreshold)).apply(var0, GeodeConfiguration::new));
    public final GeodeBlockSettings geodeBlockSettings;
    public final GeodeLayerSettings geodeLayerSettings;
    public final GeodeCrackSettings geodeCrackSettings;

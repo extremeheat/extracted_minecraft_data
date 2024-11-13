@@ -45,79 +45,10 @@ public record JfrStatsResult(Instant recordingStarted, Instant recordingEnded, D
 
    public List<Pair<ChunkStatus, TimedStatSummary<ChunkGenStat>>> chunkGenSummary() {
       Map var1 = (Map)this.chunkGenStats.stream().collect(Collectors.groupingBy(ChunkGenStat::status));
-      return var1.entrySet().stream().map((var0) -> {
-         return Pair.of((ChunkStatus)var0.getKey(), TimedStatSummary.summary((List)var0.getValue()));
-      }).sorted(Comparator.comparing((var0) -> {
-         return ((TimedStatSummary)var0.getSecond()).totalDuration();
-      }).reversed()).toList();
+      return var1.entrySet().stream().map((var0) -> Pair.of((ChunkStatus)var0.getKey(), TimedStatSummary.summary((List)var0.getValue()))).sorted(Comparator.comparing((var0) -> ((TimedStatSummary)var0.getSecond()).totalDuration()).reversed()).toList();
    }
 
    public String asJson() {
       return (new JfrResultJsonSerializer()).format(this);
-   }
-
-   public Instant recordingStarted() {
-      return this.recordingStarted;
-   }
-
-   public Instant recordingEnded() {
-      return this.recordingEnded;
-   }
-
-   public Duration recordingDuration() {
-      return this.recordingDuration;
-   }
-
-   @Nullable
-   public Duration worldCreationDuration() {
-      return this.worldCreationDuration;
-   }
-
-   public List<TickTimeStat> tickTimes() {
-      return this.tickTimes;
-   }
-
-   public List<CpuLoadStat> cpuLoadStats() {
-      return this.cpuLoadStats;
-   }
-
-   public GcHeapStat.Summary heapSummary() {
-      return this.heapSummary;
-   }
-
-   public ThreadAllocationStat.Summary threadAllocationSummary() {
-      return this.threadAllocationSummary;
-   }
-
-   public IoSummary<PacketIdentification> receivedPacketsSummary() {
-      return this.receivedPacketsSummary;
-   }
-
-   public IoSummary<PacketIdentification> sentPacketsSummary() {
-      return this.sentPacketsSummary;
-   }
-
-   public IoSummary<ChunkIdentification> writtenChunks() {
-      return this.writtenChunks;
-   }
-
-   public IoSummary<ChunkIdentification> readChunks() {
-      return this.readChunks;
-   }
-
-   public FileIOStat.Summary fileWrites() {
-      return this.fileWrites;
-   }
-
-   public FileIOStat.Summary fileReads() {
-      return this.fileReads;
-   }
-
-   public List<ChunkGenStat> chunkGenStats() {
-      return this.chunkGenStats;
-   }
-
-   public List<StructureGenStat> structureGenStats() {
-      return this.structureGenStats;
    }
 }

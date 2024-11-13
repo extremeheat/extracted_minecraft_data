@@ -3,7 +3,6 @@ package net.minecraft.world.item.component;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
@@ -17,9 +16,7 @@ import net.minecraft.world.item.TooltipFlag;
 
 public record Fireworks(int flightDuration, List<FireworkExplosion> explosions) implements TooltipProvider {
    public static final int MAX_EXPLOSIONS = 256;
-   public static final Codec<Fireworks> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ExtraCodecs.UNSIGNED_BYTE.optionalFieldOf("flight_duration", 0).forGetter(Fireworks::flightDuration), FireworkExplosion.CODEC.sizeLimitedListOf(256).optionalFieldOf("explosions", List.of()).forGetter(Fireworks::explosions)).apply(var0, Fireworks::new);
-   });
+   public static final Codec<Fireworks> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.UNSIGNED_BYTE.optionalFieldOf("flight_duration", 0).forGetter(Fireworks::flightDuration), FireworkExplosion.CODEC.sizeLimitedListOf(256).optionalFieldOf("explosions", List.of()).forGetter(Fireworks::explosions)).apply(var0, Fireworks::new));
    public static final StreamCodec<ByteBuf, Fireworks> STREAM_CODEC;
 
    public Fireworks(int var1, List<FireworkExplosion> var2) {
@@ -37,24 +34,11 @@ public record Fireworks(int flightDuration, List<FireworkExplosion> explosions) 
          var2.accept(Component.translatable("item.minecraft.firework_rocket.flight").append(CommonComponents.SPACE).append(String.valueOf(this.flightDuration)).withStyle(ChatFormatting.GRAY));
       }
 
-      Iterator var4 = this.explosions.iterator();
-
-      while(var4.hasNext()) {
-         FireworkExplosion var5 = (FireworkExplosion)var4.next();
+      for(FireworkExplosion var5 : this.explosions) {
          var5.addShapeNameTooltip(var2);
-         var5.addAdditionalTooltip((var1x) -> {
-            var2.accept(Component.literal("  ").append(var1x));
-         });
+         var5.addAdditionalTooltip((var1x) -> var2.accept(Component.literal("  ").append(var1x)));
       }
 
-   }
-
-   public int flightDuration() {
-      return this.flightDuration;
-   }
-
-   public List<FireworkExplosion> explosions() {
-      return this.explosions;
    }
 
    static {

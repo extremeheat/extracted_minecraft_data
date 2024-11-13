@@ -36,9 +36,7 @@ public interface Merchant {
    }
 
    default void openTradingScreen(Player var1, Component var2, int var3) {
-      OptionalInt var4 = var1.openMenu(new SimpleMenuProvider((var1x, var2x, var3x) -> {
-         return new MerchantMenu(var1x, var2x, this);
-      }, var2));
+      OptionalInt var4 = var1.openMenu(new SimpleMenuProvider((var1x, var2x, var3x) -> new MerchantMenu(var1x, var2x, this), var2));
       if (var4.isPresent()) {
          MerchantOffers var5 = this.getOffers();
          if (!var5.isEmpty()) {

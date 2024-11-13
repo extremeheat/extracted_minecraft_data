@@ -24,14 +24,6 @@ public record ServerboundPickItemFromBlockPacket(BlockPos pos, boolean includeDa
       var1.handlePickItemFromBlock(this);
    }
 
-   public BlockPos pos() {
-      return this.pos;
-   }
-
-   public boolean includeData() {
-      return this.includeData;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(BlockPos.STREAM_CODEC, ServerboundPickItemFromBlockPacket::pos, ByteBufCodecs.BOOL, ServerboundPickItemFromBlockPacket::includeData, ServerboundPickItemFromBlockPacket::new);
    }

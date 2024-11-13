@@ -10,7 +10,6 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.LongSummaryStatistics;
 import java.util.Objects;
@@ -31,14 +30,10 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 public class LevelTicks<T> implements LevelTickAccess<T> {
-   private static final Comparator<LevelChunkTicks<?>> CONTAINER_DRAIN_ORDER = (var0, var1) -> {
-      return ScheduledTick.INTRA_TICK_DRAIN_ORDER.compare(var0.peek(), var1.peek());
-   };
+   private static final Comparator<LevelChunkTicks<?>> CONTAINER_DRAIN_ORDER = (var0, var1) -> ScheduledTick.INTRA_TICK_DRAIN_ORDER.compare(var0.peek(), var1.peek());
    private final LongPredicate tickCheck;
    private final Long2ObjectMap<LevelChunkTicks<T>> allContainers = new Long2ObjectOpenHashMap();
-   private final Long2LongMap nextTickForContainer = (Long2LongMap)Util.make(new Long2LongOpenHashMap(), (var0) -> {
-      var0.defaultReturnValue(9223372036854775807L);
-   });
+   private final Long2LongMap nextTickForContainer = (Long2LongMap)Util.make(new Long2LongOpenHashMap(), (var0) -> var0.defaultReturnValue(9223372036854775807L));
    private final Queue<LevelChunkTicks<T>> containersToTick;
    private final Queue<ScheduledTick<T>> toRunThisTick;
    private final List<ScheduledTick<T>> alreadyRunThisTick;
@@ -156,10 +151,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
    }
 
    private void rescheduleLeftoverContainers() {
-      Iterator var1 = this.containersToTick.iterator();
-
-      while(var1.hasNext()) {
-         LevelChunkTicks var2 = (LevelChunkTicks)var1.next();
+      for(LevelChunkTicks var2 : this.containersToTick) {
          this.updateContainerScheduling(var2.peek());
       }
 
@@ -251,9 +243,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
    }
 
    public void clearArea(BoundingBox var1) {
-      Predicate var2 = (var1x) -> {
-         return var1.isInside(var1x.pos());
-      };
+      Predicate var2 = (var1x) -> var1.isInside(var1x.pos());
       this.forContainersInArea(var1, (var2x, var4) -> {
          ScheduledTick var5 = var4.peek();
          var4.removeIf(var2);
@@ -277,9 +267,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
 
    public void copyAreaFrom(LevelTicks<T> var1, BoundingBox var2, Vec3i var3) {
       ArrayList var4 = new ArrayList();
-      Predicate var5 = (var1x) -> {
-         return var2.isInside(var1x.pos());
-      };
+      Predicate var5 = (var1x) -> var2.isInside(var1x.pos());
       Stream var10000 = var1.alreadyRunThisTick.stream().filter(var5);
       Objects.requireNonNull(var4);
       var10000.forEach(var4::add);
@@ -294,9 +282,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
       LongSummaryStatistics var6 = var4.stream().mapToLong(ScheduledTick::subTickOrder).summaryStatistics();
       long var7 = var6.getMin();
       long var9 = var6.getMax();
-      var4.forEach((var6x) -> {
-         this.schedule(new ScheduledTick(var6x.type(), var6x.pos().offset(var3), var6x.triggerTick(), var6x.priority(), var6x.subTickOrder() - var7 + var9 + 1L));
-      });
+      var4.forEach((var6x) -> this.schedule(new ScheduledTick(var6x.type(), var6x.pos().offset(var3), var6x.triggerTick(), var6x.priority(), var6x.subTickOrder() - var7 + var9 + 1L)));
    }
 
    public int count() {

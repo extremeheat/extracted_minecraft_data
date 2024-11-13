@@ -9,9 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
 public record UseCycle(float period) implements RangeSelectItemModelProperty {
-   public static final MapCodec<UseCycle> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("period", 1.0F).forGetter(UseCycle::period)).apply(var0, UseCycle::new);
-   });
+   public static final MapCodec<UseCycle> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("period", 1.0F).forGetter(UseCycle::period)).apply(var0, UseCycle::new));
 
    public UseCycle(float var1) {
       super();
@@ -24,9 +22,5 @@ public record UseCycle(float period) implements RangeSelectItemModelProperty {
 
    public MapCodec<UseCycle> type() {
       return MAP_CODEC;
-   }
-
-   public float period() {
-      return this.period;
    }
 }

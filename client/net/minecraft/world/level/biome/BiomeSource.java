@@ -7,7 +7,6 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -28,9 +27,7 @@ import net.minecraft.world.level.LevelReader;
 
 public abstract class BiomeSource implements BiomeResolver {
    public static final Codec<BiomeSource> CODEC;
-   private final Supplier<Set<Holder<Biome>>> possibleBiomes = Suppliers.memoize(() -> {
-      return (Set)this.collectPossibleBiomes().distinct().collect(ImmutableSet.toImmutableSet());
-   });
+   private final Supplier<Set<Holder<Biome>>> possibleBiomes = Suppliers.memoize(() -> (Set)this.collectPossibleBiomes().distinct().collect(ImmutableSet.toImmutableSet()));
 
    protected BiomeSource() {
       super();
@@ -83,19 +80,14 @@ public abstract class BiomeSource implements BiomeResolver {
       } else {
          int var9 = Math.floorDiv(var2, var3);
          int[] var10 = Mth.outFromOrigin(var1.getY(), var7.getMinY() + 1, var7.getMaxY() + 1, var4).toArray();
-         Iterator var11 = BlockPos.spiralAround(BlockPos.ZERO, var9, Direction.EAST, Direction.SOUTH).iterator();
 
-         while(var11.hasNext()) {
-            BlockPos.MutableBlockPos var12 = (BlockPos.MutableBlockPos)var11.next();
+         for(BlockPos.MutableBlockPos var12 : BlockPos.spiralAround(BlockPos.ZERO, var9, Direction.EAST, Direction.SOUTH)) {
             int var13 = var1.getX() + var12.getX() * var3;
             int var14 = var1.getZ() + var12.getZ() * var3;
             int var15 = QuartPos.fromBlock(var13);
             int var16 = QuartPos.fromBlock(var14);
-            int[] var17 = var10;
-            int var18 = var10.length;
 
-            for(int var19 = 0; var19 < var18; ++var19) {
-               int var20 = var17[var19];
+            for(int var20 : var10) {
                int var21 = QuartPos.fromBlock(var20);
                Holder var22 = this.getNoiseBiome(var15, var21, var16, var6);
                if (var8.contains(var22)) {

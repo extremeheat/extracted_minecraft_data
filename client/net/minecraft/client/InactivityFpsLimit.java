@@ -8,7 +8,7 @@ public enum InactivityFpsLimit implements OptionEnum, StringRepresentable {
    MINIMIZED(0, "minimized", "options.inactivityFpsLimit.minimized"),
    AFK(1, "afk", "options.inactivityFpsLimit.afk");
 
-   public static final Codec<InactivityFpsLimit> CODEC = StringRepresentable.fromEnum(InactivityFpsLimit::values);
+   public static final Codec<InactivityFpsLimit> CODEC = StringRepresentable.<InactivityFpsLimit>fromEnum(InactivityFpsLimit::values);
    private final int id;
    private final String serializedName;
    private final String key;

@@ -14,29 +14,7 @@ import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecorator;
 import net.minecraft.world.level.levelgen.feature.trunkplacers.TrunkPlacer;
 
 public class TreeConfiguration implements FeatureConfiguration {
-   public static final Codec<TreeConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(BlockStateProvider.CODEC.fieldOf("trunk_provider").forGetter((var0x) -> {
-         return var0x.trunkProvider;
-      }), TrunkPlacer.CODEC.fieldOf("trunk_placer").forGetter((var0x) -> {
-         return var0x.trunkPlacer;
-      }), BlockStateProvider.CODEC.fieldOf("foliage_provider").forGetter((var0x) -> {
-         return var0x.foliageProvider;
-      }), FoliagePlacer.CODEC.fieldOf("foliage_placer").forGetter((var0x) -> {
-         return var0x.foliagePlacer;
-      }), RootPlacer.CODEC.optionalFieldOf("root_placer").forGetter((var0x) -> {
-         return var0x.rootPlacer;
-      }), BlockStateProvider.CODEC.fieldOf("dirt_provider").forGetter((var0x) -> {
-         return var0x.dirtProvider;
-      }), FeatureSize.CODEC.fieldOf("minimum_size").forGetter((var0x) -> {
-         return var0x.minimumSize;
-      }), TreeDecorator.CODEC.listOf().fieldOf("decorators").forGetter((var0x) -> {
-         return var0x.decorators;
-      }), Codec.BOOL.fieldOf("ignore_vines").orElse(false).forGetter((var0x) -> {
-         return var0x.ignoreVines;
-      }), Codec.BOOL.fieldOf("force_dirt").orElse(false).forGetter((var0x) -> {
-         return var0x.forceDirt;
-      })).apply(var0, TreeConfiguration::new);
-   });
+   public static final Codec<TreeConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockStateProvider.CODEC.fieldOf("trunk_provider").forGetter((var0x) -> var0x.trunkProvider), TrunkPlacer.CODEC.fieldOf("trunk_placer").forGetter((var0x) -> var0x.trunkPlacer), BlockStateProvider.CODEC.fieldOf("foliage_provider").forGetter((var0x) -> var0x.foliageProvider), FoliagePlacer.CODEC.fieldOf("foliage_placer").forGetter((var0x) -> var0x.foliagePlacer), RootPlacer.CODEC.optionalFieldOf("root_placer").forGetter((var0x) -> var0x.rootPlacer), BlockStateProvider.CODEC.fieldOf("dirt_provider").forGetter((var0x) -> var0x.dirtProvider), FeatureSize.CODEC.fieldOf("minimum_size").forGetter((var0x) -> var0x.minimumSize), TreeDecorator.CODEC.listOf().fieldOf("decorators").forGetter((var0x) -> var0x.decorators), Codec.BOOL.fieldOf("ignore_vines").orElse(false).forGetter((var0x) -> var0x.ignoreVines), Codec.BOOL.fieldOf("force_dirt").orElse(false).forGetter((var0x) -> var0x.forceDirt)).apply(var0, TreeConfiguration::new));
    public final BlockStateProvider trunkProvider;
    public final BlockStateProvider dirtProvider;
    public final TrunkPlacer trunkPlacer;

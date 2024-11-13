@@ -5,7 +5,6 @@ import com.google.common.collect.UnmodifiableIterator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -47,10 +46,8 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
       this.tabs = ImmutableList.copyOf(var3);
       this.layout.defaultCellSetting().alignHorizontallyCenter();
       ImmutableList.Builder var4 = ImmutableList.builder();
-      Iterator var5 = var3.iterator();
 
-      while(var5.hasNext()) {
-         Tab var6 = (Tab)var5.next();
+      for(Tab var6 : var3) {
          var4.add((TabButton)this.layout.addChild(new TabButton(var2, var6, 0, 24)));
       }
 
@@ -106,9 +103,7 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
    }
 
    public void updateNarration(NarrationElementOutput var1) {
-      Optional var2 = this.tabButtons.stream().filter(AbstractWidget::isHovered).findFirst().or(() -> {
-         return Optional.ofNullable(this.currentTabButton());
-      });
+      Optional var2 = this.tabButtons.stream().filter(AbstractWidget::isHovered).findFirst().or(() -> Optional.ofNullable(this.currentTabButton()));
       var2.ifPresent((var2x) -> {
          this.narrateListElementPosition(var1.nest(), var2x);
          var2x.updateNarration(var1);

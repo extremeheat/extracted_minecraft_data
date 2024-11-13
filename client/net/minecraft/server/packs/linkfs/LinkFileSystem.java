@@ -10,7 +10,6 @@ import java.nio.file.WatchService;
 import java.nio.file.attribute.UserPrincipalLookupService;
 import java.nio.file.spi.FileSystemProvider;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,12 +34,8 @@ public class LinkFileSystem extends FileSystem {
    private static LinkFSPath buildPath(DirectoryEntry var0, LinkFileSystem var1, String var2, @Nullable LinkFSPath var3) {
       Object2ObjectOpenHashMap var4 = new Object2ObjectOpenHashMap();
       LinkFSPath var5 = new LinkFSPath(var1, var2, var3, new PathContents.DirectoryContents(var4));
-      var0.files.forEach((var3x, var4x) -> {
-         var4.put(var3x, new LinkFSPath(var1, var3x, var5, new PathContents.FileContents(var4x)));
-      });
-      var0.children.forEach((var3x, var4x) -> {
-         var4.put(var3x, buildPath(var4x, var1, var3x, var5));
-      });
+      var0.files.forEach((var3x, var4x) -> var4.put(var3x, new LinkFSPath(var1, var3x, var5, new PathContents.FileContents(var4x))));
+      var0.children.forEach((var3x, var4x) -> var4.put(var3x, buildPath(var4x, var1, var3x, var5)));
       var4.trim();
       return var5;
    }
@@ -85,36 +80,33 @@ public class LinkFileSystem extends FileSystem {
       String var4 = (String)var3.collect(Collectors.joining("/"));
       if (var4.equals("/")) {
          return this.root;
-      } else {
-         LinkFSPath var5;
-         Iterator var6;
-         String var7;
-         if (var4.startsWith("/")) {
-            var5 = this.root;
+      } else if (var4.startsWith("/")) {
+         LinkFSPath var8 = this.root;
 
-            for(var6 = PATH_SPLITTER.split(var4.substring(1)).iterator(); var6.hasNext(); var5 = var5.resolveName(var7)) {
-               var7 = (String)var6.next();
-               if (var7.isEmpty()) {
-                  throw new IllegalArgumentException("Empty paths not allowed");
-               }
-            }
-
-            return var5;
-         } else {
-            var5 = null;
-
-            for(var6 = PATH_SPLITTER.split(var4).iterator(); var6.hasNext(); var5 = new LinkFSPath(this, var7, var5, PathContents.RELATIVE)) {
-               var7 = (String)var6.next();
-               if (var7.isEmpty()) {
-                  throw new IllegalArgumentException("Empty paths not allowed");
-               }
-            }
-
-            if (var5 == null) {
+         for(String var10 : PATH_SPLITTER.split(var4.substring(1))) {
+            if (var10.isEmpty()) {
                throw new IllegalArgumentException("Empty paths not allowed");
-            } else {
-               return var5;
             }
+
+            var8 = var8.resolveName(var10);
+         }
+
+         return var8;
+      } else {
+         LinkFSPath var5 = null;
+
+         for(String var7 : PATH_SPLITTER.split(var4)) {
+            if (var7.isEmpty()) {
+               throw new IllegalArgumentException("Empty paths not allowed");
+            }
+
+            var5 = new LinkFSPath(this, var7, var5, PathContents.RELATIVE);
+         }
+
+         if (var5 == null) {
+            throw new IllegalArgumentException("Empty paths not allowed");
+         } else {
+            return var5;
          }
       }
    }
@@ -156,14 +148,6 @@ public class LinkFileSystem extends FileSystem {
          this.children = var1;
          this.files = var2;
       }
-
-      public Map<String, DirectoryEntry> children() {
-         return this.children;
-      }
-
-      public Map<String, Path> files() {
-         return this.files;
-      }
    }
 
    public static class Builder {
@@ -176,11 +160,8 @@ public class LinkFileSystem extends FileSystem {
       public Builder put(List<String> var1, String var2, Path var3) {
          DirectoryEntry var4 = this.root;
 
-         String var6;
-         for(Iterator var5 = var1.iterator(); var5.hasNext(); var4 = (DirectoryEntry)var4.children.computeIfAbsent(var6, (var0) -> {
-            return new DirectoryEntry();
-         })) {
-            var6 = (String)var5.next();
+         for(String var6 : var1) {
+            var4 = (DirectoryEntry)var4.children.computeIfAbsent(var6, (var0) -> new DirectoryEntry());
          }
 
          var4.files.put(var2, var3);

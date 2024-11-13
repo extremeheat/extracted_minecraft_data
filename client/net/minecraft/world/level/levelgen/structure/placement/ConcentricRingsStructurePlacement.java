@@ -15,9 +15,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 
 public class ConcentricRingsStructurePlacement extends StructurePlacement {
-   public static final MapCodec<ConcentricRingsStructurePlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return codec(var0).apply(var0, ConcentricRingsStructurePlacement::new);
-   });
+   public static final MapCodec<ConcentricRingsStructurePlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> codec(var0).apply(var0, ConcentricRingsStructurePlacement::new));
    private final int distance;
    private final int spread;
    private final int count;

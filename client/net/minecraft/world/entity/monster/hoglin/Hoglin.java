@@ -115,7 +115,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    protected Brain.Provider<Hoglin> brainProvider() {
-      return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
+      return Brain.<Hoglin>provider(MEMORY_TYPES, SENSOR_TYPES);
    }
 
    protected Brain<?> makeBrain(Dynamic<?> var1) {
@@ -220,9 +220,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    private void finishConversion() {
-      this.convertTo(EntityType.ZOGLIN, ConversionParams.single(this, true, false), (var0) -> {
-         var0.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0));
-      });
+      this.convertTo(EntityType.ZOGLIN, ConversionParams.single(this, true, false), (var0) -> var0.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0)));
    }
 
    public boolean isFood(ItemStack var1) {
@@ -280,7 +278,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
 
    @Nullable
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Hoglin var3 = (Hoglin)EntityType.HOGLIN.create(var1, EntitySpawnReason.BREEDING);
+      Hoglin var3 = EntityType.HOGLIN.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          var3.setPersistenceRequired();
       }
@@ -331,7 +329,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    static {
-      DATA_IMMUNE_TO_ZOMBIFICATION = SynchedEntityData.defineId(Hoglin.class, EntityDataSerializers.BOOLEAN);
+      DATA_IMMUNE_TO_ZOMBIFICATION = SynchedEntityData.<Boolean>defineId(Hoglin.class, EntityDataSerializers.BOOLEAN);
       SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ADULT, SensorType.HOGLIN_SPECIFIC_SENSOR);
       MEMORY_TYPES = ImmutableList.of(MemoryModuleType.BREED_TARGET, MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER, MemoryModuleType.LOOK_TARGET, MemoryModuleType.WALK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.ATTACK_COOLING_DOWN, MemoryModuleType.NEAREST_VISIBLE_ADULT_PIGLIN, new MemoryModuleType[]{MemoryModuleType.AVOID_TARGET, MemoryModuleType.VISIBLE_ADULT_PIGLIN_COUNT, MemoryModuleType.VISIBLE_ADULT_HOGLIN_COUNT, MemoryModuleType.NEAREST_VISIBLE_ADULT_HOGLINS, MemoryModuleType.NEAREST_VISIBLE_ADULT, MemoryModuleType.NEAREST_REPELLENT, MemoryModuleType.PACIFIED, MemoryModuleType.IS_PANICKING});
    }

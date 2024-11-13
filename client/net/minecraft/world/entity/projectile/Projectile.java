@@ -142,9 +142,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       Entity var1 = this.getOwner();
       if (var1 != null) {
          AABB var2 = this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0);
-         return var1.getRootVehicle().getSelfAndPassengers().filter(EntitySelector.CAN_BE_PICKED).noneMatch((var1x) -> {
-            return var2.intersects(var1x.getBoundingBox());
-         });
+         return var1.getRootVehicle().getSelfAndPassengers().filter(EntitySelector.CAN_BE_PICKED).noneMatch((var1x) -> var2.intersects(var1x.getBoundingBox()));
       } else {
          return true;
       }
@@ -175,25 +173,19 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    public static <T extends Projectile> T spawnProjectileFromRotation(ProjectileFactory<T> var0, ServerLevel var1, ItemStack var2, LivingEntity var3, float var4, float var5, float var6) {
-      return spawnProjectile(var0.create(var1, var3, var2), var1, var2, (var4x) -> {
-         var4x.shootFromRotation(var3, var3.getXRot(), var3.getYRot(), var4, var5, var6);
-      });
+      return (T)spawnProjectile(var0.create(var1, var3, var2), var1, var2, (var4x) -> var4x.shootFromRotation(var3, var3.getXRot(), var3.getYRot(), var4, var5, var6));
    }
 
    public static <T extends Projectile> T spawnProjectileUsingShoot(ProjectileFactory<T> var0, ServerLevel var1, ItemStack var2, LivingEntity var3, double var4, double var6, double var8, float var10, float var11) {
-      return spawnProjectile(var0.create(var1, var3, var2), var1, var2, (var8x) -> {
-         var8x.shoot(var4, var6, var8, var10, var11);
-      });
+      return (T)spawnProjectile(var0.create(var1, var3, var2), var1, var2, (var8x) -> var8x.shoot(var4, var6, var8, var10, var11));
    }
 
    public static <T extends Projectile> T spawnProjectileUsingShoot(T var0, ServerLevel var1, ItemStack var2, double var3, double var5, double var7, float var9, float var10) {
-      return spawnProjectile(var0, var1, var2, (var9x) -> {
-         var0.shoot(var3, var5, var7, var9, var10);
-      });
+      return (T)spawnProjectile(var0, var1, var2, (var9x) -> var0.shoot(var3, var5, var7, var9, var10));
    }
 
    public static <T extends Projectile> T spawnProjectile(T var0, ServerLevel var1, ItemStack var2) {
-      return spawnProjectile(var0, var1, var2, (var0x) -> {
+      return (T)spawnProjectile(var0, var1, var2, (var0x) -> {
       });
    }
 
@@ -201,7 +193,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       var3.accept(var0);
       var1.addFreshEntity(var0);
       var0.applyOnProjectileSpawned(var1, var2);
-      return var0;
+      return (T)var0;
    }
 
    public void applyOnProjectileSpawned(ServerLevel var1, ItemStack var2) {

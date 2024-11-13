@@ -9,7 +9,6 @@ import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.DonkeyRenderState;
-import net.minecraft.client.renderer.entity.state.EquineRenderState;
 
 public class DonkeyModel extends AbstractEquineModel<DonkeyRenderState> {
    public static final float DONKEY_SCALE = 0.87F;
@@ -47,7 +46,7 @@ public class DonkeyModel extends AbstractEquineModel<DonkeyRenderState> {
    }
 
    public void setupAnim(DonkeyRenderState var1) {
-      super.setupAnim((EquineRenderState)var1);
+      super.setupAnim(var1);
       this.leftChest.visible = var1.hasChest;
       this.rightChest.visible = var1.hasChest;
    }

@@ -127,11 +127,7 @@ public class BuiltInLootTables {
    }
 
    private static void makeDyeKeyMap(EnumMap<DyeColor, ResourceKey<LootTable>> var0, String var1) {
-      DyeColor[] var2 = DyeColor.values();
-      int var3 = var2.length;
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         DyeColor var5 = var2[var4];
+      for(DyeColor var5 : DyeColor.values()) {
          var0.put(var5, register(var1 + "/" + var5.getName()));
       }
 
@@ -218,9 +214,7 @@ public class BuiltInLootTables {
       EQUIPMENT_TRIAL_CHAMBER = register("equipment/trial_chamber");
       EQUIPMENT_TRIAL_CHAMBER_RANGED = register("equipment/trial_chamber_ranged");
       EQUIPMENT_TRIAL_CHAMBER_MELEE = register("equipment/trial_chamber_melee");
-      SHEEP_BY_DYE = (Map)Util.make(new EnumMap(DyeColor.class), (var0) -> {
-         makeDyeKeyMap(var0, "entities/sheep");
-      });
+      SHEEP_BY_DYE = (Map)Util.make(new EnumMap(DyeColor.class), (var0) -> makeDyeKeyMap(var0, "entities/sheep"));
       FISHING = register("gameplay/fishing");
       FISHING_JUNK = register("gameplay/fishing/junk");
       FISHING_TREASURE = register("gameplay/fishing/treasure");
@@ -257,9 +251,7 @@ public class BuiltInLootTables {
       SHEAR_BROWN_MOOSHROOM = register("shearing/mooshroom/brown");
       SHEAR_SNOW_GOLEM = register("shearing/snow_golem");
       SHEAR_SHEEP = register("shearing/sheep");
-      SHEAR_SHEEP_BY_DYE = (Map)Util.make(new EnumMap(DyeColor.class), (var0) -> {
-         makeDyeKeyMap(var0, "shearing/sheep");
-      });
+      SHEAR_SHEEP_BY_DYE = (Map)Util.make(new EnumMap(DyeColor.class), (var0) -> makeDyeKeyMap(var0, "shearing/sheep"));
       DESERT_WELL_ARCHAEOLOGY = register("archaeology/desert_well");
       DESERT_PYRAMID_ARCHAEOLOGY = register("archaeology/desert_pyramid");
       TRAIL_RUINS_ARCHAEOLOGY_COMMON = register("archaeology/trail_ruins_common");

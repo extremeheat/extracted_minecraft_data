@@ -8,9 +8,7 @@ import net.minecraft.world.level.ChunkPos;
 public class CarvingMask {
    private final int minY;
    private final BitSet mask;
-   private Mask additionalMask = (var0, var1x, var2x) -> {
-      return false;
-   };
+   private Mask additionalMask = (var0, var1x, var2x) -> false;
 
    public CarvingMask(int var1, int var2) {
       super();

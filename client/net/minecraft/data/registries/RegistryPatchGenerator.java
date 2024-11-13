@@ -31,11 +31,7 @@ public class RegistryPatchGenerator {
          Optional var6 = var5.lookup(Registries.BIOME);
          Optional var7 = var5.lookup(Registries.PLACED_FEATURE);
          if (var6.isPresent() || var7.isPresent()) {
-            VanillaRegistries.validateThatAllBiomeFeaturesHaveBiomeFilter((HolderGetter)DataFixUtils.orElseGet(var7, () -> {
-               return var1x.lookupOrThrow(Registries.PLACED_FEATURE);
-            }), (HolderLookup)DataFixUtils.orElseGet(var6, () -> {
-               return var1x.lookupOrThrow(Registries.BIOME);
-            }));
+            VanillaRegistries.validateThatAllBiomeFeaturesHaveBiomeFilter((HolderGetter)DataFixUtils.orElseGet(var7, () -> var1x.lookupOrThrow(Registries.PLACED_FEATURE)), (HolderLookup)DataFixUtils.orElseGet(var6, () -> var1x.lookupOrThrow(Registries.BIOME)));
          }
 
          return var4;

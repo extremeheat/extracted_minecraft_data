@@ -31,6 +31,6 @@ public record MainHand() implements SelectItemModelProperty<HumanoidArm> {
    }
 
    static {
-      TYPE = SelectItemModelProperty.Type.create(MapCodec.unit(new MainHand()), HumanoidArm.CODEC);
+      TYPE = SelectItemModelProperty.Type.<MainHand, HumanoidArm>create(MapCodec.unit(new MainHand()), HumanoidArm.CODEC);
    }
 }

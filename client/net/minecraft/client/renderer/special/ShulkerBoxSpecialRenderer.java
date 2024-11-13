@@ -33,9 +33,7 @@ public class ShulkerBoxSpecialRenderer implements NoDataSpecialModelRenderer {
    }
 
    public static record Unbaked(ResourceLocation texture, float openness, Direction orientation) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(ResourceLocation.CODEC.fieldOf("texture").forGetter(Unbaked::texture), Codec.FLOAT.optionalFieldOf("openness", 0.0F).forGetter(Unbaked::openness), Direction.CODEC.optionalFieldOf("orientation", Direction.UP).forGetter(Unbaked::orientation)).apply(var0, Unbaked::new);
-      });
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("texture").forGetter(Unbaked::texture), Codec.FLOAT.optionalFieldOf("openness", 0.0F).forGetter(Unbaked::openness), Direction.CODEC.optionalFieldOf("orientation", Direction.UP).forGetter(Unbaked::orientation)).apply(var0, Unbaked::new));
 
       public Unbaked() {
          this(ResourceLocation.withDefaultNamespace("shulker"), 0.0F, Direction.UP);
@@ -58,18 +56,6 @@ public class ShulkerBoxSpecialRenderer implements NoDataSpecialModelRenderer {
 
       public SpecialModelRenderer<?> bake(EntityModelSet var1) {
          return new ShulkerBoxSpecialRenderer(new ShulkerBoxRenderer(var1), this.openness, this.orientation, Sheets.createShulkerMaterial(this.texture));
-      }
-
-      public ResourceLocation texture() {
-         return this.texture;
-      }
-
-      public float openness() {
-         return this.openness;
-      }
-
-      public Direction orientation() {
-         return this.orientation;
       }
    }
 }

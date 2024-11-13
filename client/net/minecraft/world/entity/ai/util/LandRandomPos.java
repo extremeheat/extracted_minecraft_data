@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.util;
 
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -21,11 +22,11 @@ public class LandRandomPos {
    @Nullable
    public static Vec3 getPos(PathfinderMob var0, int var1, int var2, ToDoubleFunction<BlockPos> var3) {
       boolean var4 = GoalUtils.mobRestricted(var0, var1);
-      return RandomPos.generateRandomPos(() -> {
+      return RandomPos.generateRandomPos((Supplier)(() -> {
          BlockPos var4x = RandomPos.generateRandomDirection(var0.getRandom(), var1, var2);
          BlockPos var5 = generateRandomPosTowardDirection(var0, var1, var4, var4x);
          return var5 == null ? null : movePosUpOutOfSolid(var0, var5);
-      }, var3);
+      }), var3);
    }
 
    @Nullable
@@ -44,7 +45,7 @@ public class LandRandomPos {
 
    @Nullable
    private static Vec3 getPosInDirection(PathfinderMob var0, int var1, int var2, Vec3 var3, boolean var4) {
-      return RandomPos.generateRandomPos(var0, () -> {
+      return RandomPos.generateRandomPos(var0, (Supplier)(() -> {
          BlockPos var5 = RandomPos.generateRandomDirectionWithinRadians(var0.getRandom(), var1, var2, 0, var3.x, var3.z, 1.5707963705062866);
          if (var5 == null) {
             return null;
@@ -52,14 +53,12 @@ public class LandRandomPos {
             BlockPos var6 = generateRandomPosTowardDirection(var0, var1, var4, var5);
             return var6 == null ? null : movePosUpOutOfSolid(var0, var6);
          }
-      });
+      }));
    }
 
    @Nullable
    public static BlockPos movePosUpOutOfSolid(PathfinderMob var0, BlockPos var1) {
-      var1 = RandomPos.moveUpOutOfSolid(var1, var0.level().getMaxY(), (var1x) -> {
-         return GoalUtils.isSolid(var0, var1x);
-      });
+      var1 = RandomPos.moveUpOutOfSolid(var1, var0.level().getMaxY(), (var1x) -> GoalUtils.isSolid(var0, var1x));
       return !GoalUtils.isWater(var0, var1) && !GoalUtils.hasMalus(var0, var1) ? var1 : null;
    }
 

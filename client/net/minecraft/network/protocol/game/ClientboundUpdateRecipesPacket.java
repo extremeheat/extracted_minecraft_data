@@ -29,14 +29,6 @@ public record ClientboundUpdateRecipesPacket(Map<ResourceKey<RecipePropertySet>,
       var1.handleUpdateRecipes(this);
    }
 
-   public Map<ResourceKey<RecipePropertySet>, RecipePropertySet> itemSets() {
-      return this.itemSets;
-   }
-
-   public SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes() {
-      return this.stonecutterRecipes;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.map(HashMap::new, ResourceKey.streamCodec(RecipePropertySet.TYPE_KEY), RecipePropertySet.STREAM_CODEC), ClientboundUpdateRecipesPacket::itemSets, SelectableRecipe.SingleInputSet.noRecipeCodec(), ClientboundUpdateRecipesPacket::stonecutterRecipes, ClientboundUpdateRecipesPacket::new);
    }

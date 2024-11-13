@@ -57,9 +57,7 @@ public class FlowerBlock extends BushBlock implements SuspiciousEffectHolder {
 
    static {
       EFFECTS_FIELD = SuspiciousStewEffects.CODEC.fieldOf("suspicious_stew_effects");
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(EFFECTS_FIELD.forGetter(FlowerBlock::getSuspiciousEffects), propertiesCodec()).apply(var0, FlowerBlock::new);
-      });
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(EFFECTS_FIELD.forGetter(FlowerBlock::getSuspiciousEffects), propertiesCodec()).apply(var0, FlowerBlock::new));
       SHAPE = Block.box(5.0, 0.0, 5.0, 11.0, 10.0, 11.0);
    }
 }

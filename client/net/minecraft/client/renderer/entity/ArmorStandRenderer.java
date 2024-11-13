@@ -17,7 +17,6 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 
 public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorStandRenderState, ArmorStandArmorModel> {
@@ -43,7 +42,7 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
    }
 
    public void extractRenderState(ArmorStand var1, ArmorStandRenderState var2, float var3) {
-      super.extractRenderState((LivingEntity)var1, (LivingEntityRenderState)var2, var3);
+      super.extractRenderState(var1, var2, var3);
       HumanoidMobRenderer.extractHumanoidRenderState(var1, var2, var3, this.itemModelResolver);
       var2.yRot = Mth.rotLerp(var3, var1.yRotO, var1.getYRot());
       var2.isMarker = var1.isMarker();
@@ -61,7 +60,7 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
 
    public void render(ArmorStandRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
       this.model = var1.isSmall ? this.smallModel : this.bigModel;
-      super.render((LivingEntityRenderState)var1, var2, var3, var4);
+      super.render(var1, var2, var3, var4);
    }
 
    protected void setupRotations(ArmorStandRenderState var1, PoseStack var2, float var3, float var4) {

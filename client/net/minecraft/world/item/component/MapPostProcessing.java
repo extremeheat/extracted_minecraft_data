@@ -10,7 +10,7 @@ public enum MapPostProcessing {
    LOCK(0),
    SCALE(1);
 
-   public static final IntFunction<MapPostProcessing> ID_MAP = ByIdMap.continuous(MapPostProcessing::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   public static final IntFunction<MapPostProcessing> ID_MAP = ByIdMap.<MapPostProcessing>continuous(MapPostProcessing::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    public static final StreamCodec<ByteBuf, MapPostProcessing> STREAM_CODEC = ByteBufCodecs.idMapper(ID_MAP, MapPostProcessing::id);
    private final int id;
 

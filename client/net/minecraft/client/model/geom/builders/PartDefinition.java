@@ -1,6 +1,5 @@
 package net.minecraft.client.model.geom.builders;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.util.List;
@@ -41,14 +40,8 @@ public class PartDefinition {
    }
 
    public ModelPart bake(int var1, int var2) {
-      Object2ObjectArrayMap var3 = (Object2ObjectArrayMap)this.children.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (var2x) -> {
-         return ((PartDefinition)var2x.getValue()).bake(var1, var2);
-      }, (var0, var1x) -> {
-         return var0;
-      }, Object2ObjectArrayMap::new));
-      List var4 = (List)this.cubes.stream().map((var2x) -> {
-         return var2x.bake(var1, var2);
-      }).collect(ImmutableList.toImmutableList());
+      Object2ObjectArrayMap var3 = (Object2ObjectArrayMap)this.children.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (var2x) -> ((PartDefinition)var2x.getValue()).bake(var1, var2), (var0, var1x) -> var0, Object2ObjectArrayMap::new));
+      List var4 = this.cubes.stream().map((var2x) -> var2x.bake(var1, var2)).toList();
       ModelPart var5 = new ModelPart(var4, var3);
       var5.setInitialPose(this.partPose);
       var5.loadPose(this.partPose);

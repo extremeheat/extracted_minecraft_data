@@ -54,13 +54,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<CampfireBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.BOOL.fieldOf("spawn_particles").forGetter((var0x) -> {
-         return var0x.spawnParticles;
-      }), Codec.intRange(0, 1000).fieldOf("fire_damage").forGetter((var0x) -> {
-         return var0x.fireDamage;
-      }), propertiesCodec()).apply(var0, CampfireBlock::new);
-   });
+   public static final MapCodec<CampfireBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("spawn_particles").forGetter((var0x) -> var0x.spawnParticles), Codec.intRange(0, 1000).fieldOf("fire_damage").forGetter((var0x) -> var0x.fireDamage), propertiesCodec()).apply(var0, CampfireBlock::new));
    protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 7.0, 16.0);
    public static final BooleanProperty LIT;
    public static final BooleanProperty SIGNAL_FIRE;
@@ -145,10 +139,6 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       return SHAPE;
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
-
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       if ((Boolean)var1.getValue(LIT)) {
          if (var4.nextInt(10) == 0) {
@@ -176,7 +166,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
          ((CampfireBlockEntity)var5).dowse();
       }
 
-      var1.gameEvent((Entity)var0, (Holder)GameEvent.BLOCK_CHANGE, (BlockPos)var2);
+      var1.gameEvent(var0, (Holder)GameEvent.BLOCK_CHANGE, (BlockPos)var2);
    }
 
    public boolean placeLiquid(LevelAccessor var1, BlockPos var2, BlockState var3, FluidState var4) {
@@ -265,9 +255,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       if (var1 instanceof ServerLevel var4) {
          if ((Boolean)var2.getValue(LIT)) {
             RecipeManager.CachedCheck var5 = RecipeManager.createCheck(RecipeType.CAMPFIRE_COOKING);
-            return createTickerHelper(var3, BlockEntityType.CAMPFIRE, (var2x, var3x, var4x, var5x) -> {
-               CampfireBlockEntity.cookTick(var4, var3x, var4x, var5x, var5);
-            });
+            return createTickerHelper(var3, BlockEntityType.CAMPFIRE, (var2x, var3x, var4x, var5x) -> CampfireBlockEntity.cookTick(var4, var3x, var4x, var5x, var5));
          } else {
             return createTickerHelper(var3, BlockEntityType.CAMPFIRE, CampfireBlockEntity::cooldownTick);
          }
@@ -281,9 +269,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    }
 
    public static boolean canLight(BlockState var0) {
-      return var0.is(BlockTags.CAMPFIRES, (var0x) -> {
-         return var0x.hasProperty(WATERLOGGED) && var0x.hasProperty(LIT);
-      }) && !(Boolean)var0.getValue(WATERLOGGED) && !(Boolean)var0.getValue(LIT);
+      return var0.is(BlockTags.CAMPFIRES, (var0x) -> var0x.hasProperty(WATERLOGGED) && var0x.hasProperty(LIT)) && !(Boolean)var0.getValue(WATERLOGGED) && !(Boolean)var0.getValue(LIT);
    }
 
    static {

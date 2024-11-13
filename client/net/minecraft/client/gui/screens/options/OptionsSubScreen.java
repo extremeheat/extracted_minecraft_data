@@ -52,9 +52,7 @@ public abstract class OptionsSubScreen extends Screen {
    protected abstract void addOptions();
 
    protected void addFooter() {
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1) -> {
-         this.onClose();
-      }).width(200).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onClose()).width(200).build());
    }
 
    protected void repositionElements() {

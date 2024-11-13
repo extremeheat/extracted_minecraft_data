@@ -36,12 +36,8 @@ public class RealmsTermsScreen extends RealmsScreen {
 
    public void init() {
       int var1 = this.width / 4 - 2;
-      this.addRenderableWidget(Button.builder(Component.translatable("mco.terms.buttons.agree"), (var1x) -> {
-         this.agreedToTos();
-      }).bounds(this.width / 4, row(12), var1, 20).build());
-      this.addRenderableWidget(Button.builder(Component.translatable("mco.terms.buttons.disagree"), (var1x) -> {
-         this.minecraft.setScreen(this.lastScreen);
-      }).bounds(this.width / 2 + 4, row(12), var1, 20).build());
+      this.addRenderableWidget(Button.builder(Component.translatable("mco.terms.buttons.agree"), (var1x) -> this.agreedToTos()).bounds(this.width / 4, row(12), var1, 20).build());
+      this.addRenderableWidget(Button.builder(Component.translatable("mco.terms.buttons.disagree"), (var1x) -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 + 4, row(12), var1, 20).build());
    }
 
    public boolean keyPressed(int var1, int var2, int var3) {

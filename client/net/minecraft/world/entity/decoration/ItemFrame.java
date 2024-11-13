@@ -103,7 +103,7 @@ public class ItemFrame extends HangingEntity {
          return false;
       } else {
          BlockState var1 = this.level().getBlockState(this.pos.relative(this.direction.getOpposite()));
-         return var1.isSolid() || this.direction.getAxis().isHorizontal() && DiodeBlock.isDiode(var1) ? this.level().getEntities((Entity)this, this.getBoundingBox(), HANGING_ENTITY).isEmpty() : false;
+         return var1.isSolid() || this.direction.getAxis().isHorizontal() && DiodeBlock.isDiode(var1) ? this.level().getEntities(this, this.getBoundingBox(), HANGING_ENTITY).isEmpty() : false;
       }
    }
 
@@ -412,7 +412,7 @@ public class ItemFrame extends HangingEntity {
    }
 
    static {
-      DATA_ITEM = SynchedEntityData.defineId(ItemFrame.class, EntityDataSerializers.ITEM_STACK);
-      DATA_ROTATION = SynchedEntityData.defineId(ItemFrame.class, EntityDataSerializers.INT);
+      DATA_ITEM = SynchedEntityData.<ItemStack>defineId(ItemFrame.class, EntityDataSerializers.ITEM_STACK);
+      DATA_ROTATION = SynchedEntityData.<Integer>defineId(ItemFrame.class, EntityDataSerializers.INT);
    }
 }

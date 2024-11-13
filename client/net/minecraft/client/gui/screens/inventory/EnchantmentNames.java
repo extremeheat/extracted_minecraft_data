@@ -32,7 +32,7 @@ public class EnchantmentNames {
             var3.append(" ");
          }
 
-         var3.append((String)Util.getRandom((Object[])this.words, this.random));
+         var3.append((String)Util.getRandom(this.words, this.random));
       }
 
       return var1.getSplitter().headByWidth(Component.literal(var3.toString()).withStyle(ROOT_STYLE), var2, Style.EMPTY);

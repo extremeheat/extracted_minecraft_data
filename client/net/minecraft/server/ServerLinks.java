@@ -27,68 +27,16 @@ public record ServerLinks(List<Entry> entries) {
    }
 
    public Optional<Entry> findKnownType(KnownLinkType var1) {
-      return this.entries.stream().filter((var1x) -> {
-         return (Boolean)var1x.type.map((var1xx) -> {
-            return var1xx == var1;
-         }, (var0) -> {
-            return false;
-         });
-      }).findFirst();
+      return this.entries.stream().filter((var1x) -> (Boolean)var1x.type.map((var1xx) -> var1xx == var1, (var0) -> false)).findFirst();
    }
 
    public List<UntrustedEntry> untrust() {
-      return this.entries.stream().map((var0) -> {
-         return new UntrustedEntry(var0.type, var0.link.toString());
-      }).toList();
-   }
-
-   public List<Entry> entries() {
-      return this.entries;
+      return this.entries.stream().map((var0) -> new UntrustedEntry(var0.type, var0.link.toString())).toList();
    }
 
    static {
       TYPE_STREAM_CODEC = ByteBufCodecs.either(ServerLinks.KnownLinkType.STREAM_CODEC, ComponentSerialization.TRUSTED_CONTEXT_FREE_STREAM_CODEC);
       UNTRUSTED_LINKS_STREAM_CODEC = ServerLinks.UntrustedEntry.STREAM_CODEC.apply(ByteBufCodecs.list());
-   }
-
-   public static enum KnownLinkType {
-      BUG_REPORT(0, "report_bug"),
-      COMMUNITY_GUIDELINES(1, "community_guidelines"),
-      SUPPORT(2, "support"),
-      STATUS(3, "status"),
-      FEEDBACK(4, "feedback"),
-      COMMUNITY(5, "community"),
-      WEBSITE(6, "website"),
-      FORUMS(7, "forums"),
-      NEWS(8, "news"),
-      ANNOUNCEMENTS(9, "announcements");
-
-      private static final IntFunction<KnownLinkType> BY_ID = ByIdMap.continuous((var0) -> {
-         return var0.id;
-      }, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final StreamCodec<ByteBuf, KnownLinkType> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> {
-         return var0.id;
-      });
-      private final int id;
-      private final String name;
-
-      private KnownLinkType(final int var3, final String var4) {
-         this.id = var3;
-         this.name = var4;
-      }
-
-      private Component displayName() {
-         return Component.translatable("known_server_link." + this.name);
-      }
-
-      public Entry create(URI var1) {
-         return ServerLinks.Entry.knownType(this, var1);
-      }
-
-      // $FF: synthetic method
-      private static KnownLinkType[] $values() {
-         return new KnownLinkType[]{BUG_REPORT, COMMUNITY_GUIDELINES, SUPPORT, STATUS, FEEDBACK, COMMUNITY, WEBSITE, FORUMS, NEWS, ANNOUNCEMENTS};
-      }
    }
 
    public static record UntrustedEntry(Either<KnownLinkType, Component> type, String link) {
@@ -98,14 +46,6 @@ public record ServerLinks(List<Entry> entries) {
          super();
          this.type = var1;
          this.link = var2;
-      }
-
-      public Either<KnownLinkType, Component> type() {
-         return this.type;
-      }
-
-      public String link() {
-         return this.link;
       }
 
       static {
@@ -132,17 +72,43 @@ public record ServerLinks(List<Entry> entries) {
       }
 
       public Component displayName() {
-         return (Component)this.type.map(KnownLinkType::displayName, (var0) -> {
-            return var0;
-         });
+         return (Component)this.type.map(KnownLinkType::displayName, (var0) -> var0);
+      }
+   }
+
+   public static enum KnownLinkType {
+      BUG_REPORT(0, "report_bug"),
+      COMMUNITY_GUIDELINES(1, "community_guidelines"),
+      SUPPORT(2, "support"),
+      STATUS(3, "status"),
+      FEEDBACK(4, "feedback"),
+      COMMUNITY(5, "community"),
+      WEBSITE(6, "website"),
+      FORUMS(7, "forums"),
+      NEWS(8, "news"),
+      ANNOUNCEMENTS(9, "announcements");
+
+      private static final IntFunction<KnownLinkType> BY_ID = ByIdMap.<KnownLinkType>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final StreamCodec<ByteBuf, KnownLinkType> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
+      private final int id;
+      private final String name;
+
+      private KnownLinkType(final int var3, final String var4) {
+         this.id = var3;
+         this.name = var4;
       }
 
-      public Either<KnownLinkType, Component> type() {
-         return this.type;
+      private Component displayName() {
+         return Component.translatable("known_server_link." + this.name);
       }
 
-      public URI link() {
-         return this.link;
+      public Entry create(URI var1) {
+         return ServerLinks.Entry.knownType(this, var1);
+      }
+
+      // $FF: synthetic method
+      private static KnownLinkType[] $values() {
+         return new KnownLinkType[]{BUG_REPORT, COMMUNITY_GUIDELINES, SUPPORT, STATUS, FEEDBACK, COMMUNITY, WEBSITE, FORUMS, NEWS, ANNOUNCEMENTS};
       }
    }
 }

@@ -57,15 +57,15 @@ public final class RegionFileStorage implements AutoCloseable {
       RegionFile var2 = this.getRegionFile(var1);
       DataInputStream var3 = var2.getChunkDataInputStream(var1);
 
-      CompoundTag var4;
+      CompoundTag var8;
       label43: {
          try {
             if (var3 == null) {
-               var4 = null;
+               var8 = null;
                break label43;
             }
 
-            var4 = NbtIo.read((DataInput)var3);
+            var8 = NbtIo.read((DataInput)var3);
          } catch (Throwable var7) {
             if (var3 != null) {
                try {
@@ -82,14 +82,14 @@ public final class RegionFileStorage implements AutoCloseable {
             var3.close();
          }
 
-         return var4;
+         return var8;
       }
 
       if (var3 != null) {
          var3.close();
       }
 
-      return var4;
+      return var8;
    }
 
    public void scanChunk(ChunkPos var1, StreamTagVisitor var2) throws IOException {

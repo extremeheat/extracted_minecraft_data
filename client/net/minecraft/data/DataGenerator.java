@@ -88,7 +88,7 @@ public class DataGenerator {
                DataGenerator.this.providersToRun.put(var3, var2);
             }
 
-            return var2;
+            return (T)var2;
          }
       }
    }

@@ -142,7 +142,7 @@ public interface Leashable {
 
       if (var2 != null && var2.leashHolder != null) {
          if (!var1.isAlive() || !var2.leashHolder.isAlive()) {
-            dropLeash(var1, true, var0.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS));
+            ((Leashable)var1).dropLeash(true, var0.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS));
          }
 
          Entity var3 = ((Leashable)var1).getLeashHolder();

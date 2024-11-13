@@ -12,11 +12,7 @@ import org.joml.Vector3f;
 public class DustParticleOptions extends ScalableParticleOptionsBase {
    public static final int REDSTONE_PARTICLE_COLOR = 16711680;
    public static final DustParticleOptions REDSTONE = new DustParticleOptions(16711680, 1.0F);
-   public static final MapCodec<DustParticleOptions> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("color").forGetter((var0x) -> {
-         return var0x.color;
-      }), SCALE.fieldOf("scale").forGetter(ScalableParticleOptionsBase::getScale)).apply(var0, DustParticleOptions::new);
-   });
+   public static final MapCodec<DustParticleOptions> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("color").forGetter((var0x) -> var0x.color), SCALE.fieldOf("scale").forGetter(ScalableParticleOptionsBase::getScale)).apply(var0, DustParticleOptions::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, DustParticleOptions> STREAM_CODEC;
    private final int color;
 
@@ -34,8 +30,6 @@ public class DustParticleOptions extends ScalableParticleOptionsBase {
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.INT, (var0) -> {
-         return var0.color;
-      }, ByteBufCodecs.FLOAT, ScalableParticleOptionsBase::getScale, DustParticleOptions::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.INT, (var0) -> var0.color, ByteBufCodecs.FLOAT, ScalableParticleOptionsBase::getScale, DustParticleOptions::new);
    }
 }

@@ -54,7 +54,7 @@ public class CamelAi {
    }
 
    public static Brain.Provider<Camel> brainProvider() {
-      return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
+      return Brain.<Camel>provider(MEMORY_TYPES, SENSOR_TYPES);
    }
 
    protected static Brain<?> makeBrain(Brain<Camel> var0) {
@@ -71,11 +71,7 @@ public class CamelAi {
    }
 
    private static void initIdleActivity(Brain<Camel> var0) {
-      var0.addActivity(Activity.IDLE, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(1, new AnimalMakeLove(EntityType.CAMEL)), Pair.of(2, new RunOne(ImmutableList.of(Pair.of(new FollowTemptation((var0x) -> {
-         return 2.5F;
-      }, (var0x) -> {
-         return var0x.isBaby() ? 2.5 : 3.5;
-      }), 1), Pair.of(BehaviorBuilder.triggerIf(Predicate.not(Camel::refuseToMove), BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 2.5F)), 1)))), Pair.of(3, new RandomLookAround(UniformInt.of(150, 250), 30.0F, 0.0F, 0.0F)), Pair.of(4, new RunOne(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), ImmutableList.of(Pair.of(BehaviorBuilder.triggerIf(Predicate.not(Camel::refuseToMove), RandomStroll.stroll(2.0F)), 1), Pair.of(BehaviorBuilder.triggerIf(Predicate.not(Camel::refuseToMove), SetWalkTargetFromLookTarget.create(2.0F, 3)), 1), Pair.of(new RandomSitting(20), 1), Pair.of(new DoNothing(30, 60), 1))))));
+      var0.addActivity(Activity.IDLE, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(1, new AnimalMakeLove(EntityType.CAMEL)), Pair.of(2, new RunOne(ImmutableList.of(Pair.of(new FollowTemptation((var0x) -> 2.5F, (var0x) -> var0x.isBaby() ? 2.5 : 3.5), 1), Pair.of(BehaviorBuilder.triggerIf(Predicate.not(Camel::refuseToMove), BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 2.5F)), 1)))), Pair.of(3, new RandomLookAround(UniformInt.of(150, 250), 30.0F, 0.0F, 0.0F)), Pair.of(4, new RunOne(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), ImmutableList.of(Pair.of(BehaviorBuilder.triggerIf(Predicate.not(Camel::refuseToMove), RandomStroll.stroll(2.0F)), 1), Pair.of(BehaviorBuilder.triggerIf(Predicate.not(Camel::refuseToMove), SetWalkTargetFromLookTarget.create(2.0F, 3)), 1), Pair.of(new RandomSitting(20), 1), Pair.of(new DoNothing(30, 60), 1))))));
    }
 
    public static void updateActivity(Camel var0) {
@@ -83,9 +79,7 @@ public class CamelAi {
    }
 
    public static Predicate<ItemStack> getTemptations() {
-      return (var0) -> {
-         return var0.is(ItemTags.CAMEL_FOOD);
-      };
+      return (var0) -> var0.is(ItemTags.CAMEL_FOOD);
    }
 
    static {
@@ -100,7 +94,7 @@ public class CamelAi {
 
       protected void start(ServerLevel var1, Camel var2, long var3) {
          var2.standUpInstantly();
-         super.start(var1, (PathfinderMob)var2, var3);
+         super.start(var1, var2, var3);
       }
 
       // $FF: synthetic method

@@ -94,11 +94,8 @@ public class RedStoneOreBlock extends Block {
    private static void spawnParticles(Level var0, BlockPos var1) {
       double var2 = 0.5625;
       RandomSource var4 = var0.random;
-      Direction[] var5 = Direction.values();
-      int var6 = var5.length;
 
-      for(int var7 = 0; var7 < var6; ++var7) {
-         Direction var8 = var5[var7];
+      for(Direction var8 : Direction.values()) {
          BlockPos var9 = var1.relative(var8);
          if (!var0.getBlockState(var9).isSolidRender()) {
             Direction.Axis var10 = var8.getAxis();

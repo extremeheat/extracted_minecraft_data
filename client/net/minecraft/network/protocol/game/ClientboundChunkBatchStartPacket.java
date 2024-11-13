@@ -22,6 +22,6 @@ public class ClientboundChunkBatchStartPacket implements Packet<ClientGamePacket
    }
 
    static {
-      STREAM_CODEC = StreamCodec.unit(INSTANCE);
+      STREAM_CODEC = StreamCodec.<ByteBuf, ClientboundChunkBatchStartPacket>unit(INSTANCE);
    }
 }

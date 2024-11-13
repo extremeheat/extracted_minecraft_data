@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -113,9 +112,7 @@ public class WorldOpenFlows {
          return null;
       } catch (ContentValidationException var4) {
          LOGGER.warn("{}", var4.getMessage());
-         this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> {
-            this.minecraft.setScreen((Screen)null);
-         }));
+         this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> this.minecraft.setScreen((Screen)null)));
          return null;
       }
    }
@@ -154,18 +151,6 @@ public class WorldOpenFlows {
                this.options = var2;
                this.existingDimensions = var3;
             }
-
-            public LevelSettings levelSettings() {
-               return this.levelSettings;
-            }
-
-            public WorldOptions options() {
-               return this.options;
-            }
-
-            public Registry<LevelStem> existingDimensions() {
-               return this.existingDimensions;
-            }
          }
 
          return new WorldLoader.DataLoadOutput(new 1Data(var3x.worldData().getLevelSettings(), var3x.worldData().worldGenOptions(), var3x.dimensions().dimensions()), var1x.datapackDimensions());
@@ -182,7 +167,7 @@ public class WorldOpenFlows {
       Minecraft var10000 = this.minecraft;
       Objects.requireNonNull(var5);
       var10000.managedBlock(var5::isDone);
-      return var5.get();
+      return (R)var5.get();
    }
 
    private void askForBackup(LevelStorageSource.LevelStorageAccess var1, boolean var2, Runnable var3, Runnable var4) {
@@ -261,7 +246,7 @@ public class WorldOpenFlows {
          var7.initCause(var11);
          CrashReport var8 = CrashReport.forThrowable(var7, var6);
          CrashReportCategory var9 = var8.addCategory("World details");
-         var9.setDetail("World folder", (Object)var1.getLevelId());
+         var9.setDetail("World folder", var1.getLevelId());
          throw new ReportedException(var8);
       }
 
@@ -307,10 +292,8 @@ public class WorldOpenFlows {
       WorldStem var6;
       try {
          var6 = this.loadWorldStem(var2, var3, var5);
-         Iterator var7 = var6.registries().compositeAccess().lookupOrThrow(Registries.LEVEL_STEM).iterator();
 
-         while(var7.hasNext()) {
-            LevelStem var8 = (LevelStem)var7.next();
+         for(LevelStem var8 : var6.registries().compositeAccess().lookupOrThrow(Registries.LEVEL_STEM)) {
             var8.generator().validate();
          }
       } catch (Exception var9) {
@@ -319,9 +302,7 @@ public class WorldOpenFlows {
             this.minecraft.setScreen(new DatapackLoadFailureScreen(() -> {
                var1.safeClose();
                var4.run();
-            }, () -> {
-               this.openWorldLoadLevelStem(var1, var2, true, var4);
-            }));
+            }, () -> this.openWorldLoadLevelStem(var1, var2, true, var4)));
          } else {
             var1.safeClose();
             this.minecraft.setScreen(new AlertScreen(var4, Component.translatable("datapackFailure.safeMode.failed.title"), Component.translatable("datapackFailure.safeMode.failed.description"), CommonComponents.GUI_BACK, true));
@@ -340,9 +321,7 @@ public class WorldOpenFlows {
       if (!var6 && !var7) {
          this.openWorldLoadBundledResourcePack(var1, var2, var3, var4);
       } else {
-         this.askForBackup(var1, var6, () -> {
-            this.openWorldLoadBundledResourcePack(var1, var2, var3, var4);
-         }, () -> {
+         this.askForBackup(var1, var6, () -> this.openWorldLoadBundledResourcePack(var1, var2, var3, var4), () -> {
             var2.close();
             var1.safeClose();
             var4.run();
@@ -352,9 +331,7 @@ public class WorldOpenFlows {
 
    private void openWorldLoadBundledResourcePack(LevelStorageSource.LevelStorageAccess var1, WorldStem var2, PackRepository var3, Runnable var4) {
       DownloadedPackSource var5 = this.minecraft.getDownloadedPackSource();
-      this.loadBundledResourcePack(var5, var1).thenApply((var0) -> {
-         return true;
-      }).exceptionallyComposeAsync((var1x) -> {
+      this.loadBundledResourcePack(var5, var1).thenApply((var0) -> true).exceptionallyComposeAsync((var1x) -> {
          LOGGER.warn("Failed to load pack: ", var1x);
          return this.promptBundledPackLoadFailure();
       }, this.minecraft).thenAcceptAsync((var6) -> {

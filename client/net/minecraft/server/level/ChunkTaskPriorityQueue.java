@@ -2,7 +2,6 @@ package net.minecraft.server.level;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
@@ -16,9 +15,7 @@ public class ChunkTaskPriorityQueue {
 
    public ChunkTaskPriorityQueue(String var1) {
       super();
-      this.queuesPerPriority = IntStream.range(0, PRIORITY_LEVEL_COUNT).mapToObj((var0) -> {
-         return new Long2ObjectLinkedOpenHashMap();
-      }).toList();
+      this.queuesPerPriority = IntStream.range(0, PRIORITY_LEVEL_COUNT).mapToObj((var0) -> new Long2ObjectLinkedOpenHashMap()).toList();
       this.topPriorityQueueIndex = PRIORITY_LEVEL_COUNT;
       this.name = var1;
    }
@@ -34,9 +31,7 @@ public class ChunkTaskPriorityQueue {
          }
 
          if (var5 != null && !var5.isEmpty()) {
-            ((List)((Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(var3)).computeIfAbsent(var2.toLong(), (var0) -> {
-               return Lists.newArrayList();
-            })).addAll(var5);
+            ((List)((Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(var3)).computeIfAbsent(var2.toLong(), (var0) -> Lists.newArrayList())).addAll(var5);
             this.topPriorityQueueIndex = Math.min(this.topPriorityQueueIndex, var3);
          }
 
@@ -44,17 +39,12 @@ public class ChunkTaskPriorityQueue {
    }
 
    protected void submit(Runnable var1, long var2, int var4) {
-      ((List)((Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(var4)).computeIfAbsent(var2, (var0) -> {
-         return Lists.newArrayList();
-      })).add(var1);
+      ((List)((Long2ObjectLinkedOpenHashMap)this.queuesPerPriority.get(var4)).computeIfAbsent(var2, (var0) -> Lists.newArrayList())).add(var1);
       this.topPriorityQueueIndex = Math.min(this.topPriorityQueueIndex, var4);
    }
 
    protected void release(long var1, boolean var3) {
-      Iterator var4 = this.queuesPerPriority.iterator();
-
-      while(var4.hasNext()) {
-         Long2ObjectLinkedOpenHashMap var5 = (Long2ObjectLinkedOpenHashMap)var4.next();
+      for(Long2ObjectLinkedOpenHashMap var5 : this.queuesPerPriority) {
          List var6 = (List)var5.get(var1);
          if (var6 != null) {
             if (var3) {
@@ -107,14 +97,6 @@ public class ChunkTaskPriorityQueue {
          super();
          this.chunkPos = var1;
          this.tasks = var3;
-      }
-
-      public long chunkPos() {
-         return this.chunkPos;
-      }
-
-      public List<Runnable> tasks() {
-         return this.tasks;
       }
    }
 }

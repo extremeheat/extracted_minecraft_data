@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.network.PacketListener;
 import net.minecraft.server.RunningOnDifferentThreadException;
@@ -61,15 +62,9 @@ public class PacketUtils {
    public static <T extends PacketListener> void fillCrashReport(CrashReport var0, T var1, @Nullable Packet<T> var2) {
       if (var2 != null) {
          CrashReportCategory var3 = var0.addCategory("Incoming Packet");
-         var3.setDetail("Type", () -> {
-            return var2.type().toString();
-         });
-         var3.setDetail("Is Terminal", () -> {
-            return Boolean.toString(var2.isTerminal());
-         });
-         var3.setDetail("Is Skippable", () -> {
-            return Boolean.toString(var2.isSkippable());
-         });
+         var3.setDetail("Type", (CrashReportDetail)(() -> var2.type().toString()));
+         var3.setDetail("Is Terminal", (CrashReportDetail)(() -> Boolean.toString(var2.isTerminal())));
+         var3.setDetail("Is Skippable", (CrashReportDetail)(() -> Boolean.toString(var2.isSkippable())));
       }
 
       var1.fillCrashReport(var0);

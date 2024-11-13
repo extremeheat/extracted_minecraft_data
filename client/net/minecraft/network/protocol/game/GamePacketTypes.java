@@ -186,10 +186,10 @@ public class GamePacketTypes {
    }
 
    private static <T extends Packet<ClientGamePacketListener>> PacketType<T> createClientbound(String var0) {
-      return new PacketType(PacketFlow.CLIENTBOUND, ResourceLocation.withDefaultNamespace(var0));
+      return new PacketType<T>(PacketFlow.CLIENTBOUND, ResourceLocation.withDefaultNamespace(var0));
    }
 
    private static <T extends Packet<ServerGamePacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType(PacketFlow.SERVERBOUND, ResourceLocation.withDefaultNamespace(var0));
+      return new PacketType<T>(PacketFlow.SERVERBOUND, ResourceLocation.withDefaultNamespace(var0));
    }
 }

@@ -25,9 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 
 public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePropertiesPredicate> properties, Optional<NbtPredicate> nbt) {
-   public static final Codec<BlockPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("blocks").forGetter(BlockPredicate::blocks), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(BlockPredicate::properties), NbtPredicate.CODEC.optionalFieldOf("nbt").forGetter(BlockPredicate::nbt)).apply(var0, BlockPredicate::new);
-   });
+   public static final Codec<BlockPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("blocks").forGetter(BlockPredicate::blocks), StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(BlockPredicate::properties), NbtPredicate.CODEC.optionalFieldOf("nbt").forGetter(BlockPredicate::nbt)).apply(var0, BlockPredicate::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, BlockPredicate> STREAM_CODEC;
 
    public BlockPredicate(Optional<HolderSet<Block>> var1, Optional<StatePropertiesPredicate> var2, Optional<NbtPredicate> var3) {
@@ -69,18 +67,6 @@ public record BlockPredicate(Optional<HolderSet<Block>> blocks, Optional<StatePr
 
    public boolean requiresNbt() {
       return this.nbt.isPresent();
-   }
-
-   public Optional<HolderSet<Block>> blocks() {
-      return this.blocks;
-   }
-
-   public Optional<StatePropertiesPredicate> properties() {
-      return this.properties;
-   }
-
-   public Optional<NbtPredicate> nbt() {
-      return this.nbt;
    }
 
    static {

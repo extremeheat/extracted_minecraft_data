@@ -30,18 +30,6 @@ public record ClientboundMoveVehiclePacket(Vec3 position, float yRot, float xRot
       var1.handleMoveVehicle(this);
    }
 
-   public Vec3 position() {
-      return this.position;
-   }
-
-   public float yRot() {
-      return this.yRot;
-   }
-
-   public float xRot() {
-      return this.xRot;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(Vec3.STREAM_CODEC, ClientboundMoveVehiclePacket::position, ByteBufCodecs.FLOAT, ClientboundMoveVehiclePacket::yRot, ByteBufCodecs.FLOAT, ClientboundMoveVehiclePacket::xRot, ClientboundMoveVehiclePacket::new);
    }

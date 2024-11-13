@@ -39,7 +39,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Parrot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
@@ -157,7 +156,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    }
 
    public void extractRenderState(AbstractClientPlayer var1, PlayerRenderState var2, float var3) {
-      super.extractRenderState((LivingEntity)var1, (LivingEntityRenderState)var2, var3);
+      super.extractRenderState(var1, var2, var3);
       HumanoidMobRenderer.extractHumanoidRenderState(var1, var2, var3, this.itemModelResolver);
       var2.leftArmPose = getArmPose(var1, HumanoidArm.LEFT);
       var2.rightArmPose = getArmPose(var1, HumanoidArm.RIGHT);
@@ -243,17 +242,15 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    @Nullable
    private static Parrot.Variant getParrotOnShoulder(AbstractClientPlayer var0, boolean var1) {
       CompoundTag var2 = var1 ? var0.getShoulderEntityLeft() : var0.getShoulderEntityRight();
-      return EntityType.byString(var2.getString("id")).filter((var0x) -> {
-         return var0x == EntityType.PARROT;
-      }).isPresent() ? Parrot.Variant.byId(var2.getInt("Variant")) : null;
+      return EntityType.byString(var2.getString("id")).filter((var0x) -> var0x == EntityType.PARROT).isPresent() ? Parrot.Variant.byId(var2.getInt("Variant")) : null;
    }
 
    public void renderRightHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, boolean var5) {
-      this.renderHand(var1, var2, var3, var4, ((PlayerModel)this.model).rightArm, var5);
+      this.renderHand(var1, var2, var3, var4, (this.model).rightArm, var5);
    }
 
    public void renderLeftHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, boolean var5) {
-      this.renderHand(var1, var2, var3, var4, ((PlayerModel)this.model).leftArm, var5);
+      this.renderHand(var1, var2, var3, var4, (this.model).leftArm, var5);
    }
 
    private void renderHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, ModelPart var5, boolean var6) {
@@ -270,10 +267,9 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    protected void setupRotations(PlayerRenderState var1, PoseStack var2, float var3, float var4) {
       float var5 = var1.swimAmount;
       float var6 = var1.xRot;
-      float var7;
       if (var1.isFallFlying) {
          super.setupRotations(var1, var2, var3, var4);
-         var7 = var1.fallFlyingScale();
+         float var7 = var1.fallFlyingScale();
          if (!var1.isAutoSpinAttack) {
             var2.mulPose(Axis.XP.rotationDegrees(var7 * (-90.0F - var6)));
          }
@@ -283,8 +279,8 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
          }
       } else if (var5 > 0.0F) {
          super.setupRotations(var1, var2, var3, var4);
-         var7 = var1.isInWater ? -90.0F - var6 : -90.0F;
-         float var8 = Mth.lerp(var5, 0.0F, var7);
+         float var9 = var1.isInWater ? -90.0F - var6 : -90.0F;
+         float var8 = Mth.lerp(var5, 0.0F, var9);
          var2.mulPose(Axis.XP.rotationDegrees(var8));
          if (var1.isVisuallySwimming) {
             var2.translate(0.0F, -1.0F, 0.3F);

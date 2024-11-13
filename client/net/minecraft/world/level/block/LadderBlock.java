@@ -79,27 +79,23 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
 
    @Nullable
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockState var2;
       if (!var1.replacingClickedOnBlock()) {
-         var2 = var1.getLevel().getBlockState(var1.getClickedPos().relative(var1.getClickedFace().getOpposite()));
+         BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos().relative(var1.getClickedFace().getOpposite()));
          if (var2.is(this) && var2.getValue(FACING) == var1.getClickedFace()) {
             return null;
          }
       }
 
-      var2 = this.defaultBlockState();
+      BlockState var10 = this.defaultBlockState();
       Level var3 = var1.getLevel();
       BlockPos var4 = var1.getClickedPos();
       FluidState var5 = var1.getLevel().getFluidState(var1.getClickedPos());
-      Direction[] var6 = var1.getNearestLookingDirections();
-      int var7 = var6.length;
 
-      for(int var8 = 0; var8 < var7; ++var8) {
-         Direction var9 = var6[var8];
+      for(Direction var9 : var1.getNearestLookingDirections()) {
          if (var9.getAxis().isHorizontal()) {
-            var2 = (BlockState)var2.setValue(FACING, var9.getOpposite());
-            if (var2.canSurvive(var3, var4)) {
-               return (BlockState)var2.setValue(WATERLOGGED, var5.getType() == Fluids.WATER);
+            var10 = (BlockState)var10.setValue(FACING, var9.getOpposite());
+            if (var10.canSurvive(var3, var4)) {
+               return (BlockState)var10.setValue(WATERLOGGED, var5.getType() == Fluids.WATER);
             }
          }
       }

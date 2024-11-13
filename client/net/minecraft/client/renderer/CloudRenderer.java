@@ -57,51 +57,27 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
          InputStream var3 = var1.open(TEXTURE_LOCATION);
 
          Optional var20;
-         try {
-            NativeImage var4 = NativeImage.read(var3);
+         try (NativeImage var4 = NativeImage.read(var3)) {
+            int var5 = var4.getWidth();
+            int var6 = var4.getHeight();
+            long[] var7 = new long[var5 * var6];
 
-            try {
-               int var5 = var4.getWidth();
-               int var6 = var4.getHeight();
-               long[] var7 = new long[var5 * var6];
-               int var8 = 0;
-
-               while(true) {
-                  if (var8 >= var6) {
-                     var20 = Optional.of(new TextureData(var7, var5, var6));
-                     break;
-                  }
-
-                  for(int var9 = 0; var9 < var5; ++var9) {
-                     int var10 = var4.getPixel(var9, var8);
-                     if (isCellEmpty(var10)) {
-                        var7[var9 + var8 * var5] = 0L;
-                     } else {
-                        boolean var11 = isCellEmpty(var4.getPixel(var9, Math.floorMod(var8 - 1, var6)));
-                        boolean var12 = isCellEmpty(var4.getPixel(Math.floorMod(var9 + 1, var6), var8));
-                        boolean var13 = isCellEmpty(var4.getPixel(var9, Math.floorMod(var8 + 1, var6)));
-                        boolean var14 = isCellEmpty(var4.getPixel(Math.floorMod(var9 - 1, var6), var8));
-                        var7[var9 + var8 * var5] = packCellData(var10, var11, var12, var13, var14);
-                     }
-                  }
-
-                  ++var8;
-               }
-            } catch (Throwable var17) {
-               if (var4 != null) {
-                  try {
-                     var4.close();
-                  } catch (Throwable var16) {
-                     var17.addSuppressed(var16);
+            for(int var8 = 0; var8 < var6; ++var8) {
+               for(int var9 = 0; var9 < var5; ++var9) {
+                  int var10 = var4.getPixel(var9, var8);
+                  if (isCellEmpty(var10)) {
+                     var7[var9 + var8 * var5] = 0L;
+                  } else {
+                     boolean var11 = isCellEmpty(var4.getPixel(var9, Math.floorMod(var8 - 1, var6)));
+                     boolean var12 = isCellEmpty(var4.getPixel(Math.floorMod(var9 + 1, var6), var8));
+                     boolean var13 = isCellEmpty(var4.getPixel(var9, Math.floorMod(var8 + 1, var6)));
+                     boolean var14 = isCellEmpty(var4.getPixel(Math.floorMod(var9 - 1, var6), var8));
+                     var7[var9 + var8 * var5] = packCellData(var10, var11, var12, var13, var14);
                   }
                }
-
-               throw var17;
             }
 
-            if (var4 != null) {
-               var4.close();
-            }
+            var20 = Optional.of(new TextureData(var7, var5, var6));
          } catch (Throwable var18) {
             if (var3 != null) {
                try {
@@ -363,7 +339,7 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
       return this.prepare(var1, var2);
    }
 
-   private static enum RelativeCameraPos {
+   static enum RelativeCameraPos {
       ABOVE_CLOUDS,
       INSIDE_CLOUDS,
       BELOW_CLOUDS;
@@ -387,18 +363,6 @@ public class CloudRenderer extends SimplePreparableReloadListener<Optional<Textu
          this.cells = var1;
          this.width = var2;
          this.height = var3;
-      }
-
-      public long[] cells() {
-         return this.cells;
-      }
-
-      public int width() {
-         return this.width;
-      }
-
-      public int height() {
-         return this.height;
       }
    }
 }

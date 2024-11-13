@@ -104,27 +104,21 @@ public class EntitySectionStorage<T extends EntityAccess> {
       long var3 = getChunkKeyFromSectionKey(var1);
       Visibility var5 = (Visibility)this.intialSectionVisibility.get(var3);
       this.sectionIds.add(var1);
-      return new EntitySection(this.entityClass, var5);
+      return new EntitySection<T>(this.entityClass, var5);
    }
 
    public LongSet getAllChunksWithExistingSections() {
       LongOpenHashSet var1 = new LongOpenHashSet();
-      this.sections.keySet().forEach((var1x) -> {
-         var1.add(getChunkKeyFromSectionKey(var1x));
-      });
+      this.sections.keySet().forEach((var1x) -> var1.add(getChunkKeyFromSectionKey(var1x)));
       return var1;
    }
 
    public void getEntities(AABB var1, AbortableIterationConsumer<T> var2) {
-      this.forEachAccessibleNonEmptySection(var1, (var2x) -> {
-         return var2x.getEntities(var1, var2);
-      });
+      this.forEachAccessibleNonEmptySection(var1, (var2x) -> var2x.getEntities(var1, var2));
    }
 
    public <U extends T> void getEntities(EntityTypeTest<T, U> var1, AABB var2, AbortableIterationConsumer<U> var3) {
-      this.forEachAccessibleNonEmptySection(var2, (var3x) -> {
-         return var3x.getEntities(var1, var2, var3);
-      });
+      this.forEachAccessibleNonEmptySection(var2, (var3x) -> var3x.getEntities(var1, var2, var3));
    }
 
    public void remove(long var1) {

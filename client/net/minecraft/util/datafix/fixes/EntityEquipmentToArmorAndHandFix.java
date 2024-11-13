@@ -39,9 +39,7 @@ public class EntityEquipmentToArmorAndHandFix extends DataFix {
          Optional var9 = var4x.getOptional(var5);
          if (var9.isPresent()) {
             List var10 = (List)var9.get();
-            Object var11 = ((Pair)var1.read(var8.emptyMap()).result().orElseThrow(() -> {
-               return new IllegalStateException("Could not parse newly created empty itemstack.");
-            })).getFirst();
+            Object var11 = ((Pair)var1.read(var8.emptyMap()).result().orElseThrow(() -> new IllegalStateException("Could not parse newly created empty itemstack."))).getFirst();
             if (!var10.isEmpty()) {
                var5x = Either.left(Lists.newArrayList(new Object[]{var10.get(0), var11}));
             }
@@ -59,24 +57,20 @@ public class EntityEquipmentToArmorAndHandFix extends DataFix {
 
          Optional var15 = var8.get("DropChances").asStreamOpt().result();
          if (var15.isPresent()) {
-            Iterator var16 = Stream.concat((Stream)var15.get(), Stream.generate(() -> {
-               return var8.createInt(0);
-            })).iterator();
+            Iterator var16 = Stream.concat((Stream)var15.get(), Stream.generate(() -> var8.createInt(0))).iterator();
             float var17 = ((Dynamic)var16.next()).asFloat(0.0F);
-            Dynamic var14;
-            Stream var10001;
             if (var8.get("HandDropChances").result().isEmpty()) {
-               var10001 = Stream.of(var17, 0.0F);
+               Stream var10001 = Stream.of(var17, 0.0F);
                Objects.requireNonNull(var8);
-               var14 = var8.createList(var10001.map(var8::createFloat));
+               Dynamic var14 = var8.createList(var10001.map(var8::createFloat));
                var8 = var8.set("HandDropChances", var14);
             }
 
             if (var8.get("ArmorDropChances").result().isEmpty()) {
-               var10001 = Stream.of(((Dynamic)var16.next()).asFloat(0.0F), ((Dynamic)var16.next()).asFloat(0.0F), ((Dynamic)var16.next()).asFloat(0.0F), ((Dynamic)var16.next()).asFloat(0.0F));
+               Stream var19 = Stream.of(((Dynamic)var16.next()).asFloat(0.0F), ((Dynamic)var16.next()).asFloat(0.0F), ((Dynamic)var16.next()).asFloat(0.0F), ((Dynamic)var16.next()).asFloat(0.0F));
                Objects.requireNonNull(var8);
-               var14 = var8.createList(var10001.map(var8::createFloat));
-               var8 = var8.set("ArmorDropChances", var14);
+               Dynamic var18 = var8.createList(var19.map(var8::createFloat));
+               var8 = var8.set("ArmorDropChances", var18);
             }
 
             var8 = var8.remove("DropChances");

@@ -15,13 +15,13 @@ import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.ptr.PointerByReference;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Collectors;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import org.slf4j.Logger;
 
 public class NativeModuleLister {
@@ -41,11 +41,8 @@ public class NativeModuleLister {
       } else {
          int var0 = Kernel32.INSTANCE.GetCurrentProcessId();
          ImmutableList.Builder var1 = ImmutableList.builder();
-         List var2 = Kernel32Util.getModules(var0);
-         Iterator var3 = var2.iterator();
 
-         while(var3.hasNext()) {
-            Tlhelp32.MODULEENTRY32W var4 = (Tlhelp32.MODULEENTRY32W)var3.next();
+         for(Tlhelp32.MODULEENTRY32W var4 : Kernel32Util.getModules(var0)) {
             String var5 = var4.szModule();
             Optional var6 = tryGetVersion(var4.szExePath());
             var1.add(new NativeModuleInfo(var5, var6));
@@ -100,11 +97,8 @@ public class NativeModuleLister {
 
    private static OptionalInt findLangAndCodepage(int[] var0) {
       OptionalInt var1 = OptionalInt.empty();
-      int[] var2 = var0;
-      int var3 = var0.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         int var5 = var2[var4];
+      for(int var5 : var0) {
          if ((var5 & -65536) == 78643200 && (var5 & '\uffff') == 1033) {
             return OptionalInt.of(var5);
          }
@@ -135,13 +129,24 @@ public class NativeModuleLister {
    }
 
    public static void addCrashSection(CrashReportCategory var0) {
-      var0.setDetail("Modules", () -> {
-         return (String)listModules().stream().sorted(Comparator.comparing((var0) -> {
-            return var0.name;
-         })).map((var0) -> {
-            return "\n\t\t" + String.valueOf(var0);
-         }).collect(Collectors.joining());
-      });
+      var0.setDetail("Modules", (CrashReportDetail)(() -> (String)listModules().stream().sorted(Comparator.comparing((var0) -> var0.name)).map((var0) -> "\n\t\t" + String.valueOf(var0)).collect(Collectors.joining())));
+   }
+
+   public static class NativeModuleVersion {
+      public final String description;
+      public final String version;
+      public final String company;
+
+      public NativeModuleVersion(String var1, String var2, String var3) {
+         super();
+         this.description = var1;
+         this.version = var2;
+         this.company = var3;
+      }
+
+      public String toString() {
+         return this.description + ":" + this.version + ":" + this.company;
+      }
    }
 
    public static class NativeModuleInfo {
@@ -159,23 +164,6 @@ public class NativeModuleLister {
             String var10000 = this.name;
             return var10000 + ":" + String.valueOf(var1);
          }).orElse(this.name);
-      }
-   }
-
-   public static class NativeModuleVersion {
-      public final String description;
-      public final String version;
-      public final String company;
-
-      public NativeModuleVersion(String var1, String var2, String var3) {
-         super();
-         this.description = var1;
-         this.version = var2;
-         this.company = var3;
-      }
-
-      public String toString() {
-         return this.description + ":" + this.version + ":" + this.company;
       }
    }
 }

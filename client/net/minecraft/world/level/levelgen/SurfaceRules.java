@@ -6,7 +6,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -141,803 +140,6 @@ public class SurfaceRules {
       UNDER_CEILING = stoneDepthCheck(0, true, CaveSurface.CEILING);
    }
 
-   private static record StoneDepthCheck(int offset, boolean addSurfaceDepth, int secondaryDepthRange, CaveSurface surfaceType) implements ConditionSource {
-      final int offset;
-      final boolean addSurfaceDepth;
-      final int secondaryDepthRange;
-      static final KeyDispatchDataCodec<StoneDepthCheck> CODEC = KeyDispatchDataCodec.of(RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(Codec.INT.fieldOf("offset").forGetter(StoneDepthCheck::offset), Codec.BOOL.fieldOf("add_surface_depth").forGetter(StoneDepthCheck::addSurfaceDepth), Codec.INT.fieldOf("secondary_depth_range").forGetter(StoneDepthCheck::secondaryDepthRange), CaveSurface.CODEC.fieldOf("surface_type").forGetter(StoneDepthCheck::surfaceType)).apply(var0, StoneDepthCheck::new);
-      }));
-
-      StoneDepthCheck(int var1, boolean var2, int var3, CaveSurface var4) {
-         super();
-         this.offset = var1;
-         this.addSurfaceDepth = var2;
-         this.secondaryDepthRange = var3;
-         this.surfaceType = var4;
-      }
-
-      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public Condition apply(final Context var1) {
-         final boolean var2 = this.surfaceType == CaveSurface.CEILING;
-
-         class 1StoneDepthCondition extends LazyYCondition {
-            _StoneDepthCondition/* $FF was: 1StoneDepthCondition*/() {
-               super(var1);
-            }
-
-            protected boolean compute() {
-               int var1x = var2 ? this.context.stoneDepthBelow : this.context.stoneDepthAbove;
-               int var2x = StoneDepthCheck.this.addSurfaceDepth ? this.context.surfaceDepth : 0;
-               int var3 = StoneDepthCheck.this.secondaryDepthRange == 0 ? 0 : (int)Mth.map(this.context.getSurfaceSecondary(), -1.0, 1.0, 0.0, (double)StoneDepthCheck.this.secondaryDepthRange);
-               return var1x <= 1 + StoneDepthCheck.this.offset + var2x + var3;
-            }
-         }
-
-         return new 1StoneDepthCondition();
-      }
-
-      public int offset() {
-         return this.offset;
-      }
-
-      public boolean addSurfaceDepth() {
-         return this.addSurfaceDepth;
-      }
-
-      public int secondaryDepthRange() {
-         return this.secondaryDepthRange;
-      }
-
-      public CaveSurface surfaceType() {
-         return this.surfaceType;
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((Context)var1);
-      }
-   }
-
-   static record NotConditionSource(ConditionSource target) implements ConditionSource {
-      static final KeyDispatchDataCodec<NotConditionSource> CODEC;
-
-      NotConditionSource(ConditionSource var1) {
-         super();
-         this.target = var1;
-      }
-
-      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public Condition apply(Context var1) {
-         return new NotCondition((Condition)this.target.apply(var1));
-      }
-
-      public ConditionSource target() {
-         return this.target;
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((Context)var1);
-      }
-
-      static {
-         CODEC = KeyDispatchDataCodec.of(SurfaceRules.ConditionSource.CODEC.xmap(NotConditionSource::new, NotConditionSource::target).fieldOf("invert"));
-      }
-   }
-
-   public interface ConditionSource extends Function<Context, Condition> {
-      Codec<ConditionSource> CODEC = BuiltInRegistries.MATERIAL_CONDITION.byNameCodec().dispatch((var0) -> {
-         return var0.codec().codec();
-      }, Function.identity());
-
-      static MapCodec<? extends ConditionSource> bootstrap(Registry<MapCodec<? extends ConditionSource>> var0) {
-         SurfaceRules.register(var0, "biome", SurfaceRules.BiomeConditionSource.CODEC);
-         SurfaceRules.register(var0, "noise_threshold", SurfaceRules.NoiseThresholdConditionSource.CODEC);
-         SurfaceRules.register(var0, "vertical_gradient", SurfaceRules.VerticalGradientConditionSource.CODEC);
-         SurfaceRules.register(var0, "y_above", SurfaceRules.YConditionSource.CODEC);
-         SurfaceRules.register(var0, "water", SurfaceRules.WaterConditionSource.CODEC);
-         SurfaceRules.register(var0, "temperature", SurfaceRules.Temperature.CODEC);
-         SurfaceRules.register(var0, "steep", SurfaceRules.Steep.CODEC);
-         SurfaceRules.register(var0, "not", SurfaceRules.NotConditionSource.CODEC);
-         SurfaceRules.register(var0, "hole", SurfaceRules.Hole.CODEC);
-         SurfaceRules.register(var0, "above_preliminary_surface", SurfaceRules.AbovePreliminarySurface.CODEC);
-         return SurfaceRules.register(var0, "stone_depth", SurfaceRules.StoneDepthCheck.CODEC);
-      }
-
-      KeyDispatchDataCodec<? extends ConditionSource> codec();
-   }
-
-   private static record YConditionSource(VerticalAnchor anchor, int surfaceDepthMultiplier, boolean addStoneDepth) implements ConditionSource {
-      final VerticalAnchor anchor;
-      final int surfaceDepthMultiplier;
-      final boolean addStoneDepth;
-      static final KeyDispatchDataCodec<YConditionSource> CODEC = KeyDispatchDataCodec.of(RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(VerticalAnchor.CODEC.fieldOf("anchor").forGetter(YConditionSource::anchor), Codec.intRange(-20, 20).fieldOf("surface_depth_multiplier").forGetter(YConditionSource::surfaceDepthMultiplier), Codec.BOOL.fieldOf("add_stone_depth").forGetter(YConditionSource::addStoneDepth)).apply(var0, YConditionSource::new);
-      }));
-
-      YConditionSource(VerticalAnchor var1, int var2, boolean var3) {
-         super();
-         this.anchor = var1;
-         this.surfaceDepthMultiplier = var2;
-         this.addStoneDepth = var3;
-      }
-
-      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public Condition apply(final Context var1) {
-         class 1YCondition extends LazyYCondition {
-            _YCondition/* $FF was: 1YCondition*/() {
-               super(var1);
-            }
-
-            protected boolean compute() {
-               return this.context.blockY + (YConditionSource.this.addStoneDepth ? this.context.stoneDepthAbove : 0) >= YConditionSource.this.anchor.resolveY(this.context.context) + this.context.surfaceDepth * YConditionSource.this.surfaceDepthMultiplier;
-            }
-         }
-
-         return new 1YCondition();
-      }
-
-      public VerticalAnchor anchor() {
-         return this.anchor;
-      }
-
-      public int surfaceDepthMultiplier() {
-         return this.surfaceDepthMultiplier;
-      }
-
-      public boolean addStoneDepth() {
-         return this.addStoneDepth;
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((Context)var1);
-      }
-   }
-
-   private static record WaterConditionSource(int offset, int surfaceDepthMultiplier, boolean addStoneDepth) implements ConditionSource {
-      final int offset;
-      final int surfaceDepthMultiplier;
-      final boolean addStoneDepth;
-      static final KeyDispatchDataCodec<WaterConditionSource> CODEC = KeyDispatchDataCodec.of(RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(Codec.INT.fieldOf("offset").forGetter(WaterConditionSource::offset), Codec.intRange(-20, 20).fieldOf("surface_depth_multiplier").forGetter(WaterConditionSource::surfaceDepthMultiplier), Codec.BOOL.fieldOf("add_stone_depth").forGetter(WaterConditionSource::addStoneDepth)).apply(var0, WaterConditionSource::new);
-      }));
-
-      WaterConditionSource(int var1, int var2, boolean var3) {
-         super();
-         this.offset = var1;
-         this.surfaceDepthMultiplier = var2;
-         this.addStoneDepth = var3;
-      }
-
-      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public Condition apply(final Context var1) {
-         class 1WaterCondition extends LazyYCondition {
-            _WaterCondition/* $FF was: 1WaterCondition*/() {
-               super(var1);
-            }
-
-            protected boolean compute() {
-               return this.context.waterHeight == -2147483648 || this.context.blockY + (WaterConditionSource.this.addStoneDepth ? this.context.stoneDepthAbove : 0) >= this.context.waterHeight + WaterConditionSource.this.offset + this.context.surfaceDepth * WaterConditionSource.this.surfaceDepthMultiplier;
-            }
-         }
-
-         return new 1WaterCondition();
-      }
-
-      public int offset() {
-         return this.offset;
-      }
-
-      public int surfaceDepthMultiplier() {
-         return this.surfaceDepthMultiplier;
-      }
-
-      public boolean addStoneDepth() {
-         return this.addStoneDepth;
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((Context)var1);
-      }
-   }
-
-   static final class BiomeConditionSource implements ConditionSource {
-      static final KeyDispatchDataCodec<BiomeConditionSource> CODEC;
-      private final List<ResourceKey<Biome>> biomes;
-      final Predicate<ResourceKey<Biome>> biomeNameTest;
-
-      BiomeConditionSource(List<ResourceKey<Biome>> var1) {
-         super();
-         this.biomes = var1;
-         Set var10001 = Set.copyOf(var1);
-         Objects.requireNonNull(var10001);
-         this.biomeNameTest = var10001::contains;
-      }
-
-      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public Condition apply(final Context var1) {
-         class 1BiomeCondition extends LazyYCondition {
-            _BiomeCondition/* $FF was: 1BiomeCondition*/() {
-               super(var1);
-            }
-
-            protected boolean compute() {
-               return ((Holder)this.context.biome.get()).is(BiomeConditionSource.this.biomeNameTest);
-            }
-         }
-
-         return new 1BiomeCondition();
-      }
-
-      public boolean equals(Object var1) {
-         if (this == var1) {
-            return true;
-         } else if (var1 instanceof BiomeConditionSource) {
-            BiomeConditionSource var2 = (BiomeConditionSource)var1;
-            return this.biomes.equals(var2.biomes);
-         } else {
-            return false;
-         }
-      }
-
-      public int hashCode() {
-         return this.biomes.hashCode();
-      }
-
-      public String toString() {
-         return "BiomeConditionSource[biomes=" + String.valueOf(this.biomes) + "]";
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((Context)var1);
-      }
-
-      static {
-         CODEC = KeyDispatchDataCodec.of(ResourceKey.codec(Registries.BIOME).listOf().fieldOf("biome_is").xmap(SurfaceRules::isBiome, (var0) -> {
-            return var0.biomes;
-         }));
-      }
-   }
-
-   private static record NoiseThresholdConditionSource(ResourceKey<NormalNoise.NoiseParameters> noise, double minThreshold, double maxThreshold) implements ConditionSource {
-      final double minThreshold;
-      final double maxThreshold;
-      static final KeyDispatchDataCodec<NoiseThresholdConditionSource> CODEC = KeyDispatchDataCodec.of(RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(ResourceKey.codec(Registries.NOISE).fieldOf("noise").forGetter(NoiseThresholdConditionSource::noise), Codec.DOUBLE.fieldOf("min_threshold").forGetter(NoiseThresholdConditionSource::minThreshold), Codec.DOUBLE.fieldOf("max_threshold").forGetter(NoiseThresholdConditionSource::maxThreshold)).apply(var0, NoiseThresholdConditionSource::new);
-      }));
-
-      NoiseThresholdConditionSource(ResourceKey<NormalNoise.NoiseParameters> var1, double var2, double var4) {
-         super();
-         this.noise = var1;
-         this.minThreshold = var2;
-         this.maxThreshold = var4;
-      }
-
-      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public Condition apply(final Context var1) {
-         final NormalNoise var2 = var1.randomState.getOrCreateNoise(this.noise);
-
-         class 1NoiseThresholdCondition extends LazyXZCondition {
-            _NoiseThresholdCondition/* $FF was: 1NoiseThresholdCondition*/() {
-               super(var1);
-            }
-
-            protected boolean compute() {
-               double var1x = var2.getValue((double)this.context.blockX, 0.0, (double)this.context.blockZ);
-               return var1x >= NoiseThresholdConditionSource.this.minThreshold && var1x <= NoiseThresholdConditionSource.this.maxThreshold;
-            }
-         }
-
-         return new 1NoiseThresholdCondition();
-      }
-
-      public ResourceKey<NormalNoise.NoiseParameters> noise() {
-         return this.noise;
-      }
-
-      public double minThreshold() {
-         return this.minThreshold;
-      }
-
-      public double maxThreshold() {
-         return this.maxThreshold;
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((Context)var1);
-      }
-   }
-
-   static record VerticalGradientConditionSource(ResourceLocation randomName, VerticalAnchor trueAtAndBelow, VerticalAnchor falseAtAndAbove) implements ConditionSource {
-      static final KeyDispatchDataCodec<VerticalGradientConditionSource> CODEC = KeyDispatchDataCodec.of(RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(ResourceLocation.CODEC.fieldOf("random_name").forGetter(VerticalGradientConditionSource::randomName), VerticalAnchor.CODEC.fieldOf("true_at_and_below").forGetter(VerticalGradientConditionSource::trueAtAndBelow), VerticalAnchor.CODEC.fieldOf("false_at_and_above").forGetter(VerticalGradientConditionSource::falseAtAndAbove)).apply(var0, VerticalGradientConditionSource::new);
-      }));
-
-      VerticalGradientConditionSource(ResourceLocation var1, VerticalAnchor var2, VerticalAnchor var3) {
-         super();
-         this.randomName = var1;
-         this.trueAtAndBelow = var2;
-         this.falseAtAndAbove = var3;
-      }
-
-      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public Condition apply(final Context var1) {
-         final int var2 = this.trueAtAndBelow().resolveY(var1.context);
-         final int var3 = this.falseAtAndAbove().resolveY(var1.context);
-         final PositionalRandomFactory var4 = var1.randomState.getOrCreateRandomFactory(this.randomName());
-
-         class 1VerticalGradientCondition extends LazyYCondition {
-            _VerticalGradientCondition/* $FF was: 1VerticalGradientCondition*/(final VerticalGradientConditionSource var1x) {
-               super(var1);
-            }
-
-            protected boolean compute() {
-               int var1x = this.context.blockY;
-               if (var1x <= var2) {
-                  return true;
-               } else if (var1x >= var3) {
-                  return false;
-               } else {
-                  double var2x = Mth.map((double)var1x, (double)var2, (double)var3, 1.0, 0.0);
-                  RandomSource var4x = var4.at(this.context.blockX, var1x, this.context.blockZ);
-                  return (double)var4x.nextFloat() < var2x;
-               }
-            }
-         }
-
-         return new 1VerticalGradientCondition(this);
-      }
-
-      public ResourceLocation randomName() {
-         return this.randomName;
-      }
-
-      public VerticalAnchor trueAtAndBelow() {
-         return this.trueAtAndBelow;
-      }
-
-      public VerticalAnchor falseAtAndAbove() {
-         return this.falseAtAndAbove;
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((Context)var1);
-      }
-   }
-
-   static enum Steep implements ConditionSource {
-      INSTANCE;
-
-      static final KeyDispatchDataCodec<Steep> CODEC = KeyDispatchDataCodec.of(MapCodec.unit(INSTANCE));
-
-      private Steep() {
-      }
-
-      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public Condition apply(Context var1) {
-         return var1.steep;
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((Context)var1);
-      }
-
-      // $FF: synthetic method
-      private static Steep[] $values() {
-         return new Steep[]{INSTANCE};
-      }
-   }
-
-   static enum Hole implements ConditionSource {
-      INSTANCE;
-
-      static final KeyDispatchDataCodec<Hole> CODEC = KeyDispatchDataCodec.of(MapCodec.unit(INSTANCE));
-
-      private Hole() {
-      }
-
-      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public Condition apply(Context var1) {
-         return var1.hole;
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((Context)var1);
-      }
-
-      // $FF: synthetic method
-      private static Hole[] $values() {
-         return new Hole[]{INSTANCE};
-      }
-   }
-
-   static enum AbovePreliminarySurface implements ConditionSource {
-      INSTANCE;
-
-      static final KeyDispatchDataCodec<AbovePreliminarySurface> CODEC = KeyDispatchDataCodec.of(MapCodec.unit(INSTANCE));
-
-      private AbovePreliminarySurface() {
-      }
-
-      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public Condition apply(Context var1) {
-         return var1.abovePreliminarySurface;
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((Context)var1);
-      }
-
-      // $FF: synthetic method
-      private static AbovePreliminarySurface[] $values() {
-         return new AbovePreliminarySurface[]{INSTANCE};
-      }
-   }
-
-   static enum Temperature implements ConditionSource {
-      INSTANCE;
-
-      static final KeyDispatchDataCodec<Temperature> CODEC = KeyDispatchDataCodec.of(MapCodec.unit(INSTANCE));
-
-      private Temperature() {
-      }
-
-      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
-         return CODEC;
-      }
-
-      public Condition apply(Context var1) {
-         return var1.temperature;
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((Context)var1);
-      }
-
-      // $FF: synthetic method
-      private static Temperature[] $values() {
-         return new Temperature[]{INSTANCE};
-      }
-   }
-
-   private static record TestRuleSource(ConditionSource ifTrue, RuleSource thenRun) implements RuleSource {
-      static final KeyDispatchDataCodec<TestRuleSource> CODEC = KeyDispatchDataCodec.of(RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(SurfaceRules.ConditionSource.CODEC.fieldOf("if_true").forGetter(TestRuleSource::ifTrue), SurfaceRules.RuleSource.CODEC.fieldOf("then_run").forGetter(TestRuleSource::thenRun)).apply(var0, TestRuleSource::new);
-      }));
-
-      TestRuleSource(ConditionSource var1, RuleSource var2) {
-         super();
-         this.ifTrue = var1;
-         this.thenRun = var2;
-      }
-
-      public KeyDispatchDataCodec<? extends RuleSource> codec() {
-         return CODEC;
-      }
-
-      public SurfaceRule apply(Context var1) {
-         return new TestRule((Condition)this.ifTrue.apply(var1), (SurfaceRule)this.thenRun.apply(var1));
-      }
-
-      public ConditionSource ifTrue() {
-         return this.ifTrue;
-      }
-
-      public RuleSource thenRun() {
-         return this.thenRun;
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((Context)var1);
-      }
-   }
-
-   public interface RuleSource extends Function<Context, SurfaceRule> {
-      Codec<RuleSource> CODEC = BuiltInRegistries.MATERIAL_RULE.byNameCodec().dispatch((var0) -> {
-         return var0.codec().codec();
-      }, Function.identity());
-
-      static MapCodec<? extends RuleSource> bootstrap(Registry<MapCodec<? extends RuleSource>> var0) {
-         SurfaceRules.register(var0, "bandlands", SurfaceRules.Bandlands.CODEC);
-         SurfaceRules.register(var0, "block", SurfaceRules.BlockRuleSource.CODEC);
-         SurfaceRules.register(var0, "sequence", SurfaceRules.SequenceRuleSource.CODEC);
-         return SurfaceRules.register(var0, "condition", SurfaceRules.TestRuleSource.CODEC);
-      }
-
-      KeyDispatchDataCodec<? extends RuleSource> codec();
-   }
-
-   private static record SequenceRuleSource(List<RuleSource> sequence) implements RuleSource {
-      static final KeyDispatchDataCodec<SequenceRuleSource> CODEC;
-
-      SequenceRuleSource(List<RuleSource> var1) {
-         super();
-         this.sequence = var1;
-      }
-
-      public KeyDispatchDataCodec<? extends RuleSource> codec() {
-         return CODEC;
-      }
-
-      public SurfaceRule apply(Context var1) {
-         if (this.sequence.size() == 1) {
-            return (SurfaceRule)((RuleSource)this.sequence.get(0)).apply(var1);
-         } else {
-            ImmutableList.Builder var2 = ImmutableList.builder();
-            Iterator var3 = this.sequence.iterator();
-
-            while(var3.hasNext()) {
-               RuleSource var4 = (RuleSource)var3.next();
-               var2.add((SurfaceRule)var4.apply(var1));
-            }
-
-            return new SequenceRule(var2.build());
-         }
-      }
-
-      public List<RuleSource> sequence() {
-         return this.sequence;
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((Context)var1);
-      }
-
-      static {
-         CODEC = KeyDispatchDataCodec.of(SurfaceRules.RuleSource.CODEC.listOf().xmap(SequenceRuleSource::new, SequenceRuleSource::sequence).fieldOf("sequence"));
-      }
-   }
-
-   static record BlockRuleSource(BlockState resultState, StateRule rule) implements RuleSource {
-      static final KeyDispatchDataCodec<BlockRuleSource> CODEC;
-
-      BlockRuleSource(BlockState var1) {
-         this(var1, new StateRule(var1));
-      }
-
-      private BlockRuleSource(BlockState var1, StateRule var2) {
-         super();
-         this.resultState = var1;
-         this.rule = var2;
-      }
-
-      public KeyDispatchDataCodec<? extends RuleSource> codec() {
-         return CODEC;
-      }
-
-      public SurfaceRule apply(Context var1) {
-         return this.rule;
-      }
-
-      public BlockState resultState() {
-         return this.resultState;
-      }
-
-      public StateRule rule() {
-         return this.rule;
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((Context)var1);
-      }
-
-      static {
-         CODEC = KeyDispatchDataCodec.of(BlockState.CODEC.xmap(BlockRuleSource::new, BlockRuleSource::resultState).fieldOf("result_state"));
-      }
-   }
-
-   private static enum Bandlands implements RuleSource {
-      INSTANCE;
-
-      static final KeyDispatchDataCodec<Bandlands> CODEC = KeyDispatchDataCodec.of(MapCodec.unit(INSTANCE));
-
-      private Bandlands() {
-      }
-
-      public KeyDispatchDataCodec<? extends RuleSource> codec() {
-         return CODEC;
-      }
-
-      public SurfaceRule apply(Context var1) {
-         SurfaceSystem var10000 = var1.system;
-         Objects.requireNonNull(var10000);
-         return var10000::getBand;
-      }
-
-      // $FF: synthetic method
-      public Object apply(final Object var1) {
-         return this.apply((Context)var1);
-      }
-
-      // $FF: synthetic method
-      private static Bandlands[] $values() {
-         return new Bandlands[]{INSTANCE};
-      }
-   }
-
-   private static record SequenceRule(List<SurfaceRule> rules) implements SurfaceRule {
-      SequenceRule(List<SurfaceRule> var1) {
-         super();
-         this.rules = var1;
-      }
-
-      @Nullable
-      public BlockState tryApply(int var1, int var2, int var3) {
-         Iterator var4 = this.rules.iterator();
-
-         BlockState var6;
-         do {
-            if (!var4.hasNext()) {
-               return null;
-            }
-
-            SurfaceRule var5 = (SurfaceRule)var4.next();
-            var6 = var5.tryApply(var1, var2, var3);
-         } while(var6 == null);
-
-         return var6;
-      }
-
-      public List<SurfaceRule> rules() {
-         return this.rules;
-      }
-   }
-
-   private static record TestRule(Condition condition, SurfaceRule followup) implements SurfaceRule {
-      TestRule(Condition var1, SurfaceRule var2) {
-         super();
-         this.condition = var1;
-         this.followup = var2;
-      }
-
-      @Nullable
-      public BlockState tryApply(int var1, int var2, int var3) {
-         return !this.condition.test() ? null : this.followup.tryApply(var1, var2, var3);
-      }
-
-      public Condition condition() {
-         return this.condition;
-      }
-
-      public SurfaceRule followup() {
-         return this.followup;
-      }
-   }
-
-   static record StateRule(BlockState state) implements SurfaceRule {
-      StateRule(BlockState var1) {
-         super();
-         this.state = var1;
-      }
-
-      public BlockState tryApply(int var1, int var2, int var3) {
-         return this.state;
-      }
-
-      public BlockState state() {
-         return this.state;
-      }
-   }
-
-   protected interface SurfaceRule {
-      @Nullable
-      BlockState tryApply(int var1, int var2, int var3);
-   }
-
-   private static record NotCondition(Condition target) implements Condition {
-      NotCondition(Condition var1) {
-         super();
-         this.target = var1;
-      }
-
-      public boolean test() {
-         return !this.target.test();
-      }
-
-      public Condition target() {
-         return this.target;
-      }
-   }
-
-   private abstract static class LazyYCondition extends LazyCondition {
-      protected LazyYCondition(Context var1) {
-         super(var1);
-      }
-
-      protected long getContextLastUpdate() {
-         return this.context.lastUpdateY;
-      }
-   }
-
-   private abstract static class LazyXZCondition extends LazyCondition {
-      protected LazyXZCondition(Context var1) {
-         super(var1);
-      }
-
-      protected long getContextLastUpdate() {
-         return this.context.lastUpdateXZ;
-      }
-   }
-
-   private abstract static class LazyCondition implements Condition {
-      protected final Context context;
-      private long lastUpdate;
-      @Nullable
-      Boolean result;
-
-      protected LazyCondition(Context var1) {
-         super();
-         this.context = var1;
-         this.lastUpdate = this.getContextLastUpdate() - 1L;
-      }
-
-      public boolean test() {
-         long var1 = this.getContextLastUpdate();
-         if (var1 == this.lastUpdate) {
-            if (this.result == null) {
-               throw new IllegalStateException("Update triggered but the result is null");
-            } else {
-               return this.result;
-            }
-         } else {
-            this.lastUpdate = var1;
-            this.result = this.compute();
-            return this.result;
-         }
-      }
-
-      protected abstract long getContextLastUpdate();
-
-      protected abstract boolean compute();
-   }
-
-   private interface Condition {
-      boolean test();
-   }
-
    protected static final class Context {
       private static final int HOW_FAR_BELOW_PRELIMINARY_SURFACE_LEVEL_TO_BUILD_SURFACE = 8;
       private static final int SURFACE_CELL_BITS = 4;
@@ -995,9 +197,7 @@ public class SurfaceRules {
 
       protected void updateY(int var1, int var2, int var3, int var4, int var5, int var6) {
          ++this.lastUpdateY;
-         this.biome = Suppliers.memoize(() -> {
-            return (Holder)this.biomeGetter.apply(this.pos.set(var4, var5, var6));
-         });
+         this.biome = Suppliers.memoize(() -> (Holder)this.biomeGetter.apply(this.pos.set(var4, var5, var6)));
          this.blockY = var5;
          this.waterHeight = var3;
          this.stoneDepthBelow = var2;
@@ -1046,7 +246,27 @@ public class SurfaceRules {
          return this.minSurfaceLevel;
       }
 
-      private static class TemperatureHelperCondition extends LazyYCondition {
+      static final class HoleCondition extends LazyXZCondition {
+         HoleCondition(Context var1) {
+            super(var1);
+         }
+
+         protected boolean compute() {
+            return this.context.surfaceDepth <= 0;
+         }
+      }
+
+      final class AbovePreliminarySurfaceCondition implements Condition {
+         AbovePreliminarySurfaceCondition() {
+            super();
+         }
+
+         public boolean test() {
+            return Context.this.blockY >= Context.this.getMinSurfaceLevel();
+         }
+      }
+
+      static class TemperatureHelperCondition extends LazyYCondition {
          TemperatureHelperCondition(Context var1) {
             super(var1);
          }
@@ -1080,25 +300,669 @@ public class SurfaceRules {
             }
          }
       }
+   }
 
-      private static final class HoleCondition extends LazyXZCondition {
-         HoleCondition(Context var1) {
-            super(var1);
-         }
+   abstract static class LazyCondition implements Condition {
+      protected final Context context;
+      private long lastUpdate;
+      @Nullable
+      Boolean result;
 
-         protected boolean compute() {
-            return this.context.surfaceDepth <= 0;
+      protected LazyCondition(Context var1) {
+         super();
+         this.context = var1;
+         this.lastUpdate = this.getContextLastUpdate() - 1L;
+      }
+
+      public boolean test() {
+         long var1 = this.getContextLastUpdate();
+         if (var1 == this.lastUpdate) {
+            if (this.result == null) {
+               throw new IllegalStateException("Update triggered but the result is null");
+            } else {
+               return this.result;
+            }
+         } else {
+            this.lastUpdate = var1;
+            this.result = this.compute();
+            return this.result;
          }
       }
 
-      final class AbovePreliminarySurfaceCondition implements Condition {
-         AbovePreliminarySurfaceCondition() {
-            super();
+      protected abstract long getContextLastUpdate();
+
+      protected abstract boolean compute();
+   }
+
+   abstract static class LazyXZCondition extends LazyCondition {
+      protected LazyXZCondition(Context var1) {
+         super(var1);
+      }
+
+      protected long getContextLastUpdate() {
+         return this.context.lastUpdateXZ;
+      }
+   }
+
+   abstract static class LazyYCondition extends LazyCondition {
+      protected LazyYCondition(Context var1) {
+         super(var1);
+      }
+
+      protected long getContextLastUpdate() {
+         return this.context.lastUpdateY;
+      }
+   }
+
+   static record NotCondition(Condition target) implements Condition {
+      NotCondition(Condition var1) {
+         super();
+         this.target = var1;
+      }
+
+      public boolean test() {
+         return !this.target.test();
+      }
+   }
+
+   static record StateRule(BlockState state) implements SurfaceRule {
+      StateRule(BlockState var1) {
+         super();
+         this.state = var1;
+      }
+
+      public BlockState tryApply(int var1, int var2, int var3) {
+         return this.state;
+      }
+   }
+
+   static record TestRule(Condition condition, SurfaceRule followup) implements SurfaceRule {
+      TestRule(Condition var1, SurfaceRule var2) {
+         super();
+         this.condition = var1;
+         this.followup = var2;
+      }
+
+      @Nullable
+      public BlockState tryApply(int var1, int var2, int var3) {
+         return !this.condition.test() ? null : this.followup.tryApply(var1, var2, var3);
+      }
+   }
+
+   static record SequenceRule(List<SurfaceRule> rules) implements SurfaceRule {
+      SequenceRule(List<SurfaceRule> var1) {
+         super();
+         this.rules = var1;
+      }
+
+      @Nullable
+      public BlockState tryApply(int var1, int var2, int var3) {
+         for(SurfaceRule var5 : this.rules) {
+            BlockState var6 = var5.tryApply(var1, var2, var3);
+            if (var6 != null) {
+               return var6;
+            }
          }
 
-         public boolean test() {
-            return Context.this.blockY >= Context.this.getMinSurfaceLevel();
+         return null;
+      }
+   }
+
+   public interface ConditionSource extends Function<Context, Condition> {
+      Codec<ConditionSource> CODEC = BuiltInRegistries.MATERIAL_CONDITION.byNameCodec().dispatch((var0) -> var0.codec().codec(), Function.identity());
+
+      static MapCodec<? extends ConditionSource> bootstrap(Registry<MapCodec<? extends ConditionSource>> var0) {
+         SurfaceRules.register(var0, "biome", SurfaceRules.BiomeConditionSource.CODEC);
+         SurfaceRules.register(var0, "noise_threshold", SurfaceRules.NoiseThresholdConditionSource.CODEC);
+         SurfaceRules.register(var0, "vertical_gradient", SurfaceRules.VerticalGradientConditionSource.CODEC);
+         SurfaceRules.register(var0, "y_above", SurfaceRules.YConditionSource.CODEC);
+         SurfaceRules.register(var0, "water", SurfaceRules.WaterConditionSource.CODEC);
+         SurfaceRules.register(var0, "temperature", SurfaceRules.Temperature.CODEC);
+         SurfaceRules.register(var0, "steep", SurfaceRules.Steep.CODEC);
+         SurfaceRules.register(var0, "not", SurfaceRules.NotConditionSource.CODEC);
+         SurfaceRules.register(var0, "hole", SurfaceRules.Hole.CODEC);
+         SurfaceRules.register(var0, "above_preliminary_surface", SurfaceRules.AbovePreliminarySurface.CODEC);
+         return SurfaceRules.<ConditionSource>register(var0, "stone_depth", SurfaceRules.StoneDepthCheck.CODEC);
+      }
+
+      KeyDispatchDataCodec<? extends ConditionSource> codec();
+   }
+
+   public interface RuleSource extends Function<Context, SurfaceRule> {
+      Codec<RuleSource> CODEC = BuiltInRegistries.MATERIAL_RULE.byNameCodec().dispatch((var0) -> var0.codec().codec(), Function.identity());
+
+      static MapCodec<? extends RuleSource> bootstrap(Registry<MapCodec<? extends RuleSource>> var0) {
+         SurfaceRules.register(var0, "bandlands", SurfaceRules.Bandlands.CODEC);
+         SurfaceRules.register(var0, "block", SurfaceRules.BlockRuleSource.CODEC);
+         SurfaceRules.register(var0, "sequence", SurfaceRules.SequenceRuleSource.CODEC);
+         return SurfaceRules.<RuleSource>register(var0, "condition", SurfaceRules.TestRuleSource.CODEC);
+      }
+
+      KeyDispatchDataCodec<? extends RuleSource> codec();
+   }
+
+   static record NotConditionSource(ConditionSource target) implements ConditionSource {
+      static final KeyDispatchDataCodec<NotConditionSource> CODEC;
+
+      NotConditionSource(ConditionSource var1) {
+         super();
+         this.target = var1;
+      }
+
+      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
+         return CODEC;
+      }
+
+      public Condition apply(Context var1) {
+         return new NotCondition((Condition)this.target.apply(var1));
+      }
+
+      // $FF: synthetic method
+      public Object apply(final Object var1) {
+         return this.apply((Context)var1);
+      }
+
+      static {
+         CODEC = KeyDispatchDataCodec.<NotConditionSource>of(SurfaceRules.ConditionSource.CODEC.xmap(NotConditionSource::new, NotConditionSource::target).fieldOf("invert"));
+      }
+   }
+
+   static record StoneDepthCheck(int offset, boolean addSurfaceDepth, int secondaryDepthRange, CaveSurface surfaceType) implements ConditionSource {
+      final int offset;
+      final boolean addSurfaceDepth;
+      final int secondaryDepthRange;
+      static final KeyDispatchDataCodec<StoneDepthCheck> CODEC = KeyDispatchDataCodec.<StoneDepthCheck>of(RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.INT.fieldOf("offset").forGetter(StoneDepthCheck::offset), Codec.BOOL.fieldOf("add_surface_depth").forGetter(StoneDepthCheck::addSurfaceDepth), Codec.INT.fieldOf("secondary_depth_range").forGetter(StoneDepthCheck::secondaryDepthRange), CaveSurface.CODEC.fieldOf("surface_type").forGetter(StoneDepthCheck::surfaceType)).apply(var0, StoneDepthCheck::new)));
+
+      StoneDepthCheck(int var1, boolean var2, int var3, CaveSurface var4) {
+         super();
+         this.offset = var1;
+         this.addSurfaceDepth = var2;
+         this.secondaryDepthRange = var3;
+         this.surfaceType = var4;
+      }
+
+      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
+         return CODEC;
+      }
+
+      public Condition apply(final Context var1) {
+         final boolean var2 = this.surfaceType == CaveSurface.CEILING;
+
+         class 1StoneDepthCondition extends LazyYCondition {
+            _StoneDepthCondition/* $FF was: 1StoneDepthCondition*/() {
+               super(StoneDepthCheck.this);
+            }
+
+            protected boolean compute() {
+               int var1x = var2 ? this.context.stoneDepthBelow : this.context.stoneDepthAbove;
+               int var2x = StoneDepthCheck.this.addSurfaceDepth ? this.context.surfaceDepth : 0;
+               int var3 = StoneDepthCheck.this.secondaryDepthRange == 0 ? 0 : (int)Mth.map(this.context.getSurfaceSecondary(), -1.0, 1.0, 0.0, (double)StoneDepthCheck.this.secondaryDepthRange);
+               return var1x <= 1 + StoneDepthCheck.this.offset + var2x + var3;
+            }
+         }
+
+         return new 1StoneDepthCondition();
+      }
+
+      // $FF: synthetic method
+      public Object apply(final Object var1) {
+         return this.apply((Context)var1);
+      }
+   }
+
+   static enum AbovePreliminarySurface implements ConditionSource {
+      INSTANCE;
+
+      static final KeyDispatchDataCodec<AbovePreliminarySurface> CODEC = KeyDispatchDataCodec.<AbovePreliminarySurface>of(MapCodec.unit(INSTANCE));
+
+      private AbovePreliminarySurface() {
+      }
+
+      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
+         return CODEC;
+      }
+
+      public Condition apply(Context var1) {
+         return var1.abovePreliminarySurface;
+      }
+
+      // $FF: synthetic method
+      public Object apply(final Object var1) {
+         return this.apply((Context)var1);
+      }
+
+      // $FF: synthetic method
+      private static AbovePreliminarySurface[] $values() {
+         return new AbovePreliminarySurface[]{INSTANCE};
+      }
+   }
+
+   static enum Hole implements ConditionSource {
+      INSTANCE;
+
+      static final KeyDispatchDataCodec<Hole> CODEC = KeyDispatchDataCodec.<Hole>of(MapCodec.unit(INSTANCE));
+
+      private Hole() {
+      }
+
+      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
+         return CODEC;
+      }
+
+      public Condition apply(Context var1) {
+         return var1.hole;
+      }
+
+      // $FF: synthetic method
+      public Object apply(final Object var1) {
+         return this.apply((Context)var1);
+      }
+
+      // $FF: synthetic method
+      private static Hole[] $values() {
+         return new Hole[]{INSTANCE};
+      }
+   }
+
+   static record YConditionSource(VerticalAnchor anchor, int surfaceDepthMultiplier, boolean addStoneDepth) implements ConditionSource {
+      final VerticalAnchor anchor;
+      final int surfaceDepthMultiplier;
+      final boolean addStoneDepth;
+      static final KeyDispatchDataCodec<YConditionSource> CODEC = KeyDispatchDataCodec.<YConditionSource>of(RecordCodecBuilder.mapCodec((var0) -> var0.group(VerticalAnchor.CODEC.fieldOf("anchor").forGetter(YConditionSource::anchor), Codec.intRange(-20, 20).fieldOf("surface_depth_multiplier").forGetter(YConditionSource::surfaceDepthMultiplier), Codec.BOOL.fieldOf("add_stone_depth").forGetter(YConditionSource::addStoneDepth)).apply(var0, YConditionSource::new)));
+
+      YConditionSource(VerticalAnchor var1, int var2, boolean var3) {
+         super();
+         this.anchor = var1;
+         this.surfaceDepthMultiplier = var2;
+         this.addStoneDepth = var3;
+      }
+
+      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
+         return CODEC;
+      }
+
+      public Condition apply(final Context var1) {
+         class 1YCondition extends LazyYCondition {
+            _YCondition/* $FF was: 1YCondition*/() {
+               super(YConditionSource.this);
+            }
+
+            protected boolean compute() {
+               return this.context.blockY + (YConditionSource.this.addStoneDepth ? this.context.stoneDepthAbove : 0) >= YConditionSource.this.anchor.resolveY(this.context.context) + this.context.surfaceDepth * YConditionSource.this.surfaceDepthMultiplier;
+            }
+         }
+
+         return new 1YCondition();
+      }
+
+      // $FF: synthetic method
+      public Object apply(final Object var1) {
+         return this.apply((Context)var1);
+      }
+   }
+
+   static record WaterConditionSource(int offset, int surfaceDepthMultiplier, boolean addStoneDepth) implements ConditionSource {
+      final int offset;
+      final int surfaceDepthMultiplier;
+      final boolean addStoneDepth;
+      static final KeyDispatchDataCodec<WaterConditionSource> CODEC = KeyDispatchDataCodec.<WaterConditionSource>of(RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.INT.fieldOf("offset").forGetter(WaterConditionSource::offset), Codec.intRange(-20, 20).fieldOf("surface_depth_multiplier").forGetter(WaterConditionSource::surfaceDepthMultiplier), Codec.BOOL.fieldOf("add_stone_depth").forGetter(WaterConditionSource::addStoneDepth)).apply(var0, WaterConditionSource::new)));
+
+      WaterConditionSource(int var1, int var2, boolean var3) {
+         super();
+         this.offset = var1;
+         this.surfaceDepthMultiplier = var2;
+         this.addStoneDepth = var3;
+      }
+
+      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
+         return CODEC;
+      }
+
+      public Condition apply(final Context var1) {
+         class 1WaterCondition extends LazyYCondition {
+            _WaterCondition/* $FF was: 1WaterCondition*/() {
+               super(WaterConditionSource.this);
+            }
+
+            protected boolean compute() {
+               return this.context.waterHeight == -2147483648 || this.context.blockY + (WaterConditionSource.this.addStoneDepth ? this.context.stoneDepthAbove : 0) >= this.context.waterHeight + WaterConditionSource.this.offset + this.context.surfaceDepth * WaterConditionSource.this.surfaceDepthMultiplier;
+            }
+         }
+
+         return new 1WaterCondition();
+      }
+
+      // $FF: synthetic method
+      public Object apply(final Object var1) {
+         return this.apply((Context)var1);
+      }
+   }
+
+   static final class BiomeConditionSource implements ConditionSource {
+      static final KeyDispatchDataCodec<BiomeConditionSource> CODEC;
+      private final List<ResourceKey<Biome>> biomes;
+      final Predicate<ResourceKey<Biome>> biomeNameTest;
+
+      BiomeConditionSource(List<ResourceKey<Biome>> var1) {
+         super();
+         this.biomes = var1;
+         Set var10001 = Set.copyOf(var1);
+         Objects.requireNonNull(var10001);
+         this.biomeNameTest = var10001::contains;
+      }
+
+      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
+         return CODEC;
+      }
+
+      public Condition apply(final Context var1) {
+         class 1BiomeCondition extends LazyYCondition {
+            _BiomeCondition/* $FF was: 1BiomeCondition*/() {
+               super(BiomeConditionSource.this);
+            }
+
+            protected boolean compute() {
+               return ((Holder)this.context.biome.get()).is(BiomeConditionSource.this.biomeNameTest);
+            }
+         }
+
+         return new 1BiomeCondition();
+      }
+
+      public boolean equals(Object var1) {
+         if (this == var1) {
+            return true;
+         } else if (var1 instanceof BiomeConditionSource) {
+            BiomeConditionSource var2 = (BiomeConditionSource)var1;
+            return this.biomes.equals(var2.biomes);
+         } else {
+            return false;
          }
       }
+
+      public int hashCode() {
+         return this.biomes.hashCode();
+      }
+
+      public String toString() {
+         return "BiomeConditionSource[biomes=" + String.valueOf(this.biomes) + "]";
+      }
+
+      // $FF: synthetic method
+      public Object apply(final Object var1) {
+         return this.apply((Context)var1);
+      }
+
+      static {
+         CODEC = KeyDispatchDataCodec.<BiomeConditionSource>of(ResourceKey.codec(Registries.BIOME).listOf().fieldOf("biome_is").xmap(SurfaceRules::isBiome, (var0) -> var0.biomes));
+      }
+   }
+
+   static record NoiseThresholdConditionSource(ResourceKey<NormalNoise.NoiseParameters> noise, double minThreshold, double maxThreshold) implements ConditionSource {
+      final double minThreshold;
+      final double maxThreshold;
+      static final KeyDispatchDataCodec<NoiseThresholdConditionSource> CODEC = KeyDispatchDataCodec.<NoiseThresholdConditionSource>of(RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.NOISE).fieldOf("noise").forGetter(NoiseThresholdConditionSource::noise), Codec.DOUBLE.fieldOf("min_threshold").forGetter(NoiseThresholdConditionSource::minThreshold), Codec.DOUBLE.fieldOf("max_threshold").forGetter(NoiseThresholdConditionSource::maxThreshold)).apply(var0, NoiseThresholdConditionSource::new)));
+
+      NoiseThresholdConditionSource(ResourceKey<NormalNoise.NoiseParameters> var1, double var2, double var4) {
+         super();
+         this.noise = var1;
+         this.minThreshold = var2;
+         this.maxThreshold = var4;
+      }
+
+      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
+         return CODEC;
+      }
+
+      public Condition apply(final Context var1) {
+         final NormalNoise var2 = var1.randomState.getOrCreateNoise(this.noise);
+
+         class 1NoiseThresholdCondition extends LazyXZCondition {
+            _NoiseThresholdCondition/* $FF was: 1NoiseThresholdCondition*/() {
+               super(NoiseThresholdConditionSource.this);
+            }
+
+            protected boolean compute() {
+               double var1x = var2.getValue((double)this.context.blockX, 0.0, (double)this.context.blockZ);
+               return var1x >= NoiseThresholdConditionSource.this.minThreshold && var1x <= NoiseThresholdConditionSource.this.maxThreshold;
+            }
+         }
+
+         return new 1NoiseThresholdCondition();
+      }
+
+      // $FF: synthetic method
+      public Object apply(final Object var1) {
+         return this.apply((Context)var1);
+      }
+   }
+
+   static record VerticalGradientConditionSource(ResourceLocation randomName, VerticalAnchor trueAtAndBelow, VerticalAnchor falseAtAndAbove) implements ConditionSource {
+      static final KeyDispatchDataCodec<VerticalGradientConditionSource> CODEC = KeyDispatchDataCodec.<VerticalGradientConditionSource>of(RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("random_name").forGetter(VerticalGradientConditionSource::randomName), VerticalAnchor.CODEC.fieldOf("true_at_and_below").forGetter(VerticalGradientConditionSource::trueAtAndBelow), VerticalAnchor.CODEC.fieldOf("false_at_and_above").forGetter(VerticalGradientConditionSource::falseAtAndAbove)).apply(var0, VerticalGradientConditionSource::new)));
+
+      VerticalGradientConditionSource(ResourceLocation var1, VerticalAnchor var2, VerticalAnchor var3) {
+         super();
+         this.randomName = var1;
+         this.trueAtAndBelow = var2;
+         this.falseAtAndAbove = var3;
+      }
+
+      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
+         return CODEC;
+      }
+
+      public Condition apply(final Context var1) {
+         final int var2 = this.trueAtAndBelow().resolveY(var1.context);
+         final int var3 = this.falseAtAndAbove().resolveY(var1.context);
+         final PositionalRandomFactory var4 = var1.randomState.getOrCreateRandomFactory(this.randomName());
+
+         class 1VerticalGradientCondition extends LazyYCondition {
+            _VerticalGradientCondition/* $FF was: 1VerticalGradientCondition*/() {
+               super(VerticalGradientConditionSource.this);
+            }
+
+            protected boolean compute() {
+               int var1x = this.context.blockY;
+               if (var1x <= var2) {
+                  return true;
+               } else if (var1x >= var3) {
+                  return false;
+               } else {
+                  double var2x = Mth.map((double)var1x, (double)var2, (double)var3, 1.0, 0.0);
+                  RandomSource var4x = var4.at(this.context.blockX, var1x, this.context.blockZ);
+                  return (double)var4x.nextFloat() < var2x;
+               }
+            }
+         }
+
+         return new 1VerticalGradientCondition();
+      }
+
+      // $FF: synthetic method
+      public Object apply(final Object var1) {
+         return this.apply((Context)var1);
+      }
+   }
+
+   static enum Temperature implements ConditionSource {
+      INSTANCE;
+
+      static final KeyDispatchDataCodec<Temperature> CODEC = KeyDispatchDataCodec.<Temperature>of(MapCodec.unit(INSTANCE));
+
+      private Temperature() {
+      }
+
+      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
+         return CODEC;
+      }
+
+      public Condition apply(Context var1) {
+         return var1.temperature;
+      }
+
+      // $FF: synthetic method
+      public Object apply(final Object var1) {
+         return this.apply((Context)var1);
+      }
+
+      // $FF: synthetic method
+      private static Temperature[] $values() {
+         return new Temperature[]{INSTANCE};
+      }
+   }
+
+   static enum Steep implements ConditionSource {
+      INSTANCE;
+
+      static final KeyDispatchDataCodec<Steep> CODEC = KeyDispatchDataCodec.<Steep>of(MapCodec.unit(INSTANCE));
+
+      private Steep() {
+      }
+
+      public KeyDispatchDataCodec<? extends ConditionSource> codec() {
+         return CODEC;
+      }
+
+      public Condition apply(Context var1) {
+         return var1.steep;
+      }
+
+      // $FF: synthetic method
+      public Object apply(final Object var1) {
+         return this.apply((Context)var1);
+      }
+
+      // $FF: synthetic method
+      private static Steep[] $values() {
+         return new Steep[]{INSTANCE};
+      }
+   }
+
+   static record BlockRuleSource(BlockState resultState, StateRule rule) implements RuleSource {
+      static final KeyDispatchDataCodec<BlockRuleSource> CODEC;
+
+      BlockRuleSource(BlockState var1) {
+         this(var1, new StateRule(var1));
+      }
+
+      private BlockRuleSource(BlockState var1, StateRule var2) {
+         super();
+         this.resultState = var1;
+         this.rule = var2;
+      }
+
+      public KeyDispatchDataCodec<? extends RuleSource> codec() {
+         return CODEC;
+      }
+
+      public SurfaceRule apply(Context var1) {
+         return this.rule;
+      }
+
+      // $FF: synthetic method
+      public Object apply(final Object var1) {
+         return this.apply((Context)var1);
+      }
+
+      static {
+         CODEC = KeyDispatchDataCodec.<BlockRuleSource>of(BlockState.CODEC.xmap(BlockRuleSource::new, BlockRuleSource::resultState).fieldOf("result_state"));
+      }
+   }
+
+   static record TestRuleSource(ConditionSource ifTrue, RuleSource thenRun) implements RuleSource {
+      static final KeyDispatchDataCodec<TestRuleSource> CODEC = KeyDispatchDataCodec.<TestRuleSource>of(RecordCodecBuilder.mapCodec((var0) -> var0.group(SurfaceRules.ConditionSource.CODEC.fieldOf("if_true").forGetter(TestRuleSource::ifTrue), SurfaceRules.RuleSource.CODEC.fieldOf("then_run").forGetter(TestRuleSource::thenRun)).apply(var0, TestRuleSource::new)));
+
+      TestRuleSource(ConditionSource var1, RuleSource var2) {
+         super();
+         this.ifTrue = var1;
+         this.thenRun = var2;
+      }
+
+      public KeyDispatchDataCodec<? extends RuleSource> codec() {
+         return CODEC;
+      }
+
+      public SurfaceRule apply(Context var1) {
+         return new TestRule((Condition)this.ifTrue.apply(var1), (SurfaceRule)this.thenRun.apply(var1));
+      }
+
+      // $FF: synthetic method
+      public Object apply(final Object var1) {
+         return this.apply((Context)var1);
+      }
+   }
+
+   static record SequenceRuleSource(List<RuleSource> sequence) implements RuleSource {
+      static final KeyDispatchDataCodec<SequenceRuleSource> CODEC;
+
+      SequenceRuleSource(List<RuleSource> var1) {
+         super();
+         this.sequence = var1;
+      }
+
+      public KeyDispatchDataCodec<? extends RuleSource> codec() {
+         return CODEC;
+      }
+
+      public SurfaceRule apply(Context var1) {
+         if (this.sequence.size() == 1) {
+            return (SurfaceRule)((RuleSource)this.sequence.get(0)).apply(var1);
+         } else {
+            ImmutableList.Builder var2 = ImmutableList.builder();
+
+            for(RuleSource var4 : this.sequence) {
+               var2.add((SurfaceRule)var4.apply(var1));
+            }
+
+            return new SequenceRule(var2.build());
+         }
+      }
+
+      // $FF: synthetic method
+      public Object apply(final Object var1) {
+         return this.apply((Context)var1);
+      }
+
+      static {
+         CODEC = KeyDispatchDataCodec.<SequenceRuleSource>of(SurfaceRules.RuleSource.CODEC.listOf().xmap(SequenceRuleSource::new, SequenceRuleSource::sequence).fieldOf("sequence"));
+      }
+   }
+
+   static enum Bandlands implements RuleSource {
+      INSTANCE;
+
+      static final KeyDispatchDataCodec<Bandlands> CODEC = KeyDispatchDataCodec.<Bandlands>of(MapCodec.unit(INSTANCE));
+
+      private Bandlands() {
+      }
+
+      public KeyDispatchDataCodec<? extends RuleSource> codec() {
+         return CODEC;
+      }
+
+      public SurfaceRule apply(Context var1) {
+         SurfaceSystem var10000 = var1.system;
+         Objects.requireNonNull(var10000);
+         return var10000::getBand;
+      }
+
+      // $FF: synthetic method
+      public Object apply(final Object var1) {
+         return this.apply((Context)var1);
+      }
+
+      // $FF: synthetic method
+      private static Bandlands[] $values() {
+         return new Bandlands[]{INSTANCE};
+      }
+   }
+
+   interface Condition {
+      boolean test();
+   }
+
+   protected interface SurfaceRule {
+      @Nullable
+      BlockState tryApply(int var1, int var2, int var3);
    }
 }

@@ -17,11 +17,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class ConcretePowderBlock extends FallingBlock {
-   public static final MapCodec<ConcretePowderBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("concrete").forGetter((var0x) -> {
-         return var0x.concrete;
-      }), propertiesCodec()).apply(var0, ConcretePowderBlock::new);
-   });
+   public static final MapCodec<ConcretePowderBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("concrete").forGetter((var0x) -> var0x.concrete), propertiesCodec()).apply(var0, ConcretePowderBlock::new));
    private final Block concrete;
 
    public MapCodec<ConcretePowderBlock> codec() {
@@ -54,11 +50,8 @@ public class ConcretePowderBlock extends FallingBlock {
    private static boolean touchesLiquid(BlockGetter var0, BlockPos var1) {
       boolean var2 = false;
       BlockPos.MutableBlockPos var3 = var1.mutable();
-      Direction[] var4 = Direction.values();
-      int var5 = var4.length;
 
-      for(int var6 = 0; var6 < var5; ++var6) {
-         Direction var7 = var4[var6];
+      for(Direction var7 : Direction.values()) {
          BlockState var8 = var0.getBlockState(var3);
          if (var7 != Direction.DOWN || canSolidify(var8)) {
             var3.setWithOffset(var1, (Direction)var7);

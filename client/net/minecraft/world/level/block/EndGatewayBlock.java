@@ -106,4 +106,8 @@ public class EndGatewayBlock extends BaseEntityBlock implements Portal {
          return null;
       }
    }
+
+   protected RenderShape getRenderShape(BlockState var1) {
+      return RenderShape.INVISIBLE;
+   }
 }

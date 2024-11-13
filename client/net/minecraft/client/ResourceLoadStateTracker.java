@@ -8,6 +8,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.server.packs.PackResources;
 import org.slf4j.Logger;
 
@@ -50,11 +51,29 @@ public class ResourceLoadStateTracker {
 
    public void fillCrashReport(CrashReport var1) {
       CrashReportCategory var2 = var1.addCategory("Last reload");
-      var2.setDetail("Reload number", (Object)this.reloadCount);
+      var2.setDetail("Reload number", this.reloadCount);
       if (this.reloadState != null) {
          this.reloadState.fillCrashInfo(var2);
       }
 
+   }
+
+   static class RecoveryInfo {
+      private final Throwable error;
+
+      RecoveryInfo(Throwable var1) {
+         super();
+         this.error = var1;
+      }
+
+      public void fillCrashInfo(CrashReportCategory var1) {
+         var1.setDetail("Recovery", "Yes");
+         var1.setDetail("Recovery reason", (CrashReportDetail)(() -> {
+            StringWriter var1 = new StringWriter();
+            this.error.printStackTrace(new PrintWriter(var1));
+            return var1.toString();
+         }));
+      }
    }
 
    static class ReloadState {
@@ -71,11 +90,9 @@ public class ResourceLoadStateTracker {
       }
 
       public void fillCrashInfo(CrashReportCategory var1) {
-         var1.setDetail("Reload reason", (Object)this.reloadReason.name);
-         var1.setDetail("Finished", (Object)(this.finished ? "Yes" : "No"));
-         var1.setDetail("Packs", () -> {
-            return String.join(", ", this.packs);
-         });
+         var1.setDetail("Reload reason", this.reloadReason.name);
+         var1.setDetail("Finished", this.finished ? "Yes" : "No");
+         var1.setDetail("Packs", (CrashReportDetail)(() -> String.join(", ", this.packs)));
          if (this.recoveryReloadInfo != null) {
             this.recoveryReloadInfo.fillCrashInfo(var1);
          }
@@ -97,24 +114,6 @@ public class ResourceLoadStateTracker {
       // $FF: synthetic method
       private static ReloadReason[] $values() {
          return new ReloadReason[]{INITIAL, MANUAL, UNKNOWN};
-      }
-   }
-
-   private static class RecoveryInfo {
-      private final Throwable error;
-
-      RecoveryInfo(Throwable var1) {
-         super();
-         this.error = var1;
-      }
-
-      public void fillCrashInfo(CrashReportCategory var1) {
-         var1.setDetail("Recovery", (Object)"Yes");
-         var1.setDetail("Recovery reason", () -> {
-            StringWriter var1 = new StringWriter();
-            this.error.printStackTrace(new PrintWriter(var1));
-            return var1.toString();
-         });
       }
    }
 }

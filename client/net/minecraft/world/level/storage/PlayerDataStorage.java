@@ -84,9 +84,7 @@ public class PlayerDataStorage {
          this.backup(var1, ".dat");
       }
 
-      return var2.or(() -> {
-         return this.load(var1, ".dat_old");
-      }).map((var2x) -> {
+      return var2.or(() -> this.load(var1, ".dat_old")).map((var2x) -> {
          int var3 = NbtUtils.getDataVersion(var2x, -1);
          var2x = DataFixTypes.PLAYER.updateToCurrentVersion(this.fixerUpper, var2x, var3);
          var1.load(var2x);

@@ -1,7 +1,6 @@
 package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 import net.minecraft.core.component.DataComponentType;
@@ -26,18 +25,13 @@ public abstract class ItemEnchantmentsPredicate implements SingleComponentItemPr
    }
 
    public boolean matches(ItemStack var1, ItemEnchantments var2) {
-      Iterator var3 = this.enchantments.iterator();
-
-      EnchantmentPredicate var4;
-      do {
-         if (!var3.hasNext()) {
-            return true;
+      for(EnchantmentPredicate var4 : this.enchantments) {
+         if (!var4.containedIn(var2)) {
+            return false;
          }
+      }
 
-         var4 = (EnchantmentPredicate)var3.next();
-      } while(var4.containedIn(var2));
-
-      return false;
+      return true;
    }
 
    public static Enchantments enchantments(List<EnchantmentPredicate> var0) {

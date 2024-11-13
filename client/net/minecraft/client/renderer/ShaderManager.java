@@ -14,13 +14,13 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -58,13 +58,9 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
    protected Configs prepare(ResourceManager var1, ProfilerFiller var2) {
       ImmutableMap.Builder var3 = ImmutableMap.builder();
       ImmutableMap.Builder var4 = ImmutableMap.builder();
-      Map var5 = var1.listResources("shaders", (var0) -> {
-         return isProgram(var0) || isShader(var0);
-      });
-      Iterator var6 = var5.entrySet().iterator();
+      Map var5 = var1.listResources("shaders", (var0) -> isProgram(var0) || isShader(var0));
 
-      while(var6.hasNext()) {
-         Map.Entry var7 = (Map.Entry)var6.next();
+      for(Map.Entry var7 : var5.entrySet()) {
          ResourceLocation var8 = (ResourceLocation)var7.getKey();
          CompiledShader.Type var9 = CompiledShader.Type.byLocation(var8);
          if (var9 != null) {
@@ -75,10 +71,8 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       }
 
       ImmutableMap.Builder var10 = ImmutableMap.builder();
-      Iterator var11 = POST_CHAIN_ID_CONVERTER.listMatchingResources(var1).entrySet().iterator();
 
-      while(var11.hasNext()) {
-         Map.Entry var12 = (Map.Entry)var11.next();
+      for(Map.Entry var12 : POST_CHAIN_ID_CONVERTER.listMatchingResources(var1).entrySet()) {
          loadPostChain((ResourceLocation)var12.getKey(), (Resource)var12.getValue(), var10);
       }
 
@@ -125,9 +119,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
             ResourceLocation var3;
             try {
                if (var1) {
-                  var3 = var2.withPath((var1x) -> {
-                     return FileUtil.normalizeResourcePath(var1x + var2x);
-                  });
+                  var3 = var2.withPath((UnaryOperator)((var1x) -> FileUtil.normalizeResourcePath(var1x + var2x)));
                } else {
                   var3 = ResourceLocation.parse(var2x).withPrefix("shaders/include/");
                }
@@ -243,28 +235,19 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
    protected void apply(Configs var1, ResourceManager var2, ProfilerFiller var3) {
       CompilationCache var4 = new CompilationCache(var1);
       HashMap var5 = new HashMap();
-      ArrayList var6 = new ArrayList(CoreShaders.getProgramsToPreload());
-      Iterator var7 = var1.postChains.values().iterator();
+      HashSet var6 = new HashSet(CoreShaders.getProgramsToPreload());
 
-      while(var7.hasNext()) {
-         PostChainConfig var8 = (PostChainConfig)var7.next();
-         Iterator var9 = var8.passes().iterator();
-
-         while(var9.hasNext()) {
-            PostChainConfig.Pass var10 = (PostChainConfig.Pass)var9.next();
+      for(PostChainConfig var8 : var1.postChains.values()) {
+         for(PostChainConfig.Pass var10 : var8.passes()) {
             var6.add(var10.program());
          }
       }
 
-      var7 = var6.iterator();
-
-      while(var7.hasNext()) {
-         ShaderProgram var12 = (ShaderProgram)var7.next();
-
+      for(ShaderProgram var13 : var6) {
          try {
-            var4.programs.put(var12, Optional.of(var4.compileProgram(var12)));
+            var4.programs.put(var13, Optional.of(var4.compileProgram(var13)));
          } catch (CompilationException var11) {
-            var5.put(var12, var11);
+            var5.put(var13, var11);
          }
       }
 
@@ -293,11 +276,7 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
    }
 
    public void preloadForStartup(ResourceProvider var1, ShaderProgram... var2) throws IOException, CompilationException {
-      ShaderProgram[] var3 = var2;
-      int var4 = var2.length;
-
-      for(int var5 = 0; var5 < var4; ++var5) {
-         ShaderProgram var6 = var3[var5];
+      for(ShaderProgram var6 : var2) {
          Resource var7 = var1.getResourceOrThrow(PROGRAM_ID_CONVERTER.idToFile(var6.configId()));
          BufferedReader var8 = var7.openAsReader();
 
@@ -406,6 +385,20 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       return this.prepare(var1, var2);
    }
 
+   public static record Configs(Map<ResourceLocation, ShaderProgramConfig> programs, Map<ShaderSourceKey, String> shaderSources, Map<ResourceLocation, PostChainConfig> postChains) {
+      final Map<ResourceLocation, ShaderProgramConfig> programs;
+      final Map<ShaderSourceKey, String> shaderSources;
+      final Map<ResourceLocation, PostChainConfig> postChains;
+      public static final Configs EMPTY = new Configs(Map.of(), Map.of(), Map.of());
+
+      public Configs(Map<ResourceLocation, ShaderProgramConfig> var1, Map<ShaderSourceKey, String> var2, Map<ResourceLocation, PostChainConfig> var3) {
+         super();
+         this.programs = var1;
+         this.shaderSources = var2;
+         this.postChains = var3;
+      }
+   }
+
    class CompilationCache implements AutoCloseable {
       private final Configs configs;
       final Map<ShaderProgram, Optional<CompiledShaderProgram>> programs = new HashMap();
@@ -486,39 +479,11 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
 
       public void close() {
          RenderSystem.assertOnRenderThread();
-         this.programs.values().forEach((var0) -> {
-            var0.ifPresent(CompiledShaderProgram::close);
-         });
+         this.programs.values().forEach((var0) -> var0.ifPresent(CompiledShaderProgram::close));
          this.shaders.values().forEach(CompiledShader::close);
          this.programs.clear();
          this.shaders.clear();
          this.postChains.clear();
-      }
-   }
-
-   public static record Configs(Map<ResourceLocation, ShaderProgramConfig> programs, Map<ShaderSourceKey, String> shaderSources, Map<ResourceLocation, PostChainConfig> postChains) {
-      final Map<ResourceLocation, ShaderProgramConfig> programs;
-      final Map<ShaderSourceKey, String> shaderSources;
-      final Map<ResourceLocation, PostChainConfig> postChains;
-      public static final Configs EMPTY = new Configs(Map.of(), Map.of(), Map.of());
-
-      public Configs(Map<ResourceLocation, ShaderProgramConfig> var1, Map<ShaderSourceKey, String> var2, Map<ResourceLocation, PostChainConfig> var3) {
-         super();
-         this.programs = var1;
-         this.shaderSources = var2;
-         this.postChains = var3;
-      }
-
-      public Map<ResourceLocation, ShaderProgramConfig> programs() {
-         return this.programs;
-      }
-
-      public Map<ShaderSourceKey, String> shaderSources() {
-         return this.shaderSources;
-      }
-
-      public Map<ResourceLocation, PostChainConfig> postChains() {
-         return this.postChains;
       }
    }
 
@@ -532,20 +497,6 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
       public String toString() {
          String var10000 = String.valueOf(this.id);
          return var10000 + " (" + String.valueOf(this.type) + ")";
-      }
-
-      public ResourceLocation id() {
-         return this.id;
-      }
-
-      public CompiledShader.Type type() {
-         return this.type;
-      }
-   }
-
-   public static class CompilationException extends Exception {
-      public CompilationException(String var1) {
-         super(var1);
       }
    }
 
@@ -566,17 +517,11 @@ public class ShaderManager extends SimplePreparableReloadListener<Configs> imple
          String var1 = var10000 + " (" + String.valueOf(this.type) + ")";
          return !this.defines.isEmpty() ? var1 + " with " + String.valueOf(this.defines) : var1;
       }
+   }
 
-      public ResourceLocation id() {
-         return this.id;
-      }
-
-      public CompiledShader.Type type() {
-         return this.type;
-      }
-
-      public ShaderDefines defines() {
-         return this.defines;
+   public static class CompilationException extends Exception {
+      public CompilationException(String var1) {
+         super(var1);
       }
    }
 }

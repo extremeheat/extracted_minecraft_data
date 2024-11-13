@@ -6,7 +6,6 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -71,27 +70,19 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
       if (this.potion.isEmpty()) {
          return this.customEffects;
       } else {
-         return (Iterable)(this.customEffects.isEmpty() ? ((Potion)((Holder)this.potion.get()).value()).getEffects() : Iterables.concat(((Potion)((Holder)this.potion.get()).value()).getEffects(), this.customEffects));
+         return (Iterable<MobEffectInstance>)(this.customEffects.isEmpty() ? ((Potion)((Holder)this.potion.get()).value()).getEffects() : Iterables.concat(((Potion)((Holder)this.potion.get()).value()).getEffects(), this.customEffects));
       }
    }
 
    public void forEachEffect(Consumer<MobEffectInstance> var1) {
-      Iterator var2;
-      MobEffectInstance var3;
       if (this.potion.isPresent()) {
-         var2 = ((Potion)((Holder)this.potion.get()).value()).getEffects().iterator();
-
-         while(var2.hasNext()) {
-            var3 = (MobEffectInstance)var2.next();
+         for(MobEffectInstance var3 : ((Potion)((Holder)this.potion.get()).value()).getEffects()) {
             var1.accept(new MobEffectInstance(var3));
          }
       }
 
-      var2 = this.customEffects.iterator();
-
-      while(var2.hasNext()) {
-         var3 = (MobEffectInstance)var2.next();
-         var1.accept(new MobEffectInstance(var3));
+      for(MobEffectInstance var5 : this.customEffects) {
+         var1.accept(new MobEffectInstance(var5));
       }
 
    }
@@ -101,7 +92,7 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
    }
 
    public PotionContents withEffectAdded(MobEffectInstance var1) {
-      return new PotionContents(this.potion, this.customColor, Util.copyAndAdd((List)this.customEffects, (Object)var1), this.customName);
+      return new PotionContents(this.potion, this.customColor, Util.copyAndAdd(this.customEffects, var1), this.customName);
    }
 
    public int getColor() {
@@ -113,11 +104,7 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
    }
 
    public Component getName(String var1) {
-      String var2 = (String)this.customName.or(() -> {
-         return this.potion.map((var0) -> {
-            return ((Potion)var0.value()).name();
-         });
-      }).orElse("empty");
+      String var2 = (String)this.customName.or(() -> this.potion.map((var0) -> ((Potion)var0.value()).name())).orElse("empty");
       return Component.translatable(var1 + var2);
    }
 
@@ -126,10 +113,8 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
       int var2 = 0;
       int var3 = 0;
       int var4 = 0;
-      Iterator var5 = var0.iterator();
 
-      while(var5.hasNext()) {
-         MobEffectInstance var6 = (MobEffectInstance)var5.next();
+      for(MobEffectInstance var6 : var0) {
          if (var6.isVisible()) {
             int var7 = ((MobEffect)var6.getEffect().value()).getColor();
             int var8 = var6.getAmplifier() + 1;
@@ -189,17 +174,11 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
       ArrayList var4 = Lists.newArrayList();
       boolean var5 = true;
 
-      Iterator var6;
-      MutableComponent var8;
-      Holder var9;
-      for(var6 = var0.iterator(); var6.hasNext(); var1.accept(var8.withStyle(((MobEffect)var9.value()).getCategory().getTooltipFormatting()))) {
-         MobEffectInstance var7 = (MobEffectInstance)var6.next();
+      for(MobEffectInstance var7 : var0) {
          var5 = false;
-         var8 = Component.translatable(var7.getDescriptionId());
-         var9 = var7.getEffect();
-         ((MobEffect)var9.value()).createModifiers(var7.getAmplifier(), (var1x, var2x) -> {
-            var4.add(new Pair(var1x, var2x));
-         });
+         MutableComponent var8 = Component.translatable(var7.getDescriptionId());
+         Holder var9 = var7.getEffect();
+         ((MobEffect)var9.value()).createModifiers(var7.getAmplifier(), (var1x, var2x) -> var4.add(new Pair(var1x, var2x)));
          if (var7.getAmplifier() > 0) {
             var8 = Component.translatable("potion.withAmplifier", var8, Component.translatable("potion.potency." + var7.getAmplifier()));
          }
@@ -207,6 +186,8 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
          if (!var7.endsWithin(20)) {
             var8 = Component.translatable("potion.withDuration", var8, MobEffectUtil.formatDuration(var7, var2, var3));
          }
+
+         var1.accept(var8.withStyle(((MobEffect)var9.value()).getCategory().getTooltipFormatting()));
       }
 
       if (var5) {
@@ -216,12 +197,10 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
       if (!var4.isEmpty()) {
          var1.accept(CommonComponents.EMPTY);
          var1.accept(Component.translatable("potion.whenDrank").withStyle(ChatFormatting.DARK_PURPLE));
-         var6 = var4.iterator();
 
-         while(var6.hasNext()) {
-            Pair var13 = (Pair)var6.next();
-            AttributeModifier var15 = (AttributeModifier)var13.getSecond();
-            double var14 = var15.amount();
+         for(Pair var14 : var4) {
+            AttributeModifier var15 = (AttributeModifier)var14.getSecond();
+            double var16 = var15.amount();
             double var11;
             if (var15.operation() != AttributeModifier.Operation.ADD_MULTIPLIED_BASE && var15.operation() != AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
                var11 = var15.amount();
@@ -229,11 +208,11 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
                var11 = var15.amount() * 100.0;
             }
 
-            if (var14 > 0.0) {
-               var1.accept(Component.translatable("attribute.modifier.plus." + var15.operation().id(), ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(var11), Component.translatable(((Attribute)((Holder)var13.getFirst()).value()).getDescriptionId())).withStyle(ChatFormatting.BLUE));
-            } else if (var14 < 0.0) {
+            if (var16 > 0.0) {
+               var1.accept(Component.translatable("attribute.modifier.plus." + var15.operation().id(), ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(var11), Component.translatable(((Attribute)((Holder)var14.getFirst()).value()).getDescriptionId())).withStyle(ChatFormatting.BLUE));
+            } else if (var16 < 0.0) {
                var11 *= -1.0;
-               var1.accept(Component.translatable("attribute.modifier.take." + var15.operation().id(), ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(var11), Component.translatable(((Attribute)((Holder)var13.getFirst()).value()).getDescriptionId())).withStyle(ChatFormatting.RED));
+               var1.accept(Component.translatable("attribute.modifier.take." + var15.operation().id(), ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(var11), Component.translatable(((Attribute)((Holder)var14.getFirst()).value()).getDescriptionId())).withStyle(ChatFormatting.RED));
             }
          }
       }
@@ -244,23 +223,9 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
       this.applyToLivingEntity(var2);
    }
 
-   public Optional<Holder<Potion>> potion() {
-      return this.potion;
-   }
-
-   public Optional<Integer> customColor() {
-      return this.customColor;
-   }
-
-   public Optional<String> customName() {
-      return this.customName;
-   }
-
    static {
       NO_EFFECT = Component.translatable("effect.none").withStyle(ChatFormatting.GRAY);
-      FULL_CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Potion.CODEC.optionalFieldOf("potion").forGetter(PotionContents::potion), Codec.INT.optionalFieldOf("custom_color").forGetter(PotionContents::customColor), MobEffectInstance.CODEC.listOf().optionalFieldOf("custom_effects", List.of()).forGetter(PotionContents::customEffects), Codec.STRING.optionalFieldOf("custom_name").forGetter(PotionContents::customName)).apply(var0, PotionContents::new);
-      });
+      FULL_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Potion.CODEC.optionalFieldOf("potion").forGetter(PotionContents::potion), Codec.INT.optionalFieldOf("custom_color").forGetter(PotionContents::customColor), MobEffectInstance.CODEC.listOf().optionalFieldOf("custom_effects", List.of()).forGetter(PotionContents::customEffects), Codec.STRING.optionalFieldOf("custom_name").forGetter(PotionContents::customName)).apply(var0, PotionContents::new));
       CODEC = Codec.withAlternative(FULL_CODEC, Potion.CODEC, PotionContents::new);
       STREAM_CODEC = StreamCodec.composite(Potion.STREAM_CODEC.apply(ByteBufCodecs::optional), PotionContents::potion, ByteBufCodecs.INT.apply(ByteBufCodecs::optional), PotionContents::customColor, MobEffectInstance.STREAM_CODEC.apply(ByteBufCodecs.list()), PotionContents::customEffects, ByteBufCodecs.STRING_UTF8.apply(ByteBufCodecs::optional), PotionContents::customName, PotionContents::new);
    }

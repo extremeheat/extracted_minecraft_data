@@ -15,12 +15,6 @@ public class EquippableAssetRenameFix extends DataFix {
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.DATA_COMPONENTS);
       OpticFinder var2 = var1.findField("minecraft:equippable");
-      return this.fixTypeEverywhereTyped("equippable asset rename fix", var1, (var1x) -> {
-         return var1x.updateTyped(var2, (var0) -> {
-            return var0.update(DSL.remainderFinder(), (var0x) -> {
-               return var0x.renameField("model", "asset_id");
-            });
-         });
-      });
+      return this.fixTypeEverywhereTyped("equippable asset rename fix", var1, (var1x) -> var1x.updateTyped(var2, (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> var0x.renameField("model", "asset_id"))));
    }
 }

@@ -68,16 +68,16 @@ public class WitherSkull extends AbstractHurtingProjectile {
             var5 = var8.hurtServer(var2, this.damageSources().magic(), 5.0F);
          }
 
-         if (var5 && var8 instanceof LivingEntity var6) {
-            byte var9 = 0;
+         if (var5 && var8 instanceof LivingEntity var9) {
+            byte var10 = 0;
             if (this.level().getDifficulty() == Difficulty.NORMAL) {
-               var9 = 10;
+               var10 = 10;
             } else if (this.level().getDifficulty() == Difficulty.HARD) {
-               var9 = 40;
+               var10 = 40;
             }
 
-            if (var9 > 0) {
-               var6.addEffect(new MobEffectInstance(MobEffects.WITHER, 20 * var9, 1), this.getEffectSource());
+            if (var10 > 0) {
+               var9.addEffect(new MobEffectInstance(MobEffects.WITHER, 20 * var10, 1), this.getEffectSource());
             }
          }
 
@@ -120,6 +120,6 @@ public class WitherSkull extends AbstractHurtingProjectile {
    }
 
    static {
-      DATA_DANGEROUS = SynchedEntityData.defineId(WitherSkull.class, EntityDataSerializers.BOOLEAN);
+      DATA_DANGEROUS = SynchedEntityData.<Boolean>defineId(WitherSkull.class, EntityDataSerializers.BOOLEAN);
    }
 }

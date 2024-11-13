@@ -92,8 +92,6 @@ public class MouseHandler {
                double var8 = this.xpos * (double)this.minecraft.getWindow().getGuiScaledWidth() / (double)this.minecraft.getWindow().getScreenWidth();
                double var10 = this.ypos * (double)this.minecraft.getWindow().getGuiScaledHeight() / (double)this.minecraft.getWindow().getScreenHeight();
                Screen var12 = this.minecraft.screen;
-               CrashReport var14;
-               CrashReportCategory var15;
                if (var6) {
                   var12.afterMouseAction();
 
@@ -102,12 +100,12 @@ public class MouseHandler {
                         return;
                      }
                   } catch (Throwable var17) {
-                     var14 = CrashReport.forThrowable(var17, "mouseClicked event handler");
+                     CrashReport var14 = CrashReport.forThrowable(var17, "mouseClicked event handler");
                      var12.fillCrashDetails(var14);
-                     var15 = var14.addCategory("Mouse");
-                     var15.setDetail("Scaled X", (Object)var8);
-                     var15.setDetail("Scaled Y", (Object)var10);
-                     var15.setDetail("Button", (Object)var3);
+                     CrashReportCategory var15 = var14.addCategory("Mouse");
+                     var15.setDetail("Scaled X", var8);
+                     var15.setDetail("Scaled Y", var10);
+                     var15.setDetail("Button", var3);
                      throw new ReportedException(var14);
                   }
                } else {
@@ -116,13 +114,13 @@ public class MouseHandler {
                         return;
                      }
                   } catch (Throwable var16) {
-                     var14 = CrashReport.forThrowable(var16, "mouseReleased event handler");
-                     var12.fillCrashDetails(var14);
-                     var15 = var14.addCategory("Mouse");
-                     var15.setDetail("Scaled X", (Object)var8);
-                     var15.setDetail("Scaled Y", (Object)var10);
-                     var15.setDetail("Button", (Object)var3);
-                     throw new ReportedException(var14);
+                     CrashReport var18 = CrashReport.forThrowable(var16, "mouseReleased event handler");
+                     var12.fillCrashDetails(var18);
+                     CrashReportCategory var19 = var18.addCategory("Mouse");
+                     var19.setDetail("Scaled X", var8);
+                     var19.setDetail("Scaled Y", var10);
+                     var19.setDetail("Button", var3);
+                     throw new ReportedException(var18);
                   }
                }
             }
@@ -200,19 +198,7 @@ public class MouseHandler {
    }
 
    public void setup(long var1) {
-      InputConstants.setupMouseCallbacks(var1, (var1x, var3, var5) -> {
-         this.minecraft.execute(() -> {
-            this.onMove(var1x, var3, var5);
-         });
-      }, (var1x, var3, var4, var5) -> {
-         this.minecraft.execute(() -> {
-            this.onPress(var1x, var3, var4, var5);
-         });
-      }, (var1x, var3, var5) -> {
-         this.minecraft.execute(() -> {
-            this.onScroll(var1x, var3, var5);
-         });
-      }, (var1x, var3, var4) -> {
+      InputConstants.setupMouseCallbacks(var1, (var1x, var3, var5) -> this.minecraft.execute(() -> this.onMove(var1x, var3, var5)), (var1x, var3, var4, var5) -> this.minecraft.execute(() -> this.onPress(var1x, var3, var4, var5)), (var1x, var3, var5) -> this.minecraft.execute(() -> this.onScroll(var1x, var3, var5)), (var1x, var3, var4) -> {
          ArrayList var6 = new ArrayList(var3);
          int var7 = 0;
 
@@ -228,9 +214,7 @@ public class MouseHandler {
          }
 
          if (!var6.isEmpty()) {
-            this.minecraft.execute(() -> {
-               this.onDrop(var1x, var6, var7);
-            });
+            this.minecraft.execute(() -> this.onDrop(var1x, var6, var7));
          }
 
       });
@@ -275,8 +259,8 @@ public class MouseHandler {
                CrashReport var12 = CrashReport.forThrowable(var19, "mouseMoved event handler");
                var5.fillCrashDetails(var12);
                CrashReportCategory var13 = var12.addCategory("Mouse");
-               var13.setDetail("Scaled X", (Object)var7);
-               var13.setDetail("Scaled Y", (Object)var9);
+               var13.setDetail("Scaled X", var7);
+               var13.setDetail("Scaled Y", var9);
                throw new ReportedException(var12);
             }
 
@@ -290,8 +274,8 @@ public class MouseHandler {
                   CrashReport var16 = CrashReport.forThrowable(var18, "mouseDragged event handler");
                   var5.fillCrashDetails(var16);
                   CrashReportCategory var17 = var16.addCategory("Mouse");
-                  var17.setDetail("Scaled X", (Object)var7);
-                  var17.setDetail("Scaled Y", (Object)var9);
+                  var17.setDetail("Scaled X", var7);
+                  var17.setDetail("Scaled Y", var9);
                   throw new ReportedException(var16);
                }
             }

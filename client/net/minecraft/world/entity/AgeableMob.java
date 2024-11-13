@@ -175,7 +175,7 @@ public abstract class AgeableMob extends PathfinderMob {
    }
 
    static {
-      DATA_BABY_ID = SynchedEntityData.defineId(AgeableMob.class, EntityDataSerializers.BOOLEAN);
+      DATA_BABY_ID = SynchedEntityData.<Boolean>defineId(AgeableMob.class, EntityDataSerializers.BOOLEAN);
    }
 
    public static class AgeableMobGroupData implements SpawnGroupData {

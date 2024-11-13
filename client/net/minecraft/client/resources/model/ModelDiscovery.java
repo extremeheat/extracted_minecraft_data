@@ -36,9 +36,7 @@ public class ModelDiscovery {
    }
 
    public void discoverDependencies() {
-      this.topModels.forEach((var1) -> {
-         var1.resolveDependencies(new ResolverImpl());
-      });
+      this.topModels.forEach((var1) -> var1.resolveDependencies(new ResolverImpl()));
    }
 
    public Map<ResourceLocation, UnbakedModel> getReferencedModels() {

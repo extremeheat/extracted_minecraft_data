@@ -35,14 +35,13 @@ public class OminousItemSpawnerRenderer extends EntityRenderer<OminousItemSpawne
    public void render(ItemClusterRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
       if (!var1.item.isEmpty()) {
          var2.pushPose();
-         float var5;
          if (var1.ageInTicks <= 50.0F) {
-            var5 = Math.min(var1.ageInTicks, 50.0F) / 50.0F;
+            float var5 = Math.min(var1.ageInTicks, 50.0F) / 50.0F;
             var2.scale(var5, var5, var5);
          }
 
-         var5 = Mth.wrapDegrees(var1.ageInTicks * 40.0F);
-         var2.mulPose(Axis.YP.rotationDegrees(var5));
+         float var6 = Mth.wrapDegrees(var1.ageInTicks * 40.0F);
+         var2.mulPose(Axis.YP.rotationDegrees(var6));
          ItemEntityRenderer.renderMultipleFromCount(var2, var3, 15728880, var1, this.random);
          var2.popPose();
       }

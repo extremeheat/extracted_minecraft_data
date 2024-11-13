@@ -8,7 +8,6 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.ArmorStandRenderState;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 
 public class ArmorStandArmorModel extends HumanoidModel<ArmorStandRenderState> {
    public ArmorStandArmorModel(ModelPart var1) {
@@ -26,7 +25,7 @@ public class ArmorStandArmorModel extends HumanoidModel<ArmorStandRenderState> {
    }
 
    public void setupAnim(ArmorStandRenderState var1) {
-      super.setupAnim((HumanoidRenderState)var1);
+      super.setupAnim(var1);
       this.head.xRot = 0.017453292F * var1.headPose.getX();
       this.head.yRot = 0.017453292F * var1.headPose.getY();
       this.head.zRot = 0.017453292F * var1.headPose.getZ();

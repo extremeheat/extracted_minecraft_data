@@ -26,9 +26,7 @@ public class BlockEntityJukeboxFix extends NamedEntityFix {
             Dynamic var8 = var5.emptyMap();
             var8 = var8.set("id", var8.createString(var7));
             var8 = var8.set("Count", var8.createByte((byte)1));
-            return var1.set(var4, (Typed)((Pair)var3.readTyped(var8).result().orElseThrow(() -> {
-               return new IllegalStateException("Could not create record item stack.");
-            })).getFirst()).set(DSL.remainderFinder(), var5);
+            return var1.set(var4, (Typed)((Pair)var3.readTyped(var8).result().orElseThrow(() -> new IllegalStateException("Could not create record item stack."))).getFirst()).set(DSL.remainderFinder(), var5);
          }
       }
 

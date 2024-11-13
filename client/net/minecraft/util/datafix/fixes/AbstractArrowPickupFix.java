@@ -38,8 +38,6 @@ public class AbstractArrowPickupFix extends DataFix {
    private Typed<?> updateEntity(Typed<?> var1, String var2, Function<Dynamic<?>, Dynamic<?>> var3) {
       Type var4 = this.getInputSchema().getChoiceType(References.ENTITY, var2);
       Type var5 = this.getOutputSchema().getChoiceType(References.ENTITY, var2);
-      return var1.updateTyped(DSL.namedChoice(var2, var4), var5, (var1x) -> {
-         return var1x.update(DSL.remainderFinder(), var3);
-      });
+      return var1.updateTyped(DSL.namedChoice(var2, var4), var5, (var1x) -> var1x.update(DSL.remainderFinder(), var3));
    }
 }

@@ -192,11 +192,8 @@ public class FaceBakery {
       } else {
          Direction var7 = null;
          float var8 = 0.0F;
-         Direction[] var9 = Direction.values();
-         int var10 = var9.length;
 
-         for(int var11 = 0; var11 < var10; ++var11) {
-            Direction var12 = var9[var11];
+         for(Direction var12 : Direction.values()) {
             Vec3i var13 = var12.getUnitVec3i();
             Vector3f var14 = new Vector3f((float)var13.getX(), (float)var13.getY(), (float)var13.getZ());
             float var15 = var6.dot(var14);
@@ -225,13 +222,11 @@ public class FaceBakery {
       var3[FaceInfo.Constants.MAX_Y] = -999.0F;
       var3[FaceInfo.Constants.MAX_Z] = -999.0F;
 
-      int var5;
-      float var8;
       for(int var4 = 0; var4 < 4; ++var4) {
-         var5 = 8 * var4;
+         int var5 = 8 * var4;
          float var6 = Float.intBitsToFloat(var2[var5]);
          float var7 = Float.intBitsToFloat(var2[var5 + 1]);
-         var8 = Float.intBitsToFloat(var2[var5 + 2]);
+         float var8 = Float.intBitsToFloat(var2[var5 + 2]);
          if (var6 < var3[FaceInfo.Constants.MIN_X]) {
             var3[FaceInfo.Constants.MIN_X] = var6;
          }
@@ -259,24 +254,24 @@ public class FaceBakery {
 
       FaceInfo var16 = FaceInfo.fromFacing(var1);
 
-      for(var5 = 0; var5 < 4; ++var5) {
-         int var17 = 8 * var5;
-         FaceInfo.VertexInfo var18 = var16.getVertexInfo(var5);
-         var8 = var3[var18.xFace];
-         float var9 = var3[var18.yFace];
-         float var10 = var3[var18.zFace];
-         var0[var17] = Float.floatToRawIntBits(var8);
-         var0[var17 + 1] = Float.floatToRawIntBits(var9);
-         var0[var17 + 2] = Float.floatToRawIntBits(var10);
+      for(int var17 = 0; var17 < 4; ++var17) {
+         int var18 = 8 * var17;
+         FaceInfo.VertexInfo var19 = var16.getVertexInfo(var17);
+         float var20 = var3[var19.xFace];
+         float var9 = var3[var19.yFace];
+         float var10 = var3[var19.zFace];
+         var0[var18] = Float.floatToRawIntBits(var20);
+         var0[var18 + 1] = Float.floatToRawIntBits(var9);
+         var0[var18 + 2] = Float.floatToRawIntBits(var10);
 
          for(int var11 = 0; var11 < 4; ++var11) {
             int var12 = 8 * var11;
             float var13 = Float.intBitsToFloat(var2[var12]);
             float var14 = Float.intBitsToFloat(var2[var12 + 1]);
             float var15 = Float.intBitsToFloat(var2[var12 + 2]);
-            if (Mth.equal(var8, var13) && Mth.equal(var9, var14) && Mth.equal(var10, var15)) {
-               var0[var17 + 4] = var2[var12 + 4];
-               var0[var17 + 4 + 1] = var2[var12 + 4 + 1];
+            if (Mth.equal(var20, var13) && Mth.equal(var9, var14) && Mth.equal(var10, var15)) {
+               var0[var18 + 4] = var2[var12 + 4];
+               var0[var18 + 4 + 1] = var2[var12 + 4 + 1];
             }
          }
       }

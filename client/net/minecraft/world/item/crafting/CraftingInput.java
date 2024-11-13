@@ -1,7 +1,6 @@
 package net.minecraft.world.item.crafting;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.item.ItemStack;
@@ -20,10 +19,8 @@ public class CraftingInput implements RecipeInput {
       this.height = var2;
       this.items = var3;
       int var4 = 0;
-      Iterator var5 = var3.iterator();
 
-      while(var5.hasNext()) {
-         ItemStack var6 = (ItemStack)var5.next();
+      for(ItemStack var6 : var3) {
          if (!var6.isEmpty()) {
             ++var4;
             this.stackedContents.accountStack(var6, 1);
@@ -44,8 +41,7 @@ public class CraftingInput implements RecipeInput {
          int var5 = var1 - 1;
          int var6 = 0;
 
-         int var7;
-         for(var7 = 0; var7 < var1; ++var7) {
+         for(int var7 = 0; var7 < var1; ++var7) {
             boolean var8 = true;
 
             for(int var9 = 0; var9 < var0; ++var9) {
@@ -63,22 +59,22 @@ public class CraftingInput implements RecipeInput {
             }
          }
 
-         var7 = var4 - var3 + 1;
-         int var13 = var6 - var5 + 1;
-         if (var7 > 0 && var13 > 0) {
-            if (var7 == var0 && var13 == var1) {
+         int var13 = var4 - var3 + 1;
+         int var14 = var6 - var5 + 1;
+         if (var13 > 0 && var14 > 0) {
+            if (var13 == var0 && var14 == var1) {
                return new Positioned(new CraftingInput(var0, var1, var2), var3, var5);
             } else {
-               ArrayList var14 = new ArrayList(var7 * var13);
+               ArrayList var15 = new ArrayList(var13 * var14);
 
-               for(int var15 = 0; var15 < var13; ++var15) {
-                  for(int var11 = 0; var11 < var7; ++var11) {
-                     int var12 = var11 + var3 + (var15 + var5) * var0;
-                     var14.add((ItemStack)var2.get(var12));
+               for(int var16 = 0; var16 < var14; ++var16) {
+                  for(int var11 = 0; var11 < var13; ++var11) {
+                     int var12 = var11 + var3 + (var16 + var5) * var0;
+                     var15.add((ItemStack)var2.get(var12));
                   }
                }
 
-               return new Positioned(new CraftingInput(var7, var13, var14), var3, var5);
+               return new Positioned(new CraftingInput(var13, var14, var15), var3, var5);
             }
          } else {
             return CraftingInput.Positioned.EMPTY;
@@ -150,18 +146,6 @@ public class CraftingInput implements RecipeInput {
          this.input = var1;
          this.left = var2;
          this.top = var3;
-      }
-
-      public CraftingInput input() {
-         return this.input;
-      }
-
-      public int left() {
-         return this.left;
-      }
-
-      public int top() {
-         return this.top;
       }
 
       static {

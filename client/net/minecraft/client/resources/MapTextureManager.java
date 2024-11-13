@@ -44,7 +44,7 @@ public class MapTextureManager implements AutoCloseable {
    private MapInstance getOrCreateMapInstance(MapId var1, MapItemSavedData var2) {
       return (MapInstance)this.maps.compute(var1.id(), (var2x, var3) -> {
          if (var3 == null) {
-            return new MapInstance(this, var2x, var2);
+            return new MapInstance(var2x, var2);
          } else {
             var3.replaceMapData(var2);
             return var3;
@@ -62,11 +62,12 @@ public class MapTextureManager implements AutoCloseable {
       private boolean requiresUpload = true;
       final ResourceLocation location;
 
-      MapInstance(final MapTextureManager var1, final int var2, final MapItemSavedData var3) {
+      MapInstance(final int var2, final MapItemSavedData var3) {
          super();
          this.data = var3;
          this.texture = new DynamicTexture(128, 128, true);
-         this.location = var1.textureManager.register("map/" + var2, this.texture);
+         this.location = ResourceLocation.withDefaultNamespace("map/" + var2);
+         MapTextureManager.this.textureManager.register(this.location, this.texture);
       }
 
       void replaceMapData(MapItemSavedData var1) {

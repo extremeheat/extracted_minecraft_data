@@ -16,7 +16,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -191,10 +190,8 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
    private void fillLevels(String var1, List<LevelSummary> var2) {
       this.clearEntries();
       var1 = var1.toLowerCase(Locale.ROOT);
-      Iterator var3 = var2.iterator();
 
-      while(var3.hasNext()) {
-         LevelSummary var4 = (LevelSummary)var3.next();
+      for(LevelSummary var4 : var2) {
          if (this.filterAccepts(var1, var4)) {
             this.addEntry(new WorldListEntry(this, var4));
          }
@@ -281,29 +278,12 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
       WORLD_EXPERIMENTAL = Component.translatable("selectWorld.experimental");
    }
 
-   public static class LoadingHeader extends Entry {
-      private static final Component LOADING_LABEL = Component.translatable("selectWorld.loading_list");
-      private final Minecraft minecraft;
-
-      public LoadingHeader(Minecraft var1) {
+   public abstract static class Entry extends ObjectSelectionList.Entry<Entry> implements AutoCloseable {
+      public Entry() {
          super();
-         this.minecraft = var1;
       }
 
-      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         int var11 = (this.minecraft.screen.width - this.minecraft.font.width((FormattedText)LOADING_LABEL)) / 2;
-         Objects.requireNonNull(this.minecraft.font);
-         int var12 = var3 + (var6 - 9) / 2;
-         var1.drawString(this.minecraft.font, (Component)LOADING_LABEL, var11, var12, -1);
-         String var13 = LoadingDotsText.get(Util.getMillis());
-         int var14 = (this.minecraft.screen.width - this.minecraft.font.width(var13)) / 2;
-         Objects.requireNonNull(this.minecraft.font);
-         int var15 = var12 + 9;
-         var1.drawString(this.minecraft.font, var13, var14, var15, -8355712);
-      }
-
-      public Component getNarration() {
-         return LOADING_LABEL;
+      public void close() {
       }
    }
 
@@ -470,9 +450,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
       public void joinWorld() {
          if (this.summary.primaryActionActive()) {
             if (this.summary instanceof LevelSummary.SymlinkLevelSummary) {
-               this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> {
-                  this.minecraft.setScreen(this.screen);
-               }));
+               this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> this.minecraft.setScreen(this.screen)));
             } else {
                this.minecraft.createWorldOpenFlows().openWorld(this.summary.getLevelId(), () -> {
                   WorldSelectionList.this.reloadWorldList();
@@ -497,26 +475,8 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
          LevelStorageSource var1 = this.minecraft.getLevelSource();
          String var2 = this.summary.getLevelId();
 
-         try {
-            LevelStorageSource.LevelStorageAccess var3 = var1.createAccess(var2);
-
-            try {
-               var3.deleteLevel();
-            } catch (Throwable var7) {
-               if (var3 != null) {
-                  try {
-                     var3.close();
-                  } catch (Throwable var6) {
-                     var7.addSuppressed(var6);
-                  }
-               }
-
-               throw var7;
-            }
-
-            if (var3 != null) {
-               var3.close();
-            }
+         try (LevelStorageSource.LevelStorageAccess var3 = var1.createAccess(var2)) {
+            var3.deleteLevel();
          } catch (IOException var8) {
             SystemToast.onWorldDeleteFailure(this.minecraft, var2);
             WorldSelectionList.LOGGER.error("Failed to delete world {}", var2, var8);
@@ -539,9 +499,7 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
             return;
          } catch (ContentValidationException var7) {
             WorldSelectionList.LOGGER.warn("{}", var7.getMessage());
-            this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> {
-               this.minecraft.setScreen(this.screen);
-            }));
+            this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> this.minecraft.setScreen(this.screen)));
             return;
          }
 
@@ -569,47 +527,23 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
       public void recreateWorld() {
          this.queueLoadScreen();
 
-         try {
-            LevelStorageSource.LevelStorageAccess var1 = this.minecraft.getLevelSource().validateAndCreateAccess(this.summary.getLevelId());
-
-            try {
-               Pair var2 = this.minecraft.createWorldOpenFlows().recreateWorldData(var1);
-               LevelSettings var3 = (LevelSettings)var2.getFirst();
-               WorldCreationContext var4 = (WorldCreationContext)var2.getSecond();
-               Path var5 = CreateWorldScreen.createTempDataPackDirFromExistingWorld(var1.getLevelPath(LevelResource.DATAPACK_DIR), this.minecraft);
-               var4.validate();
-               if (var4.options().isOldCustomizedWorld()) {
-                  this.minecraft.setScreen(new ConfirmScreen((var4x) -> {
-                     this.minecraft.setScreen((Screen)(var4x ? CreateWorldScreen.createFromExisting(this.minecraft, this.screen, var3, var4, var5) : this.screen));
-                  }, Component.translatable("selectWorld.recreate.customized.title"), Component.translatable("selectWorld.recreate.customized.text"), CommonComponents.GUI_PROCEED, CommonComponents.GUI_CANCEL));
-               } else {
-                  this.minecraft.setScreen(CreateWorldScreen.createFromExisting(this.minecraft, this.screen, var3, var4, var5));
-               }
-            } catch (Throwable var7) {
-               if (var1 != null) {
-                  try {
-                     var1.close();
-                  } catch (Throwable var6) {
-                     var7.addSuppressed(var6);
-                  }
-               }
-
-               throw var7;
-            }
-
-            if (var1 != null) {
-               var1.close();
+         try (LevelStorageSource.LevelStorageAccess var1 = this.minecraft.getLevelSource().validateAndCreateAccess(this.summary.getLevelId())) {
+            Pair var2 = this.minecraft.createWorldOpenFlows().recreateWorldData(var1);
+            LevelSettings var3 = (LevelSettings)var2.getFirst();
+            WorldCreationContext var4 = (WorldCreationContext)var2.getSecond();
+            Path var5 = CreateWorldScreen.createTempDataPackDirFromExistingWorld(var1.getLevelPath(LevelResource.DATAPACK_DIR), this.minecraft);
+            var4.validate();
+            if (var4.options().isOldCustomizedWorld()) {
+               this.minecraft.setScreen(new ConfirmScreen((var4x) -> this.minecraft.setScreen((Screen)(var4x ? CreateWorldScreen.createFromExisting(this.minecraft, this.screen, var3, var4, var5) : this.screen)), Component.translatable("selectWorld.recreate.customized.title"), Component.translatable("selectWorld.recreate.customized.text"), CommonComponents.GUI_PROCEED, CommonComponents.GUI_CANCEL));
+            } else {
+               this.minecraft.setScreen(CreateWorldScreen.createFromExisting(this.minecraft, this.screen, var3, var4, var5));
             }
          } catch (ContentValidationException var8) {
             WorldSelectionList.LOGGER.warn("{}", var8.getMessage());
-            this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> {
-               this.minecraft.setScreen(this.screen);
-            }));
+            this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> this.minecraft.setScreen(this.screen)));
          } catch (Exception var9) {
             WorldSelectionList.LOGGER.error("Unable to recreate world", var9);
-            this.minecraft.setScreen(new AlertScreen(() -> {
-               this.minecraft.setScreen(this.screen);
-            }, Component.translatable("selectWorld.recreate.error.title"), Component.translatable("selectWorld.recreate.error.text")));
+            this.minecraft.setScreen(new AlertScreen(() -> this.minecraft.setScreen(this.screen), Component.translatable("selectWorld.recreate.error.title"), Component.translatable("selectWorld.recreate.error.text")));
          }
 
       }
@@ -660,12 +594,29 @@ public class WorldSelectionList extends ObjectSelectionList<Entry> {
       }
    }
 
-   public abstract static class Entry extends ObjectSelectionList.Entry<Entry> implements AutoCloseable {
-      public Entry() {
+   public static class LoadingHeader extends Entry {
+      private static final Component LOADING_LABEL = Component.translatable("selectWorld.loading_list");
+      private final Minecraft minecraft;
+
+      public LoadingHeader(Minecraft var1) {
          super();
+         this.minecraft = var1;
       }
 
-      public void close() {
+      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+         int var11 = (this.minecraft.screen.width - this.minecraft.font.width((FormattedText)LOADING_LABEL)) / 2;
+         Objects.requireNonNull(this.minecraft.font);
+         int var12 = var3 + (var6 - 9) / 2;
+         var1.drawString(this.minecraft.font, (Component)LOADING_LABEL, var11, var12, -1);
+         String var13 = LoadingDotsText.get(Util.getMillis());
+         int var14 = (this.minecraft.screen.width - this.minecraft.font.width(var13)) / 2;
+         Objects.requireNonNull(this.minecraft.font);
+         int var15 = var12 + 9;
+         var1.drawString(this.minecraft.font, var13, var14, var15, -8355712);
+      }
+
+      public Component getNarration() {
+         return LOADING_LABEL;
       }
    }
 }

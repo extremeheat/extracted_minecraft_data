@@ -11,7 +11,7 @@ public class FullTextSearchTree<T> extends IdSearchTree<T> {
 
    public FullTextSearchTree(Function<T, Stream<String>> var1, Function<T, Stream<ResourceLocation>> var2, List<T> var3) {
       super(var2, var3);
-      this.plainTextSearchTree = SearchTree.plainText(var3, var1);
+      this.plainTextSearchTree = SearchTree.<T>plainText(var3, var1);
    }
 
    protected List<T> searchPlainText(String var1) {

@@ -137,11 +137,8 @@ public class ReportReasonSelectionScreen extends Screen {
    public class ReasonSelectionList extends ObjectSelectionList<Entry> {
       public ReasonSelectionList(final Minecraft var2) {
          super(var2, ReportReasonSelectionScreen.this.width, ReportReasonSelectionScreen.this.listHeight(), ReportReasonSelectionScreen.this.layout.getHeaderHeight(), 18);
-         ReportReason[] var3 = ReportReason.values();
-         int var4 = var3.length;
 
-         for(int var5 = 0; var5 < var4; ++var5) {
-            ReportReason var6 = var3[var5];
+         for(ReportReason var6 : ReportReason.values()) {
             if (!ReportReason.getIncompatibleCategories(ReportReasonSelectionScreen.this.reportType).contains(var6)) {
                this.addEntry(new Entry(var6));
             }
@@ -151,9 +148,7 @@ public class ReportReasonSelectionScreen extends Screen {
 
       @Nullable
       public Entry findEntry(ReportReason var1) {
-         return (Entry)this.children().stream().filter((var1x) -> {
-            return var1x.reason == var1;
-         }).findFirst().orElse((Object)null);
+         return (Entry)this.children().stream().filter((var1x) -> var1x.reason == var1).findFirst().orElse((Object)null);
       }
 
       public int getRowWidth() {

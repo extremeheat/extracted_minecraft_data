@@ -30,33 +30,17 @@ public record LootDataType<T>(ResourceKey<Registry<T>> registryKey, Codec<T> cod
    }
 
    private static <T extends LootContextUser> Validator<T> createSimpleValidator() {
-      return (var0, var1, var2) -> {
-         var2.validate(var0.enterElement("{" + String.valueOf(var1.registry()) + "/" + String.valueOf(var1.location()) + "}", var1));
-      };
+      return (var0, var1, var2) -> var2.validate(var0.enterElement("{" + String.valueOf(var1.registry()) + "/" + String.valueOf(var1.location()) + "}", var1));
    }
 
    private static Validator<LootTable> createLootTableValidator() {
-      return (var0, var1, var2) -> {
-         var2.validate(var0.setContextKeySet(var2.getParamSet()).enterElement("{" + String.valueOf(var1.registry()) + "/" + String.valueOf(var1.location()) + "}", var1));
-      };
-   }
-
-   public ResourceKey<Registry<T>> registryKey() {
-      return this.registryKey;
-   }
-
-   public Codec<T> codec() {
-      return this.codec;
-   }
-
-   public Validator<T> validator() {
-      return this.validator;
+      return (var0, var1, var2) -> var2.validate(var0.setContextKeySet(var2.getParamSet()).enterElement("{" + String.valueOf(var1.registry()) + "/" + String.valueOf(var1.location()) + "}", var1));
    }
 
    static {
-      PREDICATE = new LootDataType(Registries.PREDICATE, LootItemCondition.DIRECT_CODEC, createSimpleValidator());
-      MODIFIER = new LootDataType(Registries.ITEM_MODIFIER, LootItemFunctions.ROOT_CODEC, createSimpleValidator());
-      TABLE = new LootDataType(Registries.LOOT_TABLE, LootTable.DIRECT_CODEC, createLootTableValidator());
+      PREDICATE = new LootDataType<LootItemCondition>(Registries.PREDICATE, LootItemCondition.DIRECT_CODEC, createSimpleValidator());
+      MODIFIER = new LootDataType<LootItemFunction>(Registries.ITEM_MODIFIER, LootItemFunctions.ROOT_CODEC, createSimpleValidator());
+      TABLE = new LootDataType<LootTable>(Registries.LOOT_TABLE, LootTable.DIRECT_CODEC, createLootTableValidator());
    }
 
    @FunctionalInterface

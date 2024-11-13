@@ -31,17 +31,15 @@ public class CrossFrameResourcePool implements GraphicsResourceAllocator, AutoCl
    public <T> T acquire(ResourceDescriptor<T> var1) {
       Iterator var2 = this.pool.iterator();
 
-      ResourceEntry var3;
-      do {
-         if (!var2.hasNext()) {
-            return var1.allocate();
+      while(var2.hasNext()) {
+         ResourceEntry var3 = (ResourceEntry)var2.next();
+         if (var3.descriptor.equals(var1)) {
+            var2.remove();
+            return var3.value;
          }
+      }
 
-         var3 = (ResourceEntry)var2.next();
-      } while(!var3.descriptor.equals(var1));
-
-      var2.remove();
-      return var3.value;
+      return (T)var1.allocate();
    }
 
    public <T> void release(ResourceDescriptor<T> var1, T var2) {

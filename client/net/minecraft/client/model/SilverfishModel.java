@@ -19,12 +19,8 @@ public class SilverfishModel extends EntityModel<EntityRenderState> {
 
    public SilverfishModel(ModelPart var1) {
       super(var1);
-      Arrays.setAll(this.bodyParts, (var1x) -> {
-         return var1.getChild(getSegmentName(var1x));
-      });
-      Arrays.setAll(this.bodyLayers, (var1x) -> {
-         return var1.getChild(getLayerName(var1x));
-      });
+      Arrays.setAll(this.bodyParts, (var1x) -> var1.getChild(getSegmentName(var1x)));
+      Arrays.setAll(this.bodyLayers, (var1x) -> var1.getChild(getLayerName(var1x)));
    }
 
    private static String getLayerName(int var0) {

@@ -33,32 +33,36 @@ public class UnconfiguredPipelineHandler {
    }
 
    private static OutboundConfigurationTask setupOutboundHandler(ChannelOutboundHandler var0) {
-      return (var1) -> {
-         var1.pipeline().replace(var1.name(), "encoder", var0);
-      };
+      return (var1) -> var1.pipeline().replace(var1.name(), "encoder", var0);
    }
 
-   @FunctionalInterface
-   public interface InboundConfigurationTask {
-      void run(ChannelHandlerContext var1);
-
-      default InboundConfigurationTask andThen(InboundConfigurationTask var1) {
-         return (var2) -> {
-            this.run(var2);
-            var1.run(var2);
-         };
+   public static class Inbound extends ChannelDuplexHandler {
+      public Inbound() {
+         super();
       }
-   }
 
-   @FunctionalInterface
-   public interface OutboundConfigurationTask {
-      void run(ChannelHandlerContext var1);
+      public void channelRead(ChannelHandlerContext var1, Object var2) {
+         if (!(var2 instanceof ByteBuf) && !(var2 instanceof Packet)) {
+            var1.fireChannelRead(var2);
+         } else {
+            ReferenceCountUtil.release(var2);
+            throw new DecoderException("Pipeline has no inbound protocol configured, can't process packet " + String.valueOf(var2));
+         }
+      }
 
-      default OutboundConfigurationTask andThen(OutboundConfigurationTask var1) {
-         return (var2) -> {
-            this.run(var2);
-            var1.run(var2);
-         };
+      public void write(ChannelHandlerContext var1, Object var2, ChannelPromise var3) throws Exception {
+         if (var2 instanceof InboundConfigurationTask var4) {
+            try {
+               var4.run(var1);
+            } finally {
+               ReferenceCountUtil.release(var2);
+            }
+
+            var3.setSuccess();
+         } else {
+            var1.write(var2, var3);
+         }
+
       }
    }
 
@@ -90,33 +94,27 @@ public class UnconfiguredPipelineHandler {
       }
    }
 
-   public static class Inbound extends ChannelDuplexHandler {
-      public Inbound() {
-         super();
+   @FunctionalInterface
+   public interface InboundConfigurationTask {
+      void run(ChannelHandlerContext var1);
+
+      default InboundConfigurationTask andThen(InboundConfigurationTask var1) {
+         return (var2) -> {
+            this.run(var2);
+            var1.run(var2);
+         };
       }
+   }
 
-      public void channelRead(ChannelHandlerContext var1, Object var2) {
-         if (!(var2 instanceof ByteBuf) && !(var2 instanceof Packet)) {
-            var1.fireChannelRead(var2);
-         } else {
-            ReferenceCountUtil.release(var2);
-            throw new DecoderException("Pipeline has no inbound protocol configured, can't process packet " + String.valueOf(var2));
-         }
-      }
+   @FunctionalInterface
+   public interface OutboundConfigurationTask {
+      void run(ChannelHandlerContext var1);
 
-      public void write(ChannelHandlerContext var1, Object var2, ChannelPromise var3) throws Exception {
-         if (var2 instanceof InboundConfigurationTask var4) {
-            try {
-               var4.run(var1);
-            } finally {
-               ReferenceCountUtil.release(var2);
-            }
-
-            var3.setSuccess();
-         } else {
-            var1.write(var2, var3);
-         }
-
+      default OutboundConfigurationTask andThen(OutboundConfigurationTask var1) {
+         return (var2) -> {
+            this.run(var2);
+            var1.run(var2);
+         };
       }
    }
 }

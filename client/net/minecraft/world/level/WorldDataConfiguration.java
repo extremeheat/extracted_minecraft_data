@@ -7,9 +7,7 @@ import net.minecraft.world.flag.FeatureFlags;
 
 public record WorldDataConfiguration(DataPackConfig dataPacks, FeatureFlagSet enabledFeatures) {
    public static final String ENABLED_FEATURES_ID = "enabled_features";
-   public static final Codec<WorldDataConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(DataPackConfig.CODEC.lenientOptionalFieldOf("DataPacks", DataPackConfig.DEFAULT).forGetter(WorldDataConfiguration::dataPacks), FeatureFlags.CODEC.lenientOptionalFieldOf("enabled_features", FeatureFlags.DEFAULT_FLAGS).forGetter(WorldDataConfiguration::enabledFeatures)).apply(var0, WorldDataConfiguration::new);
-   });
+   public static final Codec<WorldDataConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(DataPackConfig.CODEC.lenientOptionalFieldOf("DataPacks", DataPackConfig.DEFAULT).forGetter(WorldDataConfiguration::dataPacks), FeatureFlags.CODEC.lenientOptionalFieldOf("enabled_features", FeatureFlags.DEFAULT_FLAGS).forGetter(WorldDataConfiguration::enabledFeatures)).apply(var0, WorldDataConfiguration::new));
    public static final WorldDataConfiguration DEFAULT;
 
    public WorldDataConfiguration(DataPackConfig var1, FeatureFlagSet var2) {
@@ -20,14 +18,6 @@ public record WorldDataConfiguration(DataPackConfig dataPacks, FeatureFlagSet en
 
    public WorldDataConfiguration expandFeatures(FeatureFlagSet var1) {
       return new WorldDataConfiguration(this.dataPacks, this.enabledFeatures.join(var1));
-   }
-
-   public DataPackConfig dataPacks() {
-      return this.dataPacks;
-   }
-
-   public FeatureFlagSet enabledFeatures() {
-      return this.enabledFeatures;
    }
 
    static {

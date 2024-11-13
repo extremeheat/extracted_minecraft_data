@@ -129,6 +129,30 @@ public abstract class Column {
       }
    }
 
+   public static final class Line extends Column {
+      static final Line INSTANCE = new Line();
+
+      private Line() {
+         super();
+      }
+
+      public OptionalInt getCeiling() {
+         return OptionalInt.empty();
+      }
+
+      public OptionalInt getFloor() {
+         return OptionalInt.empty();
+      }
+
+      public OptionalInt getHeight() {
+         return OptionalInt.empty();
+      }
+
+      public String toString() {
+         return "C(-)";
+      }
+   }
+
    public static final class Ray extends Column {
       private final int edge;
       private final boolean pointingUp;
@@ -153,30 +177,6 @@ public abstract class Column {
 
       public String toString() {
          return this.pointingUp ? "C(" + this.edge + "-)" : "C(-" + this.edge + ")";
-      }
-   }
-
-   public static final class Line extends Column {
-      static final Line INSTANCE = new Line();
-
-      private Line() {
-         super();
-      }
-
-      public OptionalInt getCeiling() {
-         return OptionalInt.empty();
-      }
-
-      public OptionalInt getFloor() {
-         return OptionalInt.empty();
-      }
-
-      public OptionalInt getHeight() {
-         return OptionalInt.empty();
-      }
-
-      public String toString() {
-         return "C(-)";
       }
    }
 }

@@ -40,38 +40,6 @@ public record ItemTransforms(ItemTransform thirdPersonLeftHand, ItemTransform th
       return var10000;
    }
 
-   public ItemTransform thirdPersonLeftHand() {
-      return this.thirdPersonLeftHand;
-   }
-
-   public ItemTransform thirdPersonRightHand() {
-      return this.thirdPersonRightHand;
-   }
-
-   public ItemTransform firstPersonLeftHand() {
-      return this.firstPersonLeftHand;
-   }
-
-   public ItemTransform firstPersonRightHand() {
-      return this.firstPersonRightHand;
-   }
-
-   public ItemTransform head() {
-      return this.head;
-   }
-
-   public ItemTransform gui() {
-      return this.gui;
-   }
-
-   public ItemTransform ground() {
-      return this.ground;
-   }
-
-   public ItemTransform fixed() {
-      return this.fixed;
-   }
-
    static {
       NO_TRANSFORMS = new ItemTransforms(ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM);
    }

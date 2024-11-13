@@ -13,7 +13,7 @@ public enum MobCategory implements StringRepresentable {
    WATER_AMBIENT("water_ambient", 20, true, false, 64),
    MISC("misc", -1, true, true, 128);
 
-   public static final Codec<MobCategory> CODEC = StringRepresentable.fromEnum(MobCategory::values);
+   public static final Codec<MobCategory> CODEC = StringRepresentable.<MobCategory>fromEnum(MobCategory::values);
    private final int max;
    private final boolean isFriendly;
    private final boolean isPersistent;

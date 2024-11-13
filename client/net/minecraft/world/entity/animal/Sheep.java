@@ -79,9 +79,7 @@ public class Sheep extends Animal implements Shearable {
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new PanicGoal(this, 1.25));
       this.goalSelector.addGoal(2, new BreedGoal(this, 1.0));
-      this.goalSelector.addGoal(3, new TemptGoal(this, 1.1, (var0) -> {
-         return var0.is(ItemTags.SHEEP_FOOD);
-      }, false));
+      this.goalSelector.addGoal(3, new TemptGoal(this, 1.1, (var0) -> var0.is(ItemTags.SHEEP_FOOD), false));
       this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.1));
       this.goalSelector.addGoal(5, this.eatBlockGoal);
       this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 1.0));
@@ -249,7 +247,7 @@ public class Sheep extends Animal implements Shearable {
 
    @Nullable
    public Sheep getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Sheep var3 = (Sheep)EntityType.SHEEP.create(var1, EntitySpawnReason.BREEDING);
+      Sheep var3 = EntityType.SHEEP.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          DyeColor var4 = this.getColor();
          DyeColor var5 = ((Sheep)var2).getColor();
@@ -281,9 +279,7 @@ public class Sheep extends Animal implements Shearable {
    }
 
    static {
-      DATA_WOOL_ID = SynchedEntityData.defineId(Sheep.class, EntityDataSerializers.BYTE);
-      COLOR_BY_DYE = Maps.newEnumMap((Map)Arrays.stream(DyeColor.values()).collect(Collectors.toMap((var0) -> {
-         return var0;
-      }, Sheep::createSheepColor)));
+      DATA_WOOL_ID = SynchedEntityData.<Byte>defineId(Sheep.class, EntityDataSerializers.BYTE);
+      COLOR_BY_DYE = Maps.newEnumMap((Map)Arrays.stream(DyeColor.values()).collect(Collectors.toMap((var0) -> var0, Sheep::createSheepColor)));
    }
 }

@@ -52,16 +52,12 @@ public class TelemetryLogManager implements AutoCloseable {
          }, Util.backgroundExecutor());
       }
 
-      return this.sessionLog.thenApply((var0) -> {
-         return var0.map(TelemetryEventLog::logger);
-      });
+      return this.sessionLog.thenApply((var0) -> var0.map(TelemetryEventLog::logger));
    }
 
    public void close() {
       if (this.sessionLog != null) {
-         this.sessionLog.thenAccept((var0) -> {
-            var0.ifPresent(TelemetryEventLog::close);
-         });
+         this.sessionLog.thenAccept((var0) -> var0.ifPresent(TelemetryEventLog::close));
       }
 
    }

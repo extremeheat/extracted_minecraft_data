@@ -11,8 +11,4 @@ public record DiscardedQueryPayload(ResourceLocation id) implements CustomQueryP
 
    public void write(FriendlyByteBuf var1) {
    }
-
-   public ResourceLocation id() {
-      return this.id;
-   }
 }

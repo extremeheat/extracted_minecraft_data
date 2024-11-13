@@ -84,11 +84,8 @@ public class AmphibiousNodeEvaluator extends WalkNodeEvaluator {
       PathType var5 = var1.getPathTypeFromState(var2, var3, var4);
       if (var5 == PathType.WATER) {
          BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
-         Direction[] var7 = Direction.values();
-         int var8 = var7.length;
 
-         for(int var9 = 0; var9 < var8; ++var9) {
-            Direction var10 = var7[var9];
+         for(Direction var10 : Direction.values()) {
             var6.set(var2, var3, var4).move(var10);
             PathType var11 = var1.getPathTypeFromState(var6.getX(), var6.getY(), var6.getZ());
             if (var11 == PathType.BLOCKED) {

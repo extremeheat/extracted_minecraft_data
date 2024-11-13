@@ -25,13 +25,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class AmethystClusterBlock extends AmethystBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<AmethystClusterBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.FLOAT.fieldOf("height").forGetter((var0x) -> {
-         return var0x.height;
-      }), Codec.FLOAT.fieldOf("aabb_offset").forGetter((var0x) -> {
-         return var0x.aabbOffset;
-      }), propertiesCodec()).apply(var0, AmethystClusterBlock::new);
-   });
+   public static final MapCodec<AmethystClusterBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("height").forGetter((var0x) -> var0x.height), Codec.FLOAT.fieldOf("aabb_offset").forGetter((var0x) -> var0x.aabbOffset), propertiesCodec()).apply(var0, AmethystClusterBlock::new));
    public static final BooleanProperty WATERLOGGED;
    public static final EnumProperty<Direction> FACING;
    private final float height;

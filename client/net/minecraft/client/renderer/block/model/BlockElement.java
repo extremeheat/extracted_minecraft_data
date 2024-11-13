@@ -9,7 +9,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -46,10 +45,7 @@ public class BlockElement {
    }
 
    private void fillUvs() {
-      Iterator var1 = this.faces.entrySet().iterator();
-
-      while(var1.hasNext()) {
-         Map.Entry var2 = (Map.Entry)var1.next();
+      for(Map.Entry var2 : this.faces.entrySet()) {
          float[] var3 = this.uvsByFace((Direction)var2.getKey());
          ((BlockElementFace)var2.getValue()).uv().setMissingUv(var3);
       }
@@ -152,10 +148,8 @@ public class BlockElement {
       private Map<Direction, BlockElementFace> filterNullFromFaces(JsonDeserializationContext var1, JsonObject var2) {
          EnumMap var3 = Maps.newEnumMap(Direction.class);
          JsonObject var4 = GsonHelper.getAsJsonObject(var2, "faces");
-         Iterator var5 = var4.entrySet().iterator();
 
-         while(var5.hasNext()) {
-            Map.Entry var6 = (Map.Entry)var5.next();
+         for(Map.Entry var6 : var4.entrySet()) {
             Direction var7 = this.getFacing((String)var6.getKey());
             var3.put(var7, (BlockElementFace)var1.deserialize((JsonElement)var6.getValue(), BlockElementFace.class));
          }

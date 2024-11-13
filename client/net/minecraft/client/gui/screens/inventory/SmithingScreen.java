@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -108,18 +107,14 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
 
    private void updateArmorStandPreview(ItemStack var1) {
       if (this.armorStandPreview != null) {
-         Iterator var2 = EquipmentSlot.VALUES.iterator();
-
-         EquipmentSlot var3;
-         while(var2.hasNext()) {
-            var3 = (EquipmentSlot)var2.next();
+         for(EquipmentSlot var3 : EquipmentSlot.VALUES) {
             this.armorStandPreview.setItemSlot(var3, ItemStack.EMPTY);
          }
 
          if (!var1.isEmpty()) {
             Equippable var4 = (Equippable)var1.get(DataComponents.EQUIPPABLE);
-            var3 = var4 != null ? var4.slot() : EquipmentSlot.OFFHAND;
-            this.armorStandPreview.setItemSlot(var3, var1.copy());
+            EquipmentSlot var5 = var4 != null ? var4.slot() : EquipmentSlot.OFFHAND;
+            this.armorStandPreview.setItemSlot(var5, var1.copy());
          }
 
       }
@@ -160,9 +155,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
          }
       }
 
-      var4.ifPresent((var4x) -> {
-         var1.renderTooltip(this.font, this.font.split(var4x, 115), var2, var3);
-      });
+      var4.ifPresent((var4x) -> var1.renderTooltip(this.font, this.font.split(var4x, 115), var2, var3));
    }
 
    private boolean hasRecipeError() {

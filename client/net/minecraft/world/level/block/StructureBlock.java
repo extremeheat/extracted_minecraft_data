@@ -58,10 +58,6 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
       }
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
-
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(MODE);
    }

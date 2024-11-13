@@ -104,64 +104,126 @@ public interface VibrationSystem {
       return Math.max(1, 15 - Mth.floor(var2 * (double)var0));
    }
 
-   public interface User {
-      int getListenerRadius();
+   public static final class Data {
+      public static Codec<Data> CODEC = RecordCodecBuilder.create((var0) -> var0.group(VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter((var0x) -> Optional.ofNullable(var0x.currentVibration)), VibrationSelector.CODEC.fieldOf("selector").forGetter(Data::getSelectionStrategy), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("event_delay").orElse(0).forGetter(Data::getTravelTimeInTicks)).apply(var0, (var0x, var1, var2) -> new Data((VibrationInfo)var0x.orElse((Object)null), var1, var2, true)));
+      public static final String NBT_TAG_KEY = "listener";
+      @Nullable
+      VibrationInfo currentVibration;
+      private int travelTimeInTicks;
+      final VibrationSelector selectionStrategy;
+      private boolean reloadVibrationParticle;
 
-      PositionSource getPositionSource();
-
-      boolean canReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, GameEvent.Context var4);
-
-      void onReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, @Nullable Entity var4, @Nullable Entity var5, float var6);
-
-      default TagKey<GameEvent> getListenableEvents() {
-         return GameEventTags.VIBRATIONS;
+      private Data(@Nullable VibrationInfo var1, VibrationSelector var2, int var3, boolean var4) {
+         super();
+         this.currentVibration = var1;
+         this.travelTimeInTicks = var3;
+         this.selectionStrategy = var2;
+         this.reloadVibrationParticle = var4;
       }
 
-      default boolean canTriggerAvoidVibration() {
-         return false;
+      public Data() {
+         this((VibrationInfo)null, new VibrationSelector(), 0, false);
       }
 
-      default boolean requiresAdjacentChunksToBeTicking() {
-         return false;
+      public VibrationSelector getSelectionStrategy() {
+         return this.selectionStrategy;
       }
 
-      default int calculateTravelTimeInTicks(float var1) {
-         return Mth.floor(var1);
+      @Nullable
+      public VibrationInfo getCurrentVibration() {
+         return this.currentVibration;
       }
 
-      default boolean isValidVibration(Holder<GameEvent> var1, GameEvent.Context var2) {
-         if (!var1.is(this.getListenableEvents())) {
+      public void setCurrentVibration(@Nullable VibrationInfo var1) {
+         this.currentVibration = var1;
+      }
+
+      public int getTravelTimeInTicks() {
+         return this.travelTimeInTicks;
+      }
+
+      public void setTravelTimeInTicks(int var1) {
+         this.travelTimeInTicks = var1;
+      }
+
+      public void decrementTravelTime() {
+         this.travelTimeInTicks = Math.max(0, this.travelTimeInTicks - 1);
+      }
+
+      public boolean shouldReloadVibrationParticle() {
+         return this.reloadVibrationParticle;
+      }
+
+      public void setReloadVibrationParticle(boolean var1) {
+         this.reloadVibrationParticle = var1;
+      }
+   }
+
+   public static class Listener implements GameEventListener {
+      private final VibrationSystem system;
+
+      public Listener(VibrationSystem var1) {
+         super();
+         this.system = var1;
+      }
+
+      public PositionSource getListenerSource() {
+         return this.system.getVibrationUser().getPositionSource();
+      }
+
+      public int getListenerRadius() {
+         return this.system.getVibrationUser().getListenerRadius();
+      }
+
+      public boolean handleGameEvent(ServerLevel var1, Holder<GameEvent> var2, GameEvent.Context var3, Vec3 var4) {
+         Data var5 = this.system.getVibrationData();
+         User var6 = this.system.getVibrationUser();
+         if (var5.getCurrentVibration() != null) {
+            return false;
+         } else if (!var6.isValidVibration(var2, var3)) {
             return false;
          } else {
-            Entity var3 = var2.sourceEntity();
-            if (var3 != null) {
-               if (var3.isSpectator()) {
-                  return false;
-               }
-
-               if (var3.isSteppingCarefully() && var1.is(GameEventTags.IGNORE_VIBRATIONS_SNEAKING)) {
-                  if (this.canTriggerAvoidVibration() && var3 instanceof ServerPlayer) {
-                     ServerPlayer var4 = (ServerPlayer)var3;
-                     CriteriaTriggers.AVOID_VIBRATION.trigger(var4);
-                  }
-
-                  return false;
-               }
-
-               if (var3.dampensVibrations()) {
-                  return false;
-               }
-            }
-
-            if (var2.affectedState() != null) {
-               return !var2.affectedState().is(BlockTags.DAMPENS_VIBRATIONS);
+            Optional var7 = var6.getPositionSource().getPosition(var1);
+            if (var7.isEmpty()) {
+               return false;
             } else {
-               return true;
+               Vec3 var8 = (Vec3)var7.get();
+               if (!var6.canReceiveVibration(var1, BlockPos.containing(var4), var2, var3)) {
+                  return false;
+               } else if (isOccluded(var1, var4, var8)) {
+                  return false;
+               } else {
+                  this.scheduleVibration(var1, var5, var2, var3, var4, var8);
+                  return true;
+               }
             }
          }
       }
 
-      default void onDataChanged() {
+      public void forceScheduleVibration(ServerLevel var1, Holder<GameEvent> var2, GameEvent.Context var3, Vec3 var4) {
+         this.system.getVibrationUser().getPositionSource().getPosition(var1).ifPresent((var5) -> this.scheduleVibration(var1, this.system.getVibrationData(), var2, var3, var4, var5));
+      }
+
+      private void scheduleVibration(ServerLevel var1, Data var2, Holder<GameEvent> var3, GameEvent.Context var4, Vec3 var5, Vec3 var6) {
+         var2.selectionStrategy.addCandidate(new VibrationInfo(var3, (float)var5.distanceTo(var6), var5, var4.sourceEntity()), var1.getGameTime());
+      }
+
+      public static float distanceBetweenInBlocks(BlockPos var0, BlockPos var1) {
+         return (float)Math.sqrt(var0.distSqr(var1));
+      }
+
+      private static boolean isOccluded(Level var0, Vec3 var1, Vec3 var2) {
+         Vec3 var3 = new Vec3((double)Mth.floor(var1.x) + 0.5, (double)Mth.floor(var1.y) + 0.5, (double)Mth.floor(var1.z) + 0.5);
+         Vec3 var4 = new Vec3((double)Mth.floor(var2.x) + 0.5, (double)Mth.floor(var2.y) + 0.5, (double)Mth.floor(var2.z) + 0.5);
+
+         for(Direction var8 : Direction.values()) {
+            Vec3 var9 = var3.relative(var8, 9.999999747378752E-6);
+            if (var0.isBlockInLine(new ClipBlockStateContext(var9, var4, (var0x) -> var0x.is(BlockTags.OCCLUDES_VIBRATION_SIGNALS))).getType() != HitResult.Type.BLOCK) {
+               return false;
+            }
+         }
+
+         return true;
       }
    }
 
@@ -249,139 +311,64 @@ public interface VibrationSystem {
       }
    }
 
-   public static class Listener implements GameEventListener {
-      private final VibrationSystem system;
+   public interface User {
+      int getListenerRadius();
 
-      public Listener(VibrationSystem var1) {
-         super();
-         this.system = var1;
+      PositionSource getPositionSource();
+
+      boolean canReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, GameEvent.Context var4);
+
+      void onReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, @Nullable Entity var4, @Nullable Entity var5, float var6);
+
+      default TagKey<GameEvent> getListenableEvents() {
+         return GameEventTags.VIBRATIONS;
       }
 
-      public PositionSource getListenerSource() {
-         return this.system.getVibrationUser().getPositionSource();
+      default boolean canTriggerAvoidVibration() {
+         return false;
       }
 
-      public int getListenerRadius() {
-         return this.system.getVibrationUser().getListenerRadius();
+      default boolean requiresAdjacentChunksToBeTicking() {
+         return false;
       }
 
-      public boolean handleGameEvent(ServerLevel var1, Holder<GameEvent> var2, GameEvent.Context var3, Vec3 var4) {
-         Data var5 = this.system.getVibrationData();
-         User var6 = this.system.getVibrationUser();
-         if (var5.getCurrentVibration() != null) {
-            return false;
-         } else if (!var6.isValidVibration(var2, var3)) {
+      default int calculateTravelTimeInTicks(float var1) {
+         return Mth.floor(var1);
+      }
+
+      default boolean isValidVibration(Holder<GameEvent> var1, GameEvent.Context var2) {
+         if (!var1.is(this.getListenableEvents())) {
             return false;
          } else {
-            Optional var7 = var6.getPositionSource().getPosition(var1);
-            if (var7.isEmpty()) {
-               return false;
-            } else {
-               Vec3 var8 = (Vec3)var7.get();
-               if (!var6.canReceiveVibration(var1, BlockPos.containing(var4), var2, var3)) {
+            Entity var3 = var2.sourceEntity();
+            if (var3 != null) {
+               if (var3.isSpectator()) {
                   return false;
-               } else if (isOccluded(var1, var4, var8)) {
+               }
+
+               if (var3.isSteppingCarefully() && var1.is(GameEventTags.IGNORE_VIBRATIONS_SNEAKING)) {
+                  if (this.canTriggerAvoidVibration() && var3 instanceof ServerPlayer) {
+                     ServerPlayer var4 = (ServerPlayer)var3;
+                     CriteriaTriggers.AVOID_VIBRATION.trigger(var4);
+                  }
+
                   return false;
-               } else {
-                  this.scheduleVibration(var1, var5, var2, var3, var4, var8);
-                  return true;
+               }
+
+               if (var3.dampensVibrations()) {
+                  return false;
                }
             }
-         }
-      }
 
-      public void forceScheduleVibration(ServerLevel var1, Holder<GameEvent> var2, GameEvent.Context var3, Vec3 var4) {
-         this.system.getVibrationUser().getPositionSource().getPosition(var1).ifPresent((var5) -> {
-            this.scheduleVibration(var1, this.system.getVibrationData(), var2, var3, var4, var5);
-         });
-      }
-
-      private void scheduleVibration(ServerLevel var1, Data var2, Holder<GameEvent> var3, GameEvent.Context var4, Vec3 var5, Vec3 var6) {
-         var2.selectionStrategy.addCandidate(new VibrationInfo(var3, (float)var5.distanceTo(var6), var5, var4.sourceEntity()), var1.getGameTime());
-      }
-
-      public static float distanceBetweenInBlocks(BlockPos var0, BlockPos var1) {
-         return (float)Math.sqrt(var0.distSqr(var1));
-      }
-
-      private static boolean isOccluded(Level var0, Vec3 var1, Vec3 var2) {
-         Vec3 var3 = new Vec3((double)Mth.floor(var1.x) + 0.5, (double)Mth.floor(var1.y) + 0.5, (double)Mth.floor(var1.z) + 0.5);
-         Vec3 var4 = new Vec3((double)Mth.floor(var2.x) + 0.5, (double)Mth.floor(var2.y) + 0.5, (double)Mth.floor(var2.z) + 0.5);
-         Direction[] var5 = Direction.values();
-         int var6 = var5.length;
-
-         for(int var7 = 0; var7 < var6; ++var7) {
-            Direction var8 = var5[var7];
-            Vec3 var9 = var3.relative(var8, 9.999999747378752E-6);
-            if (var0.isBlockInLine(new ClipBlockStateContext(var9, var4, (var0x) -> {
-               return var0x.is(BlockTags.OCCLUDES_VIBRATION_SIGNALS);
-            })).getType() != HitResult.Type.BLOCK) {
-               return false;
+            if (var2.affectedState() != null) {
+               return !var2.affectedState().is(BlockTags.DAMPENS_VIBRATIONS);
+            } else {
+               return true;
             }
          }
-
-         return true;
-      }
-   }
-
-   public static final class Data {
-      public static Codec<Data> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter((var0x) -> {
-            return Optional.ofNullable(var0x.currentVibration);
-         }), VibrationSelector.CODEC.fieldOf("selector").forGetter(Data::getSelectionStrategy), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("event_delay").orElse(0).forGetter(Data::getTravelTimeInTicks)).apply(var0, (var0x, var1, var2) -> {
-            return new Data((VibrationInfo)var0x.orElse((Object)null), var1, var2, true);
-         });
-      });
-      public static final String NBT_TAG_KEY = "listener";
-      @Nullable
-      VibrationInfo currentVibration;
-      private int travelTimeInTicks;
-      final VibrationSelector selectionStrategy;
-      private boolean reloadVibrationParticle;
-
-      private Data(@Nullable VibrationInfo var1, VibrationSelector var2, int var3, boolean var4) {
-         super();
-         this.currentVibration = var1;
-         this.travelTimeInTicks = var3;
-         this.selectionStrategy = var2;
-         this.reloadVibrationParticle = var4;
       }
 
-      public Data() {
-         this((VibrationInfo)null, new VibrationSelector(), 0, false);
-      }
-
-      public VibrationSelector getSelectionStrategy() {
-         return this.selectionStrategy;
-      }
-
-      @Nullable
-      public VibrationInfo getCurrentVibration() {
-         return this.currentVibration;
-      }
-
-      public void setCurrentVibration(@Nullable VibrationInfo var1) {
-         this.currentVibration = var1;
-      }
-
-      public int getTravelTimeInTicks() {
-         return this.travelTimeInTicks;
-      }
-
-      public void setTravelTimeInTicks(int var1) {
-         this.travelTimeInTicks = var1;
-      }
-
-      public void decrementTravelTime() {
-         this.travelTimeInTicks = Math.max(0, this.travelTimeInTicks - 1);
-      }
-
-      public boolean shouldReloadVibrationParticle() {
-         return this.reloadVibrationParticle;
-      }
-
-      public void setReloadVibrationParticle(boolean var1) {
-         this.reloadVibrationParticle = var1;
+      default void onDataChanged() {
       }
    }
 }

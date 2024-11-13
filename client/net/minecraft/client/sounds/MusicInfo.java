@@ -23,13 +23,4 @@ public record MusicInfo(@Nullable Music music, float volume) {
          return this.music.replaceCurrentMusic() && !((SoundEvent)this.music.getEvent().value()).location().equals(var1.getLocation());
       }
    }
-
-   @Nullable
-   public Music music() {
-      return this.music;
-   }
-
-   public float volume() {
-      return this.volume;
-   }
 }

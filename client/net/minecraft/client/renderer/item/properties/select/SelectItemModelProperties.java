@@ -5,7 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 
 public class SelectItemModelProperties {
-   private static final ExtraCodecs.LateBoundIdMapper<ResourceLocation, SelectItemModelProperty.Type<?, ?>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper();
+   private static final ExtraCodecs.LateBoundIdMapper<ResourceLocation, SelectItemModelProperty.Type<?, ?>> ID_MAPPER = new ExtraCodecs.LateBoundIdMapper<ResourceLocation, SelectItemModelProperty.Type<?, ?>>();
    public static final Codec<SelectItemModelProperty.Type<?, ?>> CODEC;
 
    public SelectItemModelProperties() {
@@ -19,6 +19,8 @@ public class SelectItemModelProperties {
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("trim_material"), TrimMaterialProperty.TYPE);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("block_state"), ItemBlockState.TYPE);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("display_context"), DisplayContext.TYPE);
+      ID_MAPPER.put(ResourceLocation.withDefaultNamespace("local_time"), LocalTime.TYPE);
+      ID_MAPPER.put(ResourceLocation.withDefaultNamespace("holder_type"), HolderType.TYPE);
    }
 
    static {

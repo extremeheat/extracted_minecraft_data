@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -324,9 +325,7 @@ public class TextureMapping {
 
    public static ResourceLocation getBlockTexture(Block var0, String var1) {
       ResourceLocation var2 = BuiltInRegistries.BLOCK.getKey(var0);
-      return var2.withPath((var1x) -> {
-         return "block/" + var1x + var1;
-      });
+      return var2.withPath((UnaryOperator)((var1x) -> "block/" + var1x + var1));
    }
 
    public static ResourceLocation getItemTexture(Item var0) {
@@ -336,8 +335,6 @@ public class TextureMapping {
 
    public static ResourceLocation getItemTexture(Item var0, String var1) {
       ResourceLocation var2 = BuiltInRegistries.ITEM.getKey(var0);
-      return var2.withPath((var1x) -> {
-         return "item/" + var1x + var1;
-      });
+      return var2.withPath((UnaryOperator)((var1x) -> "item/" + var1x + var1));
    }
 }

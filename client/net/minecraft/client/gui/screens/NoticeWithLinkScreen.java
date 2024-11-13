@@ -46,15 +46,9 @@ public class NoticeWithLinkScreen extends Screen {
       boolean var2 = true;
       GridLayout var3 = (new GridLayout()).columnSpacing(5);
       GridLayout.RowHelper var4 = var3.createRowHelper(3);
-      var4.addChild(Button.builder(CommonComponents.GUI_OPEN_IN_BROWSER, (var1x) -> {
-         Util.getPlatform().openUri(this.uri);
-      }).size(120, 20).build());
-      var4.addChild(Button.builder(CommonComponents.GUI_COPY_LINK_TO_CLIPBOARD, (var1x) -> {
-         this.minecraft.keyboardHandler.setClipboard(this.uri.toString());
-      }).size(120, 20).build());
-      var4.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
-         this.onClose();
-      }).size(120, 20).build());
+      var4.addChild(Button.builder(CommonComponents.GUI_OPEN_IN_BROWSER, (var1x) -> Util.getPlatform().openUri(this.uri)).size(120, 20).build());
+      var4.addChild(Button.builder(CommonComponents.GUI_COPY_LINK_TO_CLIPBOARD, (var1x) -> this.minecraft.keyboardHandler.setClipboard(this.uri.toString())).size(120, 20).build());
+      var4.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).size(120, 20).build());
       var1.addChild(var3);
       this.repositionElements();
       this.layout.visitWidgets(this::addRenderableWidget);

@@ -74,12 +74,8 @@ public class SpawnUtil {
             return false;
          }
       };
-      Strategy ON_TOP_OF_COLLIDER = (var0, var1, var2, var3, var4) -> {
-         return var4.getCollisionShape(var0, var3).isEmpty() && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
-      };
-      Strategy ON_TOP_OF_COLLIDER_NO_LEAVES = (var0, var1, var2, var3, var4) -> {
-         return var4.getCollisionShape(var0, var3).isEmpty() && !var2.is(BlockTags.LEAVES) && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
-      };
+      Strategy ON_TOP_OF_COLLIDER = (var0, var1, var2, var3, var4) -> var4.getCollisionShape(var0, var3).isEmpty() && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
+      Strategy ON_TOP_OF_COLLIDER_NO_LEAVES = (var0, var1, var2, var3, var4) -> var4.getCollisionShape(var0, var3).isEmpty() && !var2.is(BlockTags.LEAVES) && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
 
       boolean canSpawnOn(ServerLevel var1, BlockPos var2, BlockState var3, BlockPos var4, BlockState var5);
    }

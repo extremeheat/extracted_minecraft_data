@@ -35,13 +35,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
-   public static final MapCodec<ButtonBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter((var0x) -> {
-         return var0x.type;
-      }), Codec.intRange(1, 1024).fieldOf("ticks_to_stay_pressed").forGetter((var0x) -> {
-         return var0x.ticksToStayPressed;
-      }), propertiesCodec()).apply(var0, ButtonBlock::new);
-   });
+   public static final MapCodec<ButtonBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter((var0x) -> var0x.type), Codec.intRange(1, 1024).fieldOf("ticks_to_stay_pressed").forGetter((var0x) -> var0x.ticksToStayPressed), propertiesCodec()).apply(var0, ButtonBlock::new));
    public static final BooleanProperty POWERED;
    private static final int PRESSED_DEPTH = 1;
    private static final int UNPRESSED_DEPTH = 2;

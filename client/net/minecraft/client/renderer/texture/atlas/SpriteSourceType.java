@@ -7,8 +7,4 @@ public record SpriteSourceType(MapCodec<? extends SpriteSource> codec) {
       super();
       this.codec = var1;
    }
-
-   public MapCodec<? extends SpriteSource> codec() {
-      return this.codec;
-   }
 }

@@ -43,35 +43,25 @@ public class EntityRidingToPassengersFix extends DataFix {
          OpticFinder var12 = DSL.typeFinder(var4);
          Type var13 = var1.getType(References.PLAYER);
          Type var14 = var2.getType(References.PLAYER);
-         return TypeRewriteRule.seq(this.fixTypeEverywhere("EntityRidingToPassengerFix", var6, var7, (var5x) -> {
-            return (var6) -> {
+         return TypeRewriteRule.seq(this.fixTypeEverywhere("EntityRidingToPassengerFix", var6, var7, (var5x) -> (var6) -> {
                Optional var7 = Optional.empty();
                Pair var8 = var6;
 
                while(true) {
                   Either var9 = (Either)DataFixUtils.orElse(var7.map((var4x) -> {
-                     Typed var5 = (Typed)var4.pointTyped(var5x).orElseThrow(() -> {
-                        return new IllegalStateException("Could not create new entity tree");
-                     });
-                     Object var6 = var5.set(var11, var4x).getOptional(var12).orElseThrow(() -> {
-                        return new IllegalStateException("Should always have an entity tree here");
-                     });
+                     Typed var5 = (Typed)var4.pointTyped(var5x).orElseThrow(() -> new IllegalStateException("Could not create new entity tree"));
+                     Object var6 = var5.set(var11, var4x).getOptional(var12).orElseThrow(() -> new IllegalStateException("Should always have an entity tree here"));
                      return Either.left(ImmutableList.of(var6));
                   }), Either.right(DSL.unit()));
                   var7 = Optional.of(Pair.of(References.ENTITY_TREE.typeName(), Pair.of(var9, ((Pair)var8.getSecond()).getSecond())));
                   Optional var10x = ((Either)((Pair)var8.getSecond()).getFirst()).left();
                   if (var10x.isEmpty()) {
-                     return (Pair)var7.orElseThrow(() -> {
-                        return new IllegalStateException("Should always have an entity tree here");
-                     });
+                     return (Pair)var7.orElseThrow(() -> new IllegalStateException("Should always have an entity tree here"));
                   }
 
-                  var8 = (Pair)(new Typed(var3, var5x, var10x.get())).getOptional(var10).orElseThrow(() -> {
-                     return new IllegalStateException("Should always have an entity here");
-                  });
+                  var8 = (Pair)(new Typed(var3, var5x, var10x.get())).getOptional(var10).orElseThrow(() -> new IllegalStateException("Should always have an entity here"));
                }
-            };
-         }), this.writeAndRead("player RootVehicle injecter", var13, var14));
+            }), this.writeAndRead("player RootVehicle injecter", var13, var14));
       }
    }
 }

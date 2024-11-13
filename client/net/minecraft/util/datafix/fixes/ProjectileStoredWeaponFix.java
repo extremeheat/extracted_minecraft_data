@@ -31,10 +31,6 @@ public class ProjectileStoredWeaponFix extends DataFix {
 
    private static <T> Function<Typed<?>, Typed<?>> fixChoiceCap(String var0, Type<?> var1, Type<T> var2) {
       OpticFinder var3 = DSL.namedChoice(var0, var1);
-      return (var2x) -> {
-         return var2x.updateTyped(var3, var2, (var1) -> {
-            return Util.writeAndReadTypedOrThrow(var1, var2, UnaryOperator.identity());
-         });
-      };
+      return (var2x) -> var2x.updateTyped(var3, var2, (var1) -> Util.writeAndReadTypedOrThrow(var1, var2, UnaryOperator.identity()));
    }
 }

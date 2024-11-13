@@ -51,18 +51,6 @@ public class ProcessorRule {
 
    static {
       DEFAULT_BLOCK_ENTITY_MODIFIER = Passthrough.INSTANCE;
-      CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(RuleTest.CODEC.fieldOf("input_predicate").forGetter((var0x) -> {
-            return var0x.inputPredicate;
-         }), RuleTest.CODEC.fieldOf("location_predicate").forGetter((var0x) -> {
-            return var0x.locPredicate;
-         }), PosRuleTest.CODEC.lenientOptionalFieldOf("position_predicate", PosAlwaysTrueTest.INSTANCE).forGetter((var0x) -> {
-            return var0x.posPredicate;
-         }), BlockState.CODEC.fieldOf("output_state").forGetter((var0x) -> {
-            return var0x.outputState;
-         }), RuleBlockEntityModifier.CODEC.lenientOptionalFieldOf("block_entity_modifier", DEFAULT_BLOCK_ENTITY_MODIFIER).forGetter((var0x) -> {
-            return var0x.blockEntityModifier;
-         })).apply(var0, ProcessorRule::new);
-      });
+      CODEC = RecordCodecBuilder.create((var0) -> var0.group(RuleTest.CODEC.fieldOf("input_predicate").forGetter((var0x) -> var0x.inputPredicate), RuleTest.CODEC.fieldOf("location_predicate").forGetter((var0x) -> var0x.locPredicate), PosRuleTest.CODEC.lenientOptionalFieldOf("position_predicate", PosAlwaysTrueTest.INSTANCE).forGetter((var0x) -> var0x.posPredicate), BlockState.CODEC.fieldOf("output_state").forGetter((var0x) -> var0x.outputState), RuleBlockEntityModifier.CODEC.lenientOptionalFieldOf("block_entity_modifier", DEFAULT_BLOCK_ENTITY_MODIFIER).forGetter((var0x) -> var0x.blockEntityModifier)).apply(var0, ProcessorRule::new));
    }
 }

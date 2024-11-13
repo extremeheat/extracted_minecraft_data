@@ -148,11 +148,19 @@ public class Sheets {
    }
 
    private static Material createSignMaterial(WoodType var0) {
-      return new Material(SIGN_SHEET, ResourceLocation.withDefaultNamespace("entity/signs/" + var0.name()));
+      return createSignMaterial(ResourceLocation.withDefaultNamespace(var0.name()));
+   }
+
+   public static Material createSignMaterial(ResourceLocation var0) {
+      return new Material(SIGN_SHEET, var0.withPrefix("entity/signs/"));
    }
 
    private static Material createHangingSignMaterial(WoodType var0) {
-      return new Material(SIGN_SHEET, ResourceLocation.withDefaultNamespace("entity/signs/hanging/" + var0.name()));
+      return createHangingSignMaterial(ResourceLocation.withDefaultNamespace(var0.name()));
+   }
+
+   public static Material createHangingSignMaterial(ResourceLocation var0) {
+      return new Material(SIGN_SHEET, var0.withPrefix("entity/signs/hanging/"));
    }
 
    public static Material getSignMaterial(WoodType var0) {
@@ -236,14 +244,10 @@ public class Sheets {
       SHIELD_BASE = new Material(SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield/base"));
       BANNER_MATERIALS = new HashMap();
       SHIELD_MATERIALS = new HashMap();
-      DECORATED_POT_MATERIALS = (Map)BuiltInRegistries.DECORATED_POT_PATTERN.listElements().collect(Collectors.toMap(Holder.Reference::key, (var0) -> {
-         return createDecoratedPotMaterial(((DecoratedPotPattern)var0.value()).assetId());
-      }));
+      DECORATED_POT_MATERIALS = (Map)BuiltInRegistries.DECORATED_POT_PATTERN.listElements().collect(Collectors.toMap(Holder.Reference::key, (var0) -> createDecoratedPotMaterial(((DecoratedPotPattern)var0.value()).assetId())));
       DECORATED_POT_BASE = createDecoratedPotMaterial(ResourceLocation.withDefaultNamespace("decorated_pot_base"));
       DECORATED_POT_SIDE = createDecoratedPotMaterial(ResourceLocation.withDefaultNamespace("decorated_pot_side"));
-      BED_TEXTURES = (Material[])Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createBedMaterial).toArray((var0) -> {
-         return new Material[var0];
-      });
+      BED_TEXTURES = (Material[])Arrays.stream(DyeColor.values()).sorted(Comparator.comparingInt(DyeColor::getId)).map(Sheets::createBedMaterial).toArray((var0) -> new Material[var0]);
       CHEST_TRAP_LOCATION = chestMaterial("trapped");
       CHEST_TRAP_LOCATION_LEFT = chestMaterial("trapped_left");
       CHEST_TRAP_LOCATION_RIGHT = chestMaterial("trapped_right");

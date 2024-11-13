@@ -48,22 +48,10 @@ public class TrialSpawnerConfigs {
       register(var0, TRIAL_CHAMBER_SLOW_RANGED_POISON_SKELETON, trialChamberSlowRanged().spawnPotentialsDefinition(SimpleWeightedRandomList.single(spawnData(EntityType.BOGGED))).build(), trialChamberSlowRanged().lootTablesToEject(SimpleWeightedRandomList.builder().add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_KEY, 3).add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_CONSUMABLES, 7).build()).spawnPotentialsDefinition(SimpleWeightedRandomList.single(spawnDataWithEquipment(EntityType.BOGGED, BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER_RANGED))).build());
       register(var0, TRIAL_CHAMBER_SLOW_RANGED_SKELETON, trialChamberSlowRanged().spawnPotentialsDefinition(SimpleWeightedRandomList.single(spawnData(EntityType.SKELETON))).build(), trialChamberSlowRanged().lootTablesToEject(SimpleWeightedRandomList.builder().add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_KEY, 3).add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_CONSUMABLES, 7).build()).spawnPotentialsDefinition(SimpleWeightedRandomList.single(spawnDataWithEquipment(EntityType.SKELETON, BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER_RANGED))).build());
       register(var0, TRIAL_CHAMBER_SLOW_RANGED_STRAY, trialChamberSlowRanged().spawnPotentialsDefinition(SimpleWeightedRandomList.single(spawnData(EntityType.STRAY))).build(), trialChamberSlowRanged().lootTablesToEject(SimpleWeightedRandomList.builder().add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_KEY, 3).add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_CONSUMABLES, 7).build()).spawnPotentialsDefinition(SimpleWeightedRandomList.single(spawnDataWithEquipment(EntityType.STRAY, BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER_RANGED))).build());
-      register(var0, TRIAL_CHAMBER_SMALL_MELEE_BABY_ZOMBIE, TrialSpawnerConfig.builder().simultaneousMobsAddedPerPlayer(0.5F).ticksBetweenSpawn(20).spawnPotentialsDefinition(SimpleWeightedRandomList.single(customSpawnDataWithEquipment(EntityType.ZOMBIE, (var0x) -> {
-         var0x.putBoolean("IsBaby", true);
-      }, (ResourceKey)null))).build(), TrialSpawnerConfig.builder().simultaneousMobsAddedPerPlayer(0.5F).ticksBetweenSpawn(20).lootTablesToEject(SimpleWeightedRandomList.builder().add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_KEY, 3).add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_CONSUMABLES, 7).build()).spawnPotentialsDefinition(SimpleWeightedRandomList.single(customSpawnDataWithEquipment(EntityType.ZOMBIE, (var0x) -> {
-         var0x.putBoolean("IsBaby", true);
-      }, BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER_MELEE))).build());
+      register(var0, TRIAL_CHAMBER_SMALL_MELEE_BABY_ZOMBIE, TrialSpawnerConfig.builder().simultaneousMobsAddedPerPlayer(0.5F).ticksBetweenSpawn(20).spawnPotentialsDefinition(SimpleWeightedRandomList.single(customSpawnDataWithEquipment(EntityType.ZOMBIE, (var0x) -> var0x.putBoolean("IsBaby", true), (ResourceKey)null))).build(), TrialSpawnerConfig.builder().simultaneousMobsAddedPerPlayer(0.5F).ticksBetweenSpawn(20).lootTablesToEject(SimpleWeightedRandomList.builder().add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_KEY, 3).add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_CONSUMABLES, 7).build()).spawnPotentialsDefinition(SimpleWeightedRandomList.single(customSpawnDataWithEquipment(EntityType.ZOMBIE, (var0x) -> var0x.putBoolean("IsBaby", true), BuiltInLootTables.EQUIPMENT_TRIAL_CHAMBER_MELEE))).build());
       register(var0, TRIAL_CHAMBER_SMALL_MELEE_CAVE_SPIDER, trialChamberBase().spawnPotentialsDefinition(SimpleWeightedRandomList.single(spawnData(EntityType.CAVE_SPIDER))).build(), trialChamberMeleeOminous().lootTablesToEject(SimpleWeightedRandomList.builder().add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_KEY, 3).add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_CONSUMABLES, 7).build()).spawnPotentialsDefinition(SimpleWeightedRandomList.single(spawnData(EntityType.CAVE_SPIDER))).build());
       register(var0, TRIAL_CHAMBER_SMALL_MELEE_SILVERFISH, trialChamberBase().spawnPotentialsDefinition(SimpleWeightedRandomList.single(spawnData(EntityType.SILVERFISH))).build(), trialChamberMeleeOminous().lootTablesToEject(SimpleWeightedRandomList.builder().add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_KEY, 3).add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_CONSUMABLES, 7).build()).spawnPotentialsDefinition(SimpleWeightedRandomList.single(spawnData(EntityType.SILVERFISH))).build());
-      register(var0, TRIAL_CHAMBER_SMALL_MELEE_SLIME, trialChamberBase().spawnPotentialsDefinition(SimpleWeightedRandomList.builder().add(customSpawnData(EntityType.SLIME, (var0x) -> {
-         var0x.putByte("Size", (byte)1);
-      }), 3).add(customSpawnData(EntityType.SLIME, (var0x) -> {
-         var0x.putByte("Size", (byte)2);
-      }), 1).build()).build(), trialChamberMeleeOminous().lootTablesToEject(SimpleWeightedRandomList.builder().add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_KEY, 3).add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_CONSUMABLES, 7).build()).spawnPotentialsDefinition(SimpleWeightedRandomList.builder().add(customSpawnData(EntityType.SLIME, (var0x) -> {
-         var0x.putByte("Size", (byte)1);
-      }), 3).add(customSpawnData(EntityType.SLIME, (var0x) -> {
-         var0x.putByte("Size", (byte)2);
-      }), 1).build()).build());
+      register(var0, TRIAL_CHAMBER_SMALL_MELEE_SLIME, trialChamberBase().spawnPotentialsDefinition(SimpleWeightedRandomList.builder().add(customSpawnData(EntityType.SLIME, (var0x) -> var0x.putByte("Size", (byte)1)), 3).add(customSpawnData(EntityType.SLIME, (var0x) -> var0x.putByte("Size", (byte)2)), 1).build()).build(), trialChamberMeleeOminous().lootTablesToEject(SimpleWeightedRandomList.builder().add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_KEY, 3).add(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_CONSUMABLES, 7).build()).spawnPotentialsDefinition(SimpleWeightedRandomList.builder().add(customSpawnData(EntityType.SLIME, (var0x) -> var0x.putByte("Size", (byte)1)), 3).add(customSpawnData(EntityType.SLIME, (var0x) -> var0x.putByte("Size", (byte)2)), 1).build()).build());
    }
 
    private static <T extends Entity> SpawnData spawnData(EntityType<T> var0) {
@@ -84,9 +72,7 @@ public class TrialSpawnerConfigs {
       CompoundTag var3 = new CompoundTag();
       var3.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(var0).toString());
       var1.accept(var3);
-      Optional var4 = Optional.ofNullable(var2).map((var0x) -> {
-         return new EquipmentTable(var0x, 0.0F);
-      });
+      Optional var4 = Optional.ofNullable(var2).map((var0x) -> new EquipmentTable(var0x, 0.0F));
       return new SpawnData(var3, Optional.empty(), var4);
    }
 
@@ -123,14 +109,6 @@ public class TrialSpawnerConfigs {
 
       public static Keys of(String var0) {
          return new Keys(TrialSpawnerConfigs.registryKey(var0 + "/normal"), TrialSpawnerConfigs.registryKey(var0 + "/ominous"));
-      }
-
-      public ResourceKey<TrialSpawnerConfig> normal() {
-         return this.normal;
-      }
-
-      public ResourceKey<TrialSpawnerConfig> ominous() {
-         return this.ominous;
       }
    }
 }

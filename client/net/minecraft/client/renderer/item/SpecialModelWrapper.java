@@ -33,9 +33,7 @@ public class SpecialModelWrapper<T> implements ItemModel {
    }
 
    public static record Unbaked(ResourceLocation base, SpecialModelRenderer.Unbaked specialModel) implements ItemModel.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(ResourceLocation.CODEC.fieldOf("base").forGetter(Unbaked::base), SpecialModelRenderers.CODEC.fieldOf("model").forGetter(Unbaked::specialModel)).apply(var0, Unbaked::new);
-      });
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("base").forGetter(Unbaked::base), SpecialModelRenderers.CODEC.fieldOf("model").forGetter(Unbaked::specialModel)).apply(var0, Unbaked::new));
 
       public Unbaked(ResourceLocation var1, SpecialModelRenderer.Unbaked var2) {
          super();
@@ -55,14 +53,6 @@ public class SpecialModelWrapper<T> implements ItemModel {
 
       public MapCodec<Unbaked> type() {
          return MAP_CODEC;
-      }
-
-      public ResourceLocation base() {
-         return this.base;
-      }
-
-      public SpecialModelRenderer.Unbaked specialModel() {
-         return this.specialModel;
       }
    }
 }

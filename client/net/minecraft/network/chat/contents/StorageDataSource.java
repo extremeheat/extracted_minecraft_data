@@ -8,9 +8,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 
 public record StorageDataSource(ResourceLocation id) implements DataSource {
-   public static final MapCodec<StorageDataSource> SUB_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceLocation.CODEC.fieldOf("storage").forGetter(StorageDataSource::id)).apply(var0, StorageDataSource::new);
-   });
+   public static final MapCodec<StorageDataSource> SUB_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("storage").forGetter(StorageDataSource::id)).apply(var0, StorageDataSource::new));
    public static final DataSource.Type<StorageDataSource> TYPE;
 
    public StorageDataSource(ResourceLocation var1) {
@@ -31,11 +29,7 @@ public record StorageDataSource(ResourceLocation id) implements DataSource {
       return "storage=" + String.valueOf(this.id);
    }
 
-   public ResourceLocation id() {
-      return this.id;
-   }
-
    static {
-      TYPE = new DataSource.Type(SUB_CODEC, "storage");
+      TYPE = new DataSource.Type<StorageDataSource>(SUB_CODEC, "storage");
    }
 }

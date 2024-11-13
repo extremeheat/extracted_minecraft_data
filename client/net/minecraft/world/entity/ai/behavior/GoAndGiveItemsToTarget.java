@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -44,9 +43,7 @@ public class GoAndGiveItemsToTarget<E extends LivingEntity & InventoryCarrier> e
    }
 
    protected void start(ServerLevel var1, E var2, long var3) {
-      ((Optional)this.targetPositionGetter.apply(var2)).ifPresent((var2x) -> {
-         BehaviorUtils.setWalkAndLookTargetMemories(var2, (PositionTracker)var2x, this.speedModifier, 3);
-      });
+      ((Optional)this.targetPositionGetter.apply(var2)).ifPresent((var2x) -> BehaviorUtils.setWalkAndLookTargetMemories(var2, (PositionTracker)var2x, this.speedModifier, 3));
    }
 
    protected void tick(ServerLevel var1, E var2, long var3) {
@@ -60,12 +57,10 @@ public class GoAndGiveItemsToTarget<E extends LivingEntity & InventoryCarrier> e
                throwItem(var2, var9, getThrowPosition(var6));
                if (var2 instanceof Allay) {
                   Allay var10 = (Allay)var2;
-                  AllayAi.getLikedPlayer(var10).ifPresent((var3x) -> {
-                     this.triggerDropItemOnBlock(var6, var9, var3x);
-                  });
+                  AllayAi.getLikedPlayer(var10).ifPresent((var3x) -> this.triggerDropItemOnBlock(var6, var9, var3x));
                }
 
-               var2.getBrain().setMemory(MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS, (int)60);
+               var2.getBrain().setMemory(MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS, 60);
             }
          }
 
@@ -95,7 +90,7 @@ public class GoAndGiveItemsToTarget<E extends LivingEntity & InventoryCarrier> e
       BehaviorUtils.throwItem(var0, var1, var2, var3, 0.2F);
       Level var4 = var0.level();
       if (var4.getGameTime() % 7L == 0L && var4.random.nextDouble() < 0.9) {
-         float var5 = (Float)Util.getRandom((List)Allay.THROW_SOUND_PITCHES, var4.getRandom());
+         float var5 = (Float)Util.getRandom(Allay.THROW_SOUND_PITCHES, var4.getRandom());
          var4.playSound((Player)null, (Entity)var0, SoundEvents.ALLAY_THROW, SoundSource.NEUTRAL, 1.0F, var5);
       }
 

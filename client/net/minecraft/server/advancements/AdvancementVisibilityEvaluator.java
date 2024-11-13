@@ -2,7 +2,6 @@ package net.minecraft.server.advancements;
 
 import it.unimi.dsi.fastutil.Stack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Predicate;
 import net.minecraft.advancements.Advancement;
@@ -48,9 +47,8 @@ public class AdvancementVisibilityEvaluator {
       boolean var6 = var4;
       var1.push(var5);
 
-      AdvancementNode var8;
-      for(Iterator var7 = var0.children().iterator(); var7.hasNext(); var6 |= evaluateVisibility(var8, var1, var2, var3)) {
-         var8 = (AdvancementNode)var7.next();
+      for(AdvancementNode var8 : var0.children()) {
+         var6 |= evaluateVisibility(var8, var1, var2, var3);
       }
 
       boolean var9 = var6 || evaluateVisiblityForUnfinishedNode(var1);

@@ -183,9 +183,9 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
          CrashReportCategory var15 = var14.addCategory("Entity being rendered");
          var1.fillCrashReportCategory(var15);
          CrashReportCategory var16 = var14.addCategory("Renderer details");
-         var16.setDetail("Assigned renderer", (Object)var12);
-         var16.setDetail("Location", (Object)CrashReportCategory.formatLocation(this.level, var2, var4, var6));
-         var16.setDetail("Delta", (Object)var8);
+         var16.setDetail("Assigned renderer", var12);
+         var16.setDetail("Location", CrashReportCategory.formatLocation(this.level, var2, var4, var6));
+         var16.setDetail("Delta", var8);
          throw new ReportedException(var14);
       }
    }
@@ -223,11 +223,8 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
          double var8 = -Mth.lerp((double)var3, var2.xOld, var2.getX());
          double var10 = -Mth.lerp((double)var3, var2.yOld, var2.getY());
          double var12 = -Mth.lerp((double)var3, var2.zOld, var2.getZ());
-         EnderDragonPart[] var14 = ((EnderDragon)var2).getSubEntities();
-         int var15 = var14.length;
 
-         for(int var16 = 0; var16 < var15; ++var16) {
-            EnderDragonPart var17 = var14[var16];
+         for(EnderDragonPart var17 : ((EnderDragon)var2).getSubEntities()) {
             var0.pushPose();
             double var18 = var8 + Mth.lerp((double)var3, var17.xOld, var17.getX());
             double var20 = var10 + Mth.lerp((double)var3, var17.yOld, var17.getY());

@@ -60,11 +60,6 @@ public abstract class SingleItemRecipe implements Recipe<SingleRecipeInput> {
       return this.result.copy();
    }
 
-   @FunctionalInterface
-   public interface Factory<T extends SingleItemRecipe> {
-      T create(String var1, Ingredient var2, ItemStack var3);
-   }
-
    public static class Serializer<T extends SingleItemRecipe> implements RecipeSerializer<T> {
       private final MapCodec<T> codec;
       private final StreamCodec<RegistryFriendlyByteBuf, T> streamCodec;
@@ -93,5 +88,10 @@ public abstract class SingleItemRecipe implements Recipe<SingleRecipeInput> {
       public StreamCodec<RegistryFriendlyByteBuf, T> streamCodec() {
          return this.streamCodec;
       }
+   }
+
+   @FunctionalInterface
+   public interface Factory<T extends SingleItemRecipe> {
+      T create(String var1, Ingredient var2, ItemStack var3);
    }
 }

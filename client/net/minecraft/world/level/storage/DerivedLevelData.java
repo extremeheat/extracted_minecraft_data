@@ -152,7 +152,7 @@ public class DerivedLevelData implements ServerLevelData {
    }
 
    public void fillCrashReportCategory(CrashReportCategory var1, LevelHeightAccessor var2) {
-      var1.setDetail("Derived", (Object)true);
+      var1.setDetail("Derived", true);
       this.wrapped.fillCrashReportCategory(var1, var2);
    }
 }

@@ -52,7 +52,7 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
 
    public String toString() {
       int var10000 = this.count;
-      return "" + var10000 + "," + String.valueOf(this.usage) + "," + String.valueOf(this.type) + " (" + this.id + ")";
+      return var10000 + "," + String.valueOf(this.usage) + "," + String.valueOf(this.type) + " (" + this.id + ")";
    }
 
    public int mask() {
@@ -73,29 +73,7 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
    }
 
    public static Stream<VertexFormatElement> elementsFromMask(int var0) {
-      return ELEMENTS.stream().filter((var1) -> {
-         return var1 != null && (var0 & var1.mask()) != 0;
-      });
-   }
-
-   public int id() {
-      return this.id;
-   }
-
-   public int index() {
-      return this.index;
-   }
-
-   public Type type() {
-      return this.type;
-   }
-
-   public Usage usage() {
-      return this.usage;
-   }
-
-   public int count() {
-      return this.count;
+      return ELEMENTS.stream().filter((var1) -> var1 != null && (var0 & var1.mask()) != 0);
    }
 
    static {
@@ -106,6 +84,43 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
       UV1 = register(3, 1, VertexFormatElement.Type.SHORT, VertexFormatElement.Usage.UV, 2);
       UV2 = register(4, 2, VertexFormatElement.Type.SHORT, VertexFormatElement.Usage.UV, 2);
       NORMAL = register(5, 0, VertexFormatElement.Type.BYTE, VertexFormatElement.Usage.NORMAL, 3);
+   }
+
+   public static enum Usage {
+      POSITION("Position", (var0, var1, var2, var3, var5) -> GlStateManager._vertexAttribPointer(var5, var0, var1, false, var2, var3)),
+      NORMAL("Normal", (var0, var1, var2, var3, var5) -> GlStateManager._vertexAttribPointer(var5, var0, var1, true, var2, var3)),
+      COLOR("Vertex Color", (var0, var1, var2, var3, var5) -> GlStateManager._vertexAttribPointer(var5, var0, var1, true, var2, var3)),
+      UV("UV", (var0, var1, var2, var3, var5) -> {
+         if (var1 == 5126) {
+            GlStateManager._vertexAttribPointer(var5, var0, var1, false, var2, var3);
+         } else {
+            GlStateManager._vertexAttribIPointer(var5, var0, var1, var2, var3);
+         }
+
+      }),
+      GENERIC("Generic", (var0, var1, var2, var3, var5) -> GlStateManager._vertexAttribPointer(var5, var0, var1, false, var2, var3));
+
+      private final String name;
+      final SetupState setupState;
+
+      private Usage(final String var3, final SetupState var4) {
+         this.name = var3;
+         this.setupState = var4;
+      }
+
+      public String toString() {
+         return this.name;
+      }
+
+      // $FF: synthetic method
+      private static Usage[] $values() {
+         return new Usage[]{POSITION, NORMAL, COLOR, UV, GENERIC};
+      }
+
+      @FunctionalInterface
+      interface SetupState {
+         void setupBufferState(int var1, int var2, int var3, long var4, int var6);
+      }
    }
 
    public static enum Type {
@@ -142,51 +157,6 @@ public record VertexFormatElement(int id, int index, Type type, Usage usage, int
       // $FF: synthetic method
       private static Type[] $values() {
          return new Type[]{FLOAT, UBYTE, BYTE, USHORT, SHORT, UINT, INT};
-      }
-   }
-
-   public static enum Usage {
-      POSITION("Position", (var0, var1, var2, var3, var5) -> {
-         GlStateManager._vertexAttribPointer(var5, var0, var1, false, var2, var3);
-      }),
-      NORMAL("Normal", (var0, var1, var2, var3, var5) -> {
-         GlStateManager._vertexAttribPointer(var5, var0, var1, true, var2, var3);
-      }),
-      COLOR("Vertex Color", (var0, var1, var2, var3, var5) -> {
-         GlStateManager._vertexAttribPointer(var5, var0, var1, true, var2, var3);
-      }),
-      UV("UV", (var0, var1, var2, var3, var5) -> {
-         if (var1 == 5126) {
-            GlStateManager._vertexAttribPointer(var5, var0, var1, false, var2, var3);
-         } else {
-            GlStateManager._vertexAttribIPointer(var5, var0, var1, var2, var3);
-         }
-
-      }),
-      GENERIC("Generic", (var0, var1, var2, var3, var5) -> {
-         GlStateManager._vertexAttribPointer(var5, var0, var1, false, var2, var3);
-      });
-
-      private final String name;
-      final SetupState setupState;
-
-      private Usage(final String var3, final SetupState var4) {
-         this.name = var3;
-         this.setupState = var4;
-      }
-
-      public String toString() {
-         return this.name;
-      }
-
-      // $FF: synthetic method
-      private static Usage[] $values() {
-         return new Usage[]{POSITION, NORMAL, COLOR, UV, GENERIC};
-      }
-
-      @FunctionalInterface
-      private interface SetupState {
-         void setupBufferState(int var1, int var2, int var3, long var4, int var6);
       }
    }
 }

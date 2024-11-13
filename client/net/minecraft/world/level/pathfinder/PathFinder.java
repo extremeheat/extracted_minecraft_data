@@ -6,7 +6,6 @@ import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -46,9 +45,7 @@ public class PathFinder {
       if (var7 == null) {
          return null;
       } else {
-         Map var8 = (Map)var3.stream().collect(Collectors.toMap((var1x) -> {
-            return this.nodeEvaluator.getTarget((double)var1x.getX(), (double)var1x.getY(), (double)var1x.getZ());
-         }, Function.identity()));
+         Map var8 = (Map)var3.stream().collect(Collectors.toMap((var1x) -> this.nodeEvaluator.getTarget((double)var1x.getX(), (double)var1x.getY(), (double)var1x.getZ()), Function.identity()));
          Path var9 = this.findPath(var7, var8, var4, var5, var6);
          this.nodeEvaluator.done();
          return var9;
@@ -79,10 +76,8 @@ public class PathFinder {
 
          Node var12 = this.openSet.pop();
          var12.closed = true;
-         Iterator var13 = var7.iterator();
 
-         while(var13.hasNext()) {
-            Target var14 = (Target)var13.next();
+         for(Target var14 : var7) {
             if (var12.distanceManhattan((Node)var14) <= (float)var4) {
                var14.setReached();
                var10.add(var14);
@@ -116,11 +111,7 @@ public class PathFinder {
          }
       }
 
-      Optional var18 = !var10.isEmpty() ? var10.stream().map((var2x) -> {
-         return this.reconstructPath(var2x.getBestNode(), (BlockPos)var2.get(var2x), true);
-      }).min(Comparator.comparingInt(Path::getNodeCount)) : var7.stream().map((var2x) -> {
-         return this.reconstructPath(var2x.getBestNode(), (BlockPos)var2.get(var2x), false);
-      }).min(Comparator.comparingDouble(Path::getDistToTarget).thenComparingInt(Path::getNodeCount));
+      Optional var18 = !var10.isEmpty() ? var10.stream().map((var2x) -> this.reconstructPath(var2x.getBestNode(), (BlockPos)var2.get(var2x), true)).min(Comparator.comparingInt(Path::getNodeCount)) : var7.stream().map((var2x) -> this.reconstructPath(var2x.getBestNode(), (BlockPos)var2.get(var2x), false)).min(Comparator.comparingDouble(Path::getDistToTarget).thenComparingInt(Path::getNodeCount));
       var6.pop();
       if (var18.isEmpty()) {
          return null;
@@ -137,11 +128,10 @@ public class PathFinder {
    private float getBestH(Node var1, Set<Target> var2) {
       float var3 = 3.4028235E38F;
 
-      float var6;
-      for(Iterator var4 = var2.iterator(); var4.hasNext(); var3 = Math.min(var6, var3)) {
-         Target var5 = (Target)var4.next();
-         var6 = var1.distanceTo((Node)var5);
+      for(Target var5 : var2) {
+         float var6 = var1.distanceTo((Node)var5);
          var5.updateBest(var6, var1);
+         var3 = Math.min(var6, var3);
       }
 
       return var3;

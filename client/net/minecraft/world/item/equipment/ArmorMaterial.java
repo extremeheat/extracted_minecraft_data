@@ -58,36 +58,4 @@ public record ArmorMaterial(int durability, Map<ArmorType, Integer> defense, int
 
       return var3.build();
    }
-
-   public int durability() {
-      return this.durability;
-   }
-
-   public Map<ArmorType, Integer> defense() {
-      return this.defense;
-   }
-
-   public int enchantmentValue() {
-      return this.enchantmentValue;
-   }
-
-   public Holder<SoundEvent> equipSound() {
-      return this.equipSound;
-   }
-
-   public float toughness() {
-      return this.toughness;
-   }
-
-   public float knockbackResistance() {
-      return this.knockbackResistance;
-   }
-
-   public TagKey<Item> repairIngredient() {
-      return this.repairIngredient;
-   }
-
-   public ResourceKey<EquipmentAsset> assetId() {
-      return this.assetId;
-   }
 }

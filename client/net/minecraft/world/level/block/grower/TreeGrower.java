@@ -2,7 +2,6 @@ package net.minecraft.world.level.block.grower;
 
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -143,24 +142,17 @@ public final class TreeGrower {
    }
 
    private boolean hasFlowers(LevelAccessor var1, BlockPos var2) {
-      Iterator var3 = BlockPos.MutableBlockPos.betweenClosed(var2.below().north(2).west(2), var2.above().south(2).east(2)).iterator();
-
-      BlockPos var4;
-      do {
-         if (!var3.hasNext()) {
-            return false;
+      for(BlockPos var4 : BlockPos.MutableBlockPos.betweenClosed(var2.below().north(2).west(2), var2.above().south(2).east(2))) {
+         if (var1.getBlockState(var4).is(BlockTags.FLOWERS)) {
+            return true;
          }
+      }
 
-         var4 = (BlockPos)var3.next();
-      } while(!var1.getBlockState(var4).is(BlockTags.FLOWERS));
-
-      return true;
+      return false;
    }
 
    static {
-      Function var10000 = (var0) -> {
-         return var0.name;
-      };
+      Function var10000 = (var0) -> var0.name;
       Map var10001 = GROWERS;
       Objects.requireNonNull(var10001);
       CODEC = Codec.stringResolver(var10000, var10001::get);

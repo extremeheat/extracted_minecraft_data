@@ -3,7 +3,6 @@ package net.minecraft.server.packs.resources;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -27,9 +26,7 @@ public class SimpleReloadInstance<S> implements ReloadInstance {
    private final AtomicInteger doneTaskCounter = new AtomicInteger();
 
    public static SimpleReloadInstance<Void> of(ResourceManager var0, List<PreparableReloadListener> var1, Executor var2, Executor var3, CompletableFuture<Unit> var4) {
-      return new SimpleReloadInstance(var2, var3, var0, var1, (var1x, var2x, var3x, var4x, var5) -> {
-         return var3x.reload(var1x, var2x, var2, var5);
-      }, var4);
+      return new SimpleReloadInstance<Void>(var2, var3, var0, var1, (var1x, var2x, var3x, var4x, var5) -> var3x.reload(var1x, var2x, var2, var5), var4);
    }
 
    protected SimpleReloadInstance(Executor var1, final Executor var2, ResourceManager var3, List<PreparableReloadListener> var4, StateFactory<S> var5, CompletableFuture<Unit> var6) {
@@ -43,10 +40,8 @@ public class SimpleReloadInstance<S> implements ReloadInstance {
       final CompletableFuture var8 = var6;
       this.preparingListeners = Sets.newHashSet(var4);
 
-      CompletableFuture var12;
-      for(Iterator var9 = var4.iterator(); var9.hasNext(); var8 = var12) {
-         final PreparableReloadListener var10 = (PreparableReloadListener)var9.next();
-         var12 = var5.create(new PreparableReloadListener.PreparationBarrier() {
+      for(final PreparableReloadListener var10 : var4) {
+         CompletableFuture var12 = var5.create(new PreparableReloadListener.PreparationBarrier() {
             public <T> CompletableFuture<T> wait(T var1) {
                var2.execute(() -> {
                   SimpleReloadInstance.this.preparingListeners.remove(var10);
@@ -55,9 +50,7 @@ public class SimpleReloadInstance<S> implements ReloadInstance {
                   }
 
                });
-               return SimpleReloadInstance.this.allPreparations.thenCombine(var8, (var1x, var2x) -> {
-                  return var1;
-               });
+               return SimpleReloadInstance.this.allPreparations.thenCombine(var8, (var1x, var2x) -> var1);
             }
          }, var3, var10, (var2x) -> {
             this.startedTaskCounter.incrementAndGet();
@@ -73,6 +66,7 @@ public class SimpleReloadInstance<S> implements ReloadInstance {
             });
          });
          var7.add(var12);
+         var8 = var12;
       }
 
       this.allDone = Util.sequenceFailFast(var7);

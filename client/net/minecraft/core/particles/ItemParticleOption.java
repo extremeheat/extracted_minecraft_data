@@ -13,19 +13,11 @@ public class ItemParticleOption implements ParticleOptions {
    private final ItemStack itemStack;
 
    public static MapCodec<ItemParticleOption> codec(ParticleType<ItemParticleOption> var0) {
-      return ITEM_CODEC.xmap((var1) -> {
-         return new ItemParticleOption(var0, var1);
-      }, (var0x) -> {
-         return var0x.itemStack;
-      }).fieldOf("item");
+      return ITEM_CODEC.xmap((var1) -> new ItemParticleOption(var0, var1), (var0x) -> var0x.itemStack).fieldOf("item");
    }
 
    public static StreamCodec<? super RegistryFriendlyByteBuf, ItemParticleOption> streamCodec(ParticleType<ItemParticleOption> var0) {
-      return ItemStack.STREAM_CODEC.map((var1) -> {
-         return new ItemParticleOption(var0, var1);
-      }, (var0x) -> {
-         return var0x.itemStack;
-      });
+      return ItemStack.STREAM_CODEC.map((var1) -> new ItemParticleOption(var0, var1), (var0x) -> var0x.itemStack);
    }
 
    public ItemParticleOption(ParticleType<ItemParticleOption> var1, ItemStack var2) {

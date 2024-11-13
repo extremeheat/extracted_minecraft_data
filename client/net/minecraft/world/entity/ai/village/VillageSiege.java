@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.village;
 
 import com.mojang.logging.LogUtils;
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -74,10 +73,7 @@ public class VillageSiege implements CustomSpawner {
    }
 
    private boolean tryToSetupSiege(ServerLevel var1) {
-      Iterator var2 = var1.players().iterator();
-
-      while(var2.hasNext()) {
-         Player var3 = (Player)var2.next();
+      for(Player var3 : var1.players()) {
          if (!var3.isSpectator()) {
             BlockPos var4 = var3.blockPosition();
             if (var1.isVillage(var4) && !var1.getBiome(var4).is(BiomeTags.WITHOUT_ZOMBIE_SIEGES)) {
@@ -133,7 +129,7 @@ public class VillageSiege implements CustomSpawner {
       return null;
    }
 
-   private static enum State {
+   static enum State {
       SIEGE_CAN_ACTIVATE,
       SIEGE_TONIGHT,
       SIEGE_DONE;

@@ -3,7 +3,6 @@ package net.minecraft.client.resources.model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -42,14 +41,9 @@ public class SimpleBakedModel implements BakedModel {
    public static BakedModel bakeElements(List<BlockElement> var0, TextureSlots var1, SpriteGetter var2, ModelState var3, boolean var4, boolean var5, boolean var6, ItemTransforms var7) {
       TextureAtlasSprite var8 = findSprite(var2, var1, "particle");
       Builder var9 = (new Builder(var4, var5, var6, var7)).particle(var8);
-      Iterator var10 = var0.iterator();
 
-      while(var10.hasNext()) {
-         BlockElement var11 = (BlockElement)var10.next();
-         Iterator var12 = var11.faces.keySet().iterator();
-
-         while(var12.hasNext()) {
-            Direction var13 = (Direction)var12.next();
+      for(BlockElement var11 : var0) {
+         for(Direction var13 : var11.faces.keySet()) {
             BlockElementFace var14 = (BlockElementFace)var11.faces.get(var13);
             TextureAtlasSprite var15 = findSprite(var2, var1, var14.texture());
             if (var14.cullForDirection() == null) {
@@ -112,11 +106,8 @@ public class SimpleBakedModel implements BakedModel {
          this.usesBlockLight = var2;
          this.isGui3d = var3;
          this.transforms = var4;
-         Direction[] var5 = Direction.values();
-         int var6 = var5.length;
 
-         for(int var7 = 0; var7 < var6; ++var7) {
-            Direction var8 = var5[var7];
+         for(Direction var8 : Direction.values()) {
             this.culledFaces.put(var8, ImmutableList.builder());
          }
 

@@ -48,20 +48,16 @@ public class NearestBedSensor extends Sensor<Mob> {
                return true;
             }
          };
-         Set var5 = (Set)var3.findAllWithType((var0) -> {
-            return var0.is(PoiTypes.HOME);
-         }, var4, var2.blockPosition(), 48, PoiManager.Occupancy.ANY).collect(Collectors.toSet());
+         Set var5 = (Set)var3.findAllWithType((var0) -> var0.is(PoiTypes.HOME), var4, var2.blockPosition(), 48, PoiManager.Occupancy.ANY).collect(Collectors.toSet());
          Path var6 = AcquirePoi.findPathToPois(var2, var5);
          if (var6 != null && var6.canReach()) {
             BlockPos var7 = var6.getTarget();
             Optional var8 = var3.getType(var7);
             if (var8.isPresent()) {
-               var2.getBrain().setMemory(MemoryModuleType.NEAREST_BED, (Object)var7);
+               var2.getBrain().setMemory(MemoryModuleType.NEAREST_BED, var7);
             }
          } else if (this.triedCount < 5) {
-            this.batchCache.long2LongEntrySet().removeIf((var1x) -> {
-               return var1x.getLongValue() < this.lastUpdate;
-            });
+            this.batchCache.long2LongEntrySet().removeIf((var1x) -> var1x.getLongValue() < this.lastUpdate);
          }
 
       }

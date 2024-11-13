@@ -26,13 +26,7 @@ import org.slf4j.Logger;
 
 public class EnchantRandomlyFunction extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<EnchantRandomlyFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(var0.group(RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).optionalFieldOf("options").forGetter((var0x) -> {
-         return var0x.options;
-      }), Codec.BOOL.optionalFieldOf("only_compatible", true).forGetter((var0x) -> {
-         return var0x.onlyCompatible;
-      }))).apply(var0, EnchantRandomlyFunction::new);
-   });
+   public static final MapCodec<EnchantRandomlyFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).optionalFieldOf("options").forGetter((var0x) -> var0x.options), Codec.BOOL.optionalFieldOf("only_compatible", true).forGetter((var0x) -> var0x.onlyCompatible))).apply(var0, EnchantRandomlyFunction::new));
    private final Optional<HolderSet<Enchantment>> options;
    private final boolean onlyCompatible;
 
@@ -50,11 +44,7 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
       RandomSource var3 = var2.getRandom();
       boolean var4 = var1.is(Items.BOOK);
       boolean var5 = !var4 && this.onlyCompatible;
-      Stream var6 = ((Stream)this.options.map(HolderSet::stream).orElseGet(() -> {
-         return var2.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).listElements().map(Function.identity());
-      })).filter((var2x) -> {
-         return !var5 || ((Enchantment)var2x.value()).canEnchant(var1);
-      });
+      Stream var6 = ((Stream)this.options.map(HolderSet::stream).orElseGet(() -> var2.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).listElements().map(Function.identity()))).filter((var2x) -> !var5 || ((Enchantment)var2x.value()).canEnchant(var1));
       List var7 = var6.toList();
       Optional var8 = Util.getRandomSafe(var7, var3);
       if (var8.isEmpty()) {

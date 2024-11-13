@@ -3,7 +3,6 @@ package net.minecraft.world.item.consume_effects;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -14,9 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public record ApplyStatusEffectsConsumeEffect(List<MobEffectInstance> effects, float probability) implements ConsumeEffect {
-   public static final MapCodec<ApplyStatusEffectsConsumeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(MobEffectInstance.CODEC.listOf().fieldOf("effects").forGetter(ApplyStatusEffectsConsumeEffect::effects), Codec.floatRange(0.0F, 1.0F).optionalFieldOf("probability", 1.0F).forGetter(ApplyStatusEffectsConsumeEffect::probability)).apply(var0, ApplyStatusEffectsConsumeEffect::new);
-   });
+   public static final MapCodec<ApplyStatusEffectsConsumeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(MobEffectInstance.CODEC.listOf().fieldOf("effects").forGetter(ApplyStatusEffectsConsumeEffect::effects), Codec.floatRange(0.0F, 1.0F).optionalFieldOf("probability", 1.0F).forGetter(ApplyStatusEffectsConsumeEffect::probability)).apply(var0, ApplyStatusEffectsConsumeEffect::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, ApplyStatusEffectsConsumeEffect> STREAM_CODEC;
 
    public ApplyStatusEffectsConsumeEffect(MobEffectInstance var1, float var2) {
@@ -46,10 +43,8 @@ public record ApplyStatusEffectsConsumeEffect(List<MobEffectInstance> effects, f
          return false;
       } else {
          boolean var4 = false;
-         Iterator var5 = this.effects.iterator();
 
-         while(var5.hasNext()) {
-            MobEffectInstance var6 = (MobEffectInstance)var5.next();
+         for(MobEffectInstance var6 : this.effects) {
             if (var3.addEffect(new MobEffectInstance(var6))) {
                var4 = true;
             }
@@ -57,14 +52,6 @@ public record ApplyStatusEffectsConsumeEffect(List<MobEffectInstance> effects, f
 
          return var4;
       }
-   }
-
-   public List<MobEffectInstance> effects() {
-      return this.effects;
-   }
-
-   public float probability() {
-      return this.probability;
    }
 
    static {

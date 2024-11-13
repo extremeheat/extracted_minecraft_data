@@ -8,7 +8,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -80,10 +79,8 @@ public class LootTable {
       LootContext.VisitedEntry var3 = LootContext.createVisitedEntry(this);
       if (var1.pushVisitedElement(var3)) {
          Consumer var4 = LootItemFunction.decorate(this.compositeFunction, var2, var1);
-         Iterator var5 = this.pools.iterator();
 
-         while(var5.hasNext()) {
-            LootPool var6 = (LootPool)var5.next();
+         for(LootPool var6 : this.pools) {
             var6.addRandomItems(var4, var1);
          }
 
@@ -130,13 +127,12 @@ public class LootTable {
    }
 
    public void validate(ValidationContext var1) {
-      int var2;
-      for(var2 = 0; var2 < this.pools.size(); ++var2) {
+      for(int var2 = 0; var2 < this.pools.size(); ++var2) {
          ((LootPool)this.pools.get(var2)).validate(var1.forChild(".pools[" + var2 + "]"));
       }
 
-      for(var2 = 0; var2 < this.functions.size(); ++var2) {
-         ((LootItemFunction)this.functions.get(var2)).validate(var1.forChild(".functions[" + var2 + "]"));
+      for(int var3 = 0; var3 < this.functions.size(); ++var3) {
+         ((LootItemFunction)this.functions.get(var3)).validate(var1.forChild(".functions[" + var3 + "]"));
       }
 
    }
@@ -220,18 +216,8 @@ public class LootTable {
    static {
       EMPTY = new LootTable(LootContextParamSets.EMPTY, Optional.empty(), List.of(), List.of());
       DEFAULT_PARAM_SET = LootContextParamSets.ALL_PARAMS;
-      DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(LootContextParamSets.CODEC.lenientOptionalFieldOf("type", DEFAULT_PARAM_SET).forGetter((var0x) -> {
-            return var0x.paramSet;
-         }), ResourceLocation.CODEC.optionalFieldOf("random_sequence").forGetter((var0x) -> {
-            return var0x.randomSequence;
-         }), LootPool.CODEC.listOf().optionalFieldOf("pools", List.of()).forGetter((var0x) -> {
-            return var0x.pools;
-         }), LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((var0x) -> {
-            return var0x.functions;
-         })).apply(var0, LootTable::new);
-      });
-      CODEC = RegistryFileCodec.create(Registries.LOOT_TABLE, DIRECT_CODEC);
+      DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(LootContextParamSets.CODEC.lenientOptionalFieldOf("type", DEFAULT_PARAM_SET).forGetter((var0x) -> var0x.paramSet), ResourceLocation.CODEC.optionalFieldOf("random_sequence").forGetter((var0x) -> var0x.randomSequence), LootPool.CODEC.listOf().optionalFieldOf("pools", List.of()).forGetter((var0x) -> var0x.pools), LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((var0x) -> var0x.functions)).apply(var0, LootTable::new));
+      CODEC = RegistryFileCodec.<Holder<LootTable>>create(Registries.LOOT_TABLE, DIRECT_CODEC);
    }
 
    public static class Builder implements FunctionUserBuilder<Builder> {

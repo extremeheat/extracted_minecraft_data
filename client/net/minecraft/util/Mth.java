@@ -383,16 +383,15 @@ public class Mth {
          }
 
          boolean var8 = var0 > var2;
-         double var9;
          if (var8) {
-            var9 = var2;
+            double var9 = var2;
             var2 = var0;
             var0 = var9;
          }
 
-         var9 = fastInvSqrt(var4);
-         var2 *= var9;
-         var0 *= var9;
+         double var28 = fastInvSqrt(var4);
+         var2 *= var28;
+         var0 *= var28;
          double var11 = FRAC_BIAS + var0;
          int var13 = (int)Double.doubleToRawLongBits(var11);
          double var14 = ASIN_TAB[var13];

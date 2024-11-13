@@ -7,11 +7,7 @@ import java.util.function.Consumer;
 
 public class ScreenNarrationCollector {
    int generation;
-   final Map<EntryKey, NarrationEntry> entries = Maps.newTreeMap(Comparator.comparing((var0) -> {
-      return var0.type;
-   }).thenComparing((var0) -> {
-      return var0.depth;
-   }));
+   final Map<EntryKey, NarrationEntry> entries = Maps.newTreeMap(Comparator.comparing((var0) -> var0.type).thenComparing((var0) -> var0.depth));
 
    public ScreenNarrationCollector() {
       super();
@@ -24,7 +20,7 @@ public class ScreenNarrationCollector {
 
    public String collectNarrationText(boolean var1) {
       final StringBuilder var2 = new StringBuilder();
-      Consumer var3 = new Consumer<String>(this) {
+      Consumer var3 = new Consumer<String>() {
          private boolean firstEntry = true;
 
          public void accept(String var1) {
@@ -60,13 +56,22 @@ public class ScreenNarrationCollector {
       }
 
       public void add(NarratedElementType var1, NarrationThunk<?> var2) {
-         ((NarrationEntry)ScreenNarrationCollector.this.entries.computeIfAbsent(new EntryKey(var1, this.depth), (var0) -> {
-            return new NarrationEntry();
-         })).update(ScreenNarrationCollector.this.generation, var2);
+         ((NarrationEntry)ScreenNarrationCollector.this.entries.computeIfAbsent(new EntryKey(var1, this.depth), (var0) -> new NarrationEntry())).update(ScreenNarrationCollector.this.generation, var2);
       }
 
       public NarrationElementOutput nest() {
          return ScreenNarrationCollector.this.new Output(this.depth + 1);
+      }
+   }
+
+   static class EntryKey {
+      final NarratedElementType type;
+      final int depth;
+
+      EntryKey(NarratedElementType var1, int var2) {
+         super();
+         this.type = var1;
+         this.depth = var2;
       }
    }
 
@@ -91,17 +96,6 @@ public class ScreenNarrationCollector {
 
          this.generation = var1;
          return this;
-      }
-   }
-
-   private static class EntryKey {
-      final NarratedElementType type;
-      final int depth;
-
-      EntryKey(NarratedElementType var1, int var2) {
-         super();
-         this.type = var1;
-         this.depth = var2;
       }
    }
 }

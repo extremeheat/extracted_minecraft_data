@@ -45,7 +45,7 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
 
    public T get(int var1) {
       this.verifyIndexInRange(var1);
-      return this.getInner(this.getIndex(var1));
+      return (T)this.getInner(this.getIndex(var1));
    }
 
    private static void verifyIndexInRange(int var0, int var1) {
@@ -59,7 +59,7 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
    }
 
    private T getInner(int var1) {
-      return this.contents[var1];
+      return (T)this.contents[var1];
    }
 
    public T set(int var1, T var2) {
@@ -68,7 +68,7 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
       int var3 = this.getIndex(var1);
       Object var4 = this.getInner(var3);
       this.contents[var3] = var2;
-      return var4;
+      return (T)var4;
    }
 
    public void add(int var1, T var2) {
@@ -127,7 +127,7 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
 
       ++this.modCount;
       --this.size;
-      return var3;
+      return (T)var3;
    }
 
    public boolean removeIf(Predicate<? super T> var1) {
@@ -192,7 +192,7 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
       if (this.size == 0) {
          throw new NoSuchElementException();
       } else {
-         return this.remove(0);
+         return (T)this.remove(0);
       }
    }
 
@@ -200,7 +200,7 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
       if (this.size == 0) {
          throw new NoSuchElementException();
       } else {
-         return this.remove(this.size - 1);
+         return (T)this.remove(this.size - 1);
       }
    }
 
@@ -210,19 +210,19 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
 
    @Nullable
    public T pollFirst() {
-      return this.size == 0 ? null : this.removeFirst();
+      return (T)(this.size == 0 ? null : this.removeFirst());
    }
 
    @Nullable
    public T pollLast() {
-      return this.size == 0 ? null : this.removeLast();
+      return (T)(this.size == 0 ? null : this.removeLast());
    }
 
    public T getFirst() {
       if (this.size == 0) {
          throw new NoSuchElementException();
       } else {
-         return this.get(0);
+         return (T)this.get(0);
       }
    }
 
@@ -230,18 +230,18 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
       if (this.size == 0) {
          throw new NoSuchElementException();
       } else {
-         return this.get(this.size - 1);
+         return (T)this.get(this.size - 1);
       }
    }
 
    @Nullable
    public T peekFirst() {
-      return this.size == 0 ? null : this.getFirst();
+      return (T)(this.size == 0 ? null : this.getFirst());
    }
 
    @Nullable
    public T peekLast() {
-      return this.size == 0 ? null : this.getLast();
+      return (T)(this.size == 0 ? null : this.getLast());
    }
 
    public boolean removeFirstOccurrence(Object var1) {
@@ -287,7 +287,27 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
       return this.reversed();
    }
 
-   private class ReversedView extends AbstractList<T> implements ListAndDeque<T> {
+   class DescendingIterator implements Iterator<T> {
+      private int index = ArrayListDeque.this.size() - 1;
+
+      public DescendingIterator() {
+         super();
+      }
+
+      public boolean hasNext() {
+         return this.index >= 0;
+      }
+
+      public T next() {
+         return (T)ArrayListDeque.this.get(this.index--);
+      }
+
+      public void remove() {
+         ArrayListDeque.this.remove(this.index + 1);
+      }
+   }
+
+   class ReversedView extends AbstractList<T> implements ListAndDeque<T> {
       private final ArrayListDeque<T> source;
 
       public ReversedView(final ArrayListDeque<T> var2) {
@@ -424,26 +444,6 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
       // $FF: synthetic method
       public Deque reversed() {
          return this.reversed();
-      }
-   }
-
-   class DescendingIterator implements Iterator<T> {
-      private int index = ArrayListDeque.this.size() - 1;
-
-      public DescendingIterator() {
-         super();
-      }
-
-      public boolean hasNext() {
-         return this.index >= 0;
-      }
-
-      public T next() {
-         return ArrayListDeque.this.get(this.index--);
-      }
-
-      public void remove() {
-         ArrayListDeque.this.remove(this.index + 1);
       }
    }
 }

@@ -18,10 +18,11 @@ public enum ItemUseAnimation implements StringRepresentable {
    CROSSBOW(6, "crossbow"),
    SPYGLASS(7, "spyglass"),
    TOOT_HORN(8, "toot_horn"),
-   BRUSH(9, "brush");
+   BRUSH(9, "brush"),
+   BUNDLE(10, "bundle");
 
-   private static final IntFunction<ItemUseAnimation> BY_ID = ByIdMap.continuous(ItemUseAnimation::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-   public static final Codec<ItemUseAnimation> CODEC = StringRepresentable.fromEnum(ItemUseAnimation::values);
+   private static final IntFunction<ItemUseAnimation> BY_ID = ByIdMap.<ItemUseAnimation>continuous(ItemUseAnimation::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   public static final Codec<ItemUseAnimation> CODEC = StringRepresentable.<ItemUseAnimation>fromEnum(ItemUseAnimation::values);
    public static final StreamCodec<ByteBuf, ItemUseAnimation> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, ItemUseAnimation::getId);
    private final int id;
    private final String name;
@@ -41,6 +42,6 @@ public enum ItemUseAnimation implements StringRepresentable {
 
    // $FF: synthetic method
    private static ItemUseAnimation[] $values() {
-      return new ItemUseAnimation[]{NONE, EAT, DRINK, BLOCK, BOW, SPEAR, CROSSBOW, SPYGLASS, TOOT_HORN, BRUSH};
+      return new ItemUseAnimation[]{NONE, EAT, DRINK, BLOCK, BOW, SPEAR, CROSSBOW, SPYGLASS, TOOT_HORN, BRUSH, BUNDLE};
    }
 }

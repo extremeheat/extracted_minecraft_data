@@ -29,14 +29,6 @@ public record ClientboundDisguisedChatPacket(Component message, ChatType.Bound c
       return true;
    }
 
-   public Component message() {
-      return this.message;
-   }
-
-   public ChatType.Bound chatType() {
-      return this.chatType;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ComponentSerialization.TRUSTED_STREAM_CODEC, ClientboundDisguisedChatPacket::message, ChatType.Bound.STREAM_CODEC, ClientboundDisguisedChatPacket::chatType, ClientboundDisguisedChatPacket::new);
    }

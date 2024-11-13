@@ -2,6 +2,7 @@ package net.minecraft.client.multiplayer;
 
 import com.google.common.base.Suppliers;
 import com.mojang.authlib.GameProfile;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -35,12 +36,8 @@ public class PlayerInfo {
       this.showHat = true;
       this.profile = var1;
       this.messageValidator = fallbackMessageValidator(var2);
-      com.google.common.base.Supplier var3 = Suppliers.memoize(() -> {
-         return createSkinLookup(var1);
-      });
-      this.skinLookup = () -> {
-         return (PlayerSkin)((Supplier)var3.get()).get();
-      };
+      com.google.common.base.Supplier var3 = Suppliers.memoize(() -> createSkinLookup(var1));
+      this.skinLookup = () -> (PlayerSkin)((Supplier)var3.get()).get();
    }
 
    private static Supplier<PlayerSkin> createSkinLookup(GameProfile var0) {
@@ -50,7 +47,7 @@ public class PlayerInfo {
       boolean var4 = !var1.isLocalPlayer(var0.getId());
       PlayerSkin var5 = DefaultPlayerSkin.get(var0);
       return () -> {
-         PlayerSkin var3x = (PlayerSkin)var3.getNow(var5);
+         PlayerSkin var3x = (PlayerSkin)((Optional)var3.getNow(Optional.empty())).orElse(var5);
          return var4 && !var3x.secure() ? var5 : var3x;
       };
    }

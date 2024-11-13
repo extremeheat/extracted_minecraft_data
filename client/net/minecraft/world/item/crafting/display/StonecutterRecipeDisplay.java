@@ -6,9 +6,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
 public record StonecutterRecipeDisplay(SlotDisplay input, SlotDisplay result, SlotDisplay craftingStation) implements RecipeDisplay {
-   public static final MapCodec<StonecutterRecipeDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(SlotDisplay.CODEC.fieldOf("input").forGetter(StonecutterRecipeDisplay::input), SlotDisplay.CODEC.fieldOf("result").forGetter(StonecutterRecipeDisplay::result), SlotDisplay.CODEC.fieldOf("crafting_station").forGetter(StonecutterRecipeDisplay::craftingStation)).apply(var0, StonecutterRecipeDisplay::new);
-   });
+   public static final MapCodec<StonecutterRecipeDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SlotDisplay.CODEC.fieldOf("input").forGetter(StonecutterRecipeDisplay::input), SlotDisplay.CODEC.fieldOf("result").forGetter(StonecutterRecipeDisplay::result), SlotDisplay.CODEC.fieldOf("crafting_station").forGetter(StonecutterRecipeDisplay::craftingStation)).apply(var0, StonecutterRecipeDisplay::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, StonecutterRecipeDisplay> STREAM_CODEC;
    public static final RecipeDisplay.Type<StonecutterRecipeDisplay> TYPE;
 
@@ -23,20 +21,8 @@ public record StonecutterRecipeDisplay(SlotDisplay input, SlotDisplay result, Sl
       return TYPE;
    }
 
-   public SlotDisplay input() {
-      return this.input;
-   }
-
-   public SlotDisplay result() {
-      return this.result;
-   }
-
-   public SlotDisplay craftingStation() {
-      return this.craftingStation;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(SlotDisplay.STREAM_CODEC, StonecutterRecipeDisplay::input, SlotDisplay.STREAM_CODEC, StonecutterRecipeDisplay::result, SlotDisplay.STREAM_CODEC, StonecutterRecipeDisplay::craftingStation, StonecutterRecipeDisplay::new);
-      TYPE = new RecipeDisplay.Type(MAP_CODEC, STREAM_CODEC);
+      TYPE = new RecipeDisplay.Type<StonecutterRecipeDisplay>(MAP_CODEC, STREAM_CODEC);
    }
 }

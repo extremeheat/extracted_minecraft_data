@@ -17,7 +17,7 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
    static <B, V> StreamCodec<B, V> of(final StreamEncoder<B, V> var0, final StreamDecoder<B, V> var1) {
       return new StreamCodec<B, V>() {
          public V decode(B var1x) {
-            return var1.decode(var1x);
+            return (V)var1.decode(var1x);
          }
 
          public void encode(B var1x, V var2) {
@@ -29,7 +29,7 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
    static <B, V> StreamCodec<B, V> ofMember(final StreamMemberEncoder<B, V> var0, final StreamDecoder<B, V> var1) {
       return new StreamCodec<B, V>() {
          public V decode(B var1x) {
-            return var1.decode(var1x);
+            return (V)var1.decode(var1x);
          }
 
          public void encode(B var1x, V var2) {
@@ -41,7 +41,7 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
    static <B, V> StreamCodec<B, V> unit(final V var0) {
       return new StreamCodec<B, V>() {
          public V decode(B var1) {
-            return var0;
+            return (V)var0;
          }
 
          public void encode(B var1, V var2) {
@@ -60,7 +60,7 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
    default <O> StreamCodec<B, O> map(final Function<? super V, ? extends O> var1, final Function<? super O, ? extends V> var2) {
       return new StreamCodec<B, O>() {
          public O decode(B var1x) {
-            return var1.apply(StreamCodec.this.decode(var1x));
+            return (O)var1.apply(StreamCodec.this.decode(var1x));
          }
 
          public void encode(B var1x, O var2x) {
@@ -73,7 +73,7 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
       return new StreamCodec<O, V>() {
          public V decode(O var1x) {
             Object var2 = var1.apply(var1x);
-            return StreamCodec.this.decode(var2);
+            return (V)StreamCodec.this.decode(var2);
          }
 
          public void encode(O var1x, V var2) {
@@ -98,7 +98,7 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
          public U decode(B var1x) {
             Object var2x = StreamCodec.this.decode(var1x);
             StreamCodec var3 = (StreamCodec)var2.apply(var2x);
-            return var3.decode(var1x);
+            return (U)var3.decode(var1x);
          }
 
          public void encode(B var1x, U var2x) {
@@ -114,7 +114,7 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
       return new StreamCodec<B, C>() {
          public C decode(B var1x) {
             Object var2x = var0.decode(var1x);
-            return var2.apply(var2x);
+            return (C)var2.apply(var2x);
          }
 
          public void encode(B var1x, C var2x) {
@@ -128,7 +128,7 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
          public C decode(B var1x) {
             Object var2x = var0.decode(var1x);
             Object var3x = var2.decode(var1x);
-            return var4.apply(var2x, var3x);
+            return (C)var4.apply(var2x, var3x);
          }
 
          public void encode(B var1x, C var2x) {
@@ -144,7 +144,7 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
             Object var2x = var0.decode(var1x);
             Object var3x = var2.decode(var1x);
             Object var4x = var4.decode(var1x);
-            return var6.apply(var2x, var3x, var4x);
+            return (C)var6.apply(var2x, var3x, var4x);
          }
 
          public void encode(B var1x, C var2x) {
@@ -162,7 +162,7 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
             Object var3x = var2.decode(var1x);
             Object var4x = var4.decode(var1x);
             Object var5x = var6.decode(var1x);
-            return var8.apply(var2x, var3x, var4x, var5x);
+            return (C)var8.apply(var2x, var3x, var4x, var5x);
          }
 
          public void encode(B var1x, C var2x) {
@@ -182,7 +182,7 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
             Object var4x = var4.decode(var1x);
             Object var5x = var6.decode(var1x);
             Object var6x = var8.decode(var1x);
-            return var10.apply(var2x, var3x, var4x, var5x, var6x);
+            return (C)var10.apply(var2x, var3x, var4x, var5x, var6x);
          }
 
          public void encode(B var1x, C var2x) {
@@ -204,7 +204,7 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
             Object var5x = var6.decode(var1x);
             Object var6x = var8.decode(var1x);
             Object var7x = var10.decode(var1x);
-            return var12.apply(var2x, var3x, var4x, var5x, var6x, var7x);
+            return (C)var12.apply(var2x, var3x, var4x, var5x, var6x, var7x);
          }
 
          public void encode(B var1x, C var2x) {
@@ -228,7 +228,7 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
             Object var6x = var8.decode(var1x);
             Object var7x = var10.decode(var1x);
             Object var8x = var12.decode(var1x);
-            return var14.apply(var2x, var3x, var4x, var5x, var6x, var7x, var8x);
+            return (C)var14.apply(var2x, var3x, var4x, var5x, var6x, var7x, var8x);
          }
 
          public void encode(B var1x, C var2x) {
@@ -254,7 +254,7 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
             Object var7x = var10.decode(var1x);
             Object var8x = var12.decode(var1x);
             Object var9x = var14.decode(var1x);
-            return var16.apply(var2x, var3x, var4x, var5x, var6x, var7x, var8x, var9x);
+            return (C)var16.apply(var2x, var3x, var4x, var5x, var6x, var7x, var8x, var9x);
          }
 
          public void encode(B var1x, C var2x) {
@@ -272,12 +272,10 @@ public interface StreamCodec<B, V> extends StreamDecoder<B, V>, StreamEncoder<B,
 
    static <B, T> StreamCodec<B, T> recursive(final UnaryOperator<StreamCodec<B, T>> var0) {
       return new StreamCodec<B, T>() {
-         private final Supplier<StreamCodec<B, T>> inner = Suppliers.memoize(() -> {
-            return (StreamCodec)var0.apply(this);
-         });
+         private final Supplier<StreamCodec<B, T>> inner = Suppliers.memoize(() -> (StreamCodec)var0.apply(this));
 
          public T decode(B var1) {
-            return ((StreamCodec)this.inner.get()).decode(var1);
+            return (T)((StreamCodec)this.inner.get()).decode(var1);
          }
 
          public void encode(B var1, T var2) {

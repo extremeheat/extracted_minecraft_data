@@ -47,11 +47,7 @@ public class CoralBlock extends Block {
    }
 
    protected boolean scanForWater(BlockGetter var1, BlockPos var2) {
-      Direction[] var3 = Direction.values();
-      int var4 = var3.length;
-
-      for(int var5 = 0; var5 < var4; ++var5) {
-         Direction var6 = var3[var5];
+      for(Direction var6 : Direction.values()) {
          FluidState var7 = var1.getFluidState(var2.relative(var6));
          if (var7.is(FluidTags.WATER)) {
             return true;
@@ -72,10 +68,6 @@ public class CoralBlock extends Block {
 
    static {
       DEAD_CORAL_FIELD = BuiltInRegistries.BLOCK.byNameCodec().fieldOf("dead");
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(DEAD_CORAL_FIELD.forGetter((var0x) -> {
-            return var0x.deadBlock;
-         }), propertiesCodec()).apply(var0, CoralBlock::new);
-      });
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DEAD_CORAL_FIELD.forGetter((var0x) -> var0x.deadBlock), propertiesCodec()).apply(var0, CoralBlock::new));
    }
 }

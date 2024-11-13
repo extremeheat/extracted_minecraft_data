@@ -19,9 +19,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class BeehiveDecorator extends TreeDecorator {
-   public static final MapCodec<BeehiveDecorator> CODEC = Codec.floatRange(0.0F, 1.0F).fieldOf("probability").xmap(BeehiveDecorator::new, (var0) -> {
-      return var0.probability;
-   });
+   public static final MapCodec<BeehiveDecorator> CODEC = Codec.floatRange(0.0F, 1.0F).fieldOf("probability").xmap(BeehiveDecorator::new, (var0) -> var0.probability);
    private static final Direction WORLDGEN_FACING;
    private static final Direction[] SPAWN_DIRECTIONS;
    private final float probability;
@@ -41,18 +39,14 @@ public class BeehiveDecorator extends TreeDecorator {
          ObjectArrayList var3 = var1.leaves();
          ObjectArrayList var4 = var1.logs();
          int var5 = !var3.isEmpty() ? Math.max(((BlockPos)var3.get(0)).getY() - 1, ((BlockPos)var4.get(0)).getY() + 1) : Math.min(((BlockPos)var4.get(0)).getY() + 1 + var2.nextInt(3), ((BlockPos)var4.get(var4.size() - 1)).getY());
-         List var6 = (List)var4.stream().filter((var1x) -> {
-            return var1x.getY() == var5;
-         }).flatMap((var0) -> {
+         List var6 = (List)var4.stream().filter((var1x) -> var1x.getY() == var5).flatMap((var0) -> {
             Stream var10000 = Stream.of(SPAWN_DIRECTIONS);
             Objects.requireNonNull(var0);
             return var10000.map(var0::relative);
          }).collect(Collectors.toList());
          if (!var6.isEmpty()) {
             Util.shuffle(var6, var2);
-            Optional var7 = var6.stream().filter((var1x) -> {
-               return var1.isAir(var1x) && var1.isAir(var1x.relative(WORLDGEN_FACING));
-            }).findFirst();
+            Optional var7 = var6.stream().filter((var1x) -> var1.isAir(var1x) && var1.isAir(var1x.relative(WORLDGEN_FACING))).findFirst();
             if (!var7.isEmpty()) {
                var1.setBlock((BlockPos)var7.get(), (BlockState)Blocks.BEE_NEST.defaultBlockState().setValue(BeehiveBlock.FACING, WORLDGEN_FACING));
                var1.level().getBlockEntity((BlockPos)var7.get(), BlockEntityType.BEEHIVE).ifPresent((var1x) -> {
@@ -70,10 +64,6 @@ public class BeehiveDecorator extends TreeDecorator {
 
    static {
       WORLDGEN_FACING = Direction.SOUTH;
-      SPAWN_DIRECTIONS = (Direction[])Direction.Plane.HORIZONTAL.stream().filter((var0) -> {
-         return var0 != WORLDGEN_FACING.getOpposite();
-      }).toArray((var0) -> {
-         return new Direction[var0];
-      });
+      SPAWN_DIRECTIONS = (Direction[])Direction.Plane.HORIZONTAL.stream().filter((var0) -> var0 != WORLDGEN_FACING.getOpposite()).toArray((var0) -> new Direction[var0]);
    }
 }

@@ -23,9 +23,7 @@ public class GoToPotentialJobSite extends Behavior<Villager> {
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
-      return (Boolean)var2.getBrain().getActiveNonCoreActivity().map((var0) -> {
-         return var0 == Activity.IDLE || var0 == Activity.WORK || var0 == Activity.PLAY;
-      }).orElse(true);
+      return (Boolean)var2.getBrain().getActiveNonCoreActivity().map((var0) -> var0 == Activity.IDLE || var0 == Activity.WORK || var0 == Activity.PLAY).orElse(true);
    }
 
    protected boolean canStillUse(ServerLevel var1, Villager var2, long var3) {
@@ -43,9 +41,7 @@ public class GoToPotentialJobSite extends Behavior<Villager> {
          ServerLevel var3 = var1.getServer().getLevel(var1x.dimension());
          if (var3 != null) {
             PoiManager var4 = var3.getPoiManager();
-            if (var4.exists(var2, (var0) -> {
-               return true;
-            })) {
+            if (var4.exists(var2, (var0) -> true)) {
                var4.release(var2);
             }
 

@@ -22,6 +22,7 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.Util;
 import net.minecraft.client.ClientBrandRetriever;
 import net.minecraft.client.Minecraft;
@@ -141,9 +142,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
 
    private void setEncryption(ServerboundKeyPacket var1, Cipher var2, Cipher var3) {
       this.switchState(ClientHandshakePacketListenerImpl.State.ENCRYPTING);
-      this.connection.send(var1, PacketSendListener.thenRun(() -> {
-         this.connection.setEncryptionKey(var2, var3);
-      }));
+      this.connection.send(var1, PacketSendListener.thenRun(() -> this.connection.setEncryptionKey(var2, var3)));
    }
 
    @Nullable
@@ -217,18 +216,12 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    }
 
    public void fillListenerSpecificCrashDetails(CrashReport var1, CrashReportCategory var2) {
-      var2.setDetail("Server type", () -> {
-         return this.serverData != null ? this.serverData.type().toString() : "<unknown>";
-      });
-      var2.setDetail("Login phase", () -> {
-         return ((State)this.state.get()).toString();
-      });
-      var2.setDetail("Is Local", () -> {
-         return String.valueOf(this.connection.isMemoryConnection());
-      });
+      var2.setDetail("Server type", (CrashReportDetail)(() -> this.serverData != null ? this.serverData.type().toString() : "<unknown>"));
+      var2.setDetail("Login phase", (CrashReportDetail)(() -> ((State)this.state.get()).toString()));
+      var2.setDetail("Is Local", (CrashReportDetail)(() -> String.valueOf(this.connection.isMemoryConnection())));
    }
 
-   private static enum State {
+   static enum State {
       CONNECTING(Component.translatable("connect.connecting"), Set.of()),
       AUTHORIZING(Component.translatable("connect.authorizing"), Set.of(CONNECTING)),
       ENCRYPTING(Component.translatable("connect.encrypting"), Set.of(AUTHORIZING)),
@@ -237,7 +230,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       final Component message;
       final Set<State> fromStates;
 
-      private State(final Component var3, final Set var4) {
+      private State(final Component var3, final Set<State> var4) {
          this.message = var3;
          this.fromStates = var4;
       }

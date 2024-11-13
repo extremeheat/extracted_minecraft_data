@@ -7,7 +7,6 @@ import com.ibm.icu.text.Bidi;
 import com.mojang.blaze3d.font.GlyphInfo;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -45,9 +44,7 @@ public class Font {
       super();
       this.fonts = var1;
       this.filterFishyGlyphs = var2;
-      this.splitter = new StringSplitter((var1x, var2x) -> {
-         return this.getFontSet(var2x.getFont()).getGlyphInfo(var1x, this.filterFishyGlyphs).getAdvance(var2x.isBold());
-      });
+      this.splitter = new StringSplitter((var1x, var2x) -> this.getFontSet(var2x.getFont()).getGlyphInfo(var1x, this.filterFishyGlyphs).getAdvance(var2x.isBold()));
    }
 
    FontSet getFontSet(ResourceLocation var1) {
@@ -197,7 +194,7 @@ public class Font {
       }
    }
 
-   private class StringRenderOutput implements FormattedCharSink {
+   class StringRenderOutput implements FormattedCharSink {
       final MultiBufferSource bufferSource;
       private final boolean drawShadow;
       private final int color;
@@ -283,10 +280,8 @@ public class Font {
             }
 
             VertexConsumer var6 = this.bufferSource.getBuffer(var2.renderType(this.mode));
-            Iterator var7 = this.effects.iterator();
 
-            while(var7.hasNext()) {
-               BakedGlyph.Effect var5 = (BakedGlyph.Effect)var7.next();
+            for(BakedGlyph.Effect var5 : this.effects) {
                var2.renderEffect(var5, this.pose, var6, this.packedLightCoords);
             }
          }
@@ -316,10 +311,7 @@ public class Font {
       }
 
       void renderCharacters() {
-         Iterator var1 = this.glyphInstances.iterator();
-
-         while(var1.hasNext()) {
-            BakedGlyph.GlyphInstance var2 = (BakedGlyph.GlyphInstance)var1.next();
+         for(BakedGlyph.GlyphInstance var2 : this.glyphInstances) {
             BakedGlyph var3 = var2.glyph();
             VertexConsumer var4 = this.bufferSource.getBuffer(var3.renderType(this.mode));
             var3.renderChar(var2, this.pose, var4, this.packedLightCoords);

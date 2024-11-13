@@ -15,9 +15,7 @@ public record RemoteChatSession(UUID sessionId, ProfilePublicKey profilePublicKe
    }
 
    public SignedMessageValidator createMessageValidator(Duration var1) {
-      return new SignedMessageValidator.KeyBased(this.profilePublicKey.createSignatureValidator(), () -> {
-         return this.profilePublicKey.data().hasExpired(var1);
-      });
+      return new SignedMessageValidator.KeyBased(this.profilePublicKey.createSignatureValidator(), () -> this.profilePublicKey.data().hasExpired(var1));
    }
 
    public SignedMessageChain.Decoder createMessageDecoder(UUID var1) {
@@ -30,14 +28,6 @@ public record RemoteChatSession(UUID sessionId, ProfilePublicKey profilePublicKe
 
    public boolean hasExpired() {
       return this.profilePublicKey.data().hasExpired();
-   }
-
-   public UUID sessionId() {
-      return this.sessionId;
-   }
-
-   public ProfilePublicKey profilePublicKey() {
-      return this.profilePublicKey;
    }
 
    public static record Data(UUID sessionId, ProfilePublicKey.Data profilePublicKey) {
@@ -58,14 +48,6 @@ public record RemoteChatSession(UUID sessionId, ProfilePublicKey profilePublicKe
 
       public RemoteChatSession validate(GameProfile var1, SignatureValidator var2) throws ProfilePublicKey.ValidationException {
          return new RemoteChatSession(this.sessionId, ProfilePublicKey.createValidated(var2, var1.getId(), this.profilePublicKey));
-      }
-
-      public UUID sessionId() {
-         return this.sessionId;
-      }
-
-      public ProfilePublicKey.Data profilePublicKey() {
-         return this.profilePublicKey;
       }
    }
 }

@@ -4,16 +4,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public record ShaderDefines(Map<String, String> values, Set<String> flags) {
    public static final ShaderDefines EMPTY = new ShaderDefines(Map.of(), Set.of());
-   public static final Codec<ShaderDefines> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.unboundedMap(Codec.STRING, Codec.STRING).optionalFieldOf("values", Map.of()).forGetter(ShaderDefines::values), Codec.STRING.listOf().xmap(Set::copyOf, List::copyOf).optionalFieldOf("flags", Set.of()).forGetter(ShaderDefines::flags)).apply(var0, ShaderDefines::new);
-   });
+   public static final Codec<ShaderDefines> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.unboundedMap(Codec.STRING, Codec.STRING).optionalFieldOf("values", Map.of()).forGetter(ShaderDefines::values), Codec.STRING.listOf().xmap(Set::copyOf, List::copyOf).optionalFieldOf("flags", Set.of()).forGetter(ShaderDefines::flags)).apply(var0, ShaderDefines::new));
 
    public ShaderDefines(Map<String, String> var1, Set<String> var2) {
       super();
@@ -43,20 +40,15 @@ public record ShaderDefines(Map<String, String> values, Set<String> flags) {
 
    public String asSourceDirectives() {
       StringBuilder var1 = new StringBuilder();
-      Iterator var2 = this.values.entrySet().iterator();
 
-      while(var2.hasNext()) {
-         Map.Entry var3 = (Map.Entry)var2.next();
+      for(Map.Entry var3 : this.values.entrySet()) {
          String var4 = (String)var3.getKey();
          String var5 = (String)var3.getValue();
          var1.append("#define ").append(var4).append(" ").append(var5).append('\n');
       }
 
-      var2 = this.flags.iterator();
-
-      while(var2.hasNext()) {
-         String var6 = (String)var2.next();
-         var1.append("#define ").append(var6).append('\n');
+      for(String var7 : this.flags) {
+         var1.append("#define ").append(var7).append('\n');
       }
 
       return var1.toString();
@@ -64,14 +56,6 @@ public record ShaderDefines(Map<String, String> values, Set<String> flags) {
 
    public boolean isEmpty() {
       return this.values.isEmpty() && this.flags.isEmpty();
-   }
-
-   public Map<String, String> values() {
-      return this.values;
-   }
-
-   public Set<String> flags() {
-      return this.flags;
    }
 
    public static class Builder {

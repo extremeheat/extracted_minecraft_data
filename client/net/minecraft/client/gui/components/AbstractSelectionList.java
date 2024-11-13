@@ -24,7 +24,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
-public abstract class AbstractSelectionList<E extends Entry<E>> extends AbstractContainerWidget {
+public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entry<E>> extends AbstractContainerWidget {
    private static final ResourceLocation MENU_LIST_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/menu_list_background.png");
    private static final ResourceLocation INWORLD_MENU_LIST_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/inworld_menu_list_background.png");
    protected final Minecraft minecraft;
@@ -71,12 +71,12 @@ public abstract class AbstractSelectionList<E extends Entry<E>> extends Abstract
    }
 
    public E getFirstElement() {
-      return (Entry)this.children.get(0);
+      return (E)(this.children.get(0));
    }
 
    @Nullable
    public E getFocused() {
-      return (Entry)super.getFocused();
+      return (E)(super.getFocused());
    }
 
    public final List<E> children() {
@@ -94,7 +94,7 @@ public abstract class AbstractSelectionList<E extends Entry<E>> extends Abstract
    }
 
    protected E getEntry(int var1) {
-      return (Entry)this.children().get(var1);
+      return (E)(this.children().get(var1));
    }
 
    protected int addEntry(E var1) {
@@ -131,7 +131,7 @@ public abstract class AbstractSelectionList<E extends Entry<E>> extends Abstract
       int var8 = var6 + var5;
       int var9 = Mth.floor(var3 - (double)this.getY()) - this.headerHeight + (int)this.scrollAmount() - 4;
       int var10 = var9 / this.itemHeight;
-      return var1 >= (double)var7 && var1 <= (double)var8 && var10 >= 0 && var9 >= 0 && var10 < this.getItemCount() ? (Entry)this.children().get(var10) : null;
+      return (E)(var1 >= (double)var7 && var1 <= (double)var8 && var10 >= 0 && var9 >= 0 && var10 < this.getItemCount() ? (Entry)this.children().get(var10) : null);
    }
 
    public void updateSize(int var1, HeaderAndFooterLayout var2) {
@@ -241,14 +241,12 @@ public abstract class AbstractSelectionList<E extends Entry<E>> extends Abstract
 
    @Nullable
    protected E nextEntry(ScreenDirection var1) {
-      return this.nextEntry(var1, (var0) -> {
-         return true;
-      });
+      return (E)this.nextEntry(var1, (var0) -> true);
    }
 
    @Nullable
    protected E nextEntry(ScreenDirection var1, Predicate<E> var2) {
-      return this.nextEntry(var1, var2, this.getSelected());
+      return (E)this.nextEntry(var1, var2, this.getSelected());
    }
 
    @Nullable
@@ -281,7 +279,7 @@ public abstract class AbstractSelectionList<E extends Entry<E>> extends Abstract
          for(int var6 = var5; var6 >= 0 && var6 < this.children.size(); var6 += var4) {
             Entry var7 = (Entry)this.children().get(var6);
             if (var2.test(var7)) {
-               return var7;
+               return (E)var7;
             }
          }
       }
@@ -354,7 +352,7 @@ public abstract class AbstractSelectionList<E extends Entry<E>> extends Abstract
    @Nullable
    protected E remove(int var1) {
       Entry var2 = (Entry)this.children.get(var1);
-      return this.removeEntry((Entry)this.children.get(var1)) ? var2 : null;
+      return (E)(this.removeEntry((Entry)this.children.get(var1)) ? var2 : null);
    }
 
    protected boolean removeEntry(E var1) {
@@ -392,57 +390,6 @@ public abstract class AbstractSelectionList<E extends Entry<E>> extends Abstract
       return this.getFocused();
    }
 
-   private class TrackedList extends AbstractList<E> {
-      private final List<E> delegate = Lists.newArrayList();
-
-      TrackedList() {
-         super();
-      }
-
-      public E get(int var1) {
-         return (Entry)this.delegate.get(var1);
-      }
-
-      public int size() {
-         return this.delegate.size();
-      }
-
-      public E set(int var1, E var2) {
-         Entry var3 = (Entry)this.delegate.set(var1, var2);
-         AbstractSelectionList.this.bindEntryToSelf(var2);
-         return var3;
-      }
-
-      public void add(int var1, E var2) {
-         this.delegate.add(var1, var2);
-         AbstractSelectionList.this.bindEntryToSelf(var2);
-      }
-
-      public E remove(int var1) {
-         return (Entry)this.delegate.remove(var1);
-      }
-
-      // $FF: synthetic method
-      public Object remove(final int var1) {
-         return this.remove(var1);
-      }
-
-      // $FF: synthetic method
-      public void add(final int var1, final Object var2) {
-         this.add(var1, (Entry)var2);
-      }
-
-      // $FF: synthetic method
-      public Object set(final int var1, final Object var2) {
-         return this.set(var1, (Entry)var2);
-      }
-
-      // $FF: synthetic method
-      public Object get(final int var1) {
-         return this.get(var1);
-      }
-   }
-
    protected abstract static class Entry<E extends Entry<E>> implements GuiEventListener {
       /** @deprecated */
       @Deprecated
@@ -466,6 +413,57 @@ public abstract class AbstractSelectionList<E extends Entry<E>> extends Abstract
 
       public boolean isMouseOver(double var1, double var3) {
          return Objects.equals(this.list.getEntryAtPosition(var1, var3), this);
+      }
+   }
+
+   class TrackedList extends AbstractList<E> {
+      private final List<E> delegate = Lists.newArrayList();
+
+      TrackedList() {
+         super();
+      }
+
+      public E get(int var1) {
+         return (E)((Entry)this.delegate.get(var1));
+      }
+
+      public int size() {
+         return this.delegate.size();
+      }
+
+      public E set(int var1, E var2) {
+         Entry var3 = (Entry)this.delegate.set(var1, var2);
+         AbstractSelectionList.this.bindEntryToSelf(var2);
+         return (E)var3;
+      }
+
+      public void add(int var1, E var2) {
+         this.delegate.add(var1, var2);
+         AbstractSelectionList.this.bindEntryToSelf(var2);
+      }
+
+      public E remove(int var1) {
+         return (E)((Entry)this.delegate.remove(var1));
+      }
+
+      // $FF: synthetic method
+      public Object remove(final int var1) {
+         return this.remove(var1);
+      }
+
+      // $FF: synthetic method
+      public void add(final int var1, final Object var2) {
+         this.add(var1, (Entry)var2);
+      }
+
+      // $FF: synthetic method
+      public Object set(final int var1, final Object var2) {
+         return this.set(var1, (Entry)var2);
+      }
+
+      // $FF: synthetic method
+      public Object get(final int var1) {
+         return this.get(var1);
       }
    }
 }

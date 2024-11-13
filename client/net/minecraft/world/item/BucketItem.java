@@ -14,7 +14,6 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -50,23 +49,19 @@ public class BucketItem extends Item implements DispensibleContainerItem {
          Direction var7 = var5.getDirection();
          BlockPos var8 = var6.relative(var7);
          if (var1.mayInteract(var2, var6) && var2.mayUseItemAt(var8, var7, var4)) {
-            BlockState var9;
-            ItemStack var11;
             if (this.content == Fluids.EMPTY) {
-               var9 = var1.getBlockState(var6);
-               Block var14 = var9.getBlock();
-               if (var14 instanceof BucketPickup) {
-                  BucketPickup var13 = (BucketPickup)var14;
-                  var11 = var13.pickupBlock(var2, var1, var6, var9);
-                  if (!var11.isEmpty()) {
+               BlockState var13 = var1.getBlockState(var6);
+               Block var15 = var13.getBlock();
+               if (var15 instanceof BucketPickup) {
+                  BucketPickup var14 = (BucketPickup)var15;
+                  ItemStack var16 = var14.pickupBlock(var2, var1, var6, var13);
+                  if (!var16.isEmpty()) {
                      var2.awardStat(Stats.ITEM_USED.get(this));
-                     var13.getPickupSound().ifPresent((var1x) -> {
-                        var2.playSound(var1x, 1.0F, 1.0F);
-                     });
+                     var14.getPickupSound().ifPresent((var1x) -> var2.playSound(var1x, 1.0F, 1.0F));
                      var1.gameEvent(var2, GameEvent.FLUID_PICKUP, var6);
-                     ItemStack var12 = ItemUtils.createFilledResult(var4, var2, var11);
+                     ItemStack var12 = ItemUtils.createFilledResult(var4, var2, var16);
                      if (!var1.isClientSide) {
-                        CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)var2, var11);
+                        CriteriaTriggers.FILLED_BUCKET.trigger((ServerPlayer)var2, var16);
                      }
 
                      return InteractionResult.SUCCESS.heldItemTransformedTo(var12);
@@ -75,7 +70,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
 
                return InteractionResult.FAIL;
             } else {
-               var9 = var1.getBlockState(var6);
+               BlockState var9 = var1.getBlockState(var6);
                BlockPos var10 = var9.getBlock() instanceof LiquidBlockContainer && this.content == Fluids.WATER ? var6 : var8;
                if (this.emptyContents(var2, var1, var10, var5)) {
                   this.checkExtraContent(var2, var1, var4, var10);
@@ -84,7 +79,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
                   }
 
                   var2.awardStat(Stats.ITEM_USED.get(this));
-                  var11 = ItemUtils.createFilledResult(var4, var2, getEmptySuccessItem(var4, var2));
+                  ItemStack var11 = ItemUtils.createFilledResult(var4, var2, getEmptySuccessItem(var4, var2));
                   return InteractionResult.SUCCESS.heldItemTransformedTo(var11);
                } else {
                   return InteractionResult.FAIL;
@@ -110,8 +105,6 @@ public class BucketItem extends Item implements DispensibleContainerItem {
       } else {
          Block var7;
          boolean var8;
-         LiquidBlockContainer var10;
-         BlockState var14;
          boolean var10000;
          label82: {
             var14 = var2.getBlockState(var3);
@@ -120,7 +113,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
             if (!var14.isAir() && !var8) {
                label80: {
                   if (var7 instanceof LiquidBlockContainer) {
-                     var10 = (LiquidBlockContainer)var7;
+                     LiquidBlockContainer var10 = (LiquidBlockContainer)var7;
                      if (var10.canPlaceLiquid(var1, var2, var3, var14, this.content)) {
                         break label80;
                      }
@@ -138,21 +131,21 @@ public class BucketItem extends Item implements DispensibleContainerItem {
          if (!var9) {
             return var4 != null && this.emptyContents(var1, var2, var4.getBlockPos().relative(var4.getDirection()), (BlockHitResult)null);
          } else if (var2.dimensionType().ultraWarm() && this.content.is(FluidTags.WATER)) {
-            int var15 = var3.getX();
+            int var16 = var3.getX();
             int var11 = var3.getY();
             int var12 = var3.getZ();
             var2.playSound(var1, var3, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (var2.random.nextFloat() - var2.random.nextFloat()) * 0.8F);
 
             for(int var13 = 0; var13 < 8; ++var13) {
-               var2.addParticle(ParticleTypes.LARGE_SMOKE, (double)var15 + Math.random(), (double)var11 + Math.random(), (double)var12 + Math.random(), 0.0, 0.0, 0.0);
+               var2.addParticle(ParticleTypes.LARGE_SMOKE, (double)var16 + Math.random(), (double)var11 + Math.random(), (double)var12 + Math.random(), 0.0, 0.0, 0.0);
             }
 
             return true;
          } else {
             if (var7 instanceof LiquidBlockContainer) {
-               var10 = (LiquidBlockContainer)var7;
+               LiquidBlockContainer var15 = (LiquidBlockContainer)var7;
                if (this.content == Fluids.WATER) {
-                  var10.placeLiquid(var2, var3, var14, var5.getSource(false));
+                  var15.placeLiquid(var2, var3, var14, var5.getSource(false));
                   this.playEmptySound(var1, var2, var3);
                   return true;
                }
@@ -175,6 +168,6 @@ public class BucketItem extends Item implements DispensibleContainerItem {
    protected void playEmptySound(@Nullable Player var1, LevelAccessor var2, BlockPos var3) {
       SoundEvent var4 = this.content.is(FluidTags.LAVA) ? SoundEvents.BUCKET_EMPTY_LAVA : SoundEvents.BUCKET_EMPTY;
       var2.playSound(var1, var3, var4, SoundSource.BLOCKS, 1.0F, 1.0F);
-      var2.gameEvent((Entity)var1, (Holder)GameEvent.FLUID_PLACE, (BlockPos)var3);
+      var2.gameEvent(var1, (Holder)GameEvent.FLUID_PLACE, (BlockPos)var3);
    }
 }

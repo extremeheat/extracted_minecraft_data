@@ -83,9 +83,7 @@ public class ServerTickRateManager extends TickRateManager {
       String var6 = String.format("%.2f", var1 == 0L ? (double)this.millisecondsPerTick() : var3 / (double)var1);
       this.scheduledCurrentSprintTicks = 0L;
       this.sprintTimeSpend = 0L;
-      this.server.createCommandSourceStack().sendSuccess(() -> {
-         return Component.translatable("commands.tick.sprint.report", var5, var6);
-      }, true);
+      this.server.createCommandSourceStack().sendSuccess(() -> Component.translatable("commands.tick.sprint.report", var5, var6), true);
       this.remainingSprintTicks = 0L;
       this.setFrozen(this.previousIsFrozen);
       this.server.onTickRateChanged();

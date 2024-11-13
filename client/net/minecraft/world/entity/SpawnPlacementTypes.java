@@ -9,9 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 
 public interface SpawnPlacementTypes {
-   SpawnPlacementType NO_RESTRICTIONS = (var0, var1, var2) -> {
-      return true;
-   };
+   SpawnPlacementType NO_RESTRICTIONS = (var0, var1, var2) -> true;
    SpawnPlacementType IN_WATER = (var0, var1, var2) -> {
       if (var2 != null && var0.getWorldBorder().isWithinBounds(var1)) {
          BlockPos var3 = var1.above();
@@ -20,9 +18,7 @@ public interface SpawnPlacementTypes {
          return false;
       }
    };
-   SpawnPlacementType IN_LAVA = (var0, var1, var2) -> {
-      return var2 != null && var0.getWorldBorder().isWithinBounds(var1) ? var0.getFluidState(var1).is(FluidTags.LAVA) : false;
-   };
+   SpawnPlacementType IN_LAVA = (var0, var1, var2) -> var2 != null && var0.getWorldBorder().isWithinBounds(var1) ? var0.getFluidState(var1).is(FluidTags.LAVA) : false;
    SpawnPlacementType ON_GROUND = new SpawnPlacementType() {
       public boolean isSpawnPositionOk(LevelReader var1, BlockPos var2, @Nullable EntityType<?> var3) {
          if (var3 != null && var1.getWorldBorder().isWithinBounds(var2)) {

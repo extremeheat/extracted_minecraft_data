@@ -87,9 +87,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
       float var6 = getPowerForTime(var5, var1, var3);
       if (var6 >= 1.0F && !isCharged(var1) && tryLoadProjectiles(var3, var1)) {
          ChargingSounds var7 = this.getChargingSounds(var1);
-         var7.end().ifPresent((var2x) -> {
-            var2.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), (SoundEvent)((SoundEvent)var2x.value()), var3.getSoundSource(), 1.0F, 1.0F / (var2.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F);
-         });
+         var7.end().ifPresent((var2x) -> var2.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), (SoundEvent)var2x.value(), var3.getSoundSource(), 1.0F, 1.0F / (var2.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F));
          return true;
       } else {
          return false;
@@ -120,15 +118,15 @@ public class CrossbowItem extends ProjectileWeaponItem {
          double var15 = var7.getY(0.3333333333333333) - var2.getY() + var13 * 0.20000000298023224;
          var8 = getProjectileShotVector(var1, new Vec3(var9, var15, var11), var6);
       } else {
-         Vec3 var18 = var1.getUpVector(1.0F);
-         Quaternionf var10 = (new Quaternionf()).setAngleAxis((double)(var6 * 0.017453292F), var18.x, var18.y, var18.z);
-         Vec3 var17 = var1.getViewVector(1.0F);
-         var8 = var17.toVector3f().rotate(var10);
+         Vec3 var17 = var1.getUpVector(1.0F);
+         Quaternionf var10 = (new Quaternionf()).setAngleAxis((double)(var6 * 0.017453292F), var17.x, var17.y, var17.z);
+         Vec3 var19 = var1.getViewVector(1.0F);
+         var8 = var19.toVector3f().rotate(var10);
       }
 
       var2.shoot((double)var8.x(), (double)var8.y(), (double)var8.z(), var4, var5);
-      float var19 = getShotPitch(var1.getRandom(), var3);
-      var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), (SoundEvent)SoundEvents.CROSSBOW_SHOOT, var1.getSoundSource(), 1.0F, var19);
+      float var18 = getShotPitch(var1.getRandom(), var3);
+      var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.CROSSBOW_SHOOT, var1.getSoundSource(), 1.0F, var18);
    }
 
    private static Vector3f getProjectileShotVector(LivingEntity var0, Vec3 var1, float var2) {
@@ -196,16 +194,12 @@ public class CrossbowItem extends ProjectileWeaponItem {
 
          if (var6 >= 0.2F && !this.startSoundPlayed) {
             this.startSoundPlayed = true;
-            var5.start().ifPresent((var2x) -> {
-               var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)((SoundEvent)var2x.value()), SoundSource.PLAYERS, 0.5F, 1.0F);
-            });
+            var5.start().ifPresent((var2x) -> var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)var2x.value(), SoundSource.PLAYERS, 0.5F, 1.0F));
          }
 
          if (var6 >= 0.5F && !this.midLoadSoundPlayed) {
             this.midLoadSoundPlayed = true;
-            var5.mid().ifPresent((var2x) -> {
-               var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)((SoundEvent)var2x.value()), SoundSource.PLAYERS, 0.5F, 1.0F);
-            });
+            var5.mid().ifPresent((var2x) -> var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)var2x.value(), SoundSource.PLAYERS, 0.5F, 1.0F));
          }
       }
 
@@ -258,7 +252,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
    }
 
    public boolean useOnRelease(ItemStack var1) {
-      return var1.is((Item)this);
+      return var1.is(this);
    }
 
    public int getDefaultProjectileRange() {
@@ -270,27 +264,13 @@ public class CrossbowItem extends ProjectileWeaponItem {
    }
 
    public static record ChargingSounds(Optional<Holder<SoundEvent>> start, Optional<Holder<SoundEvent>> mid, Optional<Holder<SoundEvent>> end) {
-      public static final Codec<ChargingSounds> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(SoundEvent.CODEC.optionalFieldOf("start").forGetter(ChargingSounds::start), SoundEvent.CODEC.optionalFieldOf("mid").forGetter(ChargingSounds::mid), SoundEvent.CODEC.optionalFieldOf("end").forGetter(ChargingSounds::end)).apply(var0, ChargingSounds::new);
-      });
+      public static final Codec<ChargingSounds> CODEC = RecordCodecBuilder.create((var0) -> var0.group(SoundEvent.CODEC.optionalFieldOf("start").forGetter(ChargingSounds::start), SoundEvent.CODEC.optionalFieldOf("mid").forGetter(ChargingSounds::mid), SoundEvent.CODEC.optionalFieldOf("end").forGetter(ChargingSounds::end)).apply(var0, ChargingSounds::new));
 
       public ChargingSounds(Optional<Holder<SoundEvent>> var1, Optional<Holder<SoundEvent>> var2, Optional<Holder<SoundEvent>> var3) {
          super();
          this.start = var1;
          this.mid = var2;
          this.end = var3;
-      }
-
-      public Optional<Holder<SoundEvent>> start() {
-         return this.start;
-      }
-
-      public Optional<Holder<SoundEvent>> mid() {
-         return this.mid;
-      }
-
-      public Optional<Holder<SoundEvent>> end() {
-         return this.end;
       }
    }
 
@@ -299,7 +279,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
       ARROW("arrow"),
       ROCKET("rocket");
 
-      public static final Codec<ChargeType> CODEC = StringRepresentable.fromEnum(ChargeType::values);
+      public static final Codec<ChargeType> CODEC = StringRepresentable.<ChargeType>fromEnum(ChargeType::values);
       private final String name;
 
       private ChargeType(final String var3) {

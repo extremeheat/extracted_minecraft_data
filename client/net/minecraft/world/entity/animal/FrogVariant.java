@@ -34,10 +34,6 @@ public record FrogVariant(ResourceLocation texture) {
       return (FrogVariant)Registry.register(var0, (ResourceKey)var1, new FrogVariant(ResourceLocation.withDefaultNamespace(var2)));
    }
 
-   public ResourceLocation texture() {
-      return this.texture;
-   }
-
    static {
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.FROG_VARIANT);
       TEMPERATE = createKey("temperate");

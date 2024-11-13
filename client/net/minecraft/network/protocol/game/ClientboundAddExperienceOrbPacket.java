@@ -9,7 +9,7 @@ import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.phys.Vec3;
 
 public class ClientboundAddExperienceOrbPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundAddExperienceOrbPacket> STREAM_CODEC = Packet.codec(ClientboundAddExperienceOrbPacket::write, ClientboundAddExperienceOrbPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundAddExperienceOrbPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundAddExperienceOrbPacket>codec(ClientboundAddExperienceOrbPacket::write, ClientboundAddExperienceOrbPacket::new);
    private final int id;
    private final double x;
    private final double y;

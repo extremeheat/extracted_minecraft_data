@@ -54,9 +54,7 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
       this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 1.0, 1.0000001E-5F));
       this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 6.0F));
       this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
-      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Mob.class, 10, true, false, (var0, var1) -> {
-         return var0 instanceof Enemy;
-      }));
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Mob.class, 10, true, false, (var0, var1) -> var0 instanceof Enemy));
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -121,9 +119,7 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
       Level var12 = this.level();
       if (var12 instanceof ServerLevel var11) {
          ItemStack var13 = new ItemStack(Items.SNOWBALL);
-         Projectile.spawnProjectile(new Snowball(var11, this, var13), var11, var13, (var8) -> {
-            var8.shoot(var3, var5 + var9 - var8.getY(), var7, 1.6F, 12.0F);
-         });
+         Projectile.spawnProjectile(new Snowball(var11, this, var13), var11, var13, (var8) -> var8.shoot(var3, var5 + var9 - var8.getY(), var7, 1.6F, 12.0F));
       }
 
       this.playSound(SoundEvents.SNOW_GOLEM_SHOOT, 1.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
@@ -149,9 +145,7 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
    public void shear(ServerLevel var1, SoundSource var2, ItemStack var3) {
       var1.playSound((Player)null, this, SoundEvents.SNOW_GOLEM_SHEAR, var2, 1.0F, 1.0F);
       this.setPumpkin(false);
-      this.dropFromShearingLootTable(var1, BuiltInLootTables.SHEAR_SNOW_GOLEM, var3, (var1x, var2x) -> {
-         this.spawnAtLocation(var1x, var2x, this.getEyeHeight());
-      });
+      this.dropFromShearingLootTable(var1, BuiltInLootTables.SHEAR_SNOW_GOLEM, var3, (var1x, var2x) -> this.spawnAtLocation(var1x, var2x, this.getEyeHeight()));
    }
 
    public boolean readyForShearing() {
@@ -192,6 +186,6 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
    }
 
    static {
-      DATA_PUMPKIN_ID = SynchedEntityData.defineId(SnowGolem.class, EntityDataSerializers.BYTE);
+      DATA_PUMPKIN_ID = SynchedEntityData.<Byte>defineId(SnowGolem.class, EntityDataSerializers.BYTE);
    }
 }

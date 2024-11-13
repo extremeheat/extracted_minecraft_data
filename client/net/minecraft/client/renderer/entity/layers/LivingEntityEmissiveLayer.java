@@ -48,20 +48,14 @@ public class LivingEntityEmissiveLayer<S extends LivingEntityRenderState, M exte
       if (var2.isEmpty()) {
          return false;
       } else {
-         this.getParentModel().allParts().forEach((var0) -> {
-            var0.skipDraw = true;
-         });
-         var2.forEach((var0) -> {
-            var0.skipDraw = false;
-         });
+         this.getParentModel().allParts().forEach((var0) -> var0.skipDraw = true);
+         var2.forEach((var0) -> var0.skipDraw = false);
          return true;
       }
    }
 
    private void resetDrawForAllParts() {
-      this.getParentModel().allParts().forEach((var0) -> {
-         var0.skipDraw = false;
-      });
+      this.getParentModel().allParts().forEach((var0) -> var0.skipDraw = false);
    }
 
    public interface AlphaFunction<S extends LivingEntityRenderState> {

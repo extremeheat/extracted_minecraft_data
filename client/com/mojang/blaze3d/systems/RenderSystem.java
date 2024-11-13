@@ -804,19 +804,14 @@ public class RenderSystem {
             try {
                this.type = var4;
                it.unimi.dsi.fastutil.ints.IntConsumer var7 = this.intConsumer(var6);
-               int var8 = 0;
 
-               while(true) {
-                  if (var8 >= var1) {
-                     var6.flip();
-                     this.buffer.resize(var5);
-                     this.buffer.write(var6, 0);
-                     break;
-                  }
-
+               for(int var8 = 0; var8 < var1; var8 += this.indexStride) {
                   this.generator.accept(var7, var8 * this.vertexStride / this.indexStride);
-                  var8 += this.indexStride;
                }
+
+               var6.flip();
+               this.buffer.resize(var5);
+               this.buffer.write(var6, 0);
             } finally {
                MemoryUtil.memFree(var6);
             }
@@ -828,9 +823,7 @@ public class RenderSystem {
       private it.unimi.dsi.fastutil.ints.IntConsumer intConsumer(ByteBuffer var1) {
          switch (this.type) {
             case SHORT:
-               return (var1x) -> {
-                  var1.putShort((short)var1x);
-               };
+               return (var1x) -> var1.putShort((short)var1x);
             case INT:
             default:
                Objects.requireNonNull(var1);

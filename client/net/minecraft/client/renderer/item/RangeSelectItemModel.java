@@ -35,17 +35,16 @@ public class RangeSelectItemModel implements ItemModel {
    }
 
    private static int lastIndexLessOrEqual(float[] var0, float var1) {
-      int var2;
       if (var0.length < 16) {
-         for(var2 = 0; var2 < var0.length; ++var2) {
-            if (var0[var2] > var1) {
-               return var2 - 1;
+         for(int var4 = 0; var4 < var0.length; ++var4) {
+            if (var0[var4] > var1) {
+               return var4 - 1;
             }
          }
 
          return var0.length - 1;
       } else {
-         var2 = Arrays.binarySearch(var0, var1);
+         int var2 = Arrays.binarySearch(var0, var1);
          if (var2 < 0) {
             int var3 = ~var2;
             return var3 - 1;
@@ -68,33 +67,8 @@ public class RangeSelectItemModel implements ItemModel {
       var9.update(var1, var2, var3, var4, var5, var6, var7);
    }
 
-   public static record Entry(float threshold, ItemModel.Unbaked model) {
-      final float threshold;
-      final ItemModel.Unbaked model;
-      public static final Codec<Entry> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Codec.FLOAT.fieldOf("threshold").forGetter(Entry::threshold), ItemModels.CODEC.fieldOf("model").forGetter(Entry::model)).apply(var0, Entry::new);
-      });
-      public static final Comparator<Entry> BY_THRESHOLD = Comparator.comparingDouble(Entry::threshold);
-
-      public Entry(float var1, ItemModel.Unbaked var2) {
-         super();
-         this.threshold = var1;
-         this.model = var2;
-      }
-
-      public float threshold() {
-         return this.threshold;
-      }
-
-      public ItemModel.Unbaked model() {
-         return this.model;
-      }
-   }
-
    public static record Unbaked(RangeSelectItemModelProperty property, float scale, List<Entry> entries, Optional<ItemModel.Unbaked> fallback) implements ItemModel.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(RangeSelectItemModelProperties.MAP_CODEC.forGetter(Unbaked::property), Codec.FLOAT.optionalFieldOf("scale", 1.0F).forGetter(Unbaked::scale), RangeSelectItemModel.Entry.CODEC.listOf().fieldOf("entries").forGetter(Unbaked::entries), ItemModels.CODEC.optionalFieldOf("fallback").forGetter(Unbaked::fallback)).apply(var0, Unbaked::new);
-      });
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RangeSelectItemModelProperties.MAP_CODEC.forGetter(Unbaked::property), Codec.FLOAT.optionalFieldOf("scale", 1.0F).forGetter(Unbaked::scale), RangeSelectItemModel.Entry.CODEC.listOf().fieldOf("entries").forGetter(Unbaked::entries), ItemModels.CODEC.optionalFieldOf("fallback").forGetter(Unbaked::fallback)).apply(var0, Unbaked::new));
 
       public Unbaked(RangeSelectItemModelProperty var1, float var2, List<Entry> var3, Optional<ItemModel.Unbaked> var4) {
          super();
@@ -120,35 +94,26 @@ public class RangeSelectItemModel implements ItemModel {
             var3[var5] = var6.model.bake(var1);
          }
 
-         ItemModel var7 = (ItemModel)this.fallback.map((var1x) -> {
-            return var1x.bake(var1);
-         }).orElse(var1.missingItemModel());
+         ItemModel var7 = (ItemModel)this.fallback.map((var1x) -> var1x.bake(var1)).orElse(var1.missingItemModel());
          return new RangeSelectItemModel(this.property, this.scale, var2, var3, var7);
       }
 
       public void resolveDependencies(ResolvableModel.Resolver var1) {
-         this.fallback.ifPresent((var1x) -> {
-            var1x.resolveDependencies(var1);
-         });
-         this.entries.forEach((var1x) -> {
-            var1x.model.resolveDependencies(var1);
-         });
+         this.fallback.ifPresent((var1x) -> var1x.resolveDependencies(var1));
+         this.entries.forEach((var1x) -> var1x.model.resolveDependencies(var1));
       }
+   }
 
-      public RangeSelectItemModelProperty property() {
-         return this.property;
-      }
+   public static record Entry(float threshold, ItemModel.Unbaked model) {
+      final float threshold;
+      final ItemModel.Unbaked model;
+      public static final Codec<Entry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.FLOAT.fieldOf("threshold").forGetter(Entry::threshold), ItemModels.CODEC.fieldOf("model").forGetter(Entry::model)).apply(var0, Entry::new));
+      public static final Comparator<Entry> BY_THRESHOLD = Comparator.comparingDouble(Entry::threshold);
 
-      public float scale() {
-         return this.scale;
-      }
-
-      public List<Entry> entries() {
-         return this.entries;
-      }
-
-      public Optional<ItemModel.Unbaked> fallback() {
-         return this.fallback;
+      public Entry(float var1, ItemModel.Unbaked var2) {
+         super();
+         this.threshold = var1;
+         this.model = var2;
       }
    }
 }

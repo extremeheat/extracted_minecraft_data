@@ -15,11 +15,7 @@ import org.slf4j.Logger;
 
 public class FunctionReference extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<FunctionReference> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(ResourceKey.codec(Registries.ITEM_MODIFIER).fieldOf("name").forGetter((var0x) -> {
-         return var0x.name;
-      })).apply(var0, FunctionReference::new);
-   });
+   public static final MapCodec<FunctionReference> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(ResourceKey.codec(Registries.ITEM_MODIFIER).fieldOf("name").forGetter((var0x) -> var0x.name)).apply(var0, FunctionReference::new));
    private final ResourceKey<LootItemFunction> name;
 
    private FunctionReference(List<LootItemCondition> var1, ResourceKey<LootItemFunction> var2) {
@@ -38,11 +34,7 @@ public class FunctionReference extends LootItemConditionalFunction {
          var1.reportProblem("Function " + String.valueOf(this.name.location()) + " is recursively called");
       } else {
          super.validate(var1);
-         var1.resolver().get(this.name).ifPresentOrElse((var2) -> {
-            ((LootItemFunction)var2.value()).validate(var1.enterElement(".{" + String.valueOf(this.name.location()) + "}", this.name));
-         }, () -> {
-            var1.reportProblem("Unknown function table called " + String.valueOf(this.name.location()));
-         });
+         var1.resolver().get(this.name).ifPresentOrElse((var2) -> ((LootItemFunction)var2.value()).validate(var1.enterElement(".{" + String.valueOf(this.name.location()) + "}", this.name)), () -> var1.reportProblem("Unknown function table called " + String.valueOf(this.name.location())));
       }
    }
 
@@ -70,8 +62,6 @@ public class FunctionReference extends LootItemConditionalFunction {
    }
 
    public static LootItemConditionalFunction.Builder<?> functionReference(ResourceKey<LootItemFunction> var0) {
-      return simpleBuilder((var1) -> {
-         return new FunctionReference(var1, var0);
-      });
+      return simpleBuilder((var1) -> new FunctionReference(var1, var0));
    }
 }

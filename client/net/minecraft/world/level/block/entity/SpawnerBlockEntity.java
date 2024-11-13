@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class SpawnerBlockEntity extends BlockEntity implements Spawner {
-   private final BaseSpawner spawner = new BaseSpawner(this) {
+   private final BaseSpawner spawner = new BaseSpawner() {
       public void broadcastEvent(Level var1, BlockPos var2, int var3) {
          var1.blockEvent(var2, Blocks.SPAWNER, var3, 0);
       }

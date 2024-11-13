@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -31,16 +30,11 @@ public class ClientLanguage extends Language {
 
    public static ClientLanguage loadFrom(ResourceManager var0, List<String> var1, boolean var2) {
       HashMap var3 = new HashMap();
-      Iterator var4 = var1.iterator();
 
-      while(var4.hasNext()) {
-         String var5 = (String)var4.next();
+      for(String var5 : var1) {
          String var6 = String.format(Locale.ROOT, "lang/%s.json", var5);
-         Iterator var7 = var0.getNamespaces().iterator();
 
-         while(var7.hasNext()) {
-            String var8 = (String)var7.next();
-
+         for(String var8 : var0.getNamespaces()) {
             try {
                ResourceLocation var9 = ResourceLocation.fromNamespaceAndPath(var8, var6);
                appendFrom(var5, var0.getResourceStack(var9), var3);
@@ -55,11 +49,7 @@ public class ClientLanguage extends Language {
    }
 
    private static void appendFrom(String var0, List<Resource> var1, Map<String, String> var2) {
-      Iterator var3 = var1.iterator();
-
-      while(var3.hasNext()) {
-         Resource var4 = (Resource)var3.next();
-
+      for(Resource var4 : var1) {
          try {
             InputStream var5 = var4.open();
 

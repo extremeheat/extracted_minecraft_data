@@ -12,9 +12,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.phys.Vec3;
 
 public record SheepPredicate(Optional<Boolean> sheared, Optional<DyeColor> color) implements EntitySubPredicate {
-   public static final MapCodec<SheepPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.BOOL.optionalFieldOf("sheared").forGetter(SheepPredicate::sheared), DyeColor.CODEC.optionalFieldOf("color").forGetter(SheepPredicate::color)).apply(var0, SheepPredicate::new);
-   });
+   public static final MapCodec<SheepPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("sheared").forGetter(SheepPredicate::sheared), DyeColor.CODEC.optionalFieldOf("color").forGetter(SheepPredicate::color)).apply(var0, SheepPredicate::new));
 
    public SheepPredicate(Optional<Boolean> var1, Optional<DyeColor> var2) {
       super();
@@ -40,13 +38,5 @@ public record SheepPredicate(Optional<Boolean> sheared, Optional<DyeColor> color
 
    public static SheepPredicate hasWool(DyeColor var0) {
       return new SheepPredicate(Optional.of(false), Optional.of(var0));
-   }
-
-   public Optional<Boolean> sheared() {
-      return this.sheared;
-   }
-
-   public Optional<DyeColor> color() {
-      return this.color;
    }
 }

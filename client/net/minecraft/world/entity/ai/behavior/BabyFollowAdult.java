@@ -14,15 +14,11 @@ public class BabyFollowAdult {
    }
 
    public static OneShot<AgeableMob> create(UniformInt var0, float var1) {
-      return create(var0, (var1x) -> {
-         return var1;
-      });
+      return create(var0, (var1x) -> var1);
    }
 
    public static OneShot<AgeableMob> create(UniformInt var0, Function<LivingEntity, Float> var1) {
-      return BehaviorBuilder.create((var2) -> {
-         return var2.group(var2.present(MemoryModuleType.NEAREST_VISIBLE_ADULT), var2.registered(MemoryModuleType.LOOK_TARGET), var2.absent(MemoryModuleType.WALK_TARGET)).apply(var2, (var3, var4, var5) -> {
-            return (var6, var7, var8) -> {
+      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.present(MemoryModuleType.NEAREST_VISIBLE_ADULT), var2.registered(MemoryModuleType.LOOK_TARGET), var2.absent(MemoryModuleType.WALK_TARGET)).apply(var2, (var3, var4, var5) -> (var6, var7, var8) -> {
                if (!var7.isBaby()) {
                   return false;
                } else {
@@ -36,8 +32,6 @@ public class BabyFollowAdult {
                      return false;
                   }
                }
-            };
-         });
-      });
+            })));
    }
 }

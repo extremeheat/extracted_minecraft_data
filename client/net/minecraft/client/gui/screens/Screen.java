@@ -9,13 +9,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.NarratorStatus;
@@ -89,14 +89,12 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    private NarratableEntry lastNarratable;
    @Nullable
    private DeferredTooltipRendering deferredTooltipRendering;
-   protected final Executor screenExecutor = (var1x) -> {
-      this.minecraft.execute(() -> {
+   protected final Executor screenExecutor = (var1x) -> this.minecraft.execute(() -> {
          if (this.minecraft.screen == this) {
             var1x.run();
          }
 
       });
-   };
 
    protected Screen(Component var1) {
       super();
@@ -122,10 +120,8 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1, var2, var3, var4);
-      Iterator var5 = this.renderables.iterator();
 
-      while(var5.hasNext()) {
-         Renderable var6 = (Renderable)var5.next();
+      for(Renderable var6 : this.renderables) {
          var6.render(var1, var2, var3, var4);
       }
 
@@ -231,18 +227,18 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    protected <T extends GuiEventListener & Renderable & NarratableEntry> T addRenderableWidget(T var1) {
       this.renderables.add((Renderable)var1);
-      return this.addWidget(var1);
+      return (T)this.addWidget(var1);
    }
 
    protected <T extends Renderable> T addRenderableOnly(T var1) {
       this.renderables.add(var1);
-      return var1;
+      return (T)var1;
    }
 
    protected <T extends GuiEventListener & NarratableEntry> T addWidget(T var1) {
       this.children.add(var1);
       this.narratables.add((NarratableEntry)var1);
-      return var1;
+      return (T)var1;
    }
 
    protected void removeWidget(GuiEventListener var1) {
@@ -450,9 +446,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    public void fillCrashDetails(CrashReport var1) {
       CrashReportCategory var2 = var1.addCategory("Affected screen", 1);
-      var2.setDetail("Screen name", () -> {
-         return this.getClass().getCanonicalName();
-      });
+      var2.setDetail("Screen name", (CrashReportDetail)(() -> this.getClass().getCanonicalName()));
    }
 
    protected boolean isValidCharacterForName(String var1, char var2, int var3) {
@@ -543,9 +537,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    protected void updateNarratedWidget(NarrationElementOutput var1) {
-      List var2 = this.narratables.stream().flatMap((var0) -> {
-         return var0.getNarratables().stream();
-      }).filter(NarratableEntry::isActive).sorted(Comparator.comparingInt(TabOrderedElement::getTabOrderGroup)).toList();
+      List var2 = this.narratables.stream().flatMap((var0) -> var0.getNarratables().stream()).filter(NarratableEntry::isActive).sorted(Comparator.comparingInt(TabOrderedElement::getTabOrderGroup)).toList();
       NarratableSearchResult var3 = findNarratableWidget(var2, this.lastNarratable);
       if (var3 != null) {
          if (var3.priority.isTerminal()) {
@@ -654,22 +646,6 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       NARRATE_DELAY_NARRATOR_ENABLED = NARRATE_SUPPRESS_AFTER_INIT_TIME;
    }
 
-   private static record DeferredTooltipRendering(List<FormattedCharSequence> tooltip, ClientTooltipPositioner positioner) {
-      DeferredTooltipRendering(List<FormattedCharSequence> var1, ClientTooltipPositioner var2) {
-         super();
-         this.tooltip = var1;
-         this.positioner = var2;
-      }
-
-      public List<FormattedCharSequence> tooltip() {
-         return this.tooltip;
-      }
-
-      public ClientTooltipPositioner positioner() {
-         return this.positioner;
-      }
-   }
-
    public static class NarratableSearchResult {
       public final NarratableEntry entry;
       public final int index;
@@ -680,6 +656,14 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
          this.entry = var1;
          this.index = var2;
          this.priority = var3;
+      }
+   }
+
+   static record DeferredTooltipRendering(List<FormattedCharSequence> tooltip, ClientTooltipPositioner positioner) {
+      DeferredTooltipRendering(List<FormattedCharSequence> var1, ClientTooltipPositioner var2) {
+         super();
+         this.tooltip = var1;
+         this.positioner = var2;
       }
    }
 }

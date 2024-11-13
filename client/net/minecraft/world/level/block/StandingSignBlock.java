@@ -19,9 +19,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public class StandingSignBlock extends SignBlock {
-   public static final MapCodec<StandingSignBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(var0, StandingSignBlock::new);
-   });
+   public static final MapCodec<StandingSignBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(var0, StandingSignBlock::new));
    public static final IntegerProperty ROTATION;
 
    public MapCodec<StandingSignBlock> codec() {

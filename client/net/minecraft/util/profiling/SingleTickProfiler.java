@@ -24,9 +24,7 @@ public class SingleTickProfiler {
    }
 
    public ProfilerFiller startTick() {
-      this.profiler = new ActiveProfiler(this.realTime, () -> {
-         return this.tick;
-      }, false);
+      this.profiler = new ActiveProfiler(this.realTime, () -> this.tick, false);
       ++this.tick;
       return this.profiler;
    }

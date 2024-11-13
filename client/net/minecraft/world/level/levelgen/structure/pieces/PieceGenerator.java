@@ -22,33 +22,5 @@ public interface PieceGenerator<C extends FeatureConfiguration> {
          this.random = var6;
          this.seed = var7;
       }
-
-      public C config() {
-         return this.config;
-      }
-
-      public ChunkGenerator chunkGenerator() {
-         return this.chunkGenerator;
-      }
-
-      public StructureTemplateManager structureTemplateManager() {
-         return this.structureTemplateManager;
-      }
-
-      public ChunkPos chunkPos() {
-         return this.chunkPos;
-      }
-
-      public LevelHeightAccessor heightAccessor() {
-         return this.heightAccessor;
-      }
-
-      public WorldgenRandom random() {
-         return this.random;
-      }
-
-      public long seed() {
-         return this.seed;
-      }
    }
 }

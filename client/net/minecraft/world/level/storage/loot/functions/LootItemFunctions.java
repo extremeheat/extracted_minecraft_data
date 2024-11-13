@@ -2,7 +2,6 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;
 import net.minecraft.core.Holder;
@@ -15,9 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public class LootItemFunctions {
-   public static final BiFunction<ItemStack, LootContext, ItemStack> IDENTITY = (var0, var1) -> {
-      return var0;
-   };
+   public static final BiFunction<ItemStack, LootContext, ItemStack> IDENTITY = (var0, var1) -> var0;
    public static final Codec<LootItemFunction> TYPED_CODEC;
    public static final Codec<LootItemFunction> ROOT_CODEC;
    public static final Codec<Holder<LootItemFunction>> CODEC;
@@ -83,15 +80,12 @@ public class LootItemFunctions {
          case 2:
             BiFunction var2 = (BiFunction)var1.get(0);
             BiFunction var3 = (BiFunction)var1.get(1);
-            var10000 = (var2x, var3x) -> {
-               return (ItemStack)var3.apply((ItemStack)var2.apply(var2x, var3x), var3x);
-            };
+            var10000 = (var2x, var3x) -> (ItemStack)var3.apply((ItemStack)var2.apply(var2x, var3x), var3x);
             break;
          default:
             var10000 = (var1x, var2x) -> {
-               BiFunction var4;
-               for(Iterator var3 = var1.iterator(); var3.hasNext(); var1x = (ItemStack)var4.apply(var1x, var2x)) {
-                  var4 = (BiFunction)var3.next();
+               for(BiFunction var4 : var1) {
+                  var1x = (ItemStack)var4.apply(var1x, var2x);
                }
 
                return var1x;
@@ -103,10 +97,8 @@ public class LootItemFunctions {
 
    static {
       TYPED_CODEC = BuiltInRegistries.LOOT_FUNCTION_TYPE.byNameCodec().dispatch("function", LootItemFunction::getType, LootItemFunctionType::codec);
-      ROOT_CODEC = Codec.lazyInitialized(() -> {
-         return Codec.withAlternative(TYPED_CODEC, SequenceFunction.INLINE_CODEC);
-      });
-      CODEC = RegistryFileCodec.create(Registries.ITEM_MODIFIER, ROOT_CODEC);
+      ROOT_CODEC = Codec.lazyInitialized(() -> Codec.withAlternative(TYPED_CODEC, SequenceFunction.INLINE_CODEC));
+      CODEC = RegistryFileCodec.<Holder<LootItemFunction>>create(Registries.ITEM_MODIFIER, ROOT_CODEC);
       SET_COUNT = register("set_count", SetItemCountFunction.CODEC);
       SET_ITEM = register("set_item", SetItemFunction.CODEC);
       ENCHANT_WITH_LEVELS = register("enchant_with_levels", EnchantWithLevelsFunction.CODEC);

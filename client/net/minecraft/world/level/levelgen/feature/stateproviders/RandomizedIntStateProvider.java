@@ -14,15 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
 public class RandomizedIntStateProvider extends BlockStateProvider {
-   public static final MapCodec<RandomizedIntStateProvider> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BlockStateProvider.CODEC.fieldOf("source").forGetter((var0x) -> {
-         return var0x.source;
-      }), Codec.STRING.fieldOf("property").forGetter((var0x) -> {
-         return var0x.propertyName;
-      }), IntProvider.CODEC.fieldOf("values").forGetter((var0x) -> {
-         return var0x.values;
-      })).apply(var0, RandomizedIntStateProvider::new);
-   });
+   public static final MapCodec<RandomizedIntStateProvider> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockStateProvider.CODEC.fieldOf("source").forGetter((var0x) -> var0x.source), Codec.STRING.fieldOf("property").forGetter((var0x) -> var0x.propertyName), IntProvider.CODEC.fieldOf("values").forGetter((var0x) -> var0x.values)).apply(var0, RandomizedIntStateProvider::new));
    private final BlockStateProvider source;
    private final String propertyName;
    @Nullable
@@ -74,13 +66,7 @@ public class RandomizedIntStateProvider extends BlockStateProvider {
    @Nullable
    private static IntegerProperty findProperty(BlockState var0, String var1) {
       Collection var2 = var0.getProperties();
-      Optional var3 = var2.stream().filter((var1x) -> {
-         return var1x.getName().equals(var1);
-      }).filter((var0x) -> {
-         return var0x instanceof IntegerProperty;
-      }).map((var0x) -> {
-         return (IntegerProperty)var0x;
-      }).findAny();
+      Optional var3 = var2.stream().filter((var1x) -> var1x.getName().equals(var1)).filter((var0x) -> var0x instanceof IntegerProperty).map((var0x) -> (IntegerProperty)var0x).findAny();
       return (IntegerProperty)var3.orElse((Object)null);
    }
 }

@@ -25,12 +25,6 @@ public class AddFlagIfNotPresentFix extends DataFix {
 
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(this.typeReference);
-      return this.fixTypeEverywhereTyped(this.name, var1, (var1x) -> {
-         return var1x.update(DSL.remainderFinder(), (var1) -> {
-            return var1.set(this.flagKey, (Dynamic)DataFixUtils.orElseGet(var1.get(this.flagKey).result(), () -> {
-               return var1.createBoolean(this.flagValue);
-            }));
-         });
-      });
+      return this.fixTypeEverywhereTyped(this.name, var1, (var1x) -> var1x.update(DSL.remainderFinder(), (var1) -> var1.set(this.flagKey, (Dynamic)DataFixUtils.orElseGet(var1.get(this.flagKey).result(), () -> var1.createBoolean(this.flagValue)))));
    }
 }

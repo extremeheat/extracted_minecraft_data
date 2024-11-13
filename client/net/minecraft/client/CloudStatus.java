@@ -9,7 +9,7 @@ public enum CloudStatus implements OptionEnum, StringRepresentable {
    FAST(1, "fast", "options.clouds.fast"),
    FANCY(2, "true", "options.clouds.fancy");
 
-   public static final Codec<CloudStatus> CODEC = StringRepresentable.fromEnum(CloudStatus::values);
+   public static final Codec<CloudStatus> CODEC = StringRepresentable.<CloudStatus>fromEnum(CloudStatus::values);
    private final int id;
    private final String legacyName;
    private final String key;

@@ -38,9 +38,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
    private Direction direction;
    private boolean extending;
    private boolean isSourcePiston;
-   private static final ThreadLocal<Direction> NOCLIP = ThreadLocal.withInitial(() -> {
-      return null;
-   });
+   private static final ThreadLocal<Direction> NOCLIP = ThreadLocal.withInitial(() -> null);
    private float progress;
    private float progressO;
    private long lastTicked;
@@ -118,43 +116,40 @@ public class PistonMovingBlockEntity extends BlockEntity {
             while(true) {
                Entity var13;
                while(true) {
-                  do {
-                     if (!var12.hasNext()) {
-                        return;
-                     }
-
-                     var13 = (Entity)var12.next();
-                  } while(var13.getPistonPushReaction() == PushReaction.IGNORE);
-
-                  if (!var11) {
-                     break;
+                  if (!var12.hasNext()) {
+                     return;
                   }
 
-                  if (!(var13 instanceof ServerPlayer)) {
-                     Vec3 var14 = var13.getDeltaMovement();
-                     double var15 = var14.x;
-                     double var17 = var14.y;
-                     double var19 = var14.z;
-                     switch (var4.getAxis()) {
-                        case X -> var15 = (double)var4.getStepX();
-                        case Y -> var17 = (double)var4.getStepY();
-                        case Z -> var19 = (double)var4.getStepZ();
+                  var13 = (Entity)var12.next();
+                  if (var13.getPistonPushReaction() != PushReaction.IGNORE) {
+                     if (!var11) {
+                        break;
                      }
 
-                     var13.setDeltaMovement(var15, var17, var19);
-                     break;
+                     if (!(var13 instanceof ServerPlayer)) {
+                        Vec3 var14 = var13.getDeltaMovement();
+                        double var15 = var14.x;
+                        double var17 = var14.y;
+                        double var19 = var14.z;
+                        switch (var4.getAxis()) {
+                           case X -> var15 = (double)var4.getStepX();
+                           case Y -> var17 = (double)var4.getStepY();
+                           case Z -> var19 = (double)var4.getStepZ();
+                        }
+
+                        var13.setDeltaMovement(var15, var17, var19);
+                        break;
+                     }
                   }
                }
 
                double var21 = 0.0;
-               Iterator var16 = var10.iterator();
 
-               while(var16.hasNext()) {
-                  AABB var22 = (AABB)var16.next();
-                  AABB var18 = PistonMath.getMovementArea(moveByPositionAndProgress(var1, var22, var3), var4, var5);
-                  AABB var23 = var13.getBoundingBox();
-                  if (var18.intersects(var23)) {
-                     var21 = Math.max(var21, getMovement(var18, var4, var23));
+               for(AABB var23 : var10) {
+                  AABB var18 = PistonMath.getMovementArea(moveByPositionAndProgress(var1, var23, var3), var4, var5);
+                  AABB var24 = var13.getBoundingBox();
+                  if (var18.intersects(var24)) {
+                     var21 = Math.max(var21, getMovement(var18, var4, var24));
                      if (var21 >= var5) {
                         break;
                      }
@@ -187,13 +182,8 @@ public class PistonMovingBlockEntity extends BlockEntity {
             double var5 = var3.movedState.getCollisionShape(var0, var1).max(Direction.Axis.Y);
             AABB var7 = moveByPositionAndProgress(var1, new AABB(0.0, var5, 0.0, 1.0, 1.5000010000000001, 1.0), var3);
             double var8 = (double)(var2 - var3.progress);
-            List var10 = var0.getEntities((Entity)null, var7, (var2x) -> {
-               return matchesStickyCritera(var7, var2x, var1);
-            });
-            Iterator var11 = var10.iterator();
 
-            while(var11.hasNext()) {
-               Entity var12 = (Entity)var11.next();
+            for(Entity var12 : var0.getEntities((Entity)null, var7, (var2x) -> matchesStickyCritera(var7, var2x, var1))) {
                moveEntityByPiston(var4, var12, var8, var4);
             }
 

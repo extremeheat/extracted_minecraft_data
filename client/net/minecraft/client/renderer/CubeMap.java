@@ -7,8 +7,8 @@ import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
+import java.util.List;
+import java.util.stream.IntStream;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
@@ -17,17 +17,14 @@ import org.joml.Matrix4fStack;
 
 public class CubeMap {
    private static final int SIDES = 6;
-   private final ResourceLocation[] images = new ResourceLocation[6];
+   private final List<ResourceLocation> sides;
 
    public CubeMap(ResourceLocation var1) {
       super();
-
-      for(int var2 = 0; var2 < 6; ++var2) {
-         ResourceLocation[] var10000 = this.images;
-         String var10003 = var1.getPath();
-         var10000[var2] = var1.withPath(var10003 + "_" + var2 + ".png");
-      }
-
+      this.sides = IntStream.range(0, 6).mapToObj((var1x) -> {
+         String var10001 = var1.getPath();
+         return var1.withPath(var10001 + "_" + var1x + ".png");
+      }).toList();
    }
 
    public void render(Minecraft var1, float var2, float var3, float var4) {
@@ -54,7 +51,7 @@ public class CubeMap {
          var7.rotateY(var3 * 0.017453292F);
 
          for(int var13 = 0; var13 < 6; ++var13) {
-            RenderSystem.setShaderTexture(0, this.images[var13]);
+            RenderSystem.setShaderTexture(0, (ResourceLocation)this.sides.get(var13));
             BufferBuilder var14 = var5.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
             int var15 = Math.round(255.0F * var4) / (var9 + 1);
             if (var13 == 0) {
@@ -114,13 +111,10 @@ public class CubeMap {
       RenderSystem.enableDepthTest();
    }
 
-   public CompletableFuture<Void> preload(TextureManager var1, Executor var2) {
-      CompletableFuture[] var3 = new CompletableFuture[6];
-
-      for(int var4 = 0; var4 < var3.length; ++var4) {
-         var3[var4] = var1.preload(this.images[var4], var2);
+   public void registerTextures(TextureManager var1) {
+      for(ResourceLocation var3 : this.sides) {
+         var1.registerForNextReload(var3);
       }
 
-      return CompletableFuture.allOf(var3);
    }
 }

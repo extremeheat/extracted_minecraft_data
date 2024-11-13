@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import com.google.common.collect.Maps;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -38,10 +37,8 @@ public class BossHealthOverlay {
          var2.push("bossHealth");
          int var3 = var1.guiWidth();
          int var4 = 12;
-         Iterator var5 = this.events.values().iterator();
 
-         while(var5.hasNext()) {
-            LerpingBossEvent var6 = (LerpingBossEvent)var5.next();
+         for(LerpingBossEvent var6 : this.events.values()) {
             int var7 = var3 / 2 - 91;
             this.drawBar(var1, var7, var4, var6);
             Component var9 = var6.getName();
@@ -116,10 +113,7 @@ public class BossHealthOverlay {
 
    public boolean shouldPlayMusic() {
       if (!this.events.isEmpty()) {
-         Iterator var1 = this.events.values().iterator();
-
-         while(var1.hasNext()) {
-            BossEvent var2 = (BossEvent)var1.next();
+         for(BossEvent var2 : this.events.values()) {
             if (var2.shouldPlayBossMusic()) {
                return true;
             }
@@ -131,10 +125,7 @@ public class BossHealthOverlay {
 
    public boolean shouldDarkenScreen() {
       if (!this.events.isEmpty()) {
-         Iterator var1 = this.events.values().iterator();
-
-         while(var1.hasNext()) {
-            BossEvent var2 = (BossEvent)var1.next();
+         for(BossEvent var2 : this.events.values()) {
             if (var2.shouldDarkenScreen()) {
                return true;
             }
@@ -146,10 +137,7 @@ public class BossHealthOverlay {
 
    public boolean shouldCreateWorldFog() {
       if (!this.events.isEmpty()) {
-         Iterator var1 = this.events.values().iterator();
-
-         while(var1.hasNext()) {
-            BossEvent var2 = (BossEvent)var1.next();
+         for(BossEvent var2 : this.events.values()) {
             if (var2.shouldCreateWorldFog()) {
                return true;
             }

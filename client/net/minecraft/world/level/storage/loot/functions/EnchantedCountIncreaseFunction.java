@@ -25,15 +25,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class EnchantedCountIncreaseFunction extends LootItemConditionalFunction {
    public static final int NO_LIMIT = 0;
-   public static final MapCodec<EnchantedCountIncreaseFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(var0.group(Enchantment.CODEC.fieldOf("enchantment").forGetter((var0x) -> {
-         return var0x.enchantment;
-      }), NumberProviders.CODEC.fieldOf("count").forGetter((var0x) -> {
-         return var0x.value;
-      }), Codec.INT.optionalFieldOf("limit", 0).forGetter((var0x) -> {
-         return var0x.limit;
-      }))).apply(var0, EnchantedCountIncreaseFunction::new);
-   });
+   public static final MapCodec<EnchantedCountIncreaseFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(Enchantment.CODEC.fieldOf("enchantment").forGetter((var0x) -> var0x.enchantment), NumberProviders.CODEC.fieldOf("count").forGetter((var0x) -> var0x.value), Codec.INT.optionalFieldOf("limit", 0).forGetter((var0x) -> var0x.limit))).apply(var0, EnchantedCountIncreaseFunction::new));
    private final Holder<Enchantment> enchantment;
    private final NumberProvider value;
    private final int limit;

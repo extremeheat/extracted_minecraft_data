@@ -8,15 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.biome.Biome;
 
 public class NoiseBasedCountPlacement extends RepeatingPlacement {
-   public static final MapCodec<NoiseBasedCountPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.INT.fieldOf("noise_to_count_ratio").forGetter((var0x) -> {
-         return var0x.noiseToCountRatio;
-      }), Codec.DOUBLE.fieldOf("noise_factor").forGetter((var0x) -> {
-         return var0x.noiseFactor;
-      }), Codec.DOUBLE.fieldOf("noise_offset").orElse(0.0).forGetter((var0x) -> {
-         return var0x.noiseOffset;
-      })).apply(var0, NoiseBasedCountPlacement::new);
-   });
+   public static final MapCodec<NoiseBasedCountPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.INT.fieldOf("noise_to_count_ratio").forGetter((var0x) -> var0x.noiseToCountRatio), Codec.DOUBLE.fieldOf("noise_factor").forGetter((var0x) -> var0x.noiseFactor), Codec.DOUBLE.fieldOf("noise_offset").orElse(0.0).forGetter((var0x) -> var0x.noiseOffset)).apply(var0, NoiseBasedCountPlacement::new));
    private final int noiseToCountRatio;
    private final double noiseFactor;
    private final double noiseOffset;

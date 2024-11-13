@@ -8,7 +8,6 @@ import com.mojang.realmsclient.dto.PlayerInfo;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.util.RealmsUtil;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -55,12 +54,8 @@ public class RealmsPlayerScreen extends RealmsScreen {
       this.invitedList = (InvitedObjectSelectionList)this.layout.addToContents(new InvitedObjectSelectionList());
       this.repopulateInvitedList();
       LinearLayout var1 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      var1.addChild(Button.builder(Component.translatable("mco.configure.world.buttons.invite"), (var1x) -> {
-         this.minecraft.setScreen(new RealmsInviteScreen(this.lastScreen, this, this.serverData));
-      }).build());
-      var1.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
-         this.onClose();
-      }).build());
+      var1.addChild(Button.builder(Component.translatable("mco.configure.world.buttons.invite"), (var1x) -> this.minecraft.setScreen(new RealmsInviteScreen(this.lastScreen, this, this.serverData))).build());
+      var1.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).build());
       this.layout.visitWidgets((var1x) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });
@@ -78,10 +73,8 @@ public class RealmsPlayerScreen extends RealmsScreen {
    void repopulateInvitedList() {
       if (this.invitedList != null) {
          this.invitedList.children().clear();
-         Iterator var1 = this.serverData.players.iterator();
 
-         while(var1.hasNext()) {
-            PlayerInfo var2 = (PlayerInfo)var1.next();
+         for(PlayerInfo var2 : this.serverData.players) {
             this.invitedList.children().add(new Entry(var2));
          }
 
@@ -124,7 +117,7 @@ public class RealmsPlayerScreen extends RealmsScreen {
       }
    }
 
-   private class Entry extends ContainerObjectSelectionList.Entry<Entry> {
+   class Entry extends ContainerObjectSelectionList.Entry<Entry> {
       private static final Component NORMAL_USER_TEXT = Component.translatable("mco.configure.world.invites.normal.tooltip");
       private static final Component OP_TEXT = Component.translatable("mco.configure.world.invites.ops.tooltip");
       private static final Component REMOVE_TEXT = Component.translatable("mco.configure.world.invites.remove.tooltip");
@@ -142,21 +135,9 @@ public class RealmsPlayerScreen extends RealmsScreen {
          super();
          this.playerInfo = var2;
          int var3 = RealmsPlayerScreen.this.serverData.players.indexOf(this.playerInfo);
-         this.makeOpButton = SpriteIconButton.builder(NORMAL_USER_TEXT, (var2x) -> {
-            this.op(var3);
-         }, false).sprite(MAKE_OP_SPRITE, 8, 7).width(16 + RealmsPlayerScreen.this.font.width((FormattedText)NORMAL_USER_TEXT)).narration((var1x) -> {
-            return CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.getName()), (Component)var1x.get(), Component.translatable("narration.cycle_button.usage.focused", OP_TEXT));
-         }).build();
-         this.removeOpButton = SpriteIconButton.builder(OP_TEXT, (var2x) -> {
-            this.deop(var3);
-         }, false).sprite(REMOVE_OP_SPRITE, 8, 7).width(16 + RealmsPlayerScreen.this.font.width((FormattedText)OP_TEXT)).narration((var1x) -> {
-            return CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.getName()), (Component)var1x.get(), Component.translatable("narration.cycle_button.usage.focused", NORMAL_USER_TEXT));
-         }).build();
-         this.removeButton = SpriteIconButton.builder(REMOVE_TEXT, (var2x) -> {
-            this.uninvite(var3);
-         }, false).sprite(REMOVE_PLAYER_SPRITE, 8, 7).width(16 + RealmsPlayerScreen.this.font.width((FormattedText)REMOVE_TEXT)).narration((var1x) -> {
-            return CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.getName()), (Component)var1x.get());
-         }).build();
+         this.makeOpButton = SpriteIconButton.builder(NORMAL_USER_TEXT, (var2x) -> this.op(var3), false).sprite(MAKE_OP_SPRITE, 8, 7).width(16 + RealmsPlayerScreen.this.font.width((FormattedText)NORMAL_USER_TEXT)).narration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.getName()), (Component)var1x.get(), Component.translatable("narration.cycle_button.usage.focused", OP_TEXT))).build();
+         this.removeOpButton = SpriteIconButton.builder(OP_TEXT, (var2x) -> this.deop(var3), false).sprite(REMOVE_OP_SPRITE, 8, 7).width(16 + RealmsPlayerScreen.this.font.width((FormattedText)OP_TEXT)).narration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.getName()), (Component)var1x.get(), Component.translatable("narration.cycle_button.usage.focused", NORMAL_USER_TEXT))).build();
+         this.removeButton = SpriteIconButton.builder(REMOVE_TEXT, (var2x) -> this.uninvite(var3), false).sprite(REMOVE_PLAYER_SPRITE, 8, 7).width(16 + RealmsPlayerScreen.this.font.width((FormattedText)REMOVE_TEXT)).narration((var1x) -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.getName()), (Component)var1x.get())).build();
          this.updateOpButtons();
       }
 
@@ -212,10 +193,7 @@ public class RealmsPlayerScreen extends RealmsScreen {
       }
 
       private void updateOps(Ops var1) {
-         Iterator var2 = RealmsPlayerScreen.this.serverData.players.iterator();
-
-         while(var2.hasNext()) {
-            PlayerInfo var3 = (PlayerInfo)var2.next();
+         for(PlayerInfo var3 : RealmsPlayerScreen.this.serverData.players) {
             var3.setOperator(var1.ops.contains(var3.getName()));
          }
 

@@ -8,7 +8,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -55,24 +54,14 @@ import net.minecraft.world.scores.Team;
 
 public class EntitySelectorOptions {
    private static final Map<String, Option> OPTIONS = Maps.newHashMap();
-   public static final DynamicCommandExceptionType ERROR_UNKNOWN_OPTION = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("argument.entity.options.unknown", var0);
-   });
-   public static final DynamicCommandExceptionType ERROR_INAPPLICABLE_OPTION = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("argument.entity.options.inapplicable", var0);
-   });
+   public static final DynamicCommandExceptionType ERROR_UNKNOWN_OPTION = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.entity.options.unknown", var0));
+   public static final DynamicCommandExceptionType ERROR_INAPPLICABLE_OPTION = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.entity.options.inapplicable", var0));
    public static final SimpleCommandExceptionType ERROR_RANGE_NEGATIVE = new SimpleCommandExceptionType(Component.translatable("argument.entity.options.distance.negative"));
    public static final SimpleCommandExceptionType ERROR_LEVEL_NEGATIVE = new SimpleCommandExceptionType(Component.translatable("argument.entity.options.level.negative"));
    public static final SimpleCommandExceptionType ERROR_LIMIT_TOO_SMALL = new SimpleCommandExceptionType(Component.translatable("argument.entity.options.limit.toosmall"));
-   public static final DynamicCommandExceptionType ERROR_SORT_UNKNOWN = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("argument.entity.options.sort.irreversible", var0);
-   });
-   public static final DynamicCommandExceptionType ERROR_GAME_MODE_INVALID = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("argument.entity.options.mode.invalid", var0);
-   });
-   public static final DynamicCommandExceptionType ERROR_ENTITY_TYPE_INVALID = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("argument.entity.options.type.invalid", var0);
-   });
+   public static final DynamicCommandExceptionType ERROR_SORT_UNKNOWN = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.entity.options.sort.irreversible", var0));
+   public static final DynamicCommandExceptionType ERROR_GAME_MODE_INVALID = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.entity.options.mode.invalid", var0));
+   public static final DynamicCommandExceptionType ERROR_ENTITY_TYPE_INVALID = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.entity.options.type.invalid", var0));
 
    public EntitySelectorOptions() {
       super();
@@ -98,13 +87,9 @@ public class EntitySelectorOptions {
                   var0.setHasNameEquals(true);
                }
 
-               var0.addPredicate((var2x) -> {
-                  return var2x.getName().getString().equals(var3) != var2;
-               });
+               var0.addPredicate((var2x) -> var2x.getName().getString().equals(var3) != var2);
             }
-         }, (var0) -> {
-            return !var0.hasNameEquals();
-         }, Component.translatable("argument.entity.options.name.description"));
+         }, (var0) -> !var0.hasNameEquals(), Component.translatable("argument.entity.options.name.description"));
          register("distance", (var0) -> {
             int var1 = var0.getReader().getCursor();
             MinMaxBounds.Doubles var2 = MinMaxBounds.Doubles.fromReader(var0.getReader());
@@ -115,9 +100,7 @@ public class EntitySelectorOptions {
                var0.getReader().setCursor(var1);
                throw ERROR_RANGE_NEGATIVE.createWithContext(var0.getReader());
             }
-         }, (var0) -> {
-            return var0.getDistance().isAny();
-         }, Component.translatable("argument.entity.options.distance.description"));
+         }, (var0) -> var0.getDistance().isAny(), Component.translatable("argument.entity.options.distance.description"));
          register("level", (var0) -> {
             int var1 = var0.getReader().getCursor();
             MinMaxBounds.Ints var2 = MinMaxBounds.Ints.fromReader(var0.getReader());
@@ -128,55 +111,33 @@ public class EntitySelectorOptions {
                var0.getReader().setCursor(var1);
                throw ERROR_LEVEL_NEGATIVE.createWithContext(var0.getReader());
             }
-         }, (var0) -> {
-            return var0.getLevel().isAny();
-         }, Component.translatable("argument.entity.options.level.description"));
+         }, (var0) -> var0.getLevel().isAny(), Component.translatable("argument.entity.options.level.description"));
          register("x", (var0) -> {
             var0.setWorldLimited();
             var0.setX(var0.getReader().readDouble());
-         }, (var0) -> {
-            return var0.getX() == null;
-         }, Component.translatable("argument.entity.options.x.description"));
+         }, (var0) -> var0.getX() == null, Component.translatable("argument.entity.options.x.description"));
          register("y", (var0) -> {
             var0.setWorldLimited();
             var0.setY(var0.getReader().readDouble());
-         }, (var0) -> {
-            return var0.getY() == null;
-         }, Component.translatable("argument.entity.options.y.description"));
+         }, (var0) -> var0.getY() == null, Component.translatable("argument.entity.options.y.description"));
          register("z", (var0) -> {
             var0.setWorldLimited();
             var0.setZ(var0.getReader().readDouble());
-         }, (var0) -> {
-            return var0.getZ() == null;
-         }, Component.translatable("argument.entity.options.z.description"));
+         }, (var0) -> var0.getZ() == null, Component.translatable("argument.entity.options.z.description"));
          register("dx", (var0) -> {
             var0.setWorldLimited();
             var0.setDeltaX(var0.getReader().readDouble());
-         }, (var0) -> {
-            return var0.getDeltaX() == null;
-         }, Component.translatable("argument.entity.options.dx.description"));
+         }, (var0) -> var0.getDeltaX() == null, Component.translatable("argument.entity.options.dx.description"));
          register("dy", (var0) -> {
             var0.setWorldLimited();
             var0.setDeltaY(var0.getReader().readDouble());
-         }, (var0) -> {
-            return var0.getDeltaY() == null;
-         }, Component.translatable("argument.entity.options.dy.description"));
+         }, (var0) -> var0.getDeltaY() == null, Component.translatable("argument.entity.options.dy.description"));
          register("dz", (var0) -> {
             var0.setWorldLimited();
             var0.setDeltaZ(var0.getReader().readDouble());
-         }, (var0) -> {
-            return var0.getDeltaZ() == null;
-         }, Component.translatable("argument.entity.options.dz.description"));
-         register("x_rotation", (var0) -> {
-            var0.setRotX(WrappedMinMaxBounds.fromReader(var0.getReader(), true, Mth::wrapDegrees));
-         }, (var0) -> {
-            return var0.getRotX() == WrappedMinMaxBounds.ANY;
-         }, Component.translatable("argument.entity.options.x_rotation.description"));
-         register("y_rotation", (var0) -> {
-            var0.setRotY(WrappedMinMaxBounds.fromReader(var0.getReader(), true, Mth::wrapDegrees));
-         }, (var0) -> {
-            return var0.getRotY() == WrappedMinMaxBounds.ANY;
-         }, Component.translatable("argument.entity.options.y_rotation.description"));
+         }, (var0) -> var0.getDeltaZ() == null, Component.translatable("argument.entity.options.dz.description"));
+         register("x_rotation", (var0) -> var0.setRotX(WrappedMinMaxBounds.fromReader(var0.getReader(), true, Mth::wrapDegrees)), (var0) -> var0.getRotX() == WrappedMinMaxBounds.ANY, Component.translatable("argument.entity.options.x_rotation.description"));
+         register("y_rotation", (var0) -> var0.setRotY(WrappedMinMaxBounds.fromReader(var0.getReader(), true, Mth::wrapDegrees)), (var0) -> var0.getRotY() == WrappedMinMaxBounds.ANY, Component.translatable("argument.entity.options.y_rotation.description"));
          register("limit", (var0) -> {
             int var1 = var0.getReader().getCursor();
             int var2 = var0.getReader().readInt();
@@ -187,15 +148,11 @@ public class EntitySelectorOptions {
                var0.setMaxResults(var2);
                var0.setLimited(true);
             }
-         }, (var0) -> {
-            return !var0.isCurrentEntity() && !var0.isLimited();
-         }, Component.translatable("argument.entity.options.limit.description"));
+         }, (var0) -> !var0.isCurrentEntity() && !var0.isLimited(), Component.translatable("argument.entity.options.limit.description"));
          register("sort", (var0) -> {
             int var1 = var0.getReader().getCursor();
             String var2 = var0.getReader().readUnquotedString();
-            var0.setSuggestions((var0x, var1x) -> {
-               return SharedSuggestionProvider.suggest((Iterable)Arrays.asList("nearest", "furthest", "random", "arbitrary"), var0x);
-            });
+            var0.setSuggestions((var0x, var1x) -> SharedSuggestionProvider.suggest(Arrays.asList("nearest", "furthest", "random", "arbitrary"), var0x));
             BiConsumer var10001;
             switch (var2) {
                case "nearest":
@@ -217,9 +174,7 @@ public class EntitySelectorOptions {
 
             var0.setOrder(var10001);
             var0.setSorted(true);
-         }, (var0) -> {
-            return !var0.isCurrentEntity() && !var0.isSorted();
-         }, Component.translatable("argument.entity.options.sort.description"));
+         }, (var0) -> !var0.isCurrentEntity() && !var0.isSorted(), Component.translatable("argument.entity.options.sort.description"));
          register("gamemode", (var0) -> {
             var0.setSuggestions((var1x, var2x) -> {
                String var3 = var1x.getRemaining().toLowerCase(Locale.ROOT);
@@ -234,11 +189,7 @@ public class EntitySelectorOptions {
                   }
                }
 
-               GameType[] var6 = GameType.values();
-               int var7 = var6.length;
-
-               for(int var8 = 0; var8 < var7; ++var8) {
-                  GameType var9 = var6[var8];
+               for(GameType var9 : GameType.values()) {
                   if (var9.getName().toLowerCase(Locale.ROOT).startsWith(var3)) {
                      if (var5) {
                         var1x.suggest("!" + var9.getName());
@@ -281,9 +232,7 @@ public class EntitySelectorOptions {
 
                }
             }
-         }, (var0) -> {
-            return !var0.hasGamemodeEquals();
-         }, Component.translatable("argument.entity.options.gamemode.description"));
+         }, (var0) -> !var0.hasGamemodeEquals(), Component.translatable("argument.entity.options.gamemode.description"));
          register("team", (var0) -> {
             boolean var1 = var0.shouldInvertValue();
             String var2 = var0.getReader().readUnquotedString();
@@ -302,20 +251,14 @@ public class EntitySelectorOptions {
                var0.setHasTeamEquals(true);
             }
 
-         }, (var0) -> {
-            return !var0.hasTeamEquals();
-         }, Component.translatable("argument.entity.options.team.description"));
+         }, (var0) -> !var0.hasTeamEquals(), Component.translatable("argument.entity.options.team.description"));
          register("type", (var0) -> {
             var0.setSuggestions((var1x, var2x) -> {
-               SharedSuggestionProvider.suggestResource((Iterable)BuiltInRegistries.ENTITY_TYPE.keySet(), var1x, String.valueOf('!'));
-               SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map((var0x) -> {
-                  return var0x.key().location();
-               }), var1x, "!#");
+               SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), var1x, String.valueOf('!'));
+               SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map((var0x) -> var0x.key().location()), var1x, "!#");
                if (!var0.isTypeLimitedInversely()) {
-                  SharedSuggestionProvider.suggestResource((Iterable)BuiltInRegistries.ENTITY_TYPE.keySet(), var1x);
-                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map((var0x) -> {
-                     return var0x.key().location();
-                  }), var1x, String.valueOf('#'));
+                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), var1x);
+                  SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map((var0x) -> var0x.key().location()), var1x, String.valueOf('#'));
                }
 
                return var1x.buildFuture();
@@ -332,9 +275,7 @@ public class EntitySelectorOptions {
 
                if (var0.isTag()) {
                   TagKey var3 = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.read(var0.getReader()));
-                  var0.addPredicate((var2x) -> {
-                     return var2x.getType().is(var3) != var2;
-                  });
+                  var0.addPredicate((var2x) -> var2x.getType().is(var3) != var2);
                } else {
                   ResourceLocation var5 = ResourceLocation.read(var0.getReader());
                   EntityType var4 = (EntityType)BuiltInRegistries.ENTITY_TYPE.getOptional(var5).orElseThrow(() -> {
@@ -345,18 +286,14 @@ public class EntitySelectorOptions {
                      var0.setIncludesEntities(false);
                   }
 
-                  var0.addPredicate((var2x) -> {
-                     return Objects.equals(var4, var2x.getType()) != var2;
-                  });
+                  var0.addPredicate((var2x) -> Objects.equals(var4, var2x.getType()) != var2);
                   if (!var2) {
                      var0.limitToType(var4);
                   }
                }
 
             }
-         }, (var0) -> {
-            return !var0.isTypeLimited();
-         }, Component.translatable("argument.entity.options.type.description"));
+         }, (var0) -> !var0.isTypeLimited(), Component.translatable("argument.entity.options.type.description"));
          register("tag", (var0) -> {
             boolean var1 = var0.shouldInvertValue();
             String var2 = var0.getReader().readUnquotedString();
@@ -367,9 +304,7 @@ public class EntitySelectorOptions {
                   return var2x.getTags().contains(var2) != var1;
                }
             });
-         }, (var0) -> {
-            return true;
-         }, Component.translatable("argument.entity.options.tag.description"));
+         }, (var0) -> true, Component.translatable("argument.entity.options.tag.description"));
          register("nbt", (var0) -> {
             boolean var1 = var0.shouldInvertValue();
             CompoundTag var2 = (new TagParser(var0.getReader())).readStruct();
@@ -384,9 +319,7 @@ public class EntitySelectorOptions {
 
                return NbtUtils.compareNbt(var2, var3, true) != var1;
             });
-         }, (var0) -> {
-            return true;
-         }, Component.translatable("argument.entity.options.nbt.description"));
+         }, (var0) -> true, Component.translatable("argument.entity.options.nbt.description"));
          register("scores", (var0) -> {
             StringReader var1 = var0.getReader();
             HashMap var2 = Maps.newHashMap();
@@ -411,35 +344,29 @@ public class EntitySelectorOptions {
             if (!var2.isEmpty()) {
                var0.addPredicate((var1x) -> {
                   ServerScoreboard var2x = var1x.getServer().getScoreboard();
-                  Iterator var3 = var2.entrySet().iterator();
 
-                  Map.Entry var4;
-                  ReadOnlyScoreInfo var6;
-                  do {
-                     if (!var3.hasNext()) {
-                        return true;
-                     }
-
-                     var4 = (Map.Entry)var3.next();
+                  for(Map.Entry var4 : var2.entrySet()) {
                      Objective var5 = ((Scoreboard)var2x).getObjective((String)var4.getKey());
                      if (var5 == null) {
                         return false;
                      }
 
-                     var6 = ((Scoreboard)var2x).getPlayerScoreInfo(var1x, var5);
+                     ReadOnlyScoreInfo var6 = ((Scoreboard)var2x).getPlayerScoreInfo(var1x, var5);
                      if (var6 == null) {
                         return false;
                      }
-                  } while(((MinMaxBounds.Ints)var4.getValue()).matches(var6.value()));
 
-                  return false;
+                     if (!((MinMaxBounds.Ints)var4.getValue()).matches(var6.value())) {
+                        return false;
+                     }
+                  }
+
+                  return true;
                });
             }
 
             var0.setHasScores(true);
-         }, (var0) -> {
-            return !var0.hasScores();
-         }, Component.translatable("argument.entity.options.scores.description"));
+         }, (var0) -> !var0.hasScores(), Component.translatable("argument.entity.options.scores.description"));
          register("advancements", (var0) -> {
             StringReader var1 = var0.getReader();
             HashMap var2 = Maps.newHashMap();
@@ -465,9 +392,7 @@ public class EntitySelectorOptions {
                      var1.expect('=');
                      var1.skipWhitespace();
                      boolean var6 = var1.readBoolean();
-                     var7.put(var5, (var1x) -> {
-                        return var1x.isDone() == var6;
-                     });
+                     var7.put(var5, (Predicate)(var1x) -> var1x.isDone() == var6);
                      var1.skipWhitespace();
                      if (var1.canRead() && var1.peek() == ',') {
                         var1.skip();
@@ -477,27 +402,19 @@ public class EntitySelectorOptions {
                   var1.skipWhitespace();
                   var1.expect('}');
                   var1.skipWhitespace();
-                  var2.put(var3, (var1x) -> {
-                     Iterator var2 = var7.entrySet().iterator();
-
-                     Map.Entry var3;
-                     CriterionProgress var4;
-                     do {
-                        if (!var2.hasNext()) {
-                           return true;
+                  var2.put(var3, (Predicate)(var1x) -> {
+                     for(Map.Entry var3 : var7.entrySet()) {
+                        CriterionProgress var4 = var1x.getCriterion((String)var3.getKey());
+                        if (var4 == null || !((Predicate)var3.getValue()).test(var4)) {
+                           return false;
                         }
+                     }
 
-                        var3 = (Map.Entry)var2.next();
-                        var4 = var1x.getCriterion((String)var3.getKey());
-                     } while(var4 != null && ((Predicate)var3.getValue()).test(var4));
-
-                     return false;
+                     return true;
                   });
                } else {
                   boolean var4 = var1.readBoolean();
-                  var2.put(var3, (var1x) -> {
-                     return var1x.isDone() == var4;
-                  });
+                  var2.put(var3, (Predicate)(var1x) -> var1x.isDone() == var4);
                }
 
                var1.skipWhitespace();
@@ -514,29 +431,22 @@ public class EntitySelectorOptions {
                   } else {
                      PlayerAdvancements var3 = var2x.getAdvancements();
                      ServerAdvancementManager var4 = var2x.getServer().getAdvancements();
-                     Iterator var5 = var2.entrySet().iterator();
 
-                     Map.Entry var6;
-                     AdvancementHolder var7;
-                     do {
-                        if (!var5.hasNext()) {
-                           return true;
+                     for(Map.Entry var6 : var2.entrySet()) {
+                        AdvancementHolder var7 = var4.get((ResourceLocation)var6.getKey());
+                        if (var7 == null || !((Predicate)var6.getValue()).test(var3.getOrStartProgress(var7))) {
+                           return false;
                         }
+                     }
 
-                        var6 = (Map.Entry)var5.next();
-                        var7 = var4.get((ResourceLocation)var6.getKey());
-                     } while(var7 != null && ((Predicate)var6.getValue()).test(var3.getOrStartProgress(var7)));
-
-                     return false;
+                     return true;
                   }
                });
                var0.setIncludesEntities(false);
             }
 
             var0.setHasAdvancements(true);
-         }, (var0) -> {
-            return !var0.hasAdvancements();
-         }, Component.translatable("argument.entity.options.advancements.description"));
+         }, (var0) -> !var0.hasAdvancements(), Component.translatable("argument.entity.options.advancements.description"));
          register("predicate", (var0) -> {
             boolean var1 = var0.shouldInvertValue();
             ResourceKey var2 = ResourceKey.create(Registries.PREDICATE, ResourceLocation.read(var0.getReader()));
@@ -556,9 +466,7 @@ public class EntitySelectorOptions {
                   }
                }
             });
-         }, (var0) -> {
-            return true;
-         }, Component.translatable("argument.entity.options.predicate.description"));
+         }, (var0) -> true, Component.translatable("argument.entity.options.predicate.description"));
       }
    }
 
@@ -578,10 +486,8 @@ public class EntitySelectorOptions {
 
    public static void suggestNames(EntitySelectorParser var0, SuggestionsBuilder var1) {
       String var2 = var1.getRemaining().toLowerCase(Locale.ROOT);
-      Iterator var3 = OPTIONS.entrySet().iterator();
 
-      while(var3.hasNext()) {
-         Map.Entry var4 = (Map.Entry)var3.next();
+      for(Map.Entry var4 : OPTIONS.entrySet()) {
          if (((Option)var4.getValue()).canUse.test(var0) && ((String)var4.getKey()).toLowerCase(Locale.ROOT).startsWith(var2)) {
             var1.suggest((String)var4.getKey() + "=", ((Option)var4.getValue()).description);
          }
@@ -599,18 +505,6 @@ public class EntitySelectorOptions {
          this.modifier = var1;
          this.canUse = var2;
          this.description = var3;
-      }
-
-      public Modifier modifier() {
-         return this.modifier;
-      }
-
-      public Predicate<EntitySelectorParser> canUse() {
-         return this.canUse;
-      }
-
-      public Component description() {
-         return this.description;
       }
    }
 

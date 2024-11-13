@@ -27,11 +27,8 @@ public class MissingBlockModel {
    public static UnbakedModel missingModel() {
       BlockFaceUV var0 = new BlockFaceUV(new float[]{0.0F, 0.0F, 16.0F, 16.0F}, 0);
       EnumMap var1 = new EnumMap(Direction.class);
-      Direction[] var2 = Direction.values();
-      int var3 = var2.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         Direction var5 = var2[var4];
+      for(Direction var5 : Direction.values()) {
          var1.put(var5, new BlockElementFace(var5, -1, "missingno", var0));
       }
 

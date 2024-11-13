@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import java.util.Optional;
+import java.util.function.Function;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -15,9 +16,7 @@ public class StopAttackingIfTargetInvalid {
    }
 
    public static <E extends Mob> BehaviorControl<E> create(TargetErasedCallback<E> var0) {
-      return create((var0x, var1) -> {
-         return false;
-      }, var0, true);
+      return create((var0x, var1) -> false, var0, true);
    }
 
    public static <E extends Mob> BehaviorControl<E> create(StopAttackCondition var0) {
@@ -26,16 +25,12 @@ public class StopAttackingIfTargetInvalid {
    }
 
    public static <E extends Mob> BehaviorControl<E> create() {
-      return create((var0, var1) -> {
-         return false;
-      }, (var0, var1, var2) -> {
+      return create((var0, var1) -> false, (var0, var1, var2) -> {
       }, true);
    }
 
    public static <E extends Mob> BehaviorControl<E> create(StopAttackCondition var0, TargetErasedCallback<E> var1, boolean var2) {
-      return BehaviorBuilder.create((var3) -> {
-         return var3.group(var3.present(MemoryModuleType.ATTACK_TARGET), var3.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)).apply(var3, (var4, var5) -> {
-            return (var6, var7, var8) -> {
+      return BehaviorBuilder.create((Function)((var3) -> var3.group(var3.present(MemoryModuleType.ATTACK_TARGET), var3.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)).apply(var3, (var4, var5) -> (var6, var7, var8) -> {
                LivingEntity var10 = (LivingEntity)var3.get(var4);
                if (var7.canAttack(var10) && (!var2 || !isTiredOfTryingToReachTarget(var7, var3.tryGet(var5))) && var10.isAlive() && var10.level() == var7.level() && !var0.test(var6, var10)) {
                   return true;
@@ -44,9 +39,7 @@ public class StopAttackingIfTargetInvalid {
                   var4.erase();
                   return true;
                }
-            };
-         });
-      });
+            })));
    }
 
    private static boolean isTiredOfTryingToReachTarget(LivingEntity var0, Optional<Long> var1) {

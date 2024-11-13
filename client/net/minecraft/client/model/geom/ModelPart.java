@@ -2,7 +2,6 @@ package net.minecraft.client.model.geom;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -117,10 +116,7 @@ public final class ModelPart {
                this.compile(var1.last(), var2, var3, var4, var5);
             }
 
-            Iterator var6 = this.children.values().iterator();
-
-            while(var6.hasNext()) {
-               ModelPart var7 = (ModelPart)var6.next();
+            for(ModelPart var7 : this.children.values()) {
                var7.render(var1, var2, var3, var4, var5);
             }
 
@@ -151,9 +147,7 @@ public final class ModelPart {
          }
 
          String var6 = var3 + "/";
-         this.children.forEach((var3x, var4x) -> {
-            var4x.visit(var1, var2, var6 + var3x);
-         });
+         this.children.forEach((var3x, var4x) -> var4x.visit(var1, var2, var6 + var3x));
          var1.popPose();
       }
    }
@@ -171,10 +165,7 @@ public final class ModelPart {
    }
 
    private void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, int var5) {
-      Iterator var6 = this.cubes.iterator();
-
-      while(var6.hasNext()) {
-         Cube var7 = (Cube)var6.next();
+      for(Cube var7 : this.cubes) {
          var7.compile(var1, var2, var3, var4, var5);
       }
 
@@ -210,11 +201,6 @@ public final class ModelPart {
       return Stream.concat(Stream.of(this), this.children.values().stream().flatMap(ModelPart::getAllParts));
    }
 
-   @FunctionalInterface
-   public interface Visitor {
-      void visit(PoseStack.Pose var1, String var2, int var3, Cube var4);
-   }
-
    public static class Cube {
       public final Polygon[] polygons;
       public final float minX;
@@ -248,7 +234,7 @@ public final class ModelPart {
             var3 = var19;
          }
 
-         Vertex var37 = new Vertex(var3, var4, var5, 0.0F, 0.0F);
+         Vertex var43 = new Vertex(var3, var4, var5, 0.0F, 0.0F);
          Vertex var20 = new Vertex(var16, var4, var5, 0.0F, 8.0F);
          Vertex var21 = new Vertex(var16, var17, var5, 8.0F, 8.0F);
          Vertex var22 = new Vertex(var3, var17, var5, 8.0F, 0.0F);
@@ -267,7 +253,7 @@ public final class ModelPart {
          float var35 = (float)var2 + var8 + var7;
          int var36 = 0;
          if (var15.contains(Direction.DOWN)) {
-            this.polygons[var36++] = new Polygon(new Vertex[]{var24, var23, var37, var20}, var28, var33, var29, var34, var13, var14, var12, Direction.DOWN);
+            this.polygons[var36++] = new Polygon(new Vertex[]{var24, var23, var43, var20}, var28, var33, var29, var34, var13, var14, var12, Direction.DOWN);
          }
 
          if (var15.contains(Direction.UP)) {
@@ -275,11 +261,11 @@ public final class ModelPart {
          }
 
          if (var15.contains(Direction.WEST)) {
-            this.polygons[var36++] = new Polygon(new Vertex[]{var37, var23, var26, var22}, var27, var34, var28, var35, var13, var14, var12, Direction.WEST);
+            this.polygons[var36++] = new Polygon(new Vertex[]{var43, var23, var26, var22}, var27, var34, var28, var35, var13, var14, var12, Direction.WEST);
          }
 
          if (var15.contains(Direction.NORTH)) {
-            this.polygons[var36++] = new Polygon(new Vertex[]{var20, var37, var22, var21}, var28, var34, var29, var35, var13, var14, var12, Direction.NORTH);
+            this.polygons[var36++] = new Polygon(new Vertex[]{var20, var43, var22, var21}, var28, var34, var29, var35, var13, var14, var12, Direction.NORTH);
          }
 
          if (var15.contains(Direction.EAST)) {
@@ -295,20 +281,14 @@ public final class ModelPart {
       public void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, int var5) {
          Matrix4f var6 = var1.pose();
          Vector3f var7 = new Vector3f();
-         Polygon[] var8 = this.polygons;
-         int var9 = var8.length;
 
-         for(int var10 = 0; var10 < var9; ++var10) {
-            Polygon var11 = var8[var10];
+         for(Polygon var11 : this.polygons) {
             Vector3f var12 = var1.transformNormal(var11.normal, var7);
             float var13 = var12.x();
             float var14 = var12.y();
             float var15 = var12.z();
-            Vertex[] var16 = var11.vertices;
-            int var17 = var16.length;
 
-            for(int var18 = 0; var18 < var17; ++var18) {
-               Vertex var19 = var16[var18];
+            for(Vertex var19 : var11.vertices) {
                float var20 = var19.pos.x() / 16.0F;
                float var21 = var19.pos.y() / 16.0F;
                float var22 = var19.pos.z() / 16.0F;
@@ -317,39 +297,6 @@ public final class ModelPart {
             }
          }
 
-      }
-   }
-
-   public static record Vertex(Vector3f pos, float u, float v) {
-      final Vector3f pos;
-      final float u;
-      final float v;
-
-      public Vertex(float var1, float var2, float var3, float var4, float var5) {
-         this(new Vector3f(var1, var2, var3), var4, var5);
-      }
-
-      public Vertex(Vector3f var1, float var2, float var3) {
-         super();
-         this.pos = var1;
-         this.u = var2;
-         this.v = var3;
-      }
-
-      public Vertex remap(float var1, float var2) {
-         return new Vertex(this.pos, var1, var2);
-      }
-
-      public Vector3f pos() {
-         return this.pos;
-      }
-
-      public float u() {
-         return this.u;
-      }
-
-      public float v() {
-         return this.v;
       }
    }
 
@@ -386,13 +333,31 @@ public final class ModelPart {
          this.vertices = var1;
          this.normal = var2;
       }
+   }
 
-      public Vertex[] vertices() {
-         return this.vertices;
+   public static record Vertex(Vector3f pos, float u, float v) {
+      final Vector3f pos;
+      final float u;
+      final float v;
+
+      public Vertex(float var1, float var2, float var3, float var4, float var5) {
+         this(new Vector3f(var1, var2, var3), var4, var5);
       }
 
-      public Vector3f normal() {
-         return this.normal;
+      public Vertex(Vector3f var1, float var2, float var3) {
+         super();
+         this.pos = var1;
+         this.u = var2;
+         this.v = var3;
       }
+
+      public Vertex remap(float var1, float var2) {
+         return new Vertex(this.pos, var1, var2);
+      }
+   }
+
+   @FunctionalInterface
+   public interface Visitor {
+      void visit(PoseStack.Pose var1, String var2, int var3, Cube var4);
    }
 }

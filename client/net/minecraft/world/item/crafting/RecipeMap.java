@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -25,10 +24,8 @@ public class RecipeMap {
    public static RecipeMap create(Iterable<RecipeHolder<?>> var0) {
       ImmutableMultimap.Builder var1 = ImmutableMultimap.builder();
       ImmutableMap.Builder var2 = ImmutableMap.builder();
-      Iterator var3 = var0.iterator();
 
-      while(var3.hasNext()) {
-         RecipeHolder var4 = (RecipeHolder)var3.next();
+      for(RecipeHolder var4 : var0) {
          var1.put(var4.value().getType(), var4);
          var2.put(var4.id(), var4);
       }
@@ -50,8 +47,6 @@ public class RecipeMap {
    }
 
    public <I extends RecipeInput, T extends Recipe<I>> Stream<RecipeHolder<T>> getRecipesFor(RecipeType<T> var1, I var2, Level var3) {
-      return var2.isEmpty() ? Stream.empty() : this.byType(var1).stream().filter((var2x) -> {
-         return var2x.value().matches(var2, var3);
-      });
+      return var2.isEmpty() ? Stream.empty() : this.byType(var1).stream().filter((var2x) -> var2x.value().matches(var2, var3));
    }
 }

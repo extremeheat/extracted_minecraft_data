@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.ai.behavior;
 
+import java.util.function.Function;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -22,9 +23,7 @@ public class ValidateNearbyPoi {
    }
 
    public static BehaviorControl<LivingEntity> create(Predicate<Holder<PoiType>> var0, MemoryModuleType<GlobalPos> var1) {
-      return BehaviorBuilder.create((var2) -> {
-         return var2.group(var2.present(var1)).apply(var2, (var2x) -> {
-            return (var3, var4, var5) -> {
+      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.present(var1)).apply(var2, (var2x) -> (var3, var4, var5) -> {
                GlobalPos var7 = (GlobalPos)var2.get(var2x);
                BlockPos var8 = var7.pos();
                if (var3.dimension() == var7.dimension() && var8.closerToCenterThan(var4.position(), 16.0)) {
@@ -43,9 +42,7 @@ public class ValidateNearbyPoi {
                } else {
                   return false;
                }
-            };
-         });
-      });
+            })));
    }
 
    private static boolean bedIsOccupied(ServerLevel var0, BlockPos var1, LivingEntity var2) {

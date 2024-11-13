@@ -22,7 +22,7 @@ public class NullOps implements DynamicOps<Unit> {
    }
 
    public <U> U convertTo(DynamicOps<U> var1, Unit var2) {
-      return var1.empty();
+      return (U)var1.empty();
    }
 
    public Unit empty() {
@@ -74,21 +74,15 @@ public class NullOps implements DynamicOps<Unit> {
    }
 
    public DataResult<Number> getNumberValue(Unit var1) {
-      return DataResult.error(() -> {
-         return "Not a number";
-      });
+      return DataResult.error(() -> "Not a number");
    }
 
    public DataResult<Boolean> getBooleanValue(Unit var1) {
-      return DataResult.error(() -> {
-         return "Not a boolean";
-      });
+      return DataResult.error(() -> "Not a boolean");
    }
 
    public DataResult<String> getStringValue(Unit var1) {
-      return DataResult.error(() -> {
-         return "Not a string";
-      });
+      return DataResult.error(() -> "Not a string");
    }
 
    public DataResult<Unit> mergeToList(Unit var1, Unit var2) {
@@ -112,51 +106,35 @@ public class NullOps implements DynamicOps<Unit> {
    }
 
    public DataResult<Stream<Pair<Unit, Unit>>> getMapValues(Unit var1) {
-      return DataResult.error(() -> {
-         return "Not a map";
-      });
+      return DataResult.error(() -> "Not a map");
    }
 
    public DataResult<Consumer<BiConsumer<Unit, Unit>>> getMapEntries(Unit var1) {
-      return DataResult.error(() -> {
-         return "Not a map";
-      });
+      return DataResult.error(() -> "Not a map");
    }
 
    public DataResult<MapLike<Unit>> getMap(Unit var1) {
-      return DataResult.error(() -> {
-         return "Not a map";
-      });
+      return DataResult.error(() -> "Not a map");
    }
 
    public DataResult<Stream<Unit>> getStream(Unit var1) {
-      return DataResult.error(() -> {
-         return "Not a list";
-      });
+      return DataResult.error(() -> "Not a list");
    }
 
    public DataResult<Consumer<Consumer<Unit>>> getList(Unit var1) {
-      return DataResult.error(() -> {
-         return "Not a list";
-      });
+      return DataResult.error(() -> "Not a list");
    }
 
    public DataResult<ByteBuffer> getByteBuffer(Unit var1) {
-      return DataResult.error(() -> {
-         return "Not a byte list";
-      });
+      return DataResult.error(() -> "Not a byte list");
    }
 
    public DataResult<IntStream> getIntStream(Unit var1) {
-      return DataResult.error(() -> {
-         return "Not an int list";
-      });
+      return DataResult.error(() -> "Not an int list");
    }
 
    public DataResult<LongStream> getLongStream(Unit var1) {
-      return DataResult.error(() -> {
-         return "Not a long list";
-      });
+      return DataResult.error(() -> "Not a long list");
    }
 
    public Unit createMap(Stream<Pair<Unit, Unit>> var1) {
@@ -375,7 +353,7 @@ public class NullOps implements DynamicOps<Unit> {
       return this.empty();
    }
 
-   private static final class NullMapBuilder extends RecordBuilder.AbstractUniversalBuilder<Unit, Unit> {
+   static final class NullMapBuilder extends RecordBuilder.AbstractUniversalBuilder<Unit, Unit> {
       public NullMapBuilder(DynamicOps<Unit> var1) {
          super(var1);
       }

@@ -122,31 +122,50 @@ public final class NativeImage implements AutoCloseable {
    }
 
    public static NativeImage read(byte[] var0) throws IOException {
-      MemoryStack var1 = MemoryStack.stackPush();
+      MemoryStack var1 = MemoryStack.stackGet();
+      int var2 = var1.getPointer();
+      if (var2 < var0.length) {
+         ByteBuffer var12 = MemoryUtil.memAlloc(var0.length);
 
-      NativeImage var3;
-      try {
-         ByteBuffer var2 = var1.malloc(var0.length);
-         var2.put(var0);
-         var2.rewind();
-         var3 = read(var2);
-      } catch (Throwable var5) {
-         if (var1 != null) {
-            try {
-               var1.close();
-            } catch (Throwable var4) {
-               var5.addSuppressed(var4);
-            }
+         NativeImage var13;
+         try {
+            var13 = putAndRead(var12, var0);
+         } finally {
+            MemoryUtil.memFree(var12);
          }
 
-         throw var5;
-      }
+         return var13;
+      } else {
+         MemoryStack var3 = MemoryStack.stackPush();
 
-      if (var1 != null) {
-         var1.close();
-      }
+         NativeImage var5;
+         try {
+            ByteBuffer var4 = var3.malloc(var0.length);
+            var5 = putAndRead(var4, var0);
+         } catch (Throwable var11) {
+            if (var3 != null) {
+               try {
+                  var3.close();
+               } catch (Throwable var9) {
+                  var11.addSuppressed(var9);
+               }
+            }
 
-      return var3;
+            throw var11;
+         }
+
+         if (var3 != null) {
+            var3.close();
+         }
+
+         return var5;
+      }
+   }
+
+   private static NativeImage putAndRead(ByteBuffer var0, byte[] var1) throws IOException {
+      var0.put(var1);
+      var0.rewind();
+      return read(var0);
    }
 
    public static NativeImage read(@Nullable Format var0, ByteBuffer var1) throws IOException {
@@ -365,9 +384,7 @@ public final class NativeImage implements AutoCloseable {
 
    public void upload(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8, boolean var9, boolean var10, boolean var11) {
       if (!RenderSystem.isOnRenderThreadOrInit()) {
-         RenderSystem.recordRenderCall(() -> {
-            this._upload(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
-         });
+         RenderSystem.recordRenderCall(() -> this._upload(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11));
       } else {
          this._upload(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
       }
@@ -500,13 +517,13 @@ public final class NativeImage implements AutoCloseable {
             LOGGER.warn("Dropping image height from {} to {} to fit the size into 32-bit signed int", this.getHeight(), var3);
          }
 
-         if (STBImageWrite.nstbi_write_png_to_func(var2.address(), 0L, this.getWidth(), var3, this.format.components(), this.pixels, 0) == 0) {
-            var4 = false;
+         if (STBImageWrite.nstbi_write_png_to_func(var2.address(), 0L, this.getWidth(), var3, this.format.components(), this.pixels, 0) != 0) {
+            var2.throwIfException();
+            var4 = true;
             return var4;
          }
 
-         var2.throwIfException();
-         var4 = true;
+         var4 = false;
       } finally {
          var2.free();
       }
@@ -598,6 +615,56 @@ public final class NativeImage implements AutoCloseable {
 
    static {
       OPEN_OPTIONS = EnumSet.of(StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+   }
+
+   static class WriteCallback extends STBIWriteCallback {
+      private final WritableByteChannel output;
+      @Nullable
+      private IOException exception;
+
+      WriteCallback(WritableByteChannel var1) {
+         super();
+         this.output = var1;
+      }
+
+      public void invoke(long var1, long var3, int var5) {
+         ByteBuffer var6 = getData(var3, var5);
+
+         try {
+            this.output.write(var6);
+         } catch (IOException var8) {
+            this.exception = var8;
+         }
+
+      }
+
+      public void throwIfException() throws IOException {
+         if (this.exception != null) {
+            throw this.exception;
+         }
+      }
+   }
+
+   public static enum InternalGlFormat {
+      RGBA(6408),
+      RGB(6407),
+      RG(33319),
+      RED(6403);
+
+      private final int glFormat;
+
+      private InternalGlFormat(final int var3) {
+         this.glFormat = var3;
+      }
+
+      public int glFormat() {
+         return this.glFormat;
+      }
+
+      // $FF: synthetic method
+      private static InternalGlFormat[] $values() {
+         return new InternalGlFormat[]{RGBA, RGB, RG, RED};
+      }
    }
 
    public static enum Format {
@@ -747,56 +814,6 @@ public final class NativeImage implements AutoCloseable {
       // $FF: synthetic method
       private static Format[] $values() {
          return new Format[]{RGBA, RGB, LUMINANCE_ALPHA, LUMINANCE};
-      }
-   }
-
-   private static class WriteCallback extends STBIWriteCallback {
-      private final WritableByteChannel output;
-      @Nullable
-      private IOException exception;
-
-      WriteCallback(WritableByteChannel var1) {
-         super();
-         this.output = var1;
-      }
-
-      public void invoke(long var1, long var3, int var5) {
-         ByteBuffer var6 = getData(var3, var5);
-
-         try {
-            this.output.write(var6);
-         } catch (IOException var8) {
-            this.exception = var8;
-         }
-
-      }
-
-      public void throwIfException() throws IOException {
-         if (this.exception != null) {
-            throw this.exception;
-         }
-      }
-   }
-
-   public static enum InternalGlFormat {
-      RGBA(6408),
-      RGB(6407),
-      RG(33319),
-      RED(6403);
-
-      private final int glFormat;
-
-      private InternalGlFormat(final int var3) {
-         this.glFormat = var3;
-      }
-
-      public int glFormat() {
-         return this.glFormat;
-      }
-
-      // $FF: synthetic method
-      private static InternalGlFormat[] $values() {
-         return new InternalGlFormat[]{RGBA, RGB, RG, RED};
       }
    }
 }

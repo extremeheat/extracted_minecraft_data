@@ -24,15 +24,11 @@ public class BredAnimalsTrigger extends SimpleCriterionTrigger<TriggerInstance> 
       LootContext var5 = EntityPredicate.createContext(var1, var2);
       LootContext var6 = EntityPredicate.createContext(var1, var3);
       LootContext var7 = var4 != null ? EntityPredicate.createContext(var1, var4) : null;
-      this.trigger(var1, (var3x) -> {
-         return var3x.matches(var5, var6, var7);
-      });
+      this.trigger(var1, (var3x) -> var3x.matches(var5, var6, var7));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> parent, Optional<ContextAwarePredicate> partner, Optional<ContextAwarePredicate> child) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("parent").forGetter(TriggerInstance::parent), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("partner").forGetter(TriggerInstance::partner), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("child").forGetter(TriggerInstance::child)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("parent").forGetter(TriggerInstance::parent), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("partner").forGetter(TriggerInstance::partner), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("child").forGetter(TriggerInstance::child)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2, Optional<ContextAwarePredicate> var3, Optional<ContextAwarePredicate> var4) {
          super();
@@ -71,22 +67,6 @@ public class BredAnimalsTrigger extends SimpleCriterionTrigger<TriggerInstance> 
          var1.validateEntity(this.parent, ".parent");
          var1.validateEntity(this.partner, ".partner");
          var1.validateEntity(this.child, ".child");
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<ContextAwarePredicate> parent() {
-         return this.parent;
-      }
-
-      public Optional<ContextAwarePredicate> partner() {
-         return this.partner;
-      }
-
-      public Optional<ContextAwarePredicate> child() {
-         return this.child;
       }
    }
 }

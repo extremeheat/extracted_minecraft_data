@@ -28,35 +28,8 @@ public record TimedStatSummary<T extends TimedStat>(T fastest, T slowest, @Nulla
          TimedStat var4 = (TimedStat)var1.get(var1.size() - 1);
          TimedStat var5 = var1.size() > 1 ? (TimedStat)var1.get(var1.size() - 2) : null;
          int var6 = var1.size();
-         Map var7 = Percentiles.evaluate(var1.stream().mapToLong((var0x) -> {
-            return var0x.duration().toNanos();
-         }).toArray());
-         return new TimedStatSummary(var3, var4, var5, var6, var7, var2);
+         Map var7 = Percentiles.evaluate(var1.stream().mapToLong((var0x) -> var0x.duration().toNanos()).toArray());
+         return new TimedStatSummary<T>(var3, var4, var5, var6, var7, var2);
       }
-   }
-
-   public T fastest() {
-      return this.fastest;
-   }
-
-   public T slowest() {
-      return this.slowest;
-   }
-
-   @Nullable
-   public T secondSlowest() {
-      return this.secondSlowest;
-   }
-
-   public int count() {
-      return this.count;
-   }
-
-   public Map<Integer, Double> percentilesNanos() {
-      return this.percentilesNanos;
-   }
-
-   public Duration totalDuration() {
-      return this.totalDuration;
    }
 }

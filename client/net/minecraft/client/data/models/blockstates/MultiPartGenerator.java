@@ -35,7 +35,7 @@ public class MultiPartGenerator implements BlockStateGenerator {
    }
 
    public MultiPartGenerator with(Variant var1) {
-      return this.with((List)ImmutableList.of(var1));
+      return this.with(ImmutableList.of(var1));
    }
 
    public MultiPartGenerator with(Condition var1, List<Variant> var2) {
@@ -44,18 +44,16 @@ public class MultiPartGenerator implements BlockStateGenerator {
    }
 
    public MultiPartGenerator with(Condition var1, Variant... var2) {
-      return this.with(var1, (List)ImmutableList.copyOf(var2));
+      return this.with(var1, ImmutableList.copyOf(var2));
    }
 
    public MultiPartGenerator with(Condition var1, Variant var2) {
-      return this.with(var1, (List)ImmutableList.of(var2));
+      return this.with(var1, ImmutableList.of(var2));
    }
 
    public JsonElement get() {
       StateDefinition var1 = this.block.getStateDefinition();
-      this.parts.forEach((var1x) -> {
-         var1x.validate(var1);
-      });
+      this.parts.forEach((var1x) -> var1x.validate(var1));
       JsonArray var2 = new JsonArray();
       Stream var10000 = this.parts.stream().map(Entry::get);
       Objects.requireNonNull(var2);
@@ -70,7 +68,7 @@ public class MultiPartGenerator implements BlockStateGenerator {
       return this.get();
    }
 
-   private static class Entry implements Supplier<JsonElement> {
+   static class Entry implements Supplier<JsonElement> {
       private final List<Variant> variants;
 
       Entry(List<Variant> var1) {

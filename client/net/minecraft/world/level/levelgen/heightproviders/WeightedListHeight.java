@@ -7,11 +7,7 @@ import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
 
 public class WeightedListHeight extends HeightProvider {
-   public static final MapCodec<WeightedListHeight> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(SimpleWeightedRandomList.wrappedCodec(HeightProvider.CODEC).fieldOf("distribution").forGetter((var0x) -> {
-         return var0x.distribution;
-      })).apply(var0, WeightedListHeight::new);
-   });
+   public static final MapCodec<WeightedListHeight> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SimpleWeightedRandomList.wrappedCodec(HeightProvider.CODEC).fieldOf("distribution").forGetter((var0x) -> var0x.distribution)).apply(var0, WeightedListHeight::new));
    private final SimpleWeightedRandomList<HeightProvider> distribution;
 
    public WeightedListHeight(SimpleWeightedRandomList<HeightProvider> var1) {

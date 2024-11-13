@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.worldselection;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -53,15 +52,9 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
       var1.addChild(new StringWidget(this.title, this.font), 2, var2);
       MultiLineTextWidget var3 = (MultiLineTextWidget)var1.addChild((new MultiLineTextWidget(MESSAGE, this.font)).setCentered(true), 2, var2);
       var3.setMaxWidth(310);
-      var1.addChild(Button.builder(DETAILS_BUTTON, (var1x) -> {
-         this.minecraft.setScreen(new DetailsScreen());
-      }).width(100).build(), 2, var2);
-      var1.addChild(Button.builder(CommonComponents.GUI_PROCEED, (var1x) -> {
-         this.callback.accept(true);
-      }).build());
-      var1.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
-         this.callback.accept(false);
-      }).build());
+      var1.addChild(Button.builder(DETAILS_BUTTON, (var1x) -> this.minecraft.setScreen(new DetailsScreen())).width(100).build(), 2, var2);
+      var1.addChild(Button.builder(CommonComponents.GUI_PROCEED, (var1x) -> this.callback.accept(true)).build());
+      var1.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.callback.accept(false)).build());
       this.layout.visitWidgets((var1x) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });
@@ -77,7 +70,7 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
       this.callback.accept(false);
    }
 
-   private class DetailsScreen extends Screen {
+   class DetailsScreen extends Screen {
       private static final Component TITLE = Component.translatable("selectWorld.experimental.details.title");
       final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
       @Nullable
@@ -89,10 +82,8 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
 
       protected void init() {
          this.layout.addTitleHeader(TITLE, this.font);
-         this.list = (PackList)this.layout.addToContents(new PackList(this, this.minecraft, ConfirmExperimentalFeaturesScreen.this.enabledPacks));
-         this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1) -> {
-            this.onClose();
-         }).build());
+         this.list = (PackList)this.layout.addToContents(new PackList(this.minecraft, ConfirmExperimentalFeaturesScreen.this.enabledPacks));
+         this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).build());
          this.layout.visitWidgets((var1) -> {
             AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1);
          });
@@ -112,21 +103,19 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
       }
 
       class PackList extends ObjectSelectionList<PackListEntry> {
-         public PackList(final DetailsScreen var1, final Minecraft var2, final Collection var3) {
-            int var10002 = var1.width;
-            int var10003 = var1.layout.getContentHeight();
-            int var10004 = var1.layout.getHeaderHeight();
+         public PackList(final Minecraft var2, final Collection<Pack> var3) {
+            int var10002 = DetailsScreen.this.width;
+            int var10003 = DetailsScreen.this.layout.getContentHeight();
+            int var10004 = DetailsScreen.this.layout.getHeaderHeight();
             Objects.requireNonNull(var2.font);
             super(var2, var10002, var10003, var10004, (9 + 2) * 3);
-            Iterator var4 = var3.iterator();
 
-            while(var4.hasNext()) {
-               Pack var5 = (Pack)var4.next();
+            for(Pack var5 : var3) {
                String var6 = FeatureFlags.printMissingFlags(FeatureFlags.VANILLA_SET, var5.getRequestedFeatures());
                if (!var6.isEmpty()) {
                   MutableComponent var7 = ComponentUtils.mergeStyles(var5.getTitle().copy(), Style.EMPTY.withBold(true));
                   MutableComponent var8 = Component.translatable("selectWorld.experimental.details.entry", var6);
-                  this.addEntry(var1.new PackListEntry(var7, var8, MultiLineLabel.create(var1.font, var8, this.getRowWidth())));
+                  this.addEntry(DetailsScreen.this.new PackListEntry(var7, var8, MultiLineLabel.create(DetailsScreen.this.font, var8, this.getRowWidth())));
                }
             }
 
@@ -137,7 +126,7 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
          }
       }
 
-      private class PackListEntry extends ObjectSelectionList.Entry<PackListEntry> {
+      class PackListEntry extends ObjectSelectionList.Entry<PackListEntry> {
          private final Component packId;
          private final Component message;
          private final MultiLineLabel splitMessage;

@@ -56,10 +56,6 @@ public interface VerticalAnchor {
          return this.y + " absolute";
       }
 
-      public int y() {
-         return this.y;
-      }
-
       static {
          CODEC = Codec.intRange(DimensionType.MIN_Y, DimensionType.MAX_Y).fieldOf("absolute").xmap(Absolute::new, Absolute::y).codec();
       }
@@ -81,10 +77,6 @@ public interface VerticalAnchor {
          return this.offset + " above bottom";
       }
 
-      public int offset() {
-         return this.offset;
-      }
-
       static {
          CODEC = Codec.intRange(DimensionType.MIN_Y, DimensionType.MAX_Y).fieldOf("above_bottom").xmap(AboveBottom::new, AboveBottom::offset).codec();
       }
@@ -104,10 +96,6 @@ public interface VerticalAnchor {
 
       public String toString() {
          return this.offset + " below top";
-      }
-
-      public int offset() {
-         return this.offset;
       }
 
       static {

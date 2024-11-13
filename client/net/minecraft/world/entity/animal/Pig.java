@@ -63,12 +63,8 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new PanicGoal(this, 1.25));
       this.goalSelector.addGoal(3, new BreedGoal(this, 1.0));
-      this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, (var0) -> {
-         return var0.is(Items.CARROT_ON_A_STICK);
-      }, false));
-      this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, (var0) -> {
-         return var0.is(ItemTags.PIG_FOOD);
-      }, false));
+      this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, (var0) -> var0.is(Items.CARROT_ON_A_STICK), false));
+      this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, (var0) -> var0.is(ItemTags.PIG_FOOD), false));
       this.goalSelector.addGoal(5, new FollowParentGoal(this, 1.1));
       this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 1.0));
       this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F));
@@ -190,11 +186,8 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
          while(var6.hasNext()) {
             Pose var7 = (Pose)var6.next();
             AABB var8 = var1.getLocalBoundsForPose(var7);
-            int[][] var9 = var3;
-            int var10 = var3.length;
 
-            for(int var11 = 0; var11 < var10; ++var11) {
-               int[] var12 = var9[var11];
+            for(int[] var12 : var3) {
                var5.set(var4.getX() + var12[0], var4.getY(), var4.getZ() + var12[1]);
                double var13 = this.level().getBlockFloorHeight(var5);
                if (DismountHelper.isBlockFloorValid(var13)) {
@@ -250,7 +243,7 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
 
    @Nullable
    public Pig getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (Pig)EntityType.PIG.create(var1, EntitySpawnReason.BREEDING);
+      return EntityType.PIG.create(var1, EntitySpawnReason.BREEDING);
    }
 
    public boolean isFood(ItemStack var1) {
@@ -268,7 +261,7 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
    }
 
    static {
-      DATA_SADDLE_ID = SynchedEntityData.defineId(Pig.class, EntityDataSerializers.BOOLEAN);
-      DATA_BOOST_TIME = SynchedEntityData.defineId(Pig.class, EntityDataSerializers.INT);
+      DATA_SADDLE_ID = SynchedEntityData.<Boolean>defineId(Pig.class, EntityDataSerializers.BOOLEAN);
+      DATA_BOOST_TIME = SynchedEntityData.<Integer>defineId(Pig.class, EntityDataSerializers.INT);
    }
 }

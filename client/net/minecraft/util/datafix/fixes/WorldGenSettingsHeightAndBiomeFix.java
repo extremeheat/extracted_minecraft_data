@@ -30,12 +30,7 @@ public class WorldGenSettingsHeightAndBiomeFix extends DataFix {
          OptionalDynamic var3 = ((Dynamic)var2x.get(DSL.remainderFinder())).get("has_increased_height_already");
          boolean var4x = var3.result().isEmpty();
          boolean var5 = var3.asBoolean(true);
-         return var2x.update(DSL.remainderFinder(), (var0) -> {
-            return var0.remove("has_increased_height_already");
-         }).updateTyped(var2, var4, (var3x) -> {
-            return Util.writeAndReadTypedOrThrow(var3x, var4, (var2) -> {
-               return var2.update("minecraft:overworld", (var2x) -> {
-                  return var2x.update("generator", (var2) -> {
+         return var2x.update(DSL.remainderFinder(), (var0) -> var0.remove("has_increased_height_already")).updateTyped(var2, var4, (var3x) -> Util.writeAndReadTypedOrThrow(var3x, var4, (var2) -> var2.update("minecraft:overworld", (var2x) -> var2x.update("generator", (var2) -> {
                      String var3 = var2.get("type").asString("");
                      if ("minecraft:noise".equals(var3)) {
                         MutableBoolean var4 = new MutableBoolean();
@@ -51,20 +46,13 @@ public class WorldGenSettingsHeightAndBiomeFix extends DataFix {
                               return var2x;
                            }
                         });
-                        return var4.booleanValue() ? var2.update("settings", (var0) -> {
-                           return "minecraft:overworld".equals(var0.asString("")) ? var0.createString("minecraft:large_biomes") : var0;
-                        }) : var2;
+                        return var4.booleanValue() ? var2.update("settings", (var0) -> "minecraft:overworld".equals(var0.asString("")) ? var0.createString("minecraft:large_biomes") : var0) : var2;
                      } else if ("minecraft:flat".equals(var3)) {
-                        return var5 ? var2 : var2.update("settings", (var0) -> {
-                           return var0.update("layers", WorldGenSettingsHeightAndBiomeFix::updateLayers);
-                        });
+                        return var5 ? var2 : var2.update("settings", (var0) -> var0.update("layers", WorldGenSettingsHeightAndBiomeFix::updateLayers));
                      } else {
                         return var2;
                      }
-                  });
-               });
-            });
-         });
+                  }))));
       });
    }
 

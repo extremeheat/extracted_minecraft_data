@@ -34,8 +34,8 @@ public class RandomLookAround extends Behavior<Mob> {
       float var6 = Mth.clamp(var5.nextFloat() * this.pitchRange + this.minPitch, -90.0F, 90.0F);
       float var7 = Mth.wrapDegrees(var2.getYRot() + 2.0F * var5.nextFloat() * this.maxYaw - this.maxYaw);
       Vec3 var8 = Vec3.directionFromRotation(var6, var7);
-      var2.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new BlockPosTracker(var2.getEyePosition().add(var8))));
-      var2.getBrain().setMemory(MemoryModuleType.GAZE_COOLDOWN_TICKS, (Object)this.interval.sample(var5));
+      var2.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(var2.getEyePosition().add(var8)));
+      var2.getBrain().setMemory(MemoryModuleType.GAZE_COOLDOWN_TICKS, this.interval.sample(var5));
    }
 
    // $FF: synthetic method

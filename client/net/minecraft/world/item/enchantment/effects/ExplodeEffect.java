@@ -24,9 +24,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
 
 public record ExplodeEffect(boolean attributeToUser, Optional<Holder<DamageType>> damageType, Optional<LevelBasedValue> knockbackMultiplier, Optional<HolderSet<Block>> immuneBlocks, Vec3 offset, LevelBasedValue radius, boolean createFire, Level.ExplosionInteraction blockInteraction, ParticleOptions smallParticle, ParticleOptions largeParticle, Holder<SoundEvent> sound) implements EnchantmentEntityEffect {
-   public static final MapCodec<ExplodeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.BOOL.optionalFieldOf("attribute_to_user", false).forGetter(ExplodeEffect::attributeToUser), DamageType.CODEC.optionalFieldOf("damage_type").forGetter(ExplodeEffect::damageType), LevelBasedValue.CODEC.optionalFieldOf("knockback_multiplier").forGetter(ExplodeEffect::knockbackMultiplier), RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("immune_blocks").forGetter(ExplodeEffect::immuneBlocks), Vec3.CODEC.optionalFieldOf("offset", Vec3.ZERO).forGetter(ExplodeEffect::offset), LevelBasedValue.CODEC.fieldOf("radius").forGetter(ExplodeEffect::radius), Codec.BOOL.optionalFieldOf("create_fire", false).forGetter(ExplodeEffect::createFire), Level.ExplosionInteraction.CODEC.fieldOf("block_interaction").forGetter(ExplodeEffect::blockInteraction), ParticleTypes.CODEC.fieldOf("small_particle").forGetter(ExplodeEffect::smallParticle), ParticleTypes.CODEC.fieldOf("large_particle").forGetter(ExplodeEffect::largeParticle), SoundEvent.CODEC.fieldOf("sound").forGetter(ExplodeEffect::sound)).apply(var0, ExplodeEffect::new);
-   });
+   public static final MapCodec<ExplodeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("attribute_to_user", false).forGetter(ExplodeEffect::attributeToUser), DamageType.CODEC.optionalFieldOf("damage_type").forGetter(ExplodeEffect::damageType), LevelBasedValue.CODEC.optionalFieldOf("knockback_multiplier").forGetter(ExplodeEffect::knockbackMultiplier), RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("immune_blocks").forGetter(ExplodeEffect::immuneBlocks), Vec3.CODEC.optionalFieldOf("offset", Vec3.ZERO).forGetter(ExplodeEffect::offset), LevelBasedValue.CODEC.fieldOf("radius").forGetter(ExplodeEffect::radius), Codec.BOOL.optionalFieldOf("create_fire", false).forGetter(ExplodeEffect::createFire), Level.ExplosionInteraction.CODEC.fieldOf("block_interaction").forGetter(ExplodeEffect::blockInteraction), ParticleTypes.CODEC.fieldOf("small_particle").forGetter(ExplodeEffect::smallParticle), ParticleTypes.CODEC.fieldOf("large_particle").forGetter(ExplodeEffect::largeParticle), SoundEvent.CODEC.fieldOf("sound").forGetter(ExplodeEffect::sound)).apply(var0, ExplodeEffect::new));
 
    public ExplodeEffect(boolean var1, Optional<Holder<DamageType>> var2, Optional<LevelBasedValue> var3, Optional<HolderSet<Block>> var4, Vec3 var5, LevelBasedValue var6, boolean var7, Level.ExplosionInteraction var8, ParticleOptions var9, ParticleOptions var10, Holder<SoundEvent> var11) {
       super();
@@ -45,9 +43,7 @@ public record ExplodeEffect(boolean attributeToUser, Optional<Holder<DamageType>
 
    public void apply(ServerLevel var1, int var2, EnchantedItemInUse var3, Entity var4, Vec3 var5) {
       Vec3 var6 = var5.add(this.offset);
-      var1.explode(this.attributeToUser ? var4 : null, this.getDamageSource(var4, var6), new SimpleExplosionDamageCalculator(this.blockInteraction != Level.ExplosionInteraction.NONE, this.damageType.isPresent(), this.knockbackMultiplier.map((var1x) -> {
-         return var1x.calculate(var2);
-      }), this.immuneBlocks), var6.x(), var6.y(), var6.z(), Math.max(this.radius.calculate(var2), 0.0F), this.createFire, this.blockInteraction, this.smallParticle, this.largeParticle, this.sound);
+      var1.explode(this.attributeToUser ? var4 : null, this.getDamageSource(var4, var6), new SimpleExplosionDamageCalculator(this.blockInteraction != Level.ExplosionInteraction.NONE, this.damageType.isPresent(), this.knockbackMultiplier.map((var1x) -> var1x.calculate(var2)), this.immuneBlocks), var6.x(), var6.y(), var6.z(), Math.max(this.radius.calculate(var2), 0.0F), this.createFire, this.blockInteraction, this.smallParticle, this.largeParticle, this.sound);
    }
 
    @Nullable
@@ -61,49 +57,5 @@ public record ExplodeEffect(boolean attributeToUser, Optional<Holder<DamageType>
 
    public MapCodec<ExplodeEffect> codec() {
       return CODEC;
-   }
-
-   public boolean attributeToUser() {
-      return this.attributeToUser;
-   }
-
-   public Optional<Holder<DamageType>> damageType() {
-      return this.damageType;
-   }
-
-   public Optional<LevelBasedValue> knockbackMultiplier() {
-      return this.knockbackMultiplier;
-   }
-
-   public Optional<HolderSet<Block>> immuneBlocks() {
-      return this.immuneBlocks;
-   }
-
-   public Vec3 offset() {
-      return this.offset;
-   }
-
-   public LevelBasedValue radius() {
-      return this.radius;
-   }
-
-   public boolean createFire() {
-      return this.createFire;
-   }
-
-   public Level.ExplosionInteraction blockInteraction() {
-      return this.blockInteraction;
-   }
-
-   public ParticleOptions smallParticle() {
-      return this.smallParticle;
-   }
-
-   public ParticleOptions largeParticle() {
-      return this.largeParticle;
-   }
-
-   public Holder<SoundEvent> sound() {
-      return this.sound;
    }
 }

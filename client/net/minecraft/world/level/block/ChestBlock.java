@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -56,11 +55,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements SimpleWaterloggedBlock {
-   public static final MapCodec<ChestBlock> CODEC = simpleCodec((var0) -> {
-      return new ChestBlock(() -> {
-         return BlockEntityType.CHEST;
-      }, var0);
-   });
+   public static final MapCodec<ChestBlock> CODEC = simpleCodec((var0) -> new ChestBlock(() -> BlockEntityType.CHEST, var0));
    public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<ChestType> TYPE;
    public static final BooleanProperty WATERLOGGED;
@@ -91,10 +86,6 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       } else {
          return var1 == ChestType.RIGHT ? DoubleBlockCombiner.BlockType.FIRST : DoubleBlockCombiner.BlockType.SECOND;
       }
-   }
-
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.ENTITYBLOCK_ANIMATED;
    }
 
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
@@ -206,14 +197,12 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    public DoubleBlockCombiner.NeighborCombineResult<? extends ChestBlockEntity> combine(BlockState var1, Level var2, BlockPos var3, boolean var4) {
       BiPredicate var5;
       if (var4) {
-         var5 = (var0, var1x) -> {
-            return false;
-         };
+         var5 = (var0, var1x) -> false;
       } else {
          var5 = ChestBlock::isChestBlockedAt;
       }
 
-      return DoubleBlockCombiner.combineWithNeigbour((BlockEntityType)this.blockEntityType.get(), ChestBlock::getBlockType, ChestBlock::getConnectedDirection, FACING, var1, var2, var3, var5);
+      return DoubleBlockCombiner.<ChestBlockEntity>combineWithNeigbour((BlockEntityType)this.blockEntityType.get(), ChestBlock::getBlockType, ChestBlock::getConnectedDirection, FACING, var1, var2, var3, var5);
    }
 
    @Nullable
@@ -224,9 +213,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    public static DoubleBlockCombiner.Combiner<ChestBlockEntity, Float2FloatFunction> opennessCombiner(final LidBlockEntity var0) {
       return new DoubleBlockCombiner.Combiner<ChestBlockEntity, Float2FloatFunction>() {
          public Float2FloatFunction acceptDouble(ChestBlockEntity var1, ChestBlockEntity var2) {
-            return (var2x) -> {
-               return Math.max(var1.getOpenNess(var2x), var2.getOpenNess(var2x));
-            };
+            return (var2x) -> Math.max(var1.getOpenNess(var2x), var2.getOpenNess(var2x));
          }
 
          public Float2FloatFunction acceptSingle(ChestBlockEntity var1) {
@@ -268,10 +255,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    private static boolean isCatSittingOnChest(LevelAccessor var0, BlockPos var1) {
       List var2 = var0.getEntitiesOfClass(Cat.class, new AABB((double)var1.getX(), (double)(var1.getY() + 1), (double)var1.getZ(), (double)(var1.getX() + 1), (double)(var1.getY() + 2), (double)(var1.getZ() + 1)));
       if (!var2.isEmpty()) {
-         Iterator var3 = var2.iterator();
-
-         while(var3.hasNext()) {
-            Cat var4 = (Cat)var3.next();
+         for(Cat var4 : var2) {
             if (var4.isInSittingPose()) {
                return true;
             }
@@ -343,7 +327,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       MENU_PROVIDER_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>>() {
          public Optional<MenuProvider> acceptDouble(final ChestBlockEntity var1, final ChestBlockEntity var2) {
             final CompoundContainer var3 = new CompoundContainer(var1, var2);
-            return Optional.of(new MenuProvider(this) {
+            return Optional.of(new MenuProvider() {
                @Nullable
                public AbstractContainerMenu createMenu(int var1x, Inventory var2x, Player var3x) {
                   if (var1.canOpen(var3x) && var2.canOpen(var3x)) {

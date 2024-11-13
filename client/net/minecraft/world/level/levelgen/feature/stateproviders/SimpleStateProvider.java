@@ -23,8 +23,6 @@ public class SimpleStateProvider extends BlockStateProvider {
    }
 
    static {
-      CODEC = BlockState.CODEC.fieldOf("state").xmap(SimpleStateProvider::new, (var0) -> {
-         return var0.state;
-      });
+      CODEC = BlockState.CODEC.fieldOf("state").xmap(SimpleStateProvider::new, (var0) -> var0.state);
    }
 }

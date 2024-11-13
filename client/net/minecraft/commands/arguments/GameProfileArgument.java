@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -87,9 +86,7 @@ public class GameProfileArgument implements ArgumentType<Result> {
          } catch (CommandSyntaxException var7) {
          }
 
-         return var5.fillSuggestions(var2, (var1x) -> {
-            SharedSuggestionProvider.suggest((Iterable)var3.getOnlinePlayerNames(), var1x);
-         });
+         return var5.fillSuggestions(var2, (var1x) -> SharedSuggestionProvider.suggest(var3.getOnlinePlayerNames(), var1x));
       } else {
          return Suggestions.empty();
       }
@@ -109,11 +106,6 @@ public class GameProfileArgument implements ArgumentType<Result> {
       return this.parse(var1);
    }
 
-   @FunctionalInterface
-   public interface Result {
-      Collection<GameProfile> getNames(CommandSourceStack var1) throws CommandSyntaxException;
-   }
-
    public static class SelectorResult implements Result {
       private final EntitySelector selector;
 
@@ -128,15 +120,18 @@ public class GameProfileArgument implements ArgumentType<Result> {
             throw EntityArgument.NO_PLAYERS_FOUND.create();
          } else {
             ArrayList var3 = Lists.newArrayList();
-            Iterator var4 = var2.iterator();
 
-            while(var4.hasNext()) {
-               ServerPlayer var5 = (ServerPlayer)var4.next();
+            for(ServerPlayer var5 : var2) {
                var3.add(var5.getGameProfile());
             }
 
             return var3;
          }
       }
+   }
+
+   @FunctionalInterface
+   public interface Result {
+      Collection<GameProfile> getNames(CommandSourceStack var1) throws CommandSyntaxException;
    }
 }

@@ -50,8 +50,8 @@ public class ClientboundLightUpdatePacketData {
       this.blockYMask = var1.readBitSet();
       this.emptySkyYMask = var1.readBitSet();
       this.emptyBlockYMask = var1.readBitSet();
-      this.skyUpdates = var1.readList(DATA_LAYER_STREAM_CODEC);
-      this.blockUpdates = var1.readList(DATA_LAYER_STREAM_CODEC);
+      this.skyUpdates = var1.<byte[]>readList(DATA_LAYER_STREAM_CODEC);
+      this.blockUpdates = var1.<byte[]>readList(DATA_LAYER_STREAM_CODEC);
    }
 
    public void write(FriendlyByteBuf var1) {

@@ -90,7 +90,7 @@ public class BlockAgeProcessor extends StructureProcessor {
    }
 
    private static BlockState getRandomFacingStairs(RandomSource var0, Block var1) {
-      return (BlockState)((BlockState)var1.defaultBlockState().setValue(StairBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(var0))).setValue(StairBlock.HALF, (Half)Util.getRandom((Object[])Half.values(), var0));
+      return (BlockState)((BlockState)var1.defaultBlockState().setValue(StairBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(var0))).setValue(StairBlock.HALF, (Half)Util.getRandom(Half.values(), var0));
    }
 
    private BlockState getRandomBlock(RandomSource var1, BlockState[] var2, BlockState[] var3) {
@@ -106,9 +106,7 @@ public class BlockAgeProcessor extends StructureProcessor {
    }
 
    static {
-      CODEC = Codec.FLOAT.fieldOf("mossiness").xmap(BlockAgeProcessor::new, (var0) -> {
-         return var0.mossiness;
-      });
+      CODEC = Codec.FLOAT.fieldOf("mossiness").xmap(BlockAgeProcessor::new, (var0) -> var0.mossiness);
       NON_MOSSY_REPLACEMENTS = new BlockState[]{Blocks.STONE_SLAB.defaultBlockState(), Blocks.STONE_BRICK_SLAB.defaultBlockState()};
    }
 }

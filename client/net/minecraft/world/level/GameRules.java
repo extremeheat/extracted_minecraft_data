@@ -13,7 +13,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicLike;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -36,9 +35,7 @@ import org.slf4j.Logger;
 public class GameRules {
    public static final int DEFAULT_RANDOM_TICK_SPEED = 3;
    static final Logger LOGGER = LogUtils.getLogger();
-   private static final Map<Key<?>, Type<?>> GAME_RULE_TYPES = Maps.newTreeMap(Comparator.comparing((var0) -> {
-      return var0.id;
-   }));
+   private static final Map<Key<?>, Type<?>> GAME_RULE_TYPES = Maps.newTreeMap(Comparator.comparing((var0) -> var0.id));
    public static final Key<BooleanValue> RULE_DOFIRETICK;
    public static final Key<BooleanValue> RULE_MOBGRIEFING;
    public static final Key<BooleanValue> RULE_KEEPINVENTORY;
@@ -111,15 +108,11 @@ public class GameRules {
    }
 
    public GameRules(FeatureFlagSet var1) {
-      this((Map)availableRules(var1).collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (var0) -> {
-         return ((Type)var0.getValue()).createRule();
-      })), var1);
+      this((Map)availableRules(var1).collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (var0) -> ((Type)var0.getValue()).createRule())), var1);
    }
 
    private static Stream<Map.Entry<Key<?>, Type<?>>> availableRules(FeatureFlagSet var0) {
-      return GAME_RULE_TYPES.entrySet().stream().filter((var1) -> {
-         return ((Type)var1.getValue()).requiredFeatures.isSubsetOf(var0);
-      });
+      return GAME_RULE_TYPES.entrySet().stream().filter((var1) -> ((Type)var1.getValue()).requiredFeatures.isSubsetOf(var0));
    }
 
    private GameRules(Map<Key<?>, Value<?>> var1, FeatureFlagSet var2) {
@@ -133,15 +126,13 @@ public class GameRules {
       if (var2 == null) {
          throw new IllegalArgumentException("Tried to access invalid game rule");
       } else {
-         return var2;
+         return (T)var2;
       }
    }
 
    public CompoundTag createTag() {
       CompoundTag var1 = new CompoundTag();
-      this.rules.forEach((var1x, var2) -> {
-         var1.putString(var1x.id, var2.serialize());
-      });
+      this.rules.forEach((var1x, var2) -> var1.putString(var1x.id, var2.serialize()));
       return var1;
    }
 
@@ -154,15 +145,11 @@ public class GameRules {
    }
 
    public GameRules copy(FeatureFlagSet var1) {
-      return new GameRules((Map)availableRules(var1).collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (var1x) -> {
-         return this.rules.containsKey(var1x.getKey()) ? (Value)this.rules.get(var1x.getKey()) : ((Type)var1x.getValue()).createRule();
-      })), var1);
+      return new GameRules((Map)availableRules(var1).collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, (var1x) -> this.rules.containsKey(var1x.getKey()) ? (Value)this.rules.get(var1x.getKey()) : ((Type)var1x.getValue()).createRule())), var1);
    }
 
    public void visitGameRuleTypes(GameRuleTypeVisitor var1) {
-      GAME_RULE_TYPES.forEach((var2, var3) -> {
-         this.callVisitorCap(var1, var2, var3);
-      });
+      GAME_RULE_TYPES.forEach((var2, var3) -> this.callVisitorCap(var1, var2, var3));
    }
 
    private <T extends Value<T>> void callVisitorCap(GameRuleTypeVisitor var1, Key<?> var2, Type<?> var3) {
@@ -174,9 +161,7 @@ public class GameRules {
    }
 
    public void assignFrom(GameRules var1, @Nullable MinecraftServer var2) {
-      var1.rules.keySet().forEach((var3) -> {
-         this.assignCap(var3, var1, var2);
-      });
+      var1.rules.keySet().forEach((var3) -> this.assignCap(var3, var1, var2));
    }
 
    private <T extends Value<T>> void assignCap(Key<T> var1, GameRules var2, @Nullable MinecraftServer var3) {
@@ -210,10 +195,8 @@ public class GameRules {
       RULE_SENDCOMMANDFEEDBACK = register("sendCommandFeedback", GameRules.Category.CHAT, GameRules.BooleanValue.create(true));
       RULE_REDUCEDDEBUGINFO = register("reducedDebugInfo", GameRules.Category.MISC, GameRules.BooleanValue.create(false, (var0, var1) -> {
          int var2 = var1.get() ? 22 : 23;
-         Iterator var3 = var0.getPlayerList().getPlayers().iterator();
 
-         while(var3.hasNext()) {
-            ServerPlayer var4 = (ServerPlayer)var3.next();
+         for(ServerPlayer var4 : var0.getPlayerList().getPlayers()) {
             var4.connection.send(new ClientboundEntityEventPacket(var4, (byte)var2));
          }
 
@@ -225,10 +208,7 @@ public class GameRules {
       RULE_MAX_ENTITY_CRAMMING = register("maxEntityCramming", GameRules.Category.MOBS, GameRules.IntegerValue.create(24));
       RULE_WEATHER_CYCLE = register("doWeatherCycle", GameRules.Category.UPDATES, GameRules.BooleanValue.create(true));
       RULE_LIMITED_CRAFTING = register("doLimitedCrafting", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false, (var0, var1) -> {
-         Iterator var2 = var0.getPlayerList().getPlayers().iterator();
-
-         while(var2.hasNext()) {
-            ServerPlayer var3 = (ServerPlayer)var2.next();
+         for(ServerPlayer var3 : var0.getPlayerList().getPlayers()) {
             var3.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.LIMITED_CRAFTING, var1.get() ? 1.0F : 0.0F));
          }
 
@@ -240,10 +220,7 @@ public class GameRules {
       RULE_DISABLE_RAIDS = register("disableRaids", GameRules.Category.MOBS, GameRules.BooleanValue.create(false));
       RULE_DOINSOMNIA = register("doInsomnia", GameRules.Category.SPAWNING, GameRules.BooleanValue.create(true));
       RULE_DO_IMMEDIATE_RESPAWN = register("doImmediateRespawn", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false, (var0, var1) -> {
-         Iterator var2 = var0.getPlayerList().getPlayers().iterator();
-
-         while(var2.hasNext()) {
-            ServerPlayer var3 = (ServerPlayer)var2.next();
+         for(ServerPlayer var3 : var0.getPlayerList().getPlayers()) {
             var3.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.IMMEDIATE_RESPAWN, var1.get() ? 1.0F : 0.0F));
          }
 
@@ -275,6 +252,42 @@ public class GameRules {
          ServerLevel var2 = var0.overworld();
          var2.setDefaultSpawnPos(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle());
       }));
+   }
+
+   public static enum Category {
+      PLAYER("gamerule.category.player"),
+      MOBS("gamerule.category.mobs"),
+      SPAWNING("gamerule.category.spawning"),
+      DROPS("gamerule.category.drops"),
+      UPDATES("gamerule.category.updates"),
+      CHAT("gamerule.category.chat"),
+      MISC("gamerule.category.misc");
+
+      private final String descriptionId;
+
+      private Category(final String var3) {
+         this.descriptionId = var3;
+      }
+
+      public String getDescriptionId() {
+         return this.descriptionId;
+      }
+
+      // $FF: synthetic method
+      private static Category[] $values() {
+         return new Category[]{PLAYER, MOBS, SPAWNING, DROPS, UPDATES, CHAT, MISC};
+      }
+   }
+
+   public interface GameRuleTypeVisitor {
+      default <T extends Value<T>> void visit(Key<T> var1, Type<T> var2) {
+      }
+
+      default void visitBoolean(Key<BooleanValue> var1, Type<BooleanValue> var2) {
+      }
+
+      default void visitInteger(Key<IntegerValue> var1, Type<IntegerValue> var2) {
+      }
    }
 
    public static final class Key<T extends Value<T>> {
@@ -316,31 +329,6 @@ public class GameRules {
       }
    }
 
-   public static enum Category {
-      PLAYER("gamerule.category.player"),
-      MOBS("gamerule.category.mobs"),
-      SPAWNING("gamerule.category.spawning"),
-      DROPS("gamerule.category.drops"),
-      UPDATES("gamerule.category.updates"),
-      CHAT("gamerule.category.chat"),
-      MISC("gamerule.category.misc");
-
-      private final String descriptionId;
-
-      private Category(final String var3) {
-         this.descriptionId = var3;
-      }
-
-      public String getDescriptionId() {
-         return this.descriptionId;
-      }
-
-      // $FF: synthetic method
-      private static Category[] $values() {
-         return new Category[]{PLAYER, MOBS, SPAWNING, DROPS, UPDATES, CHAT, MISC};
-      }
-   }
-
    public static class Type<T extends Value<T>> {
       final Supplier<ArgumentType<?>> argument;
       private final Function<Type<T>, T> constructor;
@@ -362,7 +350,7 @@ public class GameRules {
       }
 
       public T createRule() {
-         return (Value)this.constructor.apply(this);
+         return (T)(this.constructor.apply(this));
       }
 
       public void callVisitor(GameRuleTypeVisitor var1, Key<T> var2) {
@@ -413,100 +401,15 @@ public class GameRules {
       public abstract void setFrom(T var1, @Nullable MinecraftServer var2);
    }
 
-   public interface GameRuleTypeVisitor {
-      default <T extends Value<T>> void visit(Key<T> var1, Type<T> var2) {
-      }
-
-      default void visitBoolean(Key<BooleanValue> var1, Type<BooleanValue> var2) {
-      }
-
-      default void visitInteger(Key<IntegerValue> var1, Type<IntegerValue> var2) {
-      }
-   }
-
-   public static class BooleanValue extends Value<BooleanValue> {
-      private boolean value;
-
-      static Type<BooleanValue> create(boolean var0, BiConsumer<MinecraftServer, BooleanValue> var1) {
-         return new Type(BoolArgumentType::bool, (var1x) -> {
-            return new BooleanValue(var1x, var0);
-         }, var1, GameRuleTypeVisitor::visitBoolean, FeatureFlagSet.of());
-      }
-
-      static Type<BooleanValue> create(boolean var0) {
-         return create(var0, (var0x, var1) -> {
-         });
-      }
-
-      public BooleanValue(Type<BooleanValue> var1, boolean var2) {
-         super(var1);
-         this.value = var2;
-      }
-
-      protected void updateFromArgument(CommandContext<CommandSourceStack> var1, String var2) {
-         this.value = BoolArgumentType.getBool(var1, var2);
-      }
-
-      public boolean get() {
-         return this.value;
-      }
-
-      public void set(boolean var1, @Nullable MinecraftServer var2) {
-         this.value = var1;
-         this.onChanged(var2);
-      }
-
-      public String serialize() {
-         return Boolean.toString(this.value);
-      }
-
-      protected void deserialize(String var1) {
-         this.value = Boolean.parseBoolean(var1);
-      }
-
-      public int getCommandResult() {
-         return this.value ? 1 : 0;
-      }
-
-      protected BooleanValue getSelf() {
-         return this;
-      }
-
-      protected BooleanValue copy() {
-         return new BooleanValue(this.type, this.value);
-      }
-
-      public void setFrom(BooleanValue var1, @Nullable MinecraftServer var2) {
-         this.value = var1.value;
-         this.onChanged(var2);
-      }
-
-      // $FF: synthetic method
-      protected Value copy() {
-         return this.copy();
-      }
-
-      // $FF: synthetic method
-      protected Value getSelf() {
-         return this.getSelf();
-      }
-   }
-
    public static class IntegerValue extends Value<IntegerValue> {
       private int value;
 
       private static Type<IntegerValue> create(int var0, BiConsumer<MinecraftServer, IntegerValue> var1) {
-         return new Type(IntegerArgumentType::integer, (var1x) -> {
-            return new IntegerValue(var1x, var0);
-         }, var1, GameRuleTypeVisitor::visitInteger, FeatureFlagSet.of());
+         return new Type<IntegerValue>(IntegerArgumentType::integer, (var1x) -> new IntegerValue(var1x, var0), var1, GameRuleTypeVisitor::visitInteger, FeatureFlagSet.of());
       }
 
       static Type<IntegerValue> create(int var0, int var1, int var2, FeatureFlagSet var3, BiConsumer<MinecraftServer, IntegerValue> var4) {
-         return new Type(() -> {
-            return IntegerArgumentType.integer(var1, var2);
-         }, (var1x) -> {
-            return new IntegerValue(var1x, var0);
-         }, var4, GameRuleTypeVisitor::visitInteger, var3);
+         return new Type<IntegerValue>(() -> IntegerArgumentType.integer(var1, var2), (var1x) -> new IntegerValue(var1x, var0), var4, GameRuleTypeVisitor::visitInteger, var3);
       }
 
       static Type<IntegerValue> create(int var0) {
@@ -590,7 +493,73 @@ public class GameRules {
       }
    }
 
-   private interface VisitorCaller<T extends Value<T>> {
+   public static class BooleanValue extends Value<BooleanValue> {
+      private boolean value;
+
+      static Type<BooleanValue> create(boolean var0, BiConsumer<MinecraftServer, BooleanValue> var1) {
+         return new Type<BooleanValue>(BoolArgumentType::bool, (var1x) -> new BooleanValue(var1x, var0), var1, GameRuleTypeVisitor::visitBoolean, FeatureFlagSet.of());
+      }
+
+      static Type<BooleanValue> create(boolean var0) {
+         return create(var0, (var0x, var1) -> {
+         });
+      }
+
+      public BooleanValue(Type<BooleanValue> var1, boolean var2) {
+         super(var1);
+         this.value = var2;
+      }
+
+      protected void updateFromArgument(CommandContext<CommandSourceStack> var1, String var2) {
+         this.value = BoolArgumentType.getBool(var1, var2);
+      }
+
+      public boolean get() {
+         return this.value;
+      }
+
+      public void set(boolean var1, @Nullable MinecraftServer var2) {
+         this.value = var1;
+         this.onChanged(var2);
+      }
+
+      public String serialize() {
+         return Boolean.toString(this.value);
+      }
+
+      protected void deserialize(String var1) {
+         this.value = Boolean.parseBoolean(var1);
+      }
+
+      public int getCommandResult() {
+         return this.value ? 1 : 0;
+      }
+
+      protected BooleanValue getSelf() {
+         return this;
+      }
+
+      protected BooleanValue copy() {
+         return new BooleanValue(this.type, this.value);
+      }
+
+      public void setFrom(BooleanValue var1, @Nullable MinecraftServer var2) {
+         this.value = var1.value;
+         this.onChanged(var2);
+      }
+
+      // $FF: synthetic method
+      protected Value copy() {
+         return this.copy();
+      }
+
+      // $FF: synthetic method
+      protected Value getSelf() {
+         return this.getSelf();
+      }
+   }
+
+   interface VisitorCaller<T extends Value<T>> {
       void call(GameRuleTypeVisitor var1, Key<T> var2, Type<T> var3);
    }
 }

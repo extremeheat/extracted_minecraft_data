@@ -10,7 +10,7 @@ public enum Markings {
    WHITE_DOTS(3),
    BLACK_DOTS(4);
 
-   private static final IntFunction<Markings> BY_ID = ByIdMap.continuous(Markings::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   private static final IntFunction<Markings> BY_ID = ByIdMap.<Markings>continuous(Markings::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    private final int id;
 
    private Markings(final int var3) {

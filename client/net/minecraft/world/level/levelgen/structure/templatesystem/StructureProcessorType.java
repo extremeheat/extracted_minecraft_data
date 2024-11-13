@@ -12,7 +12,7 @@ public interface StructureProcessorType<P extends StructureProcessor> {
    Codec<StructureProcessor> SINGLE_CODEC = BuiltInRegistries.STRUCTURE_PROCESSOR.byNameCodec().dispatch("processor_type", StructureProcessor::getType, StructureProcessorType::codec);
    Codec<StructureProcessorList> LIST_OBJECT_CODEC = SINGLE_CODEC.listOf().xmap(StructureProcessorList::new, StructureProcessorList::list);
    Codec<StructureProcessorList> DIRECT_CODEC = Codec.withAlternative(LIST_OBJECT_CODEC.fieldOf("processors").codec(), LIST_OBJECT_CODEC);
-   Codec<Holder<StructureProcessorList>> LIST_CODEC = RegistryFileCodec.create(Registries.PROCESSOR_LIST, DIRECT_CODEC);
+   Codec<Holder<StructureProcessorList>> LIST_CODEC = RegistryFileCodec.<Holder<StructureProcessorList>>create(Registries.PROCESSOR_LIST, DIRECT_CODEC);
    StructureProcessorType<BlockIgnoreProcessor> BLOCK_IGNORE = register("block_ignore", BlockIgnoreProcessor.CODEC);
    StructureProcessorType<BlockRotProcessor> BLOCK_ROT = register("block_rot", BlockRotProcessor.CODEC);
    StructureProcessorType<GravityProcessor> GRAVITY = register("gravity", GravityProcessor.CODEC);
@@ -28,8 +28,6 @@ public interface StructureProcessorType<P extends StructureProcessor> {
    MapCodec<P> codec();
 
    static <P extends StructureProcessor> StructureProcessorType<P> register(String var0, MapCodec<P> var1) {
-      return (StructureProcessorType)Registry.register(BuiltInRegistries.STRUCTURE_PROCESSOR, (String)var0, () -> {
-         return var1;
-      });
+      return (StructureProcessorType)Registry.register(BuiltInRegistries.STRUCTURE_PROCESSOR, (String)var0, (StructureProcessorType)() -> var1);
    }
 }

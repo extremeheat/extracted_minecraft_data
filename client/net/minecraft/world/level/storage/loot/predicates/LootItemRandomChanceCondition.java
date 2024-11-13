@@ -8,9 +8,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public record LootItemRandomChanceCondition(NumberProvider chance) implements LootItemCondition {
-   public static final MapCodec<LootItemRandomChanceCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(NumberProviders.CODEC.fieldOf("chance").forGetter(LootItemRandomChanceCondition::chance)).apply(var0, LootItemRandomChanceCondition::new);
-   });
+   public static final MapCodec<LootItemRandomChanceCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(NumberProviders.CODEC.fieldOf("chance").forGetter(LootItemRandomChanceCondition::chance)).apply(var0, LootItemRandomChanceCondition::new));
 
    public LootItemRandomChanceCondition(NumberProvider var1) {
       super();
@@ -27,19 +25,11 @@ public record LootItemRandomChanceCondition(NumberProvider chance) implements Lo
    }
 
    public static LootItemCondition.Builder randomChance(float var0) {
-      return () -> {
-         return new LootItemRandomChanceCondition(ConstantValue.exactly(var0));
-      };
+      return () -> new LootItemRandomChanceCondition(ConstantValue.exactly(var0));
    }
 
    public static LootItemCondition.Builder randomChance(NumberProvider var0) {
-      return () -> {
-         return new LootItemRandomChanceCondition(var0);
-      };
-   }
-
-   public NumberProvider chance() {
-      return this.chance;
+      return () -> new LootItemRandomChanceCondition(var0);
    }
 
    // $FF: synthetic method

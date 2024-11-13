@@ -21,9 +21,7 @@ public class EquipmentAssetManager extends SimpleJsonResourceReloadListener<Equi
    }
 
    protected void apply(Map<ResourceLocation, EquipmentClientInfo> var1, ResourceManager var2, ProfilerFiller var3) {
-      this.equipmentAssets = (Map)var1.entrySet().stream().collect(Collectors.toUnmodifiableMap((var0) -> {
-         return ResourceKey.create(EquipmentAssets.ROOT_ID, (ResourceLocation)var0.getKey());
-      }, Map.Entry::getValue));
+      this.equipmentAssets = (Map)var1.entrySet().stream().collect(Collectors.toUnmodifiableMap((var0) -> ResourceKey.create(EquipmentAssets.ROOT_ID, (ResourceLocation)var0.getKey()), Map.Entry::getValue));
    }
 
    public EquipmentClientInfo get(ResourceKey<EquipmentAsset> var1) {

@@ -19,10 +19,6 @@ public record ItemCustomDataPredicate(NbtPredicate value) implements ItemSubPred
       return new ItemCustomDataPredicate(var0);
    }
 
-   public NbtPredicate value() {
-      return this.value;
-   }
-
    static {
       CODEC = NbtPredicate.CODEC.xmap(ItemCustomDataPredicate::new, ItemCustomDataPredicate::value);
    }

@@ -83,14 +83,13 @@ public class TutorialToast implements Toast {
       int var6 = this.lines.size() * 11;
       int var7 = 7 + (this.contentHeight() - var6) / 2;
 
-      int var8;
-      for(var8 = 0; var8 < this.lines.size(); ++var8) {
+      for(int var8 = 0; var8 < this.lines.size(); ++var8) {
          var1.drawString(var2, (FormattedCharSequence)((FormattedCharSequence)this.lines.get(var8)), 30, var7 + var8 * 11, -16777216, false);
       }
 
       if (this.progressable) {
-         var8 = var5 - 4;
-         var1.fill(3, var8, 157, var8 + 1, -1);
+         int var10 = var5 - 4;
+         var1.fill(3, var10, 157, var10 + 1, -1);
          int var9;
          if (this.progress >= this.smoothedProgress) {
             var9 = -16755456;
@@ -98,7 +97,7 @@ public class TutorialToast implements Toast {
             var9 = -11206656;
          }
 
-         var1.fill(3, var8, (int)(3.0F + 154.0F * this.smoothedProgress), var8 + 1, var9);
+         var1.fill(3, var10, (int)(3.0F + 154.0F * this.smoothedProgress), var10 + 1, var9);
       }
 
    }

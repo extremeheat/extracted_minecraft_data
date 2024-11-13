@@ -1,6 +1,7 @@
 package net.minecraft.world.level.storage;
 
 import java.nio.file.Path;
+import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
@@ -227,60 +228,6 @@ public class LevelSummary implements Comparable<LevelSummary> {
       }
    }
 
-   public static class CorruptedLevelSummary extends LevelSummary {
-      private static final Component INFO = Component.translatable("recover_world.warning").withStyle((var0) -> {
-         return var0.withColor(-65536);
-      });
-      private static final Component RECOVER = Component.translatable("recover_world.button");
-      private final long lastPlayed;
-
-      public CorruptedLevelSummary(String var1, Path var2, long var3) {
-         super((LevelSettings)null, (LevelVersion)null, var1, false, false, false, var2);
-         this.lastPlayed = var3;
-      }
-
-      public String getLevelName() {
-         return this.getLevelId();
-      }
-
-      public Component getInfo() {
-         return INFO;
-      }
-
-      public long getLastPlayed() {
-         return this.lastPlayed;
-      }
-
-      public boolean isDisabled() {
-         return false;
-      }
-
-      public Component primaryActionMessage() {
-         return RECOVER;
-      }
-
-      public boolean primaryActionActive() {
-         return true;
-      }
-
-      public boolean canUpload() {
-         return false;
-      }
-
-      public boolean canEdit() {
-         return false;
-      }
-
-      public boolean canRecreate() {
-         return false;
-      }
-
-      // $FF: synthetic method
-      public int compareTo(final Object var1) {
-         return super.compareTo((LevelSummary)var1);
-      }
-   }
-
    public static class SymlinkLevelSummary extends LevelSummary {
       private static final Component MORE_INFO_BUTTON = Component.translatable("symlink_warning.more_info");
       private static final Component INFO = Component.translatable("symlink_warning.title").withColor(-65536);
@@ -307,6 +254,58 @@ public class LevelSummary implements Comparable<LevelSummary> {
 
       public Component primaryActionMessage() {
          return MORE_INFO_BUTTON;
+      }
+
+      public boolean primaryActionActive() {
+         return true;
+      }
+
+      public boolean canUpload() {
+         return false;
+      }
+
+      public boolean canEdit() {
+         return false;
+      }
+
+      public boolean canRecreate() {
+         return false;
+      }
+
+      // $FF: synthetic method
+      public int compareTo(final Object var1) {
+         return super.compareTo((LevelSummary)var1);
+      }
+   }
+
+   public static class CorruptedLevelSummary extends LevelSummary {
+      private static final Component INFO = Component.translatable("recover_world.warning").withStyle((UnaryOperator)((var0) -> var0.withColor(-65536)));
+      private static final Component RECOVER = Component.translatable("recover_world.button");
+      private final long lastPlayed;
+
+      public CorruptedLevelSummary(String var1, Path var2, long var3) {
+         super((LevelSettings)null, (LevelVersion)null, var1, false, false, false, var2);
+         this.lastPlayed = var3;
+      }
+
+      public String getLevelName() {
+         return this.getLevelId();
+      }
+
+      public Component getInfo() {
+         return INFO;
+      }
+
+      public long getLastPlayed() {
+         return this.lastPlayed;
+      }
+
+      public boolean isDisabled() {
+         return false;
+      }
+
+      public Component primaryActionMessage() {
+         return RECOVER;
       }
 
       public boolean primaryActionActive() {

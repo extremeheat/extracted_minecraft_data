@@ -10,9 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.FireworkExplosion;
 
 public record Firework(int defaultColor) implements ItemTintSource {
-   public static final MapCodec<Firework> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(Firework::defaultColor)).apply(var0, Firework::new);
-   });
+   public static final MapCodec<Firework> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(Firework::defaultColor)).apply(var0, Firework::new));
 
    public Firework() {
       this(-7697782);
@@ -49,9 +47,5 @@ public record Firework(int defaultColor) implements ItemTintSource {
 
    public MapCodec<Firework> type() {
       return MAP_CODEC;
-   }
-
-   public int defaultColor() {
-      return this.defaultColor;
    }
 }

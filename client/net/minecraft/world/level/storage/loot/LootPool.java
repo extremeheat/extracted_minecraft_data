@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -28,19 +27,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 public class LootPool {
-   public static final Codec<LootPool> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(LootPoolEntries.CODEC.listOf().fieldOf("entries").forGetter((var0x) -> {
-         return var0x.entries;
-      }), LootItemCondition.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((var0x) -> {
-         return var0x.conditions;
-      }), LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((var0x) -> {
-         return var0x.functions;
-      }), NumberProviders.CODEC.fieldOf("rolls").forGetter((var0x) -> {
-         return var0x.rolls;
-      }), NumberProviders.CODEC.fieldOf("bonus_rolls").orElse(ConstantValue.exactly(0.0F)).forGetter((var0x) -> {
-         return var0x.bonusRolls;
-      })).apply(var0, LootPool::new);
-   });
+   public static final Codec<LootPool> CODEC = RecordCodecBuilder.create((var0) -> var0.group(LootPoolEntries.CODEC.listOf().fieldOf("entries").forGetter((var0x) -> var0x.entries), LootItemCondition.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((var0x) -> var0x.conditions), LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((var0x) -> var0x.functions), NumberProviders.CODEC.fieldOf("rolls").forGetter((var0x) -> var0x.rolls), NumberProviders.CODEC.fieldOf("bonus_rolls").orElse(ConstantValue.exactly(0.0F)).forGetter((var0x) -> var0x.bonusRolls)).apply(var0, LootPool::new));
    private final List<LootPoolEntryContainer> entries;
    private final List<LootItemCondition> conditions;
    private final Predicate<LootContext> compositeCondition;
@@ -64,10 +51,8 @@ public class LootPool {
       RandomSource var3 = var2.getRandom();
       ArrayList var4 = Lists.newArrayList();
       MutableInt var5 = new MutableInt();
-      Iterator var6 = this.entries.iterator();
 
-      while(var6.hasNext()) {
-         LootPoolEntryContainer var7 = (LootPoolEntryContainer)var6.next();
+      for(LootPoolEntryContainer var7 : this.entries) {
          var7.expand(var2, (var3x) -> {
             int var4x = var3x.getWeight(var2.getLuck());
             if (var4x > 0) {
@@ -84,19 +69,15 @@ public class LootPool {
             ((LootPoolEntry)var4.get(0)).createItemStack(var1, var2);
          } else {
             int var11 = var3.nextInt(var5.intValue());
-            Iterator var8 = var4.iterator();
 
-            LootPoolEntry var9;
-            do {
-               if (!var8.hasNext()) {
+            for(LootPoolEntry var9 : var4) {
+               var11 -= var9.getWeight(var2.getLuck());
+               if (var11 < 0) {
+                  var9.createItemStack(var1, var2);
                   return;
                }
+            }
 
-               var9 = (LootPoolEntry)var8.next();
-               var11 -= var9.getWeight(var2.getLuck());
-            } while(var11 >= 0);
-
-            var9.createItemStack(var1, var2);
          }
       }
    }
@@ -114,17 +95,16 @@ public class LootPool {
    }
 
    public void validate(ValidationContext var1) {
-      int var2;
-      for(var2 = 0; var2 < this.conditions.size(); ++var2) {
+      for(int var2 = 0; var2 < this.conditions.size(); ++var2) {
          ((LootItemCondition)this.conditions.get(var2)).validate(var1.forChild(".condition[" + var2 + "]"));
       }
 
-      for(var2 = 0; var2 < this.functions.size(); ++var2) {
-         ((LootItemFunction)this.functions.get(var2)).validate(var1.forChild(".functions[" + var2 + "]"));
+      for(int var3 = 0; var3 < this.functions.size(); ++var3) {
+         ((LootItemFunction)this.functions.get(var3)).validate(var1.forChild(".functions[" + var3 + "]"));
       }
 
-      for(var2 = 0; var2 < this.entries.size(); ++var2) {
-         ((LootPoolEntryContainer)this.entries.get(var2)).validate(var1.forChild(".entries[" + var2 + "]"));
+      for(int var4 = 0; var4 < this.entries.size(); ++var4) {
+         ((LootPoolEntryContainer)this.entries.get(var4)).validate(var1.forChild(".entries[" + var4 + "]"));
       }
 
       this.rolls.validate(var1.forChild(".rolls"));

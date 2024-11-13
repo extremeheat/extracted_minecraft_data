@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.recipebook;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -45,6 +44,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
 
    public OverlayRecipeComponent(SlotSelectTime var1, boolean var2) {
       super();
+      this.collection = RecipeCollection.EMPTY;
       this.slotSelectTime = var1;
       this.isFurnaceMenu = var2;
    }
@@ -86,9 +86,9 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          int var24 = this.x + 4 + 25 * (var21 % var13);
          int var25 = this.y + 5 + 25 * (var21 / var13);
          if (this.isFurnaceMenu) {
-            this.recipeButtons.add(new OverlaySmeltingRecipeButton(this, var24, var25, var23.id(), var23.display(), var2, var22));
+            this.recipeButtons.add(new OverlaySmeltingRecipeButton(var24, var25, var23.id(), var23.display(), var2, var22));
          } else {
-            this.recipeButtons.add(new OverlayCraftingRecipeButton(this, var24, var25, var23.id(), var23.display(), var2, var22));
+            this.recipeButtons.add(new OverlayCraftingRecipeButton(var24, var25, var23.id(), var23.display(), var2, var22));
          }
       }
 
@@ -108,19 +108,14 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       if (var5 != 0) {
          return false;
       } else {
-         Iterator var6 = this.recipeButtons.iterator();
-
-         OverlayRecipeButton var7;
-         do {
-            if (!var6.hasNext()) {
-               return false;
+         for(OverlayRecipeButton var7 : this.recipeButtons) {
+            if (var7.mouseClicked(var1, var3, var5)) {
+               this.lastRecipeClicked = var7.recipe;
+               return true;
             }
+         }
 
-            var7 = (OverlayRecipeButton)var6.next();
-         } while(!var7.mouseClicked(var1, var3, var5));
-
-         this.lastRecipeClicked = var7.recipe;
-         return true;
+         return false;
       }
    }
 
@@ -137,10 +132,8 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          int var7 = Mth.ceil((float)this.recipeButtons.size() / (float)var5);
          boolean var8 = true;
          var1.blitSprite(RenderType::guiTextured, OVERLAY_RECIPE_SPRITE, this.x, this.y, var6 * 25 + 8, var7 * 25 + 8);
-         Iterator var9 = this.recipeButtons.iterator();
 
-         while(var9.hasNext()) {
-            OverlayRecipeButton var10 = (OverlayRecipeButton)var9.next();
+         for(OverlayRecipeButton var10 : this.recipeButtons) {
             var10.render(var1, var2, var3, var4);
          }
 
@@ -169,7 +162,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       private static final ResourceLocation DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("recipe_book/furnace_overlay_disabled");
       private static final ResourceLocation HIGHLIGHTED_DISABLED_SPRITE = ResourceLocation.withDefaultNamespace("recipe_book/furnace_overlay_disabled_highlighted");
 
-      public OverlaySmeltingRecipeButton(final OverlayRecipeComponent var1, final int var2, final int var3, final RecipeDisplayId var4, final RecipeDisplay var5, final ContextMap var6, final boolean var7) {
+      public OverlaySmeltingRecipeButton(final int var2, final int var3, final RecipeDisplayId var4, final RecipeDisplay var5, final ContextMap var6, final boolean var7) {
          super(var2, var3, var4, var7, calculateIngredientsPositions(var5, var6));
       }
 
@@ -201,7 +194,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       private static final int GRID_WIDTH = 3;
       private static final int GRID_HEIGHT = 3;
 
-      public OverlayCraftingRecipeButton(final OverlayRecipeComponent var1, final int var2, final int var3, final RecipeDisplayId var4, final RecipeDisplay var5, final ContextMap var6, final boolean var7) {
+      public OverlayCraftingRecipeButton(final int var2, final int var3, final RecipeDisplayId var4, final RecipeDisplay var5, final ContextMap var6, final boolean var7) {
          super(var2, var3, var4, var7, calculateIngredientsPositions(var5, var6));
       }
 
@@ -247,7 +240,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       }
    }
 
-   private abstract class OverlayRecipeButton extends AbstractWidget {
+   abstract class OverlayRecipeButton extends AbstractWidget {
       final RecipeDisplayId recipe;
       private final boolean isCraftable;
       private final List<Pos> slots;
@@ -274,10 +267,8 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          float var5 = (float)(this.getX() + 2);
          float var6 = (float)(this.getY() + 2);
          float var7 = 150.0F;
-         Iterator var8 = this.slots.iterator();
 
-         while(var8.hasNext()) {
-            Pos var9 = (Pos)var8.next();
+         for(Pos var9 : this.slots) {
             var1.pose().pushPose();
             var1.pose().translate(var5 + (float)var9.x, var6 + (float)var9.y, 150.0F);
             var1.pose().scale(0.375F, 0.375F, 1.0F);
@@ -305,18 +296,6 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
 
          public ItemStack selectIngredient(int var1) {
             return (ItemStack)this.ingredients.get(var1 % this.ingredients.size());
-         }
-
-         public int x() {
-            return this.x;
-         }
-
-         public int y() {
-            return this.y;
-         }
-
-         public List<ItemStack> ingredients() {
-            return this.ingredients;
          }
       }
    }

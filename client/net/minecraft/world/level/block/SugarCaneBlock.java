@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -80,10 +79,8 @@ public class SugarCaneBlock extends Block {
       } else {
          if (var4.is(BlockTags.DIRT) || var4.is(BlockTags.SAND)) {
             BlockPos var5 = var3.below();
-            Iterator var6 = Direction.Plane.HORIZONTAL.iterator();
 
-            while(var6.hasNext()) {
-               Direction var7 = (Direction)var6.next();
+            for(Direction var7 : Direction.Plane.HORIZONTAL) {
                BlockState var8 = var2.getBlockState(var5.relative(var7));
                FluidState var9 = var2.getFluidState(var5.relative(var7));
                if (var9.is(FluidTags.WATER) || var8.is(Blocks.FROSTED_ICE)) {

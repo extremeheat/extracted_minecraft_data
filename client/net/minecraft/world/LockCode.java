@@ -26,9 +26,7 @@ public record LockCode(ItemPredicate predicate) {
    public void addToTag(CompoundTag var1, HolderLookup.Provider var2) {
       if (this != NO_LOCK) {
          DataResult var3 = CODEC.encode(this, var2.createSerializationContext(NbtOps.INSTANCE), new CompoundTag());
-         var3.result().ifPresent((var1x) -> {
-            var1.put("lock", var1x);
-         });
+         var3.result().ifPresent((var1x) -> var1.put("lock", var1x));
       }
 
    }
@@ -42,10 +40,6 @@ public record LockCode(ItemPredicate predicate) {
       }
 
       return NO_LOCK;
-   }
-
-   public ItemPredicate predicate() {
-      return this.predicate;
    }
 
    static {

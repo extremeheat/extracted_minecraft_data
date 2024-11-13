@@ -1,13 +1,11 @@
 package com.mojang.realmsclient.dto;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -61,11 +59,7 @@ public class RealmsNotification {
       ArrayList var1 = new ArrayList();
 
       try {
-         JsonArray var2 = JsonParser.parseString(var0).getAsJsonObject().get("notifications").getAsJsonArray();
-         Iterator var3 = var2.iterator();
-
-         while(var3.hasNext()) {
-            JsonElement var4 = (JsonElement)var3.next();
+         for(JsonElement var4 : JsonParser.parseString(var0).getAsJsonObject().get("notifications").getAsJsonArray()) {
             var1.add(parse(var4.getAsJsonObject()));
          }
       } catch (Exception var5) {
@@ -182,15 +176,13 @@ public class RealmsNotification {
                var2x.onClose();
                var2.accept(this.uuid());
             });
-            var4.onClose(() -> {
-               var2.accept(this.uuid());
-            });
+            var4.onClose(() -> var2.accept(this.uuid()));
             return var4.build();
          }
       }
    }
 
-   private static record UrlButton(String url, RealmsText urlText) {
+   static record UrlButton(String url, RealmsText urlText) {
       final String url;
       final RealmsText urlText;
       private static final String URL = "url";
@@ -206,14 +198,6 @@ public class RealmsNotification {
          String var1 = JsonUtils.getRequiredString("url", var0);
          RealmsText var2 = (RealmsText)JsonUtils.getRequired("urlText", var0, RealmsText::parse);
          return new UrlButton(var1, var2);
-      }
-
-      public String url() {
-         return this.url;
-      }
-
-      public RealmsText urlText() {
-         return this.urlText;
       }
    }
 }

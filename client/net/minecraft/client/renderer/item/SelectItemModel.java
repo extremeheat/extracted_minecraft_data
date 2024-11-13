@@ -5,7 +5,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -37,28 +36,27 @@ public class SelectItemModel<T> implements ItemModel {
 
    }
 
-   public static record SwitchCase<T>(List<T> values, ItemModel.Unbaked model) {
-      final List<T> values;
-      final ItemModel.Unbaked model;
+   public static record Unbaked(UnbakedSwitch<?, ?> unbakedSwitch, Optional<ItemModel.Unbaked> fallback) implements ItemModel.Unbaked {
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SelectItemModel.UnbakedSwitch.MAP_CODEC.forGetter(Unbaked::unbakedSwitch), ItemModels.CODEC.optionalFieldOf("fallback").forGetter(Unbaked::fallback)).apply(var0, Unbaked::new));
 
-      public SwitchCase(List<T> var1, ItemModel.Unbaked var2) {
+      public Unbaked(UnbakedSwitch<?, ?> var1, Optional<ItemModel.Unbaked> var2) {
          super();
-         this.values = var1;
-         this.model = var2;
+         this.unbakedSwitch = var1;
+         this.fallback = var2;
       }
 
-      public static <T> Codec<SwitchCase<T>> codec(Codec<T> var0) {
-         return RecordCodecBuilder.create((var1) -> {
-            return var1.group(ExtraCodecs.nonEmptyList(ExtraCodecs.compactListCodec(var0)).fieldOf("when").forGetter(SwitchCase::values), ItemModels.CODEC.fieldOf("model").forGetter(SwitchCase::model)).apply(var1, SwitchCase::new);
-         });
+      public MapCodec<Unbaked> type() {
+         return MAP_CODEC;
       }
 
-      public List<T> values() {
-         return this.values;
+      public ItemModel bake(ItemModel.BakingContext var1) {
+         ItemModel var2 = (ItemModel)this.fallback.map((var1x) -> var1x.bake(var1)).orElse(var1.missingItemModel());
+         return this.unbakedSwitch.bake(var1, var2);
       }
 
-      public ItemModel.Unbaked model() {
-         return this.model;
+      public void resolveDependencies(ResolvableModel.Resolver var1) {
+         this.unbakedSwitch.resolveDependencies(var1);
+         this.fallback.ifPresent((var1x) -> var1x.resolveDependencies(var1));
       }
    }
 
@@ -73,16 +71,12 @@ public class SelectItemModel<T> implements ItemModel {
 
       public ItemModel bake(ItemModel.BakingContext var1, ItemModel var2) {
          Object2ObjectOpenHashMap var3 = new Object2ObjectOpenHashMap();
-         Iterator var4 = this.cases.iterator();
 
-         while(var4.hasNext()) {
-            SwitchCase var5 = (SwitchCase)var4.next();
+         for(SwitchCase var5 : this.cases) {
             ItemModel.Unbaked var6 = var5.model;
             ItemModel var7 = var6.bake(var1);
-            Iterator var8 = var5.values.iterator();
 
-            while(var8.hasNext()) {
-               Object var9 = var8.next();
+            for(Object var9 : var5.values) {
                var3.put(var9, var7);
             }
          }
@@ -92,65 +86,29 @@ public class SelectItemModel<T> implements ItemModel {
       }
 
       public void resolveDependencies(ResolvableModel.Resolver var1) {
-         Iterator var2 = this.cases.iterator();
-
-         while(var2.hasNext()) {
-            SwitchCase var3 = (SwitchCase)var2.next();
+         for(SwitchCase var3 : this.cases) {
             var3.model.resolveDependencies(var1);
          }
 
       }
 
-      public P property() {
-         return this.property;
-      }
-
-      public List<SwitchCase<T>> cases() {
-         return this.cases;
-      }
-
       static {
-         MAP_CODEC = SelectItemModelProperties.CODEC.dispatchMap("property", (var0) -> {
-            return var0.property().type();
-         }, SelectItemModelProperty.Type::switchCodec);
+         MAP_CODEC = SelectItemModelProperties.CODEC.dispatchMap("property", (var0) -> var0.property().type(), SelectItemModelProperty.Type::switchCodec);
       }
    }
 
-   public static record Unbaked(UnbakedSwitch<?, ?> unbakedSwitch, Optional<ItemModel.Unbaked> fallback) implements ItemModel.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(SelectItemModel.UnbakedSwitch.MAP_CODEC.forGetter(Unbaked::unbakedSwitch), ItemModels.CODEC.optionalFieldOf("fallback").forGetter(Unbaked::fallback)).apply(var0, Unbaked::new);
-      });
+   public static record SwitchCase<T>(List<T> values, ItemModel.Unbaked model) {
+      final List<T> values;
+      final ItemModel.Unbaked model;
 
-      public Unbaked(UnbakedSwitch<?, ?> var1, Optional<ItemModel.Unbaked> var2) {
+      public SwitchCase(List<T> var1, ItemModel.Unbaked var2) {
          super();
-         this.unbakedSwitch = var1;
-         this.fallback = var2;
+         this.values = var1;
+         this.model = var2;
       }
 
-      public MapCodec<Unbaked> type() {
-         return MAP_CODEC;
-      }
-
-      public ItemModel bake(ItemModel.BakingContext var1) {
-         ItemModel var2 = (ItemModel)this.fallback.map((var1x) -> {
-            return var1x.bake(var1);
-         }).orElse(var1.missingItemModel());
-         return this.unbakedSwitch.bake(var1, var2);
-      }
-
-      public void resolveDependencies(ResolvableModel.Resolver var1) {
-         this.unbakedSwitch.resolveDependencies(var1);
-         this.fallback.ifPresent((var1x) -> {
-            var1x.resolveDependencies(var1);
-         });
-      }
-
-      public UnbakedSwitch<?, ?> unbakedSwitch() {
-         return this.unbakedSwitch;
-      }
-
-      public Optional<ItemModel.Unbaked> fallback() {
-         return this.fallback;
+      public static <T> Codec<SwitchCase<T>> codec(Codec<T> var0) {
+         return RecordCodecBuilder.create((var1) -> var1.group(ExtraCodecs.nonEmptyList(ExtraCodecs.compactListCodec(var0)).fieldOf("when").forGetter(SwitchCase::values), ItemModels.CODEC.fieldOf("model").forGetter(SwitchCase::model)).apply(var1, SwitchCase::new));
       }
    }
 }

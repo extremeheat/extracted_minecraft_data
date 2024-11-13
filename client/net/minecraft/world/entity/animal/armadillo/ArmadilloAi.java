@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -59,7 +60,7 @@ public class ArmadilloAi {
    }
 
    public static Brain.Provider<Armadillo> brainProvider() {
-      return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
+      return Brain.<Armadillo>provider(MEMORY_TYPES, SENSOR_TYPES);
    }
 
    protected static Brain<?> makeBrain(Brain<Armadillo> var0) {
@@ -87,11 +88,7 @@ public class ArmadilloAi {
    }
 
    private static void initIdleActivity(Brain<Armadillo> var0) {
-      var0.addActivity(Activity.IDLE, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(1, new AnimalMakeLove(EntityType.ARMADILLO, 1.0F, 1)), Pair.of(2, new RunOne(ImmutableList.of(Pair.of(new FollowTemptation((var0x) -> {
-         return 1.25F;
-      }, (var0x) -> {
-         return var0x.isBaby() ? 1.0 : 2.0;
-      }), 1), Pair.of(BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 1.25F), 1)))), Pair.of(3, new RandomLookAround(UniformInt.of(150, 250), 30.0F, 0.0F, 0.0F)), Pair.of(4, new RunOne(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), ImmutableList.of(Pair.of(RandomStroll.stroll(1.0F), 1), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 1), Pair.of(new DoNothing(30, 60), 1))))));
+      var0.addActivity(Activity.IDLE, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(1, new AnimalMakeLove(EntityType.ARMADILLO, 1.0F, 1)), Pair.of(2, new RunOne(ImmutableList.of(Pair.of(new FollowTemptation((var0x) -> 1.25F, (var0x) -> var0x.isBaby() ? 1.0 : 2.0), 1), Pair.of(BabyFollowAdult.create(ADULT_FOLLOW_RANGE, 1.25F), 1)))), Pair.of(3, new RandomLookAround(UniformInt.of(150, 250), 30.0F, 0.0F, 0.0F)), Pair.of(4, new RunOne(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), ImmutableList.of(Pair.of(RandomStroll.stroll(1.0F), 1), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 1), Pair.of(new DoNothing(30, 60), 1))))));
    }
 
    private static void initScaredActivity(Brain<Armadillo> var0) {
@@ -103,49 +100,20 @@ public class ArmadilloAi {
    }
 
    public static Predicate<ItemStack> getTemptations() {
-      return (var0) -> {
-         return var0.is(ItemTags.ARMADILLO_FOOD);
-      };
+      return (var0) -> var0.is(ItemTags.ARMADILLO_FOOD);
    }
 
    static {
       SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.ARMADILLO_TEMPTATIONS, SensorType.NEAREST_ADULT, SensorType.ARMADILLO_SCARE_DETECTED);
       MEMORY_TYPES = ImmutableList.of(MemoryModuleType.IS_PANICKING, MemoryModuleType.HURT_BY, MemoryModuleType.HURT_BY_ENTITY, MemoryModuleType.WALK_TARGET, MemoryModuleType.LOOK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.TEMPTING_PLAYER, MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, MemoryModuleType.GAZE_COOLDOWN_TICKS, MemoryModuleType.IS_TEMPTED, new MemoryModuleType[]{MemoryModuleType.BREED_TARGET, MemoryModuleType.NEAREST_VISIBLE_ADULT, MemoryModuleType.DANGER_DETECTED_RECENTLY});
-      ARMADILLO_ROLLING_OUT = BehaviorBuilder.create((var0) -> {
-         return var0.group(var0.absent(MemoryModuleType.DANGER_DETECTED_RECENTLY)).apply(var0, (var0x) -> {
-            return (var0, var1, var2) -> {
+      ARMADILLO_ROLLING_OUT = BehaviorBuilder.create((Function)((var0) -> var0.group(var0.absent(MemoryModuleType.DANGER_DETECTED_RECENTLY)).apply(var0, (var0x) -> (var0, var1, var2) -> {
                if (var1.isScared()) {
                   var1.rollOut();
                   return true;
                } else {
                   return false;
                }
-            };
-         });
-      });
-   }
-
-   public static class ArmadilloPanic extends AnimalPanic<Armadillo> {
-      public ArmadilloPanic(float var1) {
-         super(var1, (var0) -> {
-            return DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES;
-         });
-      }
-
-      protected void start(ServerLevel var1, Armadillo var2, long var3) {
-         var2.rollOut();
-         super.start(var1, (PathfinderMob)var2, var3);
-      }
-
-      // $FF: synthetic method
-      protected void start(final ServerLevel var1, final PathfinderMob var2, final long var3) {
-         this.start(var1, (Armadillo)var2, var3);
-      }
-
-      // $FF: synthetic method
-      protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-         this.start(var1, (Armadillo)var2, var3);
-      }
+            })));
    }
 
    public static class ArmadilloBallUp extends Behavior<Armadillo> {
@@ -242,6 +210,27 @@ public class ArmadilloAi {
 
       static {
          BALL_UP_STAY_IN_STATE = 5 * TimeUtil.SECONDS_PER_MINUTE * 20;
+      }
+   }
+
+   public static class ArmadilloPanic extends AnimalPanic<Armadillo> {
+      public ArmadilloPanic(float var1) {
+         super(var1, (var0) -> DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES);
+      }
+
+      protected void start(ServerLevel var1, Armadillo var2, long var3) {
+         var2.rollOut();
+         super.start(var1, var2, var3);
+      }
+
+      // $FF: synthetic method
+      protected void start(final ServerLevel var1, final PathfinderMob var2, final long var3) {
+         this.start(var1, (Armadillo)var2, var3);
+      }
+
+      // $FF: synthetic method
+      protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
+         this.start(var1, (Armadillo)var2, var3);
       }
    }
 }

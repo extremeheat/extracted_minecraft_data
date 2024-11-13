@@ -20,13 +20,13 @@ public class SingleValuePalette<T> implements Palette<T> {
       this.resizeHandler = var2;
       if (var3.size() > 0) {
          Validate.isTrue(var3.size() <= 1, "Can't initialize SingleValuePalette with %d values.", (long)var3.size());
-         this.value = var3.get(0);
+         this.value = (T)var3.get(0);
       }
 
    }
 
    public static <A> Palette<A> create(int var0, IdMap<A> var1, PaletteResize<A> var2, List<A> var3) {
-      return new SingleValuePalette(var1, var2, var3);
+      return new SingleValuePalette<A>(var1, var2, var3);
    }
 
    public int idFor(T var1) {

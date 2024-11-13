@@ -11,9 +11,7 @@ import net.minecraft.world.level.storage.loot.IntRange;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public record TimeCheck(Optional<Long> period, IntRange value) implements LootItemCondition {
-   public static final MapCodec<TimeCheck> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.LONG.optionalFieldOf("period").forGetter(TimeCheck::period), IntRange.CODEC.fieldOf("value").forGetter(TimeCheck::value)).apply(var0, TimeCheck::new);
-   });
+   public static final MapCodec<TimeCheck> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.LONG.optionalFieldOf("period").forGetter(TimeCheck::period), IntRange.CODEC.fieldOf("value").forGetter(TimeCheck::value)).apply(var0, TimeCheck::new));
 
    public TimeCheck(Optional<Long> var1, IntRange var2) {
       super();
@@ -41,14 +39,6 @@ public record TimeCheck(Optional<Long> period, IntRange value) implements LootIt
 
    public static Builder time(IntRange var0) {
       return new Builder(var0);
-   }
-
-   public Optional<Long> period() {
-      return this.period;
-   }
-
-   public IntRange value() {
-      return this.value;
    }
 
    // $FF: synthetic method

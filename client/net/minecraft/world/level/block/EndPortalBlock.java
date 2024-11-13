@@ -112,4 +112,8 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
    protected boolean canBeReplaced(BlockState var1, Fluid var2) {
       return false;
    }
+
+   protected RenderShape getRenderShape(BlockState var1) {
+      return RenderShape.INVISIBLE;
+   }
 }

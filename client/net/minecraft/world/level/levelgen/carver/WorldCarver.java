@@ -39,7 +39,7 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
    private final MapCodec<ConfiguredWorldCarver<C>> configuredCodec;
 
    private static <C extends CarverConfiguration, F extends WorldCarver<C>> F register(String var0, F var1) {
-      return (WorldCarver)Registry.register(BuiltInRegistries.CARVER, (String)var0, var1);
+      return (F)(Registry.register(BuiltInRegistries.CARVER, (String)var0, var1));
    }
 
    public WorldCarver(Codec<C> var1) {
@@ -49,7 +49,7 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
    }
 
    public ConfiguredWorldCarver<C> configured(C var1) {
-      return new ConfiguredWorldCarver(this, var1);
+      return new ConfiguredWorldCarver<C>(this, var1);
    }
 
    public MapCodec<ConfiguredWorldCarver<C>> configuredCodec() {

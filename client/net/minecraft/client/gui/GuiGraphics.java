@@ -7,7 +7,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,6 +16,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -163,24 +163,23 @@ public class GuiGraphics {
 
    public void fill(RenderType var1, int var2, int var3, int var4, int var5, int var6, int var7) {
       Matrix4f var8 = this.pose.last().pose();
-      int var9;
       if (var2 < var4) {
-         var9 = var2;
+         int var9 = var2;
          var2 = var4;
          var4 = var9;
       }
 
       if (var3 < var5) {
-         var9 = var3;
+         int var10 = var3;
          var3 = var5;
-         var5 = var9;
+         var5 = var10;
       }
 
-      VertexConsumer var10 = this.bufferSource.getBuffer(var1);
-      var10.addVertex(var8, (float)var2, (float)var3, (float)var6).setColor(var7);
-      var10.addVertex(var8, (float)var2, (float)var5, (float)var6).setColor(var7);
-      var10.addVertex(var8, (float)var4, (float)var5, (float)var6).setColor(var7);
-      var10.addVertex(var8, (float)var4, (float)var3, (float)var6).setColor(var7);
+      VertexConsumer var11 = this.bufferSource.getBuffer(var1);
+      var11.addVertex(var8, (float)var2, (float)var3, (float)var6).setColor(var7);
+      var11.addVertex(var8, (float)var2, (float)var5, (float)var6).setColor(var7);
+      var11.addVertex(var8, (float)var4, (float)var5, (float)var6).setColor(var7);
+      var11.addVertex(var8, (float)var4, (float)var3, (float)var6).setColor(var7);
    }
 
    public void fillGradient(int var1, int var2, int var3, int var4, int var5, int var6) {
@@ -261,10 +260,10 @@ public class GuiGraphics {
    }
 
    public void drawWordWrap(Font var1, FormattedText var2, int var3, int var4, int var5, int var6, boolean var7) {
-      for(Iterator var8 = var1.split(var2, var5).iterator(); var8.hasNext(); var4 += 9) {
-         FormattedCharSequence var9 = (FormattedCharSequence)var8.next();
+      for(FormattedCharSequence var9 : var1.split(var2, var5)) {
          this.drawString(var1, var9, var3, var4, var6, var7);
          Objects.requireNonNull(var1);
+         var4 += 9;
       }
 
    }
@@ -472,15 +471,9 @@ public class GuiGraphics {
          } catch (Throwable var11) {
             CrashReport var9 = CrashReport.forThrowable(var11, "Rendering item");
             CrashReportCategory var10 = var9.addCategory("Item being rendered");
-            var10.setDetail("Item Type", () -> {
-               return String.valueOf(var3.getItem());
-            });
-            var10.setDetail("Item Components", () -> {
-               return String.valueOf(var3.getComponents());
-            });
-            var10.setDetail("Item Foil", () -> {
-               return String.valueOf(var3.hasFoil());
-            });
+            var10.setDetail("Item Type", (CrashReportDetail)(() -> String.valueOf(var3.getItem())));
+            var10.setDetail("Item Components", (CrashReportDetail)(() -> String.valueOf(var3.getComponents())));
+            var10.setDetail("Item Foil", (CrashReportDetail)(() -> String.valueOf(var3.hasFoil())));
             throw new ReportedException(var9);
          }
 
@@ -512,14 +505,12 @@ public class GuiGraphics {
 
    public void renderTooltip(Font var1, List<Component> var2, Optional<TooltipComponent> var3, int var4, int var5, @Nullable ResourceLocation var6) {
       List var7 = (List)var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Util.toMutableList());
-      var3.ifPresent((var1x) -> {
-         var7.add(var7.isEmpty() ? 0 : 1, ClientTooltipComponent.create(var1x));
-      });
+      var3.ifPresent((var1x) -> var7.add(var7.isEmpty() ? 0 : 1, ClientTooltipComponent.create(var1x)));
       this.renderTooltipInternal(var1, var7, var4, var5, DefaultTooltipPositioner.INSTANCE, var6);
    }
 
    public void renderTooltip(Font var1, Component var2, int var3, int var4) {
-      this.renderTooltip(var1, (Component)var2, var3, var4, (ResourceLocation)null);
+      this.renderTooltip(var1, var2, var3, var4, (ResourceLocation)null);
    }
 
    public void renderTooltip(Font var1, Component var2, int var3, int var4, @Nullable ResourceLocation var5) {
@@ -551,13 +542,13 @@ public class GuiGraphics {
          int var7 = 0;
          int var8 = var2.size() == 1 ? -2 : 0;
 
-         ClientTooltipComponent var10;
-         for(Iterator var9 = var2.iterator(); var9.hasNext(); var8 += var10.getHeight(var1)) {
-            var10 = (ClientTooltipComponent)var9.next();
+         for(ClientTooltipComponent var10 : var2) {
             int var11 = var10.getWidth(var1);
             if (var11 > var7) {
                var7 = var11;
             }
+
+            var8 += var10.getHeight(var1);
          }
 
          int var18 = var7;
@@ -571,20 +562,18 @@ public class GuiGraphics {
          this.pose.translate(0.0F, 0.0F, 400.0F);
          int var15 = var13;
 
-         int var16;
-         ClientTooltipComponent var17;
-         for(var16 = 0; var16 < var2.size(); ++var16) {
-            var17 = (ClientTooltipComponent)var2.get(var16);
+         for(int var16 = 0; var16 < var2.size(); ++var16) {
+            ClientTooltipComponent var17 = (ClientTooltipComponent)var2.get(var16);
             var17.renderText(var1, var12, var15, this.pose.last().pose(), this.bufferSource);
             var15 += var17.getHeight(var1) + (var16 == 0 ? 2 : 0);
          }
 
          var15 = var13;
 
-         for(var16 = 0; var16 < var2.size(); ++var16) {
-            var17 = (ClientTooltipComponent)var2.get(var16);
-            var17.renderImage(var1, var12, var15, var18, var19, this);
-            var15 += var17.getHeight(var1) + (var16 == 0 ? 2 : 0);
+         for(int var22 = 0; var22 < var2.size(); ++var22) {
+            ClientTooltipComponent var23 = (ClientTooltipComponent)var2.get(var22);
+            var23.renderImage(var1, var12, var15, var18, var19, this);
+            var15 += var23.getHeight(var1) + (var22 == 0 ? 2 : 0);
          }
 
          this.pose.popPose();

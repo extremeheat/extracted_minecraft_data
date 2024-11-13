@@ -5,7 +5,6 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -33,34 +32,20 @@ public record EquipmentTable(ResourceKey<LootTable> lootTable, Map<EquipmentSlot
 
    private static Map<EquipmentSlot, Float> createForAllSlots(List<EquipmentSlot> var0, float var1) {
       HashMap var2 = Maps.newHashMap();
-      Iterator var3 = var0.iterator();
 
-      while(var3.hasNext()) {
-         EquipmentSlot var4 = (EquipmentSlot)var3.next();
+      for(EquipmentSlot var4 : var0) {
          var2.put(var4, var1);
       }
 
       return var2;
    }
 
-   public ResourceKey<LootTable> lootTable() {
-      return this.lootTable;
-   }
-
-   public Map<EquipmentSlot, Float> slotDropChances() {
-      return this.slotDropChances;
-   }
-
    static {
-      DROP_CHANCES_CODEC = Codec.either(Codec.FLOAT, Codec.unboundedMap(EquipmentSlot.CODEC, Codec.FLOAT)).xmap((var0) -> {
-         return (Map)var0.map(EquipmentTable::createForAllSlots, Function.identity());
-      }, (var0) -> {
+      DROP_CHANCES_CODEC = Codec.either(Codec.FLOAT, Codec.unboundedMap(EquipmentSlot.CODEC, Codec.FLOAT)).xmap((var0) -> (Map)var0.map(EquipmentTable::createForAllSlots, Function.identity()), (var0) -> {
          boolean var1 = var0.values().stream().distinct().count() == 1L;
          boolean var2 = var0.keySet().containsAll(EquipmentSlot.VALUES);
          return var1 && var2 ? Either.left((Float)var0.values().stream().findFirst().orElse(0.0F)) : Either.right(var0);
       });
-      CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(ResourceKey.codec(Registries.LOOT_TABLE).fieldOf("loot_table").forGetter(EquipmentTable::lootTable), DROP_CHANCES_CODEC.optionalFieldOf("slot_drop_chances", Map.of()).forGetter(EquipmentTable::slotDropChances)).apply(var0, EquipmentTable::new);
-      });
+      CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceKey.codec(Registries.LOOT_TABLE).fieldOf("loot_table").forGetter(EquipmentTable::lootTable), DROP_CHANCES_CODEC.optionalFieldOf("slot_drop_chances", Map.of()).forGetter(EquipmentTable::slotDropChances)).apply(var0, EquipmentTable::new));
    }
 }

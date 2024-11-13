@@ -27,9 +27,7 @@ public class EntityMinecartIdentifiersFix extends EntityRenameFix {
 
          String var4 = var10000;
          Type var5 = (Type)this.getOutputSchema().findChoiceType(References.ENTITY).types().get(var4);
-         return Pair.of(var4, Util.writeAndReadTypedOrThrow(var2, var5, (var0) -> {
-            return var0.remove("Type");
-         }));
+         return Pair.of(var4, Util.writeAndReadTypedOrThrow(var2, var5, (var0) -> var0.remove("Type")));
       }
    }
 }

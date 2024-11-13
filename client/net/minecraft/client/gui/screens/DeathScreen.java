@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -42,9 +41,7 @@ public class DeathScreen extends Screen {
          this.minecraft.player.respawn();
          var1x.active = false;
       }).bounds(this.width / 2 - 100, this.height / 4 + 72, 200, 20).build()));
-      this.exitToTitleButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("deathScreen.titleScreen"), (var1x) -> {
-         this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, this::handleExitToTitleScreen, true);
-      }).bounds(this.width / 2 - 100, this.height / 4 + 96, 200, 20).build());
+      this.exitToTitleButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("deathScreen.titleScreen"), (var1x) -> this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, this::handleExitToTitleScreen, true)).bounds(this.width / 2 - 100, this.height / 4 + 96, 200, 20).build());
       this.exitButtons.add(this.exitToTitleButton);
       this.setButtonsActive(false);
       this.deathScore = Component.translatable("deathScreen.score.value", Component.literal(Integer.toString(this.minecraft.player.getScore())).withStyle(ChatFormatting.YELLOW));
@@ -155,9 +152,8 @@ public class DeathScreen extends Screen {
    }
 
    private void setButtonsActive(boolean var1) {
-      Button var3;
-      for(Iterator var2 = this.exitButtons.iterator(); var2.hasNext(); var3.active = var1) {
-         var3 = (Button)var2.next();
+      for(Button var3 : this.exitButtons) {
+         var3.active = var1;
       }
 
    }

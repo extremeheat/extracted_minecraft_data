@@ -24,15 +24,11 @@ public class BrightnessCombiner<S extends BlockEntity> implements DoubleBlockCom
    }
 
    public Int2IntFunction acceptSingle(S var1) {
-      return (var0) -> {
-         return var0;
-      };
+      return (var0) -> var0;
    }
 
    public Int2IntFunction acceptNone() {
-      return (var0) -> {
-         return var0;
-      };
+      return (var0) -> var0;
    }
 
    // $FF: synthetic method

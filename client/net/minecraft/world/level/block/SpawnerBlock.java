@@ -47,10 +47,6 @@ public class SpawnerBlock extends BaseEntityBlock {
 
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
-
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
       Spawner.appendHoverText(var1, var3, "SpawnData");

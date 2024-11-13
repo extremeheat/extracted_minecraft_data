@@ -8,9 +8,7 @@ import java.util.Objects;
 import net.minecraft.Util;
 
 public interface StatFormatter {
-   DecimalFormat DECIMAL_FORMAT = (DecimalFormat)Util.make(new DecimalFormat("########0.00"), (var0) -> {
-      var0.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT));
-   });
+   DecimalFormat DECIMAL_FORMAT = (DecimalFormat)Util.make(new DecimalFormat("########0.00"), (var0) -> var0.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT)));
    StatFormatter DEFAULT;
    StatFormatter DIVIDE_BY_TEN;
    StatFormatter DISTANCE;
@@ -22,16 +20,14 @@ public interface StatFormatter {
       NumberFormat var10000 = NumberFormat.getIntegerInstance(Locale.US);
       Objects.requireNonNull(var10000);
       DEFAULT = var10000::format;
-      DIVIDE_BY_TEN = (var0) -> {
-         return DECIMAL_FORMAT.format((double)var0 * 0.1);
-      };
+      DIVIDE_BY_TEN = (var0) -> DECIMAL_FORMAT.format((double)var0 * 0.1);
       DISTANCE = (var0) -> {
          double var1 = (double)var0 / 100.0;
          double var3 = var1 / 1000.0;
          if (var3 > 0.5) {
             return DECIMAL_FORMAT.format(var3) + " km";
          } else {
-            return var1 > 0.5 ? DECIMAL_FORMAT.format(var1) + " m" : "" + var0 + " cm";
+            return var1 > 0.5 ? DECIMAL_FORMAT.format(var1) + " m" : var0 + " cm";
          }
       };
       TIME = (var0) -> {
@@ -47,7 +43,7 @@ public interface StatFormatter {
          } else if (var5 > 0.5) {
             return DECIMAL_FORMAT.format(var5) + " h";
          } else {
-            return var3 > 0.5 ? DECIMAL_FORMAT.format(var3) + " min" : "" + var1 + " s";
+            return var3 > 0.5 ? DECIMAL_FORMAT.format(var3) + " min" : var1 + " s";
          }
       };
    }

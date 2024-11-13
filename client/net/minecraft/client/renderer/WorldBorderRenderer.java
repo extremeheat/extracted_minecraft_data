@@ -48,16 +48,12 @@ public class WorldBorderRenderer {
          double var31 = Math.max((double)Mth.floor(var19 - var3), var11);
          double var33 = Math.min((double)Mth.ceil(var19 + var3), var13);
          float var35 = (float)(Mth.floor(var31) & 1) * 0.5F;
-         float var36;
-         double var37;
-         double var39;
-         float var41;
          if (var17 > var9 - var3) {
-            var36 = var35;
+            float var36 = var35;
 
-            for(var37 = var31; var37 < var33; var36 += 0.5F) {
-               var39 = Math.min(1.0, var33 - var37);
-               var41 = (float)var39 * 0.5F;
+            for(double var37 = var31; var37 < var33; var36 += 0.5F) {
+               double var39 = Math.min(1.0, var33 - var37);
+               float var41 = (float)var39 * 0.5F;
                var30.addVertex((float)(var9 - var17), -var21, (float)(var37 - var19)).setUv(var27 - var36, var27 + var29);
                var30.addVertex((float)(var9 - var17), -var21, (float)(var37 + var39 - var19)).setUv(var27 - (var41 + var36), var27 + var29);
                var30.addVertex((float)(var9 - var17), var21, (float)(var37 + var39 - var19)).setUv(var27 - (var41 + var36), var27 + var28);
@@ -67,16 +63,16 @@ public class WorldBorderRenderer {
          }
 
          if (var17 < var7 + var3) {
-            var36 = var35;
+            float var47 = var35;
 
-            for(var37 = var31; var37 < var33; var36 += 0.5F) {
-               var39 = Math.min(1.0, var33 - var37);
-               var41 = (float)var39 * 0.5F;
-               var30.addVertex((float)(var7 - var17), -var21, (float)(var37 - var19)).setUv(var27 + var36, var27 + var29);
-               var30.addVertex((float)(var7 - var17), -var21, (float)(var37 + var39 - var19)).setUv(var27 + var41 + var36, var27 + var29);
-               var30.addVertex((float)(var7 - var17), var21, (float)(var37 + var39 - var19)).setUv(var27 + var41 + var36, var27 + var28);
-               var30.addVertex((float)(var7 - var17), var21, (float)(var37 - var19)).setUv(var27 + var36, var27 + var28);
-               ++var37;
+            for(double var51 = var31; var51 < var33; var47 += 0.5F) {
+               double var54 = Math.min(1.0, var33 - var51);
+               float var57 = (float)var54 * 0.5F;
+               var30.addVertex((float)(var7 - var17), -var21, (float)(var51 - var19)).setUv(var27 + var47, var27 + var29);
+               var30.addVertex((float)(var7 - var17), -var21, (float)(var51 + var54 - var19)).setUv(var27 + var57 + var47, var27 + var29);
+               var30.addVertex((float)(var7 - var17), var21, (float)(var51 + var54 - var19)).setUv(var27 + var57 + var47, var27 + var28);
+               var30.addVertex((float)(var7 - var17), var21, (float)(var51 - var19)).setUv(var27 + var47, var27 + var28);
+               ++var51;
             }
          }
 
@@ -84,36 +80,36 @@ public class WorldBorderRenderer {
          var33 = Math.min((double)Mth.ceil(var17 + var3), var9);
          var35 = (float)(Mth.floor(var31) & 1) * 0.5F;
          if (var19 > var13 - var3) {
-            var36 = var35;
+            float var48 = var35;
 
-            for(var37 = var31; var37 < var33; var36 += 0.5F) {
-               var39 = Math.min(1.0, var33 - var37);
-               var41 = (float)var39 * 0.5F;
-               var30.addVertex((float)(var37 - var17), -var21, (float)(var13 - var19)).setUv(var27 + var36, var27 + var29);
-               var30.addVertex((float)(var37 + var39 - var17), -var21, (float)(var13 - var19)).setUv(var27 + var41 + var36, var27 + var29);
-               var30.addVertex((float)(var37 + var39 - var17), var21, (float)(var13 - var19)).setUv(var27 + var41 + var36, var27 + var28);
-               var30.addVertex((float)(var37 - var17), var21, (float)(var13 - var19)).setUv(var27 + var36, var27 + var28);
-               ++var37;
+            for(double var52 = var31; var52 < var33; var48 += 0.5F) {
+               double var55 = Math.min(1.0, var33 - var52);
+               float var58 = (float)var55 * 0.5F;
+               var30.addVertex((float)(var52 - var17), -var21, (float)(var13 - var19)).setUv(var27 + var48, var27 + var29);
+               var30.addVertex((float)(var52 + var55 - var17), -var21, (float)(var13 - var19)).setUv(var27 + var58 + var48, var27 + var29);
+               var30.addVertex((float)(var52 + var55 - var17), var21, (float)(var13 - var19)).setUv(var27 + var58 + var48, var27 + var28);
+               var30.addVertex((float)(var52 - var17), var21, (float)(var13 - var19)).setUv(var27 + var48, var27 + var28);
+               ++var52;
             }
          }
 
          if (var19 < var11 + var3) {
-            var36 = var35;
+            float var49 = var35;
 
-            for(var37 = var31; var37 < var33; var36 += 0.5F) {
-               var39 = Math.min(1.0, var33 - var37);
-               var41 = (float)var39 * 0.5F;
-               var30.addVertex((float)(var37 - var17), -var21, (float)(var11 - var19)).setUv(var27 - var36, var27 + var29);
-               var30.addVertex((float)(var37 + var39 - var17), -var21, (float)(var11 - var19)).setUv(var27 - (var41 + var36), var27 + var29);
-               var30.addVertex((float)(var37 + var39 - var17), var21, (float)(var11 - var19)).setUv(var27 - (var41 + var36), var27 + var28);
-               var30.addVertex((float)(var37 - var17), var21, (float)(var11 - var19)).setUv(var27 - var36, var27 + var28);
-               ++var37;
+            for(double var53 = var31; var53 < var33; var49 += 0.5F) {
+               double var56 = Math.min(1.0, var33 - var53);
+               float var59 = (float)var56 * 0.5F;
+               var30.addVertex((float)(var53 - var17), -var21, (float)(var11 - var19)).setUv(var27 - var49, var27 + var29);
+               var30.addVertex((float)(var53 + var56 - var17), -var21, (float)(var11 - var19)).setUv(var27 - (var59 + var49), var27 + var29);
+               var30.addVertex((float)(var53 + var56 - var17), var21, (float)(var11 - var19)).setUv(var27 - (var59 + var49), var27 + var28);
+               var30.addVertex((float)(var53 - var17), var21, (float)(var11 - var19)).setUv(var27 - var49, var27 + var28);
+               ++var53;
             }
          }
 
-         MeshData var42 = var30.build();
-         if (var42 != null) {
-            BufferUploader.drawWithShader(var42);
+         MeshData var50 = var30.build();
+         if (var50 != null) {
+            BufferUploader.drawWithShader(var50);
          }
 
          var22.clearRenderState();

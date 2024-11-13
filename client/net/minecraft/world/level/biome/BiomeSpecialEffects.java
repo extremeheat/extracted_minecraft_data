@@ -12,35 +12,7 @@ import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 
 public class BiomeSpecialEffects {
-   public static final Codec<BiomeSpecialEffects> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.INT.fieldOf("fog_color").forGetter((var0x) -> {
-         return var0x.fogColor;
-      }), Codec.INT.fieldOf("water_color").forGetter((var0x) -> {
-         return var0x.waterColor;
-      }), Codec.INT.fieldOf("water_fog_color").forGetter((var0x) -> {
-         return var0x.waterFogColor;
-      }), Codec.INT.fieldOf("sky_color").forGetter((var0x) -> {
-         return var0x.skyColor;
-      }), Codec.INT.optionalFieldOf("foliage_color").forGetter((var0x) -> {
-         return var0x.foliageColorOverride;
-      }), Codec.INT.optionalFieldOf("grass_color").forGetter((var0x) -> {
-         return var0x.grassColorOverride;
-      }), BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier", BiomeSpecialEffects.GrassColorModifier.NONE).forGetter((var0x) -> {
-         return var0x.grassColorModifier;
-      }), AmbientParticleSettings.CODEC.optionalFieldOf("particle").forGetter((var0x) -> {
-         return var0x.ambientParticleSettings;
-      }), SoundEvent.CODEC.optionalFieldOf("ambient_sound").forGetter((var0x) -> {
-         return var0x.ambientLoopSoundEvent;
-      }), AmbientMoodSettings.CODEC.optionalFieldOf("mood_sound").forGetter((var0x) -> {
-         return var0x.ambientMoodSettings;
-      }), AmbientAdditionsSettings.CODEC.optionalFieldOf("additions_sound").forGetter((var0x) -> {
-         return var0x.ambientAdditionsSettings;
-      }), SimpleWeightedRandomList.wrappedCodecAllowingEmpty(Music.CODEC).optionalFieldOf("music").forGetter((var0x) -> {
-         return var0x.backgroundMusic;
-      }), Codec.FLOAT.fieldOf("music_volume").orElse(1.0F).forGetter((var0x) -> {
-         return var0x.backgroundMusicVolume;
-      })).apply(var0, BiomeSpecialEffects::new);
-   });
+   public static final Codec<BiomeSpecialEffects> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("fog_color").forGetter((var0x) -> var0x.fogColor), Codec.INT.fieldOf("water_color").forGetter((var0x) -> var0x.waterColor), Codec.INT.fieldOf("water_fog_color").forGetter((var0x) -> var0x.waterFogColor), Codec.INT.fieldOf("sky_color").forGetter((var0x) -> var0x.skyColor), Codec.INT.optionalFieldOf("foliage_color").forGetter((var0x) -> var0x.foliageColorOverride), Codec.INT.optionalFieldOf("grass_color").forGetter((var0x) -> var0x.grassColorOverride), BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier", BiomeSpecialEffects.GrassColorModifier.NONE).forGetter((var0x) -> var0x.grassColorModifier), AmbientParticleSettings.CODEC.optionalFieldOf("particle").forGetter((var0x) -> var0x.ambientParticleSettings), SoundEvent.CODEC.optionalFieldOf("ambient_sound").forGetter((var0x) -> var0x.ambientLoopSoundEvent), AmbientMoodSettings.CODEC.optionalFieldOf("mood_sound").forGetter((var0x) -> var0x.ambientMoodSettings), AmbientAdditionsSettings.CODEC.optionalFieldOf("additions_sound").forGetter((var0x) -> var0x.ambientAdditionsSettings), SimpleWeightedRandomList.wrappedCodecAllowingEmpty(Music.CODEC).optionalFieldOf("music").forGetter((var0x) -> var0x.backgroundMusic), Codec.FLOAT.fieldOf("music_volume").orElse(1.0F).forGetter((var0x) -> var0x.backgroundMusicVolume)).apply(var0, BiomeSpecialEffects::new));
    private final int fogColor;
    private final int waterColor;
    private final int waterFogColor;
@@ -122,47 +94,6 @@ public class BiomeSpecialEffects {
 
    public float getBackgroundMusicVolume() {
       return this.backgroundMusicVolume;
-   }
-
-   public static enum GrassColorModifier implements StringRepresentable {
-      NONE("none") {
-         public int modifyColor(double var1, double var3, int var5) {
-            return var5;
-         }
-      },
-      DARK_FOREST("dark_forest") {
-         public int modifyColor(double var1, double var3, int var5) {
-            return (var5 & 16711422) + 2634762 >> 1;
-         }
-      },
-      SWAMP("swamp") {
-         public int modifyColor(double var1, double var3, int var5) {
-            double var6 = Biome.BIOME_INFO_NOISE.getValue(var1 * 0.0225, var3 * 0.0225, false);
-            return var6 < -0.1 ? 5011004 : 6975545;
-         }
-      };
-
-      private final String name;
-      public static final Codec<GrassColorModifier> CODEC = StringRepresentable.fromEnum(GrassColorModifier::values);
-
-      public abstract int modifyColor(double var1, double var3, int var5);
-
-      GrassColorModifier(final String var3) {
-         this.name = var3;
-      }
-
-      public String getName() {
-         return this.name;
-      }
-
-      public String getSerializedName() {
-         return this.name;
-      }
-
-      // $FF: synthetic method
-      private static GrassColorModifier[] $values() {
-         return new GrassColorModifier[]{NONE, DARK_FOREST, SWAMP};
-      }
    }
 
    public static class Builder {
@@ -271,15 +202,48 @@ public class BiomeSpecialEffects {
       }
 
       public BiomeSpecialEffects build() {
-         return new BiomeSpecialEffects(this.fogColor.orElseThrow(() -> {
-            return new IllegalStateException("Missing 'fog' color.");
-         }), this.waterColor.orElseThrow(() -> {
-            return new IllegalStateException("Missing 'water' color.");
-         }), this.waterFogColor.orElseThrow(() -> {
-            return new IllegalStateException("Missing 'water fog' color.");
-         }), this.skyColor.orElseThrow(() -> {
-            return new IllegalStateException("Missing 'sky' color.");
-         }), this.foliageColorOverride, this.grassColorOverride, this.grassColorModifier, this.ambientParticle, this.ambientLoopSoundEvent, this.ambientMoodSettings, this.ambientAdditionsSettings, this.backgroundMusic, this.backgroundMusicVolume);
+         return new BiomeSpecialEffects(this.fogColor.orElseThrow(() -> new IllegalStateException("Missing 'fog' color.")), this.waterColor.orElseThrow(() -> new IllegalStateException("Missing 'water' color.")), this.waterFogColor.orElseThrow(() -> new IllegalStateException("Missing 'water fog' color.")), this.skyColor.orElseThrow(() -> new IllegalStateException("Missing 'sky' color.")), this.foliageColorOverride, this.grassColorOverride, this.grassColorModifier, this.ambientParticle, this.ambientLoopSoundEvent, this.ambientMoodSettings, this.ambientAdditionsSettings, this.backgroundMusic, this.backgroundMusicVolume);
+      }
+   }
+
+   public static enum GrassColorModifier implements StringRepresentable {
+      NONE("none") {
+         public int modifyColor(double var1, double var3, int var5) {
+            return var5;
+         }
+      },
+      DARK_FOREST("dark_forest") {
+         public int modifyColor(double var1, double var3, int var5) {
+            return (var5 & 16711422) + 2634762 >> 1;
+         }
+      },
+      SWAMP("swamp") {
+         public int modifyColor(double var1, double var3, int var5) {
+            double var6 = Biome.BIOME_INFO_NOISE.getValue(var1 * 0.0225, var3 * 0.0225, false);
+            return var6 < -0.1 ? 5011004 : 6975545;
+         }
+      };
+
+      private final String name;
+      public static final Codec<GrassColorModifier> CODEC = StringRepresentable.<GrassColorModifier>fromEnum(GrassColorModifier::values);
+
+      public abstract int modifyColor(double var1, double var3, int var5);
+
+      GrassColorModifier(final String var3) {
+         this.name = var3;
+      }
+
+      public String getName() {
+         return this.name;
+      }
+
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      // $FF: synthetic method
+      private static GrassColorModifier[] $values() {
+         return new GrassColorModifier[]{NONE, DARK_FOREST, SWAMP};
       }
    }
 }

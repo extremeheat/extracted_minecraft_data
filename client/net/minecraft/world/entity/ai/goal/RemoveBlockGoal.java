@@ -71,20 +71,18 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
       BlockPos var3 = this.getPosWithBlock(var2, var1);
       RandomSource var4 = this.removerMob.getRandom();
       if (this.isReachedTarget() && var3 != null) {
-         Vec3 var5;
-         double var6;
          if (this.ticksSinceReachedGoal > 0) {
-            var5 = this.removerMob.getDeltaMovement();
+            Vec3 var5 = this.removerMob.getDeltaMovement();
             this.removerMob.setDeltaMovement(var5.x, 0.3, var5.z);
             if (!var1.isClientSide) {
-               var6 = 0.08;
+               double var6 = 0.08;
                ((ServerLevel)var1).sendParticles(new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.EGG)), (double)var3.getX() + 0.5, (double)var3.getY() + 0.7, (double)var3.getZ() + 0.5, 3, ((double)var4.nextFloat() - 0.5) * 0.08, ((double)var4.nextFloat() - 0.5) * 0.08, ((double)var4.nextFloat() - 0.5) * 0.08, 0.15000000596046448);
             }
          }
 
          if (this.ticksSinceReachedGoal % 2 == 0) {
-            var5 = this.removerMob.getDeltaMovement();
-            this.removerMob.setDeltaMovement(var5.x, -0.3, var5.z);
+            Vec3 var12 = this.removerMob.getDeltaMovement();
+            this.removerMob.setDeltaMovement(var12.x, -0.3, var12.z);
             if (this.ticksSinceReachedGoal % 6 == 0) {
                this.playDestroyProgressSound(var1, this.blockPos);
             }
@@ -93,11 +91,11 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
          if (this.ticksSinceReachedGoal > 60) {
             var1.removeBlock(var3, false);
             if (!var1.isClientSide) {
-               for(int var12 = 0; var12 < 20; ++var12) {
-                  var6 = var4.nextGaussian() * 0.02;
+               for(int var13 = 0; var13 < 20; ++var13) {
+                  double var14 = var4.nextGaussian() * 0.02;
                   double var8 = var4.nextGaussian() * 0.02;
                   double var10 = var4.nextGaussian() * 0.02;
-                  ((ServerLevel)var1).sendParticles(ParticleTypes.POOF, (double)var3.getX() + 0.5, (double)var3.getY(), (double)var3.getZ() + 0.5, 1, var6, var8, var10, 0.15000000596046448);
+                  ((ServerLevel)var1).sendParticles(ParticleTypes.POOF, (double)var3.getX() + 0.5, (double)var3.getY(), (double)var3.getZ() + 0.5, 1, var14, var8, var10, 0.15000000596046448);
                }
 
                this.playBreakSound(var1, var3);
@@ -115,11 +113,8 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
          return var1;
       } else {
          BlockPos[] var3 = new BlockPos[]{var1.below(), var1.west(), var1.east(), var1.north(), var1.south(), var1.below().below()};
-         BlockPos[] var4 = var3;
-         int var5 = var3.length;
 
-         for(int var6 = 0; var6 < var5; ++var6) {
-            BlockPos var7 = var4[var6];
+         for(BlockPos var7 : var3) {
             if (var2.getBlockState(var7).is(this.blockToRemove)) {
                return var7;
             }

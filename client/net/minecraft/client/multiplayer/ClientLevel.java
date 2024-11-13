@@ -9,15 +9,16 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -107,7 +108,7 @@ public class ClientLevel extends Level {
    private static final int NORMAL_LIGHT_UPDATES_PER_FRAME = 10;
    private static final int LIGHT_UPDATE_QUEUE_SIZE_THRESHOLD = 1000;
    final EntityTickList tickingEntities = new EntityTickList();
-   private final TransientEntitySectionManager<Entity> entityStorage = new TransientEntitySectionManager(Entity.class, new EntityCallbacks());
+   private final TransientEntitySectionManager<Entity> entityStorage = new TransientEntitySectionManager<Entity>(Entity.class, new EntityCallbacks());
    private final ClientPacketListener connection;
    private final LevelRenderer levelRenderer;
    private final LevelEventHandler levelEventHandler;
@@ -121,15 +122,9 @@ public class ClientLevel extends Level {
    private static final int CLOUD_COLOR = -1;
    private int skyFlashTime;
    private final Object2ObjectArrayMap<ColorResolver, BlockTintCache> tintCaches = (Object2ObjectArrayMap)Util.make(new Object2ObjectArrayMap(3), (var1x) -> {
-      var1x.put(BiomeColors.GRASS_COLOR_RESOLVER, new BlockTintCache((var1) -> {
-         return this.calculateBlockTint(var1, BiomeColors.GRASS_COLOR_RESOLVER);
-      }));
-      var1x.put(BiomeColors.FOLIAGE_COLOR_RESOLVER, new BlockTintCache((var1) -> {
-         return this.calculateBlockTint(var1, BiomeColors.FOLIAGE_COLOR_RESOLVER);
-      }));
-      var1x.put(BiomeColors.WATER_COLOR_RESOLVER, new BlockTintCache((var1) -> {
-         return this.calculateBlockTint(var1, BiomeColors.WATER_COLOR_RESOLVER);
-      }));
+      var1x.put(BiomeColors.GRASS_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.GRASS_COLOR_RESOLVER)));
+      var1x.put(BiomeColors.FOLIAGE_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.FOLIAGE_COLOR_RESOLVER)));
+      var1x.put(BiomeColors.WATER_COLOR_RESOLVER, new BlockTintCache((var1) -> this.calculateBlockTint(var1, BiomeColors.WATER_COLOR_RESOLVER)));
    });
    private final ClientChunkCache chunkSource;
    private final Deque<Runnable> lightUpdateQueue = Queues.newArrayDeque();
@@ -230,24 +225,8 @@ public class ClientLevel extends Level {
          this.setSkyFlashTime(this.skyFlashTime - 1);
       }
 
-      Zone var2 = Profiler.get().zone("blocks");
-
-      try {
+      try (Zone var2 = Profiler.get().zone("blocks")) {
          this.chunkSource.tick(var1, true);
-      } catch (Throwable var6) {
-         if (var2 != null) {
-            try {
-               var2.close();
-            } catch (Throwable var5) {
-               var6.addSuppressed(var5);
-            }
-         }
-
-         throw var6;
-      }
-
-      if (var2 != null) {
-         var2.close();
       }
 
    }
@@ -293,15 +272,11 @@ public class ClientLevel extends Level {
    public void tickNonPassenger(Entity var1) {
       var1.setOldPosAndRot();
       ++var1.tickCount;
-      Profiler.get().push(() -> {
-         return BuiltInRegistries.ENTITY_TYPE.getKey(var1.getType()).toString();
-      });
+      Profiler.get().push((Supplier)(() -> BuiltInRegistries.ENTITY_TYPE.getKey(var1.getType()).toString()));
       var1.tick();
       Profiler.get().pop();
-      Iterator var2 = var1.getPassengers().iterator();
 
-      while(var2.hasNext()) {
-         Entity var3 = (Entity)var2.next();
+      for(Entity var3 : var1.getPassengers()) {
          this.tickPassenger(var1, var3);
       }
 
@@ -313,10 +288,8 @@ public class ClientLevel extends Level {
             var2.setOldPosAndRot();
             ++var2.tickCount;
             var2.rideTick();
-            Iterator var3 = var2.getPassengers().iterator();
 
-            while(var3.hasNext()) {
-               Entity var4 = (Entity)var3.next();
+            for(Entity var4 : var2.getPassengers()) {
                this.tickPassenger(var2, var4);
             }
 
@@ -333,9 +306,7 @@ public class ClientLevel extends Level {
    }
 
    public void onChunkLoaded(ChunkPos var1) {
-      this.tintCaches.forEach((var1x, var2) -> {
-         var2.invalidateForChunk(var1.x, var1.z);
-      });
+      this.tintCaches.forEach((var1x, var2) -> var2.invalidateForChunk(var1.x, var1.z));
       this.entityStorage.startTicking(var1);
    }
 
@@ -344,9 +315,7 @@ public class ClientLevel extends Level {
    }
 
    public void clearTintCaches() {
-      this.tintCaches.forEach((var0, var1) -> {
-         var1.invalidateAll();
-      });
+      this.tintCaches.forEach((var0, var1) -> var1.invalidateAll());
    }
 
    public boolean hasChunk(int var1, int var2) {
@@ -476,15 +445,9 @@ public class ClientLevel extends Level {
 
    public CrashReportCategory fillReportDetails(CrashReport var1) {
       CrashReportCategory var2 = super.fillReportDetails(var1);
-      var2.setDetail("Server brand", () -> {
-         return this.minecraft.player.connection.serverBrand();
-      });
-      var2.setDetail("Server type", () -> {
-         return this.minecraft.getSingleplayerServer() == null ? "Non-integrated multiplayer server" : "Integrated singleplayer server";
-      });
-      var2.setDetail("Tracked entity count", () -> {
-         return String.valueOf(this.getEntityCount());
-      });
+      var2.setDetail("Server brand", (CrashReportDetail)(() -> this.minecraft.player.connection.serverBrand()));
+      var2.setDetail("Server type", (CrashReportDetail)(() -> this.minecraft.getSingleplayerServer() == null ? "Non-integrated multiplayer server" : "Integrated singleplayer server"));
+      var2.setDetail("Tracked entity count", (CrashReportDetail)(() -> String.valueOf(this.getEntityCount())));
       return var2;
    }
 
@@ -546,11 +509,11 @@ public class ClientLevel extends Level {
    }
 
    public LevelTickAccess<Block> getBlockTicks() {
-      return BlackholeTickAccess.emptyLevelList();
+      return BlackholeTickAccess.<Block>emptyLevelList();
    }
 
    public LevelTickAccess<Fluid> getFluidTicks() {
-      return BlackholeTickAccess.emptyLevelList();
+      return BlackholeTickAccess.<Fluid>emptyLevelList();
    }
 
    public ClientChunkCache getChunkSource() {
@@ -607,10 +570,10 @@ public class ClientLevel extends Level {
       } catch (Throwable var8) {
          CrashReport var6 = CrashReport.forThrowable(var8, "Playing level event");
          CrashReportCategory var7 = var6.addCategory("Level event being played");
-         var7.setDetail("Block coordinates", (Object)CrashReportCategory.formatLocation(this, var3));
-         var7.setDetail("Event source", (Object)var1);
-         var7.setDetail("Event type", (Object)var2);
-         var7.setDetail("Event data", (Object)var4);
+         var7.setDetail("Block coordinates", CrashReportCategory.formatLocation(this, var3));
+         var7.setDetail("Event source", var1);
+         var7.setDetail("Event type", var2);
+         var7.setDetail("Event data", var4);
          throw new ReportedException(var6);
       }
    }
@@ -656,37 +619,32 @@ public class ClientLevel extends Level {
    public int getSkyColor(Vec3 var1, float var2) {
       float var3 = this.getTimeOfDay(var2);
       Vec3 var4 = var1.subtract(2.0, 2.0, 2.0).scale(0.25);
-      Vec3 var5 = CubicSampler.gaussianSampleVec3(var4, (var1x, var2x, var3x) -> {
-         return Vec3.fromRGB24(((Biome)this.getBiomeManager().getNoiseBiomeAtQuart(var1x, var2x, var3x).value()).getSkyColor());
-      });
+      Vec3 var5 = CubicSampler.gaussianSampleVec3(var4, (var1x, var2x, var3x) -> Vec3.fromRGB24(((Biome)this.getBiomeManager().getNoiseBiomeAtQuart(var1x, var2x, var3x).value()).getSkyColor()));
       float var6 = Mth.cos(var3 * 6.2831855F) * 2.0F + 0.5F;
       var6 = Mth.clamp(var6, 0.0F, 1.0F);
       var5 = var5.scale((double)var6);
       int var7 = ARGB.color(var5);
       float var8 = this.getRainLevel(var2);
-      float var9;
-      float var10;
       if (var8 > 0.0F) {
-         var9 = 0.6F;
-         var10 = var8 * 0.75F;
+         float var9 = 0.6F;
+         float var10 = var8 * 0.75F;
          int var11 = ARGB.scaleRGB(ARGB.greyscale(var7), 0.6F);
          var7 = ARGB.lerp(var10, var7, var11);
       }
 
-      var9 = this.getThunderLevel(var2);
-      float var14;
-      if (var9 > 0.0F) {
-         var10 = 0.2F;
-         var14 = var9 * 0.75F;
+      float var15 = this.getThunderLevel(var2);
+      if (var15 > 0.0F) {
+         float var16 = 0.2F;
+         float var18 = var15 * 0.75F;
          int var12 = ARGB.scaleRGB(ARGB.greyscale(var7), 0.2F);
-         var7 = ARGB.lerp(var14, var7, var12);
+         var7 = ARGB.lerp(var18, var7, var12);
       }
 
-      int var13 = this.getSkyFlashTime();
-      if (var13 > 0) {
-         var14 = Math.min((float)var13 - var2, 1.0F);
-         var14 *= 0.45F;
-         var7 = ARGB.lerp(var14, var7, ARGB.color(204, 204, 255));
+      int var17 = this.getSkyFlashTime();
+      if (var17 > 0) {
+         float var19 = Math.min((float)var17 - var2, 1.0F);
+         var19 *= 0.45F;
+         var7 = ARGB.lerp(var19, var7, ARGB.color(204, 204, 255));
       }
 
       return var7;
@@ -700,8 +658,8 @@ public class ClientLevel extends Level {
          var2 = ARGB.lerp(var3 * 0.95F, var2, var4);
       }
 
-      float var8 = this.getTimeOfDay(var1);
-      float var5 = Mth.cos(var8 * 6.2831855F) * 2.0F + 0.5F;
+      float var9 = this.getTimeOfDay(var1);
+      float var5 = Mth.cos(var9 * 6.2831855F) * 2.0F + 0.5F;
       var5 = Mth.clamp(var5, 0.0F, 1.0F);
       var2 = ARGB.multiply(var2, ARGB.colorFromFloat(1.0F, var5 * 0.9F + 0.1F, var5 * 0.9F + 0.1F, var5 * 0.85F + 0.15F));
       float var6 = this.getThunderLevel(var1);
@@ -860,96 +818,6 @@ public class ClientLevel extends Level {
       MARKER_PARTICLE_ITEMS = Set.of(Items.BARRIER, Items.LIGHT);
    }
 
-   private final class EntityCallbacks implements LevelCallback<Entity> {
-      EntityCallbacks() {
-         super();
-      }
-
-      public void onCreated(Entity var1) {
-      }
-
-      public void onDestroyed(Entity var1) {
-      }
-
-      public void onTickingStart(Entity var1) {
-         ClientLevel.this.tickingEntities.add(var1);
-      }
-
-      public void onTickingEnd(Entity var1) {
-         ClientLevel.this.tickingEntities.remove(var1);
-      }
-
-      public void onTrackingStart(Entity var1) {
-         Objects.requireNonNull(var1);
-         byte var3 = 0;
-         //$FF: var3->value
-         //0->net/minecraft/client/player/AbstractClientPlayer
-         //1->net/minecraft/world/entity/boss/enderdragon/EnderDragon
-         switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
-            case 0:
-               AbstractClientPlayer var4 = (AbstractClientPlayer)var1;
-               ClientLevel.this.players.add(var4);
-               break;
-            case 1:
-               EnderDragon var5 = (EnderDragon)var1;
-               ClientLevel.this.dragonParts.addAll(Arrays.asList(var5.getSubEntities()));
-         }
-
-      }
-
-      public void onTrackingEnd(Entity var1) {
-         var1.unRide();
-         Objects.requireNonNull(var1);
-         byte var3 = 0;
-         //$FF: var3->value
-         //0->net/minecraft/client/player/AbstractClientPlayer
-         //1->net/minecraft/world/entity/boss/enderdragon/EnderDragon
-         switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
-            case 0:
-               AbstractClientPlayer var4 = (AbstractClientPlayer)var1;
-               ClientLevel.this.players.remove(var4);
-               break;
-            case 1:
-               EnderDragon var5 = (EnderDragon)var1;
-               ClientLevel.this.dragonParts.removeAll(Arrays.asList(var5.getSubEntities()));
-         }
-
-      }
-
-      public void onSectionChange(Entity var1) {
-      }
-
-      // $FF: synthetic method
-      public void onSectionChange(final Object var1) {
-         this.onSectionChange((Entity)var1);
-      }
-
-      // $FF: synthetic method
-      public void onTrackingEnd(final Object var1) {
-         this.onTrackingEnd((Entity)var1);
-      }
-
-      // $FF: synthetic method
-      public void onTrackingStart(final Object var1) {
-         this.onTrackingStart((Entity)var1);
-      }
-
-      // $FF: synthetic method
-      public void onTickingStart(final Object var1) {
-         this.onTickingStart((Entity)var1);
-      }
-
-      // $FF: synthetic method
-      public void onDestroyed(final Object var1) {
-         this.onDestroyed((Entity)var1);
-      }
-
-      // $FF: synthetic method
-      public void onCreated(final Object var1) {
-         this.onCreated((Entity)var1);
-      }
-   }
-
    public static class ClientLevelData implements WritableLevelData {
       private final boolean hardcore;
       private final boolean isFlat;
@@ -1039,6 +907,96 @@ public class ClientLevel extends Level {
 
       public float getClearColorScale() {
          return this.isFlat ? 1.0F : 0.03125F;
+      }
+   }
+
+   final class EntityCallbacks implements LevelCallback<Entity> {
+      EntityCallbacks() {
+         super();
+      }
+
+      public void onCreated(Entity var1) {
+      }
+
+      public void onDestroyed(Entity var1) {
+      }
+
+      public void onTickingStart(Entity var1) {
+         ClientLevel.this.tickingEntities.add(var1);
+      }
+
+      public void onTickingEnd(Entity var1) {
+         ClientLevel.this.tickingEntities.remove(var1);
+      }
+
+      public void onTrackingStart(Entity var1) {
+         Objects.requireNonNull(var1);
+         byte var3 = 0;
+         //$FF: var3->value
+         //0->net/minecraft/client/player/AbstractClientPlayer
+         //1->net/minecraft/world/entity/boss/enderdragon/EnderDragon
+         switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+            case 0:
+               AbstractClientPlayer var4 = (AbstractClientPlayer)var1;
+               ClientLevel.this.players.add(var4);
+               break;
+            case 1:
+               EnderDragon var5 = (EnderDragon)var1;
+               ClientLevel.this.dragonParts.addAll(Arrays.asList(var5.getSubEntities()));
+         }
+
+      }
+
+      public void onTrackingEnd(Entity var1) {
+         var1.unRide();
+         Objects.requireNonNull(var1);
+         byte var3 = 0;
+         //$FF: var3->value
+         //0->net/minecraft/client/player/AbstractClientPlayer
+         //1->net/minecraft/world/entity/boss/enderdragon/EnderDragon
+         switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+            case 0:
+               AbstractClientPlayer var4 = (AbstractClientPlayer)var1;
+               ClientLevel.this.players.remove(var4);
+               break;
+            case 1:
+               EnderDragon var5 = (EnderDragon)var1;
+               ClientLevel.this.dragonParts.removeAll(Arrays.asList(var5.getSubEntities()));
+         }
+
+      }
+
+      public void onSectionChange(Entity var1) {
+      }
+
+      // $FF: synthetic method
+      public void onSectionChange(final Object var1) {
+         this.onSectionChange((Entity)var1);
+      }
+
+      // $FF: synthetic method
+      public void onTrackingEnd(final Object var1) {
+         this.onTrackingEnd((Entity)var1);
+      }
+
+      // $FF: synthetic method
+      public void onTrackingStart(final Object var1) {
+         this.onTrackingStart((Entity)var1);
+      }
+
+      // $FF: synthetic method
+      public void onTickingStart(final Object var1) {
+         this.onTickingStart((Entity)var1);
+      }
+
+      // $FF: synthetic method
+      public void onDestroyed(final Object var1) {
+         this.onDestroyed((Entity)var1);
+      }
+
+      // $FF: synthetic method
+      public void onCreated(final Object var1) {
+         this.onCreated((Entity)var1);
       }
    }
 }

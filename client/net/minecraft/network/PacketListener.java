@@ -2,6 +2,7 @@ package net.minecraft.network;
 
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -31,12 +32,8 @@ public interface PacketListener {
 
    default void fillCrashReport(CrashReport var1) {
       CrashReportCategory var2 = var1.addCategory("Connection");
-      var2.setDetail("Protocol", () -> {
-         return this.protocol().id();
-      });
-      var2.setDetail("Flow", () -> {
-         return this.flow().toString();
-      });
+      var2.setDetail("Protocol", (CrashReportDetail)(() -> this.protocol().id()));
+      var2.setDetail("Flow", (CrashReportDetail)(() -> this.flow().toString()));
       this.fillListenerSpecificCrashDetails(var1, var2);
    }
 

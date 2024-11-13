@@ -5,7 +5,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -30,36 +29,22 @@ public interface SelectItemModelProperty<T> {
       public static <P extends SelectItemModelProperty<T>, T> Type<P, T> create(MapCodec<P> var0, Codec<T> var1) {
          Codec var2 = SelectItemModel.SwitchCase.codec(var1).listOf().validate((var0x) -> {
             if (var0x.isEmpty()) {
-               return DataResult.error(() -> {
-                  return "Empty case list";
-               });
+               return DataResult.error(() -> "Empty case list");
             } else {
                HashMultiset var1 = HashMultiset.create();
-               Iterator var2 = var0x.iterator();
 
-               while(var2.hasNext()) {
-                  SelectItemModel.SwitchCase var3 = (SelectItemModel.SwitchCase)var2.next();
+               for(SelectItemModel.SwitchCase var3 : var0x) {
                   var1.addAll(var3.values());
                }
 
                return var1.size() != var1.entrySet().size() ? DataResult.error(() -> {
-                  Stream var10000 = var1.entrySet().stream().filter((var0) -> {
-                     return var0.getCount() > 1;
-                  }).map((var0) -> {
-                     return var0.getElement().toString();
-                  });
+                  Stream var10000 = var1.entrySet().stream().filter((var0) -> var0.getCount() > 1).map((var0) -> var0.getElement().toString());
                   return "Duplicate case conditions: " + (String)var10000.collect(Collectors.joining(", "));
                }) : DataResult.success(var0x);
             }
          });
-         MapCodec var3 = RecordCodecBuilder.mapCodec((var2x) -> {
-            return var2x.group(var0.forGetter(SelectItemModel.UnbakedSwitch::property), var2.fieldOf("cases").forGetter(SelectItemModel.UnbakedSwitch::cases)).apply(var2x, SelectItemModel.UnbakedSwitch::new);
-         });
-         return new Type(var3);
-      }
-
-      public MapCodec<SelectItemModel.UnbakedSwitch<P, T>> switchCodec() {
-         return this.switchCodec;
+         MapCodec var3 = RecordCodecBuilder.mapCodec((var2x) -> var2x.group(var0.forGetter(SelectItemModel.UnbakedSwitch::property), var2.fieldOf("cases").forGetter(SelectItemModel.UnbakedSwitch::cases)).apply(var2x, SelectItemModel.UnbakedSwitch::new));
+         return new Type<P, T>(var3);
       }
    }
 }

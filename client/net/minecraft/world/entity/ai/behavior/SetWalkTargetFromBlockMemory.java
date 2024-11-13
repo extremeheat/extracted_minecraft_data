@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import java.util.Optional;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -16,9 +17,7 @@ public class SetWalkTargetFromBlockMemory {
    }
 
    public static OneShot<Villager> create(MemoryModuleType<GlobalPos> var0, float var1, int var2, int var3, int var4) {
-      return BehaviorBuilder.create((var5) -> {
-         return var5.group(var5.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE), var5.absent(MemoryModuleType.WALK_TARGET), var5.present(var0)).apply(var5, (var6, var7, var8) -> {
-            return (var9, var10, var11) -> {
+      return BehaviorBuilder.create((Function)((var5) -> var5.group(var5.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE), var5.absent(MemoryModuleType.WALK_TARGET), var5.present(var0)).apply(var5, (var6, var7, var8) -> (var9, var10, var11) -> {
                GlobalPos var13 = (GlobalPos)var5.get(var8);
                Optional var14 = var5.tryGet(var6);
                if (var13.dimension() == var9.dimension() && (!var14.isPresent() || var9.getGameTime() - (Long)var14.get() <= (long)var4)) {
@@ -49,8 +48,6 @@ public class SetWalkTargetFromBlockMemory {
                }
 
                return true;
-            };
-         });
-      });
+            })));
    }
 }

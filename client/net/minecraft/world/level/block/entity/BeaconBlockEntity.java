@@ -3,7 +3,6 @@ package net.minecraft.world.level.block.entity;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -133,8 +132,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
       BeaconBeamSection var8 = var3.checkingBeamSections.isEmpty() ? null : (BeaconBeamSection)var3.checkingBeamSections.get(var3.checkingBeamSections.size() - 1);
       int var9 = var0.getHeight(Heightmap.Types.WORLD_SURFACE, var4, var6);
 
-      int var10;
-      for(var10 = 0; var10 < 10 && var7.getY() <= var9; ++var10) {
+      for(int var10 = 0; var10 < 10 && var7.getY() <= var9; ++var10) {
          BlockState var11 = var0.getBlockState(var7);
          Block var12 = var11.getBlock();
          if (var12 instanceof BeaconBeamBlock var13) {
@@ -164,7 +162,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
          ++var3.lastCheckY;
       }
 
-      var10 = var3.levels;
+      int var15 = var3.levels;
       if (var0.getGameTime() % 80L == 0L) {
          if (!var3.beamSections.isEmpty()) {
             var3.levels = updateBase(var0, var4, var5, var6);
@@ -178,19 +176,17 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
 
       if (var3.lastCheckY >= var9) {
          var3.lastCheckY = var0.getMinY() - 1;
-         boolean var15 = var10 > 0;
+         boolean var16 = var15 > 0;
          var3.beamSections = var3.checkingBeamSections;
          if (!var0.isClientSide) {
-            boolean var16 = var3.levels > 0;
-            if (!var15 && var16) {
+            boolean var17 = var3.levels > 0;
+            if (!var16 && var17) {
                playSound(var0, var1, SoundEvents.BEACON_ACTIVATE);
-               Iterator var17 = var0.getEntitiesOfClass(ServerPlayer.class, (new AABB((double)var4, (double)var5, (double)var6, (double)var4, (double)(var5 - 4), (double)var6)).inflate(10.0, 5.0, 10.0)).iterator();
 
-               while(var17.hasNext()) {
-                  ServerPlayer var18 = (ServerPlayer)var17.next();
-                  CriteriaTriggers.CONSTRUCT_BEACON.trigger(var18, var3.levels);
+               for(ServerPlayer var19 : var0.getEntitiesOfClass(ServerPlayer.class, (new AABB((double)var4, (double)var5, (double)var6, (double)var4, (double)(var5 - 4), (double)var6)).inflate(10.0, 5.0, 10.0))) {
+                  CriteriaTriggers.CONSTRUCT_BEACON.trigger(var19, var3.levels);
                }
-            } else if (var15 && !var16) {
+            } else if (var16 && !var17) {
                playSound(var0, var1, SoundEvents.BEACON_DEACTIVATE);
             }
          }
@@ -242,20 +238,14 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
          int var8 = (9 + var2 * 2) * 20;
          AABB var9 = (new AABB(var1)).inflate(var5).expandTowards(0.0, (double)var0.getHeight(), 0.0);
          List var10 = var0.getEntitiesOfClass(Player.class, var9);
-         Iterator var11 = var10.iterator();
 
-         Player var12;
-         while(var11.hasNext()) {
-            var12 = (Player)var11.next();
+         for(Player var12 : var10) {
             var12.addEffect(new MobEffectInstance(var3, var8, var7, true, true));
          }
 
          if (var2 >= 4 && !Objects.equals(var3, var4) && var4 != null) {
-            var11 = var10.iterator();
-
-            while(var11.hasNext()) {
-               var12 = (Player)var11.next();
-               var12.addEffect(new MobEffectInstance(var4, var8, 0, true, true));
+            for(Player var14 : var10) {
+               var14.addEffect(new MobEffectInstance(var4, var8, 0, true, true));
             }
          }
 
@@ -267,7 +257,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    }
 
    public List<BeaconBeamSection> getBeamSections() {
-      return (List)(this.levels == 0 ? ImmutableList.of() : this.beamSections);
+      return (List<BeaconBeamSection>)(this.levels == 0 ? ImmutableList.of() : this.beamSections);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
@@ -280,9 +270,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
 
    private static void storeEffect(CompoundTag var0, String var1, @Nullable Holder<MobEffect> var2) {
       if (var2 != null) {
-         var2.unwrapKey().ifPresent((var2x) -> {
-            var0.putString(var1, var2x.location().toString());
-         });
+         var2.unwrapKey().ifPresent((var2x) -> var0.putString(var1, var2x.location().toString()));
       }
 
    }

@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ServerboundResourcePackPacket(UUID id, Action action) implements Packet<ServerCommonPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundResourcePackPacket> STREAM_CODEC = Packet.codec(ServerboundResourcePackPacket::write, ServerboundResourcePackPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundResourcePackPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundResourcePackPacket>codec(ServerboundResourcePackPacket::write, ServerboundResourcePackPacket::new);
 
    private ServerboundResourcePackPacket(FriendlyByteBuf var1) {
       this(var1.readUUID(), (Action)var1.readEnum(Action.class));
@@ -30,14 +30,6 @@ public record ServerboundResourcePackPacket(UUID id, Action action) implements P
 
    public void handle(ServerCommonPacketListener var1) {
       var1.handleResourcePackResponse(this);
-   }
-
-   public UUID id() {
-      return this.id;
-   }
-
-   public Action action() {
-      return this.action;
    }
 
    public static enum Action {

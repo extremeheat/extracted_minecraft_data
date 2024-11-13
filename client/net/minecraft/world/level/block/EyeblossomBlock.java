@@ -25,11 +25,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
 public class EyeblossomBlock extends FlowerBlock {
-   public static final MapCodec<EyeblossomBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.BOOL.fieldOf("open").forGetter((var0x) -> {
-         return var0x.type.open;
-      }), propertiesCodec()).apply(var0, EyeblossomBlock::new);
-   });
+   public static final MapCodec<EyeblossomBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("open").forGetter((var0x) -> var0x.type.open), propertiesCodec()).apply(var0, EyeblossomBlock::new));
    private static final int EYEBLOSSOM_XZ_RANGE = 3;
    private static final int EYEBLOSSOM_Y_RANGE = 2;
    private final Type type;
@@ -99,7 +95,7 @@ public class EyeblossomBlock extends FlowerBlock {
 
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (!var2.isClientSide() && var2.getDifficulty() != Difficulty.PEACEFUL && var4 instanceof Bee var5) {
-         if (!var5.hasEffect(MobEffects.POISON)) {
+         if (Bee.attractsBees(var1) && !var5.hasEffect(MobEffects.POISON)) {
             var5.addEffect(this.getBeeInteractionEffect());
          }
       }
@@ -111,7 +107,7 @@ public class EyeblossomBlock extends FlowerBlock {
    }
 
    public static enum Type {
-      OPEN(true, MobEffects.BLINDNESS, 7.0F, SoundEvents.EYEBLOSSOM_OPEN_LONG, SoundEvents.EYEBLOSSOM_OPEN, 16545810),
+      OPEN(true, MobEffects.BLINDNESS, 11.0F, SoundEvents.EYEBLOSSOM_OPEN_LONG, SoundEvents.EYEBLOSSOM_OPEN, 16545810),
       CLOSED(false, MobEffects.CONFUSION, 7.0F, SoundEvents.EYEBLOSSOM_CLOSE_LONG, SoundEvents.EYEBLOSSOM_CLOSE, 6250335);
 
       final boolean open;
@@ -121,17 +117,13 @@ public class EyeblossomBlock extends FlowerBlock {
       final SoundEvent shortSwitchSound;
       private final int particleColor;
 
-      private Type(final boolean var3, final Holder var4, final float var5, final SoundEvent var6, final SoundEvent var7, final int var8) {
+      private Type(final boolean var3, final Holder<MobEffect> var4, final float var5, final SoundEvent var6, final SoundEvent var7, final int var8) {
          this.open = var3;
          this.effect = var4;
          this.effectDuration = var5;
          this.longSwitchSound = var6;
          this.shortSwitchSound = var7;
          this.particleColor = var8;
-      }
-
-      public BlockState oppositeState() {
-         return this == OPEN ? Blocks.CLOSED_EYEBLOSSOM.defaultBlockState() : Blocks.OPEN_EYEBLOSSOM.defaultBlockState();
       }
 
       public Block block() {

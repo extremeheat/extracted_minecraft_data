@@ -84,7 +84,7 @@ public class PlacementUtils {
    }
 
    public static Holder<PlacedFeature> inlinePlaced(Holder<ConfiguredFeature<?, ?>> var0, PlacementModifier... var1) {
-      return Holder.direct(new PlacedFeature(var0, List.of(var1)));
+      return Holder.<PlacedFeature>direct(new PlacedFeature(var0, List.of(var1)));
    }
 
    public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<PlacedFeature> inlinePlaced(F var0, FC var1, PlacementModifier... var2) {

@@ -9,7 +9,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.redstone.Orientation;
 
 public record RedstoneWireOrientationsDebugPayload(long time, List<Wire> wires) implements CustomPacketPayload {
-   public static final CustomPacketPayload.Type<RedstoneWireOrientationsDebugPayload> TYPE = CustomPacketPayload.createType("debug/redstone_update_order");
+   public static final CustomPacketPayload.Type<RedstoneWireOrientationsDebugPayload> TYPE = CustomPacketPayload.<RedstoneWireOrientationsDebugPayload>createType("debug/redstone_update_order");
    public static final StreamCodec<FriendlyByteBuf, RedstoneWireOrientationsDebugPayload> STREAM_CODEC;
 
    public RedstoneWireOrientationsDebugPayload(long var1, List<Wire> var3) {
@@ -20,14 +20,6 @@ public record RedstoneWireOrientationsDebugPayload(long time, List<Wire> wires) 
 
    public CustomPacketPayload.Type<RedstoneWireOrientationsDebugPayload> type() {
       return TYPE;
-   }
-
-   public long time() {
-      return this.time;
-   }
-
-   public List<Wire> wires() {
-      return this.wires;
    }
 
    static {
@@ -41,14 +33,6 @@ public record RedstoneWireOrientationsDebugPayload(long time, List<Wire> wires) 
          super();
          this.pos = var1;
          this.orientation = var2;
-      }
-
-      public BlockPos pos() {
-         return this.pos;
-      }
-
-      public Orientation orientation() {
-         return this.orientation;
       }
 
       static {

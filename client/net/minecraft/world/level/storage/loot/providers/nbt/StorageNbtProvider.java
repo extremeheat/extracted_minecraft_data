@@ -9,9 +9,7 @@ import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public record StorageNbtProvider(ResourceLocation id) implements NbtProvider {
-   public static final MapCodec<StorageNbtProvider> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceLocation.CODEC.fieldOf("source").forGetter(StorageNbtProvider::id)).apply(var0, StorageNbtProvider::new);
-   });
+   public static final MapCodec<StorageNbtProvider> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("source").forGetter(StorageNbtProvider::id)).apply(var0, StorageNbtProvider::new));
 
    public StorageNbtProvider(ResourceLocation var1) {
       super();
@@ -28,9 +26,5 @@ public record StorageNbtProvider(ResourceLocation id) implements NbtProvider {
 
    public Set<ContextKey<?>> getReferencedContextParams() {
       return Set.of();
-   }
-
-   public ResourceLocation id() {
-      return this.id;
    }
 }

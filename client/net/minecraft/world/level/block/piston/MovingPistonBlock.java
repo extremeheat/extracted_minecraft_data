@@ -17,6 +17,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -108,6 +109,10 @@ public class MovingPistonBlock extends BaseEntityBlock {
    private PistonMovingBlockEntity getBlockEntity(BlockGetter var1, BlockPos var2) {
       BlockEntity var3 = var1.getBlockEntity(var2);
       return var3 instanceof PistonMovingBlockEntity ? (PistonMovingBlockEntity)var3 : null;
+   }
+
+   protected RenderShape getRenderShape(BlockState var1) {
+      return RenderShape.INVISIBLE;
    }
 
    protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {

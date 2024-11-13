@@ -34,11 +34,7 @@ public class MinecartSpawner extends AbstractMinecart {
    }
 
    private Runnable createTicker(Level var1) {
-      return var1 instanceof ServerLevel ? () -> {
-         this.spawner.serverTick((ServerLevel)var1, this.blockPosition());
-      } : () -> {
-         this.spawner.clientTick(var1, this.blockPosition());
-      };
+      return var1 instanceof ServerLevel ? () -> this.spawner.serverTick((ServerLevel)var1, this.blockPosition()) : () -> this.spawner.clientTick(var1, this.blockPosition());
    }
 
    public BlockState getDefaultDisplayBlockState() {

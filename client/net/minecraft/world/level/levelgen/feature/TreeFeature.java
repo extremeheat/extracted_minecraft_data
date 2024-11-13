@@ -40,15 +40,11 @@ public class TreeFeature extends Feature<TreeConfiguration> {
    }
 
    private static boolean isVine(LevelSimulatedReader var0, BlockPos var1) {
-      return var0.isStateAtPosition(var1, (var0x) -> {
-         return var0x.is(Blocks.VINE);
-      });
+      return var0.isStateAtPosition(var1, (var0x) -> var0x.is(Blocks.VINE));
    }
 
    public static boolean isAirOrLeaves(LevelSimulatedReader var0, BlockPos var1) {
-      return var0.isStateAtPosition(var1, (var0x) -> {
-         return var0x.isAir() || var0x.is(BlockTags.LEAVES);
-      });
+      return var0.isStateAtPosition(var1, (var0x) -> var0x.isAir() || var0x.is(BlockTags.LEAVES));
    }
 
    private static void setBlockKnownShape(LevelWriter var0, BlockPos var1, BlockState var2) {
@@ -56,9 +52,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
    }
 
    public static boolean validTreePos(LevelSimulatedReader var0, BlockPos var1) {
-      return var0.isStateAtPosition(var1, (var0x) -> {
-         return var0x.isAir() || var0x.is(BlockTags.REPLACEABLE_BY_TREES);
-      });
+      return var0.isStateAtPosition(var1, (var0x) -> var0x.isAir() || var0x.is(BlockTags.REPLACEABLE_BY_TREES));
    }
 
    private boolean doPlace(WorldGenLevel var1, RandomSource var2, BlockPos var3, BiConsumer<BlockPos, BlockState> var4, BiConsumer<BlockPos, BlockState> var5, FoliagePlacer.FoliageSetter var6, TreeConfiguration var7) {
@@ -66,24 +60,22 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       int var9 = var7.foliagePlacer.foliageHeight(var2, var8, var7);
       int var10 = var8 - var9;
       int var11 = var7.foliagePlacer.foliageRadius(var2, var10);
-      BlockPos var12 = (BlockPos)var7.rootPlacer.map((var2x) -> {
-         return var2x.getTrunkOrigin(var3, var2);
-      }).orElse(var3);
+      BlockPos var12 = (BlockPos)var7.rootPlacer.map((var2x) -> var2x.getTrunkOrigin(var3, var2)).orElse(var3);
       int var13 = Math.min(var3.getY(), var12.getY());
       int var14 = Math.max(var3.getY(), var12.getY()) + var8 + 1;
       if (var13 >= var1.getMinY() + 1 && var14 <= var1.getMaxY() + 1) {
          OptionalInt var15 = var7.minimumSize.minClippedHeight();
          int var16 = this.getMaxFreeTreeHeight(var1, var8, var12, var7);
-         if (var16 < var8 && (var15.isEmpty() || var16 < var15.getAsInt())) {
-            return false;
-         } else if (var7.rootPlacer.isPresent() && !((RootPlacer)var7.rootPlacer.get()).placeRoots(var1, var4, var2, var3, var12, var7)) {
-            return false;
+         if (var16 >= var8 || !var15.isEmpty() && var16 >= var15.getAsInt()) {
+            if (var7.rootPlacer.isPresent() && !((RootPlacer)var7.rootPlacer.get()).placeRoots(var1, var4, var2, var3, var12, var7)) {
+               return false;
+            } else {
+               List var17 = var7.trunkPlacer.placeTrunk(var1, var5, var2, var16, var12, var7);
+               var17.forEach((var7x) -> var7.foliagePlacer.createFoliage(var1, var6, var2, var7, var16, var7x, var9, var11));
+               return true;
+            }
          } else {
-            List var17 = var7.trunkPlacer.placeTrunk(var1, var5, var2, var16, var12, var7);
-            var17.forEach((var7x) -> {
-               var7.foliagePlacer.createFoliage(var1, var6, var2, var7, var16, var7x, var9, var11);
-            });
-            return true;
+            return false;
          }
       } else {
          return false;
@@ -130,7 +122,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
          var7.add(var2x.immutable());
          var2.setBlock(var2x, var3x, 19);
       };
-      FoliagePlacer.FoliageSetter var12 = new FoliagePlacer.FoliageSetter(this) {
+      FoliagePlacer.FoliageSetter var12 = new FoliagePlacer.FoliageSetter() {
          public void set(BlockPos var1, BlockState var2x) {
             var8.add(var1.immutable());
             var2.setBlock(var1, var2x, 19);
@@ -148,9 +140,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       if (var14 && (!var7.isEmpty() || !var8.isEmpty())) {
          if (!var5.decorators.isEmpty()) {
             TreeDecorator.Context var15 = new TreeDecorator.Context(var2, var13, var3, var7, var8, var6);
-            var5.decorators.forEach((var1x) -> {
-               var1x.place(var15);
-            });
+            var5.decorators.forEach((var1x) -> var1x.place(var15));
          }
 
          return (Boolean)BoundingBox.encapsulatingPositions(Iterables.concat(var6, var7, var8, var9)).map((var4x) -> {
@@ -172,10 +162,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
          var7.add(Sets.newHashSet());
       }
 
-      Iterator var22 = Lists.newArrayList(Sets.union(var3, var4)).iterator();
-
-      while(var22.hasNext()) {
-         BlockPos var9 = (BlockPos)var22.next();
+      for(BlockPos var9 : Lists.newArrayList(Sets.union(var3, var4))) {
          if (var1.isInside(var9)) {
             ((DiscreteVoxelShape)var5).fill(var9.getX() - var1.minX(), var9.getY() - var1.minY(), var9.getZ() - var1.minZ());
          }
@@ -201,11 +188,8 @@ public class TreeFeature extends Feature<TreeConfiguration> {
                }
 
                ((DiscreteVoxelShape)var5).fill(var11.getX() - var1.minX(), var11.getY() - var1.minY(), var11.getZ() - var1.minZ());
-               Direction[] var25 = Direction.values();
-               int var13 = var25.length;
 
-               for(int var14 = 0; var14 < var13; ++var14) {
-                  Direction var15 = var25[var14];
+               for(Direction var15 : Direction.values()) {
                   var23.setWithOffset(var11, (Direction)var15);
                   if (var1.isInside(var23)) {
                      int var16 = var23.getX() - var1.minX();

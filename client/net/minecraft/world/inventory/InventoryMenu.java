@@ -52,7 +52,7 @@ public class InventoryMenu extends AbstractCraftingMenu {
       }
 
       this.addStandardInventorySlots(var1, 8, 84);
-      this.addSlot(new Slot(this, var1, 40, 77, 62) {
+      this.addSlot(new Slot(var1, 40, 77, 62) {
          public void setByPlayer(ItemStack var1, ItemStack var2) {
             var3.onEquipItem(EquipmentSlot.OFFHAND, var2, var1);
             super.setByPlayer(var1, var2);
@@ -90,7 +90,7 @@ public class InventoryMenu extends AbstractCraftingMenu {
 
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = (Slot)this.slots.get(var2);
+      Slot var4 = this.slots.get(var2);
       if (var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -154,7 +154,7 @@ public class InventoryMenu extends AbstractCraftingMenu {
    }
 
    public Slot getResultSlot() {
-      return (Slot)this.slots.get(0);
+      return this.slots.get(0);
    }
 
    public List<Slot> getInputGridSlots() {

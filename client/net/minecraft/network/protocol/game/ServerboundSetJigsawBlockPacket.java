@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 
 public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundSetJigsawBlockPacket> STREAM_CODEC = Packet.codec(ServerboundSetJigsawBlockPacket::write, ServerboundSetJigsawBlockPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundSetJigsawBlockPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundSetJigsawBlockPacket>codec(ServerboundSetJigsawBlockPacket::write, ServerboundSetJigsawBlockPacket::new);
    private final BlockPos pos;
    private final ResourceLocation name;
    private final ResourceLocation target;
@@ -38,7 +38,7 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
       this.target = var1.readResourceLocation();
       this.pool = var1.readResourceLocation();
       this.finalState = var1.readUtf();
-      this.joint = (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.CODEC.byName(var1.readUtf(), (Enum)JigsawBlockEntity.JointType.ALIGNED);
+      this.joint = (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.CODEC.byName(var1.readUtf(), JigsawBlockEntity.JointType.ALIGNED);
       this.selectionPriority = var1.readVarInt();
       this.placementPriority = var1.readVarInt();
    }

@@ -1,11 +1,11 @@
 package net.minecraft.world.entity.player;
 
 import com.google.common.collect.ImmutableList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
@@ -40,9 +40,9 @@ public class Inventory implements Container, Nameable {
 
    public Inventory(Player var1) {
       super();
-      this.items = NonNullList.withSize(36, ItemStack.EMPTY);
-      this.armor = NonNullList.withSize(4, ItemStack.EMPTY);
-      this.offhand = NonNullList.withSize(1, ItemStack.EMPTY);
+      this.items = NonNullList.<ItemStack>withSize(36, ItemStack.EMPTY);
+      this.armor = NonNullList.<ItemStack>withSize(4, ItemStack.EMPTY);
+      this.offhand = NonNullList.<ItemStack>withSize(1, ItemStack.EMPTY);
       this.compartments = ImmutableList.of(this.items, this.armor, this.offhand);
       this.player = var1;
    }
@@ -74,7 +74,7 @@ public class Inventory implements Container, Nameable {
       if (!((ItemStack)this.items.get(this.selected)).isEmpty()) {
          int var2 = this.getFreeSlot();
          if (var2 != -1) {
-            this.items.set(var2, (ItemStack)this.items.get(this.selected));
+            this.items.set(var2, this.items.get(this.selected));
          }
       }
 
@@ -83,8 +83,8 @@ public class Inventory implements Container, Nameable {
 
    public void pickSlot(int var1) {
       this.selected = this.getSuitableHotbarSlot();
-      ItemStack var2 = (ItemStack)this.items.get(this.selected);
-      this.items.set(this.selected, (ItemStack)this.items.get(var1));
+      ItemStack var2 = this.items.get(this.selected);
+      this.items.set(this.selected, this.items.get(var1));
       this.items.set(var1, var2);
    }
 
@@ -94,7 +94,7 @@ public class Inventory implements Container, Nameable {
 
    public int findSlotMatchingItem(ItemStack var1) {
       for(int var2 = 0; var2 < this.items.size(); ++var2) {
-         if (!((ItemStack)this.items.get(var2)).isEmpty() && ItemStack.isSameItemSameComponents(var1, (ItemStack)this.items.get(var2))) {
+         if (!((ItemStack)this.items.get(var2)).isEmpty() && ItemStack.isSameItemSameComponents(var1, this.items.get(var2))) {
             return var2;
          }
       }
@@ -108,7 +108,7 @@ public class Inventory implements Container, Nameable {
 
    public int findSlotMatchingCraftingIngredient(Holder<Item> var1) {
       for(int var2 = 0; var2 < this.items.size(); ++var2) {
-         ItemStack var3 = (ItemStack)this.items.get(var2);
+         ItemStack var3 = this.items.get(var2);
          if (!var3.isEmpty() && var3.is(var1) && isUsableForCrafting(var3)) {
             return var2;
          }
@@ -118,19 +118,17 @@ public class Inventory implements Container, Nameable {
    }
 
    public int getSuitableHotbarSlot() {
-      int var1;
-      int var2;
-      for(var1 = 0; var1 < 9; ++var1) {
-         var2 = (this.selected + var1) % 9;
+      for(int var1 = 0; var1 < 9; ++var1) {
+         int var2 = (this.selected + var1) % 9;
          if (((ItemStack)this.items.get(var2)).isEmpty()) {
             return var2;
          }
       }
 
-      for(var1 = 0; var1 < 9; ++var1) {
-         var2 = (this.selected + var1) % 9;
-         if (!((ItemStack)this.items.get(var2)).isEnchanted()) {
-            return var2;
+      for(int var3 = 0; var3 < 9; ++var3) {
+         int var4 = (this.selected + var3) % 9;
+         if (!((ItemStack)this.items.get(var4)).isEnchanted()) {
+            return var4;
          }
       }
 
@@ -191,7 +189,7 @@ public class Inventory implements Container, Nameable {
          return 40;
       } else {
          for(int var2 = 0; var2 < this.items.size(); ++var2) {
-            if (this.hasRemainingSpaceForItem((ItemStack)this.items.get(var2), var1)) {
+            if (this.hasRemainingSpaceForItem(this.items.get(var2), var1)) {
                return var2;
             }
          }
@@ -201,11 +199,7 @@ public class Inventory implements Container, Nameable {
    }
 
    public void tick() {
-      Iterator var1 = this.compartments.iterator();
-
-      while(var1.hasNext()) {
-         NonNullList var2 = (NonNullList)var1.next();
-
+      for(NonNullList var2 : this.compartments) {
          for(int var3 = 0; var3 < var2.size(); ++var3) {
             if (!((ItemStack)var2.get(var3)).isEmpty()) {
                ((ItemStack)var2.get(var3)).inventoryTick(this.player.level(), this.player, var3, this.selected == var3);
@@ -223,39 +217,8 @@ public class Inventory implements Container, Nameable {
       if (var2.isEmpty()) {
          return false;
       } else {
-         int var3;
-         CrashReport var4;
-         CrashReportCategory var5;
-         label81: {
-            try {
-               if (!var2.isDamaged()) {
-                  do {
-                     var3 = var2.getCount();
-                     if (var1 == -1) {
-                        var2.setCount(this.addResource(var2));
-                     } else {
-                        var2.setCount(this.addResource(var1, var2));
-                     }
-                  } while(!var2.isEmpty() && var2.getCount() < var3);
-
-                  if (var2.getCount() == var3 && this.player.hasInfiniteMaterials()) {
-                     var2.setCount(0);
-                     return true;
-                  }
-                  break label81;
-               }
-            } catch (Throwable var10) {
-               var4 = CrashReport.forThrowable(var10, "Adding item to inventory");
-               var5 = var4.addCategory("Item being added");
-               var5.setDetail("Item ID", (Object)Item.getId(var2.getItem()));
-               var5.setDetail("Item data", (Object)var2.getDamageValue());
-               var5.setDetail("Item name", () -> {
-                  return var2.getHoverName().getString();
-               });
-               throw new ReportedException(var4);
-            }
-
-            try {
+         try {
+            if (var2.isDamaged()) {
                if (var1 == -1) {
                   var1 = this.getFreeSlot();
                }
@@ -264,58 +227,36 @@ public class Inventory implements Container, Nameable {
                   this.items.set(var1, var2.copyAndClear());
                   ((ItemStack)this.items.get(var1)).setPopTime(5);
                   return true;
-               }
-            } catch (Throwable var9) {
-               var4 = CrashReport.forThrowable(var9, "Adding item to inventory");
-               var5 = var4.addCategory("Item being added");
-               var5.setDetail("Item ID", (Object)Item.getId(var2.getItem()));
-               var5.setDetail("Item data", (Object)var2.getDamageValue());
-               var5.setDetail("Item name", () -> {
-                  return var2.getHoverName().getString();
-               });
-               throw new ReportedException(var4);
-            }
-
-            try {
-               if (this.player.hasInfiniteMaterials()) {
+               } else if (this.player.hasInfiniteMaterials()) {
                   var2.setCount(0);
                   return true;
+               } else {
+                  return false;
                }
-            } catch (Throwable var8) {
-               var4 = CrashReport.forThrowable(var8, "Adding item to inventory");
-               var5 = var4.addCategory("Item being added");
-               var5.setDetail("Item ID", (Object)Item.getId(var2.getItem()));
-               var5.setDetail("Item data", (Object)var2.getDamageValue());
-               var5.setDetail("Item name", () -> {
-                  return var2.getHoverName().getString();
-               });
-               throw new ReportedException(var4);
-            }
+            } else {
+               int var3;
+               do {
+                  var3 = var2.getCount();
+                  if (var1 == -1) {
+                     var2.setCount(this.addResource(var2));
+                  } else {
+                     var2.setCount(this.addResource(var1, var2));
+                  }
+               } while(!var2.isEmpty() && var2.getCount() < var3);
 
-            try {
-               return false;
-            } catch (Throwable var7) {
-               var4 = CrashReport.forThrowable(var7, "Adding item to inventory");
-               var5 = var4.addCategory("Item being added");
-               var5.setDetail("Item ID", (Object)Item.getId(var2.getItem()));
-               var5.setDetail("Item data", (Object)var2.getDamageValue());
-               var5.setDetail("Item name", () -> {
-                  return var2.getHoverName().getString();
-               });
-               throw new ReportedException(var4);
+               if (var2.getCount() == var3 && this.player.hasInfiniteMaterials()) {
+                  var2.setCount(0);
+                  return true;
+               } else {
+                  return var2.getCount() < var3;
+               }
             }
-         }
-
-         try {
-            return var2.getCount() < var3;
          } catch (Throwable var6) {
-            var4 = CrashReport.forThrowable(var6, "Adding item to inventory");
-            var5 = var4.addCategory("Item being added");
-            var5.setDetail("Item ID", (Object)Item.getId(var2.getItem()));
-            var5.setDetail("Item data", (Object)var2.getDamageValue());
-            var5.setDetail("Item name", () -> {
-               return var2.getHoverName().getString();
-            });
+            CrashReport var4 = CrashReport.forThrowable(var6, "Adding item to inventory");
+            CrashReportCategory var5 = var4.addCategory("Item being added");
+            var5.setDetail("Item ID", Item.getId(var2.getItem()));
+            var5.setDetail("Item data", var2.getDamageValue());
+            var5.setDetail("Item name", (CrashReportDetail)(() -> var2.getHoverName().getString()));
             throw new ReportedException(var4);
          }
       }
@@ -361,47 +302,40 @@ public class Inventory implements Container, Nameable {
    public ItemStack removeItem(int var1, int var2) {
       NonNullList var3 = null;
 
-      NonNullList var5;
-      for(Iterator var4 = this.compartments.iterator(); var4.hasNext(); var1 -= var5.size()) {
-         var5 = (NonNullList)var4.next();
+      for(NonNullList var5 : this.compartments) {
          if (var1 < var5.size()) {
             var3 = var5;
             break;
          }
+
+         var1 -= var5.size();
       }
 
       return var3 != null && !((ItemStack)var3.get(var1)).isEmpty() ? ContainerHelper.removeItem(var3, var1, var2) : ItemStack.EMPTY;
    }
 
    public void removeItem(ItemStack var1) {
-      Iterator var2 = this.compartments.iterator();
-
-      while(true) {
-         while(var2.hasNext()) {
-            NonNullList var3 = (NonNullList)var2.next();
-
-            for(int var4 = 0; var4 < var3.size(); ++var4) {
-               if (var3.get(var4) == var1) {
-                  var3.set(var4, ItemStack.EMPTY);
-                  break;
-               }
+      for(NonNullList var3 : this.compartments) {
+         for(int var4 = 0; var4 < var3.size(); ++var4) {
+            if (var3.get(var4) == var1) {
+               var3.set(var4, ItemStack.EMPTY);
+               break;
             }
          }
-
-         return;
       }
+
    }
 
    public ItemStack removeItemNoUpdate(int var1) {
       NonNullList var2 = null;
 
-      NonNullList var4;
-      for(Iterator var3 = this.compartments.iterator(); var3.hasNext(); var1 -= var4.size()) {
-         var4 = (NonNullList)var3.next();
+      for(NonNullList var4 : this.compartments) {
          if (var1 < var4.size()) {
             var2 = var4;
             break;
          }
+
+         var1 -= var4.size();
       }
 
       if (var2 != null && !((ItemStack)var2.get(var1)).isEmpty()) {
@@ -416,13 +350,13 @@ public class Inventory implements Container, Nameable {
    public void setItem(int var1, ItemStack var2) {
       NonNullList var3 = null;
 
-      NonNullList var5;
-      for(Iterator var4 = this.compartments.iterator(); var4.hasNext(); var1 -= var5.size()) {
-         var5 = (NonNullList)var4.next();
+      for(NonNullList var5 : this.compartments) {
          if (var1 < var5.size()) {
             var3 = var5;
             break;
          }
+
+         var1 -= var5.size();
       }
 
       if (var3 != null) {
@@ -436,29 +370,27 @@ public class Inventory implements Container, Nameable {
    }
 
    public ListTag save(ListTag var1) {
-      int var2;
-      CompoundTag var3;
-      for(var2 = 0; var2 < this.items.size(); ++var2) {
+      for(int var2 = 0; var2 < this.items.size(); ++var2) {
          if (!((ItemStack)this.items.get(var2)).isEmpty()) {
-            var3 = new CompoundTag();
+            CompoundTag var3 = new CompoundTag();
             var3.putByte("Slot", (byte)var2);
             var1.add(((ItemStack)this.items.get(var2)).save(this.player.registryAccess(), var3));
          }
       }
 
-      for(var2 = 0; var2 < this.armor.size(); ++var2) {
-         if (!((ItemStack)this.armor.get(var2)).isEmpty()) {
-            var3 = new CompoundTag();
-            var3.putByte("Slot", (byte)(var2 + 100));
-            var1.add(((ItemStack)this.armor.get(var2)).save(this.player.registryAccess(), var3));
+      for(int var4 = 0; var4 < this.armor.size(); ++var4) {
+         if (!((ItemStack)this.armor.get(var4)).isEmpty()) {
+            CompoundTag var6 = new CompoundTag();
+            var6.putByte("Slot", (byte)(var4 + 100));
+            var1.add(((ItemStack)this.armor.get(var4)).save(this.player.registryAccess(), var6));
          }
       }
 
-      for(var2 = 0; var2 < this.offhand.size(); ++var2) {
-         if (!((ItemStack)this.offhand.get(var2)).isEmpty()) {
-            var3 = new CompoundTag();
-            var3.putByte("Slot", (byte)(var2 + 150));
-            var1.add(((ItemStack)this.offhand.get(var2)).save(this.player.registryAccess(), var3));
+      for(int var5 = 0; var5 < this.offhand.size(); ++var5) {
+         if (!((ItemStack)this.offhand.get(var5)).isEmpty()) {
+            CompoundTag var7 = new CompoundTag();
+            var7.putByte("Slot", (byte)(var5 + 150));
+            var1.add(((ItemStack)this.offhand.get(var5)).save(this.player.registryAccess(), var7));
          }
       }
 
@@ -490,50 +422,37 @@ public class Inventory implements Container, Nameable {
    }
 
    public boolean isEmpty() {
-      Iterator var1 = this.items.iterator();
-
-      ItemStack var2;
-      do {
-         if (!var1.hasNext()) {
-            var1 = this.armor.iterator();
-
-            do {
-               if (!var1.hasNext()) {
-                  var1 = this.offhand.iterator();
-
-                  do {
-                     if (!var1.hasNext()) {
-                        return true;
-                     }
-
-                     var2 = (ItemStack)var1.next();
-                  } while(var2.isEmpty());
-
-                  return false;
-               }
-
-               var2 = (ItemStack)var1.next();
-            } while(var2.isEmpty());
-
+      for(ItemStack var2 : this.items) {
+         if (!var2.isEmpty()) {
             return false;
          }
+      }
 
-         var2 = (ItemStack)var1.next();
-      } while(var2.isEmpty());
+      for(ItemStack var5 : this.armor) {
+         if (!var5.isEmpty()) {
+            return false;
+         }
+      }
 
-      return false;
+      for(ItemStack var6 : this.offhand) {
+         if (!var6.isEmpty()) {
+            return false;
+         }
+      }
+
+      return true;
    }
 
    public ItemStack getItem(int var1) {
       NonNullList var2 = null;
 
-      NonNullList var4;
-      for(Iterator var3 = this.compartments.iterator(); var3.hasNext(); var1 -= var4.size()) {
-         var4 = (NonNullList)var3.next();
+      for(NonNullList var4 : this.compartments) {
          if (var1 < var4.size()) {
             var2 = var4;
             break;
          }
+
+         var1 -= var4.size();
       }
 
       return var2 == null ? ItemStack.EMPTY : (ItemStack)var2.get(var1);
@@ -544,15 +463,11 @@ public class Inventory implements Container, Nameable {
    }
 
    public ItemStack getArmor(int var1) {
-      return (ItemStack)this.armor.get(var1);
+      return this.armor.get(var1);
    }
 
    public void dropAll() {
-      Iterator var1 = this.compartments.iterator();
-
-      while(var1.hasNext()) {
-         List var2 = (List)var1.next();
-
+      for(List var2 : this.compartments) {
          for(int var3 = 0; var3 < var2.size(); ++var3) {
             ItemStack var4 = (ItemStack)var2.get(var3);
             if (!var4.isEmpty()) {
@@ -577,14 +492,8 @@ public class Inventory implements Container, Nameable {
    }
 
    public boolean contains(ItemStack var1) {
-      Iterator var2 = this.compartments.iterator();
-
-      while(var2.hasNext()) {
-         List var3 = (List)var2.next();
-         Iterator var4 = var3.iterator();
-
-         while(var4.hasNext()) {
-            ItemStack var5 = (ItemStack)var4.next();
+      for(List var3 : this.compartments) {
+         for(ItemStack var5 : var3) {
             if (!var5.isEmpty() && ItemStack.isSameItemSameComponents(var5, var1)) {
                return true;
             }
@@ -595,14 +504,8 @@ public class Inventory implements Container, Nameable {
    }
 
    public boolean contains(TagKey<Item> var1) {
-      Iterator var2 = this.compartments.iterator();
-
-      while(var2.hasNext()) {
-         List var3 = (List)var2.next();
-         Iterator var4 = var3.iterator();
-
-         while(var4.hasNext()) {
-            ItemStack var5 = (ItemStack)var4.next();
+      for(List var3 : this.compartments) {
+         for(ItemStack var5 : var3) {
             if (!var5.isEmpty() && var5.is(var1)) {
                return true;
             }
@@ -613,14 +516,8 @@ public class Inventory implements Container, Nameable {
    }
 
    public boolean contains(Predicate<ItemStack> var1) {
-      Iterator var2 = this.compartments.iterator();
-
-      while(var2.hasNext()) {
-         List var3 = (List)var2.next();
-         Iterator var4 = var3.iterator();
-
-         while(var4.hasNext()) {
-            ItemStack var5 = (ItemStack)var4.next();
+      for(List var3 : this.compartments) {
+         for(ItemStack var5 : var3) {
             if (var1.test(var5)) {
                return true;
             }
@@ -639,20 +536,14 @@ public class Inventory implements Container, Nameable {
    }
 
    public void clearContent() {
-      Iterator var1 = this.compartments.iterator();
-
-      while(var1.hasNext()) {
-         List var2 = (List)var1.next();
+      for(List var2 : this.compartments) {
          var2.clear();
       }
 
    }
 
    public void fillStackedContents(StackedItemContents var1) {
-      Iterator var2 = this.items.iterator();
-
-      while(var2.hasNext()) {
-         ItemStack var3 = (ItemStack)var2.next();
+      for(ItemStack var3 : this.items) {
          var1.accountSimpleStack(var3);
       }
 

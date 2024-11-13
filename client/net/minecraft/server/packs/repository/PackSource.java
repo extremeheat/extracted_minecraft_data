@@ -31,8 +31,6 @@ public interface PackSource {
 
    private static UnaryOperator<Component> decorateWithSource(String var0) {
       MutableComponent var1 = Component.translatable(var0);
-      return (var1x) -> {
-         return Component.translatable("pack.nameAndSource", var1x, var1).withStyle(ChatFormatting.GRAY);
-      };
+      return (var1x) -> Component.translatable("pack.nameAndSource", var1x, var1).withStyle(ChatFormatting.GRAY);
    }
 }

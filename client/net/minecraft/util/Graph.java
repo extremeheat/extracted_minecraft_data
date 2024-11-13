@@ -1,7 +1,6 @@
 package net.minecraft.util;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -18,21 +17,17 @@ public final class Graph {
          return true;
       } else {
          var2.add(var4);
-         Iterator var5 = ((Set)var0.getOrDefault(var4, ImmutableSet.of())).iterator();
 
-         Object var6;
-         do {
-            if (!var5.hasNext()) {
-               var2.remove(var4);
-               var1.add(var4);
-               var3.accept(var4);
-               return false;
+         for(Object var6 : (Set)var0.getOrDefault(var4, ImmutableSet.of())) {
+            if (depthFirstSearch(var0, var1, var2, var3, var6)) {
+               return true;
             }
+         }
 
-            var6 = var5.next();
-         } while(!depthFirstSearch(var0, var1, var2, var3, var6));
-
-         return true;
+         var2.remove(var4);
+         var1.add(var4);
+         var3.accept(var4);
+         return false;
       }
    }
 }

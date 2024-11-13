@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.telemetry;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
@@ -94,9 +93,7 @@ public class TelemetryEventWidget extends AbstractTextAreaWidget {
       int var6 = this.getInnerLeft();
       var1.pose().pushPose();
       var1.pose().translate((double)var6, (double)var5, 0.0);
-      this.content.container().visitWidgets((var4x) -> {
-         var4x.render(var1, var2, var3, var4);
-      });
+      this.content.container().visitWidgets((var4x) -> var4x.render(var1, var2, var3, var4));
       var1.pose().popPose();
    }
 
@@ -119,10 +116,7 @@ public class TelemetryEventWidget extends AbstractTextAreaWidget {
    }
 
    private void addEventTypeProperties(TelemetryEventType var1, ContentBuilder var2, boolean var3) {
-      Iterator var4 = var1.properties().iterator();
-
-      while(var4.hasNext()) {
-         TelemetryProperty var5 = (TelemetryProperty)var4.next();
+      for(TelemetryProperty var5 : var1.properties()) {
          var2.addLine(this.font, this.grayOutIfDisabled(var5.title(), var3));
       }
 
@@ -136,23 +130,7 @@ public class TelemetryEventWidget extends AbstractTextAreaWidget {
       PROPERTY_TITLE = Component.translatable("telemetry_info.property_title").withStyle(ChatFormatting.UNDERLINE);
    }
 
-   private static record Content(Layout container, Component narration) {
-      Content(Layout var1, Component var2) {
-         super();
-         this.container = var1;
-         this.narration = var2;
-      }
-
-      public Layout container() {
-         return this.container;
-      }
-
-      public Component narration() {
-         return this.narration;
-      }
-   }
-
-   private static class ContentBuilder {
+   static class ContentBuilder {
       private final int width;
       private final LinearLayout layout;
       private final MutableComponent narration = Component.empty();
@@ -170,16 +148,12 @@ public class TelemetryEventWidget extends AbstractTextAreaWidget {
       }
 
       public void addLine(Font var1, Component var2, int var3) {
-         this.layout.addChild((new MultiLineTextWidget(var2, var1)).setMaxWidth(this.width), (Consumer)((var1x) -> {
-            var1x.paddingBottom(var3);
-         }));
+         this.layout.addChild((new MultiLineTextWidget(var2, var1)).setMaxWidth(this.width), (Consumer)((var1x) -> var1x.paddingBottom(var3)));
          this.narration.append(var2).append("\n");
       }
 
       public void addHeader(Font var1, Component var2) {
-         this.layout.addChild((new MultiLineTextWidget(var2, var1)).setMaxWidth(this.width - 64).setCentered(true), (Consumer)((var0) -> {
-            var0.alignHorizontallyCenter().paddingHorizontal(32);
-         }));
+         this.layout.addChild((new MultiLineTextWidget(var2, var1)).setMaxWidth(this.width - 64).setCentered(true), (Consumer)((var0) -> var0.alignHorizontallyCenter().paddingHorizontal(32)));
          this.narration.append(var2).append("\n");
       }
 
@@ -190,6 +164,14 @@ public class TelemetryEventWidget extends AbstractTextAreaWidget {
       public Content build() {
          this.layout.arrangeElements();
          return new Content(this.layout, this.narration);
+      }
+   }
+
+   static record Content(Layout container, Component narration) {
+      Content(Layout var1, Component var2) {
+         super();
+         this.container = var1;
+         this.narration = var2;
       }
    }
 }

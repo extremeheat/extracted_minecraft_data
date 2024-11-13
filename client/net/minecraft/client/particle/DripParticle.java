@@ -184,7 +184,7 @@ public class DripParticle extends TextureSheetParticle {
       return var14;
    }
 
-   private static class DripHangParticle extends DripParticle {
+   static class DripHangParticle extends DripParticle {
       private final ParticleOptions fallingParticle;
 
       DripHangParticle(ClientLevel var1, double var2, double var4, double var6, Fluid var8, ParticleOptions var9) {
@@ -209,23 +209,6 @@ public class DripParticle extends TextureSheetParticle {
       }
    }
 
-   private static class FallAndLandParticle extends FallingParticle {
-      protected final ParticleOptions landParticle;
-
-      FallAndLandParticle(ClientLevel var1, double var2, double var4, double var6, Fluid var8, ParticleOptions var9) {
-         super(var1, var2, var4, var6, var8);
-         this.landParticle = var9;
-      }
-
-      protected void postMoveUpdate() {
-         if (this.onGround) {
-            this.remove();
-            this.level.addParticle(this.landParticle, this.x, this.y, this.z, 0.0, 0.0, 0.0);
-         }
-
-      }
-   }
-
    static class CoolingDripHangParticle extends DripHangParticle {
       CoolingDripHangParticle(ClientLevel var1, double var2, double var4, double var6, Fluid var8, ParticleOptions var9) {
          super(var1, var2, var4, var6, var8, var9);
@@ -239,10 +222,20 @@ public class DripParticle extends TextureSheetParticle {
       }
    }
 
-   static class DripLandParticle extends DripParticle {
-      DripLandParticle(ClientLevel var1, double var2, double var4, double var6, Fluid var8) {
+   static class FallAndLandParticle extends FallingParticle {
+      protected final ParticleOptions landParticle;
+
+      FallAndLandParticle(ClientLevel var1, double var2, double var4, double var6, Fluid var8, ParticleOptions var9) {
          super(var1, var2, var4, var6, var8);
-         this.lifetime = (int)(16.0 / (Math.random() * 0.8 + 0.2));
+         this.landParticle = var9;
+      }
+
+      protected void postMoveUpdate() {
+         if (this.onGround) {
+            this.remove();
+            this.level.addParticle(this.landParticle, this.x, this.y, this.z, 0.0, 0.0, 0.0);
+         }
+
       }
    }
 
@@ -262,7 +255,7 @@ public class DripParticle extends TextureSheetParticle {
       }
    }
 
-   private static class DripstoneFallAndLandParticle extends FallAndLandParticle {
+   static class DripstoneFallAndLandParticle extends FallAndLandParticle {
       DripstoneFallAndLandParticle(ClientLevel var1, double var2, double var4, double var6, Fluid var8, ParticleOptions var9) {
          super(var1, var2, var4, var6, var8, var9);
       }
@@ -294,6 +287,13 @@ public class DripParticle extends TextureSheetParticle {
             this.remove();
          }
 
+      }
+   }
+
+   static class DripLandParticle extends DripParticle {
+      DripLandParticle(ClientLevel var1, double var2, double var4, double var6, Fluid var8) {
+         super(var1, var2, var4, var6, var8);
+         this.lifetime = (int)(16.0 / (Math.random() * 0.8 + 0.2));
       }
    }
 }

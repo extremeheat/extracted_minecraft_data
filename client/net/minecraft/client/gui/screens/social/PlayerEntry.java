@@ -87,11 +87,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       boolean var11 = var1.getChatStatus().isChatAllowed(var1.isLocalServer());
       boolean var12 = !var1.player.getUUID().equals(var3);
       if (var12 && var11 && !var10.isBlocked(var3)) {
-         this.reportButton = new ImageButton(0, 0, 20, 20, REPORT_BUTTON_SPRITES, (var4x) -> {
-            var7.draftReportHandled(var1, var2, () -> {
-               var1.setScreen(new ReportPlayerScreen(var2, var7, this));
-            }, false);
-         }, Component.translatable("gui.socialInteractions.report")) {
+         this.reportButton = new ImageButton(0, 0, 20, 20, REPORT_BUTTON_SPRITES, (var4x) -> var7.draftReportHandled(var1, var2, () -> var1.setScreen(new ReportPlayerScreen(var2, var7, this)), false), Component.translatable("gui.socialInteractions.report")) {
             protected MutableComponent createNarrationMessage() {
                return PlayerEntry.this.getEntryNarationMessage(super.createNarrationMessage());
             }

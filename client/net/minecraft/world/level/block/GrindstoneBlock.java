@@ -101,10 +101,6 @@ public class GrindstoneBlock extends FaceAttachedHorizontalDirectionalBlock {
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(FACE, AttachFace.WALL));
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
-
    private VoxelShape getVoxelShape(BlockState var1) {
       Direction var2 = (Direction)var1.getValue(FACING);
       switch ((AttachFace)var1.getValue(FACE)) {
@@ -159,9 +155,7 @@ public class GrindstoneBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
-      return new SimpleMenuProvider((var2x, var3x, var4) -> {
-         return new GrindstoneMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3));
-      }, CONTAINER_TITLE);
+      return new SimpleMenuProvider((var2x, var3x, var4) -> new GrindstoneMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), CONTAINER_TITLE);
    }
 
    protected BlockState rotate(BlockState var1, Rotation var2) {

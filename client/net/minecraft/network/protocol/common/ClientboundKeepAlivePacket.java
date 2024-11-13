@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundKeepAlivePacket implements Packet<ClientCommonPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundKeepAlivePacket> STREAM_CODEC = Packet.codec(ClientboundKeepAlivePacket::write, ClientboundKeepAlivePacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundKeepAlivePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundKeepAlivePacket>codec(ClientboundKeepAlivePacket::write, ClientboundKeepAlivePacket::new);
    private final long id;
 
    public ClientboundKeepAlivePacket(long var1) {

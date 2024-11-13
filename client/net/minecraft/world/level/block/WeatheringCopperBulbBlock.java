@@ -9,9 +9,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class WeatheringCopperBulbBlock extends CopperBulbBlock implements WeatheringCopper {
-   public static final MapCodec<WeatheringCopperBulbBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(WeatheringCopperBulbBlock::getAge), propertiesCodec()).apply(var0, WeatheringCopperBulbBlock::new);
-   });
+   public static final MapCodec<WeatheringCopperBulbBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(WeatheringCopperBulbBlock::getAge), propertiesCodec()).apply(var0, WeatheringCopperBulbBlock::new));
    private final WeatheringCopper.WeatherState weatherState;
 
    protected MapCodec<WeatheringCopperBulbBlock> codec() {

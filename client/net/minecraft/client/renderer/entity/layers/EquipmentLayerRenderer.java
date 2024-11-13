@@ -2,10 +2,10 @@ package net.minecraft.client.renderer.entity.layers;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.model.Model;
@@ -40,12 +40,8 @@ public class EquipmentLayerRenderer {
    public EquipmentLayerRenderer(EquipmentAssetManager var1, TextureAtlas var2) {
       super();
       this.equipmentAssets = var1;
-      this.layerTextureLookup = Util.memoize((var0) -> {
-         return var0.layer.getTextureLocation(var0.layerType);
-      });
-      this.trimSpriteLookup = Util.memoize((var1x) -> {
-         return var2.getSprite(var1x.textureId());
-      });
+      this.layerTextureLookup = Util.memoize((Function)((var0) -> var0.layer.getTextureLocation(var0.layerType)));
+      this.trimSpriteLookup = Util.memoize((Function)((var1x) -> var2.getSprite(var1x.textureId())));
    }
 
    public void renderLayers(EquipmentClientInfo.LayerType var1, ResourceKey<EquipmentAsset> var2, Model var3, ItemStack var4, PoseStack var5, MultiBufferSource var6, int var7) {
@@ -57,32 +53,24 @@ public class EquipmentLayerRenderer {
       if (!var9.isEmpty()) {
          int var10 = var4.is(ItemTags.DYEABLE) ? DyedItemColor.getOrDefault(var4, 0) : 0;
          boolean var11 = var4.hasFoil();
-         Iterator var12 = var9.iterator();
 
-         while(true) {
-            EquipmentClientInfo.Layer var13;
-            int var14;
-            do {
-               if (!var12.hasNext()) {
-                  ArmorTrim var17 = (ArmorTrim)var4.get(DataComponents.TRIM);
-                  if (var17 != null) {
-                     TextureAtlasSprite var18 = (TextureAtlasSprite)this.trimSpriteLookup.apply(new TrimSpriteKey(var17, var1, var2));
-                     VertexConsumer var19 = var18.wrap(var6.getBuffer(Sheets.armorTrimsSheet(((TrimPattern)var17.pattern().value()).decal())));
-                     var3.renderToBuffer(var5, var19, var7, OverlayTexture.NO_OVERLAY);
-                  }
-
-                  return;
-               }
-
-               var13 = (EquipmentClientInfo.Layer)var12.next();
-               var14 = getColorForLayer(var13, var10);
-            } while(var14 == 0);
-
-            ResourceLocation var15 = var13.usePlayerTexture() && var8 != null ? var8 : (ResourceLocation)this.layerTextureLookup.apply(new LayerTextureKey(var1, var13));
-            VertexConsumer var16 = ItemRenderer.getArmorFoilBuffer(var6, RenderType.armorCutoutNoCull(var15), var11);
-            var3.renderToBuffer(var5, var16, var7, OverlayTexture.NO_OVERLAY, var14);
-            var11 = false;
+         for(EquipmentClientInfo.Layer var13 : var9) {
+            int var14 = getColorForLayer(var13, var10);
+            if (var14 != 0) {
+               ResourceLocation var15 = var13.usePlayerTexture() && var8 != null ? var8 : (ResourceLocation)this.layerTextureLookup.apply(new LayerTextureKey(var1, var13));
+               VertexConsumer var16 = ItemRenderer.getArmorFoilBuffer(var6, RenderType.armorCutoutNoCull(var15), var11);
+               var3.renderToBuffer(var5, var16, var7, OverlayTexture.NO_OVERLAY, var14);
+               var11 = false;
+            }
          }
+
+         ArmorTrim var17 = (ArmorTrim)var4.get(DataComponents.TRIM);
+         if (var17 != null) {
+            TextureAtlasSprite var18 = (TextureAtlasSprite)this.trimSpriteLookup.apply(new TrimSpriteKey(var17, var1, var2));
+            VertexConsumer var19 = var18.wrap(var6.getBuffer(Sheets.armorTrimsSheet(((TrimPattern)var17.pattern().value()).decal())));
+            var3.renderToBuffer(var5, var19, var7, OverlayTexture.NO_OVERLAY);
+         }
+
       }
    }
 
@@ -105,14 +93,6 @@ public class EquipmentLayerRenderer {
          this.layerType = var1;
          this.layer = var2;
       }
-
-      public EquipmentClientInfo.LayerType layerType() {
-         return this.layerType;
-      }
-
-      public EquipmentClientInfo.Layer layer() {
-         return this.layer;
-      }
    }
 
    static record TrimSpriteKey(ArmorTrim trim, EquipmentClientInfo.LayerType layerType, ResourceKey<EquipmentAsset> equipmentAssetId) {
@@ -131,21 +111,7 @@ public class EquipmentLayerRenderer {
       public ResourceLocation textureId() {
          ResourceLocation var1 = ((TrimPattern)this.trim.pattern().value()).assetId();
          String var2 = getColorPaletteSuffix(this.trim.material(), this.equipmentAssetId);
-         return var1.withPath((var2x) -> {
-            return "trims/entity/" + this.layerType.getSerializedName() + "/" + var2x + "_" + var2;
-         });
-      }
-
-      public ArmorTrim trim() {
-         return this.trim;
-      }
-
-      public EquipmentClientInfo.LayerType layerType() {
-         return this.layerType;
-      }
-
-      public ResourceKey<EquipmentAsset> equipmentAssetId() {
-         return this.equipmentAssetId;
+         return var1.withPath((UnaryOperator)((var2x) -> "trims/entity/" + this.layerType.getSerializedName() + "/" + var2x + "_" + var2));
       }
    }
 }

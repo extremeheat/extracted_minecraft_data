@@ -86,15 +86,7 @@ public class SmithingTrimRecipe implements SmithingRecipe {
    }
 
    public static class Serializer implements RecipeSerializer<SmithingTrimRecipe> {
-      private static final MapCodec<SmithingTrimRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(Ingredient.CODEC.optionalFieldOf("template").forGetter((var0x) -> {
-            return var0x.template;
-         }), Ingredient.CODEC.optionalFieldOf("base").forGetter((var0x) -> {
-            return var0x.base;
-         }), Ingredient.CODEC.optionalFieldOf("addition").forGetter((var0x) -> {
-            return var0x.addition;
-         })).apply(var0, SmithingTrimRecipe::new);
-      });
+      private static final MapCodec<SmithingTrimRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Ingredient.CODEC.optionalFieldOf("template").forGetter((var0x) -> var0x.template), Ingredient.CODEC.optionalFieldOf("base").forGetter((var0x) -> var0x.base), Ingredient.CODEC.optionalFieldOf("addition").forGetter((var0x) -> var0x.addition)).apply(var0, SmithingTrimRecipe::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, SmithingTrimRecipe> STREAM_CODEC;
 
       public Serializer() {
@@ -110,13 +102,7 @@ public class SmithingTrimRecipe implements SmithingRecipe {
       }
 
       static {
-         STREAM_CODEC = StreamCodec.composite(Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> {
-            return var0.template;
-         }, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> {
-            return var0.base;
-         }, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> {
-            return var0.addition;
-         }, SmithingTrimRecipe::new);
+         STREAM_CODEC = StreamCodec.composite(Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> var0.template, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> var0.base, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> var0.addition, SmithingTrimRecipe::new);
       }
    }
 }

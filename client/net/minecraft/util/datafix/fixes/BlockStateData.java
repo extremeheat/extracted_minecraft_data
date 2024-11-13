@@ -13,12 +13,8 @@ public class BlockStateData {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Dynamic<?>[] MAP = new Dynamic[4096];
    private static final Dynamic<?>[] BLOCK_DEFAULTS = new Dynamic[256];
-   private static final Object2IntMap<Dynamic<?>> ID_BY_OLD = (Object2IntMap)DataFixUtils.make(new Object2IntOpenHashMap(), (var0) -> {
-      var0.defaultReturnValue(-1);
-   });
-   private static final Object2IntMap<String> ID_BY_OLD_NAME = (Object2IntMap)DataFixUtils.make(new Object2IntOpenHashMap(), (var0) -> {
-      var0.defaultReturnValue(-1);
-   });
+   private static final Object2IntMap<Dynamic<?>> ID_BY_OLD = (Object2IntMap)DataFixUtils.make(new Object2IntOpenHashMap(), (var0) -> var0.defaultReturnValue(-1));
+   private static final Object2IntMap<String> ID_BY_OLD_NAME = (Object2IntMap)DataFixUtils.make(new Object2IntOpenHashMap(), (var0) -> var0.defaultReturnValue(-1));
    static final String FILTER_ME = "%%FILTER_ME%%";
 
    public BlockStateData() {
@@ -33,11 +29,7 @@ public class BlockStateData {
          BLOCK_DEFAULTS[var4] = var3;
       }
 
-      String[] var5 = var2;
-      int var6 = var2.length;
-
-      for(int var7 = 0; var7 < var6; ++var7) {
-         String var8 = var5[var7];
+      for(String var8 : var2) {
          Dynamic var9 = parse(var8);
          String var10 = var9.get("Name").asString("");
          ID_BY_OLD_NAME.putIfAbsent(var10, var0);

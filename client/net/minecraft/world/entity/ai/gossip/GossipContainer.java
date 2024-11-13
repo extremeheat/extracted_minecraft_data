@@ -63,9 +63,7 @@ public class GossipContainer {
    }
 
    private Stream<GossipEntry> unpack() {
-      return this.gossips.entrySet().stream().flatMap((var0) -> {
-         return ((EntityGossips)var0.getValue()).unpack((UUID)var0.getKey());
-      });
+      return this.gossips.entrySet().stream().flatMap((var0) -> ((EntityGossips)var0.getValue()).unpack((UUID)var0.getKey()));
    }
 
    private Collection<GossipEntry> selectGossipsForTransfer(RandomSource var1, int var2) {
@@ -95,9 +93,7 @@ public class GossipContainer {
    }
 
    private EntityGossips getOrCreate(UUID var1) {
-      return (EntityGossips)this.gossips.computeIfAbsent(var1, (var0) -> {
-         return new EntityGossips();
-      });
+      return (EntityGossips)this.gossips.computeIfAbsent(var1, (var0) -> new EntityGossips());
    }
 
    public void transferFrom(GossipContainer var1, RandomSource var2, int var3) {
@@ -117,16 +113,12 @@ public class GossipContainer {
    }
 
    public long getCountForType(GossipType var1, DoublePredicate var2) {
-      return this.gossips.values().stream().filter((var2x) -> {
-         return var2.test((double)(var2x.entries.getOrDefault(var1, 0) * var1.weight));
-      }).count();
+      return this.gossips.values().stream().filter((var2x) -> var2.test((double)(var2x.entries.getOrDefault(var1, 0) * var1.weight))).count();
    }
 
    public void add(UUID var1, GossipType var2, int var3) {
       EntityGossips var4 = this.getOrCreate(var1);
-      var4.entries.mergeInt(var2, var3, (var2x, var3x) -> {
-         return this.mergeValuesForAddition(var2, var2x, var3x);
-      });
+      var4.entries.mergeInt(var2, var3, (var2x, var3x) -> this.mergeValuesForAddition(var2, var2x, var3x));
       var4.makeSureValueIsntTooLowOrTooHigh(var2);
       if (var4.isEmpty()) {
          this.gossips.remove(var1);
@@ -163,21 +155,13 @@ public class GossipContainer {
    }
 
    public <T> T store(DynamicOps<T> var1) {
-      Optional var10000 = GossipContainer.GossipEntry.LIST_CODEC.encodeStart(var1, this.unpack().toList()).resultOrPartial((var0) -> {
-         LOGGER.warn("Failed to serialize gossips: {}", var0);
-      });
+      Optional var10000 = GossipContainer.GossipEntry.LIST_CODEC.encodeStart(var1, this.unpack().toList()).resultOrPartial((var0) -> LOGGER.warn("Failed to serialize gossips: {}", var0));
       Objects.requireNonNull(var1);
-      return var10000.orElseGet(var1::emptyList);
+      return (T)var10000.orElseGet(var1::emptyList);
    }
 
    public void update(Dynamic<?> var1) {
-      GossipContainer.GossipEntry.LIST_CODEC.decode(var1).resultOrPartial((var0) -> {
-         LOGGER.warn("Failed to deserialize gossips: {}", var0);
-      }).stream().flatMap((var0) -> {
-         return ((List)var0.getFirst()).stream();
-      }).forEach((var1x) -> {
-         this.getOrCreate(var1x.target).entries.put(var1x.type, var1x.value);
-      });
+      GossipContainer.GossipEntry.LIST_CODEC.decode(var1).resultOrPartial((var0) -> LOGGER.warn("Failed to deserialize gossips: {}", var0)).stream().flatMap((var0) -> ((List)var0.getFirst()).stream()).forEach((var1x) -> this.getOrCreate(var1x.target).entries.put(var1x.type, var1x.value));
    }
 
    private static int mergeValuesForTransfer(int var0, int var1) {
@@ -189,6 +173,29 @@ public class GossipContainer {
       return var4 > var1.max ? Math.max(var1.max, var2) : var4;
    }
 
+   static record GossipEntry(UUID target, GossipType type, int value) {
+      final UUID target;
+      final GossipType type;
+      final int value;
+      public static final Codec<GossipEntry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(UUIDUtil.CODEC.fieldOf("Target").forGetter(GossipEntry::target), GossipType.CODEC.fieldOf("Type").forGetter(GossipEntry::type), ExtraCodecs.POSITIVE_INT.fieldOf("Value").forGetter(GossipEntry::value)).apply(var0, GossipEntry::new));
+      public static final Codec<List<GossipEntry>> LIST_CODEC;
+
+      GossipEntry(UUID var1, GossipType var2, int var3) {
+         super();
+         this.target = var1;
+         this.type = var2;
+         this.value = var3;
+      }
+
+      public int weightedValue() {
+         return this.value * this.type.weight;
+      }
+
+      static {
+         LIST_CODEC = CODEC.listOf();
+      }
+   }
+
    static class EntityGossips {
       final Object2IntMap<GossipType> entries = new Object2IntOpenHashMap();
 
@@ -197,17 +204,11 @@ public class GossipContainer {
       }
 
       public int weightedValue(Predicate<GossipType> var1) {
-         return this.entries.object2IntEntrySet().stream().filter((var1x) -> {
-            return var1.test((GossipType)var1x.getKey());
-         }).mapToInt((var0) -> {
-            return var0.getIntValue() * ((GossipType)var0.getKey()).weight;
-         }).sum();
+         return this.entries.object2IntEntrySet().stream().filter((var1x) -> var1.test((GossipType)var1x.getKey())).mapToInt((var0) -> var0.getIntValue() * ((GossipType)var0.getKey()).weight).sum();
       }
 
       public Stream<GossipEntry> unpack(UUID var1) {
-         return this.entries.object2IntEntrySet().stream().map((var1x) -> {
-            return new GossipEntry(var1, (GossipType)var1x.getKey(), var1x.getIntValue());
-         });
+         return this.entries.object2IntEntrySet().stream().map((var1x) -> new GossipEntry(var1, (GossipType)var1x.getKey(), var1x.getIntValue()));
       }
 
       public void decay() {
@@ -243,43 +244,6 @@ public class GossipContainer {
 
       public void remove(GossipType var1) {
          this.entries.removeInt(var1);
-      }
-   }
-
-   static record GossipEntry(UUID target, GossipType type, int value) {
-      final UUID target;
-      final GossipType type;
-      final int value;
-      public static final Codec<GossipEntry> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(UUIDUtil.CODEC.fieldOf("Target").forGetter(GossipEntry::target), GossipType.CODEC.fieldOf("Type").forGetter(GossipEntry::type), ExtraCodecs.POSITIVE_INT.fieldOf("Value").forGetter(GossipEntry::value)).apply(var0, GossipEntry::new);
-      });
-      public static final Codec<List<GossipEntry>> LIST_CODEC;
-
-      GossipEntry(UUID var1, GossipType var2, int var3) {
-         super();
-         this.target = var1;
-         this.type = var2;
-         this.value = var3;
-      }
-
-      public int weightedValue() {
-         return this.value * this.type.weight;
-      }
-
-      public UUID target() {
-         return this.target;
-      }
-
-      public GossipType type() {
-         return this.type;
-      }
-
-      public int value() {
-         return this.value;
-      }
-
-      static {
-         LIST_CODEC = CODEC.listOf();
       }
    }
 }

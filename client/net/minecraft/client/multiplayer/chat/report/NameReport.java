@@ -54,7 +54,7 @@ public class NameReport extends Report {
 
       @Nullable
       public Report.CannotBuildReason checkBuildable() {
-         return ((NameReport)this.report).comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : super.checkBuildable();
+         return (this.report).comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : super.checkBuildable();
       }
 
       public Either<Report.Result, Report.CannotBuildReason> build(ReportingContext var1) {
@@ -62,9 +62,9 @@ public class NameReport extends Report {
          if (var2 != null) {
             return Either.right(var2);
          } else {
-            ReportedEntity var3 = new ReportedEntity(((NameReport)this.report).reportedProfileId);
-            AbuseReport var4 = AbuseReport.name(((NameReport)this.report).comments, var3, ((NameReport)this.report).createdAt);
-            return Either.left(new Report.Result(((NameReport)this.report).reportId, ReportType.USERNAME, var4));
+            ReportedEntity var3 = new ReportedEntity((this.report).reportedProfileId);
+            AbuseReport var4 = AbuseReport.name((this.report).comments, var3, (this.report).createdAt);
+            return Either.left(new Report.Result((this.report).reportId, ReportType.USERNAME, var4));
          }
       }
    }

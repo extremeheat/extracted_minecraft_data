@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -76,16 +75,13 @@ public class DetectorRailBlock extends BaseRailBlock {
       if (this.canSurvive(var3, var1, var2)) {
          boolean var4 = (Boolean)var3.getValue(POWERED);
          boolean var5 = false;
-         List var6 = this.getInteractingMinecartOfType(var1, var2, AbstractMinecart.class, (var0) -> {
-            return true;
-         });
+         List var6 = this.getInteractingMinecartOfType(var1, var2, AbstractMinecart.class, (var0) -> true);
          if (!var6.isEmpty()) {
             var5 = true;
          }
 
-         BlockState var7;
          if (var5 && !var4) {
-            var7 = (BlockState)var3.setValue(POWERED, true);
+            BlockState var7 = (BlockState)var3.setValue(POWERED, true);
             var1.setBlock(var2, var7, 3);
             this.updatePowerToConnected(var1, var2, var7, true);
             var1.updateNeighborsAt(var2, this);
@@ -94,12 +90,12 @@ public class DetectorRailBlock extends BaseRailBlock {
          }
 
          if (!var5 && var4) {
-            var7 = (BlockState)var3.setValue(POWERED, false);
-            var1.setBlock(var2, var7, 3);
-            this.updatePowerToConnected(var1, var2, var7, false);
+            BlockState var8 = (BlockState)var3.setValue(POWERED, false);
+            var1.setBlock(var2, var8, 3);
+            this.updatePowerToConnected(var1, var2, var8, false);
             var1.updateNeighborsAt(var2, this);
             var1.updateNeighborsAt(var2.below(), this);
-            var1.setBlocksDirty(var2, var3, var7);
+            var1.setBlocksDirty(var2, var3, var8);
          }
 
          if (var5) {
@@ -112,11 +108,8 @@ public class DetectorRailBlock extends BaseRailBlock {
 
    protected void updatePowerToConnected(Level var1, BlockPos var2, BlockState var3, boolean var4) {
       RailState var5 = new RailState(var1, var2, var3);
-      List var6 = var5.getConnections();
-      Iterator var7 = var6.iterator();
 
-      while(var7.hasNext()) {
-         BlockPos var8 = (BlockPos)var7.next();
+      for(BlockPos var8 : var5.getConnections()) {
          BlockState var9 = var1.getBlockState(var8);
          var1.neighborChanged(var9, var8, var9.getBlock(), (Orientation)null, false);
       }
@@ -140,9 +133,7 @@ public class DetectorRailBlock extends BaseRailBlock {
 
    protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       if ((Boolean)var1.getValue(POWERED)) {
-         List var4 = this.getInteractingMinecartOfType(var2, var3, MinecartCommandBlock.class, (var0) -> {
-            return true;
-         });
+         List var4 = this.getInteractingMinecartOfType(var2, var3, MinecartCommandBlock.class, (var0) -> true);
          if (!var4.isEmpty()) {
             return ((MinecartCommandBlock)var4.get(0)).getCommandBlock().getSuccessCount();
          }

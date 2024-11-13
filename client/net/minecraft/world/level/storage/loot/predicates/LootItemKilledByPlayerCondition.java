@@ -27,9 +27,7 @@ public class LootItemKilledByPlayerCondition implements LootItemCondition {
    }
 
    public static LootItemCondition.Builder killedByPlayer() {
-      return () -> {
-         return INSTANCE;
-      };
+      return () -> INSTANCE;
    }
 
    // $FF: synthetic method

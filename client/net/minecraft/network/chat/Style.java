@@ -234,11 +234,8 @@ public class Style {
       Boolean var5 = this.strikethrough;
       Boolean var6 = this.underlined;
       Boolean var7 = this.obfuscated;
-      ChatFormatting[] var8 = var1;
-      int var9 = var1.length;
 
-      for(int var10 = 0; var10 < var9; ++var10) {
-         ChatFormatting var11 = var8[var10];
+      for(ChatFormatting var11 : var1) {
          switch (var11) {
             case OBFUSCATED:
                var7 = true;
@@ -279,7 +276,7 @@ public class Style {
       class 1Collector {
          private boolean isNotFirst;
 
-         _Collector/* $FF was: 1Collector*/(final Style var1x) {
+         _Collector/* $FF was: 1Collector*/() {
             super();
          }
 
@@ -314,7 +311,7 @@ public class Style {
          }
       }
 
-      1Collector var2 = new 1Collector(this);
+      1Collector var2 = new 1Collector();
       var2.addValueString("color", this.color);
       var2.addValueString("shadowColor", this.shadowColor);
       var2.addFlagString("bold", this.bold);
@@ -346,31 +343,7 @@ public class Style {
    }
 
    public static class Serializer {
-      public static final MapCodec<Style> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(TextColor.CODEC.optionalFieldOf("color").forGetter((var0x) -> {
-            return Optional.ofNullable(var0x.color);
-         }), ExtraCodecs.ARGB_COLOR_CODEC.optionalFieldOf("shadow_color").forGetter((var0x) -> {
-            return Optional.ofNullable(var0x.shadowColor);
-         }), Codec.BOOL.optionalFieldOf("bold").forGetter((var0x) -> {
-            return Optional.ofNullable(var0x.bold);
-         }), Codec.BOOL.optionalFieldOf("italic").forGetter((var0x) -> {
-            return Optional.ofNullable(var0x.italic);
-         }), Codec.BOOL.optionalFieldOf("underlined").forGetter((var0x) -> {
-            return Optional.ofNullable(var0x.underlined);
-         }), Codec.BOOL.optionalFieldOf("strikethrough").forGetter((var0x) -> {
-            return Optional.ofNullable(var0x.strikethrough);
-         }), Codec.BOOL.optionalFieldOf("obfuscated").forGetter((var0x) -> {
-            return Optional.ofNullable(var0x.obfuscated);
-         }), ClickEvent.CODEC.optionalFieldOf("clickEvent").forGetter((var0x) -> {
-            return Optional.ofNullable(var0x.clickEvent);
-         }), HoverEvent.CODEC.optionalFieldOf("hoverEvent").forGetter((var0x) -> {
-            return Optional.ofNullable(var0x.hoverEvent);
-         }), Codec.STRING.optionalFieldOf("insertion").forGetter((var0x) -> {
-            return Optional.ofNullable(var0x.insertion);
-         }), ResourceLocation.CODEC.optionalFieldOf("font").forGetter((var0x) -> {
-            return Optional.ofNullable(var0x.font);
-         })).apply(var0, Style::create);
-      });
+      public static final MapCodec<Style> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(TextColor.CODEC.optionalFieldOf("color").forGetter((var0x) -> Optional.ofNullable(var0x.color)), ExtraCodecs.ARGB_COLOR_CODEC.optionalFieldOf("shadow_color").forGetter((var0x) -> Optional.ofNullable(var0x.shadowColor)), Codec.BOOL.optionalFieldOf("bold").forGetter((var0x) -> Optional.ofNullable(var0x.bold)), Codec.BOOL.optionalFieldOf("italic").forGetter((var0x) -> Optional.ofNullable(var0x.italic)), Codec.BOOL.optionalFieldOf("underlined").forGetter((var0x) -> Optional.ofNullable(var0x.underlined)), Codec.BOOL.optionalFieldOf("strikethrough").forGetter((var0x) -> Optional.ofNullable(var0x.strikethrough)), Codec.BOOL.optionalFieldOf("obfuscated").forGetter((var0x) -> Optional.ofNullable(var0x.obfuscated)), ClickEvent.CODEC.optionalFieldOf("clickEvent").forGetter((var0x) -> Optional.ofNullable(var0x.clickEvent)), HoverEvent.CODEC.optionalFieldOf("hoverEvent").forGetter((var0x) -> Optional.ofNullable(var0x.hoverEvent)), Codec.STRING.optionalFieldOf("insertion").forGetter((var0x) -> Optional.ofNullable(var0x.insertion)), ResourceLocation.CODEC.optionalFieldOf("font").forGetter((var0x) -> Optional.ofNullable(var0x.font))).apply(var0, Style::create));
       public static final Codec<Style> CODEC;
       public static final StreamCodec<RegistryFriendlyByteBuf, Style> TRUSTED_STREAM_CODEC;
 

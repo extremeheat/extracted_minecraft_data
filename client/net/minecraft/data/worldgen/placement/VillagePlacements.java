@@ -10,7 +10,6 @@ import net.minecraft.data.worldgen.features.VegetationFeatures;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 
 public class VillagePlacements {
    public static final ResourceKey<PlacedFeature> PILE_HAY_VILLAGE = PlacementUtils.createKey("pile_hay");
@@ -46,18 +45,18 @@ public class VillagePlacements {
       Holder.Reference var12 = var1.getOrThrow(VegetationFeatures.FLOWER_PLAIN);
       Holder.Reference var13 = var1.getOrThrow(VegetationFeatures.PATCH_TAIGA_GRASS);
       Holder.Reference var14 = var1.getOrThrow(VegetationFeatures.PATCH_BERRY_BUSH);
-      PlacementUtils.register(var0, PILE_HAY_VILLAGE, var2, (PlacementModifier[])());
-      PlacementUtils.register(var0, PILE_MELON_VILLAGE, var3, (PlacementModifier[])());
-      PlacementUtils.register(var0, PILE_SNOW_VILLAGE, var4, (PlacementModifier[])());
-      PlacementUtils.register(var0, PILE_ICE_VILLAGE, var5, (PlacementModifier[])());
-      PlacementUtils.register(var0, PILE_PUMPKIN_VILLAGE, var6, (PlacementModifier[])());
-      PlacementUtils.register(var0, OAK_VILLAGE, var7, (PlacementModifier[])(PlacementUtils.filteredByBlockSurvival(Blocks.OAK_SAPLING)));
-      PlacementUtils.register(var0, ACACIA_VILLAGE, var8, (PlacementModifier[])(PlacementUtils.filteredByBlockSurvival(Blocks.ACACIA_SAPLING)));
-      PlacementUtils.register(var0, SPRUCE_VILLAGE, var9, (PlacementModifier[])(PlacementUtils.filteredByBlockSurvival(Blocks.SPRUCE_SAPLING)));
-      PlacementUtils.register(var0, PINE_VILLAGE, var10, (PlacementModifier[])(PlacementUtils.filteredByBlockSurvival(Blocks.SPRUCE_SAPLING)));
-      PlacementUtils.register(var0, PATCH_CACTUS_VILLAGE, var11, (PlacementModifier[])());
-      PlacementUtils.register(var0, FLOWER_PLAIN_VILLAGE, var12, (PlacementModifier[])());
-      PlacementUtils.register(var0, PATCH_TAIGA_GRASS_VILLAGE, var13, (PlacementModifier[])());
-      PlacementUtils.register(var0, PATCH_BERRY_BUSH_VILLAGE, var14, (PlacementModifier[])());
+      PlacementUtils.register(var0, PILE_HAY_VILLAGE, var2);
+      PlacementUtils.register(var0, PILE_MELON_VILLAGE, var3);
+      PlacementUtils.register(var0, PILE_SNOW_VILLAGE, var4);
+      PlacementUtils.register(var0, PILE_ICE_VILLAGE, var5);
+      PlacementUtils.register(var0, PILE_PUMPKIN_VILLAGE, var6);
+      PlacementUtils.register(var0, OAK_VILLAGE, var7, PlacementUtils.filteredByBlockSurvival(Blocks.OAK_SAPLING));
+      PlacementUtils.register(var0, ACACIA_VILLAGE, var8, PlacementUtils.filteredByBlockSurvival(Blocks.ACACIA_SAPLING));
+      PlacementUtils.register(var0, SPRUCE_VILLAGE, var9, PlacementUtils.filteredByBlockSurvival(Blocks.SPRUCE_SAPLING));
+      PlacementUtils.register(var0, PINE_VILLAGE, var10, PlacementUtils.filteredByBlockSurvival(Blocks.SPRUCE_SAPLING));
+      PlacementUtils.register(var0, PATCH_CACTUS_VILLAGE, var11);
+      PlacementUtils.register(var0, FLOWER_PLAIN_VILLAGE, var12);
+      PlacementUtils.register(var0, PATCH_TAIGA_GRASS_VILLAGE, var13);
+      PlacementUtils.register(var0, PATCH_BERRY_BUSH_VILLAGE, var14);
    }
 }

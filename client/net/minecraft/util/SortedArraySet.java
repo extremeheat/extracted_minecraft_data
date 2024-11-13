@@ -20,7 +20,7 @@ public class SortedArraySet<T> extends AbstractSet<T> {
       if (var1 < 0) {
          throw new IllegalArgumentException("Initial capacity (" + var1 + ") is negative");
       } else {
-         this.contents = castRawArray(new Object[var1]);
+         this.contents = (T[])castRawArray(new Object[var1]);
       }
    }
 
@@ -29,7 +29,7 @@ public class SortedArraySet<T> extends AbstractSet<T> {
    }
 
    public static <T extends Comparable<T>> SortedArraySet<T> create(int var0) {
-      return new SortedArraySet(var0, Comparator.naturalOrder());
+      return new SortedArraySet<T>(var0, Comparator.naturalOrder());
    }
 
    public static <T> SortedArraySet<T> create(Comparator<T> var0) {
@@ -37,11 +37,11 @@ public class SortedArraySet<T> extends AbstractSet<T> {
    }
 
    public static <T> SortedArraySet<T> create(Comparator<T> var0, int var1) {
-      return new SortedArraySet(var1, var0);
+      return new SortedArraySet<T>(var1, var0);
    }
 
    private static <T> T[] castRawArray(Object[] var0) {
-      return var0;
+      return (T[])var0;
    }
 
    private int findIndex(T var1) {
@@ -73,7 +73,7 @@ public class SortedArraySet<T> extends AbstractSet<T> {
 
          Object[] var2 = new Object[var1];
          System.arraycopy(this.contents, 0, var2, 0, this.size);
-         this.contents = castRawArray(var2);
+         this.contents = (T[])castRawArray(var2);
       }
    }
 
@@ -97,13 +97,13 @@ public class SortedArraySet<T> extends AbstractSet<T> {
    }
 
    private T getInternal(int var1) {
-      return this.contents[var1];
+      return (T)this.contents[var1];
    }
 
    public T addOrGet(T var1) {
       int var2 = this.findIndex(var1);
       if (var2 >= 0) {
-         return this.getInternal(var2);
+         return (T)this.getInternal(var2);
       } else {
          this.addInternal(var1, getInsertionPosition(var2));
          return var1;
@@ -123,15 +123,15 @@ public class SortedArraySet<T> extends AbstractSet<T> {
    @Nullable
    public T get(T var1) {
       int var2 = this.findIndex(var1);
-      return var2 >= 0 ? this.getInternal(var2) : null;
+      return (T)(var2 >= 0 ? this.getInternal(var2) : null);
    }
 
    public T first() {
-      return this.getInternal(0);
+      return (T)this.getInternal(0);
    }
 
    public T last() {
-      return this.getInternal(this.size - 1);
+      return (T)this.getInternal(this.size - 1);
    }
 
    public boolean contains(Object var1) {
@@ -153,14 +153,14 @@ public class SortedArraySet<T> extends AbstractSet<T> {
 
    public <U> U[] toArray(U[] var1) {
       if (var1.length < this.size) {
-         return Arrays.copyOf(this.contents, this.size, var1.getClass());
+         return (U[])Arrays.copyOf(this.contents, this.size, var1.getClass());
       } else {
          System.arraycopy(this.contents, 0, var1, 0, this.size);
          if (var1.length > this.size) {
             var1[this.size] = null;
          }
 
-         return var1;
+         return (U[])var1;
       }
    }
 
@@ -184,7 +184,7 @@ public class SortedArraySet<T> extends AbstractSet<T> {
       }
    }
 
-   private class ArrayIterator implements Iterator<T> {
+   class ArrayIterator implements Iterator<T> {
       private int index;
       private int last = -1;
 
@@ -201,7 +201,7 @@ public class SortedArraySet<T> extends AbstractSet<T> {
             throw new NoSuchElementException();
          } else {
             this.last = this.index++;
-            return SortedArraySet.this.contents[this.last];
+            return (T)SortedArraySet.this.contents[this.last];
          }
       }
 

@@ -26,15 +26,9 @@ public enum EntityAttachment {
 
    public interface Fallback {
       List<Vec3> ZERO = List.of(Vec3.ZERO);
-      Fallback AT_FEET = (var0, var1) -> {
-         return ZERO;
-      };
-      Fallback AT_HEIGHT = (var0, var1) -> {
-         return List.of(new Vec3(0.0, (double)var1, 0.0));
-      };
-      Fallback AT_CENTER = (var0, var1) -> {
-         return List.of(new Vec3(0.0, (double)var1 / 2.0, 0.0));
-      };
+      Fallback AT_FEET = (var0, var1) -> ZERO;
+      Fallback AT_HEIGHT = (var0, var1) -> List.of(new Vec3(0.0, (double)var1, 0.0));
+      Fallback AT_CENTER = (var0, var1) -> List.of(new Vec3(0.0, (double)var1 / 2.0, 0.0));
 
       List<Vec3> create(float var1, float var2);
    }

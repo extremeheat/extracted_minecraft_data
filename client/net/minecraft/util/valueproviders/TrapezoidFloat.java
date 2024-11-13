@@ -7,23 +7,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.RandomSource;
 
 public class TrapezoidFloat extends FloatProvider {
-   public static final MapCodec<TrapezoidFloat> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.FLOAT.fieldOf("min").forGetter((var0x) -> {
-         return var0x.min;
-      }), Codec.FLOAT.fieldOf("max").forGetter((var0x) -> {
-         return var0x.max;
-      }), Codec.FLOAT.fieldOf("plateau").forGetter((var0x) -> {
-         return var0x.plateau;
-      })).apply(var0, TrapezoidFloat::new);
-   }).validate((var0) -> {
+   public static final MapCodec<TrapezoidFloat> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("min").forGetter((var0x) -> var0x.min), Codec.FLOAT.fieldOf("max").forGetter((var0x) -> var0x.max), Codec.FLOAT.fieldOf("plateau").forGetter((var0x) -> var0x.plateau)).apply(var0, TrapezoidFloat::new)).validate((var0) -> {
       if (var0.max < var0.min) {
-         return DataResult.error(() -> {
-            return "Max must be larger than min: [" + var0.min + ", " + var0.max + "]";
-         });
+         return DataResult.error(() -> "Max must be larger than min: [" + var0.min + ", " + var0.max + "]");
       } else {
-         return var0.plateau > var0.max - var0.min ? DataResult.error(() -> {
-            return "Plateau can at most be the full span: [" + var0.min + ", " + var0.max + "]";
-         }) : DataResult.success(var0);
+         return var0.plateau > var0.max - var0.min ? DataResult.error(() -> "Plateau can at most be the full span: [" + var0.min + ", " + var0.max + "]") : DataResult.success(var0);
       }
    });
    private final float min;

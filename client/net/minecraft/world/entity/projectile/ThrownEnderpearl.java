@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.projectile;
 
-import java.util.Iterator;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -80,10 +79,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
          if (var6 != null) {
             return var6;
          } else {
-            Iterator var4 = var2.getServer().getAllLevels().iterator();
-
-            while(var4.hasNext()) {
-               ServerLevel var5 = (ServerLevel)var4.next();
+            for(ServerLevel var5 : var2.getServer().getAllLevels()) {
                if (var5 != var2) {
                   var6 = var5.getEntity(var1);
                   if (var6 != null) {
@@ -125,7 +121,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
                   ServerPlayer var5 = (ServerPlayer)var8;
                   if (var5.connection.isAcceptingMessages()) {
                      if (this.random.nextFloat() < 0.05F && var7.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
-                        Endermite var6 = (Endermite)EntityType.ENDERMITE.create(var7, EntitySpawnReason.TRIGGERED);
+                        Endermite var6 = EntityType.ENDERMITE.create(var7, EntitySpawnReason.TRIGGERED);
                         if (var6 != null) {
                            var6.moveTo(var8.getX(), var8.getY(), var8.getZ(), var8.getYRot(), var8.getXRot());
                            var7.addFreshEntity(var6);

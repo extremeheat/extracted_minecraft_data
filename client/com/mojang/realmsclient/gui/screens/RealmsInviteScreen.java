@@ -47,12 +47,8 @@ public class RealmsInviteScreen extends RealmsScreen {
       LinearLayout var1 = (LinearLayout)this.layout.addToContents(LinearLayout.vertical().spacing(8));
       this.profileName = new EditBox(this.minecraft.font, 200, 20, Component.translatable("mco.configure.world.invite.profile.name"));
       var1.addChild(CommonLayouts.labeledElement(this.font, this.profileName, NAME_LABEL));
-      this.inviteButton = (Button)var1.addChild(Button.builder(TITLE, (var1x) -> {
-         this.onInvite();
-      }).width(200).build());
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
-         this.onClose();
-      }).width(200).build());
+      this.inviteButton = (Button)var1.addChild(Button.builder(TITLE, (var1x) -> this.onInvite()).width(200).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).width(200).build());
       this.layout.visitWidgets((var1x) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });

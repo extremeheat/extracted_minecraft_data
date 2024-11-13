@@ -11,35 +11,7 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class RootSystemConfiguration implements FeatureConfiguration {
-   public static final Codec<RootSystemConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((var0x) -> {
-         return var0x.treeFeature;
-      }), Codec.intRange(1, 64).fieldOf("required_vertical_space_for_tree").forGetter((var0x) -> {
-         return var0x.requiredVerticalSpaceForTree;
-      }), Codec.intRange(1, 64).fieldOf("root_radius").forGetter((var0x) -> {
-         return var0x.rootRadius;
-      }), TagKey.hashedCodec(Registries.BLOCK).fieldOf("root_replaceable").forGetter((var0x) -> {
-         return var0x.rootReplaceable;
-      }), BlockStateProvider.CODEC.fieldOf("root_state_provider").forGetter((var0x) -> {
-         return var0x.rootStateProvider;
-      }), Codec.intRange(1, 256).fieldOf("root_placement_attempts").forGetter((var0x) -> {
-         return var0x.rootPlacementAttempts;
-      }), Codec.intRange(1, 4096).fieldOf("root_column_max_height").forGetter((var0x) -> {
-         return var0x.rootColumnMaxHeight;
-      }), Codec.intRange(1, 64).fieldOf("hanging_root_radius").forGetter((var0x) -> {
-         return var0x.hangingRootRadius;
-      }), Codec.intRange(0, 16).fieldOf("hanging_roots_vertical_span").forGetter((var0x) -> {
-         return var0x.hangingRootsVerticalSpan;
-      }), BlockStateProvider.CODEC.fieldOf("hanging_root_state_provider").forGetter((var0x) -> {
-         return var0x.hangingRootStateProvider;
-      }), Codec.intRange(1, 256).fieldOf("hanging_root_placement_attempts").forGetter((var0x) -> {
-         return var0x.hangingRootPlacementAttempts;
-      }), Codec.intRange(1, 64).fieldOf("allowed_vertical_water_for_tree").forGetter((var0x) -> {
-         return var0x.allowedVerticalWaterForTree;
-      }), BlockPredicate.CODEC.fieldOf("allowed_tree_position").forGetter((var0x) -> {
-         return var0x.allowedTreePosition;
-      })).apply(var0, RootSystemConfiguration::new);
-   });
+   public static final Codec<RootSystemConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((var0x) -> var0x.treeFeature), Codec.intRange(1, 64).fieldOf("required_vertical_space_for_tree").forGetter((var0x) -> var0x.requiredVerticalSpaceForTree), Codec.intRange(1, 64).fieldOf("root_radius").forGetter((var0x) -> var0x.rootRadius), TagKey.hashedCodec(Registries.BLOCK).fieldOf("root_replaceable").forGetter((var0x) -> var0x.rootReplaceable), BlockStateProvider.CODEC.fieldOf("root_state_provider").forGetter((var0x) -> var0x.rootStateProvider), Codec.intRange(1, 256).fieldOf("root_placement_attempts").forGetter((var0x) -> var0x.rootPlacementAttempts), Codec.intRange(1, 4096).fieldOf("root_column_max_height").forGetter((var0x) -> var0x.rootColumnMaxHeight), Codec.intRange(1, 64).fieldOf("hanging_root_radius").forGetter((var0x) -> var0x.hangingRootRadius), Codec.intRange(0, 16).fieldOf("hanging_roots_vertical_span").forGetter((var0x) -> var0x.hangingRootsVerticalSpan), BlockStateProvider.CODEC.fieldOf("hanging_root_state_provider").forGetter((var0x) -> var0x.hangingRootStateProvider), Codec.intRange(1, 256).fieldOf("hanging_root_placement_attempts").forGetter((var0x) -> var0x.hangingRootPlacementAttempts), Codec.intRange(1, 64).fieldOf("allowed_vertical_water_for_tree").forGetter((var0x) -> var0x.allowedVerticalWaterForTree), BlockPredicate.CODEC.fieldOf("allowed_tree_position").forGetter((var0x) -> var0x.allowedTreePosition)).apply(var0, RootSystemConfiguration::new));
    public final Holder<PlacedFeature> treeFeature;
    public final int requiredVerticalSpaceForTree;
    public final int rootRadius;

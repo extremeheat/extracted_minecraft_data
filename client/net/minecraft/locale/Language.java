@@ -11,7 +11,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -58,11 +57,7 @@ public abstract class Language {
          }
 
          public FormattedCharSequence getVisualOrder(FormattedText var1) {
-            return (var1x) -> {
-               return var1.visit((var1xx, var2) -> {
-                  return StringDecomposer.iterateFormatted(var2, var1xx, var1x) ? Optional.empty() : FormattedText.STOP_ITERATION;
-               }, Style.EMPTY).isPresent();
-            };
+            return (var1x) -> var1.visit((var1xx, var2) -> StringDecomposer.iterateFormatted(var2, var1xx, var1x) ? Optional.empty() : FormattedText.STOP_ITERATION, Style.EMPTY).isPresent();
          }
       };
    }
@@ -96,10 +91,8 @@ public abstract class Language {
 
    public static void loadFromJson(InputStream var0, BiConsumer<String, String> var1) {
       JsonObject var2 = (JsonObject)GSON.fromJson(new InputStreamReader(var0, StandardCharsets.UTF_8), JsonObject.class);
-      Iterator var3 = var2.entrySet().iterator();
 
-      while(var3.hasNext()) {
-         Map.Entry var4 = (Map.Entry)var3.next();
+      for(Map.Entry var4 : var2.entrySet()) {
          String var5 = UNSUPPORTED_FORMAT_PATTERN.matcher(GsonHelper.convertToString((JsonElement)var4.getValue(), (String)var4.getKey())).replaceAll("%$1s");
          var1.accept((String)var4.getKey(), var5);
       }

@@ -20,6 +20,6 @@ public interface Packet<T extends PacketListener> {
    }
 
    static <B extends ByteBuf, T extends Packet<?>> StreamCodec<B, T> codec(StreamMemberEncoder<B, T> var0, StreamDecoder<B, T> var1) {
-      return StreamCodec.ofMember(var0, var1);
+      return StreamCodec.<B, T>ofMember(var0, var1);
    }
 }

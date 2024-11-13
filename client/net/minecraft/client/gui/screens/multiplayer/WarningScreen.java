@@ -42,9 +42,7 @@ public abstract class WarningScreen extends Screen {
       LinearLayout var1 = (LinearLayout)this.layout.addChild(LinearLayout.vertical().spacing(8));
       var1.defaultCellSetting().alignHorizontallyCenter();
       var1.addChild(new StringWidget(this.getTitle(), this.font));
-      this.messageWidget = (FocusableTextWidget)var1.addChild(new FocusableTextWidget(this.width - 100, this.message, this.font, 12), (Consumer)((var0) -> {
-         var0.padding(12);
-      }));
+      this.messageWidget = (FocusableTextWidget)var1.addChild(new FocusableTextWidget(this.width - 100, this.message, this.font, 12), (Consumer)((var0) -> var0.padding(12)));
       this.messageWidget.setCentered(false);
       LinearLayout var2 = (LinearLayout)var1.addChild(LinearLayout.vertical().spacing(8));
       var2.defaultCellSetting().alignHorizontallyCenter();

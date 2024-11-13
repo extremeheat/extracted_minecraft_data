@@ -28,13 +28,7 @@ public abstract class TrunkPlacer {
    protected final int heightRandB;
 
    protected static <P extends TrunkPlacer> Products.P3<RecordCodecBuilder.Mu<P>, Integer, Integer, Integer> trunkPlacerParts(RecordCodecBuilder.Instance<P> var0) {
-      return var0.group(Codec.intRange(0, 32).fieldOf("base_height").forGetter((var0x) -> {
-         return var0x.baseHeight;
-      }), Codec.intRange(0, 24).fieldOf("height_rand_a").forGetter((var0x) -> {
-         return var0x.heightRandA;
-      }), Codec.intRange(0, 24).fieldOf("height_rand_b").forGetter((var0x) -> {
-         return var0x.heightRandB;
-      }));
+      return var0.group(Codec.intRange(0, 32).fieldOf("base_height").forGetter((var0x) -> var0x.baseHeight), Codec.intRange(0, 24).fieldOf("height_rand_a").forGetter((var0x) -> var0x.heightRandA), Codec.intRange(0, 24).fieldOf("height_rand_b").forGetter((var0x) -> var0x.heightRandB));
    }
 
    public TrunkPlacer(int var1, int var2, int var3) {
@@ -53,9 +47,7 @@ public abstract class TrunkPlacer {
    }
 
    private static boolean isDirt(LevelSimulatedReader var0, BlockPos var1) {
-      return var0.isStateAtPosition(var1, (var0x) -> {
-         return Feature.isDirt(var0x) && !var0x.is(Blocks.GRASS_BLOCK) && !var0x.is(Blocks.MYCELIUM);
-      });
+      return var0.isStateAtPosition(var1, (var0x) -> Feature.isDirt(var0x) && !var0x.is(Blocks.GRASS_BLOCK) && !var0x.is(Blocks.MYCELIUM));
    }
 
    protected static void setDirtAt(LevelSimulatedReader var0, BiConsumer<BlockPos, BlockState> var1, RandomSource var2, BlockPos var3, TreeConfiguration var4) {
@@ -90,9 +82,7 @@ public abstract class TrunkPlacer {
    }
 
    public boolean isFree(LevelSimulatedReader var1, BlockPos var2) {
-      return this.validTreePos(var1, var2) || var1.isStateAtPosition(var2, (var0) -> {
-         return var0.is(BlockTags.LOGS);
-      });
+      return this.validTreePos(var1, var2) || var1.isStateAtPosition(var2, (var0) -> var0.is(BlockTags.LOGS));
    }
 
    static {

@@ -63,13 +63,41 @@ public class BreakingItemParticle extends TextureSheetParticle {
       return this.sprite.getV((this.vo + 1.0F) / 4.0F);
    }
 
-   public static class SnowballProvider extends ItemParticleProvider<SimpleParticleType> {
-      public SnowballProvider() {
+   public abstract static class ItemParticleProvider<T extends ParticleOptions> implements ParticleProvider<T> {
+      private final ItemStackRenderState scratchRenderState = new ItemStackRenderState();
+
+      public ItemParticleProvider() {
+         super();
+      }
+
+      protected ItemStackRenderState calculateState(ItemStack var1, ClientLevel var2) {
+         Minecraft.getInstance().getItemModelResolver().updateForTopItem(this.scratchRenderState, var1, ItemDisplayContext.GROUND, false, var2, (LivingEntity)null, 0);
+         return this.scratchRenderState;
+      }
+   }
+
+   public static class Provider extends ItemParticleProvider<ItemParticleOption> {
+      public Provider() {
+         super();
+      }
+
+      public Particle createParticle(ItemParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return new BreakingItemParticle(var2, var3, var5, var7, var9, var11, var13, this.calculateState(var1.getItem(), var2));
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
+         return this.createParticle((ItemParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
+   }
+
+   public static class SlimeProvider extends ItemParticleProvider<SimpleParticleType> {
+      public SlimeProvider() {
          super();
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         return new BreakingItemParticle(var2, var3, var5, var7, this.calculateState(new ItemStack(Items.SNOWBALL), var2));
+         return new BreakingItemParticle(var2, var3, var5, var7, this.calculateState(new ItemStack(Items.SLIME_BALL), var2));
       }
 
       // $FF: synthetic method
@@ -93,46 +121,18 @@ public class BreakingItemParticle extends TextureSheetParticle {
       }
    }
 
-   public static class SlimeProvider extends ItemParticleProvider<SimpleParticleType> {
-      public SlimeProvider() {
+   public static class SnowballProvider extends ItemParticleProvider<SimpleParticleType> {
+      public SnowballProvider() {
          super();
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         return new BreakingItemParticle(var2, var3, var5, var7, this.calculateState(new ItemStack(Items.SLIME_BALL), var2));
+         return new BreakingItemParticle(var2, var3, var5, var7, this.calculateState(new ItemStack(Items.SNOWBALL), var2));
       }
 
       // $FF: synthetic method
       public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
          return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
-      }
-   }
-
-   public static class Provider extends ItemParticleProvider<ItemParticleOption> {
-      public Provider() {
-         super();
-      }
-
-      public Particle createParticle(ItemParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         return new BreakingItemParticle(var2, var3, var5, var7, var9, var11, var13, this.calculateState(var1.getItem(), var2));
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((ItemParticleOption)var1, var2, var3, var5, var7, var9, var11, var13);
-      }
-   }
-
-   public abstract static class ItemParticleProvider<T extends ParticleOptions> implements ParticleProvider<T> {
-      private final ItemStackRenderState scratchRenderState = new ItemStackRenderState();
-
-      public ItemParticleProvider() {
-         super();
-      }
-
-      protected ItemStackRenderState calculateState(ItemStack var1, ClientLevel var2) {
-         Minecraft.getInstance().getItemModelResolver().updateForTopItem(this.scratchRenderState, var1, ItemDisplayContext.GROUND, false, var2, (LivingEntity)null, 0);
-         return this.scratchRenderState;
       }
    }
 }

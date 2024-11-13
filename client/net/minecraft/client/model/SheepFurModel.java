@@ -7,7 +7,6 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.SheepRenderState;
 
 public class SheepFurModel extends QuadrupedModel<SheepRenderState> {
@@ -29,7 +28,7 @@ public class SheepFurModel extends QuadrupedModel<SheepRenderState> {
    }
 
    public void setupAnim(SheepRenderState var1) {
-      super.setupAnim((LivingEntityRenderState)var1);
+      super.setupAnim(var1);
       ModelPart var10000 = this.head;
       var10000.y += var1.headEatPositionScale * 9.0F * var1.ageScale;
       this.head.xRot = var1.headEatAngleScale;

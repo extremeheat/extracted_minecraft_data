@@ -3,8 +3,6 @@ package net.minecraft.world.entity.monster.breeze;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -79,7 +77,7 @@ public class LongJump extends Behavior<Breeze> {
                } else if (!BreezeUtil.hasLineOfSight(var1, var3.getCenter()) && !BreezeUtil.hasLineOfSight(var1, var3.above(4).getCenter())) {
                   return false;
                } else {
-                  var1.getBrain().setMemory(MemoryModuleType.BREEZE_JUMP_TARGET, (Object)var3);
+                  var1.getBrain().setMemory(MemoryModuleType.BREEZE_JUMP_TARGET, var3);
                   return true;
                }
             }
@@ -102,9 +100,7 @@ public class LongJump extends Behavior<Breeze> {
 
       var2.setPose(Pose.INHALING);
       var1.playSound((Player)null, var2, SoundEvents.BREEZE_CHARGE, SoundSource.HOSTILE, 1.0F, 1.0F);
-      var2.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET).ifPresent((var1x) -> {
-         var2.lookAt(EntityAnchorArgument.Anchor.EYES, var1x.getCenter());
-      });
+      var2.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET).ifPresent((var1x) -> var2.lookAt(EntityAnchorArgument.Anchor.EYES, var1x.getCenter()));
    }
 
    protected void tick(ServerLevel var1, Breeze var2, long var3) {
@@ -114,16 +110,14 @@ public class LongJump extends Behavior<Breeze> {
       }
 
       if (isFinishedInhaling(var2)) {
-         Vec3 var6 = (Vec3)var2.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET).flatMap((var1x) -> {
-            return calculateOptimalJumpVector(var2, var2.getRandom(), Vec3.atBottomCenterOf(var1x));
-         }).orElse((Object)null);
+         Vec3 var6 = (Vec3)var2.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET).flatMap((var1x) -> calculateOptimalJumpVector(var2, var2.getRandom(), Vec3.atBottomCenterOf(var1x))).orElse((Object)null);
          if (var6 == null) {
             var2.setPose(Pose.STANDING);
             return;
          }
 
          if (var5) {
-            var2.getBrain().setMemory(MemoryModuleType.BREEZE_LEAVING_WATER, (Object)Unit.INSTANCE);
+            var2.getBrain().setMemory(MemoryModuleType.BREEZE_LEAVING_WATER, Unit.INSTANCE);
          }
 
          var2.playSound(SoundEvents.BREEZE_JUMP, 1.0F, 1.0F);
@@ -201,28 +195,20 @@ public class LongJump extends Behavior<Breeze> {
    }
 
    private static Optional<Vec3> calculateOptimalJumpVector(Breeze var0, RandomSource var1, Vec3 var2) {
-      List var3 = Util.shuffledCopy(ALLOWED_ANGLES, var1);
-      Iterator var4 = var3.iterator();
-
-      Optional var7;
-      do {
-         if (!var4.hasNext()) {
-            return Optional.empty();
-         }
-
-         int var5 = (Integer)var4.next();
+      for(int var5 : Util.shuffledCopy(ALLOWED_ANGLES, var1)) {
          float var6 = 0.058333334F * (float)var0.getAttributeValue(Attributes.FOLLOW_RANGE);
-         var7 = LongJumpUtil.calculateJumpVectorForAngle(var0, var2, var6, var5, false);
-      } while(!var7.isPresent());
+         Optional var7 = LongJumpUtil.calculateJumpVectorForAngle(var0, var2, var6, var5, false);
+         if (var7.isPresent()) {
+            if (var0.hasEffect(MobEffects.JUMP)) {
+               double var8 = ((Vec3)var7.get()).normalize().y * (double)var0.getJumpBoostPower();
+               return var7.map((var2x) -> var2x.add(0.0, var8, 0.0));
+            }
 
-      if (var0.hasEffect(MobEffects.JUMP)) {
-         double var8 = ((Vec3)var7.get()).normalize().y * (double)var0.getJumpBoostPower();
-         return var7.map((var2x) -> {
-            return var2x.add(0.0, var8, 0.0);
-         });
-      } else {
-         return var7;
+            return var7;
+         }
       }
+
+      return Optional.empty();
    }
 
    // $FF: synthetic method

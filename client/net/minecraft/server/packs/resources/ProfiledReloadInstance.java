@@ -2,7 +2,6 @@ package net.minecraft.server.packs.resources;
 
 import com.google.common.base.Stopwatch;
 import com.mojang.logging.LogUtils;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -33,8 +32,7 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<State> {
    }
 
    private static Executor profiledExecutor(Executor var0, AtomicLong var1, String var2) {
-      return (var3) -> {
-         var0.execute(() -> {
+      return (var3) -> var0.execute(() -> {
             ProfilerFiller var3x = Profiler.get();
             var3x.push(var2);
             long var4 = Util.getNanos();
@@ -42,7 +40,6 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<State> {
             var1.addAndGet(Util.getNanos() - var4);
             var3x.pop();
          });
-      };
    }
 
    private List<State> finish(List<State> var1) {
@@ -50,14 +47,13 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<State> {
       long var2 = 0L;
       LOGGER.info("Resource reload finished after {} ms", this.total.elapsed(TimeUnit.MILLISECONDS));
 
-      long var8;
-      for(Iterator var4 = var1.iterator(); var4.hasNext(); var2 += var8) {
-         State var5 = (State)var4.next();
+      for(State var5 : var1) {
          long var6 = TimeUnit.NANOSECONDS.toMillis(var5.preparationNanos.get());
-         var8 = TimeUnit.NANOSECONDS.toMillis(var5.reloadNanos.get());
+         long var8 = TimeUnit.NANOSECONDS.toMillis(var5.reloadNanos.get());
          long var10 = var6 + var8;
          String var12 = var5.name;
          LOGGER.info("{} took approximately {} ms ({} ms preparing, {} ms applying)", new Object[]{var12, var10, var6, var8});
+         var2 += var8;
       }
 
       LOGGER.info("Total blocking time: {} ms", var2);
@@ -74,18 +70,6 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<State> {
          this.name = var1;
          this.preparationNanos = var2;
          this.reloadNanos = var3;
-      }
-
-      public String name() {
-         return this.name;
-      }
-
-      public AtomicLong preparationNanos() {
-         return this.preparationNanos;
-      }
-
-      public AtomicLong reloadNanos() {
-         return this.reloadNanos;
       }
    }
 }

@@ -19,9 +19,7 @@ import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.phys.Vec3;
 
 public class CompassAngleState extends NeedleDirectionHelper {
-   public static final MapCodec<CompassAngleState> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.BOOL.optionalFieldOf("wobble", true).forGetter(NeedleDirectionHelper::wobble), CompassAngleState.CompassTarget.CODEC.fieldOf("target").forGetter(CompassAngleState::target)).apply(var0, CompassAngleState::new);
-   });
+   public static final MapCodec<CompassAngleState> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("wobble", true).forGetter(NeedleDirectionHelper::wobble), CompassAngleState.CompassTarget.CODEC.fieldOf("target").forGetter(CompassAngleState::target)).apply(var0, CompassAngleState::new));
    private final NeedleDirectionHelper.Wobbler wobbler = this.newWobbler(0.8F);
    private final NeedleDirectionHelper.Wobbler noTargetWobbler = this.newWobbler(0.8F);
    private final CompassTarget compassTarget;
@@ -115,7 +113,7 @@ public class CompassAngleState extends NeedleDirectionHelper {
          }
       };
 
-      public static final Codec<CompassTarget> CODEC = StringRepresentable.fromEnum(CompassTarget::values);
+      public static final Codec<CompassTarget> CODEC = StringRepresentable.<CompassTarget>fromEnum(CompassTarget::values);
       private final String name;
 
       CompassTarget(final String var3) {

@@ -34,48 +34,6 @@ public abstract class Report {
 
    public abstract Screen createScreen(Screen var1, ReportingContext var2);
 
-   public static record CannotBuildReason(Component message) {
-      public static final CannotBuildReason NO_REASON = new CannotBuildReason(Component.translatable("gui.abuseReport.send.no_reason"));
-      public static final CannotBuildReason NO_REPORTED_MESSAGES = new CannotBuildReason(Component.translatable("gui.chatReport.send.no_reported_messages"));
-      public static final CannotBuildReason TOO_MANY_MESSAGES = new CannotBuildReason(Component.translatable("gui.chatReport.send.too_many_messages"));
-      public static final CannotBuildReason COMMENT_TOO_LONG = new CannotBuildReason(Component.translatable("gui.abuseReport.send.comment_too_long"));
-      public static final CannotBuildReason NOT_ATTESTED = new CannotBuildReason(Component.translatable("gui.abuseReport.send.not_attested"));
-
-      public CannotBuildReason(Component var1) {
-         super();
-         this.message = var1;
-      }
-
-      public Tooltip tooltip() {
-         return Tooltip.create(this.message);
-      }
-
-      public Component message() {
-         return this.message;
-      }
-   }
-
-   public static record Result(UUID id, ReportType reportType, AbuseReport report) {
-      public Result(UUID var1, ReportType var2, AbuseReport var3) {
-         super();
-         this.id = var1;
-         this.reportType = var2;
-         this.report = var3;
-      }
-
-      public UUID id() {
-         return this.id;
-      }
-
-      public ReportType reportType() {
-         return this.reportType;
-      }
-
-      public AbuseReport report() {
-         return this.report;
-      }
-   }
-
    public abstract static class Builder<R extends Report> {
       protected final R report;
       protected final AbuseReportLimits limits;
@@ -127,5 +85,31 @@ public abstract class Report {
       }
 
       public abstract Either<Result, CannotBuildReason> build(ReportingContext var1);
+   }
+
+   public static record Result(UUID id, ReportType reportType, AbuseReport report) {
+      public Result(UUID var1, ReportType var2, AbuseReport var3) {
+         super();
+         this.id = var1;
+         this.reportType = var2;
+         this.report = var3;
+      }
+   }
+
+   public static record CannotBuildReason(Component message) {
+      public static final CannotBuildReason NO_REASON = new CannotBuildReason(Component.translatable("gui.abuseReport.send.no_reason"));
+      public static final CannotBuildReason NO_REPORTED_MESSAGES = new CannotBuildReason(Component.translatable("gui.chatReport.send.no_reported_messages"));
+      public static final CannotBuildReason TOO_MANY_MESSAGES = new CannotBuildReason(Component.translatable("gui.chatReport.send.too_many_messages"));
+      public static final CannotBuildReason COMMENT_TOO_LONG = new CannotBuildReason(Component.translatable("gui.abuseReport.send.comment_too_long"));
+      public static final CannotBuildReason NOT_ATTESTED = new CannotBuildReason(Component.translatable("gui.abuseReport.send.not_attested"));
+
+      public CannotBuildReason(Component var1) {
+         super();
+         this.message = var1;
+      }
+
+      public Tooltip tooltip() {
+         return Tooltip.create(this.message);
+      }
    }
 }

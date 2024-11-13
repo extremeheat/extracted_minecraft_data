@@ -21,15 +21,11 @@ public class TargetBlockTrigger extends SimpleCriterionTrigger<TriggerInstance> 
 
    public void trigger(ServerPlayer var1, Entity var2, Vec3 var3, int var4) {
       LootContext var5 = EntityPredicate.createContext(var1, var2);
-      this.trigger(var1, (var3x) -> {
-         return var3x.matches(var5, var3, var4);
-      });
+      this.trigger(var1, (var3x) -> var3x.matches(var5, var3, var4));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, MinMaxBounds.Ints signalStrength, Optional<ContextAwarePredicate> projectile) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MinMaxBounds.Ints.CODEC.optionalFieldOf("signal_strength", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::signalStrength), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("projectile").forGetter(TriggerInstance::projectile)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MinMaxBounds.Ints.CODEC.optionalFieldOf("signal_strength", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::signalStrength), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("projectile").forGetter(TriggerInstance::projectile)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, MinMaxBounds.Ints var2, Optional<ContextAwarePredicate> var3) {
          super();
@@ -53,18 +49,6 @@ public class TargetBlockTrigger extends SimpleCriterionTrigger<TriggerInstance> 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
          var1.validateEntity(this.projectile, ".projectile");
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public MinMaxBounds.Ints signalStrength() {
-         return this.signalStrength;
-      }
-
-      public Optional<ContextAwarePredicate> projectile() {
-         return this.projectile;
       }
    }
 }

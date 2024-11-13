@@ -10,8 +10,6 @@ public class EntityGoatMissingStateFix extends NamedEntityFix {
    }
 
    protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var0) -> {
-         return var0.set("HasLeftHorn", var0.createBoolean(true)).set("HasRightHorn", var0.createBoolean(true));
-      });
+      return var1.update(DSL.remainderFinder(), (var0) -> var0.set("HasLeftHorn", var0.createBoolean(true)).set("HasRightHorn", var0.createBoolean(true)));
    }
 }

@@ -18,7 +18,7 @@ public class IsInWaterSensor extends Sensor<LivingEntity> {
 
    protected void doTick(ServerLevel var1, LivingEntity var2) {
       if (var2.isInWater()) {
-         var2.getBrain().setMemory(MemoryModuleType.IS_IN_WATER, (Object)Unit.INSTANCE);
+         var2.getBrain().setMemory(MemoryModuleType.IS_IN_WATER, Unit.INSTANCE);
       } else {
          var2.getBrain().eraseMemory(MemoryModuleType.IS_IN_WATER);
       }

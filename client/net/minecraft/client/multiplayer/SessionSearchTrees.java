@@ -1,7 +1,6 @@
 package net.minecraft.client.multiplayer;
 
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -46,23 +45,14 @@ public class SessionSearchTrees {
    }
 
    public void rebuildAfterLanguageChange() {
-      Iterator var1 = this.reloaders.values().iterator();
-
-      while(var1.hasNext()) {
-         Runnable var2 = (Runnable)var1.next();
+      for(Runnable var2 : this.reloaders.values()) {
          var2.run();
       }
 
    }
 
    private static Stream<String> getTooltipLines(Stream<ItemStack> var0, Item.TooltipContext var1, TooltipFlag var2) {
-      return var0.flatMap((var2x) -> {
-         return var2x.getTooltipLines(var1, (Player)null, var2).stream();
-      }).map((var0x) -> {
-         return ChatFormatting.stripFormatting(var0x.getString()).trim();
-      }).filter((var0x) -> {
-         return !var0x.isEmpty();
-      });
+      return var0.flatMap((var2x) -> var2x.getTooltipLines(var1, (Player)null, var2).stream()).map((var0x) -> ChatFormatting.stripFormatting(var0x.getString()).trim()).filter((var0x) -> !var0x.isEmpty());
    }
 
    public void updateRecipes(ClientRecipeBook var1, Level var2) {
@@ -74,19 +64,7 @@ public class SessionSearchTrees {
          ContextMap var7 = SlotDisplayContext.fromLevel(var2);
          TooltipFlag.Default var8 = TooltipFlag.Default.NORMAL;
          CompletableFuture var9 = this.recipeSearch;
-         this.recipeSearch = CompletableFuture.supplyAsync(() -> {
-            return new FullTextSearchTree((var3x) -> {
-               return getTooltipLines(var3x.getRecipes().stream().flatMap((var1) -> {
-                  return var1.resultItems(var7).stream();
-               }), var6, var8);
-            }, (var2) -> {
-               return var2.getRecipes().stream().flatMap((var1) -> {
-                  return var1.resultItems(var7).stream();
-               }).map((var1) -> {
-                  return var5.getKey(var1.getItem());
-               });
-            }, var3);
-         }, Util.backgroundExecutor());
+         this.recipeSearch = CompletableFuture.supplyAsync(() -> new FullTextSearchTree((var3x) -> getTooltipLines(var3x.getRecipes().stream().flatMap((var1) -> var1.resultItems(var7).stream()), var6, var8), (var2) -> var2.getRecipes().stream().flatMap((var1) -> var1.resultItems(var7).stream()).map((var1) -> var5.getKey(var1.getItem())), var3), Util.backgroundExecutor());
          var9.cancel(true);
       });
    }
@@ -98,11 +76,7 @@ public class SessionSearchTrees {
    public void updateCreativeTags(List<ItemStack> var1) {
       this.register(CREATIVE_TAGS, () -> {
          CompletableFuture var2 = this.creativeByTagSearch;
-         this.creativeByTagSearch = CompletableFuture.supplyAsync(() -> {
-            return new IdSearchTree((var0) -> {
-               return var0.getTags().map(TagKey::location);
-            }, var1);
-         }, Util.backgroundExecutor());
+         this.creativeByTagSearch = CompletableFuture.supplyAsync(() -> new IdSearchTree((var0) -> var0.getTags().map(TagKey::location), var1), Util.backgroundExecutor());
          var2.cancel(true);
       });
    }
@@ -116,13 +90,7 @@ public class SessionSearchTrees {
          Item.TooltipContext var3 = Item.TooltipContext.of(var1);
          TooltipFlag.Default var4 = TooltipFlag.Default.NORMAL.asCreative();
          CompletableFuture var5 = this.creativeByNameSearch;
-         this.creativeByNameSearch = CompletableFuture.supplyAsync(() -> {
-            return new FullTextSearchTree((var2x) -> {
-               return getTooltipLines(Stream.of(var2x), var3, var4);
-            }, (var0) -> {
-               return var0.getItemHolder().unwrapKey().map(ResourceKey::location).stream();
-            }, var2);
-         }, Util.backgroundExecutor());
+         this.creativeByNameSearch = CompletableFuture.supplyAsync(() -> new FullTextSearchTree((var2x) -> getTooltipLines(Stream.of(var2x), var3, var4), (var0) -> var0.getItemHolder().unwrapKey().map(ResourceKey::location).stream(), var2), Util.backgroundExecutor());
          var5.cancel(true);
       });
    }

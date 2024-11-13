@@ -8,9 +8,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 
 public final class Selector {
    private static final Selector EMPTY = new Selector(ImmutableList.of());
-   private static final Comparator<Property.Value<?>> COMPARE_BY_NAME = Comparator.comparing((var0) -> {
-      return var0.property().getName();
-   });
+   private static final Comparator<Property.Value<?>> COMPARE_BY_NAME = Comparator.comparing((var0) -> var0.property().getName());
    private final List<Property.Value<?>> values;
 
    public Selector extend(Property.Value<?> var1) {

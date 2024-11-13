@@ -11,9 +11,7 @@ import org.slf4j.Logger;
 @FunctionalInterface
 public interface ServerRedirectHandler {
    Logger LOGGER = LogUtils.getLogger();
-   ServerRedirectHandler EMPTY = (var0) -> {
-      return Optional.empty();
-   };
+   ServerRedirectHandler EMPTY = (var0) -> Optional.empty();
 
    Optional<ServerAddress> lookupRedirect(ServerAddress var1);
 

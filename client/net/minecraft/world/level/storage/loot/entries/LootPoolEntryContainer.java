@@ -22,9 +22,7 @@ public abstract class LootPoolEntryContainer implements ComposableEntryContainer
    }
 
    protected static <T extends LootPoolEntryContainer> Products.P1<RecordCodecBuilder.Mu<T>, List<LootItemCondition>> commonFields(RecordCodecBuilder.Instance<T> var0) {
-      return var0.group(LootItemCondition.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((var0x) -> {
-         return var0x.conditions;
-      }));
+      return var0.group(LootItemCondition.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((var0x) -> var0x.conditions));
    }
 
    public void validate(ValidationContext var1) {
@@ -51,11 +49,11 @@ public abstract class LootPoolEntryContainer implements ComposableEntryContainer
 
       public T when(LootItemCondition.Builder var1) {
          this.conditions.add(var1.build());
-         return this.getThis();
+         return (T)this.getThis();
       }
 
       public final T unwrap() {
-         return this.getThis();
+         return (T)this.getThis();
       }
 
       protected List<LootItemCondition> getConditions() {

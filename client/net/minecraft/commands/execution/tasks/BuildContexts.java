@@ -10,8 +10,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.ExecutionCommandSource;
 import net.minecraft.commands.execution.ChainModifiers;
@@ -28,9 +28,7 @@ import net.minecraft.network.chat.Component;
 
 public class BuildContexts<T extends ExecutionCommandSource<T>> {
    @VisibleForTesting
-   public static final DynamicCommandExceptionType ERROR_FORK_LIMIT_REACHED = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("command.forkLimit", var0);
-   });
+   public static final DynamicCommandExceptionType ERROR_FORK_LIMIT_REACHED = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("command.forkLimit", var0));
    private final String commandInput;
    private final ContextChain<T> command;
 
@@ -45,9 +43,7 @@ public class BuildContexts<T extends ExecutionCommandSource<T>> {
       ChainModifiers var7 = var5;
       Object var8 = var2;
       if (var6.getStage() != Stage.EXECUTE) {
-         var3.profiler().push(() -> {
-            return "prepare " + this.commandInput;
-         });
+         var3.profiler().push((Supplier)(() -> "prepare " + this.commandInput));
 
          try {
             for(int var9 = var3.forkLimit(); var6.getStage() != Stage.EXECUTE; var6 = var6.nextStage()) {
@@ -58,8 +54,8 @@ public class BuildContexts<T extends ExecutionCommandSource<T>> {
 
                RedirectModifier var11 = var10.getRedirectModifier();
                if (var11 instanceof CustomModifierExecutor) {
-                  CustomModifierExecutor var27 = (CustomModifierExecutor)var11;
-                  var27.apply(var1, (List)var8, var6, var7, ExecutionControl.create(var3, var4));
+                  CustomModifierExecutor var28 = (CustomModifierExecutor)var11;
+                  var28.apply(var1, (List)var8, var6, var7, ExecutionControl.create(var3, var4));
                   return;
                }
 
@@ -67,11 +63,8 @@ public class BuildContexts<T extends ExecutionCommandSource<T>> {
                   var3.incrementCost();
                   boolean var12 = var7.isForked();
                   ObjectArrayList var13 = new ObjectArrayList();
-                  Iterator var14 = ((List)var8).iterator();
 
-                  while(var14.hasNext()) {
-                     ExecutionCommandSource var15 = (ExecutionCommandSource)var14.next();
-
+                  for(ExecutionCommandSource var15 : var8) {
                      try {
                         Collection var16 = ContextChain.runModifier(var10, var15, (var0, var1x, var2x) -> {
                         }, var12);
@@ -107,12 +100,10 @@ public class BuildContexts<T extends ExecutionCommandSource<T>> {
          Command var23 = var22.getCommand();
          if (var23 instanceof CustomCommandExecutor) {
             CustomCommandExecutor var24 = (CustomCommandExecutor)var23;
-            ExecutionControl var28 = ExecutionControl.create(var3, var4);
-            Iterator var29 = ((List)var8).iterator();
+            ExecutionControl var29 = ExecutionControl.create(var3, var4);
 
-            while(var29.hasNext()) {
-               ExecutionCommandSource var30 = (ExecutionCommandSource)var29.next();
-               var24.run(var30, var6, var7, var28);
+            for(ExecutionCommandSource var31 : var8) {
+               var24.run(var31, var6, var7, var29);
             }
          } else {
             if (var7.isReturn()) {
@@ -121,10 +112,8 @@ public class BuildContexts<T extends ExecutionCommandSource<T>> {
                var8 = List.of(var25);
             }
 
-            ExecuteCommand var26 = new ExecuteCommand(this.commandInput, var7, var22);
-            ContinuationTask.schedule(var3, var4, (List)var8, (var1x, var2x) -> {
-               return new CommandQueueEntry(var1x, var26.bind(var2x));
-            });
+            ExecuteCommand var27 = new ExecuteCommand(this.commandInput, var7, var22);
+            ContinuationTask.schedule(var3, var4, (List)var8, (var1x, var2x) -> new CommandQueueEntry(var1x, var27.bind(var2x)));
          }
 
       }
@@ -142,17 +131,19 @@ public class BuildContexts<T extends ExecutionCommandSource<T>> {
       return this.commandInput;
    }
 
-   public static class TopLevel<T extends ExecutionCommandSource<T>> extends BuildContexts<T> implements EntryAction<T> {
-      private final T source;
-
-      public TopLevel(String var1, ContextChain<T> var2, T var3) {
+   public static class Unbound<T extends ExecutionCommandSource<T>> extends BuildContexts<T> implements UnboundEntryAction<T> {
+      public Unbound(String var1, ContextChain<T> var2) {
          super(var1, var2);
-         this.source = var3;
       }
 
-      public void execute(ExecutionContext<T> var1, Frame var2) {
-         this.traceCommandStart(var1, var2);
-         this.execute(this.source, List.of(this.source), var1, var2, ChainModifiers.DEFAULT);
+      public void execute(T var1, ExecutionContext<T> var2, Frame var3) {
+         this.traceCommandStart(var2, var3);
+         this.execute(var1, List.of(var1), var2, var3, ChainModifiers.DEFAULT);
+      }
+
+      // $FF: synthetic method
+      public void execute(final Object var1, final ExecutionContext var2, final Frame var3) {
+         this.execute((ExecutionCommandSource)var1, var2, var3);
       }
    }
 
@@ -173,19 +164,17 @@ public class BuildContexts<T extends ExecutionCommandSource<T>> {
       }
    }
 
-   public static class Unbound<T extends ExecutionCommandSource<T>> extends BuildContexts<T> implements UnboundEntryAction<T> {
-      public Unbound(String var1, ContextChain<T> var2) {
+   public static class TopLevel<T extends ExecutionCommandSource<T>> extends BuildContexts<T> implements EntryAction<T> {
+      private final T source;
+
+      public TopLevel(String var1, ContextChain<T> var2, T var3) {
          super(var1, var2);
+         this.source = var3;
       }
 
-      public void execute(T var1, ExecutionContext<T> var2, Frame var3) {
-         this.traceCommandStart(var2, var3);
-         this.execute(var1, List.of(var1), var2, var3, ChainModifiers.DEFAULT);
-      }
-
-      // $FF: synthetic method
-      public void execute(final Object var1, final ExecutionContext var2, final Frame var3) {
-         this.execute((ExecutionCommandSource)var1, var2, var3);
+      public void execute(ExecutionContext<T> var1, Frame var2) {
+         this.traceCommandStart(var1, var2);
+         this.execute(this.source, List.of(this.source), var1, var2, ChainModifiers.DEFAULT);
       }
    }
 }

@@ -2,7 +2,6 @@ package net.minecraft.world.level.storage.loot.entries;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
@@ -24,18 +23,13 @@ public class SequentialEntry extends CompositeEntryBase {
          case 1 -> var10000 = (ComposableEntryContainer)var1.get(0);
          case 2 -> var10000 = ((ComposableEntryContainer)var1.get(0)).and((ComposableEntryContainer)var1.get(1));
          default -> var10000 = (var1x, var2) -> {
-   Iterator var3 = var1.iterator();
-
-   ComposableEntryContainer var4;
-   do {
-      if (!var3.hasNext()) {
-         return true;
+   for(ComposableEntryContainer var4 : var1) {
+      if (!var4.expand(var1x, var2)) {
+         return false;
       }
+   }
 
-      var4 = (ComposableEntryContainer)var3.next();
-   } while(var4.expand(var1x, var2));
-
-   return false;
+   return true;
 };
       }
 
@@ -51,11 +45,8 @@ public class SequentialEntry extends CompositeEntryBase {
 
       public Builder(LootPoolEntryContainer.Builder<?>... var1) {
          super();
-         LootPoolEntryContainer.Builder[] var2 = var1;
-         int var3 = var1.length;
 
-         for(int var4 = 0; var4 < var3; ++var4) {
-            LootPoolEntryContainer.Builder var5 = var2[var4];
+         for(LootPoolEntryContainer.Builder var5 : var1) {
             this.entries.add(var5.build());
          }
 

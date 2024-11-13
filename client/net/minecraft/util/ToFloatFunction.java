@@ -4,9 +4,7 @@ import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import java.util.function.Function;
 
 public interface ToFloatFunction<C> {
-   ToFloatFunction<Float> IDENTITY = createUnlimited((var0) -> {
-      return var0;
-   });
+   ToFloatFunction<Float> IDENTITY = createUnlimited((var0) -> var0);
 
    float apply(C var1);
 
@@ -31,7 +29,7 @@ public interface ToFloatFunction<C> {
    }
 
    default <C2> ToFloatFunction<C2> comap(final Function<C2, C> var1) {
-      return new ToFloatFunction<C2>(this) {
+      return new ToFloatFunction<C2>() {
          public float apply(C2 var1x) {
             return ToFloatFunction.this.apply(var1.apply(var1x));
          }

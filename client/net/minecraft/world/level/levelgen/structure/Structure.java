@@ -48,15 +48,11 @@ public abstract class Structure {
    protected final StructureSettings settings;
 
    public static <S extends Structure> RecordCodecBuilder<S, StructureSettings> settingsCodec(RecordCodecBuilder.Instance<S> var0) {
-      return Structure.StructureSettings.CODEC.forGetter((var0x) -> {
-         return var0x.settings;
-      });
+      return Structure.StructureSettings.CODEC.forGetter((var0x) -> var0x.settings);
    }
 
    public static <S extends Structure> MapCodec<S> simpleCodec(Function<StructureSettings, S> var0) {
-      return RecordCodecBuilder.mapCodec((var1) -> {
-         return var1.group(settingsCodec(var1)).apply(var1, var0);
-      });
+      return RecordCodecBuilder.mapCodec((var1) -> var1.group(settingsCodec(var1)).apply(var1, var0));
    }
 
    protected Structure(StructureSettings var1) {
@@ -170,16 +166,14 @@ public abstract class Structure {
    protected abstract Optional<GenerationStub> findGenerationPoint(GenerationContext var1);
 
    public Optional<GenerationStub> findValidGenerationPoint(GenerationContext var1) {
-      return this.findGenerationPoint(var1).filter((var1x) -> {
-         return isValidBiome(var1x, var1);
-      });
+      return this.findGenerationPoint(var1).filter((var1x) -> isValidBiome(var1x, var1));
    }
 
    public abstract StructureType<?> type();
 
    static {
       DIRECT_CODEC = BuiltInRegistries.STRUCTURE_TYPE.byNameCodec().dispatch(Structure::type, StructureType::codec);
-      CODEC = RegistryFileCodec.create(Registries.STRUCTURE, DIRECT_CODEC);
+      CODEC = RegistryFileCodec.<Holder<Structure>>create(Registries.STRUCTURE, DIRECT_CODEC);
    }
 
    public static record StructureSettings(HolderSet<Biome> biomes, Map<MobCategory, StructureSpawnOverride> spawnOverrides, GenerationStep.Decoration step, TerrainAdjustment terrainAdaptation) {
@@ -202,27 +196,9 @@ public abstract class Structure {
          this.terrainAdaptation = var4;
       }
 
-      public HolderSet<Biome> biomes() {
-         return this.biomes;
-      }
-
-      public Map<MobCategory, StructureSpawnOverride> spawnOverrides() {
-         return this.spawnOverrides;
-      }
-
-      public GenerationStep.Decoration step() {
-         return this.step;
-      }
-
-      public TerrainAdjustment terrainAdaptation() {
-         return this.terrainAdaptation;
-      }
-
       static {
          DEFAULT = new StructureSettings(HolderSet.direct(), Map.of(), GenerationStep.Decoration.SURFACE_STRUCTURES, TerrainAdjustment.NONE);
-         CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-            return var0.group(RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(StructureSettings::biomes), Codec.simpleMap(MobCategory.CODEC, StructureSpawnOverride.CODEC, StringRepresentable.keys(MobCategory.values())).fieldOf("spawn_overrides").forGetter(StructureSettings::spawnOverrides), GenerationStep.Decoration.CODEC.fieldOf("step").forGetter(StructureSettings::step), TerrainAdjustment.CODEC.optionalFieldOf("terrain_adaptation", DEFAULT.terrainAdaptation).forGetter(StructureSettings::terrainAdaptation)).apply(var0, StructureSettings::new);
-         });
+         CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(StructureSettings::biomes), Codec.simpleMap(MobCategory.CODEC, StructureSpawnOverride.CODEC, StringRepresentable.keys(MobCategory.values())).fieldOf("spawn_overrides").forGetter(StructureSettings::spawnOverrides), GenerationStep.Decoration.CODEC.fieldOf("step").forGetter(StructureSettings::step), TerrainAdjustment.CODEC.optionalFieldOf("terrain_adaptation", DEFAULT.terrainAdaptation).forGetter(StructureSettings::terrainAdaptation)).apply(var0, StructureSettings::new));
       }
 
       public static class Builder {
@@ -288,46 +264,6 @@ public abstract class Structure {
          var3.setLargeFeatureSeed(var0, var2.x, var2.z);
          return var3;
       }
-
-      public RegistryAccess registryAccess() {
-         return this.registryAccess;
-      }
-
-      public ChunkGenerator chunkGenerator() {
-         return this.chunkGenerator;
-      }
-
-      public BiomeSource biomeSource() {
-         return this.biomeSource;
-      }
-
-      public RandomState randomState() {
-         return this.randomState;
-      }
-
-      public StructureTemplateManager structureTemplateManager() {
-         return this.structureTemplateManager;
-      }
-
-      public WorldgenRandom random() {
-         return this.random;
-      }
-
-      public long seed() {
-         return this.seed;
-      }
-
-      public ChunkPos chunkPos() {
-         return this.chunkPos;
-      }
-
-      public LevelHeightAccessor heightAccessor() {
-         return this.heightAccessor;
-      }
-
-      public Predicate<Holder<Biome>> validBiome() {
-         return this.validBiome;
-      }
    }
 
    public static record GenerationStub(BlockPos position, Either<Consumer<StructurePiecesBuilder>, StructurePiecesBuilder> generator) {
@@ -346,17 +282,7 @@ public abstract class Structure {
             StructurePiecesBuilder var1 = new StructurePiecesBuilder();
             var0.accept(var1);
             return var1;
-         }, (var0) -> {
-            return var0;
-         });
-      }
-
-      public BlockPos position() {
-         return this.position;
-      }
-
-      public Either<Consumer<StructurePiecesBuilder>, StructurePiecesBuilder> generator() {
-         return this.generator;
+         }, (var0) -> var0);
       }
    }
 }

@@ -36,24 +36,6 @@ public class SquidInkParticle extends SimpleAnimatedParticle {
 
    }
 
-   public static class GlowInkProvider implements ParticleProvider<SimpleParticleType> {
-      private final SpriteSet sprites;
-
-      public GlowInkProvider(SpriteSet var1) {
-         super();
-         this.sprites = var1;
-      }
-
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         return new SquidInkParticle(var2, var3, var5, var7, var9, var11, var13, ARGB.color(255, 204, 31, 102), this.sprites);
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
-      }
-   }
-
    public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
@@ -64,6 +46,24 @@ public class SquidInkParticle extends SimpleAnimatedParticle {
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new SquidInkParticle(var2, var3, var5, var7, var9, var11, var13, ARGB.color(255, 255, 255, 255), this.sprites);
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
+   }
+
+   public static class GlowInkProvider implements ParticleProvider<SimpleParticleType> {
+      private final SpriteSet sprites;
+
+      public GlowInkProvider(SpriteSet var1) {
+         super();
+         this.sprites = var1;
+      }
+
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return new SquidInkParticle(var2, var3, var5, var7, var9, var11, var13, ARGB.color(255, 204, 31, 102), this.sprites);
       }
 
       // $FF: synthetic method

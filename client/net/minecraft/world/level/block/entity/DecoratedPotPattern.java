@@ -7,8 +7,4 @@ public record DecoratedPotPattern(ResourceLocation assetId) {
       super();
       this.assetId = var1;
    }
-
-   public ResourceLocation assetId() {
-      return this.assetId;
-   }
 }

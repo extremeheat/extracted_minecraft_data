@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.IntFunction;
@@ -91,7 +90,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
 
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      this.setVariant((Variant)Util.getRandom((Object[])Parrot.Variant.values(), var1.getRandom()));
+      this.setVariant((Variant)Util.getRandom(Parrot.Variant.values(), var1.getRandom()));
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(false);
       }
@@ -173,7 +172,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
             Mob var3 = (Mob)var2.get(var0.random.nextInt(var2.size()));
             if (!var3.isSilent()) {
                SoundEvent var4 = getImitatedSound(var3.getType());
-               var0.playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), (SoundEvent)var4, var1.getSoundSource(), 0.7F, getPitch(var0.random));
+               var0.playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), var4, var1.getSoundSource(), 0.7F, getPitch(var0.random));
                return true;
             }
          }
@@ -189,7 +188,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
       if (!this.isTame() && var3.is(ItemTags.PARROT_FOOD)) {
          this.usePlayerItem(var1, var2, var3);
          if (!this.isSilent()) {
-            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)SoundEvents.PARROT_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PARROT_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
          }
 
          if (!this.level().isClientSide) {
@@ -354,7 +353,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
    }
 
    static {
-      DATA_VARIANT_ID = SynchedEntityData.defineId(Parrot.class, EntityDataSerializers.INT);
+      DATA_VARIANT_ID = SynchedEntityData.<Integer>defineId(Parrot.class, EntityDataSerializers.INT);
       NOT_PARROT_PREDICATE = new Predicate<Mob>() {
          public boolean test(@Nullable Mob var1) {
             return var1 != null && Parrot.MOB_SOUND_MAP.containsKey(var1.getType());
@@ -370,6 +369,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
          var0.put(EntityType.BOGGED, SoundEvents.PARROT_IMITATE_BOGGED);
          var0.put(EntityType.BREEZE, SoundEvents.PARROT_IMITATE_BREEZE);
          var0.put(EntityType.CAVE_SPIDER, SoundEvents.PARROT_IMITATE_SPIDER);
+         var0.put(EntityType.CREAKING, SoundEvents.PARROT_IMITATE_CREAKING);
          var0.put(EntityType.CREEPER, SoundEvents.PARROT_IMITATE_CREEPER);
          var0.put(EntityType.DROWNED, SoundEvents.PARROT_IMITATE_DROWNED);
          var0.put(EntityType.ELDER_GUARDIAN, SoundEvents.PARROT_IMITATE_ELDER_GUARDIAN);
@@ -400,8 +400,6 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
          var0.put(EntityType.WITHER, SoundEvents.PARROT_IMITATE_WITHER);
          var0.put(EntityType.WITHER_SKELETON, SoundEvents.PARROT_IMITATE_WITHER_SKELETON);
          var0.put(EntityType.ZOGLIN, SoundEvents.PARROT_IMITATE_ZOGLIN);
-         var0.put(EntityType.CREAKING, SoundEvents.PARROT_IMITATE_CREAKING);
-         var0.put(EntityType.CREAKING_TRANSIENT, SoundEvents.PARROT_IMITATE_CREAKING);
          var0.put(EntityType.ZOMBIE, SoundEvents.PARROT_IMITATE_ZOMBIE);
          var0.put(EntityType.ZOMBIE_VILLAGER, SoundEvents.PARROT_IMITATE_ZOMBIE_VILLAGER);
       });
@@ -414,8 +412,8 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
       YELLOW_BLUE(3, "yellow_blue"),
       GRAY(4, "gray");
 
-      public static final Codec<Variant> CODEC = StringRepresentable.fromEnum(Variant::values);
-      private static final IntFunction<Variant> BY_ID = ByIdMap.continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
+      public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+      private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
       final int id;
       private final String name;
 
@@ -466,25 +464,18 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
          BlockPos var1 = this.mob.blockPosition();
          BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
          BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos();
-         Iterable var4 = BlockPos.betweenClosed(Mth.floor(this.mob.getX() - 3.0), Mth.floor(this.mob.getY() - 6.0), Mth.floor(this.mob.getZ() - 3.0), Mth.floor(this.mob.getX() + 3.0), Mth.floor(this.mob.getY() + 6.0), Mth.floor(this.mob.getZ() + 3.0));
-         Iterator var5 = var4.iterator();
 
-         BlockPos var6;
-         boolean var8;
-         do {
-            do {
-               if (!var5.hasNext()) {
-                  return null;
+         for(BlockPos var6 : BlockPos.betweenClosed(Mth.floor(this.mob.getX() - 3.0), Mth.floor(this.mob.getY() - 6.0), Mth.floor(this.mob.getZ() - 3.0), Mth.floor(this.mob.getX() + 3.0), Mth.floor(this.mob.getY() + 6.0), Mth.floor(this.mob.getZ() + 3.0))) {
+            if (!var1.equals(var6)) {
+               BlockState var7 = this.mob.level().getBlockState(var3.setWithOffset(var6, (Direction)Direction.DOWN));
+               boolean var8 = var7.getBlock() instanceof LeavesBlock || var7.is(BlockTags.LOGS);
+               if (var8 && this.mob.level().isEmptyBlock(var6) && this.mob.level().isEmptyBlock(var2.setWithOffset(var6, (Direction)Direction.UP))) {
+                  return Vec3.atBottomCenterOf(var6);
                }
+            }
+         }
 
-               var6 = (BlockPos)var5.next();
-            } while(var1.equals(var6));
-
-            BlockState var7 = this.mob.level().getBlockState(var3.setWithOffset(var6, (Direction)Direction.DOWN));
-            var8 = var7.getBlock() instanceof LeavesBlock || var7.is(BlockTags.LOGS);
-         } while(!var8 || !this.mob.level().isEmptyBlock(var6) || !this.mob.level().isEmptyBlock(var2.setWithOffset(var6, (Direction)Direction.UP)));
-
-         return Vec3.atBottomCenterOf(var6);
+         return null;
       }
    }
 }

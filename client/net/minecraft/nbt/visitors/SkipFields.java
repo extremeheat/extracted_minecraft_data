@@ -12,11 +12,8 @@ public class SkipFields extends CollectToTag {
    public SkipFields(FieldSelector... var1) {
       super();
       FieldTree var2 = FieldTree.createRoot();
-      FieldSelector[] var3 = var1;
-      int var4 = var1.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         FieldSelector var6 = var3[var5];
+      for(FieldSelector var6 : var1) {
          var2.addEntry(var6);
       }
 

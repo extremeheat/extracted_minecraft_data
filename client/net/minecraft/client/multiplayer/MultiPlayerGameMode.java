@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.client.ClientRecipeBook;
@@ -139,9 +138,8 @@ public class MultiPlayerGameMode {
       } else if (!this.minecraft.level.getWorldBorder().isWithinBounds(var1)) {
          return false;
       } else {
-         BlockState var3;
          if (this.localPlayerMode.isCreative()) {
-            var3 = this.minecraft.level.getBlockState(var1);
+            BlockState var3 = this.minecraft.level.getBlockState(var1);
             this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var3, 1.0F);
             this.startPrediction(this.minecraft.level, (var3x) -> {
                this.destroyBlock(var1);
@@ -153,15 +151,15 @@ public class MultiPlayerGameMode {
                this.connection.send(new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK, this.destroyBlockPos, var2));
             }
 
-            var3 = this.minecraft.level.getBlockState(var1);
-            this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var3, 0.0F);
-            this.startPrediction(this.minecraft.level, (var4) -> {
-               boolean var5 = !var3.isAir();
+            BlockState var4 = this.minecraft.level.getBlockState(var1);
+            this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var4, 0.0F);
+            this.startPrediction(this.minecraft.level, (var4x) -> {
+               boolean var5 = !var4.isAir();
                if (var5 && this.destroyProgress == 0.0F) {
-                  var3.attack(this.minecraft.level, var1, this.minecraft.player);
+                  var4.attack(this.minecraft.level, var1, this.minecraft.player);
                }
 
-               if (var5 && var3.getDestroyProgress(this.minecraft.player, this.minecraft.player.level(), var1) >= 1.0F) {
+               if (var5 && var4.getDestroyProgress(this.minecraft.player, this.minecraft.player.level(), var1) >= 1.0F) {
                   this.destroyBlock(var1);
                } else {
                   this.isDestroying = true;
@@ -172,7 +170,7 @@ public class MultiPlayerGameMode {
                   this.minecraft.level.destroyBlockProgress(this.minecraft.player.getId(), this.destroyBlockPos, this.getDestroyStage());
                }
 
-               return new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, var1, var2, var4);
+               return new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, var1, var2, var4x);
             });
          }
 
@@ -198,72 +196,53 @@ public class MultiPlayerGameMode {
       if (this.destroyDelay > 0) {
          --this.destroyDelay;
          return true;
-      } else {
-         BlockState var3;
-         if (this.localPlayerMode.isCreative() && this.minecraft.level.getWorldBorder().isWithinBounds(var1)) {
-            this.destroyDelay = 5;
-            var3 = this.minecraft.level.getBlockState(var1);
-            this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var3, 1.0F);
-            this.startPrediction(this.minecraft.level, (var3x) -> {
-               this.destroyBlock(var1);
-               return new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, var1, var2, var3x);
-            });
-            return true;
-         } else if (this.sameDestroyTarget(var1)) {
-            var3 = this.minecraft.level.getBlockState(var1);
-            if (var3.isAir()) {
-               this.isDestroying = false;
-               return false;
-            } else {
-               this.destroyProgress += var3.getDestroyProgress(this.minecraft.player, this.minecraft.player.level(), var1);
-               if (this.destroyTicks % 4.0F == 0.0F) {
-                  SoundType var4 = var3.getSoundType();
-                  this.minecraft.getSoundManager().play(new SimpleSoundInstance(var4.getHitSound(), SoundSource.BLOCKS, (var4.getVolume() + 1.0F) / 8.0F, var4.getPitch() * 0.5F, SoundInstance.createUnseededRandom(), var1));
-               }
-
-               ++this.destroyTicks;
-               this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var3, Mth.clamp(this.destroyProgress, 0.0F, 1.0F));
-               if (this.destroyProgress >= 1.0F) {
-                  this.isDestroying = false;
-                  this.startPrediction(this.minecraft.level, (var3x) -> {
-                     this.destroyBlock(var1);
-                     return new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, var1, var2, var3x);
-                  });
-                  this.destroyProgress = 0.0F;
-                  this.destroyTicks = 0.0F;
-                  this.destroyDelay = 5;
-               }
-
-               this.minecraft.level.destroyBlockProgress(this.minecraft.player.getId(), this.destroyBlockPos, this.getDestroyStage());
-               return true;
-            }
+      } else if (this.localPlayerMode.isCreative() && this.minecraft.level.getWorldBorder().isWithinBounds(var1)) {
+         this.destroyDelay = 5;
+         BlockState var5 = this.minecraft.level.getBlockState(var1);
+         this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var5, 1.0F);
+         this.startPrediction(this.minecraft.level, (var3x) -> {
+            this.destroyBlock(var1);
+            return new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, var1, var2, var3x);
+         });
+         return true;
+      } else if (this.sameDestroyTarget(var1)) {
+         BlockState var3 = this.minecraft.level.getBlockState(var1);
+         if (var3.isAir()) {
+            this.isDestroying = false;
+            return false;
          } else {
-            return this.startDestroyBlock(var1, var2);
+            this.destroyProgress += var3.getDestroyProgress(this.minecraft.player, this.minecraft.player.level(), var1);
+            if (this.destroyTicks % 4.0F == 0.0F) {
+               SoundType var4 = var3.getSoundType();
+               this.minecraft.getSoundManager().play(new SimpleSoundInstance(var4.getHitSound(), SoundSource.BLOCKS, (var4.getVolume() + 1.0F) / 8.0F, var4.getPitch() * 0.5F, SoundInstance.createUnseededRandom(), var1));
+            }
+
+            ++this.destroyTicks;
+            this.minecraft.getTutorial().onDestroyBlock(this.minecraft.level, var1, var3, Mth.clamp(this.destroyProgress, 0.0F, 1.0F));
+            if (this.destroyProgress >= 1.0F) {
+               this.isDestroying = false;
+               this.startPrediction(this.minecraft.level, (var3x) -> {
+                  this.destroyBlock(var1);
+                  return new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK, var1, var2, var3x);
+               });
+               this.destroyProgress = 0.0F;
+               this.destroyTicks = 0.0F;
+               this.destroyDelay = 5;
+            }
+
+            this.minecraft.level.destroyBlockProgress(this.minecraft.player.getId(), this.destroyBlockPos, this.getDestroyStage());
+            return true;
          }
+      } else {
+         return this.startDestroyBlock(var1, var2);
       }
    }
 
    private void startPrediction(ClientLevel var1, PredictiveAction var2) {
-      BlockStatePredictionHandler var3 = var1.getBlockStatePredictionHandler().startPredicting();
-
-      try {
+      try (BlockStatePredictionHandler var3 = var1.getBlockStatePredictionHandler().startPredicting()) {
          int var4 = var3.currentSequence();
          Packet var5 = var2.predict(var4);
          this.connection.send(var5);
-      } catch (Throwable var7) {
-         if (var3 != null) {
-            try {
-               var3.close();
-            } catch (Throwable var6) {
-               var7.addSuppressed(var6);
-            }
-         }
-
-         throw var7;
-      }
-
-      if (var3 != null) {
-         var3.close();
       }
 
    }
@@ -368,9 +347,7 @@ public class MultiPlayerGameMode {
                ItemStack var8;
                if (var7 instanceof InteractionResult.Success) {
                   InteractionResult.Success var9 = (InteractionResult.Success)var7;
-                  var8 = (ItemStack)Objects.requireNonNullElseGet(var9.heldItemTransformedTo(), () -> {
-                     return var1.getItemInHand(var2);
-                  });
+                  var8 = (ItemStack)Objects.requireNonNullElseGet(var9.heldItemTransformedTo(), () -> var1.getItemInHand(var2));
                } else {
                   var8 = var1.getItemInHand(var2);
                }
@@ -426,10 +403,8 @@ public class MultiPlayerGameMode {
          NonNullList var7 = var6.slots;
          int var8 = var7.size();
          ArrayList var9 = Lists.newArrayListWithCapacity(var8);
-         Iterator var10 = var7.iterator();
 
-         while(var10.hasNext()) {
-            Slot var11 = (Slot)var10.next();
+         for(Slot var11 : var7) {
             var9.add(var11.getItem().copy());
          }
 

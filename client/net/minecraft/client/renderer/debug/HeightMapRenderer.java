@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.debug;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.Iterator;
 import java.util.Map;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -34,10 +33,8 @@ public class HeightMapRenderer implements DebugRenderer.SimpleDebugRenderer {
       for(int var12 = -2; var12 <= 2; ++var12) {
          for(int var13 = -2; var13 <= 2; ++var13) {
             ChunkAccess var14 = var9.getChunk(var11.offset(var12 * 16, 0, var13 * 16));
-            Iterator var15 = var14.getHeightmaps().iterator();
 
-            while(var15.hasNext()) {
-               Map.Entry var16 = (Map.Entry)var15.next();
+            for(Map.Entry var16 : var14.getHeightmaps()) {
                Heightmap.Types var17 = (Heightmap.Types)var16.getKey();
                ChunkPos var18 = var14.getPos();
                Vector3f var19 = this.getColor(var17);

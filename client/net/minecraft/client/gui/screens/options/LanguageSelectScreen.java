@@ -41,12 +41,8 @@ public class LanguageSelectScreen extends OptionsSubScreen {
       var1.defaultCellSetting().alignHorizontallyCenter();
       var1.addChild(new StringWidget(WARNING_LABEL, this.font));
       LinearLayout var2 = (LinearLayout)var1.addChild(LinearLayout.horizontal().spacing(8));
-      var2.addChild(Button.builder(Component.translatable("options.font"), (var1x) -> {
-         this.minecraft.setScreen(new FontOptionsScreen(this, this.options));
-      }).build());
-      var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
-         this.onDone();
-      }).build());
+      var2.addChild(Button.builder(Component.translatable("options.font"), (var1x) -> this.minecraft.setScreen(new FontOptionsScreen(this, this.options))).build());
+      var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onDone()).build());
    }
 
    protected void repositionElements() {
@@ -65,7 +61,7 @@ public class LanguageSelectScreen extends OptionsSubScreen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   private class LanguageSelectionList extends ObjectSelectionList<Entry> {
+   class LanguageSelectionList extends ObjectSelectionList<Entry> {
       public LanguageSelectionList(final Minecraft var2) {
          super(var2, LanguageSelectScreen.this.width, LanguageSelectScreen.this.height - 33 - 53, 33, 18);
          String var3 = LanguageSelectScreen.this.languageManager.getSelected();

@@ -4,7 +4,6 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -26,7 +25,7 @@ public record Grammar<T>(Dictionary<StringReader> rules, Atom<T> top) {
    }
 
    public Optional<T> parse(ParseState<StringReader> var1) {
-      return var1.parseTopRule(this.top);
+      return var1.<T>parseTopRule(this.top);
    }
 
    public T parseForCommands(StringReader var1) throws CommandSyntaxException {
@@ -34,7 +33,7 @@ public record Grammar<T>(Dictionary<StringReader> rules, Atom<T> top) {
       StringReaderParserState var3 = new StringReaderParserState(this.rules(), var2, var1);
       Optional var4 = this.parse(var3);
       if (var4.isPresent()) {
-         return var4.get();
+         return (T)var4.get();
       } else {
          List var5 = var2.entries().stream().mapMulti((var0, var1x) -> {
             Object var3 = var0.reason();
@@ -43,28 +42,24 @@ public record Grammar<T>(Dictionary<StringReader> rules, Atom<T> top) {
             }
 
          }).toList();
-         Iterator var6 = var5.iterator();
 
-         Exception var7;
-         do {
-            if (!var6.hasNext()) {
-               if (var5.size() == 1) {
-                  Object var10 = var5.get(0);
-                  if (var10 instanceof RuntimeException) {
-                     RuntimeException var9 = (RuntimeException)var10;
-                     throw var9;
-                  }
-               }
-
-               Stream var10002 = var2.entries().stream().map(ErrorEntry::toString);
-               throw new IllegalStateException("Failed to parse: " + (String)var10002.collect(Collectors.joining(", ")));
+         for(Exception var7 : var5) {
+            if (var7 instanceof CommandSyntaxException) {
+               CommandSyntaxException var8 = (CommandSyntaxException)var7;
+               throw var8;
             }
+         }
 
-            var7 = (Exception)var6.next();
-         } while(!(var7 instanceof CommandSyntaxException));
+         if (var5.size() == 1) {
+            Object var10 = var5.get(0);
+            if (var10 instanceof RuntimeException) {
+               RuntimeException var9 = (RuntimeException)var10;
+               throw var9;
+            }
+         }
 
-         CommandSyntaxException var8 = (CommandSyntaxException)var7;
-         throw var8;
+         Stream var10002 = var2.entries().stream().map(ErrorEntry::toString);
+         throw new IllegalStateException("Failed to parse: " + (String)var10002.collect(Collectors.joining(", ")));
       }
    }
 
@@ -79,10 +74,8 @@ public record Grammar<T>(Dictionary<StringReader> rules, Atom<T> top) {
          return var1.buildFuture();
       } else {
          SuggestionsBuilder var6 = var1.createOffset(var3.cursor());
-         Iterator var7 = var5.iterator();
 
-         while(var7.hasNext()) {
-            ErrorEntry var8 = (ErrorEntry)var7.next();
+         for(ErrorEntry var8 : var5) {
             SuggestionSupplier var10 = var8.suggestions();
             if (var10 instanceof ResourceSuggestion) {
                ResourceSuggestion var9 = (ResourceSuggestion)var10;
@@ -94,13 +87,5 @@ public record Grammar<T>(Dictionary<StringReader> rules, Atom<T> top) {
 
          return var6.buildFuture();
       }
-   }
-
-   public Dictionary<StringReader> rules() {
-      return this.rules;
-   }
-
-   public Atom<T> top() {
-      return this.top;
    }
 }

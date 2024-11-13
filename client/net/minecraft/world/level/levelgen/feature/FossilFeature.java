@@ -16,7 +16,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -43,28 +42,27 @@ public class FossilFeature extends Feature<FossilFeatureConfiguration> {
       BlockPos var15 = var4.offset(-var14.getX() / 2, 0, -var14.getZ() / 2);
       int var16 = var4.getY();
 
-      int var17;
-      for(var17 = 0; var17 < var14.getX(); ++var17) {
+      for(int var17 = 0; var17 < var14.getX(); ++var17) {
          for(int var18 = 0; var18 < var14.getZ(); ++var18) {
             var16 = Math.min(var16, var3.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, var15.getX() + var17, var15.getZ() + var18));
          }
       }
 
-      var17 = Math.max(var16 - 15 - var2.nextInt(10), var3.getMinY() + 10);
-      BlockPos var19 = var9.getZeroPositionWithTransform(var15.atY(var17), Mirror.NONE, var5);
-      if (countEmptyCorners(var3, var9.getBoundingBox(var13, var19)) > var6.maxEmptyCornersAllowed) {
+      int var19 = Math.max(var16 - 15 - var2.nextInt(10), var3.getMinY() + 10);
+      BlockPos var20 = var9.getZeroPositionWithTransform(var15.atY(var19), Mirror.NONE, var5);
+      if (countEmptyCorners(var3, var9.getBoundingBox(var13, var20)) > var6.maxEmptyCornersAllowed) {
          return false;
       } else {
          var13.clearProcessors();
-         List var10000 = ((StructureProcessorList)var6.fossilProcessors.value()).list();
+         List var10000 = (var6.fossilProcessors.value()).list();
          Objects.requireNonNull(var13);
          var10000.forEach(var13::addProcessor);
-         var9.placeInWorld(var3, var19, var19, var13, var2, 4);
+         var9.placeInWorld(var3, var20, var20, var13, var2, 4);
          var13.clearProcessors();
-         var10000 = ((StructureProcessorList)var6.overlayProcessors.value()).list();
+         var10000 = (var6.overlayProcessors.value()).list();
          Objects.requireNonNull(var13);
          var10000.forEach(var13::addProcessor);
-         var10.placeInWorld(var3, var19, var19, var13, var2, 4);
+         var10.placeInWorld(var3, var20, var20, var13, var2, 4);
          return true;
       }
    }

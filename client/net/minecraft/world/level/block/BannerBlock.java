@@ -22,9 +22,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BannerBlock extends AbstractBannerBlock {
-   public static final MapCodec<BannerBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(DyeColor.CODEC.fieldOf("color").forGetter(AbstractBannerBlock::getColor), propertiesCodec()).apply(var0, BannerBlock::new);
-   });
+   public static final MapCodec<BannerBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DyeColor.CODEC.fieldOf("color").forGetter(AbstractBannerBlock::getColor), propertiesCodec()).apply(var0, BannerBlock::new));
    public static final IntegerProperty ROTATION;
    private static final Map<DyeColor, Block> BY_COLOR;
    private static final VoxelShape SHAPE;
@@ -69,10 +67,6 @@ public class BannerBlock extends AbstractBannerBlock {
 
    public static Block byColor(DyeColor var0) {
       return (Block)BY_COLOR.getOrDefault(var0, Blocks.WHITE_BANNER);
-   }
-
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.ENTITYBLOCK_ANIMATED;
    }
 
    static {

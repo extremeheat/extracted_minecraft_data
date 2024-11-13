@@ -4,7 +4,6 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -34,12 +33,33 @@ public class DataFetcher {
          String var10002 = String.valueOf(var3);
          throw new IllegalArgumentException("Period of " + var10002 + " too short for selected resolution of " + String.valueOf(this.resolution));
       } else {
-         return new Task(var1, var2, var5, var4);
+         return new Task<T>(var1, var2, var5, var4);
       }
    }
 
    public Subscription createSubscription() {
       return new Subscription();
+   }
+
+   static record ComputationResult<T>(Either<T, Exception> value, long time) {
+      final long time;
+
+      ComputationResult(Either<T, Exception> var1, long var2) {
+         super();
+         this.value = var1;
+         this.time = var2;
+      }
+   }
+
+   static record SuccessfulComputationResult<T>(T value, long time) {
+      final T value;
+      final long time;
+
+      SuccessfulComputationResult(T var1, long var2) {
+         super();
+         this.value = var1;
+         this.time = var2;
+      }
    }
 
    public class Task<T> {
@@ -71,7 +91,7 @@ public class DataFetcher {
             this.pendingTask = null;
             long var4 = var3.time;
             var3.value().ifLeft((var3x) -> {
-               this.lastResult = new SuccessfulComputationResult(var3x, var4);
+               this.lastResult = new SuccessfulComputationResult<T>(var3x, var4);
                this.nextUpdate = var4 + this.period * this.repeatStrategy.delayCyclesAfterSuccess();
             }).ifRight((var3x) -> {
                long var4x = this.repeatStrategy.delayCyclesAfterFailure();
@@ -82,13 +102,12 @@ public class DataFetcher {
 
          if (this.nextUpdate <= var1) {
             this.pendingTask = CompletableFuture.supplyAsync(() -> {
-               long var2;
                try {
                   Object var1 = this.updater.call();
-                  var2 = DataFetcher.this.timeSource.get(DataFetcher.this.resolution);
-                  return new ComputationResult(Either.left(var1), var2);
+                  long var5 = DataFetcher.this.timeSource.get(DataFetcher.this.resolution);
+                  return new ComputationResult(Either.left(var1), var5);
                } catch (Exception var4) {
-                  var2 = DataFetcher.this.timeSource.get(DataFetcher.this.resolution);
+                  long var2 = DataFetcher.this.timeSource.get(DataFetcher.this.resolution);
                   return new ComputationResult(Either.right(var4), var2);
                }
             }, DataFetcher.this.executor);
@@ -103,56 +122,12 @@ public class DataFetcher {
       }
    }
 
-   public class Subscription {
-      private final List<SubscribedTask<?>> subscriptions = new ArrayList();
-
-      public Subscription() {
-         super();
-      }
-
-      public <T> void subscribe(Task<T> var1, Consumer<T> var2) {
-         SubscribedTask var3 = DataFetcher.this.new SubscribedTask(DataFetcher.this, var1, var2);
-         this.subscriptions.add(var3);
-         var3.runCallbackIfNeeded();
-      }
-
-      public void forceUpdate() {
-         Iterator var1 = this.subscriptions.iterator();
-
-         while(var1.hasNext()) {
-            SubscribedTask var2 = (SubscribedTask)var1.next();
-            var2.runCallback();
-         }
-
-      }
-
-      public void tick() {
-         Iterator var1 = this.subscriptions.iterator();
-
-         while(var1.hasNext()) {
-            SubscribedTask var2 = (SubscribedTask)var1.next();
-            var2.update(DataFetcher.this.timeSource.get(DataFetcher.this.resolution));
-         }
-
-      }
-
-      public void reset() {
-         Iterator var1 = this.subscriptions.iterator();
-
-         while(var1.hasNext()) {
-            SubscribedTask var2 = (SubscribedTask)var1.next();
-            var2.reset();
-         }
-
-      }
-   }
-
-   private class SubscribedTask<T> {
+   class SubscribedTask<T> {
       private final Task<T> task;
       private final Consumer<T> output;
       private long lastCheckTime = -1L;
 
-      SubscribedTask(final DataFetcher var1, final Task var2, final Consumer var3) {
+      SubscribedTask(final Task<T> var2, final Consumer<T> var3) {
          super();
          this.task = var2;
          this.output = var3;
@@ -187,40 +162,38 @@ public class DataFetcher {
       }
    }
 
-   private static record SuccessfulComputationResult<T>(T value, long time) {
-      final T value;
-      final long time;
+   public class Subscription {
+      private final List<SubscribedTask<?>> subscriptions = new ArrayList();
 
-      SuccessfulComputationResult(T var1, long var2) {
+      public Subscription() {
          super();
-         this.value = var1;
-         this.time = var2;
       }
 
-      public T value() {
-         return this.value;
+      public <T> void subscribe(Task<T> var1, Consumer<T> var2) {
+         SubscribedTask var3 = DataFetcher.this.new SubscribedTask(var1, var2);
+         this.subscriptions.add(var3);
+         var3.runCallbackIfNeeded();
       }
 
-      public long time() {
-         return this.time;
-      }
-   }
+      public void forceUpdate() {
+         for(SubscribedTask var2 : this.subscriptions) {
+            var2.runCallback();
+         }
 
-   private static record ComputationResult<T>(Either<T, Exception> value, long time) {
-      final long time;
-
-      ComputationResult(Either<T, Exception> var1, long var2) {
-         super();
-         this.value = var1;
-         this.time = var2;
       }
 
-      public Either<T, Exception> value() {
-         return this.value;
+      public void tick() {
+         for(SubscribedTask var2 : this.subscriptions) {
+            var2.update(DataFetcher.this.timeSource.get(DataFetcher.this.resolution));
+         }
+
       }
 
-      public long time() {
-         return this.time;
+      public void reset() {
+         for(SubscribedTask var2 : this.subscriptions) {
+            var2.reset();
+         }
+
       }
    }
 }

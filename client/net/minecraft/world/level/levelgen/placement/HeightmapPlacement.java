@@ -8,11 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class HeightmapPlacement extends PlacementModifier {
-   public static final MapCodec<HeightmapPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Heightmap.Types.CODEC.fieldOf("heightmap").forGetter((var0x) -> {
-         return var0x.heightmap;
-      })).apply(var0, HeightmapPlacement::new);
-   });
+   public static final MapCodec<HeightmapPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Heightmap.Types.CODEC.fieldOf("heightmap").forGetter((var0x) -> var0x.heightmap)).apply(var0, HeightmapPlacement::new));
    private final Heightmap.Types heightmap;
 
    private HeightmapPlacement(Heightmap.Types var1) {

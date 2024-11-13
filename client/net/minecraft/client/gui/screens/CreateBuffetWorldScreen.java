@@ -39,9 +39,7 @@ public class CreateBuffetWorldScreen extends Screen {
       this.parent = var1;
       this.applySettings = var3;
       this.biomes = var2.worldgenLoadContext().lookupOrThrow(Registries.BIOME);
-      Holder var4 = (Holder)this.biomes.get(Biomes.PLAINS).or(() -> {
-         return this.biomes.listElements().findAny();
-      }).orElseThrow();
+      Holder var4 = (Holder)this.biomes.get(Biomes.PLAINS).or(() -> this.biomes.listElements().findAny()).orElseThrow();
       this.biome = (Holder)var2.selectedDimensions().overworld().getBiomeSource().possibleBiomes().stream().findFirst().orElse(var4);
    }
 
@@ -60,12 +58,8 @@ public class CreateBuffetWorldScreen extends Screen {
          this.applySettings.accept(this.biome);
          this.onClose();
       }).build());
-      var2.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
-         this.onClose();
-      }).build());
-      this.list.setSelected((BiomeList.Entry)this.list.children().stream().filter((var1x) -> {
-         return Objects.equals(var1x.biome, this.biome);
-      }).findFirst().orElse((Object)null));
+      var2.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).build());
+      this.list.setSelected((BiomeList.Entry)this.list.children().stream().filter((var1x) -> Objects.equals(var1x.biome, this.biome)).findFirst().orElse((Object)null));
       this.layout.visitWidgets(this::addRenderableWidget);
       this.repositionElements();
    }
@@ -83,13 +77,7 @@ public class CreateBuffetWorldScreen extends Screen {
       BiomeList() {
          super(CreateBuffetWorldScreen.this.minecraft, CreateBuffetWorldScreen.this.width, CreateBuffetWorldScreen.this.height - 77, 40, 16);
          Collator var2 = Collator.getInstance(Locale.getDefault());
-         CreateBuffetWorldScreen.this.biomes.listElements().map((var1x) -> {
-            return new Entry(var1x);
-         }).sorted(Comparator.comparing((var0) -> {
-            return var0.name.getString();
-         }, var2)).forEach((var1x) -> {
-            this.addEntry(var1x);
-         });
+         CreateBuffetWorldScreen.this.biomes.listElements().map((var1x) -> new Entry(var1x)).sorted(Comparator.comparing((var0) -> var0.name.getString(), var2)).forEach((var1x) -> this.addEntry(var1x));
       }
 
       public void setSelected(@Nullable Entry var1) {
@@ -101,7 +89,7 @@ public class CreateBuffetWorldScreen extends Screen {
          CreateBuffetWorldScreen.this.updateButtonValidity();
       }
 
-      private class Entry extends ObjectSelectionList.Entry<Entry> {
+      class Entry extends ObjectSelectionList.Entry<Entry> {
          final Holder.Reference<Biome> biome;
          final Component name;
 

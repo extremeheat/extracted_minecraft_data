@@ -156,7 +156,7 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
    @Nullable
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       if (var2 instanceof Donkey) {
-         Mule var9 = (Mule)EntityType.MULE.create(var1, EntitySpawnReason.BREEDING);
+         Mule var9 = EntityType.MULE.create(var1, EntitySpawnReason.BREEDING);
          if (var9 != null) {
             this.setOffspringAttributes(var2, var9);
          }
@@ -164,7 +164,7 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
          return var9;
       } else {
          Horse var3 = (Horse)var2;
-         Horse var4 = (Horse)EntityType.HORSE.create(var1, EntitySpawnReason.BREEDING);
+         Horse var4 = EntityType.HORSE.create(var1, EntitySpawnReason.BREEDING);
          if (var4 != null) {
             int var6 = this.random.nextInt(9);
             Variant var5;
@@ -173,7 +173,7 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
             } else if (var6 < 8) {
                var5 = var3.getVariant();
             } else {
-               var5 = (Variant)Util.getRandom((Object[])Variant.values(), this.random);
+               var5 = (Variant)Util.getRandom(Variant.values(), this.random);
             }
 
             int var8 = this.random.nextInt(5);
@@ -183,7 +183,7 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
             } else if (var8 < 4) {
                var7 = var3.getMarkings();
             } else {
-               var7 = (Markings)Util.getRandom((Object[])Markings.values(), this.random);
+               var7 = (Markings)Util.getRandom(Markings.values(), this.random);
             }
 
             var4.setVariantAndMarkings(var5, var7);
@@ -209,11 +209,11 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
       if (var4 instanceof HorseGroupData) {
          var6 = ((HorseGroupData)var4).variant;
       } else {
-         var6 = (Variant)Util.getRandom((Object[])Variant.values(), var5);
+         var6 = (Variant)Util.getRandom(Variant.values(), var5);
          var4 = new HorseGroupData(var6);
       }
 
-      this.setVariantAndMarkings(var6, (Markings)Util.getRandom((Object[])Markings.values(), var5));
+      this.setVariantAndMarkings(var6, (Markings)Util.getRandom(Markings.values(), var5));
       return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
@@ -227,7 +227,7 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
    }
 
    static {
-      DATA_ID_TYPE_VARIANT = SynchedEntityData.defineId(Horse.class, EntityDataSerializers.INT);
+      DATA_ID_TYPE_VARIANT = SynchedEntityData.<Integer>defineId(Horse.class, EntityDataSerializers.INT);
       BABY_DIMENSIONS = EntityType.HORSE.getDimensions().withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.HORSE.getHeight() + 0.125F, 0.0F)).scale(0.5F);
    }
 

@@ -4,7 +4,6 @@ import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,21 +25,15 @@ public class TagNetworkSerialization {
    }
 
    public static Map<ResourceKey<? extends Registry<?>>, NetworkPayload> serializeTagsToNetwork(LayeredRegistryAccess<RegistryLayer> var0) {
-      return (Map)RegistrySynchronization.networkSafeRegistries(var0).map((var0x) -> {
-         return Pair.of(var0x.key(), serializeToNetwork(var0x.value()));
-      }).filter((var0x) -> {
-         return !((NetworkPayload)var0x.getSecond()).isEmpty();
-      }).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
+      return (Map)RegistrySynchronization.networkSafeRegistries(var0).map((var0x) -> Pair.of(var0x.key(), serializeToNetwork(var0x.value()))).filter((var0x) -> !((NetworkPayload)var0x.getSecond()).isEmpty()).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond));
    }
 
    private static <T> NetworkPayload serializeToNetwork(Registry<T> var0) {
       HashMap var1 = new HashMap();
       var0.getTags().forEach((var2) -> {
          IntArrayList var3 = new IntArrayList(var2.size());
-         Iterator var4 = var2.iterator();
 
-         while(var4.hasNext()) {
-            Holder var5 = (Holder)var4.next();
+         for(Holder var5 : var2) {
             if (var5.kind() != Holder.Kind.REFERENCE) {
                throw new IllegalStateException("Can't serialize unregistered value " + String.valueOf(var5));
             }
@@ -63,7 +56,7 @@ public class TagNetworkSerialization {
          List var6 = (List)var10000.mapToObj(var0::get).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
          var3.put(var5, var6);
       });
-      return new TagLoader.LoadResult(var2, var3);
+      return new TagLoader.LoadResult<T>(var2, var3);
    }
 
    public static final class NetworkPayload {
@@ -92,7 +85,7 @@ public class TagNetworkSerialization {
       }
 
       public <T> TagLoader.LoadResult<T> resolve(Registry<T> var1) {
-         return TagNetworkSerialization.deserializeTagsFromNetwork(var1, this);
+         return TagNetworkSerialization.<T>deserializeTagsFromNetwork(var1, this);
       }
    }
 }

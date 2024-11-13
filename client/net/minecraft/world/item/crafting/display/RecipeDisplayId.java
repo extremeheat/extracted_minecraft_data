@@ -12,10 +12,6 @@ public record RecipeDisplayId(int index) {
       this.index = var1;
    }
 
-   public int index() {
-      return this.index;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, RecipeDisplayId::index, RecipeDisplayId::new);
    }

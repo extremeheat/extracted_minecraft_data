@@ -16,7 +16,6 @@ import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -57,9 +56,7 @@ public class ComponentSerialization {
             return var1.decode(var1x, var2).flatMap((var1xx) -> {
                try {
                   JsonElement var2 = JsonParser.parseString((String)var1xx.getFirst());
-                  return ComponentSerialization.CODEC.parse(var3, var2).map((var1x) -> {
-                     return Pair.of(var1x, var1xx.getSecond());
-                  });
+                  return ComponentSerialization.CODEC.parse(var3, var2).map((var1x) -> Pair.of(var1x, var1xx.getSecond()));
                } catch (JsonParseException var3x) {
                   Objects.requireNonNull(var3x);
                   return DataResult.error(var3x::getMessage);
@@ -81,7 +78,7 @@ public class ComponentSerialization {
 
          private static <T> DynamicOps<JsonElement> asJsonOps(DynamicOps<T> var0) {
             if (var0 instanceof RegistryOps var1x) {
-               return var1x.withParent(JsonOps.INSTANCE);
+               return var1x.<JsonElement>withParent(JsonOps.INSTANCE);
             } else {
                return JsonOps.INSTANCE;
             }
@@ -105,30 +102,18 @@ public class ComponentSerialization {
    }
 
    public static <T extends StringRepresentable, E> MapCodec<E> createLegacyComponentMatcher(T[] var0, Function<T, MapCodec<? extends E>> var1, Function<E, T> var2, String var3) {
-      FuzzyCodec var4 = new FuzzyCodec(Stream.of(var0).map(var1).toList(), (var2x) -> {
-         return (MapEncoder)var1.apply((StringRepresentable)var2.apply(var2x));
-      });
-      Codec var5 = StringRepresentable.fromValues(() -> {
-         return var0;
-      });
+      FuzzyCodec var4 = new FuzzyCodec(Stream.of(var0).map(var1).toList(), (var2x) -> (MapEncoder)var1.apply((StringRepresentable)var2.apply(var2x)));
+      Codec var5 = StringRepresentable.fromValues(() -> var0);
       MapCodec var6 = var5.dispatchMap(var3, var2, var1);
       StrictEither var7 = new StrictEither(var3, var6, var4);
-      return ExtraCodecs.orCompressed((MapCodec)var7, (MapCodec)var6);
+      return ExtraCodecs.orCompressed(var7, var6);
    }
 
    private static Codec<Component> createCodec(Codec<Component> var0) {
       ComponentContents.Type[] var1 = new ComponentContents.Type[]{PlainTextContents.TYPE, TranslatableContents.TYPE, KeybindContents.TYPE, ScoreContents.TYPE, SelectorContents.TYPE, NbtContents.TYPE};
       MapCodec var2 = createLegacyComponentMatcher(var1, ComponentContents.Type::codec, ComponentContents::type, "type");
-      Codec var3 = RecordCodecBuilder.create((var2x) -> {
-         return var2x.group(var2.forGetter(Component::getContents), ExtraCodecs.nonEmptyList(var0.listOf()).optionalFieldOf("extra", List.of()).forGetter(Component::getSiblings), Style.Serializer.MAP_CODEC.forGetter(Component::getStyle)).apply(var2x, MutableComponent::new);
-      });
-      return Codec.either(Codec.either(Codec.STRING, ExtraCodecs.nonEmptyList(var0.listOf())), var3).xmap((var0x) -> {
-         return (Component)var0x.map((var0) -> {
-            return (Component)var0.map(Component::literal, ComponentSerialization::createFromList);
-         }, (var0) -> {
-            return var0;
-         });
-      }, (var0x) -> {
+      Codec var3 = RecordCodecBuilder.create((var2x) -> var2x.group(var2.forGetter(Component::getContents), ExtraCodecs.nonEmptyList(var0.listOf()).optionalFieldOf("extra", List.of()).forGetter(Component::getSiblings), Style.Serializer.MAP_CODEC.forGetter(Component::getStyle)).apply(var2x, MutableComponent::new));
+      return Codec.either(Codec.either(Codec.STRING, ExtraCodecs.nonEmptyList(var0.listOf())), var3).xmap((var0x) -> (Component)var0x.map((var0) -> (Component)var0.map(Component::literal, ComponentSerialization::createFromList), (var0) -> var0), (var0x) -> {
          String var1 = var0x.tryCollapseToString();
          return var1 != null ? Either.left(Either.left(var1)) : Either.right(var0x);
       });
@@ -143,51 +128,7 @@ public class ComponentSerialization {
       FLAT_CODEC = flatCodec(2147483647);
    }
 
-   private static class FuzzyCodec<T> extends MapCodec<T> {
-      private final List<MapCodec<? extends T>> codecs;
-      private final Function<T, MapEncoder<? extends T>> encoderGetter;
-
-      public FuzzyCodec(List<MapCodec<? extends T>> var1, Function<T, MapEncoder<? extends T>> var2) {
-         super();
-         this.codecs = var1;
-         this.encoderGetter = var2;
-      }
-
-      public <S> DataResult<T> decode(DynamicOps<S> var1, MapLike<S> var2) {
-         Iterator var3 = this.codecs.iterator();
-
-         DataResult var5;
-         do {
-            if (!var3.hasNext()) {
-               return DataResult.error(() -> {
-                  return "No matching codec found";
-               });
-            }
-
-            MapDecoder var4 = (MapDecoder)var3.next();
-            var5 = var4.decode(var1, var2);
-         } while(!var5.result().isPresent());
-
-         return var5;
-      }
-
-      public <S> RecordBuilder<S> encode(T var1, DynamicOps<S> var2, RecordBuilder<S> var3) {
-         MapEncoder var4 = (MapEncoder)this.encoderGetter.apply(var1);
-         return var4.encode(var1, var2, var3);
-      }
-
-      public <S> Stream<S> keys(DynamicOps<S> var1) {
-         return this.codecs.stream().flatMap((var1x) -> {
-            return var1x.keys(var1);
-         }).distinct();
-      }
-
-      public String toString() {
-         return "FuzzyCodec[" + String.valueOf(this.codecs) + "]";
-      }
-   }
-
-   private static class StrictEither<T> extends MapCodec<T> {
+   static class StrictEither<T> extends MapCodec<T> {
       private final String typeFieldName;
       private final MapCodec<T> typed;
       private final MapCodec<T> fuzzy;
@@ -209,6 +150,41 @@ public class ComponentSerialization {
 
       public <T1> Stream<T1> keys(DynamicOps<T1> var1) {
          return Stream.concat(this.typed.keys(var1), this.fuzzy.keys(var1)).distinct();
+      }
+   }
+
+   static class FuzzyCodec<T> extends MapCodec<T> {
+      private final List<MapCodec<? extends T>> codecs;
+      private final Function<T, MapEncoder<? extends T>> encoderGetter;
+
+      public FuzzyCodec(List<MapCodec<? extends T>> var1, Function<T, MapEncoder<? extends T>> var2) {
+         super();
+         this.codecs = var1;
+         this.encoderGetter = var2;
+      }
+
+      public <S> DataResult<T> decode(DynamicOps<S> var1, MapLike<S> var2) {
+         for(MapDecoder var4 : this.codecs) {
+            DataResult var5 = var4.decode(var1, var2);
+            if (var5.result().isPresent()) {
+               return var5;
+            }
+         }
+
+         return DataResult.error(() -> "No matching codec found");
+      }
+
+      public <S> RecordBuilder<S> encode(T var1, DynamicOps<S> var2, RecordBuilder<S> var3) {
+         MapEncoder var4 = (MapEncoder)this.encoderGetter.apply(var1);
+         return var4.encode(var1, var2, var3);
+      }
+
+      public <S> Stream<S> keys(DynamicOps<S> var1) {
+         return this.codecs.stream().flatMap((var1x) -> var1x.keys(var1)).distinct();
+      }
+
+      public String toString() {
+         return "FuzzyCodec[" + String.valueOf(this.codecs) + "]";
       }
    }
 }

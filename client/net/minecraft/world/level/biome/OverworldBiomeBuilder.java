@@ -96,17 +96,10 @@ public final class OverworldBiomeBuilder {
       DensityFunctions.Spline.Coordinate var6 = new DensityFunctions.Spline.Coordinate(var3.getOrThrow(NoiseRouterData.RIDGES_FOLDED));
       var1.accept(Pair.of(Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.01F), Biomes.PLAINS));
       CubicSpline var7 = TerrainProvider.buildErosionOffsetSpline(var5, var6, -0.15F, 0.0F, 0.0F, 0.1F, 0.0F, -0.03F, false, false, ToFloatFunction.IDENTITY);
-      float[] var10;
-      int var11;
-      int var12;
-      float var13;
       if (var7 instanceof CubicSpline.Multipoint var8) {
          ResourceKey var9 = Biomes.DESERT;
-         var10 = var8.locations();
-         var11 = var10.length;
 
-         for(var12 = 0; var12 < var11; ++var12) {
-            var13 = var10[var12];
+         for(float var13 : var8.locations()) {
             var1.accept(Pair.of(Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(var13), Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.0F), var9));
             var9 = var9 == Biomes.DESERT ? Biomes.BADLANDS : Biomes.DESERT;
          }
@@ -114,12 +107,8 @@ public final class OverworldBiomeBuilder {
 
       CubicSpline var14 = TerrainProvider.overworldOffset(var4, var5, var6, false);
       if (var14 instanceof CubicSpline.Multipoint var15) {
-         var10 = var15.locations();
-         var11 = var10.length;
-
-         for(var12 = 0; var12 < var11; ++var12) {
-            var13 = var10[var12];
-            var1.accept(Pair.of(Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(var13), this.FULL_RANGE, Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.0F), Biomes.SNOWY_TAIGA));
+         for(float var19 : var15.locations()) {
+            var1.accept(Pair.of(Climate.parameters(this.FULL_RANGE, this.FULL_RANGE, Climate.Parameter.point(var19), this.FULL_RANGE, Climate.Parameter.point(0.0F), this.FULL_RANGE, 0.0F), Biomes.SNOWY_TAIGA));
          }
       }
 

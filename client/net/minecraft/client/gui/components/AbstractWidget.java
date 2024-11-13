@@ -95,9 +95,8 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       Objects.requireNonNull(var1);
       int var10 = (var10000 - 9) / 2 + 1;
       int var11 = var6 - var4;
-      int var12;
       if (var9 > var11) {
-         var12 = var9 - var11;
+         int var12 = var9 - var11;
          double var13 = (double)Util.getMillis() / 1000.0;
          double var15 = Math.max((double)var12 * 0.5, 3.0);
          double var17 = Math.sin(1.5707963267948966 * Math.cos(6.283185307179586 * var13 / var15)) / 2.0 + 0.5;
@@ -106,8 +105,8 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
          var0.drawString(var1, var2, var4 - (int)var19, var10, var8);
          var0.disableScissor();
       } else {
-         var12 = Mth.clamp(var3, var4 + var9 / 2, var6 - var9 / 2);
-         var0.drawCenteredString(var1, var2, var12, var10, var8);
+         int var21 = Mth.clamp(var3, var4 + var9 / 2, var6 - var9 / 2);
+         var0.drawCenteredString(var1, var2, var21, var10, var8);
       }
 
    }

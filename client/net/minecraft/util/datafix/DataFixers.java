@@ -395,9 +395,7 @@ public class DataFixers {
       Schema var16 = var0.addSchema(501, V501::new);
       var0.addFixer(new AddNewChoices(var16, "Add 1.10 entities fix", References.ENTITY));
       Schema var17 = var0.addSchema(502, SAME);
-      var0.addFixer(ItemRenameFix.create(var17, "cooked_fished item renamer", (var0x) -> {
-         return Objects.equals(NamespacedSchema.ensureNamespaced(var0x), "minecraft:cooked_fished") ? "minecraft:cooked_fish" : var0x;
-      }));
+      var0.addFixer(ItemRenameFix.create(var17, "cooked_fished item renamer", (var0x) -> Objects.equals(NamespacedSchema.ensureNamespaced(var0x), "minecraft:cooked_fished") ? "minecraft:cooked_fish" : var0x));
       var0.addFixer(new EntityZombieVillagerTypeFix(var17, false));
       Schema var18 = var0.addSchema(505, SAME);
       var0.addFixer(new OptionsForceVBOFix(var18, false));
@@ -478,12 +476,8 @@ public class DataFixers {
       var0.addFixer(new AddNewChoices(var49, "Add 1.13 entities fix", References.ENTITY));
       Schema var50 = var0.addSchema(1474, SAME_NAMESPACED);
       var0.addFixer(new ColorlessShulkerEntityFix(var50, false));
-      var0.addFixer(BlockRenameFix.create(var50, "Colorless shulker block fixer", (var0x) -> {
-         return Objects.equals(NamespacedSchema.ensureNamespaced(var0x), "minecraft:purple_shulker_box") ? "minecraft:shulker_box" : var0x;
-      }));
-      var0.addFixer(ItemRenameFix.create(var50, "Colorless shulker item fixer", (var0x) -> {
-         return Objects.equals(NamespacedSchema.ensureNamespaced(var0x), "minecraft:purple_shulker_box") ? "minecraft:shulker_box" : var0x;
-      }));
+      var0.addFixer(BlockRenameFix.create(var50, "Colorless shulker block fixer", (var0x) -> Objects.equals(NamespacedSchema.ensureNamespaced(var0x), "minecraft:purple_shulker_box") ? "minecraft:shulker_box" : var0x));
+      var0.addFixer(ItemRenameFix.create(var50, "Colorless shulker item fixer", (var0x) -> Objects.equals(NamespacedSchema.ensureNamespaced(var0x), "minecraft:purple_shulker_box") ? "minecraft:shulker_box" : var0x));
       Schema var51 = var0.addSchema(1475, SAME_NAMESPACED);
       var0.addFixer(BlockRenameFix.create(var51, "Flowing fixer", createRenamer(ImmutableMap.of("minecraft:flowing_water", "minecraft:water", "minecraft:flowing_lava", "minecraft:lava"))));
       Schema var52 = var0.addSchema(1480, SAME_NAMESPACED);
@@ -790,9 +784,7 @@ public class DataFixers {
       Objects.requireNonNull(var10008);
       var0.addFixer(new EntityVariantFix(var166, "Change cat variant type", var10005, "minecraft:cat", "CatType", var10008::get));
       ImmutableMap var167 = ImmutableMap.builder().put("textures/entity/cat/tabby.png", "minecraft:tabby").put("textures/entity/cat/black.png", "minecraft:black").put("textures/entity/cat/red.png", "minecraft:red").put("textures/entity/cat/siamese.png", "minecraft:siamese").put("textures/entity/cat/british_shorthair.png", "minecraft:british").put("textures/entity/cat/calico.png", "minecraft:calico").put("textures/entity/cat/persian.png", "minecraft:persian").put("textures/entity/cat/ragdoll.png", "minecraft:ragdoll").put("textures/entity/cat/white.png", "minecraft:white").put("textures/entity/cat/jellie.png", "minecraft:jellie").put("textures/entity/cat/all_black.png", "minecraft:all_black").build();
-      var0.addFixer(new CriteriaRenameFix(var166, "Migrate cat variant advancement", "minecraft:husbandry/complete_catalogue", (var1x) -> {
-         return (String)var167.getOrDefault(var1x, var1x);
-      }));
+      var0.addFixer(new CriteriaRenameFix(var166, "Migrate cat variant advancement", "minecraft:husbandry/complete_catalogue", (var1x) -> (String)var167.getOrDefault(var1x, var1x)));
       Schema var168 = var0.addSchema(3087, SAME_NAMESPACED);
       var10005 = References.ENTITY;
       var10008 = (Int2ObjectOpenHashMap)Util.make(new Int2ObjectOpenHashMap(), (var0x) -> {
@@ -813,12 +805,10 @@ public class DataFixers {
       var0.addFixer(new FilteredSignsFix(var172));
       Map var173 = Map.of("minecraft:british", "minecraft:british_shorthair");
       var0.addFixer(new VariantRenameFix(var172, "Rename british shorthair", References.ENTITY, "minecraft:cat", var173));
-      var0.addFixer(new CriteriaRenameFix(var172, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> {
-         return (String)var173.getOrDefault(var1x, var1x);
-      }));
-      Set var249 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var249);
-      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var249::contains));
+      var0.addFixer(new CriteriaRenameFix(var172, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> (String)var173.getOrDefault(var1x, var1x)));
+      Set var250 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var250);
+      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var250::contains));
       Schema var174 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var174));
       Schema var175 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -859,9 +849,7 @@ public class DataFixers {
       Schema var190 = var0.addSchema(3441, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataFix(var190));
       Schema var191 = var0.addSchema(3447, SAME_NAMESPACED);
-      var0.addFixer(ItemRenameFix.create(var191, "Pottery shard item renaming to Pottery sherd", createRenamer((Map)Stream.of("minecraft:angler_pottery_shard", "minecraft:archer_pottery_shard", "minecraft:arms_up_pottery_shard", "minecraft:blade_pottery_shard", "minecraft:brewer_pottery_shard", "minecraft:burn_pottery_shard", "minecraft:danger_pottery_shard", "minecraft:explorer_pottery_shard", "minecraft:friend_pottery_shard", "minecraft:heart_pottery_shard", "minecraft:heartbreak_pottery_shard", "minecraft:howl_pottery_shard", "minecraft:miner_pottery_shard", "minecraft:mourner_pottery_shard", "minecraft:plenty_pottery_shard", "minecraft:prize_pottery_shard", "minecraft:sheaf_pottery_shard", "minecraft:shelter_pottery_shard", "minecraft:skull_pottery_shard", "minecraft:snort_pottery_shard").collect(Collectors.toMap(Function.identity(), (var0x) -> {
-         return var0x.replace("_pottery_shard", "_pottery_sherd");
-      })))));
+      var0.addFixer(ItemRenameFix.create(var191, "Pottery shard item renaming to Pottery sherd", createRenamer((Map)Stream.of("minecraft:angler_pottery_shard", "minecraft:archer_pottery_shard", "minecraft:arms_up_pottery_shard", "minecraft:blade_pottery_shard", "minecraft:brewer_pottery_shard", "minecraft:burn_pottery_shard", "minecraft:danger_pottery_shard", "minecraft:explorer_pottery_shard", "minecraft:friend_pottery_shard", "minecraft:heart_pottery_shard", "minecraft:heartbreak_pottery_shard", "minecraft:howl_pottery_shard", "minecraft:miner_pottery_shard", "minecraft:mourner_pottery_shard", "minecraft:plenty_pottery_shard", "minecraft:prize_pottery_shard", "minecraft:sheaf_pottery_shard", "minecraft:shelter_pottery_shard", "minecraft:skull_pottery_shard", "minecraft:snort_pottery_shard").collect(Collectors.toMap(Function.identity(), (var0x) -> var0x.replace("_pottery_shard", "_pottery_sherd"))))));
       Schema var192 = var0.addSchema(3448, V3448::new);
       var0.addFixer(new DecoratedPotFieldRenameFix(var192));
       Schema var193 = var0.addSchema(3450, SAME_NAMESPACED);
@@ -991,20 +979,14 @@ public class DataFixers {
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {
-      return (var1) -> {
-         return (String)var0.getOrDefault(var1, var1);
-      };
+      return (var1) -> (String)var0.getOrDefault(var1, var1);
    }
 
    private static UnaryOperator<String> createRenamer(Map<String, String> var0) {
-      return (var1) -> {
-         return (String)var0.getOrDefault(NamespacedSchema.ensureNamespaced(var1), var1);
-      };
+      return (var1) -> (String)var0.getOrDefault(NamespacedSchema.ensureNamespaced(var1), var1);
    }
 
    private static UnaryOperator<String> createRenamer(String var0, String var1) {
-      return (var2) -> {
-         return Objects.equals(NamespacedSchema.ensureNamespaced(var2), var0) ? var1 : var2;
-      };
+      return (var2) -> Objects.equals(NamespacedSchema.ensureNamespaced(var2), var0) ? var1 : var2;
    }
 }

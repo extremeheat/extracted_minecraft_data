@@ -17,7 +17,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import org.slf4j.Logger;
 
 public interface JvmProfiler {
-   JvmProfiler INSTANCE = Runtime.class.getModule().getLayer().findModule("jdk.jfr").isPresent() ? JfrProfiler.getInstance() : new NoOpProfiler();
+   JvmProfiler INSTANCE = (JvmProfiler)(Runtime.class.getModule().getLayer().findModule("jdk.jfr").isPresent() ? JfrProfiler.getInstance() : new NoOpProfiler());
 
    boolean start(Environment var1);
 

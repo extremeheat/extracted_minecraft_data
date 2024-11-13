@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.ai.behavior;
 
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Mob;
@@ -21,9 +22,7 @@ public class GoToTargetLocation {
    }
 
    public static <E extends Mob> OneShot<E> create(MemoryModuleType<BlockPos> var0, int var1, float var2) {
-      return BehaviorBuilder.create((var3) -> {
-         return var3.group(var3.present(var0), var3.absent(MemoryModuleType.ATTACK_TARGET), var3.absent(MemoryModuleType.WALK_TARGET), var3.registered(MemoryModuleType.LOOK_TARGET)).apply(var3, (var3x, var4, var5, var6) -> {
-            return (var4x, var5x, var6x) -> {
+      return BehaviorBuilder.create((Function)((var3) -> var3.group(var3.present(var0), var3.absent(MemoryModuleType.ATTACK_TARGET), var3.absent(MemoryModuleType.WALK_TARGET), var3.registered(MemoryModuleType.LOOK_TARGET)).apply(var3, (var3x, var4, var5, var6) -> (var4x, var5x, var6x) -> {
                BlockPos var8 = (BlockPos)var3.get(var3x);
                boolean var9 = var8.closerThan(var5x.blockPosition(), (double)var1);
                if (!var9) {
@@ -31,8 +30,6 @@ public class GoToTargetLocation {
                }
 
                return true;
-            };
-         });
-      });
+            })));
    }
 }

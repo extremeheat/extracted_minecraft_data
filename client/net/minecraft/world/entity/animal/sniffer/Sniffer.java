@@ -231,11 +231,7 @@ public class Sniffer extends Animal {
    }
 
    Optional<BlockPos> calculateDigPosition() {
-      return IntStream.range(0, 5).mapToObj((var1) -> {
-         return LandRandomPos.getPos(this, 10 + 2 * var1, 3);
-      }).filter(Objects::nonNull).map(BlockPos::containing).filter((var1) -> {
-         return this.level().getWorldBorder().isWithinBounds(var1);
-      }).map(BlockPos::below).filter(this::canDig).findFirst();
+      return IntStream.range(0, 5).mapToObj((var1) -> LandRandomPos.getPos(this, 10 + 2 * var1, 3)).filter(Objects::nonNull).map(BlockPos::containing).filter((var1) -> this.level().getWorldBorder().isWithinBounds(var1)).map(BlockPos::below).filter(this::canDig).findFirst();
    }
 
    boolean canDig() {
@@ -243,9 +239,7 @@ public class Sniffer extends Animal {
    }
 
    private boolean canDig(BlockPos var1) {
-      return this.level().getBlockState(var1).is(BlockTags.SNIFFER_DIGGABLE_BLOCK) && this.getExploredPositions().noneMatch((var2) -> {
-         return GlobalPos.of(this.level().dimension(), var1).equals(var2);
-      }) && (Boolean)Optional.ofNullable(this.getNavigation().createPath((BlockPos)var1, 1)).map(Path::canReach).orElse(false);
+      return this.level().getBlockState(var1).is(BlockTags.SNIFFER_DIGGABLE_BLOCK) && this.getExploredPositions().noneMatch((var2) -> GlobalPos.of(this.level().dimension(), var1).equals(var2)) && (Boolean)Optional.ofNullable(this.getNavigation().createPath(var1, 1)).map(Path::canReach).orElse(false);
    }
 
    private void dropSeed() {
@@ -292,7 +286,7 @@ public class Sniffer extends Animal {
    private Sniffer storeExploredPosition(BlockPos var1) {
       List var2 = (List)this.getExploredPositions().limit(20L).collect(Collectors.toList());
       var2.add(0, GlobalPos.of(this.level().dimension(), var1));
-      this.getBrain().setMemory(MemoryModuleType.SNIFFER_EXPLORED_POSITIONS, (Object)var2);
+      this.getBrain().setMemory(MemoryModuleType.SNIFFER_EXPLORED_POSITIONS, var2);
       return this;
    }
 
@@ -382,7 +376,7 @@ public class Sniffer extends Animal {
    }
 
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (AgeableMob)EntityType.SNIFFER.create(var1, EntitySpawnReason.BREEDING);
+      return EntityType.SNIFFER.create(var1, EntitySpawnReason.BREEDING);
    }
 
    public boolean canMate(Animal var1) {
@@ -407,7 +401,7 @@ public class Sniffer extends Animal {
    }
 
    protected Brain.Provider<Sniffer> brainProvider() {
-      return Brain.provider(SnifferAi.MEMORY_TYPES, SnifferAi.SENSOR_TYPES);
+      return Brain.<Sniffer>provider(SnifferAi.MEMORY_TYPES, SnifferAi.SENSOR_TYPES);
    }
 
    protected void customServerAiStep(ServerLevel var1) {
@@ -427,8 +421,8 @@ public class Sniffer extends Animal {
 
    static {
       DIGGING_DIMENSIONS = EntityDimensions.scalable(EntityType.SNIFFER.getWidth(), EntityType.SNIFFER.getHeight() - 0.4F).withEyeHeight(0.81F);
-      DATA_STATE = SynchedEntityData.defineId(Sniffer.class, EntityDataSerializers.SNIFFER_STATE);
-      DATA_DROP_SEED_AT_TICK = SynchedEntityData.defineId(Sniffer.class, EntityDataSerializers.INT);
+      DATA_STATE = SynchedEntityData.<State>defineId(Sniffer.class, EntityDataSerializers.SNIFFER_STATE);
+      DATA_DROP_SEED_AT_TICK = SynchedEntityData.<Integer>defineId(Sniffer.class, EntityDataSerializers.INT);
    }
 
    public static enum State {
@@ -440,7 +434,7 @@ public class Sniffer extends Animal {
       DIGGING(5),
       RISING(6);
 
-      public static final IntFunction<State> BY_ID = ByIdMap.continuous(State::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final IntFunction<State> BY_ID = ByIdMap.<State>continuous(State::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       public static final StreamCodec<ByteBuf, State> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, State::id);
       private final int id;
 

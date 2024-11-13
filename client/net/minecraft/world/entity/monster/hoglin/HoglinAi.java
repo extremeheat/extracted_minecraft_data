@@ -87,7 +87,7 @@ public class HoglinAi {
    }
 
    private static RunOne<Hoglin> createIdleMovementBehaviors() {
-      return new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.4F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.4F, 3), 2), Pair.of(new DoNothing(30, 60), 1)));
+      return new RunOne<Hoglin>(ImmutableList.of(Pair.of(RandomStroll.stroll(0.4F), 2), Pair.of(SetWalkTargetFromLookTarget.create(0.4F, 3), 2), Pair.of(new DoNothing(30, 60), 1)));
    }
 
    protected static void updateActivity(Hoglin var0) {
@@ -116,9 +116,7 @@ public class HoglinAi {
    }
 
    private static void broadcastRetreat(Hoglin var0, LivingEntity var1) {
-      getVisibleAdultHoglins(var0).forEach((var1x) -> {
-         retreatFromNearestTarget(var1x, var1);
-      });
+      getVisibleAdultHoglins(var0).forEach((var1x) -> retreatFromNearestTarget(var1x, var1));
    }
 
    private static void retreatFromNearestTarget(Hoglin var0, LivingEntity var1) {
@@ -189,9 +187,7 @@ public class HoglinAi {
    }
 
    private static void broadcastAttackTarget(Hoglin var0, LivingEntity var1) {
-      getVisibleAdultHoglins(var0).forEach((var1x) -> {
-         setAttackTargetIfCloserThanCurrent(var1x, var1);
-      });
+      getVisibleAdultHoglins(var0).forEach((var1x) -> setAttackTargetIfCloserThanCurrent(var1x, var1));
    }
 
    private static void setAttackTargetIfCloserThanCurrent(Hoglin var0, LivingEntity var1) {
@@ -203,9 +199,7 @@ public class HoglinAi {
    }
 
    public static Optional<SoundEvent> getSoundForCurrentActivity(Hoglin var0) {
-      return var0.getBrain().getActiveNonCoreActivity().map((var1) -> {
-         return getSoundForActivity(var0, var1);
-      });
+      return var0.getBrain().getActiveNonCoreActivity().map((var1) -> getSoundForActivity(var0, var1));
    }
 
    private static SoundEvent getSoundForActivity(Hoglin var0, Activity var1) {

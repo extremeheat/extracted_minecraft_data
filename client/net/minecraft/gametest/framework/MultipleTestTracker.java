@@ -33,13 +33,11 @@ public class MultipleTestTracker {
 
    public void addListener(GameTestListener var1) {
       this.listeners.add(var1);
-      this.tests.forEach((var1x) -> {
-         var1x.addListener(var1);
-      });
+      this.tests.forEach((var1x) -> var1x.addListener(var1));
    }
 
    public void addFailureListener(final Consumer<GameTestInfo> var1) {
-      this.addListener(new GameTestListener(this) {
+      this.addListener(new GameTestListener() {
          public void testStructureLoaded(GameTestInfo var1x) {
          }
 

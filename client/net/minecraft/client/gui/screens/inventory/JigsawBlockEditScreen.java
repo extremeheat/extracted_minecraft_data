@@ -80,23 +80,17 @@ public class JigsawBlockEditScreen extends Screen {
       this.poolEdit = new EditBox(this.font, this.width / 2 - 153, 20, 300, 20, POOL_LABEL);
       this.poolEdit.setMaxLength(128);
       this.poolEdit.setValue(this.jigsawEntity.getPool().location().toString());
-      this.poolEdit.setResponder((var1x) -> {
-         this.updateValidity();
-      });
+      this.poolEdit.setResponder((var1x) -> this.updateValidity());
       this.addWidget(this.poolEdit);
       this.nameEdit = new EditBox(this.font, this.width / 2 - 153, 55, 300, 20, NAME_LABEL);
       this.nameEdit.setMaxLength(128);
       this.nameEdit.setValue(this.jigsawEntity.getName().toString());
-      this.nameEdit.setResponder((var1x) -> {
-         this.updateValidity();
-      });
+      this.nameEdit.setResponder((var1x) -> this.updateValidity());
       this.addWidget(this.nameEdit);
       this.targetEdit = new EditBox(this.font, this.width / 2 - 153, 90, 300, 20, TARGET_LABEL);
       this.targetEdit.setMaxLength(128);
       this.targetEdit.setValue(this.jigsawEntity.getTarget().toString());
-      this.targetEdit.setResponder((var1x) -> {
-         this.updateValidity();
-      });
+      this.targetEdit.setResponder((var1x) -> this.updateValidity());
       this.addWidget(this.targetEdit);
       this.finalStateEdit = new EditBox(this.font, this.width / 2 - 153, 125, 300, 20, FINAL_STATE_LABEL);
       this.finalStateEdit.setMaxLength(256);
@@ -113,9 +107,7 @@ public class JigsawBlockEditScreen extends Screen {
       this.placementPriorityEdit.setTooltip(Tooltip.create(PLACEMENT_PRIORITY_TOOLTIP));
       this.addWidget(this.placementPriorityEdit);
       this.joint = this.jigsawEntity.getJoint();
-      this.jointButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(JigsawBlockEntity.JointType::getTranslatedName).withValues((Object[])JigsawBlockEntity.JointType.values()).withInitialValue(this.joint).displayOnlyValue().create(this.width / 2 + 54, 160, 100, 20, JOINT_LABEL, (var1x, var2) -> {
-         this.joint = var2;
-      }));
+      this.jointButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(JigsawBlockEntity.JointType::getTranslatedName).withValues(JigsawBlockEntity.JointType.values()).withInitialValue(this.joint).displayOnlyValue().create(this.width / 2 + 54, 160, 100, 20, JOINT_LABEL, (var1x, var2) -> this.joint = var2));
       boolean var1 = JigsawBlock.getFrontFacing(this.jigsawEntity.getBlockState()).getAxis().isVertical();
       this.jointButton.active = var1;
       this.jointButton.visible = var1;
@@ -132,19 +124,13 @@ public class JigsawBlockEditScreen extends Screen {
             JigsawBlockEditScreen.this.levels = Mth.floor(Mth.clampedLerp(0.0, 20.0, this.value));
          }
       });
-      this.addRenderableWidget(CycleButton.onOffBuilder(this.keepJigsaws).create(this.width / 2 - 50, 185, 100, 20, Component.translatable("jigsaw_block.keep_jigsaws"), (var1x, var2) -> {
-         this.keepJigsaws = var2;
-      }));
+      this.addRenderableWidget(CycleButton.onOffBuilder(this.keepJigsaws).create(this.width / 2 - 50, 185, 100, 20, Component.translatable("jigsaw_block.keep_jigsaws"), (var1x, var2) -> this.keepJigsaws = var2));
       this.generateButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("jigsaw_block.generate"), (var1x) -> {
          this.onDone();
          this.sendGenerate();
       }).bounds(this.width / 2 + 54, 185, 100, 20).build());
-      this.doneButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
-         this.onDone();
-      }).bounds(this.width / 2 - 4 - 150, 210, 150, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
-         this.onCancel();
-      }).bounds(this.width / 2 + 4, 210, 150, 20).build());
+      this.doneButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onDone()).bounds(this.width / 2 - 4 - 150, 210, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onCancel()).bounds(this.width / 2 + 4, 210, 150, 20).build());
       this.updateValidity();
    }
 

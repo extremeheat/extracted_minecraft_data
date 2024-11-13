@@ -7,9 +7,7 @@ import net.minecraft.client.renderer.entity.layers.SkeletonClothingLayer;
 import net.minecraft.client.renderer.entity.state.BoggedRenderState;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.client.renderer.entity.state.SkeletonRenderState;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Bogged;
 
 public class BoggedRenderer extends AbstractSkeletonRenderer<Bogged, BoggedRenderState> {
@@ -30,7 +28,7 @@ public class BoggedRenderer extends AbstractSkeletonRenderer<Bogged, BoggedRende
    }
 
    public void extractRenderState(Bogged var1, BoggedRenderState var2, float var3) {
-      super.extractRenderState((AbstractSkeleton)var1, (SkeletonRenderState)var2, var3);
+      super.extractRenderState(var1, var2, var3);
       var2.isSheared = var1.isSheared();
    }
 

@@ -38,9 +38,7 @@ class PlayerScores {
 
    public Object2IntMap<Objective> listScores() {
       Object2IntOpenHashMap var1 = new Object2IntOpenHashMap();
-      this.scores.forEach((var1x, var2) -> {
-         var1.put(var1x, var2.value());
-      });
+      this.scores.forEach((var1x, var2) -> var1.put(var1x, var2.value()));
       return var1;
    }
 

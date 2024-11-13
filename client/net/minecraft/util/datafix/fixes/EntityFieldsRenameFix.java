@@ -4,7 +4,6 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
-import java.util.Iterator;
 import java.util.Map;
 
 public class EntityFieldsRenameFix extends NamedEntityFix {
@@ -16,9 +15,8 @@ public class EntityFieldsRenameFix extends NamedEntityFix {
    }
 
    public Dynamic<?> fixTag(Dynamic<?> var1) {
-      Map.Entry var3;
-      for(Iterator var2 = this.renames.entrySet().iterator(); var2.hasNext(); var1 = var1.renameField((String)var3.getKey(), (String)var3.getValue())) {
-         var3 = (Map.Entry)var2.next();
+      for(Map.Entry var3 : this.renames.entrySet()) {
+         var1 = var1.renameField((String)var3.getKey(), (String)var3.getValue());
       }
 
       return var1;

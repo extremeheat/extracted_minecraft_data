@@ -60,8 +60,6 @@ public class GameModeArgument implements ArgumentType<GameType> {
    static {
       EXAMPLES = (Collection)Stream.of(GameType.SURVIVAL, GameType.CREATIVE).map(GameType::getName).collect(Collectors.toList());
       VALUES = GameType.values();
-      ERROR_INVALID = new DynamicCommandExceptionType((var0) -> {
-         return Component.translatableEscape("argument.gamemode.invalid", var0);
-      });
+      ERROR_INVALID = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.gamemode.invalid", var0));
    }
 }

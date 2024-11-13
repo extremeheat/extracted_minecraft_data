@@ -20,24 +20,15 @@ public interface JsonEventLogReader<T> extends Closeable {
          @Nullable
          public T next() throws IOException {
             try {
-               JsonParseException var1;
-               try {
-                  if (!var2.hasNext()) {
-                     return null;
-                  }
-               } catch (JsonParseException var3) {
-                  var1 = var3;
-                  throw new IOException(var1);
+               if (!var2.hasNext()) {
+                  return null;
+               } else {
+                  JsonElement var1 = JsonParser.parseReader(var2);
+                  return (T)var0.parse(JsonOps.INSTANCE, var1).getOrThrow(IOException::new);
                }
-
-               try {
-                  JsonElement var5 = JsonParser.parseReader(var2);
-                  return var0.parse(JsonOps.INSTANCE, var5).getOrThrow(IOException::new);
-               } catch (JsonParseException var2x) {
-                  var1 = var2x;
-                  throw new IOException(var1);
-               }
-            } catch (EOFException var4) {
+            } catch (JsonParseException var2x) {
+               throw new IOException(var2x);
+            } catch (EOFException var3) {
                return null;
             }
          }

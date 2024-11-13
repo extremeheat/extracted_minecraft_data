@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal.axolotl;
 
+import java.util.function.Function;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -11,9 +12,7 @@ public class ValidatePlayDead {
    }
 
    public static BehaviorControl<LivingEntity> create() {
-      return BehaviorBuilder.create((var0) -> {
-         return var0.group(var0.present(MemoryModuleType.PLAY_DEAD_TICKS), var0.registered(MemoryModuleType.HURT_BY_ENTITY)).apply(var0, (var1, var2) -> {
-            return (var3, var4, var5) -> {
+      return BehaviorBuilder.create((Function)((var0) -> var0.group(var0.present(MemoryModuleType.PLAY_DEAD_TICKS), var0.registered(MemoryModuleType.HURT_BY_ENTITY)).apply(var0, (var1, var2) -> (var3, var4, var5) -> {
                int var7 = (Integer)var0.get(var1);
                if (var7 <= 0) {
                   var1.erase();
@@ -24,8 +23,6 @@ public class ValidatePlayDead {
                }
 
                return true;
-            };
-         });
-      });
+            })));
    }
 }

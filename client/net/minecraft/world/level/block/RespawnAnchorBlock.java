@@ -12,7 +12,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
@@ -83,7 +82,7 @@ public class RespawnAnchorBlock extends Block {
             ServerPlayer var6 = (ServerPlayer)var4;
             if (var6.getRespawnDimension() != var2.dimension() || !var3.equals(var6.getRespawnPosition())) {
                var6.setRespawnPosition(var2.dimension(), var3, 0.0F, false, true);
-               var2.playSound((Player)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, (SoundEvent)SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
+               var2.playSound((Player)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
                return InteractionResult.SUCCESS_SERVER;
             }
          }
@@ -121,11 +120,9 @@ public class RespawnAnchorBlock extends Block {
       var2.removeBlock(var3, false);
       Stream var10000 = Direction.Plane.HORIZONTAL.stream();
       Objects.requireNonNull(var3);
-      boolean var4 = var10000.map(var3::relative).anyMatch((var1x) -> {
-         return isWaterThatWouldFlow(var1x, var2);
-      });
+      boolean var4 = var10000.map(var3::relative).anyMatch((var1x) -> isWaterThatWouldFlow(var1x, var2));
       final boolean var5 = var4 || var2.getFluidState(var3.above()).is(FluidTags.WATER);
-      ExplosionDamageCalculator var6 = new ExplosionDamageCalculator(this) {
+      ExplosionDamageCalculator var6 = new ExplosionDamageCalculator() {
          public Optional<Float> getBlockExplosionResistance(Explosion var1, BlockGetter var2, BlockPos var3x, BlockState var4, FluidState var5x) {
             return var3x.equals(var3) && var5 ? Optional.of(Blocks.WATER.getExplosionResistance()) : super.getBlockExplosionResistance(var1, var2, var3x, var4, var5x);
          }
@@ -142,7 +139,7 @@ public class RespawnAnchorBlock extends Block {
       BlockState var4 = (BlockState)var3.setValue(CHARGE, (Integer)var3.getValue(CHARGE) + 1);
       var1.setBlock(var2, var4, 3);
       var1.gameEvent(GameEvent.BLOCK_CHANGE, var2, GameEvent.Context.of(var0, var4));
-      var1.playSound((Player)null, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, (SoundEvent)SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0F, 1.0F);
+      var1.playSound((Player)null, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0F, 1.0F);
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
@@ -184,18 +181,16 @@ public class RespawnAnchorBlock extends Block {
       BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
       UnmodifiableIterator var5 = RESPAWN_OFFSETS.iterator();
 
-      Vec3 var7;
-      do {
-         if (!var5.hasNext()) {
-            return Optional.empty();
-         }
-
+      while(var5.hasNext()) {
          Vec3i var6 = (Vec3i)var5.next();
          var4.set(var2).move(var6);
-         var7 = DismountHelper.findSafeDismountLocation(var0, var1, var4, var3);
-      } while(var7 == null);
+         Vec3 var7 = DismountHelper.findSafeDismountLocation(var0, var1, var4, var3);
+         if (var7 != null) {
+            return Optional.of(var7);
+         }
+      }
 
-      return Optional.of(var7);
+      return Optional.empty();
    }
 
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {

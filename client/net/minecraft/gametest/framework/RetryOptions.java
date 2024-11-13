@@ -26,12 +26,4 @@ public record RetryOptions(int numberOfTries, boolean haltOnFailure) {
    public boolean hasRetries() {
       return this.numberOfTries != 1;
    }
-
-   public int numberOfTries() {
-      return this.numberOfTries;
-   }
-
-   public boolean haltOnFailure() {
-      return this.haltOnFailure;
-   }
 }

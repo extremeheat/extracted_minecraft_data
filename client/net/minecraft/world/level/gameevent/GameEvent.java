@@ -85,20 +85,36 @@ public record GameEvent(int notificationRadius) {
       return BLOCK_ACTIVATE;
    }
 
-   public int notificationRadius() {
-      return this.notificationRadius;
-   }
-
    private static Holder.Reference<GameEvent> register(String var0) {
       return register(var0, 16);
    }
 
    private static Holder.Reference<GameEvent> register(String var0, int var1) {
-      return Registry.registerForHolder(BuiltInRegistries.GAME_EVENT, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new GameEvent(var1));
+      return Registry.registerForHolder(BuiltInRegistries.GAME_EVENT, ResourceLocation.withDefaultNamespace(var0), new GameEvent(var1));
    }
 
    static {
-      CODEC = RegistryFixedCodec.create(Registries.GAME_EVENT);
+      CODEC = RegistryFixedCodec.<Holder<GameEvent>>create(Registries.GAME_EVENT);
+   }
+
+   public static record Context(@Nullable Entity sourceEntity, @Nullable BlockState affectedState) {
+      public Context(@Nullable Entity var1, @Nullable BlockState var2) {
+         super();
+         this.sourceEntity = var1;
+         this.affectedState = var2;
+      }
+
+      public static Context of(@Nullable Entity var0) {
+         return new Context(var0, (BlockState)null);
+      }
+
+      public static Context of(@Nullable BlockState var0) {
+         return new Context((Entity)null, var0);
+      }
+
+      public static Context of(@Nullable Entity var0, @Nullable BlockState var1) {
+         return new Context(var0, var1);
+      }
    }
 
    public static final class ListenerInfo implements Comparable<ListenerInfo> {
@@ -140,36 +156,6 @@ public record GameEvent(int notificationRadius) {
       // $FF: synthetic method
       public int compareTo(final Object var1) {
          return this.compareTo((ListenerInfo)var1);
-      }
-   }
-
-   public static record Context(@Nullable Entity sourceEntity, @Nullable BlockState affectedState) {
-      public Context(@Nullable Entity var1, @Nullable BlockState var2) {
-         super();
-         this.sourceEntity = var1;
-         this.affectedState = var2;
-      }
-
-      public static Context of(@Nullable Entity var0) {
-         return new Context(var0, (BlockState)null);
-      }
-
-      public static Context of(@Nullable BlockState var0) {
-         return new Context((Entity)null, var0);
-      }
-
-      public static Context of(@Nullable Entity var0, @Nullable BlockState var1) {
-         return new Context(var0, var1);
-      }
-
-      @Nullable
-      public Entity sourceEntity() {
-         return this.sourceEntity;
-      }
-
-      @Nullable
-      public BlockState affectedState() {
-         return this.affectedState;
       }
    }
 }

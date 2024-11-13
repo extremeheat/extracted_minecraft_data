@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
 import it.unimi.dsi.fastutil.doubles.DoubleDoubleImmutablePair;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -38,9 +37,7 @@ import net.minecraft.world.phys.HitResult;
 public class ThrownPotion extends ThrowableItemProjectile {
    public static final double SPLASH_RANGE = 4.0;
    private static final double SPLASH_RANGE_SQ = 16.0;
-   public static final Predicate<LivingEntity> WATER_SENSITIVE_OR_ON_FIRE = (var0) -> {
-      return var0.isSensitiveToWater() || var0.isOnFire();
-   };
+   public static final Predicate<LivingEntity> WATER_SENSITIVE_OR_ON_FIRE = (var0) -> var0.isSensitiveToWater() || var0.isOnFire();
 
    public ThrownPotion(EntityType<? extends ThrownPotion> var1, Level var2) {
       super(var1, var2);
@@ -73,10 +70,8 @@ public class ThrownPotion extends ThrowableItemProjectile {
          if (var6.is(Potions.WATER)) {
             this.dowseFire(var5);
             this.dowseFire(var5.relative(var3.getOpposite()));
-            Iterator var7 = Direction.Plane.HORIZONTAL.iterator();
 
-            while(var7.hasNext()) {
-               Direction var8 = (Direction)var7.next();
+            for(Direction var8 : Direction.Plane.HORIZONTAL) {
                this.dowseFire(var5.relative(var8));
             }
          }
@@ -108,11 +103,8 @@ public class ThrownPotion extends ThrowableItemProjectile {
 
    private void applyWater(ServerLevel var1) {
       AABB var2 = this.getBoundingBox().inflate(4.0, 2.0, 4.0);
-      List var3 = this.level().getEntitiesOfClass(LivingEntity.class, var2, WATER_SENSITIVE_OR_ON_FIRE);
-      Iterator var4 = var3.iterator();
 
-      while(var4.hasNext()) {
-         LivingEntity var5 = (LivingEntity)var4.next();
+      for(LivingEntity var5 : this.level().getEntitiesOfClass(LivingEntity.class, var2, WATER_SENSITIVE_OR_ON_FIRE)) {
          double var6 = this.distanceToSqr(var5);
          if (var6 < 16.0) {
             if (var5.isSensitiveToWater()) {
@@ -125,11 +117,7 @@ public class ThrownPotion extends ThrowableItemProjectile {
          }
       }
 
-      List var8 = this.level().getEntitiesOfClass(Axolotl.class, var2);
-      Iterator var9 = var8.iterator();
-
-      while(var9.hasNext()) {
-         Axolotl var10 = (Axolotl)var9.next();
+      for(Axolotl var10 : this.level().getEntitiesOfClass(Axolotl.class, var2)) {
          var10.rehydrate();
       }
 
@@ -140,49 +128,35 @@ public class ThrownPotion extends ThrowableItemProjectile {
       List var5 = var1.getEntitiesOfClass(LivingEntity.class, var4);
       if (!var5.isEmpty()) {
          Entity var6 = this.getEffectSource();
-         Iterator var7 = var5.iterator();
 
-         while(true) {
-            LivingEntity var8;
-            double var9;
-            do {
-               do {
-                  if (!var7.hasNext()) {
-                     return;
+         for(LivingEntity var8 : var5) {
+            if (var8.isAffectedByPotions()) {
+               double var9 = this.distanceToSqr(var8);
+               if (var9 < 16.0) {
+                  double var11;
+                  if (var8 == var3) {
+                     var11 = 1.0;
+                  } else {
+                     var11 = 1.0 - Math.sqrt(var9) / 4.0;
                   }
 
-                  var8 = (LivingEntity)var7.next();
-               } while(!var8.isAffectedByPotions());
-
-               var9 = this.distanceToSqr(var8);
-            } while(!(var9 < 16.0));
-
-            double var11;
-            if (var8 == var3) {
-               var11 = 1.0;
-            } else {
-               var11 = 1.0 - Math.sqrt(var9) / 4.0;
-            }
-
-            Iterator var13 = var2.iterator();
-
-            while(var13.hasNext()) {
-               MobEffectInstance var14 = (MobEffectInstance)var13.next();
-               Holder var15 = var14.getEffect();
-               if (((MobEffect)var15.value()).isInstantenous()) {
-                  ((MobEffect)var15.value()).applyInstantenousEffect(var1, this, this.getOwner(), var8, var14.getAmplifier(), var11);
-               } else {
-                  int var16 = var14.mapDuration((var2x) -> {
-                     return (int)(var11 * (double)var2x + 0.5);
-                  });
-                  MobEffectInstance var17 = new MobEffectInstance(var15, var16, var14.getAmplifier(), var14.isAmbient(), var14.isVisible());
-                  if (!var17.endsWithin(20)) {
-                     var8.addEffect(var17, var6);
+                  for(MobEffectInstance var14 : var2) {
+                     Holder var15 = var14.getEffect();
+                     if (((MobEffect)var15.value()).isInstantenous()) {
+                        ((MobEffect)var15.value()).applyInstantenousEffect(var1, this, this.getOwner(), var8, var14.getAmplifier(), var11);
+                     } else {
+                        int var16 = var14.mapDuration((var2x) -> (int)(var11 * (double)var2x + 0.5));
+                        MobEffectInstance var17 = new MobEffectInstance(var15, var16, var14.getAmplifier(), var14.isAmbient(), var14.isVisible());
+                        if (!var17.endsWithin(20)) {
+                           var8.addEffect(var17, var6);
+                        }
+                     }
                   }
                }
             }
          }
       }
+
    }
 
    private void makeAreaOfEffectCloud(PotionContents var1) {

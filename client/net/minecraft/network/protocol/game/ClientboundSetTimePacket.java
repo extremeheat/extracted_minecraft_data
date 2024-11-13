@@ -24,18 +24,6 @@ public record ClientboundSetTimePacket(long gameTime, long dayTime, boolean tick
       var1.handleSetTime(this);
    }
 
-   public long gameTime() {
-      return this.gameTime;
-   }
-
-   public long dayTime() {
-      return this.dayTime;
-   }
-
-   public boolean tickDayTime() {
-      return this.tickDayTime;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.LONG, ClientboundSetTimePacket::gameTime, ByteBufCodecs.LONG, ClientboundSetTimePacket::dayTime, ByteBufCodecs.BOOL, ClientboundSetTimePacket::tickDayTime, ClientboundSetTimePacket::new);
    }

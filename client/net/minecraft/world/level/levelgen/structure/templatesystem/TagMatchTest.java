@@ -25,8 +25,6 @@ public class TagMatchTest extends RuleTest {
    }
 
    static {
-      CODEC = TagKey.codec(Registries.BLOCK).fieldOf("tag").xmap(TagMatchTest::new, (var0) -> {
-         return var0.tag;
-      });
+      CODEC = TagKey.codec(Registries.BLOCK).fieldOf("tag").xmap(TagMatchTest::new, (var0) -> var0.tag);
    }
 }

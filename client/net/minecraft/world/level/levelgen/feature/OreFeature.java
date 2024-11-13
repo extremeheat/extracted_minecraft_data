@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
 import java.util.BitSet;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Function;
 import net.minecraft.core.BlockPos;
@@ -60,17 +59,12 @@ public class OreFeature extends Feature<OreConfiguration> {
       int var24 = var3.size;
       double[] var25 = new double[var24 * 4];
 
-      int var26;
-      double var28;
-      double var30;
-      double var32;
-      double var34;
-      for(var26 = 0; var26 < var24; ++var26) {
+      for(int var26 = 0; var26 < var24; ++var26) {
          float var27 = (float)var26 / (float)var24;
-         var28 = Mth.lerp((double)var27, var4, var6);
-         var30 = Mth.lerp((double)var27, var12, var14);
-         var32 = Mth.lerp((double)var27, var8, var10);
-         var34 = var2.nextDouble() * (double)var24 / 16.0;
+         double var28 = Mth.lerp((double)var27, var4, var6);
+         double var30 = Mth.lerp((double)var27, var12, var14);
+         double var32 = Mth.lerp((double)var27, var8, var10);
+         double var34 = var2.nextDouble() * (double)var24 / 16.0;
          double var36 = ((double)(Mth.sin(3.1415927F * var27) + 1.0F) * var34 + 1.0) / 2.0;
          var25[var26 * 4 + 0] = var28;
          var25[var26 * 4 + 1] = var30;
@@ -78,20 +72,19 @@ public class OreFeature extends Feature<OreConfiguration> {
          var25[var26 * 4 + 3] = var36;
       }
 
-      int var62;
-      for(var26 = 0; var26 < var24 - 1; ++var26) {
-         if (!(var25[var26 * 4 + 3] <= 0.0)) {
-            for(var62 = var26 + 1; var62 < var24; ++var62) {
-               if (!(var25[var62 * 4 + 3] <= 0.0)) {
-                  var28 = var25[var26 * 4 + 0] - var25[var62 * 4 + 0];
-                  var30 = var25[var26 * 4 + 1] - var25[var62 * 4 + 1];
-                  var32 = var25[var26 * 4 + 2] - var25[var62 * 4 + 2];
-                  var34 = var25[var26 * 4 + 3] - var25[var62 * 4 + 3];
-                  if (var34 * var34 > var28 * var28 + var30 * var30 + var32 * var32) {
-                     if (var34 > 0.0) {
-                        var25[var62 * 4 + 3] = -1.0;
+      for(int var61 = 0; var61 < var24 - 1; ++var61) {
+         if (!(var25[var61 * 4 + 3] <= 0.0)) {
+            for(int var63 = var61 + 1; var63 < var24; ++var63) {
+               if (!(var25[var63 * 4 + 3] <= 0.0)) {
+                  double var65 = var25[var61 * 4 + 0] - var25[var63 * 4 + 0];
+                  double var67 = var25[var61 * 4 + 1] - var25[var63 * 4 + 1];
+                  double var69 = var25[var61 * 4 + 2] - var25[var63 * 4 + 2];
+                  double var71 = var25[var61 * 4 + 3] - var25[var63 * 4 + 3];
+                  if (var71 * var71 > var65 * var65 + var67 * var67 + var69 * var69) {
+                     if (var71 > 0.0) {
+                        var25[var63 * 4 + 3] = -1.0;
                      } else {
-                        var25[var26 * 4 + 3] = -1.0;
+                        var25[var61 * 4 + 3] = -1.0;
                      }
                   }
                }
@@ -99,48 +92,44 @@ public class OreFeature extends Feature<OreConfiguration> {
          }
       }
 
-      BulkSectionAccess var61 = new BulkSectionAccess(var1);
+      try (BulkSectionAccess var62 = new BulkSectionAccess(var1)) {
+         for(int var64 = 0; var64 < var24; ++var64) {
+            double var66 = var25[var64 * 4 + 3];
+            if (!(var66 < 0.0)) {
+               double var68 = var25[var64 * 4 + 0];
+               double var70 = var25[var64 * 4 + 1];
+               double var72 = var25[var64 * 4 + 2];
+               int var73 = Math.max(Mth.floor(var68 - var66), var16);
+               int var37 = Math.max(Mth.floor(var70 - var66), var17);
+               int var38 = Math.max(Mth.floor(var72 - var66), var18);
+               int var39 = Math.max(Mth.floor(var68 + var66), var73);
+               int var40 = Math.max(Mth.floor(var70 + var66), var37);
+               int var41 = Math.max(Mth.floor(var72 + var66), var38);
 
-      try {
-         for(var62 = 0; var62 < var24; ++var62) {
-            var28 = var25[var62 * 4 + 3];
-            if (!(var28 < 0.0)) {
-               var30 = var25[var62 * 4 + 0];
-               var32 = var25[var62 * 4 + 1];
-               var34 = var25[var62 * 4 + 2];
-               int var63 = Math.max(Mth.floor(var30 - var28), var16);
-               int var37 = Math.max(Mth.floor(var32 - var28), var17);
-               int var38 = Math.max(Mth.floor(var34 - var28), var18);
-               int var39 = Math.max(Mth.floor(var30 + var28), var63);
-               int var40 = Math.max(Mth.floor(var32 + var28), var37);
-               int var41 = Math.max(Mth.floor(var34 + var28), var38);
-
-               for(int var42 = var63; var42 <= var39; ++var42) {
-                  double var43 = ((double)var42 + 0.5 - var30) / var28;
+               for(int var42 = var73; var42 <= var39; ++var42) {
+                  double var43 = ((double)var42 + 0.5 - var68) / var66;
                   if (var43 * var43 < 1.0) {
                      for(int var45 = var37; var45 <= var40; ++var45) {
-                        double var46 = ((double)var45 + 0.5 - var32) / var28;
+                        double var46 = ((double)var45 + 0.5 - var70) / var66;
                         if (var43 * var43 + var46 * var46 < 1.0) {
                            for(int var48 = var38; var48 <= var41; ++var48) {
-                              double var49 = ((double)var48 + 0.5 - var34) / var28;
+                              double var49 = ((double)var48 + 0.5 - var72) / var66;
                               if (var43 * var43 + var46 * var46 + var49 * var49 < 1.0 && !var1.isOutsideBuildHeight(var45)) {
                                  int var51 = var42 - var16 + (var45 - var17) * var19 + (var48 - var18) * var19 * var20;
                                  if (!var22.get(var51)) {
                                     var22.set(var51);
                                     var23.set(var42, var45, var48);
                                     if (var1.ensureCanWrite(var23)) {
-                                       LevelChunkSection var52 = var61.getSection(var23);
+                                       LevelChunkSection var52 = var62.getSection(var23);
                                        if (var52 != null) {
                                           int var53 = SectionPos.sectionRelative(var42);
                                           int var54 = SectionPos.sectionRelative(var45);
                                           int var55 = SectionPos.sectionRelative(var48);
                                           BlockState var56 = var52.getBlockState(var53, var54, var55);
-                                          Iterator var57 = var3.targetStates.iterator();
 
-                                          while(var57.hasNext()) {
-                                             OreConfiguration.TargetBlockState var58 = (OreConfiguration.TargetBlockState)var57.next();
-                                             Objects.requireNonNull(var61);
-                                             if (canPlaceOre(var56, var61::getBlockState, var2, var3, var58, var23)) {
+                                          for(OreConfiguration.TargetBlockState var58 : var3.targetStates) {
+                                             Objects.requireNonNull(var62);
+                                             if (canPlaceOre(var56, var62::getBlockState, var2, var3, var58, var23)) {
                                                 var52.setBlockState(var53, var54, var55, var58.state, false);
                                                 ++var21;
                                                 break;
@@ -157,17 +146,8 @@ public class OreFeature extends Feature<OreConfiguration> {
                }
             }
          }
-      } catch (Throwable var60) {
-         try {
-            var61.close();
-         } catch (Throwable var59) {
-            var60.addSuppressed(var59);
-         }
-
-         throw var60;
       }
 
-      var61.close();
       return var21 > 0;
    }
 

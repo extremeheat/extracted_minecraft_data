@@ -454,20 +454,15 @@ public class LayerDefinitions {
       WoodType.values().forEach((var3x) -> {
          var0.put(ModelLayers.createStandingSignModelName(var3x), var59);
          var0.put(ModelLayers.createWallSignModelName(var3x), var60);
-         HangingSignRenderer.AttachmentType[] var4 = HangingSignRenderer.AttachmentType.values();
-         int var5 = var4.length;
 
-         for(int var6 = 0; var6 < var5; ++var6) {
-            HangingSignRenderer.AttachmentType var7 = var4[var6];
+         for(HangingSignRenderer.AttachmentType var7 : HangingSignRenderer.AttachmentType.values()) {
             LayerDefinition var8 = HangingSignRenderer.createHangingSignLayer(var7);
             var0.put(ModelLayers.createHangingSignModelName(var3x, var7), var8);
          }
 
       });
       ImmutableMap var61 = var0.build();
-      List var62 = (List)ModelLayers.getKnownLocations().filter((var1x) -> {
-         return !var61.containsKey(var1x);
-      }).collect(Collectors.toList());
+      List var62 = (List)ModelLayers.getKnownLocations().filter((var1x) -> !var61.containsKey(var1x)).collect(Collectors.toList());
       if (!var62.isEmpty()) {
          throw new IllegalStateException("Missing layer definitions: " + String.valueOf(var62));
       } else {

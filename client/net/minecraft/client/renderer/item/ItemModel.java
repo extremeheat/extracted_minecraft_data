@@ -27,18 +27,6 @@ public interface ItemModel {
       public BakedModel bake(ResourceLocation var1) {
          return this.blockModelBaker().bake(var1, BlockModelRotation.X0_Y0);
       }
-
-      public ModelBaker blockModelBaker() {
-         return this.blockModelBaker;
-      }
-
-      public EntityModelSet entityModelSet() {
-         return this.entityModelSet;
-      }
-
-      public ItemModel missingItemModel() {
-         return this.missingItemModel;
-      }
    }
 
    public interface Unbaked extends ResolvableModel {

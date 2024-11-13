@@ -2,7 +2,6 @@ package net.minecraft.client.gui.components;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,10 +55,7 @@ public class OptionsList extends ContainerObjectSelectionList<Entry> {
 
    @Nullable
    public AbstractWidget findOption(OptionInstance<?> var1) {
-      Iterator var2 = this.children().iterator();
-
-      while(var2.hasNext()) {
-         Entry var3 = (Entry)var2.next();
+      for(Entry var3 : this.children()) {
          if (var3 instanceof OptionEntry var4) {
             AbstractWidget var5 = (AbstractWidget)var4.options.get(var1);
             if (var5 != null) {
@@ -72,39 +68,21 @@ public class OptionsList extends ContainerObjectSelectionList<Entry> {
    }
 
    public void applyUnsavedChanges() {
-      Iterator var1 = this.children().iterator();
-
-      while(true) {
-         Entry var2;
-         do {
-            if (!var1.hasNext()) {
-               return;
-            }
-
-            var2 = (Entry)var1.next();
-         } while(!(var2 instanceof OptionEntry));
-
-         OptionEntry var3 = (OptionEntry)var2;
-         Iterator var4 = var3.options.values().iterator();
-
-         while(var4.hasNext()) {
-            AbstractWidget var5 = (AbstractWidget)var4.next();
-            if (var5 instanceof OptionInstance.OptionInstanceSliderButton var6) {
-               var6.applyUnsavedValue();
+      for(Entry var2 : this.children()) {
+         if (var2 instanceof OptionEntry var3) {
+            for(AbstractWidget var5 : var3.options.values()) {
+               if (var5 instanceof OptionInstance.OptionInstanceSliderButton var6) {
+                  var6.applyUnsavedValue();
+               }
             }
          }
       }
+
    }
 
    public Optional<GuiEventListener> getMouseOver(double var1, double var3) {
-      Iterator var5 = this.children().iterator();
-
-      while(var5.hasNext()) {
-         Entry var6 = (Entry)var5.next();
-         Iterator var7 = var6.children().iterator();
-
-         while(var7.hasNext()) {
-            GuiEventListener var8 = (GuiEventListener)var7.next();
+      for(Entry var6 : this.children()) {
+         for(GuiEventListener var8 : var6.children()) {
             if (var8.isMouseOver(var1, var3)) {
                return Optional.of(var8);
             }
@@ -112,24 +90,6 @@ public class OptionsList extends ContainerObjectSelectionList<Entry> {
       }
 
       return Optional.empty();
-   }
-
-   protected static class OptionEntry extends Entry {
-      final Map<OptionInstance<?>, AbstractWidget> options;
-
-      private OptionEntry(Map<OptionInstance<?>, AbstractWidget> var1, OptionsSubScreen var2) {
-         super(ImmutableList.copyOf(var1.values()), var2);
-         this.options = var1;
-      }
-
-      public static OptionEntry big(Options var0, OptionInstance<?> var1, OptionsSubScreen var2) {
-         return new OptionEntry(ImmutableMap.of(var1, var1.createButton(var0, 0, 0, 310)), var2);
-      }
-
-      public static OptionEntry small(Options var0, OptionInstance<?> var1, @Nullable OptionInstance<?> var2, OptionsSubScreen var3) {
-         AbstractWidget var4 = var1.createButton(var0);
-         return var2 == null ? new OptionEntry(ImmutableMap.of(var1, var4), var3) : new OptionEntry(ImmutableMap.of(var1, var4, var2, var2.createButton(var0)), var3);
-      }
    }
 
    protected static class Entry extends ContainerObjectSelectionList.Entry<Entry> {
@@ -155,10 +115,10 @@ public class OptionsList extends ContainerObjectSelectionList<Entry> {
          int var11 = 0;
          int var12 = this.screen.width / 2 - 155;
 
-         for(Iterator var13 = this.children.iterator(); var13.hasNext(); var11 += 160) {
-            AbstractWidget var14 = (AbstractWidget)var13.next();
+         for(AbstractWidget var14 : this.children) {
             var14.setPosition(var12 + var11, var3);
             var14.render(var1, var7, var8, var10);
+            var11 += 160;
          }
 
       }
@@ -169,6 +129,24 @@ public class OptionsList extends ContainerObjectSelectionList<Entry> {
 
       public List<? extends NarratableEntry> narratables() {
          return this.children;
+      }
+   }
+
+   protected static class OptionEntry extends Entry {
+      final Map<OptionInstance<?>, AbstractWidget> options;
+
+      private OptionEntry(Map<OptionInstance<?>, AbstractWidget> var1, OptionsSubScreen var2) {
+         super(ImmutableList.copyOf(var1.values()), var2);
+         this.options = var1;
+      }
+
+      public static OptionEntry big(Options var0, OptionInstance<?> var1, OptionsSubScreen var2) {
+         return new OptionEntry(ImmutableMap.of(var1, var1.createButton(var0, 0, 0, 310)), var2);
+      }
+
+      public static OptionEntry small(Options var0, OptionInstance<?> var1, @Nullable OptionInstance<?> var2, OptionsSubScreen var3) {
+         AbstractWidget var4 = var1.createButton(var0);
+         return var2 == null ? new OptionEntry(ImmutableMap.of(var1, var4), var3) : new OptionEntry(ImmutableMap.of(var1, var4, var2, var2.createButton(var0)), var3);
       }
    }
 }

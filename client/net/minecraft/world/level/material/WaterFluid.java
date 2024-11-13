@@ -100,6 +100,20 @@ public abstract class WaterFluid extends FlowingFluid {
       return Optional.of(SoundEvents.BUCKET_FILL);
    }
 
+   public static class Source extends WaterFluid {
+      public Source() {
+         super();
+      }
+
+      public int getAmount(FluidState var1) {
+         return 8;
+      }
+
+      public boolean isSource(FluidState var1) {
+         return true;
+      }
+   }
+
    public static class Flowing extends WaterFluid {
       public Flowing() {
          super();
@@ -116,20 +130,6 @@ public abstract class WaterFluid extends FlowingFluid {
 
       public boolean isSource(FluidState var1) {
          return false;
-      }
-   }
-
-   public static class Source extends WaterFluid {
-      public Source() {
-         super();
-      }
-
-      public int getAmount(FluidState var1) {
-         return 8;
-      }
-
-      public boolean isSource(FluidState var1) {
-         return true;
       }
    }
 }

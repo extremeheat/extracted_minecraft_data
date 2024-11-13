@@ -17,7 +17,7 @@ public class IdSearchTree<T> implements SearchTree<T> {
       super();
       ToIntFunction var3 = Util.createIndexLookup(var2);
       this.additionOrder = Comparator.comparingInt(var3);
-      this.resourceLocationSearchTree = ResourceLocationSearchTree.create(var2, var1);
+      this.resourceLocationSearchTree = ResourceLocationSearchTree.<T>create(var2, var1);
    }
 
    public List<T> search(String var1) {

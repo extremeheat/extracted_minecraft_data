@@ -37,8 +37,6 @@ public class CraftingTableBlock extends Block {
    }
 
    protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
-      return new SimpleMenuProvider((var2x, var3x, var4) -> {
-         return new CraftingMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3));
-      }, CONTAINER_TITLE);
+      return new SimpleMenuProvider((var2x, var3x, var4) -> new CraftingMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), CONTAINER_TITLE);
    }
 }

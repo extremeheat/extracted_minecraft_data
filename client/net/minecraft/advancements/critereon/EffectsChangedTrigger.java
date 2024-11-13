@@ -22,15 +22,11 @@ public class EffectsChangedTrigger extends SimpleCriterionTrigger<TriggerInstanc
 
    public void trigger(ServerPlayer var1, @Nullable Entity var2) {
       LootContext var3 = var2 != null ? EntityPredicate.createContext(var1, var2) : null;
-      this.trigger(var1, (var2x) -> {
-         return var2x.matches(var1, var3);
-      });
+      this.trigger(var1, (var2x) -> var2x.matches(var1, var3));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<MobEffectsPredicate> effects, Optional<ContextAwarePredicate> source) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MobEffectsPredicate.CODEC.optionalFieldOf("effects").forGetter(TriggerInstance::effects), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("source").forGetter(TriggerInstance::source)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), MobEffectsPredicate.CODEC.optionalFieldOf("effects").forGetter(TriggerInstance::effects), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("source").forGetter(TriggerInstance::source)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<MobEffectsPredicate> var2, Optional<ContextAwarePredicate> var3) {
          super();
@@ -58,18 +54,6 @@ public class EffectsChangedTrigger extends SimpleCriterionTrigger<TriggerInstanc
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
          var1.validateEntity(this.source, ".source");
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<MobEffectsPredicate> effects() {
-         return this.effects;
-      }
-
-      public Optional<ContextAwarePredicate> source() {
-         return this.source;
       }
    }
 }

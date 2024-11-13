@@ -45,9 +45,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.commons.lang3.ArrayUtils;
 
 public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock {
-   public static final MapCodec<BedBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(DyeColor.CODEC.fieldOf("color").forGetter(BedBlock::getColor), propertiesCodec()).apply(var0, BedBlock::new);
-   });
+   public static final MapCodec<BedBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DyeColor.CODEC.fieldOf("color").forGetter(BedBlock::getColor), propertiesCodec()).apply(var0, BedBlock::new));
    public static final EnumProperty<BedPart> PART;
    public static final BooleanProperty OCCUPIED;
    protected static final int HEIGHT = 9;
@@ -266,11 +264,8 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
 
    private static Optional<Vec3> findStandUpPositionAtOffset(EntityType<?> var0, CollisionGetter var1, BlockPos var2, int[][] var3, boolean var4) {
       BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
-      int[][] var6 = var3;
-      int var7 = var3.length;
 
-      for(int var8 = 0; var8 < var7; ++var8) {
-         int[] var9 = var6[var8];
+      for(int[] var9 : var3) {
          var5.set(var2.getX() + var9[0], var2.getY(), var2.getZ() + var9[1]);
          Vec3 var10 = DismountHelper.findSafeDismountLocation(var0, var1, var5, var4);
          if (var10 != null) {
@@ -279,10 +274,6 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       }
 
       return Optional.empty();
-   }
-
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.ENTITYBLOCK_ANIMATED;
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {

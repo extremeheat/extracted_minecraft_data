@@ -15,9 +15,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProc
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 
 public class LegacySinglePoolElement extends SinglePoolElement {
-   public static final MapCodec<LegacySinglePoolElement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(templateCodec(), processorsCodec(), projectionCodec(), overrideLiquidSettingsCodec()).apply(var0, LegacySinglePoolElement::new);
-   });
+   public static final MapCodec<LegacySinglePoolElement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(templateCodec(), processorsCodec(), projectionCodec(), overrideLiquidSettingsCodec()).apply(var0, LegacySinglePoolElement::new));
 
    protected LegacySinglePoolElement(Either<ResourceLocation, StructureTemplate> var1, Holder<StructureProcessorList> var2, StructureTemplatePool.Projection var3, Optional<LiquidSettings> var4) {
       super(var1, var2, var3, var4);

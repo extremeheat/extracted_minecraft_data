@@ -132,7 +132,7 @@ public class RangedCrossbowAttackGoal<T extends Monster & RangedAttackMob & Cros
       return this.crossbowState == RangedCrossbowAttackGoal.CrossbowState.UNCHARGED;
    }
 
-   private static enum CrossbowState {
+   static enum CrossbowState {
       UNCHARGED,
       CHARGING,
       CHARGED,

@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -58,9 +57,7 @@ public class ProfilerPieChart {
          var1.drawSpecial((var4x) -> {
             double var5 = 0.0;
 
-            ResultField var8;
-            for(Iterator var7 = var2.iterator(); var7.hasNext(); var5 += var8.percentage) {
-               var8 = (ResultField)var7.next();
+            for(ResultField var8 : var2) {
                int var9 = Mth.floor(var8.percentage / 4.0) + 1;
                VertexConsumer var10 = var4x.getBuffer(RenderType.debugTriangleFan());
                int var11x = ARGB.opaque(var8.getColor());
@@ -68,33 +65,31 @@ public class ProfilerPieChart {
                PoseStack.Pose var13 = var1.pose().last();
                var10.addVertex(var13, (float)var4, (float)var11, 10.0F).setColor(var11x);
 
-               int var14;
-               float var15;
-               float var16;
-               float var17;
-               for(var14 = var9; var14 >= 0; --var14) {
-                  var15 = (float)((var5 + var8.percentage * (double)var14 / (double)var9) * 6.2831854820251465 / 100.0);
-                  var16 = Mth.sin(var15) * 105.0F;
-                  var17 = Mth.cos(var15) * 105.0F * 0.5F;
+               for(int var14 = var9; var14 >= 0; --var14) {
+                  float var15 = (float)((var5 + var8.percentage * (double)var14 / (double)var9) * 6.2831854820251465 / 100.0);
+                  float var16 = Mth.sin(var15) * 105.0F;
+                  float var17 = Mth.cos(var15) * 105.0F * 0.5F;
                   var10.addVertex(var13, (float)var4 + var16, (float)var11 - var17, 10.0F).setColor(var11x);
                }
 
                var10 = var4x.getBuffer(RenderType.debugQuads());
 
-               for(var14 = var9; var14 > 0; --var14) {
-                  var15 = (float)((var5 + var8.percentage * (double)var14 / (double)var9) * 6.2831854820251465 / 100.0);
-                  var16 = Mth.sin(var15) * 105.0F;
-                  var17 = Mth.cos(var15) * 105.0F * 0.5F;
-                  float var18 = (float)((var5 + var8.percentage * (double)(var14 - 1) / (double)var9) * 6.2831854820251465 / 100.0);
+               for(int var22 = var9; var22 > 0; --var22) {
+                  float var23 = (float)((var5 + var8.percentage * (double)var22 / (double)var9) * 6.2831854820251465 / 100.0);
+                  float var24 = Mth.sin(var23) * 105.0F;
+                  float var25 = Mth.cos(var23) * 105.0F * 0.5F;
+                  float var18 = (float)((var5 + var8.percentage * (double)(var22 - 1) / (double)var9) * 6.2831854820251465 / 100.0);
                   float var19 = Mth.sin(var18) * 105.0F;
                   float var20 = Mth.cos(var18) * 105.0F * 0.5F;
-                  if (!((var17 + var20) / 2.0F > 0.0F)) {
-                     var10.addVertex(var13, (float)var4 + var16, (float)var11 - var17, 10.0F).setColor(var12);
-                     var10.addVertex(var13, (float)var4 + var16, (float)var11 - var17 + 10.0F, 10.0F).setColor(var12);
+                  if (!((var25 + var20) / 2.0F > 0.0F)) {
+                     var10.addVertex(var13, (float)var4 + var24, (float)var11 - var25, 10.0F).setColor(var12);
+                     var10.addVertex(var13, (float)var4 + var24, (float)var11 - var25 + 10.0F, 10.0F).setColor(var12);
                      var10.addVertex(var13, (float)var4 + var19, (float)var11 - var20 + 10.0F, 10.0F).setColor(var12);
                      var10.addVertex(var13, (float)var4 + var19, (float)var11 - var20, 10.0F).setColor(var12);
                   }
                }
+
+               var5 += var8.percentage;
             }
 
          });
@@ -115,8 +110,8 @@ public class ProfilerPieChart {
          int var15 = 16777215;
          int var16 = var11 - 62;
          var1.drawString(this.font, var14, var5, var16, 16777215);
-         String var22 = var12.format(var3.globalPercentage);
-         var14 = var22 + "%";
+         String var26 = var12.format(var3.globalPercentage);
+         var14 = var26 + "%";
          var1.drawString(this.font, var14, var6 - this.font.width(var14), var16, 16777215);
 
          for(int var17 = 0; var17 < var2.size(); ++var17) {
@@ -132,11 +127,11 @@ public class ProfilerPieChart {
             Objects.requireNonNull(this.font);
             int var21 = var9 + var17 * 9;
             var1.drawString(this.font, var20, var5, var21, var18.getColor());
-            var22 = var12.format(var18.percentage);
-            var20 = var22 + "%";
+            var26 = var12.format(var18.percentage);
+            var20 = var26 + "%";
             var1.drawString(this.font, var20, var6 - 50 - this.font.width(var20), var21, var18.getColor());
-            var22 = var12.format(var18.globalPercentage);
-            var20 = var22 + "%";
+            var26 = var12.format(var18.globalPercentage);
+            var20 = var26 + "%";
             var1.drawString(this.font, var20, var6 - this.font.width(var20), var21, var18.getColor());
          }
 

@@ -24,14 +24,6 @@ public record ClientboundSetPlayerInventoryPacket(int slot, ItemStack contents) 
       var1.handleSetPlayerInventory(this);
    }
 
-   public int slot() {
-      return this.slot;
-   }
-
-   public ItemStack contents() {
-      return this.contents;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundSetPlayerInventoryPacket::slot, ItemStack.OPTIONAL_STREAM_CODEC, ClientboundSetPlayerInventoryPacket::contents, ClientboundSetPlayerInventoryPacket::new);
    }

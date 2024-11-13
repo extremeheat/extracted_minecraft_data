@@ -14,13 +14,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class ParticleLeavesBlock extends LeavesBlock {
-   public static final MapCodec<ParticleLeavesBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("chance").forGetter((var0x) -> {
-         return var0x.chance;
-      }), ParticleTypes.CODEC.fieldOf("particle").forGetter((var0x) -> {
-         return var0x.particle;
-      }), propertiesCodec()).apply(var0, ParticleLeavesBlock::new);
-   });
+   public static final MapCodec<ParticleLeavesBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("chance").forGetter((var0x) -> var0x.chance), ParticleTypes.CODEC.fieldOf("particle").forGetter((var0x) -> var0x.particle), propertiesCodec()).apply(var0, ParticleLeavesBlock::new));
    private final ParticleOptions particle;
    private final int chance;
 

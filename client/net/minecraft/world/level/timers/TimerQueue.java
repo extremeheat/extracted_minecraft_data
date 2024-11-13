@@ -30,11 +30,7 @@ public class TimerQueue<T> {
    private final Table<String, Long, Event<T>> events;
 
    private static <T> Comparator<Event<T>> createComparator() {
-      return Comparator.comparingLong((var0) -> {
-         return var0.triggerTime;
-      }).thenComparing((var0) -> {
-         return var0.sequentialId;
-      });
+      return Comparator.comparingLong((var0) -> var0.triggerTime).thenComparing((var0) -> var0.sequentialId);
    }
 
    public TimerQueue(TimerCallbacks<T> var1, Stream<? extends Dynamic<?>> var2) {

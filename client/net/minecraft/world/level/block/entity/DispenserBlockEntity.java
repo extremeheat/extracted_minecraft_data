@@ -20,7 +20,7 @@ public class DispenserBlockEntity extends RandomizableContainerBlockEntity {
 
    protected DispenserBlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3) {
       super(var1, var2, var3);
-      this.items = NonNullList.withSize(9, ItemStack.EMPTY);
+      this.items = NonNullList.<ItemStack>withSize(9, ItemStack.EMPTY);
    }
 
    public DispenserBlockEntity(BlockPos var1, BlockState var2) {
@@ -49,7 +49,7 @@ public class DispenserBlockEntity extends RandomizableContainerBlockEntity {
       int var2 = this.getMaxStackSize(var1);
 
       for(int var3 = 0; var3 < this.items.size(); ++var3) {
-         ItemStack var4 = (ItemStack)this.items.get(var3);
+         ItemStack var4 = this.items.get(var3);
          if (var4.isEmpty() || ItemStack.isSameItemSameComponents(var1, var4)) {
             int var5 = Math.min(var1.getCount(), var2 - var4.getCount());
             if (var5 > 0) {
@@ -76,7 +76,7 @@ public class DispenserBlockEntity extends RandomizableContainerBlockEntity {
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+      this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
          ContainerHelper.loadAllItems(var1, this.items, var2);
       }

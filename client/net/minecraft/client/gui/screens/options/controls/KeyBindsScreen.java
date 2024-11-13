@@ -34,11 +34,7 @@ public class KeyBindsScreen extends OptionsSubScreen {
 
    protected void addFooter() {
       this.resetButton = Button.builder(Component.translatable("controls.resetAll"), (var1x) -> {
-         KeyMapping[] var2 = this.options.keyMappings;
-         int var3 = var2.length;
-
-         for(int var4 = 0; var4 < var3; ++var4) {
-            KeyMapping var5 = var2[var4];
+         for(KeyMapping var5 : this.options.keyMappings) {
             var5.setKey(var5.getDefaultKey());
          }
 
@@ -46,9 +42,7 @@ public class KeyBindsScreen extends OptionsSubScreen {
       }).build();
       LinearLayout var1 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       var1.addChild(this.resetButton);
-      var1.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
-         this.onClose();
-      }).build());
+      var1.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).build());
    }
 
    protected void repositionElements() {
@@ -87,11 +81,8 @@ public class KeyBindsScreen extends OptionsSubScreen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       boolean var5 = false;
-      KeyMapping[] var6 = this.options.keyMappings;
-      int var7 = var6.length;
 
-      for(int var8 = 0; var8 < var7; ++var8) {
-         KeyMapping var9 = var6[var8];
+      for(KeyMapping var9 : this.options.keyMappings) {
          if (!var9.isDefault()) {
             var5 = true;
             break;

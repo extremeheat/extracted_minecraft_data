@@ -18,11 +18,8 @@ public class CollectFields extends CollectToTag {
       this.fieldsToGetCount = var1.length;
       ImmutableSet.Builder var2 = ImmutableSet.builder();
       FieldTree var3 = FieldTree.createRoot();
-      FieldSelector[] var4 = var1;
-      int var5 = var1.length;
 
-      for(int var6 = 0; var6 < var5; ++var6) {
-         FieldSelector var7 = var4[var6];
+      for(FieldSelector var7 : var1) {
          var3.addEntry(var7);
          var2.add(var7.type());
       }

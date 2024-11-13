@@ -57,7 +57,7 @@ public class PiglinBruteAi {
 
    protected static void initMemories(PiglinBrute var0) {
       GlobalPos var1 = GlobalPos.of(var0.level().dimension(), var0.blockPosition());
-      var0.getBrain().setMemory(MemoryModuleType.HOME, (Object)var1);
+      var0.getBrain().setMemory(MemoryModuleType.HOME, var1);
    }
 
    private static void initCoreActivity(PiglinBrute var0, Brain<PiglinBrute> var1) {
@@ -69,17 +69,15 @@ public class PiglinBruteAi {
    }
 
    private static void initFightActivity(PiglinBrute var0, Brain<PiglinBrute> var1) {
-      var1.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(StopAttackingIfTargetInvalid.create((var1x, var2) -> {
-         return !isNearestValidAttackTarget(var1x, var0, var2);
-      }), SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), MeleeAttack.create(20)), MemoryModuleType.ATTACK_TARGET);
+      var1.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(StopAttackingIfTargetInvalid.create((StopAttackingIfTargetInvalid.StopAttackCondition)((var1x, var2) -> !isNearestValidAttackTarget(var1x, var0, var2))), SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), MeleeAttack.create(20)), MemoryModuleType.ATTACK_TARGET);
    }
 
    private static RunOne<PiglinBrute> createIdleLookBehaviors() {
-      return new RunOne(ImmutableList.of(Pair.of(SetEntityLookTarget.create(EntityType.PLAYER, 8.0F), 1), Pair.of(SetEntityLookTarget.create(EntityType.PIGLIN, 8.0F), 1), Pair.of(SetEntityLookTarget.create(EntityType.PIGLIN_BRUTE, 8.0F), 1), Pair.of(SetEntityLookTarget.create(8.0F), 1), Pair.of(new DoNothing(30, 60), 1)));
+      return new RunOne<PiglinBrute>(ImmutableList.of(Pair.of(SetEntityLookTarget.create(EntityType.PLAYER, 8.0F), 1), Pair.of(SetEntityLookTarget.create(EntityType.PIGLIN, 8.0F), 1), Pair.of(SetEntityLookTarget.create(EntityType.PIGLIN_BRUTE, 8.0F), 1), Pair.of(SetEntityLookTarget.create(8.0F), 1), Pair.of(new DoNothing(30, 60), 1)));
    }
 
    private static RunOne<PiglinBrute> createIdleMovementBehaviors() {
-      return new RunOne(ImmutableList.of(Pair.of(RandomStroll.stroll(0.6F), 2), Pair.of(InteractWith.of(EntityType.PIGLIN, 8, MemoryModuleType.INTERACTION_TARGET, 0.6F, 2), 2), Pair.of(InteractWith.of(EntityType.PIGLIN_BRUTE, 8, MemoryModuleType.INTERACTION_TARGET, 0.6F, 2), 2), Pair.of(StrollToPoi.create(MemoryModuleType.HOME, 0.6F, 2, 100), 2), Pair.of(StrollAroundPoi.create(MemoryModuleType.HOME, 0.6F, 5), 2), Pair.of(new DoNothing(30, 60), 1)));
+      return new RunOne<PiglinBrute>(ImmutableList.of(Pair.of(RandomStroll.stroll(0.6F), 2), Pair.of(InteractWith.of(EntityType.PIGLIN, 8, MemoryModuleType.INTERACTION_TARGET, 0.6F, 2), 2), Pair.of(InteractWith.of(EntityType.PIGLIN_BRUTE, 8, MemoryModuleType.INTERACTION_TARGET, 0.6F, 2), 2), Pair.of(StrollToPoi.create(MemoryModuleType.HOME, 0.6F, 2, 100), 2), Pair.of(StrollAroundPoi.create(MemoryModuleType.HOME, 0.6F, 5), 2), Pair.of(new DoNothing(30, 60), 1)));
    }
 
    protected static void updateActivity(PiglinBrute var0) {
@@ -95,9 +93,7 @@ public class PiglinBruteAi {
    }
 
    private static boolean isNearestValidAttackTarget(ServerLevel var0, AbstractPiglin var1, LivingEntity var2) {
-      return findNearestValidAttackTarget(var0, var1).filter((var1x) -> {
-         return var1x == var2;
-      }).isPresent();
+      return findNearestValidAttackTarget(var0, var1).filter((var1x) -> var1x == var2).isPresent();
    }
 
    private static Optional<? extends LivingEntity> findNearestValidAttackTarget(ServerLevel var0, AbstractPiglin var1) {

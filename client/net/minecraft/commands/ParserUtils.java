@@ -58,7 +58,7 @@ public class ParserUtils {
          var1.setCursor(var1.getCursor() + getPos(var3));
       }
 
-      return var5;
+      return (T)var5;
    }
 
    public static String readWhile(StringReader var0, CharPredicate var1) {

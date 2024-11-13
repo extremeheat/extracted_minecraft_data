@@ -10,12 +10,4 @@ public record CommandQueueEntry<T>(Frame frame, EntryAction<T> action) {
    public void execute(ExecutionContext<T> var1) {
       this.action.execute(var1, this.frame);
    }
-
-   public Frame frame() {
-      return this.frame;
-   }
-
-   public EntryAction<T> action() {
-      return this.action;
-   }
 }

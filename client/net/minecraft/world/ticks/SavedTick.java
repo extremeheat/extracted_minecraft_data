@@ -92,26 +92,10 @@ public record SavedTick<T>(T type, BlockPos pos, int delay, TickPriority priorit
    }
 
    public ScheduledTick<T> unpack(long var1, long var3) {
-      return new ScheduledTick(this.type, this.pos, var1 + (long)this.delay, this.priority, var3);
+      return new ScheduledTick<T>(this.type, this.pos, var1 + (long)this.delay, this.priority, var3);
    }
 
    public static <T> SavedTick<T> probe(T var0, BlockPos var1) {
-      return new SavedTick(var0, var1, 0, TickPriority.NORMAL);
-   }
-
-   public T type() {
-      return this.type;
-   }
-
-   public BlockPos pos() {
-      return this.pos;
-   }
-
-   public int delay() {
-      return this.delay;
-   }
-
-   public TickPriority priority() {
-      return this.priority;
+      return new SavedTick<T>(var0, var1, 0, TickPriority.NORMAL);
    }
 }

@@ -41,11 +41,8 @@ public class LanternBlock extends Block implements SimpleWaterloggedBlock {
    @Nullable
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
-      Direction[] var3 = var1.getNearestLookingDirections();
-      int var4 = var3.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         Direction var6 = var3[var5];
+      for(Direction var6 : var1.getNearestLookingDirections()) {
          if (var6.getAxis() == Direction.Axis.Y) {
             BlockState var7 = (BlockState)this.defaultBlockState().setValue(HANGING, var6 == Direction.UP);
             if (var7.canSurvive(var1.getLevel(), var1.getClickedPos())) {

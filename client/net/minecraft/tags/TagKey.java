@@ -23,27 +23,15 @@ public record TagKey<T>(ResourceKey<? extends Registry<T>> registry, ResourceLoc
    }
 
    public static <T> Codec<TagKey<T>> codec(ResourceKey<? extends Registry<T>> var0) {
-      return ResourceLocation.CODEC.xmap((var1) -> {
-         return create(var0, var1);
-      }, TagKey::location);
+      return ResourceLocation.CODEC.xmap((var1) -> create(var0, var1), TagKey::location);
    }
 
    public static <T> Codec<TagKey<T>> hashedCodec(ResourceKey<? extends Registry<T>> var0) {
-      return Codec.STRING.comapFlatMap((var1) -> {
-         return var1.startsWith("#") ? ResourceLocation.read(var1.substring(1)).map((var1x) -> {
-            return create(var0, var1x);
-         }) : DataResult.error(() -> {
-            return "Not a tag id";
-         });
-      }, (var0x) -> {
-         return "#" + String.valueOf(var0x.location);
-      });
+      return Codec.STRING.comapFlatMap((var1) -> var1.startsWith("#") ? ResourceLocation.read(var1.substring(1)).map((var1x) -> create(var0, var1x)) : DataResult.error(() -> "Not a tag id"), (var0x) -> "#" + String.valueOf(var0x.location));
    }
 
    public static <T> StreamCodec<ByteBuf, TagKey<T>> streamCodec(ResourceKey<? extends Registry<T>> var0) {
-      return ResourceLocation.STREAM_CODEC.map((var1) -> {
-         return create(var0, var1);
-      }, TagKey::location);
+      return ResourceLocation.STREAM_CODEC.map((var1) -> create(var0, var1), TagKey::location);
    }
 
    public static <T> TagKey<T> create(ResourceKey<? extends Registry<T>> var0, ResourceLocation var1) {
@@ -61,13 +49,5 @@ public record TagKey<T>(ResourceKey<? extends Registry<T>> registry, ResourceLoc
    public String toString() {
       String var10000 = String.valueOf(this.registry.location());
       return "TagKey[" + var10000 + " / " + String.valueOf(this.location) + "]";
-   }
-
-   public ResourceKey<? extends Registry<T>> registry() {
-      return this.registry;
-   }
-
-   public ResourceLocation location() {
-      return this.location;
    }
 }

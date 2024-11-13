@@ -15,11 +15,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
 public class CoralFanBlock extends BaseCoralFanBlock {
-   public static final MapCodec<CoralFanBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(CoralBlock.DEAD_CORAL_FIELD.forGetter((var0x) -> {
-         return var0x.deadBlock;
-      }), propertiesCodec()).apply(var0, CoralFanBlock::new);
-   });
+   public static final MapCodec<CoralFanBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(CoralBlock.DEAD_CORAL_FIELD.forGetter((var0x) -> var0x.deadBlock), propertiesCodec()).apply(var0, CoralFanBlock::new));
    private final Block deadBlock;
 
    public MapCodec<CoralFanBlock> codec() {

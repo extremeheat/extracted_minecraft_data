@@ -33,9 +33,8 @@ public class BambooFeature extends Feature<ProbabilityFeatureConfiguration> {
       if (var4.isEmptyBlock(var7)) {
          if (Blocks.BAMBOO.defaultBlockState().canSurvive(var4, var7)) {
             int var9 = var5.nextInt(12) + 5;
-            int var10;
             if (var5.nextFloat() < var6.probability) {
-               var10 = var5.nextInt(4) + 1;
+               int var10 = var5.nextInt(4) + 1;
 
                for(int var11 = var3.getX() - var10; var11 <= var3.getX() + var10; ++var11) {
                   for(int var12 = var3.getZ() - var10; var12 <= var3.getZ() + var10; ++var12) {
@@ -51,7 +50,7 @@ public class BambooFeature extends Feature<ProbabilityFeatureConfiguration> {
                }
             }
 
-            for(var10 = 0; var10 < var9 && var4.isEmptyBlock(var7); ++var10) {
+            for(int var15 = 0; var15 < var9 && var4.isEmptyBlock(var7); ++var15) {
                var4.setBlock(var7, BAMBOO_TRUNK, 2);
                var7.move(Direction.UP, 1);
             }

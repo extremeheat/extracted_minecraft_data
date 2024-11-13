@@ -38,16 +38,14 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
       int var5 = this.leftPos;
       int var6 = this.topPos;
       var1.blit(RenderType::guiTextured, this.texture, var5, var6, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
-      boolean var7;
-      int var8;
       if (((AbstractFurnaceMenu)this.menu).isLit()) {
-         var7 = true;
-         var8 = Mth.ceil(((AbstractFurnaceMenu)this.menu).getLitProgress() * 13.0F) + 1;
+         boolean var7 = true;
+         int var8 = Mth.ceil(((AbstractFurnaceMenu)this.menu).getLitProgress() * 13.0F) + 1;
          var1.blitSprite(RenderType::guiTextured, this.litProgressSprite, 14, 14, 0, 14 - var8, var5 + 56, var6 + 36 + 14 - var8, 14, var8);
       }
 
-      var7 = true;
-      var8 = Mth.ceil(((AbstractFurnaceMenu)this.menu).getBurnProgress() * 24.0F);
-      var1.blitSprite(RenderType::guiTextured, this.burnProgressSprite, 24, 16, 0, 0, var5 + 79, var6 + 34, var8, 16);
+      boolean var9 = true;
+      int var10 = Mth.ceil(((AbstractFurnaceMenu)this.menu).getBurnProgress() * 24.0F);
+      var1.blitSprite(RenderType::guiTextured, this.burnProgressSprite, 24, 16, 0, 0, var5 + 79, var6 + 34, var10, 16);
    }
 }

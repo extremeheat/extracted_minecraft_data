@@ -14,17 +14,15 @@ public interface CustomPacketPayload {
    Type<? extends CustomPacketPayload> type();
 
    static <B extends ByteBuf, T extends CustomPacketPayload> StreamCodec<B, T> codec(StreamMemberEncoder<B, T> var0, StreamDecoder<B, T> var1) {
-      return StreamCodec.ofMember(var0, var1);
+      return StreamCodec.<B, T>ofMember(var0, var1);
    }
 
    static <T extends CustomPacketPayload> Type<T> createType(String var0) {
-      return new Type(ResourceLocation.withDefaultNamespace(var0));
+      return new Type<T>(ResourceLocation.withDefaultNamespace(var0));
    }
 
    static <B extends FriendlyByteBuf> StreamCodec<B, CustomPacketPayload> codec(final FallbackProvider<B> var0, List<TypeAndCodec<? super B, ?>> var1) {
-      final Map var2 = (Map)var1.stream().collect(Collectors.toUnmodifiableMap((var0x) -> {
-         return var0x.type().id();
-      }, TypeAndCodec::codec));
+      final Map var2 = (Map)var1.stream().collect(Collectors.toUnmodifiableMap((var0x) -> var0x.type().id(), TypeAndCodec::codec));
       return new StreamCodec<B, CustomPacketPayload>() {
          private StreamCodec<? super B, ? extends CustomPacketPayload> findCodec(ResourceLocation var1) {
             StreamCodec var2x = (StreamCodec)var2.get(var1);
@@ -65,14 +63,6 @@ public interface CustomPacketPayload {
          super();
          this.id = var1;
       }
-
-      public ResourceLocation id() {
-         return this.id;
-      }
-   }
-
-   public interface FallbackProvider<B extends FriendlyByteBuf> {
-      StreamCodec<B, ? extends CustomPacketPayload> create(ResourceLocation var1);
    }
 
    public static record TypeAndCodec<B extends FriendlyByteBuf, T extends CustomPacketPayload>(Type<T> type, StreamCodec<B, T> codec) {
@@ -81,13 +71,9 @@ public interface CustomPacketPayload {
          this.type = var1;
          this.codec = var2;
       }
+   }
 
-      public Type<T> type() {
-         return this.type;
-      }
-
-      public StreamCodec<B, T> codec() {
-         return this.codec;
-      }
+   public interface FallbackProvider<B extends FriendlyByteBuf> {
+      StreamCodec<B, ? extends CustomPacketPayload> create(ResourceLocation var1);
    }
 }

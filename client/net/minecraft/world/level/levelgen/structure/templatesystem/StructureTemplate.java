@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -100,41 +101,32 @@ public class StructureTemplate {
          BlockPos var10 = new BlockPos(Math.min(var2.getX(), var6.getX()), Math.min(var2.getY(), var6.getY()), Math.min(var2.getZ(), var6.getZ()));
          BlockPos var11 = new BlockPos(Math.max(var2.getX(), var6.getX()), Math.max(var2.getY(), var6.getY()), Math.max(var2.getZ(), var6.getZ()));
          this.size = var3;
-         Iterator var12 = BlockPos.betweenClosed(var10, var11).iterator();
 
-         while(true) {
-            BlockPos var13;
-            BlockPos var14;
-            BlockState var15;
-            do {
-               if (!var12.hasNext()) {
-                  List var18 = buildInfoList(var7, var8, var9);
-                  this.palettes.clear();
-                  this.palettes.add(new Palette(var18));
-                  if (var4) {
-                     this.fillEntityList(var1, var10, var11);
-                  } else {
-                     this.entityInfoList.clear();
-                  }
-
-                  return;
+         for(BlockPos var13 : BlockPos.betweenClosed(var10, var11)) {
+            BlockPos var14 = var13.subtract(var10);
+            BlockState var15 = var1.getBlockState(var13);
+            if (var5 == null || !var15.is(var5)) {
+               BlockEntity var16 = var1.getBlockEntity(var13);
+               StructureBlockInfo var17;
+               if (var16 != null) {
+                  var17 = new StructureBlockInfo(var14, var15, var16.saveWithId(var1.registryAccess()));
+               } else {
+                  var17 = new StructureBlockInfo(var14, var15, (CompoundTag)null);
                }
 
-               var13 = (BlockPos)var12.next();
-               var14 = var13.subtract(var10);
-               var15 = var1.getBlockState(var13);
-            } while(var5 != null && var15.is(var5));
-
-            BlockEntity var16 = var1.getBlockEntity(var13);
-            StructureBlockInfo var17;
-            if (var16 != null) {
-               var17 = new StructureBlockInfo(var14, var15, var16.saveWithId(var1.registryAccess()));
-            } else {
-               var17 = new StructureBlockInfo(var14, var15, (CompoundTag)null);
+               addToLists(var17, var7, var8, var9);
             }
-
-            addToLists(var17, var7, var8, var9);
          }
+
+         List var18 = buildInfoList(var7, var8, var9);
+         this.palettes.clear();
+         this.palettes.add(new Palette(var18));
+         if (var4) {
+            this.fillEntityList(var1, var10, var11);
+         } else {
+            this.entityInfoList.clear();
+         }
+
       }
    }
 
@@ -150,13 +142,7 @@ public class StructureTemplate {
    }
 
    private static List<StructureBlockInfo> buildInfoList(List<StructureBlockInfo> var0, List<StructureBlockInfo> var1, List<StructureBlockInfo> var2) {
-      Comparator var3 = Comparator.comparingInt((var0x) -> {
-         return var0x.pos.getY();
-      }).thenComparingInt((var0x) -> {
-         return var0x.pos.getX();
-      }).thenComparingInt((var0x) -> {
-         return var0x.pos.getZ();
-      });
+      Comparator var3 = Comparator.comparingInt((var0x) -> var0x.pos.getY()).thenComparingInt((var0x) -> var0x.pos.getX()).thenComparingInt((var0x) -> var0x.pos.getZ());
       var0.sort(var3);
       var2.sort(var3);
       var1.sort(var3);
@@ -168,24 +154,21 @@ public class StructureTemplate {
    }
 
    private void fillEntityList(Level var1, BlockPos var2, BlockPos var3) {
-      List var4 = var1.getEntitiesOfClass(Entity.class, AABB.encapsulatingFullBlocks(var2, var3), (var0) -> {
-         return !(var0 instanceof Player);
-      });
+      List var4 = var1.getEntitiesOfClass(Entity.class, AABB.encapsulatingFullBlocks(var2, var3), (var0) -> !(var0 instanceof Player));
       this.entityInfoList.clear();
 
-      Vec3 var7;
-      CompoundTag var8;
-      BlockPos var9;
-      for(Iterator var5 = var4.iterator(); var5.hasNext(); this.entityInfoList.add(new StructureEntityInfo(var7, var9, var8.copy()))) {
-         Entity var6 = (Entity)var5.next();
-         var7 = new Vec3(var6.getX() - (double)var2.getX(), var6.getY() - (double)var2.getY(), var6.getZ() - (double)var2.getZ());
-         var8 = new CompoundTag();
+      for(Entity var6 : var4) {
+         Vec3 var7 = new Vec3(var6.getX() - (double)var2.getX(), var6.getY() - (double)var2.getY(), var6.getZ() - (double)var2.getZ());
+         CompoundTag var8 = new CompoundTag();
          var6.save(var8);
+         BlockPos var9;
          if (var6 instanceof Painting) {
             var9 = ((Painting)var6).getPos().subtract(var2);
          } else {
             var9 = BlockPos.containing(var7);
          }
+
+         this.entityInfoList.add(new StructureEntityInfo(var7, var9, var8.copy()));
       }
 
    }
@@ -201,10 +184,8 @@ public class StructureTemplate {
          StructurePlaceSettings var3 = (new StructurePlaceSettings()).setRotation(var2);
          List var4 = var3.getRandomPalette(this.palettes, var1).jigsaws();
          ArrayList var5 = new ArrayList(var4.size());
-         Iterator var6 = var4.iterator();
 
-         while(var6.hasNext()) {
-            JigsawBlockInfo var7 = (JigsawBlockInfo)var6.next();
+         for(JigsawBlockInfo var7 : var4) {
             StructureBlockInfo var8 = var7.info;
             var5.add(var7.withInfo(new StructureBlockInfo(calculateRelativePosition(var3, var8.pos()).offset(var1), var8.state.rotate(var3.getRotation()), var8.nbt)));
          }
@@ -219,22 +200,14 @@ public class StructureTemplate {
       if (this.palettes.isEmpty()) {
          return var5;
       } else {
-         Iterator var7 = var2.getRandomPalette(this.palettes, var1).blocks(var3).iterator();
-
-         while(true) {
-            StructureBlockInfo var8;
-            BlockPos var9;
-            do {
-               if (!var7.hasNext()) {
-                  return var5;
-               }
-
-               var8 = (StructureBlockInfo)var7.next();
-               var9 = var4 ? calculateRelativePosition(var2, var8.pos).offset(var1) : var8.pos;
-            } while(var6 != null && !var6.isInside(var9));
-
-            var5.add(new StructureBlockInfo(var9, var8.state.rotate(var2.getRotation()), var8.nbt));
+         for(StructureBlockInfo var8 : var2.getRandomPalette(this.palettes, var1).blocks(var3)) {
+            BlockPos var9 = var4 ? calculateRelativePosition(var2, var8.pos).offset(var1) : var8.pos;
+            if (var6 == null || var6.isInside(var9)) {
+               var5.add(new StructureBlockInfo(var9, var8.state.rotate(var2.getRotation()), var8.nbt));
+            }
          }
+
+         return var5;
       }
    }
 
@@ -264,140 +237,123 @@ public class StructureTemplate {
             int var15 = -2147483648;
             int var16 = -2147483648;
             int var17 = -2147483648;
-            List var18 = processBlockInfos(var1, var2, var3, var4, var7);
-            Iterator var19 = var18.iterator();
 
-            while(true) {
-               StructureBlockInfo var20;
-               BlockPos var21;
-               BlockEntity var24;
-               do {
-                  if (!var19.hasNext()) {
-                     boolean var28 = true;
-                     Direction[] var29 = new Direction[]{Direction.UP, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
-
-                     Iterator var30;
-                     int var38;
-                     BlockState var39;
-                     while(var28 && !var9.isEmpty()) {
-                        var28 = false;
-                        var30 = var9.iterator();
-
-                        while(var30.hasNext()) {
-                           BlockPos var32 = (BlockPos)var30.next();
-                           FluidState var35 = var1.getFluidState(var32);
-
-                           for(var38 = 0; var38 < var29.length && !var35.isSource(); ++var38) {
-                              BlockPos var25 = var32.relative(var29[var38]);
-                              FluidState var26 = var1.getFluidState(var25);
-                              if (var26.isSource() && !var10.contains(var25)) {
-                                 var35 = var26;
-                              }
-                           }
-
-                           if (var35.isSource()) {
-                              var39 = var1.getBlockState(var32);
-                              Block var40 = var39.getBlock();
-                              if (var40 instanceof LiquidBlockContainer) {
-                                 ((LiquidBlockContainer)var40).placeLiquid(var1, var32, var39, var35);
-                                 var28 = true;
-                                 var30.remove();
-                              }
-                           }
-                        }
-                     }
-
-                     if (var12 <= var15) {
-                        if (!var4.getKnownShape()) {
-                           BitSetDiscreteVoxelShape var31 = new BitSetDiscreteVoxelShape(var15 - var12 + 1, var16 - var13 + 1, var17 - var14 + 1);
-                           int var33 = var12;
-                           int var36 = var13;
-                           var38 = var14;
-                           Iterator var41 = var11.iterator();
-
-                           while(var41.hasNext()) {
-                              Pair var43 = (Pair)var41.next();
-                              BlockPos var27 = (BlockPos)var43.getFirst();
-                              ((DiscreteVoxelShape)var31).fill(var27.getX() - var33, var27.getY() - var36, var27.getZ() - var38);
-                           }
-
-                           updateShapeAtEdge(var1, var6, var31, var33, var36, var38);
-                        }
-
-                        var30 = var11.iterator();
-
-                        while(var30.hasNext()) {
-                           Pair var34 = (Pair)var30.next();
-                           BlockPos var37 = (BlockPos)var34.getFirst();
-                           if (!var4.getKnownShape()) {
-                              var39 = var1.getBlockState(var37);
-                              BlockState var42 = Block.updateFromNeighbourShapes(var39, var1, var37);
-                              if (var39 != var42) {
-                                 var1.setBlock(var37, var42, var6 & -2 | 16);
-                              }
-
-                              var1.blockUpdated(var37, var42.getBlock());
-                           }
-
-                           if (var34.getSecond() != null) {
-                              var24 = var1.getBlockEntity(var37);
-                              if (var24 != null) {
-                                 var24.setChanged();
-                              }
-                           }
-                        }
-                     }
-
-                     if (!var4.isIgnoreEntities()) {
-                        this.placeEntities(var1, var2, var4.getMirror(), var4.getRotation(), var4.getRotationPivot(), var8, var4.shouldFinalizeEntities());
-                     }
-
-                     return true;
-                  }
-
-                  var20 = (StructureBlockInfo)var19.next();
-                  var21 = var20.pos;
-               } while(var8 != null && !var8.isInside(var21));
-
-               FluidState var22 = var4.shouldApplyWaterlogging() ? var1.getFluidState(var21) : null;
-               BlockState var23 = var20.state.mirror(var4.getMirror()).rotate(var4.getRotation());
-               if (var20.nbt != null) {
-                  var24 = var1.getBlockEntity(var21);
-                  Clearable.tryClear(var24);
-                  var1.setBlock(var21, Blocks.BARRIER.defaultBlockState(), 20);
-               }
-
-               if (var1.setBlock(var21, var23, var6)) {
-                  var12 = Math.min(var12, var21.getX());
-                  var13 = Math.min(var13, var21.getY());
-                  var14 = Math.min(var14, var21.getZ());
-                  var15 = Math.max(var15, var21.getX());
-                  var16 = Math.max(var16, var21.getY());
-                  var17 = Math.max(var17, var21.getZ());
-                  var11.add(Pair.of(var21, var20.nbt));
+            for(StructureBlockInfo var20 : processBlockInfos(var1, var2, var3, var4, var7)) {
+               BlockPos var21 = var20.pos;
+               if (var8 == null || var8.isInside(var21)) {
+                  FluidState var22 = var4.shouldApplyWaterlogging() ? var1.getFluidState(var21) : null;
+                  BlockState var23 = var20.state.mirror(var4.getMirror()).rotate(var4.getRotation());
                   if (var20.nbt != null) {
-                     var24 = var1.getBlockEntity(var21);
-                     if (var24 != null) {
-                        if (var24 instanceof RandomizableContainer) {
-                           var20.nbt.putLong("LootTableSeed", var5.nextLong());
-                        }
-
-                        var24.loadWithComponents(var20.nbt, var1.registryAccess());
-                     }
+                     BlockEntity var24 = var1.getBlockEntity(var21);
+                     Clearable.tryClear(var24);
+                     var1.setBlock(var21, Blocks.BARRIER.defaultBlockState(), 20);
                   }
 
-                  if (var22 != null) {
-                     if (var23.getFluidState().isSource()) {
-                        var10.add(var21);
-                     } else if (var23.getBlock() instanceof LiquidBlockContainer) {
-                        ((LiquidBlockContainer)var23.getBlock()).placeLiquid(var1, var21, var23, var22);
-                        if (!var22.isSource()) {
-                           var9.add(var21);
+                  if (var1.setBlock(var21, var23, var6)) {
+                     var12 = Math.min(var12, var21.getX());
+                     var13 = Math.min(var13, var21.getY());
+                     var14 = Math.min(var14, var21.getZ());
+                     var15 = Math.max(var15, var21.getX());
+                     var16 = Math.max(var16, var21.getY());
+                     var17 = Math.max(var17, var21.getZ());
+                     var11.add(Pair.of(var21, var20.nbt));
+                     if (var20.nbt != null) {
+                        BlockEntity var39 = var1.getBlockEntity(var21);
+                        if (var39 != null) {
+                           if (var39 instanceof RandomizableContainer) {
+                              var20.nbt.putLong("LootTableSeed", var5.nextLong());
+                           }
+
+                           var39.loadWithComponents(var20.nbt, var1.registryAccess());
+                        }
+                     }
+
+                     if (var22 != null) {
+                        if (var23.getFluidState().isSource()) {
+                           var10.add(var21);
+                        } else if (var23.getBlock() instanceof LiquidBlockContainer) {
+                           ((LiquidBlockContainer)var23.getBlock()).placeLiquid(var1, var21, var23, var22);
+                           if (!var22.isSource()) {
+                              var9.add(var21);
+                           }
                         }
                      }
                   }
                }
             }
+
+            boolean var28 = true;
+            Direction[] var29 = new Direction[]{Direction.UP, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+
+            while(var28 && !var9.isEmpty()) {
+               var28 = false;
+               Iterator var30 = var9.iterator();
+
+               while(var30.hasNext()) {
+                  BlockPos var33 = (BlockPos)var30.next();
+                  FluidState var36 = var1.getFluidState(var33);
+
+                  for(int var40 = 0; var40 < var29.length && !var36.isSource(); ++var40) {
+                     BlockPos var25 = var33.relative(var29[var40]);
+                     FluidState var26 = var1.getFluidState(var25);
+                     if (var26.isSource() && !var10.contains(var25)) {
+                        var36 = var26;
+                     }
+                  }
+
+                  if (var36.isSource()) {
+                     BlockState var41 = var1.getBlockState(var33);
+                     Block var45 = var41.getBlock();
+                     if (var45 instanceof LiquidBlockContainer) {
+                        ((LiquidBlockContainer)var45).placeLiquid(var1, var33, var41, var36);
+                        var28 = true;
+                        var30.remove();
+                     }
+                  }
+               }
+            }
+
+            if (var12 <= var15) {
+               if (!var4.getKnownShape()) {
+                  BitSetDiscreteVoxelShape var31 = new BitSetDiscreteVoxelShape(var15 - var12 + 1, var16 - var13 + 1, var17 - var14 + 1);
+                  int var34 = var12;
+                  int var37 = var13;
+                  int var42 = var14;
+
+                  for(Pair var48 : var11) {
+                     BlockPos var27 = (BlockPos)var48.getFirst();
+                     ((DiscreteVoxelShape)var31).fill(var27.getX() - var34, var27.getY() - var37, var27.getZ() - var42);
+                  }
+
+                  updateShapeAtEdge(var1, var6, var31, var34, var37, var42);
+               }
+
+               for(Pair var35 : var11) {
+                  BlockPos var38 = (BlockPos)var35.getFirst();
+                  if (!var4.getKnownShape()) {
+                     BlockState var43 = var1.getBlockState(var38);
+                     BlockState var47 = Block.updateFromNeighbourShapes(var43, var1, var38);
+                     if (var43 != var47) {
+                        var1.setBlock(var38, var47, var6 & -2 | 16);
+                     }
+
+                     var1.blockUpdated(var38, var47.getBlock());
+                  }
+
+                  if (var35.getSecond() != null) {
+                     BlockEntity var44 = var1.getBlockEntity(var38);
+                     if (var44 != null) {
+                        var44.setChanged();
+                     }
+                  }
+               }
+            }
+
+            if (!var4.isIgnoreEntities()) {
+               this.placeEntities(var1, var2, var4.getMirror(), var4.getRotation(), var4.getRotationPivot(), var8, var4.shouldFinalizeEntities());
+            }
+
+            return true;
          } else {
             return false;
          }
@@ -432,10 +388,8 @@ public class StructureTemplate {
    public static List<StructureBlockInfo> processBlockInfos(ServerLevelAccessor var0, BlockPos var1, BlockPos var2, StructurePlaceSettings var3, List<StructureBlockInfo> var4) {
       ArrayList var5 = new ArrayList();
       Object var6 = new ArrayList();
-      Iterator var7 = var4.iterator();
 
-      while(var7.hasNext()) {
-         StructureBlockInfo var8 = (StructureBlockInfo)var7.next();
+      for(StructureBlockInfo var8 : var4) {
          BlockPos var9 = calculateRelativePosition(var3, var8.pos).offset(var1);
          StructureBlockInfo var10 = new StructureBlockInfo(var9, var8.state, var8.nbt != null ? var8.nbt.copy() : null);
 
@@ -448,49 +402,39 @@ public class StructureTemplate {
          }
       }
 
-      StructureProcessor var12;
-      for(var7 = var3.getProcessors().iterator(); var7.hasNext(); var6 = var12.finalizeProcessing(var0, var1, var2, var5, (List)var6, var3)) {
-         var12 = (StructureProcessor)var7.next();
+      for(StructureProcessor var13 : var3.getProcessors()) {
+         var6 = var13.finalizeProcessing(var0, var1, var2, var5, (List)var6, var3);
       }
 
-      return (List)var6;
+      return (List<StructureBlockInfo>)var6;
    }
 
    private void placeEntities(ServerLevelAccessor var1, BlockPos var2, Mirror var3, Rotation var4, BlockPos var5, @Nullable BoundingBox var6, boolean var7) {
-      Iterator var8 = this.entityInfoList.iterator();
+      for(StructureEntityInfo var9 : this.entityInfoList) {
+         BlockPos var10 = transform(var9.blockPos, var3, var4, var5).offset(var2);
+         if (var6 == null || var6.isInside(var10)) {
+            CompoundTag var11 = var9.nbt.copy();
+            Vec3 var12 = transform(var9.pos, var3, var4, var5);
+            Vec3 var13 = var12.add((double)var2.getX(), (double)var2.getY(), (double)var2.getZ());
+            ListTag var14 = new ListTag();
+            var14.add(DoubleTag.valueOf(var13.x));
+            var14.add(DoubleTag.valueOf(var13.y));
+            var14.add(DoubleTag.valueOf(var13.z));
+            var11.put("Pos", var14);
+            var11.remove("UUID");
+            createEntityIgnoreException(var1, var11).ifPresent((var5x) -> {
+               float var6 = var5x.rotate(var4);
+               var6 += var5x.mirror(var3) - var5x.getYRot();
+               var5x.moveTo(var13.x, var13.y, var13.z, var6, var5x.getXRot());
+               if (var7 && var5x instanceof Mob) {
+                  ((Mob)var5x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var13)), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
+               }
 
-      while(true) {
-         StructureEntityInfo var9;
-         BlockPos var10;
-         do {
-            if (!var8.hasNext()) {
-               return;
-            }
-
-            var9 = (StructureEntityInfo)var8.next();
-            var10 = transform(var9.blockPos, var3, var4, var5).offset(var2);
-         } while(var6 != null && !var6.isInside(var10));
-
-         CompoundTag var11 = var9.nbt.copy();
-         Vec3 var12 = transform(var9.pos, var3, var4, var5);
-         Vec3 var13 = var12.add((double)var2.getX(), (double)var2.getY(), (double)var2.getZ());
-         ListTag var14 = new ListTag();
-         var14.add(DoubleTag.valueOf(var13.x));
-         var14.add(DoubleTag.valueOf(var13.y));
-         var14.add(DoubleTag.valueOf(var13.z));
-         var11.put("Pos", var14);
-         var11.remove("UUID");
-         createEntityIgnoreException(var1, var11).ifPresent((var5x) -> {
-            float var6 = var5x.rotate(var4);
-            var6 += var5x.mirror(var3) - var5x.getYRot();
-            var5x.moveTo(var13.x, var13.y, var13.z, var6, var5x.getXRot());
-            if (var7 && var5x instanceof Mob) {
-               ((Mob)var5x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var13)), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
-            }
-
-            var1.addFreshEntityWithPassengers(var5x);
-         });
+               var1.addFreshEntityWithPassengers(var5x);
+            });
+         }
       }
+
    }
 
    private static Optional<Entity> createEntityIgnoreException(ServerLevelAccessor var0, CompoundTag var1) {
@@ -640,50 +584,42 @@ public class StructureTemplate {
          }
 
          var1.put("blocks", var14);
-         ListTag var17;
-         Iterator var18;
          if (var2.size() == 1) {
-            var17 = new ListTag();
-            var18 = var3.iterator();
+            ListTag var17 = new ListTag();
 
-            while(var18.hasNext()) {
-               BlockState var19 = (BlockState)var18.next();
-               var17.add(NbtUtils.writeBlockState(var19));
+            for(BlockState var21 : var3) {
+               var17.add(NbtUtils.writeBlockState(var21));
             }
 
             var1.put("palette", var17);
          } else {
-            var17 = new ListTag();
-            var18 = var2.iterator();
+            ListTag var18 = new ListTag();
 
-            while(var18.hasNext()) {
-               SimplePalette var20 = (SimplePalette)var18.next();
-               ListTag var21 = new ListTag();
-               Iterator var22 = var20.iterator();
+            for(SimplePalette var22 : var2) {
+               ListTag var23 = new ListTag();
 
-               while(var22.hasNext()) {
-                  BlockState var23 = (BlockState)var22.next();
-                  var21.add(NbtUtils.writeBlockState(var23));
+               for(BlockState var25 : var22) {
+                  var23.add(NbtUtils.writeBlockState(var25));
                }
 
-               var17.add(var21);
+               var18.add(var23);
             }
 
-            var1.put("palettes", var17);
+            var1.put("palettes", var18);
          }
       }
 
       ListTag var12 = new ListTag();
 
-      CompoundTag var16;
-      for(Iterator var13 = this.entityInfoList.iterator(); var13.hasNext(); var12.add(var16)) {
-         StructureEntityInfo var15 = (StructureEntityInfo)var13.next();
-         var16 = new CompoundTag();
+      for(StructureEntityInfo var15 : this.entityInfoList) {
+         CompoundTag var16 = new CompoundTag();
          var16.put("pos", this.newDoubleList(var15.pos.x, var15.pos.y, var15.pos.z));
          var16.put("blockPos", this.newIntegerList(var15.blockPos.getX(), var15.blockPos.getY(), var15.blockPos.getZ()));
          if (var15.nbt != null) {
             var16.put("nbt", var15.nbt);
          }
+
+         var12.add(var16);
       }
 
       var1.put("entities", var12);
@@ -697,22 +633,20 @@ public class StructureTemplate {
       ListTag var3 = var2.getList("size", 3);
       this.size = new Vec3i(var3.getInt(0), var3.getInt(1), var3.getInt(2));
       ListTag var4 = var2.getList("blocks", 10);
-      ListTag var5;
-      int var6;
       if (var2.contains("palettes", 9)) {
-         var5 = var2.getList("palettes", 9);
+         ListTag var5 = var2.getList("palettes", 9);
 
-         for(var6 = 0; var6 < var5.size(); ++var6) {
+         for(int var6 = 0; var6 < var5.size(); ++var6) {
             this.loadPalette(var1, var5.getList(var6), var4);
          }
       } else {
          this.loadPalette(var1, var2.getList("palette", 10), var4);
       }
 
-      var5 = var2.getList("entities", 10);
+      ListTag var13 = var2.getList("entities", 10);
 
-      for(var6 = 0; var6 < var5.size(); ++var6) {
-         CompoundTag var7 = var5.getCompound(var6);
+      for(int var14 = 0; var14 < var13.size(); ++var14) {
+         CompoundTag var7 = var13.getCompound(var14);
          ListTag var8 = var7.getList("pos", 6);
          Vec3 var9 = new Vec3(var8.getDouble(0), var8.getDouble(1), var8.getDouble(2));
          ListTag var10 = var7.getList("blockPos", 3);
@@ -758,11 +692,8 @@ public class StructureTemplate {
 
    private ListTag newIntegerList(int... var1) {
       ListTag var2 = new ListTag();
-      int[] var3 = var1;
-      int var4 = var1.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         int var6 = var3[var5];
+      for(int var6 : var1) {
          var2.add(IntTag.valueOf(var6));
       }
 
@@ -771,11 +702,8 @@ public class StructureTemplate {
 
    private ListTag newDoubleList(double... var1) {
       ListTag var2 = new ListTag();
-      double[] var3 = var1;
-      int var4 = var1.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         double var6 = var3[var5];
+      for(double var6 : var1) {
          var2.add(DoubleTag.valueOf(var6));
       }
 
@@ -783,9 +711,45 @@ public class StructureTemplate {
    }
 
    public static JigsawBlockEntity.JointType getJointType(CompoundTag var0, BlockState var1) {
-      return (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.CODEC.byName(var0.getString("joint"), () -> {
-         return JigsawBlock.getFrontFacing(var1).getAxis().isHorizontal() ? JigsawBlockEntity.JointType.ALIGNED : JigsawBlockEntity.JointType.ROLLABLE;
-      });
+      return (JigsawBlockEntity.JointType)JigsawBlockEntity.JointType.CODEC.byName(var0.getString("joint"), (Supplier)(() -> JigsawBlock.getFrontFacing(var1).getAxis().isHorizontal() ? JigsawBlockEntity.JointType.ALIGNED : JigsawBlockEntity.JointType.ROLLABLE));
+   }
+
+   static class SimplePalette implements Iterable<BlockState> {
+      public static final BlockState DEFAULT_BLOCK_STATE;
+      private final IdMapper<BlockState> ids = new IdMapper<BlockState>(16);
+      private int lastId;
+
+      SimplePalette() {
+         super();
+      }
+
+      public int idFor(BlockState var1) {
+         int var2 = this.ids.getId(var1);
+         if (var2 == -1) {
+            var2 = this.lastId++;
+            this.ids.addMapping(var1, var2);
+         }
+
+         return var2;
+      }
+
+      @Nullable
+      public BlockState stateFor(int var1) {
+         BlockState var2 = this.ids.byId(var1);
+         return var2 == null ? DEFAULT_BLOCK_STATE : var2;
+      }
+
+      public Iterator<BlockState> iterator() {
+         return this.ids.iterator();
+      }
+
+      public void addMapping(BlockState var1, int var2) {
+         this.ids.addMapping(var1, var2);
+      }
+
+      static {
+         DEFAULT_BLOCK_STATE = Blocks.AIR.defaultBlockState();
+      }
    }
 
    public static record StructureBlockInfo(BlockPos pos, BlockState state, @Nullable CompoundTag nbt) {
@@ -804,18 +768,46 @@ public class StructureTemplate {
       public String toString() {
          return String.format(Locale.ROOT, "<StructureBlockInfo | %s | %s | %s>", this.pos, this.state, this.nbt);
       }
+   }
 
-      public BlockPos pos() {
-         return this.pos;
+   public static record JigsawBlockInfo(StructureBlockInfo info, JigsawBlockEntity.JointType jointType, ResourceLocation name, ResourceLocation pool, ResourceLocation target, int placementPriority, int selectionPriority) {
+      final StructureBlockInfo info;
+
+      public JigsawBlockInfo(StructureBlockInfo var1, JigsawBlockEntity.JointType var2, ResourceLocation var3, ResourceLocation var4, ResourceLocation var5, int var6, int var7) {
+         super();
+         this.info = var1;
+         this.jointType = var2;
+         this.name = var3;
+         this.pool = var4;
+         this.target = var5;
+         this.placementPriority = var6;
+         this.selectionPriority = var7;
       }
 
-      public BlockState state() {
-         return this.state;
+      public static JigsawBlockInfo of(StructureBlockInfo var0) {
+         CompoundTag var1 = (CompoundTag)Objects.requireNonNull(var0.nbt(), () -> String.valueOf(var0) + " nbt was null");
+         return new JigsawBlockInfo(var0, StructureTemplate.getJointType(var1, var0.state()), ResourceLocation.parse(var1.getString("name")), ResourceLocation.parse(var1.getString("pool")), ResourceLocation.parse(var1.getString("target")), var1.getInt("placement_priority"), var1.getInt("selection_priority"));
       }
 
-      @Nullable
-      public CompoundTag nbt() {
-         return this.nbt;
+      public String toString() {
+         return String.format(Locale.ROOT, "<JigsawBlockInfo | %s | %s | name: %s | pool: %s | target: %s | placement: %d | selection: %d | %s>", this.info.pos, this.info.state, this.name, this.pool, this.target, this.placementPriority, this.selectionPriority, this.info.nbt);
+      }
+
+      public JigsawBlockInfo withInfo(StructureBlockInfo var1) {
+         return new JigsawBlockInfo(var1, this.jointType, this.name, this.pool, this.target, this.placementPriority, this.selectionPriority);
+      }
+   }
+
+   public static class StructureEntityInfo {
+      public final Vec3 pos;
+      public final BlockPos blockPos;
+      public final CompoundTag nbt;
+
+      public StructureEntityInfo(Vec3 var1, BlockPos var2, CompoundTag var3) {
+         super();
+         this.pos = var1;
+         this.blockPos = var2;
+         this.nbt = var3;
       }
    }
 
@@ -843,120 +835,7 @@ public class StructureTemplate {
       }
 
       public List<StructureBlockInfo> blocks(Block var1) {
-         return (List)this.cache.computeIfAbsent(var1, (var1x) -> {
-            return (List)this.blocks.stream().filter((var1) -> {
-               return var1.state.is(var1x);
-            }).collect(Collectors.toList());
-         });
-      }
-   }
-
-   public static class StructureEntityInfo {
-      public final Vec3 pos;
-      public final BlockPos blockPos;
-      public final CompoundTag nbt;
-
-      public StructureEntityInfo(Vec3 var1, BlockPos var2, CompoundTag var3) {
-         super();
-         this.pos = var1;
-         this.blockPos = var2;
-         this.nbt = var3;
-      }
-   }
-
-   public static record JigsawBlockInfo(StructureBlockInfo info, JigsawBlockEntity.JointType jointType, ResourceLocation name, ResourceLocation pool, ResourceLocation target, int placementPriority, int selectionPriority) {
-      final StructureBlockInfo info;
-
-      public JigsawBlockInfo(StructureBlockInfo var1, JigsawBlockEntity.JointType var2, ResourceLocation var3, ResourceLocation var4, ResourceLocation var5, int var6, int var7) {
-         super();
-         this.info = var1;
-         this.jointType = var2;
-         this.name = var3;
-         this.pool = var4;
-         this.target = var5;
-         this.placementPriority = var6;
-         this.selectionPriority = var7;
-      }
-
-      public static JigsawBlockInfo of(StructureBlockInfo var0) {
-         CompoundTag var1 = (CompoundTag)Objects.requireNonNull(var0.nbt(), () -> {
-            return String.valueOf(var0) + " nbt was null";
-         });
-         return new JigsawBlockInfo(var0, StructureTemplate.getJointType(var1, var0.state()), ResourceLocation.parse(var1.getString("name")), ResourceLocation.parse(var1.getString("pool")), ResourceLocation.parse(var1.getString("target")), var1.getInt("placement_priority"), var1.getInt("selection_priority"));
-      }
-
-      public String toString() {
-         return String.format(Locale.ROOT, "<JigsawBlockInfo | %s | %s | name: %s | pool: %s | target: %s | placement: %d | selection: %d | %s>", this.info.pos, this.info.state, this.name, this.pool, this.target, this.placementPriority, this.selectionPriority, this.info.nbt);
-      }
-
-      public JigsawBlockInfo withInfo(StructureBlockInfo var1) {
-         return new JigsawBlockInfo(var1, this.jointType, this.name, this.pool, this.target, this.placementPriority, this.selectionPriority);
-      }
-
-      public StructureBlockInfo info() {
-         return this.info;
-      }
-
-      public JigsawBlockEntity.JointType jointType() {
-         return this.jointType;
-      }
-
-      public ResourceLocation name() {
-         return this.name;
-      }
-
-      public ResourceLocation pool() {
-         return this.pool;
-      }
-
-      public ResourceLocation target() {
-         return this.target;
-      }
-
-      public int placementPriority() {
-         return this.placementPriority;
-      }
-
-      public int selectionPriority() {
-         return this.selectionPriority;
-      }
-   }
-
-   private static class SimplePalette implements Iterable<BlockState> {
-      public static final BlockState DEFAULT_BLOCK_STATE;
-      private final IdMapper<BlockState> ids = new IdMapper(16);
-      private int lastId;
-
-      SimplePalette() {
-         super();
-      }
-
-      public int idFor(BlockState var1) {
-         int var2 = this.ids.getId(var1);
-         if (var2 == -1) {
-            var2 = this.lastId++;
-            this.ids.addMapping(var1, var2);
-         }
-
-         return var2;
-      }
-
-      @Nullable
-      public BlockState stateFor(int var1) {
-         BlockState var2 = (BlockState)this.ids.byId(var1);
-         return var2 == null ? DEFAULT_BLOCK_STATE : var2;
-      }
-
-      public Iterator<BlockState> iterator() {
-         return this.ids.iterator();
-      }
-
-      public void addMapping(BlockState var1, int var2) {
-         this.ids.addMapping(var1, var2);
-      }
-
-      static {
-         DEFAULT_BLOCK_STATE = Blocks.AIR.defaultBlockState();
+         return (List)this.cache.computeIfAbsent(var1, (var1x) -> (List)this.blocks.stream().filter((var1) -> var1.state.is(var1x)).collect(Collectors.toList()));
       }
    }
 }

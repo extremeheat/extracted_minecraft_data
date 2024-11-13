@@ -145,7 +145,7 @@ public class EndCrystal extends Entity {
    }
 
    static {
-      DATA_BEAM_TARGET = SynchedEntityData.defineId(EndCrystal.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
-      DATA_SHOW_BOTTOM = SynchedEntityData.defineId(EndCrystal.class, EntityDataSerializers.BOOLEAN);
+      DATA_BEAM_TARGET = SynchedEntityData.<Optional<BlockPos>>defineId(EndCrystal.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
+      DATA_SHOW_BOTTOM = SynchedEntityData.<Boolean>defineId(EndCrystal.class, EntityDataSerializers.BOOLEAN);
    }
 }

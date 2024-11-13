@@ -14,19 +14,7 @@ import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
 
 public class BlendedNoise implements DensityFunction.SimpleFunction {
    private static final Codec<Double> SCALE_RANGE = Codec.doubleRange(0.001, 1000.0);
-   private static final MapCodec<BlendedNoise> DATA_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(SCALE_RANGE.fieldOf("xz_scale").forGetter((var0x) -> {
-         return var0x.xzScale;
-      }), SCALE_RANGE.fieldOf("y_scale").forGetter((var0x) -> {
-         return var0x.yScale;
-      }), SCALE_RANGE.fieldOf("xz_factor").forGetter((var0x) -> {
-         return var0x.xzFactor;
-      }), SCALE_RANGE.fieldOf("y_factor").forGetter((var0x) -> {
-         return var0x.yFactor;
-      }), Codec.doubleRange(1.0, 8.0).fieldOf("smear_scale_multiplier").forGetter((var0x) -> {
-         return var0x.smearScaleMultiplier;
-      })).apply(var0, BlendedNoise::createUnseeded);
-   });
+   private static final MapCodec<BlendedNoise> DATA_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SCALE_RANGE.fieldOf("xz_scale").forGetter((var0x) -> var0x.xzScale), SCALE_RANGE.fieldOf("y_scale").forGetter((var0x) -> var0x.yScale), SCALE_RANGE.fieldOf("xz_factor").forGetter((var0x) -> var0x.xzFactor), SCALE_RANGE.fieldOf("y_factor").forGetter((var0x) -> var0x.yFactor), Codec.doubleRange(1.0, 8.0).fieldOf("smear_scale_multiplier").forGetter((var0x) -> var0x.smearScaleMultiplier)).apply(var0, BlendedNoise::createUnseeded));
    public static final KeyDispatchDataCodec<BlendedNoise> CODEC;
    private final PerlinNoise minLimitNoise;
    private final PerlinNoise maxLimitNoise;
@@ -92,9 +80,9 @@ public class BlendedNoise implements DensityFunction.SimpleFunction {
          var25 /= 2.0;
       }
 
-      double var41 = (var22 / 10.0 + 1.0) / 2.0;
-      boolean var29 = var41 >= 1.0;
-      boolean var30 = var41 <= 0.0;
+      double var42 = (var22 / 10.0 + 1.0) / 2.0;
+      boolean var29 = var42 >= 1.0;
+      boolean var30 = var42 <= 0.0;
       var25 = 1.0;
 
       for(int var31 = 0; var31 < 16; ++var31) {
@@ -102,25 +90,24 @@ public class BlendedNoise implements DensityFunction.SimpleFunction {
          double var34 = PerlinNoise.wrap(var4 * var25);
          double var36 = PerlinNoise.wrap(var6 * var25);
          double var38 = var14 * var25;
-         ImprovedNoise var40;
          if (!var29) {
-            var40 = this.minLimitNoise.getOctaveNoise(var31);
+            ImprovedNoise var40 = this.minLimitNoise.getOctaveNoise(var31);
             if (var40 != null) {
                var18 += var40.noise(var32, var34, var36, var38, var4 * var25) / var25;
             }
          }
 
          if (!var30) {
-            var40 = this.maxLimitNoise.getOctaveNoise(var31);
-            if (var40 != null) {
-               var20 += var40.noise(var32, var34, var36, var38, var4 * var25) / var25;
+            ImprovedNoise var43 = this.maxLimitNoise.getOctaveNoise(var31);
+            if (var43 != null) {
+               var20 += var43.noise(var32, var34, var36, var38, var4 * var25) / var25;
             }
          }
 
          var25 /= 2.0;
       }
 
-      return Mth.clampedLerp(var18 / 512.0, var20 / 512.0, var41) / 128.0;
+      return Mth.clampedLerp(var18 / 512.0, var20 / 512.0, var42) / 128.0;
    }
 
    public double minValue() {
@@ -147,6 +134,6 @@ public class BlendedNoise implements DensityFunction.SimpleFunction {
    }
 
    static {
-      CODEC = KeyDispatchDataCodec.of(DATA_CODEC);
+      CODEC = KeyDispatchDataCodec.<BlendedNoise>of(DATA_CODEC);
    }
 }

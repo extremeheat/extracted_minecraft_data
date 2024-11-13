@@ -11,8 +11,6 @@ public class BlockStateStructureTemplateFix extends DataFix {
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("BlockStateStructureTemplateFix", this.getInputSchema().getType(References.BLOCK_STATE), (var0) -> {
-         return var0.update(DSL.remainderFinder(), BlockStateData::upgradeBlockStateTag);
-      });
+      return this.fixTypeEverywhereTyped("BlockStateStructureTemplateFix", this.getInputSchema().getType(References.BLOCK_STATE), (var0) -> var0.update(DSL.remainderFinder(), BlockStateData::upgradeBlockStateTag));
    }
 }

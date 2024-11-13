@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -71,12 +72,8 @@ public class WorldGenRegion implements WorldGenLevel {
    private final LevelData levelData;
    private final RandomSource random;
    private final DimensionType dimensionType;
-   private final WorldGenTickAccess<Block> blockTicks = new WorldGenTickAccess((var1x) -> {
-      return this.getChunk(var1x).getBlockTicks();
-   });
-   private final WorldGenTickAccess<Fluid> fluidTicks = new WorldGenTickAccess((var1x) -> {
-      return this.getChunk(var1x).getFluidTicks();
-   });
+   private final WorldGenTickAccess<Block> blockTicks = new WorldGenTickAccess<Block>((var1x) -> this.getChunk(var1x).getBlockTicks());
+   private final WorldGenTickAccess<Fluid> fluidTicks = new WorldGenTickAccess<Fluid>((var1x) -> this.getChunk(var1x).getFluidTicks());
    private final BiomeManager biomeManager;
    private final ChunkStep generatingStep;
    @Nullable
@@ -119,7 +116,7 @@ public class WorldGenRegion implements WorldGenLevel {
       ChunkStatus var6 = var5 >= this.generatingStep.directDependencies().size() ? null : this.generatingStep.directDependencies().get(var5);
       GenerationChunkHolder var7;
       if (var6 != null) {
-         var7 = (GenerationChunkHolder)this.cache.get(var1, var2);
+         var7 = this.cache.get(var1, var2);
          if (var3.isOrBefore(var6)) {
             ChunkAccess var8 = var7.getChunkIfPresentUnchecked(var6);
             if (var8 != null) {
@@ -130,28 +127,22 @@ public class WorldGenRegion implements WorldGenLevel {
          var7 = null;
       }
 
-      CrashReport var11 = CrashReport.forThrowable(new IllegalStateException("Requested chunk unavailable during world generation"), "Exception generating new chunk");
-      CrashReportCategory var9 = var11.addCategory("Chunk request details");
-      var9.setDetail("Requested chunk", (Object)String.format(Locale.ROOT, "%d, %d", var1, var2));
-      var9.setDetail("Generating status", () -> {
-         return this.generatingStep.targetStatus().getName();
-      });
+      CrashReport var10 = CrashReport.forThrowable(new IllegalStateException("Requested chunk unavailable during world generation"), "Exception generating new chunk");
+      CrashReportCategory var9 = var10.addCategory("Chunk request details");
+      var9.setDetail("Requested chunk", String.format(Locale.ROOT, "%d, %d", var1, var2));
+      var9.setDetail("Generating status", (CrashReportDetail)(() -> this.generatingStep.targetStatus().getName()));
       Objects.requireNonNull(var3);
       var9.setDetail("Requested status", var3::getName);
-      var9.setDetail("Actual status", () -> {
-         return var7 == null ? "[out of cache bounds]" : var7.getPersistedStatus().getName();
-      });
-      var9.setDetail("Maximum allowed status", () -> {
-         return var6 == null ? "null" : var6.getName();
-      });
+      var9.setDetail("Actual status", (CrashReportDetail)(() -> var7 == null ? "[out of cache bounds]" : var7.getPersistedStatus().getName()));
+      var9.setDetail("Maximum allowed status", (CrashReportDetail)(() -> var6 == null ? "null" : var6.getName()));
       ChunkDependencies var10002 = this.generatingStep.directDependencies();
       Objects.requireNonNull(var10002);
       var9.setDetail("Dependencies", var10002::toString);
-      var9.setDetail("Requested distance", (Object)var5);
-      ChunkPos var10 = this.center.getPos();
-      Objects.requireNonNull(var10);
-      var9.setDetail("Generating chunk", var10::toString);
-      throw new ReportedException(var11);
+      var9.setDetail("Requested distance", var5);
+      ChunkPos var11 = this.center.getPos();
+      Objects.requireNonNull(var11);
+      var9.setDetail("Generating chunk", var11::toString);
+      throw new ReportedException(var10);
    }
 
    public boolean hasChunk(int var1, int var2) {

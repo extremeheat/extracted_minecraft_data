@@ -91,7 +91,7 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public static Item byId(int var0) {
-      return (Item)BuiltInRegistries.ITEM.byId(var0);
+      return BuiltInRegistries.ITEM.byId(var0);
    }
 
    /** @deprecated */
@@ -315,11 +315,7 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    static {
-      CODEC = BuiltInRegistries.ITEM.holderByNameCodec().validate((var0) -> {
-         return var0.is((Holder)Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> {
-            return "Item must not be minecraft:air";
-         }) : DataResult.success(var0);
-      });
+      CODEC = BuiltInRegistries.ITEM.holderByNameCodec().validate((var0) -> var0.is((Holder)Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air") : DataResult.success(var0));
       LOGGER = LogUtils.getLogger();
       BY_BLOCK = Maps.newHashMap();
       BASE_ATTACK_DAMAGE_ID = ResourceLocation.withDefaultNamespace("base_attack_damage");
@@ -327,12 +323,8 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public static class Properties {
-      private static final DependantName<Item, String> BLOCK_DESCRIPTION_ID = (var0) -> {
-         return Util.makeDescriptionId("block", var0.location());
-      };
-      private static final DependantName<Item, String> ITEM_DESCRIPTION_ID = (var0) -> {
-         return Util.makeDescriptionId("item", var0.location());
-      };
+      private static final DependantName<Item, String> BLOCK_DESCRIPTION_ID = (var0) -> Util.makeDescriptionId("block", var0.location());
+      private static final DependantName<Item, String> ITEM_DESCRIPTION_ID = (var0) -> Util.makeDescriptionId("item", var0.location());
       private final DataComponentMap.Builder components;
       @Nullable
       Item craftingRemainingItem;
@@ -426,7 +418,7 @@ public class Item implements FeatureElement, ItemLike {
       }
 
       public Properties overrideDescription(String var1) {
-         this.descriptionId = DependantName.fixed(var1);
+         this.descriptionId = DependantName.<Item, String>fixed(var1);
          return this;
       }
 
@@ -441,11 +433,11 @@ public class Item implements FeatureElement, ItemLike {
       }
 
       protected String effectiveDescriptionId() {
-         return (String)this.descriptionId.get((ResourceKey)Objects.requireNonNull(this.id, "Item id not set"));
+         return this.descriptionId.get((ResourceKey)Objects.requireNonNull(this.id, "Item id not set"));
       }
 
       public ResourceLocation effectiveModel() {
-         return (ResourceLocation)this.model.get((ResourceKey)Objects.requireNonNull(this.id, "Item id not set"));
+         return this.model.get((ResourceKey)Objects.requireNonNull(this.id, "Item id not set"));
       }
 
       public <T> Properties component(DataComponentType<T> var1, T var2) {

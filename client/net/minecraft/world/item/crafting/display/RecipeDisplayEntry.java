@@ -12,7 +12,6 @@ import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.entity.player.StackedItemContents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.PlacementInfo;
 import net.minecraft.world.item.crafting.RecipeBookCategory;
 
 public record RecipeDisplayEntry(RecipeDisplayId id, RecipeDisplay display, OptionalInt group, RecipeBookCategory category, Optional<List<Ingredient>> craftingRequirements) {
@@ -32,32 +31,7 @@ public record RecipeDisplayEntry(RecipeDisplayId id, RecipeDisplay display, Opti
    }
 
    public boolean canCraft(StackedItemContents var1) {
-      if (this.craftingRequirements.isEmpty()) {
-         return false;
-      } else {
-         List var2 = ((List)this.craftingRequirements.get()).stream().map(PlacementInfo::ingredientToContents).toList();
-         return var1.canCraft((List)var2, (StackedContents.Output)null);
-      }
-   }
-
-   public RecipeDisplayId id() {
-      return this.id;
-   }
-
-   public RecipeDisplay display() {
-      return this.display;
-   }
-
-   public OptionalInt group() {
-      return this.group;
-   }
-
-   public RecipeBookCategory category() {
-      return this.category;
-   }
-
-   public Optional<List<Ingredient>> craftingRequirements() {
-      return this.craftingRequirements;
+      return this.craftingRequirements.isEmpty() ? false : var1.canCraft((List)this.craftingRequirements.get(), (StackedContents.Output)null);
    }
 
    static {

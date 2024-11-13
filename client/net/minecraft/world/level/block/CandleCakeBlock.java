@@ -31,11 +31,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CandleCakeBlock extends AbstractCandleBlock {
-   public static final MapCodec<CandleCakeBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("candle").forGetter((var0x) -> {
-         return var0x.candleBlock;
-      }), propertiesCodec()).apply(var0, CandleCakeBlock::new);
-   });
+   public static final MapCodec<CandleCakeBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("candle").forGetter((var0x) -> var0x.candleBlock), propertiesCodec()).apply(var0, CandleCakeBlock::new));
    public static final BooleanProperty LIT;
    protected static final float AABB_OFFSET = 1.0F;
    protected static final VoxelShape CAKE_SHAPE;
@@ -128,9 +124,7 @@ public class CandleCakeBlock extends AbstractCandleBlock {
    }
 
    public static boolean canLight(BlockState var0) {
-      return var0.is(BlockTags.CANDLE_CAKES, (var1) -> {
-         return var1.hasProperty(LIT) && !(Boolean)var0.getValue(LIT);
-      });
+      return var0.is(BlockTags.CANDLE_CAKES, (var1) -> var1.hasProperty(LIT) && !(Boolean)var0.getValue(LIT));
    }
 
    static {

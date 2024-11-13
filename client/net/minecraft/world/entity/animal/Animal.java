@@ -226,9 +226,7 @@ public abstract class Animal extends AgeableMob {
    }
 
    public void finalizeSpawnChildFromBreeding(ServerLevel var1, Animal var2, @Nullable AgeableMob var3) {
-      Optional.ofNullable(this.getLoveCause()).or(() -> {
-         return Optional.ofNullable(var2.getLoveCause());
-      }).ifPresent((var3x) -> {
+      Optional.ofNullable(this.getLoveCause()).or(() -> Optional.ofNullable(var2.getLoveCause())).ifPresent((var3x) -> {
          var3x.awardStat(Stats.ANIMALS_BRED);
          CriteriaTriggers.BRED_ANIMALS.trigger(var3x, this, var2, var3);
       });

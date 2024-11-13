@@ -24,9 +24,7 @@ public record ItemLore(List<Component> lines, List<Component> styledLines) imple
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemLore> STREAM_CODEC;
 
    public ItemLore(List<Component> var1) {
-      this(var1, Lists.transform(var1, (var0) -> {
-         return ComponentUtils.mergeStyles(var0.copy(), LORE_STYLE);
-      }));
+      this(var1, Lists.transform(var1, (var0) -> ComponentUtils.mergeStyles(var0.copy(), LORE_STYLE)));
    }
 
    public ItemLore(List<Component> var1, List<Component> var2) {
@@ -40,19 +38,11 @@ public record ItemLore(List<Component> lines, List<Component> styledLines) imple
    }
 
    public ItemLore withLineAdded(Component var1) {
-      return new ItemLore(Util.copyAndAdd((List)this.lines, (Object)var1));
+      return new ItemLore(Util.copyAndAdd(this.lines, var1));
    }
 
    public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
       this.styledLines.forEach(var2);
-   }
-
-   public List<Component> lines() {
-      return this.lines;
-   }
-
-   public List<Component> styledLines() {
-      return this.styledLines;
    }
 
    static {

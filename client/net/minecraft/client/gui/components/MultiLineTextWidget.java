@@ -23,9 +23,7 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       this.maxWidth = OptionalInt.empty();
       this.maxRows = OptionalInt.empty();
       this.centered = false;
-      this.cache = Util.singleKeyCache((var1x) -> {
-         return var1x.maxRows.isPresent() ? MultiLineLabel.create(var4, var1x.maxWidth, var1x.maxRows.getAsInt(), var1x.message) : MultiLineLabel.create(var4, var1x.message, var1x.maxWidth);
-      });
+      this.cache = Util.<CacheKey, MultiLineLabel>singleKeyCache((var1x) -> var1x.maxRows.isPresent() ? MultiLineLabel.create(var4, var1x.maxWidth, var1x.maxRows.getAsInt(), var1x.message) : MultiLineLabel.create(var4, var1x.message, var1x.maxWidth));
       this.active = false;
    }
 
@@ -60,7 +58,7 @@ public class MultiLineTextWidget extends AbstractStringWidget {
    }
 
    public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-      MultiLineLabel var5 = (MultiLineLabel)this.cache.getValue(this.getFreshCacheKey());
+      MultiLineLabel var5 = this.cache.getValue(this.getFreshCacheKey());
       int var6 = this.getX();
       int var7 = this.getY();
       Objects.requireNonNull(this.getFont());
@@ -83,7 +81,7 @@ public class MultiLineTextWidget extends AbstractStringWidget {
       return this.setColor(var1);
    }
 
-   private static record CacheKey(Component message, int maxWidth, OptionalInt maxRows) {
+   static record CacheKey(Component message, int maxWidth, OptionalInt maxRows) {
       final Component message;
       final int maxWidth;
       final OptionalInt maxRows;
@@ -93,18 +91,6 @@ public class MultiLineTextWidget extends AbstractStringWidget {
          this.message = var1;
          this.maxWidth = var2;
          this.maxRows = var3;
-      }
-
-      public Component message() {
-         return this.message;
-      }
-
-      public int maxWidth() {
-         return this.maxWidth;
-      }
-
-      public OptionalInt maxRows() {
-         return this.maxRows;
       }
    }
 }

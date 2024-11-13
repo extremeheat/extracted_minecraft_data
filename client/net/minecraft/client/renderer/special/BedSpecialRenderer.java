@@ -27,9 +27,7 @@ public class BedSpecialRenderer implements NoDataSpecialModelRenderer {
    }
 
    public static record Unbaked(ResourceLocation texture) implements SpecialModelRenderer.Unbaked {
-      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(ResourceLocation.CODEC.fieldOf("texture").forGetter(Unbaked::texture)).apply(var0, Unbaked::new);
-      });
+      public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("texture").forGetter(Unbaked::texture)).apply(var0, Unbaked::new));
 
       public Unbaked(DyeColor var1) {
          this(Sheets.colorToResourceMaterial(var1));
@@ -46,10 +44,6 @@ public class BedSpecialRenderer implements NoDataSpecialModelRenderer {
 
       public SpecialModelRenderer<?> bake(EntityModelSet var1) {
          return new BedSpecialRenderer(new BedRenderer(var1), Sheets.createBedMaterial(this.texture));
-      }
-
-      public ResourceLocation texture() {
-         return this.texture;
       }
    }
 }

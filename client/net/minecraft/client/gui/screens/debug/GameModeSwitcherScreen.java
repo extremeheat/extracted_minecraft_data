@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.debug;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.InputConstants;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
@@ -82,10 +81,8 @@ public class GameModeSwitcherScreen extends Screen {
          }
 
          boolean var7 = this.firstMouseX == var2 && this.firstMouseY == var3;
-         Iterator var8 = this.slots.iterator();
 
-         while(var8.hasNext()) {
-            GameModeSlot var9 = (GameModeSlot)var8.next();
+         for(GameModeSlot var9 : this.slots) {
             var9.render(var1, var2, var3, var4);
             var9.setSelected(this.currentlyHovered == var9.icon);
             if (!var7 && var9.isHoveredOrFocused()) {

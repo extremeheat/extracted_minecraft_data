@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -12,9 +13,7 @@ public class DismountOrSkipMounting {
    }
 
    public static <E extends LivingEntity> BehaviorControl<E> create(int var0, BiPredicate<E, Entity> var1) {
-      return BehaviorBuilder.create((var2) -> {
-         return var2.group(var2.registered(MemoryModuleType.RIDE_TARGET)).apply(var2, (var3) -> {
-            return (var4, var5, var6) -> {
+      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.registered(MemoryModuleType.RIDE_TARGET)).apply(var2, (var3) -> (var4, var5, var6) -> {
                Entity var8 = var5.getVehicle();
                Entity var9 = (Entity)var2.tryGet(var3).orElse((Object)null);
                if (var8 == null && var9 == null) {
@@ -29,9 +28,7 @@ public class DismountOrSkipMounting {
                      return true;
                   }
                }
-            };
-         });
-      });
+            })));
    }
 
    private static boolean isVehicleValid(LivingEntity var0, Entity var1, int var2) {

@@ -7,9 +7,7 @@ import net.minecraft.util.random.WeightedRandomList;
 import net.minecraft.world.level.biome.MobSpawnSettings;
 
 public record StructureSpawnOverride(BoundingBoxType boundingBox, WeightedRandomList<MobSpawnSettings.SpawnerData> spawns) {
-   public static final Codec<StructureSpawnOverride> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(StructureSpawnOverride.BoundingBoxType.CODEC.fieldOf("bounding_box").forGetter(StructureSpawnOverride::boundingBox), WeightedRandomList.codec(MobSpawnSettings.SpawnerData.CODEC).fieldOf("spawns").forGetter(StructureSpawnOverride::spawns)).apply(var0, StructureSpawnOverride::new);
-   });
+   public static final Codec<StructureSpawnOverride> CODEC = RecordCodecBuilder.create((var0) -> var0.group(StructureSpawnOverride.BoundingBoxType.CODEC.fieldOf("bounding_box").forGetter(StructureSpawnOverride::boundingBox), WeightedRandomList.codec(MobSpawnSettings.SpawnerData.CODEC).fieldOf("spawns").forGetter(StructureSpawnOverride::spawns)).apply(var0, StructureSpawnOverride::new));
 
    public StructureSpawnOverride(BoundingBoxType var1, WeightedRandomList<MobSpawnSettings.SpawnerData> var2) {
       super();
@@ -17,19 +15,11 @@ public record StructureSpawnOverride(BoundingBoxType boundingBox, WeightedRandom
       this.spawns = var2;
    }
 
-   public BoundingBoxType boundingBox() {
-      return this.boundingBox;
-   }
-
-   public WeightedRandomList<MobSpawnSettings.SpawnerData> spawns() {
-      return this.spawns;
-   }
-
    public static enum BoundingBoxType implements StringRepresentable {
       PIECE("piece"),
       STRUCTURE("full");
 
-      public static final Codec<BoundingBoxType> CODEC = StringRepresentable.fromEnum(BoundingBoxType::values);
+      public static final Codec<BoundingBoxType> CODEC = StringRepresentable.<BoundingBoxType>fromEnum(BoundingBoxType::values);
       private final String id;
 
       private BoundingBoxType(final String var3) {

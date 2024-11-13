@@ -18,11 +18,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SaplingBlock extends BushBlock implements BonemealableBlock {
-   public static final MapCodec<SaplingBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(TreeGrower.CODEC.fieldOf("tree").forGetter((var0x) -> {
-         return var0x.treeGrower;
-      }), propertiesCodec()).apply(var0, SaplingBlock::new);
-   });
+   public static final MapCodec<SaplingBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(TreeGrower.CODEC.fieldOf("tree").forGetter((var0x) -> var0x.treeGrower), propertiesCodec()).apply(var0, SaplingBlock::new));
    public static final IntegerProperty STAGE;
    protected static final float AABB_OFFSET = 6.0F;
    protected static final VoxelShape SHAPE;

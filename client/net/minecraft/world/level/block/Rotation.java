@@ -14,7 +14,7 @@ public enum Rotation implements StringRepresentable {
    CLOCKWISE_180("180", OctahedralGroup.ROT_180_FACE_XZ),
    COUNTERCLOCKWISE_90("counterclockwise_90", OctahedralGroup.ROT_90_Y_POS);
 
-   public static final Codec<Rotation> CODEC = StringRepresentable.fromEnum(Rotation::values);
+   public static final Codec<Rotation> CODEC = StringRepresentable.<Rotation>fromEnum(Rotation::values);
    private final String id;
    private final OctahedralGroup rotation;
 
@@ -116,11 +116,11 @@ public enum Rotation implements StringRepresentable {
    }
 
    public static Rotation getRandom(RandomSource var0) {
-      return (Rotation)Util.getRandom((Object[])values(), var0);
+      return (Rotation)Util.getRandom(values(), var0);
    }
 
    public static List<Rotation> getShuffled(RandomSource var0) {
-      return Util.shuffledCopy((Object[])values(), var0);
+      return Util.shuffledCopy(values(), var0);
    }
 
    public String getSerializedName() {

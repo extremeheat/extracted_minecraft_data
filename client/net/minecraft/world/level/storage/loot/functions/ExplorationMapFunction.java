@@ -81,19 +81,7 @@ public class ExplorationMapFunction extends LootItemConditionalFunction {
    static {
       DEFAULT_DESTINATION = StructureTags.ON_TREASURE_MAPS;
       DEFAULT_DECORATION = MapDecorationTypes.WOODLAND_MANSION;
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return commonFields(var0).and(var0.group(TagKey.codec(Registries.STRUCTURE).optionalFieldOf("destination", DEFAULT_DESTINATION).forGetter((var0x) -> {
-            return var0x.destination;
-         }), MapDecorationType.CODEC.optionalFieldOf("decoration", DEFAULT_DECORATION).forGetter((var0x) -> {
-            return var0x.mapDecoration;
-         }), Codec.BYTE.optionalFieldOf("zoom", (byte)2).forGetter((var0x) -> {
-            return var0x.zoom;
-         }), Codec.INT.optionalFieldOf("search_radius", 50).forGetter((var0x) -> {
-            return var0x.searchRadius;
-         }), Codec.BOOL.optionalFieldOf("skip_existing_chunks", true).forGetter((var0x) -> {
-            return var0x.skipKnownStructures;
-         }))).apply(var0, ExplorationMapFunction::new);
-      });
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(TagKey.codec(Registries.STRUCTURE).optionalFieldOf("destination", DEFAULT_DESTINATION).forGetter((var0x) -> var0x.destination), MapDecorationType.CODEC.optionalFieldOf("decoration", DEFAULT_DECORATION).forGetter((var0x) -> var0x.mapDecoration), Codec.BYTE.optionalFieldOf("zoom", (byte)2).forGetter((var0x) -> var0x.zoom), Codec.INT.optionalFieldOf("search_radius", 50).forGetter((var0x) -> var0x.searchRadius), Codec.BOOL.optionalFieldOf("skip_existing_chunks", true).forGetter((var0x) -> var0x.skipKnownStructures))).apply(var0, ExplorationMapFunction::new));
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<Builder> {

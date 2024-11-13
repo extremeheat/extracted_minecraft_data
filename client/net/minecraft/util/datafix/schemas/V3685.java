@@ -18,15 +18,9 @@ public class V3685 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       Map var2 = super.registerEntities(var1);
-      var1.register(var2, "minecraft:trident", () -> {
-         return abstractArrow(var1);
-      });
-      var1.register(var2, "minecraft:spectral_arrow", () -> {
-         return abstractArrow(var1);
-      });
-      var1.register(var2, "minecraft:arrow", () -> {
-         return abstractArrow(var1);
-      });
+      var1.register(var2, "minecraft:trident", () -> abstractArrow(var1));
+      var1.register(var2, "minecraft:spectral_arrow", () -> abstractArrow(var1));
+      var1.register(var2, "minecraft:arrow", () -> abstractArrow(var1));
       return var2;
    }
 }

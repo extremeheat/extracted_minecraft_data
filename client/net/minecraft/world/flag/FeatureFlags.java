@@ -26,9 +26,7 @@ public class FeatureFlags {
    public static String printMissingFlags(FeatureFlagRegistry var0, FeatureFlagSet var1, FeatureFlagSet var2) {
       Set var3 = var0.toNames(var2);
       Set var4 = var0.toNames(var1);
-      return (String)var3.stream().filter((var1x) -> {
-         return !var4.contains(var1x);
-      }).map(ResourceLocation::toString).collect(Collectors.joining(", "));
+      return (String)var3.stream().filter((var1x) -> !var4.contains(var1x)).map(ResourceLocation::toString).collect(Collectors.joining(", "));
    }
 
    public static boolean isExperimental(FeatureFlagSet var0) {

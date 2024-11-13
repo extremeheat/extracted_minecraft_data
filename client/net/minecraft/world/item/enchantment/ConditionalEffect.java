@@ -22,31 +22,15 @@ public record ConditionalEffect<T>(T effect, Optional<LootItemCondition> require
          ProblemReporter.Collector var2 = new ProblemReporter.Collector();
          ValidationContext var3 = new ValidationContext(var2, var0);
          var1.validate(var3);
-         return (DataResult)var2.getReport().map((var0x) -> {
-            return DataResult.error(() -> {
-               return "Validation error in enchantment effect condition: " + var0x;
-            });
-         }).orElseGet(() -> {
-            return DataResult.success(var1);
-         });
+         return (DataResult)var2.getReport().map((var0x) -> DataResult.error(() -> "Validation error in enchantment effect condition: " + var0x)).orElseGet(() -> DataResult.success(var1));
       });
    }
 
    public static <T> Codec<ConditionalEffect<T>> codec(Codec<T> var0, ContextKeySet var1) {
-      return RecordCodecBuilder.create((var2) -> {
-         return var2.group(var0.fieldOf("effect").forGetter(ConditionalEffect::effect), conditionCodec(var1).optionalFieldOf("requirements").forGetter(ConditionalEffect::requirements)).apply(var2, ConditionalEffect::new);
-      });
+      return RecordCodecBuilder.create((var2) -> var2.group(var0.fieldOf("effect").forGetter(ConditionalEffect::effect), conditionCodec(var1).optionalFieldOf("requirements").forGetter(ConditionalEffect::requirements)).apply(var2, ConditionalEffect::new));
    }
 
    public boolean matches(LootContext var1) {
       return this.requirements.isEmpty() ? true : ((LootItemCondition)this.requirements.get()).test(var1);
-   }
-
-   public T effect() {
-      return this.effect;
-   }
-
-   public Optional<LootItemCondition> requirements() {
-      return this.requirements;
    }
 }

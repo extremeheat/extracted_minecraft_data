@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -71,9 +70,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    public ZombieVillager(EntityType<? extends ZombieVillager> var1, Level var2) {
       super(var1, var2);
-      BuiltInRegistries.VILLAGER_PROFESSION.getRandom(this.random).ifPresent((var1x) -> {
-         this.setVillagerData(this.getVillagerData().setProfession((VillagerProfession)var1x.value()));
-      });
+      BuiltInRegistries.VILLAGER_PROFESSION.getRandom(this.random).ifPresent((var1x) -> this.setVillagerData(this.getVillagerData().setProfession((VillagerProfession)var1x.value())));
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
@@ -87,9 +84,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       DataResult var10000 = VillagerData.CODEC.encodeStart(NbtOps.INSTANCE, this.getVillagerData());
       Logger var10001 = LOGGER;
       Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         var1.put("VillagerData", var1x);
-      });
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("VillagerData", var1x));
       if (this.tradeOffers != null) {
          var1.put("Offers", (Tag)MerchantOffers.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.tradeOffers).getOrThrow());
       }
@@ -119,9 +114,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
          DataResult var10000 = MerchantOffers.CODEC.parse(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var1.get("Offers"));
          Logger var10002 = LOGGER;
          Objects.requireNonNull(var10002);
-         var10000.resultOrPartial(Util.prefix("Failed to load offers: ", var10002::warn)).ifPresent((var1x) -> {
-            this.tradeOffers = var1x;
-         });
+         var10000.resultOrPartial(Util.prefix("Failed to load offers: ", var10002::warn)).ifPresent((var1x) -> this.tradeOffers = var1x);
       }
 
       if (var1.contains("Gossips", 9)) {
@@ -202,12 +195,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    private void finishConversion(ServerLevel var1) {
       this.convertTo(EntityType.VILLAGER, ConversionParams.single(this, false, false), (var2) -> {
-         Iterator var3 = this.dropPreservedEquipment(var1, (var0) -> {
-            return !EnchantmentHelper.has(var0, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE);
-         }).iterator();
-
-         while(var3.hasNext()) {
-            EquipmentSlot var4 = (EquipmentSlot)var3.next();
+         for(EquipmentSlot var4 : this.dropPreservedEquipment(var1, (var0) -> !EnchantmentHelper.has(var0, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE))) {
             SlotAccess var5 = var2.getSlot(var4.getIndex() + 300);
             var5.set(this.getItemBySlot(var4));
          }
@@ -330,7 +318,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
    }
 
    static {
-      DATA_CONVERTING_ID = SynchedEntityData.defineId(ZombieVillager.class, EntityDataSerializers.BOOLEAN);
-      DATA_VILLAGER_DATA = SynchedEntityData.defineId(ZombieVillager.class, EntityDataSerializers.VILLAGER_DATA);
+      DATA_CONVERTING_ID = SynchedEntityData.<Boolean>defineId(ZombieVillager.class, EntityDataSerializers.BOOLEAN);
+      DATA_VILLAGER_DATA = SynchedEntityData.<VillagerData>defineId(ZombieVillager.class, EntityDataSerializers.VILLAGER_DATA);
    }
 }

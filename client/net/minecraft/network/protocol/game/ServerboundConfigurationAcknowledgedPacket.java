@@ -26,6 +26,6 @@ public class ServerboundConfigurationAcknowledgedPacket implements Packet<Server
    }
 
    static {
-      STREAM_CODEC = StreamCodec.unit(INSTANCE);
+      STREAM_CODEC = StreamCodec.<ByteBuf, ServerboundConfigurationAcknowledgedPacket>unit(INSTANCE);
    }
 }

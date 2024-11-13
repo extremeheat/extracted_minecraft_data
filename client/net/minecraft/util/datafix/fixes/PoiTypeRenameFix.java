@@ -17,12 +17,10 @@ public class PoiTypeRenameFix extends AbstractPoiSectionFix {
    }
 
    protected <T> Stream<Dynamic<T>> processRecords(Stream<Dynamic<T>> var1) {
-      return var1.map((var1x) -> {
-         return var1x.update("type", (var1) -> {
+      return var1.map((var1x) -> var1x.update("type", (var1) -> {
             DataResult var10000 = var1.asString().map(this.renamer);
             Objects.requireNonNull(var1);
             return (Dynamic)DataFixUtils.orElse(var10000.map(var1::createString).result(), var1);
-         });
-      });
+         }));
    }
 }

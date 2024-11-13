@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.recipebook;
 
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.gui.GuiGraphics;
@@ -26,15 +25,9 @@ public class RecipeBookTabButton extends StateSwitchingButton {
 
    public void startAnimation(ClientRecipeBook var1, boolean var2) {
       RecipeCollection.CraftableStatus var3 = var2 ? RecipeCollection.CraftableStatus.CRAFTABLE : RecipeCollection.CraftableStatus.ANY;
-      List var4 = var1.getCollection(this.tabInfo.category());
-      Iterator var5 = var4.iterator();
 
-      while(var5.hasNext()) {
-         RecipeCollection var6 = (RecipeCollection)var5.next();
-         Iterator var7 = var6.getSelectedRecipes(var3).iterator();
-
-         while(var7.hasNext()) {
-            RecipeDisplayEntry var8 = (RecipeDisplayEntry)var7.next();
+      for(RecipeCollection var6 : var1.getCollection(this.tabInfo.category())) {
+         for(RecipeDisplayEntry var8 : var6.getSelectedRecipes(var3)) {
             if (var1.willHighlight(var8.id())) {
                this.animationTime = 15.0F;
                return;
@@ -88,10 +81,8 @@ public class RecipeBookTabButton extends StateSwitchingButton {
    public boolean updateVisibility(ClientRecipeBook var1) {
       List var2 = var1.getCollection(this.tabInfo.category());
       this.visible = false;
-      Iterator var3 = var2.iterator();
 
-      while(var3.hasNext()) {
-         RecipeCollection var4 = (RecipeCollection)var3.next();
+      for(RecipeCollection var4 : var2) {
          if (var4.hasAnySelected()) {
             this.visible = true;
             break;

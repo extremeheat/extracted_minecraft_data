@@ -88,11 +88,8 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
    private static BlockState updateDistance(BlockState var0, LevelAccessor var1, BlockPos var2) {
       int var3 = 7;
       BlockPos.MutableBlockPos var4 = new BlockPos.MutableBlockPos();
-      Direction[] var5 = Direction.values();
-      int var6 = var5.length;
 
-      for(int var7 = 0; var7 < var6; ++var7) {
-         Direction var8 = var5[var7];
+      for(Direction var8 : Direction.values()) {
          var4.setWithOffset(var2, (Direction)var8);
          var3 = Math.min(var3, getDistanceAt(var1.getBlockState(var4)) + 1);
          if (var3 == 1) {

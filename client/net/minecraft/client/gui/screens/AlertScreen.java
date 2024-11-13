@@ -41,9 +41,7 @@ public class AlertScreen extends Screen {
       int var1 = var10000 * 9;
       int var2 = Mth.clamp(90 + var1 + 12, this.height / 6 + 96, this.height - 24);
       boolean var3 = true;
-      this.addRenderableWidget(Button.builder(this.okButton, (var1x) -> {
-         this.callback.run();
-      }).bounds((this.width - 150) / 2, var2, 150, 20).build());
+      this.addRenderableWidget(Button.builder(this.okButton, (var1x) -> this.callback.run()).bounds((this.width - 150) / 2, var2, 150, 20).build());
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

@@ -25,9 +25,7 @@ import net.minecraft.server.network.FilteredText;
 
 public class MessageArgument implements SignedArgument<Message> {
    private static final Collection<String> EXAMPLES = Arrays.asList("Hello world!", "foo", "@e", "Hello @p :)");
-   static final Dynamic2CommandExceptionType TOO_LONG = new Dynamic2CommandExceptionType((var0, var1) -> {
-      return Component.translatableEscape("argument.message.too_long", var0, var1);
-   });
+   static final Dynamic2CommandExceptionType TOO_LONG = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("argument.message.too_long", var0, var1));
 
    public MessageArgument() {
       super();
@@ -116,11 +114,8 @@ public class MessageArgument implements SignedArgument<Message> {
          if (this.parts.length != 0 && var2) {
             MutableComponent var3 = Component.literal(this.text.substring(0, this.parts[0].start()));
             int var4 = this.parts[0].start();
-            Part[] var5 = this.parts;
-            int var6 = var5.length;
 
-            for(int var7 = 0; var7 < var6; ++var7) {
-               Part var8 = var5[var7];
+            for(Part var8 : this.parts) {
                Component var9 = var8.toComponent(var1);
                if (var4 < var8.start()) {
                   var3.append(this.text.substring(var4, var8.start()));
@@ -155,43 +150,34 @@ public class MessageArgument implements SignedArgument<Message> {
                while(true) {
                   int var5;
                   EntitySelector var6;
-                  label42:
                   while(true) {
-                     while(var0.canRead()) {
-                        if (var0.peek() == '@') {
-                           var5 = var0.getCursor();
-
-                           try {
-                              EntitySelectorParser var7 = new EntitySelectorParser(var0, true);
-                              var6 = var7.parse();
-                              break label42;
-                           } catch (CommandSyntaxException var8) {
-                              if (var8.getType() != EntitySelectorParser.ERROR_MISSING_SELECTOR_TYPE && var8.getType() != EntitySelectorParser.ERROR_UNKNOWN_SELECTOR_TYPE) {
-                                 throw var8;
-                              }
-
-                              var0.setCursor(var5 + 1);
-                           }
-                        } else {
-                           var0.skip();
-                        }
+                     if (!var0.canRead()) {
+                        return new Message(var2, (Part[])var3.toArray(new Part[0]));
                      }
 
-                     return new Message(var2, (Part[])var3.toArray(new Part[0]));
+                     if (var0.peek() == '@') {
+                        var5 = var0.getCursor();
+
+                        try {
+                           EntitySelectorParser var7 = new EntitySelectorParser(var0, true);
+                           var6 = var7.parse();
+                           break;
+                        } catch (CommandSyntaxException var8) {
+                           if (var8.getType() != EntitySelectorParser.ERROR_MISSING_SELECTOR_TYPE && var8.getType() != EntitySelectorParser.ERROR_UNKNOWN_SELECTOR_TYPE) {
+                              throw var8;
+                           }
+
+                           var0.setCursor(var5 + 1);
+                        }
+                     } else {
+                        var0.skip();
+                     }
                   }
 
                   var3.add(new Part(var5 - var4, var0.getCursor() - var4, var6));
                }
             }
          }
-      }
-
-      public String text() {
-         return this.text;
-      }
-
-      public Part[] parts() {
-         return this.parts;
       }
    }
 
@@ -205,18 +191,6 @@ public class MessageArgument implements SignedArgument<Message> {
 
       public Component toComponent(CommandSourceStack var1) throws CommandSyntaxException {
          return EntitySelector.joinNames(this.selector.findEntities(var1));
-      }
-
-      public int start() {
-         return this.start;
-      }
-
-      public int end() {
-         return this.end;
-      }
-
-      public EntitySelector selector() {
-         return this.selector;
       }
    }
 }

@@ -3,7 +3,6 @@ package com.mojang.realmsclient.gui.screens;
 import com.google.common.collect.ImmutableList;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsWorldOptions;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.client.gui.GuiGraphics;
@@ -76,9 +75,9 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
 
    private static <T> T findByIndex(List<T> var0, int var1, int var2) {
       try {
-         return var0.get(var1);
+         return (T)var0.get(var1);
       } catch (IndexOutOfBoundsException var4) {
-         return var0.get(var2);
+         return (T)var0.get(var2);
       }
    }
 
@@ -108,18 +107,12 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
       this.nameEdit.setMaxLength(10);
       this.nameEdit.setValue(this.worldName);
       this.nameEdit.setResponder(this::setWorldName);
-      CycleButton var7 = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.pvp).create(var1, row(1), this.columnWidth, 20, Component.translatable("mco.configure.world.pvp"), (var1x, var2x) -> {
-         this.pvp = var2x;
-      }));
-      this.addRenderableWidget(CycleButton.builder(GameType::getShortDisplayName).withValues((Collection)GAME_MODES).withInitialValue(this.gameMode).create(this.column1X, row(3), this.columnWidth, 20, Component.translatable("selectWorld.gameMode"), (var1x, var2x) -> {
-         this.gameMode = var2x;
-      }));
+      CycleButton var7 = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.pvp).create(var1, row(1), this.columnWidth, 20, Component.translatable("mco.configure.world.pvp"), (var1x, var2x) -> this.pvp = var2x));
+      this.addRenderableWidget(CycleButton.builder(GameType::getShortDisplayName).withValues(GAME_MODES).withInitialValue(this.gameMode).create(this.column1X, row(3), this.columnWidth, 20, Component.translatable("selectWorld.gameMode"), (var1x, var2x) -> this.gameMode = var2x));
       this.spawnProtectionButton = (SettingsSlider)this.addRenderableWidget(new SettingsSlider(var1, row(3), this.columnWidth, this.spawnProtection, 0.0F, 16.0F));
       MutableComponent var3 = Component.translatable("mco.configure.world.spawn_toggle.message");
-      CycleButton var4 = CycleButton.onOffBuilder(this.difficulty != Difficulty.PEACEFUL && this.spawnMonsters).create(var1, row(5), this.columnWidth, 20, Component.translatable("mco.configure.world.spawnMonsters"), this.confirmDangerousOption(var3, (var1x) -> {
-         this.spawnMonsters = var1x;
-      }));
-      this.addRenderableWidget(CycleButton.builder(Difficulty::getDisplayName).withValues((Collection)DIFFICULTIES).withInitialValue(this.difficulty).create(this.column1X, row(5), this.columnWidth, 20, Component.translatable("options.difficulty"), (var2x, var3x) -> {
+      CycleButton var4 = CycleButton.onOffBuilder(this.difficulty != Difficulty.PEACEFUL && this.spawnMonsters).create(var1, row(5), this.columnWidth, 20, Component.translatable("mco.configure.world.spawnMonsters"), this.confirmDangerousOption(var3, (var1x) -> this.spawnMonsters = var1x));
+      this.addRenderableWidget(CycleButton.builder(Difficulty::getDisplayName).withValues(DIFFICULTIES).withInitialValue(this.difficulty).create(this.column1X, row(5), this.columnWidth, 20, Component.translatable("options.difficulty"), (var2x, var3x) -> {
          this.difficulty = var3x;
          if (this.worldType == RealmsServer.WorldType.NORMAL) {
             boolean var4x = this.difficulty != Difficulty.PEACEFUL;
@@ -129,12 +122,8 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
 
       }));
       this.addRenderableWidget(var4);
-      CycleButton var5 = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.forceGameMode).create(this.column1X, row(7), this.columnWidth, 20, Component.translatable("mco.configure.world.forceGameMode"), (var1x, var2x) -> {
-         this.forceGameMode = var2x;
-      }));
-      CycleButton var6 = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.commandBlocks).create(var1, row(7), this.columnWidth, 20, Component.translatable("mco.configure.world.commandBlocks"), (var1x, var2x) -> {
-         this.commandBlocks = var2x;
-      }));
+      CycleButton var5 = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.forceGameMode).create(this.column1X, row(7), this.columnWidth, 20, Component.translatable("mco.configure.world.forceGameMode"), (var1x, var2x) -> this.forceGameMode = var2x));
+      CycleButton var6 = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.commandBlocks).create(var1, row(7), this.columnWidth, 20, Component.translatable("mco.configure.world.commandBlocks"), (var1x, var2x) -> this.commandBlocks = var2x));
       if (this.worldType != RealmsServer.WorldType.NORMAL) {
          var7.active = false;
          var4.active = false;
@@ -147,12 +136,8 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
          var4.active = false;
       }
 
-      this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.buttons.done"), (var1x) -> {
-         this.saveSettings();
-      }).bounds(this.column1X, row(13), this.columnWidth, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
-         this.onClose();
-      }).bounds(var1, row(13), this.columnWidth, 20).build());
+      this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.buttons.done"), (var1x) -> this.saveSettings()).bounds(this.column1X, row(13), this.columnWidth, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).bounds(var1, row(13), this.columnWidth, 20).build());
    }
 
    private CycleButton.OnValueChange<Boolean> confirmDangerousOption(Component var1, Consumer<Boolean> var2) {
@@ -208,7 +193,7 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
       SPAWN_PROTECTION_TEXT = Component.translatable("mco.configure.world.spawnProtection");
    }
 
-   private class SettingsSlider extends AbstractSliderButton {
+   class SettingsSlider extends AbstractSliderButton {
       private final double minValue;
       private final double maxValue;
 

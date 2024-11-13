@@ -84,9 +84,9 @@ public class HumanoidArmorLayer<S extends HumanoidRenderState, M extends Humanoi
 
    private A getArmorModel(S var1, EquipmentSlot var2) {
       if (this.usesInnerModel(var2)) {
-         return var1.isBaby ? this.innerModelBaby : this.innerModel;
+         return (A)(var1.isBaby ? this.innerModelBaby : this.innerModel);
       } else {
-         return var1.isBaby ? this.outerModelBaby : this.outerModel;
+         return (A)(var1.isBaby ? this.outerModelBaby : this.outerModel);
       }
    }
 

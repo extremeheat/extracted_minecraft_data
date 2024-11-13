@@ -59,7 +59,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
 
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = (Slot)this.slots.get(var2);
+      Slot var4 = this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -119,7 +119,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       return this.brewingStandData.get(0);
    }
 
-   private static class PotionSlot extends Slot {
+   static class PotionSlot extends Slot {
       public PotionSlot(Container var1, int var2, int var3, int var4) {
          super(var1, var2, var3, var4);
       }
@@ -163,7 +163,7 @@ public class BrewingStandMenu extends AbstractContainerMenu {
       }
    }
 
-   private static class FuelSlot extends Slot {
+   static class FuelSlot extends Slot {
       public FuelSlot(Container var1, int var2, int var3, int var4) {
          super(var1, var2, var3, var4);
       }

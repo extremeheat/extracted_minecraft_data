@@ -18,16 +18,4 @@ public record StructurePieceSerializationContext(ResourceManager resourceManager
       MinecraftServer var1 = var0.getServer();
       return new StructurePieceSerializationContext(var1.getResourceManager(), var1.registryAccess(), var1.getStructureManager());
    }
-
-   public ResourceManager resourceManager() {
-      return this.resourceManager;
-   }
-
-   public RegistryAccess registryAccess() {
-      return this.registryAccess;
-   }
-
-   public StructureTemplateManager structureTemplateManager() {
-      return this.structureTemplateManager;
-   }
 }

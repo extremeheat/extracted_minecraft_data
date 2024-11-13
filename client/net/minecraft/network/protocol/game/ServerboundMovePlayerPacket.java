@@ -94,87 +94,8 @@ public abstract class ServerboundMovePlayerPacket implements Packet<ServerGamePa
       return this.hasRot;
    }
 
-   public static class StatusOnly extends ServerboundMovePlayerPacket {
-      public static final StreamCodec<FriendlyByteBuf, StatusOnly> STREAM_CODEC = Packet.codec(StatusOnly::write, StatusOnly::read);
-
-      public StatusOnly(boolean var1, boolean var2) {
-         super(0.0, 0.0, 0.0, 0.0F, 0.0F, var1, var2, false, false);
-      }
-
-      private static StatusOnly read(FriendlyByteBuf var0) {
-         short var1 = var0.readUnsignedByte();
-         boolean var2 = ServerboundMovePlayerPacket.unpackOnGround(var1);
-         boolean var3 = ServerboundMovePlayerPacket.unpackHorizontalCollision(var1);
-         return new StatusOnly(var2, var3);
-      }
-
-      private void write(FriendlyByteBuf var1) {
-         var1.writeByte(ServerboundMovePlayerPacket.packFlags(this.onGround, this.horizontalCollision));
-      }
-
-      public PacketType<StatusOnly> type() {
-         return GamePacketTypes.SERVERBOUND_MOVE_PLAYER_STATUS_ONLY;
-      }
-   }
-
-   public static class Rot extends ServerboundMovePlayerPacket {
-      public static final StreamCodec<FriendlyByteBuf, Rot> STREAM_CODEC = Packet.codec(Rot::write, Rot::read);
-
-      public Rot(float var1, float var2, boolean var3, boolean var4) {
-         super(0.0, 0.0, 0.0, var1, var2, var3, var4, false, true);
-      }
-
-      private static Rot read(FriendlyByteBuf var0) {
-         float var1 = var0.readFloat();
-         float var2 = var0.readFloat();
-         short var3 = var0.readUnsignedByte();
-         boolean var4 = ServerboundMovePlayerPacket.unpackOnGround(var3);
-         boolean var5 = ServerboundMovePlayerPacket.unpackHorizontalCollision(var3);
-         return new Rot(var1, var2, var4, var5);
-      }
-
-      private void write(FriendlyByteBuf var1) {
-         var1.writeFloat(this.yRot);
-         var1.writeFloat(this.xRot);
-         var1.writeByte(ServerboundMovePlayerPacket.packFlags(this.onGround, this.horizontalCollision));
-      }
-
-      public PacketType<Rot> type() {
-         return GamePacketTypes.SERVERBOUND_MOVE_PLAYER_ROT;
-      }
-   }
-
-   public static class Pos extends ServerboundMovePlayerPacket {
-      public static final StreamCodec<FriendlyByteBuf, Pos> STREAM_CODEC = Packet.codec(Pos::write, Pos::read);
-
-      public Pos(double var1, double var3, double var5, boolean var7, boolean var8) {
-         super(var1, var3, var5, 0.0F, 0.0F, var7, var8, true, false);
-      }
-
-      private static Pos read(FriendlyByteBuf var0) {
-         double var1 = var0.readDouble();
-         double var3 = var0.readDouble();
-         double var5 = var0.readDouble();
-         short var7 = var0.readUnsignedByte();
-         boolean var8 = ServerboundMovePlayerPacket.unpackOnGround(var7);
-         boolean var9 = ServerboundMovePlayerPacket.unpackHorizontalCollision(var7);
-         return new Pos(var1, var3, var5, var8, var9);
-      }
-
-      private void write(FriendlyByteBuf var1) {
-         var1.writeDouble(this.x);
-         var1.writeDouble(this.y);
-         var1.writeDouble(this.z);
-         var1.writeByte(ServerboundMovePlayerPacket.packFlags(this.onGround, this.horizontalCollision));
-      }
-
-      public PacketType<Pos> type() {
-         return GamePacketTypes.SERVERBOUND_MOVE_PLAYER_POS;
-      }
-   }
-
    public static class PosRot extends ServerboundMovePlayerPacket {
-      public static final StreamCodec<FriendlyByteBuf, PosRot> STREAM_CODEC = Packet.codec(PosRot::write, PosRot::read);
+      public static final StreamCodec<FriendlyByteBuf, PosRot> STREAM_CODEC = Packet.<FriendlyByteBuf, PosRot>codec(PosRot::write, PosRot::read);
 
       public PosRot(double var1, double var3, double var5, float var7, float var8, boolean var9, boolean var10) {
          super(var1, var3, var5, var7, var8, var9, var10, true, true);
@@ -203,6 +124,85 @@ public abstract class ServerboundMovePlayerPacket implements Packet<ServerGamePa
 
       public PacketType<PosRot> type() {
          return GamePacketTypes.SERVERBOUND_MOVE_PLAYER_POS_ROT;
+      }
+   }
+
+   public static class Pos extends ServerboundMovePlayerPacket {
+      public static final StreamCodec<FriendlyByteBuf, Pos> STREAM_CODEC = Packet.<FriendlyByteBuf, Pos>codec(Pos::write, Pos::read);
+
+      public Pos(double var1, double var3, double var5, boolean var7, boolean var8) {
+         super(var1, var3, var5, 0.0F, 0.0F, var7, var8, true, false);
+      }
+
+      private static Pos read(FriendlyByteBuf var0) {
+         double var1 = var0.readDouble();
+         double var3 = var0.readDouble();
+         double var5 = var0.readDouble();
+         short var7 = var0.readUnsignedByte();
+         boolean var8 = ServerboundMovePlayerPacket.unpackOnGround(var7);
+         boolean var9 = ServerboundMovePlayerPacket.unpackHorizontalCollision(var7);
+         return new Pos(var1, var3, var5, var8, var9);
+      }
+
+      private void write(FriendlyByteBuf var1) {
+         var1.writeDouble(this.x);
+         var1.writeDouble(this.y);
+         var1.writeDouble(this.z);
+         var1.writeByte(ServerboundMovePlayerPacket.packFlags(this.onGround, this.horizontalCollision));
+      }
+
+      public PacketType<Pos> type() {
+         return GamePacketTypes.SERVERBOUND_MOVE_PLAYER_POS;
+      }
+   }
+
+   public static class Rot extends ServerboundMovePlayerPacket {
+      public static final StreamCodec<FriendlyByteBuf, Rot> STREAM_CODEC = Packet.<FriendlyByteBuf, Rot>codec(Rot::write, Rot::read);
+
+      public Rot(float var1, float var2, boolean var3, boolean var4) {
+         super(0.0, 0.0, 0.0, var1, var2, var3, var4, false, true);
+      }
+
+      private static Rot read(FriendlyByteBuf var0) {
+         float var1 = var0.readFloat();
+         float var2 = var0.readFloat();
+         short var3 = var0.readUnsignedByte();
+         boolean var4 = ServerboundMovePlayerPacket.unpackOnGround(var3);
+         boolean var5 = ServerboundMovePlayerPacket.unpackHorizontalCollision(var3);
+         return new Rot(var1, var2, var4, var5);
+      }
+
+      private void write(FriendlyByteBuf var1) {
+         var1.writeFloat(this.yRot);
+         var1.writeFloat(this.xRot);
+         var1.writeByte(ServerboundMovePlayerPacket.packFlags(this.onGround, this.horizontalCollision));
+      }
+
+      public PacketType<Rot> type() {
+         return GamePacketTypes.SERVERBOUND_MOVE_PLAYER_ROT;
+      }
+   }
+
+   public static class StatusOnly extends ServerboundMovePlayerPacket {
+      public static final StreamCodec<FriendlyByteBuf, StatusOnly> STREAM_CODEC = Packet.<FriendlyByteBuf, StatusOnly>codec(StatusOnly::write, StatusOnly::read);
+
+      public StatusOnly(boolean var1, boolean var2) {
+         super(0.0, 0.0, 0.0, 0.0F, 0.0F, var1, var2, false, false);
+      }
+
+      private static StatusOnly read(FriendlyByteBuf var0) {
+         short var1 = var0.readUnsignedByte();
+         boolean var2 = ServerboundMovePlayerPacket.unpackOnGround(var1);
+         boolean var3 = ServerboundMovePlayerPacket.unpackHorizontalCollision(var1);
+         return new StatusOnly(var2, var3);
+      }
+
+      private void write(FriendlyByteBuf var1) {
+         var1.writeByte(ServerboundMovePlayerPacket.packFlags(this.onGround, this.horizontalCollision));
+      }
+
+      public PacketType<StatusOnly> type() {
+         return GamePacketTypes.SERVERBOUND_MOVE_PLAYER_STATUS_ONLY;
       }
    }
 }

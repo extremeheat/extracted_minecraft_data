@@ -126,7 +126,7 @@ public class CreateFlatWorldScreen extends Screen {
       this.minecraft.setScreen(this.parent);
    }
 
-   private class DetailsList extends ObjectSelectionList<Entry> {
+   class DetailsList extends ObjectSelectionList<Entry> {
       private static final Component LAYER_MATERIAL_TITLE;
       private static final Component HEIGHT_TITLE;
 

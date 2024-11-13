@@ -11,7 +11,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.inventory.RecipeBookType;
 
 public final class RecipeBookSettings {
-   public static final StreamCodec<FriendlyByteBuf, RecipeBookSettings> STREAM_CODEC = StreamCodec.ofMember(RecipeBookSettings::write, RecipeBookSettings::read);
+   public static final StreamCodec<FriendlyByteBuf, RecipeBookSettings> STREAM_CODEC = StreamCodec.<FriendlyByteBuf, RecipeBookSettings>ofMember(RecipeBookSettings::write, RecipeBookSettings::read);
    private static final Map<RecipeBookType, Pair<String, String>> TAG_FIELDS;
    private final Map<RecipeBookType, TypeSettings> states;
 
@@ -48,9 +48,7 @@ public final class RecipeBookSettings {
    }
 
    public void setOpen(RecipeBookType var1, boolean var2) {
-      this.updateSettings(var1, (var1x) -> {
-         return var1x.setOpen(var2);
-      });
+      this.updateSettings(var1, (var1x) -> var1x.setOpen(var2));
    }
 
    public boolean isFiltering(RecipeBookType var1) {
@@ -58,18 +56,13 @@ public final class RecipeBookSettings {
    }
 
    public void setFiltering(RecipeBookType var1, boolean var2) {
-      this.updateSettings(var1, (var1x) -> {
-         return var1x.setFiltering(var2);
-      });
+      this.updateSettings(var1, (var1x) -> var1x.setFiltering(var2));
    }
 
    private static RecipeBookSettings read(FriendlyByteBuf var0) {
       EnumMap var1 = new EnumMap(RecipeBookType.class);
-      RecipeBookType[] var2 = RecipeBookType.values();
-      int var3 = var2.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         RecipeBookType var5 = var2[var4];
+      for(RecipeBookType var5 : RecipeBookType.values()) {
          boolean var6 = var0.readBoolean();
          boolean var7 = var0.readBoolean();
          if (var6 || var7) {
@@ -81,11 +74,7 @@ public final class RecipeBookSettings {
    }
 
    private void write(FriendlyByteBuf var1) {
-      RecipeBookType[] var2 = RecipeBookType.values();
-      int var3 = var2.length;
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         RecipeBookType var5 = var2[var4];
+      for(RecipeBookType var5 : RecipeBookType.values()) {
          TypeSettings var6 = (TypeSettings)this.states.getOrDefault(var5, RecipeBookSettings.TypeSettings.DEFAULT);
          var1.writeBoolean(var6.open);
          var1.writeBoolean(var6.filtering);
@@ -156,14 +145,6 @@ public final class RecipeBookSettings {
 
       public TypeSettings setFiltering(boolean var1) {
          return new TypeSettings(this.open, var1);
-      }
-
-      public boolean open() {
-         return this.open;
-      }
-
-      public boolean filtering() {
-         return this.filtering;
       }
    }
 }

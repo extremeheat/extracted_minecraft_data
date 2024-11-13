@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.block.model;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -76,10 +75,8 @@ public class ItemModelGenerator implements UnbakedModel {
       float var4 = (float)var1.width();
       float var5 = (float)var1.height();
       ArrayList var6 = new ArrayList();
-      Iterator var7 = this.getSpans(var1).iterator();
 
-      while(var7.hasNext()) {
-         Span var8 = (Span)var7.next();
+      for(Span var8 : this.getSpans(var1)) {
          float var9 = 0.0F;
          float var10 = 0.0F;
          float var11 = 0.0F;
@@ -190,10 +187,8 @@ public class ItemModelGenerator implements UnbakedModel {
 
    private void createOrExpandSpan(List<Span> var1, SpanFacing var2, int var3, int var4) {
       Span var5 = null;
-      Iterator var6 = var1.iterator();
 
-      while(var6.hasNext()) {
-         Span var7 = (Span)var6.next();
+      for(Span var7 : var1) {
          if (var7.getFacing() == var2) {
             int var8 = var2.isHorizontal() ? var4 : var3;
             if (var7.getAnchor() == var8) {
@@ -217,7 +212,45 @@ public class ItemModelGenerator implements UnbakedModel {
       return var3 >= 0 && var4 >= 0 && var3 < var5 && var4 < var6 ? var1.isTransparent(var2, var3, var4) : true;
    }
 
-   private static class Span {
+   static enum SpanFacing {
+      UP(Direction.UP, 0, -1),
+      DOWN(Direction.DOWN, 0, 1),
+      LEFT(Direction.EAST, -1, 0),
+      RIGHT(Direction.WEST, 1, 0);
+
+      private final Direction direction;
+      private final int xOffset;
+      private final int yOffset;
+
+      private SpanFacing(final Direction var3, final int var4, final int var5) {
+         this.direction = var3;
+         this.xOffset = var4;
+         this.yOffset = var5;
+      }
+
+      public Direction getDirection() {
+         return this.direction;
+      }
+
+      public int getXOffset() {
+         return this.xOffset;
+      }
+
+      public int getYOffset() {
+         return this.yOffset;
+      }
+
+      boolean isHorizontal() {
+         return this == DOWN || this == UP;
+      }
+
+      // $FF: synthetic method
+      private static SpanFacing[] $values() {
+         return new SpanFacing[]{UP, DOWN, LEFT, RIGHT};
+      }
+   }
+
+   static class Span {
       private final SpanFacing facing;
       private int min;
       private int max;
@@ -254,44 +287,6 @@ public class ItemModelGenerator implements UnbakedModel {
 
       public int getAnchor() {
          return this.anchor;
-      }
-   }
-
-   private static enum SpanFacing {
-      UP(Direction.UP, 0, -1),
-      DOWN(Direction.DOWN, 0, 1),
-      LEFT(Direction.EAST, -1, 0),
-      RIGHT(Direction.WEST, 1, 0);
-
-      private final Direction direction;
-      private final int xOffset;
-      private final int yOffset;
-
-      private SpanFacing(final Direction var3, final int var4, final int var5) {
-         this.direction = var3;
-         this.xOffset = var4;
-         this.yOffset = var5;
-      }
-
-      public Direction getDirection() {
-         return this.direction;
-      }
-
-      public int getXOffset() {
-         return this.xOffset;
-      }
-
-      public int getYOffset() {
-         return this.yOffset;
-      }
-
-      boolean isHorizontal() {
-         return this == DOWN || this == UP;
-      }
-
-      // $FF: synthetic method
-      private static SpanFacing[] $values() {
-         return new SpanFacing[]{UP, DOWN, LEFT, RIGHT};
       }
    }
 }

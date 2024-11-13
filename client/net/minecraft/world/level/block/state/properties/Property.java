@@ -20,25 +20,21 @@ public abstract class Property<T extends Comparable<T>> {
 
    protected Property(String var1, Class<T> var2) {
       super();
-      this.codec = Codec.STRING.comapFlatMap((var1x) -> {
-         return (DataResult)this.getValue(var1x).map(DataResult::success).orElseGet(() -> {
-            return DataResult.error(() -> {
+      this.codec = Codec.STRING.comapFlatMap((var1x) -> (DataResult)this.getValue(var1x).map(DataResult::success).orElseGet(() -> DataResult.error(() -> {
                String var10000 = String.valueOf(this);
                return "Unable to read property: " + var10000 + " with value: " + var1x;
-            });
-         });
-      }, this::getName);
+            })), this::getName);
       this.valueCodec = this.codec.xmap(this::value, Value::value);
       this.clazz = var2;
       this.name = var1;
    }
 
    public Value<T> value(T var1) {
-      return new Value(this, var1);
+      return new Value<T>(this, var1);
    }
 
    public Value<T> value(StateHolder<?, ?> var1) {
-      return new Value(this, var1.getValue(this));
+      return new Value<T>(this, var1.getValue(this));
    }
 
    public Stream<Value<T>> getAllValues() {
@@ -98,9 +94,7 @@ public abstract class Property<T extends Comparable<T>> {
 
    public <U, S extends StateHolder<?, S>> DataResult<S> parseValue(DynamicOps<U> var1, S var2, U var3) {
       DataResult var4 = this.codec.parse(var1, var3);
-      return var4.map((var2x) -> {
-         return (StateHolder)var2.setValue(this, var2x);
-      }).setPartial(var2);
+      return var4.map((var2x) -> (StateHolder)var2.setValue(this, var2x)).setPartial(var2);
    }
 
    public static record Value<T extends Comparable<T>>(Property<T> property, T value) {
@@ -118,14 +112,6 @@ public abstract class Property<T extends Comparable<T>> {
       public String toString() {
          String var10000 = this.property.getName();
          return var10000 + "=" + this.property.getName(this.value);
-      }
-
-      public Property<T> property() {
-         return this.property;
-      }
-
-      public T value() {
-         return this.value;
       }
    }
 }

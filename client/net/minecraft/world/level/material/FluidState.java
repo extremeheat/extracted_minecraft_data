@@ -32,7 +32,7 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
    }
 
    public Fluid getType() {
-      return (Fluid)this.owner;
+      return this.owner;
    }
 
    public boolean isSource() {

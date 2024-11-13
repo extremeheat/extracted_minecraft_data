@@ -36,10 +36,8 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       this.tickQueue = new PriorityQueue(ScheduledTick.DRAIN_ORDER);
       this.ticksPerPosition = new ObjectOpenCustomHashSet(ScheduledTick.UNIQUE_TICK_HASH);
       this.pendingTicks = var1;
-      Iterator var2 = var1.iterator();
 
-      while(var2.hasNext()) {
-         SavedTick var3 = (SavedTick)var2.next();
+      for(SavedTick var3 : var1) {
          this.ticksPerPosition.add(ScheduledTick.probe(var3.type(), var3.pos()));
       }
 
@@ -110,10 +108,7 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
          var3.addAll(this.pendingTicks);
       }
 
-      Iterator var4 = this.tickQueue.iterator();
-
-      while(var4.hasNext()) {
-         ScheduledTick var5 = (ScheduledTick)var4.next();
+      for(ScheduledTick var5 : this.tickQueue) {
          var3.add(var5.toSavedTick(var1));
       }
 
@@ -122,11 +117,8 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
 
    public ListTag save(long var1, Function<T, String> var3) {
       ListTag var4 = new ListTag();
-      List var5 = this.pack(var1);
-      Iterator var6 = var5.iterator();
 
-      while(var6.hasNext()) {
-         SavedTick var7 = (SavedTick)var6.next();
+      for(SavedTick var7 : this.pack(var1)) {
          var4.add(var7.save(var3));
       }
 
@@ -136,10 +128,8 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
    public void unpack(long var1) {
       if (this.pendingTicks != null) {
          int var3 = -this.pendingTicks.size();
-         Iterator var4 = this.pendingTicks.iterator();
 
-         while(var4.hasNext()) {
-            SavedTick var5 = (SavedTick)var4.next();
+         for(SavedTick var5 : this.pendingTicks) {
             this.scheduleUnchecked(var5.unpack(var1, (long)(var3++)));
          }
       }
@@ -148,6 +138,6 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
    }
 
    public static <T> LevelChunkTicks<T> load(ListTag var0, Function<String, Optional<T>> var1, ChunkPos var2) {
-      return new LevelChunkTicks(SavedTick.loadTickList(var0, var1, var2));
+      return new LevelChunkTicks<T>(SavedTick.loadTickList(var0, var1, var2));
    }
 }

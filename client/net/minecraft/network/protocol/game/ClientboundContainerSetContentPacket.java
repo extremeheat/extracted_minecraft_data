@@ -9,7 +9,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.item.ItemStack;
 
 public class ClientboundContainerSetContentPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundContainerSetContentPacket> STREAM_CODEC = Packet.codec(ClientboundContainerSetContentPacket::write, ClientboundContainerSetContentPacket::new);
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundContainerSetContentPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundContainerSetContentPacket>codec(ClientboundContainerSetContentPacket::write, ClientboundContainerSetContentPacket::new);
    private final int containerId;
    private final int stateId;
    private final List<ItemStack> items;
@@ -19,7 +19,7 @@ public class ClientboundContainerSetContentPacket implements Packet<ClientGamePa
       super();
       this.containerId = var1;
       this.stateId = var2;
-      this.items = NonNullList.withSize(var3.size(), ItemStack.EMPTY);
+      this.items = NonNullList.<ItemStack>withSize(var3.size(), ItemStack.EMPTY);
 
       for(int var5 = 0; var5 < var3.size(); ++var5) {
          this.items.set(var5, ((ItemStack)var3.get(var5)).copy());

@@ -19,8 +19,6 @@ public class WeightedBakedModel extends DelegateBakedModel {
    }
 
    public List<BakedQuad> getQuads(@Nullable BlockState var1, @Nullable Direction var2, RandomSource var3) {
-      return (List)this.list.getRandomValue(var3).map((var3x) -> {
-         return var3x.getQuads(var1, var2, var3);
-      }).orElse(Collections.emptyList());
+      return (List)this.list.getRandomValue(var3).map((var3x) -> var3x.getQuads(var1, var2, var3)).orElse(Collections.emptyList());
    }
 }

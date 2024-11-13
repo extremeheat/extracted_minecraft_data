@@ -8,15 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.biome.Biome;
 
 public class NoiseThresholdCountPlacement extends RepeatingPlacement {
-   public static final MapCodec<NoiseThresholdCountPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.DOUBLE.fieldOf("noise_level").forGetter((var0x) -> {
-         return var0x.noiseLevel;
-      }), Codec.INT.fieldOf("below_noise").forGetter((var0x) -> {
-         return var0x.belowNoise;
-      }), Codec.INT.fieldOf("above_noise").forGetter((var0x) -> {
-         return var0x.aboveNoise;
-      })).apply(var0, NoiseThresholdCountPlacement::new);
-   });
+   public static final MapCodec<NoiseThresholdCountPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.DOUBLE.fieldOf("noise_level").forGetter((var0x) -> var0x.noiseLevel), Codec.INT.fieldOf("below_noise").forGetter((var0x) -> var0x.belowNoise), Codec.INT.fieldOf("above_noise").forGetter((var0x) -> var0x.aboveNoise)).apply(var0, NoiseThresholdCountPlacement::new));
    private final double noiseLevel;
    private final int belowNoise;
    private final int aboveNoise;

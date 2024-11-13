@@ -5,7 +5,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
@@ -25,17 +24,7 @@ import org.slf4j.Logger;
 
 public class Unstitcher implements SpriteSource {
    static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<Unstitcher> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceLocation.CODEC.fieldOf("resource").forGetter((var0x) -> {
-         return var0x.resource;
-      }), ExtraCodecs.nonEmptyList(Unstitcher.Region.CODEC.listOf()).fieldOf("regions").forGetter((var0x) -> {
-         return var0x.regions;
-      }), Codec.DOUBLE.optionalFieldOf("divisor_x", 1.0).forGetter((var0x) -> {
-         return var0x.xDivisor;
-      }), Codec.DOUBLE.optionalFieldOf("divisor_y", 1.0).forGetter((var0x) -> {
-         return var0x.yDivisor;
-      })).apply(var0, Unstitcher::new);
-   });
+   public static final MapCodec<Unstitcher> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("resource").forGetter((var0x) -> var0x.resource), ExtraCodecs.nonEmptyList(Unstitcher.Region.CODEC.listOf()).fieldOf("regions").forGetter((var0x) -> var0x.regions), Codec.DOUBLE.optionalFieldOf("divisor_x", 1.0).forGetter((var0x) -> var0x.xDivisor), Codec.DOUBLE.optionalFieldOf("divisor_y", 1.0).forGetter((var0x) -> var0x.yDivisor)).apply(var0, Unstitcher::new));
    private final ResourceLocation resource;
    private final List<Region> regions;
    private final double xDivisor;
@@ -54,10 +43,8 @@ public class Unstitcher implements SpriteSource {
       Optional var4 = var1.getResource(var3);
       if (var4.isPresent()) {
          LazyLoadedImage var5 = new LazyLoadedImage(var3, (Resource)var4.get(), this.regions.size());
-         Iterator var6 = this.regions.iterator();
 
-         while(var6.hasNext()) {
-            Region var7 = (Region)var6.next();
+         for(Region var7 : this.regions) {
             var2.add(var7.sprite, (SpriteSource.SpriteSupplier)(new RegionInstance(var5, var7, this.xDivisor, this.yDivisor)));
          }
       } else {
@@ -70,15 +57,13 @@ public class Unstitcher implements SpriteSource {
       return SpriteSources.UNSTITCHER;
    }
 
-   private static record Region(ResourceLocation sprite, double x, double y, double width, double height) {
+   static record Region(ResourceLocation sprite, double x, double y, double width, double height) {
       final ResourceLocation sprite;
       final double x;
       final double y;
       final double width;
       final double height;
-      public static final Codec<Region> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(ResourceLocation.CODEC.fieldOf("sprite").forGetter(Region::sprite), Codec.DOUBLE.fieldOf("x").forGetter(Region::x), Codec.DOUBLE.fieldOf("y").forGetter(Region::y), Codec.DOUBLE.fieldOf("width").forGetter(Region::width), Codec.DOUBLE.fieldOf("height").forGetter(Region::height)).apply(var0, Region::new);
-      });
+      public static final Codec<Region> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("sprite").forGetter(Region::sprite), Codec.DOUBLE.fieldOf("x").forGetter(Region::x), Codec.DOUBLE.fieldOf("y").forGetter(Region::y), Codec.DOUBLE.fieldOf("width").forGetter(Region::width), Codec.DOUBLE.fieldOf("height").forGetter(Region::height)).apply(var0, Region::new));
 
       private Region(ResourceLocation var1, double var2, double var4, double var6, double var8) {
          super();
@@ -87,26 +72,6 @@ public class Unstitcher implements SpriteSource {
          this.y = var4;
          this.width = var6;
          this.height = var8;
-      }
-
-      public ResourceLocation sprite() {
-         return this.sprite;
-      }
-
-      public double x() {
-         return this.x;
-      }
-
-      public double y() {
-         return this.y;
-      }
-
-      public double width() {
-         return this.width;
-      }
-
-      public double height() {
-         return this.height;
       }
    }
 

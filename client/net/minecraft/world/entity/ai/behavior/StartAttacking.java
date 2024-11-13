@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import java.util.Optional;
+import java.util.function.Function;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -13,15 +14,11 @@ public class StartAttacking {
    }
 
    public static <E extends Mob> BehaviorControl<E> create(TargetFinder<E> var0) {
-      return create((var0x, var1) -> {
-         return true;
-      }, var0);
+      return create((var0x, var1) -> true, var0);
    }
 
    public static <E extends Mob> BehaviorControl<E> create(StartAttackingCondition<E> var0, TargetFinder<E> var1) {
-      return BehaviorBuilder.create((var2) -> {
-         return var2.group(var2.absent(MemoryModuleType.ATTACK_TARGET), var2.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)).apply(var2, (var2x, var3) -> {
-            return (var4, var5, var6) -> {
+      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.absent(MemoryModuleType.ATTACK_TARGET), var2.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)).apply(var2, (var2x, var3) -> (var4, var5, var6) -> {
                if (!var0.test(var4, var5)) {
                   return false;
                } else {
@@ -39,9 +36,7 @@ public class StartAttacking {
                      }
                   }
                }
-            };
-         });
-      });
+            })));
    }
 
    @FunctionalInterface

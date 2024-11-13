@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 
 public abstract class MobRenderer<T extends Mob, S extends LivingEntityRenderState, M extends EntityModel<? super S>> extends LivingEntityRenderer<T, S, M> {
@@ -12,7 +11,7 @@ public abstract class MobRenderer<T extends Mob, S extends LivingEntityRenderSta
    }
 
    protected boolean shouldShowName(T var1, double var2) {
-      return super.shouldShowName((LivingEntity)var1, var2) && (var1.shouldShowName() || var1.hasCustomName() && var1 == this.entityRenderDispatcher.crosshairPickEntity);
+      return super.shouldShowName(var1, var2) && (var1.shouldShowName() || var1.hasCustomName() && var1 == this.entityRenderDispatcher.crosshairPickEntity);
    }
 
    protected float getShadowRadius(S var1) {

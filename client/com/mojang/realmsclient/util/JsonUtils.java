@@ -19,7 +19,7 @@ public class JsonUtils {
          if (!var3.isJsonObject()) {
             throw new IllegalStateException("Required property " + var0 + " was not a JsonObject as espected");
          } else {
-            return var2.apply(var3.getAsJsonObject());
+            return (T)var2.apply(var3.getAsJsonObject());
          }
       } else {
          throw new IllegalStateException("Missing required property: " + var0);
@@ -33,7 +33,7 @@ public class JsonUtils {
          if (!var3.isJsonObject()) {
             throw new IllegalStateException("Required property " + var0 + " was not a JsonObject as espected");
          } else {
-            return var2.apply(var3.getAsJsonObject());
+            return (T)var2.apply(var3.getAsJsonObject());
          }
       } else {
          return null;

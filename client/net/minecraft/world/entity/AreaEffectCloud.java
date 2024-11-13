@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -211,81 +210,57 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
             }
 
             if (this.tickCount % 5 == 0) {
-               this.victims.entrySet().removeIf((var1x) -> {
-                  return this.tickCount >= (Integer)var1x.getValue();
-               });
+               this.victims.entrySet().removeIf((var1x) -> this.tickCount >= (Integer)var1x.getValue());
                if (!this.potionContents.hasEffects()) {
                   this.victims.clear();
                } else {
                   ArrayList var5 = Lists.newArrayList();
                   if (this.potionContents.potion().isPresent()) {
-                     Iterator var6 = ((Potion)((Holder)this.potionContents.potion().get()).value()).getEffects().iterator();
-
-                     while(var6.hasNext()) {
-                        MobEffectInstance var7 = (MobEffectInstance)var6.next();
-                        var5.add(new MobEffectInstance(var7.getEffect(), var7.mapDuration((var0) -> {
-                           return var0 / 4;
-                        }), var7.getAmplifier(), var7.isAmbient(), var7.isVisible()));
+                     for(MobEffectInstance var7 : ((Potion)((Holder)this.potionContents.potion().get()).value()).getEffects()) {
+                        var5.add(new MobEffectInstance(var7.getEffect(), var7.mapDuration((var0) -> var0 / 4), var7.getAmplifier(), var7.isAmbient(), var7.isVisible()));
                      }
                   }
 
                   var5.addAll(this.potionContents.customEffects());
                   List var17 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox());
                   if (!var17.isEmpty()) {
-                     Iterator var18 = var17.iterator();
+                     for(LivingEntity var8 : var17) {
+                        if (!this.victims.containsKey(var8) && var8.isAffectedByPotions()) {
+                           Stream var10000 = var5.stream();
+                           Objects.requireNonNull(var8);
+                           if (!var10000.noneMatch(var8::canBeAffected)) {
+                              double var9 = var8.getX() - this.getX();
+                              double var11 = var8.getZ() - this.getZ();
+                              double var13 = var9 * var9 + var11 * var11;
+                              if (var13 <= (double)(var4 * var4)) {
+                                 this.victims.put(var8, this.tickCount + this.reapplicationDelay);
 
-                     while(true) {
-                        LivingEntity var8;
-                        double var13;
-                        do {
-                           Stream var10000;
-                           do {
-                              do {
-                                 do {
-                                    if (!var18.hasNext()) {
+                                 for(MobEffectInstance var16 : var5) {
+                                    if (((MobEffect)var16.getEffect().value()).isInstantenous()) {
+                                       ((MobEffect)var16.getEffect().value()).applyInstantenousEffect(var1, this, this.getOwner(), var8, var16.getAmplifier(), 0.5);
+                                    } else {
+                                       var8.addEffect(new MobEffectInstance(var16), this);
+                                    }
+                                 }
+
+                                 if (this.radiusOnUse != 0.0F) {
+                                    var4 += this.radiusOnUse;
+                                    if (var4 < 0.5F) {
+                                       this.discard();
                                        return;
                                     }
 
-                                    var8 = (LivingEntity)var18.next();
-                                 } while(this.victims.containsKey(var8));
-                              } while(!var8.isAffectedByPotions());
+                                    this.setRadius(var4);
+                                 }
 
-                              var10000 = var5.stream();
-                              Objects.requireNonNull(var8);
-                           } while(var10000.noneMatch(var8::canBeAffected));
-
-                           double var9 = var8.getX() - this.getX();
-                           double var11 = var8.getZ() - this.getZ();
-                           var13 = var9 * var9 + var11 * var11;
-                        } while(!(var13 <= (double)(var4 * var4)));
-
-                        this.victims.put(var8, this.tickCount + this.reapplicationDelay);
-                        Iterator var15 = var5.iterator();
-
-                        while(var15.hasNext()) {
-                           MobEffectInstance var16 = (MobEffectInstance)var15.next();
-                           if (((MobEffect)var16.getEffect().value()).isInstantenous()) {
-                              ((MobEffect)var16.getEffect().value()).applyInstantenousEffect(var1, this, this.getOwner(), var8, var16.getAmplifier(), 0.5);
-                           } else {
-                              var8.addEffect(new MobEffectInstance(var16), this);
-                           }
-                        }
-
-                        if (this.radiusOnUse != 0.0F) {
-                           var4 += this.radiusOnUse;
-                           if (var4 < 0.5F) {
-                              this.discard();
-                              return;
-                           }
-
-                           this.setRadius(var4);
-                        }
-
-                        if (this.durationOnUse != 0) {
-                           this.duration += this.durationOnUse;
-                           if (this.duration <= 0) {
-                              this.discard();
-                              return;
+                                 if (this.durationOnUse != 0) {
+                                    this.duration += this.durationOnUse;
+                                    if (this.duration <= 0) {
+                                       this.discard();
+                                       return;
+                                    }
+                                 }
+                              }
                            }
                         }
                      }
@@ -375,15 +350,11 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
 
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       if (var1.contains("Particle", 10)) {
-         ParticleTypes.CODEC.parse(var2, var1.get("Particle")).resultOrPartial((var0) -> {
-            LOGGER.warn("Failed to parse area effect cloud particle options: '{}'", var0);
-         }).ifPresent(this::setParticle);
+         ParticleTypes.CODEC.parse(var2, var1.get("Particle")).resultOrPartial((var0) -> LOGGER.warn("Failed to parse area effect cloud particle options: '{}'", var0)).ifPresent(this::setParticle);
       }
 
       if (var1.contains("potion_contents")) {
-         PotionContents.CODEC.parse(var2, var1.get("potion_contents")).resultOrPartial((var0) -> {
-            LOGGER.warn("Failed to parse area effect cloud potions: '{}'", var0);
-         }).ifPresent(this::setPotionContents);
+         PotionContents.CODEC.parse(var2, var1.get("potion_contents")).resultOrPartial((var0) -> LOGGER.warn("Failed to parse area effect cloud potions: '{}'", var0)).ifPresent(this::setPotionContents);
       }
 
    }
@@ -437,8 +408,8 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    }
 
    static {
-      DATA_RADIUS = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.FLOAT);
-      DATA_WAITING = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.BOOLEAN);
-      DATA_PARTICLE = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.PARTICLE);
+      DATA_RADIUS = SynchedEntityData.<Float>defineId(AreaEffectCloud.class, EntityDataSerializers.FLOAT);
+      DATA_WAITING = SynchedEntityData.<Boolean>defineId(AreaEffectCloud.class, EntityDataSerializers.BOOLEAN);
+      DATA_PARTICLE = SynchedEntityData.<ParticleOptions>defineId(AreaEffectCloud.class, EntityDataSerializers.PARTICLE);
    }
 }

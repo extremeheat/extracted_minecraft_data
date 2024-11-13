@@ -139,7 +139,6 @@ public final class ItemTags {
    public static final TagKey<Item> SKULLS = bind("skulls");
    public static final TagKey<Item> TRIMMABLE_ARMOR = bind("trimmable_armor");
    public static final TagKey<Item> TRIM_MATERIALS = bind("trim_materials");
-   public static final TagKey<Item> TRIM_TEMPLATES = bind("trim_templates");
    public static final TagKey<Item> DECORATED_POT_SHERDS = bind("decorated_pot_sherds");
    public static final TagKey<Item> DECORATED_POT_INGREDIENTS = bind("decorated_pot_ingredients");
    public static final TagKey<Item> SWORDS = bind("swords");
@@ -153,10 +152,11 @@ public final class ItemTags {
    public static final TagKey<Item> DYEABLE = bind("dyeable");
    public static final TagKey<Item> FURNACE_MINECART_FUEL = bind("furnace_minecart_fuel");
    public static final TagKey<Item> BUNDLES = bind("bundles");
-   public static final TagKey<Item> SKELETON_PREFERRED_WEAPON = bind("skeleton_preferred_weapon");
-   public static final TagKey<Item> DROWNED_PREFERRED_WEAPON = bind("drowned_preferred_weapon");
-   public static final TagKey<Item> PIGLIN_PREFERRED_WEAPON = bind("piglin_preferred_weapon");
-   public static final TagKey<Item> PILLAGER_PREFERRED_WEAPON = bind("pillager_preferred_weapon");
+   public static final TagKey<Item> SKELETON_PREFERRED_WEAPONS = bind("skeleton_preferred_weapons");
+   public static final TagKey<Item> DROWNED_PREFERRED_WEAPONS = bind("drowned_preferred_weapons");
+   public static final TagKey<Item> PIGLIN_PREFERRED_WEAPONS = bind("piglin_preferred_weapons");
+   public static final TagKey<Item> PILLAGER_PREFERRED_WEAPONS = bind("pillager_preferred_weapons");
+   public static final TagKey<Item> WITHER_SKELETON_DISLIKED_WEAPONS = bind("wither_skeleton_disliked_weapons");
    public static final TagKey<Item> FOOT_ARMOR_ENCHANTABLE = bind("enchantable/foot_armor");
    public static final TagKey<Item> LEG_ARMOR_ENCHANTABLE = bind("enchantable/leg_armor");
    public static final TagKey<Item> CHEST_ARMOR_ENCHANTABLE = bind("enchantable/chest_armor");
@@ -184,6 +184,6 @@ public final class ItemTags {
    }
 
    private static TagKey<Item> bind(String var0) {
-      return TagKey.create(Registries.ITEM, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<Item>create(Registries.ITEM, ResourceLocation.withDefaultNamespace(var0));
    }
 }

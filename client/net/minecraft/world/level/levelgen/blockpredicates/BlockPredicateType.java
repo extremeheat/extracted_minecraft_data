@@ -22,8 +22,6 @@ public interface BlockPredicateType<P extends BlockPredicate> {
    MapCodec<P> codec();
 
    private static <P extends BlockPredicate> BlockPredicateType<P> register(String var0, MapCodec<P> var1) {
-      return (BlockPredicateType)Registry.register(BuiltInRegistries.BLOCK_PREDICATE_TYPE, (String)var0, () -> {
-         return var1;
-      });
+      return (BlockPredicateType)Registry.register(BuiltInRegistries.BLOCK_PREDICATE_TYPE, (String)var0, (BlockPredicateType)() -> var1);
    }
 }

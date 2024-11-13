@@ -134,6 +134,20 @@ public class RealmsWorldSlotButton extends Button {
       }
    }
 
+   public static enum Action {
+      NOTHING,
+      SWITCH_SLOT,
+      JOIN;
+
+      private Action() {
+      }
+
+      // $FF: synthetic method
+      private static Action[] $values() {
+         return new Action[]{NOTHING, SWITCH_SLOT, JOIN};
+      }
+   }
+
    public static class State {
       final boolean isCurrentlyActiveSlot;
       final String slotName;
@@ -172,20 +186,6 @@ public class RealmsWorldSlotButton extends Button {
          }
 
          this.action = RealmsWorldSlotButton.getAction(var1, this.isCurrentlyActiveSlot, this.minigame);
-      }
-   }
-
-   public static enum Action {
-      NOTHING,
-      SWITCH_SLOT,
-      JOIN;
-
-      private Action() {
-      }
-
-      // $FF: synthetic method
-      private static Action[] $values() {
-         return new Action[]{NOTHING, SWITCH_SLOT, JOIN};
       }
    }
 }

@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -39,17 +38,15 @@ public class LeadItem extends Item {
 
    public static InteractionResult bindPlayerMobs(Player var0, Level var1, BlockPos var2) {
       LeashFenceKnotEntity var3 = null;
-      List var4 = leashableInArea(var1, var2, (var1x) -> {
-         return var1x.getLeashHolder() == var0;
-      });
+      List var4 = leashableInArea(var1, var2, (var1x) -> var1x.getLeashHolder() == var0);
 
-      Leashable var6;
-      for(Iterator var5 = var4.iterator(); var5.hasNext(); var6.setLeashedTo(var3, true)) {
-         var6 = (Leashable)var5.next();
+      for(Leashable var6 : var4) {
          if (var3 == null) {
             var3 = LeashFenceKnotEntity.getOrCreateKnot(var1, var2);
             var3.playPlacementSound();
          }
+
+         var6.setLeashedTo(var3, true);
       }
 
       if (!var4.isEmpty()) {

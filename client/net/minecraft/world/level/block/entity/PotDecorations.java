@@ -56,29 +56,11 @@ public record PotDecorations(Optional<Item> back, Optional<Item> left, Optional<
    }
 
    public List<Item> ordered() {
-      return Stream.of(this.back, this.left, this.right, this.front).map((var0) -> {
-         return (Item)var0.orElse(Items.BRICK);
-      }).toList();
+      return Stream.of(this.back, this.left, this.right, this.front).map((var0) -> (Item)var0.orElse(Items.BRICK)).toList();
    }
 
    public static PotDecorations load(@Nullable CompoundTag var0) {
       return var0 != null && var0.contains("sherds") ? (PotDecorations)CODEC.parse(NbtOps.INSTANCE, var0.get("sherds")).result().orElse(EMPTY) : EMPTY;
-   }
-
-   public Optional<Item> back() {
-      return this.back;
-   }
-
-   public Optional<Item> left() {
-      return this.left;
-   }
-
-   public Optional<Item> right() {
-      return this.right;
-   }
-
-   public Optional<Item> front() {
-      return this.front;
    }
 
    static {

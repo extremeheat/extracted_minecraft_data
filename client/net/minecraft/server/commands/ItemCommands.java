@@ -14,7 +14,6 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.commands.CommandBuildContext;
@@ -45,27 +44,15 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public class ItemCommands {
-   static final Dynamic3CommandExceptionType ERROR_TARGET_NOT_A_CONTAINER = new Dynamic3CommandExceptionType((var0, var1, var2) -> {
-      return Component.translatableEscape("commands.item.target.not_a_container", var0, var1, var2);
-   });
-   static final Dynamic3CommandExceptionType ERROR_SOURCE_NOT_A_CONTAINER = new Dynamic3CommandExceptionType((var0, var1, var2) -> {
-      return Component.translatableEscape("commands.item.source.not_a_container", var0, var1, var2);
-   });
-   static final DynamicCommandExceptionType ERROR_TARGET_INAPPLICABLE_SLOT = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("commands.item.target.no_such_slot", var0);
-   });
-   private static final DynamicCommandExceptionType ERROR_SOURCE_INAPPLICABLE_SLOT = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("commands.item.source.no_such_slot", var0);
-   });
-   private static final DynamicCommandExceptionType ERROR_TARGET_NO_CHANGES = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("commands.item.target.no_changes", var0);
-   });
-   private static final Dynamic2CommandExceptionType ERROR_TARGET_NO_CHANGES_KNOWN_ITEM = new Dynamic2CommandExceptionType((var0, var1) -> {
-      return Component.translatableEscape("commands.item.target.no_changed.known_item", var0, var1);
-   });
+   static final Dynamic3CommandExceptionType ERROR_TARGET_NOT_A_CONTAINER = new Dynamic3CommandExceptionType((var0, var1, var2) -> Component.translatableEscape("commands.item.target.not_a_container", var0, var1, var2));
+   static final Dynamic3CommandExceptionType ERROR_SOURCE_NOT_A_CONTAINER = new Dynamic3CommandExceptionType((var0, var1, var2) -> Component.translatableEscape("commands.item.source.not_a_container", var0, var1, var2));
+   static final DynamicCommandExceptionType ERROR_TARGET_INAPPLICABLE_SLOT = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.item.target.no_such_slot", var0));
+   private static final DynamicCommandExceptionType ERROR_SOURCE_INAPPLICABLE_SLOT = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.item.source.no_such_slot", var0));
+   private static final DynamicCommandExceptionType ERROR_TARGET_NO_CHANGES = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.item.target.no_changes", var0));
+   private static final Dynamic2CommandExceptionType ERROR_TARGET_NO_CHANGES_KNOWN_ITEM = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.item.target.no_changed.known_item", var0, var1));
    private static final SuggestionProvider<CommandSourceStack> SUGGEST_MODIFIER = (var0, var1) -> {
       ReloadableServerRegistries.Holder var2 = ((CommandSourceStack)var0.getSource()).getServer().reloadableRegistries();
-      return SharedSuggestionProvider.suggestResource((Iterable)var2.getKeys(Registries.ITEM_MODIFIER), var1);
+      return SharedSuggestionProvider.suggestResource(var2.getKeys(Registries.ITEM_MODIFIER), var1);
    };
 
    public ItemCommands() {
@@ -73,37 +60,7 @@ public class ItemCommands {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("item").requires((var0x) -> {
-         return var0x.hasPermission(2);
-      })).then(((LiteralArgumentBuilder)Commands.literal("replace").then(Commands.literal("block").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("slot", SlotArgument.slot()).then(Commands.literal("with").then(((RequiredArgumentBuilder)Commands.argument("item", ItemArgument.item(var1)).executes((var0x) -> {
-         return setBlockItem((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotArgument.getSlot(var0x, "slot"), ItemArgument.getItem(var0x, "item").createItemStack(1, false));
-      })).then(Commands.argument("count", IntegerArgumentType.integer(1, 99)).executes((var0x) -> {
-         return setBlockItem((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotArgument.getSlot(var0x, "slot"), ItemArgument.getItem(var0x, "item").createItemStack(IntegerArgumentType.getInteger(var0x, "count"), true));
-      }))))).then(((LiteralArgumentBuilder)Commands.literal("from").then(Commands.literal("block").then(Commands.argument("source", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("sourceSlot", SlotArgument.slot()).executes((var0x) -> {
-         return blockToBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotArgument.getSlot(var0x, "slot"));
-      })).then(Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1)).suggests(SUGGEST_MODIFIER).executes((var0x) -> {
-         return blockToBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotArgument.getSlot(var0x, "slot"), ResourceOrIdArgument.getLootModifier(var0x, "modifier"));
-      })))))).then(Commands.literal("entity").then(Commands.argument("source", EntityArgument.entity()).then(((RequiredArgumentBuilder)Commands.argument("sourceSlot", SlotArgument.slot()).executes((var0x) -> {
-         return entityToBlock((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotArgument.getSlot(var0x, "slot"));
-      })).then(Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1)).suggests(SUGGEST_MODIFIER).executes((var0x) -> {
-         return entityToBlock((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotArgument.getSlot(var0x, "slot"), ResourceOrIdArgument.getLootModifier(var0x, "modifier"));
-      })))))))))).then(Commands.literal("entity").then(Commands.argument("targets", EntityArgument.entities()).then(((RequiredArgumentBuilder)Commands.argument("slot", SlotArgument.slot()).then(Commands.literal("with").then(((RequiredArgumentBuilder)Commands.argument("item", ItemArgument.item(var1)).executes((var0x) -> {
-         return setEntityItem((CommandSourceStack)var0x.getSource(), EntityArgument.getEntities(var0x, "targets"), SlotArgument.getSlot(var0x, "slot"), ItemArgument.getItem(var0x, "item").createItemStack(1, false));
-      })).then(Commands.argument("count", IntegerArgumentType.integer(1, 99)).executes((var0x) -> {
-         return setEntityItem((CommandSourceStack)var0x.getSource(), EntityArgument.getEntities(var0x, "targets"), SlotArgument.getSlot(var0x, "slot"), ItemArgument.getItem(var0x, "item").createItemStack(IntegerArgumentType.getInteger(var0x, "count"), true));
-      }))))).then(((LiteralArgumentBuilder)Commands.literal("from").then(Commands.literal("block").then(Commands.argument("source", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("sourceSlot", SlotArgument.slot()).executes((var0x) -> {
-         return blockToEntities((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), EntityArgument.getEntities(var0x, "targets"), SlotArgument.getSlot(var0x, "slot"));
-      })).then(Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1)).suggests(SUGGEST_MODIFIER).executes((var0x) -> {
-         return blockToEntities((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), EntityArgument.getEntities(var0x, "targets"), SlotArgument.getSlot(var0x, "slot"), ResourceOrIdArgument.getLootModifier(var0x, "modifier"));
-      })))))).then(Commands.literal("entity").then(Commands.argument("source", EntityArgument.entity()).then(((RequiredArgumentBuilder)Commands.argument("sourceSlot", SlotArgument.slot()).executes((var0x) -> {
-         return entityToEntities((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), EntityArgument.getEntities(var0x, "targets"), SlotArgument.getSlot(var0x, "slot"));
-      })).then(Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1)).suggests(SUGGEST_MODIFIER).executes((var0x) -> {
-         return entityToEntities((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), EntityArgument.getEntities(var0x, "targets"), SlotArgument.getSlot(var0x, "slot"), ResourceOrIdArgument.getLootModifier(var0x, "modifier"));
-      }))))))))))).then(((LiteralArgumentBuilder)Commands.literal("modify").then(Commands.literal("block").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(Commands.argument("slot", SlotArgument.slot()).then(Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1)).suggests(SUGGEST_MODIFIER).executes((var0x) -> {
-         return modifyBlockItem((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotArgument.getSlot(var0x, "slot"), ResourceOrIdArgument.getLootModifier(var0x, "modifier"));
-      })))))).then(Commands.literal("entity").then(Commands.argument("targets", EntityArgument.entities()).then(Commands.argument("slot", SlotArgument.slot()).then(Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1)).suggests(SUGGEST_MODIFIER).executes((var0x) -> {
-         return modifyEntityItem((CommandSourceStack)var0x.getSource(), EntityArgument.getEntities(var0x, "targets"), SlotArgument.getSlot(var0x, "slot"), ResourceOrIdArgument.getLootModifier(var0x, "modifier"));
-      })))))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("item").requires((var0x) -> var0x.hasPermission(2))).then(((LiteralArgumentBuilder)Commands.literal("replace").then(Commands.literal("block").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("slot", SlotArgument.slot()).then(Commands.literal("with").then(((RequiredArgumentBuilder)Commands.argument("item", ItemArgument.item(var1)).executes((var0x) -> setBlockItem((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotArgument.getSlot(var0x, "slot"), ItemArgument.getItem(var0x, "item").createItemStack(1, false)))).then(Commands.argument("count", IntegerArgumentType.integer(1, 99)).executes((var0x) -> setBlockItem((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotArgument.getSlot(var0x, "slot"), ItemArgument.getItem(var0x, "item").createItemStack(IntegerArgumentType.getInteger(var0x, "count"), true))))))).then(((LiteralArgumentBuilder)Commands.literal("from").then(Commands.literal("block").then(Commands.argument("source", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("sourceSlot", SlotArgument.slot()).executes((var0x) -> blockToBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotArgument.getSlot(var0x, "slot")))).then(Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1)).suggests(SUGGEST_MODIFIER).executes((var0x) -> blockToBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotArgument.getSlot(var0x, "slot"), ResourceOrIdArgument.getLootModifier(var0x, "modifier")))))))).then(Commands.literal("entity").then(Commands.argument("source", EntityArgument.entity()).then(((RequiredArgumentBuilder)Commands.argument("sourceSlot", SlotArgument.slot()).executes((var0x) -> entityToBlock((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotArgument.getSlot(var0x, "slot")))).then(Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1)).suggests(SUGGEST_MODIFIER).executes((var0x) -> entityToBlock((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotArgument.getSlot(var0x, "slot"), ResourceOrIdArgument.getLootModifier(var0x, "modifier")))))))))))).then(Commands.literal("entity").then(Commands.argument("targets", EntityArgument.entities()).then(((RequiredArgumentBuilder)Commands.argument("slot", SlotArgument.slot()).then(Commands.literal("with").then(((RequiredArgumentBuilder)Commands.argument("item", ItemArgument.item(var1)).executes((var0x) -> setEntityItem((CommandSourceStack)var0x.getSource(), EntityArgument.getEntities(var0x, "targets"), SlotArgument.getSlot(var0x, "slot"), ItemArgument.getItem(var0x, "item").createItemStack(1, false)))).then(Commands.argument("count", IntegerArgumentType.integer(1, 99)).executes((var0x) -> setEntityItem((CommandSourceStack)var0x.getSource(), EntityArgument.getEntities(var0x, "targets"), SlotArgument.getSlot(var0x, "slot"), ItemArgument.getItem(var0x, "item").createItemStack(IntegerArgumentType.getInteger(var0x, "count"), true))))))).then(((LiteralArgumentBuilder)Commands.literal("from").then(Commands.literal("block").then(Commands.argument("source", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("sourceSlot", SlotArgument.slot()).executes((var0x) -> blockToEntities((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), EntityArgument.getEntities(var0x, "targets"), SlotArgument.getSlot(var0x, "slot")))).then(Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1)).suggests(SUGGEST_MODIFIER).executes((var0x) -> blockToEntities((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), EntityArgument.getEntities(var0x, "targets"), SlotArgument.getSlot(var0x, "slot"), ResourceOrIdArgument.getLootModifier(var0x, "modifier")))))))).then(Commands.literal("entity").then(Commands.argument("source", EntityArgument.entity()).then(((RequiredArgumentBuilder)Commands.argument("sourceSlot", SlotArgument.slot()).executes((var0x) -> entityToEntities((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), EntityArgument.getEntities(var0x, "targets"), SlotArgument.getSlot(var0x, "slot")))).then(Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1)).suggests(SUGGEST_MODIFIER).executes((var0x) -> entityToEntities((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "source"), SlotArgument.getSlot(var0x, "sourceSlot"), EntityArgument.getEntities(var0x, "targets"), SlotArgument.getSlot(var0x, "slot"), ResourceOrIdArgument.getLootModifier(var0x, "modifier"))))))))))))).then(((LiteralArgumentBuilder)Commands.literal("modify").then(Commands.literal("block").then(Commands.argument("pos", BlockPosArgument.blockPos()).then(Commands.argument("slot", SlotArgument.slot()).then(Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1)).suggests(SUGGEST_MODIFIER).executes((var0x) -> modifyBlockItem((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), SlotArgument.getSlot(var0x, "slot"), ResourceOrIdArgument.getLootModifier(var0x, "modifier")))))))).then(Commands.literal("entity").then(Commands.argument("targets", EntityArgument.entities()).then(Commands.argument("slot", SlotArgument.slot()).then(Commands.argument("modifier", ResourceOrIdArgument.lootModifier(var1)).suggests(SUGGEST_MODIFIER).executes((var0x) -> modifyEntityItem((CommandSourceStack)var0x.getSource(), EntityArgument.getEntities(var0x, "targets"), SlotArgument.getSlot(var0x, "slot"), ResourceOrIdArgument.getLootModifier(var0x, "modifier")))))))));
    }
 
    private static int modifyBlockItem(CommandSourceStack var0, BlockPos var1, int var2, Holder<LootItemFunction> var3) throws CommandSyntaxException {
@@ -111,9 +68,7 @@ public class ItemCommands {
       if (var2 >= 0 && var2 < var4.getContainerSize()) {
          ItemStack var5 = applyModifier(var0, var3, var4.getItem(var2));
          var4.setItem(var2, var5);
-         var0.sendSuccess(() -> {
-            return Component.translatable("commands.item.block.set.success", var1.getX(), var1.getY(), var1.getZ(), var5.getDisplayName());
-         }, true);
+         var0.sendSuccess(() -> Component.translatable("commands.item.block.set.success", var1.getX(), var1.getY(), var1.getZ(), var5.getDisplayName()), true);
          return 1;
       } else {
          throw ERROR_TARGET_INAPPLICABLE_SLOT.create(var2);
@@ -122,10 +77,8 @@ public class ItemCommands {
 
    private static int modifyEntityItem(CommandSourceStack var0, Collection<? extends Entity> var1, int var2, Holder<LootItemFunction> var3) throws CommandSyntaxException {
       HashMap var4 = Maps.newHashMapWithExpectedSize(var1.size());
-      Iterator var5 = var1.iterator();
 
-      while(var5.hasNext()) {
-         Entity var6 = (Entity)var5.next();
+      for(Entity var6 : var1) {
          SlotAccess var7 = var6.getSlot(var2);
          if (var7 != SlotAccess.NULL) {
             ItemStack var8 = applyModifier(var0, var3, var7.get().copy());
@@ -143,13 +96,9 @@ public class ItemCommands {
       } else {
          if (var4.size() == 1) {
             Map.Entry var9 = (Map.Entry)var4.entrySet().iterator().next();
-            var0.sendSuccess(() -> {
-               return Component.translatable("commands.item.entity.set.success.single", ((Entity)var9.getKey()).getDisplayName(), ((ItemStack)var9.getValue()).getDisplayName());
-            }, true);
+            var0.sendSuccess(() -> Component.translatable("commands.item.entity.set.success.single", ((Entity)var9.getKey()).getDisplayName(), ((ItemStack)var9.getValue()).getDisplayName()), true);
          } else {
-            var0.sendSuccess(() -> {
-               return Component.translatable("commands.item.entity.set.success.multiple", var4.size());
-            }, true);
+            var0.sendSuccess(() -> Component.translatable("commands.item.entity.set.success.multiple", var4.size()), true);
          }
 
          return var4.size();
@@ -160,9 +109,7 @@ public class ItemCommands {
       Container var4 = getContainer(var0, var1, ERROR_TARGET_NOT_A_CONTAINER);
       if (var2 >= 0 && var2 < var4.getContainerSize()) {
          var4.setItem(var2, var3);
-         var0.sendSuccess(() -> {
-            return Component.translatable("commands.item.block.set.success", var1.getX(), var1.getY(), var1.getZ(), var3.getDisplayName());
-         }, true);
+         var0.sendSuccess(() -> Component.translatable("commands.item.block.set.success", var1.getX(), var1.getY(), var1.getZ(), var3.getDisplayName()), true);
          return 1;
       } else {
          throw ERROR_TARGET_INAPPLICABLE_SLOT.create(var2);
@@ -180,10 +127,8 @@ public class ItemCommands {
 
    private static int setEntityItem(CommandSourceStack var0, Collection<? extends Entity> var1, int var2, ItemStack var3) throws CommandSyntaxException {
       ArrayList var4 = Lists.newArrayListWithCapacity(var1.size());
-      Iterator var5 = var1.iterator();
 
-      while(var5.hasNext()) {
-         Entity var6 = (Entity)var5.next();
+      for(Entity var6 : var1) {
          SlotAccess var7 = var6.getSlot(var2);
          if (var7 != SlotAccess.NULL && var7.set(var3.copy())) {
             var4.add(var6);
@@ -197,13 +142,9 @@ public class ItemCommands {
          throw ERROR_TARGET_NO_CHANGES_KNOWN_ITEM.create(var3.getDisplayName(), var2);
       } else {
          if (var4.size() == 1) {
-            var0.sendSuccess(() -> {
-               return Component.translatable("commands.item.entity.set.success.single", ((Entity)var4.iterator().next()).getDisplayName(), var3.getDisplayName());
-            }, true);
+            var0.sendSuccess(() -> Component.translatable("commands.item.entity.set.success.single", ((Entity)var4.iterator().next()).getDisplayName(), var3.getDisplayName()), true);
          } else {
-            var0.sendSuccess(() -> {
-               return Component.translatable("commands.item.entity.set.success.multiple", var4.size(), var3.getDisplayName());
-            }, true);
+            var0.sendSuccess(() -> Component.translatable("commands.item.entity.set.success.multiple", var4.size(), var3.getDisplayName()), true);
          }
 
          return var4.size();

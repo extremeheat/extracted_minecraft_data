@@ -24,14 +24,6 @@ public record ClientboundPlaceGhostRecipePacket(int containerId, RecipeDisplay r
       var1.handlePlaceRecipe(this);
    }
 
-   public int containerId() {
-      return this.containerId;
-   }
-
-   public RecipeDisplay recipeDisplay() {
-      return this.recipeDisplay;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.CONTAINER_ID, ClientboundPlaceGhostRecipePacket::containerId, RecipeDisplay.STREAM_CODEC, ClientboundPlaceGhostRecipePacket::recipeDisplay, ClientboundPlaceGhostRecipePacket::new);
    }

@@ -25,7 +25,7 @@ public abstract class IntrinsicHolderTagsProvider<T> extends TagsProvider<T> {
 
    protected IntrinsicTagAppender<T> tag(TagKey<T> var1) {
       TagBuilder var2 = this.getOrCreateRawBuilder(var1);
-      return new IntrinsicTagAppender(var2, this.keyExtractor);
+      return new IntrinsicTagAppender<T>(var2, this.keyExtractor);
    }
 
    // $FF: synthetic method
@@ -47,7 +47,7 @@ public abstract class IntrinsicHolderTagsProvider<T> extends TagsProvider<T> {
       }
 
       public final IntrinsicTagAppender<T> add(T var1) {
-         this.add((ResourceKey)((ResourceKey)this.keyExtractor.apply(var1)));
+         this.add((ResourceKey)this.keyExtractor.apply(var1));
          return this;
       }
 

@@ -65,9 +65,7 @@ public abstract class Sensor<E extends LivingEntity> {
    }
 
    public static BiPredicate<ServerLevel, LivingEntity> wasEntityAttackableLastNTicks(LivingEntity var0, int var1) {
-      return rememberPositives(var1, (var1x, var2) -> {
-         return isEntityAttackable(var1x, var0, var2);
-      });
+      return rememberPositives(var1, (var1x, var2) -> isEntityAttackable(var1x, var0, var2));
    }
 
    public static boolean isEntityAttackableIgnoringLineOfSight(ServerLevel var0, LivingEntity var1, LivingEntity var2) {

@@ -17,6 +17,7 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.Connection;
@@ -143,9 +144,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
          this.disconnect(var3);
       } else {
          if (this.server.getCompressionThreshold() >= 0 && !this.connection.isMemoryConnection()) {
-            this.connection.send(new ClientboundLoginCompressionPacket(this.server.getCompressionThreshold()), PacketSendListener.thenRun(() -> {
-               this.connection.setupCompression(this.server.getCompressionThreshold(), true);
-            }));
+            this.connection.send(new ClientboundLoginCompressionPacket(this.server.getCompressionThreshold()), PacketSendListener.thenRun(() -> this.connection.setupCompression(this.server.getCompressionThreshold(), true)));
          }
 
          boolean var4 = var2.disconnectAllPlayersWithProfile(var1);
@@ -237,9 +236,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
    }
 
    public void fillListenerSpecificCrashDetails(CrashReport var1, CrashReportCategory var2) {
-      var2.setDetail("Login phase", () -> {
-         return this.state.toString();
-      });
+      var2.setDetail("Login phase", (CrashReportDetail)(() -> this.state.toString()));
    }
 
    public void handleCookieResponse(ServerboundCookieResponsePacket var1) {

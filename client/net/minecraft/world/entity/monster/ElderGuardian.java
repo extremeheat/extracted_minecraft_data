@@ -60,9 +60,7 @@ public class ElderGuardian extends Guardian {
       if ((this.tickCount + this.getId()) % 1200 == 0) {
          MobEffectInstance var2 = new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 6000, 2);
          List var3 = MobEffectUtil.addEffectToPlayersAround(var1, this, this.position(), 50.0, var2, 1200);
-         var3.forEach((var1x) -> {
-            var1x.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.GUARDIAN_ELDER_EFFECT, this.isSilent() ? 0.0F : 1.0F));
-         });
+         var3.forEach((var1x) -> var1x.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.GUARDIAN_ELDER_EFFECT, this.isSilent() ? 0.0F : 1.0F)));
       }
 
       if (!this.hasRestriction()) {

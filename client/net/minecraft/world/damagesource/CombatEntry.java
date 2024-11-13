@@ -10,21 +10,4 @@ public record CombatEntry(DamageSource source, float damage, @Nullable FallLocat
       this.fallLocation = var3;
       this.fallDistance = var4;
    }
-
-   public DamageSource source() {
-      return this.source;
-   }
-
-   public float damage() {
-      return this.damage;
-   }
-
-   @Nullable
-   public FallLocation fallLocation() {
-      return this.fallLocation;
-   }
-
-   public float fallDistance() {
-      return this.fallDistance;
-   }
 }

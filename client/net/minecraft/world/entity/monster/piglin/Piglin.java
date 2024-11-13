@@ -120,9 +120,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
          }
       }
 
-      this.inventory.removeAllItems().forEach((var2x) -> {
-         this.spawnAtLocation(var1, var2x);
-      });
+      this.inventory.removeAllItems().forEach((var2x) -> this.spawnAtLocation(var1, var2x));
    }
 
    protected ItemStack addToInventory(ItemStack var1) {
@@ -199,7 +197,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    protected Brain.Provider<Piglin> brainProvider() {
-      return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
+      return Brain.<Piglin>provider(MEMORY_TYPES, SENSOR_TYPES);
    }
 
    protected Brain<?> makeBrain(Dynamic<?> var1) {
@@ -269,9 +267,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    protected void finishConversion(ServerLevel var1) {
       PiglinAi.cancelAdmiring(var1, this);
-      this.inventory.removeAllItems().forEach((var2) -> {
-         this.spawnAtLocation(var1, var2);
-      });
+      this.inventory.removeAllItems().forEach((var2) -> this.spawnAtLocation(var1, var2));
       super.finishConversion(var1);
    }
 
@@ -280,7 +276,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    public TagKey<Item> getPreferredWeaponType() {
-      return ItemTags.PIGLIN_PREFERRED_WEAPON;
+      return ItemTags.PIGLIN_PREFERRED_WEAPONS;
    }
 
    private boolean isChargingCrossbow() {
@@ -417,9 +413,9 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    static {
-      DATA_BABY_ID = SynchedEntityData.defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
-      DATA_IS_CHARGING_CROSSBOW = SynchedEntityData.defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
-      DATA_IS_DANCING = SynchedEntityData.defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
+      DATA_BABY_ID = SynchedEntityData.<Boolean>defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
+      DATA_IS_CHARGING_CROSSBOW = SynchedEntityData.<Boolean>defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
+      DATA_IS_DANCING = SynchedEntityData.<Boolean>defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
       SPEED_MODIFIER_BABY_ID = ResourceLocation.withDefaultNamespace("baby");
       SPEED_MODIFIER_BABY = new AttributeModifier(SPEED_MODIFIER_BABY_ID, 0.20000000298023224, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
       BABY_DIMENSIONS = EntityType.PIGLIN.getDimensions().scale(0.5F).withEyeHeight(0.97F);

@@ -88,51 +88,6 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
 
    }
 
-   private static record ShapeUpdate(Direction direction, BlockState neighborState, BlockPos pos, BlockPos neighborPos, int updateFlags, int updateLimit) implements NeighborUpdates {
-      ShapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
-         super();
-         this.direction = var1;
-         this.neighborState = var2;
-         this.pos = var3;
-         this.neighborPos = var4;
-         this.updateFlags = var5;
-         this.updateLimit = var6;
-      }
-
-      public boolean runNext(Level var1) {
-         NeighborUpdater.executeShapeUpdate(var1, this.direction, this.pos, this.neighborPos, this.neighborState, this.updateFlags, this.updateLimit);
-         return false;
-      }
-
-      public Direction direction() {
-         return this.direction;
-      }
-
-      public BlockState neighborState() {
-         return this.neighborState;
-      }
-
-      public BlockPos pos() {
-         return this.pos;
-      }
-
-      public BlockPos neighborPos() {
-         return this.neighborPos;
-      }
-
-      public int updateFlags() {
-         return this.updateFlags;
-      }
-
-      public int updateLimit() {
-         return this.updateLimit;
-      }
-   }
-
-   private interface NeighborUpdates {
-      boolean runNext(Level var1);
-   }
-
    static record SimpleNeighborUpdate(BlockPos pos, Block block, @Nullable Orientation orientation) implements NeighborUpdates {
       SimpleNeighborUpdate(BlockPos var1, Block var2, @Nullable Orientation var3) {
          super();
@@ -145,19 +100,6 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
          BlockState var2 = var1.getBlockState(this.pos);
          NeighborUpdater.executeUpdate(var1, var2, this.pos, this.block, this.orientation, false);
          return false;
-      }
-
-      public BlockPos pos() {
-         return this.pos;
-      }
-
-      public Block block() {
-         return this.block;
-      }
-
-      @Nullable
-      public Orientation orientation() {
-         return this.orientation;
       }
    }
 
@@ -174,27 +116,6 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
       public boolean runNext(Level var1) {
          NeighborUpdater.executeUpdate(var1, this.state, this.pos, this.block, this.orientation, this.movedByPiston);
          return false;
-      }
-
-      public BlockState state() {
-         return this.state;
-      }
-
-      public BlockPos pos() {
-         return this.pos;
-      }
-
-      public Block block() {
-         return this.block;
-      }
-
-      @Nullable
-      public Orientation orientation() {
-         return this.orientation;
-      }
-
-      public boolean movedByPiston() {
-         return this.movedByPiston;
       }
    }
 
@@ -239,5 +160,26 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
 
          return this.idx < NeighborUpdater.UPDATE_ORDER.length;
       }
+   }
+
+   static record ShapeUpdate(Direction direction, BlockState neighborState, BlockPos pos, BlockPos neighborPos, int updateFlags, int updateLimit) implements NeighborUpdates {
+      ShapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
+         super();
+         this.direction = var1;
+         this.neighborState = var2;
+         this.pos = var3;
+         this.neighborPos = var4;
+         this.updateFlags = var5;
+         this.updateLimit = var6;
+      }
+
+      public boolean runNext(Level var1) {
+         NeighborUpdater.executeShapeUpdate(var1, this.direction, this.pos, this.neighborPos, this.neighborState, this.updateFlags, this.updateLimit);
+         return false;
+      }
+   }
+
+   interface NeighborUpdates {
+      boolean runNext(Level var1);
    }
 }

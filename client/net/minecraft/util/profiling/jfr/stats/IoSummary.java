@@ -55,13 +55,5 @@ public final class IoSummary<T> {
       public float averageSize() {
          return (float)this.totalSize / (float)this.totalCount;
       }
-
-      public long totalCount() {
-         return this.totalCount;
-      }
-
-      public long totalSize() {
-         return this.totalSize;
-      }
    }
 }

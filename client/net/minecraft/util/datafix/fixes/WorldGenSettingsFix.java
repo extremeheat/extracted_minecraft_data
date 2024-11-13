@@ -40,9 +40,7 @@ public class WorldGenSettingsFix extends DataFix {
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("WorldGenSettings building", this.getInputSchema().getType(References.WORLD_GEN_SETTINGS), (var0) -> {
-         return var0.update(DSL.remainderFinder(), WorldGenSettingsFix::fix);
-      });
+      return this.fixTypeEverywhereTyped("WorldGenSettings building", this.getInputSchema().getType(References.WORLD_GEN_SETTINGS), (var0) -> var0.update(DSL.remainderFinder(), WorldGenSettingsFix::fix));
    }
 
    private static <T> Dynamic<T> noise(long var0, DynamicLike<T> var2, Dynamic<T> var3, Dynamic<T> var4) {
@@ -61,12 +59,8 @@ public class WorldGenSettingsFix extends DataFix {
    private static <T> Dynamic<T> fix(Dynamic<T> var0) {
       DynamicOps var1 = var0.getOps();
       long var2 = var0.get("RandomSeed").asLong(0L);
-      Optional var5 = var0.get("generatorName").asString().map((var0x) -> {
-         return var0x.toLowerCase(Locale.ROOT);
-      }).result();
-      Optional var6 = (Optional)var0.get("legacy_custom_options").asString().result().map(Optional::of).orElseGet(() -> {
-         return var5.equals(Optional.of("customized")) ? var0.get("generatorOptions").asString().result() : Optional.empty();
-      });
+      Optional var5 = var0.get("generatorName").asString().map((var0x) -> var0x.toLowerCase(Locale.ROOT)).result();
+      Optional var6 = (Optional)var0.get("legacy_custom_options").asString().result().map(Optional::of).orElseGet(() -> var5.equals(Optional.of("customized")) ? var0.get("generatorOptions").asString().result() : Optional.empty());
       boolean var7 = false;
       Dynamic var4;
       if (var5.equals(Optional.of("customized"))) {
@@ -78,9 +72,7 @@ public class WorldGenSettingsFix extends DataFix {
             case "flat":
                OptionalDynamic var10 = var0.get("generatorOptions");
                Map var11 = fixFlatStructures(var1, var10);
-               var4 = var0.createMap(ImmutableMap.of(var0.createString("type"), var0.createString("minecraft:flat"), var0.createString("settings"), var0.createMap(ImmutableMap.of(var0.createString("structures"), var0.createMap(var11), var0.createString("layers"), (Dynamic)var10.get("layers").result().orElseGet(() -> {
-                  return var0.createList(Stream.of(var0.createMap(ImmutableMap.of(var0.createString("height"), var0.createInt(1), var0.createString("block"), var0.createString("minecraft:bedrock"))), var0.createMap(ImmutableMap.of(var0.createString("height"), var0.createInt(2), var0.createString("block"), var0.createString("minecraft:dirt"))), var0.createMap(ImmutableMap.of(var0.createString("height"), var0.createInt(1), var0.createString("block"), var0.createString("minecraft:grass_block")))));
-               }), var0.createString("biome"), var0.createString(var10.get("biome").asString("minecraft:plains"))))));
+               var4 = var0.createMap(ImmutableMap.of(var0.createString("type"), var0.createString("minecraft:flat"), var0.createString("settings"), var0.createMap(ImmutableMap.of(var0.createString("structures"), var0.createMap(var11), var0.createString("layers"), (Dynamic)var10.get("layers").result().orElseGet(() -> var0.createList(Stream.of(var0.createMap(ImmutableMap.of(var0.createString("height"), var0.createInt(1), var0.createString("block"), var0.createString("minecraft:bedrock"))), var0.createMap(ImmutableMap.of(var0.createString("height"), var0.createInt(2), var0.createString("block"), var0.createString("minecraft:dirt"))), var0.createMap(ImmutableMap.of(var0.createString("height"), var0.createInt(1), var0.createString("block"), var0.createString("minecraft:grass_block")))))), var0.createString("biome"), var0.createString(var10.get("biome").asString("minecraft:plains"))))));
                break;
             case "debug_all_block_states":
                var4 = var0.createMap(ImmutableMap.of(var0.createString("type"), var0.createString("minecraft:debug")));
@@ -99,14 +91,10 @@ public class WorldGenSettingsFix extends DataFix {
                   var15 = var0.createString("minecraft:overworld");
                }
 
-               Dynamic var16 = (Dynamic)var12.get("biome_source").result().orElseGet(() -> {
-                  return var0.createMap(ImmutableMap.of(var0.createString("type"), var0.createString("minecraft:fixed")));
-               });
+               Dynamic var16 = (Dynamic)var12.get("biome_source").result().orElseGet(() -> var0.createMap(ImmutableMap.of(var0.createString("type"), var0.createString("minecraft:fixed"))));
                Dynamic var17;
                if (var16.get("type").asString().result().equals(Optional.of("minecraft:fixed"))) {
-                  String var18 = (String)var16.get("options").get("biomes").asStream().findFirst().flatMap((var0x) -> {
-                     return var0x.asString().result();
-                  }).orElse("minecraft:ocean");
+                  String var18 = (String)var16.get("options").get("biomes").asStream().findFirst().flatMap((var0x) -> var0x.asString().result()).orElse("minecraft:ocean");
                   var17 = var16.remove("options").set("biome", var0.createString(var18));
                } else {
                   var17 = var16;
@@ -124,16 +112,14 @@ public class WorldGenSettingsFix extends DataFix {
       }
 
       boolean var22 = var0.get("MapFeatures").asBoolean(true);
-      boolean var24 = var0.get("BonusChest").asBoolean(false);
-      ImmutableMap.Builder var23 = ImmutableMap.builder();
-      var23.put(var1.createString("seed"), var1.createLong(var2));
-      var23.put(var1.createString("generate_features"), var1.createBoolean(var22));
-      var23.put(var1.createString("bonus_chest"), var1.createBoolean(var24));
-      var23.put(var1.createString("dimensions"), vanillaLevels(var0, var2, var4, var7));
-      var6.ifPresent((var2x) -> {
-         var23.put(var1.createString("legacy_custom_options"), var1.createString(var2x));
-      });
-      return new Dynamic(var1, var1.createMap(var23.build()));
+      boolean var23 = var0.get("BonusChest").asBoolean(false);
+      ImmutableMap.Builder var24 = ImmutableMap.builder();
+      var24.put(var1.createString("seed"), var1.createLong(var2));
+      var24.put(var1.createString("generate_features"), var1.createBoolean(var22));
+      var24.put(var1.createString("bonus_chest"), var1.createBoolean(var23));
+      var24.put(var1.createString("dimensions"), vanillaLevels(var0, var2, var4, var7));
+      var6.ifPresent((var2x) -> var24.put(var1.createString("legacy_custom_options"), var1.createString(var2x)));
+      return new Dynamic(var1, var1.createMap(var24.build()));
    }
 
    protected static <T> Dynamic<T> defaultOverworld(Dynamic<T> var0, long var1) {
@@ -142,7 +128,7 @@ public class WorldGenSettingsFix extends DataFix {
 
    protected static <T> T vanillaLevels(Dynamic<T> var0, long var1, Dynamic<T> var3, boolean var4) {
       DynamicOps var5 = var0.getOps();
-      return var5.createMap(ImmutableMap.of(var5.createString("minecraft:overworld"), var5.createMap(ImmutableMap.of(var5.createString("type"), var5.createString("minecraft:overworld" + (var4 ? "_caves" : "")), var5.createString("generator"), var3.getValue())), var5.createString("minecraft:the_nether"), var5.createMap(ImmutableMap.of(var5.createString("type"), var5.createString("minecraft:the_nether"), var5.createString("generator"), noise(var1, var0, var0.createString("minecraft:nether"), var0.createMap(ImmutableMap.of(var0.createString("type"), var0.createString("minecraft:multi_noise"), var0.createString("seed"), var0.createLong(var1), var0.createString("preset"), var0.createString("minecraft:nether")))).getValue())), var5.createString("minecraft:the_end"), var5.createMap(ImmutableMap.of(var5.createString("type"), var5.createString("minecraft:the_end"), var5.createString("generator"), noise(var1, var0, var0.createString("minecraft:end"), var0.createMap(ImmutableMap.of(var0.createString("type"), var0.createString("minecraft:the_end"), var0.createString("seed"), var0.createLong(var1)))).getValue()))));
+      return (T)var5.createMap(ImmutableMap.of(var5.createString("minecraft:overworld"), var5.createMap(ImmutableMap.of(var5.createString("type"), var5.createString("minecraft:overworld" + (var4 ? "_caves" : "")), var5.createString("generator"), var3.getValue())), var5.createString("minecraft:the_nether"), var5.createMap(ImmutableMap.of(var5.createString("type"), var5.createString("minecraft:the_nether"), var5.createString("generator"), noise(var1, var0, var0.createString("minecraft:nether"), var0.createMap(ImmutableMap.of(var0.createString("type"), var0.createString("minecraft:multi_noise"), var0.createString("seed"), var0.createLong(var1), var0.createString("preset"), var0.createString("minecraft:nether")))).getValue())), var5.createString("minecraft:the_end"), var5.createMap(ImmutableMap.of(var5.createString("type"), var5.createString("minecraft:the_end"), var5.createString("generator"), noise(var1, var0, var0.createString("minecraft:end"), var0.createMap(ImmutableMap.of(var0.createString("type"), var0.createString("minecraft:the_end"), var0.createString("seed"), var0.createLong(var1)))).getValue()))));
    }
 
    private static <T> Map<Dynamic<T>, Dynamic<T>> fixFlatStructures(DynamicOps<T> var0, OptionalDynamic<T> var1) {
@@ -156,10 +142,7 @@ public class WorldGenSettingsFix extends DataFix {
          var6.put("minecraft:village", (StructureFeatureConfiguration)DEFAULTS.get("minecraft:village"));
       }
 
-      var1.get("structures").flatMap(Dynamic::getMapValues).ifSuccess((var5x) -> {
-         var5x.forEach((var5xx, var6x) -> {
-            var6x.getMapValues().result().ifPresent((var6xx) -> {
-               var6xx.forEach((var6x, var7) -> {
+      var1.get("structures").flatMap(Dynamic::getMapValues).ifSuccess((var5x) -> var5x.forEach((var5xx, var6x) -> var6x.getMapValues().result().ifPresent((var6xx) -> var6xx.forEach((var6x, var7) -> {
                   String var8 = var5xx.asString("");
                   String var9 = var6x.asString("");
                   String var10 = var7.asString("");
@@ -217,16 +200,9 @@ public class WorldGenSettingsFix extends DataFix {
                         default:
                      }
                   }
-               });
-            });
-         });
-      });
+               }))));
       ImmutableMap.Builder var7 = ImmutableMap.builder();
-      var7.put(var1.createString("structures"), var1.createMap((Map)var6.entrySet().stream().collect(Collectors.toMap((var1x) -> {
-         return var1.createString((String)var1x.getKey());
-      }, (var1x) -> {
-         return ((StructureFeatureConfiguration)var1x.getValue()).serialize(var0);
-      }))));
+      var7.put(var1.createString("structures"), var1.createMap((Map)var6.entrySet().stream().collect(Collectors.toMap((var1x) -> var1.createString((String)var1x.getKey()), (var1x) -> ((StructureFeatureConfiguration)var1x.getValue()).serialize(var0)))));
       if (var5.isTrue()) {
          var7.put(var1.createString("stronghold"), var1.createMap(ImmutableMap.of(var1.createString("distance"), var1.createInt(var2.getValue()), var1.createString("spread"), var1.createInt(var3.getValue()), var1.createString("count"), var1.createInt(var4.getValue()))));
       }
@@ -249,15 +225,7 @@ public class WorldGenSettingsFix extends DataFix {
    }
 
    static final class StructureFeatureConfiguration {
-      public static final Codec<StructureFeatureConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Codec.INT.fieldOf("spacing").forGetter((var0x) -> {
-            return var0x.spacing;
-         }), Codec.INT.fieldOf("separation").forGetter((var0x) -> {
-            return var0x.separation;
-         }), Codec.INT.fieldOf("salt").forGetter((var0x) -> {
-            return var0x.salt;
-         })).apply(var0, StructureFeatureConfiguration::new);
-      });
+      public static final Codec<StructureFeatureConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("spacing").forGetter((var0x) -> var0x.spacing), Codec.INT.fieldOf("separation").forGetter((var0x) -> var0x.separation), Codec.INT.fieldOf("salt").forGetter((var0x) -> var0x.salt)).apply(var0, StructureFeatureConfiguration::new));
       final int spacing;
       final int separation;
       final int salt;

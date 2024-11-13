@@ -18,10 +18,6 @@ public class VillagerFollowRangeFix extends NamedEntityFix {
    }
 
    private static Dynamic<?> fixValue(Dynamic<?> var0) {
-      return var0.update("Attributes", (var1) -> {
-         return var0.createList(var1.asStream().map((var0x) -> {
-            return var0x.get("Name").asString("").equals("generic.follow_range") && var0x.get("Base").asDouble(0.0) == 16.0 ? var0x.set("Base", var0x.createDouble(48.0)) : var0x;
-         }));
-      });
+      return var0.update("Attributes", (var1) -> var0.createList(var1.asStream().map((var0x) -> var0x.get("Name").asString("").equals("generic.follow_range") && var0x.get("Base").asDouble(0.0) == 16.0 ? var0x.set("Base", var0x.createDouble(48.0)) : var0x)));
    }
 }

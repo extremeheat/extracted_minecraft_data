@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 
 public record ClientboundCookieRequestPacket(ResourceLocation key) implements Packet<ClientCookiePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundCookieRequestPacket> STREAM_CODEC = Packet.codec(ClientboundCookieRequestPacket::write, ClientboundCookieRequestPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundCookieRequestPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundCookieRequestPacket>codec(ClientboundCookieRequestPacket::write, ClientboundCookieRequestPacket::new);
 
    private ClientboundCookieRequestPacket(FriendlyByteBuf var1) {
       this(var1.readResourceLocation());
@@ -28,9 +28,5 @@ public record ClientboundCookieRequestPacket(ResourceLocation key) implements Pa
 
    public void handle(ClientCookiePacketListener var1) {
       var1.handleRequestCookie(this);
-   }
-
-   public ResourceLocation key() {
-      return this.key;
    }
 }

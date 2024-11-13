@@ -9,7 +9,7 @@ public enum ParticleStatus implements OptionEnum {
    DECREASED(1, "options.particles.decreased"),
    MINIMAL(2, "options.particles.minimal");
 
-   private static final IntFunction<ParticleStatus> BY_ID = ByIdMap.continuous(ParticleStatus::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   private static final IntFunction<ParticleStatus> BY_ID = ByIdMap.<ParticleStatus>continuous(ParticleStatus::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    private final int id;
    private final String key;
 

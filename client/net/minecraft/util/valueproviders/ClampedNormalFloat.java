@@ -8,21 +8,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class ClampedNormalFloat extends FloatProvider {
-   public static final MapCodec<ClampedNormalFloat> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.FLOAT.fieldOf("mean").forGetter((var0x) -> {
-         return var0x.mean;
-      }), Codec.FLOAT.fieldOf("deviation").forGetter((var0x) -> {
-         return var0x.deviation;
-      }), Codec.FLOAT.fieldOf("min").forGetter((var0x) -> {
-         return var0x.min;
-      }), Codec.FLOAT.fieldOf("max").forGetter((var0x) -> {
-         return var0x.max;
-      })).apply(var0, ClampedNormalFloat::new);
-   }).validate((var0) -> {
-      return var0.max < var0.min ? DataResult.error(() -> {
-         return "Max must be larger than min: [" + var0.min + ", " + var0.max + "]";
-      }) : DataResult.success(var0);
-   });
+   public static final MapCodec<ClampedNormalFloat> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("mean").forGetter((var0x) -> var0x.mean), Codec.FLOAT.fieldOf("deviation").forGetter((var0x) -> var0x.deviation), Codec.FLOAT.fieldOf("min").forGetter((var0x) -> var0x.min), Codec.FLOAT.fieldOf("max").forGetter((var0x) -> var0x.max)).apply(var0, ClampedNormalFloat::new)).validate((var0) -> var0.max < var0.min ? DataResult.error(() -> "Max must be larger than min: [" + var0.min + ", " + var0.max + "]") : DataResult.success(var0));
    private final float mean;
    private final float deviation;
    private final float min;

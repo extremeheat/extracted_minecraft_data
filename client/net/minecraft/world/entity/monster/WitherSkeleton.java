@@ -4,6 +4,8 @@ import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
@@ -19,6 +21,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -50,6 +53,14 @@ public class WitherSkeleton extends AbstractSkeleton {
 
    SoundEvent getStepSound() {
       return SoundEvents.WITHER_SKELETON_STEP;
+   }
+
+   public TagKey<Item> getPreferredWeaponType() {
+      return null;
+   }
+
+   public boolean canHoldItem(ItemStack var1) {
+      return !var1.is(ItemTags.WITHER_SKELETON_DISLIKED_WEAPONS) && super.canHoldItem(var1);
    }
 
    protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {

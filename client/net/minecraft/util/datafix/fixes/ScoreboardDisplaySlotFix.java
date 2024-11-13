@@ -29,20 +29,10 @@ public class ScoreboardDisplaySlotFix extends DataFix {
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.SAVED_DATA_SCOREBOARD);
       OpticFinder var2 = var1.findField("data");
-      return this.fixTypeEverywhereTyped("Scoreboard DisplaySlot rename", var1, (var1x) -> {
-         return var1x.updateTyped(var2, (var0) -> {
-            return var0.update(DSL.remainderFinder(), (var0x) -> {
-               return var0x.update("DisplaySlots", (var0) -> {
-                  return var0.updateMapValues((var0x) -> {
-                     return var0x.mapFirst((var0) -> {
+      return this.fixTypeEverywhereTyped("Scoreboard DisplaySlot rename", var1, (var1x) -> var1x.updateTyped(var2, (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> var0x.update("DisplaySlots", (var0) -> var0.updateMapValues((var0x) -> var0x.mapFirst((var0) -> {
                         Optional var10000 = var0.asString().result().map(ScoreboardDisplaySlotFix::rename);
                         Objects.requireNonNull(var0);
                         return (Dynamic)DataFixUtils.orElse(var10000.map(var0::createString), var0);
-                     });
-                  });
-               });
-            });
-         });
-      });
+                     }))))));
    }
 }

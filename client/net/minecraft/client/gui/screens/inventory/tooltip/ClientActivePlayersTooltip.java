@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.inventory.tooltip;
 
 import com.mojang.authlib.yggdrasil.ProfileResult;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -25,10 +24,8 @@ public class ClientActivePlayersTooltip implements ClientTooltipComponent {
 
    public int getWidth(Font var1) {
       int var2 = 0;
-      Iterator var3 = this.activePlayers.iterator();
 
-      while(var3.hasNext()) {
-         ProfileResult var4 = (ProfileResult)var3.next();
+      for(ProfileResult var4 : this.activePlayers) {
          int var5 = var1.width(var4.profile().getName());
          if (var5 > var2) {
             var2 = var5;
@@ -52,10 +49,6 @@ public class ClientActivePlayersTooltip implements ClientTooltipComponent {
       public ActivePlayersTooltip(List<ProfileResult> var1) {
          super();
          this.profiles = var1;
-      }
-
-      public List<ProfileResult> profiles() {
-         return this.profiles;
       }
    }
 }

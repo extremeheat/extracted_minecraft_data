@@ -57,7 +57,7 @@ public class MobEffects {
    }
 
    private static Holder<MobEffect> register(String var0, MobEffect var1) {
-      return Registry.registerForHolder(BuiltInRegistries.MOB_EFFECT, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), var1);
+      return Registry.registerForHolder(BuiltInRegistries.MOB_EFFECT, ResourceLocation.withDefaultNamespace(var0), var1);
    }
 
    public static Holder<MobEffect> bootstrap(Registry<MobEffect> var0) {
@@ -101,14 +101,8 @@ public class MobEffects {
       TRIAL_OMEN = register("trial_omen", (new MobEffect(MobEffectCategory.NEUTRAL, 1484454, ParticleTypes.TRIAL_OMEN)).withSoundOnAdded(SoundEvents.APPLY_EFFECT_TRIAL_OMEN));
       RAID_OMEN = register("raid_omen", (new RaidOmenMobEffect(MobEffectCategory.NEUTRAL, 14565464, ParticleTypes.RAID_OMEN)).withSoundOnAdded(SoundEvents.APPLY_EFFECT_RAID_OMEN));
       WIND_CHARGED = register("wind_charged", new WindChargedMobEffect(MobEffectCategory.HARMFUL, 12438015));
-      WEAVING = register("weaving", new WeavingMobEffect(MobEffectCategory.HARMFUL, 7891290, (var0) -> {
-         return Mth.randomBetweenInclusive(var0, 2, 3);
-      }));
-      OOZING = register("oozing", new OozingMobEffect(MobEffectCategory.HARMFUL, 10092451, (var0) -> {
-         return 2;
-      }));
-      INFESTED = register("infested", new InfestedMobEffect(MobEffectCategory.HARMFUL, 9214860, 0.1F, (var0) -> {
-         return Mth.randomBetweenInclusive(var0, 1, 2);
-      }));
+      WEAVING = register("weaving", new WeavingMobEffect(MobEffectCategory.HARMFUL, 7891290, (var0) -> Mth.randomBetweenInclusive(var0, 2, 3)));
+      OOZING = register("oozing", new OozingMobEffect(MobEffectCategory.HARMFUL, 10092451, (var0) -> 2));
+      INFESTED = register("infested", new InfestedMobEffect(MobEffectCategory.HARMFUL, 9214860, 0.1F, (var0) -> Mth.randomBetweenInclusive(var0, 1, 2)));
    }
 }

@@ -39,8 +39,6 @@ public class CartographyTableBlock extends Block {
 
    @Nullable
    protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
-      return new SimpleMenuProvider((var2x, var3x, var4) -> {
-         return new CartographyTableMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3));
-      }, CONTAINER_TITLE);
+      return new SimpleMenuProvider((var2x, var3x, var4) -> new CartographyTableMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), CONTAINER_TITLE);
    }
 }

@@ -33,14 +33,6 @@ public record ClientboundRemoveMobEffectPacket(int entityId, Holder<MobEffect> e
       return var1.getEntity(this.entityId);
    }
 
-   public int entityId() {
-      return this.entityId;
-   }
-
-   public Holder<MobEffect> effect() {
-      return this.effect;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundRemoveMobEffectPacket::entityId, MobEffect.STREAM_CODEC, ClientboundRemoveMobEffectPacket::effect, ClientboundRemoveMobEffectPacket::new);
    }

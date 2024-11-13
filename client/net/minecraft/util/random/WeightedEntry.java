@@ -7,33 +7,7 @@ public interface WeightedEntry {
    Weight getWeight();
 
    static <T> Wrapper<T> wrap(T var0, int var1) {
-      return new Wrapper(var0, Weight.of(var1));
-   }
-
-   public static record Wrapper<T>(T data, Weight weight) implements WeightedEntry {
-      public Wrapper(T var1, Weight var2) {
-         super();
-         this.data = var1;
-         this.weight = var2;
-      }
-
-      public Weight getWeight() {
-         return this.weight;
-      }
-
-      public static <E> Codec<Wrapper<E>> codec(Codec<E> var0) {
-         return RecordCodecBuilder.create((var1) -> {
-            return var1.group(var0.fieldOf("data").forGetter(Wrapper::data), Weight.CODEC.fieldOf("weight").forGetter(Wrapper::weight)).apply(var1, Wrapper::new);
-         });
-      }
-
-      public T data() {
-         return this.data;
-      }
-
-      public Weight weight() {
-         return this.weight;
-      }
+      return new Wrapper<T>(var0, Weight.of(var1));
    }
 
    public static class IntrusiveBase implements WeightedEntry {
@@ -51,6 +25,22 @@ public interface WeightedEntry {
 
       public Weight getWeight() {
          return this.weight;
+      }
+   }
+
+   public static record Wrapper<T>(T data, Weight weight) implements WeightedEntry {
+      public Wrapper(T var1, Weight var2) {
+         super();
+         this.data = var1;
+         this.weight = var2;
+      }
+
+      public Weight getWeight() {
+         return this.weight;
+      }
+
+      public static <E> Codec<Wrapper<E>> codec(Codec<E> var0) {
+         return RecordCodecBuilder.create((var1) -> var1.group(var0.fieldOf("data").forGetter(Wrapper::data), Weight.CODEC.fieldOf("weight").forGetter(Wrapper::weight)).apply(var1, Wrapper::new));
       }
    }
 }

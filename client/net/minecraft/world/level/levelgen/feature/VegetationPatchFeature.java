@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -25,9 +24,7 @@ public class VegetationPatchFeature extends Feature<VegetationPatchConfiguration
       VegetationPatchConfiguration var3 = (VegetationPatchConfiguration)var1.config();
       RandomSource var4 = var1.random();
       BlockPos var5 = var1.origin();
-      Predicate var6 = (var1x) -> {
-         return var1x.is(var3.replaceable);
-      };
+      Predicate var6 = (var1x) -> var1x.is(var3.replaceable);
       int var7 = var3.xzRadius.sample(var4) + 1;
       int var8 = var3.xzRadius.sample(var4) + 1;
       Set var9 = this.placeGroundPatch(var2, var3, var4, var5, var6, var7, var8);
@@ -53,14 +50,11 @@ public class VegetationPatchFeature extends Feature<VegetationPatchConfiguration
             if (!var18 && (!var19 || var2.extraEdgeColumnChance != 0.0F && !(var3.nextFloat() > var2.extraEdgeColumnChance))) {
                var8.setWithOffset(var4, var13, 0, var15);
 
-               int var20;
-               for(var20 = 0; var1.isStateAtPosition(var8, BlockBehaviour.BlockStateBase::isAir) && var20 < var2.verticalRange; ++var20) {
+               for(int var20 = 0; var1.isStateAtPosition(var8, BlockBehaviour.BlockStateBase::isAir) && var20 < var2.verticalRange; ++var20) {
                   var8.move(var10);
                }
 
-               for(var20 = 0; var1.isStateAtPosition(var8, (var0) -> {
-                  return !var0.isAir();
-               }) && var20 < var2.verticalRange; ++var20) {
+               for(int var25 = 0; var1.isStateAtPosition(var8, (var0) -> !var0.isAir()) && var25 < var2.verticalRange; ++var25) {
                   var8.move(var11);
                }
 
@@ -82,10 +76,7 @@ public class VegetationPatchFeature extends Feature<VegetationPatchConfiguration
    }
 
    protected void distributeVegetation(FeaturePlaceContext<VegetationPatchConfiguration> var1, WorldGenLevel var2, VegetationPatchConfiguration var3, RandomSource var4, Set<BlockPos> var5, int var6, int var7) {
-      Iterator var8 = var5.iterator();
-
-      while(var8.hasNext()) {
-         BlockPos var9 = (BlockPos)var8.next();
+      for(BlockPos var9 : var5) {
          if (var3.vegetationChance > 0.0F && var4.nextFloat() < var3.vegetationChance) {
             this.placeVegetation(var2, var3, var1.chunkGenerator(), var4, var9);
          }

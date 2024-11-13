@@ -9,7 +9,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 
 public record ClientboundUpdateEnabledFeaturesPacket(Set<ResourceLocation> features) implements Packet<ClientConfigurationPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundUpdateEnabledFeaturesPacket> STREAM_CODEC = Packet.codec(ClientboundUpdateEnabledFeaturesPacket::write, ClientboundUpdateEnabledFeaturesPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundUpdateEnabledFeaturesPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundUpdateEnabledFeaturesPacket>codec(ClientboundUpdateEnabledFeaturesPacket::write, ClientboundUpdateEnabledFeaturesPacket::new);
 
    private ClientboundUpdateEnabledFeaturesPacket(FriendlyByteBuf var1) {
       this((Set)var1.readCollection(HashSet::new, FriendlyByteBuf::readResourceLocation));
@@ -30,9 +30,5 @@ public record ClientboundUpdateEnabledFeaturesPacket(Set<ResourceLocation> featu
 
    public void handle(ClientConfigurationPacketListener var1) {
       var1.handleEnabledFeatures(this);
-   }
-
-   public Set<ResourceLocation> features() {
-      return this.features;
    }
 }

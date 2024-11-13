@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -55,7 +54,7 @@ public abstract class AbstractFurnaceBlock extends BaseEntityBlock {
          BlockEntity var6 = var2.getBlockEntity(var3);
          if (var6 instanceof AbstractFurnaceBlockEntity) {
             if (var2 instanceof ServerLevel) {
-               Containers.dropContents(var2, (BlockPos)var3, (Container)((AbstractFurnaceBlockEntity)var6));
+               Containers.dropContents(var2, (BlockPos)var3, (AbstractFurnaceBlockEntity)var6);
                ((AbstractFurnaceBlockEntity)var6).getRecipesToAwardAndPopExperience((ServerLevel)var2, Vec3.atCenterOf(var3));
             }
 
@@ -76,10 +75,6 @@ public abstract class AbstractFurnaceBlock extends BaseEntityBlock {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
-
    protected BlockState rotate(BlockState var1, Rotation var2) {
       return (BlockState)var1.setValue(FACING, var2.rotate((Direction)var1.getValue(FACING)));
    }
@@ -96,9 +91,7 @@ public abstract class AbstractFurnaceBlock extends BaseEntityBlock {
    protected static <T extends BlockEntity> BlockEntityTicker<T> createFurnaceTicker(Level var0, BlockEntityType<T> var1, BlockEntityType<? extends AbstractFurnaceBlockEntity> var2) {
       BlockEntityTicker var10000;
       if (var0 instanceof ServerLevel var3) {
-         var10000 = createTickerHelper(var1, var2, (var1x, var2x, var3x, var4) -> {
-            AbstractFurnaceBlockEntity.serverTick(var3, var2x, var3x, var4);
-         });
+         var10000 = createTickerHelper(var1, var2, (var1x, var2x, var3x, var4) -> AbstractFurnaceBlockEntity.serverTick(var3, var2x, var3x, var4));
       } else {
          var10000 = null;
       }

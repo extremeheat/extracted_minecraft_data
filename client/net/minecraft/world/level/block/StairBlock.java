@@ -27,11 +27,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class StairBlock extends Block implements SimpleWaterloggedBlock {
-   public static final MapCodec<StairBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BlockState.CODEC.fieldOf("base_state").forGetter((var0x) -> {
-         return var0x.baseState;
-      }), propertiesCodec()).apply(var0, StairBlock::new);
-   });
+   public static final MapCodec<StairBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockState.CODEC.fieldOf("base_state").forGetter((var0x) -> var0x.baseState), propertiesCodec()).apply(var0, StairBlock::new));
    public static final EnumProperty<Direction> FACING;
    public static final EnumProperty<Half> HALF;
    public static final EnumProperty<StairsShape> SHAPE;
@@ -57,11 +53,7 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    private static VoxelShape[] makeShapes(VoxelShape var0, VoxelShape var1, VoxelShape var2, VoxelShape var3, VoxelShape var4) {
-      return (VoxelShape[])IntStream.range(0, 16).mapToObj((var5) -> {
-         return makeStairShape(var5, var0, var1, var2, var3, var4);
-      }).toArray((var0x) -> {
-         return new VoxelShape[var0x];
-      });
+      return (VoxelShape[])IntStream.range(0, 16).mapToObj((var5) -> makeStairShape(var5, var0, var1, var2, var3, var4)).toArray((var0x) -> new VoxelShape[var0x]);
    }
 
    private static VoxelShape makeStairShape(int var0, VoxelShape var1, VoxelShape var2, VoxelShape var3, VoxelShape var4, VoxelShape var5) {

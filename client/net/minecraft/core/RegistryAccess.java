@@ -17,17 +17,13 @@ public interface RegistryAccess extends HolderLookup.Provider {
    <E> Optional<Registry<E>> lookup(ResourceKey<? extends Registry<? extends E>> var1);
 
    default <E> Registry<E> lookupOrThrow(ResourceKey<? extends Registry<? extends E>> var1) {
-      return (Registry)this.lookup(var1).orElseThrow(() -> {
-         return new IllegalStateException("Missing registry: " + String.valueOf(var1));
-      });
+      return (Registry)this.lookup(var1).orElseThrow(() -> new IllegalStateException("Missing registry: " + String.valueOf(var1)));
    }
 
    Stream<RegistryEntry<?>> registries();
 
    default Stream<ResourceKey<? extends Registry<?>>> listRegistryKeys() {
-      return this.registries().map((var0) -> {
-         return var0.key;
-      });
+      return this.registries().map((var0) -> var0.key);
    }
 
    static Frozen fromRegistryOfRegistries(final Registry<? extends Registry<?>> var0) {
@@ -49,12 +45,12 @@ public interface RegistryAccess extends HolderLookup.Provider {
 
    default Frozen freeze() {
       class 1FrozenAccess extends ImmutableRegistryAccess implements Frozen {
-         protected _FrozenAccess/* $FF was: 1FrozenAccess*/(final RegistryAccess var1, final Stream var2) {
+         protected _FrozenAccess/* $FF was: 1FrozenAccess*/(final Stream<RegistryEntry<?>> var2) {
             super(var2);
          }
       }
 
-      return new 1FrozenAccess(this, this.registries().map(RegistryEntry::freeze));
+      return new 1FrozenAccess(this.registries().map(RegistryEntry::freeze));
    }
 
    // $FF: synthetic method
@@ -81,19 +77,11 @@ public interface RegistryAccess extends HolderLookup.Provider {
       }
 
       private static <T> RegistryEntry<T> fromUntyped(ResourceKey<? extends Registry<?>> var0, Registry<?> var1) {
-         return new RegistryEntry(var0, var1);
+         return new RegistryEntry<T>(var0, var1);
       }
 
       private RegistryEntry<T> freeze() {
-         return new RegistryEntry(this.key, this.value.freeze());
-      }
-
-      public ResourceKey<? extends Registry<T>> key() {
-         return this.key;
-      }
-
-      public Registry<T> value() {
-         return this.value;
+         return new RegistryEntry<T>(this.key, this.value.freeze());
       }
    }
 
@@ -102,9 +90,7 @@ public interface RegistryAccess extends HolderLookup.Provider {
 
       public ImmutableRegistryAccess(List<? extends Registry<?>> var1) {
          super();
-         this.registries = (Map)var1.stream().collect(Collectors.toUnmodifiableMap(Registry::key, (var0) -> {
-            return var0;
-         }));
+         this.registries = (Map)var1.stream().collect(Collectors.toUnmodifiableMap(Registry::key, (var0) -> var0));
       }
 
       public ImmutableRegistryAccess(Map<? extends ResourceKey<? extends Registry<?>>, ? extends Registry<?>> var1) {
@@ -118,9 +104,7 @@ public interface RegistryAccess extends HolderLookup.Provider {
       }
 
       public <E> Optional<Registry<E>> lookup(ResourceKey<? extends Registry<? extends E>> var1) {
-         return Optional.ofNullable((Registry)this.registries.get(var1)).map((var0) -> {
-            return var0;
-         });
+         return Optional.ofNullable((Registry)this.registries.get(var1)).map((var0) -> var0);
       }
 
       public Stream<RegistryEntry<?>> registries() {

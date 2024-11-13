@@ -6,7 +6,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -46,16 +45,13 @@ public class LootTableProvider implements DataProvider {
    }
 
    public CompletableFuture<?> run(CachedOutput var1) {
-      return this.registries.thenCompose((var2) -> {
-         return this.run(var1, var2);
-      });
+      return this.registries.thenCompose((var2) -> this.run(var1, var2));
    }
 
    private CompletableFuture<?> run(CachedOutput var1, HolderLookup.Provider var2) {
       MappedRegistry var3 = new MappedRegistry(Registries.LOOT_TABLE, Lifecycle.experimental());
       Object2ObjectOpenHashMap var4 = new Object2ObjectOpenHashMap();
-      this.subProviders.forEach((var3x) -> {
-         ((LootTableSubProvider)var3x.provider().apply(var2)).generate((var3xx, var4x) -> {
+      this.subProviders.forEach((var3x) -> ((LootTableSubProvider)var3x.provider().apply(var2)).generate((var3xx, var4x) -> {
             ResourceLocation var5 = sequenceIdForLootTable(var3xx);
             ResourceLocation var6 = (ResourceLocation)var4.put(RandomSequence.seedForKey(var5), var5);
             if (var6 != null) {
@@ -66,38 +62,28 @@ public class LootTableProvider implements DataProvider {
             var4x.setRandomSequence(var5);
             LootTable var7 = var4x.setParamSet(var3x.paramSet).build();
             var3.register(var3xx, var7, RegistrationInfo.BUILT_IN);
-         });
-      });
+         }));
       var3.freeze();
       ProblemReporter.Collector var5 = new ProblemReporter.Collector();
       RegistryAccess.Frozen var6 = (new RegistryAccess.ImmutableRegistryAccess(List.of(var3))).freeze();
       ValidationContext var7 = new ValidationContext(var5, LootContextParamSets.ALL_PARAMS, var6);
-      Sets.SetView var8 = Sets.difference(this.requiredTables, var3.registryKeySet());
-      Iterator var9 = var8.iterator();
 
-      while(var9.hasNext()) {
-         ResourceKey var10 = (ResourceKey)var9.next();
+      for(ResourceKey var10 : Sets.difference(this.requiredTables, var3.registryKeySet())) {
          var5.report("Missing built-in table: " + String.valueOf(var10.location()));
       }
 
-      var3.listElements().forEach((var1x) -> {
-         ((LootTable)var1x.value()).validate(var7.setContextKeySet(((LootTable)var1x.value()).getParamSet()).enterElement("{" + String.valueOf(var1x.key().location()) + "}", var1x.key()));
-      });
+      var3.listElements().forEach((var1x) -> ((LootTable)var1x.value()).validate(var7.setContextKeySet(((LootTable)var1x.value()).getParamSet()).enterElement("{" + String.valueOf(var1x.key().location()) + "}", var1x.key())));
       Multimap var11 = var5.get();
       if (!var11.isEmpty()) {
-         var11.forEach((var0, var1x) -> {
-            LOGGER.warn("Found validation problem in {}: {}", var0, var1x);
-         });
+         var11.forEach((var0, var1x) -> LOGGER.warn("Found validation problem in {}: {}", var0, var1x));
          throw new IllegalStateException("Failed to validate loot tables, see logs");
       } else {
          return CompletableFuture.allOf((CompletableFuture[])var3.entrySet().stream().map((var3x) -> {
             ResourceKey var4 = (ResourceKey)var3x.getKey();
             LootTable var5 = (LootTable)var3x.getValue();
             Path var6 = this.pathProvider.json(var4.location());
-            return DataProvider.saveStable(var1, (HolderLookup.Provider)var2, LootTable.DIRECT_CODEC, var5, var6);
-         }).toArray((var0) -> {
-            return new CompletableFuture[var0];
-         }));
+            return DataProvider.saveStable(var1, var2, LootTable.DIRECT_CODEC, var5, var6);
+         }).toArray((var0) -> new CompletableFuture[var0]));
       }
    }
 
@@ -116,14 +102,6 @@ public class LootTableProvider implements DataProvider {
          super();
          this.provider = var1;
          this.paramSet = var2;
-      }
-
-      public Function<HolderLookup.Provider, LootTableSubProvider> provider() {
-         return this.provider;
-      }
-
-      public ContextKeySet paramSet() {
-         return this.paramSet;
       }
    }
 }

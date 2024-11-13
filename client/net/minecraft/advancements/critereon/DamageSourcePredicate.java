@@ -3,7 +3,6 @@ package net.minecraft.advancements.critereon;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.registries.Registries;
@@ -14,9 +13,7 @@ import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.phys.Vec3;
 
 public record DamageSourcePredicate(List<TagPredicate<DamageType>> tags, Optional<EntityPredicate> directEntity, Optional<EntityPredicate> sourceEntity, Optional<Boolean> isDirect) {
-   public static final Codec<DamageSourcePredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(TagPredicate.codec(Registries.DAMAGE_TYPE).listOf().optionalFieldOf("tags", List.of()).forGetter(DamageSourcePredicate::tags), EntityPredicate.CODEC.optionalFieldOf("direct_entity").forGetter(DamageSourcePredicate::directEntity), EntityPredicate.CODEC.optionalFieldOf("source_entity").forGetter(DamageSourcePredicate::sourceEntity), Codec.BOOL.optionalFieldOf("is_direct").forGetter(DamageSourcePredicate::isDirect)).apply(var0, DamageSourcePredicate::new);
-   });
+   public static final Codec<DamageSourcePredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(TagPredicate.codec(Registries.DAMAGE_TYPE).listOf().optionalFieldOf("tags", List.of()).forGetter(DamageSourcePredicate::tags), EntityPredicate.CODEC.optionalFieldOf("direct_entity").forGetter(DamageSourcePredicate::directEntity), EntityPredicate.CODEC.optionalFieldOf("source_entity").forGetter(DamageSourcePredicate::sourceEntity), Codec.BOOL.optionalFieldOf("is_direct").forGetter(DamageSourcePredicate::isDirect)).apply(var0, DamageSourcePredicate::new));
 
    public DamageSourcePredicate(List<TagPredicate<DamageType>> var1, Optional<EntityPredicate> var2, Optional<EntityPredicate> var3, Optional<Boolean> var4) {
       super();
@@ -31,46 +28,21 @@ public record DamageSourcePredicate(List<TagPredicate<DamageType>> tags, Optiona
    }
 
    public boolean matches(ServerLevel var1, Vec3 var2, DamageSource var3) {
-      Iterator var4 = this.tags.iterator();
-
-      TagPredicate var5;
-      do {
-         if (!var4.hasNext()) {
-            if (this.directEntity.isPresent() && !((EntityPredicate)this.directEntity.get()).matches(var1, var2, var3.getDirectEntity())) {
-               return false;
-            }
-
-            if (this.sourceEntity.isPresent() && !((EntityPredicate)this.sourceEntity.get()).matches(var1, var2, var3.getEntity())) {
-               return false;
-            }
-
-            if (this.isDirect.isPresent() && (Boolean)this.isDirect.get() != var3.isDirect()) {
-               return false;
-            }
-
-            return true;
+      for(TagPredicate var5 : this.tags) {
+         if (!var5.matches(var3.typeHolder())) {
+            return false;
          }
+      }
 
-         var5 = (TagPredicate)var4.next();
-      } while(var5.matches(var3.typeHolder()));
-
-      return false;
-   }
-
-   public List<TagPredicate<DamageType>> tags() {
-      return this.tags;
-   }
-
-   public Optional<EntityPredicate> directEntity() {
-      return this.directEntity;
-   }
-
-   public Optional<EntityPredicate> sourceEntity() {
-      return this.sourceEntity;
-   }
-
-   public Optional<Boolean> isDirect() {
-      return this.isDirect;
+      if (this.directEntity.isPresent() && !((EntityPredicate)this.directEntity.get()).matches(var1, var2, var3.getDirectEntity())) {
+         return false;
+      } else if (this.sourceEntity.isPresent() && !((EntityPredicate)this.sourceEntity.get()).matches(var1, var2, var3.getEntity())) {
+         return false;
+      } else if (this.isDirect.isPresent() && (Boolean)this.isDirect.get() != var3.isDirect()) {
+         return false;
+      } else {
+         return true;
+      }
    }
 
    public static class Builder {

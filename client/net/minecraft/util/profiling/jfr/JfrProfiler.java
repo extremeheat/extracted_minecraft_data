@@ -70,9 +70,7 @@ public class JfrProfiler implements JvmProfiler {
    private JfrProfiler() {
       super();
       CUSTOM_EVENTS.forEach(FlightRecorder::register);
-      FlightRecorder.addPeriodicEvent(ServerTickTimeEvent.class, () -> {
-         (new ServerTickTimeEvent(this.currentAverageTickTime)).commit();
-      });
+      FlightRecorder.addPeriodicEvent(ServerTickTimeEvent.class, () -> (new ServerTickTimeEvent(this.currentAverageTickTime)).commit());
       FlightRecorder.addPeriodicEvent(NetworkSummaryEvent.class, () -> {
          Iterator var1 = this.networkTrafficByAddress.values().iterator();
 
@@ -171,9 +169,7 @@ public class JfrProfiler implements JvmProfiler {
 
    private void setupSummaryListener() {
       FlightRecorder.addListener(new FlightRecorderListener() {
-         final SummaryReporter summaryReporter = new SummaryReporter(() -> {
-            JfrProfiler.this.recording = null;
-         });
+         final SummaryReporter summaryReporter = new SummaryReporter(() -> JfrProfiler.this.recording = null);
 
          public void recordingStateChanged(Recording var1) {
             if (var1 == JfrProfiler.this.recording && var1.getState() == RecordingState.STOPPED) {
@@ -238,9 +234,7 @@ public class JfrProfiler implements JvmProfiler {
       } else {
          WorldLoadFinishedEvent var1 = new WorldLoadFinishedEvent();
          var1.begin();
-         return (var1x) -> {
-            var1.commit();
-         };
+         return (var1x) -> var1.commit();
       }
    }
 
@@ -251,9 +245,7 @@ public class JfrProfiler implements JvmProfiler {
       } else {
          ChunkGenerationEvent var4 = new ChunkGenerationEvent(var1, var2, var3);
          var4.begin();
-         return (var1x) -> {
-            var4.commit();
-         };
+         return (var1x) -> var4.commit();
       }
    }
 

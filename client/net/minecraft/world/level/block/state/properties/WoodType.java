@@ -49,30 +49,6 @@ public record WoodType(String name, BlockSetType setType, SoundType soundType, S
       return TYPES.values().stream();
    }
 
-   public String name() {
-      return this.name;
-   }
-
-   public BlockSetType setType() {
-      return this.setType;
-   }
-
-   public SoundType soundType() {
-      return this.soundType;
-   }
-
-   public SoundType hangingSignSoundType() {
-      return this.hangingSignSoundType;
-   }
-
-   public SoundEvent fenceGateClose() {
-      return this.fenceGateClose;
-   }
-
-   public SoundEvent fenceGateOpen() {
-      return this.fenceGateOpen;
-   }
-
    static {
       Function var10000 = WoodType::name;
       Map var10001 = TYPES;

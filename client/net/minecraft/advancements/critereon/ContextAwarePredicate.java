@@ -36,8 +36,6 @@ public class ContextAwarePredicate {
    }
 
    static {
-      CODEC = LootItemCondition.DIRECT_CODEC.listOf().xmap(ContextAwarePredicate::new, (var0) -> {
-         return var0.conditions;
-      });
+      CODEC = LootItemCondition.DIRECT_CODEC.listOf().xmap(ContextAwarePredicate::new, (var0) -> var0.conditions);
    }
 }

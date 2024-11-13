@@ -23,12 +23,4 @@ public record ModelResourceLocation(ResourceLocation id, String variant) {
       String var10000 = String.valueOf(this.id);
       return var10000 + "#" + this.variant;
    }
-
-   public ResourceLocation id() {
-      return this.id;
-   }
-
-   public String variant() {
-      return this.variant;
-   }
 }

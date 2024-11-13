@@ -17,9 +17,5 @@ public interface ConfigurationTask {
       public String toString() {
          return this.id;
       }
-
-      public String id() {
-         return this.id;
-      }
    }
 }

@@ -14,11 +14,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class FillPlayerHead extends LootItemConditionalFunction {
-   public static final MapCodec<FillPlayerHead> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter((var0x) -> {
-         return var0x.entityTarget;
-      })).apply(var0, FillPlayerHead::new);
-   });
+   public static final MapCodec<FillPlayerHead> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter((var0x) -> var0x.entityTarget)).apply(var0, FillPlayerHead::new));
    private final LootContext.EntityTarget entityTarget;
 
    public FillPlayerHead(List<LootItemCondition> var1, LootContext.EntityTarget var2) {
@@ -47,8 +43,6 @@ public class FillPlayerHead extends LootItemConditionalFunction {
    }
 
    public static LootItemConditionalFunction.Builder<?> fillPlayerHead(LootContext.EntityTarget var0) {
-      return simpleBuilder((var1) -> {
-         return new FillPlayerHead(var1, var0);
-      });
+      return simpleBuilder((var1) -> new FillPlayerHead(var1, var0));
    }
 }

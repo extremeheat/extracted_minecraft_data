@@ -39,9 +39,7 @@ public class ComponentDataFixUtils {
    }
 
    public static <T> Dynamic<T> wrapLiteralStringAsComponent(Dynamic<T> var0) {
-      return (Dynamic)DataFixUtils.orElse(var0.asString().map((var1) -> {
-         return createPlainTextComponent(var0.getOps(), var1);
-      }).result(), var0);
+      return (Dynamic)DataFixUtils.orElse(var0.asString().map((var1) -> createPlainTextComponent(var0.getOps(), var1)).result(), var0);
    }
 
    public static Dynamic<?> rewriteFromLenient(Dynamic<?> var0) {

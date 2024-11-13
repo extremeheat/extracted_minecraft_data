@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.feature;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
-import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -35,10 +34,8 @@ public class DeltaFeature extends Feature<DeltaFeatureConfiguration> {
       int var11 = var5.size().sample(var3);
       int var12 = var5.size().sample(var3);
       int var13 = Math.max(var11, var12);
-      Iterator var14 = BlockPos.withinManhattan(var6, var11, 0, var12).iterator();
 
-      while(var14.hasNext()) {
-         BlockPos var15 = (BlockPos)var14.next();
+      for(BlockPos var15 : BlockPos.withinManhattan(var6, var11, 0, var12)) {
          if (var15.distManhattan(var6) > var13) {
             break;
          }
@@ -67,11 +64,7 @@ public class DeltaFeature extends Feature<DeltaFeatureConfiguration> {
       } else if (CANNOT_REPLACE.contains(var3.getBlock())) {
          return false;
       } else {
-         Direction[] var4 = DIRECTIONS;
-         int var5 = var4.length;
-
-         for(int var6 = 0; var6 < var5; ++var6) {
-            Direction var7 = var4[var6];
+         for(Direction var7 : DIRECTIONS) {
             boolean var8 = var0.getBlockState(var1.relative(var7)).isAir();
             if (var8 && var7 != Direction.UP || !var8 && var7 == Direction.UP) {
                return false;

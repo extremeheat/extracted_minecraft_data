@@ -2,7 +2,6 @@ package net.minecraft.data.loot;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -92,7 +91,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    }
 
    protected LootItemCondition.Builder hasShears() {
-      return MatchTool.toolMatches(ItemPredicate.Builder.item().of(this.registries.lookupOrThrow(Registries.ITEM), (ItemLike[])(Items.SHEARS)));
+      return MatchTool.toolMatches(ItemPredicate.Builder.item().of(this.registries.lookupOrThrow(Registries.ITEM), Items.SHEARS));
    }
 
    private LootItemCondition.Builder hasShearsOrSilkTouch() {
@@ -116,11 +115,11 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    }
 
    protected <T extends FunctionUserBuilder<T>> T applyExplosionDecay(ItemLike var1, FunctionUserBuilder<T> var2) {
-      return !this.explosionResistant.contains(var1.asItem()) ? var2.apply(ApplyExplosionDecay.explosionDecay()) : var2.unwrap();
+      return (T)(!this.explosionResistant.contains(var1.asItem()) ? var2.apply(ApplyExplosionDecay.explosionDecay()) : var2.unwrap());
    }
 
    protected <T extends ConditionUserBuilder<T>> T applyExplosionCondition(ItemLike var1, ConditionUserBuilder<T> var2) {
-      return !this.explosionResistant.contains(var1.asItem()) ? var2.when(ExplosionCondition.survivesExplosion()) : var2.unwrap();
+      return (T)(!this.explosionResistant.contains(var1.asItem()) ? var2.when(ExplosionCondition.survivesExplosion()) : var2.unwrap());
    }
 
    public LootTable.Builder createSingleItemTable(ItemLike var1) {
@@ -225,9 +224,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    }
 
    public LootTable.Builder createStemDrops(Block var1, Item var2) {
-      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionDecay(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(var2).apply(StemBlock.AGE.getPossibleValues(), (var1x) -> {
-         return SetItemCountFunction.setCount(BinomialDistributionGenerator.binomial(3, (float)(var1x + 1) / 15.0F)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(StemBlock.AGE, var1x)));
-      }))));
+      return LootTable.lootTable().withPool((LootPool.Builder)this.applyExplosionDecay(var1, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)LootItem.lootTableItem(var2).apply(StemBlock.AGE.getPossibleValues(), (var1x) -> SetItemCountFunction.setCount(BinomialDistributionGenerator.binomial(3, (float)(var1x + 1) / 15.0F)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(StemBlock.AGE, var1x)))))));
    }
 
    public LootTable.Builder createAttachedStemDrops(Block var1, Item var2) {
@@ -243,15 +240,11 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    }
 
    protected LootTable.Builder createMultifaceBlockDrops(Block var1, LootItemCondition.Builder var2) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, ((LootPoolSingletonContainer.Builder)((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var1).when(var2)).apply(Direction.values(), (var1x) -> {
-         return SetItemCountFunction.setCount(ConstantValue.exactly(1.0F), true).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MultifaceBlock.getFaceProperty(var1x), true)));
-      })).apply(SetItemCountFunction.setCount(ConstantValue.exactly(-1.0F), true)))));
+      return LootTable.lootTable().withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, ((LootPoolSingletonContainer.Builder)((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var1).when(var2)).apply(Direction.values(), (var1x) -> SetItemCountFunction.setCount(ConstantValue.exactly(1.0F), true).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MultifaceBlock.getFaceProperty(var1x), true))))).apply(SetItemCountFunction.setCount(ConstantValue.exactly(-1.0F), true)))));
    }
 
    protected LootTable.Builder createMultifaceBlockDrops(Block var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var1).apply(Direction.values(), (var1x) -> {
-         return SetItemCountFunction.setCount(ConstantValue.exactly(1.0F), true).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MultifaceBlock.getFaceProperty(var1x), true)));
-      })).apply(SetItemCountFunction.setCount(ConstantValue.exactly(-1.0F), true)))));
+      return LootTable.lootTable().withPool(LootPool.lootPool().add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var1).apply(Direction.values(), (var1x) -> SetItemCountFunction.setCount(ConstantValue.exactly(1.0F), true).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(MultifaceBlock.getFaceProperty(var1x), true))))).apply(SetItemCountFunction.setCount(ConstantValue.exactly(-1.0F), true)))));
    }
 
    protected LootTable.Builder createMossyCarpetBlockDrops(Block var1) {
@@ -285,19 +278,15 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    protected LootTable.Builder createDoublePlantWithSeedDrops(Block var1, Block var2) {
       HolderLookup.RegistryLookup var3 = this.registries.lookupOrThrow(Registries.BLOCK);
       AlternativesEntry.Builder var4 = ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var2).apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F))).when(this.hasShears())).otherwise(((LootPoolSingletonContainer.Builder)this.applyExplosionCondition(var1, LootItem.lootTableItem(Items.WHEAT_SEEDS))).when(LootItemRandomChanceCondition.randomChance(0.125F)));
-      return LootTable.lootTable().withPool(LootPool.lootPool().add(var4).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.LOWER))).when(LocationCheck.checkLocation(LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(var3, (Block[])(var1)).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.UPPER))), new BlockPos(0, 1, 0)))).withPool(LootPool.lootPool().add(var4).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.UPPER))).when(LocationCheck.checkLocation(LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(var3, (Block[])(var1)).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.LOWER))), new BlockPos(0, -1, 0))));
+      return LootTable.lootTable().withPool(LootPool.lootPool().add(var4).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.LOWER))).when(LocationCheck.checkLocation(LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(var3, var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.UPPER))), new BlockPos(0, 1, 0)))).withPool(LootPool.lootPool().add(var4).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.UPPER))).when(LocationCheck.checkLocation(LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(var3, var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DoublePlantBlock.HALF, (Comparable)DoubleBlockHalf.LOWER))), new BlockPos(0, -1, 0))));
    }
 
    protected LootTable.Builder createCandleDrops(Block var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(List.of(2, 3, 4), (var1x) -> {
-         return SetItemCountFunction.setCount(ConstantValue.exactly((float)var1x)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(CandleBlock.CANDLES, var1x)));
-      }))));
+      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(List.of(2, 3, 4), (var1x) -> SetItemCountFunction.setCount(ConstantValue.exactly((float)var1x)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(CandleBlock.CANDLES, var1x)))))));
    }
 
    protected LootTable.Builder createPetalsDrops(Block var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(IntStream.rangeClosed(1, 4).boxed().toList(), (var1x) -> {
-         return SetItemCountFunction.setCount(ConstantValue.exactly((float)var1x)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(PinkPetalsBlock.AMOUNT, var1x)));
-      }))));
+      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(IntStream.rangeClosed(1, 4).boxed().toList(), (var1x) -> SetItemCountFunction.setCount(ConstantValue.exactly((float)var1x)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(PinkPetalsBlock.AMOUNT, var1x)))))));
    }
 
    protected static LootTable.Builder createCandleCakeDrops(Block var0) {
@@ -313,10 +302,8 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {
       this.generate();
       HashSet var2 = new HashSet();
-      Iterator var3 = BuiltInRegistries.BLOCK.iterator();
 
-      while(var3.hasNext()) {
-         Block var4 = (Block)var3.next();
+      for(Block var4 : BuiltInRegistries.BLOCK) {
          if (var4.isEnabled(this.enabledFeatures)) {
             var4.getLootTable().ifPresent((var4x) -> {
                if (var2.add(var4x)) {
@@ -349,9 +336,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    }
 
    protected void dropPottedContents(Block var1) {
-      this.add(var1, (var1x) -> {
-         return this.createPotFlowerItemTable(((FlowerPotBlock)var1x).getPotted());
-      });
+      this.add(var1, (Function)((var1x) -> this.createPotFlowerItemTable(((FlowerPotBlock)var1x).getPotted())));
    }
 
    protected void otherWhenSilkTouch(Block var1, Block var2) {
@@ -375,8 +360,6 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    }
 
    protected void add(Block var1, LootTable.Builder var2) {
-      this.map.put((ResourceKey)var1.getLootTable().orElseThrow(() -> {
-         return new IllegalStateException("Block " + String.valueOf(var1) + " does not have loot table");
-      }), var2);
+      this.map.put((ResourceKey)var1.getLootTable().orElseThrow(() -> new IllegalStateException("Block " + String.valueOf(var1) + " does not have loot table")), var2);
    }
 }

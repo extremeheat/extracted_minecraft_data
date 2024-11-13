@@ -252,12 +252,6 @@ public class BoundingBox {
    }
 
    static {
-      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> {
-         return Util.fixedSize((IntStream)var0, 6).map((var0x) -> {
-            return new BoundingBox(var0x[0], var0x[1], var0x[2], var0x[3], var0x[4], var0x[5]);
-         });
-      }, (var0) -> {
-         return IntStream.of(new int[]{var0.minX, var0.minY, var0.minZ, var0.maxX, var0.maxY, var0.maxZ});
-      }).stable();
+      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> Util.fixedSize((IntStream)var0, 6).map((var0x) -> new BoundingBox(var0x[0], var0x[1], var0x[2], var0x[3], var0x[4], var0x[5])), (var0) -> IntStream.of(new int[]{var0.minX, var0.minY, var0.minZ, var0.maxX, var0.maxY, var0.maxZ})).stable();
    }
 }

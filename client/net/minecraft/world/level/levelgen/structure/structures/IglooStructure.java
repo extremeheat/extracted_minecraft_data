@@ -19,9 +19,7 @@ public class IglooStructure extends Structure {
    }
 
    public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
-      return onTopOfChunkCenter(var1, Heightmap.Types.WORLD_SURFACE_WG, (var2) -> {
-         this.generatePieces(var2, var1);
-      });
+      return onTopOfChunkCenter(var1, Heightmap.Types.WORLD_SURFACE_WG, (var2) -> this.generatePieces(var2, var1));
    }
 
    private void generatePieces(StructurePiecesBuilder var1, Structure.GenerationContext var2) {

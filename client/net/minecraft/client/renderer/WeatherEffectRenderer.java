@@ -2,7 +2,6 @@ package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
@@ -102,15 +101,14 @@ public class WeatherEffectRenderer {
    }
 
    private void render(MultiBufferSource var1, Vec3 var2, int var3, float var4, List<ColumnInstance> var5, List<ColumnInstance> var6) {
-      RenderType var7;
       if (!var5.isEmpty()) {
-         var7 = RenderType.weather(RAIN_LOCATION, Minecraft.useShaderTransparency());
+         RenderType var7 = RenderType.weather(RAIN_LOCATION, Minecraft.useShaderTransparency());
          this.renderInstances(var1.getBuffer(var7), var5, var2, 1.0F, var3, var4);
       }
 
       if (!var6.isEmpty()) {
-         var7 = RenderType.weather(SNOW_LOCATION, Minecraft.useShaderTransparency());
-         this.renderInstances(var1.getBuffer(var7), var6, var2, 0.8F, var3, var4);
+         RenderType var8 = RenderType.weather(SNOW_LOCATION, Minecraft.useShaderTransparency());
+         this.renderInstances(var1.getBuffer(var8), var6, var2, 0.8F, var3, var4);
       }
 
    }
@@ -134,10 +132,7 @@ public class WeatherEffectRenderer {
    }
 
    private void renderInstances(VertexConsumer var1, List<ColumnInstance> var2, Vec3 var3, float var4, int var5, float var6) {
-      Iterator var7 = var2.iterator();
-
-      while(var7.hasNext()) {
-         ColumnInstance var8 = (ColumnInstance)var7.next();
+      for(ColumnInstance var8 : var2) {
          float var9 = (float)((double)var8.x + 0.5 - var3.x);
          float var10 = (float)((double)var8.z + 0.5 - var3.z);
          float var11 = (float)Mth.lengthSquared((double)var9, (double)var10);
@@ -216,7 +211,7 @@ public class WeatherEffectRenderer {
       }
    }
 
-   private static record ColumnInstance(int x, int z, int bottomY, int topY, float uOffset, float vOffset, int lightCoords) {
+   static record ColumnInstance(int x, int z, int bottomY, int topY, float uOffset, float vOffset, int lightCoords) {
       final int x;
       final int z;
       final int bottomY;
@@ -234,34 +229,6 @@ public class WeatherEffectRenderer {
          this.uOffset = var5;
          this.vOffset = var6;
          this.lightCoords = var7;
-      }
-
-      public int x() {
-         return this.x;
-      }
-
-      public int z() {
-         return this.z;
-      }
-
-      public int bottomY() {
-         return this.bottomY;
-      }
-
-      public int topY() {
-         return this.topY;
-      }
-
-      public float uOffset() {
-         return this.uOffset;
-      }
-
-      public float vOffset() {
-         return this.vOffset;
-      }
-
-      public int lightCoords() {
-         return this.lightCoords;
       }
    }
 }

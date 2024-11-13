@@ -17,8 +17,6 @@ public class AndCondition implements Condition {
    }
 
    public Predicate<BlockState> getPredicate(StateDefinition<Block, BlockState> var1) {
-      return Util.allOf(Streams.stream(this.conditions).map((var1x) -> {
-         return var1x.getPredicate(var1);
-      }).toList());
+      return Util.allOf(Streams.stream(this.conditions).map((var1x) -> var1x.getPredicate(var1)).toList());
    }
 }

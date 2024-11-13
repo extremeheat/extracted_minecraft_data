@@ -64,9 +64,7 @@ public class TradeWithVillager extends Behavior<Villager> {
    private static Set<Item> figureOutWhatIAmWillingToTrade(Villager var0, Villager var1) {
       ImmutableSet var2 = var1.getVillagerData().getProfession().requestedItems();
       ImmutableSet var3 = var0.getVillagerData().getProfession().requestedItems();
-      return (Set)var2.stream().filter((var1x) -> {
-         return !var3.contains(var1x);
-      }).collect(Collectors.toSet());
+      return (Set)var2.stream().filter((var1x) -> !var3.contains(var1x)).collect(Collectors.toSet());
    }
 
    private static void throwHalfStack(Villager var0, Set<Item> var1, LivingEntity var2) {

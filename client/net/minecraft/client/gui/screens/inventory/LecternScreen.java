@@ -51,12 +51,8 @@ public class LecternScreen extends BookViewScreen implements MenuAccess<LecternM
 
    protected void createMenuControls() {
       if (this.minecraft.player.mayBuild()) {
-         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> {
-            this.onClose();
-         }).bounds(this.width / 2 - 100, 196, 98, 20).build());
-         this.addRenderableWidget(Button.builder(Component.translatable("lectern.take_book"), (var1) -> {
-            this.sendButtonClick(3);
-         }).bounds(this.width / 2 + 2, 196, 98, 20).build());
+         this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onClose()).bounds(this.width / 2 - 100, 196, 98, 20).build());
+         this.addRenderableWidget(Button.builder(Component.translatable("lectern.take_book"), (var1) -> this.sendButtonClick(3)).bounds(this.width / 2 + 2, 196, 98, 20).build());
       } else {
          super.createMenuControls();
       }

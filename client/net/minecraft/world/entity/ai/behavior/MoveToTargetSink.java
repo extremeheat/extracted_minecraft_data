@@ -79,7 +79,7 @@ public class MoveToTargetSink extends Behavior<Mob> {
    }
 
    protected void start(ServerLevel var1, Mob var2, long var3) {
-      var2.getBrain().setMemory(MemoryModuleType.PATH, (Object)this.path);
+      var2.getBrain().setMemory(MemoryModuleType.PATH, this.path);
       var2.getNavigation().moveTo(this.path, (double)this.speedModifier);
    }
 
@@ -88,7 +88,7 @@ public class MoveToTargetSink extends Behavior<Mob> {
       Brain var6 = var2.getBrain();
       if (this.path != var5) {
          this.path = var5;
-         var6.setMemory(MemoryModuleType.PATH, (Object)var5);
+         var6.setMemory(MemoryModuleType.PATH, var5);
       }
 
       if (var5 != null && this.lastTargetPos != null) {
@@ -103,7 +103,7 @@ public class MoveToTargetSink extends Behavior<Mob> {
 
    private boolean tryComputePath(Mob var1, WalkTarget var2, long var3) {
       BlockPos var5 = var2.getTarget().currentBlockPosition();
-      this.path = var1.getNavigation().createPath((BlockPos)var5, 0);
+      this.path = var1.getNavigation().createPath(var5, 0);
       this.speedModifier = var2.getSpeedModifier();
       Brain var6 = var1.getBrain();
       if (this.reachedTarget(var1, var2)) {
@@ -113,7 +113,7 @@ public class MoveToTargetSink extends Behavior<Mob> {
          if (var7) {
             var6.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
          } else if (!var6.hasMemoryValue(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)) {
-            var6.setMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, (Object)var3);
+            var6.setMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, var3);
          }
 
          if (this.path != null) {

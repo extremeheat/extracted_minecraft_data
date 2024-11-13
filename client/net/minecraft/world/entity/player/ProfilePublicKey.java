@@ -39,10 +39,6 @@ public record ProfilePublicKey(Data data) {
       return SignatureValidator.from(this.data.key, "SHA256withRSA");
    }
 
-   public Data data() {
-      return this.data;
-   }
-
    static {
       TRUSTED_CODEC = ProfilePublicKey.Data.CODEC.xmap(ProfilePublicKey::new, ProfilePublicKey::data);
    }
@@ -50,9 +46,7 @@ public record ProfilePublicKey(Data data) {
    public static record Data(Instant expiresAt, PublicKey key, byte[] keySignature) {
       final PublicKey key;
       private static final int MAX_KEY_SIGNATURE_SIZE = 4096;
-      public static final Codec<Data> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(ExtraCodecs.INSTANT_ISO8601.fieldOf("expires_at").forGetter(Data::expiresAt), Crypt.PUBLIC_KEY_CODEC.fieldOf("key").forGetter(Data::key), ExtraCodecs.BASE64_STRING.fieldOf("signature_v2").forGetter(Data::keySignature)).apply(var0, Data::new);
-      });
+      public static final Codec<Data> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.INSTANT_ISO8601.fieldOf("expires_at").forGetter(Data::expiresAt), Crypt.PUBLIC_KEY_CODEC.fieldOf("key").forGetter(Data::key), ExtraCodecs.BASE64_STRING.fieldOf("signature_v2").forGetter(Data::keySignature)).apply(var0, Data::new));
 
       public Data(FriendlyByteBuf var1) {
          this(var1.readInstant(), var1.readPublicKey(), var1.readByteArray(4096));
@@ -97,18 +91,6 @@ public record ProfilePublicKey(Data data) {
          } else {
             return this.expiresAt.equals(var2.expiresAt) && this.key.equals(var2.key) && Arrays.equals(this.keySignature, var2.keySignature);
          }
-      }
-
-      public Instant expiresAt() {
-         return this.expiresAt;
-      }
-
-      public PublicKey key() {
-         return this.key;
-      }
-
-      public byte[] keySignature() {
-         return this.keySignature;
       }
    }
 

@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,10 +52,8 @@ public class BlockStateModelLoader {
 
    private static Function<ResourceLocation, StateDefinition<Block, BlockState>> definitionLocationToBlockMapper() {
       HashMap var0 = new HashMap(STATIC_DEFINITIONS);
-      Iterator var1 = BuiltInRegistries.BLOCK.iterator();
 
-      while(var1.hasNext()) {
-         Block var2 = (Block)var1.next();
+      for(Block var2 : BuiltInRegistries.BLOCK) {
          var0.put(var2.builtInRegistryHolder().key().location(), var2.getStateDefinition());
       }
 
@@ -66,14 +63,10 @@ public class BlockStateModelLoader {
 
    public static CompletableFuture<LoadedModels> loadBlockStates(UnbakedModel var0, ResourceManager var1, Executor var2) {
       Function var3 = definitionLocationToBlockMapper();
-      return CompletableFuture.supplyAsync(() -> {
-         return BLOCKSTATE_LISTER.listMatchingResourceStacks(var1);
-      }, var2).thenCompose((var3x) -> {
+      return CompletableFuture.supplyAsync(() -> BLOCKSTATE_LISTER.listMatchingResourceStacks(var1), var2).thenCompose((var3x) -> {
          ArrayList var4 = new ArrayList(var3x.size());
-         Iterator var5 = var3x.entrySet().iterator();
 
-         while(var5.hasNext()) {
-            Map.Entry var6 = (Map.Entry)var5.next();
+         for(Map.Entry var6 : var3x.entrySet()) {
             var4.add(CompletableFuture.supplyAsync(() -> {
                ResourceLocation var3x = BLOCKSTATE_LISTER.fileToId((ResourceLocation)var6.getKey());
                StateDefinition var4 = (StateDefinition)var3.apply(var3x);
@@ -83,11 +76,8 @@ public class BlockStateModelLoader {
                } else {
                   List var5 = (List)var6.getValue();
                   ArrayList var6x = new ArrayList(var5.size());
-                  Iterator var7 = var5.iterator();
 
-                  while(var7.hasNext()) {
-                     Resource var8 = (Resource)var7.next();
-
+                  for(Resource var8 : var5) {
                      try {
                         BufferedReader var9 = var8.openAsReader();
 
@@ -127,10 +117,8 @@ public class BlockStateModelLoader {
 
          return Util.sequence(var4).thenApply((var0x) -> {
             HashMap var1 = new HashMap();
-            Iterator var2 = var0x.iterator();
 
-            while(var2.hasNext()) {
-               LoadedModels var3 = (LoadedModels)var2.next();
+            for(LoadedModels var3 : var0x) {
                if (var3 != null) {
                   var1.putAll(var3.models());
                }
@@ -143,10 +131,8 @@ public class BlockStateModelLoader {
 
    private static LoadedModels loadBlockStateDefinitionStack(ResourceLocation var0, StateDefinition<Block, BlockState> var1, List<LoadedBlockModelDefinition> var2, UnbakedModel var3) {
       HashMap var4 = new HashMap();
-      Iterator var5 = var2.iterator();
 
-      while(var5.hasNext()) {
-         LoadedBlockModelDefinition var6 = (LoadedBlockModelDefinition)var5.next();
+      for(LoadedBlockModelDefinition var6 : var2) {
          BlockModelDefinition var10000 = var6.contents;
          String var10002 = String.valueOf(var0);
          var10000.instantiate(var1, var10002 + "/" + var6.source).forEach((var2x, var3x) -> {
@@ -159,7 +145,7 @@ public class BlockStateModelLoader {
    }
 
    static {
-      ITEM_FRAME_FAKE_DEFINITION = (new StateDefinition.Builder(Blocks.AIR)).add(BooleanProperty.create("map")).create(Block::defaultBlockState, BlockState::new);
+      ITEM_FRAME_FAKE_DEFINITION = (new StateDefinition.Builder<Block, BlockState>(Blocks.AIR)).add(BooleanProperty.create("map")).create(Block::defaultBlockState, BlockState::new);
       GLOW_ITEM_FRAME_LOCATION = ResourceLocation.withDefaultNamespace("glow_item_frame");
       ITEM_FRAME_LOCATION = ResourceLocation.withDefaultNamespace("item_frame");
       STATIC_DEFINITIONS = Map.of(ITEM_FRAME_LOCATION, ITEM_FRAME_FAKE_DEFINITION, GLOW_ITEM_FRAME_LOCATION, ITEM_FRAME_FAKE_DEFINITION);
@@ -169,7 +155,7 @@ public class BlockStateModelLoader {
       FRAME_LOCATION = new ModelResourceLocation(ITEM_FRAME_LOCATION, "map=false");
    }
 
-   private static record LoadedBlockModelDefinition(String source, BlockModelDefinition contents) {
+   static record LoadedBlockModelDefinition(String source, BlockModelDefinition contents) {
       final String source;
       final BlockModelDefinition contents;
 
@@ -178,13 +164,13 @@ public class BlockStateModelLoader {
          this.source = var1;
          this.contents = var2;
       }
+   }
 
-      public String source() {
-         return this.source;
-      }
-
-      public BlockModelDefinition contents() {
-         return this.contents;
+   public static record LoadedModel(BlockState state, UnbakedBlockStateModel model) {
+      public LoadedModel(BlockState var1, UnbakedBlockStateModel var2) {
+         super();
+         this.state = var1;
+         this.model = var2;
       }
    }
 
@@ -200,26 +186,6 @@ public class BlockStateModelLoader {
 
       public Map<ModelResourceLocation, UnbakedBlockStateModel> plainModels() {
          return Maps.transformValues(this.models, LoadedModel::model);
-      }
-
-      public Map<ModelResourceLocation, LoadedModel> models() {
-         return this.models;
-      }
-   }
-
-   public static record LoadedModel(BlockState state, UnbakedBlockStateModel model) {
-      public LoadedModel(BlockState var1, UnbakedBlockStateModel var2) {
-         super();
-         this.state = var1;
-         this.model = var2;
-      }
-
-      public BlockState state() {
-         return this.state;
-      }
-
-      public UnbakedBlockStateModel model() {
-         return this.model;
       }
    }
 }

@@ -17,9 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 
 public record ChatType(ChatTypeDecoration chat, ChatTypeDecoration narration) {
-   public static final Codec<ChatType> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ChatTypeDecoration.CODEC.fieldOf("chat").forGetter(ChatType::chat), ChatTypeDecoration.CODEC.fieldOf("narration").forGetter(ChatType::narration)).apply(var0, ChatType::new);
-   });
+   public static final Codec<ChatType> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ChatTypeDecoration.CODEC.fieldOf("chat").forGetter(ChatType::chat), ChatTypeDecoration.CODEC.fieldOf("narration").forGetter(ChatType::narration)).apply(var0, ChatType::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, ChatType> DIRECT_STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<ChatType>> STREAM_CODEC;
    public static final ChatTypeDecoration DEFAULT_CHAT_DECORATION;
@@ -64,14 +62,6 @@ public record ChatType(ChatTypeDecoration chat, ChatTypeDecoration narration) {
       return new Bound(var3.getOrThrow(var0), var2);
    }
 
-   public ChatTypeDecoration chat() {
-      return this.chat;
-   }
-
-   public ChatTypeDecoration narration() {
-      return this.narration;
-   }
-
    static {
       DIRECT_STREAM_CODEC = StreamCodec.composite(ChatTypeDecoration.STREAM_CODEC, ChatType::chat, ChatTypeDecoration.STREAM_CODEC, ChatType::narration, ChatType::new);
       STREAM_CODEC = ByteBufCodecs.holder(Registries.CHAT_TYPE, DIRECT_STREAM_CODEC);
@@ -109,18 +99,6 @@ public record ChatType(ChatTypeDecoration chat, ChatTypeDecoration narration) {
 
       public Bound withTargetName(Component var1) {
          return new Bound(this.chatType, this.name, Optional.of(var1));
-      }
-
-      public Holder<ChatType> chatType() {
-         return this.chatType;
-      }
-
-      public Component name() {
-         return this.name;
-      }
-
-      public Optional<Component> targetName() {
-         return this.targetName;
       }
 
       static {

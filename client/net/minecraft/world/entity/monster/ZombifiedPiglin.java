@@ -133,15 +133,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
    private void alertOthers() {
       double var1 = this.getAttributeValue(Attributes.FOLLOW_RANGE);
       AABB var3 = AABB.unitCubeFromLowerCorner(this.position()).inflate(var1, 10.0, var1);
-      this.level().getEntitiesOfClass(ZombifiedPiglin.class, var3, EntitySelector.NO_SPECTATORS).stream().filter((var1x) -> {
-         return var1x != this;
-      }).filter((var0) -> {
-         return var0.getTarget() == null;
-      }).filter((var1x) -> {
-         return !var1x.isAlliedTo(this.getTarget());
-      }).forEach((var1x) -> {
-         var1x.setTarget(this.getTarget());
-      });
+      this.level().getEntitiesOfClass(ZombifiedPiglin.class, var3, EntitySelector.NO_SPECTATORS).stream().filter((var1x) -> var1x != this).filter((var0) -> var0.getTarget() == null).filter((var1x) -> !var1x.isAlliedTo(this.getTarget())).forEach((var1x) -> var1x.setTarget(this.getTarget()));
    }
 
    private void playAngerSound() {

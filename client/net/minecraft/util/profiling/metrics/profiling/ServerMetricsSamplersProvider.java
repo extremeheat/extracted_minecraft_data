@@ -42,20 +42,14 @@ public class ServerMetricsSamplersProvider implements MetricsSamplerProvider {
 
       try {
          CpuStats var1 = new CpuStats();
-         Stream var10000 = IntStream.range(0, var1.nrOfCpus).mapToObj((var1x) -> {
-            return MetricSampler.create("cpu#" + var1x, MetricCategory.CPU, () -> {
-               return var1.loadForCpu(var1x);
-            });
-         });
+         Stream var10000 = IntStream.range(0, var1.nrOfCpus).mapToObj((var1x) -> MetricSampler.create("cpu#" + var1x, MetricCategory.CPU, () -> var1.loadForCpu(var1x)));
          Objects.requireNonNull(var0);
          var10000.forEach(var0::add);
       } catch (Throwable var2) {
          LOGGER.warn("Failed to query cpu, no cpu stats will be recorded", var2);
       }
 
-      var0.add(MetricSampler.create("heap MiB", MetricCategory.JVM, () -> {
-         return (double)SystemReport.sizeInMiB(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
-      }));
+      var0.add(MetricSampler.create("heap MiB", MetricCategory.JVM, () -> (double)SystemReport.sizeInMiB(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())));
       var0.addAll(MetricsRegistry.INSTANCE.getRegisteredSamplers());
       return var0.build();
    }

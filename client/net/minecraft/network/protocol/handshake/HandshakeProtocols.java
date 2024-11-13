@@ -14,9 +14,7 @@ public class HandshakeProtocols {
    }
 
    static {
-      SERVERBOUND_TEMPLATE = ProtocolInfoBuilder.serverboundProtocol(ConnectionProtocol.HANDSHAKING, (var0) -> {
-         var0.addPacket(HandshakePacketTypes.CLIENT_INTENTION, ClientIntentionPacket.STREAM_CODEC);
-      });
+      SERVERBOUND_TEMPLATE = ProtocolInfoBuilder.<ServerHandshakePacketListener, FriendlyByteBuf>serverboundProtocol(ConnectionProtocol.HANDSHAKING, (var0) -> var0.addPacket(HandshakePacketTypes.CLIENT_INTENTION, ClientIntentionPacket.STREAM_CODEC));
       SERVERBOUND = SERVERBOUND_TEMPLATE.bind(FriendlyByteBuf::new);
    }
 }

@@ -3,10 +3,6 @@ package net.minecraft.client.renderer.texture;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
-import java.io.IOException;
-import java.util.concurrent.Executor;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 
 public abstract class AbstractTexture implements AutoCloseable {
    public static final int NOT_ASSIGNED = -1;
@@ -63,21 +59,13 @@ public abstract class AbstractTexture implements AutoCloseable {
       return this.defaultBlur;
    }
 
-   public abstract void load(ResourceManager var1) throws IOException;
-
    public void bind() {
       if (!RenderSystem.isOnRenderThreadOrInit()) {
-         RenderSystem.recordRenderCall(() -> {
-            GlStateManager._bindTexture(this.getId());
-         });
+         RenderSystem.recordRenderCall(() -> GlStateManager._bindTexture(this.getId()));
       } else {
          GlStateManager._bindTexture(this.getId());
       }
 
-   }
-
-   public void reset(TextureManager var1, ResourceManager var2, ResourceLocation var3, Executor var4) {
-      var1.register(var3, this);
    }
 
    public void close() {

@@ -22,10 +22,6 @@ public record ClientboundSetCursorItemPacket(ItemStack contents) implements Pack
       var1.handleSetCursorItem(this);
    }
 
-   public ItemStack contents() {
-      return this.contents;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ItemStack.OPTIONAL_STREAM_CODEC, ClientboundSetCursorItemPacket::contents, ClientboundSetCursorItemPacket::new);
    }

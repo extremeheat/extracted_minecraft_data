@@ -9,9 +9,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class WeatheringCopperGrateBlock extends WaterloggedTransparentBlock implements WeatheringCopper {
-   public static final MapCodec<WeatheringCopperGrateBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(WeatheringCopperGrateBlock::getAge), propertiesCodec()).apply(var0, WeatheringCopperGrateBlock::new);
-   });
+   public static final MapCodec<WeatheringCopperGrateBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(WeatheringCopperGrateBlock::getAge), propertiesCodec()).apply(var0, WeatheringCopperGrateBlock::new));
    private final WeatheringCopper.WeatherState weatherState;
 
    protected MapCodec<WeatheringCopperGrateBlock> codec() {

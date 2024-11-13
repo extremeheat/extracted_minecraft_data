@@ -8,7 +8,7 @@ import net.minecraft.network.codec.StreamCodec;
 
 public record VillageSectionsDebugPayload(Set<SectionPos> villageChunks, Set<SectionPos> notVillageChunks) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, VillageSectionsDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(VillageSectionsDebugPayload::write, VillageSectionsDebugPayload::new);
-   public static final CustomPacketPayload.Type<VillageSectionsDebugPayload> TYPE = CustomPacketPayload.createType("debug/village_sections");
+   public static final CustomPacketPayload.Type<VillageSectionsDebugPayload> TYPE = CustomPacketPayload.<VillageSectionsDebugPayload>createType("debug/village_sections");
 
    private VillageSectionsDebugPayload(FriendlyByteBuf var1) {
       this((Set)var1.readCollection(HashSet::new, FriendlyByteBuf::readSectionPos), (Set)var1.readCollection(HashSet::new, FriendlyByteBuf::readSectionPos));
@@ -27,13 +27,5 @@ public record VillageSectionsDebugPayload(Set<SectionPos> villageChunks, Set<Sec
 
    public CustomPacketPayload.Type<VillageSectionsDebugPayload> type() {
       return TYPE;
-   }
-
-   public Set<SectionPos> villageChunks() {
-      return this.villageChunks;
-   }
-
-   public Set<SectionPos> notVillageChunks() {
-      return this.notVillageChunks;
    }
 }

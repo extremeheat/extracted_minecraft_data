@@ -69,7 +69,7 @@ public class ChatReport extends Report {
       }
 
       public IntSet reportedMessages() {
-         return ((ChatReport)this.report).reportedMessages;
+         return (this.report).reportedMessages;
       }
 
       public void toggleReported(int var1) {
@@ -77,7 +77,7 @@ public class ChatReport extends Report {
       }
 
       public boolean isReported(int var1) {
-         return ((ChatReport)this.report).reportedMessages.contains(var1);
+         return (this.report).reportedMessages.contains(var1);
       }
 
       public boolean hasContent() {
@@ -86,14 +86,14 @@ public class ChatReport extends Report {
 
       @Nullable
       public Report.CannotBuildReason checkBuildable() {
-         if (((ChatReport)this.report).reportedMessages.isEmpty()) {
+         if ((this.report).reportedMessages.isEmpty()) {
             return Report.CannotBuildReason.NO_REPORTED_MESSAGES;
-         } else if (((ChatReport)this.report).reportedMessages.size() > this.limits.maxReportedMessageCount()) {
+         } else if ((this.report).reportedMessages.size() > this.limits.maxReportedMessageCount()) {
             return Report.CannotBuildReason.TOO_MANY_MESSAGES;
-         } else if (((ChatReport)this.report).reason == null) {
+         } else if ((this.report).reason == null) {
             return Report.CannotBuildReason.NO_REASON;
          } else {
-            return ((ChatReport)this.report).comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : super.checkBuildable();
+            return (this.report).comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : super.checkBuildable();
          }
       }
 
@@ -102,20 +102,18 @@ public class ChatReport extends Report {
          if (var2 != null) {
             return Either.right(var2);
          } else {
-            String var3 = ((ReportReason)Objects.requireNonNull(((ChatReport)this.report).reason)).backendName();
+            String var3 = ((ReportReason)Objects.requireNonNull((this.report).reason)).backendName();
             ReportEvidence var4 = this.buildEvidence(var1);
-            ReportedEntity var5 = new ReportedEntity(((ChatReport)this.report).reportedProfileId);
-            AbuseReport var6 = AbuseReport.chat(((ChatReport)this.report).comments, var3, var4, var5, ((ChatReport)this.report).createdAt);
-            return Either.left(new Report.Result(((ChatReport)this.report).reportId, ReportType.CHAT, var6));
+            ReportedEntity var5 = new ReportedEntity((this.report).reportedProfileId);
+            AbuseReport var6 = AbuseReport.chat((this.report).comments, var3, var4, var5, (this.report).createdAt);
+            return Either.left(new Report.Result((this.report).reportId, ReportType.CHAT, var6));
          }
       }
 
       private ReportEvidence buildEvidence(ReportingContext var1) {
          ArrayList var2 = new ArrayList();
          ChatReportContextBuilder var3 = new ChatReportContextBuilder(this.limits.leadingContextMessageCount());
-         var3.collectAllContext(var1.chatLog(), ((ChatReport)this.report).reportedMessages, (var2x, var3x) -> {
-            var2.add(this.buildReportedChatMessage(var3x, this.isReported(var2x)));
-         });
+         var3.collectAllContext(var1.chatLog(), (this.report).reportedMessages, (var2x, var3x) -> var2.add(this.buildReportedChatMessage(var3x, this.isReported(var2x))));
          return new ReportEvidence(Lists.reverse(var2));
       }
 

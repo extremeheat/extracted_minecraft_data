@@ -25,9 +25,5 @@ public interface CommandSigningContext {
       public PlayerChatMessage getArgument(String var1) {
          return (PlayerChatMessage)this.arguments.get(var1);
       }
-
-      public Map<String, PlayerChatMessage> arguments() {
-         return this.arguments;
-      }
    }
 }

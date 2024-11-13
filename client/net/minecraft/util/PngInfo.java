@@ -50,12 +50,4 @@ public record PngInfo(int width, int height) {
          var0.order(var1);
       }
    }
-
-   public int width() {
-      return this.width;
-   }
-
-   public int height() {
-      return this.height;
-   }
 }

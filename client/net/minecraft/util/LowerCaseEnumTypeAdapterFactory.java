@@ -25,11 +25,8 @@ public class LowerCaseEnumTypeAdapterFactory implements TypeAdapterFactory {
          return null;
       } else {
          final HashMap var4 = Maps.newHashMap();
-         Object[] var5 = var3.getEnumConstants();
-         int var6 = var5.length;
 
-         for(int var7 = 0; var7 < var6; ++var7) {
-            Object var8 = var5[var7];
+         for(Object var8 : var3.getEnumConstants()) {
             var4.put(this.toLowercase(var8), var8);
          }
 
@@ -49,7 +46,7 @@ public class LowerCaseEnumTypeAdapterFactory implements TypeAdapterFactory {
                   var1.nextNull();
                   return null;
                } else {
-                  return var4.get(var1.nextString());
+                  return (T)var4.get(var1.nextString());
                }
             }
          };

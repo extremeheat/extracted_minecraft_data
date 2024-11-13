@@ -7,7 +7,7 @@ public interface EntityTypeTest<B, T extends B> {
       return new EntityTypeTest<B, T>() {
          @Nullable
          public T tryCast(B var1) {
-            return var0.isInstance(var1) ? var1 : null;
+            // $FF: Couldn't be decompiled
          }
 
          public Class<? extends B> getBaseClass() {
@@ -20,7 +20,7 @@ public interface EntityTypeTest<B, T extends B> {
       return new EntityTypeTest<B, T>() {
          @Nullable
          public T tryCast(B var1) {
-            return var0.equals(var1.getClass()) ? var1 : null;
+            // $FF: Couldn't be decompiled
          }
 
          public Class<? extends B> getBaseClass() {

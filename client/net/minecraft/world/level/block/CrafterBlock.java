@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -174,10 +173,8 @@ public class CrafterBlock extends BaseEntityBlock {
                var2.setBlock(var3, (BlockState)var1.setValue(CRAFTING, true), 2);
                var8.onCraftedBySystem(var2);
                this.dispenseItem(var2, var3, var4, var8, var1, var7);
-               Iterator var9 = ((CraftingRecipe)var7.value()).getRemainingItems(var11).iterator();
 
-               while(var9.hasNext()) {
-                  ItemStack var10 = (ItemStack)var9.next();
+               for(ItemStack var10 : ((CraftingRecipe)var7.value()).getRemainingItems(var11)) {
                   if (!var10.isEmpty()) {
                      this.dispenseItem(var2, var3, var4, var10, var1, var7);
                   }
@@ -226,10 +223,8 @@ public class CrafterBlock extends BaseEntityBlock {
          Vec3 var15 = Vec3.atCenterOf(var2);
          Vec3 var16 = var15.relative(var7, 0.7);
          DefaultDispenseItemBehavior.spawnItem(var1, var9, 6, var7, var16);
-         Iterator var12 = var1.getEntitiesOfClass(ServerPlayer.class, AABB.ofSize(var15, 17.0, 17.0, 17.0)).iterator();
 
-         while(var12.hasNext()) {
-            ServerPlayer var13 = (ServerPlayer)var12.next();
+         for(ServerPlayer var13 : var1.getEntitiesOfClass(ServerPlayer.class, AABB.ofSize(var15, 17.0, 17.0, 17.0))) {
             CriteriaTriggers.CRAFTER_RECIPE_CRAFTED.trigger(var13, var6.id(), var3.getItems());
          }
 
@@ -237,10 +232,6 @@ public class CrafterBlock extends BaseEntityBlock {
          var1.levelEvent(2010, var2, var7.get3DDataValue());
       }
 
-   }
-
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
    }
 
    protected BlockState rotate(BlockState var1, Rotation var2) {

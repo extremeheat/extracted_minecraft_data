@@ -18,13 +18,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class EntityPositionSource implements PositionSource {
-   public static final MapCodec<EntityPositionSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(UUIDUtil.CODEC.fieldOf("source_entity").forGetter(EntityPositionSource::getUuid), Codec.FLOAT.fieldOf("y_offset").orElse(0.0F).forGetter((var0x) -> {
-         return var0x.yOffset;
-      })).apply(var0, (var0x, var1) -> {
-         return new EntityPositionSource(Either.right(Either.left(var0x)), var1);
-      });
-   });
+   public static final MapCodec<EntityPositionSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(UUIDUtil.CODEC.fieldOf("source_entity").forGetter(EntityPositionSource::getUuid), Codec.FLOAT.fieldOf("y_offset").orElse(0.0F).forGetter((var0x) -> var0x.yOffset)).apply(var0, (var0x, var1) -> new EntityPositionSource(Either.right(Either.left(var0x)), var1)));
    public static final StreamCodec<ByteBuf, EntityPositionSource> STREAM_CODEC;
    private Either<Entity, Either<UUID, Integer>> entityOrUuidOrId;
    private final float yOffset;
@@ -44,9 +38,7 @@ public class EntityPositionSource implements PositionSource {
          this.resolveEntity(var1);
       }
 
-      return this.entityOrUuidOrId.left().map((var1x) -> {
-         return var1x.position().add(0.0, (double)this.yOffset, 0.0);
-      });
+      return this.entityOrUuidOrId.left().map((var1x) -> var1x.position().add(0.0, (double)this.yOffset, 0.0));
    }
 
    private void resolveEntity(Level var1) {
@@ -63,25 +55,19 @@ public class EntityPositionSource implements PositionSource {
          };
          Objects.requireNonNull(var1);
          return Optional.ofNullable((Entity)var1x.map(var10001, var1::getEntity));
-      })).ifPresent((var1x) -> {
-         this.entityOrUuidOrId = Either.left(var1x);
-      });
+      })).ifPresent((var1x) -> this.entityOrUuidOrId = Either.left(var1x));
    }
 
    private UUID getUuid() {
-      return (UUID)this.entityOrUuidOrId.map(Entity::getUUID, (var0) -> {
-         return (UUID)var0.map(Function.identity(), (var0x) -> {
+      return (UUID)this.entityOrUuidOrId.map(Entity::getUUID, (var0) -> (UUID)var0.map(Function.identity(), (var0x) -> {
             throw new RuntimeException("Unable to get entityId from uuid");
-         });
-      });
+         }));
    }
 
    private int getId() {
-      return (Integer)this.entityOrUuidOrId.map(Entity::getId, (var0) -> {
-         return (Integer)var0.map((var0x) -> {
+      return (Integer)this.entityOrUuidOrId.map(Entity::getId, (var0) -> (Integer)var0.map((var0x) -> {
             throw new IllegalStateException("Unable to get entityId from uuid");
-         }, Function.identity());
-      });
+         }, Function.identity()));
    }
 
    public PositionSourceType<EntityPositionSource> getType() {
@@ -89,11 +75,7 @@ public class EntityPositionSource implements PositionSource {
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, EntityPositionSource::getId, ByteBufCodecs.FLOAT, (var0) -> {
-         return var0.yOffset;
-      }, (var0, var1) -> {
-         return new EntityPositionSource(Either.right(Either.right(var0)), var1);
-      });
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, EntityPositionSource::getId, ByteBufCodecs.FLOAT, (var0) -> var0.yOffset, (var0, var1) -> new EntityPositionSource(Either.right(Either.right(var0)), var1));
    }
 
    public static class Type implements PositionSourceType<EntityPositionSource> {

@@ -9,9 +9,7 @@ import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.phys.Vec3;
 
 public record SlimePredicate(MinMaxBounds.Ints size) implements EntitySubPredicate {
-   public static final MapCodec<SlimePredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("size", MinMaxBounds.Ints.ANY).forGetter(SlimePredicate::size)).apply(var0, SlimePredicate::new);
-   });
+   public static final MapCodec<SlimePredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(MinMaxBounds.Ints.CODEC.optionalFieldOf("size", MinMaxBounds.Ints.ANY).forGetter(SlimePredicate::size)).apply(var0, SlimePredicate::new));
 
    public SlimePredicate(MinMaxBounds.Ints var1) {
       super();
@@ -32,9 +30,5 @@ public record SlimePredicate(MinMaxBounds.Ints size) implements EntitySubPredica
 
    public MapCodec<SlimePredicate> codec() {
       return EntitySubPredicates.SLIME;
-   }
-
-   public MinMaxBounds.Ints size() {
-      return this.size;
    }
 }

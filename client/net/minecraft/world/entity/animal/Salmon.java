@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal;
 
+import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
@@ -84,9 +85,7 @@ public class Salmon extends AbstractSchoolingFish implements VariantHolder<Varia
 
    public void saveToBucketTag(ItemStack var1) {
       Bucketable.saveDefaultDataToBucketTag(this, var1);
-      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (var1x) -> {
-         var1x.putString("type", this.getVariant().getSerializedName());
-      });
+      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (Consumer)((var1x) -> var1x.putString("type", this.getVariant().getSerializedName())));
    }
 
    public void loadFromBucketTag(CompoundTag var1) {
@@ -126,7 +125,7 @@ public class Salmon extends AbstractSchoolingFish implements VariantHolder<Varia
    }
 
    static {
-      DATA_TYPE = SynchedEntityData.defineId(Salmon.class, EntityDataSerializers.INT);
+      DATA_TYPE = SynchedEntityData.<Integer>defineId(Salmon.class, EntityDataSerializers.INT);
    }
 
    public static enum Variant implements StringRepresentable {
@@ -134,8 +133,8 @@ public class Salmon extends AbstractSchoolingFish implements VariantHolder<Varia
       MEDIUM("medium", 1, 1.0F),
       LARGE("large", 2, 1.5F);
 
-      public static final StringRepresentable.EnumCodec<Variant> CODEC = StringRepresentable.fromEnum(Variant::values);
-      static final IntFunction<Variant> BY_ID = ByIdMap.continuous(Variant::id, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
+      public static final StringRepresentable.EnumCodec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
+      static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::id, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
       private final String name;
       final int id;
       final float boundingBoxScale;
@@ -155,7 +154,7 @@ public class Salmon extends AbstractSchoolingFish implements VariantHolder<Varia
       }
 
       static Variant byName(String var0) {
-         return (Variant)CODEC.byName(var0, (Enum)MEDIUM);
+         return (Variant)CODEC.byName(var0, MEDIUM);
       }
 
       // $FF: synthetic method

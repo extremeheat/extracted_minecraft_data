@@ -14,7 +14,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -125,9 +124,7 @@ public class SculkSpreader {
       DataResult var10000 = SculkSpreader.ChargeCursor.CODEC.listOf().encodeStart(NbtOps.INSTANCE, this.cursors);
       Logger var10001 = LOGGER;
       Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         var1.put("cursors", var1x);
-      });
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("cursors", var1x));
    }
 
    public void addCursors(BlockPos var1, int var2) {
@@ -150,44 +147,15 @@ public class SculkSpreader {
          ArrayList var5 = new ArrayList();
          HashMap var6 = new HashMap();
          Object2IntOpenHashMap var7 = new Object2IntOpenHashMap();
-         Iterator var8 = this.cursors.iterator();
 
-         while(true) {
-            while(true) {
-               ChargeCursor var9;
-               BlockPos var10;
-               do {
-                  if (!var8.hasNext()) {
-                     ObjectIterator var16 = var7.object2IntEntrySet().iterator();
-
-                     while(var16.hasNext()) {
-                        Object2IntMap.Entry var17 = (Object2IntMap.Entry)var16.next();
-                        var10 = (BlockPos)var17.getKey();
-                        int var18 = var17.getIntValue();
-                        ChargeCursor var12 = (ChargeCursor)var6.get(var10);
-                        Set var13 = var12 == null ? null : var12.getFacingData();
-                        if (var18 > 0 && var13 != null) {
-                           int var14 = (int)(Math.log1p((double)var18) / 2.299999952316284) + 1;
-                           int var15 = (var14 << 6) + MultifaceBlock.pack(var13);
-                           var1.levelEvent(3006, var10, var15);
-                        }
-                     }
-
-                     this.cursors = var5;
-                     return;
-                  }
-
-                  var9 = (ChargeCursor)var8.next();
-               } while(var9.isPosUnreasonable(var2));
-
+         for(ChargeCursor var9 : this.cursors) {
+            if (!var9.isPosUnreasonable(var2)) {
                var9.update(var1, var2, var3, this, var4);
                if (var9.charge <= 0) {
                   var1.levelEvent(3006, var9.getPos(), 0);
                } else {
-                  var10 = var9.getPos();
-                  var7.computeInt(var10, (var1x, var2x) -> {
-                     return (var2x == null ? 0 : var2x) + var9.charge;
-                  });
+                  BlockPos var10 = var9.getPos();
+                  var7.computeInt(var10, (var1x, var2x) -> (var2x == null ? 0 : var2x) + var9.charge);
                   ChargeCursor var11 = (ChargeCursor)var6.get(var10);
                   if (var11 == null) {
                      var6.put(var10, var9);
@@ -203,6 +171,23 @@ public class SculkSpreader {
                }
             }
          }
+
+         ObjectIterator var16 = var7.object2IntEntrySet().iterator();
+
+         while(var16.hasNext()) {
+            Object2IntMap.Entry var17 = (Object2IntMap.Entry)var16.next();
+            BlockPos var18 = (BlockPos)var17.getKey();
+            int var19 = var17.getIntValue();
+            ChargeCursor var12 = (ChargeCursor)var6.get(var18);
+            Set var13 = var12 == null ? null : var12.getFacingData();
+            if (var19 > 0 && var13 != null) {
+               int var14 = (int)(Math.log1p((double)var19) / 2.299999952316284) + 1;
+               int var15 = (var14 << 6) + MultifaceBlock.pack(var13);
+               var1.levelEvent(3006, var18, var15);
+            }
+         }
+
+         this.cursors = var5;
       }
    }
 
@@ -213,9 +198,7 @@ public class SculkSpreader {
 
    public static class ChargeCursor {
       private static final ObjectArrayList<Vec3i> NON_CORNER_NEIGHBOURS = (ObjectArrayList)Util.make(new ObjectArrayList(18), (var0) -> {
-         Stream var10000 = BlockPos.betweenClosedStream(new BlockPos(-1, -1, -1), new BlockPos(1, 1, 1)).filter((var0x) -> {
-            return (var0x.getX() == 0 || var0x.getY() == 0 || var0x.getZ() == 0) && !var0x.equals(BlockPos.ZERO);
-         }).map(BlockPos::immutable);
+         Stream var10000 = BlockPos.betweenClosedStream(new BlockPos(-1, -1, -1), new BlockPos(1, 1, 1)).filter((var0x) -> (var0x.getX() == 0 || var0x.getY() == 0 || var0x.getZ() == 0) && !var0x.equals(BlockPos.ZERO)).map(BlockPos::immutable);
          Objects.requireNonNull(var0);
          var10000.forEach(var0::add);
       });
@@ -345,10 +328,8 @@ public class SculkSpreader {
       private static BlockPos getValidMovementPos(LevelAccessor var0, BlockPos var1, RandomSource var2) {
          BlockPos.MutableBlockPos var3 = var1.mutable();
          BlockPos.MutableBlockPos var4 = var1.mutable();
-         Iterator var5 = getRandomizedNonCornerNeighbourOffsets(var2).iterator();
 
-         while(var5.hasNext()) {
-            Vec3i var6 = (Vec3i)var5.next();
+         for(Vec3i var6 : getRandomizedNonCornerNeighbourOffsets(var2)) {
             var4.setWithOffset(var1, (Vec3i)var6);
             BlockState var7 = var0.getBlockState(var4);
             if (var7.getBlock() instanceof SculkBehaviour && isMovementUnobstructed(var0, var1, var4)) {
@@ -386,16 +367,8 @@ public class SculkSpreader {
       }
 
       static {
-         DIRECTION_SET = Direction.CODEC.listOf().xmap((var0) -> {
-            return Sets.newEnumSet(var0, Direction.class);
-         }, Lists::newArrayList);
-         CODEC = RecordCodecBuilder.create((var0) -> {
-            return var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(ChargeCursor::getPos), Codec.intRange(0, 1000).fieldOf("charge").orElse(0).forGetter(ChargeCursor::getCharge), Codec.intRange(0, 1).fieldOf("decay_delay").orElse(1).forGetter(ChargeCursor::getDecayDelay), Codec.intRange(0, 2147483647).fieldOf("update_delay").orElse(0).forGetter((var0x) -> {
-               return var0x.updateDelay;
-            }), DIRECTION_SET.lenientOptionalFieldOf("facings").forGetter((var0x) -> {
-               return Optional.ofNullable(var0x.getFacingData());
-            })).apply(var0, ChargeCursor::new);
-         });
+         DIRECTION_SET = Direction.CODEC.listOf().xmap((var0) -> Sets.newEnumSet(var0, Direction.class), Lists::newArrayList);
+         CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(ChargeCursor::getPos), Codec.intRange(0, 1000).fieldOf("charge").orElse(0).forGetter(ChargeCursor::getCharge), Codec.intRange(0, 1).fieldOf("decay_delay").orElse(1).forGetter(ChargeCursor::getDecayDelay), Codec.intRange(0, 2147483647).fieldOf("update_delay").orElse(0).forGetter((var0x) -> var0x.updateDelay), DIRECTION_SET.lenientOptionalFieldOf("facings").forGetter((var0x) -> Optional.ofNullable(var0x.getFacingData()))).apply(var0, ChargeCursor::new));
       }
    }
 }

@@ -5,7 +5,6 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,16 +46,12 @@ public class AttributeMap {
    }
 
    public Collection<AttributeInstance> getSyncableAttributes() {
-      return (Collection)this.attributes.values().stream().filter((var0) -> {
-         return ((Attribute)var0.getAttribute().value()).isClientSyncable();
-      }).collect(Collectors.toList());
+      return (Collection)this.attributes.values().stream().filter((var0) -> ((Attribute)var0.getAttribute().value()).isClientSyncable()).collect(Collectors.toList());
    }
 
    @Nullable
    public AttributeInstance getInstance(Holder<Attribute> var1) {
-      return (AttributeInstance)this.attributes.computeIfAbsent(var1, (var1x) -> {
-         return this.supplier.createInstance(this::onAttributeModified, var1x);
-      });
+      return (AttributeInstance)this.attributes.computeIfAbsent(var1, (var1x) -> this.supplier.createInstance(this::onAttributeModified, var1x));
    }
 
    public boolean hasAttribute(Holder<Attribute> var1) {
@@ -98,9 +93,7 @@ public class AttributeMap {
       var1.asMap().forEach((var1x, var2) -> {
          AttributeInstance var3 = (AttributeInstance)this.attributes.get(var1x);
          if (var3 != null) {
-            var2.forEach((var1) -> {
-               var3.removeModifier(var1.id());
-            });
+            var2.forEach((var1) -> var3.removeModifier(var1.id()));
          }
 
       });
@@ -151,10 +144,8 @@ public class AttributeMap {
 
    public ListTag save() {
       ListTag var1 = new ListTag();
-      Iterator var2 = this.attributes.values().iterator();
 
-      while(var2.hasNext()) {
-         AttributeInstance var3 = (AttributeInstance)var2.next();
+      for(AttributeInstance var3 : this.attributes.values()) {
          var1.add(var3.save());
       }
 
@@ -173,9 +164,7 @@ public class AttributeMap {
                   var3x.load(var3);
                }
 
-            }, () -> {
-               LOGGER.warn("Ignoring unknown attribute '{}'", var5);
-            });
+            }, () -> LOGGER.warn("Ignoring unknown attribute '{}'", var5));
          } else {
             LOGGER.warn("Ignoring malformed attribute '{}'", var4);
          }

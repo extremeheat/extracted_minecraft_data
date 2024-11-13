@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -116,10 +115,7 @@ public class BeehiveBlock extends BaseEntityBlock {
             return;
          }
 
-         Iterator var6 = var4.iterator();
-
-         while(var6.hasNext()) {
-            Bee var7 = (Bee)var6.next();
+         for(Bee var7 : var4) {
             if (var7.getTarget() == null) {
                Player var8 = (Player)Util.getRandom(var5, var1.random);
                var7.setTarget(var8);
@@ -248,10 +244,6 @@ public class BeehiveBlock extends BaseEntityBlock {
       var1.add(HONEY_LEVEL, FACING);
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
-
    @Nullable
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new BeehiveBlockEntity(var1, var2);
@@ -273,7 +265,7 @@ public class BeehiveBlock extends BaseEntityBlock {
                if (var9 || var8 > 0) {
                   ItemStack var10 = new ItemStack(this);
                   var10.applyComponents(var7.collectComponents());
-                  var10.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(HONEY_LEVEL, (Comparable)var8));
+                  var10.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(HONEY_LEVEL, var8));
                   ItemEntity var11 = new ItemEntity(var1, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), var10);
                   var11.setDefaultPickUpDelay();
                   var1.addFreshEntity(var11);
@@ -301,7 +293,7 @@ public class BeehiveBlock extends BaseEntityBlock {
    protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       ItemStack var5 = super.getCloneItemStack(var1, var2, var3, var4);
       if (var4) {
-         var5.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(HONEY_LEVEL, (Comparable)((Integer)var3.getValue(HONEY_LEVEL))));
+         var5.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(HONEY_LEVEL, (Integer)var3.getValue(HONEY_LEVEL)));
       }
 
       return var5;

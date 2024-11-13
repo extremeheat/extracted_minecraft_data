@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -162,94 +161,71 @@ public class ServerExplosion implements Explosion {
       int var5 = Mth.floor(this.center.y + (double)var1 + 1.0);
       int var6 = Mth.floor(this.center.z - (double)var1 - 1.0);
       int var7 = Mth.floor(this.center.z + (double)var1 + 1.0);
-      List var8 = this.level.getEntities(this.source, new AABB((double)var2, (double)var4, (double)var6, (double)var3, (double)var5, (double)var7));
-      Iterator var9 = var8.iterator();
 
-      while(true) {
-         Entity var10;
-         double var11;
-         double var13;
-         double var15;
-         double var17;
-         double var19;
-         do {
-            do {
-               do {
-                  if (!var9.hasNext()) {
-                     return;
+      for(Entity var10 : this.level.getEntities(this.source, new AABB((double)var2, (double)var4, (double)var6, (double)var3, (double)var5, (double)var7))) {
+         if (!var10.ignoreExplosion(this)) {
+            double var11 = Math.sqrt(var10.distanceToSqr(this.center)) / (double)var1;
+            if (var11 <= 1.0) {
+               double var13 = var10.getX() - this.center.x;
+               double var15 = (var10 instanceof PrimedTnt ? var10.getY() : var10.getEyeY()) - this.center.y;
+               double var17 = var10.getZ() - this.center.z;
+               double var19 = Math.sqrt(var13 * var13 + var15 * var15 + var17 * var17);
+               if (var19 != 0.0) {
+                  var13 /= var19;
+                  var15 /= var19;
+                  var17 /= var19;
+                  boolean var21 = this.damageCalculator.shouldDamageEntity(this, var10);
+                  float var22 = this.damageCalculator.getKnockbackMultiplier(var10);
+                  float var23 = !var21 && var22 == 0.0F ? 0.0F : getSeenPercent(this.center, var10);
+                  if (var21) {
+                     var10.hurtServer(this.level, this.damageSource, this.damageCalculator.getEntityDamageAmount(this, var10, var23));
                   }
 
-                  var10 = (Entity)var9.next();
-               } while(var10.ignoreExplosion(this));
+                  double var24 = (1.0 - var11) * (double)var23 * (double)var22;
+                  double var26;
+                  if (var10 instanceof LivingEntity) {
+                     LivingEntity var28 = (LivingEntity)var10;
+                     var26 = var24 * (1.0 - var28.getAttributeValue(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE));
+                  } else {
+                     var26 = var24;
+                  }
 
-               var11 = Math.sqrt(var10.distanceToSqr(this.center)) / (double)var1;
-            } while(!(var11 <= 1.0));
+                  var13 *= var26;
+                  var15 *= var26;
+                  var17 *= var26;
+                  Vec3 var36 = new Vec3(var13, var15, var17);
+                  var10.push(var36);
+                  if (var10 instanceof Player) {
+                     Player var29 = (Player)var10;
+                     if (!var29.isSpectator() && (!var29.isCreative() || !var29.getAbilities().flying)) {
+                        this.hitPlayers.put(var29, var36);
+                     }
+                  }
 
-            var13 = var10.getX() - this.center.x;
-            var15 = (var10 instanceof PrimedTnt ? var10.getY() : var10.getEyeY()) - this.center.y;
-            var17 = var10.getZ() - this.center.z;
-            var19 = Math.sqrt(var13 * var13 + var15 * var15 + var17 * var17);
-         } while(var19 == 0.0);
-
-         var13 /= var19;
-         var15 /= var19;
-         var17 /= var19;
-         boolean var21 = this.damageCalculator.shouldDamageEntity(this, var10);
-         float var22 = this.damageCalculator.getKnockbackMultiplier(var10);
-         float var23 = !var21 && var22 == 0.0F ? 0.0F : getSeenPercent(this.center, var10);
-         if (var21) {
-            var10.hurtServer(this.level, this.damageSource, this.damageCalculator.getEntityDamageAmount(this, var10, var23));
-         }
-
-         double var24 = (1.0 - var11) * (double)var23 * (double)var22;
-         double var26;
-         if (var10 instanceof LivingEntity var28) {
-            var26 = var24 * (1.0 - var28.getAttributeValue(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE));
-         } else {
-            var26 = var24;
-         }
-
-         var13 *= var26;
-         var15 *= var26;
-         var17 *= var26;
-         Vec3 var30 = new Vec3(var13, var15, var17);
-         var10.push(var30);
-         if (var10 instanceof Player var29) {
-            if (!var29.isSpectator() && (!var29.isCreative() || !var29.getAbilities().flying)) {
-               this.hitPlayers.put(var29, var30);
+                  var10.onExplosionHit(this.source);
+               }
             }
          }
-
-         var10.onExplosionHit(this.source);
       }
+
    }
 
    private void interactWithBlocks(List<BlockPos> var1) {
       ArrayList var2 = new ArrayList();
       Util.shuffle(var1, this.level.random);
-      Iterator var3 = var1.iterator();
 
-      while(var3.hasNext()) {
-         BlockPos var4 = (BlockPos)var3.next();
-         this.level.getBlockState(var4).onExplosionHit(this.level, var4, this, (var1x, var2x) -> {
-            addOrAppendStack(var2, var1x, var2x);
-         });
+      for(BlockPos var4 : var1) {
+         this.level.getBlockState(var4).onExplosionHit(this.level, var4, this, (var1x, var2x) -> addOrAppendStack(var2, var1x, var2x));
       }
 
-      var3 = var2.iterator();
-
-      while(var3.hasNext()) {
-         StackCollector var5 = (StackCollector)var3.next();
-         Block.popResource(this.level, (BlockPos)var5.pos, var5.stack);
+      for(StackCollector var6 : var2) {
+         Block.popResource(this.level, var6.pos, var6.stack);
       }
 
    }
 
    private void createFire(List<BlockPos> var1) {
-      Iterator var2 = var1.iterator();
-
-      while(var2.hasNext()) {
-         BlockPos var3 = (BlockPos)var2.next();
+      for(BlockPos var3 : var1) {
          if (this.level.random.nextInt(3) == 0 && this.level.getBlockState(var3).isAir() && this.level.getBlockState(var3.below()).isSolidRender()) {
             this.level.setBlockAndUpdate(var3, BaseFireBlock.getState(this.level, var3));
          }
@@ -275,18 +251,14 @@ public class ServerExplosion implements Explosion {
    }
 
    private static void addOrAppendStack(List<StackCollector> var0, ItemStack var1, BlockPos var2) {
-      Iterator var3 = var0.iterator();
-
-      do {
-         if (!var3.hasNext()) {
-            var0.add(new StackCollector(var2, var1));
+      for(StackCollector var4 : var0) {
+         var4.tryMerge(var1);
+         if (var1.isEmpty()) {
             return;
          }
+      }
 
-         StackCollector var4 = (StackCollector)var3.next();
-         var4.tryMerge(var1);
-      } while(!var1.isEmpty());
-
+      var0.add(new StackCollector(var2, var1));
    }
 
    private boolean interactsWithBlocks() {

@@ -73,19 +73,18 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> 
 
    public void render(ConduitBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
       float var7 = (float)var1.tickCount + var2;
-      float var8;
       if (!var1.isActive()) {
-         var8 = var1.getActiveRotation(0.0F);
-         VertexConsumer var16 = SHELL_TEXTURE.buffer(var4, RenderType::entitySolid);
+         float var16 = var1.getActiveRotation(0.0F);
+         VertexConsumer var18 = SHELL_TEXTURE.buffer(var4, RenderType::entitySolid);
          var3.pushPose();
          var3.translate(0.5F, 0.5F, 0.5F);
-         var3.mulPose((new Quaternionf()).rotationY(var8 * 0.017453292F));
-         this.shell.render(var3, var16, var5, var6);
+         var3.mulPose((new Quaternionf()).rotationY(var16 * 0.017453292F));
+         this.shell.render(var3, var18, var5, var6);
          var3.popPose();
       } else {
-         var8 = var1.getActiveRotation(var2) * 57.295776F;
+         float var8 = var1.getActiveRotation(var2) * 57.295776F;
          float var9 = Mth.sin(var7 * 0.1F) / 2.0F + 0.5F;
-         var9 += var9 * var9;
+         var9 = var9 * var9 + var9;
          var3.pushPose();
          var3.translate(0.5F, 0.3F + var9 * 0.2F, 0.5F);
          Vector3f var10 = (new Vector3f(0.5F, 1.0F, 0.5F)).normalize();

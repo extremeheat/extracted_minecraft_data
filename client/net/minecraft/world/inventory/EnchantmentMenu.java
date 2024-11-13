@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.Util;
@@ -56,12 +55,12 @@ public class EnchantmentMenu extends AbstractContainerMenu {
       this.enchantClue = new int[]{-1, -1, -1};
       this.levelClue = new int[]{-1, -1, -1};
       this.access = var3;
-      this.addSlot(new Slot(this, this.enchantSlots, 0, 15, 47) {
+      this.addSlot(new Slot(this.enchantSlots, 0, 15, 47) {
          public int getMaxStackSize() {
             return 1;
          }
       });
-      this.addSlot(new Slot(this, this.enchantSlots, 1, 35, 47) {
+      this.addSlot(new Slot(this.enchantSlots, 1, 35, 47) {
          public boolean mayPlace(ItemStack var1) {
             return var1.is(Items.LAPIS_LAZULI);
          }
@@ -90,10 +89,8 @@ public class EnchantmentMenu extends AbstractContainerMenu {
             this.access.execute((var2x, var3x) -> {
                IdMap var4 = var2x.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).asHolderIdMap();
                int var5 = 0;
-               Iterator var6 = EnchantingTableBlock.BOOKSHELF_OFFSETS.iterator();
 
-               while(var6.hasNext()) {
-                  BlockPos var7 = (BlockPos)var6.next();
+               for(BlockPos var7 : EnchantingTableBlock.BOOKSHELF_OFFSETS) {
                   if (EnchantingTableBlock.isValidBookShelf(var2x, var3x, var7)) {
                      ++var5;
                   }
@@ -101,8 +98,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
 
                this.random.setSeed((long)this.enchantmentSeed.get());
 
-               int var9;
-               for(var9 = 0; var9 < 3; ++var9) {
+               for(int var9 = 0; var9 < 3; ++var9) {
                   this.costs[var9] = EnchantmentHelper.getEnchantmentCost(this.random, var9, var5, var2);
                   this.enchantClue[var9] = -1;
                   this.levelClue[var9] = -1;
@@ -111,13 +107,13 @@ public class EnchantmentMenu extends AbstractContainerMenu {
                   }
                }
 
-               for(var9 = 0; var9 < 3; ++var9) {
-                  if (this.costs[var9] > 0) {
-                     List var10 = this.getEnchantmentList(var2x.registryAccess(), var2, var9, this.costs[var9]);
-                     if (var10 != null && !var10.isEmpty()) {
-                        EnchantmentInstance var8 = (EnchantmentInstance)var10.get(this.random.nextInt(var10.size()));
-                        this.enchantClue[var9] = var4.getId(var8.enchantment);
-                        this.levelClue[var9] = var8.level;
+               for(int var10 = 0; var10 < 3; ++var10) {
+                  if (this.costs[var10] > 0) {
+                     List var11 = this.getEnchantmentList(var2x.registryAccess(), var2, var10, this.costs[var10]);
+                     if (var11 != null && !var11.isEmpty()) {
+                        EnchantmentInstance var8 = (EnchantmentInstance)var11.get(this.random.nextInt(var11.size()));
+                        this.enchantClue[var10] = var4.getId(var8.enchantment);
+                        this.levelClue[var10] = var8.level;
                      }
                   }
                }
@@ -155,10 +151,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
                      this.enchantSlots.setItem(0, var8);
                   }
 
-                  Iterator var10 = var9.iterator();
-
-                  while(var10.hasNext()) {
-                     EnchantmentInstance var11 = (EnchantmentInstance)var10.next();
+                  for(EnchantmentInstance var11 : var9) {
                      var8.enchant(var11.enchantment, var11.level);
                   }
 
@@ -214,9 +207,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
 
    public void removed(Player var1) {
       super.removed(var1);
-      this.access.execute((var2, var3) -> {
-         this.clearContainer(var1, this.enchantSlots);
-      });
+      this.access.execute((var2, var3) -> this.clearContainer(var1, this.enchantSlots));
    }
 
    public boolean stillValid(Player var1) {
@@ -225,7 +216,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
 
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = (Slot)this.slots.get(var2);
+      Slot var4 = this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();

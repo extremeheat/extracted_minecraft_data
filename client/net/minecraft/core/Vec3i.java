@@ -17,11 +17,7 @@ public class Vec3i implements Comparable<Vec3i> {
    private int z;
 
    public static Codec<Vec3i> offsetCodec(int var0) {
-      return CODEC.validate((var1) -> {
-         return Math.abs(var1.getX()) < var0 && Math.abs(var1.getY()) < var0 && Math.abs(var1.getZ()) < var0 ? DataResult.success(var1) : DataResult.error(() -> {
-            return "Position out of range, expected at most " + var0 + ": " + String.valueOf(var1);
-         });
-      });
+      return CODEC.validate((var1) -> Math.abs(var1.getX()) < var0 && Math.abs(var1.getY()) < var0 && Math.abs(var1.getZ()) < var0 ? DataResult.success(var1) : DataResult.error(() -> "Position out of range, expected at most " + var0 + ": " + String.valueOf(var1)));
    }
 
    public Vec3i(int var1, int var2, int var3) {
@@ -232,7 +228,7 @@ public class Vec3i implements Comparable<Vec3i> {
 
    public String toShortString() {
       int var10000 = this.getX();
-      return "" + var10000 + ", " + this.getY() + ", " + this.getZ();
+      return var10000 + ", " + this.getY() + ", " + this.getZ();
    }
 
    // $FF: synthetic method
@@ -241,13 +237,7 @@ public class Vec3i implements Comparable<Vec3i> {
    }
 
    static {
-      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> {
-         return Util.fixedSize((IntStream)var0, 3).map((var0x) -> {
-            return new Vec3i(var0x[0], var0x[1], var0x[2]);
-         });
-      }, (var0) -> {
-         return IntStream.of(new int[]{var0.getX(), var0.getY(), var0.getZ()});
-      });
+      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> Util.fixedSize((IntStream)var0, 3).map((var0x) -> new Vec3i(var0x[0], var0x[1], var0x[2])), (var0) -> IntStream.of(new int[]{var0.getX(), var0.getY(), var0.getZ()}));
       ZERO = new Vec3i(0, 0, 0);
    }
 }

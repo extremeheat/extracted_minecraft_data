@@ -7,8 +7,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -125,7 +125,7 @@ public class Gui {
    private static final int AIR_BUBBLE_SIZE = 9;
    private static final int AIR_BUBBLE_SEPERATION = 8;
    private static final int AIR_BUBBLE_POPPING_DURATION = 2;
-   private static final int EMPTY_AIR_BUBBLE_DELAY_DURATION = 4;
+   private static final int EMPTY_AIR_BUBBLE_DELAY_DURATION = 1;
    private static final float AIR_BUBBLE_POP_SOUND_VOLUME_BASE = 0.5F;
    private static final float AIR_BUBBLE_POP_SOUND_VOLUME_INCREMENT = 0.1F;
    private static final float AIR_BUBBLE_POP_SOUND_PITCH_BASE = 1.0F;
@@ -182,22 +182,14 @@ public class Gui {
       this.bossOverlay = new BossHealthOverlay(var1);
       this.subtitleOverlay = new SubtitleOverlay(var1);
       this.resetTitleTimes();
-      LayeredDraw var2 = (new LayeredDraw()).add(this::renderCameraOverlays).add(this::renderCrosshair).add(this::renderHotbarAndDecorations).add(this::renderExperienceLevel).add(this::renderEffects).add((var1x, var2x) -> {
-         this.bossOverlay.render(var1x);
-      });
+      LayeredDraw var2 = (new LayeredDraw()).add(this::renderCameraOverlays).add(this::renderCrosshair).add(this::renderHotbarAndDecorations).add(this::renderExperienceLevel).add(this::renderEffects).add((var1x, var2x) -> this.bossOverlay.render(var1x));
       LayeredDraw var3 = (new LayeredDraw()).add(this::renderDemoOverlay).add((var1x, var2x) -> {
          if (this.debugOverlay.showDebugScreen()) {
             this.debugOverlay.render(var1x);
          }
 
-      }).add(this::renderScoreboardSidebar).add(this::renderOverlayMessage).add(this::renderTitle).add(this::renderChat).add(this::renderTabList).add((var1x, var2x) -> {
-         this.subtitleOverlay.render(var1x);
-      });
-      this.layers.add(var2, () -> {
-         return !var1.options.hideGui;
-      }).add(this::renderSleepOverlay).add(var3, () -> {
-         return !var1.options.hideGui;
-      });
+      }).add(this::renderScoreboardSidebar).add(this::renderOverlayMessage).add(this::renderTitle).add(this::renderChat).add(this::renderTabList).add((var1x, var2x) -> this.subtitleOverlay.render(var1x));
+      this.layers.add(var2, () -> !var1.options.hideGui).add(this::renderSleepOverlay).add(var3, () -> !var1.options.hideGui);
    }
 
    public void resetTitleTimes() {
@@ -222,17 +214,12 @@ public class Gui {
             this.renderSpyglassOverlay(var1, this.scopeScale);
          } else {
             this.scopeScale = 0.5F;
-            EquipmentSlot[] var4 = EquipmentSlot.values();
-            int var5 = var4.length;
 
-            for(int var6 = 0; var6 < var5; ++var6) {
-               EquipmentSlot var7 = var4[var6];
+            for(EquipmentSlot var7 : EquipmentSlot.values()) {
                ItemStack var8 = this.minecraft.player.getItemBySlot(var7);
                Equippable var9 = (Equippable)var8.get(DataComponents.EQUIPPABLE);
                if (var9 != null && var9.slot() == var7 && var9.cameraOverlay().isPresent()) {
-                  this.renderTextureOverlay(var1, ((ResourceLocation)var9.cameraOverlay().get()).withPath((var0) -> {
-                     return "textures/" + var0 + ".png";
-                  }), 1.0F);
+                  this.renderTextureOverlay(var1, ((ResourceLocation)var9.cameraOverlay().get()).withPath((UnaryOperator)((var0) -> "textures/" + var0 + ".png")), 1.0F);
                }
             }
          }
@@ -322,9 +309,9 @@ public class Gui {
             var1.pose().translate((float)(var1.guiWidth() / 2), (float)(var1.guiHeight() / 2), 0.0F);
             var1.pose().pushPose();
             var1.pose().scale(4.0F, 4.0F, 4.0F);
-            int var9 = var3.width((FormattedText)this.title);
+            int var10 = var3.width((FormattedText)this.title);
             int var7 = ARGB.color(var5, -1);
-            var1.drawStringWithBackdrop(var3, this.title, -var9 / 2, -10, var9, var7);
+            var1.drawStringWithBackdrop(var3, this.title, -var10 / 2, -10, var10, var7);
             var1.pose().popPose();
             if (this.subtitle != null) {
                var1.pose().pushPose();
@@ -444,10 +431,8 @@ public class Gui {
          int var5 = 0;
          MobEffectTextureManager var6 = this.minecraft.getMobEffectTextures();
          ArrayList var7 = Lists.newArrayListWithExpectedSize(var3.size());
-         Iterator var8 = Ordering.natural().reverse().sortedCopy(var3).iterator();
 
-         while(var8.hasNext()) {
-            MobEffectInstance var9 = (MobEffectInstance)var8.next();
+         for(MobEffectInstance var9 : Ordering.natural().reverse().sortedCopy(var3)) {
             Holder var10 = var9.getEffect();
             if (var9.showIcon()) {
                int var11 = var1.guiWidth();
@@ -478,10 +463,10 @@ public class Gui {
                   }
                }
 
-               TextureAtlasSprite var18 = var6.get(var10);
-               var7.add(() -> {
+               TextureAtlasSprite var20 = var6.get(var10);
+               var7.add((Runnable)() -> {
                   int var5 = ARGB.white(var13);
-                  var1.blitSprite(RenderType::guiTextured, (TextureAtlasSprite)var18, var11 + 3, var12 + 3, 18, 18, var5);
+                  var1.blitSprite(RenderType::guiTextured, (TextureAtlasSprite)var20, var11 + 3, var12 + 3, 18, 18, var5);
                });
             }
          }
@@ -541,36 +526,33 @@ public class Gui {
          var1.pose().popPose();
          int var9 = 1;
 
-         int var10;
-         int var11;
-         int var12;
-         for(var10 = 0; var10 < 9; ++var10) {
-            var11 = var6 - 90 + var10 * 20 + 2;
-            var12 = var1.guiHeight() - 16 - 3;
-            this.renderSlot(var1, var11, var12, var2, var3, (ItemStack)var3.getInventory().items.get(var10), var9++);
+         for(int var10 = 0; var10 < 9; ++var10) {
+            int var11 = var6 - 90 + var10 * 20 + 2;
+            int var12 = var1.guiHeight() - 16 - 3;
+            this.renderSlot(var1, var11, var12, var2, var3, var3.getInventory().items.get(var10), var9++);
          }
 
          if (!var4.isEmpty()) {
-            var10 = var1.guiHeight() - 16 - 3;
+            int var16 = var1.guiHeight() - 16 - 3;
             if (var5 == HumanoidArm.LEFT) {
-               this.renderSlot(var1, var6 - 91 - 26, var10, var2, var3, var4, var9++);
+               this.renderSlot(var1, var6 - 91 - 26, var16, var2, var3, var4, var9++);
             } else {
-               this.renderSlot(var1, var6 + 91 + 10, var10, var2, var3, var4, var9++);
+               this.renderSlot(var1, var6 + 91 + 10, var16, var2, var3, var4, var9++);
             }
          }
 
          if (this.minecraft.options.attackIndicator().get() == AttackIndicatorStatus.HOTBAR) {
-            float var14 = this.minecraft.player.getAttackStrengthScale(0.0F);
-            if (var14 < 1.0F) {
-               var11 = var1.guiHeight() - 20;
-               var12 = var6 + 91 + 6;
+            float var17 = this.minecraft.player.getAttackStrengthScale(0.0F);
+            if (var17 < 1.0F) {
+               int var18 = var1.guiHeight() - 20;
+               int var19 = var6 + 91 + 6;
                if (var5 == HumanoidArm.RIGHT) {
-                  var12 = var6 - 91 - 22;
+                  var19 = var6 - 91 - 22;
                }
 
-               int var13 = (int)(var14 * 19.0F);
-               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var12, var11, 18, 18);
-               var1.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - var13, var12, var11 + 18 - var13, 18, var13);
+               int var13 = (int)(var17 * 19.0F);
+               var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_ATTACK_INDICATOR_BACKGROUND_SPRITE, var19, var18, 18, 18);
+               var1.blitSprite(RenderType::guiTextured, HOTBAR_ATTACK_INDICATOR_PROGRESS_SPRITE, 18, 18, 0, 18 - var13, var19, var18 + 18 - var13, 18, var13);
             }
          }
 
@@ -679,9 +661,7 @@ public class Gui {
    private void displayScoreboardSidebar(GuiGraphics var1, Objective var2) {
       Scoreboard var3 = var2.getScoreboard();
       NumberFormat var4 = var2.numberFormatOrDefault(StyledFormat.SIDEBAR_DEFAULT);
-      1DisplayEntry[] var5 = (1DisplayEntry[])var3.listPlayerScores(var2).stream().filter((var0) -> {
-         return !var0.isHidden();
-      }).sorted(SCORE_DISPLAY_ORDER).limit(15L).map((var3x) -> {
+      1DisplayEntry[] var5 = (1DisplayEntry[])var3.listPlayerScores(var2).stream().filter((var0) -> !var0.isHidden()).sorted(SCORE_DISPLAY_ORDER).limit(15L).map((var3x) -> {
          PlayerTeam var4x = var3.getPlayersTeam(var3x.owner());
          Component var5 = var3x.ownerName();
          MutableComponent var6 = PlayerTeam.formatNameForTeam(var4x, var5);
@@ -699,62 +679,44 @@ public class Gui {
                this.score = var2;
                this.scoreWidth = var3;
             }
-
-            public Component name() {
-               return this.name;
-            }
-
-            public Component score() {
-               return this.score;
-            }
-
-            public int scoreWidth() {
-               return this.scoreWidth;
-            }
          }
 
          return new 1DisplayEntry(var6, var7, var8);
-      }).toArray((var0) -> {
-         return new 1DisplayEntry[var0];
-      });
+      }).toArray((var0) -> new 1DisplayEntry[var0]);
       Component var6 = var2.getDisplayName();
       int var7 = this.getFont().width((FormattedText)var6);
       int var8 = var7;
       int var9 = this.getFont().width(": ");
-      1DisplayEntry[] var10 = var5;
-      int var11 = var5.length;
 
-      int var12;
-      for(var12 = 0; var12 < var11; ++var12) {
-         1DisplayEntry var13 = var10[var12];
+      for(1DisplayEntry var13 : var5) {
          var8 = Math.max(var8, this.getFont().width((FormattedText)var13.name) + (var13.scoreWidth > 0 ? var9 + var13.scoreWidth : 0));
       }
 
-      var11 = var5.length;
+      int var23 = var5.length;
       Objects.requireNonNull(this.getFont());
-      var12 = var11 * 9;
-      int var23 = var1.guiHeight() / 2 + var12 / 3;
+      int var24 = var23 * 9;
+      int var25 = var1.guiHeight() / 2 + var24 / 3;
       boolean var14 = true;
       int var15 = var1.guiWidth() - var8 - 3;
       int var16 = var1.guiWidth() - 3 + 2;
       int var17 = this.minecraft.options.getBackgroundColor(0.3F);
       int var18 = this.minecraft.options.getBackgroundColor(0.4F);
       Objects.requireNonNull(this.getFont());
-      int var19 = var23 - var11 * 9;
+      int var19 = var25 - var23 * 9;
       int var10001 = var15 - 2;
       Objects.requireNonNull(this.getFont());
       var1.fill(var10001, var19 - 9 - 1, var16, var19 - 1, var18);
-      var1.fill(var15 - 2, var19 - 1, var16, var23, var17);
-      Font var24 = this.getFont();
+      var1.fill(var15 - 2, var19 - 1, var16, var25, var17);
+      Font var26 = this.getFont();
       int var10003 = var15 + var8 / 2 - var7 / 2;
       Objects.requireNonNull(this.getFont());
-      var1.drawString(var24, (Component)var6, var10003, var19 - 9, -1, false);
+      var1.drawString(var26, (Component)var6, var10003, var19 - 9, -1, false);
 
-      for(int var20 = 0; var20 < var11; ++var20) {
+      for(int var20 = 0; var20 < var23; ++var20) {
          1DisplayEntry var21 = var5[var20];
-         var10001 = var11 - var20;
+         int var27 = var23 - var20;
          Objects.requireNonNull(this.getFont());
-         int var22 = var23 - var10001 * 9;
+         int var22 = var25 - var27 * 9;
          var1.drawString(this.getFont(), (Component)var21.name, var15, var22, -1, false);
          var1.drawString(this.getFont(), (Component)var21.score, var16 - var21.scoreWidth, var22, -1, false);
       }
@@ -916,15 +878,14 @@ public class Gui {
             }
          }
 
-         boolean var26;
          if (var11 && var22 < var9) {
-            var26 = var22 + 1 == var9;
+            boolean var26 = var22 + 1 == var9;
             this.renderHeart(var1, var12, var20, var21, var13, true, var26);
          }
 
          if (var22 < var8) {
-            var26 = var22 + 1 == var8;
-            this.renderHeart(var1, var12, var20, var21, var13, false, var26);
+            boolean var27 = var22 + 1 == var8;
+            this.renderHeart(var1, var12, var20, var21, var13, false, var27);
          }
       }
 
@@ -975,7 +936,7 @@ public class Gui {
    }
 
    private static int getEmptyBubbleDelayDuration(int var0, boolean var1) {
-      return var0 != 0 && var1 ? 4 : 0;
+      return var0 != 0 && var1 ? 1 : 0;
    }
 
    private void playAirBubblePoppedSound(int var1, Player var2, int var3) {
@@ -1098,17 +1059,17 @@ public class Gui {
          }
       }
 
-      int var10;
+      int var11;
       if (var4 > 0.0F) {
          var4 = Mth.clamp(var4, 0.0F, 1.0F);
-         var10 = ARGB.colorFromFloat(1.0F, 0.0F, var4, var4);
+         var11 = ARGB.colorFromFloat(1.0F, 0.0F, var4, var4);
       } else {
-         float var11 = this.vignetteBrightness;
-         var11 = Mth.clamp(var11, 0.0F, 1.0F);
-         var10 = ARGB.colorFromFloat(1.0F, var11, var11, var11);
+         float var12 = this.vignetteBrightness;
+         var12 = Mth.clamp(var12, 0.0F, 1.0F);
+         var11 = ARGB.colorFromFloat(1.0F, var12, var12, var12);
       }
 
-      var1.blit(RenderType::vignette, VIGNETTE_LOCATION, 0, 0, 0.0F, 0.0F, var1.guiWidth(), var1.guiHeight(), var1.guiWidth(), var1.guiHeight(), var10);
+      var1.blit(RenderType::vignette, VIGNETTE_LOCATION, 0, 0, 0.0F, 0.0F, var1.guiWidth(), var1.guiHeight(), var1.guiWidth(), var1.guiHeight(), var11);
    }
 
    private void renderPortalOverlay(GuiGraphics var1, float var2) {
@@ -1134,9 +1095,7 @@ public class Gui {
       float var6 = 0.2F * var2;
       float var7 = 0.4F * var2;
       float var8 = 0.2F * var2;
-      var1.blit((var0) -> {
-         return RenderType.guiNauseaOverlay();
-      }, NAUSEA_LOCATION, 0, 0, 0.0F, 0.0F, var3, var4, var3, var4, ARGB.colorFromFloat(1.0F, var6, var7, var8));
+      var1.blit((var0) -> RenderType.guiNauseaOverlay(), NAUSEA_LOCATION, 0, 0, 0.0F, 0.0F, var3, var4, var3, var4, ARGB.colorFromFloat(1.0F, var6, var7, var8));
       var1.pose().popPose();
    }
 
@@ -1332,7 +1291,7 @@ public class Gui {
       SAVING_TEXT = Component.translatable("menu.savingLevel");
    }
 
-   private static enum HeartType {
+   static enum HeartType {
       CONTAINER(ResourceLocation.withDefaultNamespace("hud/heart/container"), ResourceLocation.withDefaultNamespace("hud/heart/container_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/container"), ResourceLocation.withDefaultNamespace("hud/heart/container_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/container_hardcore"), ResourceLocation.withDefaultNamespace("hud/heart/container_hardcore_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/container_hardcore"), ResourceLocation.withDefaultNamespace("hud/heart/container_hardcore_blinking")),
       NORMAL(ResourceLocation.withDefaultNamespace("hud/heart/full"), ResourceLocation.withDefaultNamespace("hud/heart/full_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/half"), ResourceLocation.withDefaultNamespace("hud/heart/half_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/hardcore_full"), ResourceLocation.withDefaultNamespace("hud/heart/hardcore_full_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/hardcore_half"), ResourceLocation.withDefaultNamespace("hud/heart/hardcore_half_blinking")),
       POISIONED(ResourceLocation.withDefaultNamespace("hud/heart/poisoned_full"), ResourceLocation.withDefaultNamespace("hud/heart/poisoned_full_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/poisoned_half"), ResourceLocation.withDefaultNamespace("hud/heart/poisoned_half_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/poisoned_hardcore_full"), ResourceLocation.withDefaultNamespace("hud/heart/poisoned_hardcore_full_blinking"), ResourceLocation.withDefaultNamespace("hud/heart/poisoned_hardcore_half"), ResourceLocation.withDefaultNamespace("hud/heart/poisoned_hardcore_half_blinking")),

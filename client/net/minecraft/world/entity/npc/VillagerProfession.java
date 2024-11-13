@@ -19,9 +19,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 public record VillagerProfession(String name, Predicate<Holder<PoiType>> heldJobSite, Predicate<Holder<PoiType>> acquirableJobSite, ImmutableSet<Item> requestedItems, ImmutableSet<Block> secondaryPoi, @Nullable SoundEvent workSound) {
-   public static final Predicate<Holder<PoiType>> ALL_ACQUIRABLE_JOBS = (var0) -> {
-      return var0.is(PoiTypeTags.ACQUIRABLE_JOB_SITE);
-   };
+   public static final Predicate<Holder<PoiType>> ALL_ACQUIRABLE_JOBS = (var0) -> var0.is(PoiTypeTags.ACQUIRABLE_JOB_SITE);
    public static final VillagerProfession NONE;
    public static final VillagerProfession ARMORER;
    public static final VillagerProfession BUTCHER;
@@ -53,11 +51,7 @@ public record VillagerProfession(String name, Predicate<Holder<PoiType>> heldJob
    }
 
    private static VillagerProfession register(String var0, ResourceKey<PoiType> var1, @Nullable SoundEvent var2) {
-      return register(var0, (var1x) -> {
-         return var1x.is(var1);
-      }, (var1x) -> {
-         return var1x.is(var1);
-      }, var2);
+      return register(var0, (var1x) -> var1x.is(var1), (var1x) -> var1x.is(var1), var2);
    }
 
    private static VillagerProfession register(String var0, Predicate<Holder<PoiType>> var1, Predicate<Holder<PoiType>> var2, @Nullable SoundEvent var3) {
@@ -65,40 +59,11 @@ public record VillagerProfession(String name, Predicate<Holder<PoiType>> heldJob
    }
 
    private static VillagerProfession register(String var0, ResourceKey<PoiType> var1, ImmutableSet<Item> var2, ImmutableSet<Block> var3, @Nullable SoundEvent var4) {
-      return register(var0, (var1x) -> {
-         return var1x.is(var1);
-      }, (var1x) -> {
-         return var1x.is(var1);
-      }, var2, var3, var4);
+      return register(var0, (var1x) -> var1x.is(var1), (var1x) -> var1x.is(var1), var2, var3, var4);
    }
 
    private static VillagerProfession register(String var0, Predicate<Holder<PoiType>> var1, Predicate<Holder<PoiType>> var2, ImmutableSet<Item> var3, ImmutableSet<Block> var4, @Nullable SoundEvent var5) {
       return (VillagerProfession)Registry.register(BuiltInRegistries.VILLAGER_PROFESSION, (ResourceLocation)ResourceLocation.withDefaultNamespace(var0), new VillagerProfession(var0, var1, var2, var3, var4, var5));
-   }
-
-   public String name() {
-      return this.name;
-   }
-
-   public Predicate<Holder<PoiType>> heldJobSite() {
-      return this.heldJobSite;
-   }
-
-   public Predicate<Holder<PoiType>> acquirableJobSite() {
-      return this.acquirableJobSite;
-   }
-
-   public ImmutableSet<Item> requestedItems() {
-      return this.requestedItems;
-   }
-
-   public ImmutableSet<Block> secondaryPoi() {
-      return this.secondaryPoi;
-   }
-
-   @Nullable
-   public SoundEvent workSound() {
-      return this.workSound;
    }
 
    static {

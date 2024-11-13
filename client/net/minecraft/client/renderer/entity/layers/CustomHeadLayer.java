@@ -30,9 +30,7 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
    public CustomHeadLayer(RenderLayerParent<S, M> var1, EntityModelSet var2, Transforms var3) {
       super(var1);
       this.transforms = var3;
-      this.skullModels = Util.memoize((var1x) -> {
-         return SkullBlockRenderer.createModel(var2, var1x);
-      });
+      this.skullModels = Util.memoize((Function)((var1x) -> SkullBlockRenderer.createModel(var2, var1x)));
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, S var4, float var5, float var6) {
@@ -73,18 +71,6 @@ public class CustomHeadLayer<S extends LivingEntityRenderState, M extends Entity
          this.yOffset = var1;
          this.skullYOffset = var2;
          this.horizontalScale = var3;
-      }
-
-      public float yOffset() {
-         return this.yOffset;
-      }
-
-      public float skullYOffset() {
-         return this.skullYOffset;
-      }
-
-      public float horizontalScale() {
-         return this.horizontalScale;
       }
    }
 }

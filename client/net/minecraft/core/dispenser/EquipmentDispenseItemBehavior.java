@@ -23,9 +23,7 @@ public class EquipmentDispenseItemBehavior extends DefaultDispenseItemBehavior {
 
    public static boolean dispenseEquipment(BlockSource var0, ItemStack var1) {
       BlockPos var2 = var0.pos().relative((Direction)var0.state().getValue(DispenserBlock.FACING));
-      List var3 = var0.level().getEntitiesOfClass(LivingEntity.class, new AABB(var2), (var1x) -> {
-         return var1x.canEquipWithDispenser(var1);
-      });
+      List var3 = var0.level().getEntitiesOfClass(LivingEntity.class, new AABB(var2), (var1x) -> var1x.canEquipWithDispenser(var1));
       if (var3.isEmpty()) {
          return false;
       } else {

@@ -11,11 +11,7 @@ import net.minecraft.world.level.levelgen.heightproviders.TrapezoidHeight;
 import net.minecraft.world.level.levelgen.heightproviders.UniformHeight;
 
 public class HeightRangePlacement extends PlacementModifier {
-   public static final MapCodec<HeightRangePlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(HeightProvider.CODEC.fieldOf("height").forGetter((var0x) -> {
-         return var0x.height;
-      })).apply(var0, HeightRangePlacement::new);
-   });
+   public static final MapCodec<HeightRangePlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(HeightProvider.CODEC.fieldOf("height").forGetter((var0x) -> var0x.height)).apply(var0, HeightRangePlacement::new));
    private final HeightProvider height;
 
    private HeightRangePlacement(HeightProvider var1) {

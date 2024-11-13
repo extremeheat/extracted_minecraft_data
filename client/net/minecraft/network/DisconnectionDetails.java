@@ -16,16 +16,4 @@ public record DisconnectionDetails(Component reason, Optional<Path> report, Opti
       this.report = var2;
       this.bugReportLink = var3;
    }
-
-   public Component reason() {
-      return this.reason;
-   }
-
-   public Optional<Path> report() {
-      return this.report;
-   }
-
-   public Optional<URI> bugReportLink() {
-      return this.bugReportLink;
-   }
 }

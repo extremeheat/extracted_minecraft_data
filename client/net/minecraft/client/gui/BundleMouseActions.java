@@ -49,7 +49,7 @@ public class BundleMouseActions implements ItemSlotMouseAction {
    }
 
    public void onSlotClicked(Slot var1, ClickType var2) {
-      if (var2 == ClickType.QUICK_MOVE || var2 == ClickType.SWAP) {
+      if (var2 == ClickType.QUICK_MOVE || var2 == ClickType.SWAP || var2 == ClickType.PICKUP) {
          this.unselectedBundleItem(var1.getItem(), var1.index);
       }
 

@@ -8,7 +8,7 @@ public enum RandomSpreadType implements StringRepresentable {
    LINEAR("linear"),
    TRIANGULAR("triangular");
 
-   public static final Codec<RandomSpreadType> CODEC = StringRepresentable.fromEnum(RandomSpreadType::values);
+   public static final Codec<RandomSpreadType> CODEC = StringRepresentable.<RandomSpreadType>fromEnum(RandomSpreadType::values);
    private final String id;
 
    private RandomSpreadType(final String var3) {

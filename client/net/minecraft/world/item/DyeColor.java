@@ -40,13 +40,9 @@ public enum DyeColor implements StringRepresentable {
    RED(14, "red", 11546150, MapColor.COLOR_RED, 11743532, 16711680),
    BLACK(15, "black", 1908001, MapColor.COLOR_BLACK, 1973019, 0);
 
-   private static final IntFunction<DyeColor> BY_ID = ByIdMap.continuous(DyeColor::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-   private static final Int2ObjectOpenHashMap<DyeColor> BY_FIREWORK_COLOR = new Int2ObjectOpenHashMap((Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> {
-      return var0.fireworkColor;
-   }, (var0) -> {
-      return var0;
-   })));
-   public static final StringRepresentable.EnumCodec<DyeColor> CODEC = StringRepresentable.fromEnum(DyeColor::values);
+   private static final IntFunction<DyeColor> BY_ID = ByIdMap.<DyeColor>continuous(DyeColor::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   private static final Int2ObjectOpenHashMap<DyeColor> BY_FIREWORK_COLOR = new Int2ObjectOpenHashMap((Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> var0.fireworkColor, (var0) -> var0)));
+   public static final StringRepresentable.EnumCodec<DyeColor> CODEC = StringRepresentable.<DyeColor>fromEnum(DyeColor::values);
    public static final StreamCodec<ByteBuf, DyeColor> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, DyeColor::getId);
    private final int id;
    private final String name;
@@ -95,7 +91,7 @@ public enum DyeColor implements StringRepresentable {
    @Nullable
    @Contract("_,!null->!null;_,null->_")
    public static DyeColor byName(String var0, @Nullable DyeColor var1) {
-      DyeColor var2 = (DyeColor)CODEC.byName(var0);
+      DyeColor var2 = CODEC.byName(var0);
       return var2 != null ? var2 : var1;
    }
 
@@ -114,15 +110,11 @@ public enum DyeColor implements StringRepresentable {
 
    public static DyeColor getMixedColor(ServerLevel var0, DyeColor var1, DyeColor var2) {
       CraftingInput var3 = makeCraftColorInput(var1, var2);
-      Optional var10000 = var0.recipeAccess().getRecipeFor(RecipeType.CRAFTING, var3, var0).map((var2x) -> {
-         return ((CraftingRecipe)var2x.value()).assemble(var3, var0.registryAccess());
-      }).map(ItemStack::getItem);
+      Optional var10000 = var0.recipeAccess().getRecipeFor(RecipeType.CRAFTING, var3, var0).map((var2x) -> ((CraftingRecipe)var2x.value()).assemble(var3, var0.registryAccess())).map(ItemStack::getItem);
       Objects.requireNonNull(DyeItem.class);
       var10000 = var10000.filter(DyeItem.class::isInstance);
       Objects.requireNonNull(DyeItem.class);
-      return (DyeColor)var10000.map(DyeItem.class::cast).map(DyeItem::getDyeColor).orElseGet(() -> {
-         return var0.random.nextBoolean() ? var1 : var2;
-      });
+      return (DyeColor)var10000.map(DyeItem.class::cast).map(DyeItem::getDyeColor).orElseGet(() -> var0.random.nextBoolean() ? var1 : var2);
    }
 
    private static CraftingInput makeCraftColorInput(DyeColor var0, DyeColor var1) {

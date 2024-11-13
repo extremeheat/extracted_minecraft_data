@@ -26,9 +26,7 @@ import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 
 public class FlatLevelSource extends ChunkGenerator {
-   public static final MapCodec<FlatLevelSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(FlatLevelGeneratorSettings.CODEC.fieldOf("settings").forGetter(FlatLevelSource::settings)).apply(var0, var0.stable(FlatLevelSource::new));
-   });
+   public static final MapCodec<FlatLevelSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(FlatLevelGeneratorSettings.CODEC.fieldOf("settings").forGetter(FlatLevelSource::settings)).apply(var0, var0.stable(FlatLevelSource::new)));
    private final FlatLevelGeneratorSettings settings;
 
    public FlatLevelSource(FlatLevelGeneratorSettings var1) {
@@ -39,11 +37,7 @@ public class FlatLevelSource extends ChunkGenerator {
    }
 
    public ChunkGeneratorStructureState createState(HolderLookup<StructureSet> var1, RandomState var2, long var3) {
-      Stream var5 = (Stream)this.settings.structureOverrides().map(HolderSet::stream).orElseGet(() -> {
-         return var1.listElements().map((var0) -> {
-            return var0;
-         });
-      });
+      Stream var5 = (Stream)this.settings.structureOverrides().map(HolderSet::stream).orElseGet(() -> var1.listElements().map((var0) -> var0));
       return ChunkGeneratorStructureState.createForFlat(var2, var3, this.biomeSource, var5);
    }
 
@@ -100,11 +94,7 @@ public class FlatLevelSource extends ChunkGenerator {
    }
 
    public NoiseColumn getBaseColumn(int var1, int var2, LevelHeightAccessor var3, RandomState var4) {
-      return new NoiseColumn(var3.getMinY(), (BlockState[])this.settings.getLayers().stream().limit((long)var3.getHeight()).map((var0) -> {
-         return var0 == null ? Blocks.AIR.defaultBlockState() : var0;
-      }).toArray((var0) -> {
-         return new BlockState[var0];
-      }));
+      return new NoiseColumn(var3.getMinY(), (BlockState[])this.settings.getLayers().stream().limit((long)var3.getHeight()).map((var0) -> var0 == null ? Blocks.AIR.defaultBlockState() : var0).toArray((var0) -> new BlockState[var0]));
    }
 
    public void addDebugScreenInfo(List<String> var1, RandomState var2, BlockPos var3) {

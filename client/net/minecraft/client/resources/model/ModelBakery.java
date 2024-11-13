@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -50,9 +51,7 @@ public class ModelBakery {
    }
 
    public BakingResult bakeModels(TextureGetter var1) {
-      BakedModel var2 = UnbakedModel.bakeWithTopModelValues(this.missingModel, new ModelBakerImpl(var1, () -> {
-         return "missing";
-      }), BlockModelRotation.X0_Y0);
+      BakedModel var2 = UnbakedModel.bakeWithTopModelValues(this.missingModel, new ModelBakerImpl(var1, () -> "missing"), BlockModelRotation.X0_Y0);
       HashMap var3 = new HashMap(this.unbakedBlockStateModels.size());
       this.unbakedBlockStateModels.forEach((var3x, var4x) -> {
          try {
@@ -67,9 +66,7 @@ public class ModelBakery {
       MissingItemModel var4 = new MissingItemModel(var2);
       HashMap var5 = new HashMap(this.unbakedItemStackModels.size());
       this.unbakedItemStackModels.forEach((var4x, var5x) -> {
-         ModelDebugName var6 = () -> {
-            return String.valueOf(var4x) + "#inventory";
-         };
+         ModelDebugName var6 = () -> String.valueOf(var4x) + "#inventory";
          ModelBakerImpl var7 = new ModelBakerImpl(var1, var6);
          ItemModel.BakingContext var8 = new ItemModel.BakingContext(var7, this.entityModelSet, var4);
 
@@ -93,19 +90,13 @@ public class ModelBakery {
       BANNER_BASE = new Material(Sheets.BANNER_SHEET, ResourceLocation.withDefaultNamespace("entity/banner_base"));
       SHIELD_BASE = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base"));
       NO_PATTERN_SHIELD = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base_nopattern"));
-      DESTROY_STAGES = (List)IntStream.range(0, 10).mapToObj((var0) -> {
-         return ResourceLocation.withDefaultNamespace("block/destroy_stage_" + var0);
-      }).collect(Collectors.toList());
-      BREAKING_LOCATIONS = (List)DESTROY_STAGES.stream().map((var0) -> {
-         return var0.withPath((var0x) -> {
-            return "textures/" + var0x + ".png";
-         });
-      }).collect(Collectors.toList());
+      DESTROY_STAGES = (List)IntStream.range(0, 10).mapToObj((var0) -> ResourceLocation.withDefaultNamespace("block/destroy_stage_" + var0)).collect(Collectors.toList());
+      BREAKING_LOCATIONS = (List)DESTROY_STAGES.stream().map((var0) -> var0.withPath((UnaryOperator)((var0x) -> "textures/" + var0x + ".png"))).collect(Collectors.toList());
       DESTROY_TYPES = (List)BREAKING_LOCATIONS.stream().map(RenderType::crumbling).collect(Collectors.toList());
       LOGGER = LogUtils.getLogger();
    }
 
-   private class ModelBakerImpl implements ModelBaker {
+   class ModelBakerImpl implements ModelBaker {
       private final ModelDebugName rootName;
       private final SpriteGetter modelTextureGetter;
 
@@ -147,6 +138,15 @@ public class ModelBakery {
       }
    }
 
+   static record BakedCacheKey(ResourceLocation id, Transformation transformation, boolean isUvLocked) {
+      BakedCacheKey(ResourceLocation var1, Transformation var2, boolean var3) {
+         super();
+         this.id = var1;
+         this.transformation = var2;
+         this.isUvLocked = var3;
+      }
+   }
+
    public interface TextureGetter {
       TextureAtlasSprite get(ModelDebugName var1, Material var2);
 
@@ -172,43 +172,6 @@ public class ModelBakery {
          this.blockStateModels = var2;
          this.missingItemModel = var3;
          this.itemStackModels = var4;
-      }
-
-      public BakedModel missingModel() {
-         return this.missingModel;
-      }
-
-      public Map<ModelResourceLocation, BakedModel> blockStateModels() {
-         return this.blockStateModels;
-      }
-
-      public ItemModel missingItemModel() {
-         return this.missingItemModel;
-      }
-
-      public Map<ResourceLocation, ItemModel> itemStackModels() {
-         return this.itemStackModels;
-      }
-   }
-
-   private static record BakedCacheKey(ResourceLocation id, Transformation transformation, boolean isUvLocked) {
-      BakedCacheKey(ResourceLocation var1, Transformation var2, boolean var3) {
-         super();
-         this.id = var1;
-         this.transformation = var2;
-         this.isUvLocked = var3;
-      }
-
-      public ResourceLocation id() {
-         return this.id;
-      }
-
-      public Transformation transformation() {
-         return this.transformation;
-      }
-
-      public boolean isUvLocked() {
-         return this.isUvLocked;
       }
    }
 }

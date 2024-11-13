@@ -1,6 +1,5 @@
 package net.minecraft.client.searchtree;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
@@ -26,10 +25,8 @@ public interface ResourceLocationSearchTree<T> {
       } else {
          final SuffixArray var2 = new SuffixArray();
          final SuffixArray var3 = new SuffixArray();
-         Iterator var4 = var0.iterator();
 
-         while(var4.hasNext()) {
-            Object var5 = var4.next();
+         for(Object var5 : var0) {
             ((Stream)var1.apply(var5)).forEach((var3x) -> {
                var2.add(var5, var3x.getNamespace().toLowerCase(Locale.ROOT));
                var3.add(var5, var3x.getPath().toLowerCase(Locale.ROOT));

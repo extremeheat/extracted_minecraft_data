@@ -3,7 +3,6 @@ package net.minecraft.world.item.component;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -20,9 +19,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
 public record DyedItemColor(int rgb, boolean showInTooltip) implements TooltipProvider {
-   private static final Codec<DyedItemColor> FULL_CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.INT.fieldOf("rgb").forGetter(DyedItemColor::rgb), Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(DyedItemColor::showInTooltip)).apply(var0, DyedItemColor::new);
-   });
+   private static final Codec<DyedItemColor> FULL_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("rgb").forGetter(DyedItemColor::rgb), Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(DyedItemColor::showInTooltip)).apply(var0, DyedItemColor::new));
    public static final Codec<DyedItemColor> CODEC;
    public static final StreamCodec<ByteBuf, DyedItemColor> STREAM_CODEC;
    public static final int LEATHER_COLOR = -6265536;
@@ -49,13 +46,10 @@ public record DyedItemColor(int rgb, boolean showInTooltip) implements TooltipPr
          int var6 = 0;
          int var7 = 0;
          DyedItemColor var8 = (DyedItemColor)var2.get(DataComponents.DYED_COLOR);
-         int var9;
-         int var10;
-         int var11;
          if (var8 != null) {
-            var9 = ARGB.red(var8.rgb());
-            var10 = ARGB.green(var8.rgb());
-            var11 = ARGB.blue(var8.rgb());
+            int var9 = ARGB.red(var8.rgb());
+            int var10 = ARGB.green(var8.rgb());
+            int var11 = ARGB.blue(var8.rgb());
             var6 += Math.max(var9, Math.max(var10, var11));
             var3 += var9;
             var4 += var10;
@@ -63,30 +57,29 @@ public record DyedItemColor(int rgb, boolean showInTooltip) implements TooltipPr
             ++var7;
          }
 
-         int var14;
-         for(Iterator var16 = var1.iterator(); var16.hasNext(); ++var7) {
-            DyeItem var17 = (DyeItem)var16.next();
-            var11 = var17.getDyeColor().getTextureDiffuseColor();
-            int var12 = ARGB.red(var11);
-            int var13 = ARGB.green(var11);
-            var14 = ARGB.blue(var11);
+         for(DyeItem var19 : var1) {
+            int var22 = var19.getDyeColor().getTextureDiffuseColor();
+            int var12 = ARGB.red(var22);
+            int var13 = ARGB.green(var22);
+            int var14 = ARGB.blue(var22);
             var6 += Math.max(var12, Math.max(var13, var14));
             var3 += var12;
             var4 += var13;
             var5 += var14;
+            ++var7;
          }
 
-         var9 = var3 / var7;
-         var10 = var4 / var7;
-         var11 = var5 / var7;
-         float var18 = (float)var6 / (float)var7;
-         float var19 = (float)Math.max(var9, Math.max(var10, var11));
-         var9 = (int)((float)var9 * var18 / var19);
-         var10 = (int)((float)var10 * var18 / var19);
-         var11 = (int)((float)var11 * var18 / var19);
-         var14 = ARGB.color(0, var9, var10, var11);
+         int var17 = var3 / var7;
+         int var20 = var4 / var7;
+         int var23 = var5 / var7;
+         float var25 = (float)var6 / (float)var7;
+         float var26 = (float)Math.max(var17, Math.max(var20, var23));
+         var17 = (int)((float)var17 * var25 / var26);
+         var20 = (int)((float)var20 * var25 / var26);
+         var23 = (int)((float)var23 * var25 / var26);
+         int var27 = ARGB.color(0, var17, var20, var23);
          boolean var15 = var8 == null || var8.showInTooltip();
-         var2.set(DataComponents.DYED_COLOR, new DyedItemColor(var14, var15));
+         var2.set(DataComponents.DYED_COLOR, new DyedItemColor(var27, var15));
          return var2;
       }
    }
@@ -106,18 +99,8 @@ public record DyedItemColor(int rgb, boolean showInTooltip) implements TooltipPr
       return new DyedItemColor(this.rgb, var1);
    }
 
-   public int rgb() {
-      return this.rgb;
-   }
-
-   public boolean showInTooltip() {
-      return this.showInTooltip;
-   }
-
    static {
-      CODEC = Codec.withAlternative(FULL_CODEC, Codec.INT, (var0) -> {
-         return new DyedItemColor(var0, true);
-      });
+      CODEC = Codec.withAlternative(FULL_CODEC, Codec.INT, (var0) -> new DyedItemColor(var0, true));
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.INT, DyedItemColor::rgb, ByteBufCodecs.BOOL, DyedItemColor::showInTooltip, DyedItemColor::new);
    }
 }

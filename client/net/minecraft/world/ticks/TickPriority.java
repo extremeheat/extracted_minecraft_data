@@ -16,11 +16,7 @@ public enum TickPriority {
    }
 
    public static TickPriority byValue(int var0) {
-      TickPriority[] var1 = values();
-      int var2 = var1.length;
-
-      for(int var3 = 0; var3 < var2; ++var3) {
-         TickPriority var4 = var1[var3];
+      for(TickPriority var4 : values()) {
          if (var4.value == var0) {
             return var4;
          }

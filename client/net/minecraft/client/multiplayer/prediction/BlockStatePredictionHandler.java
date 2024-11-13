@@ -19,9 +19,7 @@ public class BlockStatePredictionHandler implements AutoCloseable {
    }
 
    public void retainKnownServerState(BlockPos var1, BlockState var2, LocalPlayer var3) {
-      this.serverVerifiedStates.compute(var1.asLong(), (var3x, var4) -> {
-         return var4 != null ? var4.setSequence(this.currentSequenceNr) : new ServerVerifiedState(this.currentSequenceNr, var2, var3.position());
-      });
+      this.serverVerifiedStates.compute(var1.asLong(), (var3x, var4) -> var4 != null ? var4.setSequence(this.currentSequenceNr) : new ServerVerifiedState(this.currentSequenceNr, var2, var3.position()));
    }
 
    public boolean updateKnownServerState(BlockPos var1, BlockState var2) {

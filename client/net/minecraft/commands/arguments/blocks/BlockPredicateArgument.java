@@ -8,7 +8,6 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -45,11 +44,7 @@ public class BlockPredicateArgument implements ArgumentType<Result> {
    }
 
    public static Result parse(HolderLookup<Block> var0, StringReader var1) throws CommandSyntaxException {
-      return (Result)BlockStateParser.parseForTesting(var0, var1, true).map((var0x) -> {
-         return new BlockPredicate(var0x.blockState(), var0x.properties().keySet(), var0x.nbt());
-      }, (var0x) -> {
-         return new TagPredicate(var0x.tag(), var0x.vagueProperties(), var0x.nbt());
-      });
+      return (Result)BlockStateParser.parseForTesting(var0, var1, true).map((var0x) -> new BlockPredicate(var0x.blockState(), var0x.properties().keySet(), var0x.nbt()), (var0x) -> new TagPredicate(var0x.tag(), var0x.vagueProperties(), var0x.nbt()));
    }
 
    public static Predicate<BlockInWorld> getBlockPredicate(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
@@ -69,11 +64,50 @@ public class BlockPredicateArgument implements ArgumentType<Result> {
       return this.parse(var1);
    }
 
-   public interface Result extends Predicate<BlockInWorld> {
-      boolean requiresNbt();
+   static class BlockPredicate implements Result {
+      private final BlockState state;
+      private final Set<Property<?>> properties;
+      @Nullable
+      private final CompoundTag nbt;
+
+      public BlockPredicate(BlockState var1, Set<Property<?>> var2, @Nullable CompoundTag var3) {
+         super();
+         this.state = var1;
+         this.properties = var2;
+         this.nbt = var3;
+      }
+
+      public boolean test(BlockInWorld var1) {
+         BlockState var2 = var1.getState();
+         if (!var2.is(this.state.getBlock())) {
+            return false;
+         } else {
+            for(Property var4 : this.properties) {
+               if (var2.getValue(var4) != this.state.getValue(var4)) {
+                  return false;
+               }
+            }
+
+            if (this.nbt == null) {
+               return true;
+            } else {
+               BlockEntity var5 = var1.getEntity();
+               return var5 != null && NbtUtils.compareNbt(this.nbt, var5.saveWithFullMetadata(var1.getLevel().registryAccess()), true);
+            }
+         }
+      }
+
+      public boolean requiresNbt() {
+         return this.nbt != null;
+      }
+
+      // $FF: synthetic method
+      public boolean test(final Object var1) {
+         return this.test((BlockInWorld)var1);
+      }
    }
 
-   private static class TagPredicate implements Result {
+   static class TagPredicate implements Result {
       private final HolderSet<Block> tag;
       @Nullable
       private final CompoundTag nbt;
@@ -91,10 +125,7 @@ public class BlockPredicateArgument implements ArgumentType<Result> {
          if (!var2.is(this.tag)) {
             return false;
          } else {
-            Iterator var3 = this.vagueProperties.entrySet().iterator();
-
-            while(var3.hasNext()) {
-               Map.Entry var4 = (Map.Entry)var3.next();
+            for(Map.Entry var4 : this.vagueProperties.entrySet()) {
                Property var5 = var2.getBlock().getStateDefinition().getProperty((String)var4.getKey());
                if (var5 == null) {
                   return false;
@@ -129,49 +160,7 @@ public class BlockPredicateArgument implements ArgumentType<Result> {
       }
    }
 
-   static class BlockPredicate implements Result {
-      private final BlockState state;
-      private final Set<Property<?>> properties;
-      @Nullable
-      private final CompoundTag nbt;
-
-      public BlockPredicate(BlockState var1, Set<Property<?>> var2, @Nullable CompoundTag var3) {
-         super();
-         this.state = var1;
-         this.properties = var2;
-         this.nbt = var3;
-      }
-
-      public boolean test(BlockInWorld var1) {
-         BlockState var2 = var1.getState();
-         if (!var2.is(this.state.getBlock())) {
-            return false;
-         } else {
-            Iterator var3 = this.properties.iterator();
-
-            while(var3.hasNext()) {
-               Property var4 = (Property)var3.next();
-               if (var2.getValue(var4) != this.state.getValue(var4)) {
-                  return false;
-               }
-            }
-
-            if (this.nbt == null) {
-               return true;
-            } else {
-               BlockEntity var5 = var1.getEntity();
-               return var5 != null && NbtUtils.compareNbt(this.nbt, var5.saveWithFullMetadata(var1.getLevel().registryAccess()), true);
-            }
-         }
-      }
-
-      public boolean requiresNbt() {
-         return this.nbt != null;
-      }
-
-      // $FF: synthetic method
-      public boolean test(final Object var1) {
-         return this.test((BlockInWorld)var1);
-      }
+   public interface Result extends Predicate<BlockInWorld> {
+      boolean requiresNbt();
    }
 }

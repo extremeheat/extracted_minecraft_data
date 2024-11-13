@@ -19,9 +19,7 @@ public class UserBanList extends StoredUserList<GameProfile, UserBanListEntry> {
    }
 
    public String[] getUserList() {
-      return (String[])this.getEntries().stream().map(StoredUserEntry::getUser).filter(Objects::nonNull).map(GameProfile::getName).toArray((var0) -> {
-         return new String[var0];
-      });
+      return (String[])this.getEntries().stream().map(StoredUserEntry::getUser).filter(Objects::nonNull).map(GameProfile::getName).toArray((var0) -> new String[var0]);
    }
 
    protected String getKeyForUser(GameProfile var1) {

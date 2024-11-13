@@ -12,7 +12,7 @@ import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
 
 public class ServerboundKeyPacket implements Packet<ServerLoginPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundKeyPacket> STREAM_CODEC = Packet.codec(ServerboundKeyPacket::write, ServerboundKeyPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundKeyPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundKeyPacket>codec(ServerboundKeyPacket::write, ServerboundKeyPacket::new);
    private final byte[] keybytes;
    private final byte[] encryptedChallenge;
 

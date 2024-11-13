@@ -15,11 +15,7 @@ import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 
 public class WorldPreset {
-   public static final Codec<WorldPreset> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.unboundedMap(ResourceKey.codec(Registries.LEVEL_STEM), LevelStem.CODEC).fieldOf("dimensions").forGetter((var0x) -> {
-         return var0x.dimensions;
-      })).apply(var0, WorldPreset::new);
-   }).validate(WorldPreset::requireOverworld);
+   public static final Codec<WorldPreset> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.unboundedMap(ResourceKey.codec(Registries.LEVEL_STEM), LevelStem.CODEC).fieldOf("dimensions").forGetter((var0x) -> var0x.dimensions)).apply(var0, WorldPreset::new)).validate(WorldPreset::requireOverworld);
    public static final Codec<Holder<WorldPreset>> CODEC;
    private final Map<ResourceKey<LevelStem>, LevelStem> dimensions;
 
@@ -49,12 +45,10 @@ public class WorldPreset {
    }
 
    private static DataResult<WorldPreset> requireOverworld(WorldPreset var0) {
-      return var0.overworld().isEmpty() ? DataResult.error(() -> {
-         return "Missing overworld dimension";
-      }) : DataResult.success(var0, Lifecycle.stable());
+      return var0.overworld().isEmpty() ? DataResult.error(() -> "Missing overworld dimension") : DataResult.success(var0, Lifecycle.stable());
    }
 
    static {
-      CODEC = RegistryFileCodec.create(Registries.WORLD_PRESET, DIRECT_CODEC);
+      CODEC = RegistryFileCodec.<Holder<WorldPreset>>create(Registries.WORLD_PRESET, DIRECT_CODEC);
    }
 }

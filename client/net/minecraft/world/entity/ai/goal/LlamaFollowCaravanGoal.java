@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -24,22 +23,17 @@ public class LlamaFollowCaravanGoal extends Goal {
 
    public boolean canUse() {
       if (!this.llama.isLeashed() && !this.llama.inCaravan()) {
-         List var1 = this.llama.level().getEntities((Entity)this.llama, this.llama.getBoundingBox().inflate(9.0, 4.0, 9.0), (var0) -> {
+         List var1 = this.llama.level().getEntities(this.llama, this.llama.getBoundingBox().inflate(9.0, 4.0, 9.0), (var0) -> {
             EntityType var1 = var0.getType();
             return var1 == EntityType.LLAMA || var1 == EntityType.TRADER_LLAMA;
          });
          Llama var2 = null;
          double var3 = 1.7976931348623157E308;
-         Iterator var5 = var1.iterator();
 
-         Entity var6;
-         Llama var7;
-         double var8;
-         while(var5.hasNext()) {
-            var6 = (Entity)var5.next();
-            var7 = (Llama)var6;
+         for(Entity var6 : var1) {
+            Llama var7 = (Llama)var6;
             if (var7.inCaravan() && !var7.hasCaravanTail()) {
-               var8 = this.llama.distanceToSqr(var7);
+               double var8 = this.llama.distanceToSqr(var7);
                if (!(var8 > var3)) {
                   var3 = var8;
                   var2 = var7;
@@ -48,16 +42,13 @@ public class LlamaFollowCaravanGoal extends Goal {
          }
 
          if (var2 == null) {
-            var5 = var1.iterator();
-
-            while(var5.hasNext()) {
-               var6 = (Entity)var5.next();
-               var7 = (Llama)var6;
-               if (var7.isLeashed() && !var7.hasCaravanTail()) {
-                  var8 = this.llama.distanceToSqr(var7);
-                  if (!(var8 > var3)) {
-                     var3 = var8;
-                     var2 = var7;
+            for(Entity var11 : var1) {
+               Llama var12 = (Llama)var11;
+               if (var12.isLeashed() && !var12.hasCaravanTail()) {
+                  double var13 = this.llama.distanceToSqr(var12);
+                  if (!(var13 > var3)) {
+                     var3 = var13;
+                     var2 = var12;
                   }
                }
             }

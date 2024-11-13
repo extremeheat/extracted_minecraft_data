@@ -27,8 +27,7 @@ public abstract class DataComponentRemainderFix extends DataFix {
 
    public final TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.DATA_COMPONENTS);
-      return this.fixTypeEverywhereTyped(this.name, var1, (var1x) -> {
-         return var1x.update(DSL.remainderFinder(), (var1) -> {
+      return this.fixTypeEverywhereTyped(this.name, var1, (var1x) -> var1x.update(DSL.remainderFinder(), (var1) -> {
             Optional var2 = var1.get(this.componentId).result();
             if (var2.isEmpty()) {
                return var1;
@@ -36,8 +35,7 @@ public abstract class DataComponentRemainderFix extends DataFix {
                Dynamic var3 = this.fixComponent((Dynamic)var2.get());
                return var1.remove(this.componentId).setFieldIfPresent(this.newComponentId, Optional.ofNullable(var3));
             }
-         });
-      });
+         }));
    }
 
    @Nullable

@@ -45,9 +45,7 @@ public interface CauldronInteraction {
 
    static InteractionMap newInteractionMap(String var0) {
       Object2ObjectOpenHashMap var1 = new Object2ObjectOpenHashMap();
-      var1.defaultReturnValue((var0x, var1x, var2x, var3, var4, var5) -> {
-         return InteractionResult.TRY_WITH_EMPTY_HAND;
-      });
+      var1.defaultReturnValue((CauldronInteraction)(var0x, var1x, var2x, var3, var4, var5) -> InteractionResult.TRY_WITH_EMPTY_HAND);
       InteractionMap var2 = new InteractionMap(var0, var1);
       INTERACTIONS.put(var0, var2);
       return var2;
@@ -58,7 +56,7 @@ public interface CauldronInteraction {
    static void bootStrap() {
       Map var0 = EMPTY.map();
       addDefaultInteractions(var0);
-      var0.put(Items.POTION, (var0x, var1x, var2x, var3x, var4, var5) -> {
+      var0.put(Items.POTION, (CauldronInteraction)(var0x, var1x, var2x, var3x, var4, var5) -> {
          PotionContents var6 = (PotionContents)var5.get(DataComponents.POTION_CONTENTS);
          if (var6 != null && var6.is(Potions.WATER)) {
             if (!var1x.isClientSide) {
@@ -78,12 +76,8 @@ public interface CauldronInteraction {
       });
       Map var1 = WATER.map();
       addDefaultInteractions(var1);
-      var1.put(Items.BUCKET, (var0x, var1x, var2x, var3x, var4, var5) -> {
-         return fillBucket(var0x, var1x, var2x, var3x, var4, var5, new ItemStack(Items.WATER_BUCKET), (var0) -> {
-            return (Integer)var0.getValue(LayeredCauldronBlock.LEVEL) == 3;
-         }, SoundEvents.BUCKET_FILL);
-      });
-      var1.put(Items.GLASS_BOTTLE, (var0x, var1x, var2x, var3x, var4, var5) -> {
+      var1.put(Items.BUCKET, (CauldronInteraction)(var0x, var1x, var2x, var3x, var4, var5) -> fillBucket(var0x, var1x, var2x, var3x, var4, var5, new ItemStack(Items.WATER_BUCKET), (var0) -> (Integer)var0.getValue(LayeredCauldronBlock.LEVEL) == 3, SoundEvents.BUCKET_FILL));
+      var1.put(Items.GLASS_BOTTLE, (CauldronInteraction)(var0x, var1x, var2x, var3x, var4, var5) -> {
          if (!var1x.isClientSide) {
             Item var6 = var5.getItem();
             var3x.setItemInHand(var4, ItemUtils.createFilledResult(var5, var3x, PotionContents.createItemStack(Items.POTION, Potions.WATER)));
@@ -96,7 +90,7 @@ public interface CauldronInteraction {
 
          return InteractionResult.SUCCESS;
       });
-      var1.put(Items.POTION, (var0x, var1x, var2x, var3x, var4, var5) -> {
+      var1.put(Items.POTION, (CauldronInteraction)(var0x, var1x, var2x, var3x, var4, var5) -> {
          if ((Integer)var0x.getValue(LayeredCauldronBlock.LEVEL) == 3) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
          } else {
@@ -156,18 +150,10 @@ public interface CauldronInteraction {
       var1.put(Items.RED_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
       var1.put(Items.YELLOW_SHULKER_BOX, CauldronInteraction::shulkerBoxInteraction);
       Map var2 = LAVA.map();
-      var2.put(Items.BUCKET, (var0x, var1x, var2x, var3x, var4, var5) -> {
-         return fillBucket(var0x, var1x, var2x, var3x, var4, var5, new ItemStack(Items.LAVA_BUCKET), (var0) -> {
-            return true;
-         }, SoundEvents.BUCKET_FILL_LAVA);
-      });
+      var2.put(Items.BUCKET, (CauldronInteraction)(var0x, var1x, var2x, var3x, var4, var5) -> fillBucket(var0x, var1x, var2x, var3x, var4, var5, new ItemStack(Items.LAVA_BUCKET), (var0) -> true, SoundEvents.BUCKET_FILL_LAVA));
       addDefaultInteractions(var2);
       Map var3 = POWDER_SNOW.map();
-      var3.put(Items.BUCKET, (var0x, var1x, var2x, var3x, var4, var5) -> {
-         return fillBucket(var0x, var1x, var2x, var3x, var4, var5, new ItemStack(Items.POWDER_SNOW_BUCKET), (var0) -> {
-            return (Integer)var0.getValue(LayeredCauldronBlock.LEVEL) == 3;
-         }, SoundEvents.BUCKET_FILL_POWDER_SNOW);
-      });
+      var3.put(Items.BUCKET, (CauldronInteraction)(var0x, var1x, var2x, var3x, var4, var5) -> fillBucket(var0x, var1x, var2x, var3x, var4, var5, new ItemStack(Items.POWDER_SNOW_BUCKET), (var0) -> (Integer)var0.getValue(LayeredCauldronBlock.LEVEL) == 3, SoundEvents.BUCKET_FILL_POWDER_SNOW));
       addDefaultInteractions(var3);
    }
 
@@ -291,14 +277,6 @@ public interface CauldronInteraction {
          super();
          this.name = var1;
          this.map = var2;
-      }
-
-      public String name() {
-         return this.name;
-      }
-
-      public Map<Item, CauldronInteraction> map() {
-         return this.map;
       }
    }
 }

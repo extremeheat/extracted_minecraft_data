@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -19,9 +18,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class FancyTrunkPlacer extends TrunkPlacer {
-   public static final MapCodec<FancyTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return trunkPlacerParts(var0).apply(var0, FancyTrunkPlacer::new);
-   });
+   public static final MapCodec<FancyTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> trunkPlacerParts(var0).apply(var0, FancyTrunkPlacer::new));
    private static final double TRUNK_HEIGHT_SCALE = 0.618;
    private static final double CLUSTER_DENSITY_MAGIC = 1.382;
    private static final double BRANCH_SLOPE = 0.381;
@@ -75,10 +72,8 @@ public class FancyTrunkPlacer extends TrunkPlacer {
       this.makeLimb(var1, var2, var3, var5, var5.above(var9), true, var6);
       this.makeBranches(var1, var2, var3, var8, var5, var15, var6);
       ArrayList var36 = Lists.newArrayList();
-      Iterator var37 = var15.iterator();
 
-      while(var37.hasNext()) {
-         FoliageCoords var38 = (FoliageCoords)var37.next();
+      for(FoliageCoords var38 : var15) {
          if (this.trimBranches(var8, var38.getBranchBase() - var5.getY())) {
             var36.add(var38.attachment);
          }
@@ -100,9 +95,7 @@ public class FancyTrunkPlacer extends TrunkPlacer {
          for(int var13 = 0; var13 <= var9; ++var13) {
             BlockPos var14 = var4.offset(Mth.floor(0.5F + (float)var13 * var10), Mth.floor(0.5F + (float)var13 * var11), Mth.floor(0.5F + (float)var13 * var12));
             if (var6) {
-               this.placeLog(var1, var2, var3, var14, var7, (var3x) -> {
-                  return (BlockState)var3x.trySetValue(RotatedPillarBlock.AXIS, this.getLogAxis(var4, var14));
-               });
+               this.placeLog(var1, var2, var3, var14, var7, (var3x) -> (BlockState)var3x.trySetValue(RotatedPillarBlock.AXIS, this.getLogAxis(var4, var14)));
             } else if (!this.isFree(var1, var14)) {
                return false;
             }
@@ -140,10 +133,7 @@ public class FancyTrunkPlacer extends TrunkPlacer {
    }
 
    private void makeBranches(LevelSimulatedReader var1, BiConsumer<BlockPos, BlockState> var2, RandomSource var3, int var4, BlockPos var5, List<FoliageCoords> var6, TreeConfiguration var7) {
-      Iterator var8 = var6.iterator();
-
-      while(var8.hasNext()) {
-         FoliageCoords var9 = (FoliageCoords)var8.next();
+      for(FoliageCoords var9 : var6) {
          int var10 = var9.getBranchBase();
          BlockPos var11 = new BlockPos(var5.getX(), var10, var5.getZ());
          if (!var11.equals(var9.attachment.pos()) && this.trimBranches(var4, var10 - var5.getY())) {

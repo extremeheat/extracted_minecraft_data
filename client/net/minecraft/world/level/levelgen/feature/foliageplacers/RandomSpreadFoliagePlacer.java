@@ -10,13 +10,7 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class RandomSpreadFoliagePlacer extends FoliagePlacer {
-   public static final MapCodec<RandomSpreadFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return foliagePlacerParts(var0).and(var0.group(IntProvider.codec(1, 512).fieldOf("foliage_height").forGetter((var0x) -> {
-         return var0x.foliageHeight;
-      }), Codec.intRange(0, 256).fieldOf("leaf_placement_attempts").forGetter((var0x) -> {
-         return var0x.leafPlacementAttempts;
-      }))).apply(var0, RandomSpreadFoliagePlacer::new);
-   });
+   public static final MapCodec<RandomSpreadFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> foliagePlacerParts(var0).and(var0.group(IntProvider.codec(1, 512).fieldOf("foliage_height").forGetter((var0x) -> var0x.foliageHeight), Codec.intRange(0, 256).fieldOf("leaf_placement_attempts").forGetter((var0x) -> var0x.leafPlacementAttempts))).apply(var0, RandomSpreadFoliagePlacer::new));
    private final IntProvider foliageHeight;
    private final int leafPlacementAttempts;
 

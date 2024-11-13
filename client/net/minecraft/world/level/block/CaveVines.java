@@ -41,8 +41,6 @@ public interface CaveVines {
    }
 
    static ToIntFunction<BlockState> emission(int var0) {
-      return (var1) -> {
-         return (Boolean)var1.getValue(BlockStateProperties.BERRIES) ? var0 : 0;
-      };
+      return (var1) -> (Boolean)var1.getValue(BlockStateProperties.BERRIES) ? var0 : 0;
    }
 }

@@ -1,5 +1,6 @@
 package net.minecraft.client.data.models.model;
 
+import java.util.function.UnaryOperator;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -22,9 +23,7 @@ public class ModelLocationUtils {
 
    public static ResourceLocation getModelLocation(Block var0, String var1) {
       ResourceLocation var2 = BuiltInRegistries.BLOCK.getKey(var0);
-      return var2.withPath((var1x) -> {
-         return "block/" + var1x + var1;
-      });
+      return var2.withPath((UnaryOperator)((var1x) -> "block/" + var1x + var1));
    }
 
    public static ResourceLocation getModelLocation(Block var0) {
@@ -39,8 +38,6 @@ public class ModelLocationUtils {
 
    public static ResourceLocation getModelLocation(Item var0, String var1) {
       ResourceLocation var2 = BuiltInRegistries.ITEM.getKey(var0);
-      return var2.withPath((var1x) -> {
-         return "item/" + var1x + var1;
-      });
+      return var2.withPath((UnaryOperator)((var1x) -> "item/" + var1x + var1));
    }
 }

@@ -20,15 +20,11 @@ public class PlayerTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    }
 
    public void trigger(ServerPlayer var1) {
-      this.trigger(var1, (var0) -> {
-         return true;
-      });
+      this.trigger(var1, (var0) -> true);
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1) {
          super();
@@ -65,10 +61,6 @@ public class PlayerTrigger extends SimpleCriterionTrigger<TriggerInstance> {
 
       public static Criterion<TriggerInstance> walkOnBlockWithEquipment(HolderGetter<Block> var0, HolderGetter<Item> var1, Block var2, Item var3) {
          return located(EntityPredicate.Builder.entity().equipment(EntityEquipmentPredicate.Builder.equipment().feet(ItemPredicate.Builder.item().of(var1, var3))).steppingOn(LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(var0, var2))));
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
       }
    }
 }

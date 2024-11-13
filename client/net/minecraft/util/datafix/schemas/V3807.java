@@ -14,9 +14,7 @@ public class V3807 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {
       Map var2 = super.registerBlockEntities(var1);
-      var1.register(var2, "minecraft:vault", () -> {
-         return DSL.optionalFields("config", DSL.optionalFields("key_item", References.ITEM_STACK.in(var1)), "server_data", DSL.optionalFields("items_to_eject", DSL.list(References.ITEM_STACK.in(var1))), "shared_data", DSL.optionalFields("display_item", References.ITEM_STACK.in(var1)));
-      });
+      var1.register(var2, "minecraft:vault", () -> DSL.optionalFields("config", DSL.optionalFields("key_item", References.ITEM_STACK.in(var1)), "server_data", DSL.optionalFields("items_to_eject", DSL.list(References.ITEM_STACK.in(var1))), "shared_data", DSL.optionalFields("display_item", References.ITEM_STACK.in(var1))));
       return var2;
    }
 }

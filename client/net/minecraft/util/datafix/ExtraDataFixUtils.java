@@ -41,22 +41,16 @@ public class ExtraDataFixUtils {
    }
 
    private static <A, B> TypeRewriteRule typePatcher(Type<A> var0, Type<B> var1) {
-      RewriteResult var2 = RewriteResult.create(View.create("Patcher", var0, var1, (var0x) -> {
-         return (var0) -> {
+      RewriteResult var2 = RewriteResult.create(View.create("Patcher", var0, var1, (var0x) -> (var0) -> {
             throw new UnsupportedOperationException();
-         };
-      }), new BitSet());
+         }), new BitSet());
       return TypeRewriteRule.everywhere(TypeRewriteRule.ifSame(var0, var2), PointFreeRule.nop(), true, true);
    }
 
    @SafeVarargs
    public static <T> Function<Typed<?>, Typed<?>> chainAllFilters(Function<Typed<?>, Typed<?>>... var0) {
       return (var1) -> {
-         Function[] var2 = var0;
-         int var3 = var0.length;
-
-         for(int var4 = 0; var4 < var3; ++var4) {
-            Function var5 = var2[var4];
+         for(Function var5 : var0) {
             var1 = (Typed)var5.apply(var1);
          }
 
@@ -68,11 +62,7 @@ public class ExtraDataFixUtils {
       Dynamic var2 = new Dynamic(NbtOps.INSTANCE, new CompoundTag());
       Dynamic var3 = var2.set("Name", var2.createString(var0));
       if (!var1.isEmpty()) {
-         var3 = var3.set("Properties", var2.createMap((Map)var1.entrySet().stream().collect(Collectors.toMap((var1x) -> {
-            return var2.createString((String)var1x.getKey());
-         }, (var1x) -> {
-            return var2.createString((String)var1x.getValue());
-         }))));
+         var3 = var3.set("Properties", var2.createMap((Map)var1.entrySet().stream().collect(Collectors.toMap((var1x) -> var2.createString((String)var1x.getKey()), (var1x) -> var2.createString((String)var1x.getValue())))));
       }
 
       return var3;

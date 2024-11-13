@@ -36,11 +36,11 @@ public class WolfVariants {
    }
 
    static void register(BootstrapContext<WolfVariant> var0, ResourceKey<WolfVariant> var1, String var2, ResourceKey<Biome> var3) {
-      register(var0, var1, var2, (HolderSet)HolderSet.direct(var0.lookup(Registries.BIOME).getOrThrow(var3)));
+      register(var0, var1, var2, HolderSet.direct(var0.lookup(Registries.BIOME).getOrThrow(var3)));
    }
 
    static void register(BootstrapContext<WolfVariant> var0, ResourceKey<WolfVariant> var1, String var2, TagKey<Biome> var3) {
-      register(var0, var1, var2, (HolderSet)var0.lookup(Registries.BIOME).getOrThrow(var3));
+      register(var0, var1, var2, var0.lookup(Registries.BIOME).getOrThrow(var3));
    }
 
    static void register(BootstrapContext<WolfVariant> var0, ResourceKey<WolfVariant> var1, String var2, HolderSet<Biome> var3) {
@@ -52,11 +52,7 @@ public class WolfVariants {
 
    public static Holder<WolfVariant> getSpawnVariant(RegistryAccess var0, Holder<Biome> var1) {
       Registry var2 = var0.lookupOrThrow(Registries.WOLF_VARIANT);
-      Optional var10000 = var2.listElements().filter((var1x) -> {
-         return ((WolfVariant)var1x.value()).biomes().contains(var1);
-      }).findFirst().or(() -> {
-         return var2.get(DEFAULT);
-      });
+      Optional var10000 = var2.listElements().filter((var1x) -> ((WolfVariant)var1x.value()).biomes().contains(var1)).findFirst().or(() -> var2.get(DEFAULT));
       Objects.requireNonNull(var2);
       return (Holder)var10000.or(var2::getAny).orElseThrow();
    }

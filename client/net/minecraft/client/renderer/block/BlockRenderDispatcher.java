@@ -84,19 +84,13 @@ public class BlockRenderDispatcher implements ResourceManagerReloadListener {
    public void renderSingleBlock(BlockState var1, PoseStack var2, MultiBufferSource var3, int var4, int var5) {
       RenderShape var6 = var1.getRenderShape();
       if (var6 != RenderShape.INVISIBLE) {
-         switch (var6) {
-            case MODEL:
-               BakedModel var7 = this.getBlockModel(var1);
-               int var8 = this.blockColors.getColor(var1, (BlockAndTintGetter)null, (BlockPos)null, 0);
-               float var9 = (float)(var8 >> 16 & 255) / 255.0F;
-               float var10 = (float)(var8 >> 8 & 255) / 255.0F;
-               float var11 = (float)(var8 & 255) / 255.0F;
-               this.modelRenderer.renderModel(var2.last(), var3.getBuffer(ItemBlockRenderTypes.getRenderType(var1)), var1, var7, var9, var10, var11, var4, var5);
-               break;
-            case ENTITYBLOCK_ANIMATED:
-               ((SpecialBlockModelRenderer)this.specialBlockModelRenderer.get()).renderByBlock(var1.getBlock(), ItemDisplayContext.NONE, var2, var3, var4, var5);
-         }
-
+         BakedModel var7 = this.getBlockModel(var1);
+         int var8 = this.blockColors.getColor(var1, (BlockAndTintGetter)null, (BlockPos)null, 0);
+         float var9 = (float)(var8 >> 16 & 255) / 255.0F;
+         float var10 = (float)(var8 >> 8 & 255) / 255.0F;
+         float var11 = (float)(var8 & 255) / 255.0F;
+         this.modelRenderer.renderModel(var2.last(), var3.getBuffer(ItemBlockRenderTypes.getRenderType(var1)), var1, var7, var9, var10, var11, var4, var5);
+         ((SpecialBlockModelRenderer)this.specialBlockModelRenderer.get()).renderByBlock(var1.getBlock(), ItemDisplayContext.NONE, var2, var3, var4, var5);
       }
    }
 

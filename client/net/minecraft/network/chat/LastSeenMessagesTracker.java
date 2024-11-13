@@ -66,9 +66,9 @@ public class LastSeenMessagesTracker {
          }
       }
 
-      LastSeenMessages var8 = new LastSeenMessages(var3);
-      LastSeenMessages.Update var7 = new LastSeenMessages.Update(var1, var2);
-      return new Update(var8, var7);
+      LastSeenMessages var7 = new LastSeenMessages(var3);
+      LastSeenMessages.Update var8 = new LastSeenMessages.Update(var1, var2);
+      return new Update(var7, var8);
    }
 
    public int offset() {
@@ -80,14 +80,6 @@ public class LastSeenMessagesTracker {
          super();
          this.lastSeen = var1;
          this.update = var2;
-      }
-
-      public LastSeenMessages lastSeen() {
-         return this.lastSeen;
-      }
-
-      public LastSeenMessages.Update update() {
-         return this.update;
       }
    }
 }

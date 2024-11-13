@@ -42,7 +42,7 @@ public class DownloadQueue implements AutoCloseable {
       super();
       this.cacheDir = var1;
       FileUtil.createDirectoriesSafe(var1);
-      this.eventLog = JsonEventLog.open(DownloadQueue.LogEntry.CODEC, var1.resolve("log.json"));
+      this.eventLog = JsonEventLog.<LogEntry>open(DownloadQueue.LogEntry.CODEC, var1.resolve("log.json"));
       DownloadCacheCleaner.vacuumCacheDir(var1, 20);
    }
 
@@ -82,9 +82,7 @@ public class DownloadQueue implements AutoCloseable {
    }
 
    public CompletableFuture<BatchResult> downloadBatch(BatchConfig var1, Map<UUID, DownloadRequest> var2) {
-      Supplier var10000 = () -> {
-         return this.runDownload(var1, var2);
-      };
+      Supplier var10000 = () -> this.runDownload(var1, var2);
       ConsecutiveExecutor var10001 = this.tasks;
       Objects.requireNonNull(var10001);
       return CompletableFuture.supplyAsync(var10000, var10001::schedule);
@@ -95,10 +93,18 @@ public class DownloadQueue implements AutoCloseable {
       this.eventLog.close();
    }
 
+   static record FileInfoEntry(String name, long size) {
+      public static final Codec<FileInfoEntry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("name").forGetter(FileInfoEntry::name), Codec.LONG.fieldOf("size").forGetter(FileInfoEntry::size)).apply(var0, FileInfoEntry::new));
+
+      FileInfoEntry(String var1, long var2) {
+         super();
+         this.name = var1;
+         this.size = var2;
+      }
+   }
+
    static record LogEntry(UUID id, String url, Instant time, Optional<String> hash, Either<String, FileInfoEntry> errorOrFileInfo) {
-      public static final Codec<LogEntry> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(UUIDUtil.STRING_CODEC.fieldOf("id").forGetter(LogEntry::id), Codec.STRING.fieldOf("url").forGetter(LogEntry::url), ExtraCodecs.INSTANT_ISO8601.fieldOf("time").forGetter(LogEntry::time), Codec.STRING.optionalFieldOf("hash").forGetter(LogEntry::hash), Codec.mapEither(Codec.STRING.fieldOf("error"), DownloadQueue.FileInfoEntry.CODEC.fieldOf("file")).forGetter(LogEntry::errorOrFileInfo)).apply(var0, LogEntry::new);
-      });
+      public static final Codec<LogEntry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(UUIDUtil.STRING_CODEC.fieldOf("id").forGetter(LogEntry::id), Codec.STRING.fieldOf("url").forGetter(LogEntry::url), ExtraCodecs.INSTANT_ISO8601.fieldOf("time").forGetter(LogEntry::time), Codec.STRING.optionalFieldOf("hash").forGetter(LogEntry::hash), Codec.mapEither(Codec.STRING.fieldOf("error"), DownloadQueue.FileInfoEntry.CODEC.fieldOf("file")).forGetter(LogEntry::errorOrFileInfo)).apply(var0, LogEntry::new));
 
       LogEntry(UUID var1, String var2, Instant var3, Optional<String> var4, Either<String, FileInfoEntry> var5) {
          super();
@@ -107,26 +113,6 @@ public class DownloadQueue implements AutoCloseable {
          this.time = var3;
          this.hash = var4;
          this.errorOrFileInfo = var5;
-      }
-
-      public UUID id() {
-         return this.id;
-      }
-
-      public String url() {
-         return this.url;
-      }
-
-      public Instant time() {
-         return this.time;
-      }
-
-      public Optional<String> hash() {
-         return this.hash;
-      }
-
-      public Either<String, FileInfoEntry> errorOrFileInfo() {
-         return this.errorOrFileInfo;
       }
    }
 
@@ -143,13 +129,17 @@ public class DownloadQueue implements AutoCloseable {
          this.downloaded = var1;
          this.failed = var2;
       }
+   }
 
-      public Map<UUID, Path> downloaded() {
-         return this.downloaded;
-      }
+   public static record DownloadRequest(URL url, @Nullable HashCode hash) {
+      final URL url;
+      @Nullable
+      final HashCode hash;
 
-      public Set<UUID> failed() {
-         return this.failed;
+      public DownloadRequest(URL var1, @Nullable HashCode var2) {
+         super();
+         this.url = var1;
+         this.hash = var2;
       }
    }
 
@@ -167,67 +157,6 @@ public class DownloadQueue implements AutoCloseable {
          this.headers = var3;
          this.proxy = var4;
          this.listener = var5;
-      }
-
-      public HashFunction hashFunction() {
-         return this.hashFunction;
-      }
-
-      public int maxSize() {
-         return this.maxSize;
-      }
-
-      public Map<String, String> headers() {
-         return this.headers;
-      }
-
-      public Proxy proxy() {
-         return this.proxy;
-      }
-
-      public HttpUtil.DownloadProgressListener listener() {
-         return this.listener;
-      }
-   }
-
-   private static record FileInfoEntry(String name, long size) {
-      public static final Codec<FileInfoEntry> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Codec.STRING.fieldOf("name").forGetter(FileInfoEntry::name), Codec.LONG.fieldOf("size").forGetter(FileInfoEntry::size)).apply(var0, FileInfoEntry::new);
-      });
-
-      FileInfoEntry(String var1, long var2) {
-         super();
-         this.name = var1;
-         this.size = var2;
-      }
-
-      public String name() {
-         return this.name;
-      }
-
-      public long size() {
-         return this.size;
-      }
-   }
-
-   public static record DownloadRequest(URL url, @Nullable HashCode hash) {
-      final URL url;
-      @Nullable
-      final HashCode hash;
-
-      public DownloadRequest(URL var1, @Nullable HashCode var2) {
-         super();
-         this.url = var1;
-         this.hash = var2;
-      }
-
-      public URL url() {
-         return this.url;
-      }
-
-      @Nullable
-      public HashCode hash() {
-         return this.hash;
       }
    }
 }

@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.worldselection;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,7 +16,6 @@ import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.Layout;
-import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.SpacerElement;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -85,10 +83,8 @@ class SwitchGrid {
          var1.addChild(SpacerElement.width(44), 0, 1);
          ArrayList var2 = new ArrayList();
          this.rowCount = 0;
-         Iterator var3 = this.switchBuilders.iterator();
 
-         while(var3.hasNext()) {
-            SwitchBuilder var4 = (SwitchBuilder)var3.next();
+         for(SwitchBuilder var4 : this.switchBuilders) {
             var2.add(var4.build(this, var1, 0));
          }
 
@@ -101,55 +97,6 @@ class SwitchGrid {
       public Builder withInfoUnderneath(int var1, boolean var2) {
          this.infoUnderneath = Optional.of(new InfoUnderneathSettings(var1, var2));
          return this;
-      }
-   }
-
-   private static record InfoUnderneathSettings(int maxInfoRows, boolean alwaysMaxHeight) {
-      final int maxInfoRows;
-      final boolean alwaysMaxHeight;
-
-      InfoUnderneathSettings(int var1, boolean var2) {
-         super();
-         this.maxInfoRows = var1;
-         this.alwaysMaxHeight = var2;
-      }
-
-      public int maxInfoRows() {
-         return this.maxInfoRows;
-      }
-
-      public boolean alwaysMaxHeight() {
-         return this.alwaysMaxHeight;
-      }
-   }
-
-   static record LabeledSwitch(CycleButton<Boolean> button, BooleanSupplier stateSupplier, @Nullable BooleanSupplier isActiveCondition) {
-      LabeledSwitch(CycleButton<Boolean> var1, BooleanSupplier var2, @Nullable BooleanSupplier var3) {
-         super();
-         this.button = var1;
-         this.stateSupplier = var2;
-         this.isActiveCondition = var3;
-      }
-
-      public void refreshState() {
-         this.button.setValue(this.stateSupplier.getAsBoolean());
-         if (this.isActiveCondition != null) {
-            this.button.active = this.isActiveCondition.getAsBoolean();
-         }
-
-      }
-
-      public CycleButton<Boolean> button() {
-         return this.button;
-      }
-
-      public BooleanSupplier stateSupplier() {
-         return this.stateSupplier;
-      }
-
-      @Nullable
-      public BooleanSupplier isActiveCondition() {
-         return this.isActiveCondition;
       }
    }
 
@@ -184,36 +131,28 @@ class SwitchGrid {
       LabeledSwitch build(Builder var1, GridLayout var2, int var3) {
          var1.increaseRow();
          StringWidget var4 = (new StringWidget(this.label, Minecraft.getInstance().font)).alignLeft();
-         var2.addChild(var4, var1.rowCount, var3, (LayoutSettings)var2.newCellSettings().align(0.0F, 0.5F).paddingLeft(var1.paddingLeft));
+         var2.addChild(var4, var1.rowCount, var3, var2.newCellSettings().align(0.0F, 0.5F).paddingLeft(var1.paddingLeft));
          Optional var5 = var1.infoUnderneath;
          CycleButton.Builder var6 = CycleButton.onOffBuilder(this.stateSupplier.getAsBoolean());
          var6.displayOnlyValue();
          boolean var7 = this.info != null && var5.isEmpty();
          if (var7) {
             Tooltip var8 = Tooltip.create(this.info);
-            var6.withTooltip((var1x) -> {
-               return var8;
-            });
+            var6.withTooltip((var1x) -> var8);
          }
 
          if (this.info != null && !var7) {
-            var6.withCustomNarration((var1x) -> {
-               return CommonComponents.joinForNarration(this.label, var1x.createDefaultNarrationMessage(), this.info);
-            });
+            var6.withCustomNarration((var1x) -> CommonComponents.joinForNarration(this.label, var1x.createDefaultNarrationMessage(), this.info));
          } else {
-            var6.withCustomNarration((var1x) -> {
-               return CommonComponents.joinForNarration(this.label, var1x.createDefaultNarrationMessage());
-            });
+            var6.withCustomNarration((var1x) -> CommonComponents.joinForNarration(this.label, var1x.createDefaultNarrationMessage()));
          }
 
-         CycleButton var9 = var6.create(0, 0, this.buttonWidth, 20, Component.empty(), (var1x, var2x) -> {
-            this.onClicked.accept(var2x);
-         });
+         CycleButton var9 = var6.create(0, 0, this.buttonWidth, 20, Component.empty(), (var1x, var2x) -> this.onClicked.accept(var2x));
          if (this.isActiveCondition != null) {
             var9.active = this.isActiveCondition.getAsBoolean();
          }
 
-         var2.addChild(var9, var1.rowCount, var3 + 1, (LayoutSettings)var2.newCellSettings().alignHorizontallyRight());
+         var2.addChild(var9, var1.rowCount, var3 + 1, var2.newCellSettings().alignHorizontallyRight());
          if (this.info != null) {
             var5.ifPresent((var4x) -> {
                MutableComponent var5 = this.info.copy().withStyle(ChatFormatting.GRAY);
@@ -231,11 +170,39 @@ class SwitchGrid {
                }
 
                int var8 = var10000;
-               var2.addChild(var7, var1.rowCount, var3, (LayoutSettings)var2.newCellSettings().paddingTop(-var1.rowSpacing).paddingBottom(var8));
+               var2.addChild(var7, var1.rowCount, var3, var2.newCellSettings().paddingTop(-var1.rowSpacing).paddingBottom(var8));
             });
          }
 
          return new LabeledSwitch(var9, this.stateSupplier, this.isActiveCondition);
+      }
+   }
+
+   static record LabeledSwitch(CycleButton<Boolean> button, BooleanSupplier stateSupplier, @Nullable BooleanSupplier isActiveCondition) {
+      LabeledSwitch(CycleButton<Boolean> var1, BooleanSupplier var2, @Nullable BooleanSupplier var3) {
+         super();
+         this.button = var1;
+         this.stateSupplier = var2;
+         this.isActiveCondition = var3;
+      }
+
+      public void refreshState() {
+         this.button.setValue(this.stateSupplier.getAsBoolean());
+         if (this.isActiveCondition != null) {
+            this.button.active = this.isActiveCondition.getAsBoolean();
+         }
+
+      }
+   }
+
+   static record InfoUnderneathSettings(int maxInfoRows, boolean alwaysMaxHeight) {
+      final int maxInfoRows;
+      final boolean alwaysMaxHeight;
+
+      InfoUnderneathSettings(int var1, boolean var2) {
+         super();
+         this.maxInfoRows = var1;
+         this.alwaysMaxHeight = var2;
       }
    }
 }

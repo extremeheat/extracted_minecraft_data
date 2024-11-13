@@ -39,19 +39,6 @@ public class TimerQuery {
       }
    }
 
-   static class TimerQueryLazyLoader {
-      static final Optional<TimerQuery> INSTANCE = Optional.ofNullable(instantiate());
-
-      private TimerQueryLazyLoader() {
-         super();
-      }
-
-      @Nullable
-      private static TimerQuery instantiate() {
-         return !GL.getCapabilities().GL_ARB_timer_query ? null : new TimerQuery();
-      }
-   }
-
    public static class FrameProfile {
       private static final long NO_RESULT = 0L;
       private static final long CANCELLED_RESULT = -1L;
@@ -92,6 +79,19 @@ public class TimerQuery {
          }
 
          return this.result;
+      }
+   }
+
+   static class TimerQueryLazyLoader {
+      static final Optional<TimerQuery> INSTANCE = Optional.ofNullable(instantiate());
+
+      private TimerQueryLazyLoader() {
+         super();
+      }
+
+      @Nullable
+      private static TimerQuery instantiate() {
+         return !GL.getCapabilities().GL_ARB_timer_query ? null : new TimerQuery();
       }
    }
 }

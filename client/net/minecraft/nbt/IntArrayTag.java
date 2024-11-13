@@ -72,11 +72,8 @@ public class IntArrayTag extends CollectionTag<IntTag> {
 
    public void write(DataOutput var1) throws IOException {
       var1.writeInt(this.data.length);
-      int[] var2 = this.data;
-      int var3 = var2.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         int var5 = var2[var4];
+      for(int var5 : this.data) {
          var1.writeInt(var5);
       }
 

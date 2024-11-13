@@ -15,7 +15,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 
 public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateAdvancementsPacket> STREAM_CODEC = Packet.codec(ClientboundUpdateAdvancementsPacket::write, ClientboundUpdateAdvancementsPacket::new);
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateAdvancementsPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundUpdateAdvancementsPacket>codec(ClientboundUpdateAdvancementsPacket::write, ClientboundUpdateAdvancementsPacket::new);
    private final boolean reset;
    private final List<AdvancementHolder> added;
    private final Set<ResourceLocation> removed;
@@ -41,9 +41,7 @@ public class ClientboundUpdateAdvancementsPacket implements Packet<ClientGamePac
       var1.writeBoolean(this.reset);
       AdvancementHolder.LIST_STREAM_CODEC.encode(var1, this.added);
       var1.writeCollection(this.removed, FriendlyByteBuf::writeResourceLocation);
-      var1.writeMap(this.progress, FriendlyByteBuf::writeResourceLocation, (var0, var1x) -> {
-         var1x.serializeToNetwork(var0);
-      });
+      var1.writeMap(this.progress, FriendlyByteBuf::writeResourceLocation, (var0, var1x) -> var1x.serializeToNetwork(var0));
    }
 
    public PacketType<ClientboundUpdateAdvancementsPacket> type() {

@@ -2,7 +2,6 @@ package net.minecraft.world.effect;
 
 import com.google.common.collect.Sets;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.function.ToIntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,11 +32,8 @@ class WeavingMobEffect extends MobEffect {
    private void spawnCobwebsRandomlyAround(ServerLevel var1, RandomSource var2, BlockPos var3) {
       HashSet var4 = Sets.newHashSet();
       int var5 = this.maxCobwebs.applyAsInt(var2);
-      Iterator var6 = BlockPos.randomInCube(var2, 15, var3, 1).iterator();
 
-      BlockPos var7;
-      while(var6.hasNext()) {
-         var7 = (BlockPos)var6.next();
+      for(BlockPos var7 : BlockPos.randomInCube(var2, 15, var3, 1)) {
          BlockPos var8 = var7.below();
          if (!var4.contains(var7) && var1.getBlockState(var7).canBeReplaced() && var1.getBlockState(var8).isFaceSturdy(var1, var8, Direction.UP)) {
             var4.add(var7.immutable());
@@ -47,12 +43,9 @@ class WeavingMobEffect extends MobEffect {
          }
       }
 
-      var6 = var4.iterator();
-
-      while(var6.hasNext()) {
-         var7 = (BlockPos)var6.next();
-         var1.setBlock(var7, Blocks.COBWEB.defaultBlockState(), 3);
-         var1.levelEvent(3018, var7, 0);
+      for(BlockPos var10 : var4) {
+         var1.setBlock(var10, Blocks.COBWEB.defaultBlockState(), 3);
+         var1.levelEvent(3018, var10, 0);
       }
 
    }

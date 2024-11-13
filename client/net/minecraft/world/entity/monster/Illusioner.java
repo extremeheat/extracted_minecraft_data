@@ -106,13 +106,12 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
             float var1 = -6.0F;
             boolean var2 = true;
 
-            int var3;
-            for(var3 = 0; var3 < 4; ++var3) {
+            for(int var3 = 0; var3 < 4; ++var3) {
                this.clientSideIllusionOffsets[0][var3] = this.clientSideIllusionOffsets[1][var3];
                this.clientSideIllusionOffsets[1][var3] = new Vec3((double)(-6.0F + (float)this.random.nextInt(13)) * 0.5, (double)Math.max(0, this.random.nextInt(6) - 4), (double)(-6.0F + (float)this.random.nextInt(13)) * 0.5);
             }
 
-            for(var3 = 0; var3 < 16; ++var3) {
+            for(int var5 = 0; var5 < 16; ++var5) {
                this.level().addParticle(ParticleTypes.CLOUD, this.getRandomX(0.5), this.getRandomY(), this.getZ(0.5), 0.0, 0.0, 0.0);
             }
 
@@ -220,7 +219,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       }
    }
 
-   private class IllusionerBlindnessSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
+   class IllusionerBlindnessSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
       private int lastTargetId;
 
       IllusionerBlindnessSpellGoal() {

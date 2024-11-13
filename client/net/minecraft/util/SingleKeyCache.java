@@ -18,7 +18,7 @@ public class SingleKeyCache<K, V> {
 
    public V getValue(K var1) {
       if (this.cachedValue == null || !Objects.equals(this.cacheKey, var1)) {
-         this.cachedValue = this.computeValue.apply(var1);
+         this.cachedValue = (V)this.computeValue.apply(var1);
          this.cacheKey = var1;
       }
 

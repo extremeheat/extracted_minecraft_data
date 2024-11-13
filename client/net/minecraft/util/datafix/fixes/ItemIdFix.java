@@ -344,14 +344,6 @@ public class ItemIdFix extends DataFix {
       Type var1 = DSL.or(DSL.intType(), DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
       Type var2 = DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString());
       OpticFinder var3 = DSL.fieldFinder("id", var1);
-      return this.fixTypeEverywhereTyped("ItemIdFix", this.getInputSchema().getType(References.ITEM_STACK), this.getOutputSchema().getType(References.ITEM_STACK), (var2x) -> {
-         return var2x.update(var3, var2, (var0) -> {
-            return (Pair)var0.map((var0x) -> {
-               return Pair.of(References.ITEM_NAME.typeName(), getItem(var0x));
-            }, (var0x) -> {
-               return var0x;
-            });
-         });
-      });
+      return this.fixTypeEverywhereTyped("ItemIdFix", this.getInputSchema().getType(References.ITEM_STACK), this.getOutputSchema().getType(References.ITEM_STACK), (var2x) -> var2x.update(var3, var2, (var0) -> (Pair)var0.map((var0x) -> Pair.of(References.ITEM_NAME.typeName(), getItem(var0x)), (var0x) -> var0x)));
    }
 }

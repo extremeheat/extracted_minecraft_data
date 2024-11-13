@@ -21,12 +21,6 @@ public abstract class HeightProvider {
 
    static {
       CONSTANT_OR_DISPATCH_CODEC = Codec.either(VerticalAnchor.CODEC, BuiltInRegistries.HEIGHT_PROVIDER_TYPE.byNameCodec().dispatch(HeightProvider::getType, HeightProviderType::codec));
-      CODEC = CONSTANT_OR_DISPATCH_CODEC.xmap((var0) -> {
-         return (HeightProvider)var0.map(ConstantHeight::of, (var0x) -> {
-            return var0x;
-         });
-      }, (var0) -> {
-         return var0.getType() == HeightProviderType.CONSTANT ? Either.left(((ConstantHeight)var0).getValue()) : Either.right(var0);
-      });
+      CODEC = CONSTANT_OR_DISPATCH_CODEC.xmap((var0) -> (HeightProvider)var0.map(ConstantHeight::of, (var0x) -> var0x), (var0) -> var0.getType() == HeightProviderType.CONSTANT ? Either.left(((ConstantHeight)var0).getValue()) : Either.right(var0));
    }
 }

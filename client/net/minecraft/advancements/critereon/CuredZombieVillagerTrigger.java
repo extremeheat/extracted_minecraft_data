@@ -22,15 +22,11 @@ public class CuredZombieVillagerTrigger extends SimpleCriterionTrigger<TriggerIn
    public void trigger(ServerPlayer var1, Zombie var2, Villager var3) {
       LootContext var4 = EntityPredicate.createContext(var1, var2);
       LootContext var5 = EntityPredicate.createContext(var1, var3);
-      this.trigger(var1, (var2x) -> {
-         return var2x.matches(var4, var5);
-      });
+      this.trigger(var1, (var2x) -> var2x.matches(var4, var5));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> zombie, Optional<ContextAwarePredicate> villager) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("zombie").forGetter(TriggerInstance::zombie), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("villager").forGetter(TriggerInstance::villager)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("zombie").forGetter(TriggerInstance::zombie), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("villager").forGetter(TriggerInstance::villager)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2, Optional<ContextAwarePredicate> var3) {
          super();
@@ -55,18 +51,6 @@ public class CuredZombieVillagerTrigger extends SimpleCriterionTrigger<TriggerIn
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
          var1.validateEntity(this.zombie, ".zombie");
          var1.validateEntity(this.villager, ".villager");
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<ContextAwarePredicate> zombie() {
-         return this.zombie;
-      }
-
-      public Optional<ContextAwarePredicate> villager() {
-         return this.villager;
       }
    }
 }

@@ -116,11 +116,7 @@ public interface UnbakedModel extends ResolvableModel {
       }
 
       public static GuiLight getByName(String var0) {
-         GuiLight[] var1 = values();
-         int var2 = var1.length;
-
-         for(int var3 = 0; var3 < var2; ++var3) {
-            GuiLight var4 = var1[var3];
+         for(GuiLight var4 : values()) {
             if (var4.name.equals(var0)) {
                return var4;
             }

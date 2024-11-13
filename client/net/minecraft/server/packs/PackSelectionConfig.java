@@ -9,16 +9,4 @@ public record PackSelectionConfig(boolean required, Pack.Position defaultPositio
       this.defaultPosition = var2;
       this.fixedPosition = var3;
    }
-
-   public boolean required() {
-      return this.required;
-   }
-
-   public Pack.Position defaultPosition() {
-      return this.defaultPosition;
-   }
-
-   public boolean fixedPosition() {
-      return this.fixedPosition;
-   }
 }

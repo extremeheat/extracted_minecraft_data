@@ -1,7 +1,5 @@
 package net.minecraft.world.entity.projectile;
 
-import java.util.Iterator;
-import java.util.List;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
@@ -98,11 +96,7 @@ public class EvokerFangs extends Entity implements TraceableEntity {
          }
       } else if (--this.warmupDelayTicks < 0) {
          if (this.warmupDelayTicks == -8) {
-            List var14 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(0.2, 0.0, 0.2));
-            Iterator var15 = var14.iterator();
-
-            while(var15.hasNext()) {
-               LivingEntity var3 = (LivingEntity)var15.next();
+            for(LivingEntity var3 : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(0.2, 0.0, 0.2))) {
                this.dealDamageTo(var3);
             }
          }

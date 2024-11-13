@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block.state.predicate;
 
 import com.google.common.collect.Maps;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -11,9 +10,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
 
 public class BlockStatePredicate implements Predicate<BlockState> {
-   public static final Predicate<BlockState> ANY = (var0) -> {
-      return true;
-   };
+   public static final Predicate<BlockState> ANY = (var0) -> true;
    private final StateDefinition<Block, BlockState> definition;
    private final Map<Property<?>, Predicate<Object>> properties = Maps.newHashMap();
 
@@ -31,18 +28,13 @@ public class BlockStatePredicate implements Predicate<BlockState> {
          if (this.properties.isEmpty()) {
             return true;
          } else {
-            Iterator var2 = this.properties.entrySet().iterator();
-
-            Map.Entry var3;
-            do {
-               if (!var2.hasNext()) {
-                  return true;
+            for(Map.Entry var3 : this.properties.entrySet()) {
+               if (!this.applies(var1, (Property)var3.getKey(), (Predicate)var3.getValue())) {
+                  return false;
                }
+            }
 
-               var3 = (Map.Entry)var2.next();
-            } while(this.applies(var1, (Property)var3.getKey(), (Predicate)var3.getValue()));
-
-            return false;
+            return true;
          }
       } else {
          return false;

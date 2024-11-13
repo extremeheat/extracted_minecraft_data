@@ -13,13 +13,7 @@ public class OptionsAmbientOcclusionFix extends DataFix {
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("OptionsAmbientOcclusionFix", this.getInputSchema().getType(References.OPTIONS), (var0) -> {
-         return var0.update(DSL.remainderFinder(), (var0x) -> {
-            return (Dynamic)DataFixUtils.orElse(var0x.get("ao").asString().map((var1) -> {
-               return var0x.set("ao", var0x.createString(updateValue(var1)));
-            }).result(), var0x);
-         });
-      });
+      return this.fixTypeEverywhereTyped("OptionsAmbientOcclusionFix", this.getInputSchema().getType(References.OPTIONS), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> (Dynamic)DataFixUtils.orElse(var0x.get("ao").asString().map((var1) -> var0x.set("ao", var0x.createString(updateValue(var1)))).result(), var0x)));
    }
 
    private static String updateValue(String var0) {

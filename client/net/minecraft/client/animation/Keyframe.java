@@ -9,16 +9,4 @@ public record Keyframe(float timestamp, Vector3f target, AnimationChannel.Interp
       this.target = var2;
       this.interpolation = var3;
    }
-
-   public float timestamp() {
-      return this.timestamp;
-   }
-
-   public Vector3f target() {
-      return this.target;
-   }
-
-   public AnimationChannel.Interpolation interpolation() {
-      return this.interpolation;
-   }
 }

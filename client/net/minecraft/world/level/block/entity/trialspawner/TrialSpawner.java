@@ -68,15 +68,7 @@ public final class TrialSpawner {
    private boolean isOminous;
 
    public Codec<TrialSpawner> codec() {
-      return RecordCodecBuilder.create((var1) -> {
-         return var1.group(TrialSpawnerConfig.CODEC.optionalFieldOf("normal_config", Holder.direct(TrialSpawnerConfig.DEFAULT)).forGetter((var0) -> {
-            return var0.normalConfig;
-         }), TrialSpawnerConfig.CODEC.optionalFieldOf("ominous_config", Holder.direct(TrialSpawnerConfig.DEFAULT)).forGetter((var0) -> {
-            return var0.ominousConfig;
-         }), TrialSpawnerData.MAP_CODEC.forGetter(TrialSpawner::getData), Codec.intRange(0, 2147483647).optionalFieldOf("target_cooldown_length", 36000).forGetter(TrialSpawner::getTargetCooldownLength), Codec.intRange(1, 128).optionalFieldOf("required_player_range", 14).forGetter(TrialSpawner::getRequiredPlayerRange)).apply(var1, (var1x, var2, var3, var4, var5) -> {
-            return new TrialSpawner(var1x, var2, var3, var4, var5, this.stateAccessor, this.playerDetector, this.entitySelector);
-         });
-      });
+      return RecordCodecBuilder.create((var1) -> var1.group(TrialSpawnerConfig.CODEC.optionalFieldOf("normal_config", Holder.direct(TrialSpawnerConfig.DEFAULT)).forGetter((var0) -> var0.normalConfig), TrialSpawnerConfig.CODEC.optionalFieldOf("ominous_config", Holder.direct(TrialSpawnerConfig.DEFAULT)).forGetter((var0) -> var0.ominousConfig), TrialSpawnerData.MAP_CODEC.forGetter(TrialSpawner::getData), Codec.intRange(0, 2147483647).optionalFieldOf("target_cooldown_length", 36000).forGetter(TrialSpawner::getTargetCooldownLength), Codec.intRange(1, 128).optionalFieldOf("required_player_range", 14).forGetter(TrialSpawner::getRequiredPlayerRange)).apply(var1, (var1x, var2, var3, var4, var5) -> new TrialSpawner(var1x, var2, var3, var4, var5, this.stateAccessor, this.playerDetector, this.entitySelector)));
    }
 
    public TrialSpawner(StateAccessor var1, PlayerDetector var2, PlayerDetector.EntitySelector var3) {
@@ -101,12 +93,12 @@ public final class TrialSpawner {
 
    @VisibleForTesting
    public TrialSpawnerConfig getNormalConfig() {
-      return (TrialSpawnerConfig)this.normalConfig.value();
+      return this.normalConfig.value();
    }
 
    @VisibleForTesting
    public TrialSpawnerConfig getOminousConfig() {
-      return (TrialSpawnerConfig)this.ominousConfig.value();
+      return this.ominousConfig.value();
    }
 
    public void applyOminous(ServerLevel var1, BlockPos var2) {
@@ -275,9 +267,7 @@ public final class TrialSpawner {
    public void tickServer(ServerLevel var1, BlockPos var2, boolean var3) {
       this.isOminous = var3;
       TrialSpawnerState var4 = this.getState();
-      if (this.data.currentMobs.removeIf((var2x) -> {
-         return shouldMobBeUntracked(var1, var2, var2x);
-      })) {
+      if (this.data.currentMobs.removeIf((var2x) -> shouldMobBeUntracked(var1, var2, var2x))) {
          this.data.nextMobSpawnsAt = var1.getGameTime() + (long)this.getConfig().ticksBetweenSpawn();
       }
 
@@ -351,8 +341,8 @@ public final class TrialSpawner {
 
    public void overrideEntityToSpawn(EntityType<?> var1, Level var2) {
       this.data.reset();
-      this.normalConfig = Holder.direct(((TrialSpawnerConfig)this.normalConfig.value()).withSpawning(var1));
-      this.ominousConfig = Holder.direct(((TrialSpawnerConfig)this.ominousConfig.value()).withSpawning(var1));
+      this.normalConfig = Holder.<TrialSpawnerConfig>direct((this.normalConfig.value()).withSpawning(var1));
+      this.ominousConfig = Holder.<TrialSpawnerConfig>direct((this.ominousConfig.value()).withSpawning(var1));
       this.setState(var2, TrialSpawnerState.INACTIVE);
    }
 
@@ -372,14 +362,6 @@ public final class TrialSpawner {
    @VisibleForTesting
    public void overridePeacefulAndMobSpawnRule() {
       this.overridePeacefulAndMobSpawnRule = true;
-   }
-
-   public interface StateAccessor {
-      void setState(Level var1, TrialSpawnerState var2);
-
-      TrialSpawnerState getState();
-
-      void markUpdated();
    }
 
    public static enum FlameParticle {
@@ -405,5 +387,13 @@ public final class TrialSpawner {
       private static FlameParticle[] $values() {
          return new FlameParticle[]{NORMAL, OMINOUS};
       }
+   }
+
+   public interface StateAccessor {
+      void setState(Level var1, TrialSpawnerState var2);
+
+      TrialSpawnerState getState();
+
+      void markUpdated();
    }
 }

@@ -83,11 +83,7 @@ public class RealmsUploadWorldPacker {
             var1.closeArchiveEntry();
             File[] var15 = var5.listFiles();
             if (var15 != null) {
-               File[] var9 = var15;
-               int var10 = var15.length;
-
-               for(int var11 = 0; var11 < var10; ++var11) {
-                  File var12 = var9[var11];
+               for(File var12 : var15) {
                   this.addFileToTarGz(var1, var12.toPath(), var6 + "/", false);
                }
             }

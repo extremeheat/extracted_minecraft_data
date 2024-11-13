@@ -66,9 +66,7 @@ public class SkullBlockEntity extends BlockEntity {
 
    public static void setup(final Services var0, Executor var1) {
       mainThreadExecutor = var1;
-      final BooleanSupplier var2 = () -> {
-         return profileCacheById == null;
-      };
+      final BooleanSupplier var2 = () -> profileCacheById == null;
       profileCacheByName = CacheBuilder.newBuilder().expireAfterAccess(Duration.ofMinutes(10L)).maximumSize(256L).build(new CacheLoader<String, CompletableFuture<Optional<GameProfile>>>() {
          public CompletableFuture<Optional<GameProfile>> load(String var1) {
             return SkullBlockEntity.fetchProfileByName(var1, var0);
@@ -94,11 +92,7 @@ public class SkullBlockEntity extends BlockEntity {
    static CompletableFuture<Optional<GameProfile>> fetchProfileByName(String var0, Services var1) {
       return var1.profileCache().getAsync(var0).thenCompose((var0x) -> {
          LoadingCache var1 = profileCacheById;
-         return var1 != null && !var0x.isEmpty() ? ((CompletableFuture)var1.getUnchecked(((GameProfile)var0x.get()).getId())).thenApply((var1x) -> {
-            return var1x.or(() -> {
-               return var0x;
-            });
-         }) : CompletableFuture.completedFuture(Optional.empty());
+         return var1 != null && !var0x.isEmpty() ? ((CompletableFuture)var1.getUnchecked(((GameProfile)var0x.get()).getId())).thenApply((var1x) -> var1x.or(() -> var0x)) : CompletableFuture.completedFuture(Optional.empty());
       });
    }
 
@@ -138,9 +132,7 @@ public class SkullBlockEntity extends BlockEntity {
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       if (var1.contains("profile")) {
-         ResolvableProfile.CODEC.parse(NbtOps.INSTANCE, var1.get("profile")).resultOrPartial((var0) -> {
-            LOGGER.error("Failed to load profile from player head: {}", var0);
-         }).ifPresent(this::setOwner);
+         ResolvableProfile.CODEC.parse(NbtOps.INSTANCE, var1.get("profile")).resultOrPartial((var0) -> LOGGER.error("Failed to load profile from player head: {}", var0)).ifPresent(this::setOwner);
       }
 
       if (var1.contains("note_block_sound", 8)) {

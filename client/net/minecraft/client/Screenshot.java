@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -34,9 +35,7 @@ public class Screenshot {
 
    public static void grab(File var0, @Nullable String var1, RenderTarget var2, Consumer<Component> var3) {
       if (!RenderSystem.isOnRenderThread()) {
-         RenderSystem.recordRenderCall(() -> {
-            _grab(var0, var1, var2, var3);
-         });
+         RenderSystem.recordRenderCall(() -> _grab(var0, var1, var2, var3));
       } else {
          _grab(var0, var1, var2, var3);
       }
@@ -57,9 +56,7 @@ public class Screenshot {
       Util.ioPool().execute(() -> {
          try {
             var4.writeToFile(var6);
-            MutableComponent var3x = Component.literal(var6.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((var1) -> {
-               return var1.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var6.getAbsolutePath()));
-            });
+            MutableComponent var3x = Component.literal(var6.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1) -> var1.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var6.getAbsolutePath()))));
             var3.accept(Component.translatable("screenshot.success", var3x));
          } catch (Exception var7) {
             LOGGER.warn("Couldn't save screenshot", var7);

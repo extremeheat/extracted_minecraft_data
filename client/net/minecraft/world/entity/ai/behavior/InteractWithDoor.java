@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
@@ -37,9 +38,7 @@ public class InteractWithDoor {
    public static BehaviorControl<LivingEntity> create() {
       MutableObject var0 = new MutableObject((Object)null);
       MutableInt var1 = new MutableInt(0);
-      return BehaviorBuilder.create((var2) -> {
-         return var2.group(var2.present(MemoryModuleType.PATH), var2.registered(MemoryModuleType.DOORS_TO_CLOSE), var2.registered(MemoryModuleType.NEAREST_LIVING_ENTITIES)).apply(var2, (var3, var4, var5) -> {
-            return (var6, var7, var8) -> {
+      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.present(MemoryModuleType.PATH), var2.registered(MemoryModuleType.DOORS_TO_CLOSE), var2.registered(MemoryModuleType.NEAREST_LIVING_ENTITIES)).apply(var2, (var3, var4, var5) -> (var6, var7, var8) -> {
                Path var10 = (Path)var2.get(var3);
                Optional var11 = var2.tryGet(var4);
                if (!var10.notStarted() && !var10.isDone()) {
@@ -54,9 +53,7 @@ public class InteractWithDoor {
                   Node var13 = var10.getNextNode();
                   BlockPos var14 = var12.asBlockPos();
                   BlockState var15 = var6.getBlockState(var14);
-                  if (var15.is(BlockTags.MOB_INTERACTABLE_DOORS, (var0x) -> {
-                     return var0x.getBlock() instanceof DoorBlock;
-                  })) {
+                  if (var15.is(BlockTags.MOB_INTERACTABLE_DOORS, (var0x) -> var0x.getBlock() instanceof DoorBlock)) {
                      DoorBlock var16 = (DoorBlock)var15.getBlock();
                      if (!var16.isOpen(var15)) {
                         var16.setOpen(var7, var6, var15, var14, true);
@@ -67,9 +64,7 @@ public class InteractWithDoor {
 
                   BlockPos var19 = var13.asBlockPos();
                   BlockState var17 = var6.getBlockState(var19);
-                  if (var17.is(BlockTags.MOB_INTERACTABLE_DOORS, (var0x) -> {
-                     return var0x.getBlock() instanceof DoorBlock;
-                  })) {
+                  if (var17.is(BlockTags.MOB_INTERACTABLE_DOORS, (var0x) -> var0x.getBlock() instanceof DoorBlock)) {
                      DoorBlock var18 = (DoorBlock)var17.getBlock();
                      if (!var18.isOpen(var17)) {
                         var18.setOpen(var7, var6, var17, var19, true);
@@ -77,66 +72,46 @@ public class InteractWithDoor {
                      }
                   }
 
-                  var11.ifPresent((var6x) -> {
-                     closeDoorsThatIHaveOpenedOrPassedThrough(var6, var7, var12, var13, var6x, var2.tryGet(var5));
-                  });
+                  var11.ifPresent((var6x) -> closeDoorsThatIHaveOpenedOrPassedThrough(var6, var7, var12, var13, var6x, var2.tryGet(var5)));
                   return true;
                } else {
                   return false;
                }
-            };
-         });
-      });
+            })));
    }
 
    public static void closeDoorsThatIHaveOpenedOrPassedThrough(ServerLevel var0, LivingEntity var1, @Nullable Node var2, @Nullable Node var3, Set<GlobalPos> var4, Optional<List<LivingEntity>> var5) {
       Iterator var6 = var4.iterator();
 
-      while(true) {
-         GlobalPos var7;
-         BlockPos var8;
-         do {
-            do {
-               if (!var6.hasNext()) {
-                  return;
-               }
-
-               var7 = (GlobalPos)var6.next();
-               var8 = var7.pos();
-            } while(var2 != null && var2.asBlockPos().equals(var8));
-         } while(var3 != null && var3.asBlockPos().equals(var8));
-
-         if (isDoorTooFarAway(var0, var1, var7)) {
-            var6.remove();
-         } else {
-            BlockState var9 = var0.getBlockState(var8);
-            if (!var9.is(BlockTags.MOB_INTERACTABLE_DOORS, (var0x) -> {
-               return var0x.getBlock() instanceof DoorBlock;
-            })) {
+      while(var6.hasNext()) {
+         GlobalPos var7 = (GlobalPos)var6.next();
+         BlockPos var8 = var7.pos();
+         if ((var2 == null || !var2.asBlockPos().equals(var8)) && (var3 == null || !var3.asBlockPos().equals(var8))) {
+            if (isDoorTooFarAway(var0, var1, var7)) {
                var6.remove();
             } else {
-               DoorBlock var10 = (DoorBlock)var9.getBlock();
-               if (!var10.isOpen(var9)) {
-                  var6.remove();
-               } else if (areOtherMobsComingThroughDoor(var1, var8, var5)) {
+               BlockState var9 = var0.getBlockState(var8);
+               if (!var9.is(BlockTags.MOB_INTERACTABLE_DOORS, (var0x) -> var0x.getBlock() instanceof DoorBlock)) {
                   var6.remove();
                } else {
-                  var10.setOpen(var1, var0, var9, var8, false);
-                  var6.remove();
+                  DoorBlock var10 = (DoorBlock)var9.getBlock();
+                  if (!var10.isOpen(var9)) {
+                     var6.remove();
+                  } else if (areOtherMobsComingThroughDoor(var1, var8, var5)) {
+                     var6.remove();
+                  } else {
+                     var10.setOpen(var1, var0, var9, var8, false);
+                     var6.remove();
+                  }
                }
             }
          }
       }
+
    }
 
    private static boolean areOtherMobsComingThroughDoor(LivingEntity var0, BlockPos var1, Optional<List<LivingEntity>> var2) {
-      return var2.isEmpty() ? false : ((List)var2.get()).stream().filter((var1x) -> {
-         return var1x.getType() == var0.getType();
-      }).filter((var1x) -> {
-         return var1.closerToCenterThan(var1x.position(), 2.0);
-      }).anyMatch((var1x) -> {
-         return isMobComingThroughDoor(var1x.getBrain(), var1);
-      });
+      return var2.isEmpty() ? false : ((List)var2.get()).stream().filter((var1x) -> var1x.getType() == var0.getType()).filter((var1x) -> var1.closerToCenterThan(var1x.position(), 2.0)).anyMatch((var1x) -> isMobComingThroughDoor(var1x.getBrain(), var1));
    }
 
    private static boolean isMobComingThroughDoor(Brain<?> var0, BlockPos var1) {

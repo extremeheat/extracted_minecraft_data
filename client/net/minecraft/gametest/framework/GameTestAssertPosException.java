@@ -17,7 +17,7 @@ public class GameTestAssertPosException extends GameTestAssertException {
 
    public String getMessage() {
       int var10000 = this.absolutePos.getX();
-      String var1 = "" + var10000 + "," + this.absolutePos.getY() + "," + this.absolutePos.getZ() + " (relative: " + this.relativePos.getX() + "," + this.relativePos.getY() + "," + this.relativePos.getZ() + ")";
+      String var1 = var10000 + "," + this.absolutePos.getY() + "," + this.absolutePos.getZ() + " (relative: " + this.relativePos.getX() + "," + this.relativePos.getY() + "," + this.relativePos.getZ() + ")";
       return super.getMessage() + " at " + var1 + " (t=" + this.tick + ")";
    }
 

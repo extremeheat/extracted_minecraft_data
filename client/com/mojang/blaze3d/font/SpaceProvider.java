@@ -20,11 +20,7 @@ public class SpaceProvider implements GlyphProvider {
    public SpaceProvider(Map<Integer, Float> var1) {
       super();
       this.glyphs = new Int2ObjectOpenHashMap(var1.size());
-      var1.forEach((var1x, var2) -> {
-         this.glyphs.put(var1x, () -> {
-            return var2;
-         });
-      });
+      var1.forEach((var1x, var2) -> this.glyphs.put(var1x, (GlyphInfo.SpaceGlyphInfo)() -> var2));
    }
 
    @Nullable
@@ -37,9 +33,7 @@ public class SpaceProvider implements GlyphProvider {
    }
 
    public static record Definition(Map<Integer, Float> advances) implements GlyphProviderDefinition {
-      public static final MapCodec<Definition> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(Codec.unboundedMap(ExtraCodecs.CODEPOINT, Codec.FLOAT).fieldOf("advances").forGetter(Definition::advances)).apply(var0, Definition::new);
-      });
+      public static final MapCodec<Definition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.unboundedMap(ExtraCodecs.CODEPOINT, Codec.FLOAT).fieldOf("advances").forGetter(Definition::advances)).apply(var0, Definition::new));
 
       public Definition(Map<Integer, Float> var1) {
          super();
@@ -51,14 +45,8 @@ public class SpaceProvider implements GlyphProvider {
       }
 
       public Either<GlyphProviderDefinition.Loader, GlyphProviderDefinition.Reference> unpack() {
-         GlyphProviderDefinition.Loader var1 = (var1x) -> {
-            return new SpaceProvider(this.advances);
-         };
+         GlyphProviderDefinition.Loader var1 = (var1x) -> new SpaceProvider(this.advances);
          return Either.left(var1);
-      }
-
-      public Map<Integer, Float> advances() {
-         return this.advances;
       }
    }
 }

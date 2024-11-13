@@ -19,11 +19,7 @@ public class BlockEntityRenameFix extends DataFix {
    public TypeRewriteRule makeRule() {
       TaggedChoice.TaggedChoiceType var1 = this.getInputSchema().findChoiceType(References.BLOCK_ENTITY);
       TaggedChoice.TaggedChoiceType var2 = this.getOutputSchema().findChoiceType(References.BLOCK_ENTITY);
-      return this.fixTypeEverywhere(this.name, var1, var2, (var1x) -> {
-         return (var1) -> {
-            return var1.mapFirst(this.nameChangeLookup);
-         };
-      });
+      return this.fixTypeEverywhere(this.name, var1, var2, (var1x) -> (var1) -> var1.mapFirst(this.nameChangeLookup));
    }
 
    public static DataFix create(Schema var0, String var1, UnaryOperator<String> var2) {

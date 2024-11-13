@@ -170,7 +170,7 @@ public class LegacyTextFilter extends ServerTextFilter {
    }
 
    @FunctionalInterface
-   private interface JoinOrLeaveEncoder {
+   interface JoinOrLeaveEncoder {
       JsonObject encode(GameProfile var1);
    }
 }

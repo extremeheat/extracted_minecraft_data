@@ -10,7 +10,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 
 public class ClientboundSoundEntityPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSoundEntityPacket> STREAM_CODEC = Packet.codec(ClientboundSoundEntityPacket::write, ClientboundSoundEntityPacket::new);
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSoundEntityPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundSoundEntityPacket>codec(ClientboundSoundEntityPacket::write, ClientboundSoundEntityPacket::new);
    private final Holder<SoundEvent> sound;
    private final SoundSource source;
    private final int id;

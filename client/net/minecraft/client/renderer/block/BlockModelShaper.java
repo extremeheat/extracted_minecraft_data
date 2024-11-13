@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.block;
 
-import java.util.Iterator;
 import java.util.Map;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
@@ -51,10 +50,8 @@ public class BlockModelShaper {
 
    public static String statePropertiesToString(Map<Property<?>, Comparable<?>> var0) {
       StringBuilder var1 = new StringBuilder();
-      Iterator var2 = var0.entrySet().iterator();
 
-      while(var2.hasNext()) {
-         Map.Entry var3 = (Map.Entry)var2.next();
+      for(Map.Entry var3 : var0.entrySet()) {
          if (var1.length() != 0) {
             var1.append(',');
          }

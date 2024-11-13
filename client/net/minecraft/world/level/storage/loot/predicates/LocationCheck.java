@@ -14,12 +14,8 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
 public record LocationCheck(Optional<LocationPredicate> predicate, BlockPos offset) implements LootItemCondition {
-   private static final MapCodec<BlockPos> OFFSET_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.INT.optionalFieldOf("offsetX", 0).forGetter(Vec3i::getX), Codec.INT.optionalFieldOf("offsetY", 0).forGetter(Vec3i::getY), Codec.INT.optionalFieldOf("offsetZ", 0).forGetter(Vec3i::getZ)).apply(var0, BlockPos::new);
-   });
-   public static final MapCodec<LocationCheck> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(LocationPredicate.CODEC.optionalFieldOf("predicate").forGetter(LocationCheck::predicate), OFFSET_CODEC.forGetter(LocationCheck::offset)).apply(var0, LocationCheck::new);
-   });
+   private static final MapCodec<BlockPos> OFFSET_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.INT.optionalFieldOf("offsetX", 0).forGetter(Vec3i::getX), Codec.INT.optionalFieldOf("offsetY", 0).forGetter(Vec3i::getY), Codec.INT.optionalFieldOf("offsetZ", 0).forGetter(Vec3i::getZ)).apply(var0, BlockPos::new));
+   public static final MapCodec<LocationCheck> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LocationPredicate.CODEC.optionalFieldOf("predicate").forGetter(LocationCheck::predicate), OFFSET_CODEC.forGetter(LocationCheck::offset)).apply(var0, LocationCheck::new));
 
    public LocationCheck(Optional<LocationPredicate> var1, BlockPos var2) {
       super();
@@ -41,23 +37,11 @@ public record LocationCheck(Optional<LocationPredicate> predicate, BlockPos offs
    }
 
    public static LootItemCondition.Builder checkLocation(LocationPredicate.Builder var0) {
-      return () -> {
-         return new LocationCheck(Optional.of(var0.build()), BlockPos.ZERO);
-      };
+      return () -> new LocationCheck(Optional.of(var0.build()), BlockPos.ZERO);
    }
 
    public static LootItemCondition.Builder checkLocation(LocationPredicate.Builder var0, BlockPos var1) {
-      return () -> {
-         return new LocationCheck(Optional.of(var0.build()), var1);
-      };
-   }
-
-   public Optional<LocationPredicate> predicate() {
-      return this.predicate;
-   }
-
-   public BlockPos offset() {
-      return this.offset;
+      return () -> new LocationCheck(Optional.of(var0.build()), var1);
    }
 
    // $FF: synthetic method

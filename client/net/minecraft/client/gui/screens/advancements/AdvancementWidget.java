@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.advancements;
 
 import com.google.common.collect.Lists;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -73,9 +72,8 @@ public class AdvancementWidget {
       int var7 = 29 + var5 + var6;
       this.description = Language.getInstance().getVisualOrder(this.findOptimalLines(ComponentUtils.mergeStyles(var4.getDescription().copy(), Style.EMPTY.withColor(var4.getType().getChatColor())), var7));
 
-      FormattedCharSequence var9;
-      for(Iterator var8 = this.description.iterator(); var8.hasNext(); var7 = Math.max(var7, var2.font.width(var9))) {
-         var9 = (FormattedCharSequence)var8.next();
+      for(FormattedCharSequence var9 : this.description) {
+         var7 = Math.max(var7, var2.font.width(var9));
       }
 
       this.width = var7 + 3 + 5;
@@ -102,11 +100,8 @@ public class AdvancementWidget {
       StringSplitter var3 = this.minecraft.font.getSplitter();
       List var4 = null;
       float var5 = 3.4028235E38F;
-      int[] var6 = TEST_SPLIT_OFFSETS;
-      int var7 = var6.length;
 
-      for(int var8 = 0; var8 < var7; ++var8) {
-         int var9 = var6[var8];
+      for(int var9 : TEST_SPLIT_OFFSETS) {
          List var10 = var3.splitLines((FormattedText)var1, var2 - var9, Style.EMPTY);
          float var11 = Math.abs(getMaxWidth(var3, var10) - (float)var2);
          if (var11 <= 10.0F) {
@@ -159,10 +154,7 @@ public class AdvancementWidget {
          }
       }
 
-      Iterator var11 = this.children.iterator();
-
-      while(var11.hasNext()) {
-         AdvancementWidget var12 = (AdvancementWidget)var11.next();
+      for(AdvancementWidget var12 : this.children) {
          var12.drawConnectivity(var1, var2, var3, var4);
       }
 
@@ -182,10 +174,7 @@ public class AdvancementWidget {
          var1.renderFakeItem(this.display.getIcon(), var2 + this.x + 8, var3 + this.y + 5);
       }
 
-      Iterator var6 = this.children.iterator();
-
-      while(var6.hasNext()) {
-         AdvancementWidget var7 = (AdvancementWidget)var6.next();
+      for(AdvancementWidget var7 : this.children) {
          var7.draw(var1, var2, var3);
       }
 

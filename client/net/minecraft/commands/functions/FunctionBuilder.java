@@ -3,7 +3,6 @@ package net.minecraft.commands.functions;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.commands.ExecutionCommandSource;
@@ -42,10 +41,8 @@ class FunctionBuilder<T extends ExecutionCommandSource<T>> {
 
    private IntList convertToIndices(List<String> var1) {
       IntArrayList var2 = new IntArrayList(var1.size());
-      Iterator var3 = var1.iterator();
 
-      while(var3.hasNext()) {
-         String var4 = (String)var3.next();
+      for(String var4 : var1) {
          var2.add(this.getArgumentIndex(var4));
       }
 
@@ -56,10 +53,8 @@ class FunctionBuilder<T extends ExecutionCommandSource<T>> {
       StringTemplate var4 = StringTemplate.fromString(var1, var2);
       if (this.plainEntries != null) {
          this.macroEntries = new ArrayList(this.plainEntries.size() + 1);
-         Iterator var5 = this.plainEntries.iterator();
 
-         while(var5.hasNext()) {
-            UnboundEntryAction var6 = (UnboundEntryAction)var5.next();
+         for(UnboundEntryAction var6 : this.plainEntries) {
             this.macroEntries.add(new MacroFunction.PlainTextEntry(var6));
          }
 
@@ -70,6 +65,6 @@ class FunctionBuilder<T extends ExecutionCommandSource<T>> {
    }
 
    public CommandFunction<T> build(ResourceLocation var1) {
-      return (CommandFunction)(this.macroEntries != null ? new MacroFunction(var1, this.macroEntries, this.macroArguments) : new PlainTextFunction(var1, this.plainEntries));
+      return (CommandFunction<T>)(this.macroEntries != null ? new MacroFunction(var1, this.macroEntries, this.macroArguments) : new PlainTextFunction(var1, this.plainEntries));
    }
 }

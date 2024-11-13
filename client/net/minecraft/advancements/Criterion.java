@@ -15,17 +15,7 @@ public record Criterion<T extends CriterionTriggerInstance>(CriterionTrigger<T> 
    }
 
    private static <T extends CriterionTriggerInstance> Codec<Criterion<T>> criterionCodec(CriterionTrigger<T> var0) {
-      return var0.codec().xmap((var1) -> {
-         return new Criterion(var0, var1);
-      }, Criterion::triggerInstance);
-   }
-
-   public CriterionTrigger<T> trigger() {
-      return this.trigger;
-   }
-
-   public T triggerInstance() {
-      return this.triggerInstance;
+      return var0.codec().xmap((var1) -> new Criterion(var0, var1), Criterion::triggerInstance);
    }
 
    static {

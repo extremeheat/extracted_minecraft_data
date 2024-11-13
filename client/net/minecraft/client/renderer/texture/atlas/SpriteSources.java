@@ -47,14 +47,10 @@ public class SpriteSources {
       PALETTED_PERMUTATIONS = register("paletted_permutations", PalettedPermutations.CODEC);
       TYPE_CODEC = ResourceLocation.CODEC.flatXmap((var0) -> {
          SpriteSourceType var1 = (SpriteSourceType)TYPES.get(var0);
-         return var1 != null ? DataResult.success(var1) : DataResult.error(() -> {
-            return "Unknown type " + String.valueOf(var0);
-         });
+         return var1 != null ? DataResult.success(var1) : DataResult.error(() -> "Unknown type " + String.valueOf(var0));
       }, (var0) -> {
          ResourceLocation var1 = (ResourceLocation)TYPES.inverse().get(var0);
-         return var0 != null ? DataResult.success(var1) : DataResult.error(() -> {
-            return "Unknown type " + String.valueOf(var1);
-         });
+         return var0 != null ? DataResult.success(var1) : DataResult.error(() -> "Unknown type " + String.valueOf(var1));
       });
       CODEC = TYPE_CODEC.dispatch(SpriteSource::type, SpriteSourceType::codec);
       FILE_CODEC = CODEC.listOf().fieldOf("sources").codec();

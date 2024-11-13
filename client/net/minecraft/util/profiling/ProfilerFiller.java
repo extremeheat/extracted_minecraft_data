@@ -42,7 +42,7 @@ public interface ProfilerFiller {
    void markForCharting(MetricCategory var1);
 
    default void incrementCounter(String var1) {
-      this.incrementCounter((String)var1, 1);
+      this.incrementCounter(var1, 1);
    }
 
    void incrementCounter(String var1, int var2);

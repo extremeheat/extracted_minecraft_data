@@ -13,11 +13,7 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class LootItem extends LootPoolSingletonContainer {
-   public static final MapCodec<LootItem> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Item.CODEC.fieldOf("name").forGetter((var0x) -> {
-         return var0x.item;
-      })).and(singletonFields(var0)).apply(var0, LootItem::new);
-   });
+   public static final MapCodec<LootItem> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Item.CODEC.fieldOf("name").forGetter((var0x) -> var0x.item)).and(singletonFields(var0)).apply(var0, LootItem::new));
    private final Holder<Item> item;
 
    private LootItem(Holder<Item> var1, int var2, int var3, List<LootItemCondition> var4, List<LootItemFunction> var5) {
@@ -34,8 +30,6 @@ public class LootItem extends LootPoolSingletonContainer {
    }
 
    public static LootPoolSingletonContainer.Builder<?> lootTableItem(ItemLike var0) {
-      return simpleBuilder((var1, var2, var3, var4) -> {
-         return new LootItem(var0.asItem().builtInRegistryHolder(), var1, var2, var3, var4);
-      });
+      return simpleBuilder((var1, var2, var3, var4) -> new LootItem(var0.asItem().builtInRegistryHolder(), var1, var2, var3, var4));
    }
 }

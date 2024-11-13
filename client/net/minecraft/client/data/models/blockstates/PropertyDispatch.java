@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -37,18 +36,15 @@ public abstract class PropertyDispatch {
       List var1 = this.getDefinedProperties();
       Stream var2 = Stream.of(Selector.empty());
 
-      Property var4;
-      for(Iterator var3 = var1.iterator(); var3.hasNext(); var2 = var2.flatMap((var1x) -> {
-         Stream var10000 = var4.getAllValues();
-         Objects.requireNonNull(var1x);
-         return var10000.map(var1x::extend);
-      })) {
-         var4 = (Property)var3.next();
+      for(Property var4 : var1) {
+         var2 = var2.flatMap((var1x) -> {
+            Stream var10000 = var4.getAllValues();
+            Objects.requireNonNull(var1x);
+            return var10000.map(var1x::extend);
+         });
       }
 
-      List var5 = (List)var2.filter((var1x) -> {
-         return !this.values.containsKey(var1x);
-      }).collect(Collectors.toList());
+      List var5 = (List)var2.filter((var1x) -> !this.values.containsKey(var1x)).collect(Collectors.toList());
       if (!var5.isEmpty()) {
          throw new IllegalStateException("Missing definition for properties: " + String.valueOf(var5));
       }
@@ -57,23 +53,23 @@ public abstract class PropertyDispatch {
    abstract List<Property<?>> getDefinedProperties();
 
    public static <T1 extends Comparable<T1>> C1<T1> property(Property<T1> var0) {
-      return new C1(var0);
+      return new C1<T1>(var0);
    }
 
    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>> C2<T1, T2> properties(Property<T1> var0, Property<T2> var1) {
-      return new C2(var0, var1);
+      return new C2<T1, T2>(var0, var1);
    }
 
    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>> C3<T1, T2, T3> properties(Property<T1> var0, Property<T2> var1, Property<T3> var2) {
-      return new C3(var0, var1, var2);
+      return new C3<T1, T2, T3>(var0, var1, var2);
    }
 
    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>> C4<T1, T2, T3, T4> properties(Property<T1> var0, Property<T2> var1, Property<T3> var2, Property<T4> var3) {
-      return new C4(var0, var1, var2, var3);
+      return new C4<T1, T2, T3, T4>(var0, var1, var2, var3);
    }
 
    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>, T5 extends Comparable<T5>> C5<T1, T2, T3, T4, T5> properties(Property<T1> var0, Property<T2> var1, Property<T3> var2, Property<T4> var3, Property<T5> var4) {
-      return new C5(var0, var1, var2, var3, var4);
+      return new C5<T1, T2, T3, T4, T5>(var0, var1, var2, var3, var4);
    }
 
    public static class C1<T1 extends Comparable<T1>> extends PropertyDispatch {
@@ -99,16 +95,12 @@ public abstract class PropertyDispatch {
       }
 
       public PropertyDispatch generate(Function<T1, Variant> var1) {
-         this.property1.getPossibleValues().forEach((var2) -> {
-            this.select(var2, (Variant)var1.apply(var2));
-         });
+         this.property1.getPossibleValues().forEach((var2) -> this.select(var2, (Variant)var1.apply(var2)));
          return this;
       }
 
       public PropertyDispatch generateList(Function<T1, List<Variant>> var1) {
-         this.property1.getPossibleValues().forEach((var2) -> {
-            this.select(var2, (List)var1.apply(var2));
-         });
+         this.property1.getPossibleValues().forEach((var2) -> this.select(var2, (List)var1.apply(var2)));
          return this;
       }
    }
@@ -138,20 +130,12 @@ public abstract class PropertyDispatch {
       }
 
       public PropertyDispatch generate(BiFunction<T1, T2, Variant> var1) {
-         this.property1.getPossibleValues().forEach((var2) -> {
-            this.property2.getPossibleValues().forEach((var3) -> {
-               this.select(var2, var3, (Variant)var1.apply(var2, var3));
-            });
-         });
+         this.property1.getPossibleValues().forEach((var2) -> this.property2.getPossibleValues().forEach((var3) -> this.select(var2, var3, (Variant)var1.apply(var2, var3))));
          return this;
       }
 
       public PropertyDispatch generateList(BiFunction<T1, T2, List<Variant>> var1) {
-         this.property1.getPossibleValues().forEach((var2) -> {
-            this.property2.getPossibleValues().forEach((var3) -> {
-               this.select(var2, var3, (List)var1.apply(var2, var3));
-            });
-         });
+         this.property1.getPossibleValues().forEach((var2) -> this.property2.getPossibleValues().forEach((var3) -> this.select(var2, var3, (List)var1.apply(var2, var3))));
          return this;
       }
    }
@@ -183,24 +167,12 @@ public abstract class PropertyDispatch {
       }
 
       public PropertyDispatch generate(TriFunction<T1, T2, T3, Variant> var1) {
-         this.property1.getPossibleValues().forEach((var2) -> {
-            this.property2.getPossibleValues().forEach((var3) -> {
-               this.property3.getPossibleValues().forEach((var4) -> {
-                  this.select(var2, var3, var4, (Variant)var1.apply(var2, var3, var4));
-               });
-            });
-         });
+         this.property1.getPossibleValues().forEach((var2) -> this.property2.getPossibleValues().forEach((var3) -> this.property3.getPossibleValues().forEach((var4) -> this.select(var2, var3, var4, (Variant)var1.apply(var2, var3, var4)))));
          return this;
       }
 
       public PropertyDispatch generateList(TriFunction<T1, T2, T3, List<Variant>> var1) {
-         this.property1.getPossibleValues().forEach((var2) -> {
-            this.property2.getPossibleValues().forEach((var3) -> {
-               this.property3.getPossibleValues().forEach((var4) -> {
-                  this.select(var2, var3, var4, (List)var1.apply(var2, var3, var4));
-               });
-            });
-         });
+         this.property1.getPossibleValues().forEach((var2) -> this.property2.getPossibleValues().forEach((var3) -> this.property3.getPossibleValues().forEach((var4) -> this.select(var2, var3, var4, (List)var1.apply(var2, var3, var4)))));
          return this;
       }
    }
@@ -234,28 +206,12 @@ public abstract class PropertyDispatch {
       }
 
       public PropertyDispatch generate(QuadFunction<T1, T2, T3, T4, Variant> var1) {
-         this.property1.getPossibleValues().forEach((var2) -> {
-            this.property2.getPossibleValues().forEach((var3) -> {
-               this.property3.getPossibleValues().forEach((var4) -> {
-                  this.property4.getPossibleValues().forEach((var5) -> {
-                     this.select(var2, var3, var4, var5, (Variant)var1.apply(var2, var3, var4, var5));
-                  });
-               });
-            });
-         });
+         this.property1.getPossibleValues().forEach((var2) -> this.property2.getPossibleValues().forEach((var3) -> this.property3.getPossibleValues().forEach((var4) -> this.property4.getPossibleValues().forEach((var5) -> this.select(var2, var3, var4, var5, (Variant)var1.apply(var2, var3, var4, var5))))));
          return this;
       }
 
       public PropertyDispatch generateList(QuadFunction<T1, T2, T3, T4, List<Variant>> var1) {
-         this.property1.getPossibleValues().forEach((var2) -> {
-            this.property2.getPossibleValues().forEach((var3) -> {
-               this.property3.getPossibleValues().forEach((var4) -> {
-                  this.property4.getPossibleValues().forEach((var5) -> {
-                     this.select(var2, var3, var4, var5, (List)var1.apply(var2, var3, var4, var5));
-                  });
-               });
-            });
-         });
+         this.property1.getPossibleValues().forEach((var2) -> this.property2.getPossibleValues().forEach((var3) -> this.property3.getPossibleValues().forEach((var4) -> this.property4.getPossibleValues().forEach((var5) -> this.select(var2, var3, var4, var5, (List)var1.apply(var2, var3, var4, var5))))));
          return this;
       }
    }
@@ -291,32 +247,12 @@ public abstract class PropertyDispatch {
       }
 
       public PropertyDispatch generate(PentaFunction<T1, T2, T3, T4, T5, Variant> var1) {
-         this.property1.getPossibleValues().forEach((var2) -> {
-            this.property2.getPossibleValues().forEach((var3) -> {
-               this.property3.getPossibleValues().forEach((var4) -> {
-                  this.property4.getPossibleValues().forEach((var5) -> {
-                     this.property5.getPossibleValues().forEach((var6) -> {
-                        this.select(var2, var3, var4, var5, var6, (Variant)var1.apply(var2, var3, var4, var5, var6));
-                     });
-                  });
-               });
-            });
-         });
+         this.property1.getPossibleValues().forEach((var2) -> this.property2.getPossibleValues().forEach((var3) -> this.property3.getPossibleValues().forEach((var4) -> this.property4.getPossibleValues().forEach((var5) -> this.property5.getPossibleValues().forEach((var6) -> this.select(var2, var3, var4, var5, var6, (Variant)var1.apply(var2, var3, var4, var5, var6)))))));
          return this;
       }
 
       public PropertyDispatch generateList(PentaFunction<T1, T2, T3, T4, T5, List<Variant>> var1) {
-         this.property1.getPossibleValues().forEach((var2) -> {
-            this.property2.getPossibleValues().forEach((var3) -> {
-               this.property3.getPossibleValues().forEach((var4) -> {
-                  this.property4.getPossibleValues().forEach((var5) -> {
-                     this.property5.getPossibleValues().forEach((var6) -> {
-                        this.select(var2, var3, var4, var5, var6, (List)var1.apply(var2, var3, var4, var5, var6));
-                     });
-                  });
-               });
-            });
-         });
+         this.property1.getPossibleValues().forEach((var2) -> this.property2.getPossibleValues().forEach((var3) -> this.property3.getPossibleValues().forEach((var4) -> this.property4.getPossibleValues().forEach((var5) -> this.property5.getPossibleValues().forEach((var6) -> this.select(var2, var3, var4, var5, var6, (List)var1.apply(var2, var3, var4, var5, var6)))))));
          return this;
       }
    }

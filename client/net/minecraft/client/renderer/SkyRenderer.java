@@ -29,12 +29,8 @@ public class SkyRenderer implements AutoCloseable {
    public SkyRenderer() {
       super();
       this.starBuffer = VertexBuffer.uploadStatic(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION, this::buildStars);
-      this.topSkyBuffer = VertexBuffer.uploadStatic(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION, (var1) -> {
-         this.buildSkyDisc(var1, 16.0F);
-      });
-      this.bottomSkyBuffer = VertexBuffer.uploadStatic(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION, (var1) -> {
-         this.buildSkyDisc(var1, -16.0F);
-      });
+      this.topSkyBuffer = VertexBuffer.uploadStatic(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION, (var1) -> this.buildSkyDisc(var1, 16.0F));
+      this.bottomSkyBuffer = VertexBuffer.uploadStatic(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION, (var1) -> this.buildSkyDisc(var1, -16.0F));
       this.endSkyBuffer = VertexBuffer.uploadStatic(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR, this::buildEndSky);
    }
 

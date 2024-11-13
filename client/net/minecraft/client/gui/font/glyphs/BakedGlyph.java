@@ -113,38 +113,6 @@ public class BakedGlyph {
       boolean hasShadow() {
          return this.shadowColor() != 0;
       }
-
-      public float x() {
-         return this.x;
-      }
-
-      public float y() {
-         return this.y;
-      }
-
-      public int color() {
-         return this.color;
-      }
-
-      public int shadowColor() {
-         return this.shadowColor;
-      }
-
-      public BakedGlyph glyph() {
-         return this.glyph;
-      }
-
-      public Style style() {
-         return this.style;
-      }
-
-      public float boldOffset() {
-         return this.boldOffset;
-      }
-
-      public float shadowOffset() {
-         return this.shadowOffset;
-      }
    }
 
    public static record Effect(float x0, float y0, float x1, float y1, float depth, int color, int shadowColor, float shadowOffset) {
@@ -173,38 +141,6 @@ public class BakedGlyph {
 
       boolean hasShadow() {
          return this.shadowColor() != 0;
-      }
-
-      public float x0() {
-         return this.x0;
-      }
-
-      public float y0() {
-         return this.y0;
-      }
-
-      public float x1() {
-         return this.x1;
-      }
-
-      public float y1() {
-         return this.y1;
-      }
-
-      public float depth() {
-         return this.depth;
-      }
-
-      public int color() {
-         return this.color;
-      }
-
-      public int shadowColor() {
-         return this.shadowColor;
-      }
-
-      public float shadowOffset() {
-         return this.shadowOffset;
       }
    }
 }

@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
@@ -21,7 +20,7 @@ public class MerchantContainer implements Container {
 
    public MerchantContainer(Merchant var1) {
       super();
-      this.itemStacks = NonNullList.withSize(3, ItemStack.EMPTY);
+      this.itemStacks = NonNullList.<ItemStack>withSize(3, ItemStack.EMPTY);
       this.merchant = var1;
    }
 
@@ -30,26 +29,21 @@ public class MerchantContainer implements Container {
    }
 
    public boolean isEmpty() {
-      Iterator var1 = this.itemStacks.iterator();
-
-      ItemStack var2;
-      do {
-         if (!var1.hasNext()) {
-            return true;
+      for(ItemStack var2 : this.itemStacks) {
+         if (!var2.isEmpty()) {
+            return false;
          }
+      }
 
-         var2 = (ItemStack)var1.next();
-      } while(var2.isEmpty());
-
-      return false;
+      return true;
    }
 
    public ItemStack getItem(int var1) {
-      return (ItemStack)this.itemStacks.get(var1);
+      return this.itemStacks.get(var1);
    }
 
    public ItemStack removeItem(int var1, int var2) {
-      ItemStack var3 = (ItemStack)this.itemStacks.get(var1);
+      ItemStack var3 = this.itemStacks.get(var1);
       if (var1 == 2 && !var3.isEmpty()) {
          return ContainerHelper.removeItem(this.itemStacks, var1, var3.getCount());
       } else {
@@ -92,11 +86,11 @@ public class MerchantContainer implements Container {
       ItemStack var1;
       ItemStack var2;
       if (((ItemStack)this.itemStacks.get(0)).isEmpty()) {
-         var1 = (ItemStack)this.itemStacks.get(1);
+         var1 = this.itemStacks.get(1);
          var2 = ItemStack.EMPTY;
       } else {
-         var1 = (ItemStack)this.itemStacks.get(0);
-         var2 = (ItemStack)this.itemStacks.get(1);
+         var1 = this.itemStacks.get(0);
+         var2 = this.itemStacks.get(1);
       }
 
       if (var1.isEmpty()) {

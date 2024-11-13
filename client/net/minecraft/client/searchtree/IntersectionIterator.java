@@ -23,7 +23,7 @@ public class IntersectionIterator<T> extends AbstractIterator<T> {
          int var1 = this.comparator.compare(this.firstIterator.peek(), this.secondIterator.peek());
          if (var1 == 0) {
             this.secondIterator.next();
-            return this.firstIterator.next();
+            return (T)this.firstIterator.next();
          }
 
          if (var1 < 0) {
@@ -33,6 +33,6 @@ public class IntersectionIterator<T> extends AbstractIterator<T> {
          }
       }
 
-      return this.endOfData();
+      return (T)this.endOfData();
    }
 }

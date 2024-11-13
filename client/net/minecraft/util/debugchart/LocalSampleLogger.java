@@ -44,10 +44,10 @@ public class LocalSampleLogger extends AbstractSampleLogger implements SampleSto
          if (var2 >= 0 && var2 < var3.length) {
             return var3[var2];
          } else {
-            throw new IndexOutOfBoundsException("" + var2 + " out of bounds for dimensions " + var3.length);
+            throw new IndexOutOfBoundsException(var2 + " out of bounds for dimensions " + var3.length);
          }
       } else {
-         throw new IndexOutOfBoundsException("" + var1 + " out of bounds for length " + this.size);
+         throw new IndexOutOfBoundsException(var1 + " out of bounds for length " + this.size);
       }
    }
 

@@ -21,7 +21,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
 public class DoublePlantBlock extends BushBlock {
@@ -39,10 +38,10 @@ public class DoublePlantBlock extends BushBlock {
 
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
       DoubleBlockHalf var9 = (DoubleBlockHalf)var1.getValue(HALF);
-      if (var5.getAxis() == Direction.Axis.Y && var9 == DoubleBlockHalf.LOWER == (var5 == Direction.UP) && (!var7.is(this) || var7.getValue(HALF) == var9)) {
-         return Blocks.AIR.defaultBlockState();
-      } else {
+      if (var5.getAxis() != Direction.Axis.Y || var9 == DoubleBlockHalf.LOWER != (var5 == Direction.UP) || var7.is(this) && var7.getValue(HALF) != var9) {
          return var9 == DoubleBlockHalf.LOWER && var5 == Direction.DOWN && !var1.canSurvive(var2, var4) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
+      } else {
+         return Blocks.AIR.defaultBlockState();
       }
    }
 
@@ -99,7 +98,7 @@ public class DoublePlantBlock extends BushBlock {
          BlockPos var5 = var1.below();
          BlockState var6 = var0.getBlockState(var5);
          if (var6.is(var2.getBlock()) && var6.getValue(HALF) == DoubleBlockHalf.LOWER) {
-            BlockState var7 = var6.getFluidState().is((Fluid)Fluids.WATER) ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState();
+            BlockState var7 = var6.getFluidState().is(Fluids.WATER) ? Blocks.WATER.defaultBlockState() : Blocks.AIR.defaultBlockState();
             var0.setBlock(var5, var7, 35);
             var0.levelEvent(var3, 2001, var5, Block.getId(var6));
          }

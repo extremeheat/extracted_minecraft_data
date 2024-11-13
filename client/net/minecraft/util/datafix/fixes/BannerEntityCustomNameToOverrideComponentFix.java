@@ -32,13 +32,9 @@ public class BannerEntityCustomNameToOverrideComponentFix extends DataFix {
    private Typed<?> fix(Typed<?> var1, OpticFinder<?> var2) {
       Dynamic var3 = (Dynamic)var1.getOptional(DSL.remainderFinder()).orElseThrow();
       OptionalDynamic var4 = var3.get("CustomName");
-      boolean var5 = var4.asString().result().flatMap(ComponentDataFixUtils::extractTranslationString).filter((var0) -> {
-         return var0.equals("block.minecraft.ominous_banner");
-      }).isPresent();
+      boolean var5 = var4.asString().result().flatMap(ComponentDataFixUtils::extractTranslationString).filter((var0) -> var0.equals("block.minecraft.ominous_banner")).isPresent();
       if (var5) {
-         Typed var6 = var1.getOrCreateTyped(var2).update(DSL.remainderFinder(), (var1x) -> {
-            return var1x.set("minecraft:item_name", (Dynamic)var4.result().get()).set("minecraft:hide_additional_tooltip", var1x.createMap(Map.of()));
-         });
+         Typed var6 = var1.getOrCreateTyped(var2).update(DSL.remainderFinder(), (var1x) -> var1x.set("minecraft:item_name", (Dynamic)var4.result().get()).set("minecraft:hide_additional_tooltip", var1x.createMap(Map.of())));
          return var1.set(var2, var6).set(DSL.remainderFinder(), var3.remove("CustomName"));
       } else {
          return var1;

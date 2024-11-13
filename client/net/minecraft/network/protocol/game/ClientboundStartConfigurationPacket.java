@@ -26,6 +26,6 @@ public class ClientboundStartConfigurationPacket implements Packet<ClientGamePac
    }
 
    static {
-      STREAM_CODEC = StreamCodec.unit(INSTANCE);
+      STREAM_CODEC = StreamCodec.<ByteBuf, ClientboundStartConfigurationPacket>unit(INSTANCE);
    }
 }

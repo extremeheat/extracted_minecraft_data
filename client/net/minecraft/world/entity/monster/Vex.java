@@ -216,7 +216,7 @@ public class Vex extends Monster implements TraceableEntity {
    }
 
    static {
-      DATA_FLAGS_ID = SynchedEntityData.defineId(Vex.class, EntityDataSerializers.BYTE);
+      DATA_FLAGS_ID = SynchedEntityData.<Byte>defineId(Vex.class, EntityDataSerializers.BYTE);
    }
 
    class VexMoveControl extends MoveControl {
@@ -305,7 +305,7 @@ public class Vex extends Monster implements TraceableEntity {
       }
    }
 
-   private class VexRandomMoveGoal extends Goal {
+   class VexRandomMoveGoal extends Goal {
       public VexRandomMoveGoal() {
          super();
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));

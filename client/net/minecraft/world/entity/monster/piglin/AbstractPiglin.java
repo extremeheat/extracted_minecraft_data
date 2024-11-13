@@ -95,9 +95,7 @@ public abstract class AbstractPiglin extends Monster {
    }
 
    protected void finishConversion(ServerLevel var1) {
-      this.convertTo(EntityType.ZOMBIFIED_PIGLIN, ConversionParams.single(this, true, true), (var0) -> {
-         var0.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0));
-      });
+      this.convertTo(EntityType.ZOMBIFIED_PIGLIN, ConversionParams.single(this, true, true), (var0) -> var0.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0)));
    }
 
    public boolean isAdult() {
@@ -130,6 +128,6 @@ public abstract class AbstractPiglin extends Monster {
    protected abstract void playConvertedSound();
 
    static {
-      DATA_IMMUNE_TO_ZOMBIFICATION = SynchedEntityData.defineId(AbstractPiglin.class, EntityDataSerializers.BOOLEAN);
+      DATA_IMMUNE_TO_ZOMBIFICATION = SynchedEntityData.<Boolean>defineId(AbstractPiglin.class, EntityDataSerializers.BOOLEAN);
    }
 }

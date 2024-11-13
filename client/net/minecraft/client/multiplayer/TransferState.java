@@ -8,8 +8,4 @@ public record TransferState(Map<ResourceLocation, byte[]> cookies) {
       super();
       this.cookies = var1;
    }
-
-   public Map<ResourceLocation, byte[]> cookies() {
-      return this.cookies;
-   }
 }

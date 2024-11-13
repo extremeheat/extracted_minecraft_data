@@ -65,14 +65,10 @@ public class TelemetryInfoScreen extends Screen {
 
       LinearLayout var4 = (LinearLayout)var3.addChild(LinearLayout.horizontal().spacing(8));
       var4.addChild(Button.builder(BUTTON_VIEW_DATA, this::openDataFolder).build());
-      var4.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
-         this.onClose();
-      }).build());
+      var4.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).build());
       LinearLayout var5 = (LinearLayout)this.layout.addToContents(LinearLayout.vertical().spacing(8));
       this.telemetryEventWidget = (TelemetryEventWidget)var5.addChild(new TelemetryEventWidget(0, 0, this.width - 40, this.layout.getContentHeight(), this.font));
-      this.telemetryEventWidget.setOnScrolledListener((var1x) -> {
-         this.savedScroll = var1x;
-      });
+      this.telemetryEventWidget.setOnScrolledListener((var1x) -> this.savedScroll = var1x);
       this.layout.visitWidgets((var1x) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });

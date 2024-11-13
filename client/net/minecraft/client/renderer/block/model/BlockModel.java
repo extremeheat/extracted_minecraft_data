@@ -11,7 +11,6 @@ import com.google.gson.JsonParseException;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -151,10 +150,8 @@ public class BlockModel implements UnbakedModel {
             return List.of();
          } else {
             ArrayList var3 = new ArrayList();
-            Iterator var4 = GsonHelper.getAsJsonArray(var2, "elements").iterator();
 
-            while(var4.hasNext()) {
-               JsonElement var5 = (JsonElement)var4.next();
+            for(JsonElement var5 : GsonHelper.getAsJsonArray(var2, "elements")) {
                var3.add((BlockElement)var1.deserialize(var5, BlockElement.class));
             }
 

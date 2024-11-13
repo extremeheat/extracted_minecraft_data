@@ -23,10 +23,6 @@ public record ClientboundServerLinksPacket(List<ServerLinks.UntrustedEntry> link
       var1.handleServerLinks(this);
    }
 
-   public List<ServerLinks.UntrustedEntry> links() {
-      return this.links;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ServerLinks.UNTRUSTED_LINKS_STREAM_CODEC, ClientboundServerLinksPacket::links, ClientboundServerLinksPacket::new);
    }

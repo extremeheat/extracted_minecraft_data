@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
@@ -29,11 +28,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TripWireBlock extends Block {
-   public static final MapCodec<TripWireBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("hook").forGetter((var0x) -> {
-         return var0x.hook;
-      }), propertiesCodec()).apply(var0, TripWireBlock::new);
-   });
+   public static final MapCodec<TripWireBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("hook").forGetter((var0x) -> var0x.hook), propertiesCodec()).apply(var0, TripWireBlock::new));
    public static final BooleanProperty POWERED;
    public static final BooleanProperty ATTACHED;
    public static final BooleanProperty DISARMED;
@@ -93,12 +88,7 @@ public class TripWireBlock extends Block {
    }
 
    private void updateSource(Level var1, BlockPos var2, BlockState var3) {
-      Direction[] var4 = new Direction[]{Direction.SOUTH, Direction.WEST};
-      int var5 = var4.length;
-
-      for(int var6 = 0; var6 < var5; ++var6) {
-         Direction var7 = var4[var6];
-
+      for(Direction var7 : new Direction[]{Direction.SOUTH, Direction.WEST}) {
          for(int var8 = 1; var8 < 42; ++var8) {
             BlockPos var9 = var2.relative(var7, var8);
             BlockState var10 = var1.getBlockState(var9);
@@ -146,10 +136,7 @@ public class TripWireBlock extends Block {
       boolean var5 = (Boolean)var4.getValue(POWERED);
       boolean var6 = false;
       if (!var3.isEmpty()) {
-         Iterator var7 = var3.iterator();
-
-         while(var7.hasNext()) {
-            Entity var8 = (Entity)var7.next();
+         for(Entity var8 : var3) {
             if (!var8.isIgnoringBlockTriggers()) {
                var6 = true;
                break;

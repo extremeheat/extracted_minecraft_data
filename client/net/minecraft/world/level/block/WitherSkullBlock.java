@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -59,17 +58,15 @@ public class WitherSkullBlock extends SkullBlock {
          if (var4 && var1.getY() >= var0.getMinY() && var0.getDifficulty() != Difficulty.PEACEFUL) {
             BlockPattern.BlockPatternMatch var5 = getOrCreateWitherFull().find(var0, var1);
             if (var5 != null) {
-               WitherBoss var6 = (WitherBoss)EntityType.WITHER.create(var0, EntitySpawnReason.TRIGGERED);
+               WitherBoss var6 = EntityType.WITHER.create(var0, EntitySpawnReason.TRIGGERED);
                if (var6 != null) {
                   CarvedPumpkinBlock.clearPatternBlocks(var0, var5);
                   BlockPos var7 = var5.getBlock(1, 2, 0).getPos();
                   var6.moveTo((double)var7.getX() + 0.5, (double)var7.getY() + 0.55, (double)var7.getZ() + 0.5, var5.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F, 0.0F);
                   var6.yBodyRot = var5.getForwards().getAxis() == Direction.Axis.X ? 0.0F : 90.0F;
                   var6.makeInvulnerable();
-                  Iterator var8 = var0.getEntitiesOfClass(ServerPlayer.class, var6.getBoundingBox().inflate(50.0)).iterator();
 
-                  while(var8.hasNext()) {
-                     ServerPlayer var9 = (ServerPlayer)var8.next();
+                  for(ServerPlayer var9 : var0.getEntitiesOfClass(ServerPlayer.class, var6.getBoundingBox().inflate(50.0))) {
                      CriteriaTriggers.SUMMONED_ENTITY.trigger(var9, var6);
                   }
 
@@ -92,11 +89,7 @@ public class WitherSkullBlock extends SkullBlock {
 
    private static BlockPattern getOrCreateWitherFull() {
       if (witherPatternFull == null) {
-         witherPatternFull = BlockPatternBuilder.start().aisle("^^^", "###", "~#~").where('#', (var0) -> {
-            return var0.getState().is(BlockTags.WITHER_SUMMON_BASE_BLOCKS);
-         }).where('^', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_SKULL).or(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_WALL_SKULL)))).where('~', (var0) -> {
-            return var0.getState().isAir();
-         }).build();
+         witherPatternFull = BlockPatternBuilder.start().aisle("^^^", "###", "~#~").where('#', (var0) -> var0.getState().is(BlockTags.WITHER_SUMMON_BASE_BLOCKS)).where('^', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_SKULL).or(BlockStatePredicate.forBlock(Blocks.WITHER_SKELETON_WALL_SKULL)))).where('~', (var0) -> var0.getState().isAir()).build();
       }
 
       return witherPatternFull;
@@ -104,11 +97,7 @@ public class WitherSkullBlock extends SkullBlock {
 
    private static BlockPattern getOrCreateWitherBase() {
       if (witherPatternBase == null) {
-         witherPatternBase = BlockPatternBuilder.start().aisle("   ", "###", "~#~").where('#', (var0) -> {
-            return var0.getState().is(BlockTags.WITHER_SUMMON_BASE_BLOCKS);
-         }).where('~', (var0) -> {
-            return var0.getState().isAir();
-         }).build();
+         witherPatternBase = BlockPatternBuilder.start().aisle("   ", "###", "~#~").where('#', (var0) -> var0.getState().is(BlockTags.WITHER_SUMMON_BASE_BLOCKS)).where('~', (var0) -> var0.getState().isAir()).build();
       }
 
       return witherPatternBase;

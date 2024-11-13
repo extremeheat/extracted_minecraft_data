@@ -21,15 +21,11 @@ public class PlayerInteractTrigger extends SimpleCriterionTrigger<TriggerInstanc
 
    public void trigger(ServerPlayer var1, ItemStack var2, Entity var3) {
       LootContext var4 = EntityPredicate.createContext(var1, var3);
-      this.trigger(var1, (var2x) -> {
-         return var2x.matches(var2, var4);
-      });
+      this.trigger(var1, (var2x) -> var2x.matches(var2, var4));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item, Optional<ContextAwarePredicate> entity) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(TriggerInstance::entity)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(TriggerInstance::entity)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2, Optional<ContextAwarePredicate> var3) {
          super();
@@ -57,18 +53,6 @@ public class PlayerInteractTrigger extends SimpleCriterionTrigger<TriggerInstanc
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
          var1.validateEntity(this.entity, ".entity");
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<ItemPredicate> item() {
-         return this.item;
-      }
-
-      public Optional<ContextAwarePredicate> entity() {
-         return this.entity;
       }
    }
 }

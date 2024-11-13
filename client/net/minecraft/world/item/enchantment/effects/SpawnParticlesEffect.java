@@ -17,9 +17,7 @@ import net.minecraft.world.item.enchantment.EnchantedItemInUse;
 import net.minecraft.world.phys.Vec3;
 
 public record SpawnParticlesEffect(ParticleOptions particle, PositionSource horizontalPosition, PositionSource verticalPosition, VelocitySource horizontalVelocity, VelocitySource verticalVelocity, FloatProvider speed) implements EnchantmentEntityEffect {
-   public static final MapCodec<SpawnParticlesEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ParticleTypes.CODEC.fieldOf("particle").forGetter(SpawnParticlesEffect::particle), SpawnParticlesEffect.PositionSource.CODEC.fieldOf("horizontal_position").forGetter(SpawnParticlesEffect::horizontalPosition), SpawnParticlesEffect.PositionSource.CODEC.fieldOf("vertical_position").forGetter(SpawnParticlesEffect::verticalPosition), SpawnParticlesEffect.VelocitySource.CODEC.fieldOf("horizontal_velocity").forGetter(SpawnParticlesEffect::horizontalVelocity), SpawnParticlesEffect.VelocitySource.CODEC.fieldOf("vertical_velocity").forGetter(SpawnParticlesEffect::verticalVelocity), FloatProvider.CODEC.optionalFieldOf("speed", ConstantFloat.ZERO).forGetter(SpawnParticlesEffect::speed)).apply(var0, SpawnParticlesEffect::new);
-   });
+   public static final MapCodec<SpawnParticlesEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ParticleTypes.CODEC.fieldOf("particle").forGetter(SpawnParticlesEffect::particle), SpawnParticlesEffect.PositionSource.CODEC.fieldOf("horizontal_position").forGetter(SpawnParticlesEffect::horizontalPosition), SpawnParticlesEffect.PositionSource.CODEC.fieldOf("vertical_position").forGetter(SpawnParticlesEffect::verticalPosition), SpawnParticlesEffect.VelocitySource.CODEC.fieldOf("horizontal_velocity").forGetter(SpawnParticlesEffect::horizontalVelocity), SpawnParticlesEffect.VelocitySource.CODEC.fieldOf("vertical_velocity").forGetter(SpawnParticlesEffect::verticalVelocity), FloatProvider.CODEC.optionalFieldOf("speed", ConstantFloat.ZERO).forGetter(SpawnParticlesEffect::speed)).apply(var0, SpawnParticlesEffect::new));
 
    public SpawnParticlesEffect(ParticleOptions var1, PositionSource var2, PositionSource var3, VelocitySource var4, VelocitySource var5, FloatProvider var6) {
       super();
@@ -59,96 +57,11 @@ public record SpawnParticlesEffect(ParticleOptions particle, PositionSource hori
       return CODEC;
    }
 
-   public ParticleOptions particle() {
-      return this.particle;
-   }
-
-   public PositionSource horizontalPosition() {
-      return this.horizontalPosition;
-   }
-
-   public PositionSource verticalPosition() {
-      return this.verticalPosition;
-   }
-
-   public VelocitySource horizontalVelocity() {
-      return this.horizontalVelocity;
-   }
-
-   public VelocitySource verticalVelocity() {
-      return this.verticalVelocity;
-   }
-
-   public FloatProvider speed() {
-      return this.speed;
-   }
-
-   public static record PositionSource(PositionSourceType type, float offset, float scale) {
-      public static final MapCodec<PositionSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(SpawnParticlesEffect.PositionSourceType.CODEC.fieldOf("type").forGetter(PositionSource::type), Codec.FLOAT.optionalFieldOf("offset", 0.0F).forGetter(PositionSource::offset), ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("scale", 1.0F).forGetter(PositionSource::scale)).apply(var0, PositionSource::new);
-      }).validate((var0) -> {
-         return var0.type() == SpawnParticlesEffect.PositionSourceType.ENTITY_POSITION && var0.scale() != 1.0F ? DataResult.error(() -> {
-            return "Cannot scale an entity position coordinate source";
-         }) : DataResult.success(var0);
-      });
-
-      public PositionSource(PositionSourceType var1, float var2, float var3) {
-         super();
-         this.type = var1;
-         this.offset = var2;
-         this.scale = var3;
-      }
-
-      public double getCoordinate(double var1, double var3, float var5, RandomSource var6) {
-         return this.type.getCoordinate(var1, var3, var5 * this.scale, var6) + (double)this.offset;
-      }
-
-      public PositionSourceType type() {
-         return this.type;
-      }
-
-      public float offset() {
-         return this.offset;
-      }
-
-      public float scale() {
-         return this.scale;
-      }
-   }
-
-   public static record VelocitySource(float movementScale, FloatProvider base) {
-      public static final MapCodec<VelocitySource> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(Codec.FLOAT.optionalFieldOf("movement_scale", 0.0F).forGetter(VelocitySource::movementScale), FloatProvider.CODEC.optionalFieldOf("base", ConstantFloat.ZERO).forGetter(VelocitySource::base)).apply(var0, VelocitySource::new);
-      });
-
-      public VelocitySource(float var1, FloatProvider var2) {
-         super();
-         this.movementScale = var1;
-         this.base = var2;
-      }
-
-      public double getVelocity(double var1, RandomSource var3) {
-         return var1 * (double)this.movementScale + (double)this.base.sample(var3);
-      }
-
-      public float movementScale() {
-         return this.movementScale;
-      }
-
-      public FloatProvider base() {
-         return this.base;
-      }
-   }
-
    public static enum PositionSourceType implements StringRepresentable {
-      ENTITY_POSITION("entity_position", (var0, var2, var4, var5) -> {
-         return var0;
-      }),
-      BOUNDING_BOX("in_bounding_box", (var0, var2, var4, var5) -> {
-         return var2 + (var5.nextDouble() - 0.5) * (double)var4;
-      });
+      ENTITY_POSITION("entity_position", (var0, var2, var4, var5) -> var0),
+      BOUNDING_BOX("in_bounding_box", (var0, var2, var4, var5) -> var2 + (var5.nextDouble() - 0.5) * (double)var4);
 
-      public static final Codec<PositionSourceType> CODEC = StringRepresentable.fromEnum(PositionSourceType::values);
+      public static final Codec<PositionSourceType> CODEC = StringRepresentable.<PositionSourceType>fromEnum(PositionSourceType::values);
       private final String id;
       private final CoordinateSource source;
 
@@ -173,6 +86,35 @@ public record SpawnParticlesEffect(ParticleOptions particle, PositionSource hori
       @FunctionalInterface
       interface CoordinateSource {
          double getCoordinate(double var1, double var3, float var5, RandomSource var6);
+      }
+   }
+
+   public static record PositionSource(PositionSourceType type, float offset, float scale) {
+      public static final MapCodec<PositionSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SpawnParticlesEffect.PositionSourceType.CODEC.fieldOf("type").forGetter(PositionSource::type), Codec.FLOAT.optionalFieldOf("offset", 0.0F).forGetter(PositionSource::offset), ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("scale", 1.0F).forGetter(PositionSource::scale)).apply(var0, PositionSource::new)).validate((var0) -> var0.type() == SpawnParticlesEffect.PositionSourceType.ENTITY_POSITION && var0.scale() != 1.0F ? DataResult.error(() -> "Cannot scale an entity position coordinate source") : DataResult.success(var0));
+
+      public PositionSource(PositionSourceType var1, float var2, float var3) {
+         super();
+         this.type = var1;
+         this.offset = var2;
+         this.scale = var3;
+      }
+
+      public double getCoordinate(double var1, double var3, float var5, RandomSource var6) {
+         return this.type.getCoordinate(var1, var3, var5 * this.scale, var6) + (double)this.offset;
+      }
+   }
+
+   public static record VelocitySource(float movementScale, FloatProvider base) {
+      public static final MapCodec<VelocitySource> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.optionalFieldOf("movement_scale", 0.0F).forGetter(VelocitySource::movementScale), FloatProvider.CODEC.optionalFieldOf("base", ConstantFloat.ZERO).forGetter(VelocitySource::base)).apply(var0, VelocitySource::new));
+
+      public VelocitySource(float var1, FloatProvider var2) {
+         super();
+         this.movementScale = var1;
+         this.base = var2;
+      }
+
+      public double getVelocity(double var1, RandomSource var3) {
+         return var1 * (double)this.movementScale + (double)this.base.sample(var3);
       }
    }
 }

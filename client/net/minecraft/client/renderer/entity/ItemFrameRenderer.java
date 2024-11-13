@@ -81,12 +81,11 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
          var2.translate(0.0F, 0.0F, 0.4375F);
       }
 
-      int var14;
       if (var1.mapId != null) {
-         var14 = var1.rotation % 4 * 2;
+         int var14 = var1.rotation % 4 * 2;
          var2.mulPose(Axis.ZP.rotationDegrees((float)var14 * 360.0F / 8.0F));
          var2.mulPose(Axis.ZP.rotationDegrees(180.0F));
-         float var15 = 0.0078125F;
+         float var16 = 0.0078125F;
          var2.scale(0.0078125F, 0.0078125F, 0.0078125F);
          var2.translate(-64.0F, -64.0F, 0.0F);
          var2.translate(0.0F, 0.0F, -1.0F);
@@ -94,9 +93,9 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T, It
          this.mapRenderer.render(var1.mapRenderState, var2, var3, true, var13);
       } else if (!var1.item.isEmpty()) {
          var2.mulPose(Axis.ZP.rotationDegrees((float)var1.rotation * 360.0F / 8.0F));
-         var14 = this.getLightCoords(var1.isGlowFrame, 15728880, var4);
+         int var15 = this.getLightCoords(var1.isGlowFrame, 15728880, var4);
          var2.scale(0.5F, 0.5F, 0.5F);
-         var1.item.render(var2, var3, var14, OverlayTexture.NO_OVERLAY);
+         var1.item.render(var2, var3, var15, OverlayTexture.NO_OVERLAY);
       }
 
       var2.popPose();

@@ -28,10 +28,6 @@ public record ItemBlockState(String property) implements SelectItemModelProperty
       return TYPE;
    }
 
-   public String property() {
-      return this.property;
-   }
-
    // $FF: synthetic method
    @Nullable
    public Object get(final ItemStack var1, @Nullable final ClientLevel var2, @Nullable final LivingEntity var3, final int var4, final ItemDisplayContext var5) {
@@ -39,8 +35,6 @@ public record ItemBlockState(String property) implements SelectItemModelProperty
    }
 
    static {
-      TYPE = SelectItemModelProperty.Type.create(RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(Codec.STRING.fieldOf("block_state_property").forGetter(ItemBlockState::property)).apply(var0, ItemBlockState::new);
-      }), Codec.STRING);
+      TYPE = SelectItemModelProperty.Type.<ItemBlockState, String>create(RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("block_state_property").forGetter(ItemBlockState::property)).apply(var0, ItemBlockState::new)), Codec.STRING);
    }
 }

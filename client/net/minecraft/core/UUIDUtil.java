@@ -74,29 +74,21 @@ public final class UUIDUtil {
    }
 
    static {
-      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> {
-         return Util.fixedSize((IntStream)var0, 4).map(UUIDUtil::uuidFromIntArray);
-      }, (var0) -> {
-         return Arrays.stream(uuidToIntArray(var0));
-      });
+      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> Util.fixedSize((IntStream)var0, 4).map(UUIDUtil::uuidFromIntArray), (var0) -> Arrays.stream(uuidToIntArray(var0)));
       CODEC_SET = Codec.list(CODEC).xmap(Sets::newHashSet, Lists::newArrayList);
       CODEC_LINKED_SET = Codec.list(CODEC).xmap(Sets::newLinkedHashSet, Lists::newArrayList);
       STRING_CODEC = Codec.STRING.comapFlatMap((var0) -> {
          try {
             return DataResult.success(UUID.fromString(var0), Lifecycle.stable());
          } catch (IllegalArgumentException var2) {
-            return DataResult.error(() -> {
-               return "Invalid UUID " + var0 + ": " + var2.getMessage();
-            });
+            return DataResult.error(() -> "Invalid UUID " + var0 + ": " + var2.getMessage());
          }
       }, UUID::toString);
       AUTHLIB_CODEC = Codec.withAlternative(Codec.STRING.comapFlatMap((var0) -> {
          try {
             return DataResult.success(UndashedUuid.fromStringLenient(var0), Lifecycle.stable());
          } catch (IllegalArgumentException var2) {
-            return DataResult.error(() -> {
-               return "Invalid UUID " + var0 + ": " + var2.getMessage();
-            });
+            return DataResult.error(() -> "Invalid UUID " + var0 + ": " + var2.getMessage());
          }
       }, UndashedUuid::toString), CODEC);
       LENIENT_CODEC = Codec.withAlternative(CODEC, STRING_CODEC);

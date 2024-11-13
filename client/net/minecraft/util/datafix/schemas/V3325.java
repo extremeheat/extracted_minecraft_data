@@ -14,12 +14,8 @@ public class V3325 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       Map var2 = super.registerEntities(var1);
-      var1.register(var2, "minecraft:item_display", (var1x) -> {
-         return DSL.optionalFields("item", References.ITEM_STACK.in(var1));
-      });
-      var1.register(var2, "minecraft:block_display", (var1x) -> {
-         return DSL.optionalFields("block_state", References.BLOCK_STATE.in(var1));
-      });
+      var1.register(var2, "minecraft:item_display", (var1x) -> DSL.optionalFields("item", References.ITEM_STACK.in(var1)));
+      var1.register(var2, "minecraft:block_display", (var1x) -> DSL.optionalFields("block_state", References.BLOCK_STATE.in(var1)));
       var1.registerSimple(var2, "minecraft:text_display");
       return var2;
    }

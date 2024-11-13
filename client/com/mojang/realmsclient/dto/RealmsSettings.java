@@ -5,8 +5,4 @@ public record RealmsSettings(boolean hardcore) {
       super();
       this.hardcore = var1;
    }
-
-   public boolean hardcore() {
-      return this.hardcore;
-   }
 }

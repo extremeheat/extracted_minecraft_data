@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -49,16 +48,11 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
       super(var1);
       BlockState var2 = (BlockState)((BlockState)this.stateDefinition.any()).setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH);
 
-      BooleanProperty var4;
-      for(Iterator var3 = SLOT_OCCUPIED_PROPERTIES.iterator(); var3.hasNext(); var2 = (BlockState)var2.setValue(var4, false)) {
-         var4 = (BooleanProperty)var3.next();
+      for(BooleanProperty var4 : SLOT_OCCUPIED_PROPERTIES) {
+         var2 = (BlockState)var2.setValue(var4, false);
       }
 
       this.registerDefaultState(var2);
-   }
-
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
    }
 
    protected InteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
@@ -185,9 +179,7 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
       var1.add(HorizontalDirectionalBlock.FACING);
       List var10000 = SLOT_OCCUPIED_PROPERTIES;
       Objects.requireNonNull(var1);
-      var10000.forEach((var1x) -> {
-         var1.add(var1x);
-      });
+      var10000.forEach((var1x) -> var1.add(var1x));
    }
 
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {

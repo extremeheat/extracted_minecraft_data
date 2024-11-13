@@ -8,7 +8,6 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.ZombieVillagerRenderState;
 import net.minecraft.world.entity.HumanoidArm;
 
@@ -46,7 +45,7 @@ public class ZombieVillagerModel<S extends ZombieVillagerRenderState> extends Hu
    }
 
    public void setupAnim(S var1) {
-      super.setupAnim((HumanoidRenderState)var1);
+      super.setupAnim(var1);
       float var2 = var1.attackTime;
       AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, var1.isAggressive, var2, var1.ageInTicks);
    }

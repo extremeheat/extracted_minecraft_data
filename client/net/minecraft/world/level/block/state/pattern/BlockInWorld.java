@@ -51,8 +51,6 @@ public class BlockInWorld {
    }
 
    public static Predicate<BlockInWorld> hasState(Predicate<BlockState> var0) {
-      return (var1) -> {
-         return var1 != null && var0.test(var1.getState());
-      };
+      return (var1) -> var1 != null && var0.test(var1.getState());
    }
 }

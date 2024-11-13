@@ -13,6 +13,6 @@ public class CatVariantTags {
    }
 
    private static TagKey<CatVariant> create(String var0) {
-      return TagKey.create(Registries.CAT_VARIANT, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<CatVariant>create(Registries.CAT_VARIANT, ResourceLocation.withDefaultNamespace(var0));
    }
 }

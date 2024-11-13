@@ -131,28 +131,14 @@ public class RealmsResetWorldScreen extends RealmsScreen {
       GridLayout var2 = (GridLayout)this.layout.addToContents(new GridLayout());
       GridLayout.RowHelper var3 = var2.createRowHelper(3);
       var3.defaultCellSetting().paddingHorizontal(16);
-      var3.addChild(new FrameButton(this.minecraft.font, GENERATE_NEW_WORLD, NEW_WORLD_LOCATION, (var1x) -> {
-         RealmsCreateWorldFlow.createWorld(this.minecraft, this.lastScreen, this, this.slot, this.serverData, this.realmCreationTask);
-      }));
-      var3.addChild(new FrameButton(this.minecraft.font, RealmsSelectFileToUploadScreen.TITLE, UPLOAD_LOCATION, (var1x) -> {
-         this.minecraft.setScreen(new RealmsSelectFileToUploadScreen(this.realmCreationTask, this.serverData.id, this.slot, this));
-      }));
-      var3.addChild(new FrameButton(this.minecraft.font, WORLD_TEMPLATES_TITLE, SURVIVAL_SPAWN_LOCATION, (var1x) -> {
-         this.minecraft.setScreen(new RealmsSelectWorldTemplateScreen(WORLD_TEMPLATES_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.NORMAL, this.templates));
-      }));
+      var3.addChild(new FrameButton(this.minecraft.font, GENERATE_NEW_WORLD, NEW_WORLD_LOCATION, (var1x) -> RealmsCreateWorldFlow.createWorld(this.minecraft, this.lastScreen, this, this.slot, this.serverData, this.realmCreationTask)));
+      var3.addChild(new FrameButton(this.minecraft.font, RealmsSelectFileToUploadScreen.TITLE, UPLOAD_LOCATION, (var1x) -> this.minecraft.setScreen(new RealmsSelectFileToUploadScreen(this.realmCreationTask, this.serverData.id, this.slot, this))));
+      var3.addChild(new FrameButton(this.minecraft.font, WORLD_TEMPLATES_TITLE, SURVIVAL_SPAWN_LOCATION, (var1x) -> this.minecraft.setScreen(new RealmsSelectWorldTemplateScreen(WORLD_TEMPLATES_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.NORMAL, this.templates))));
       var3.addChild(SpacerElement.height(16), 3);
-      var3.addChild(new FrameButton(this.minecraft.font, ADVENTURES_TITLE, ADVENTURE_MAP_LOCATION, (var1x) -> {
-         this.minecraft.setScreen(new RealmsSelectWorldTemplateScreen(ADVENTURES_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.ADVENTUREMAP, this.adventuremaps));
-      }));
-      var3.addChild(new FrameButton(this.minecraft.font, EXPERIENCES_TITLE, EXPERIENCE_LOCATION, (var1x) -> {
-         this.minecraft.setScreen(new RealmsSelectWorldTemplateScreen(EXPERIENCES_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.EXPERIENCE, this.experiences));
-      }));
-      var3.addChild(new FrameButton(this.minecraft.font, INSPIRATION_TITLE, INSPIRATION_LOCATION, (var1x) -> {
-         this.minecraft.setScreen(new RealmsSelectWorldTemplateScreen(INSPIRATION_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.INSPIRATION, this.inspirations));
-      }));
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
-         this.onClose();
-      }).build());
+      var3.addChild(new FrameButton(this.minecraft.font, ADVENTURES_TITLE, ADVENTURE_MAP_LOCATION, (var1x) -> this.minecraft.setScreen(new RealmsSelectWorldTemplateScreen(ADVENTURES_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.ADVENTUREMAP, this.adventuremaps))));
+      var3.addChild(new FrameButton(this.minecraft.font, EXPERIENCES_TITLE, EXPERIENCE_LOCATION, (var1x) -> this.minecraft.setScreen(new RealmsSelectWorldTemplateScreen(EXPERIENCES_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.EXPERIENCE, this.experiences))));
+      var3.addChild(new FrameButton(this.minecraft.font, INSPIRATION_TITLE, INSPIRATION_LOCATION, (var1x) -> this.minecraft.setScreen(new RealmsSelectWorldTemplateScreen(INSPIRATION_TITLE, this::templateSelectionCallback, RealmsServer.WorldType.INSPIRATION, this.inspirations))));
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).build());
       this.layout.visitWidgets((var1x) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });

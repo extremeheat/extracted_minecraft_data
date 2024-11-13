@@ -23,10 +23,6 @@ public record ClientboundSetSubtitleTextPacket(Component text) implements Packet
       var1.setSubtitleText(this);
    }
 
-   public Component text() {
-      return this.text;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ComponentSerialization.TRUSTED_STREAM_CODEC, ClientboundSetSubtitleTextPacket::text, ClientboundSetSubtitleTextPacket::new);
    }

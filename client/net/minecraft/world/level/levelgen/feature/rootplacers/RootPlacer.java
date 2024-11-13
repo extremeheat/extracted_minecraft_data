@@ -25,13 +25,7 @@ public abstract class RootPlacer {
    protected final Optional<AboveRootPlacement> aboveRootPlacement;
 
    protected static <P extends RootPlacer> Products.P3<RecordCodecBuilder.Mu<P>, IntProvider, BlockStateProvider, Optional<AboveRootPlacement>> rootPlacerParts(RecordCodecBuilder.Instance<P> var0) {
-      return var0.group(IntProvider.CODEC.fieldOf("trunk_offset_y").forGetter((var0x) -> {
-         return var0x.trunkOffsetY;
-      }), BlockStateProvider.CODEC.fieldOf("root_provider").forGetter((var0x) -> {
-         return var0x.rootProvider;
-      }), AboveRootPlacement.CODEC.optionalFieldOf("above_root_placement").forGetter((var0x) -> {
-         return var0x.aboveRootPlacement;
-      }));
+      return var0.group(IntProvider.CODEC.fieldOf("trunk_offset_y").forGetter((var0x) -> var0x.trunkOffsetY), BlockStateProvider.CODEC.fieldOf("root_provider").forGetter((var0x) -> var0x.rootProvider), AboveRootPlacement.CODEC.optionalFieldOf("above_root_placement").forGetter((var0x) -> var0x.aboveRootPlacement));
    }
 
    public RootPlacer(IntProvider var1, BlockStateProvider var2, Optional<AboveRootPlacement> var3) {
@@ -65,9 +59,7 @@ public abstract class RootPlacer {
 
    protected BlockState getPotentiallyWaterloggedState(LevelSimulatedReader var1, BlockPos var2, BlockState var3) {
       if (var3.hasProperty(BlockStateProperties.WATERLOGGED)) {
-         boolean var4 = var1.isFluidAtPosition(var2, (var0) -> {
-            return var0.is(FluidTags.WATER);
-         });
+         boolean var4 = var1.isFluidAtPosition(var2, (var0) -> var0.is(FluidTags.WATER));
          return (BlockState)var3.setValue(BlockStateProperties.WATERLOGGED, var4);
       } else {
          return var3;

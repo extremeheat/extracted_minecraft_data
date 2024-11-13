@@ -14,12 +14,8 @@ public class V2688 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       Map var2 = super.registerEntities(var1);
-      var1.register(var2, "minecraft:glow_squid", () -> {
-         return V100.equipment(var1);
-      });
-      var1.register(var2, "minecraft:glow_item_frame", (var1x) -> {
-         return DSL.optionalFields("Item", References.ITEM_STACK.in(var1));
-      });
+      var1.register(var2, "minecraft:glow_squid", () -> V100.equipment(var1));
+      var1.register(var2, "minecraft:glow_item_frame", (var1x) -> DSL.optionalFields("Item", References.ITEM_STACK.in(var1)));
       return var2;
    }
 }

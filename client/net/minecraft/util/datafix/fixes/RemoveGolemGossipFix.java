@@ -15,10 +15,6 @@ public class RemoveGolemGossipFix extends NamedEntityFix {
    }
 
    private static Dynamic<?> fixValue(Dynamic<?> var0) {
-      return var0.update("Gossips", (var1) -> {
-         return var0.createList(var1.asStream().filter((var0x) -> {
-            return !var0x.get("Type").asString("").equals("golem");
-         }));
-      });
+      return var0.update("Gossips", (var1) -> var0.createList(var1.asStream().filter((var0x) -> !var0x.get("Type").asString("").equals("golem"))));
    }
 }

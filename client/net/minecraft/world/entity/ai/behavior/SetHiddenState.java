@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.ai.behavior;
 
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,9 +18,7 @@ public class SetHiddenState {
    public static BehaviorControl<LivingEntity> create(int var0, int var1) {
       int var2 = var0 * 20;
       MutableInt var3 = new MutableInt(0);
-      return BehaviorBuilder.create((var3x) -> {
-         return var3x.group(var3x.present(MemoryModuleType.HIDING_PLACE), var3x.present(MemoryModuleType.HEARD_BELL_TIME)).apply(var3x, (var4, var5) -> {
-            return (var6, var7, var8) -> {
+      return BehaviorBuilder.create((Function)((var3x) -> var3x.group(var3x.present(MemoryModuleType.HIDING_PLACE), var3x.present(MemoryModuleType.HEARD_BELL_TIME)).apply(var3x, (var4, var5) -> (var6, var7, var8) -> {
                long var10 = (Long)var3x.get(var5);
                boolean var12 = var10 + 300L <= var8;
                if (var3.getValue() <= var2 && !var12) {
@@ -36,8 +35,6 @@ public class SetHiddenState {
                   var3.setValue(0);
                   return true;
                }
-            };
-         });
-      });
+            })));
    }
 }

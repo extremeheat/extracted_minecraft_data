@@ -80,11 +80,10 @@ public interface VertexConsumer {
             float var26;
             float var27;
             float var28;
-            float var31;
             if (var10) {
                float var29 = (float)(var20.get(12) & 255);
                float var30 = (float)(var20.get(13) & 255);
-               var31 = (float)(var20.get(14) & 255);
+               float var31 = (float)(var20.get(14) & 255);
                var26 = var29 * var3[var22] * var4;
                var27 = var30 * var3[var22] * var5;
                var28 = var31 * var3[var22] * var6;
@@ -96,10 +95,10 @@ public interface VertexConsumer {
 
             int var36 = ARGB.color(var17, (int)var26, (int)var27, (int)var28);
             int var37 = LightTexture.lightCoordsWithEmission(var8[var22], var18);
-            var31 = var20.getFloat(16);
+            float var38 = var20.getFloat(16);
             float var32 = var20.getFloat(20);
             Vector3f var33 = var13.transformPosition(var23, var24, var25, new Vector3f());
-            this.addVertex(var33.x(), var33.y(), var33.z(), var36, var31, var32, var9, var37, var14.x(), var14.y(), var14.z());
+            this.addVertex(var33.x(), var33.y(), var33.z(), var36, var38, var32, var9, var37, var14.x(), var14.y(), var14.z());
          }
       } catch (Throwable var35) {
          if (var19 != null) {

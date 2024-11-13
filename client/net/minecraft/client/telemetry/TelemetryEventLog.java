@@ -16,13 +16,12 @@ public class TelemetryEventLog implements AutoCloseable {
 
    public TelemetryEventLog(FileChannel var1, Executor var2) {
       super();
-      this.log = new JsonEventLog(TelemetryEventInstance.CODEC, var1);
+      this.log = new JsonEventLog<TelemetryEventInstance>(TelemetryEventInstance.CODEC, var1);
       this.consecutiveExecutor = new ConsecutiveExecutor(var2, "telemetry-event-log");
    }
 
    public TelemetryEventLogger logger() {
-      return (var1) -> {
-         this.consecutiveExecutor.schedule(() -> {
+      return (var1) -> this.consecutiveExecutor.schedule(() -> {
             try {
                this.log.write(var1);
             } catch (IOException var3) {
@@ -30,13 +29,10 @@ public class TelemetryEventLog implements AutoCloseable {
             }
 
          });
-      };
    }
 
    public void close() {
-      this.consecutiveExecutor.schedule(() -> {
-         IOUtils.closeQuietly(this.log);
-      });
+      this.consecutiveExecutor.schedule(() -> IOUtils.closeQuietly(this.log));
       this.consecutiveExecutor.close();
    }
 }

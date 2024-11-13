@@ -117,16 +117,4 @@ public record ScreenRectangle(ScreenPosition position, int width, int height) {
          return new ScreenRectangle(Mth.floor(var2.x), Mth.floor(var2.y), Mth.floor(var3.x - var2.x), Mth.floor(var3.y - var2.y));
       }
    }
-
-   public ScreenPosition position() {
-      return this.position;
-   }
-
-   public int width() {
-      return this.width;
-   }
-
-   public int height() {
-      return this.height;
-   }
 }

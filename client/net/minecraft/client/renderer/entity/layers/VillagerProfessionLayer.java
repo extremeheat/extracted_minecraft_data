@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 import net.minecraft.Util;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.VillagerLikeModel;
@@ -14,7 +15,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.VillagerDataHolderRenderState;
-import net.minecraft.client.resources.metadata.animation.VillagerMetaDataSection;
+import net.minecraft.client.resources.metadata.animation.VillagerMetadataSection;
 import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -32,8 +33,8 @@ public class VillagerProfessionLayer<S extends LivingEntityRenderState & Village
       var0.put(4, ResourceLocation.withDefaultNamespace("emerald"));
       var0.put(5, ResourceLocation.withDefaultNamespace("diamond"));
    });
-   private final Object2ObjectMap<VillagerType, VillagerMetaDataSection.Hat> typeHatCache = new Object2ObjectOpenHashMap();
-   private final Object2ObjectMap<VillagerProfession, VillagerMetaDataSection.Hat> professionHatCache = new Object2ObjectOpenHashMap();
+   private final Object2ObjectMap<VillagerType, VillagerMetadataSection.Hat> typeHatCache = new Object2ObjectOpenHashMap();
+   private final Object2ObjectMap<VillagerProfession, VillagerMetadataSection.Hat> professionHatCache = new Object2ObjectOpenHashMap();
    private final ResourceManager resourceManager;
    private final String path;
 
@@ -48,10 +49,10 @@ public class VillagerProfessionLayer<S extends LivingEntityRenderState & Village
          VillagerData var7 = ((VillagerDataHolderRenderState)var4).getVillagerData();
          VillagerType var8 = var7.getType();
          VillagerProfession var9 = var7.getProfession();
-         VillagerMetaDataSection.Hat var10 = this.getHatData(this.typeHatCache, "type", BuiltInRegistries.VILLAGER_TYPE, var8);
-         VillagerMetaDataSection.Hat var11 = this.getHatData(this.professionHatCache, "profession", BuiltInRegistries.VILLAGER_PROFESSION, var9);
+         VillagerMetadataSection.Hat var10 = this.getHatData(this.typeHatCache, "type", BuiltInRegistries.VILLAGER_TYPE, var8);
+         VillagerMetadataSection.Hat var11 = this.getHatData(this.professionHatCache, "profession", BuiltInRegistries.VILLAGER_PROFESSION, var9);
          EntityModel var12 = this.getParentModel();
-         ((VillagerLikeModel)var12).hatVisible(var11 == VillagerMetaDataSection.Hat.NONE || var11 == VillagerMetaDataSection.Hat.PARTIAL && var10 != VillagerMetaDataSection.Hat.FULL);
+         ((VillagerLikeModel)var12).hatVisible(var11 == VillagerMetadataSection.Hat.NONE || var11 == VillagerMetadataSection.Hat.PARTIAL && var10 != VillagerMetadataSection.Hat.FULL);
          ResourceLocation var13 = this.getResourceLocation("type", BuiltInRegistries.VILLAGER_TYPE.getKey(var8));
          renderColoredCutoutModel(var12, var13, var1, var2, var3, var4, -1);
          ((VillagerLikeModel)var12).hatVisible(true);
@@ -68,20 +69,16 @@ public class VillagerProfessionLayer<S extends LivingEntityRenderState & Village
    }
 
    private ResourceLocation getResourceLocation(String var1, ResourceLocation var2) {
-      return var2.withPath((var2x) -> {
-         return "textures/entity/" + this.path + "/" + var1 + "/" + var2x + ".png";
-      });
+      return var2.withPath((UnaryOperator)((var2x) -> "textures/entity/" + this.path + "/" + var1 + "/" + var2x + ".png"));
    }
 
-   public <K> VillagerMetaDataSection.Hat getHatData(Object2ObjectMap<K, VillagerMetaDataSection.Hat> var1, String var2, DefaultedRegistry<K> var3, K var4) {
-      return (VillagerMetaDataSection.Hat)var1.computeIfAbsent(var4, (var4x) -> {
-         return (VillagerMetaDataSection.Hat)this.resourceManager.getResource(this.getResourceLocation(var2, var3.getKey(var4))).flatMap((var0) -> {
+   public <K> VillagerMetadataSection.Hat getHatData(Object2ObjectMap<K, VillagerMetadataSection.Hat> var1, String var2, DefaultedRegistry<K> var3, K var4) {
+      return (VillagerMetadataSection.Hat)var1.computeIfAbsent(var4, (var4x) -> (VillagerMetadataSection.Hat)this.resourceManager.getResource(this.getResourceLocation(var2, var3.getKey(var4))).flatMap((var0) -> {
             try {
-               return var0.metadata().getSection(VillagerMetaDataSection.SERIALIZER).map(VillagerMetaDataSection::getHat);
+               return var0.metadata().getSection(VillagerMetadataSection.TYPE).map(VillagerMetadataSection::hat);
             } catch (IOException var2) {
                return Optional.empty();
             }
-         }).orElse(VillagerMetaDataSection.Hat.NONE);
-      });
+         }).orElse(VillagerMetadataSection.Hat.NONE));
    }
 }

@@ -10,13 +10,7 @@ import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class FilteredFunction extends LootItemConditionalFunction {
-   public static final MapCodec<FilteredFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(var0.group(ItemPredicate.CODEC.fieldOf("item_filter").forGetter((var0x) -> {
-         return var0x.filter;
-      }), LootItemFunctions.ROOT_CODEC.fieldOf("modifier").forGetter((var0x) -> {
-         return var0x.modifier;
-      }))).apply(var0, FilteredFunction::new);
-   });
+   public static final MapCodec<FilteredFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(ItemPredicate.CODEC.fieldOf("item_filter").forGetter((var0x) -> var0x.filter), LootItemFunctions.ROOT_CODEC.fieldOf("modifier").forGetter((var0x) -> var0x.modifier))).apply(var0, FilteredFunction::new));
    private final ItemPredicate filter;
    private final LootItemFunction modifier;
 

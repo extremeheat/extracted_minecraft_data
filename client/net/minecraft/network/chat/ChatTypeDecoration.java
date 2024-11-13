@@ -13,9 +13,7 @@ import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
 public record ChatTypeDecoration(String translationKey, List<Parameter> parameters, Style style) {
-   public static final Codec<ChatTypeDecoration> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.STRING.fieldOf("translation_key").forGetter(ChatTypeDecoration::translationKey), ChatTypeDecoration.Parameter.CODEC.listOf().fieldOf("parameters").forGetter(ChatTypeDecoration::parameters), Style.Serializer.CODEC.optionalFieldOf("style", Style.EMPTY).forGetter(ChatTypeDecoration::style)).apply(var0, ChatTypeDecoration::new);
-   });
+   public static final Codec<ChatTypeDecoration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("translation_key").forGetter(ChatTypeDecoration::translationKey), ChatTypeDecoration.Parameter.CODEC.listOf().fieldOf("parameters").forGetter(ChatTypeDecoration::parameters), Style.Serializer.CODEC.optionalFieldOf("style", Style.EMPTY).forGetter(ChatTypeDecoration::style)).apply(var0, ChatTypeDecoration::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, ChatTypeDecoration> STREAM_CODEC;
 
    public ChatTypeDecoration(String var1, List<Parameter> var2, Style var3) {
@@ -59,40 +57,18 @@ public record ChatTypeDecoration(String translationKey, List<Parameter> paramete
       return var3;
    }
 
-   public String translationKey() {
-      return this.translationKey;
-   }
-
-   public List<Parameter> parameters() {
-      return this.parameters;
-   }
-
-   public Style style() {
-      return this.style;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8, ChatTypeDecoration::translationKey, ChatTypeDecoration.Parameter.STREAM_CODEC.apply(ByteBufCodecs.list()), ChatTypeDecoration::parameters, Style.Serializer.TRUSTED_STREAM_CODEC, ChatTypeDecoration::style, ChatTypeDecoration::new);
    }
 
    public static enum Parameter implements StringRepresentable {
-      SENDER(0, "sender", (var0, var1) -> {
-         return var1.name();
-      }),
-      TARGET(1, "target", (var0, var1) -> {
-         return (Component)var1.targetName().orElse(CommonComponents.EMPTY);
-      }),
-      CONTENT(2, "content", (var0, var1) -> {
-         return var0;
-      });
+      SENDER(0, "sender", (var0, var1) -> var1.name()),
+      TARGET(1, "target", (var0, var1) -> (Component)var1.targetName().orElse(CommonComponents.EMPTY)),
+      CONTENT(2, "content", (var0, var1) -> var0);
 
-      private static final IntFunction<Parameter> BY_ID = ByIdMap.continuous((var0) -> {
-         return var0.id;
-      }, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final Codec<Parameter> CODEC = StringRepresentable.fromEnum(Parameter::values);
-      public static final StreamCodec<ByteBuf, Parameter> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> {
-         return var0.id;
-      });
+      private static final IntFunction<Parameter> BY_ID = ByIdMap.<Parameter>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final Codec<Parameter> CODEC = StringRepresentable.<Parameter>fromEnum(Parameter::values);
+      public static final StreamCodec<ByteBuf, Parameter> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
       private final int id;
       private final String name;
       private final Selector selector;

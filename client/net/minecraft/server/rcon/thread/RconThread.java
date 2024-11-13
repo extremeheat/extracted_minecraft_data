@@ -7,7 +7,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.server.ServerInterface;
@@ -29,9 +28,7 @@ public class RconThread extends GenericThread {
    }
 
    private void clearClients() {
-      this.clients.removeIf((var0) -> {
-         return !var0.isRunning();
-      });
+      this.clients.removeIf((var0) -> !var0.isRunning());
    }
 
    public void run() {
@@ -97,10 +94,8 @@ public class RconThread extends GenericThread {
       this.running = false;
       this.closeSocket(this.socket);
       super.stop();
-      Iterator var1 = this.clients.iterator();
 
-      while(var1.hasNext()) {
-         RconClient var2 = (RconClient)var1.next();
+      for(RconClient var2 : this.clients) {
          if (var2.isRunning()) {
             var2.stop();
          }

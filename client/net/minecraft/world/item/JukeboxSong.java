@@ -18,9 +18,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 
 public record JukeboxSong(Holder<SoundEvent> soundEvent, Component description, float lengthInSeconds, int comparatorOutput) {
-   public static final Codec<JukeboxSong> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(SoundEvent.CODEC.fieldOf("sound_event").forGetter(JukeboxSong::soundEvent), ComponentSerialization.CODEC.fieldOf("description").forGetter(JukeboxSong::description), ExtraCodecs.POSITIVE_FLOAT.fieldOf("length_in_seconds").forGetter(JukeboxSong::lengthInSeconds), ExtraCodecs.intRange(0, 15).fieldOf("comparator_output").forGetter(JukeboxSong::comparatorOutput)).apply(var0, JukeboxSong::new);
-   });
+   public static final Codec<JukeboxSong> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(SoundEvent.CODEC.fieldOf("sound_event").forGetter(JukeboxSong::soundEvent), ComponentSerialization.CODEC.fieldOf("description").forGetter(JukeboxSong::description), ExtraCodecs.POSITIVE_FLOAT.fieldOf("length_in_seconds").forGetter(JukeboxSong::lengthInSeconds), ExtraCodecs.intRange(0, 15).fieldOf("comparator_output").forGetter(JukeboxSong::comparatorOutput)).apply(var0, JukeboxSong::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, JukeboxSong> DIRECT_STREAM_CODEC;
    public static final Codec<Holder<JukeboxSong>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<JukeboxSong>> STREAM_CODEC;
@@ -47,25 +45,9 @@ public record JukeboxSong(Holder<SoundEvent> soundEvent, Component description, 
       return var2 != null ? var2.song().unwrap(var0) : Optional.empty();
    }
 
-   public Holder<SoundEvent> soundEvent() {
-      return this.soundEvent;
-   }
-
-   public Component description() {
-      return this.description;
-   }
-
-   public float lengthInSeconds() {
-      return this.lengthInSeconds;
-   }
-
-   public int comparatorOutput() {
-      return this.comparatorOutput;
-   }
-
    static {
       DIRECT_STREAM_CODEC = StreamCodec.composite(SoundEvent.STREAM_CODEC, JukeboxSong::soundEvent, ComponentSerialization.STREAM_CODEC, JukeboxSong::description, ByteBufCodecs.FLOAT, JukeboxSong::lengthInSeconds, ByteBufCodecs.VAR_INT, JukeboxSong::comparatorOutput, JukeboxSong::new);
-      CODEC = RegistryFixedCodec.create(Registries.JUKEBOX_SONG);
+      CODEC = RegistryFixedCodec.<Holder<JukeboxSong>>create(Registries.JUKEBOX_SONG);
       STREAM_CODEC = ByteBufCodecs.holder(Registries.JUKEBOX_SONG, DIRECT_STREAM_CODEC);
    }
 }

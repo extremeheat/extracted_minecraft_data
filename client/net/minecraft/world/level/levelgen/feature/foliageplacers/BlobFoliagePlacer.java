@@ -10,15 +10,11 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class BlobFoliagePlacer extends FoliagePlacer {
-   public static final MapCodec<BlobFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return blobParts(var0).apply(var0, BlobFoliagePlacer::new);
-   });
+   public static final MapCodec<BlobFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> blobParts(var0).apply(var0, BlobFoliagePlacer::new));
    protected final int height;
 
    protected static <P extends BlobFoliagePlacer> Products.P3<RecordCodecBuilder.Mu<P>, IntProvider, IntProvider, Integer> blobParts(RecordCodecBuilder.Instance<P> var0) {
-      return foliagePlacerParts(var0).and(Codec.intRange(0, 16).fieldOf("height").forGetter((var0x) -> {
-         return var0x.height;
-      }));
+      return foliagePlacerParts(var0).and(Codec.intRange(0, 16).fieldOf("height").forGetter((var0x) -> var0x.height));
    }
 
    public BlobFoliagePlacer(IntProvider var1, IntProvider var2, int var3) {

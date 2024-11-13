@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
@@ -16,7 +15,7 @@ public class ResultContainer implements Container, RecipeCraftingHolder {
 
    public ResultContainer() {
       super();
-      this.itemStacks = NonNullList.withSize(1, ItemStack.EMPTY);
+      this.itemStacks = NonNullList.<ItemStack>withSize(1, ItemStack.EMPTY);
    }
 
    public int getContainerSize() {
@@ -24,22 +23,17 @@ public class ResultContainer implements Container, RecipeCraftingHolder {
    }
 
    public boolean isEmpty() {
-      Iterator var1 = this.itemStacks.iterator();
-
-      ItemStack var2;
-      do {
-         if (!var1.hasNext()) {
-            return true;
+      for(ItemStack var2 : this.itemStacks) {
+         if (!var2.isEmpty()) {
+            return false;
          }
+      }
 
-         var2 = (ItemStack)var1.next();
-      } while(var2.isEmpty());
-
-      return false;
+      return true;
    }
 
    public ItemStack getItem(int var1) {
-      return (ItemStack)this.itemStacks.get(0);
+      return this.itemStacks.get(0);
    }
 
    public ItemStack removeItem(int var1, int var2) {

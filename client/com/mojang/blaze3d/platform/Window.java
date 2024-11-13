@@ -301,8 +301,8 @@ public final class Window implements AutoCloseable {
                } catch (Exception var10) {
                   CrashReport var8 = CrashReport.forThrowable(var10, "Window resize");
                   CrashReportCategory var9 = var8.addCategory("Window Dimensions");
-                  var9.setDetail("Old", (Object)("" + var5 + "x" + var6));
-                  var9.setDetail("New", (Object)("" + var3 + "x" + var4));
+                  var9.setDetail("Old", var5 + "x" + var6);
+                  var9.setDetail("New", var3 + "x" + var4);
                   throw new ReportedException(var8);
                }
             }
@@ -527,9 +527,7 @@ public final class Window implements AutoCloseable {
    }
 
    public void setWindowCloseCallback(Runnable var1) {
-      GLFWWindowCloseCallback var2 = GLFW.glfwSetWindowCloseCallback(this.window, (var1x) -> {
-         var1.run();
-      });
+      GLFWWindowCloseCallback var2 = GLFW.glfwSetWindowCloseCallback(this.window, (var1x) -> var1.run());
       if (var2 != null) {
          var2.free();
       }

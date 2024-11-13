@@ -16,7 +16,7 @@ public interface ExecutionCommandSource<T extends ExecutionCommandSource<T>> {
    CommandResultCallback callback();
 
    default T clearCallbacks() {
-      return this.withCallback(CommandResultCallback.EMPTY);
+      return (T)this.withCallback(CommandResultCallback.EMPTY);
    }
 
    CommandDispatcher<T> dispatcher();
@@ -30,8 +30,6 @@ public interface ExecutionCommandSource<T extends ExecutionCommandSource<T>> {
    }
 
    static <T extends ExecutionCommandSource<T>> ResultConsumer<T> resultConsumer() {
-      return (var0, var1, var2) -> {
-         ((ExecutionCommandSource)var0.getSource()).callback().onResult(var1, var2);
-      };
+      return (var0, var1, var2) -> ((ExecutionCommandSource)var0.getSource()).callback().onResult(var1, var2);
    }
 }

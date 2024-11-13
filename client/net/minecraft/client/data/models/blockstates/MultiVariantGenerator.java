@@ -6,7 +6,6 @@ import com.google.common.collect.Sets;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,12 +30,11 @@ public class MultiVariantGenerator implements BlockStateGenerator {
 
    public MultiVariantGenerator with(PropertyDispatch var1) {
       var1.getDefinedProperties().forEach((var1x) -> {
-         String var10002;
          if (this.block.getStateDefinition().getProperty(var1x.getName()) != var1x) {
-            var10002 = String.valueOf(var1x);
-            throw new IllegalStateException("Property " + var10002 + " is not defined for block " + String.valueOf(this.block));
+            String var2 = String.valueOf(var1x);
+            throw new IllegalStateException("Property " + var2 + " is not defined for block " + String.valueOf(this.block));
          } else if (!this.seenProperties.add(var1x)) {
-            var10002 = String.valueOf(var1x);
+            String var10002 = String.valueOf(var1x);
             throw new IllegalStateException("Values of property " + var10002 + " already defined for block " + String.valueOf(this.block));
          }
       });
@@ -47,22 +45,17 @@ public class MultiVariantGenerator implements BlockStateGenerator {
    public JsonElement get() {
       Stream var1 = Stream.of(Pair.of(Selector.empty(), this.baseVariants));
 
-      Map var4;
-      for(Iterator var2 = this.declaredPropertySets.iterator(); var2.hasNext(); var1 = var1.flatMap((var1x) -> {
-         return var4.entrySet().stream().map((var1) -> {
-            Selector var2 = ((Selector)var1x.getFirst()).extend((Selector)var1.getKey());
-            List var3 = mergeVariants((List)var1x.getSecond(), (List)var1.getValue());
-            return Pair.of(var2, var3);
-         });
-      })) {
-         PropertyDispatch var3 = (PropertyDispatch)var2.next();
-         var4 = var3.getEntries();
+      for(PropertyDispatch var3 : this.declaredPropertySets) {
+         Map var4 = var3.getEntries();
+         var1 = var1.flatMap((var1x) -> var4.entrySet().stream().map((var1) -> {
+               Selector var2 = ((Selector)var1x.getFirst()).extend((Selector)var1.getKey());
+               List var3 = mergeVariants((List)var1x.getSecond(), (List)var1.getValue());
+               return Pair.of(var2, var3);
+            }));
       }
 
       TreeMap var5 = new TreeMap();
-      var1.forEach((var1x) -> {
-         var5.put(((Selector)var1x.getFirst()).getKey(), Variant.convertList((List)var1x.getSecond()));
-      });
+      var1.forEach((var1x) -> var5.put(((Selector)var1x.getFirst()).getKey(), Variant.convertList((List)var1x.getSecond())));
       JsonObject var6 = new JsonObject();
       var6.add("variants", (JsonElement)Util.make(new JsonObject(), (var1x) -> {
          Objects.requireNonNull(var1x);
@@ -73,11 +66,7 @@ public class MultiVariantGenerator implements BlockStateGenerator {
 
    private static List<Variant> mergeVariants(List<Variant> var0, List<Variant> var1) {
       ImmutableList.Builder var2 = ImmutableList.builder();
-      var0.forEach((var2x) -> {
-         var1.forEach((var2xx) -> {
-            var2.add(Variant.merge(var2x, var2xx));
-         });
-      });
+      var0.forEach((var2x) -> var1.forEach((var2xx) -> var2.add(Variant.merge(var2x, var2xx))));
       return var2.build();
    }
 

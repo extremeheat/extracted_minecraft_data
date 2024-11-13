@@ -102,15 +102,9 @@ public class SocialInteractionsScreen extends Screen {
       int var1 = this.socialInteractionsPlayerList.getRowWidth() / 3;
       int var2 = this.socialInteractionsPlayerList.getRowLeft();
       int var3 = this.socialInteractionsPlayerList.getRowRight();
-      this.allButton = (Button)this.addRenderableWidget(Button.builder(TAB_ALL, (var1x) -> {
-         this.showPage(SocialInteractionsScreen.Page.ALL);
-      }).bounds(var2, 45, var1, 20).build());
-      this.hiddenButton = (Button)this.addRenderableWidget(Button.builder(TAB_HIDDEN, (var1x) -> {
-         this.showPage(SocialInteractionsScreen.Page.HIDDEN);
-      }).bounds((var2 + var3 - var1) / 2 + 1, 45, var1, 20).build());
-      this.blockedButton = (Button)this.addRenderableWidget(Button.builder(TAB_BLOCKED, (var1x) -> {
-         this.showPage(SocialInteractionsScreen.Page.BLOCKED);
-      }).bounds(var3 - var1 + 1, 45, var1, 20).build());
+      this.allButton = (Button)this.addRenderableWidget(Button.builder(TAB_ALL, (var1x) -> this.showPage(SocialInteractionsScreen.Page.ALL)).bounds(var2, 45, var1, 20).build());
+      this.hiddenButton = (Button)this.addRenderableWidget(Button.builder(TAB_HIDDEN, (var1x) -> this.showPage(SocialInteractionsScreen.Page.HIDDEN)).bounds((var2 + var3 - var1) / 2 + 1, 45, var1, 20).build());
+      this.blockedButton = (Button)this.addRenderableWidget(Button.builder(TAB_BLOCKED, (var1x) -> this.showPage(SocialInteractionsScreen.Page.BLOCKED)).bounds(var3 - var1 + 1, 45, var1, 20).build());
       String var4 = this.searchBox != null ? this.searchBox.getValue() : "";
       this.searchBox = new EditBox(this.font, this.marginX() + 28, 74, 200, 15, SEARCH_HINT) {
          protected MutableComponent createNarrationMessage() {
@@ -127,9 +121,7 @@ public class SocialInteractionsScreen extends Screen {
       this.addWidget(this.socialInteractionsPlayerList);
       this.blockingHintButton = (Button)this.addRenderableWidget(Button.builder(BLOCKING_HINT, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.BLOCKING_HELP)).bounds(this.width / 2 - 100, 64 + this.windowHeight(), 200, 20).build());
       this.showPage(this.page);
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
-         this.onClose();
-      }).width(200).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).width(200).build());
       this.layout.visitWidgets((var1x) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });

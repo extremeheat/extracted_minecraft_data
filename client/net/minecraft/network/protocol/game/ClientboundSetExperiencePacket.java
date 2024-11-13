@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundSetExperiencePacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetExperiencePacket> STREAM_CODEC = Packet.codec(ClientboundSetExperiencePacket::write, ClientboundSetExperiencePacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetExperiencePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSetExperiencePacket>codec(ClientboundSetExperiencePacket::write, ClientboundSetExperiencePacket::new);
    private final float experienceProgress;
    private final int totalExperience;
    private final int experienceLevel;

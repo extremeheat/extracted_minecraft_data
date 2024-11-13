@@ -32,14 +32,10 @@ public class VanillaPackResourcesBuilder {
    public static Consumer<VanillaPackResourcesBuilder> developmentConfig = (var0) -> {
    };
    private static final Map<PackType, Path> ROOT_DIR_BY_TYPE = (Map)Util.make(() -> {
-      Class var0 = VanillaPackResources.class;
       synchronized(VanillaPackResources.class) {
          ImmutableMap.Builder var1 = ImmutableMap.builder();
-         PackType[] var2 = PackType.values();
-         int var3 = var2.length;
 
-         for(int var4 = 0; var4 < var3; ++var4) {
-            PackType var5 = var2[var4];
+         for(PackType var5 : PackType.values()) {
             String var6 = "/" + var5.getDirectory() + "/.mcassetsroot";
             URL var7 = VanillaPackResources.class.getResource(var6);
             if (var7 == null) {
@@ -107,9 +103,7 @@ public class VanillaPackResourcesBuilder {
 
    private void pushPathForType(PackType var1, Path var2) {
       if (this.validateDirPath(var2)) {
-         ((Set)this.pathsForType.computeIfAbsent(var1, (var0) -> {
-            return new LinkedHashSet();
-         })).add(var2);
+         ((Set)this.pathsForType.computeIfAbsent(var1, (var0) -> new LinkedHashSet())).add(var2);
       }
 
    }
@@ -155,11 +149,8 @@ public class VanillaPackResourcesBuilder {
 
    public VanillaPackResourcesBuilder pushUniversalPath(Path var1) {
       this.pushRootPath(var1);
-      PackType[] var2 = PackType.values();
-      int var3 = var2.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         PackType var5 = var2[var4];
+      for(PackType var5 : PackType.values()) {
          this.pushPathForType(var5, var1.resolve(var5.getDirectory()));
       }
 
@@ -184,11 +175,8 @@ public class VanillaPackResourcesBuilder {
 
    public VanillaPackResources build(PackLocationInfo var1) {
       EnumMap var2 = new EnumMap(PackType.class);
-      PackType[] var3 = PackType.values();
-      int var4 = var3.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         PackType var6 = var3[var5];
+      for(PackType var6 : PackType.values()) {
          List var7 = copyAndReverse((Collection)this.pathsForType.getOrDefault(var6, Set.of()));
          var2.put(var6, var7);
       }

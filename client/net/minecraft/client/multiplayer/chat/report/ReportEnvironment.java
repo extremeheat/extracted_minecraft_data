@@ -63,16 +63,16 @@ public record ReportEnvironment(String clientVersion, @Nullable Server server) {
       return var0.toString();
    }
 
-   public String clientVersion() {
-      return this.clientVersion;
-   }
-
-   @Nullable
-   public Server server() {
-      return this.server;
-   }
-
    public interface Server {
+      public static record ThirdParty(String ip) implements Server {
+         final String ip;
+
+         public ThirdParty(String var1) {
+            super();
+            this.ip = var1;
+         }
+      }
+
       public static record Realm(long realmId, int slotId) implements Server {
          public Realm(RealmsServer var1) {
             this(var1.id, var1.activeSlot);
@@ -82,27 +82,6 @@ public record ReportEnvironment(String clientVersion, @Nullable Server server) {
             super();
             this.realmId = var1;
             this.slotId = var3;
-         }
-
-         public long realmId() {
-            return this.realmId;
-         }
-
-         public int slotId() {
-            return this.slotId;
-         }
-      }
-
-      public static record ThirdParty(String ip) implements Server {
-         final String ip;
-
-         public ThirdParty(String var1) {
-            super();
-            this.ip = var1;
-         }
-
-         public String ip() {
-            return this.ip;
          }
       }
    }

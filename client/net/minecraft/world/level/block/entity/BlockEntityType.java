@@ -109,7 +109,7 @@ public class BlockEntityType<T extends BlockEntity> {
    @Nullable
    public T getBlockEntity(BlockGetter var1, BlockPos var2) {
       BlockEntity var3 = var1.getBlockEntity(var2);
-      return var3 != null && var3.getType() == this ? var3 : null;
+      return (T)(var3 != null && var3.getType() == this ? var3 : null);
    }
 
    public boolean onlyOpCanSetNbt() {
@@ -166,7 +166,7 @@ public class BlockEntityType<T extends BlockEntity> {
    }
 
    @FunctionalInterface
-   private interface BlockEntitySupplier<T extends BlockEntity> {
+   interface BlockEntitySupplier<T extends BlockEntity> {
       T create(BlockPos var1, BlockState var2);
    }
 }

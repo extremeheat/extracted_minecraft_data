@@ -62,9 +62,7 @@ public class ServerPacksSource extends BuiltInPackSource {
    }
 
    public static PackRepository createVanillaTrustedRepository() {
-      return new PackRepository(new RepositorySource[]{new ServerPacksSource(new DirectoryValidator((var0) -> {
-         return true;
-      }))});
+      return new PackRepository(new RepositorySource[]{new ServerPacksSource(new DirectoryValidator((var0) -> true))});
    }
 
    public static PackRepository createPackRepository(LevelStorageSource.LevelStorageAccess var0) {

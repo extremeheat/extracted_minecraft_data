@@ -82,9 +82,7 @@ public class SignText {
    }
 
    public boolean hasMessage(Player var1) {
-      return Arrays.stream(this.getMessages(var1.isTextFilteringEnabled())).anyMatch((var0) -> {
-         return !var0.getString().isEmpty();
-      });
+      return Arrays.stream(this.getMessages(var1.isTextFilteringEnabled())).anyMatch((var0) -> !var0.getString().isEmpty());
    }
 
    public Component[] getMessages(boolean var1) {
@@ -115,11 +113,7 @@ public class SignText {
    }
 
    public boolean hasAnyClickCommands(Player var1) {
-      Component[] var2 = this.getMessages(var1.isTextFilteringEnabled());
-      int var3 = var2.length;
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         Component var5 = var2[var4];
+      for(Component var5 : this.getMessages(var1.isTextFilteringEnabled())) {
          Style var6 = var5.getStyle();
          ClickEvent var7 = var6.getClickEvent();
          if (var7 != null && var7.getAction() == ClickEvent.Action.RUN_COMMAND) {
@@ -131,21 +125,7 @@ public class SignText {
    }
 
    static {
-      LINES_CODEC = ComponentSerialization.FLAT_CODEC.listOf().comapFlatMap((var0) -> {
-         return Util.fixedSize((List)var0, 4).map((var0x) -> {
-            return new Component[]{(Component)var0x.get(0), (Component)var0x.get(1), (Component)var0x.get(2), (Component)var0x.get(3)};
-         });
-      }, (var0) -> {
-         return List.of(var0[0], var0[1], var0[2], var0[3]);
-      });
-      DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(LINES_CODEC.fieldOf("messages").forGetter((var0x) -> {
-            return var0x.messages;
-         }), LINES_CODEC.lenientOptionalFieldOf("filtered_messages").forGetter(SignText::filteredMessages), DyeColor.CODEC.fieldOf("color").orElse(DyeColor.BLACK).forGetter((var0x) -> {
-            return var0x.color;
-         }), Codec.BOOL.fieldOf("has_glowing_text").orElse(false).forGetter((var0x) -> {
-            return var0x.hasGlowingText;
-         })).apply(var0, SignText::load);
-      });
+      LINES_CODEC = ComponentSerialization.FLAT_CODEC.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 4).map((var0x) -> new Component[]{(Component)var0x.get(0), (Component)var0x.get(1), (Component)var0x.get(2), (Component)var0x.get(3)}), (var0) -> List.of(var0[0], var0[1], var0[2], var0[3]));
+      DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(LINES_CODEC.fieldOf("messages").forGetter((var0x) -> var0x.messages), LINES_CODEC.lenientOptionalFieldOf("filtered_messages").forGetter(SignText::filteredMessages), DyeColor.CODEC.fieldOf("color").orElse(DyeColor.BLACK).forGetter((var0x) -> var0x.color), Codec.BOOL.fieldOf("has_glowing_text").orElse(false).forGetter((var0x) -> var0x.hasGlowingText)).apply(var0, SignText::load));
    }
 }

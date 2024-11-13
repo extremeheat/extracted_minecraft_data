@@ -61,26 +61,20 @@ public class Interaction extends Entity implements Attackable, Targeting {
          this.setHeight(var1.getFloat("height"));
       }
 
-      DataResult var10000;
-      Logger var10002;
       if (var1.contains("attack")) {
-         var10000 = Interaction.PlayerAction.CODEC.decode(NbtOps.INSTANCE, var1.get("attack"));
-         var10002 = LOGGER;
+         DataResult var10000 = Interaction.PlayerAction.CODEC.decode(NbtOps.INSTANCE, var1.get("attack"));
+         Logger var10002 = LOGGER;
          Objects.requireNonNull(var10002);
-         var10000.resultOrPartial(Util.prefix("Interaction entity", var10002::error)).ifPresent((var1x) -> {
-            this.attack = (PlayerAction)var1x.getFirst();
-         });
+         var10000.resultOrPartial(Util.prefix("Interaction entity", var10002::error)).ifPresent((var1x) -> this.attack = (PlayerAction)var1x.getFirst());
       } else {
          this.attack = null;
       }
 
       if (var1.contains("interaction")) {
-         var10000 = Interaction.PlayerAction.CODEC.decode(NbtOps.INSTANCE, var1.get("interaction"));
-         var10002 = LOGGER;
-         Objects.requireNonNull(var10002);
-         var10000.resultOrPartial(Util.prefix("Interaction entity", var10002::error)).ifPresent((var1x) -> {
-            this.interaction = (PlayerAction)var1x.getFirst();
-         });
+         DataResult var2 = Interaction.PlayerAction.CODEC.decode(NbtOps.INSTANCE, var1.get("interaction"));
+         Logger var3 = LOGGER;
+         Objects.requireNonNull(var3);
+         var2.resultOrPartial(Util.prefix("Interaction entity", var3::error)).ifPresent((var1x) -> this.interaction = (PlayerAction)var1x.getFirst());
       } else {
          this.interaction = null;
       }
@@ -93,15 +87,11 @@ public class Interaction extends Entity implements Attackable, Targeting {
       var1.putFloat("width", this.getWidth());
       var1.putFloat("height", this.getHeight());
       if (this.attack != null) {
-         Interaction.PlayerAction.CODEC.encodeStart(NbtOps.INSTANCE, this.attack).ifSuccess((var1x) -> {
-            var1.put("attack", var1x);
-         });
+         Interaction.PlayerAction.CODEC.encodeStart(NbtOps.INSTANCE, this.attack).ifSuccess((var1x) -> var1.put("attack", var1x));
       }
 
       if (this.interaction != null) {
-         Interaction.PlayerAction.CODEC.encodeStart(NbtOps.INSTANCE, this.interaction).ifSuccess((var1x) -> {
-            var1.put("interaction", var1x);
-         });
+         Interaction.PlayerAction.CODEC.encodeStart(NbtOps.INSTANCE, this.interaction).ifSuccess((var1x) -> var1.put("interaction", var1x));
       }
 
       var1.putBoolean("response", this.getResponse());
@@ -207,28 +197,18 @@ public class Interaction extends Entity implements Attackable, Targeting {
    }
 
    static {
-      DATA_WIDTH_ID = SynchedEntityData.defineId(Interaction.class, EntityDataSerializers.FLOAT);
-      DATA_HEIGHT_ID = SynchedEntityData.defineId(Interaction.class, EntityDataSerializers.FLOAT);
-      DATA_RESPONSE_ID = SynchedEntityData.defineId(Interaction.class, EntityDataSerializers.BOOLEAN);
+      DATA_WIDTH_ID = SynchedEntityData.<Float>defineId(Interaction.class, EntityDataSerializers.FLOAT);
+      DATA_HEIGHT_ID = SynchedEntityData.<Float>defineId(Interaction.class, EntityDataSerializers.FLOAT);
+      DATA_RESPONSE_ID = SynchedEntityData.<Boolean>defineId(Interaction.class, EntityDataSerializers.BOOLEAN);
    }
 
-   private static record PlayerAction(UUID player, long timestamp) {
-      public static final Codec<PlayerAction> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(UUIDUtil.CODEC.fieldOf("player").forGetter(PlayerAction::player), Codec.LONG.fieldOf("timestamp").forGetter(PlayerAction::timestamp)).apply(var0, PlayerAction::new);
-      });
+   static record PlayerAction(UUID player, long timestamp) {
+      public static final Codec<PlayerAction> CODEC = RecordCodecBuilder.create((var0) -> var0.group(UUIDUtil.CODEC.fieldOf("player").forGetter(PlayerAction::player), Codec.LONG.fieldOf("timestamp").forGetter(PlayerAction::timestamp)).apply(var0, PlayerAction::new));
 
       PlayerAction(UUID var1, long var2) {
          super();
          this.player = var1;
          this.timestamp = var2;
-      }
-
-      public UUID player() {
-         return this.player;
-      }
-
-      public long timestamp() {
-         return this.timestamp;
       }
    }
 }

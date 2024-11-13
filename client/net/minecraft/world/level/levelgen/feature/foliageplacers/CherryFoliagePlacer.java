@@ -10,19 +10,7 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class CherryFoliagePlacer extends FoliagePlacer {
-   public static final MapCodec<CherryFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return foliagePlacerParts(var0).and(var0.group(IntProvider.codec(4, 16).fieldOf("height").forGetter((var0x) -> {
-         return var0x.height;
-      }), Codec.floatRange(0.0F, 1.0F).fieldOf("wide_bottom_layer_hole_chance").forGetter((var0x) -> {
-         return var0x.wideBottomLayerHoleChance;
-      }), Codec.floatRange(0.0F, 1.0F).fieldOf("corner_hole_chance").forGetter((var0x) -> {
-         return var0x.wideBottomLayerHoleChance;
-      }), Codec.floatRange(0.0F, 1.0F).fieldOf("hanging_leaves_chance").forGetter((var0x) -> {
-         return var0x.hangingLeavesChance;
-      }), Codec.floatRange(0.0F, 1.0F).fieldOf("hanging_leaves_extension_chance").forGetter((var0x) -> {
-         return var0x.hangingLeavesExtensionChance;
-      }))).apply(var0, CherryFoliagePlacer::new);
-   });
+   public static final MapCodec<CherryFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> foliagePlacerParts(var0).and(var0.group(IntProvider.codec(4, 16).fieldOf("height").forGetter((var0x) -> var0x.height), Codec.floatRange(0.0F, 1.0F).fieldOf("wide_bottom_layer_hole_chance").forGetter((var0x) -> var0x.wideBottomLayerHoleChance), Codec.floatRange(0.0F, 1.0F).fieldOf("corner_hole_chance").forGetter((var0x) -> var0x.wideBottomLayerHoleChance), Codec.floatRange(0.0F, 1.0F).fieldOf("hanging_leaves_chance").forGetter((var0x) -> var0x.hangingLeavesChance), Codec.floatRange(0.0F, 1.0F).fieldOf("hanging_leaves_extension_chance").forGetter((var0x) -> var0x.hangingLeavesExtensionChance))).apply(var0, CherryFoliagePlacer::new));
    private final IntProvider height;
    private final float wideBottomLayerHoleChance;
    private final float cornerHoleChance;

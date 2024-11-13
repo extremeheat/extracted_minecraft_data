@@ -6,6 +6,7 @@ import com.mojang.serialization.Dynamic;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -236,7 +237,7 @@ public class Axolotl extends Animal implements VariantHolder<Variant>, Bucketabl
 
    @Nullable
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Axolotl var3 = (Axolotl)EntityType.AXOLOTL.create(var1, EntitySpawnReason.BREEDING);
+      Axolotl var3 = EntityType.AXOLOTL.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          Variant var4;
          if (useRareVariant(this.random)) {
@@ -290,7 +291,7 @@ public class Axolotl extends Animal implements VariantHolder<Variant>, Bucketabl
    public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
       float var4 = this.getHealth();
       if (!this.isNoAi() && this.level().random.nextInt(3) == 0 && ((float)this.level().random.nextInt(3) < var3 || var4 / this.getMaxHealth() < 0.5F) && var3 < var4 && this.isInWater() && (var2.getEntity() != null || var2.getDirectEntity() != null) && !this.isPlayingDead()) {
-         this.brain.setMemory(MemoryModuleType.PLAY_DEAD_TICKS, (int)200);
+         this.brain.setMemory(MemoryModuleType.PLAY_DEAD_TICKS, 200);
       }
 
       return super.hurtServer(var1, var2, var3);
@@ -310,7 +311,7 @@ public class Axolotl extends Animal implements VariantHolder<Variant>, Bucketabl
 
    public void saveToBucketTag(ItemStack var1) {
       Bucketable.saveDefaultDataToBucketTag(this, var1);
-      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (var1x) -> {
+      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (Consumer)((var1x) -> {
          var1x.putInt("Variant", this.getVariant().getId());
          var1x.putInt("Age", this.getAge());
          Brain var2 = this.getBrain();
@@ -318,7 +319,7 @@ public class Axolotl extends Animal implements VariantHolder<Variant>, Bucketabl
             var1x.putLong("HuntingCooldown", var2.getTimeUntilExpiry(MemoryModuleType.HAS_HUNTING_COOLDOWN));
          }
 
-      });
+      }));
    }
 
    public void loadFromBucketTag(CompoundTag var1) {
@@ -401,7 +402,7 @@ public class Axolotl extends Animal implements VariantHolder<Variant>, Bucketabl
    }
 
    protected Brain.Provider<Axolotl> brainProvider() {
-      return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
+      return Brain.<Axolotl>provider(MEMORY_TYPES, SENSOR_TYPES);
    }
 
    protected Brain<?> makeBrain(Dynamic<?> var1) {
@@ -458,38 +459,9 @@ public class Axolotl extends Animal implements VariantHolder<Variant>, Bucketabl
    static {
       SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_ADULT, SensorType.HURT_BY, SensorType.AXOLOTL_ATTACKABLES, SensorType.AXOLOTL_TEMPTATIONS);
       MEMORY_TYPES = ImmutableList.of(MemoryModuleType.BREED_TARGET, MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER, MemoryModuleType.LOOK_TARGET, MemoryModuleType.WALK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.ATTACK_COOLING_DOWN, MemoryModuleType.NEAREST_VISIBLE_ADULT, new MemoryModuleType[]{MemoryModuleType.HURT_BY_ENTITY, MemoryModuleType.PLAY_DEAD_TICKS, MemoryModuleType.NEAREST_ATTACKABLE, MemoryModuleType.TEMPTING_PLAYER, MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, MemoryModuleType.IS_TEMPTED, MemoryModuleType.HAS_HUNTING_COOLDOWN, MemoryModuleType.IS_PANICKING});
-      DATA_VARIANT = SynchedEntityData.defineId(Axolotl.class, EntityDataSerializers.INT);
-      DATA_PLAYING_DEAD = SynchedEntityData.defineId(Axolotl.class, EntityDataSerializers.BOOLEAN);
-      FROM_BUCKET = SynchedEntityData.defineId(Axolotl.class, EntityDataSerializers.BOOLEAN);
-   }
-
-   private static class AxolotlMoveControl extends SmoothSwimmingMoveControl {
-      private final Axolotl axolotl;
-
-      public AxolotlMoveControl(Axolotl var1) {
-         super(var1, 85, 10, 0.1F, 0.5F, false);
-         this.axolotl = var1;
-      }
-
-      public void tick() {
-         if (!this.axolotl.isPlayingDead()) {
-            super.tick();
-         }
-
-      }
-   }
-
-   private class AxolotlLookControl extends SmoothSwimmingLookControl {
-      public AxolotlLookControl(final Axolotl var2, final int var3) {
-         super(var2, var3);
-      }
-
-      public void tick() {
-         if (!Axolotl.this.isPlayingDead()) {
-            super.tick();
-         }
-
-      }
+      DATA_VARIANT = SynchedEntityData.<Integer>defineId(Axolotl.class, EntityDataSerializers.INT);
+      DATA_PLAYING_DEAD = SynchedEntityData.<Boolean>defineId(Axolotl.class, EntityDataSerializers.BOOLEAN);
+      FROM_BUCKET = SynchedEntityData.<Boolean>defineId(Axolotl.class, EntityDataSerializers.BOOLEAN);
    }
 
    public static enum Variant implements StringRepresentable {
@@ -499,8 +471,8 @@ public class Axolotl extends Animal implements VariantHolder<Variant>, Bucketabl
       CYAN(3, "cyan", true),
       BLUE(4, "blue", false);
 
-      private static final IntFunction<Variant> BY_ID = ByIdMap.continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      public static final Codec<Variant> CODEC = StringRepresentable.fromEnum(Variant::values);
+      private static final IntFunction<Variant> BY_ID = ByIdMap.<Variant>continuous(Variant::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final Codec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       private final int id;
       private final String name;
       private final boolean common;
@@ -536,17 +508,42 @@ public class Axolotl extends Animal implements VariantHolder<Variant>, Bucketabl
       }
 
       private static Variant getSpawnVariant(RandomSource var0, boolean var1) {
-         Variant[] var2 = (Variant[])Arrays.stream(values()).filter((var1x) -> {
-            return var1x.common == var1;
-         }).toArray((var0x) -> {
-            return new Variant[var0x];
-         });
-         return (Variant)Util.getRandom((Object[])var2, var0);
+         Variant[] var2 = (Variant[])Arrays.stream(values()).filter((var1x) -> var1x.common == var1).toArray((var0x) -> new Variant[var0x]);
+         return (Variant)Util.getRandom(var2, var0);
       }
 
       // $FF: synthetic method
       private static Variant[] $values() {
          return new Variant[]{LUCY, WILD, GOLD, CYAN, BLUE};
+      }
+   }
+
+   static class AxolotlMoveControl extends SmoothSwimmingMoveControl {
+      private final Axolotl axolotl;
+
+      public AxolotlMoveControl(Axolotl var1) {
+         super(var1, 85, 10, 0.1F, 0.5F, false);
+         this.axolotl = var1;
+      }
+
+      public void tick() {
+         if (!this.axolotl.isPlayingDead()) {
+            super.tick();
+         }
+
+      }
+   }
+
+   class AxolotlLookControl extends SmoothSwimmingLookControl {
+      public AxolotlLookControl(final Axolotl var2, final int var3) {
+         super(var2, var3);
+      }
+
+      public void tick() {
+         if (!Axolotl.this.isPlayingDead()) {
+            super.tick();
+         }
+
       }
    }
 

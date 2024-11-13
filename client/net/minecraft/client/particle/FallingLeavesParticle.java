@@ -85,24 +85,6 @@ public class FallingLeavesParticle extends TextureSheetParticle {
       }
    }
 
-   public static class PaleOakProvider implements ParticleProvider<SimpleParticleType> {
-      private final SpriteSet sprites;
-
-      public PaleOakProvider(SpriteSet var1) {
-         super();
-         this.sprites = var1;
-      }
-
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         return new FallingLeavesParticle(var2, var3, var5, var7, this.sprites, 0.07F, 10.0F, true, false, 2.0F, 0.021F);
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
-      }
-   }
-
    public static class CherryProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
@@ -113,6 +95,24 @@ public class FallingLeavesParticle extends TextureSheetParticle {
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new FallingLeavesParticle(var2, var3, var5, var7, this.sprites, 0.25F, 2.0F, false, true, 1.0F, 0.0F);
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
+   }
+
+   public static class PaleOakProvider implements ParticleProvider<SimpleParticleType> {
+      private final SpriteSet sprites;
+
+      public PaleOakProvider(SpriteSet var1) {
+         super();
+         this.sprites = var1;
+      }
+
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return new FallingLeavesParticle(var2, var3, var5, var7, this.sprites, 0.07F, 10.0F, true, false, 2.0F, 0.021F);
       }
 
       // $FF: synthetic method

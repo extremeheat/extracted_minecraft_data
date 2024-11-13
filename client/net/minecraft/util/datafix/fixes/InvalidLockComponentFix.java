@@ -25,11 +25,7 @@ public class InvalidLockComponentFix extends DataComponentRemainderFix {
    }
 
    private static <T> boolean isBrokenLock(Dynamic<T> var0) {
-      return isMapWithOneField(var0, "components", (var0x) -> {
-         return isMapWithOneField(var0x, "minecraft:custom_name", (var0) -> {
-            return var0.asString().result().equals(INVALID_LOCK_CUSTOM_NAME);
-         });
-      });
+      return isMapWithOneField(var0, "components", (var0x) -> isMapWithOneField(var0x, "minecraft:custom_name", (var0) -> var0.asString().result().equals(INVALID_LOCK_CUSTOM_NAME)));
    }
 
    private static <T> boolean isMapWithOneField(Dynamic<T> var0, String var1, Predicate<Dynamic<T>> var2) {

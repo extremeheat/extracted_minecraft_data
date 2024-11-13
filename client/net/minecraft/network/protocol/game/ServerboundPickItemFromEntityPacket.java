@@ -23,14 +23,6 @@ public record ServerboundPickItemFromEntityPacket(int id, boolean includeData) i
       var1.handlePickItemFromEntity(this);
    }
 
-   public int id() {
-      return this.id;
-   }
-
-   public boolean includeData() {
-      return this.includeData;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ServerboundPickItemFromEntityPacket::id, ByteBufCodecs.BOOL, ServerboundPickItemFromEntityPacket::includeData, ServerboundPickItemFromEntityPacket::new);
    }

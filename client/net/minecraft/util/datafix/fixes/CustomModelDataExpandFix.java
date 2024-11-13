@@ -15,13 +15,9 @@ public class CustomModelDataExpandFix extends DataFix {
 
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.DATA_COMPONENTS);
-      return this.fixTypeEverywhereTyped("Custom Model Data expansion", var1, (var0) -> {
-         return var0.update(DSL.remainderFinder(), (var0x) -> {
-            return var0x.update("minecraft:custom_model_data", (var0) -> {
+      return this.fixTypeEverywhereTyped("Custom Model Data expansion", var1, (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> var0x.update("minecraft:custom_model_data", (var0) -> {
                float var1 = var0.asNumber(0.0F).floatValue();
                return var0.createMap(Map.of(var0.createString("floats"), var0.createList(Stream.of(var0.createFloat(var1)))));
-            });
-         });
-      });
+            })));
    }
 }

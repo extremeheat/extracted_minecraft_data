@@ -79,35 +79,21 @@ public class PauseScreen extends Screen {
          this.minecraft.setScreen((Screen)null);
          this.minecraft.mouseHandler.grabMouse();
       }).width(204).build(), 2, var1.newCellSettings().paddingTop(50));
-      var2.addChild(this.openScreenButton(ADVANCEMENTS, () -> {
-         return new AdvancementsScreen(this.minecraft.player.connection.getAdvancements(), this);
-      }));
-      var2.addChild(this.openScreenButton(STATS, () -> {
-         return new StatsScreen(this, this.minecraft.player.getStats());
-      }));
+      var2.addChild(this.openScreenButton(ADVANCEMENTS, () -> new AdvancementsScreen(this.minecraft.player.connection.getAdvancements(), this)));
+      var2.addChild(this.openScreenButton(STATS, () -> new StatsScreen(this, this.minecraft.player.getStats())));
       ServerLinks var3 = this.minecraft.player.connection.serverLinks();
       if (var3.isEmpty()) {
          addFeedbackButtons(this, var2);
       } else {
-         var2.addChild(this.openScreenButton(FEEDBACK_SUBSCREEN, () -> {
-            return new FeedbackSubScreen(this);
-         }));
-         var2.addChild(this.openScreenButton(SERVER_LINKS, () -> {
-            return new ServerLinksScreen(this, var3);
-         }));
+         var2.addChild(this.openScreenButton(FEEDBACK_SUBSCREEN, () -> new FeedbackSubScreen(this)));
+         var2.addChild(this.openScreenButton(SERVER_LINKS, () -> new ServerLinksScreen(this, var3)));
       }
 
-      var2.addChild(this.openScreenButton(OPTIONS, () -> {
-         return new OptionsScreen(this, this.minecraft.options);
-      }));
+      var2.addChild(this.openScreenButton(OPTIONS, () -> new OptionsScreen(this, this.minecraft.options)));
       if (this.minecraft.hasSingleplayerServer() && !this.minecraft.getSingleplayerServer().isPublished()) {
-         var2.addChild(this.openScreenButton(SHARE_TO_LAN, () -> {
-            return new ShareToLanScreen(this);
-         }));
+         var2.addChild(this.openScreenButton(SHARE_TO_LAN, () -> new ShareToLanScreen(this)));
       } else {
-         var2.addChild(this.openScreenButton(PLAYER_REPORTING, () -> {
-            return new SocialInteractionsScreen(this);
-         }));
+         var2.addChild(this.openScreenButton(PLAYER_REPORTING, () -> new SocialInteractionsScreen(this)));
       }
 
       Component var4 = this.minecraft.isLocalServer() ? RETURN_TO_MENU : CommonComponents.GUI_DISCONNECT;
@@ -166,9 +152,7 @@ public class PauseScreen extends Screen {
    }
 
    private Button openScreenButton(Component var1, Supplier<Screen> var2) {
-      return Button.builder(var1, (var2x) -> {
-         this.minecraft.setScreen((Screen)var2.get());
-      }).width(98).build();
+      return Button.builder(var1, (var2x) -> this.minecraft.setScreen((Screen)var2.get())).width(98).build();
    }
 
    private static Button openLinkButton(Screen var0, Component var1, URI var2) {
@@ -191,9 +175,7 @@ public class PauseScreen extends Screen {
          var1.defaultCellSetting().padding(4, 4, 4, 0);
          GridLayout.RowHelper var2 = var1.createRowHelper(2);
          PauseScreen.addFeedbackButtons(this, var2);
-         this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
-            this.onClose();
-         }).width(200).build());
+         this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).width(200).build());
          this.layout.visitWidgets(this::addRenderableWidget);
          this.repositionElements();
       }

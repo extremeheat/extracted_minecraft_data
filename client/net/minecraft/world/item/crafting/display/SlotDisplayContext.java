@@ -8,8 +8,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.FuelValues;
 
 public class SlotDisplayContext {
-   public static final ContextKey<FuelValues> FUEL_VALUES = ContextKey.vanilla("fuel_values");
-   public static final ContextKey<HolderLookup.Provider> REGISTRIES = ContextKey.vanilla("registries");
+   public static final ContextKey<FuelValues> FUEL_VALUES = ContextKey.<FuelValues>vanilla("fuel_values");
+   public static final ContextKey<HolderLookup.Provider> REGISTRIES = ContextKey.<HolderLookup.Provider>vanilla("registries");
    public static final ContextKeySet CONTEXT;
 
    public SlotDisplayContext() {

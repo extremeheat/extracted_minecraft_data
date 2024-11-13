@@ -11,7 +11,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -47,10 +46,8 @@ public class TextureSlots {
 
    public static Data parseTextureMap(JsonObject var0, ResourceLocation var1) {
       Data.Builder var2 = new Data.Builder();
-      Iterator var3 = var0.entrySet().iterator();
 
-      while(var3.hasNext()) {
-         Map.Entry var4 = (Map.Entry)var3.next();
+      for(Map.Entry var4 : var0.entrySet()) {
          parseEntry(var1, (String)var4.getKey(), ((JsonElement)var4.getValue()).getAsString(), var2);
       }
 
@@ -71,6 +68,22 @@ public class TextureSlots {
 
    }
 
+   static record Value(Material material) implements SlotContents {
+      Value(Material var1) {
+         super();
+         this.material = var1;
+      }
+   }
+
+   static record Reference(String target) implements SlotContents {
+      final String target;
+
+      Reference(String var1) {
+         super();
+         this.target = var1;
+      }
+   }
+
    public static record Data(Map<String, SlotContents> values) {
       final Map<String, SlotContents> values;
       public static final Data EMPTY = new Data(Map.of());
@@ -78,10 +91,6 @@ public class TextureSlots {
       public Data(Map<String, SlotContents> var1) {
          super();
          this.values = var1;
-      }
-
-      public Map<String, SlotContents> values() {
-         return this.values;
       }
 
       public static class Builder {
@@ -131,10 +140,8 @@ public class TextureSlots {
          } else {
             Object2ObjectArrayMap var2 = new Object2ObjectArrayMap();
             Object2ObjectArrayMap var3 = new Object2ObjectArrayMap();
-            Iterator var4 = Lists.reverse(this.entries).iterator();
 
-            while(var4.hasNext()) {
-               Data var5 = (Data)var4.next();
+            for(Data var5 : Lists.reverse(this.entries)) {
                var5.values.forEach((var2x, var3x) -> {
                   Objects.requireNonNull(var3x);
                   byte var5 = 0;
@@ -144,10 +151,12 @@ public class TextureSlots {
                   switch (var3x.typeSwitch<invokedynamic>(var3x, var5)) {
                      case 0:
                         Value var6 = (Value)var3x;
+                        var3.remove(var2x);
                         var2.put(var2x, var6.material());
                         break;
                      case 1:
                         Reference var7 = (Reference)var3x;
+                        var2.remove(var2x);
                         var3.put(var2x, var7);
                         break;
                      default:
@@ -187,30 +196,6 @@ public class TextureSlots {
                return new TextureSlots(var2);
             }
          }
-      }
-   }
-
-   static record Reference(String target) implements SlotContents {
-      final String target;
-
-      Reference(String var1) {
-         super();
-         this.target = var1;
-      }
-
-      public String target() {
-         return this.target;
-      }
-   }
-
-   static record Value(Material material) implements SlotContents {
-      Value(Material var1) {
-         super();
-         this.material = var1;
-      }
-
-      public Material material() {
-         return this.material;
       }
    }
 

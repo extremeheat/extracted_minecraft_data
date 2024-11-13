@@ -36,13 +36,7 @@ public class PerfCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("perf").requires((var0x) -> {
-         return var0x.hasPermission(4);
-      })).then(Commands.literal("start").executes((var0x) -> {
-         return startProfilingDedicatedServer((CommandSourceStack)var0x.getSource());
-      }))).then(Commands.literal("stop").executes((var0x) -> {
-         return stopProfilingDedicatedServer((CommandSourceStack)var0x.getSource());
-      })));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("perf").requires((var0x) -> var0x.hasPermission(4))).then(Commands.literal("start").executes((var0x) -> startProfilingDedicatedServer((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stopProfilingDedicatedServer((CommandSourceStack)var0x.getSource()))));
    }
 
    private static int startProfilingDedicatedServer(CommandSourceStack var0) throws CommandSyntaxException {
@@ -50,16 +44,10 @@ public class PerfCommand {
       if (var1.isRecordingMetrics()) {
          throw ERROR_ALREADY_RUNNING.create();
       } else {
-         Consumer var2 = (var1x) -> {
-            whenStopped(var0, var1x);
-         };
-         Consumer var3 = (var2x) -> {
-            saveResults(var0, var2x, var1);
-         };
+         Consumer var2 = (var1x) -> whenStopped(var0, var1x);
+         Consumer var3 = (var2x) -> saveResults(var0, var2x, var1);
          var1.startRecordingMetrics(var2, var3);
-         var0.sendSuccess(() -> {
-            return Component.translatable("commands.perf.started");
-         }, false);
+         var0.sendSuccess(() -> Component.translatable("commands.perf.started"), false);
          return 0;
       }
    }
@@ -109,18 +97,14 @@ public class PerfCommand {
          LOGGER.warn("Failed to delete temporary profiling file {}", var1, var9);
       }
 
-      var0.sendSuccess(() -> {
-         return Component.translatable("commands.perf.reportSaved", var4);
-      }, false);
+      var0.sendSuccess(() -> Component.translatable("commands.perf.reportSaved", var4), false);
    }
 
    private static void whenStopped(CommandSourceStack var0, ProfileResults var1) {
       if (var1 != EmptyProfileResults.EMPTY) {
          int var2 = var1.getTickDuration();
          double var3 = (double)var1.getNanoDuration() / (double)TimeUtil.NANOSECONDS_PER_SECOND;
-         var0.sendSuccess(() -> {
-            return Component.translatable("commands.perf.stopped", String.format(Locale.ROOT, "%.2f", var3), var2, String.format(Locale.ROOT, "%.2f", (double)var2 / var3));
-         }, false);
+         var0.sendSuccess(() -> Component.translatable("commands.perf.stopped", String.format(Locale.ROOT, "%.2f", var3), var2, String.format(Locale.ROOT, "%.2f", (double)var2 / var3)), false);
       }
    }
 }

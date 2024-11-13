@@ -3,7 +3,6 @@ package net.minecraft.client.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import java.util.Iterator;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -41,59 +40,50 @@ public class MapRenderer {
       var7.addVertex(var6, 128.0F, 0.0F, -0.01F).setColor(-1).setUv(1.0F, 0.0F).setLight(var5);
       var7.addVertex(var6, 0.0F, 0.0F, -0.01F).setColor(-1).setUv(0.0F, 0.0F).setLight(var5);
       int var8 = 0;
-      Iterator var9 = var1.decorations.iterator();
 
-      while(true) {
-         MapRenderState.MapDecorationRenderState var10;
-         do {
-            if (!var9.hasNext()) {
-               return;
+      for(MapRenderState.MapDecorationRenderState var10 : var1.decorations) {
+         if (!var4 || var10.renderOnFrame) {
+            var2.pushPose();
+            var2.translate((float)var10.x / 2.0F + 64.0F, (float)var10.y / 2.0F + 64.0F, -0.02F);
+            var2.mulPose(Axis.ZP.rotationDegrees((float)(var10.rot * 360) / 16.0F));
+            var2.scale(4.0F, 4.0F, 3.0F);
+            var2.translate(-0.125F, 0.125F, 0.0F);
+            Matrix4f var11 = var2.last().pose();
+            TextureAtlasSprite var12 = var10.atlasSprite;
+            if (var12 != null) {
+               VertexConsumer var13 = var3.getBuffer(RenderType.text(var12.atlasLocation()));
+               var13.addVertex(var11, -1.0F, 1.0F, (float)var8 * -0.001F).setColor(-1).setUv(var12.getU0(), var12.getV0()).setLight(var5);
+               var13.addVertex(var11, 1.0F, 1.0F, (float)var8 * -0.001F).setColor(-1).setUv(var12.getU1(), var12.getV0()).setLight(var5);
+               var13.addVertex(var11, 1.0F, -1.0F, (float)var8 * -0.001F).setColor(-1).setUv(var12.getU1(), var12.getV1()).setLight(var5);
+               var13.addVertex(var11, -1.0F, -1.0F, (float)var8 * -0.001F).setColor(-1).setUv(var12.getU0(), var12.getV1()).setLight(var5);
+               var2.popPose();
             }
 
-            var10 = (MapRenderState.MapDecorationRenderState)var9.next();
-         } while(var4 && !var10.renderOnFrame);
+            if (var10.name != null) {
+               Font var16 = Minecraft.getInstance().font;
+               float var14 = (float)var16.width((FormattedText)var10.name);
+               float var10000 = 25.0F / var14;
+               Objects.requireNonNull(var16);
+               float var15 = Mth.clamp(var10000, 0.0F, 6.0F / 9.0F);
+               var2.pushPose();
+               var2.translate((float)var10.x / 2.0F + 64.0F - var14 * var15 / 2.0F, (float)var10.y / 2.0F + 64.0F + 4.0F, -0.025F);
+               var2.scale(var15, var15, 1.0F);
+               var2.translate(0.0F, 0.0F, -0.1F);
+               var16.drawInBatch(var10.name, 0.0F, 0.0F, -1, false, var2.last().pose(), var3, Font.DisplayMode.NORMAL, -2147483648, var5, false);
+               var2.popPose();
+            }
 
-         var2.pushPose();
-         var2.translate((float)var10.x / 2.0F + 64.0F, (float)var10.y / 2.0F + 64.0F, -0.02F);
-         var2.mulPose(Axis.ZP.rotationDegrees((float)(var10.rot * 360) / 16.0F));
-         var2.scale(4.0F, 4.0F, 3.0F);
-         var2.translate(-0.125F, 0.125F, 0.0F);
-         Matrix4f var11 = var2.last().pose();
-         TextureAtlasSprite var12 = var10.atlasSprite;
-         if (var12 != null) {
-            VertexConsumer var13 = var3.getBuffer(RenderType.text(var12.atlasLocation()));
-            var13.addVertex(var11, -1.0F, 1.0F, (float)var8 * -0.001F).setColor(-1).setUv(var12.getU0(), var12.getV0()).setLight(var5);
-            var13.addVertex(var11, 1.0F, 1.0F, (float)var8 * -0.001F).setColor(-1).setUv(var12.getU1(), var12.getV0()).setLight(var5);
-            var13.addVertex(var11, 1.0F, -1.0F, (float)var8 * -0.001F).setColor(-1).setUv(var12.getU1(), var12.getV1()).setLight(var5);
-            var13.addVertex(var11, -1.0F, -1.0F, (float)var8 * -0.001F).setColor(-1).setUv(var12.getU0(), var12.getV1()).setLight(var5);
-            var2.popPose();
+            ++var8;
          }
-
-         if (var10.name != null) {
-            Font var16 = Minecraft.getInstance().font;
-            float var14 = (float)var16.width((FormattedText)var10.name);
-            float var10000 = 25.0F / var14;
-            Objects.requireNonNull(var16);
-            float var15 = Mth.clamp(var10000, 0.0F, 6.0F / 9.0F);
-            var2.pushPose();
-            var2.translate((float)var10.x / 2.0F + 64.0F - var14 * var15 / 2.0F, (float)var10.y / 2.0F + 64.0F + 4.0F, -0.025F);
-            var2.scale(var15, var15, 1.0F);
-            var2.translate(0.0F, 0.0F, -0.1F);
-            var16.drawInBatch(var10.name, 0.0F, 0.0F, -1, false, var2.last().pose(), var3, Font.DisplayMode.NORMAL, -2147483648, var5, false);
-            var2.popPose();
-         }
-
-         ++var8;
       }
+
    }
 
    public void extractRenderState(MapId var1, MapItemSavedData var2, MapRenderState var3) {
       var3.texture = this.mapTextureManager.prepareMapTexture(var1, var2);
       var3.decorations.clear();
-      Iterator var4 = var2.getDecorations().iterator();
 
-      while(var4.hasNext()) {
-         MapDecoration var5 = (MapDecoration)var4.next();
+      for(MapDecoration var5 : var2.getDecorations()) {
          var3.decorations.add(this.extractDecorationRenderState(var5));
       }
 

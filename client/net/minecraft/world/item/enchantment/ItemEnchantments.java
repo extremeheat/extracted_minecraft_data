@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -45,19 +44,15 @@ public class ItemEnchantments implements TooltipProvider {
       this.showInTooltip = var2;
       ObjectIterator var3 = var1.object2IntEntrySet().iterator();
 
-      Object2IntMap.Entry var4;
-      int var5;
-      do {
-         if (!var3.hasNext()) {
-            return;
+      while(var3.hasNext()) {
+         Object2IntMap.Entry var4 = (Object2IntMap.Entry)var3.next();
+         int var5 = var4.getIntValue();
+         if (var5 < 0 || var5 > 255) {
+            String var10002 = String.valueOf(var4.getKey());
+            throw new IllegalArgumentException("Enchantment " + var10002 + " has invalid level " + var5);
          }
+      }
 
-         var4 = (Object2IntMap.Entry)var3.next();
-         var5 = var4.getIntValue();
-      } while(var5 >= 0 && var5 <= 255);
-
-      String var10002 = String.valueOf(var4.getKey());
-      throw new IllegalArgumentException("Enchantment " + var10002 + " has invalid level " + var5);
    }
 
    public int getLevel(Holder<Enchantment> var1) {
@@ -68,10 +63,8 @@ public class ItemEnchantments implements TooltipProvider {
       if (this.showInTooltip) {
          HolderLookup.Provider var4 = var1.registries();
          HolderSet var5 = getTagOrEmpty(var4, Registries.ENCHANTMENT, EnchantmentTags.TOOLTIP_ORDER);
-         Iterator var6 = var5.iterator();
 
-         while(var6.hasNext()) {
-            Holder var7 = (Holder)var6.next();
+         for(Holder var7 : var5) {
             int var8 = this.enchantments.getInt(var7);
             if (var8 > 0) {
                var2.accept(Enchantment.getFullname(var7, var8));
@@ -146,21 +139,9 @@ public class ItemEnchantments implements TooltipProvider {
 
    static {
       LEVELS_CODEC = Codec.unboundedMap(Enchantment.CODEC, LEVEL_CODEC).xmap(Object2IntOpenHashMap::new, Function.identity());
-      FULL_CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(LEVELS_CODEC.fieldOf("levels").forGetter((var0x) -> {
-            return var0x.enchantments;
-         }), Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter((var0x) -> {
-            return var0x.showInTooltip;
-         })).apply(var0, ItemEnchantments::new);
-      });
-      CODEC = Codec.withAlternative(FULL_CODEC, LEVELS_CODEC, (var0) -> {
-         return new ItemEnchantments(var0, true);
-      });
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.map(Object2IntOpenHashMap::new, Enchantment.STREAM_CODEC, ByteBufCodecs.VAR_INT), (var0) -> {
-         return var0.enchantments;
-      }, ByteBufCodecs.BOOL, (var0) -> {
-         return var0.showInTooltip;
-      }, ItemEnchantments::new);
+      FULL_CODEC = RecordCodecBuilder.create((var0) -> var0.group(LEVELS_CODEC.fieldOf("levels").forGetter((var0x) -> var0x.enchantments), Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter((var0x) -> var0x.showInTooltip)).apply(var0, ItemEnchantments::new));
+      CODEC = Codec.withAlternative(FULL_CODEC, LEVELS_CODEC, (var0) -> new ItemEnchantments(var0, true));
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.map(Object2IntOpenHashMap::new, Enchantment.STREAM_CODEC, ByteBufCodecs.VAR_INT), (var0) -> var0.enchantments, ByteBufCodecs.BOOL, (var0) -> var0.showInTooltip, ItemEnchantments::new);
    }
 
    public static class Mutable {

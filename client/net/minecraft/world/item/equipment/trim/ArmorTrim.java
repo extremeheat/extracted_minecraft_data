@@ -17,11 +17,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipProvider;
 
 public record ArmorTrim(Holder<TrimMaterial> material, Holder<TrimPattern> pattern, boolean showInTooltip) implements TooltipProvider {
-   public static final Codec<ArmorTrim> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(TrimMaterial.CODEC.fieldOf("material").forGetter(ArmorTrim::material), TrimPattern.CODEC.fieldOf("pattern").forGetter(ArmorTrim::pattern), Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter((var0x) -> {
-         return var0x.showInTooltip;
-      })).apply(var0, ArmorTrim::new);
-   });
+   public static final Codec<ArmorTrim> CODEC = RecordCodecBuilder.create((var0) -> var0.group(TrimMaterial.CODEC.fieldOf("material").forGetter(ArmorTrim::material), TrimPattern.CODEC.fieldOf("pattern").forGetter(ArmorTrim::pattern), Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter((var0x) -> var0x.showInTooltip)).apply(var0, ArmorTrim::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, ArmorTrim> STREAM_CODEC;
    private static final Component UPGRADE_TITLE;
 
@@ -43,7 +39,7 @@ public record ArmorTrim(Holder<TrimMaterial> material, Holder<TrimPattern> patte
    public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
       if (this.showInTooltip) {
          var2.accept(UPGRADE_TITLE);
-         var2.accept(CommonComponents.space().append(((TrimPattern)this.pattern.value()).copyWithStyle(this.material)));
+         var2.accept(CommonComponents.space().append((this.pattern.value()).copyWithStyle(this.material)));
          var2.accept(CommonComponents.space().append(((TrimMaterial)this.material.value()).description()));
       }
    }
@@ -52,22 +48,8 @@ public record ArmorTrim(Holder<TrimMaterial> material, Holder<TrimPattern> patte
       return new ArmorTrim(this.material, this.pattern, var1);
    }
 
-   public Holder<TrimMaterial> material() {
-      return this.material;
-   }
-
-   public Holder<TrimPattern> pattern() {
-      return this.pattern;
-   }
-
-   public boolean showInTooltip() {
-      return this.showInTooltip;
-   }
-
    static {
-      STREAM_CODEC = StreamCodec.composite(TrimMaterial.STREAM_CODEC, ArmorTrim::material, TrimPattern.STREAM_CODEC, ArmorTrim::pattern, ByteBufCodecs.BOOL, (var0) -> {
-         return var0.showInTooltip;
-      }, ArmorTrim::new);
+      STREAM_CODEC = StreamCodec.composite(TrimMaterial.STREAM_CODEC, ArmorTrim::material, TrimPattern.STREAM_CODEC, ArmorTrim::pattern, ByteBufCodecs.BOOL, (var0) -> var0.showInTooltip, ArmorTrim::new);
       UPGRADE_TITLE = Component.translatable(Util.makeDescriptionId("item", ResourceLocation.withDefaultNamespace("smithing_template.upgrade"))).withStyle(ChatFormatting.GRAY);
    }
 }

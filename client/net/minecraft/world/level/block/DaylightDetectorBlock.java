@@ -86,10 +86,6 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
       }
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
-
    protected boolean isSignalSource(BlockState var1) {
       return true;
    }

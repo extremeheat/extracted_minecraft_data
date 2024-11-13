@@ -1,7 +1,6 @@
 package net.minecraft.world.level;
 
 import com.google.common.collect.Lists;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 
@@ -25,16 +24,15 @@ public class PotentialCalculator {
       } else {
          double var4 = 0.0;
 
-         PointCharge var7;
-         for(Iterator var6 = this.charges.iterator(); var6.hasNext(); var4 += var7.getPotentialChange(var1)) {
-            var7 = (PointCharge)var6.next();
+         for(PointCharge var7 : this.charges) {
+            var4 += var7.getPotentialChange(var1);
          }
 
          return var4 * var2;
       }
    }
 
-   private static class PointCharge {
+   static class PointCharge {
       private final BlockPos pos;
       private final double charge;
 

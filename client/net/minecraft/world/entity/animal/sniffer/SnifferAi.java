@@ -56,9 +56,7 @@ public class SnifferAi {
    }
 
    public static Predicate<ItemStack> getTemptations() {
-      return (var0) -> {
-         return var0.is(ItemTags.SNIFFER_FOOD);
-      };
+      return (var0) -> var0.is(ItemTags.SNIFFER_FOOD);
    }
 
    protected static Brain<?> makeBrain(Brain<Sniffer> var0) {
@@ -82,7 +80,7 @@ public class SnifferAi {
       var0.addActivity(Activity.CORE, 0, ImmutableList.of(new Swim(0.8F), new AnimalPanic<Sniffer>(2.0F) {
          protected void start(ServerLevel var1, Sniffer var2, long var3) {
             SnifferAi.resetSniffing(var2);
-            super.start(var1, (PathfinderMob)var2, var3);
+            super.start(var1, var2, var3);
          }
 
          // $FF: synthetic method
@@ -116,11 +114,7 @@ public class SnifferAi {
          protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
             this.start(var1, (Animal)var2, var3);
          }
-      }), Pair.of(1, new FollowTemptation((var0x) -> {
-         return 1.25F;
-      }, (var0x) -> {
-         return var0x.isBaby() ? 2.5 : 3.5;
-      }) {
+      }), Pair.of(1, new FollowTemptation((var0x) -> 1.25F, (var0x) -> var0x.isBaby() ? 2.5 : 3.5) {
          protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
             SnifferAi.resetSniffing((Sniffer)var2);
             super.start(var1, var2, var3);
@@ -140,6 +134,46 @@ public class SnifferAi {
    static {
       SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.HURT_BY, SensorType.NEAREST_PLAYERS, SensorType.SNIFFER_TEMPTATIONS);
       MEMORY_TYPES = ImmutableList.of(MemoryModuleType.LOOK_TARGET, MemoryModuleType.WALK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.IS_PANICKING, MemoryModuleType.SNIFFER_SNIFFING_TARGET, MemoryModuleType.SNIFFER_DIGGING, MemoryModuleType.SNIFFER_HAPPY, MemoryModuleType.SNIFF_COOLDOWN, MemoryModuleType.SNIFFER_EXPLORED_POSITIONS, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.BREED_TARGET, new MemoryModuleType[]{MemoryModuleType.TEMPTING_PLAYER, MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, MemoryModuleType.IS_TEMPTED});
+   }
+
+   static class Sniffing extends Behavior<Sniffer> {
+      Sniffing(int var1, int var2) {
+         super(Map.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.SNIFFER_SNIFFING_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.SNIFF_COOLDOWN, MemoryStatus.VALUE_ABSENT), var1, var2);
+      }
+
+      protected boolean checkExtraStartConditions(ServerLevel var1, Sniffer var2) {
+         return !var2.isBaby() && var2.canSniff();
+      }
+
+      protected boolean canStillUse(ServerLevel var1, Sniffer var2, long var3) {
+         return var2.canSniff();
+      }
+
+      protected void start(ServerLevel var1, Sniffer var2, long var3) {
+         var2.transitionTo(Sniffer.State.SNIFFING);
+      }
+
+      protected void stop(ServerLevel var1, Sniffer var2, long var3) {
+         boolean var5 = this.timedOut(var3);
+         var2.transitionTo(Sniffer.State.IDLING);
+         if (var5) {
+            var2.calculateDigPosition().ifPresent((var1x) -> {
+               var2.getBrain().setMemory(MemoryModuleType.SNIFFER_SNIFFING_TARGET, var1x);
+               var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var1x, 1.25F, 0));
+            });
+         }
+
+      }
+
+      // $FF: synthetic method
+      protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
+         this.stop(var1, (Sniffer)var2, var3);
+      }
+
+      // $FF: synthetic method
+      protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
+         this.start(var1, (Sniffer)var2, var3);
+      }
    }
 
    static class Searching extends Behavior<Sniffer> {
@@ -168,7 +202,7 @@ public class SnifferAi {
 
       protected void stop(ServerLevel var1, Sniffer var2, long var3) {
          if (var2.canDig() && var2.canSniff()) {
-            var2.getBrain().setMemory(MemoryModuleType.SNIFFER_DIGGING, (Object)true);
+            var2.getBrain().setMemory(MemoryModuleType.SNIFFER_DIGGING, true);
          }
 
          var2.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
@@ -245,7 +279,7 @@ public class SnifferAi {
          boolean var5 = this.timedOut(var3);
          var2.transitionTo(Sniffer.State.IDLING).onDiggingComplete(var5);
          var2.getBrain().eraseMemory(MemoryModuleType.SNIFFER_DIGGING);
-         var2.getBrain().setMemory(MemoryModuleType.SNIFFER_HAPPY, (Object)true);
+         var2.getBrain().setMemory(MemoryModuleType.SNIFFER_HAPPY, true);
       }
 
       // $FF: synthetic method
@@ -307,46 +341,6 @@ public class SnifferAi {
 
       protected void stop(ServerLevel var1, Sniffer var2, long var3) {
          var2.transitionTo(Sniffer.State.IDLING);
-      }
-
-      // $FF: synthetic method
-      protected void stop(final ServerLevel var1, final LivingEntity var2, final long var3) {
-         this.stop(var1, (Sniffer)var2, var3);
-      }
-
-      // $FF: synthetic method
-      protected void start(final ServerLevel var1, final LivingEntity var2, final long var3) {
-         this.start(var1, (Sniffer)var2, var3);
-      }
-   }
-
-   static class Sniffing extends Behavior<Sniffer> {
-      Sniffing(int var1, int var2) {
-         super(Map.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.SNIFFER_SNIFFING_TARGET, MemoryStatus.VALUE_ABSENT, MemoryModuleType.SNIFF_COOLDOWN, MemoryStatus.VALUE_ABSENT), var1, var2);
-      }
-
-      protected boolean checkExtraStartConditions(ServerLevel var1, Sniffer var2) {
-         return !var2.isBaby() && var2.canSniff();
-      }
-
-      protected boolean canStillUse(ServerLevel var1, Sniffer var2, long var3) {
-         return var2.canSniff();
-      }
-
-      protected void start(ServerLevel var1, Sniffer var2, long var3) {
-         var2.transitionTo(Sniffer.State.SNIFFING);
-      }
-
-      protected void stop(ServerLevel var1, Sniffer var2, long var3) {
-         boolean var5 = this.timedOut(var3);
-         var2.transitionTo(Sniffer.State.IDLING);
-         if (var5) {
-            var2.calculateDigPosition().ifPresent((var1x) -> {
-               var2.getBrain().setMemory(MemoryModuleType.SNIFFER_SNIFFING_TARGET, (Object)var1x);
-               var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var1x, 1.25F, 0)));
-            });
-         }
-
       }
 
       // $FF: synthetic method

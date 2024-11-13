@@ -17,15 +17,11 @@ public class StartRidingTrigger extends SimpleCriterionTrigger<TriggerInstance> 
    }
 
    public void trigger(ServerPlayer var1) {
-      this.trigger(var1, (var0) -> {
-         return true;
-      });
+      this.trigger(var1, (var0) -> true);
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1) {
          super();
@@ -34,10 +30,6 @@ public class StartRidingTrigger extends SimpleCriterionTrigger<TriggerInstance> 
 
       public static Criterion<TriggerInstance> playerStartsRiding(EntityPredicate.Builder var0) {
          return CriteriaTriggers.START_RIDING_TRIGGER.createCriterion(new TriggerInstance(Optional.of(EntityPredicate.wrap(var0))));
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
       }
    }
 }

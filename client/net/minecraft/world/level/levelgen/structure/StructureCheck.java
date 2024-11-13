@@ -10,7 +10,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -80,11 +79,7 @@ public class StructureCheck {
          } else if (!var3.applyAdditionalChunkRestrictions(var1.x, var1.z, this.seed)) {
             return StructureCheckResult.START_NOT_PRESENT;
          } else {
-            boolean var9 = ((Long2BooleanMap)this.featureChecks.computeIfAbsent(var2, (var0) -> {
-               return new Long2BooleanOpenHashMap();
-            })).computeIfAbsent(var5, (var3x) -> {
-               return this.canCreateStructure(var1, var2);
-            });
+            boolean var9 = ((Long2BooleanMap)this.featureChecks.computeIfAbsent(var2, (var0) -> new Long2BooleanOpenHashMap())).computeIfAbsent(var5, (var3x) -> this.canCreateStructure(var1, var2));
             return !var9 ? StructureCheckResult.START_NOT_PRESENT : StructureCheckResult.CHUNK_LOAD_NEEDED;
          }
       }
@@ -158,10 +153,8 @@ public class StructureCheck {
             } else {
                Object2IntOpenHashMap var4 = new Object2IntOpenHashMap();
                Registry var5 = this.registryAccess.lookupOrThrow(Registries.STRUCTURE);
-               Iterator var6 = var3.getAllKeys().iterator();
 
-               while(var6.hasNext()) {
-                  String var7 = (String)var6.next();
+               for(String var7 : var3.getAllKeys()) {
                   ResourceLocation var8 = ResourceLocation.tryParse(var7);
                   if (var8 != null) {
                      Structure var9 = (Structure)var5.getValue(var8);
@@ -207,9 +200,7 @@ public class StructureCheck {
 
    private void storeFullResults(long var1, Object2IntMap<Structure> var3) {
       this.loadedChunks.put(var1, deduplicateEmptyMap(var3));
-      this.featureChecks.values().forEach((var2) -> {
-         var2.remove(var1);
-      });
+      this.featureChecks.values().forEach((var2) -> var2.remove(var1));
    }
 
    public void incrementReference(ChunkPos var1, Structure var2) {
@@ -218,9 +209,7 @@ public class StructureCheck {
             var2x = new Object2IntOpenHashMap();
          }
 
-         ((Object2IntMap)var2x).computeInt(var2, (var0, var1) -> {
-            return var1 == null ? 1 : var1 + 1;
-         });
+         ((Object2IntMap)var2x).computeInt(var2, (var0, var1) -> var1 == null ? 1 : var1 + 1);
          return (Object2IntMap)var2x;
       });
    }

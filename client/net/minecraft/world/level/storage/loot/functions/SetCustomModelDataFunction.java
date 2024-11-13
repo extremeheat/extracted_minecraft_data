@@ -37,11 +37,7 @@ public class SetCustomModelDataFunction extends LootItemConditionalFunction {
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return (Set)Stream.concat(this.floats.stream(), this.colors.stream()).flatMap((var0) -> {
-         return var0.value().stream();
-      }).flatMap((var0) -> {
-         return var0.getReferencedContextParams().stream();
-      }).collect(Collectors.toSet());
+      return (Set)Stream.concat(this.floats.stream(), this.colors.stream()).flatMap((var0) -> var0.value().stream()).flatMap((var0) -> var0.getReferencedContextParams().stream()).collect(Collectors.toSet());
    }
 
    public LootItemFunctionType<SetCustomModelDataFunction> getType() {
@@ -49,9 +45,7 @@ public class SetCustomModelDataFunction extends LootItemConditionalFunction {
    }
 
    private static <T> List<T> apply(Optional<ListOperation.StandAlone<T>> var0, List<T> var1) {
-      return (List)var0.map((var1x) -> {
-         return var1x.apply(var1);
-      }).orElse(var1);
+      return (List)var0.map((var1x) -> var1x.apply(var1)).orElse(var1);
    }
 
    private static <T, E> List<E> apply(Optional<ListOperation.StandAlone<T>> var0, List<E> var1, Function<T, E> var2) {
@@ -63,26 +57,12 @@ public class SetCustomModelDataFunction extends LootItemConditionalFunction {
 
    public ItemStack run(ItemStack var1, LootContext var2) {
       CustomModelData var3 = (CustomModelData)var1.getOrDefault(DataComponents.CUSTOM_MODEL_DATA, CustomModelData.EMPTY);
-      var1.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(apply(this.floats, var3.floats(), (var1x) -> {
-         return var1x.getFloat(var2);
-      }), apply(this.flags, var3.flags()), apply(this.strings, var3.strings()), apply(this.colors, var3.colors(), (var1x) -> {
-         return var1x.getInt(var2);
-      })));
+      var1.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(apply(this.floats, var3.floats(), (var1x) -> var1x.getFloat(var2)), apply(this.flags, var3.flags()), apply(this.strings, var3.strings()), apply(this.colors, var3.colors(), (var1x) -> var1x.getInt(var2))));
       return var1;
    }
 
    static {
       COLOR_PROVIDER_CODEC = Codec.withAlternative(NumberProviders.CODEC, ExtraCodecs.RGB_COLOR_CODEC, ConstantValue::new);
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return commonFields(var0).and(var0.group(ListOperation.StandAlone.codec(NumberProviders.CODEC, 2147483647).optionalFieldOf("floats").forGetter((var0x) -> {
-            return var0x.floats;
-         }), ListOperation.StandAlone.codec(Codec.BOOL, 2147483647).optionalFieldOf("flags").forGetter((var0x) -> {
-            return var0x.flags;
-         }), ListOperation.StandAlone.codec(Codec.STRING, 2147483647).optionalFieldOf("strings").forGetter((var0x) -> {
-            return var0x.strings;
-         }), ListOperation.StandAlone.codec(COLOR_PROVIDER_CODEC, 2147483647).optionalFieldOf("colors").forGetter((var0x) -> {
-            return var0x.colors;
-         }))).apply(var0, SetCustomModelDataFunction::new);
-      });
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(ListOperation.StandAlone.codec(NumberProviders.CODEC, 2147483647).optionalFieldOf("floats").forGetter((var0x) -> var0x.floats), ListOperation.StandAlone.codec(Codec.BOOL, 2147483647).optionalFieldOf("flags").forGetter((var0x) -> var0x.flags), ListOperation.StandAlone.codec(Codec.STRING, 2147483647).optionalFieldOf("strings").forGetter((var0x) -> var0x.strings), ListOperation.StandAlone.codec(COLOR_PROVIDER_CODEC, 2147483647).optionalFieldOf("colors").forGetter((var0x) -> var0x.colors))).apply(var0, SetCustomModelDataFunction::new));
    }
 }

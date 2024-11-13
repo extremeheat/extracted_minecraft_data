@@ -9,9 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.MapItemColor;
 
 public record MapColor(int defaultColor) implements ItemTintSource {
-   public static final MapCodec<MapColor> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(MapColor::defaultColor)).apply(var0, MapColor::new);
-   });
+   public static final MapCodec<MapColor> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.RGB_COLOR_CODEC.fieldOf("default").forGetter(MapColor::defaultColor)).apply(var0, MapColor::new));
 
    public MapColor() {
       this(MapItemColor.DEFAULT.rgb());
@@ -29,9 +27,5 @@ public record MapColor(int defaultColor) implements ItemTintSource {
 
    public MapCodec<MapColor> type() {
       return MAP_CODEC;
-   }
-
-   public int defaultColor() {
-      return this.defaultColor;
    }
 }

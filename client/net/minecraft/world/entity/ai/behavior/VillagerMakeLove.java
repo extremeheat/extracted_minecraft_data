@@ -81,9 +81,7 @@ public class VillagerMakeLove extends Behavior<Villager> {
 
    private boolean isBreedingPossible(Villager var1) {
       Brain var2 = var1.getBrain();
-      Optional var3 = var2.getMemory(MemoryModuleType.BREED_TARGET).filter((var0) -> {
-         return var0.getType() == EntityType.VILLAGER;
-      });
+      Optional var3 = var2.getMemory(MemoryModuleType.BREED_TARGET).filter((var0) -> var0.getType() == EntityType.VILLAGER);
       if (var3.isEmpty()) {
          return false;
       } else {
@@ -92,11 +90,7 @@ public class VillagerMakeLove extends Behavior<Villager> {
    }
 
    private Optional<BlockPos> takeVacantBed(ServerLevel var1, Villager var2) {
-      return var1.getPoiManager().take((var0) -> {
-         return var0.is(PoiTypes.HOME);
-      }, (var2x, var3) -> {
-         return this.canReach(var2, var3, var2x);
-      }, var2.blockPosition(), 48);
+      return var1.getPoiManager().take((var0) -> var0.is(PoiTypes.HOME), (var2x, var3) -> this.canReach(var2, var3, var2x), var2.blockPosition(), 48);
    }
 
    private boolean canReach(Villager var1, BlockPos var2, Holder<PoiType> var3) {
@@ -121,7 +115,7 @@ public class VillagerMakeLove extends Behavior<Villager> {
 
    private void giveBedToChild(ServerLevel var1, Villager var2, BlockPos var3) {
       GlobalPos var4 = GlobalPos.of(var1.dimension(), var3);
-      var2.getBrain().setMemory(MemoryModuleType.HOME, (Object)var4);
+      var2.getBrain().setMemory(MemoryModuleType.HOME, var4);
    }
 
    // $FF: synthetic method

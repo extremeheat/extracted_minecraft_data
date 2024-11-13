@@ -48,7 +48,7 @@ public class TrialSpawnerConfigInRegistryFix extends NamedEntityFix {
       });
    }
 
-   private static final class VanillaTrialChambers {
+   static final class VanillaTrialChambers {
       public static final Map<Pair<Dynamic<Tag>, Dynamic<Tag>>, ResourceLocation> CONFIGS_TO_KEY = new HashMap();
 
       private VanillaTrialChambers() {

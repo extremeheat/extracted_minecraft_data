@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ServerboundSelectBundleItemPacket(int slotId, int selectedItemIndex) implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundSelectBundleItemPacket> STREAM_CODEC = Packet.codec(ServerboundSelectBundleItemPacket::write, ServerboundSelectBundleItemPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundSelectBundleItemPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundSelectBundleItemPacket>codec(ServerboundSelectBundleItemPacket::write, ServerboundSelectBundleItemPacket::new);
 
    private ServerboundSelectBundleItemPacket(FriendlyByteBuf var1) {
       this(var1.readVarInt(), var1.readVarInt());
@@ -29,13 +29,5 @@ public record ServerboundSelectBundleItemPacket(int slotId, int selectedItemInde
 
    public void handle(ServerGamePacketListener var1) {
       var1.handleBundleItemSelectedPacket(this);
-   }
-
-   public int slotId() {
-      return this.slotId;
-   }
-
-   public int selectedItemIndex() {
-      return this.selectedItemIndex;
    }
 }

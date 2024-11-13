@@ -132,7 +132,7 @@ public class SpectatorMenu {
       }
    }
 
-   private static class ScrollMenuItem implements SpectatorMenuItem {
+   static class ScrollMenuItem implements SpectatorMenuItem {
       private final int direction;
       private final boolean enabled;
 

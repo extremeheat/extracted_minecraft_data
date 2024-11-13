@@ -26,7 +26,7 @@ public enum Pose {
    SHOOTING(16),
    INHALING(17);
 
-   public static final IntFunction<Pose> BY_ID = ByIdMap.continuous(Pose::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   public static final IntFunction<Pose> BY_ID = ByIdMap.<Pose>continuous(Pose::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    public static final StreamCodec<ByteBuf, Pose> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Pose::id);
    private final int id;
 

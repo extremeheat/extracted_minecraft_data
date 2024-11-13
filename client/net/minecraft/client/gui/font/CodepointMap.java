@@ -18,8 +18,8 @@ public class CodepointMap<T> {
 
    public CodepointMap(IntFunction<T[]> var1, IntFunction<T[][]> var2) {
       super();
-      this.empty = (Object[])var1.apply(256);
-      this.blockMap = (Object[][])var2.apply(4352);
+      this.empty = (T[])((Object[])var1.apply(256));
+      this.blockMap = (T[][])((Object[][])var2.apply(4352));
       Arrays.fill(this.blockMap, this.empty);
       this.blockConstructor = var1;
    }
@@ -32,7 +32,7 @@ public class CodepointMap<T> {
    public T get(int var1) {
       int var2 = var1 >> 8;
       int var3 = var1 & 255;
-      return this.blockMap[var2][var3];
+      return (T)this.blockMap[var2][var3];
    }
 
    @Nullable
@@ -41,14 +41,14 @@ public class CodepointMap<T> {
       int var4 = var1 & 255;
       Object[] var5 = this.blockMap[var3];
       if (var5 == this.empty) {
-         var5 = (Object[])this.blockConstructor.apply(256);
+         var5 = this.blockConstructor.apply(256);
          this.blockMap[var3] = var5;
          var5[var4] = var2;
          return null;
       } else {
          Object var6 = var5[var4];
          var5[var4] = var2;
-         return var6;
+         return (T)var6;
       }
    }
 
@@ -58,16 +58,16 @@ public class CodepointMap<T> {
       Object[] var5 = this.blockMap[var3];
       Object var6 = var5[var4];
       if (var6 != null) {
-         return var6;
+         return (T)var6;
       } else {
          if (var5 == this.empty) {
-            var5 = (Object[])this.blockConstructor.apply(256);
+            var5 = this.blockConstructor.apply(256);
             this.blockMap[var3] = var5;
          }
 
          Object var7 = var2.apply(var1);
          var5[var4] = var7;
-         return var7;
+         return (T)var7;
       }
    }
 
@@ -81,7 +81,7 @@ public class CodepointMap<T> {
       } else {
          Object var5 = var4[var3];
          var4[var3] = null;
-         return var5;
+         return (T)var5;
       }
    }
 
@@ -103,9 +103,7 @@ public class CodepointMap<T> {
 
    public IntSet keySet() {
       IntOpenHashSet var1 = new IntOpenHashSet();
-      this.forEach((var1x, var2) -> {
-         var1.add(var1x);
-      });
+      this.forEach((var1x, var2) -> var1.add(var1x));
       return var1;
    }
 

@@ -1,8 +1,6 @@
 package net.minecraft.client;
 
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
@@ -211,11 +209,8 @@ public class Camera {
             return FogType.WATER;
          } else {
             NearPlane var2 = this.getNearPlane();
-            List var3 = Arrays.asList(var2.forward, var2.getTopLeft(), var2.getTopRight(), var2.getBottomLeft(), var2.getBottomRight());
-            Iterator var4 = var3.iterator();
 
-            while(var4.hasNext()) {
-               Vec3 var5 = (Vec3)var4.next();
+            for(Vec3 var5 : Arrays.asList(var2.forward, var2.getTopLeft(), var2.getTopRight(), var2.getBottomLeft(), var2.getBottomRight())) {
                Vec3 var6 = this.position.add(var5);
                BlockPos var7 = BlockPos.containing(var6);
                FluidState var8 = this.level.getFluidState(var7);

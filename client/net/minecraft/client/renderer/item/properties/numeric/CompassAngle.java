@@ -28,8 +28,6 @@ public class CompassAngle implements RangeSelectItemModelProperty {
    }
 
    static {
-      MAP_CODEC = CompassAngleState.MAP_CODEC.xmap(CompassAngle::new, (var0) -> {
-         return var0.state;
-      });
+      MAP_CODEC = CompassAngleState.MAP_CODEC.xmap(CompassAngle::new, (var0) -> var0.state);
    }
 }

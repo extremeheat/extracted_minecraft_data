@@ -15,6 +15,6 @@ public interface PositionSourceType<T extends PositionSource> {
    StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec();
 
    static <S extends PositionSourceType<T>, T extends PositionSource> S register(String var0, S var1) {
-      return (PositionSourceType)Registry.register(BuiltInRegistries.POSITION_SOURCE_TYPE, (String)var0, var1);
+      return (S)(Registry.register(BuiltInRegistries.POSITION_SOURCE_TYPE, (String)var0, var1));
    }
 }

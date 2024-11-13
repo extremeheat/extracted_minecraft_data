@@ -19,9 +19,7 @@ public abstract class SinglePieceStructure extends Structure {
    }
 
    public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
-      return getLowestY(var1, this.width, this.depth) < var1.chunkGenerator().getSeaLevel() ? Optional.empty() : onTopOfChunkCenter(var1, Heightmap.Types.WORLD_SURFACE_WG, (var2) -> {
-         this.generatePieces(var2, var1);
-      });
+      return getLowestY(var1, this.width, this.depth) < var1.chunkGenerator().getSeaLevel() ? Optional.empty() : onTopOfChunkCenter(var1, Heightmap.Types.WORLD_SURFACE_WG, (var2) -> this.generatePieces(var2, var1));
    }
 
    private void generatePieces(StructurePiecesBuilder var1, Structure.GenerationContext var2) {

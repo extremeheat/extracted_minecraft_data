@@ -16,9 +16,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class ForkingTrunkPlacer extends TrunkPlacer {
-   public static final MapCodec<ForkingTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return trunkPlacerParts(var0).apply(var0, ForkingTrunkPlacer::new);
-   });
+   public static final MapCodec<ForkingTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> trunkPlacerParts(var0).apply(var0, ForkingTrunkPlacer::new));
 
    public ForkingTrunkPlacer(int var1, int var2, int var3) {
       super(var1, var2, var3);
@@ -39,9 +37,8 @@ public class ForkingTrunkPlacer extends TrunkPlacer {
       int var13 = var5.getZ();
       OptionalInt var14 = OptionalInt.empty();
 
-      int var16;
       for(int var15 = 0; var15 < var4; ++var15) {
-         var16 = var5.getY() + var15;
+         int var16 = var5.getY() + var15;
          if (var15 >= var9 && var10 > 0) {
             var12 += var8.getStepX();
             var13 += var8.getStepZ();
@@ -59,17 +56,17 @@ public class ForkingTrunkPlacer extends TrunkPlacer {
 
       var12 = var5.getX();
       var13 = var5.getZ();
-      Direction var20 = Direction.Plane.HORIZONTAL.getRandomDirection(var3);
-      if (var20 != var8) {
-         var16 = var9 - var3.nextInt(2) - 1;
+      Direction var23 = Direction.Plane.HORIZONTAL.getRandomDirection(var3);
+      if (var23 != var8) {
+         int var24 = var9 - var3.nextInt(2) - 1;
          int var17 = 1 + var3.nextInt(3);
          var14 = OptionalInt.empty();
 
-         for(int var18 = var16; var18 < var4 && var17 > 0; --var17) {
+         for(int var18 = var24; var18 < var4 && var17 > 0; --var17) {
             if (var18 >= 1) {
                int var19 = var5.getY() + var18;
-               var12 += var20.getStepX();
-               var13 += var20.getStepZ();
+               var12 += var23.getStepX();
+               var13 += var23.getStepZ();
                if (this.placeLog(var1, var2, var3, var11.set(var12, var19, var13), var6)) {
                   var14 = OptionalInt.of(var19 + 1);
                }

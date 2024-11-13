@@ -30,22 +30,6 @@ public record Variant(ResourceLocation modelLocation, Transformation rotation, b
       return this.uvLock;
    }
 
-   public ResourceLocation modelLocation() {
-      return this.modelLocation;
-   }
-
-   public Transformation rotation() {
-      return this.rotation;
-   }
-
-   public boolean uvLock() {
-      return this.uvLock;
-   }
-
-   public int weight() {
-      return this.weight;
-   }
-
    public static class Deserializer implements JsonDeserializer<Variant> {
       @VisibleForTesting
       static final boolean DEFAULT_UVLOCK = false;

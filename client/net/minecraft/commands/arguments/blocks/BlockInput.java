@@ -1,6 +1,5 @@
 package net.minecraft.commands.arguments.blocks;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -40,10 +39,7 @@ public class BlockInput implements Predicate<BlockInWorld> {
       if (!var2.is(this.state.getBlock())) {
          return false;
       } else {
-         Iterator var3 = this.properties.iterator();
-
-         while(var3.hasNext()) {
-            Property var4 = (Property)var3.next();
+         for(Property var4 : this.properties) {
             if (var2.getValue(var4) != this.state.getValue(var4)) {
                return false;
             }
@@ -87,9 +83,8 @@ public class BlockInput implements Predicate<BlockInWorld> {
       if (var1 == this.state) {
          return var1;
       } else {
-         Property var3;
-         for(Iterator var2 = this.properties.iterator(); var2.hasNext(); var1 = copyProperty(var1, this.state, var3)) {
-            var3 = (Property)var2.next();
+         for(Property var3 : this.properties) {
+            var1 = copyProperty(var1, this.state, var3);
          }
 
          return var1;

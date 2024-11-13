@@ -30,7 +30,7 @@ public abstract class AbstractSampleLogger implements SampleLogger {
       if (var3 >= 1 && var3 < this.sample.length) {
          this.sample[var3] = var1;
       } else {
-         throw new IndexOutOfBoundsException("" + var3 + " out of bounds for dimensions " + this.sample.length);
+         throw new IndexOutOfBoundsException(var3 + " out of bounds for dimensions " + this.sample.length);
       }
    }
 

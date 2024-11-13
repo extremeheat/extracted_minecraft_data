@@ -59,11 +59,7 @@ public class BegGoal extends Goal {
    }
 
    private boolean playerHoldingInteresting(Player var1) {
-      InteractionHand[] var2 = InteractionHand.values();
-      int var3 = var2.length;
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         InteractionHand var5 = var2[var4];
+      for(InteractionHand var5 : InteractionHand.values()) {
          ItemStack var6 = var1.getItemInHand(var5);
          if (var6.is(Items.BONE) || this.wolf.isFood(var6)) {
             return true;

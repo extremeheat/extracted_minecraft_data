@@ -36,9 +36,7 @@ public class AlterGroundDecorator extends TreeDecorator {
 
       if (!var2.isEmpty()) {
          int var5 = ((BlockPos)var2.get(0)).getY();
-         var2.stream().filter((var1x) -> {
-            return var1x.getY() == var5;
-         }).forEach((var2x) -> {
+         var2.stream().filter((var1x) -> var1x.getY() == var5).forEach((var2x) -> {
             this.placeCircle(var1, var2x.west().north());
             this.placeCircle(var1, var2x.east(2).north());
             this.placeCircle(var1, var2x.west().south(2));
@@ -84,8 +82,6 @@ public class AlterGroundDecorator extends TreeDecorator {
    }
 
    static {
-      CODEC = BlockStateProvider.CODEC.fieldOf("provider").xmap(AlterGroundDecorator::new, (var0) -> {
-         return var0.provider;
-      });
+      CODEC = BlockStateProvider.CODEC.fieldOf("provider").xmap(AlterGroundDecorator::new, (var0) -> var0.provider);
    }
 }

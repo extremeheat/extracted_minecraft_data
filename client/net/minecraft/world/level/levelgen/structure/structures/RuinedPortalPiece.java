@@ -65,9 +65,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
    }
 
    public RuinedPortalPiece(StructureTemplateManager var1, CompoundTag var2) {
-      super(StructurePieceType.RUINED_PORTAL, var2, var1, (var2x) -> {
-         return makeSettings(var1, var2, var2x);
-      });
+      super(StructurePieceType.RUINED_PORTAL, var2, var1, (var2x) -> makeSettings(var1, var2, var2x));
       this.verticalPlacement = RuinedPortalPiece.VerticalPlacement.byName(var2.getString("VerticalPlacement"));
       this.properties = (Properties)RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var2.get("Properties"))).getPartialOrThrow();
    }
@@ -80,9 +78,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       DataResult var10000 = RuinedPortalPiece.Properties.CODEC.encodeStart(NbtOps.INSTANCE, this.properties);
       Logger var10001 = LOGGER;
       Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         var2.put("Properties", var1x);
-      });
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var2.put("Properties", var1x));
    }
 
    private static StructurePlaceSettings makeSettings(StructureTemplateManager var0, CompoundTag var1, ResourceLocation var2) {
@@ -256,55 +252,8 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       return new ProcessorRule(new BlockMatchTest(var0), AlwaysTrueTest.INSTANCE, var1.defaultBlockState());
    }
 
-   public static enum VerticalPlacement implements StringRepresentable {
-      ON_LAND_SURFACE("on_land_surface"),
-      PARTLY_BURIED("partly_buried"),
-      ON_OCEAN_FLOOR("on_ocean_floor"),
-      IN_MOUNTAIN("in_mountain"),
-      UNDERGROUND("underground"),
-      IN_NETHER("in_nether");
-
-      public static final StringRepresentable.EnumCodec<VerticalPlacement> CODEC = StringRepresentable.fromEnum(VerticalPlacement::values);
-      private final String name;
-
-      private VerticalPlacement(final String var3) {
-         this.name = var3;
-      }
-
-      public String getName() {
-         return this.name;
-      }
-
-      public static VerticalPlacement byName(String var0) {
-         return (VerticalPlacement)CODEC.byName(var0);
-      }
-
-      public String getSerializedName() {
-         return this.name;
-      }
-
-      // $FF: synthetic method
-      private static VerticalPlacement[] $values() {
-         return new VerticalPlacement[]{ON_LAND_SURFACE, PARTLY_BURIED, ON_OCEAN_FLOOR, IN_MOUNTAIN, UNDERGROUND, IN_NETHER};
-      }
-   }
-
    public static class Properties {
-      public static final Codec<Properties> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Codec.BOOL.fieldOf("cold").forGetter((var0x) -> {
-            return var0x.cold;
-         }), Codec.FLOAT.fieldOf("mossiness").forGetter((var0x) -> {
-            return var0x.mossiness;
-         }), Codec.BOOL.fieldOf("air_pocket").forGetter((var0x) -> {
-            return var0x.airPocket;
-         }), Codec.BOOL.fieldOf("overgrown").forGetter((var0x) -> {
-            return var0x.overgrown;
-         }), Codec.BOOL.fieldOf("vines").forGetter((var0x) -> {
-            return var0x.vines;
-         }), Codec.BOOL.fieldOf("replace_with_blackstone").forGetter((var0x) -> {
-            return var0x.replaceWithBlackstone;
-         })).apply(var0, Properties::new);
-      });
+      public static final Codec<Properties> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.BOOL.fieldOf("cold").forGetter((var0x) -> var0x.cold), Codec.FLOAT.fieldOf("mossiness").forGetter((var0x) -> var0x.mossiness), Codec.BOOL.fieldOf("air_pocket").forGetter((var0x) -> var0x.airPocket), Codec.BOOL.fieldOf("overgrown").forGetter((var0x) -> var0x.overgrown), Codec.BOOL.fieldOf("vines").forGetter((var0x) -> var0x.vines), Codec.BOOL.fieldOf("replace_with_blackstone").forGetter((var0x) -> var0x.replaceWithBlackstone)).apply(var0, Properties::new));
       public boolean cold;
       public float mossiness;
       public boolean airPocket;
@@ -324,6 +273,39 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
          this.overgrown = var4;
          this.vines = var5;
          this.replaceWithBlackstone = var6;
+      }
+   }
+
+   public static enum VerticalPlacement implements StringRepresentable {
+      ON_LAND_SURFACE("on_land_surface"),
+      PARTLY_BURIED("partly_buried"),
+      ON_OCEAN_FLOOR("on_ocean_floor"),
+      IN_MOUNTAIN("in_mountain"),
+      UNDERGROUND("underground"),
+      IN_NETHER("in_nether");
+
+      public static final StringRepresentable.EnumCodec<VerticalPlacement> CODEC = StringRepresentable.<VerticalPlacement>fromEnum(VerticalPlacement::values);
+      private final String name;
+
+      private VerticalPlacement(final String var3) {
+         this.name = var3;
+      }
+
+      public String getName() {
+         return this.name;
+      }
+
+      public static VerticalPlacement byName(String var0) {
+         return CODEC.byName(var0);
+      }
+
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      // $FF: synthetic method
+      private static VerticalPlacement[] $values() {
+         return new VerticalPlacement[]{ON_LAND_SURFACE, PARTLY_BURIED, ON_OCEAN_FLOOR, IN_MOUNTAIN, UNDERGROUND, IN_NETHER};
       }
    }
 }

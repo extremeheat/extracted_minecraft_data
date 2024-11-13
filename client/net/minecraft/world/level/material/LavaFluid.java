@@ -101,11 +101,7 @@ public abstract class LavaFluid extends FlowingFluid {
    }
 
    private boolean hasFlammableNeighbours(LevelReader var1, BlockPos var2) {
-      Direction[] var3 = Direction.values();
-      int var4 = var3.length;
-
-      for(int var5 = 0; var5 < var4; ++var5) {
-         Direction var6 = var3[var5];
+      for(Direction var6 : Direction.values()) {
          if (this.isFlammable(var1, var2.relative(var6))) {
             return true;
          }
@@ -196,6 +192,20 @@ public abstract class LavaFluid extends FlowingFluid {
       return Optional.of(SoundEvents.BUCKET_FILL_LAVA);
    }
 
+   public static class Source extends LavaFluid {
+      public Source() {
+         super();
+      }
+
+      public int getAmount(FluidState var1) {
+         return 8;
+      }
+
+      public boolean isSource(FluidState var1) {
+         return true;
+      }
+   }
+
    public static class Flowing extends LavaFluid {
       public Flowing() {
          super();
@@ -212,20 +222,6 @@ public abstract class LavaFluid extends FlowingFluid {
 
       public boolean isSource(FluidState var1) {
          return false;
-      }
-   }
-
-   public static class Source extends LavaFluid {
-      public Source() {
-         super();
-      }
-
-      public int getAmount(FluidState var1) {
-         return 8;
-      }
-
-      public boolean isSource(FluidState var1) {
-         return true;
       }
    }
 }

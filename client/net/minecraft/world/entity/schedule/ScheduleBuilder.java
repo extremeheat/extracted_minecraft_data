@@ -27,15 +27,13 @@ public class ScheduleBuilder {
       var10000.forEach(var10001::ensureTimelineExistsFor);
       this.transitions.forEach((var1) -> {
          Activity var2 = var1.getActivity();
-         this.schedule.getAllTimelinesExceptFor(var2).forEach((var1x) -> {
-            var1x.addKeyframe(var1.getTime(), 0.0F);
-         });
+         this.schedule.getAllTimelinesExceptFor(var2).forEach((var1x) -> var1x.addKeyframe(var1.getTime(), 0.0F));
          this.schedule.getTimelineFor(var2).addKeyframe(var1.getTime(), 1.0F);
       });
       return this.schedule;
    }
 
-   private static class ActivityTransition {
+   static class ActivityTransition {
       private final int time;
       private final Activity activity;
 

@@ -2,7 +2,6 @@ package net.minecraft.data.tags;
 
 import com.google.common.collect.Maps;
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -66,61 +65,39 @@ public abstract class TagsProvider<T> implements DataProvider {
                this.contents = var1;
                this.parent = var2;
             }
-
-            public HolderLookup.Provider contents() {
-               return this.contents;
-            }
-
-            public TagLookup<T> parent() {
-               return this.parent;
-            }
          }
 
          return new 1CombinedData(var0, var1x);
       }, Util.backgroundExecutor()).thenCompose((var2) -> {
          HolderLookup.RegistryLookup var3 = var2.contents.lookupOrThrow(this.registryKey);
-         Predicate var4 = (var2x) -> {
-            return var3.get(ResourceKey.create(this.registryKey, var2x)).isPresent();
-         };
-         Predicate var5 = (var2x) -> {
-            return this.builders.containsKey(var2x) || var2.parent.contains(TagKey.create(this.registryKey, var2x));
-         };
+         Predicate var4 = (var2x) -> var3.get(ResourceKey.create(this.registryKey, var2x)).isPresent();
+         Predicate var5 = (var2x) -> this.builders.containsKey(var2x) || var2.parent.contains(TagKey.create(this.registryKey, var2x));
          return CompletableFuture.allOf((CompletableFuture[])this.builders.entrySet().stream().map((var5x) -> {
             ResourceLocation var6 = (ResourceLocation)var5x.getKey();
             TagBuilder var7 = (TagBuilder)var5x.getValue();
             List var8 = var7.build();
-            List var9 = var8.stream().filter((var2x) -> {
-               return !var2x.verifyIfPresent(var4, var5);
-            }).toList();
+            List var9 = var8.stream().filter((var2x) -> !var2x.verifyIfPresent(var4, var5)).toList();
             if (!var9.isEmpty()) {
                throw new IllegalArgumentException(String.format(Locale.ROOT, "Couldn't define tag %s as it is missing following references: %s", var6, var9.stream().map(Objects::toString).collect(Collectors.joining(","))));
             } else {
                Path var10 = this.pathProvider.json(var6);
-               return DataProvider.saveStable(var1, (HolderLookup.Provider)var2.contents, TagFile.CODEC, new TagFile(var8, false), var10);
+               return DataProvider.saveStable(var1, var2.contents, TagFile.CODEC, new TagFile(var8, false), var10);
             }
-         }).toArray((var0) -> {
-            return new CompletableFuture[var0];
-         }));
+         }).toArray((var0) -> new CompletableFuture[var0]));
       });
    }
 
    protected TagAppender<T> tag(TagKey<T> var1) {
       TagBuilder var2 = this.getOrCreateRawBuilder(var1);
-      return new TagAppender(var2);
+      return new TagAppender<T>(var2);
    }
 
    protected TagBuilder getOrCreateRawBuilder(TagKey<T> var1) {
-      return (TagBuilder)this.builders.computeIfAbsent(var1.location(), (var0) -> {
-         return TagBuilder.create();
-      });
+      return (TagBuilder)this.builders.computeIfAbsent(var1.location(), (var0) -> TagBuilder.create());
    }
 
    public CompletableFuture<TagLookup<T>> contentsGetter() {
-      return this.contentsDone.thenApply((var1) -> {
-         return (var1x) -> {
-            return Optional.ofNullable((TagBuilder)this.builders.get(var1x.location()));
-         };
-      });
+      return this.contentsDone.thenApply((var1) -> (var1x) -> Optional.ofNullable((TagBuilder)this.builders.get(var1x.location())));
    }
 
    protected CompletableFuture<HolderLookup.Provider> createContentsProvider() {
@@ -134,9 +111,7 @@ public abstract class TagsProvider<T> implements DataProvider {
    @FunctionalInterface
    public interface TagLookup<T> extends Function<TagKey<T>, Optional<TagBuilder>> {
       static <T> TagLookup<T> empty() {
-         return (var0) -> {
-            return Optional.empty();
-         };
+         return (var0) -> Optional.empty();
       }
 
       default boolean contains(TagKey<T> var1) {
@@ -159,11 +134,7 @@ public abstract class TagsProvider<T> implements DataProvider {
 
       @SafeVarargs
       public final TagAppender<T> add(ResourceKey<T>... var1) {
-         ResourceKey[] var2 = var1;
-         int var3 = var1.length;
-
-         for(int var4 = 0; var4 < var3; ++var4) {
-            ResourceKey var5 = var2[var4];
+         for(ResourceKey var5 : var1) {
             this.builder.addElement(var5.location());
          }
 
@@ -171,10 +142,7 @@ public abstract class TagsProvider<T> implements DataProvider {
       }
 
       public final TagAppender<T> addAll(List<ResourceKey<T>> var1) {
-         Iterator var2 = var1.iterator();
-
-         while(var2.hasNext()) {
-            ResourceKey var3 = (ResourceKey)var2.next();
+         for(ResourceKey var3 : var1) {
             this.builder.addElement(var3.location());
          }
 

@@ -10,11 +10,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class DropExperienceBlock extends Block {
-   public static final MapCodec<DropExperienceBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(IntProvider.codec(0, 10).fieldOf("experience").forGetter((var0x) -> {
-         return var0x.xpRange;
-      }), propertiesCodec()).apply(var0, DropExperienceBlock::new);
-   });
+   public static final MapCodec<DropExperienceBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(IntProvider.codec(0, 10).fieldOf("experience").forGetter((var0x) -> var0x.xpRange), propertiesCodec()).apply(var0, DropExperienceBlock::new));
    private final IntProvider xpRange;
 
    public MapCodec<? extends DropExperienceBlock> codec() {

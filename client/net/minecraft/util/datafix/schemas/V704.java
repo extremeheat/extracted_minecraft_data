@@ -142,7 +142,7 @@ public class V704 extends Schema {
    });
    protected static final Hook.HookFunction ADD_NAMES = new Hook.HookFunction() {
       public <T> T apply(DynamicOps<T> var1, T var2) {
-         return V99.addNames(new Dynamic(var1, var2), V704.ITEM_TO_BLOCKENTITY, V99.ITEM_TO_ENTITY);
+         return (T)V99.addNames(new Dynamic(var1, var2), V704.ITEM_TO_BLOCKENTITY, V99.ITEM_TO_ENTITY);
       }
    };
 
@@ -151,9 +151,7 @@ public class V704 extends Schema {
    }
 
    protected static void registerInventory(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      var0.register(var1, var2, () -> {
-         return DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var0)));
-      });
+      var0.register(var1, var2, () -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var0))));
    }
 
    public Type<?> getChoiceType(DSL.TypeReference var1, String var2) {
@@ -165,15 +163,11 @@ public class V704 extends Schema {
       registerInventory(var1, var2, "minecraft:furnace");
       registerInventory(var1, var2, "minecraft:chest");
       var1.registerSimple(var2, "minecraft:ender_chest");
-      var1.register(var2, "minecraft:jukebox", (var1x) -> {
-         return DSL.optionalFields("RecordItem", References.ITEM_STACK.in(var1));
-      });
+      var1.register(var2, "minecraft:jukebox", (var1x) -> DSL.optionalFields("RecordItem", References.ITEM_STACK.in(var1)));
       registerInventory(var1, var2, "minecraft:dispenser");
       registerInventory(var1, var2, "minecraft:dropper");
       var1.registerSimple(var2, "minecraft:sign");
-      var1.register(var2, "minecraft:mob_spawner", (var1x) -> {
-         return References.UNTAGGED_SPAWNER.in(var1);
-      });
+      var1.register(var2, "minecraft:mob_spawner", (var1x) -> References.UNTAGGED_SPAWNER.in(var1));
       var1.registerSimple(var2, "minecraft:noteblock");
       var1.registerSimple(var2, "minecraft:piston");
       registerInventory(var1, var2, "minecraft:brewing_stand");
@@ -184,9 +178,7 @@ public class V704 extends Schema {
       var1.registerSimple(var2, "minecraft:daylight_detector");
       registerInventory(var1, var2, "minecraft:hopper");
       var1.registerSimple(var2, "minecraft:comparator");
-      var1.register(var2, "minecraft:flower_pot", (var1x) -> {
-         return DSL.optionalFields("Item", DSL.or(DSL.constType(DSL.intType()), References.ITEM_NAME.in(var1)));
-      });
+      var1.register(var2, "minecraft:flower_pot", (var1x) -> DSL.optionalFields("Item", DSL.or(DSL.constType(DSL.intType()), References.ITEM_NAME.in(var1))));
       var1.registerSimple(var2, "minecraft:banner");
       var1.registerSimple(var2, "minecraft:structure_block");
       var1.registerSimple(var2, "minecraft:end_gateway");
@@ -196,11 +188,7 @@ public class V704 extends Schema {
 
    public void registerTypes(Schema var1, Map<String, Supplier<TypeTemplate>> var2, Map<String, Supplier<TypeTemplate>> var3) {
       super.registerTypes(var1, var2, var3);
-      var1.registerType(true, References.BLOCK_ENTITY, () -> {
-         return DSL.optionalFields("components", References.DATA_COMPONENTS.in(var1), DSL.taggedChoiceLazy("id", NamespacedSchema.namespacedString(), var3));
-      });
-      var1.registerType(true, References.ITEM_STACK, () -> {
-         return DSL.hook(DSL.optionalFields("id", References.ITEM_NAME.in(var1), "tag", DSL.optionalFields(new Pair[]{Pair.of("EntityTag", References.ENTITY_TREE.in(var1)), Pair.of("BlockEntityTag", References.BLOCK_ENTITY.in(var1)), Pair.of("CanDestroy", DSL.list(References.BLOCK_NAME.in(var1))), Pair.of("CanPlaceOn", DSL.list(References.BLOCK_NAME.in(var1))), Pair.of("Items", DSL.list(References.ITEM_STACK.in(var1))), Pair.of("ChargedProjectiles", DSL.list(References.ITEM_STACK.in(var1)))})), ADD_NAMES, HookFunction.IDENTITY);
-      });
+      var1.registerType(true, References.BLOCK_ENTITY, () -> DSL.optionalFields("components", References.DATA_COMPONENTS.in(var1), DSL.taggedChoiceLazy("id", NamespacedSchema.namespacedString(), var3)));
+      var1.registerType(true, References.ITEM_STACK, () -> DSL.hook(DSL.optionalFields("id", References.ITEM_NAME.in(var1), "tag", DSL.optionalFields(new Pair[]{Pair.of("EntityTag", References.ENTITY_TREE.in(var1)), Pair.of("BlockEntityTag", References.BLOCK_ENTITY.in(var1)), Pair.of("CanDestroy", DSL.list(References.BLOCK_NAME.in(var1))), Pair.of("CanPlaceOn", DSL.list(References.BLOCK_NAME.in(var1))), Pair.of("Items", DSL.list(References.ITEM_STACK.in(var1))), Pair.of("ChargedProjectiles", DSL.list(References.ITEM_STACK.in(var1)))})), ADD_NAMES, HookFunction.IDENTITY));
    }
 }

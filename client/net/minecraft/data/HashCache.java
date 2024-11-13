@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -59,13 +58,12 @@ public class HashCache {
       HashMap var4 = new HashMap();
       int var5 = 0;
 
-      ProviderCache var9;
-      for(Iterator var6 = var2.iterator(); var6.hasNext(); var5 += var9.count()) {
-         String var7 = (String)var6.next();
+      for(String var7 : var2) {
          Path var8 = this.getProviderCachePath(var7);
          this.cachePaths.add(var8);
-         var9 = readCache(var1, var8);
+         ProviderCache var9 = readCache(var1, var8);
          var4.put(var7, var9);
+         var5 += var9.count();
       }
 
       this.caches = var4;
@@ -95,9 +93,7 @@ public class HashCache {
          throw new IllegalStateException("Provider not registered: " + var1);
       } else {
          CacheUpdater var4 = new CacheUpdater(var1, this.versionId, var3);
-         return var2.update(var4).thenApply((var1x) -> {
-            return var4.close();
-         });
+         return var2.update(var4).thenApply((var1x) -> var4.close());
       }
    }
 
@@ -245,13 +241,25 @@ public class HashCache {
          }
 
       }
+   }
 
-      public String version() {
-         return this.version;
+   static record ProviderCacheBuilder(String version, ConcurrentMap<Path, HashCode> data) {
+      ProviderCacheBuilder(String var1) {
+         this(var1, new ConcurrentHashMap());
       }
 
-      public ImmutableMap<Path, HashCode> data() {
-         return this.data;
+      private ProviderCacheBuilder(String var1, ConcurrentMap<Path, HashCode> var2) {
+         super();
+         this.version = var1;
+         this.data = var2;
+      }
+
+      public void put(Path var1, HashCode var2) {
+         this.data.put(var1, var2);
+      }
+
+      public ProviderCache build() {
+         return new ProviderCache(this.version, ImmutableMap.copyOf(this.data));
       }
    }
 
@@ -293,11 +301,6 @@ public class HashCache {
       }
    }
 
-   @FunctionalInterface
-   public interface UpdateFunction {
-      CompletableFuture<?> update(CachedOutput var1);
-   }
-
    public static record UpdateResult(String providerId, ProviderCache cache, int writes) {
       public UpdateResult(String var1, ProviderCache var2, int var3) {
          super();
@@ -305,45 +308,10 @@ public class HashCache {
          this.cache = var2;
          this.writes = var3;
       }
-
-      public String providerId() {
-         return this.providerId;
-      }
-
-      public ProviderCache cache() {
-         return this.cache;
-      }
-
-      public int writes() {
-         return this.writes;
-      }
    }
 
-   static record ProviderCacheBuilder(String version, ConcurrentMap<Path, HashCode> data) {
-      ProviderCacheBuilder(String var1) {
-         this(var1, new ConcurrentHashMap());
-      }
-
-      private ProviderCacheBuilder(String var1, ConcurrentMap<Path, HashCode> var2) {
-         super();
-         this.version = var1;
-         this.data = var2;
-      }
-
-      public void put(Path var1, HashCode var2) {
-         this.data.put(var1, var2);
-      }
-
-      public ProviderCache build() {
-         return new ProviderCache(this.version, ImmutableMap.copyOf(this.data));
-      }
-
-      public String version() {
-         return this.version;
-      }
-
-      public ConcurrentMap<Path, HashCode> data() {
-         return this.data;
-      }
+   @FunctionalInterface
+   public interface UpdateFunction {
+      CompletableFuture<?> update(CachedOutput var1);
    }
 }

@@ -98,9 +98,7 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
                   }
 
                   var5.skipDropExperience();
-                  this.positionSource.getPosition(var1).ifPresent((var2x) -> {
-                     this.bloom(var1, BlockPos.containing(var2x), this.blockState, var1.getRandom());
-                  });
+                  this.positionSource.getPosition(var1).ifPresent((var2x) -> this.bloom(var1, BlockPos.containing(var2x), this.blockState, var1.getRandom()));
                }
 
                return true;

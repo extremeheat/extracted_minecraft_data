@@ -94,9 +94,7 @@ public record WrappedMinMaxBounds(@Nullable Float min, @Nullable Float max) {
    }
 
    public static WrappedMinMaxBounds fromReader(StringReader var0, boolean var1) throws CommandSyntaxException {
-      return fromReader(var0, var1, (var0x) -> {
-         return var0x;
-      });
+      return fromReader(var0, var1, (var0x) -> var0x);
    }
 
    public static WrappedMinMaxBounds fromReader(StringReader var0, boolean var1, Function<Float, Float> var2) throws CommandSyntaxException {
@@ -172,15 +170,5 @@ public record WrappedMinMaxBounds(@Nullable Float min, @Nullable Float max) {
    @Nullable
    private static Float optionallyFormat(@Nullable Float var0, Function<Float, Float> var1) {
       return var0 == null ? null : (Float)var1.apply(var0);
-   }
-
-   @Nullable
-   public Float min() {
-      return this.min;
-   }
-
-   @Nullable
-   public Float max() {
-      return this.max;
    }
 }

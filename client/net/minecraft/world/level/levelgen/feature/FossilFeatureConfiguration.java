@@ -10,19 +10,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProc
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
 
 public class FossilFeatureConfiguration implements FeatureConfiguration {
-   public static final Codec<FossilFeatureConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ResourceLocation.CODEC.listOf().fieldOf("fossil_structures").forGetter((var0x) -> {
-         return var0x.fossilStructures;
-      }), ResourceLocation.CODEC.listOf().fieldOf("overlay_structures").forGetter((var0x) -> {
-         return var0x.overlayStructures;
-      }), StructureProcessorType.LIST_CODEC.fieldOf("fossil_processors").forGetter((var0x) -> {
-         return var0x.fossilProcessors;
-      }), StructureProcessorType.LIST_CODEC.fieldOf("overlay_processors").forGetter((var0x) -> {
-         return var0x.overlayProcessors;
-      }), Codec.intRange(0, 7).fieldOf("max_empty_corners_allowed").forGetter((var0x) -> {
-         return var0x.maxEmptyCornersAllowed;
-      })).apply(var0, FossilFeatureConfiguration::new);
-   });
+   public static final Codec<FossilFeatureConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceLocation.CODEC.listOf().fieldOf("fossil_structures").forGetter((var0x) -> var0x.fossilStructures), ResourceLocation.CODEC.listOf().fieldOf("overlay_structures").forGetter((var0x) -> var0x.overlayStructures), StructureProcessorType.LIST_CODEC.fieldOf("fossil_processors").forGetter((var0x) -> var0x.fossilProcessors), StructureProcessorType.LIST_CODEC.fieldOf("overlay_processors").forGetter((var0x) -> var0x.overlayProcessors), Codec.intRange(0, 7).fieldOf("max_empty_corners_allowed").forGetter((var0x) -> var0x.maxEmptyCornersAllowed)).apply(var0, FossilFeatureConfiguration::new));
    public final List<ResourceLocation> fossilStructures;
    public final List<ResourceLocation> overlayStructures;
    public final Holder<StructureProcessorList> fossilProcessors;

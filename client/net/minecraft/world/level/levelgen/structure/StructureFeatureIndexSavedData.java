@@ -14,7 +14,7 @@ public class StructureFeatureIndexSavedData extends SavedData {
    private final LongSet remaining;
 
    public static SavedData.Factory<StructureFeatureIndexSavedData> factory() {
-      return new SavedData.Factory(StructureFeatureIndexSavedData::new, StructureFeatureIndexSavedData::load, DataFixTypes.SAVED_DATA_STRUCTURE_FEATURE_INDICES);
+      return new SavedData.Factory<StructureFeatureIndexSavedData>(StructureFeatureIndexSavedData::new, StructureFeatureIndexSavedData::load, DataFixTypes.SAVED_DATA_STRUCTURE_FEATURE_INDICES);
    }
 
    private StructureFeatureIndexSavedData(LongSet var1, LongSet var2) {

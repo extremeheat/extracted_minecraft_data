@@ -18,13 +18,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
 public class LayeredCauldronBlock extends AbstractCauldronBlock {
-   public static final MapCodec<LayeredCauldronBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Biome.Precipitation.CODEC.fieldOf("precipitation").forGetter((var0x) -> {
-         return var0x.precipitationType;
-      }), CauldronInteraction.CODEC.fieldOf("interactions").forGetter((var0x) -> {
-         return var0x.interactions;
-      }), propertiesCodec()).apply(var0, LayeredCauldronBlock::new);
-   });
+   public static final MapCodec<LayeredCauldronBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Biome.Precipitation.CODEC.fieldOf("precipitation").forGetter((var0x) -> var0x.precipitationType), CauldronInteraction.CODEC.fieldOf("interactions").forGetter((var0x) -> var0x.interactions), propertiesCodec()).apply(var0, LayeredCauldronBlock::new));
    public static final int MIN_FILL_LEVEL = 1;
    public static final int MAX_FILL_LEVEL = 3;
    public static final IntegerProperty LEVEL;

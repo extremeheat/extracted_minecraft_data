@@ -18,20 +18,4 @@ public record GameTestBatch(String name, Collection<GameTestInfo> gameTestInfos,
          this.afterBatchFunction = var4;
       }
    }
-
-   public String name() {
-      return this.name;
-   }
-
-   public Collection<GameTestInfo> gameTestInfos() {
-      return this.gameTestInfos;
-   }
-
-   public Consumer<ServerLevel> beforeBatchFunction() {
-      return this.beforeBatchFunction;
-   }
-
-   public Consumer<ServerLevel> afterBatchFunction() {
-      return this.afterBatchFunction;
-   }
 }

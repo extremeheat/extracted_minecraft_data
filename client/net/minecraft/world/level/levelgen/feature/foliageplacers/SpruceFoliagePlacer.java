@@ -9,11 +9,7 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class SpruceFoliagePlacer extends FoliagePlacer {
-   public static final MapCodec<SpruceFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return foliagePlacerParts(var0).and(IntProvider.codec(0, 24).fieldOf("trunk_height").forGetter((var0x) -> {
-         return var0x.trunkHeight;
-      })).apply(var0, SpruceFoliagePlacer::new);
-   });
+   public static final MapCodec<SpruceFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> foliagePlacerParts(var0).and(IntProvider.codec(0, 24).fieldOf("trunk_height").forGetter((var0x) -> var0x.trunkHeight)).apply(var0, SpruceFoliagePlacer::new));
    private final IntProvider trunkHeight;
 
    public SpruceFoliagePlacer(IntProvider var1, IntProvider var2, IntProvider var3) {

@@ -47,12 +47,12 @@ public class CartographyTableMenu extends AbstractContainerMenu {
          }
       };
       this.access = var3;
-      this.addSlot(new Slot(this, this.container, 0, 15, 15) {
+      this.addSlot(new Slot(this.container, 0, 15, 15) {
          public boolean mayPlace(ItemStack var1) {
             return var1.has(DataComponents.MAP_ID);
          }
       });
-      this.addSlot(new Slot(this, this.container, 1, 15, 52) {
+      this.addSlot(new Slot(this.container, 1, 15, 52) {
          public boolean mayPlace(ItemStack var1) {
             return var1.is(Items.PAPER) || var1.is(Items.MAP) || var1.is(Items.GLASS_PANE);
          }
@@ -137,7 +137,7 @@ public class CartographyTableMenu extends AbstractContainerMenu {
 
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = (Slot)this.slots.get(var2);
+      Slot var4 = this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -187,8 +187,6 @@ public class CartographyTableMenu extends AbstractContainerMenu {
    public void removed(Player var1) {
       super.removed(var1);
       this.resultContainer.removeItemNoUpdate(2);
-      this.access.execute((var2, var3) -> {
-         this.clearContainer(var1, this.container);
-      });
+      this.access.execute((var2, var3) -> this.clearContainer(var1, this.container));
    }
 }

@@ -16,9 +16,7 @@ public class StrongholdStructure extends Structure {
    }
 
    public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
-      return Optional.of(new Structure.GenerationStub(var1.chunkPos().getWorldPosition(), (var1x) -> {
-         generatePieces(var1x, var1);
-      }));
+      return Optional.of(new Structure.GenerationStub(var1.chunkPos().getWorldPosition(), (var1x) -> generatePieces(var1x, var1)));
    }
 
    private static void generatePieces(StructurePiecesBuilder var0, Structure.GenerationContext var1) {

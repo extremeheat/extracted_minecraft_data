@@ -5,7 +5,6 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -130,10 +129,8 @@ public class DebugPackets {
    private static List<String> getMemoryDescriptions(LivingEntity var0, long var1) {
       Map var3 = var0.getBrain().getMemories();
       ArrayList var4 = Lists.newArrayList();
-      Iterator var5 = var3.entrySet().iterator();
 
-      while(var5.hasNext()) {
-         Map.Entry var6 = (Map.Entry)var5.next();
+      for(Map.Entry var6 : var3.entrySet()) {
          MemoryModuleType var7 = (MemoryModuleType)var6.getKey();
          Optional var8 = (Optional)var6.getValue();
          String var9;
@@ -142,7 +139,7 @@ public class DebugPackets {
             Object var11 = var10.getValue();
             if (var7 == MemoryModuleType.HEARD_BELL_TIME) {
                long var12 = var1 - (Long)var11;
-               var9 = "" + var12 + " ticks ago";
+               var9 = var12 + " ticks ago";
             } else if (var10.canExpire()) {
                String var10000 = getShortDescription((ServerLevel)var0.level(), var11);
                var9 = var10000 + " (ttl: " + var10.getTimeToLive() + ")";
@@ -166,46 +163,39 @@ public class DebugPackets {
          return "-";
       } else if (var1 instanceof UUID) {
          return getShortDescription(var0, var0.getEntity((UUID)var1));
+      } else if (var1 instanceof LivingEntity) {
+         Entity var6 = (Entity)var1;
+         return DebugEntityNameGenerator.getEntityName(var6);
+      } else if (var1 instanceof Nameable) {
+         return ((Nameable)var1).getName().getString();
+      } else if (var1 instanceof WalkTarget) {
+         return getShortDescription(var0, ((WalkTarget)var1).getTarget());
+      } else if (var1 instanceof EntityTracker) {
+         return getShortDescription(var0, ((EntityTracker)var1).getEntity());
+      } else if (var1 instanceof GlobalPos) {
+         return getShortDescription(var0, ((GlobalPos)var1).pos());
+      } else if (var1 instanceof BlockPosTracker) {
+         return getShortDescription(var0, ((BlockPosTracker)var1).currentBlockPosition());
+      } else if (var1 instanceof DamageSource) {
+         Entity var5 = ((DamageSource)var1).getEntity();
+         return var5 == null ? var1.toString() : getShortDescription(var0, var5);
+      } else if (!(var1 instanceof Collection)) {
+         return var1.toString();
       } else {
-         Entity var5;
-         if (var1 instanceof LivingEntity) {
-            var5 = (Entity)var1;
-            return DebugEntityNameGenerator.getEntityName(var5);
-         } else if (var1 instanceof Nameable) {
-            return ((Nameable)var1).getName().getString();
-         } else if (var1 instanceof WalkTarget) {
-            return getShortDescription(var0, ((WalkTarget)var1).getTarget());
-         } else if (var1 instanceof EntityTracker) {
-            return getShortDescription(var0, ((EntityTracker)var1).getEntity());
-         } else if (var1 instanceof GlobalPos) {
-            return getShortDescription(var0, ((GlobalPos)var1).pos());
-         } else if (var1 instanceof BlockPosTracker) {
-            return getShortDescription(var0, ((BlockPosTracker)var1).currentBlockPosition());
-         } else if (var1 instanceof DamageSource) {
-            var5 = ((DamageSource)var1).getEntity();
-            return var5 == null ? var1.toString() : getShortDescription(var0, var5);
-         } else if (!(var1 instanceof Collection)) {
-            return var1.toString();
-         } else {
-            ArrayList var2 = Lists.newArrayList();
-            Iterator var3 = ((Iterable)var1).iterator();
+         ArrayList var2 = Lists.newArrayList();
 
-            while(var3.hasNext()) {
-               Object var4 = var3.next();
-               var2.add(getShortDescription(var0, var4));
-            }
-
-            return var2.toString();
+         for(Object var4 : (Iterable)var1) {
+            var2.add(getShortDescription(var0, var4));
          }
+
+         return var2.toString();
       }
    }
 
    private static void sendPacketToAllPlayers(ServerLevel var0, CustomPacketPayload var1) {
       ClientboundCustomPayloadPacket var2 = new ClientboundCustomPayloadPacket(var1);
-      Iterator var3 = var0.players().iterator();
 
-      while(var3.hasNext()) {
-         ServerPlayer var4 = (ServerPlayer)var3.next();
+      for(ServerPlayer var4 : var0.players()) {
          var4.connection.send(var2);
       }
 
@@ -219,9 +209,7 @@ public class DebugPackets {
    // $FF: synthetic method
    private static void lambda$sendEntityBrain$6(List var0, UUID var1, Object2IntMap var2) {
       String var3 = DebugEntityNameGenerator.getEntityName(var1);
-      var2.forEach((var2x, var3x) -> {
-         var0.add(var3 + ": " + String.valueOf(var2x) + ": " + var3x);
-      });
+      var2.forEach((var2x, var3x) -> var0.add(var3 + ": " + String.valueOf(var2x) + ": " + var3x));
    }
 
    // $FF: synthetic method

@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ClientboundCustomChatCompletionsPacket(Action action, List<String> entries) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundCustomChatCompletionsPacket> STREAM_CODEC = Packet.codec(ClientboundCustomChatCompletionsPacket::write, ClientboundCustomChatCompletionsPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundCustomChatCompletionsPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundCustomChatCompletionsPacket>codec(ClientboundCustomChatCompletionsPacket::write, ClientboundCustomChatCompletionsPacket::new);
 
    private ClientboundCustomChatCompletionsPacket(FriendlyByteBuf var1) {
       this((Action)var1.readEnum(Action.class), var1.readList(FriendlyByteBuf::readUtf));
@@ -30,14 +30,6 @@ public record ClientboundCustomChatCompletionsPacket(Action action, List<String>
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleCustomChatCompletions(this);
-   }
-
-   public Action action() {
-      return this.action;
-   }
-
-   public List<String> entries() {
-      return this.entries;
    }
 
    public static enum Action {

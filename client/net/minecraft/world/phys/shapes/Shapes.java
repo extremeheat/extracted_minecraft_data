@@ -6,7 +6,6 @@ import com.google.common.math.IntMath;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Objects;
 import net.minecraft.Util;
 import net.minecraft.core.AxisCycle;
@@ -141,11 +140,8 @@ public final class Shapes {
             } else {
                boolean var5 = var2.apply(true, false);
                boolean var6 = var2.apply(false, true);
-               Direction.Axis[] var7 = AxisCycle.AXIS_VALUES;
-               int var8 = var7.length;
 
-               for(int var9 = 0; var9 < var8; ++var9) {
-                  Direction.Axis var10 = var7[var9];
+               for(Direction.Axis var10 : AxisCycle.AXIS_VALUES) {
                   if (var0.max(var10) < var1.min(var10) - 1.0E-7) {
                      return var5 || var6;
                   }
@@ -167,22 +163,16 @@ public final class Shapes {
    }
 
    private static boolean joinIsNotEmpty(IndexMerger var0, IndexMerger var1, IndexMerger var2, DiscreteVoxelShape var3, DiscreteVoxelShape var4, BooleanOp var5) {
-      return !var0.forMergedIndexes((var5x, var6, var7) -> {
-         return var1.forMergedIndexes((var6x, var7x, var8) -> {
-            return var2.forMergedIndexes((var7, var8x, var9) -> {
-               return !var5.apply(var3.isFullWide(var5x, var6x, var7), var4.isFullWide(var6, var7x, var8x));
-            });
-         });
-      });
+      return !var0.forMergedIndexes((var5x, var6, var7) -> var1.forMergedIndexes((var6x, var7x, var8) -> var2.forMergedIndexes((var7, var8x, var9) -> !var5.apply(var3.isFullWide(var5x, var6x, var7), var4.isFullWide(var6, var7x, var8x)))));
    }
 
    public static double collide(Direction.Axis var0, AABB var1, Iterable<VoxelShape> var2, double var3) {
-      VoxelShape var6;
-      for(Iterator var5 = var2.iterator(); var5.hasNext(); var3 = var6.collide(var0, var1, var3)) {
-         var6 = (VoxelShape)var5.next();
+      for(VoxelShape var6 : var2) {
          if (Math.abs(var3) < 1.0E-7) {
             return 0.0;
          }
+
+         var3 = var6.collide(var0, var1, var3);
       }
 
       return var3;

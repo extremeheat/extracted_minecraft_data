@@ -50,11 +50,7 @@ public class SpongeBlock extends Block {
 
    private boolean removeWaterBreadthFirstSearch(Level var1, BlockPos var2) {
       return BlockPos.breadthFirstTraversal(var2, 6, 65, (var0, var1x) -> {
-         Direction[] var2 = ALL_DIRECTIONS;
-         int var3 = var2.length;
-
-         for(int var4 = 0; var4 < var3; ++var4) {
-            Direction var5 = var2[var4];
+         for(Direction var5 : ALL_DIRECTIONS) {
             var1x.accept(var0.relative(var5));
          }
 

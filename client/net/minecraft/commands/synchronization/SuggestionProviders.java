@@ -49,19 +49,9 @@ public class SuggestionProviders {
    }
 
    static {
-      ASK_SERVER = register(DEFAULT_NAME, (var0, var1) -> {
-         return ((SharedSuggestionProvider)var0.getSource()).customSuggestion(var0);
-      });
-      AVAILABLE_SOUNDS = register(ResourceLocation.withDefaultNamespace("available_sounds"), (var0, var1) -> {
-         return SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)var0.getSource()).getAvailableSounds(), var1);
-      });
-      SUMMONABLE_ENTITIES = register(ResourceLocation.withDefaultNamespace("summonable_entities"), (var0, var1) -> {
-         return SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.stream().filter((var1x) -> {
-            return var1x.isEnabled(((SharedSuggestionProvider)var0.getSource()).enabledFeatures()) && var1x.canSummon();
-         }), var1, EntityType::getKey, (var0x) -> {
-            return Component.translatable(Util.makeDescriptionId("entity", EntityType.getKey(var0x)));
-         });
-      });
+      ASK_SERVER = register(DEFAULT_NAME, (var0, var1) -> ((SharedSuggestionProvider)var0.getSource()).customSuggestion(var0));
+      AVAILABLE_SOUNDS = register(ResourceLocation.withDefaultNamespace("available_sounds"), (var0, var1) -> SharedSuggestionProvider.suggestResource(((SharedSuggestionProvider)var0.getSource()).getAvailableSounds(), var1));
+      SUMMONABLE_ENTITIES = register(ResourceLocation.withDefaultNamespace("summonable_entities"), (var0, var1) -> SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.stream().filter((var1x) -> var1x.isEnabled(((SharedSuggestionProvider)var0.getSource()).enabledFeatures()) && var1x.canSummon()), var1, EntityType::getKey, (var0x) -> Component.translatable(Util.makeDescriptionId("entity", EntityType.getKey(var0x)))));
    }
 
    protected static class Wrapper implements SuggestionProvider<SharedSuggestionProvider> {

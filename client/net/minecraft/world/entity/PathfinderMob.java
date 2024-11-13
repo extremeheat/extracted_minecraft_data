@@ -1,6 +1,5 @@
 package net.minecraft.world.entity;
 
-import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
@@ -38,18 +37,13 @@ public abstract class PathfinderMob extends Mob {
       if (this.brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)) {
          return this.brain.getMemory(MemoryModuleType.IS_PANICKING).isPresent();
       } else {
-         Iterator var1 = this.goalSelector.getAvailableGoals().iterator();
-
-         WrappedGoal var2;
-         do {
-            if (!var1.hasNext()) {
-               return false;
+         for(WrappedGoal var2 : this.goalSelector.getAvailableGoals()) {
+            if (var2.isRunning() && var2.getGoal() instanceof PanicGoal) {
+               return true;
             }
+         }
 
-            var2 = (WrappedGoal)var1.next();
-         } while(!var2.isRunning() || !(var2.getGoal() instanceof PanicGoal));
-
-         return true;
+         return false;
       }
    }
 

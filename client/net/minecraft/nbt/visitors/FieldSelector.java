@@ -22,16 +22,4 @@ public record FieldSelector(List<String> path, TagType<?> type, String name) {
       this.type = var2;
       this.name = var3;
    }
-
-   public List<String> path() {
-      return this.path;
-   }
-
-   public TagType<?> type() {
-      return this.type;
-   }
-
-   public String name() {
-      return this.name;
-   }
 }

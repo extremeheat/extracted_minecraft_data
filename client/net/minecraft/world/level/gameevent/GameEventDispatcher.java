@@ -2,7 +2,6 @@ package net.minecraft.world.level.gameevent;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -64,10 +63,8 @@ public class GameEventDispatcher {
 
    private void handleGameEventMessagesInQueue(List<GameEvent.ListenerInfo> var1) {
       Collections.sort(var1);
-      Iterator var2 = var1.iterator();
 
-      while(var2.hasNext()) {
-         GameEvent.ListenerInfo var3 = (GameEvent.ListenerInfo)var2.next();
+      for(GameEvent.ListenerInfo var3 : var1) {
          GameEventListener var4 = var3.recipient();
          var4.handleGameEvent(this.level, var3.gameEvent(), var3.context(), var3.source());
       }

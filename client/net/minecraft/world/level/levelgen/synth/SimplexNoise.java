@@ -19,15 +19,14 @@ public class SimplexNoise {
       this.yo = var1.nextDouble() * 256.0;
       this.zo = var1.nextDouble() * 256.0;
 
-      int var2;
-      for(var2 = 0; var2 < 256; this.p[var2] = var2++) {
+      for(int var2 = 0; var2 < 256; this.p[var2] = var2++) {
       }
 
-      for(var2 = 0; var2 < 256; ++var2) {
-         int var3 = var1.nextInt(256 - var2);
-         int var4 = this.p[var2];
-         this.p[var2] = this.p[var3 + var2];
-         this.p[var3 + var2] = var4;
+      for(int var5 = 0; var5 < 256; ++var5) {
+         int var3 = var1.nextInt(256 - var5);
+         int var4 = this.p[var5];
+         this.p[var5] = this.p[var3 + var5];
+         this.p[var3 + var5] = var4;
       }
 
    }

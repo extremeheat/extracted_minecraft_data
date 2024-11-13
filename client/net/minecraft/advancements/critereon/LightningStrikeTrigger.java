@@ -24,19 +24,13 @@ public class LightningStrikeTrigger extends SimpleCriterionTrigger<TriggerInstan
    }
 
    public void trigger(ServerPlayer var1, LightningBolt var2, List<Entity> var3) {
-      List var4 = (List)var3.stream().map((var1x) -> {
-         return EntityPredicate.createContext(var1, var1x);
-      }).collect(Collectors.toList());
+      List var4 = (List)var3.stream().map((var1x) -> EntityPredicate.createContext(var1, var1x)).collect(Collectors.toList());
       LootContext var5 = EntityPredicate.createContext(var1, var2);
-      this.trigger(var1, (var2x) -> {
-         return var2x.matches(var5, var4);
-      });
+      this.trigger(var1, (var2x) -> var2x.matches(var5, var4));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> lightning, Optional<ContextAwarePredicate> bystander) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("lightning").forGetter(TriggerInstance::lightning), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("bystander").forGetter(TriggerInstance::bystander)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("lightning").forGetter(TriggerInstance::lightning), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("bystander").forGetter(TriggerInstance::bystander)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2, Optional<ContextAwarePredicate> var3) {
          super();
@@ -70,18 +64,6 @@ public class LightningStrikeTrigger extends SimpleCriterionTrigger<TriggerInstan
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
          var1.validateEntity(this.lightning, ".lightning");
          var1.validateEntity(this.bystander, ".bystander");
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<ContextAwarePredicate> lightning() {
-         return this.lightning;
-      }
-
-      public Optional<ContextAwarePredicate> bystander() {
-         return this.bystander;
       }
    }
 }

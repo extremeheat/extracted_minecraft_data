@@ -12,7 +12,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -89,9 +88,7 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
    @Nullable
    public String getAllWarnings() {
       StringBuilder var1 = new StringBuilder();
-      this.warnings.forEach((var1x, var2) -> {
-         var1.append(var1x).append(": ").append(var2);
-      });
+      this.warnings.forEach((var1x, var2) -> var1.append(var1x).append(": ").append(var2));
       return var1.length() == 0 ? null : var1.toString();
    }
 
@@ -101,26 +98,10 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
       ArrayList var5 = Lists.newArrayList();
       JsonObject var6 = parseJson(var1, var2);
       if (var6 != null) {
-         Zone var7 = var2.zone("compile_regex");
-
-         try {
+         try (Zone var7 = var2.zone("compile_regex")) {
             compilePatterns(var6.getAsJsonArray("renderer"), var3);
             compilePatterns(var6.getAsJsonArray("version"), var4);
             compilePatterns(var6.getAsJsonArray("vendor"), var5);
-         } catch (Throwable var11) {
-            if (var7 != null) {
-               try {
-                  var7.close();
-               } catch (Throwable var10) {
-                  var11.addSuppressed(var10);
-               }
-            }
-
-            throw var11;
-         }
-
-         if (var7 != null) {
-            var7.close();
          }
       }
 
@@ -132,18 +113,14 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
    }
 
    private static void compilePatterns(JsonArray var0, List<Pattern> var1) {
-      var0.forEach((var1x) -> {
-         var1.add(Pattern.compile(var1x.getAsString(), 2));
-      });
+      var0.forEach((var1x) -> var1.add(Pattern.compile(var1x.getAsString(), 2)));
    }
 
    @Nullable
    private static JsonObject parseJson(ResourceManager var0, ProfilerFiller var1) {
       try {
-         Zone var2 = var1.zone("parse_json");
-
          JsonObject var4;
-         try {
+         try (Zone var2 = var1.zone("parse_json")) {
             BufferedReader var3 = var0.openAsReader(GPU_WARNLIST_LOCATION);
 
             try {
@@ -163,20 +140,6 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
             if (var3 != null) {
                ((Reader)var3).close();
             }
-         } catch (Throwable var9) {
-            if (var2 != null) {
-               try {
-                  var2.close();
-               } catch (Throwable var6) {
-                  var9.addSuppressed(var6);
-               }
-            }
-
-            throw var9;
-         }
-
-         if (var2 != null) {
-            var2.close();
          }
 
          return var4;
@@ -205,10 +168,8 @@ public class GpuWarnlistManager extends SimplePreparableReloadListener<Preparati
 
       private static String matchAny(List<Pattern> var0, String var1) {
          ArrayList var2 = Lists.newArrayList();
-         Iterator var3 = var0.iterator();
 
-         while(var3.hasNext()) {
-            Pattern var4 = (Pattern)var3.next();
+         for(Pattern var4 : var0) {
             Matcher var5 = var4.matcher(var1);
 
             while(var5.find()) {

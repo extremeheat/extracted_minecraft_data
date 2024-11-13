@@ -68,9 +68,7 @@ public class Slime extends Mob implements Enemy {
       this.goalSelector.addGoal(2, new SlimeAttackGoal(this));
       this.goalSelector.addGoal(3, new SlimeRandomDirectionGoal(this));
       this.goalSelector.addGoal(5, new SlimeKeepOnJumpingGoal(this));
-      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (var1, var2) -> {
-         return Math.abs(var1.getY() - this.getY()) <= 4.0;
-      }));
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (var1, var2) -> Math.abs(var1.getY() - this.getY()) <= 4.0));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
    }
 
@@ -330,10 +328,10 @@ public class Slime extends Mob implements Enemy {
    }
 
    static {
-      ID_SIZE = SynchedEntityData.defineId(Slime.class, EntityDataSerializers.INT);
+      ID_SIZE = SynchedEntityData.<Integer>defineId(Slime.class, EntityDataSerializers.INT);
    }
 
-   private static class SlimeMoveControl extends MoveControl {
+   static class SlimeMoveControl extends MoveControl {
       private float yRot;
       private int jumpDelay;
       private final Slime slime;
@@ -388,38 +386,7 @@ public class Slime extends Mob implements Enemy {
       }
    }
 
-   static class SlimeFloatGoal extends Goal {
-      private final Slime slime;
-
-      public SlimeFloatGoal(Slime var1) {
-         super();
-         this.slime = var1;
-         this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
-         var1.getNavigation().setCanFloat(true);
-      }
-
-      public boolean canUse() {
-         return (this.slime.isInWater() || this.slime.isInLava()) && this.slime.getMoveControl() instanceof SlimeMoveControl;
-      }
-
-      public boolean requiresUpdateEveryTick() {
-         return true;
-      }
-
-      public void tick() {
-         if (this.slime.getRandom().nextFloat() < 0.8F) {
-            this.slime.getJumpControl().jump();
-         }
-
-         MoveControl var2 = this.slime.getMoveControl();
-         if (var2 instanceof SlimeMoveControl var1) {
-            var1.setWantedMovement(1.2);
-         }
-
-      }
-   }
-
-   private static class SlimeAttackGoal extends Goal {
+   static class SlimeAttackGoal extends Goal {
       private final Slime slime;
       private int growTiredTimer;
 
@@ -496,6 +463,37 @@ public class Slime extends Mob implements Enemy {
          MoveControl var2 = this.slime.getMoveControl();
          if (var2 instanceof SlimeMoveControl var1) {
             var1.setDirection(this.chosenDegrees, false);
+         }
+
+      }
+   }
+
+   static class SlimeFloatGoal extends Goal {
+      private final Slime slime;
+
+      public SlimeFloatGoal(Slime var1) {
+         super();
+         this.slime = var1;
+         this.setFlags(EnumSet.of(Goal.Flag.JUMP, Goal.Flag.MOVE));
+         var1.getNavigation().setCanFloat(true);
+      }
+
+      public boolean canUse() {
+         return (this.slime.isInWater() || this.slime.isInLava()) && this.slime.getMoveControl() instanceof SlimeMoveControl;
+      }
+
+      public boolean requiresUpdateEveryTick() {
+         return true;
+      }
+
+      public void tick() {
+         if (this.slime.getRandom().nextFloat() < 0.8F) {
+            this.slime.getJumpControl().jump();
+         }
+
+         MoveControl var2 = this.slime.getMoveControl();
+         if (var2 instanceof SlimeMoveControl var1) {
+            var1.setWantedMovement(1.2);
          }
 
       }

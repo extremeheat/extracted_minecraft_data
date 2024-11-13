@@ -12,9 +12,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public record Repairable(HolderSet<Item> items) {
-   public static final Codec<Repairable> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(RegistryCodecs.homogeneousList(Registries.ITEM).fieldOf("items").forGetter(Repairable::items)).apply(var0, Repairable::new);
-   });
+   public static final Codec<Repairable> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.ITEM).fieldOf("items").forGetter(Repairable::items)).apply(var0, Repairable::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, Repairable> STREAM_CODEC;
 
    public Repairable(HolderSet<Item> var1) {
@@ -24,10 +22,6 @@ public record Repairable(HolderSet<Item> items) {
 
    public boolean isValidRepairItem(ItemStack var1) {
       return var1.is(this.items);
-   }
-
-   public HolderSet<Item> items() {
-      return this.items;
    }
 
    static {
