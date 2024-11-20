@@ -118,13 +118,14 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    }
 
    public AABB getBoundingBox(BlockState var1) {
-      return Shulker.getProgressAabb(1.0F, (Direction)var1.getValue(ShulkerBoxBlock.FACING), 0.5F * this.getProgress(1.0F));
+      Vec3 var2 = new Vec3(0.5, 0.0, 0.5);
+      return Shulker.getProgressAabb(1.0F, (Direction)var1.getValue(ShulkerBoxBlock.FACING), 0.5F * this.getProgress(1.0F), var2);
    }
 
    private void moveCollidedEntities(Level var1, BlockPos var2, BlockState var3) {
       if (var3.getBlock() instanceof ShulkerBoxBlock) {
          Direction var4 = (Direction)var3.getValue(ShulkerBoxBlock.FACING);
-         AABB var5 = Shulker.getProgressDeltaAabb(1.0F, var4, this.progressOld, this.progress).move(var2);
+         AABB var5 = Shulker.getProgressDeltaAabb(1.0F, var4, this.progressOld, this.progress, var2.getBottomCenter());
          List var6 = var1.getEntities((Entity)null, var5);
          if (!var6.isEmpty()) {
             for(Entity var8 : var6) {

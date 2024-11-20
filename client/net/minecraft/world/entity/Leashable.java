@@ -47,15 +47,24 @@ public interface Leashable {
       dropLeash((Entity)this, false, false);
    }
 
+   default void readLeashData(CompoundTag var1) {
+      LeashData var2 = readLeashDataInternal(var1);
+      if (this.getLeashData() != null && var2 == null) {
+         this.removeLeash();
+      }
+
+      this.setLeashData(var2);
+   }
+
    @Nullable
-   default LeashData readLeashData(CompoundTag var1) {
-      if (var1.contains("leash", 10)) {
-         return new LeashData(Either.left(var1.getCompound("leash").getUUID("UUID")));
+   private static LeashData readLeashDataInternal(CompoundTag var0) {
+      if (var0.contains("leash", 10)) {
+         return new LeashData(Either.left(var0.getCompound("leash").getUUID("UUID")));
       } else {
-         if (var1.contains("leash", 11)) {
-            Either var2 = (Either)NbtUtils.readBlockPos(var1, "leash").map(Either::right).orElse((Object)null);
-            if (var2 != null) {
-               return new LeashData(var2);
+         if (var0.contains("leash", 11)) {
+            Either var1 = (Either)NbtUtils.readBlockPos(var0, "leash").map(Either::right).orElse((Object)null);
+            if (var1 != null) {
+               return new LeashData(var1);
             }
          }
 
@@ -111,14 +120,22 @@ public interface Leashable {
 
    }
 
-   default void dropLeash(boolean var1, boolean var2) {
-      dropLeash((Entity)this, var1, var2);
+   default void dropLeash() {
+      dropLeash((Entity)this, true, true);
+   }
+
+   default void removeLeash() {
+      dropLeash((Entity)this, true, false);
+   }
+
+   default void onLeashRemoved() {
    }
 
    private static <E extends Entity & Leashable> void dropLeash(E var0, boolean var1, boolean var2) {
       LeashData var3 = ((Leashable)var0).getLeashData();
       if (var3 != null && var3.leashHolder != null) {
          ((Leashable)var0).setLeashData((LeashData)null);
+         ((Leashable)var0).onLeashRemoved();
          Level var5 = var0.level();
          if (var5 instanceof ServerLevel) {
             ServerLevel var4 = (ServerLevel)var5;
@@ -142,7 +159,11 @@ public interface Leashable {
 
       if (var2 != null && var2.leashHolder != null) {
          if (!var1.isAlive() || !var2.leashHolder.isAlive()) {
-            ((Leashable)var1).dropLeash(true, var0.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS));
+            if (var0.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+               ((Leashable)var1).dropLeash();
+            } else {
+               ((Leashable)var1).removeLeash();
+            }
          }
 
          Entity var3 = ((Leashable)var1).getLeashHolder();
@@ -170,7 +191,7 @@ public interface Leashable {
    }
 
    default void leashTooFarBehaviour() {
-      this.dropLeash(true, true);
+      this.dropLeash();
    }
 
    default void closeRangeLeashBehaviour(Entity var1) {

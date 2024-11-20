@@ -21,6 +21,7 @@ public class FontTexture extends AbstractTexture implements Dumpable {
       this.colored = var2;
       this.root = new Node(0, 0, 256, 256);
       TextureUtil.prepareImage(var2 ? NativeImage.InternalGlFormat.RGBA : NativeImage.InternalGlFormat.RED, this.getId(), 256, 256);
+      this.setFilter(false, false);
       this.renderTypes = var1;
    }
 

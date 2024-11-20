@@ -11,6 +11,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.component.DataComponents;
@@ -114,14 +115,16 @@ public class ItemInHandRenderer {
    private float oOffHandHeight;
    private final EntityRenderDispatcher entityRenderDispatcher;
    private final ItemRenderer itemRenderer;
+   private final ItemModelResolver itemModelResolver;
 
-   public ItemInHandRenderer(Minecraft var1, EntityRenderDispatcher var2, ItemRenderer var3) {
+   public ItemInHandRenderer(Minecraft var1, EntityRenderDispatcher var2, ItemRenderer var3, ItemModelResolver var4) {
       super();
       this.mainHandItem = ItemStack.EMPTY;
       this.offHandItem = ItemStack.EMPTY;
       this.minecraft = var1;
       this.entityRenderDispatcher = var2;
       this.itemRenderer = var3;
+      this.itemModelResolver = var4;
    }
 
    public void renderItem(LivingEntity var1, ItemStack var2, ItemDisplayContext var3, boolean var4, PoseStack var5, MultiBufferSource var6, int var7) {
@@ -513,17 +516,25 @@ public class ItemInHandRenderer {
       this.applyItemArmAttackTransform(var3, var5, var1);
    }
 
+   private boolean shouldInstantlyReplaceVisibleItem(ItemStack var1, ItemStack var2) {
+      if (ItemStack.matches(var1, var2)) {
+         return true;
+      } else {
+         return !this.itemModelResolver.shouldPlaySwapAnimation(var2);
+      }
+   }
+
    public void tick() {
       this.oMainHandHeight = this.mainHandHeight;
       this.oOffHandHeight = this.offHandHeight;
       LocalPlayer var1 = this.minecraft.player;
       ItemStack var2 = var1.getMainHandItem();
       ItemStack var3 = var1.getOffhandItem();
-      if (ItemStack.matches(this.mainHandItem, var2)) {
+      if (this.shouldInstantlyReplaceVisibleItem(this.mainHandItem, var2)) {
          this.mainHandItem = var2;
       }
 
-      if (ItemStack.matches(this.offHandItem, var3)) {
+      if (this.shouldInstantlyReplaceVisibleItem(this.offHandItem, var3)) {
          this.offHandItem = var3;
       }
 
@@ -532,8 +543,10 @@ public class ItemInHandRenderer {
          this.offHandHeight = Mth.clamp(this.offHandHeight - 0.4F, 0.0F, 1.0F);
       } else {
          float var4 = var1.getAttackStrengthScale(1.0F);
-         this.mainHandHeight += Mth.clamp((this.mainHandItem == var2 ? var4 * var4 * var4 : 0.0F) - this.mainHandHeight, -0.4F, 0.4F);
-         this.offHandHeight += Mth.clamp((float)(this.offHandItem == var3 ? 1 : 0) - this.offHandHeight, -0.4F, 0.4F);
+         float var5 = this.mainHandItem != var2 ? 0.0F : var4 * var4 * var4;
+         float var6 = this.offHandItem != var3 ? 0.0F : 1.0F;
+         this.mainHandHeight += Mth.clamp(var5 - this.mainHandHeight, -0.4F, 0.4F);
+         this.offHandHeight += Mth.clamp(var6 - this.offHandHeight, -0.4F, 0.4F);
       }
 
       if (this.mainHandHeight < 0.1F) {

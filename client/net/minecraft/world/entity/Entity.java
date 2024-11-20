@@ -431,11 +431,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.setBoundingBox(this.makeBoundingBox());
    }
 
-   protected AABB makeBoundingBox() {
+   protected final AABB makeBoundingBox() {
       return this.makeBoundingBox(this.position);
    }
 
-   private AABB makeBoundingBox(Vec3 var1) {
+   protected AABB makeBoundingBox(Vec3 var1) {
       return this.dimensions.makeBoundingBox(var1);
    }
 
@@ -1928,6 +1928,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                   } catch (Exception var16) {
                      LOGGER.warn("Failed to parse entity custom name {}", var13, var16);
                   }
+               } else {
+                  this.entityData.set(DATA_CUSTOM_NAME, Optional.empty());
                }
 
                this.setCustomNameVisible(var1.getBoolean("CustomNameVisible"));
@@ -2048,7 +2050,12 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       if (this.isAlive() && this instanceof Leashable var3) {
          if (var3.getLeashHolder() == var1) {
             if (!this.level().isClientSide()) {
-               var3.dropLeash(true, !var1.hasInfiniteMaterials());
+               if (var1.hasInfiniteMaterials()) {
+                  var3.removeLeash();
+               } else {
+                  var3.dropLeash();
+               }
+
                this.gameEvent(GameEvent.ENTITY_INTERACT, var1);
             }
 
@@ -2808,7 +2815,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    protected void removeAfterChangingDimensions() {
       this.setRemoved(Entity.RemovalReason.CHANGED_DIMENSION);
       if (this instanceof Leashable var1) {
-         var1.dropLeash(true, false);
+         var1.removeLeash();
       }
 
    }
@@ -3117,10 +3124,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             return var2;
          }
       }
-   }
-
-   public boolean onlyOpCanSetNbt() {
-      return false;
    }
 
    public ProjectileDeflection deflection(Projectile var1) {

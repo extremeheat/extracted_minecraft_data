@@ -20,7 +20,8 @@ public class SelectItemModelProperties {
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("block_state"), ItemBlockState.TYPE);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("display_context"), DisplayContext.TYPE);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("local_time"), LocalTime.TYPE);
-      ID_MAPPER.put(ResourceLocation.withDefaultNamespace("holder_type"), HolderType.TYPE);
+      ID_MAPPER.put(ResourceLocation.withDefaultNamespace("context_entity_type"), ContextEntityType.TYPE);
+      ID_MAPPER.put(ResourceLocation.withDefaultNamespace("context_dimension"), ContextDimension.TYPE);
    }
 
    static {

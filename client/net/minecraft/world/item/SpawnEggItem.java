@@ -2,15 +2,15 @@ package net.minecraft.world.item;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
@@ -38,7 +38,6 @@ import net.minecraft.world.phys.Vec3;
 
 public class SpawnEggItem extends Item {
    private static final Map<EntityType<? extends Mob>, SpawnEggItem> BY_ID = Maps.newIdentityHashMap();
-   private static final MapCodec<EntityType<?>> ENTITY_TYPE_FIELD_CODEC;
    private final EntityType<?> defaultType;
 
    public SpawnEggItem(EntityType<? extends Mob> var1, Item.Properties var2) {
@@ -59,7 +58,7 @@ public class SpawnEggItem extends Item {
          BlockEntity var8 = var2.getBlockEntity(var4);
          if (var8 instanceof Spawner) {
             Spawner var9 = (Spawner)var8;
-            EntityType var11 = this.getType(var3);
+            EntityType var11 = this.getType(var2.registryAccess(), var3);
             var9.setEntityId(var11, var2.getRandom());
             var2.sendBlockUpdated(var4, var6, var6, 3);
             var2.gameEvent(var1.getPlayer(), GameEvent.BLOCK_CHANGE, var4);
@@ -73,7 +72,7 @@ public class SpawnEggItem extends Item {
                var7 = var4.relative(var5);
             }
 
-            EntityType var10 = this.getType(var3);
+            EntityType var10 = this.getType(var2.registryAccess(), var3);
             if (var10.spawn((ServerLevel)var2, var3, var1.getPlayer(), var7, EntitySpawnReason.SPAWN_ITEM_USE, true, !Objects.equals(var4, var7) && var5 == Direction.UP) != null) {
                var3.shrink(1);
                var2.gameEvent(var1.getPlayer(), GameEvent.ENTITY_PLACE, var4);
@@ -89,31 +88,32 @@ public class SpawnEggItem extends Item {
       BlockHitResult var5 = getPlayerPOVHitResult(var1, var2, ClipContext.Fluid.SOURCE_ONLY);
       if (var5.getType() != HitResult.Type.BLOCK) {
          return InteractionResult.PASS;
-      } else if (var1.isClientSide) {
-         return InteractionResult.SUCCESS;
-      } else {
-         BlockPos var7 = var5.getBlockPos();
-         if (!(var1.getBlockState(var7).getBlock() instanceof LiquidBlock)) {
+      } else if (var1 instanceof ServerLevel) {
+         ServerLevel var6 = (ServerLevel)var1;
+         BlockPos var8 = var5.getBlockPos();
+         if (!(var1.getBlockState(var8).getBlock() instanceof LiquidBlock)) {
             return InteractionResult.PASS;
-         } else if (var1.mayInteract(var2, var7) && var2.mayUseItemAt(var7, var5.getDirection(), var4)) {
-            EntityType var8 = this.getType(var4);
-            Entity var9 = var8.spawn((ServerLevel)var1, var4, var2, var7, EntitySpawnReason.SPAWN_ITEM_USE, false, false);
-            if (var9 == null) {
+         } else if (var1.mayInteract(var2, var8) && var2.mayUseItemAt(var8, var5.getDirection(), var4)) {
+            EntityType var9 = this.getType(var6.registryAccess(), var4);
+            Entity var10 = var9.spawn(var6, var4, var2, var8, EntitySpawnReason.SPAWN_ITEM_USE, false, false);
+            if (var10 == null) {
                return InteractionResult.PASS;
             } else {
                var4.consume(1, var2);
                var2.awardStat(Stats.ITEM_USED.get(this));
-               var1.gameEvent(var2, GameEvent.ENTITY_PLACE, var9.position());
+               var1.gameEvent(var2, GameEvent.ENTITY_PLACE, var10.position());
                return InteractionResult.SUCCESS;
             }
          } else {
             return InteractionResult.FAIL;
          }
+      } else {
+         return InteractionResult.SUCCESS;
       }
    }
 
-   public boolean spawnsEntity(ItemStack var1, EntityType<?> var2) {
-      return Objects.equals(this.getType(var1), var2);
+   public boolean spawnsEntity(HolderLookup.Provider var1, ItemStack var2, EntityType<?> var3) {
+      return Objects.equals(this.getType(var1, var2), var3);
    }
 
    @Nullable
@@ -125,9 +125,16 @@ public class SpawnEggItem extends Item {
       return Iterables.unmodifiableIterable(BY_ID.values());
    }
 
-   public EntityType<?> getType(ItemStack var1) {
-      CustomData var2 = (CustomData)var1.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
-      return !var2.isEmpty() ? (EntityType)var2.read(ENTITY_TYPE_FIELD_CODEC).result().orElse(this.defaultType) : this.defaultType;
+   public EntityType<?> getType(HolderLookup.Provider var1, ItemStack var2) {
+      CustomData var3 = (CustomData)var2.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
+      if (!var3.isEmpty()) {
+         EntityType var4 = (EntityType)var3.parseEntityType(var1, Registries.ENTITY_TYPE);
+         if (var4 != null) {
+            return var4;
+         }
+      }
+
+      return this.defaultType;
    }
 
    public FeatureFlagSet requiredFeatures() {
@@ -135,7 +142,7 @@ public class SpawnEggItem extends Item {
    }
 
    public Optional<Mob> spawnOffspringFromSpawnEgg(Player var1, Mob var2, EntityType<? extends Mob> var3, ServerLevel var4, Vec3 var5, ItemStack var6) {
-      if (!this.spawnsEntity(var6, var3)) {
+      if (!this.spawnsEntity(var4.registryAccess(), var6, var3)) {
          return Optional.empty();
       } else {
          Object var7;
@@ -162,7 +169,15 @@ public class SpawnEggItem extends Item {
       }
    }
 
-   static {
-      ENTITY_TYPE_FIELD_CODEC = BuiltInRegistries.ENTITY_TYPE.byNameCodec().fieldOf("id");
+   public boolean shouldPrintOpWarning(ItemStack var1, @Nullable Player var2) {
+      if (var2 != null && var2.getPermissionLevel() >= 2) {
+         CustomData var3 = (CustomData)var1.get(DataComponents.ENTITY_DATA);
+         if (var3 != null) {
+            EntityType var4 = (EntityType)var3.parseEntityType(var2.level().registryAccess(), Registries.ENTITY_TYPE);
+            return var4 != null && var4.onlyOpCanSetNbt();
+         }
+      }
+
+      return false;
    }
 }

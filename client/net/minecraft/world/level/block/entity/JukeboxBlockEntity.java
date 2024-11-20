@@ -75,6 +75,10 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
       if (var1.contains("RecordItem", 10)) {
          this.item = (ItemStack)ItemStack.parse(var2, var1.getCompound("RecordItem")).orElse(ItemStack.EMPTY);
       } else {
+         if (!this.item.isEmpty()) {
+            this.jukeboxSongPlayer.stop(this.level, this.getBlockState());
+         }
+
          this.item = ItemStack.EMPTY;
       }
 

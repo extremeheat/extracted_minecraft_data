@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.HexFormat;
 
 public record PngInfo(int width, int height) {
+   private static final HexFormat FORMAT = HexFormat.of().withUpperCase().withPrefix("0x");
    private static final long PNG_HEADER = -8552249625308161526L;
    private static final int IHDR_TYPE = 1229472850;
    private static final int IHDR_SIZE = 13;
@@ -20,16 +22,23 @@ public record PngInfo(int width, int height) {
 
    public static PngInfo fromStream(InputStream var0) throws IOException {
       DataInputStream var1 = new DataInputStream(var0);
-      if (var1.readLong() != -8552249625308161526L) {
-         throw new IOException("Bad PNG Signature");
-      } else if (var1.readInt() != 13) {
-         throw new IOException("Bad length for IHDR chunk!");
-      } else if (var1.readInt() != 1229472850) {
-         throw new IOException("Bad type for IHDR chunk!");
+      long var2 = var1.readLong();
+      if (var2 != -8552249625308161526L) {
+         throw new IOException("Bad PNG Signature: " + FORMAT.toHexDigits(var2));
       } else {
-         int var2 = var1.readInt();
-         int var3 = var1.readInt();
-         return new PngInfo(var2, var3);
+         int var4 = var1.readInt();
+         if (var4 != 13) {
+            throw new IOException("Bad length for IHDR chunk: " + var4);
+         } else {
+            int var5 = var1.readInt();
+            if (var5 != 1229472850) {
+               throw new IOException("Bad type for IHDR chunk: " + FORMAT.toHexDigits(var5));
+            } else {
+               int var6 = var1.readInt();
+               int var7 = var1.readInt();
+               return new PngInfo(var6, var7);
+            }
+         }
       }
    }
 

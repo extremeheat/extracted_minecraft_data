@@ -45,11 +45,11 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
       this.accelerationPower = 0.0;
    }
 
-   protected AABB makeBoundingBox() {
-      float var1 = this.getType().getDimensions().width() / 2.0F;
-      float var2 = this.getType().getDimensions().height();
-      float var3 = 0.15F;
-      return new AABB(this.position().x - (double)var1, this.position().y - 0.15000000596046448, this.position().z - (double)var1, this.position().x + (double)var1, this.position().y - 0.15000000596046448 + (double)var2, this.position().z + (double)var1);
+   protected AABB makeBoundingBox(Vec3 var1) {
+      float var2 = this.getType().getDimensions().width() / 2.0F;
+      float var3 = this.getType().getDimensions().height();
+      float var4 = 0.15F;
+      return new AABB(var1.x - (double)var2, var1.y - 0.15000000596046448, var1.z - (double)var2, var1.x + (double)var2, var1.y - 0.15000000596046448 + (double)var3, var1.z + (double)var2);
    }
 
    public boolean canCollideWith(Entity var1) {

@@ -89,7 +89,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       this.textureManager = var2;
       this.itemModelResolver = var3;
       this.mapRenderer = var5;
-      this.itemInHandRenderer = new ItemInHandRenderer(var1, this, var4);
+      this.itemInHandRenderer = new ItemInHandRenderer(var1, this, var4, var3);
       this.blockRenderDispatcher = var6;
       this.font = var7;
       this.options = var8;

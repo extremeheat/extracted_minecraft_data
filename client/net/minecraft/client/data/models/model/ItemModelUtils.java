@@ -17,12 +17,14 @@ import net.minecraft.client.renderer.item.properties.conditional.ConditionalItem
 import net.minecraft.client.renderer.item.properties.conditional.HasComponent;
 import net.minecraft.client.renderer.item.properties.conditional.IsUsingItem;
 import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperty;
+import net.minecraft.client.renderer.item.properties.select.ContextDimension;
 import net.minecraft.client.renderer.item.properties.select.ItemBlockState;
 import net.minecraft.client.renderer.item.properties.select.LocalTime;
 import net.minecraft.client.renderer.item.properties.select.SelectItemModelProperty;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.properties.Property;
 
 public class ItemModelUtils {
@@ -110,6 +112,10 @@ public class ItemModelUtils {
 
    public static ConditionalItemModelProperty hasComponent(DataComponentType<?> var0) {
       return new HasComponent(var0, false);
+   }
+
+   public static ItemModel.Unbaked inOverworld(ItemModel.Unbaked var0, ItemModel.Unbaked var1) {
+      return select(new ContextDimension(), var1, when(Level.OVERWORLD, var0));
    }
 
    public static <T extends Comparable<T>> ItemModel.Unbaked selectBlockItemProperty(Property<T> var0, ItemModel.Unbaked var1, Map<T, ItemModel.Unbaked> var2) {

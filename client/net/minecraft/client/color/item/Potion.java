@@ -2,9 +2,12 @@ package net.minecraft.client.color.item;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import javax.annotation.Nullable;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionContents;
 
@@ -20,9 +23,9 @@ public record Potion(int defaultColor) implements ItemTintSource {
       this.defaultColor = var1;
    }
 
-   public int calculate(ItemStack var1) {
-      PotionContents var2 = (PotionContents)var1.get(DataComponents.POTION_CONTENTS);
-      return var2 != null ? ARGB.opaque(var2.getColorOr(this.defaultColor)) : ARGB.opaque(this.defaultColor);
+   public int calculate(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3) {
+      PotionContents var4 = (PotionContents)var1.get(DataComponents.POTION_CONTENTS);
+      return var4 != null ? ARGB.opaque(var4.getColorOr(this.defaultColor)) : ARGB.opaque(this.defaultColor);
    }
 
    public MapCodec<Potion> type() {

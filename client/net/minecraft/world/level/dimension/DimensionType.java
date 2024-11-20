@@ -34,7 +34,7 @@ public record DimensionType(OptionalLong fixedTime, boolean hasSkyLight, boolean
    public static final int WAY_BELOW_MIN_Y;
    public static final Codec<DimensionType> DIRECT_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<DimensionType>> STREAM_CODEC;
-   private static final int MOON_PHASES = 8;
+   public static final int MOON_PHASES = 8;
    public static final float[] MOON_BRIGHTNESS_PER_PHASE;
    public static final Codec<Holder<DimensionType>> CODEC;
 

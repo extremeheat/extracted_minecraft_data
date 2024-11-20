@@ -2,9 +2,12 @@ package net.minecraft.client.color.item;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import javax.annotation.Nullable;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.MapItemColor;
 
@@ -20,9 +23,9 @@ public record MapColor(int defaultColor) implements ItemTintSource {
       this.defaultColor = var1;
    }
 
-   public int calculate(ItemStack var1) {
-      MapItemColor var2 = (MapItemColor)var1.get(DataComponents.MAP_COLOR);
-      return var2 != null ? ARGB.opaque(var2.rgb()) : ARGB.opaque(this.defaultColor);
+   public int calculate(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3) {
+      MapItemColor var4 = (MapItemColor)var1.get(DataComponents.MAP_COLOR);
+      return var4 != null ? ARGB.opaque(var4.rgb()) : ARGB.opaque(this.defaultColor);
    }
 
    public MapCodec<MapColor> type() {

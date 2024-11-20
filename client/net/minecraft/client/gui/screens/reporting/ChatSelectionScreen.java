@@ -248,6 +248,10 @@ public class ChatSelectionScreen extends Screen {
          public boolean canReport() {
             return this.canSelect();
          }
+
+         public boolean mouseClicked(double var1, double var3, int var5) {
+            return this.canSelect();
+         }
       }
 
       public class MessageEntry extends Entry {

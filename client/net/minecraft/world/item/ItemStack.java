@@ -96,8 +96,9 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
 
 public final class ItemStack implements DataComponentHolder {
-   public static final Codec<ItemStack> CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.create((var0) -> var0.group(Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder), ExtraCodecs.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((var0x) -> var0x.components.asPatch())).apply(var0, ItemStack::new)));
-   public static final Codec<ItemStack> SINGLE_ITEM_CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.create((var0) -> var0.group(Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((var0x) -> var0x.components.asPatch())).apply(var0, (var0x, var1) -> new ItemStack(var0x, 1, var1))));
+   private static final List<Component> OP_NBT_WARNING;
+   public static final Codec<ItemStack> CODEC;
+   public static final Codec<ItemStack> SINGLE_ITEM_CODEC;
    public static final Codec<ItemStack> STRICT_CODEC;
    public static final Codec<ItemStack> STRICT_SINGLE_ITEM_CODEC;
    public static final Codec<ItemStack> OPTIONAL_CODEC;
@@ -771,9 +772,9 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public List<Component> getTooltipLines(Item.TooltipContext var1, @Nullable Player var2, TooltipFlag var3) {
-      boolean var4 = BlockItem.shouldPrintOpWarning(this, var2);
+      boolean var4 = this.getItem().shouldPrintOpWarning(this, var2);
       if (!var3.isCreative() && this.has(DataComponents.HIDE_TOOLTIP)) {
-         return var4 ? BlockItem.OP_NBT_WARNING : List.of();
+         return var4 ? OP_NBT_WARNING : List.of();
       } else {
          ArrayList var5 = Lists.newArrayList();
          var5.add(this.getStyledHoverName());
@@ -831,7 +832,7 @@ public final class ItemStack implements DataComponentHolder {
          }
 
          if (var4) {
-            var5.addAll(BlockItem.OP_NBT_WARNING);
+            var5.addAll(OP_NBT_WARNING);
          }
 
          return var5;
@@ -1068,6 +1069,9 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    static {
+      OP_NBT_WARNING = List.of(Component.translatable("item.op_warning.line1").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), Component.translatable("item.op_warning.line2").withStyle(ChatFormatting.RED), Component.translatable("item.op_warning.line3").withStyle(ChatFormatting.RED));
+      CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.create((var0) -> var0.group(Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder), ExtraCodecs.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((var0x) -> var0x.components.asPatch())).apply(var0, ItemStack::new)));
+      SINGLE_ITEM_CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.create((var0) -> var0.group(Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((var0x) -> var0x.components.asPatch())).apply(var0, (var0x, var1) -> new ItemStack(var0x, 1, var1))));
       STRICT_CODEC = CODEC.validate(ItemStack::validateStrict);
       STRICT_SINGLE_ITEM_CODEC = SINGLE_ITEM_CODEC.validate(ItemStack::validateStrict);
       OPTIONAL_CODEC = ExtraCodecs.optionalEmptyMap(CODEC).xmap((var0) -> (ItemStack)var0.orElse(EMPTY), (var0) -> var0.isEmpty() ? Optional.empty() : Optional.of(var0));

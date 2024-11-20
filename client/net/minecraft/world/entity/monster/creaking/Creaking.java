@@ -2,6 +2,7 @@ package net.minecraft.world.entity.monster.creaking;
 
 import com.mojang.serialization.Dynamic;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -56,6 +57,7 @@ public class Creaking extends Monster {
    private static final EntityDataAccessor<Boolean> CAN_MOVE;
    private static final EntityDataAccessor<Boolean> IS_ACTIVE;
    private static final EntityDataAccessor<Boolean> IS_TEARING_DOWN;
+   private static final EntityDataAccessor<Optional<BlockPos>> HOME_POS;
    private static final int ATTACK_ANIMATION_DURATION = 15;
    private static final int MAX_HEALTH = 1;
    private static final float ATTACK_DAMAGE = 3.0F;
@@ -76,8 +78,6 @@ public class Creaking extends Monster {
    private int invulnerabilityAnimationRemainingTicks;
    private boolean eyesGlowing;
    private int nextFlickerTime;
-   @Nullable
-   BlockPos homePos;
    private int playerStuckCounter;
 
    public Creaking(EntityType<? extends Creaking> var1, Level var2) {
@@ -91,7 +91,7 @@ public class Creaking extends Monster {
    }
 
    public void setTransient(BlockPos var1) {
-      this.homePos = var1;
+      this.setHomePos(var1);
       this.setPathfindingMalus(PathType.DAMAGE_OTHER, 8.0F);
       this.setPathfindingMalus(PathType.POWDER_SNOW, 8.0F);
       this.setPathfindingMalus(PathType.LAVA, 8.0F);
@@ -99,8 +99,8 @@ public class Creaking extends Monster {
       this.setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);
    }
 
-   public boolean isTransient() {
-      return this.homePos != null;
+   public boolean isHeartBound() {
+      return this.getHomePos() != null;
    }
 
    protected BodyRotationControl createBodyControl() {
@@ -120,6 +120,7 @@ public class Creaking extends Monster {
       var1.define(CAN_MOVE, true);
       var1.define(IS_ACTIVE, false);
       var1.define(IS_TEARING_DOWN, false);
+      var1.define(HOME_POS, Optional.empty());
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -141,21 +142,22 @@ public class Creaking extends Monster {
    }
 
    public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
-      if (this.homePos != null && !var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+      BlockPos var4 = this.getHomePos();
+      if (var4 != null && !var2.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
          if (!this.isInvulnerableTo(var1, var2) && this.invulnerabilityAnimationRemainingTicks <= 0 && !this.isDeadOrDying()) {
-            Player var4 = this.blameSourceForDamage(var2);
-            Entity var5 = var2.getDirectEntity();
-            if (!(var5 instanceof LivingEntity) && !(var5 instanceof Projectile) && var4 == null) {
+            Player var5 = this.blameSourceForDamage(var2);
+            Entity var6 = var2.getDirectEntity();
+            if (!(var6 instanceof LivingEntity) && !(var6 instanceof Projectile) && var5 == null) {
                return false;
             } else {
                this.invulnerabilityAnimationRemainingTicks = 8;
                this.level().broadcastEntityEvent(this, (byte)66);
-               BlockEntity var7 = this.level().getBlockEntity(this.homePos);
-               if (var7 instanceof CreakingHeartBlockEntity) {
-                  CreakingHeartBlockEntity var6 = (CreakingHeartBlockEntity)var7;
-                  if (var6.isProtector(this)) {
-                     if (var4 != null) {
-                        var6.creakingHurt();
+               BlockEntity var8 = this.level().getBlockEntity(var4);
+               if (var8 instanceof CreakingHeartBlockEntity) {
+                  CreakingHeartBlockEntity var7 = (CreakingHeartBlockEntity)var8;
+                  if (var7.isProtector(this)) {
+                     if (var5 != null) {
+                        var7.creakingHurt();
                      }
 
                      this.playHurtSound(var2);
@@ -228,24 +230,27 @@ public class Creaking extends Monster {
    }
 
    public void tick() {
-      if (!this.level().isClientSide && this.homePos != null) {
-         boolean var10000;
-         label21: {
-            BlockEntity var3 = this.level().getBlockEntity(this.homePos);
-            if (var3 instanceof CreakingHeartBlockEntity) {
-               CreakingHeartBlockEntity var2 = (CreakingHeartBlockEntity)var3;
-               if (var2.isProtector(this)) {
-                  var10000 = true;
-                  break label21;
+      if (!this.level().isClientSide) {
+         BlockPos var1 = this.getHomePos();
+         if (var1 != null) {
+            boolean var10000;
+            label21: {
+               BlockEntity var4 = this.level().getBlockEntity(var1);
+               if (var4 instanceof CreakingHeartBlockEntity) {
+                  CreakingHeartBlockEntity var3 = (CreakingHeartBlockEntity)var4;
+                  if (var3.isProtector(this)) {
+                     var10000 = true;
+                     break label21;
+                  }
                }
+
+               var10000 = false;
             }
 
-            var10000 = false;
-         }
-
-         boolean var1 = var10000;
-         if (!var1) {
-            this.setHealth(0.0F);
+            boolean var2 = var10000;
+            if (!var2) {
+               this.setHealth(0.0F);
+            }
          }
       }
 
@@ -258,7 +263,7 @@ public class Creaking extends Monster {
    }
 
    protected void tickDeath() {
-      if (this.isTransient() && this.isTearingDown()) {
+      if (this.isHeartBound() && this.isTearingDown()) {
          ++this.deathTime;
          if (!this.level().isClientSide() && this.deathTime > 45 && !this.isRemoved()) {
             this.tearDown();
@@ -316,25 +321,29 @@ public class Creaking extends Monster {
    }
 
    public boolean fireImmune() {
-      return this.isTransient() || super.fireImmune();
+      return this.isHeartBound() || super.fireImmune();
+   }
+
+   public boolean canBeNameTagged() {
+      return !this.isHeartBound() && super.canBeNameTagged();
    }
 
    protected boolean canAddPassenger(Entity var1) {
-      return !this.isTransient() && super.canAddPassenger(var1);
+      return !this.isHeartBound() && super.canAddPassenger(var1);
    }
 
    protected boolean couldAcceptPassenger() {
-      return !this.isTransient() && super.couldAcceptPassenger();
+      return !this.isHeartBound() && super.couldAcceptPassenger();
    }
 
    protected void addPassenger(Entity var1) {
-      if (this.isTransient()) {
+      if (this.isHeartBound()) {
          throw new IllegalStateException("Should never addPassenger without checking couldAcceptPassenger()");
       }
    }
 
    public boolean canUsePortal(boolean var1) {
-      return !this.isTransient() && super.canUsePortal(var1);
+      return !this.isHeartBound() && super.canUsePortal(var1);
    }
 
    protected PathNavigation createNavigation(Level var1) {
@@ -371,10 +380,20 @@ public class Creaking extends Monster {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      if (this.homePos != null) {
-         var1.put("home_pos", NbtUtils.writeBlockPos(this.homePos));
+      BlockPos var2 = this.getHomePos();
+      if (var2 != null) {
+         var1.put("home_pos", NbtUtils.writeBlockPos(var2));
       }
 
+   }
+
+   public void setHomePos(BlockPos var1) {
+      this.entityData.set(HOME_POS, Optional.of(var1));
+   }
+
+   @Nullable
+   public BlockPos getHomePos() {
+      return (BlockPos)((Optional)this.entityData.get(HOME_POS)).orElse((Object)null);
    }
 
    public void setTearingDown() {
@@ -499,6 +518,7 @@ public class Creaking extends Monster {
       CAN_MOVE = SynchedEntityData.<Boolean>defineId(Creaking.class, EntityDataSerializers.BOOLEAN);
       IS_ACTIVE = SynchedEntityData.<Boolean>defineId(Creaking.class, EntityDataSerializers.BOOLEAN);
       IS_TEARING_DOWN = SynchedEntityData.<Boolean>defineId(Creaking.class, EntityDataSerializers.BOOLEAN);
+      HOME_POS = SynchedEntityData.<Optional<BlockPos>>defineId(Creaking.class, EntityDataSerializers.OPTIONAL_BLOCK_POS);
    }
 
    class CreakingLookControl extends LookControl {
@@ -563,7 +583,7 @@ public class Creaking extends Monster {
       }
 
       public PathType getPathType(PathfindingContext var1, int var2, int var3, int var4) {
-         BlockPos var5 = Creaking.this.homePos;
+         BlockPos var5 = Creaking.this.getHomePos();
          if (var5 == null) {
             return super.getPathType(var1, var2, var3, var4);
          } else {

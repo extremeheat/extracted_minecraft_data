@@ -82,7 +82,7 @@ public class TraderLlama extends Llama {
       if (this.canDespawn()) {
          this.despawnDelay = this.isLeashedToWanderingTrader() ? ((WanderingTrader)this.getLeashHolder()).getDespawnDelay() - 1 : this.despawnDelay - 1;
          if (this.despawnDelay <= 0) {
-            this.dropLeash(true, false);
+            this.removeLeash();
             this.discard();
          }
 

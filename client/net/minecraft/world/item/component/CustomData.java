@@ -12,7 +12,9 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -21,6 +23,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -86,6 +89,12 @@ public final class CustomData {
    @Nullable
    public ResourceLocation parseEntityId() {
       return !this.tag.contains("id", 8) ? null : ResourceLocation.tryParse(this.tag.getString("id"));
+   }
+
+   @Nullable
+   public <T> T parseEntityType(HolderLookup.Provider var1, ResourceKey<? extends Registry<T>> var2) {
+      ResourceLocation var3 = this.parseEntityId();
+      return (T)(var3 == null ? null : var1.lookup(var2).flatMap((var2x) -> var2x.get(ResourceKey.create(var2, var3))).map(Holder::value).orElse((Object)null));
    }
 
    public void loadInto(Entity var1) {

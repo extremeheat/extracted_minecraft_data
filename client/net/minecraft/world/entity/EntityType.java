@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -330,6 +331,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<ZombifiedPiglin> ZOMBIFIED_PIGLIN;
    public static final EntityType<Player> PLAYER;
    public static final EntityType<FishingHook> FISHING_BOBBER;
+   private static final Set<EntityType<?>> OP_ONLY_CUSTOM_DATA;
    private final EntityFactory<T> factory;
    private final MobCategory category;
    private final ImmutableSet<Block> immuneTo;
@@ -480,8 +482,11 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static void updateCustomEntityTag(Level var0, @Nullable Player var1, @Nullable Entity var2, CustomData var3) {
       MinecraftServer var4 = var0.getServer();
       if (var4 != null && var2 != null) {
-         if (var0.isClientSide || !var2.onlyOpCanSetNbt() || var1 != null && var4.getPlayerList().isOp(var1.getGameProfile())) {
-            var3.loadInto(var2);
+         EntityType var5 = (EntityType)var3.parseEntityType(var4.registryAccess(), Registries.ENTITY_TYPE);
+         if (var2.getType() == var5) {
+            if (var0.isClientSide || !var2.getType().onlyOpCanSetNbt() || var1 != null && var4.getPlayerList().isOp(var1.getGameProfile())) {
+               var3.loadInto(var2);
+            }
          }
       }
    }
@@ -678,6 +683,10 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return (var1, var2) -> new ChestRaft(var1, var2, var0);
    }
 
+   public boolean onlyOpCanSetNbt() {
+      return OP_ONLY_CUSTOM_DATA.contains(this);
+   }
+
    static {
       ACACIA_BOAT = register("acacia_boat", EntityType.Builder.of(boatFactory(() -> Items.ACACIA_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
       ACACIA_CHEST_BOAT = register("acacia_chest_boat", EntityType.Builder.of(chestBoatFactory(() -> Items.ACACIA_CHEST_BOAT), MobCategory.MISC).noLootTable().sized(1.375F, 0.5625F).eyeHeight(0.5625F).clientTrackingRange(10));
@@ -828,6 +837,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       ZOMBIFIED_PIGLIN = register("zombified_piglin", EntityType.Builder.of(ZombifiedPiglin::new, MobCategory.MONSTER).fireImmune().sized(0.6F, 1.95F).eyeHeight(1.79F).passengerAttachments(2.0F).ridingOffset(-0.7F).clientTrackingRange(8));
       PLAYER = register("player", EntityType.Builder.createNothing(MobCategory.MISC).noSave().noSummon().sized(0.6F, 1.8F).eyeHeight(1.62F).vehicleAttachment(Player.DEFAULT_VEHICLE_ATTACHMENT).clientTrackingRange(32).updateInterval(2));
       FISHING_BOBBER = register("fishing_bobber", EntityType.Builder.of(FishingHook::new, MobCategory.MISC).noLootTable().noSave().noSummon().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(5));
+      OP_ONLY_CUSTOM_DATA = Set.of(FALLING_BLOCK, COMMAND_BLOCK_MINECART, SPAWNER_MINECART);
    }
 
    public static class Builder<T extends Entity> {

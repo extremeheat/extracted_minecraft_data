@@ -34,7 +34,9 @@ public abstract class ReloadableTexture extends AbstractTexture {
 
    private void doLoad(NativeImage var1, boolean var2, boolean var3) {
       TextureUtil.prepareImage(this.getId(), 0, var1.getWidth(), var1.getHeight());
-      var1.upload(0, 0, 0, 0, 0, var1.getWidth(), var1.getHeight(), var2, var3, false, true);
+      this.setFilter(var2, false);
+      this.setClamp(var3);
+      var1.upload(0, 0, 0, 0, 0, var1.getWidth(), var1.getHeight(), true);
    }
 
    public abstract TextureContents loadContents(ResourceManager var1) throws IOException;

@@ -71,7 +71,7 @@ public enum ConversionType {
 
          Entity var5 = var1.getLeashHolder();
          if (var5 != null) {
-            var1.dropLeash(true, true);
+            var1.dropLeash();
          }
 
          this.convertCommon(var1, var2, var3);

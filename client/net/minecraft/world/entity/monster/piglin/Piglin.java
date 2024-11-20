@@ -276,7 +276,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    public TagKey<Item> getPreferredWeaponType() {
-      return ItemTags.PIGLIN_PREFERRED_WEAPONS;
+      return this.isBaby() ? null : ItemTags.PIGLIN_PREFERRED_WEAPONS;
    }
 
    private boolean isChargingCrossbow() {
@@ -362,14 +362,13 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       if (EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE)) {
          return false;
       } else {
-         boolean var4 = PiglinAi.isLovedItem(var1) || var1.is(Items.CROSSBOW);
-         boolean var5 = PiglinAi.isLovedItem(var2) || var2.is(Items.CROSSBOW);
-         if (var4 && !var5) {
+         TagKey var4 = this.getPreferredWeaponType();
+         boolean var5 = PiglinAi.isLovedItem(var1) || var4 != null && var1.is(var4);
+         boolean var6 = PiglinAi.isLovedItem(var2) || var4 != null && var2.is(var4);
+         if (var5 && !var6) {
             return true;
-         } else if (!var4 && var5) {
-            return false;
          } else {
-            return this.isAdult() && !var1.is(Items.CROSSBOW) && var2.is(Items.CROSSBOW) ? false : super.canReplaceCurrentItem(var1, var2, var3);
+            return !var5 && var6 ? false : super.canReplaceCurrentItem(var1, var2, var3);
          }
       }
    }

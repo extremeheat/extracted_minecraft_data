@@ -2,9 +2,12 @@ package net.minecraft.client.color.item;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import javax.annotation.Nullable;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomModelData;
 
@@ -17,12 +20,12 @@ public record CustomModelDataSource(int index, int defaultColor) implements Item
       this.defaultColor = var2;
    }
 
-   public int calculate(ItemStack var1) {
-      CustomModelData var2 = (CustomModelData)var1.get(DataComponents.CUSTOM_MODEL_DATA);
-      if (var2 != null) {
-         Integer var3 = var2.getColor(this.index);
-         if (var3 != null) {
-            return ARGB.opaque(var3);
+   public int calculate(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3) {
+      CustomModelData var4 = (CustomModelData)var1.get(DataComponents.CUSTOM_MODEL_DATA);
+      if (var4 != null) {
+         Integer var5 = var4.getColor(this.index);
+         if (var5 != null) {
+            return ARGB.opaque(var5);
          }
       }
 

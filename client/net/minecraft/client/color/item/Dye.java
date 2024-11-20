@@ -2,7 +2,10 @@ package net.minecraft.client.color.item;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import javax.annotation.Nullable;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DyedItemColor;
 
@@ -14,7 +17,7 @@ public record Dye(int defaultColor) implements ItemTintSource {
       this.defaultColor = var1;
    }
 
-   public int calculate(ItemStack var1) {
+   public int calculate(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3) {
       return DyedItemColor.getOrDefault(var1, this.defaultColor);
    }
 

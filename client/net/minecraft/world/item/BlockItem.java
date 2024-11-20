@@ -3,17 +3,12 @@ package net.minecraft.world.item;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -37,7 +32,6 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 public class BlockItem extends Item {
-   public static final List<Component> OP_NBT_WARNING;
    /** @deprecated */
    @Deprecated
    private final Block block;
@@ -155,7 +149,7 @@ public class BlockItem extends Item {
       } else {
          CustomData var4 = (CustomData)var3.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
          if (!var4.isEmpty()) {
-            BlockEntityType var5 = getBlockEntityType(var0.registryAccess(), var4);
+            BlockEntityType var5 = (BlockEntityType)var4.parseEntityType(var0.registryAccess(), Registries.BLOCK_ENTITY_TYPE);
             if (var5 == null) {
                return false;
             }
@@ -179,23 +173,17 @@ public class BlockItem extends Item {
       }
    }
 
-   @Nullable
-   private static BlockEntityType<?> getBlockEntityType(HolderLookup.Provider var0, CustomData var1) {
-      ResourceLocation var2 = var1.parseEntityId();
-      return var2 == null ? null : (BlockEntityType)var0.lookup(Registries.BLOCK_ENTITY_TYPE).flatMap((var1x) -> var1x.get(ResourceKey.create(Registries.BLOCK_ENTITY_TYPE, var2))).map(Holder::value).orElse((Object)null);
-   }
-
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
       this.getBlock().appendHoverText(var1, var2, var3, var4);
    }
 
-   public static boolean shouldPrintOpWarning(ItemStack var0, @Nullable Player var1) {
-      if (var1 != null && var1.getPermissionLevel() >= 2) {
-         CustomData var2 = (CustomData)var0.get(DataComponents.BLOCK_ENTITY_DATA);
-         if (var2 != null) {
-            BlockEntityType var3 = getBlockEntityType(var1.level().registryAccess(), var2);
-            return var3 != null && var3.onlyOpCanSetNbt();
+   public boolean shouldPrintOpWarning(ItemStack var1, @Nullable Player var2) {
+      if (var2 != null && var2.getPermissionLevel() >= 2) {
+         CustomData var3 = (CustomData)var1.get(DataComponents.BLOCK_ENTITY_DATA);
+         if (var3 != null) {
+            BlockEntityType var4 = (BlockEntityType)var3.parseEntityType(var2.level().registryAccess(), Registries.BLOCK_ENTITY_TYPE);
+            return var4 != null && var4.onlyOpCanSetNbt();
          }
       }
 
@@ -235,9 +223,5 @@ public class BlockItem extends Item {
 
    public FeatureFlagSet requiredFeatures() {
       return this.getBlock().requiredFeatures();
-   }
-
-   static {
-      OP_NBT_WARNING = List.of(Component.translatable("item.op_block_warning.line1").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), Component.translatable("item.op_block_warning.line2").withStyle(ChatFormatting.RED), Component.translatable("item.op_block_warning.line3").withStyle(ChatFormatting.RED));
    }
 }

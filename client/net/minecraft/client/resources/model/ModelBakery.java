@@ -13,6 +13,7 @@ import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.UnbakedBlockStateModel;
+import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.MissingItemModel;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -37,15 +38,15 @@ public class ModelBakery {
    private final EntityModelSet entityModelSet;
    final Map<BakedCacheKey, BakedModel> bakedCache = new HashMap();
    private final Map<ModelResourceLocation, UnbakedBlockStateModel> unbakedBlockStateModels;
-   private final Map<ResourceLocation, ItemModel.Unbaked> unbakedItemStackModels;
+   private final Map<ResourceLocation, ClientItem> clientInfos;
    final Map<ResourceLocation, UnbakedModel> unbakedPlainModels;
    final UnbakedModel missingModel;
 
-   public ModelBakery(EntityModelSet var1, Map<ModelResourceLocation, UnbakedBlockStateModel> var2, Map<ResourceLocation, ItemModel.Unbaked> var3, Map<ResourceLocation, UnbakedModel> var4, UnbakedModel var5) {
+   public ModelBakery(EntityModelSet var1, Map<ModelResourceLocation, UnbakedBlockStateModel> var2, Map<ResourceLocation, ClientItem> var3, Map<ResourceLocation, UnbakedModel> var4, UnbakedModel var5) {
       super();
       this.entityModelSet = var1;
       this.unbakedBlockStateModels = var2;
-      this.unbakedItemStackModels = var3;
+      this.clientInfos = var3;
       this.unbakedPlainModels = var4;
       this.missingModel = var5;
    }
@@ -64,21 +65,25 @@ public class ModelBakery {
 
       });
       MissingItemModel var4 = new MissingItemModel(var2);
-      HashMap var5 = new HashMap(this.unbakedItemStackModels.size());
-      this.unbakedItemStackModels.forEach((var4x, var5x) -> {
-         ModelDebugName var6 = () -> String.valueOf(var4x) + "#inventory";
-         ModelBakerImpl var7 = new ModelBakerImpl(var1, var6);
-         ItemModel.BakingContext var8 = new ItemModel.BakingContext(var7, this.entityModelSet, var4);
+      HashMap var5 = new HashMap(this.clientInfos.size());
+      HashMap var6 = new HashMap(this.clientInfos.size());
+      this.clientInfos.forEach((var5x, var6x) -> {
+         ModelDebugName var7 = () -> String.valueOf(var5x) + "#inventory";
+         ModelBakerImpl var8 = new ModelBakerImpl(var1, var7);
+         ItemModel.BakingContext var9 = new ItemModel.BakingContext(var8, this.entityModelSet, var4);
 
          try {
-            ItemModel var9 = var5x.bake(var8);
-            var5.put(var4x, var9);
-         } catch (Exception var10) {
-            LOGGER.warn("Unable to bake item model: '{}'", var4x, var10);
+            ItemModel var10 = var6x.model().bake(var9);
+            var5.put(var5x, var10);
+            if (!var6x.properties().equals(ClientItem.Properties.DEFAULT)) {
+               var6.put(var5x, var6x.properties());
+            }
+         } catch (Exception var11) {
+            LOGGER.warn("Unable to bake item model: '{}'", var5x, var11);
          }
 
       });
-      return new BakingResult(var2, var3, var4, var5);
+      return new BakingResult(var2, var3, var4, var5, var6);
    }
 
    static {
@@ -165,13 +170,14 @@ public class ModelBakery {
       }
    }
 
-   public static record BakingResult(BakedModel missingModel, Map<ModelResourceLocation, BakedModel> blockStateModels, ItemModel missingItemModel, Map<ResourceLocation, ItemModel> itemStackModels) {
-      public BakingResult(BakedModel var1, Map<ModelResourceLocation, BakedModel> var2, ItemModel var3, Map<ResourceLocation, ItemModel> var4) {
+   public static record BakingResult(BakedModel missingModel, Map<ModelResourceLocation, BakedModel> blockStateModels, ItemModel missingItemModel, Map<ResourceLocation, ItemModel> itemStackModels, Map<ResourceLocation, ClientItem.Properties> itemProperties) {
+      public BakingResult(BakedModel var1, Map<ModelResourceLocation, BakedModel> var2, ItemModel var3, Map<ResourceLocation, ItemModel> var4, Map<ResourceLocation, ClientItem.Properties> var5) {
          super();
          this.missingModel = var1;
          this.blockStateModels = var2;
          this.missingItemModel = var3;
          this.itemStackModels = var4;
+         this.itemProperties = var5;
       }
    }
 }

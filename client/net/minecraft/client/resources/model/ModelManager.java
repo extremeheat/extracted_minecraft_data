@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import java.io.BufferedReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -25,6 +24,7 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.SpecialBlockModelRenderer;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BlockModel;
+import net.minecraft.client.renderer.item.ClientItem;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -48,6 +48,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
    private static final Map<ResourceLocation, ResourceLocation> VANILLA_ATLASES;
    private Map<ModelResourceLocation, BakedModel> bakedBlockStateModels = Map.of();
    private Map<ResourceLocation, ItemModel> bakedItemStackModels = Map.of();
+   private Map<ResourceLocation, ClientItem.Properties> itemProperties = Map.of();
    private final AtlasSet atlases;
    private final BlockModelShaper blockModelShaper;
    private final BlockColors blockColors;
@@ -81,6 +82,10 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       return (ItemModel)this.bakedItemStackModels.getOrDefault(var1, this.missingItemModel);
    }
 
+   public ClientItem.Properties getItemProperties(ResourceLocation var1) {
+      return (ClientItem.Properties)this.itemProperties.getOrDefault(var1, ClientItem.Properties.DEFAULT);
+   }
+
    public BlockModelShaper getBlockModelShaper() {
       return this.blockModelShaper;
    }
@@ -91,8 +96,8 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       CompletableFuture var7 = var6.thenApplyAsync(SpecialBlockModelRenderer::vanilla, var3);
       CompletableFuture var8 = loadBlockModels(var2, var3);
       CompletableFuture var9 = BlockStateModelLoader.loadBlockStates(var5, var2, var3);
-      CompletableFuture var10 = ItemStackModelLoader.loadItemStackModels(var2, var3);
-      CompletableFuture var11 = CompletableFuture.allOf(var8, var9, var10).thenApplyAsync((var4x) -> discoverModelDependencies(var5, (Map)var8.join(), (BlockStateModelLoader.LoadedModels)var9.join(), (ItemStackModelLoader.LoadedModels)var10.join()), var3);
+      CompletableFuture var10 = ClientItemInfoLoader.scheduleLoad(var2, var3);
+      CompletableFuture var11 = CompletableFuture.allOf(var8, var9, var10).thenApplyAsync((var4x) -> discoverModelDependencies(var5, (Map)var8.join(), (BlockStateModelLoader.LoadedModels)var9.join(), (ClientItemInfoLoader.LoadedClientInfos)var10.join()), var3);
       CompletableFuture var12 = var9.thenApplyAsync((var1x) -> buildModelGroups(this.blockColors, var1x), var3);
       Map var13 = this.atlases.scheduleLoad(var2, this.maxMipmapLevels, var3);
       CompletableFuture var10000 = CompletableFuture.allOf((CompletableFuture[])Stream.concat(var13.values().stream(), Stream.of(var11, var12, var9, var10, var6, var7)).toArray((var0) -> new CompletableFuture[var0])).thenApplyAsync((var8x) -> {
@@ -104,7 +109,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
             LOGGER.debug("Unreferenced models: \n{}", var12x.stream().sorted().map((var0) -> "\t" + String.valueOf(var0) + "\n").collect(Collectors.joining()));
          }
 
-         ModelBakery var13x = new ModelBakery((EntityModelSet)var6.join(), ((BlockStateModelLoader.LoadedModels)var9.join()).plainModels(), ((ItemStackModelLoader.LoadedModels)var10.join()).models(), var10x.getReferencedModels(), var5);
+         ModelBakery var13x = new ModelBakery((EntityModelSet)var6.join(), ((BlockStateModelLoader.LoadedModels)var9.join()).plainModels(), ((ClientItemInfoLoader.LoadedClientInfos)var10.join()).contents(), var10x.getReferencedModels(), var5);
          return loadModels(Profiler.get(), var9x, var13x, var11x, (EntityModelSet)var6.join(), (SpecialBlockModelRenderer)var7.join());
       }, var3).thenCompose((var0) -> var0.readyForUpload.thenApply((var1) -> var0));
       Objects.requireNonNull(var1);
@@ -153,14 +158,12 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       });
    }
 
-   private static ModelDiscovery discoverModelDependencies(UnbakedModel var0, Map<ResourceLocation, UnbakedModel> var1, BlockStateModelLoader.LoadedModels var2, ItemStackModelLoader.LoadedModels var3) {
+   private static ModelDiscovery discoverModelDependencies(UnbakedModel var0, Map<ResourceLocation, UnbakedModel> var1, BlockStateModelLoader.LoadedModels var2, ClientItemInfoLoader.LoadedClientInfos var3) {
       ModelDiscovery var4 = new ModelDiscovery(var1, var0);
       Stream var10000 = var2.forResolving();
       Objects.requireNonNull(var4);
       var10000.forEach(var4::addRoot);
-      Collection var5 = var3.models().values();
-      Objects.requireNonNull(var4);
-      var5.forEach(var4::addRoot);
+      var3.contents().values().forEach((var1x) -> var4.addRoot(var1x.model()));
       var4.registerSpecialModels();
       var4.discoverDependencies();
       return var4;
@@ -231,6 +234,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       ModelBakery.BakingResult var3 = var1.bakedModels;
       this.bakedBlockStateModels = var3.blockStateModels();
       this.bakedItemStackModels = var3.itemStackModels();
+      this.itemProperties = var3.itemProperties();
       this.modelGroups = var1.modelGroups;
       this.missingModel = var3.missingModel();
       this.missingItemModel = var3.missingItemModel();

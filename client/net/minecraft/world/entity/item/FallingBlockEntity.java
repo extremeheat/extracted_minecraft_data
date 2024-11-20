@@ -332,10 +332,6 @@ public class FallingBlockEntity extends Entity {
       return Component.translatable("entity.minecraft.falling_block_type", this.blockState.getBlock().getName());
    }
 
-   public boolean onlyOpCanSetNbt() {
-      return true;
-   }
-
    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity var1) {
       return new ClientboundAddEntityPacket(this, var1, Block.getId(this.getBlockState()));
    }

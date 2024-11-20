@@ -207,7 +207,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
                FT_Face var3 = TrueTypeGlyphProvider.this.validateFontOpen();
                NativeImage var4 = new NativeImage(NativeImage.Format.LUMINANCE, Glyph.this.width, Glyph.this.height, false);
                if (var4.copyFromFont(var3, Glyph.this.index)) {
-                  var4.upload(0, var1, var2, 0, 0, Glyph.this.width, Glyph.this.height, false, true);
+                  var4.upload(0, var1, var2, 0, 0, Glyph.this.width, Glyph.this.height, true);
                } else {
                   var4.close();
                }

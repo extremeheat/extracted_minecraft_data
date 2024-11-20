@@ -183,11 +183,10 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
    }
 
-   protected AABB makeBoundingBox() {
-      float var1 = getPhysicalPeek(this.currentPeekAmount);
-      Direction var2 = this.getAttachFace().getOpposite();
-      float var3 = this.getBbWidth() / 2.0F;
-      return getProgressAabb(this.getScale(), var2, var1).move(this.getX() - (double)var3, this.getY(), this.getZ() - (double)var3);
+   protected AABB makeBoundingBox(Vec3 var1) {
+      float var2 = getPhysicalPeek(this.currentPeekAmount);
+      Direction var3 = this.getAttachFace().getOpposite();
+      return getProgressAabb(this.getScale(), var3, var2, var1);
    }
 
    private static float getPhysicalPeek(float var0) {
@@ -217,7 +216,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       Direction var3 = this.getAttachFace().getOpposite();
       float var4 = (var1 - var2) * this.getScale();
       if (!(var4 <= 0.0F)) {
-         for(Entity var7 : this.level().getEntities(this, getProgressDeltaAabb(this.getScale(), var3, var2, var1).move(this.getX() - 0.5, this.getY(), this.getZ() - 0.5), EntitySelector.NO_SPECTATORS.and((var1x) -> !var1x.isPassengerOfSameVehicle(this)))) {
+         for(Entity var7 : this.level().getEntities(this, getProgressDeltaAabb(this.getScale(), var3, var2, var1, this.position()), EntitySelector.NO_SPECTATORS.and((var1x) -> !var1x.isPassengerOfSameVehicle(this)))) {
             if (!(var7 instanceof Shulker) && !var7.noPhysics) {
                var7.move(MoverType.SHULKER, new Vec3((double)(var4 * (float)var3.getStepX()), (double)(var4 * (float)var3.getStepY()), (double)(var4 * (float)var3.getStepZ())));
             }
@@ -226,15 +225,16 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       }
    }
 
-   public static AABB getProgressAabb(float var0, Direction var1, float var2) {
-      return getProgressDeltaAabb(var0, var1, -1.0F, var2);
+   public static AABB getProgressAabb(float var0, Direction var1, float var2, Vec3 var3) {
+      return getProgressDeltaAabb(var0, var1, -1.0F, var2, var3);
    }
 
-   public static AABB getProgressDeltaAabb(float var0, Direction var1, float var2, float var3) {
-      AABB var4 = new AABB(0.0, 0.0, 0.0, (double)var0, (double)var0, (double)var0);
-      double var5 = (double)Math.max(var2, var3);
-      double var7 = (double)Math.min(var2, var3);
-      return var4.expandTowards((double)var1.getStepX() * var5 * (double)var0, (double)var1.getStepY() * var5 * (double)var0, (double)var1.getStepZ() * var5 * (double)var0).contract((double)(-var1.getStepX()) * (1.0 + var7) * (double)var0, (double)(-var1.getStepY()) * (1.0 + var7) * (double)var0, (double)(-var1.getStepZ()) * (1.0 + var7) * (double)var0);
+   public static AABB getProgressDeltaAabb(float var0, Direction var1, float var2, float var3, Vec3 var4) {
+      AABB var5 = new AABB((double)(-var0) * 0.5, 0.0, (double)(-var0) * 0.5, (double)var0 * 0.5, (double)var0, (double)var0 * 0.5);
+      double var6 = (double)Math.max(var2, var3);
+      double var8 = (double)Math.min(var2, var3);
+      AABB var10 = var5.expandTowards((double)var1.getStepX() * var6 * (double)var0, (double)var1.getStepY() * var6 * (double)var0, (double)var1.getStepZ() * var6 * (double)var0).contract((double)(-var1.getStepX()) * (1.0 + var8) * (double)var0, (double)(-var1.getStepY()) * (1.0 + var8) * (double)var0, (double)(-var1.getStepZ()) * (1.0 + var8) * (double)var0);
+      return var10.move(var4.x, var4.y, var4.z);
    }
 
    public boolean startRiding(Entity var1, boolean var2) {
@@ -325,7 +325,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
          if (!this.level().loadedAndEntityCanStandOnFace(var1.relative(var2), this, var3)) {
             return false;
          } else {
-            AABB var4 = getProgressAabb(this.getScale(), var3, 1.0F).move(var1).deflate(1.0E-6);
+            AABB var4 = getProgressAabb(this.getScale(), var3, 1.0F, var1.getBottomCenter()).deflate(1.0E-6);
             return this.level().noCollision(this, var4);
          }
       }

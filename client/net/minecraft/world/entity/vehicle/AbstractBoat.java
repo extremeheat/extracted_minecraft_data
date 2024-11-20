@@ -697,7 +697,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
-      this.leashData = this.readLeashData(var1);
+      this.readLeashData(var1);
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
@@ -711,7 +711,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
 
    public void remove(Entity.RemovalReason var1) {
       if (!this.level().isClientSide && var1.shouldDestroy() && this.isLeashed()) {
-         this.dropLeash(true, true);
+         this.dropLeash();
       }
 
       super.remove(var1);

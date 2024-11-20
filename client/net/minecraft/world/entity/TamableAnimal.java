@@ -74,6 +74,9 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
          } catch (Throwable var4) {
             this.setTame(false, true);
          }
+      } else {
+         this.setOwnerUUID((UUID)null);
+         this.setTame(false, true);
       }
 
       this.orderedToSit = var1.getBoolean("Sitting");
@@ -87,7 +90,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
    public boolean handleLeashAtDistance(Entity var1, float var2) {
       if (this.isInSittingPose()) {
          if (var2 > 10.0F) {
-            this.dropLeash(true, true);
+            this.dropLeash();
          }
 
          return false;

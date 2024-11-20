@@ -125,7 +125,7 @@ public class ModelProvider implements DataProvider {
       }
 
       public void accept(Item var1, ItemModel.Unbaked var2) {
-         this.register(var1, new ClientItem(var2));
+         this.register(var1, new ClientItem(var2, ClientItem.Properties.DEFAULT));
       }
 
       private void register(Item var1, ClientItem var2) {

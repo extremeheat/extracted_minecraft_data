@@ -38,7 +38,7 @@ public class BlockModelWrapper implements ItemModel {
       int[] var10 = var8.prepareTintLayers(var9);
 
       for(int var11 = 0; var11 < var9; ++var11) {
-         var10[var11] = ((ItemTintSource)this.tints.get(var11)).calculate(var2);
+         var10[var11] = ((ItemTintSource)this.tints.get(var11)).calculate(var2, var5, var6);
       }
 
       RenderType var12 = ItemBlockRenderTypes.getRenderType(var2);

@@ -13,7 +13,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CompassItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.phys.Vec3;
@@ -86,6 +85,12 @@ public class CompassAngleState extends NeedleDirectionHelper {
    }
 
    public static enum CompassTarget implements StringRepresentable {
+      NONE("none") {
+         @Nullable
+         public GlobalPos get(ClientLevel var1, ItemStack var2, Entity var3) {
+            return null;
+         }
+      },
       LODESTONE("lodestone") {
          @Nullable
          public GlobalPos get(ClientLevel var1, ItemStack var2, Entity var3) {
@@ -94,9 +99,8 @@ public class CompassAngleState extends NeedleDirectionHelper {
          }
       },
       SPAWN("spawn") {
-         @Nullable
          public GlobalPos get(ClientLevel var1, ItemStack var2, Entity var3) {
-            return CompassItem.getSpawnPosition(var1);
+            return GlobalPos.of(var1.dimension(), var1.getSharedSpawnPos());
          }
       },
       RECOVERY("recovery") {
@@ -129,7 +133,7 @@ public class CompassAngleState extends NeedleDirectionHelper {
 
       // $FF: synthetic method
       private static CompassTarget[] $values() {
-         return new CompassTarget[]{LODESTONE, SPAWN, RECOVERY};
+         return new CompassTarget[]{NONE, LODESTONE, SPAWN, RECOVERY};
       }
    }
 }

@@ -113,7 +113,7 @@ public class ItemModelGenerators {
 
    private void generateStandardCompassItem(Item var1) {
       List var2 = this.createCompassModels(var1);
-      this.itemModelOutput.accept(var1, ItemModelUtils.conditional(ItemModelUtils.hasComponent(DataComponents.LODESTONE_TRACKER), ItemModelUtils.rangeSelect(new CompassAngle(true, CompassAngleState.CompassTarget.LODESTONE), 32.0F, var2), ItemModelUtils.rangeSelect(new CompassAngle(true, CompassAngleState.CompassTarget.SPAWN), 32.0F, var2)));
+      this.itemModelOutput.accept(var1, ItemModelUtils.conditional(ItemModelUtils.hasComponent(DataComponents.LODESTONE_TRACKER), ItemModelUtils.rangeSelect(new CompassAngle(true, CompassAngleState.CompassTarget.LODESTONE), 32.0F, var2), ItemModelUtils.inOverworld(ItemModelUtils.rangeSelect(new CompassAngle(true, CompassAngleState.CompassTarget.SPAWN), 32.0F, var2), ItemModelUtils.rangeSelect(new CompassAngle(true, CompassAngleState.CompassTarget.NONE), 32.0F, var2))));
    }
 
    private void generateRecoveryCompassItem(Item var1) {
@@ -131,7 +131,7 @@ public class ItemModelGenerators {
       }
 
       var2.add(ItemModelUtils.override(var3, 63.5F));
-      this.itemModelOutput.accept(var1, ItemModelUtils.rangeSelect(new Time(true, true), 64.0F, var2));
+      this.itemModelOutput.accept(var1, ItemModelUtils.inOverworld(ItemModelUtils.rangeSelect(new Time(true, Time.TimeSource.DAYTIME), 64.0F, var2), ItemModelUtils.rangeSelect(new Time(true, Time.TimeSource.RANDOM), 64.0F, var2)));
    }
 
    private ResourceLocation generateLayeredItem(Item var1, ResourceLocation var2, ResourceLocation var3) {

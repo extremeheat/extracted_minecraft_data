@@ -3,9 +3,12 @@ package net.minecraft.client.color.item;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.IntList;
+import javax.annotation.Nullable;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.FireworkExplosion;
 
@@ -21,27 +24,27 @@ public record Firework(int defaultColor) implements ItemTintSource {
       this.defaultColor = var1;
    }
 
-   public int calculate(ItemStack var1) {
-      FireworkExplosion var2 = (FireworkExplosion)var1.get(DataComponents.FIREWORK_EXPLOSION);
-      IntList var3 = var2 != null ? var2.colors() : IntList.of();
-      int var4 = var3.size();
-      if (var4 == 0) {
+   public int calculate(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3) {
+      FireworkExplosion var4 = (FireworkExplosion)var1.get(DataComponents.FIREWORK_EXPLOSION);
+      IntList var5 = var4 != null ? var4.colors() : IntList.of();
+      int var6 = var5.size();
+      if (var6 == 0) {
          return this.defaultColor;
-      } else if (var4 == 1) {
-         return ARGB.opaque(var3.getInt(0));
+      } else if (var6 == 1) {
+         return ARGB.opaque(var5.getInt(0));
       } else {
-         int var5 = 0;
-         int var6 = 0;
          int var7 = 0;
+         int var8 = 0;
+         int var9 = 0;
 
-         for(int var8 = 0; var8 < var4; ++var8) {
-            int var9 = var3.getInt(var8);
-            var5 += ARGB.red(var9);
-            var6 += ARGB.green(var9);
-            var7 += ARGB.blue(var9);
+         for(int var10 = 0; var10 < var6; ++var10) {
+            int var11 = var5.getInt(var10);
+            var7 += ARGB.red(var11);
+            var8 += ARGB.green(var11);
+            var9 += ARGB.blue(var11);
          }
 
-         return ARGB.color(var5 / var4, var6 / var4, var7 / var4);
+         return ARGB.color(var7 / var6, var8 / var6, var9 / var6);
       }
    }
 

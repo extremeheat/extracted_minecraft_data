@@ -84,7 +84,7 @@ public interface DispenseItemBehavior {
       DefaultDispenseItemBehavior var0 = new DefaultDispenseItemBehavior() {
          public ItemStack execute(BlockSource var1, ItemStack var2) {
             Direction var3 = (Direction)var1.state().getValue(DispenserBlock.FACING);
-            EntityType var4 = ((SpawnEggItem)var2.getItem()).getType(var2);
+            EntityType var4 = ((SpawnEggItem)var2.getItem()).getType(var1.level().registryAccess(), var2);
 
             try {
                var4.spawn(var1.level(), var2, (Player)null, var1.pos().relative(var3), EntitySpawnReason.DISPENSER, var3 != Direction.UP, false);

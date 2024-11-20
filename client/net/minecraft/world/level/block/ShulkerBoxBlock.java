@@ -107,7 +107,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       if (var3.getAnimationStatus() != ShulkerBoxBlockEntity.AnimationStatus.CLOSED) {
          return true;
       } else {
-         AABB var4 = Shulker.getProgressDeltaAabb(1.0F, (Direction)var0.getValue(FACING), 0.0F, 0.5F).move(var2).deflate(1.0E-6);
+         AABB var4 = Shulker.getProgressDeltaAabb(1.0F, (Direction)var0.getValue(FACING), 0.0F, 0.5F, var2.getBottomCenter()).deflate(1.0E-6);
          return var1.noCollision(var4);
       }
    }
@@ -198,7 +198,11 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       BlockEntity var5 = var2.getBlockEntity(var3);
-      return var5 instanceof ShulkerBoxBlockEntity ? Shapes.create(((ShulkerBoxBlockEntity)var5).getBoundingBox(var1)) : Shapes.block();
+      if (var5 instanceof ShulkerBoxBlockEntity var6) {
+         return Shapes.create(var6.getBoundingBox(var1));
+      } else {
+         return Shapes.block();
+      }
    }
 
    protected boolean propagatesSkylightDown(BlockState var1) {

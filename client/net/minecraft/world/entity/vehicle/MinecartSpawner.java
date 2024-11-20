@@ -63,8 +63,4 @@ public class MinecartSpawner extends AbstractMinecart {
    public BaseSpawner getSpawner() {
       return this.spawner;
    }
-
-   public boolean onlyOpCanSetNbt() {
-      return true;
-   }
 }

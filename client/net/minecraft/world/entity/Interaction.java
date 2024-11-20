@@ -24,6 +24,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 public class Interaction extends Entity implements Attackable, Targeting {
@@ -192,8 +193,8 @@ public class Interaction extends Entity implements Attackable, Targeting {
       return this.getDimensions();
    }
 
-   protected AABB makeBoundingBox() {
-      return this.getDimensions().makeBoundingBox(this.position());
+   protected AABB makeBoundingBox(Vec3 var1) {
+      return this.getDimensions().makeBoundingBox(var1);
    }
 
    static {

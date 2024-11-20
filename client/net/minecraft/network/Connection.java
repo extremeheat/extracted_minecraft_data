@@ -504,14 +504,14 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
    }
 
    private static ChannelOutboundHandler createFrameEncoder(boolean var0) {
-      return (ChannelOutboundHandler)(var0 ? new NoOpFrameEncoder() : new Varint21LengthFieldPrepender());
+      return (ChannelOutboundHandler)(var0 ? new LocalFrameEncoder() : new Varint21LengthFieldPrepender());
    }
 
    private static ChannelInboundHandler createFrameDecoder(@Nullable BandwidthDebugMonitor var0, boolean var1) {
       if (!var1) {
          return new Varint21FrameDecoder(var0);
       } else {
-         return (ChannelInboundHandler)(var0 != null ? new MonitorFrameDecoder(var0) : new NoOpFrameDecoder());
+         return (ChannelInboundHandler)(var0 != null ? new MonitoredLocalFrameDecoder(var0) : new LocalFrameDecoder());
       }
    }
 

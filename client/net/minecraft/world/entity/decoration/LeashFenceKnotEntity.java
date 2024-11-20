@@ -85,7 +85,7 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
             if (var1.getAbilities().instabuild) {
                for(Leashable var7 : var4) {
                   if (var7.isLeashed() && var7.getLeashHolder() == this) {
-                     var7.dropLeash(true, false);
+                     var7.removeLeash();
                      var8 = true;
                   }
                }

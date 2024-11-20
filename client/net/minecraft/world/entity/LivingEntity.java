@@ -417,6 +417,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
                   this.hurt(this.damageSources().drown(), 2.0F);
                }
+            } else if (this.getAirSupply() < this.getMaxAirSupply()) {
+               this.setAirSupply(this.increaseAirSupply(this.getAirSupply()));
             }
 
             if (!this.level().isClientSide && this.isPassenger() && this.getVehicle() != null && this.getVehicle().dismountsUnderwater()) {
@@ -1534,6 +1536,10 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
    public Map<Enchantment, Set<EnchantmentLocationBasedEffect>> activeLocationDependentEnchantments(EquipmentSlot var1) {
       return (Map)this.activeLocationDependentEnchantments.computeIfAbsent(var1, (var0) -> new Reference2ObjectArrayMap());
+   }
+
+   public boolean canBeNameTagged() {
+      return true;
    }
 
    public Fallsounds getFallSounds() {

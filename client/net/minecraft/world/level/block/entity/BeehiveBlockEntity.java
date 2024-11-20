@@ -137,7 +137,7 @@ public class BeehiveBlockEntity extends BlockEntity {
       if (this.stored.size() < 3) {
          var1.stopRiding();
          var1.ejectPassengers();
-         var1.dropLeash(true, true);
+         var1.dropLeash();
          this.storeBee(BeehiveBlockEntity.Occupant.of(var1));
          if (this.level != null) {
             if (var1.hasSavedFlowerPos() && (!this.hasSavedFlowerPos() || this.level.random.nextBoolean())) {

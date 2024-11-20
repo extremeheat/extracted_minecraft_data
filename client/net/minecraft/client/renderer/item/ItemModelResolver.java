@@ -20,11 +20,14 @@ import net.minecraft.world.level.block.AbstractSkullBlock;
 
 public class ItemModelResolver {
    private final Function<ResourceLocation, ItemModel> modelGetter;
+   private final Function<ResourceLocation, ClientItem.Properties> clientProperties;
 
    public ItemModelResolver(ModelManager var1) {
       super();
       Objects.requireNonNull(var1);
       this.modelGetter = var1::getItemModel;
+      Objects.requireNonNull(var1);
+      this.clientProperties = var1::getItemProperties;
    }
 
    public void updateForLiving(ItemStackRenderState var1, ItemStack var2, ItemDisplayContext var3, boolean var4, LivingEntity var5) {
@@ -74,5 +77,10 @@ public class ItemModelResolver {
 
          var10000.update(var1, var2, this, var3, var10005, var5, var6);
       }
+   }
+
+   public boolean shouldPlaySwapAnimation(ItemStack var1) {
+      ResourceLocation var2 = (ResourceLocation)var1.get(DataComponents.ITEM_MODEL);
+      return var2 == null ? true : ((ClientItem.Properties)this.clientProperties.apply(var2)).handAnimationOnSwap();
    }
 }

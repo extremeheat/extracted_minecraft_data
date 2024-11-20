@@ -91,10 +91,6 @@ public class MinecartCommandBlock extends AbstractMinecart {
 
    }
 
-   public boolean onlyOpCanSetNbt() {
-      return true;
-   }
-
    static {
       DATA_ID_COMMAND_NAME = SynchedEntityData.<String>defineId(MinecartCommandBlock.class, EntityDataSerializers.STRING);
       DATA_ID_LAST_OUTPUT = SynchedEntityData.<Component>defineId(MinecartCommandBlock.class, EntityDataSerializers.COMPONENT);

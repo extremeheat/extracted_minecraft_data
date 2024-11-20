@@ -210,18 +210,6 @@ public final class NativeImage implements AutoCloseable {
       }
    }
 
-   private static void setFilter(boolean var0, boolean var1) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      if (var0) {
-         GlStateManager._texParameter(3553, 10241, var1 ? 9987 : 9729);
-         GlStateManager._texParameter(3553, 10240, 9729);
-      } else {
-         GlStateManager._texParameter(3553, 10241, var1 ? 9986 : 9728);
-         GlStateManager._texParameter(3553, 10240, 9728);
-      }
-
-   }
-
    private void checkAllocated() {
       if (this.pixels == 0L) {
          throw new IllegalStateException("Image is not allocated.");
@@ -375,27 +363,22 @@ public final class NativeImage implements AutoCloseable {
    }
 
    public void upload(int var1, int var2, int var3, boolean var4) {
-      this.upload(var1, var2, var3, 0, 0, this.width, this.height, false, var4);
+      this.upload(var1, var2, var3, 0, 0, this.width, this.height, var4);
    }
 
-   public void upload(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8, boolean var9) {
-      this.upload(var1, var2, var3, var4, var5, var6, var7, false, false, var8, var9);
-   }
-
-   public void upload(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8, boolean var9, boolean var10, boolean var11) {
+   public void upload(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8) {
       if (!RenderSystem.isOnRenderThreadOrInit()) {
-         RenderSystem.recordRenderCall(() -> this._upload(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11));
+         RenderSystem.recordRenderCall(() -> this._upload(var1, var2, var3, var4, var5, var6, var7, var8));
       } else {
-         this._upload(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
+         this._upload(var1, var2, var3, var4, var5, var6, var7, var8);
       }
 
    }
 
-   private void _upload(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8, boolean var9, boolean var10, boolean var11) {
+   private void _upload(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8) {
       try {
          RenderSystem.assertOnRenderThreadOrInit();
          this.checkAllocated();
-         setFilter(var8, var10);
          if (var6 == this.getWidth()) {
             GlStateManager._pixelStore(3314, 0);
          } else {
@@ -406,12 +389,8 @@ public final class NativeImage implements AutoCloseable {
          GlStateManager._pixelStore(3315, var5);
          this.format.setUnpackPixelStoreState();
          GlStateManager._texSubImage2D(3553, var1, var2, var3, var6, var7, this.format.glFormat(), 5121, this.pixels);
-         if (var9) {
-            GlStateManager._texParameter(3553, 10242, 33071);
-            GlStateManager._texParameter(3553, 10243, 33071);
-         }
       } finally {
-         if (var11) {
+         if (var8) {
             this.close();
          }
 

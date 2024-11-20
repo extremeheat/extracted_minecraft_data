@@ -225,7 +225,7 @@ public class BitmapProvider implements GlyphProvider {
             }
 
             public void upload(int var1, int var2) {
-               Glyph.this.image.upload(0, var1, var2, Glyph.this.offsetX, Glyph.this.offsetY, Glyph.this.width, Glyph.this.height, false, false);
+               Glyph.this.image.upload(0, var1, var2, Glyph.this.offsetX, Glyph.this.offsetY, Glyph.this.width, Glyph.this.height, false);
             }
 
             public boolean isColored() {

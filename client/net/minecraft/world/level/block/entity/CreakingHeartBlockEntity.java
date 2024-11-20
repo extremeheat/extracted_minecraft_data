@@ -107,7 +107,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
                            if (var12 != null) {
                               Creaking var14 = spawnProtector(var4, var3);
                               if (var14 != null) {
-                                 var3.creakingInfo = Either.left(var14);
+                                 var3.setCreakingInfo(var14);
                                  var14.makeSound(SoundEvents.CREAKING_SPAWN);
                                  var0.playSound((Player)null, (BlockPos)var3.getBlockPos(), SoundEvents.CREAKING_HEART_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
                               }
@@ -126,10 +126,6 @@ public class CreakingHeartBlockEntity extends BlockEntity {
                      return;
                   }
 
-                  if (var13.isRemoved()) {
-                     var3.creakingInfo = null;
-                  }
-
                   if (!CreakingHeartBlock.hasRequiredLogs(var2, var0, var1) && var3.creakingInfo == null) {
                      var0.setBlock(var1, (BlockState)var2.setValue(CreakingHeartBlock.ACTIVE, false), 3);
                   }
@@ -144,26 +140,49 @@ public class CreakingHeartBlockEntity extends BlockEntity {
       return (Double)this.getCreakingProtector().map((var1) -> Math.sqrt(var1.distanceToSqr(Vec3.atBottomCenterOf(this.getBlockPos())))).orElse(0.0);
    }
 
+   private void clearCreakingInfo() {
+      this.creakingInfo = null;
+      this.setChanged();
+   }
+
+   public void setCreakingInfo(Creaking var1) {
+      this.creakingInfo = Either.left(var1);
+      this.setChanged();
+   }
+
+   public void setCreakingInfo(UUID var1) {
+      this.creakingInfo = Either.right(var1);
+      this.ticksExisted = 0L;
+      this.setChanged();
+   }
+
    private Optional<Creaking> getCreakingProtector() {
       if (this.creakingInfo == null) {
          return NO_CREAKING;
-      } else if (this.creakingInfo.left().isPresent()) {
-         return Optional.of((Creaking)this.creakingInfo.left().get());
       } else {
+         if (this.creakingInfo.left().isPresent()) {
+            Creaking var1 = (Creaking)this.creakingInfo.left().get();
+            if (!var1.isRemoved()) {
+               return Optional.of(var1);
+            }
+
+            this.setCreakingInfo(var1.getUUID());
+         }
+
          Level var2 = this.level;
          if (var2 instanceof ServerLevel) {
-            ServerLevel var1 = (ServerLevel)var2;
+            ServerLevel var5 = (ServerLevel)var2;
             if (this.creakingInfo.right().isPresent()) {
-               UUID var5 = (UUID)this.creakingInfo.right().get();
-               Entity var3 = var1.getEntity(var5);
+               UUID var6 = (UUID)this.creakingInfo.right().get();
+               Entity var3 = var5.getEntity(var6);
                if (var3 instanceof Creaking) {
                   Creaking var4 = (Creaking)var3;
-                  this.creakingInfo = Either.left(var4);
+                  this.setCreakingInfo(var4);
                   return Optional.of(var4);
                }
 
                if (this.ticksExisted >= 30L) {
-                  this.creakingInfo = null;
+                  this.clearCreakingInfo();
                }
 
                return NO_CREAKING;
@@ -291,7 +310,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
             var2.setHealth(0.0F);
          }
 
-         this.creakingInfo = null;
+         this.clearCreakingInfo();
       }
 
    }
@@ -317,9 +336,9 @@ public class CreakingHeartBlockEntity extends BlockEntity {
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       if (var1.contains("creaking")) {
-         this.creakingInfo = Either.right(var1.getUUID("creaking"));
+         this.setCreakingInfo(var1.getUUID("creaking"));
       } else {
-         this.creakingInfo = null;
+         this.clearCreakingInfo();
       }
 
    }

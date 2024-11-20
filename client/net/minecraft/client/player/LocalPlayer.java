@@ -635,8 +635,11 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.crouching = !var4.flying && !this.isSwimming() && !this.isPassenger() && this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.CROUCHING) && (this.isShiftKeyDown() || !this.isSleeping() && !this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.STANDING));
       this.input.tick();
       this.minecraft.getTutorial().onInput(this.input);
-      if (this.isUsingItem() && !this.isPassenger() && !this.isUnderWater()) {
-         this.setSprinting(false);
+      if (this.isUsingItem() && !this.isPassenger()) {
+         if (!this.isUnderWater()) {
+            this.setSprinting(false);
+         }
+
          ClientInput var17 = this.input;
          var17.leftImpulse *= 0.2F;
          var17 = this.input;

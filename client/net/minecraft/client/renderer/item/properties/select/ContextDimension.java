@@ -5,24 +5,24 @@ import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 
-public record HolderType() implements SelectItemModelProperty<ResourceKey<EntityType<?>>> {
-   public static final SelectItemModelProperty.Type<HolderType, ResourceKey<EntityType<?>>> TYPE;
+public record ContextDimension() implements SelectItemModelProperty<ResourceKey<Level>> {
+   public static final SelectItemModelProperty.Type<ContextDimension, ResourceKey<Level>> TYPE;
 
-   public HolderType() {
+   public ContextDimension() {
       super();
    }
 
    @Nullable
-   public ResourceKey<EntityType<?>> get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
-      return var3 == null ? null : var3.getType().builtInRegistryHolder().key();
+   public ResourceKey<Level> get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5) {
+      return var2 != null ? var2.dimension() : null;
    }
 
-   public SelectItemModelProperty.Type<HolderType, ResourceKey<EntityType<?>>> type() {
+   public SelectItemModelProperty.Type<ContextDimension, ResourceKey<Level>> type() {
       return TYPE;
    }
 
@@ -33,6 +33,6 @@ public record HolderType() implements SelectItemModelProperty<ResourceKey<Entity
    }
 
    static {
-      TYPE = SelectItemModelProperty.Type.<HolderType, ResourceKey<EntityType<?>>>create(MapCodec.unit(new HolderType()), ResourceKey.codec(Registries.ENTITY_TYPE));
+      TYPE = SelectItemModelProperty.Type.<ContextDimension, ResourceKey<Level>>create(MapCodec.unit(new ContextDimension()), ResourceKey.codec(Registries.DIMENSION));
    }
 }

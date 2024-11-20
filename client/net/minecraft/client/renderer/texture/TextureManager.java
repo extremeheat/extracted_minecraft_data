@@ -41,16 +41,25 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
 
    public void registerAndLoad(ResourceLocation var1, ReloadableTexture var2) {
       try {
-         var2.apply(loadContents(this.resourceManager, var1, var2));
+         var2.apply(this.loadContentsSafe(var1, var2));
       } catch (Throwable var6) {
-         CrashReport var4 = CrashReport.forThrowable(var6, "Registering texture");
-         CrashReportCategory var5 = var4.addCategory("Resource location being registered");
+         CrashReport var4 = CrashReport.forThrowable(var6, "Uploading texture");
+         CrashReportCategory var5 = var4.addCategory("Uploaded texture");
          var5.setDetail("Resource location", var2.resourceId());
          var5.setDetail("Texture id", var1);
          throw new ReportedException(var4);
       }
 
       this.register(var1, var2);
+   }
+
+   private TextureContents loadContentsSafe(ResourceLocation var1, ReloadableTexture var2) {
+      try {
+         return loadContents(this.resourceManager, var1, var2);
+      } catch (Exception var4) {
+         LOGGER.error("Failed to load texture {} into slot {}", new Object[]{var2.resourceId(), var1, var4});
+         return TextureContents.createMissing();
+      }
    }
 
    public void registerForNextReload(ResourceLocation var1) {

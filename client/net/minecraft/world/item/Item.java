@@ -314,6 +314,10 @@ public class Item implements FeatureElement, ItemLike {
       return this.requiredFeatures;
    }
 
+   public boolean shouldPrintOpWarning(ItemStack var1, @Nullable Player var2) {
+      return false;
+   }
+
    static {
       CODEC = BuiltInRegistries.ITEM.holderByNameCodec().validate((var0) -> var0.is((Holder)Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air") : DataResult.success(var0));
       LOGGER = LogUtils.getLogger();

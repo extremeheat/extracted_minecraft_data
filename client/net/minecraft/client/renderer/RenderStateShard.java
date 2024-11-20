@@ -1,10 +1,10 @@
 package net.minecraft.client.renderer;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -15,7 +15,6 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.TriState;
-import org.apache.commons.lang3.tuple.Triple;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 
@@ -434,21 +433,19 @@ public abstract class RenderStateShard {
    protected static class MultiTextureStateShard extends EmptyTextureStateShard {
       private final Optional<ResourceLocation> cutoutTexture;
 
-      MultiTextureStateShard(ImmutableList<Triple<ResourceLocation, Boolean, Boolean>> var1) {
+      MultiTextureStateShard(List<Entry> var1) {
          super(() -> {
-            int var1x = 0;
-            UnmodifiableIterator var2 = var1.iterator();
-
-            while(var2.hasNext()) {
-               Triple var3 = (Triple)var2.next();
-               TextureManager var4 = Minecraft.getInstance().getTextureManager();
-               var4.getTexture((ResourceLocation)var3.getLeft()).setFilter((Boolean)var3.getMiddle(), (Boolean)var3.getRight());
-               RenderSystem.setShaderTexture(var1x++, (ResourceLocation)var3.getLeft());
+            for(int var1x = 0; var1x < var1.size(); ++var1x) {
+               Entry var2 = (Entry)var1.get(var1x);
+               TextureManager var3 = Minecraft.getInstance().getTextureManager();
+               AbstractTexture var4 = var3.getTexture(var2.id);
+               var4.setFilter(var2.blur, var2.mipmap);
+               RenderSystem.setShaderTexture(var1x, var4.getId());
             }
 
          }, () -> {
          });
-         this.cutoutTexture = var1.stream().findFirst().map(Triple::getLeft);
+         this.cutoutTexture = var1.isEmpty() ? Optional.empty() : Optional.of(((Entry)var1.getFirst()).id);
       }
 
       protected Optional<ResourceLocation> cutoutTexture() {
@@ -459,15 +456,28 @@ public abstract class RenderStateShard {
          return new Builder();
       }
 
+      static record Entry(ResourceLocation id, boolean blur, boolean mipmap) {
+         final ResourceLocation id;
+         final boolean blur;
+         final boolean mipmap;
+
+         Entry(ResourceLocation var1, boolean var2, boolean var3) {
+            super();
+            this.id = var1;
+            this.blur = var2;
+            this.mipmap = var3;
+         }
+      }
+
       public static final class Builder {
-         private final ImmutableList.Builder<Triple<ResourceLocation, Boolean, Boolean>> builder = new ImmutableList.Builder();
+         private final ImmutableList.Builder<Entry> builder = new ImmutableList.Builder();
 
          public Builder() {
             super();
          }
 
          public Builder add(ResourceLocation var1, boolean var2, boolean var3) {
-            this.builder.add(Triple.of(var1, var2, var3));
+            this.builder.add(new Entry(var1, var2, var3));
             return this;
          }
 
@@ -486,8 +496,8 @@ public abstract class RenderStateShard {
          super(() -> {
             TextureManager var3x = Minecraft.getInstance().getTextureManager();
             AbstractTexture var4 = var3x.getTexture(var1);
-            var4.setFilter(var2.toBoolean(var4.getDefaultBlur()), var3);
-            RenderSystem.setShaderTexture(0, var1);
+            var4.setFilter(var2, var3);
+            RenderSystem.setShaderTexture(0, var4.getId());
          }, () -> {
          });
          this.texture = Optional.of(var1);

@@ -14,6 +14,7 @@ public class ItemModels {
    }
 
    public static void bootstrap() {
+      ID_MAPPER.put(ResourceLocation.withDefaultNamespace("empty"), EmptyModel.Unbaked.MAP_CODEC);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("model"), BlockModelWrapper.Unbaked.MAP_CODEC);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("range_dispatch"), RangeSelectItemModel.Unbaked.MAP_CODEC);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("special"), SpecialModelWrapper.Unbaked.MAP_CODEC);

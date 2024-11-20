@@ -1001,7 +1001,7 @@ public class RealmsMainScreen extends RealmsScreen {
       public boolean keyPressed(int var1, int var2, int var3) {
          if (CommonInputs.selected(var1)) {
             this.addSnapshotRealm();
-            return true;
+            return false;
          } else {
             return super.keyPressed(var1, var2, var3);
          }

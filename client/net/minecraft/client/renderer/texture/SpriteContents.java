@@ -126,7 +126,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
 
    void upload(int var1, int var2, int var3, int var4, NativeImage[] var5) {
       for(int var6 = 0; var6 < this.byMipLevel.length; ++var6) {
-         var5[var6].upload(var6, var1 >> var6, var2 >> var6, var3 >> var6, var4 >> var6, this.width >> var6, this.height >> var6, this.byMipLevel.length > 1, false);
+         var5[var6].upload(var6, var1 >> var6, var2 >> var6, var3 >> var6, var4 >> var6, this.width >> var6, this.height >> var6, false);
       }
 
    }

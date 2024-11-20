@@ -52,6 +52,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
       this.height = var1.height();
       this.mipLevel = var1.mipLevel();
       this.clearTextureData();
+      this.setFilter(false, this.mipLevel > 1);
       this.texturesByName = Map.copyOf(var1.regions());
       this.missingSprite = (TextureAtlasSprite)this.texturesByName.get(MissingTextureAtlasSprite.getLocation());
       if (this.missingSprite == null) {
@@ -168,9 +169,5 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
 
    int getHeight() {
       return this.height;
-   }
-
-   public void updateFilter(SpriteLoader.Preparations var1) {
-      this.setFilter(false, var1.mipLevel() > 0);
    }
 }

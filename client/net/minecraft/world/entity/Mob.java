@@ -427,9 +427,10 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       var1.putBoolean("LeftHanded", this.isLeftHanded());
       if (this.lootTable.isPresent()) {
          var1.putString("DeathLootTable", ((ResourceKey)this.lootTable.get()).location().toString());
-         if (this.lootTableSeed != 0L) {
-            var1.putLong("DeathLootTableSeed", this.lootTableSeed);
-         }
+      }
+
+      if (this.lootTableSeed != 0L) {
+         var1.putLong("DeathLootTableSeed", this.lootTableSeed);
       }
 
       if (this.isNoAi()) {
@@ -440,10 +441,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("CanPickUpLoot", 99)) {
-         this.setCanPickUpLoot(var1.getBoolean("CanPickUpLoot"));
-      }
-
+      this.setCanPickUpLoot(var1.getBoolean("CanPickUpLoot"));
       this.persistenceRequired = var1.getBoolean("PersistenceRequired");
       if (var1.contains("ArmorItems", 9)) {
          ListTag var2 = var1.getList("ArmorItems", 10);
@@ -452,6 +450,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
             CompoundTag var4 = var2.getCompound(var3);
             this.armorItems.set(var3, ItemStack.parseOptional(this.registryAccess(), var4));
          }
+      } else {
+         this.armorItems.replaceAll((var0) -> ItemStack.EMPTY);
       }
 
       if (var1.contains("ArmorDropChances", 9)) {
@@ -460,6 +460,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
          for(int var8 = 0; var8 < var5.size(); ++var8) {
             this.armorDropChances[var8] = var5.getFloat(var8);
          }
+      } else {
+         Arrays.fill(this.armorDropChances, 0.0F);
       }
 
       if (var1.contains("HandItems", 9)) {
@@ -469,6 +471,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
             CompoundTag var11 = var6.getCompound(var9);
             this.handItems.set(var9, ItemStack.parseOptional(this.registryAccess(), var11));
          }
+      } else {
+         this.handItems.replaceAll((var0) -> ItemStack.EMPTY);
       }
 
       if (var1.contains("HandDropChances", 9)) {
@@ -477,6 +481,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
          for(int var10 = 0; var10 < var7.size(); ++var10) {
             this.handDropChances[var10] = var7.getFloat(var10);
          }
+      } else {
+         Arrays.fill(this.handDropChances, 0.0F);
       }
 
       if (var1.contains("body_armor_item", 10)) {
@@ -486,13 +492,15 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
          this.bodyArmorItem = ItemStack.EMPTY;
       }
 
-      this.leashData = this.readLeashData(var1);
+      this.readLeashData(var1);
       this.setLeftHanded(var1.getBoolean("LeftHanded"));
       if (var1.contains("DeathLootTable", 8)) {
          this.lootTable = Optional.of(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.parse(var1.getString("DeathLootTable"))));
-         this.lootTableSeed = var1.getLong("DeathLootTableSeed");
+      } else {
+         this.lootTable = Optional.empty();
       }
 
+      this.lootTableSeed = var1.getLong("DeathLootTableSeed");
       this.setNoAi(var1.getBoolean("NoAI"));
    }
 
@@ -1299,8 +1307,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       this.leashData = var1;
    }
 
-   public void dropLeash(boolean var1, boolean var2) {
-      Leashable.super.dropLeash(var1, var2);
+   public void onLeashRemoved() {
       if (this.getLeashData() == null) {
          this.clearRestriction();
       }
@@ -1319,7 +1326,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    public boolean startRiding(Entity var1, boolean var2) {
       boolean var3 = super.startRiding(var1, var2);
       if (var3 && this.isLeashed()) {
-         this.dropLeash(true, true);
+         this.dropLeash();
       }
 
       return var3;
