@@ -302,7 +302,11 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    }
 
    public void setBlockEntityNbt(CompoundTag var1) {
-      this.pendingBlockEntities.put(BlockEntity.getPosFromTag(var1), var1);
+      BlockPos var2 = BlockEntity.getPosFromTag(var1);
+      if (!this.blockEntities.containsKey(var2)) {
+         this.pendingBlockEntities.put(var2, var1);
+      }
+
    }
 
    @Nullable

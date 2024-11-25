@@ -7,6 +7,7 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.ShortListIterator;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -108,6 +109,9 @@ public class LevelChunk extends ChunkAccess {
 
    public LevelChunk(ServerLevel var1, ProtoChunk var2, @Nullable PostLoadProcessor var3) {
       this(var1, var2.getPos(), var2.getUpgradeData(), var2.unpackBlockTicks(), var2.unpackFluidTicks(), var2.getInhabitedTime(), var2.getSections(), var3, var2.getBlendingData());
+      if (!Collections.disjoint(var2.pendingBlockEntities.keySet(), var2.blockEntities.keySet())) {
+         LOGGER.error("Chunk at {} contains duplicated block entities", var2.getPos());
+      }
 
       for(BlockEntity var5 : var2.getBlockEntities().values()) {
          this.setBlockEntity(var5);

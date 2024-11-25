@@ -151,6 +151,7 @@ public class ProtoChunk extends ChunkAccess {
    }
 
    public void setBlockEntity(BlockEntity var1) {
+      this.pendingBlockEntities.remove(var1.getBlockPos());
       this.blockEntities.put(var1.getBlockPos(), var1);
    }
 

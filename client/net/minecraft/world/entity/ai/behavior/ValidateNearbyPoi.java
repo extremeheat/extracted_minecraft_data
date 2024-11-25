@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.ai.behavior;
 
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -12,8 +13,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
+import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
 public class ValidateNearbyPoi {
    private static final int MAX_DISTANCE = 16;
@@ -31,8 +34,10 @@ public class ValidateNearbyPoi {
                   if (var9 != null && var9.getPoiManager().exists(var8, var0)) {
                      if (bedIsOccupied(var9, var8, var4)) {
                         var2x.erase();
-                        var3.getPoiManager().release(var8);
-                        DebugPackets.sendPoiTicketCountPacket(var3, var8);
+                        if (!bedIsOccupiedByVillager(var9, var8)) {
+                           var3.getPoiManager().release(var8);
+                           DebugPackets.sendPoiTicketCountPacket(var3, var8);
+                        }
                      }
                   } else {
                      var2x.erase();
@@ -48,5 +53,10 @@ public class ValidateNearbyPoi {
    private static boolean bedIsOccupied(ServerLevel var0, BlockPos var1, LivingEntity var2) {
       BlockState var3 = var0.getBlockState(var1);
       return var3.is(BlockTags.BEDS) && (Boolean)var3.getValue(BedBlock.OCCUPIED) && !var2.isSleeping();
+   }
+
+   private static boolean bedIsOccupiedByVillager(ServerLevel var0, BlockPos var1) {
+      List var2 = var0.getEntitiesOfClass(Villager.class, new AABB(var1), LivingEntity::isSleeping);
+      return !var2.isEmpty();
    }
 }

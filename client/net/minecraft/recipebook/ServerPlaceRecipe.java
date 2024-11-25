@@ -149,27 +149,27 @@ public class ServerPlaceRecipe<R extends Recipe<?>> {
    }
 
    private int moveItemToGrid(Slot var1, Holder<Item> var2, int var3) {
-      int var4 = this.inventory.findSlotMatchingCraftingIngredient(var2);
-      if (var4 == -1) {
+      ItemStack var4 = var1.getItem();
+      int var5 = this.inventory.findSlotMatchingCraftingIngredient(var2, var4);
+      if (var5 == -1) {
          return -1;
       } else {
-         ItemStack var5 = this.inventory.getItem(var4);
-         int var6;
-         if (var3 < var5.getCount()) {
-            this.inventory.removeItem(var4, var3);
-            var6 = var3;
+         ItemStack var6 = this.inventory.getItem(var5);
+         ItemStack var7;
+         if (var3 < var6.getCount()) {
+            var7 = this.inventory.removeItem(var5, var3);
          } else {
-            this.inventory.removeItemNoUpdate(var4);
-            var6 = var5.getCount();
+            var7 = this.inventory.removeItemNoUpdate(var5);
          }
 
-         if (var1.getItem().isEmpty()) {
-            var1.set(var5.copyWithCount(var6));
+         int var8 = var7.getCount();
+         if (var4.isEmpty()) {
+            var1.set(var7);
          } else {
-            var1.getItem().grow(var6);
+            var4.grow(var8);
          }
 
-         return var3 - var6;
+         return var3 - var8;
       }
    }
 

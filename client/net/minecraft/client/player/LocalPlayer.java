@@ -635,25 +635,24 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.crouching = !var4.flying && !this.isSwimming() && !this.isPassenger() && this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.CROUCHING) && (this.isShiftKeyDown() || !this.isSleeping() && !this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.STANDING));
       this.input.tick();
       this.minecraft.getTutorial().onInput(this.input);
-      if (this.isUsingItem() && !this.isPassenger()) {
-         if (!this.isUnderWater()) {
-            this.setSprinting(false);
-         }
+      if (this.shouldStopSprinting()) {
+         this.setSprinting(false);
+      }
 
-         ClientInput var17 = this.input;
-         var17.leftImpulse *= 0.2F;
-         var17 = this.input;
-         var17.forwardImpulse *= 0.2F;
-         this.sprintTriggerTime = 0;
-      } else if (this.isMovingSlowly()) {
-         this.setSprinting(false);
-         float var5 = (float)this.getAttributeValue(Attributes.SNEAKING_SPEED);
+      if (this.isUsingItem() && !this.isPassenger()) {
          ClientInput var10000 = this.input;
-         var10000.leftImpulse *= var5;
+         var10000.leftImpulse *= 0.2F;
          var10000 = this.input;
-         var10000.forwardImpulse *= var5;
-      } else if (this.isFallFlying() || this.isPassenger() && !this.isRidingCamel() || this.hasBlindness()) {
-         this.setSprinting(false);
+         var10000.forwardImpulse *= 0.2F;
+         this.sprintTriggerTime = 0;
+      }
+
+      if (this.isMovingSlowly()) {
+         float var5 = (float)this.getAttributeValue(Attributes.SNEAKING_SPEED);
+         ClientInput var17 = this.input;
+         var17.leftImpulse *= var5;
+         var17 = this.input;
+         var17.forwardImpulse *= var5;
       }
 
       boolean var11 = false;
@@ -791,6 +790,10 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.onUpdateAbilities();
       }
 
+   }
+
+   private boolean shouldStopSprinting() {
+      return this.isFallFlying() || this.hasBlindness() || this.isMovingSlowly() || this.isPassenger() && !this.isRidingCamel() || this.isUsingItem() && !this.isPassenger() && !this.isUnderWater();
    }
 
    private boolean isRidingCamel() {

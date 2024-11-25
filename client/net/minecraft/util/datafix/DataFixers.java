@@ -41,6 +41,7 @@ import net.minecraft.util.datafix.fixes.BlendingDataRemoveFromNetherEndFix;
 import net.minecraft.util.datafix.fixes.BlockEntityBannerColorFix;
 import net.minecraft.util.datafix.fixes.BlockEntityBlockStateFix;
 import net.minecraft.util.datafix.fixes.BlockEntityCustomNameToComponentFix;
+import net.minecraft.util.datafix.fixes.BlockEntityFurnaceBurnTimeFix;
 import net.minecraft.util.datafix.fixes.BlockEntityIdFix;
 import net.minecraft.util.datafix.fixes.BlockEntityJukeboxFix;
 import net.minecraft.util.datafix.fixes.BlockEntityKeepPacked;
@@ -806,9 +807,9 @@ public class DataFixers {
       Map var173 = Map.of("minecraft:british", "minecraft:british_shorthair");
       var0.addFixer(new VariantRenameFix(var172, "Rename british shorthair", References.ENTITY, "minecraft:cat", var173));
       var0.addFixer(new CriteriaRenameFix(var172, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> (String)var173.getOrDefault(var1x, var1x)));
-      Set var250 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var250);
-      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var250::contains));
+      Set var252 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var252);
+      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var252::contains));
       Schema var174 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var174));
       Schema var175 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -976,6 +977,12 @@ public class DataFixers {
       Schema var248 = var0.addSchema(4176, SAME_NAMESPACED);
       var0.addFixer(new InvalidBlockEntityLockFix(var248));
       var0.addFixer(new InvalidLockComponentFix(var248));
+      Schema var249 = var0.addSchema(4180, SAME_NAMESPACED);
+      var0.addFixer(new FeatureFlagRemoveFix(var249, "Remove Winter Drop toggle", Set.of("minecraft:winter_drop")));
+      Schema var250 = var0.addSchema(4181, SAME_NAMESPACED);
+      var0.addFixer(new BlockEntityFurnaceBurnTimeFix(var250, "minecraft:furnace"));
+      var0.addFixer(new BlockEntityFurnaceBurnTimeFix(var250, "minecraft:smoker"));
+      var0.addFixer(new BlockEntityFurnaceBurnTimeFix(var250, "minecraft:blast_furnace"));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

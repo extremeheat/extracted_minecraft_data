@@ -425,7 +425,7 @@ public class Creaking extends Monster {
    }
 
    protected SoundEvent getHurtSound(DamageSource var1) {
-      return SoundEvents.CREAKING_SWAY;
+      return this.isHeartBound() ? SoundEvents.CREAKING_SWAY : super.getHurtSound(var1);
    }
 
    protected SoundEvent getDeathSound() {

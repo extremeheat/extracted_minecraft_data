@@ -1589,8 +1589,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
          double var14 = var13.length();
          var13 = var13.normalize();
          double var16 = var7.dot(var13);
-         if (var16 > 1.0 - var2 / (var4 ? var14 : 1.0)) {
-            return var1.hasLineOfSight(this, var5 ? ClipContext.Block.VISUAL : ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var11);
+         if (var16 > 1.0 - var2 / (var4 ? var14 : 1.0) && var1.hasLineOfSight(this, var5 ? ClipContext.Block.VISUAL : ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var11)) {
+            return true;
          }
       }
 

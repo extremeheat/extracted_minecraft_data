@@ -106,11 +106,11 @@ public class Inventory implements Container, Nameable {
       return !var0.isDamaged() && !var0.isEnchanted() && !var0.has(DataComponents.CUSTOM_NAME);
    }
 
-   public int findSlotMatchingCraftingIngredient(Holder<Item> var1) {
-      for(int var2 = 0; var2 < this.items.size(); ++var2) {
-         ItemStack var3 = this.items.get(var2);
-         if (!var3.isEmpty() && var3.is(var1) && isUsableForCrafting(var3)) {
-            return var2;
+   public int findSlotMatchingCraftingIngredient(Holder<Item> var1, ItemStack var2) {
+      for(int var3 = 0; var3 < this.items.size(); ++var3) {
+         ItemStack var4 = this.items.get(var3);
+         if (!var4.isEmpty() && var4.is(var1) && isUsableForCrafting(var4) && (var2.isEmpty() || ItemStack.isSameItemSameComponents(var2, var4))) {
+            return var3;
          }
       }
 

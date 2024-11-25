@@ -1202,6 +1202,14 @@ public class ServerPlayer extends Player {
    }
 
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
+      if (this.spawnExtraParticlesOnFall && var3 && this.fallDistance > 0.0F) {
+         Vec3 var6 = var5.getCenter().add(0.0, 0.5, 0.0);
+         int var7 = (int)Mth.clamp(50.0F * this.fallDistance, 0.0F, 200.0F);
+         this.serverLevel().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, var4), var6.x, var6.y, var6.z, var7, 0.30000001192092896, 0.30000001192092896, 0.30000001192092896, 0.15000000596046448);
+         this.spawnExtraParticlesOnFall = false;
+      }
+
+      super.checkFallDamage(var1, var3, var4, var5);
    }
 
    protected void onChangedBlock(ServerLevel var1, BlockPos var2) {
@@ -1209,22 +1217,6 @@ public class ServerPlayer extends Player {
          super.onChangedBlock(var1, var2);
       }
 
-   }
-
-   public void doCheckFallDamage(double var1, double var3, double var5, boolean var7) {
-      if (!this.touchingUnloadedChunk()) {
-         this.checkSupportingBlock(var7, new Vec3(var1, var3, var5));
-         BlockPos var8 = this.getOnPosLegacy();
-         BlockState var9 = this.level().getBlockState(var8);
-         if (this.spawnExtraParticlesOnFall && var7 && this.fallDistance > 0.0F) {
-            Vec3 var10 = var8.getCenter().add(0.0, 0.5, 0.0);
-            int var11 = (int)Mth.clamp(50.0F * this.fallDistance, 0.0F, 200.0F);
-            this.serverLevel().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, var9), var10.x, var10.y, var10.z, var11, 0.30000001192092896, 0.30000001192092896, 0.30000001192092896, 0.15000000596046448);
-            this.spawnExtraParticlesOnFall = false;
-         }
-
-         super.checkFallDamage(var3, var7, var9, var8);
-      }
    }
 
    public void onExplosionHit(@Nullable Entity var1) {
