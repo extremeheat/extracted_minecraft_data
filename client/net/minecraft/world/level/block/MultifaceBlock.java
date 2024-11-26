@@ -239,7 +239,7 @@ public class MultifaceBlock extends Block implements SimpleWaterloggedBlock {
 
    private static BlockState removeFace(BlockState var0, BooleanProperty var1) {
       BlockState var2 = (BlockState)var0.setValue(var1, false);
-      return hasAnyFace(var2) ? var2 : var0.getFluidState().createLegacyBlock();
+      return hasAnyFace(var2) ? var2 : Blocks.AIR.defaultBlockState();
    }
 
    public static BooleanProperty getFaceProperty(Direction var0) {

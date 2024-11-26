@@ -1201,6 +1201,13 @@ public class ServerPlayer extends Player {
       return super.isInvulnerableTo(var1, var2) || this.isChangingDimension() && !var2.is(DamageTypes.ENDER_PEARL) || !this.hasClientLoaded();
    }
 
+   protected void onChangedBlock(ServerLevel var1, BlockPos var2) {
+      if (!this.isSpectator()) {
+         super.onChangedBlock(var1, var2);
+      }
+
+   }
+
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
       if (this.spawnExtraParticlesOnFall && var3 && this.fallDistance > 0.0F) {
          Vec3 var6 = var5.getCenter().add(0.0, 0.5, 0.0);
@@ -1210,13 +1217,6 @@ public class ServerPlayer extends Player {
       }
 
       super.checkFallDamage(var1, var3, var4, var5);
-   }
-
-   protected void onChangedBlock(ServerLevel var1, BlockPos var2) {
-      if (!this.isSpectator()) {
-         super.onChangedBlock(var1, var2);
-      }
-
    }
 
    public void onExplosionHit(@Nullable Entity var1) {

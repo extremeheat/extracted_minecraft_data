@@ -718,7 +718,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
          BlockPos var9 = this.getOnPosLegacy();
          BlockState var10 = this.level().getBlockState(var9);
-         if ((!this.level().isClientSide() || this.isControlledByLocalInstance()) && !var1.equals(MoverType.PLAYER)) {
+         if ((!this.level().isClientSide() || this.isControlledByLocalInstance()) && !this.isControlledByClient()) {
             this.checkFallDamage(var4.y, this.onGround(), var10, var9);
          }
 
@@ -1275,7 +1275,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       return false;
    }
 
-   public void doCheckFallDamage(double var1, double var3, double var5, boolean var7) {
+   public final void doCheckFallDamage(double var1, double var3, double var5, boolean var7) {
       if (!this.touchingUnloadedChunk()) {
          this.checkSupportingBlock(var7, new Vec3(var1, var3, var5));
          BlockPos var8 = this.getOnPosLegacy();

@@ -704,8 +704,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          setValuesFromPositionPacket(var1.change(), var1.relatives(), var2, false);
       }
 
-      this.connection.send(new ServerboundMovePlayerPacket.PosRot(((Player)var2).getX(), ((Player)var2).getY(), ((Player)var2).getZ(), ((Player)var2).getYRot(), ((Player)var2).getXRot(), false, false));
       this.connection.send(new ServerboundAcceptTeleportationPacket(var1.id()));
+      this.connection.send(new ServerboundMovePlayerPacket.PosRot(((Player)var2).getX(), ((Player)var2).getY(), ((Player)var2).getZ(), ((Player)var2).getYRot(), ((Player)var2).getXRot(), false, false));
    }
 
    private static boolean setValuesFromPositionPacket(PositionMoveRotation var0, Set<Relative> var1, Entity var2, boolean var3) {
