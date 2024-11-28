@@ -193,11 +193,12 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var2.parrotOnRightShoulder = getParrotOnShoulder(var1, false);
       var2.id = var1.getId();
       var2.name = var1.getGameProfile().getName();
-      ItemStack var8 = var1.getUseItem();
-      if (var8.is(Items.SPYGLASS)) {
-         this.itemModelResolver.updateForLiving(var2.heldOnHead, var8, ItemDisplayContext.HEAD, false, var1);
-      } else {
-         var2.heldOnHead.clear();
+      var2.heldOnHead.clear();
+      if (var2.isUsingItem) {
+         ItemStack var8 = var1.getItemInHand(var2.useItemHand);
+         if (var8.is(Items.SPYGLASS)) {
+            this.itemModelResolver.updateForLiving(var2.heldOnHead, var8, ItemDisplayContext.HEAD, false, var1);
+         }
       }
 
    }

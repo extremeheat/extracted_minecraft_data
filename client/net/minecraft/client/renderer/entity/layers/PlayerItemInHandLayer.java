@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 
 public class PlayerItemInHandLayer<S extends PlayerRenderState, M extends EntityModel<S> & ArmedModel & HeadedModel> extends ItemInHandLayer<S, M> {
@@ -23,7 +24,8 @@ public class PlayerItemInHandLayer<S extends PlayerRenderState, M extends Entity
 
    protected void renderArmWithItem(S var1, ItemStackRenderState var2, HumanoidArm var3, PoseStack var4, MultiBufferSource var5, int var6) {
       if (!var2.isEmpty()) {
-         if (var1.attackTime < 1.0E-5F && var1.mainArm == var3 && !var1.heldOnHead.isEmpty()) {
+         InteractionHand var7 = var3 == var1.mainArm ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+         if (var1.isUsingItem && var1.useItemHand == var7 && var1.attackTime < 1.0E-5F && !var1.heldOnHead.isEmpty()) {
             this.renderItemHeldToEye(var1.heldOnHead, var3, var4, var5, var6);
          } else {
             super.renderArmWithItem(var1, var2, var3, var4, var5, var6);
