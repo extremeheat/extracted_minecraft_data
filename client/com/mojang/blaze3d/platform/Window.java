@@ -58,6 +58,7 @@ public final class Window implements AutoCloseable {
    private boolean dirty;
    private boolean vsync;
    private boolean iconified;
+   private boolean minimized;
 
    public Window(WindowEventHandler var1, ScreenManager var2, DisplayData var3, @Nullable String var4, String var5) {
       super();
@@ -293,6 +294,7 @@ public final class Window implements AutoCloseable {
          int var5 = this.getWidth();
          int var6 = this.getHeight();
          if (var3 != 0 && var4 != 0) {
+            this.minimized = false;
             this.framebufferWidth = var3;
             this.framebufferHeight = var4;
             if (this.getWidth() != var5 || this.getHeight() != var6) {
@@ -307,6 +309,8 @@ public final class Window implements AutoCloseable {
                }
             }
 
+         } else {
+            this.minimized = true;
          }
       }
    }
@@ -532,6 +536,10 @@ public final class Window implements AutoCloseable {
          var2.free();
       }
 
+   }
+
+   public boolean isMinimized() {
+      return this.minimized;
    }
 
    public static class WindowInitFailed extends SilentInitException {

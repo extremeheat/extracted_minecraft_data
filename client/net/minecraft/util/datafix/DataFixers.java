@@ -84,6 +84,7 @@ import net.minecraft.util.datafix.fixes.EffectDurationFix;
 import net.minecraft.util.datafix.fixes.EmptyItemInHotbarFix;
 import net.minecraft.util.datafix.fixes.EmptyItemInVillagerTradeFix;
 import net.minecraft.util.datafix.fixes.EntityArmorStandSilentFix;
+import net.minecraft.util.datafix.fixes.EntityAttributeBaseValueFix;
 import net.minecraft.util.datafix.fixes.EntityBlockStateFix;
 import net.minecraft.util.datafix.fixes.EntityBrushableBlockFieldsRenameFix;
 import net.minecraft.util.datafix.fixes.EntityCatSplitFix;
@@ -807,9 +808,9 @@ public class DataFixers {
       Map var173 = Map.of("minecraft:british", "minecraft:british_shorthair");
       var0.addFixer(new VariantRenameFix(var172, "Rename british shorthair", References.ENTITY, "minecraft:cat", var173));
       var0.addFixer(new CriteriaRenameFix(var172, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> (String)var173.getOrDefault(var1x, var1x)));
-      Set var252 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var252);
-      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var252::contains));
+      Set var253 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var253);
+      var0.addFixer(new PoiTypeRemoveFix(var172, "Remove unpopulated villager PoI types", var253::contains));
       Schema var174 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var174));
       Schema var175 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -983,6 +984,13 @@ public class DataFixers {
       var0.addFixer(new BlockEntityFurnaceBurnTimeFix(var249, "minecraft:blast_furnace"));
       Schema var250 = var0.addSchema(4185, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataFix(var250));
+      Schema var251 = var0.addSchema(4187, SAME_NAMESPACED);
+      var0.addFixer(new EntityAttributeBaseValueFix(var251, "Villager follow range fix undo", "minecraft:villager", "minecraft:follow_range", (var0x) -> var0x == 48.0 ? 16.0 : var0x));
+      var0.addFixer(new EntityAttributeBaseValueFix(var251, "Bee follow range fix", "minecraft:bee", "minecraft:follow_range", (var0x) -> var0x == 48.0 ? 16.0 : var0x));
+      var0.addFixer(new EntityAttributeBaseValueFix(var251, "Allay follow range fix", "minecraft:allay", "minecraft:follow_range", (var0x) -> var0x == 48.0 ? 16.0 : var0x));
+      var0.addFixer(new EntityAttributeBaseValueFix(var251, "Llama follow range fix", "minecraft:llama", "minecraft:follow_range", (var0x) -> var0x == 40.0 ? 16.0 : var0x));
+      var0.addFixer(new EntityAttributeBaseValueFix(var251, "Piglin Brute follow range fix", "minecraft:piglin_brute", "minecraft:follow_range", (var0x) -> var0x == 16.0 ? 12.0 : var0x));
+      var0.addFixer(new EntityAttributeBaseValueFix(var251, "Warden follow range fix", "minecraft:warden", "minecraft:follow_range", (var0x) -> var0x == 16.0 ? 24.0 : var0x));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

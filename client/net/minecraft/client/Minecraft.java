@@ -1211,7 +1211,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       var4.push("blit");
       this.mainRenderTarget.unbindWrite();
-      this.mainRenderTarget.blitToScreen(this.window.getWidth(), this.window.getHeight());
+      if (!this.window.isMinimized()) {
+         this.mainRenderTarget.blitToScreen(this.window.getWidth(), this.window.getHeight());
+      }
+
       this.frameTimeNs = Util.getNanos() - var15;
       if (var7) {
          TimerQuery.getInstance().ifPresent((var1x) -> this.currentFrameProfile = var1x.endProfile());

@@ -494,11 +494,6 @@ public class SectionRenderDispatcher {
          public CompletableFuture<SectionTaskResult> doTask(SectionBufferBuilderPack var1) {
             if (this.isCancelled.get()) {
                return CompletableFuture.completedFuture(SectionRenderDispatcher.SectionTaskResult.CANCELLED);
-            } else if (!RenderSection.this.hasAllNeighbors()) {
-               this.isCancelled.set(true);
-               return CompletableFuture.completedFuture(SectionRenderDispatcher.SectionTaskResult.CANCELLED);
-            } else if (this.isCancelled.get()) {
-               return CompletableFuture.completedFuture(SectionRenderDispatcher.SectionTaskResult.CANCELLED);
             } else {
                MeshData.SortState var2 = this.compiledSection.transparencyState;
                if (var2 != null && !this.compiledSection.isEmpty(RenderType.translucent())) {

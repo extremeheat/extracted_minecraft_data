@@ -139,7 +139,7 @@ public class Util {
    }
 
    private static TracingExecutor makeExecutor(String var0) {
-      int var1 = Mth.clamp(Runtime.getRuntime().availableProcessors() - 1, 1, getMaxThreads());
+      int var1 = maxAllowedExecutorThreads();
       Object var2;
       if (var1 <= 0) {
          var2 = MoreExecutors.newDirectExecutorService();
@@ -169,6 +169,10 @@ public class Util {
       }
 
       return new TracingExecutor((ExecutorService)var2);
+   }
+
+   public static int maxAllowedExecutorThreads() {
+      return Mth.clamp(Runtime.getRuntime().availableProcessors() - 1, 1, getMaxThreads());
    }
 
    private static int getMaxThreads() {
