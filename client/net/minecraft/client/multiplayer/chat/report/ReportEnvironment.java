@@ -55,7 +55,7 @@ public record ReportEnvironment(String clientVersion, @Nullable Server server) {
 
    private static String getClientVersion() {
       StringBuilder var0 = new StringBuilder();
-      var0.append("1.21.4-rc1");
+      var0.append("1.21.4-rc2");
       if (Minecraft.checkModStatus().shouldReportAsModified()) {
          var0.append(" (modded)");
       }
