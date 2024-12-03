@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import javax.annotation.Nullable;
@@ -133,10 +132,8 @@ public class GlDebug {
    public static List<String> getLastOpenGlDebugMessages() {
       synchronized(MESSAGE_BUFFER) {
          ArrayList var1 = Lists.newArrayListWithCapacity(MESSAGE_BUFFER.size());
-         Iterator var2 = MESSAGE_BUFFER.iterator();
 
-         while(var2.hasNext()) {
-            LogEntry var3 = (LogEntry)var2.next();
+         for(LogEntry var3 : MESSAGE_BUFFER) {
             String var10001 = String.valueOf(var3);
             var1.add(var10001 + " x " + var3.count);
          }
@@ -152,8 +149,6 @@ public class GlDebug {
    public static void enableDebugCallback(int var0, boolean var1) {
       if (var0 > 0) {
          GLCapabilities var2 = GL.getCapabilities();
-         int var3;
-         boolean var4;
          if (var2.GL_KHR_debug) {
             debugEnabled = true;
             GL11.glEnable(37600);
@@ -161,8 +156,8 @@ public class GlDebug {
                GL11.glEnable(33346);
             }
 
-            for(var3 = 0; var3 < DEBUG_LEVELS.size(); ++var3) {
-               var4 = var3 < var0;
+            for(int var3 = 0; var3 < DEBUG_LEVELS.size(); ++var3) {
+               boolean var4 = var3 < var0;
                KHRDebug.glDebugMessageControl(4352, 4352, (Integer)DEBUG_LEVELS.get(var3), (int[])null, var4);
             }
 
@@ -173,9 +168,9 @@ public class GlDebug {
                GL11.glEnable(33346);
             }
 
-            for(var3 = 0; var3 < DEBUG_LEVELS_ARB.size(); ++var3) {
-               var4 = var3 < var0;
-               ARBDebugOutput.glDebugMessageControlARB(4352, 4352, (Integer)DEBUG_LEVELS_ARB.get(var3), (int[])null, var4);
+            for(int var5 = 0; var5 < DEBUG_LEVELS_ARB.size(); ++var5) {
+               boolean var6 = var5 < var0;
+               ARBDebugOutput.glDebugMessageControlARB(4352, 4352, (Integer)DEBUG_LEVELS_ARB.get(var5), (int[])null, var6);
             }
 
             ARBDebugOutput.glDebugMessageCallbackARB((GLDebugMessageARBCallbackI)GLX.make(GLDebugMessageARBCallback.create(GlDebug::printDebugLog), DebugMemoryUntracker::untrack), 0L);
@@ -184,7 +179,7 @@ public class GlDebug {
       }
    }
 
-   private static class LogEntry {
+   static class LogEntry {
       private final int id;
       private final int source;
       private final int type;

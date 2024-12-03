@@ -36,11 +36,8 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
       KeyMapping[] var3 = (KeyMapping[])ArrayUtils.clone(var2.options.keyMappings);
       Arrays.sort(var3);
       String var4 = null;
-      KeyMapping[] var5 = var3;
-      int var6 = var3.length;
 
-      for(int var7 = 0; var7 < var6; ++var7) {
-         KeyMapping var8 = var5[var7];
+      for(KeyMapping var8 : var3) {
          String var9 = var8.getCategory();
          if (!var9.equals(var4)) {
             var4 = var9;
@@ -71,6 +68,14 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
       return 340;
    }
 
+   public abstract static class Entry extends ContainerObjectSelectionList.Entry<Entry> {
+      public Entry() {
+         super();
+      }
+
+      abstract void refreshEntry();
+   }
+
    public class CategoryEntry extends Entry {
       final Component name;
       private final int width;
@@ -87,7 +92,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          int var10003 = KeyBindsList.this.width / 2 - this.width / 2;
          int var10004 = var3 + var6;
          Objects.requireNonNull(KeyBindsList.this.minecraft.font);
-         var1.drawString(var10001, (Component)var10002, var10003, var10004 - 9 - 1, -1, false);
+         var1.drawString(var10001, (Component)var10002, var10003, var10004 - 9 - 1, -1);
       }
 
       @Nullable
@@ -131,20 +136,16 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          this.changeButton = Button.builder(var3, (var2x) -> {
             KeyBindsList.this.keyBindsScreen.selectedKey = var2;
             KeyBindsList.this.resetMappingAndUpdateButtons();
-         }).bounds(0, 0, 75, 20).createNarration((var2x) -> {
-            return var2.isUnbound() ? Component.translatable("narrator.controls.unbound", var3) : Component.translatable("narrator.controls.bound", var3, var2x.get());
-         }).build();
+         }).bounds(0, 0, 75, 20).createNarration((var2x) -> var2.isUnbound() ? Component.translatable("narrator.controls.unbound", var3) : Component.translatable("narrator.controls.bound", var3, var2x.get())).build();
          this.resetButton = Button.builder(RESET_BUTTON_TITLE, (var2x) -> {
             var2.setKey(var2.getDefaultKey());
             KeyBindsList.this.resetMappingAndUpdateButtons();
-         }).bounds(0, 0, 50, 20).createNarration((var1x) -> {
-            return Component.translatable("narrator.controls.reset", var3);
-         }).build();
+         }).bounds(0, 0, 50, 20).createNarration((var1x) -> Component.translatable("narrator.controls.reset", var3)).build();
          this.refreshEntry();
       }
 
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         int var11 = KeyBindsList.this.getScrollbarPosition() - this.resetButton.getWidth() - 10;
+         int var11 = KeyBindsList.this.scrollBarX() - this.resetButton.getWidth() - 10;
          int var12 = var3 - 2;
          this.resetButton.setPosition(var11, var12);
          this.resetButton.render(var1, var7, var8, var10);
@@ -178,11 +179,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          this.hasCollision = false;
          MutableComponent var1 = Component.empty();
          if (!this.key.isUnbound()) {
-            KeyMapping[] var2 = KeyBindsList.this.minecraft.options.keyMappings;
-            int var3 = var2.length;
-
-            for(int var4 = 0; var4 < var3; ++var4) {
-               KeyMapping var5 = var2[var4];
+            for(KeyMapping var5 : KeyBindsList.this.minecraft.options.keyMappings) {
                if (var5 != this.key && this.key.same(var5)) {
                   if (this.hasCollision) {
                      var1.append(", ");
@@ -206,13 +203,5 @@ public class KeyBindsList extends ContainerObjectSelectionList<Entry> {
          }
 
       }
-   }
-
-   public abstract static class Entry extends ContainerObjectSelectionList.Entry<Entry> {
-      public Entry() {
-         super();
-      }
-
-      abstract void refreshEntry();
    }
 }

@@ -12,27 +12,6 @@ public interface DeltaTracker {
 
    float getRealtimeDeltaTicks();
 
-   public static class DefaultValue implements DeltaTracker {
-      private final float value;
-
-      DefaultValue(float var1) {
-         super();
-         this.value = var1;
-      }
-
-      public float getGameTimeDeltaTicks() {
-         return this.value;
-      }
-
-      public float getGameTimeDeltaPartialTick(boolean var1) {
-         return this.value;
-      }
-
-      public float getRealtimeDeltaTicks() {
-         return this.value;
-      }
-   }
-
    public static class Timer implements DeltaTracker {
       private float deltaTicks;
       private float deltaTickResidual;
@@ -114,6 +93,27 @@ public interface DeltaTracker {
 
       public float getRealtimeDeltaTicks() {
          return this.realtimeDeltaTicks > 7.0F ? 0.5F : this.realtimeDeltaTicks;
+      }
+   }
+
+   public static class DefaultValue implements DeltaTracker {
+      private final float value;
+
+      DefaultValue(float var1) {
+         super();
+         this.value = var1;
+      }
+
+      public float getGameTimeDeltaTicks() {
+         return this.value;
+      }
+
+      public float getGameTimeDeltaPartialTick(boolean var1) {
+         return this.value;
+      }
+
+      public float getRealtimeDeltaTicks() {
+         return this.value;
       }
    }
 }

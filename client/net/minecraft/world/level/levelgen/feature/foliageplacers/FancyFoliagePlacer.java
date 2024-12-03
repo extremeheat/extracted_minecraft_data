@@ -9,9 +9,7 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class FancyFoliagePlacer extends BlobFoliagePlacer {
-   public static final MapCodec<FancyFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return blobParts(var0).apply(var0, FancyFoliagePlacer::new);
-   });
+   public static final MapCodec<FancyFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec((var0) -> blobParts(var0).apply(var0, FancyFoliagePlacer::new));
 
    public FancyFoliagePlacer(IntProvider var1, IntProvider var2, int var3) {
       super(var1, var2, var3);

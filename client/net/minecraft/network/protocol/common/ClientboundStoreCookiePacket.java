@@ -9,7 +9,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 
 public record ClientboundStoreCookiePacket(ResourceLocation key, byte[] payload) implements Packet<ClientCommonPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundStoreCookiePacket> STREAM_CODEC = Packet.codec(ClientboundStoreCookiePacket::write, ClientboundStoreCookiePacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundStoreCookiePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundStoreCookiePacket>codec(ClientboundStoreCookiePacket::write, ClientboundStoreCookiePacket::new);
    private static final int MAX_PAYLOAD_SIZE = 5120;
    public static final StreamCodec<ByteBuf, byte[]> PAYLOAD_STREAM_CODEC = ByteBufCodecs.byteArray(5120);
 
@@ -34,13 +34,5 @@ public record ClientboundStoreCookiePacket(ResourceLocation key, byte[] payload)
 
    public void handle(ClientCommonPacketListener var1) {
       var1.handleStoreCookie(this);
-   }
-
-   public ResourceLocation key() {
-      return this.key;
-   }
-
-   public byte[] payload() {
-      return this.payload;
    }
 }

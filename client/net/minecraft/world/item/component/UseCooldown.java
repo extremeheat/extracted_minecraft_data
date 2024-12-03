@@ -13,9 +13,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 public record UseCooldown(float seconds, Optional<ResourceLocation> cooldownGroup) {
-   public static final Codec<UseCooldown> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ExtraCodecs.POSITIVE_FLOAT.fieldOf("seconds").forGetter(UseCooldown::seconds), ResourceLocation.CODEC.optionalFieldOf("cooldown_group").forGetter(UseCooldown::cooldownGroup)).apply(var0, UseCooldown::new);
-   });
+   public static final Codec<UseCooldown> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.POSITIVE_FLOAT.fieldOf("seconds").forGetter(UseCooldown::seconds), ResourceLocation.CODEC.optionalFieldOf("cooldown_group").forGetter(UseCooldown::cooldownGroup)).apply(var0, UseCooldown::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, UseCooldown> STREAM_CODEC;
 
    public UseCooldown(float var1) {
@@ -37,14 +35,6 @@ public record UseCooldown(float seconds, Optional<ResourceLocation> cooldownGrou
          var3.getCooldowns().addCooldown(var1, this.ticks());
       }
 
-   }
-
-   public float seconds() {
-      return this.seconds;
-   }
-
-   public Optional<ResourceLocation> cooldownGroup() {
-      return this.cooldownGroup;
    }
 
    static {

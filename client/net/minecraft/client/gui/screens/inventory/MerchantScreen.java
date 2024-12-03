@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import java.util.Iterator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.RenderType;
@@ -169,59 +168,49 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
          int var9 = var6 + 5 + 5;
          this.renderScroller(var1, var6, var7, var5);
          int var10 = 0;
-         Iterator var11 = var5.iterator();
 
-         while(true) {
-            MerchantOffer var12;
-            while(var11.hasNext()) {
-               var12 = (MerchantOffer)var11.next();
-               if (this.canScroll(var5.size()) && (var10 < this.scrollOff || var10 >= 7 + this.scrollOff)) {
-                  ++var10;
-               } else {
-                  ItemStack var13 = var12.getBaseCostA();
-                  ItemStack var14 = var12.getCostA();
-                  ItemStack var15 = var12.getCostB();
-                  ItemStack var16 = var12.getResult();
-                  var1.pose().pushPose();
-                  var1.pose().translate(0.0F, 0.0F, 100.0F);
-                  int var17 = var8 + 2;
-                  this.renderAndDecorateCostA(var1, var14, var13, var9, var17);
-                  if (!var15.isEmpty()) {
-                     var1.renderFakeItem(var15, var6 + 5 + 35, var17);
-                     var1.renderItemDecorations(this.font, var15, var6 + 5 + 35, var17);
-                  }
-
-                  this.renderButtonArrows(var1, var12, var6, var17);
-                  var1.renderFakeItem(var16, var6 + 5 + 68, var17);
-                  var1.renderItemDecorations(this.font, var16, var6 + 5 + 68, var17);
-                  var1.pose().popPose();
-                  var8 += 20;
-                  ++var10;
-               }
-            }
-
-            int var18 = this.shopItem;
-            var12 = (MerchantOffer)var5.get(var18);
-            if (((MerchantMenu)this.menu).showProgressBar()) {
-               this.renderProgressBar(var1, var6, var7, var12);
-            }
-
-            if (var12.isOutOfStock() && this.isHovering(186, 35, 22, 21, (double)var2, (double)var3) && ((MerchantMenu)this.menu).canRestock()) {
-               var1.renderTooltip(this.font, DEPRECATED_TOOLTIP, var2, var3);
-            }
-
-            TradeOfferButton[] var19 = this.tradeOfferButtons;
-            int var20 = var19.length;
-
-            for(int var21 = 0; var21 < var20; ++var21) {
-               TradeOfferButton var22 = var19[var21];
-               if (var22.isHoveredOrFocused()) {
-                  var22.renderToolTip(var1, var2, var3);
+         for(MerchantOffer var12 : var5) {
+            if (!this.canScroll(var5.size()) || var10 >= this.scrollOff && var10 < 7 + this.scrollOff) {
+               ItemStack var13 = var12.getBaseCostA();
+               ItemStack var14 = var12.getCostA();
+               ItemStack var15 = var12.getCostB();
+               ItemStack var16 = var12.getResult();
+               var1.pose().pushPose();
+               var1.pose().translate(0.0F, 0.0F, 100.0F);
+               int var17 = var8 + 2;
+               this.renderAndDecorateCostA(var1, var14, var13, var9, var17);
+               if (!var15.isEmpty()) {
+                  var1.renderFakeItem(var15, var6 + 5 + 35, var17);
+                  var1.renderItemDecorations(this.font, var15, var6 + 5 + 35, var17);
                }
 
-               var22.visible = var22.index < ((MerchantMenu)this.menu).getOffers().size();
+               this.renderButtonArrows(var1, var12, var6, var17);
+               var1.renderFakeItem(var16, var6 + 5 + 68, var17);
+               var1.renderItemDecorations(this.font, var16, var6 + 5 + 68, var17);
+               var1.pose().popPose();
+               var8 += 20;
+               ++var10;
+            } else {
+               ++var10;
             }
-            break;
+         }
+
+         int var18 = this.shopItem;
+         MerchantOffer var19 = (MerchantOffer)var5.get(var18);
+         if (((MerchantMenu)this.menu).showProgressBar()) {
+            this.renderProgressBar(var1, var6, var7, var19);
+         }
+
+         if (var19.isOutOfStock() && this.isHovering(186, 35, 22, 21, (double)var2, (double)var3) && ((MerchantMenu)this.menu).canRestock()) {
+            var1.renderTooltip(this.font, DEPRECATED_TOOLTIP, var2, var3);
+         }
+
+         for(TradeOfferButton var23 : this.tradeOfferButtons) {
+            if (var23.isHoveredOrFocused()) {
+               var23.renderToolTip(var1, var2, var3);
+            }
+
+            var23.visible = var23.index < ((MerchantMenu)this.menu).getOffers().size();
          }
       }
 
@@ -311,18 +300,17 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
 
       public void renderToolTip(GuiGraphics var1, int var2, int var3) {
          if (this.isHovered && ((MerchantMenu)MerchantScreen.this.menu).getOffers().size() > this.index + MerchantScreen.this.scrollOff) {
-            ItemStack var4;
             if (var2 < this.getX() + 20) {
-               var4 = ((MerchantOffer)((MerchantMenu)MerchantScreen.this.menu).getOffers().get(this.index + MerchantScreen.this.scrollOff)).getCostA();
+               ItemStack var4 = ((MerchantOffer)((MerchantMenu)MerchantScreen.this.menu).getOffers().get(this.index + MerchantScreen.this.scrollOff)).getCostA();
                var1.renderTooltip(MerchantScreen.this.font, var4, var2, var3);
             } else if (var2 < this.getX() + 50 && var2 > this.getX() + 30) {
-               var4 = ((MerchantOffer)((MerchantMenu)MerchantScreen.this.menu).getOffers().get(this.index + MerchantScreen.this.scrollOff)).getCostB();
-               if (!var4.isEmpty()) {
-                  var1.renderTooltip(MerchantScreen.this.font, var4, var2, var3);
+               ItemStack var6 = ((MerchantOffer)((MerchantMenu)MerchantScreen.this.menu).getOffers().get(this.index + MerchantScreen.this.scrollOff)).getCostB();
+               if (!var6.isEmpty()) {
+                  var1.renderTooltip(MerchantScreen.this.font, var6, var2, var3);
                }
             } else if (var2 > this.getX() + 65) {
-               var4 = ((MerchantOffer)((MerchantMenu)MerchantScreen.this.menu).getOffers().get(this.index + MerchantScreen.this.scrollOff)).getResult();
-               var1.renderTooltip(MerchantScreen.this.font, var4, var2, var3);
+               ItemStack var5 = ((MerchantOffer)((MerchantMenu)MerchantScreen.this.menu).getOffers().get(this.index + MerchantScreen.this.scrollOff)).getResult();
+               var1.renderTooltip(MerchantScreen.this.font, var5, var2, var3);
             }
          }
 

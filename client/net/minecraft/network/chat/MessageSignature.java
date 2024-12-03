@@ -73,10 +73,6 @@ public record MessageSignature(byte[] bytes) {
       return var2 != -1 ? new Packed(var2) : new Packed(this);
    }
 
-   public byte[] bytes() {
-      return this.bytes;
-   }
-
    static {
       CODEC = ExtraCodecs.BASE64_STRING.xmap(MessageSignature::new, MessageSignature::bytes);
    }
@@ -113,15 +109,6 @@ public record MessageSignature(byte[] bytes) {
 
       public Optional<MessageSignature> unpack(MessageSignatureCache var1) {
          return this.fullSignature != null ? Optional.of(this.fullSignature) : Optional.ofNullable(var1.unpack(this.id));
-      }
-
-      public int id() {
-         return this.id;
-      }
-
-      @Nullable
-      public MessageSignature fullSignature() {
-         return this.fullSignature;
       }
    }
 }

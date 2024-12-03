@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -41,9 +40,7 @@ public final class BundleContents implements TooltipComponent {
          Fraction var1 = computeContentWeight(var0);
          return DataResult.success(new BundleContents(var0, var1, -1));
       } catch (ArithmeticException var2) {
-         return DataResult.error(() -> {
-            return "Excessive total bundle weight";
-         });
+         return DataResult.error(() -> "Excessive total bundle weight");
       }
    }
 
@@ -54,9 +51,8 @@ public final class BundleContents implements TooltipComponent {
    private static Fraction computeContentWeight(List<ItemStack> var0) {
       Fraction var1 = Fraction.ZERO;
 
-      ItemStack var3;
-      for(Iterator var2 = var0.iterator(); var2.hasNext(); var1 = var1.add(getWeight(var3).multiplyBy(Fraction.getFraction(var3.getCount(), 1)))) {
-         var3 = (ItemStack)var2.next();
+      for(ItemStack var3 : var0) {
+         var1 = var1.add(getWeight(var3).multiplyBy(Fraction.getFraction(var3.getCount(), 1)));
       }
 
       return var1;
@@ -140,12 +136,8 @@ public final class BundleContents implements TooltipComponent {
    }
 
    static {
-      CODEC = ItemStack.CODEC.listOf().flatXmap(BundleContents::checkAndCreate, (var0) -> {
-         return DataResult.success(var0.items);
-      });
-      STREAM_CODEC = ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list()).map(BundleContents::new, (var0) -> {
-         return var0.items;
-      });
+      CODEC = ItemStack.CODEC.listOf().flatXmap(BundleContents::checkAndCreate, (var0) -> DataResult.success(var0.items));
+      STREAM_CODEC = ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list()).map(BundleContents::new, (var0) -> var0.items);
       BUNDLE_IN_BUNDLE_WEIGHT = Fraction.getFraction(1, 16);
    }
 

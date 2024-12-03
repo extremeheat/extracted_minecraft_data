@@ -25,14 +25,6 @@ public record ClientboundRecipeBookAddPacket(List<Entry> entries, boolean replac
       var1.handleRecipeBookAdd(this);
    }
 
-   public List<Entry> entries() {
-      return this.entries;
-   }
-
-   public boolean replace() {
-      return this.replace;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ClientboundRecipeBookAddPacket.Entry.STREAM_CODEC.apply(ByteBufCodecs.list()), ClientboundRecipeBookAddPacket::entries, ByteBufCodecs.BOOL, ClientboundRecipeBookAddPacket::replace, ClientboundRecipeBookAddPacket::new);
    }
@@ -58,14 +50,6 @@ public record ClientboundRecipeBookAddPacket(List<Entry> entries, boolean replac
 
       public boolean highlight() {
          return (this.flags & 2) != 0;
-      }
-
-      public RecipeDisplayEntry contents() {
-         return this.contents;
-      }
-
-      public byte flags() {
-         return this.flags;
       }
 
       static {

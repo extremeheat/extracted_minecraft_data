@@ -40,9 +40,7 @@ public class OnlineOptionsScreen extends OptionsSubScreen {
       var3.add(var1.allowServerListing());
       OptionInstance var4 = (OptionInstance)Optionull.map(var2.level, (var0) -> {
          Difficulty var1 = var0.getDifficulty();
-         return new OptionInstance("options.difficulty.online", OptionInstance.noTooltip(), (var1x, var2) -> {
-            return var1.getDisplayName();
-         }, new OptionInstance.Enum(List.of(Unit.INSTANCE), Codec.EMPTY.codec()), Unit.INSTANCE, (var0x) -> {
+         return new OptionInstance("options.difficulty.online", OptionInstance.noTooltip(), (var1x, var2) -> var1.getDisplayName(), new OptionInstance.Enum(List.of(Unit.INSTANCE), Codec.EMPTY.codec()), Unit.INSTANCE, (var0x) -> {
          });
       });
       if (var4 != null) {

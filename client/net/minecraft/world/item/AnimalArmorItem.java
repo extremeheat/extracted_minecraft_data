@@ -31,9 +31,9 @@ public class AnimalArmorItem extends Item {
       final SoundEvent breakingSound;
       final HolderSet<EntityType<?>> allowedEntities;
 
-      private BodyType(final SoundEvent var3, final EntityType... var4) {
+      private BodyType(final SoundEvent var3, final EntityType<?>... var4) {
          this.breakingSound = var3;
-         this.allowedEntities = HolderSet.direct(EntityType::builtInRegistryHolder, (Object[])var4);
+         this.allowedEntities = HolderSet.direct(EntityType::builtInRegistryHolder, var4);
       }
 
       // $FF: synthetic method

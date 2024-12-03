@@ -20,15 +20,11 @@ public class ChangeDimensionTrigger extends SimpleCriterionTrigger<TriggerInstan
    }
 
    public void trigger(ServerPlayer var1, ResourceKey<Level> var2, ResourceKey<Level> var3) {
-      this.trigger(var1, (var2x) -> {
-         return var2x.matches(var2, var3);
-      });
+      this.trigger(var1, (var2x) -> var2x.matches(var2, var3));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ResourceKey<Level>> from, Optional<ResourceKey<Level>> to) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("from").forGetter(TriggerInstance::from), ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("to").forGetter(TriggerInstance::to)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("from").forGetter(TriggerInstance::from), ResourceKey.codec(Registries.DIMENSION).optionalFieldOf("to").forGetter(TriggerInstance::to)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ResourceKey<Level>> var2, Optional<ResourceKey<Level>> var3) {
          super();
@@ -59,18 +55,6 @@ public class ChangeDimensionTrigger extends SimpleCriterionTrigger<TriggerInstan
          } else {
             return !this.to.isPresent() || this.to.get() == var2;
          }
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<ResourceKey<Level>> from() {
-         return this.from;
-      }
-
-      public Optional<ResourceKey<Level>> to() {
-         return this.to;
       }
    }
 }

@@ -11,7 +11,6 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -50,25 +49,21 @@ public class StatsCounterFix extends DataFix {
                return null;
             } else {
                String var3 = var0.substring(0, var2);
-               String var4;
                if ("stat.mineBlock".equals(var3)) {
-                  var4 = upgradeBlock(var0.substring(var2 + 1).replace('.', ':'));
-                  return new StatType("minecraft:mined", var4);
+                  String var8 = upgradeBlock(var0.substring(var2 + 1).replace('.', ':'));
+                  return new StatType("minecraft:mined", var8);
                } else {
-                  var4 = (String)ITEM_KEYS.get(var3);
-                  String var5;
-                  String var6;
-                  String var7;
+                  String var4 = (String)ITEM_KEYS.get(var3);
                   if (var4 != null) {
-                     var5 = var0.substring(var2 + 1).replace('.', ':');
-                     var6 = upgradeItem(var5);
-                     var7 = var6 == null ? var5 : var6;
-                     return new StatType(var4, var7);
+                     String var9 = var0.substring(var2 + 1).replace('.', ':');
+                     String var10 = upgradeItem(var9);
+                     String var11 = var10 == null ? var9 : var10;
+                     return new StatType(var4, var11);
                   } else {
-                     var5 = (String)ENTITY_KEYS.get(var3);
+                     String var5 = (String)ENTITY_KEYS.get(var3);
                      if (var5 != null) {
-                        var6 = var0.substring(var2 + 1).replace('.', ':');
-                        var7 = (String)ENTITIES.getOrDefault(var6, var6);
+                        String var6 = var0.substring(var2 + 1).replace('.', ':');
+                        String var7 = (String)ENTITIES.getOrDefault(var6, var6);
                         return new StatType(var5, var7);
                      } else {
                         return null;
@@ -92,18 +87,13 @@ public class StatsCounterFix extends DataFix {
          HashMap var3 = Maps.newHashMap();
          Optional var4 = var2x.getMapValues().result();
          if (var4.isPresent()) {
-            Iterator var5 = ((Map)var4.get()).entrySet().iterator();
-
-            while(var5.hasNext()) {
-               Map.Entry var6 = (Map.Entry)var5.next();
+            for(Map.Entry var6 : ((Map)var4.get()).entrySet()) {
                if (((Dynamic)var6.getValue()).asNumber().result().isPresent()) {
                   String var7 = ((Dynamic)var6.getKey()).asString("");
                   StatType var8 = unpackLegacyKey(var7);
                   if (var8 != null) {
                      Dynamic var9 = var2x.createString(var8.type());
-                     Dynamic var10 = (Dynamic)var3.computeIfAbsent(var9, (var1) -> {
-                        return var2x.emptyMap();
-                     });
+                     Dynamic var10 = (Dynamic)var3.computeIfAbsent(var9, (var1) -> var2x.emptyMap());
                      var3.put(var9, var10.set(var8.typeKey(), (Dynamic)var6.getValue()));
                   }
                }
@@ -157,14 +147,6 @@ public class StatsCounterFix extends DataFix {
          super();
          this.type = var1;
          this.typeKey = var2;
-      }
-
-      public String type() {
-         return this.type;
-      }
-
-      public String typeKey() {
-         return this.typeKey;
       }
    }
 }

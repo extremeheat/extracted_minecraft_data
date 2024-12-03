@@ -181,6 +181,6 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
    }
 
    static {
-      DATA_ID_CHEST = SynchedEntityData.defineId(AbstractChestedHorse.class, EntityDataSerializers.BOOLEAN);
+      DATA_ID_CHEST = SynchedEntityData.<Boolean>defineId(AbstractChestedHorse.class, EntityDataSerializers.BOOLEAN);
    }
 }

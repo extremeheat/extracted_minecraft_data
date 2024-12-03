@@ -28,12 +28,12 @@ public abstract class AbstractBannerBlock extends BaseEntityBlock {
       return new BannerBlockEntity(var1, var2, this.color);
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
-      BlockEntity var5 = var1.getBlockEntity(var2);
-      if (var5 instanceof BannerBlockEntity var4) {
-         return var4.getItem();
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+      BlockEntity var6 = var1.getBlockEntity(var2);
+      if (var6 instanceof BannerBlockEntity var5) {
+         return var5.getItem();
       } else {
-         return super.getCloneItemStack(var1, var2, var3);
+         return super.getCloneItemStack(var1, var2, var3, var4);
       }
    }
 

@@ -6,9 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public record ConstantValue(float value) implements NumberProvider {
-   public static final MapCodec<ConstantValue> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.FLOAT.fieldOf("value").forGetter(ConstantValue::value)).apply(var0, ConstantValue::new);
-   });
+   public static final MapCodec<ConstantValue> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("value").forGetter(ConstantValue::value)).apply(var0, ConstantValue::new));
    public static final Codec<ConstantValue> INLINE_CODEC;
 
    public ConstantValue(float var1) {
@@ -40,10 +38,6 @@ public record ConstantValue(float value) implements NumberProvider {
 
    public int hashCode() {
       return this.value != 0.0F ? Float.floatToIntBits(this.value) : 0;
-   }
-
-   public float value() {
-      return this.value;
    }
 
    static {

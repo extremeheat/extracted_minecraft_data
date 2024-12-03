@@ -44,6 +44,6 @@ public class EnderDragonPhaseManager {
          this.phases[var2] = var1.createInstance(this.dragon);
       }
 
-      return this.phases[var2];
+      return (T)this.phases[var2];
    }
 }

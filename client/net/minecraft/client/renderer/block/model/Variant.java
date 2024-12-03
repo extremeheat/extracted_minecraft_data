@@ -8,18 +8,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.math.Transformation;
 import java.lang.reflect.Type;
-import java.util.Objects;
 import net.minecraft.client.resources.model.BlockModelRotation;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 
-public class Variant implements ModelState {
-   private final ResourceLocation modelLocation;
-   private final Transformation rotation;
-   private final boolean uvLock;
-   private final int weight;
-
+public record Variant(ResourceLocation modelLocation, Transformation rotation, boolean uvLock, int weight) implements ModelState {
    public Variant(ResourceLocation var1, Transformation var2, boolean var3, int var4) {
       super();
       this.modelLocation = var1;
@@ -28,44 +22,12 @@ public class Variant implements ModelState {
       this.weight = var4;
    }
 
-   public ResourceLocation getModelLocation() {
-      return this.modelLocation;
-   }
-
    public Transformation getRotation() {
       return this.rotation;
    }
 
    public boolean isUvLocked() {
       return this.uvLock;
-   }
-
-   public int getWeight() {
-      return this.weight;
-   }
-
-   public String toString() {
-      String var10000 = String.valueOf(this.modelLocation);
-      return "Variant{modelLocation=" + var10000 + ", rotation=" + String.valueOf(this.rotation) + ", uvLock=" + this.uvLock + ", weight=" + this.weight + "}";
-   }
-
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else if (!(var1 instanceof Variant)) {
-         return false;
-      } else {
-         Variant var2 = (Variant)var1;
-         return this.modelLocation.equals(var2.modelLocation) && Objects.equals(this.rotation, var2.rotation) && this.uvLock == var2.uvLock && this.weight == var2.weight;
-      }
-   }
-
-   public int hashCode() {
-      int var1 = this.modelLocation.hashCode();
-      var1 = 31 * var1 + this.rotation.hashCode();
-      var1 = 31 * var1 + Boolean.valueOf(this.uvLock).hashCode();
-      var1 = 31 * var1 + this.weight;
-      return var1;
    }
 
    public static class Deserializer implements JsonDeserializer<Variant> {

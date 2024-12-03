@@ -34,17 +34,13 @@ public class NameReportScreen extends AbstractReportScreen<NameReport.Builder> {
 
    protected void addContent() {
       MutableComponent var1 = Component.literal(((NameReport)((NameReport.Builder)this.reportBuilder).report()).getReportedName()).withStyle(ChatFormatting.YELLOW);
-      this.layout.addChild(new StringWidget(Component.translatable("gui.abuseReport.name.reporting", var1), this.font), (Consumer)((var0) -> {
-         var0.alignHorizontallyCenter().padding(0, 8);
-      }));
+      this.layout.addChild(new StringWidget(Component.translatable("gui.abuseReport.name.reporting", var1), this.font), (Consumer)((var0) -> var0.alignHorizontallyCenter().padding(0, 8)));
       Objects.requireNonNull(this.font);
       this.commentBox = this.createCommentBox(280, 9 * 8, (var1x) -> {
          ((NameReport.Builder)this.reportBuilder).setComments(var1x);
          this.onReportChanged();
       });
-      this.layout.addChild(CommonLayouts.labeledElement(this.font, this.commentBox, COMMENT_BOX_LABEL, (var0) -> {
-         var0.paddingBottom(12);
-      }));
+      this.layout.addChild(CommonLayouts.labeledElement(this.font, this.commentBox, COMMENT_BOX_LABEL, (var0) -> var0.paddingBottom(12)));
    }
 
    public boolean mouseReleased(double var1, double var3, int var5) {

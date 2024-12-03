@@ -18,15 +18,11 @@ public class LevitationTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    }
 
    public void trigger(ServerPlayer var1, Vec3 var2, int var3) {
-      this.trigger(var1, (var3x) -> {
-         return var3x.matches(var1, var2, var3);
-      });
+      this.trigger(var1, (var3x) -> var3x.matches(var1, var2, var3));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<DistancePredicate> distance, MinMaxBounds.Ints duration) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(TriggerInstance::distance), MinMaxBounds.Ints.CODEC.optionalFieldOf("duration", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::duration)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(TriggerInstance::distance), MinMaxBounds.Ints.CODEC.optionalFieldOf("duration", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::duration)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<DistancePredicate> var2, MinMaxBounds.Ints var3) {
          super();
@@ -45,18 +41,6 @@ public class LevitationTrigger extends SimpleCriterionTrigger<TriggerInstance> {
          } else {
             return this.duration.matches(var3);
          }
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<DistancePredicate> distance() {
-         return this.distance;
-      }
-
-      public MinMaxBounds.Ints duration() {
-         return this.duration;
       }
    }
 }

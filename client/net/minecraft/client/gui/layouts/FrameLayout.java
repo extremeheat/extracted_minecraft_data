@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.layouts;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -57,19 +56,14 @@ public class FrameLayout extends AbstractLayout {
       int var1 = this.minWidth;
       int var2 = this.minHeight;
 
-      Iterator var3;
-      ChildContainer var4;
-      for(var3 = this.children.iterator(); var3.hasNext(); var2 = Math.max(var2, var4.getHeight())) {
-         var4 = (ChildContainer)var3.next();
+      for(ChildContainer var4 : this.children) {
          var1 = Math.max(var1, var4.getWidth());
+         var2 = Math.max(var2, var4.getHeight());
       }
 
-      var3 = this.children.iterator();
-
-      while(var3.hasNext()) {
-         var4 = (ChildContainer)var3.next();
-         var4.setX(this.getX(), var1);
-         var4.setY(this.getY(), var2);
+      for(ChildContainer var6 : this.children) {
+         var6.setX(this.getX(), var1);
+         var6.setY(this.getY(), var2);
       }
 
       this.width = var1;
@@ -77,22 +71,20 @@ public class FrameLayout extends AbstractLayout {
    }
 
    public <T extends LayoutElement> T addChild(T var1) {
-      return this.addChild(var1, this.newChildLayoutSettings());
+      return (T)this.addChild(var1, this.newChildLayoutSettings());
    }
 
    public <T extends LayoutElement> T addChild(T var1, LayoutSettings var2) {
       this.children.add(new ChildContainer(var1, var2));
-      return var1;
+      return (T)var1;
    }
 
    public <T extends LayoutElement> T addChild(T var1, Consumer<LayoutSettings> var2) {
-      return this.addChild(var1, (LayoutSettings)Util.make(this.newChildLayoutSettings(), var2));
+      return (T)this.addChild(var1, (LayoutSettings)Util.make(this.newChildLayoutSettings(), var2));
    }
 
    public void visitChildren(Consumer<LayoutElement> var1) {
-      this.children.forEach((var1x) -> {
-         var1.accept(var1x.child);
-      });
+      this.children.forEach((var1x) -> var1.accept(var1x.child));
    }
 
    public static void centerInRectangle(LayoutElement var0, int var1, int var2, int var3, int var4) {

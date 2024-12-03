@@ -11,16 +11,14 @@ public record AnimationChannel(Target target, Keyframe... keyframes) {
       this.keyframes = var2;
    }
 
-   public Target target() {
-      return this.target;
-   }
+   public static class Targets {
+      public static final Target POSITION = ModelPart::offsetPos;
+      public static final Target ROTATION = ModelPart::offsetRotation;
+      public static final Target SCALE = ModelPart::offsetScale;
 
-   public Keyframe[] keyframes() {
-      return this.keyframes;
-   }
-
-   public interface Target {
-      void apply(ModelPart var1, Vector3f var2);
+      public Targets() {
+         super();
+      }
    }
 
    public static class Interpolations {
@@ -43,17 +41,11 @@ public record AnimationChannel(Target target, Keyframe... keyframes) {
       }
    }
 
-   public static class Targets {
-      public static final Target POSITION = ModelPart::offsetPos;
-      public static final Target ROTATION = ModelPart::offsetRotation;
-      public static final Target SCALE = ModelPart::offsetScale;
-
-      public Targets() {
-         super();
-      }
-   }
-
    public interface Interpolation {
       Vector3f apply(Vector3f var1, float var2, Keyframe[] var3, int var4, int var5, float var6);
+   }
+
+   public interface Target {
+      void apply(ModelPart var1, Vector3f var2);
    }
 }

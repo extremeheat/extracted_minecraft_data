@@ -11,9 +11,7 @@ import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 
 public class WeatheringCopperDoorBlock extends DoorBlock implements WeatheringCopper {
-   public static final MapCodec<WeatheringCopperDoorBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter(DoorBlock::type), WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(WeatheringCopperDoorBlock::getAge), propertiesCodec()).apply(var0, WeatheringCopperDoorBlock::new);
-   });
+   public static final MapCodec<WeatheringCopperDoorBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter(DoorBlock::type), WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(WeatheringCopperDoorBlock::getAge), propertiesCodec()).apply(var0, WeatheringCopperDoorBlock::new));
    private final WeatheringCopper.WeatherState weatherState;
 
    public MapCodec<WeatheringCopperDoorBlock> codec() {

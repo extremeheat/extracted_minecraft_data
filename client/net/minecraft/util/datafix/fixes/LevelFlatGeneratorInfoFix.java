@@ -31,9 +31,7 @@ public class LevelFlatGeneratorInfoFix extends DataFix {
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("LevelFlatGeneratorInfoFix", this.getInputSchema().getType(References.LEVEL), (var1) -> {
-         return var1.update(DSL.remainderFinder(), this::fix);
-      });
+      return this.fixTypeEverywhereTyped("LevelFlatGeneratorInfoFix", this.getInputSchema().getType(References.LEVEL), (var1) -> var1.update(DSL.remainderFinder(), this::fix));
    }
 
    private Dynamic<?> fix(Dynamic<?> var1) {
@@ -82,7 +80,7 @@ public class LevelFlatGeneratorInfoFix extends DataFix {
                int var9 = var4 == 3 ? EntityBlockStateFix.getBlockId("minecraft:" + var8) : NumberUtils.toInt(var8, 0);
                int var10 = var7x + 1;
                int var11 = var6.size() > var10 ? NumberUtils.toInt((String)var6.get(var10), 0) : 0;
-               String var10000 = var3 == 1 ? "" : "" + var3 + "*";
+               String var10000 = var3 == 1 ? "" : var3 + "*";
                return var10000 + BlockStateData.getTag(var9 << 4 | var11).get("Name").asString("");
             }).collect(Collectors.joining(",")));
 

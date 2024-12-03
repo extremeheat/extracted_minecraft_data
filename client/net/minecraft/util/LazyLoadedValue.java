@@ -16,6 +16,6 @@ public class LazyLoadedValue<T> {
    }
 
    public T get() {
-      return this.factory.get();
+      return (T)this.factory.get();
    }
 }

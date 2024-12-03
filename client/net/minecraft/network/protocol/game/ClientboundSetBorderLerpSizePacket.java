@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.level.border.WorldBorder;
 
 public class ClientboundSetBorderLerpSizePacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetBorderLerpSizePacket> STREAM_CODEC = Packet.codec(ClientboundSetBorderLerpSizePacket::write, ClientboundSetBorderLerpSizePacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetBorderLerpSizePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSetBorderLerpSizePacket>codec(ClientboundSetBorderLerpSizePacket::write, ClientboundSetBorderLerpSizePacket::new);
    private final double oldSize;
    private final double newSize;
    private final long lerpTime;

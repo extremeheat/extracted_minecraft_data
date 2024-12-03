@@ -17,31 +17,8 @@ public record FileIOStat(Duration duration, @Nullable String path, long bytes) {
    }
 
    public static Summary summary(Duration var0, List<FileIOStat> var1) {
-      long var2 = var1.stream().mapToLong((var0x) -> {
-         return var0x.bytes;
-      }).sum();
-      return new Summary(var2, (double)var2 / (double)var0.getSeconds(), (long)var1.size(), (double)var1.size() / (double)var0.getSeconds(), (Duration)var1.stream().map(FileIOStat::duration).reduce(Duration.ZERO, Duration::plus), ((Map)var1.stream().filter((var0x) -> {
-         return var0x.path != null;
-      }).collect(Collectors.groupingBy((var0x) -> {
-         return var0x.path;
-      }, Collectors.summingLong((var0x) -> {
-         return var0x.bytes;
-      })))).entrySet().stream().sorted(Entry.comparingByValue().reversed()).map((var0x) -> {
-         return Pair.of((String)var0x.getKey(), (Long)var0x.getValue());
-      }).limit(10L).toList());
-   }
-
-   public Duration duration() {
-      return this.duration;
-   }
-
-   @Nullable
-   public String path() {
-      return this.path;
-   }
-
-   public long bytes() {
-      return this.bytes;
+      long var2 = var1.stream().mapToLong((var0x) -> var0x.bytes).sum();
+      return new Summary(var2, (double)var2 / (double)var0.getSeconds(), (long)var1.size(), (double)var1.size() / (double)var0.getSeconds(), (Duration)var1.stream().map(FileIOStat::duration).reduce(Duration.ZERO, Duration::plus), ((Map)var1.stream().filter((var0x) -> var0x.path != null).collect(Collectors.groupingBy((var0x) -> var0x.path, Collectors.summingLong((var0x) -> var0x.bytes)))).entrySet().stream().sorted(Entry.comparingByValue().reversed()).map((var0x) -> Pair.of((String)var0x.getKey(), (Long)var0x.getValue())).limit(10L).toList());
    }
 
    public static record Summary(long totalBytes, double bytesPerSecond, long counts, double countsPerSecond, Duration timeSpentInIO, List<Pair<String, Long>> topTenContributorsByTotalBytes) {
@@ -53,30 +30,6 @@ public record FileIOStat(Duration duration, @Nullable String path, long bytes) {
          this.countsPerSecond = var7;
          this.timeSpentInIO = var9;
          this.topTenContributorsByTotalBytes = var10;
-      }
-
-      public long totalBytes() {
-         return this.totalBytes;
-      }
-
-      public double bytesPerSecond() {
-         return this.bytesPerSecond;
-      }
-
-      public long counts() {
-         return this.counts;
-      }
-
-      public double countsPerSecond() {
-         return this.countsPerSecond;
-      }
-
-      public Duration timeSpentInIO() {
-         return this.timeSpentInIO;
-      }
-
-      public List<Pair<String, Long>> topTenContributorsByTotalBytes() {
-         return this.topTenContributorsByTotalBytes;
       }
    }
 }

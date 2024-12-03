@@ -54,41 +54,40 @@ public class ParrotModel extends EntityModel<ParrotRenderState> {
       this.prepare(var1.pose);
       this.head.xRot = var1.xRot * 0.017453292F;
       this.head.yRot = var1.yRot * 0.017453292F;
-      ModelPart var10000;
       switch (var1.pose.ordinal()) {
          case 1:
-            var10000 = this.leftLeg;
-            var10000.xRot += Mth.cos(var1.walkAnimationPos * 0.6662F) * 1.4F * var1.walkAnimationSpeed;
-            var10000 = this.rightLeg;
-            var10000.xRot += Mth.cos(var1.walkAnimationPos * 0.6662F + 3.1415927F) * 1.4F * var1.walkAnimationSpeed;
+            ModelPart var14 = this.leftLeg;
+            var14.xRot += Mth.cos(var1.walkAnimationPos * 0.6662F) * 1.4F * var1.walkAnimationSpeed;
+            var14 = this.rightLeg;
+            var14.xRot += Mth.cos(var1.walkAnimationPos * 0.6662F + 3.1415927F) * 1.4F * var1.walkAnimationSpeed;
          case 0:
          case 4:
          default:
             float var4 = var1.flapAngle * 0.3F;
-            var10000 = this.head;
-            var10000.y += var4;
-            var10000 = this.tail;
-            var10000.xRot += Mth.cos(var1.walkAnimationPos * 0.6662F) * 0.3F * var1.walkAnimationSpeed;
-            var10000 = this.tail;
-            var10000.y += var4;
-            var10000 = this.body;
-            var10000.y += var4;
+            ModelPart var16 = this.head;
+            var16.y += var4;
+            var16 = this.tail;
+            var16.xRot += Mth.cos(var1.walkAnimationPos * 0.6662F) * 0.3F * var1.walkAnimationSpeed;
+            var16 = this.tail;
+            var16.y += var4;
+            var16 = this.body;
+            var16.y += var4;
             this.leftWing.zRot = -0.0873F - var1.flapAngle;
-            var10000 = this.leftWing;
-            var10000.y += var4;
+            var16 = this.leftWing;
+            var16.y += var4;
             this.rightWing.zRot = 0.0873F + var1.flapAngle;
-            var10000 = this.rightWing;
-            var10000.y += var4;
-            var10000 = this.leftLeg;
-            var10000.y += var4;
-            var10000 = this.rightLeg;
-            var10000.y += var4;
+            var16 = this.rightWing;
+            var16.y += var4;
+            var16 = this.leftLeg;
+            var16.y += var4;
+            var16 = this.rightLeg;
+            var16.y += var4;
          case 2:
             break;
          case 3:
             float var2 = Mth.cos(var1.ageInTicks);
             float var3 = Mth.sin(var1.ageInTicks);
-            var10000 = this.head;
+            ModelPart var10000 = this.head;
             var10000.x += var2;
             var10000 = this.head;
             var10000.y += var3;
@@ -118,13 +117,12 @@ public class ParrotModel extends EntityModel<ParrotRenderState> {
    }
 
    private void prepare(Pose var1) {
-      ModelPart var10000;
       switch (var1.ordinal()) {
          case 0:
-            var10000 = this.leftLeg;
-            var10000.xRot += 0.6981317F;
-            var10000 = this.rightLeg;
-            var10000.xRot += 0.6981317F;
+            ModelPart var4 = this.leftLeg;
+            var4.xRot += 0.6981317F;
+            var4 = this.rightLeg;
+            var4.xRot += 0.6981317F;
          case 1:
          case 4:
          default:
@@ -132,7 +130,7 @@ public class ParrotModel extends EntityModel<ParrotRenderState> {
          case 2:
             float var2 = 1.9F;
             ++this.head.y;
-            var10000 = this.tail;
+            ModelPart var10000 = this.tail;
             var10000.xRot += 0.5235988F;
             ++this.tail.y;
             ++this.body.y;

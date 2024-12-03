@@ -15,9 +15,7 @@ public class SetRoarTarget {
    }
 
    public static <E extends Warden> BehaviorControl<E> create(Function<E, Optional<? extends LivingEntity>> var0) {
-      return BehaviorBuilder.create((var1) -> {
-         return var1.group(var1.absent(MemoryModuleType.ROAR_TARGET), var1.absent(MemoryModuleType.ATTACK_TARGET), var1.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)).apply(var1, (var1x, var2, var3) -> {
-            return (var3x, var4, var5) -> {
+      return BehaviorBuilder.create((Function)((var1) -> var1.group(var1.absent(MemoryModuleType.ROAR_TARGET), var1.absent(MemoryModuleType.ATTACK_TARGET), var1.registered(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)).apply(var1, (var1x, var2, var3) -> (var3x, var4, var5) -> {
                Optional var7 = (Optional)var0.apply(var4);
                Objects.requireNonNull(var4);
                if (var7.filter(var4::canTargetEntity).isEmpty()) {
@@ -27,8 +25,6 @@ public class SetRoarTarget {
                   var3.erase();
                   return true;
                }
-            };
-         });
-      });
+            })));
    }
 }

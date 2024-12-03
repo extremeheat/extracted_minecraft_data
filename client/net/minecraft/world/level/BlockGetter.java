@@ -1,7 +1,6 @@
 package net.minecraft.world.level;
 
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -105,7 +104,7 @@ public interface BlockGetter extends LevelHeightAccessor {
 
    static <T, C> T traverseBlocks(Vec3 var0, Vec3 var1, C var2, BiFunction<C, BlockPos, T> var3, Function<C, T> var4) {
       if (var0.equals(var1)) {
-         return var4.apply(var2);
+         return (T)var4.apply(var2);
       } else {
          double var5 = Mth.lerp(-1.0E-7, var1.x, var0.x);
          double var7 = Mth.lerp(-1.0E-7, var1.y, var0.y);
@@ -119,7 +118,7 @@ public interface BlockGetter extends LevelHeightAccessor {
          BlockPos.MutableBlockPos var20 = new BlockPos.MutableBlockPos(var17, var18, var19);
          Object var21 = var3.apply(var2, var20);
          if (var21 != null) {
-            return var21;
+            return (T)var21;
          } else {
             double var22 = var5 - var11;
             double var24 = var7 - var13;
@@ -134,12 +133,7 @@ public interface BlockGetter extends LevelHeightAccessor {
             double var39 = var33 * (var29 > 0 ? 1.0 - Mth.frac(var13) : Mth.frac(var13));
             double var41 = var35 * (var30 > 0 ? 1.0 - Mth.frac(var15) : Mth.frac(var15));
 
-            Object var43;
-            do {
-               if (!(var37 <= 1.0) && !(var39 <= 1.0) && !(var41 <= 1.0)) {
-                  return var4.apply(var2);
-               }
-
+            while(var37 <= 1.0 || var39 <= 1.0 || var41 <= 1.0) {
                if (var37 < var39) {
                   if (var37 < var41) {
                      var17 += var28;
@@ -156,10 +150,13 @@ public interface BlockGetter extends LevelHeightAccessor {
                   var41 += var35;
                }
 
-               var43 = var3.apply(var2, var20.set(var17, var18, var19));
-            } while(var43 == null);
+               Object var43 = var3.apply(var2, var20.set(var17, var18, var19));
+               if (var43 != null) {
+                  return (T)var43;
+               }
+            }
 
-            return var43;
+            return (T)var4.apply(var2);
          }
       }
    }
@@ -171,15 +168,12 @@ public interface BlockGetter extends LevelHeightAccessor {
          return var4;
       } else {
          ObjectLinkedOpenHashSet var5 = new ObjectLinkedOpenHashSet();
-         Vec3 var6 = var3.normalize().scale(1.0E-7);
-         Vec3 var7 = var2.getMinPosition().add(var6);
-         Vec3 var8 = var2.getMinPosition().subtract(var3).subtract(var6);
-         addCollisionsAlongTravel(var5, var8, var7, var2);
-         Iterator var9 = var4.iterator();
+         Vec3 var6 = var2.getMinPosition();
+         Vec3 var7 = var6.subtract(var3);
+         addCollisionsAlongTravel(var5, var7, var6, var2);
 
-         while(var9.hasNext()) {
-            BlockPos var10 = (BlockPos)var9.next();
-            var5.add(var10.immutable());
+         for(BlockPos var9 : var4) {
+            var5.add(var9.immutable());
          }
 
          return var5;

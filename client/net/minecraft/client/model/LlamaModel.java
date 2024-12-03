@@ -1,6 +1,5 @@
 package net.minecraft.client.model;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.function.UnaryOperator;
 import net.minecraft.client.model.geom.ModelPart;
@@ -56,20 +55,12 @@ public class LlamaModel extends EntityModel<LlamaRenderState> {
       float var1 = 2.0F;
       float var2 = 0.7F;
       float var3 = 1.1F;
-      UnaryOperator var4 = (var0x) -> {
-         return var0x.translated(0.0F, 21.0F, 3.52F).scaled(0.71428573F, 0.64935064F, 0.7936508F);
-      };
-      UnaryOperator var5 = (var0x) -> {
-         return var0x.translated(0.0F, 33.0F, 0.0F).scaled(0.625F, 0.45454544F, 0.45454544F);
-      };
-      UnaryOperator var6 = (var0x) -> {
-         return var0x.translated(0.0F, 33.0F, 0.0F).scaled(0.45454544F, 0.41322312F, 0.45454544F);
-      };
+      UnaryOperator var4 = (var0x) -> var0x.translated(0.0F, 21.0F, 3.52F).scaled(0.71428573F, 0.64935064F, 0.7936508F);
+      UnaryOperator var5 = (var0x) -> var0x.translated(0.0F, 33.0F, 0.0F).scaled(0.625F, 0.45454544F, 0.45454544F);
+      UnaryOperator var6 = (var0x) -> var0x.translated(0.0F, 33.0F, 0.0F).scaled(0.45454544F, 0.41322312F, 0.45454544F);
       MeshDefinition var7 = new MeshDefinition();
-      Iterator var8 = var0.getRoot().getChildren().iterator();
 
-      while(var8.hasNext()) {
-         Map.Entry var9 = (Map.Entry)var8.next();
+      for(Map.Entry var9 : var0.getRoot().getChildren()) {
          String var10 = (String)var9.getKey();
          PartDefinition var11 = (PartDefinition)var9.getValue();
          UnaryOperator var10000;

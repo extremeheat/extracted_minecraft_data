@@ -22,6 +22,6 @@ public class ClientboundPlayerCombatEnterPacket implements Packet<ClientGamePack
    }
 
    static {
-      STREAM_CODEC = StreamCodec.unit(INSTANCE);
+      STREAM_CODEC = StreamCodec.<ByteBuf, ClientboundPlayerCombatEnterPacket>unit(INSTANCE);
    }
 }

@@ -8,7 +8,7 @@ public enum CaveSurface implements StringRepresentable {
    CEILING(Direction.UP, 1, "ceiling"),
    FLOOR(Direction.DOWN, -1, "floor");
 
-   public static final Codec<CaveSurface> CODEC = StringRepresentable.fromEnum(CaveSurface::values);
+   public static final Codec<CaveSurface> CODEC = StringRepresentable.<CaveSurface>fromEnum(CaveSurface::values);
    private final Direction direction;
    private final int y;
    private final String id;

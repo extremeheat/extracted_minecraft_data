@@ -56,9 +56,7 @@ public class Chicken extends Animal {
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new PanicGoal(this, 1.4));
       this.goalSelector.addGoal(2, new BreedGoal(this, 1.0));
-      this.goalSelector.addGoal(3, new TemptGoal(this, 1.0, (var0) -> {
-         return var0.is(ItemTags.CHICKEN_FOOD);
-      }, false));
+      this.goalSelector.addGoal(3, new TemptGoal(this, 1.0, (var0) -> var0.is(ItemTags.CHICKEN_FOOD), false));
       this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.1));
       this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
       this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
@@ -130,7 +128,7 @@ public class Chicken extends Animal {
 
    @Nullable
    public Chicken getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (Chicken)EntityType.CHICKEN.create(var1, EntitySpawnReason.BREEDING);
+      return EntityType.CHICKEN.create(var1, EntitySpawnReason.BREEDING);
    }
 
    public boolean isFood(ItemStack var1) {

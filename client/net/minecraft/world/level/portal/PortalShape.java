@@ -28,9 +28,7 @@ public class PortalShape {
    public static final int MAX_WIDTH = 21;
    private static final int MIN_HEIGHT = 3;
    public static final int MAX_HEIGHT = 21;
-   private static final BlockBehaviour.StatePredicate FRAME = (var0, var1, var2) -> {
-      return var0.is(Blocks.OBSIDIAN);
-   };
+   private static final BlockBehaviour.StatePredicate FRAME = (var0, var1, var2) -> var0.is(Blocks.OBSIDIAN);
    private static final float SAFE_TRAVEL_MAX_ENTITY_XY = 4.0F;
    private static final double SAFE_TRAVEL_MAX_VERTICAL_DELTA = 1.0;
    private final Direction.Axis axis;
@@ -51,9 +49,7 @@ public class PortalShape {
    }
 
    public static Optional<PortalShape> findEmptyPortalShape(LevelAccessor var0, BlockPos var1, Direction.Axis var2) {
-      return findPortalShape(var0, var1, (var0x) -> {
-         return var0x.isValid() && var0x.numPortalBlocks == 0;
-      }, var2);
+      return findPortalShape(var0, var1, (var0x) -> var0x.isValid() && var0x.numPortalBlocks == 0, var2);
    }
 
    public static Optional<PortalShape> findPortalShape(LevelAccessor var0, BlockPos var1, Predicate<PortalShape> var2, Direction.Axis var3) {
@@ -175,9 +171,7 @@ public class PortalShape {
 
    public void createPortalBlocks(LevelAccessor var1) {
       BlockState var2 = (BlockState)Blocks.NETHER_PORTAL.defaultBlockState().setValue(NetherPortalBlock.AXIS, this.axis);
-      BlockPos.betweenClosed(this.bottomLeft, this.bottomLeft.relative(Direction.UP, this.height - 1).relative(this.rightDir, this.width - 1)).forEach((var2x) -> {
-         var1.setBlock(var2x, var2, 18);
-      });
+      BlockPos.betweenClosed(this.bottomLeft, this.bottomLeft.relative(Direction.UP, this.height - 1).relative(this.rightDir, this.width - 1)).forEach((var2x) -> var1.setBlock(var2x, var2, 18));
    }
 
    public boolean isComplete() {
@@ -189,25 +183,24 @@ public class PortalShape {
       double var6 = (double)var0.axis2Size - (double)var3.height();
       BlockPos var8 = var0.minCorner;
       double var9;
-      double var11;
       if (var4 > 0.0) {
-         var11 = (double)var8.get(var1) + (double)var3.width() / 2.0;
+         double var11 = (double)var8.get(var1) + (double)var3.width() / 2.0;
          var9 = Mth.clamp(Mth.inverseLerp(var2.get(var1) - var11, 0.0, var4), 0.0, 1.0);
       } else {
          var9 = 0.5;
       }
 
-      Direction.Axis var13;
+      double var16;
       if (var6 > 0.0) {
-         var13 = Direction.Axis.Y;
-         var11 = Mth.clamp(Mth.inverseLerp(var2.get(var13) - (double)var8.get(var13), 0.0, var6), 0.0, 1.0);
+         Direction.Axis var13 = Direction.Axis.Y;
+         var16 = Mth.clamp(Mth.inverseLerp(var2.get(var13) - (double)var8.get(var13), 0.0, var6), 0.0, 1.0);
       } else {
-         var11 = 0.0;
+         var16 = 0.0;
       }
 
-      var13 = var1 == Direction.Axis.X ? Direction.Axis.Z : Direction.Axis.X;
-      double var14 = var2.get(var13) - ((double)var8.get(var13) + 0.5);
-      return new Vec3(var9, var11, var14);
+      Direction.Axis var17 = var1 == Direction.Axis.X ? Direction.Axis.Z : Direction.Axis.X;
+      double var14 = var2.get(var17) - ((double)var8.get(var17) + 0.5);
+      return new Vec3(var9, var16, var14);
    }
 
    public static Vec3 findCollisionFreePosition(Vec3 var0, ServerLevel var1, Entity var2, EntityDimensions var3) {
@@ -216,9 +209,7 @@ public class PortalShape {
          Vec3 var6 = var0.add(0.0, var4, 0.0);
          VoxelShape var7 = Shapes.create(AABB.ofSize(var6, (double)var3.width(), 0.0, (double)var3.width()).expandTowards(0.0, 1.0, 0.0).inflate(1.0E-6));
          Optional var8 = var1.findFreePosition(var2, var7, var6, (double)var3.width(), (double)var3.height(), (double)var3.width());
-         Optional var9 = var8.map((var2x) -> {
-            return var2x.subtract(0.0, var4, 0.0);
-         });
+         Optional var9 = var8.map((var2x) -> var2x.subtract(0.0, var4, 0.0));
          return (Vec3)var9.orElse(var0);
       } else {
          return var0;

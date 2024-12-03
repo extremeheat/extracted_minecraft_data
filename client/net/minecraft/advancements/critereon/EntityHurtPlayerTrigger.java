@@ -18,15 +18,11 @@ public class EntityHurtPlayerTrigger extends SimpleCriterionTrigger<TriggerInsta
    }
 
    public void trigger(ServerPlayer var1, DamageSource var2, float var3, float var4, boolean var5) {
-      this.trigger(var1, (var5x) -> {
-         return var5x.matches(var1, var2, var3, var4, var5);
-      });
+      this.trigger(var1, (var5x) -> var5x.matches(var1, var2, var3, var4, var5));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<DamagePredicate> damage) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), DamagePredicate.CODEC.optionalFieldOf("damage").forGetter(TriggerInstance::damage)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), DamagePredicate.CODEC.optionalFieldOf("damage").forGetter(TriggerInstance::damage)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<DamagePredicate> var2) {
          super();
@@ -48,14 +44,6 @@ public class EntityHurtPlayerTrigger extends SimpleCriterionTrigger<TriggerInsta
 
       public boolean matches(ServerPlayer var1, DamageSource var2, float var3, float var4, boolean var5) {
          return !this.damage.isPresent() || ((DamagePredicate)this.damage.get()).matches(var1, var2, var3, var4, var5);
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<DamagePredicate> damage() {
-         return this.damage;
       }
    }
 }

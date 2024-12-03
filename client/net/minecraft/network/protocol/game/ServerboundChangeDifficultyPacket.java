@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.Difficulty;
 
 public class ServerboundChangeDifficultyPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundChangeDifficultyPacket> STREAM_CODEC = Packet.codec(ServerboundChangeDifficultyPacket::write, ServerboundChangeDifficultyPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundChangeDifficultyPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundChangeDifficultyPacket>codec(ServerboundChangeDifficultyPacket::write, ServerboundChangeDifficultyPacket::new);
    private final Difficulty difficulty;
 
    public ServerboundChangeDifficultyPacket(Difficulty var1) {

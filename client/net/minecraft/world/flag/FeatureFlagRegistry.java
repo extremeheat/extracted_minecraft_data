@@ -6,7 +6,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,9 +37,7 @@ public class FeatureFlagRegistry {
    }
 
    public FeatureFlagSet fromNames(Iterable<ResourceLocation> var1) {
-      return this.fromNames(var1, (var0) -> {
-         LOGGER.warn("Unknown feature flag: {}", var0);
-      });
+      return this.fromNames(var1, (var0) -> LOGGER.warn("Unknown feature flag: {}", var0));
    }
 
    public FeatureFlagSet subset(FeatureFlag... var1) {
@@ -49,10 +46,8 @@ public class FeatureFlagRegistry {
 
    public FeatureFlagSet fromNames(Iterable<ResourceLocation> var1, Consumer<ResourceLocation> var2) {
       Set var3 = Sets.newIdentityHashSet();
-      Iterator var4 = var1.iterator();
 
-      while(var4.hasNext()) {
-         ResourceLocation var5 = (ResourceLocation)var4.next();
+      for(ResourceLocation var5 : var1) {
          FeatureFlag var6 = (FeatureFlag)this.names.get(var5);
          if (var6 == null) {
             var2.accept(var5);
@@ -80,12 +75,8 @@ public class FeatureFlagRegistry {
          HashSet var2 = new HashSet();
          Objects.requireNonNull(var2);
          FeatureFlagSet var3 = this.fromNames(var1, var2::add);
-         return !var2.isEmpty() ? DataResult.error(() -> {
-            return "Unknown feature ids: " + String.valueOf(var2);
-         }, var3) : DataResult.success(var3);
-      }, (var1) -> {
-         return List.copyOf(this.toNames(var1));
-      });
+         return !var2.isEmpty() ? DataResult.error(() -> "Unknown feature ids: " + String.valueOf(var2), var3) : DataResult.success(var3);
+      }, (var1) -> List.copyOf(this.toNames(var1)));
    }
 
    public static class Builder {

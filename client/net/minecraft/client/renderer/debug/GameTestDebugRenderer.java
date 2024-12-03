@@ -25,12 +25,8 @@ public class GameTestDebugRenderer implements DebugRenderer.SimpleDebugRenderer 
 
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       long var9 = Util.getMillis();
-      this.markers.entrySet().removeIf((var2x) -> {
-         return var9 > ((Marker)var2x.getValue()).removeAtTime;
-      });
-      this.markers.forEach((var3x, var4) -> {
-         this.renderMarker(var1, var2, var3x, var4);
-      });
+      this.markers.entrySet().removeIf((var2x) -> var9 > ((Marker)var2x.getValue()).removeAtTime);
+      this.markers.forEach((var3x, var4) -> this.renderMarker(var1, var2, var3x, var4));
    }
 
    private void renderMarker(PoseStack var1, MultiBufferSource var2, BlockPos var3, Marker var4) {
@@ -44,7 +40,7 @@ public class GameTestDebugRenderer implements DebugRenderer.SimpleDebugRenderer 
 
    }
 
-   private static class Marker {
+   static class Marker {
       public int color;
       public String text;
       public long removeAtTime;

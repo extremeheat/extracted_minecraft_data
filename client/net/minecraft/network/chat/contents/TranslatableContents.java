@@ -8,7 +8,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -46,9 +45,7 @@ public class TranslatableContents implements ComponentContents {
    private static final Pattern FORMAT_PATTERN;
 
    private static DataResult<Object> filterAllowedArguments(@Nullable Object var0) {
-      return !isAllowedPrimitiveArgument(var0) ? DataResult.error(() -> {
-         return "This value needs to be parsed as component";
-      }) : DataResult.success(var0);
+      return !isAllowedPrimitiveArgument(var0) ? DataResult.error(() -> "This value needs to be parsed as component") : DataResult.success(var0);
    }
 
    public static boolean isAllowedPrimitiveArgument(@Nullable Object var0) {
@@ -60,9 +57,7 @@ public class TranslatableContents implements ComponentContents {
    }
 
    private static Object[] adjustArgs(Optional<List<Object>> var0) {
-      return (Object[])var0.map((var0x) -> {
-         return var0x.isEmpty() ? NO_ARGS : var0x.toArray();
-      }).orElse(NO_ARGS);
+      return var0.map((var0x) -> var0x.isEmpty() ? NO_ARGS : var0x.toArray()).orElse(NO_ARGS);
    }
 
    private static TranslatableContents create(String var0, Optional<String> var1, Optional<List<Object>> var2) {
@@ -109,9 +104,8 @@ public class TranslatableContents implements ComponentContents {
          for(var5 = 0; var3.find(var5); var5 = var7) {
             int var6 = var3.start();
             var7 = var3.end();
-            String var8;
             if (var6 > var5) {
-               var8 = var1.substring(var5, var6);
+               String var8 = var1.substring(var5, var6);
                if (var8.indexOf(37) != -1) {
                   throw new IllegalArgumentException();
                }
@@ -119,12 +113,12 @@ public class TranslatableContents implements ComponentContents {
                var2.accept(FormattedText.of(var8));
             }
 
-            var8 = var3.group(2);
+            String var14 = var3.group(2);
             String var9 = var1.substring(var6, var7);
-            if ("%".equals(var8) && "%%".equals(var9)) {
+            if ("%".equals(var14) && "%%".equals(var9)) {
                var2.accept(TEXT_PERCENT);
             } else {
-               if (!"s".equals(var8)) {
+               if (!"s".equals(var14)) {
                   throw new TranslatableFormatException(this, "Unsupported format: '" + var9 + "'");
                }
 
@@ -164,36 +158,28 @@ public class TranslatableContents implements ComponentContents {
 
    public <T> Optional<T> visit(FormattedText.StyledContentConsumer<T> var1, Style var2) {
       this.decompose();
-      Iterator var3 = this.decomposedParts.iterator();
 
-      Optional var5;
-      do {
-         if (!var3.hasNext()) {
-            return Optional.empty();
+      for(FormattedText var4 : this.decomposedParts) {
+         Optional var5 = var4.visit(var1, var2);
+         if (var5.isPresent()) {
+            return var5;
          }
+      }
 
-         FormattedText var4 = (FormattedText)var3.next();
-         var5 = var4.visit(var1, var2);
-      } while(!var5.isPresent());
-
-      return var5;
+      return Optional.empty();
    }
 
    public <T> Optional<T> visit(FormattedText.ContentConsumer<T> var1) {
       this.decompose();
-      Iterator var2 = this.decomposedParts.iterator();
 
-      Optional var4;
-      do {
-         if (!var2.hasNext()) {
-            return Optional.empty();
+      for(FormattedText var3 : this.decomposedParts) {
+         Optional var4 = var3.visit(var1);
+         if (var4.isPresent()) {
+            return var4;
          }
+      }
 
-         FormattedText var3 = (FormattedText)var2.next();
-         var4 = var3.visit(var1);
-      } while(!var4.isPresent());
-
-      return var4;
+      return Optional.empty();
    }
 
    public MutableComponent resolve(@Nullable CommandSourceStack var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
@@ -256,13 +242,7 @@ public class TranslatableContents implements ComponentContents {
 
    static {
       PRIMITIVE_ARG_CODEC = ExtraCodecs.JAVA.validate(TranslatableContents::filterAllowedArguments);
-      ARG_CODEC = Codec.either(PRIMITIVE_ARG_CODEC, ComponentSerialization.CODEC).xmap((var0) -> {
-         return var0.map((var0x) -> {
-            return var0x;
-         }, (var0x) -> {
-            return Objects.requireNonNullElse(var0x.tryCollapseToString(), var0x);
-         });
-      }, (var0) -> {
+      ARG_CODEC = Codec.either(PRIMITIVE_ARG_CODEC, ComponentSerialization.CODEC).xmap((var0) -> var0.map((var0x) -> var0x, (var0x) -> Objects.requireNonNullElse(var0x.tryCollapseToString(), var0x)), (var0) -> {
          Either var10000;
          if (var0 instanceof Component var1) {
             var10000 = Either.right(var1);
@@ -272,16 +252,8 @@ public class TranslatableContents implements ComponentContents {
 
          return var10000;
       });
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(Codec.STRING.fieldOf("translate").forGetter((var0x) -> {
-            return var0x.key;
-         }), Codec.STRING.lenientOptionalFieldOf("fallback").forGetter((var0x) -> {
-            return Optional.ofNullable(var0x.fallback);
-         }), ARG_CODEC.listOf().optionalFieldOf("with").forGetter((var0x) -> {
-            return adjustArgs(var0x.args);
-         })).apply(var0, TranslatableContents::create);
-      });
-      TYPE = new ComponentContents.Type(CODEC, "translatable");
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("translate").forGetter((var0x) -> var0x.key), Codec.STRING.lenientOptionalFieldOf("fallback").forGetter((var0x) -> Optional.ofNullable(var0x.fallback)), ARG_CODEC.listOf().optionalFieldOf("with").forGetter((var0x) -> adjustArgs(var0x.args))).apply(var0, TranslatableContents::create));
+      TYPE = new ComponentContents.Type<TranslatableContents>(CODEC, "translatable");
       TEXT_PERCENT = FormattedText.of("%");
       TEXT_NULL = FormattedText.of("null");
       FORMAT_PATTERN = Pattern.compile("%(?:(\\d+)\\$)?([A-Za-z%]|$)");

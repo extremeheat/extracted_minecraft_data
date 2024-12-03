@@ -27,13 +27,5 @@ public interface GlyphProvider extends AutoCloseable {
       public void close() {
          this.provider.close();
       }
-
-      public GlyphProvider provider() {
-         return this.provider;
-      }
-
-      public FontOption.Filter filter() {
-         return this.filter;
-      }
    }
 }

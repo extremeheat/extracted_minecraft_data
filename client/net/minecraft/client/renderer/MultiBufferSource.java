@@ -7,7 +7,6 @@ import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMaps;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.SequencedMap;
 import javax.annotation.Nullable;
@@ -73,10 +72,8 @@ public interface MultiBufferSource {
 
       public void endBatch() {
          this.endLastBatch();
-         Iterator var1 = this.fixedBuffers.keySet().iterator();
 
-         while(var1.hasNext()) {
-            RenderType var2 = (RenderType)var1.next();
+         for(RenderType var2 : this.fixedBuffers.keySet()) {
             this.endBatch(var2);
          }
 

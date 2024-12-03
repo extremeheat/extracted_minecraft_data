@@ -5,6 +5,7 @@ import java.util.Locale;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Difficulty;
@@ -33,19 +34,13 @@ public interface WorldData {
    void setModdedInfo(String var1, boolean var2);
 
    default void fillCrashReportCategory(CrashReportCategory var1) {
-      var1.setDetail("Known server brands", () -> {
-         return String.join(", ", this.getKnownServerBrands());
-      });
-      var1.setDetail("Removed feature flags", () -> {
-         return String.join(", ", this.getRemovedFeatureFlags());
-      });
-      var1.setDetail("Level was modded", () -> {
-         return Boolean.toString(this.wasModded());
-      });
-      var1.setDetail("Level storage version", () -> {
+      var1.setDetail("Known server brands", (CrashReportDetail)(() -> String.join(", ", this.getKnownServerBrands())));
+      var1.setDetail("Removed feature flags", (CrashReportDetail)(() -> String.join(", ", this.getRemovedFeatureFlags())));
+      var1.setDetail("Level was modded", (CrashReportDetail)(() -> Boolean.toString(this.wasModded())));
+      var1.setDetail("Level storage version", (CrashReportDetail)(() -> {
          int var1 = this.getVersion();
          return String.format(Locale.ROOT, "0x%05X - %s", var1, this.getStorageVersionName(var1));
-      });
+      }));
    }
 
    default String getStorageVersionName(int var1) {

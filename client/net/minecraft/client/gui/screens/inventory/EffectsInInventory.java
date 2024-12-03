@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.inventory;
 
 import com.google.common.collect.Ordering;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
@@ -61,11 +60,12 @@ public class EffectsInInventory {
             int var10 = this.screen.topPos;
             MobEffectInstance var11 = null;
 
-            for(Iterator var12 = var9.iterator(); var12.hasNext(); var10 += var8) {
-               MobEffectInstance var13 = (MobEffectInstance)var12.next();
+            for(MobEffectInstance var13 : var9) {
                if (var3 >= var10 && var3 <= var10 + var8) {
                   var11 = var13;
                }
+
+               var10 += var8;
             }
 
             if (var11 != null) {
@@ -80,13 +80,14 @@ public class EffectsInInventory {
    private void renderBackgrounds(GuiGraphics var1, int var2, int var3, Iterable<MobEffectInstance> var4, boolean var5) {
       int var6 = this.screen.topPos;
 
-      for(Iterator var7 = var4.iterator(); var7.hasNext(); var6 += var3) {
-         MobEffectInstance var8 = (MobEffectInstance)var7.next();
+      for(MobEffectInstance var8 : var4) {
          if (var5) {
             var1.blitSprite(RenderType::guiTextured, (ResourceLocation)EFFECT_BACKGROUND_LARGE_SPRITE, var2, var6, 120, 32);
          } else {
             var1.blitSprite(RenderType::guiTextured, (ResourceLocation)EFFECT_BACKGROUND_SMALL_SPRITE, var2, var6, 32, 32);
          }
+
+         var6 += var3;
       }
 
    }
@@ -95,11 +96,11 @@ public class EffectsInInventory {
       MobEffectTextureManager var6 = this.minecraft.getMobEffectTextures();
       int var7 = this.screen.topPos;
 
-      for(Iterator var8 = var4.iterator(); var8.hasNext(); var7 += var3) {
-         MobEffectInstance var9 = (MobEffectInstance)var8.next();
+      for(MobEffectInstance var9 : var4) {
          Holder var10 = var9.getEffect();
          TextureAtlasSprite var11 = var6.get(var10);
          var1.blitSprite(RenderType::guiTextured, (TextureAtlasSprite)var11, var2 + (var5 ? 6 : 7), var7 + 7, 18, 18);
+         var7 += var3;
       }
 
    }
@@ -107,12 +108,12 @@ public class EffectsInInventory {
    private void renderLabels(GuiGraphics var1, int var2, int var3, Iterable<MobEffectInstance> var4) {
       int var5 = this.screen.topPos;
 
-      for(Iterator var6 = var4.iterator(); var6.hasNext(); var5 += var3) {
-         MobEffectInstance var7 = (MobEffectInstance)var6.next();
+      for(MobEffectInstance var7 : var4) {
          Component var8 = this.getEffectName(var7);
          var1.drawString(this.screen.getFont(), var8, var2 + 10 + 18, var5 + 6, 16777215);
          Component var9 = MobEffectUtil.formatDuration(var7, 1.0F, this.minecraft.level.tickRateManager().tickrate());
          var1.drawString(this.screen.getFont(), var9, var2 + 10 + 18, var5 + 6 + 10, 8355711);
+         var5 += var3;
       }
 
    }

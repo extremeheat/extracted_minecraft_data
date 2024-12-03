@@ -122,7 +122,7 @@ public class BigDripleafStemBlock extends HorizontalDirectionalBlock implements 
       }
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return new ItemStack(Blocks.BIG_DRIPLEAF);
    }
 

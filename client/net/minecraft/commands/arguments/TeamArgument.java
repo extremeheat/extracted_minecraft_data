@@ -19,9 +19,7 @@ import net.minecraft.world.scores.Scoreboard;
 
 public class TeamArgument implements ArgumentType<String> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "123");
-   private static final DynamicCommandExceptionType ERROR_TEAM_NOT_FOUND = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("team.notFound", var0);
-   });
+   private static final DynamicCommandExceptionType ERROR_TEAM_NOT_FOUND = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("team.notFound", var0));
 
    public TeamArgument() {
       super();
@@ -47,7 +45,7 @@ public class TeamArgument implements ArgumentType<String> {
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return var1.getSource() instanceof SharedSuggestionProvider ? SharedSuggestionProvider.suggest((Iterable)((SharedSuggestionProvider)var1.getSource()).getAllTeams(), var2) : Suggestions.empty();
+      return var1.getSource() instanceof SharedSuggestionProvider ? SharedSuggestionProvider.suggest(((SharedSuggestionProvider)var1.getSource()).getAllTeams(), var2) : Suggestions.empty();
    }
 
    public Collection<String> getExamples() {

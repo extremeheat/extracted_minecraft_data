@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -102,10 +101,8 @@ public class EndCityPieces {
          if (var1.generate(var0, var2, var3, var4, var7, var6)) {
             boolean var8 = false;
             int var9 = var6.nextInt();
-            Iterator var10 = var7.iterator();
 
-            while(var10.hasNext()) {
-               StructurePiece var11 = (StructurePiece)var10.next();
+            for(StructurePiece var11 : var7) {
                var11.setGenDepth(var9);
                StructurePiece var12 = StructurePiece.findCollisionPiece(var5, var11.getBoundingBox());
                if (var12 != null && var12.getGenDepth() != var3.getGenDepth()) {
@@ -145,10 +142,7 @@ public class EndCityPieces {
             }
 
             if (var9 != null) {
-               Iterator var14 = EndCityPieces.TOWER_BRIDGES.iterator();
-
-               while(var14.hasNext()) {
-                  Tuple var12 = (Tuple)var14.next();
+               for(Tuple var12 : EndCityPieces.TOWER_BRIDGES) {
                   if (var6.nextBoolean()) {
                      EndCityPiece var13 = EndCityPieces.addHelper(var5, EndCityPieces.addPiece(var1, var9, (BlockPos)var12.getB(), "bridge_end", var7.getRotated((Rotation)var12.getA()), true));
                      EndCityPieces.recursiveChildren(var1, EndCityPieces.TOWER_BRIDGE_GENERATOR, var2 + 1, var13, (BlockPos)null, var5, var6);
@@ -220,10 +214,8 @@ public class EndCityPieces {
 
             for(int var9 = 0; var9 < 2 && var6.nextInt(3) != 0; ++var9) {
                var7 = EndCityPieces.addHelper(var5, EndCityPieces.addPiece(var1, var7, new BlockPos(0, 8, 0), "fat_tower_middle", var8, true));
-               Iterator var10 = EndCityPieces.FAT_TOWER_BRIDGES.iterator();
 
-               while(var10.hasNext()) {
-                  Tuple var11 = (Tuple)var10.next();
+               for(Tuple var11 : EndCityPieces.FAT_TOWER_BRIDGES) {
                   if (var6.nextBoolean()) {
                      EndCityPiece var12 = EndCityPieces.addHelper(var5, EndCityPieces.addPiece(var1, var7, (BlockPos)var11.getB(), "bridge_end", var8.getRotated((Rotation)var11.getA()), true));
                      EndCityPieces.recursiveChildren(var1, EndCityPieces.TOWER_BRIDGE_GENERATOR, var2 + 1, var12, (BlockPos)null, var5, var6);
@@ -243,9 +235,7 @@ public class EndCityPieces {
       }
 
       public EndCityPiece(StructureTemplateManager var1, CompoundTag var2) {
-         super(StructurePieceType.END_CITY_PIECE, var2, var1, (var1x) -> {
-            return makeSettings(var2.getBoolean("OW"), Rotation.valueOf(var2.getString("Rot")));
-         });
+         super(StructurePieceType.END_CITY_PIECE, var2, var1, (var1x) -> makeSettings(var2.getBoolean("OW"), Rotation.valueOf(var2.getString("Rot"))));
       }
 
       private static StructurePlaceSettings makeSettings(boolean var0, Rotation var1) {
@@ -275,7 +265,7 @@ public class EndCityPieces {
             }
          } else if (var5.isInside(var2) && Level.isInSpawnableBounds(var2)) {
             if (var1.startsWith("Sentry")) {
-               Shulker var7 = (Shulker)EntityType.SHULKER.create(var3.getLevel(), EntitySpawnReason.STRUCTURE);
+               Shulker var7 = EntityType.SHULKER.create(var3.getLevel(), EntitySpawnReason.STRUCTURE);
                if (var7 != null) {
                   var7.setPos((double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5);
                   var3.addFreshEntity(var7);
@@ -290,7 +280,7 @@ public class EndCityPieces {
       }
    }
 
-   private interface SectionGenerator {
+   interface SectionGenerator {
       void init();
 
       boolean generate(StructureTemplateManager var1, int var2, EndCityPiece var3, BlockPos var4, List<StructurePiece> var5, RandomSource var6);

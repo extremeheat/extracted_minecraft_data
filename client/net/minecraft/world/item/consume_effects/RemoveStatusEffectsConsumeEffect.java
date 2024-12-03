@@ -2,7 +2,6 @@ package net.minecraft.world.item.consume_effects;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
@@ -16,13 +15,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public record RemoveStatusEffectsConsumeEffect(HolderSet<MobEffect> effects) implements ConsumeEffect {
-   public static final MapCodec<RemoveStatusEffectsConsumeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(RegistryCodecs.homogeneousList(Registries.MOB_EFFECT).fieldOf("effects").forGetter(RemoveStatusEffectsConsumeEffect::effects)).apply(var0, RemoveStatusEffectsConsumeEffect::new);
-   });
+   public static final MapCodec<RemoveStatusEffectsConsumeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.MOB_EFFECT).fieldOf("effects").forGetter(RemoveStatusEffectsConsumeEffect::effects)).apply(var0, RemoveStatusEffectsConsumeEffect::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, RemoveStatusEffectsConsumeEffect> STREAM_CODEC;
 
    public RemoveStatusEffectsConsumeEffect(Holder<MobEffect> var1) {
-      this((HolderSet)HolderSet.direct(var1));
+      this(HolderSet.direct(var1));
    }
 
    public RemoveStatusEffectsConsumeEffect(HolderSet<MobEffect> var1) {
@@ -36,20 +33,14 @@ public record RemoveStatusEffectsConsumeEffect(HolderSet<MobEffect> effects) imp
 
    public boolean apply(Level var1, ItemStack var2, LivingEntity var3) {
       boolean var4 = false;
-      Iterator var5 = this.effects.iterator();
 
-      while(var5.hasNext()) {
-         Holder var6 = (Holder)var5.next();
+      for(Holder var6 : this.effects) {
          if (var3.removeEffect(var6)) {
             var4 = true;
          }
       }
 
       return var4;
-   }
-
-   public HolderSet<MobEffect> effects() {
-      return this.effects;
    }
 
    static {

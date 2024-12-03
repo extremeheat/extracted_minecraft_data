@@ -40,19 +40,11 @@ public class TorchBlock extends BaseTorchBlock {
          if (var0 instanceof SimpleParticleType var1) {
             var10000 = DataResult.success(var1);
          } else {
-            var10000 = DataResult.error(() -> {
-               return "Not a SimpleParticleType: " + String.valueOf(var0);
-            });
+            var10000 = DataResult.error(() -> "Not a SimpleParticleType: " + String.valueOf(var0));
          }
 
          return var10000;
-      }, (var0) -> {
-         return var0;
-      }).fieldOf("particle_options");
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(PARTICLE_OPTIONS_FIELD.forGetter((var0x) -> {
-            return var0x.flameParticle;
-         }), propertiesCodec()).apply(var0, TorchBlock::new);
-      });
+      }, (var0) -> var0).fieldOf("particle_options");
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(PARTICLE_OPTIONS_FIELD.forGetter((var0x) -> var0x.flameParticle), propertiesCodec()).apply(var0, TorchBlock::new));
    }
 }

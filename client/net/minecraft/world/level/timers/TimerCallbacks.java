@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 
 public class TimerCallbacks<C> {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final TimerCallbacks<MinecraftServer> SERVER_CALLBACKS = (new TimerCallbacks()).register(new FunctionCallback.Serializer()).register(new FunctionTagCallback.Serializer());
+   public static final TimerCallbacks<MinecraftServer> SERVER_CALLBACKS = (new TimerCallbacks<MinecraftServer>()).register(new FunctionCallback.Serializer()).register(new FunctionTagCallback.Serializer());
    private final Map<ResourceLocation, TimerCallback.Serializer<C, ?>> idToSerializer = Maps.newHashMap();
    private final Map<Class<?>, TimerCallback.Serializer<C, ?>> classToSerializer = Maps.newHashMap();
 

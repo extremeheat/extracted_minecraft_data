@@ -82,9 +82,7 @@ public class ExecutionContext<T> implements AutoCloseable {
    }
 
    public Frame.FrameControl frameControlForDepth(int var1) {
-      return () -> {
-         this.discardAtDepthOrHigher(var1);
-      };
+      return () -> this.discardAtDepthOrHigher(var1);
    }
 
    public void runCommandQueue() {

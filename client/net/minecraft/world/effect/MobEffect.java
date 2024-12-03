@@ -2,7 +2,6 @@ package net.minecraft.world.effect;
 
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -67,9 +66,7 @@ public class MobEffect implements FeatureElement {
       this.requiredFeatures = FeatureFlags.VANILLA_SET;
       this.category = var1;
       this.color = var2;
-      this.particleFactory = (var1x) -> {
-         return var3;
-      };
+      this.particleFactory = (var1x) -> var3;
    }
 
    public int getBlendDurationTicks() {
@@ -92,9 +89,7 @@ public class MobEffect implements FeatureElement {
    }
 
    public void onEffectAdded(LivingEntity var1, int var2) {
-      this.soundOnAdded.ifPresent((var1x) -> {
-         var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), (SoundEvent)var1x, var1.getSoundSource(), 1.0F, 1.0F);
-      });
+      this.soundOnAdded.ifPresent((var1x) -> var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), var1x, var1.getSoundSource(), 1.0F, 1.0F));
    }
 
    public void onMobRemoved(ServerLevel var1, LivingEntity var2, int var3, Entity.RemovalReason var4) {
@@ -142,16 +137,11 @@ public class MobEffect implements FeatureElement {
    }
 
    public void createModifiers(int var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
-      this.attributeModifiers.forEach((var2x, var3) -> {
-         var2.accept(var2x, var3.create(var1));
-      });
+      this.attributeModifiers.forEach((var2x, var3) -> var2.accept(var2x, var3.create(var1)));
    }
 
    public void removeAttributeModifiers(AttributeMap var1) {
-      Iterator var2 = this.attributeModifiers.entrySet().iterator();
-
-      while(var2.hasNext()) {
-         Map.Entry var3 = (Map.Entry)var2.next();
+      for(Map.Entry var3 : this.attributeModifiers.entrySet()) {
          AttributeInstance var4 = var1.getInstance((Holder)var3.getKey());
          if (var4 != null) {
             var4.removeModifier(((AttributeTemplate)var3.getValue()).id());
@@ -161,10 +151,7 @@ public class MobEffect implements FeatureElement {
    }
 
    public void addAttributeModifiers(AttributeMap var1, int var2) {
-      Iterator var3 = this.attributeModifiers.entrySet().iterator();
-
-      while(var3.hasNext()) {
-         Map.Entry var4 = (Map.Entry)var3.next();
+      for(Map.Entry var4 : this.attributeModifiers.entrySet()) {
          AttributeInstance var5 = var1.getInstance((Holder)var4.getKey());
          if (var5 != null) {
             var5.removeModifier(((AttributeTemplate)var4.getValue()).id());
@@ -212,18 +199,6 @@ public class MobEffect implements FeatureElement {
 
       public AttributeModifier create(int var1) {
          return new AttributeModifier(this.id, this.amount * (double)(var1 + 1), this.operation);
-      }
-
-      public ResourceLocation id() {
-         return this.id;
-      }
-
-      public double amount() {
-         return this.amount;
-      }
-
-      public AttributeModifier.Operation operation() {
-         return this.operation;
       }
    }
 }

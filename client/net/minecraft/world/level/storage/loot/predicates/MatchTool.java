@@ -11,9 +11,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public record MatchTool(Optional<ItemPredicate> predicate) implements LootItemCondition {
-   public static final MapCodec<MatchTool> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ItemPredicate.CODEC.optionalFieldOf("predicate").forGetter(MatchTool::predicate)).apply(var0, MatchTool::new);
-   });
+   public static final MapCodec<MatchTool> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ItemPredicate.CODEC.optionalFieldOf("predicate").forGetter(MatchTool::predicate)).apply(var0, MatchTool::new));
 
    public MatchTool(Optional<ItemPredicate> var1) {
       super();
@@ -34,13 +32,7 @@ public record MatchTool(Optional<ItemPredicate> predicate) implements LootItemCo
    }
 
    public static LootItemCondition.Builder toolMatches(ItemPredicate.Builder var0) {
-      return () -> {
-         return new MatchTool(Optional.of(var0.build()));
-      };
-   }
-
-   public Optional<ItemPredicate> predicate() {
-      return this.predicate;
+      return () -> new MatchTool(Optional.of(var0.build()));
    }
 
    // $FF: synthetic method

@@ -18,13 +18,7 @@ public class TeamDisplayNameFix extends DataFix {
       if (!Objects.equals(var1, this.getInputSchema().getType(References.TEAM))) {
          throw new IllegalStateException("Team type is not what was expected.");
       } else {
-         return this.fixTypeEverywhere("TeamDisplayNameFix", var1, (var0) -> {
-            return (var0x) -> {
-               return var0x.mapSecond((var0) -> {
-                  return var0.update("DisplayName", ComponentDataFixUtils::wrapLiteralStringAsComponent);
-               });
-            };
-         });
+         return this.fixTypeEverywhere("TeamDisplayNameFix", var1, (var0) -> (var0x) -> var0x.mapSecond((var0) -> var0.update("DisplayName", ComponentDataFixUtils::wrapLiteralStringAsComponent)));
       }
    }
 }

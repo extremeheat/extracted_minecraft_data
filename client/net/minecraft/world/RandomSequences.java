@@ -3,10 +3,8 @@ package net.minecraft.world;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -28,11 +26,7 @@ public class RandomSequences extends SavedData {
    private final Map<ResourceLocation, RandomSequence> sequences = new Object2ObjectOpenHashMap();
 
    public static SavedData.Factory<RandomSequences> factory(long var0) {
-      return new SavedData.Factory(() -> {
-         return new RandomSequences(var0);
-      }, (var2, var3) -> {
-         return load(var0, var2);
-      }, DataFixTypes.SAVED_DATA_RANDOM_SEQUENCES);
+      return new SavedData.Factory<RandomSequences>(() -> new RandomSequences(var0), (var2, var3) -> load(var0, var2), DataFixTypes.SAVED_DATA_RANDOM_SEQUENCES);
    }
 
    public RandomSequences(long var1) {
@@ -69,9 +63,7 @@ public class RandomSequences extends SavedData {
       var1.putBoolean("include_world_seed", this.includeWorldSeed);
       var1.putBoolean("include_sequence_id", this.includeSequenceId);
       CompoundTag var3 = new CompoundTag();
-      this.sequences.forEach((var1x, var2x) -> {
-         var3.put(var1x.toString(), (Tag)RandomSequence.CODEC.encodeStart(NbtOps.INSTANCE, var2x).result().orElseThrow());
-      });
+      this.sequences.forEach((var1x, var2x) -> var3.put(var1x.toString(), (Tag)RandomSequence.CODEC.encodeStart(NbtOps.INSTANCE, var2x).result().orElseThrow()));
       var1.put("sequences", var3);
       return var1;
    }
@@ -84,12 +76,8 @@ public class RandomSequences extends SavedData {
       RandomSequences var3 = new RandomSequences(var0);
       var3.setSeedDefaults(var2.getInt("salt"), getBooleanWithDefault(var2, "include_world_seed", true), getBooleanWithDefault(var2, "include_sequence_id", true));
       CompoundTag var4 = var2.getCompound("sequences");
-      Set var5 = var4.getAllKeys();
-      Iterator var6 = var5.iterator();
 
-      while(var6.hasNext()) {
-         String var7 = (String)var6.next();
-
+      for(String var7 : var4.getAllKeys()) {
          try {
             RandomSequence var8 = (RandomSequence)((Pair)RandomSequence.CODEC.decode(NbtOps.INSTANCE, var4.get(var7)).result().get()).getFirst();
             var3.sequences.put(ResourceLocation.parse(var7), var8);
@@ -115,7 +103,7 @@ public class RandomSequences extends SavedData {
       this.sequences.put(var1, this.createSequence(var1, var2, var3, var4));
    }
 
-   private class DirtyMarkingRandomSource implements RandomSource {
+   class DirtyMarkingRandomSource implements RandomSource {
       private final RandomSource random;
 
       DirtyMarkingRandomSource(final RandomSource var2) {

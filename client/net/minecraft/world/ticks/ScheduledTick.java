@@ -60,30 +60,10 @@ public record ScheduledTick<T>(T type, BlockPos pos, long triggerTick, TickPrior
    }
 
    public static <T> ScheduledTick<T> probe(T var0, BlockPos var1) {
-      return new ScheduledTick(var0, var1, 0L, TickPriority.NORMAL, 0L);
+      return new ScheduledTick<T>(var0, var1, 0L, TickPriority.NORMAL, 0L);
    }
 
    public SavedTick<T> toSavedTick(long var1) {
-      return new SavedTick(this.type, this.pos, (int)(this.triggerTick - var1), this.priority);
-   }
-
-   public T type() {
-      return this.type;
-   }
-
-   public BlockPos pos() {
-      return this.pos;
-   }
-
-   public long triggerTick() {
-      return this.triggerTick;
-   }
-
-   public TickPriority priority() {
-      return this.priority;
-   }
-
-   public long subTickOrder() {
-      return this.subTickOrder;
+      return new SavedTick<T>(this.type, this.pos, (int)(this.triggerTick - var1), this.priority);
    }
 }

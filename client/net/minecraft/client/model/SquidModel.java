@@ -17,9 +17,7 @@ public class SquidModel extends EntityModel<SquidRenderState> {
 
    public SquidModel(ModelPart var1) {
       super(var1);
-      Arrays.setAll(this.tentacles, (var1x) -> {
-         return var1.getChild(createTentacleName(var1x));
-      });
+      Arrays.setAll(this.tentacles, (var1x) -> var1.getChild(createTentacleName(var1x)));
    }
 
    private static String createTentacleName(int var0) {
@@ -50,11 +48,8 @@ public class SquidModel extends EntityModel<SquidRenderState> {
 
    public void setupAnim(SquidRenderState var1) {
       super.setupAnim(var1);
-      ModelPart[] var2 = this.tentacles;
-      int var3 = var2.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         ModelPart var5 = var2[var4];
+      for(ModelPart var5 : this.tentacles) {
          var5.xRot = var1.tentacleAngle;
       }
 

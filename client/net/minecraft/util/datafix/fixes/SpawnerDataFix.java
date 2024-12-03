@@ -23,13 +23,7 @@ public class SpawnerDataFix extends DataFix {
       Type var4 = var2.findField("SpawnData").type();
       OpticFinder var5 = var1.findField("SpawnPotentials");
       Type var6 = var2.findField("SpawnPotentials").type();
-      return this.fixTypeEverywhereTyped("Fix mob spawner data structure", var1, var2, (var5x) -> {
-         return var5x.updateTyped(var3, var4, (var2) -> {
-            return this.wrapEntityToSpawnData(var4, var2);
-         }).updateTyped(var5, var6, (var2) -> {
-            return this.wrapSpawnPotentialsToWeightedEntries(var6, var2);
-         });
-      });
+      return this.fixTypeEverywhereTyped("Fix mob spawner data structure", var1, var2, (var5x) -> var5x.updateTyped(var3, var4, (var2) -> this.wrapEntityToSpawnData(var4, var2)).updateTyped(var5, var6, (var2) -> this.wrapSpawnPotentialsToWeightedEntries(var6, var2)));
    }
 
    private <T> Typed<T> wrapEntityToSpawnData(Type<T> var1, Typed<?> var2) {

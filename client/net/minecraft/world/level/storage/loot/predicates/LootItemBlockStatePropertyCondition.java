@@ -15,9 +15,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public record LootItemBlockStatePropertyCondition(Holder<Block> block, Optional<StatePropertiesPredicate> properties) implements LootItemCondition {
-   public static final MapCodec<LootItemBlockStatePropertyCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BuiltInRegistries.BLOCK.holderByNameCodec().fieldOf("block").forGetter(LootItemBlockStatePropertyCondition::block), StatePropertiesPredicate.CODEC.optionalFieldOf("properties").forGetter(LootItemBlockStatePropertyCondition::properties)).apply(var0, LootItemBlockStatePropertyCondition::new);
-   }).validate(LootItemBlockStatePropertyCondition::validate);
+   public static final MapCodec<LootItemBlockStatePropertyCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.holderByNameCodec().fieldOf("block").forGetter(LootItemBlockStatePropertyCondition::block), StatePropertiesPredicate.CODEC.optionalFieldOf("properties").forGetter(LootItemBlockStatePropertyCondition::properties)).apply(var0, LootItemBlockStatePropertyCondition::new)).validate(LootItemBlockStatePropertyCondition::validate);
 
    public LootItemBlockStatePropertyCondition(Holder<Block> var1, Optional<StatePropertiesPredicate> var2) {
       super();
@@ -26,14 +24,10 @@ public record LootItemBlockStatePropertyCondition(Holder<Block> block, Optional<
    }
 
    private static DataResult<LootItemBlockStatePropertyCondition> validate(LootItemBlockStatePropertyCondition var0) {
-      return (DataResult)var0.properties().flatMap((var1) -> {
-         return var1.checkState(((Block)var0.block().value()).getStateDefinition());
-      }).map((var1) -> {
-         return DataResult.error(() -> {
+      return (DataResult)var0.properties().flatMap((var1) -> var1.checkState(((Block)var0.block().value()).getStateDefinition())).map((var1) -> DataResult.error(() -> {
             String var10000 = String.valueOf(var0.block());
             return "Block " + var10000 + " has no property" + var1;
-         });
-      }).orElse(DataResult.success(var0));
+         })).orElse(DataResult.success(var0));
    }
 
    public LootItemConditionType getType() {
@@ -51,14 +45,6 @@ public record LootItemBlockStatePropertyCondition(Holder<Block> block, Optional<
 
    public static Builder hasBlockStateProperties(Block var0) {
       return new Builder(var0);
-   }
-
-   public Holder<Block> block() {
-      return this.block;
-   }
-
-   public Optional<StatePropertiesPredicate> properties() {
-      return this.properties;
    }
 
    // $FF: synthetic method

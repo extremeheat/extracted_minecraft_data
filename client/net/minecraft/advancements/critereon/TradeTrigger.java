@@ -21,15 +21,11 @@ public class TradeTrigger extends SimpleCriterionTrigger<TriggerInstance> {
 
    public void trigger(ServerPlayer var1, AbstractVillager var2, ItemStack var3) {
       LootContext var4 = EntityPredicate.createContext(var1, var2);
-      this.trigger(var1, (var2x) -> {
-         return var2x.matches(var4, var3);
-      });
+      this.trigger(var1, (var2x) -> var2x.matches(var4, var3));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> villager, Optional<ItemPredicate> item) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("villager").forGetter(TriggerInstance::villager), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("villager").forGetter(TriggerInstance::villager), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2, Optional<ItemPredicate> var3) {
          super();
@@ -57,18 +53,6 @@ public class TradeTrigger extends SimpleCriterionTrigger<TriggerInstance> {
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
          var1.validateEntity(this.villager, ".villager");
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<ContextAwarePredicate> villager() {
-         return this.villager;
-      }
-
-      public Optional<ItemPredicate> item() {
-         return this.item;
       }
    }
 }

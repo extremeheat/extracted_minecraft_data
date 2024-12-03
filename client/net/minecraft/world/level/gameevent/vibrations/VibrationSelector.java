@@ -6,20 +6,12 @@ import java.util.Optional;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class VibrationSelector {
-   public static final Codec<VibrationSelector> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter((var0x) -> {
-         return var0x.currentVibrationData.map(Pair::getLeft);
-      }), Codec.LONG.fieldOf("tick").forGetter((var0x) -> {
-         return (Long)var0x.currentVibrationData.map(Pair::getRight).orElse(-1L);
-      })).apply(var0, VibrationSelector::new);
-   });
+   public static final Codec<VibrationSelector> CODEC = RecordCodecBuilder.create((var0) -> var0.group(VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter((var0x) -> var0x.currentVibrationData.map(Pair::getLeft)), Codec.LONG.fieldOf("tick").forGetter((var0x) -> (Long)var0x.currentVibrationData.map(Pair::getRight).orElse(-1L))).apply(var0, VibrationSelector::new));
    private Optional<Pair<VibrationInfo, Long>> currentVibrationData;
 
    public VibrationSelector(Optional<VibrationInfo> var1, long var2) {
       super();
-      this.currentVibrationData = var1.map((var2x) -> {
-         return Pair.of(var2x, var2);
-      });
+      this.currentVibrationData = var1.map((var2x) -> Pair.of(var2x, var2));
    }
 
    public VibrationSelector() {

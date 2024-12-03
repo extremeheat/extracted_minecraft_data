@@ -1,7 +1,5 @@
 package net.minecraft.world.item;
 
-import java.util.Iterator;
-import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -46,11 +44,7 @@ public class MinecartItem extends Item {
             return InteractionResult.FAIL;
          } else {
             if (AbstractMinecart.useExperimentalMovement(var2)) {
-               List var11 = var2.getEntities((Entity)null, var10.getBoundingBox());
-               Iterator var12 = var11.iterator();
-
-               while(var12.hasNext()) {
-                  Entity var13 = (Entity)var12.next();
+               for(Entity var13 : var2.getEntities((Entity)null, var10.getBoundingBox())) {
                   if (var13 instanceof AbstractMinecart) {
                      return InteractionResult.FAIL;
                   }

@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.vehicle;
 
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.HolderLookup;
@@ -84,7 +83,7 @@ public interface ContainerEntity extends Container, MenuProvider {
 
    default void chestVehicleDestroyed(DamageSource var1, ServerLevel var2, Entity var3) {
       if (var2.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-         Containers.dropContents(var2, (Entity)var3, (Container)this);
+         Containers.dropContents(var2, (Entity)var3, this);
          Entity var4 = var1.getDirectEntity();
          if (var4 != null && var4.getType() == EntityType.PLAYER) {
             PiglinAi.angerNearbyPiglins(var2, (Player)var4, true);
@@ -123,18 +122,13 @@ public interface ContainerEntity extends Container, MenuProvider {
    }
 
    default boolean isChestVehicleEmpty() {
-      Iterator var1 = this.getItemStacks().iterator();
-
-      ItemStack var2;
-      do {
-         if (!var1.hasNext()) {
-            return true;
+      for(ItemStack var2 : this.getItemStacks()) {
+         if (!var2.isEmpty()) {
+            return false;
          }
+      }
 
-         var2 = (ItemStack)var1.next();
-      } while(var2.isEmpty());
-
-      return false;
+      return true;
    }
 
    default ItemStack removeChestVehicleItemNoUpdate(int var1) {

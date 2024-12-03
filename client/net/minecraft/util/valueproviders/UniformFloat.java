@@ -8,17 +8,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class UniformFloat extends FloatProvider {
-   public static final MapCodec<UniformFloat> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.FLOAT.fieldOf("min_inclusive").forGetter((var0x) -> {
-         return var0x.minInclusive;
-      }), Codec.FLOAT.fieldOf("max_exclusive").forGetter((var0x) -> {
-         return var0x.maxExclusive;
-      })).apply(var0, UniformFloat::new);
-   }).validate((var0) -> {
-      return var0.maxExclusive <= var0.minInclusive ? DataResult.error(() -> {
-         return "Max must be larger than min, min_inclusive: " + var0.minInclusive + ", max_exclusive: " + var0.maxExclusive;
-      }) : DataResult.success(var0);
-   });
+   public static final MapCodec<UniformFloat> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("min_inclusive").forGetter((var0x) -> var0x.minInclusive), Codec.FLOAT.fieldOf("max_exclusive").forGetter((var0x) -> var0x.maxExclusive)).apply(var0, UniformFloat::new)).validate((var0) -> var0.maxExclusive <= var0.minInclusive ? DataResult.error(() -> "Max must be larger than min, min_inclusive: " + var0.minInclusive + ", max_exclusive: " + var0.maxExclusive) : DataResult.success(var0));
    private final float minInclusive;
    private final float maxExclusive;
 

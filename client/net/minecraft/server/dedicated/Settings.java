@@ -36,16 +36,15 @@ public abstract class Settings<T extends Settings<T>> {
 
    public static Properties loadFromFile(Path var0) {
       try {
-         Properties var3;
-         Properties var4;
          try {
             InputStream var1 = Files.newInputStream(var0);
 
+            Properties var13;
             try {
                CharsetDecoder var11 = StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT).onUnmappableCharacter(CodingErrorAction.REPORT);
-               var3 = new Properties();
-               var3.load(new InputStreamReader(var1, var11));
-               var4 = var3;
+               Properties var12 = new Properties();
+               var12.load(new InputStreamReader(var1, var11));
+               var13 = var12;
             } catch (Throwable var8) {
                if (var1 != null) {
                   try {
@@ -62,13 +61,14 @@ public abstract class Settings<T extends Settings<T>> {
                var1.close();
             }
 
-            return var4;
+            return var13;
          } catch (CharacterCodingException var9) {
             LOGGER.info("Failed to load properties as UTF-8 from file {}, trying ISO_8859_1", var0);
             BufferedReader var2 = Files.newBufferedReader(var0, StandardCharsets.ISO_8859_1);
 
+            Properties var4;
             try {
-               var3 = new Properties();
+               Properties var3 = new Properties();
                var3.load(var2);
                var4 = var3;
             } catch (Throwable var7) {
@@ -154,7 +154,7 @@ public abstract class Settings<T extends Settings<T>> {
          return null;
       } else {
          this.properties.remove(var1);
-         return var2.apply(var3);
+         return (V)var2.apply(var3);
       }
    }
 
@@ -162,29 +162,29 @@ public abstract class Settings<T extends Settings<T>> {
       String var5 = this.getStringRaw(var1);
       Object var6 = MoreObjects.firstNonNull(var5 != null ? var2.apply(var5) : null, var4);
       this.properties.put(var1, var3.apply(var6));
-      return var6;
+      return (V)var6;
    }
 
    protected <V> Settings<T>.MutableValue<V> getMutable(String var1, Function<String, V> var2, Function<V, String> var3, V var4) {
       String var5 = this.getStringRaw(var1);
       Object var6 = MoreObjects.firstNonNull(var5 != null ? var2.apply(var5) : null, var4);
       this.properties.put(var1, var3.apply(var6));
-      return new MutableValue(var1, var6, var3);
+      return new MutableValue<V>(var1, var6, var3);
    }
 
    protected <V> V get(String var1, Function<String, V> var2, UnaryOperator<V> var3, Function<V, String> var4, V var5) {
-      return this.get(var1, (var2x) -> {
+      return (V)this.get(var1, (var2x) -> {
          Object var3x = var2.apply(var2x);
          return var3x != null ? var3.apply(var3x) : null;
       }, var4, var5);
    }
 
    protected <V> V get(String var1, Function<String, V> var2, V var3) {
-      return this.get(var1, var2, Objects::toString, var3);
+      return (V)this.get(var1, var2, Objects::toString, var3);
    }
 
    protected <V> Settings<T>.MutableValue<V> getMutable(String var1, Function<String, V> var2, V var3) {
-      return this.getMutable(var1, var2, Objects::toString, var3);
+      return this.<V>getMutable(var1, var2, Objects::toString, var3);
    }
 
    protected String get(String var1, String var2) {
@@ -201,7 +201,7 @@ public abstract class Settings<T extends Settings<T>> {
    }
 
    protected Settings<T>.MutableValue<Integer> getMutable(String var1, int var2) {
-      return this.getMutable(var1, wrapNumberDeserializer(Integer::parseInt), var2);
+      return this.<Integer>getMutable(var1, wrapNumberDeserializer(Integer::parseInt), var2);
    }
 
    protected int get(String var1, UnaryOperator<Integer> var2, int var3) {
@@ -217,7 +217,7 @@ public abstract class Settings<T extends Settings<T>> {
    }
 
    protected Settings<T>.MutableValue<Boolean> getMutable(String var1, boolean var2) {
-      return this.getMutable(var1, Boolean::valueOf, var2);
+      return this.<Boolean>getMutable(var1, Boolean::valueOf, var2);
    }
 
    @Nullable
@@ -252,7 +252,7 @@ public abstract class Settings<T extends Settings<T>> {
       public T update(RegistryAccess var1, V var2) {
          Properties var3 = Settings.this.cloneProperties();
          var3.put(this.key, this.serializer.apply(var2));
-         return Settings.this.reload(var1, var3);
+         return (T)Settings.this.reload(var1, var3);
       }
    }
 }

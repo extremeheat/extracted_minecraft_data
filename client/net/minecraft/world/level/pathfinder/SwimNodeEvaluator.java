@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.EnumMap;
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -45,11 +44,8 @@ public class SwimNodeEvaluator extends NodeEvaluator {
    public int getNeighbors(Node[] var1, Node var2) {
       int var3 = 0;
       EnumMap var4 = Maps.newEnumMap(Direction.class);
-      Direction[] var5 = Direction.values();
-      int var6 = var5.length;
 
-      for(int var7 = 0; var7 < var6; ++var7) {
-         Direction var8 = var5[var7];
+      for(Direction var8 : Direction.values()) {
          Node var9 = this.findAcceptedNode(var2.x + var8.getStepX(), var2.y + var8.getStepY(), var2.z + var8.getStepZ());
          var4.put(var8, var9);
          if (this.isNodeValid(var9)) {
@@ -57,10 +53,7 @@ public class SwimNodeEvaluator extends NodeEvaluator {
          }
       }
 
-      Iterator var10 = Direction.Plane.HORIZONTAL.iterator();
-
-      while(var10.hasNext()) {
-         Direction var11 = (Direction)var10.next();
+      for(Direction var11 : Direction.Plane.HORIZONTAL) {
          Direction var12 = var11.getClockWise();
          if (hasMalus((Node)var4.get(var11)) && hasMalus((Node)var4.get(var12))) {
             Node var13 = this.findAcceptedNode(var2.x + var11.getStepX() + var12.getStepX(), var2.y, var2.z + var11.getStepZ() + var12.getStepZ());
@@ -101,9 +94,7 @@ public class SwimNodeEvaluator extends NodeEvaluator {
    }
 
    protected PathType getCachedBlockType(int var1, int var2, int var3) {
-      return (PathType)this.pathTypesByPosCache.computeIfAbsent(BlockPos.asLong(var1, var2, var3), (var4) -> {
-         return this.getPathType(this.currentContext, var1, var2, var3);
-      });
+      return (PathType)this.pathTypesByPosCache.computeIfAbsent(BlockPos.asLong(var1, var2, var3), (var4) -> this.getPathType(this.currentContext, var1, var2, var3));
    }
 
    public PathType getPathType(PathfindingContext var1, int var2, int var3, int var4) {

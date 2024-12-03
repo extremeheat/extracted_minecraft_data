@@ -26,6 +26,6 @@ public record ClearAllStatusEffectsConsumeEffect() implements ConsumeEffect {
 
    static {
       CODEC = MapCodec.unit(INSTANCE);
-      STREAM_CODEC = StreamCodec.unit(INSTANCE);
+      STREAM_CODEC = StreamCodec.<RegistryFriendlyByteBuf, ClearAllStatusEffectsConsumeEffect>unit(INSTANCE);
    }
 }

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -112,8 +111,7 @@ public class Blender {
          MutableDouble var7 = new MutableDouble(0.0);
          MutableDouble var8 = new MutableDouble(0.0);
          MutableDouble var9 = new MutableDouble(1.0 / 0.0);
-         this.heightAndBiomeBlendingData.forEach((var5x, var6) -> {
-            var6.iterateHeights(QuartPos.fromSection(ChunkPos.getX(var5x)), QuartPos.fromSection(ChunkPos.getZ(var5x)), (var5, var6x, var7x) -> {
+         this.heightAndBiomeBlendingData.forEach((var5x, var6) -> var6.iterateHeights(QuartPos.fromSection(ChunkPos.getX(var5x)), QuartPos.fromSection(ChunkPos.getZ(var5x)), (var5, var6x, var7x) -> {
                double var9x = (double)Mth.length((float)(var3 - var5), (float)(var4 - var6x));
                if (!(var9x > (double)HEIGHT_BLENDING_RANGE_CELLS)) {
                   if (var9x < var9.doubleValue()) {
@@ -124,8 +122,7 @@ public class Blender {
                   var8.add(var7x * var11);
                   var7.add(var11);
                }
-            });
-         });
+            }));
          if (var9.doubleValue() == 1.0 / 0.0) {
             return new BlendingOutput(1.0, 0.0);
          } else {
@@ -155,8 +152,7 @@ public class Blender {
          MutableDouble var9 = new MutableDouble(0.0);
          MutableDouble var10 = new MutableDouble(0.0);
          MutableDouble var11 = new MutableDouble(1.0 / 0.0);
-         this.densityBlendingData.forEach((var6x, var7x) -> {
-            var7x.iterateDensities(QuartPos.fromSection(ChunkPos.getX(var6x)), QuartPos.fromSection(ChunkPos.getZ(var6x)), var5 - 1, var5 + 1, (var6xx, var7, var8, var9x) -> {
+         this.densityBlendingData.forEach((var6x, var7x) -> var7x.iterateDensities(QuartPos.fromSection(ChunkPos.getX(var6x)), QuartPos.fromSection(ChunkPos.getZ(var6x)), var5 - 1, var5 + 1, (var6xx, var7, var8, var9x) -> {
                double var11x = Mth.length((double)(var4 - var6xx), (double)((var5 - var7) * 2), (double)(var6 - var8));
                if (!(var11x > 2.0)) {
                   if (var11x < var11.doubleValue()) {
@@ -167,8 +163,7 @@ public class Blender {
                   var10.add(var9x * var13);
                   var9.add(var13);
                }
-            });
-         });
+            }));
          if (var11.doubleValue() == 1.0 / 0.0) {
             return var2;
          } else {
@@ -220,8 +215,7 @@ public class Blender {
    private Holder<Biome> blendBiome(int var1, int var2, int var3) {
       MutableDouble var4 = new MutableDouble(1.0 / 0.0);
       MutableObject var5 = new MutableObject();
-      this.heightAndBiomeBlendingData.forEach((var5x, var6x) -> {
-         var6x.iterateBiomes(QuartPos.fromSection(ChunkPos.getX(var5x)), var2, QuartPos.fromSection(ChunkPos.getZ(var5x)), (var4x, var5xx, var6) -> {
+      this.heightAndBiomeBlendingData.forEach((var5x, var6x) -> var6x.iterateBiomes(QuartPos.fromSection(ChunkPos.getX(var5x)), var2, QuartPos.fromSection(ChunkPos.getZ(var5x)), (var4x, var5xx, var6) -> {
             double var7 = (double)Mth.length((float)(var1 - var4x), (float)(var3 - var5xx));
             if (!(var7 > (double)HEIGHT_BLENDING_RANGE_CELLS)) {
                if (var7 < var4.doubleValue()) {
@@ -230,8 +224,7 @@ public class Blender {
                }
 
             }
-         });
-      });
+         }));
       if (var4.doubleValue() == 1.0 / 0.0) {
          return null;
       } else {
@@ -261,33 +254,25 @@ public class Blender {
             }
          }
 
-         Iterator var19 = Direction.Plane.HORIZONTAL.iterator();
+         for(Direction var20 : Direction.Plane.HORIZONTAL) {
+            if (var0.getChunk(var2.x + var20.getStepX(), var2.z + var20.getStepZ()).isOldNoiseGeneration() != var3) {
+               int var11 = var20 == Direction.EAST ? 15 : 0;
+               int var12 = var20 == Direction.WEST ? 0 : 15;
+               int var13 = var20 == Direction.SOUTH ? 15 : 0;
+               int var14 = var20 == Direction.NORTH ? 0 : 15;
 
-         while(true) {
-            Direction var20;
-            do {
-               if (!var19.hasNext()) {
-                  return;
-               }
+               for(int var15 = var11; var15 <= var12; ++var15) {
+                  for(int var16 = var13; var16 <= var14; ++var16) {
+                     int var17 = Math.min(var8, var1.getHeight(Heightmap.Types.MOTION_BLOCKING, var15, var16)) + 1;
 
-               var20 = (Direction)var19.next();
-            } while(var0.getChunk(var2.x + var20.getStepX(), var2.z + var20.getStepZ()).isOldNoiseGeneration() == var3);
-
-            int var11 = var20 == Direction.EAST ? 15 : 0;
-            int var12 = var20 == Direction.WEST ? 0 : 15;
-            int var13 = var20 == Direction.SOUTH ? 15 : 0;
-            int var14 = var20 == Direction.NORTH ? 0 : 15;
-
-            for(int var15 = var11; var15 <= var12; ++var15) {
-               for(int var16 = var13; var16 <= var14; ++var16) {
-                  int var17 = Math.min(var8, var1.getHeight(Heightmap.Types.MOTION_BLOCKING, var15, var16)) + 1;
-
-                  for(int var18 = var7; var18 < var17; ++var18) {
-                     generateBorderTick(var1, var4.setWithOffset(var5, var15, var18, var16));
+                     for(int var18 = var7; var18 < var17; ++var18) {
+                        generateBorderTick(var1, var4.setWithOffset(var5, var15, var18, var16));
+                     }
                   }
                }
             }
          }
+
       }
    }
 
@@ -307,11 +292,8 @@ public class Blender {
    public static void addAroundOldChunksCarvingMaskFilter(WorldGenLevel var0, ProtoChunk var1) {
       ChunkPos var2 = var1.getPos();
       ImmutableMap.Builder var3 = ImmutableMap.builder();
-      Direction8[] var4 = Direction8.values();
-      int var5 = var4.length;
 
-      for(int var6 = 0; var6 < var5; ++var6) {
-         Direction8 var7 = var4[var6];
+      for(Direction8 var7 : Direction8.values()) {
          int var8 = var2.x + var7.getStepX();
          int var9 = var2.z + var7.getStepZ();
          BlendingData var10 = var0.getChunk(var8, var9).getBlendingData();
@@ -339,15 +321,11 @@ public class Blender {
          var2.add(makeOffsetOldChunkDistanceGetter((Direction8)null, var0));
       }
 
-      var1.forEach((var1x, var2x) -> {
-         var2.add(makeOffsetOldChunkDistanceGetter(var1x, var2x));
-      });
+      var1.forEach((var1x, var2x) -> var2.add(makeOffsetOldChunkDistanceGetter(var1x, var2x)));
       return (var1x, var3, var5) -> {
          double var7 = 1.0 / 0.0;
-         Iterator var9 = var2.iterator();
 
-         while(var9.hasNext()) {
-            DistanceGetter var10 = (DistanceGetter)var9.next();
+         for(DistanceGetter var10 : var2) {
             double var11 = var10.getDistance(var1x, var3, var5);
             if (var11 < var7) {
                var7 = var11;
@@ -361,19 +339,16 @@ public class Blender {
    private static DistanceGetter makeOffsetOldChunkDistanceGetter(@Nullable Direction8 var0, BlendingData var1) {
       double var2 = 0.0;
       double var4 = 0.0;
-      Direction var7;
       if (var0 != null) {
-         for(Iterator var6 = var0.getDirections().iterator(); var6.hasNext(); var4 += (double)(var7.getStepZ() * 16)) {
-            var7 = (Direction)var6.next();
+         for(Direction var7 : var0.getDirections()) {
             var2 += (double)(var7.getStepX() * 16);
+            var4 += (double)(var7.getStepZ() * 16);
          }
       }
 
       double var10 = (double)var1.getAreaWithOldGeneration().getHeight() / 2.0;
       double var12 = (double)var1.getAreaWithOldGeneration().getMinY() + var10;
-      return (var8, var10x, var12x) -> {
-         return distanceToCube(var8 - 8.0 - var2, var10x - var12, var12x - 8.0 - var4, 8.0, var10, 8.0);
-      };
+      return (var8, var10x, var12x) -> distanceToCube(var8 - 8.0 - var2, var10x - var12, var12x - 8.0 - var4, 8.0, var10, 8.0);
    }
 
    private static double distanceToCube(double var0, double var2, double var4, double var6, double var8, double var10) {
@@ -390,24 +365,16 @@ public class Blender {
       DENSITY_BLENDING_RANGE_CHUNKS = QuartPos.toSection(5);
    }
 
-   interface CellValueGetter {
-      double get(BlendingData var1, int var2, int var3, int var4);
-   }
-
    public static record BlendingOutput(double alpha, double blendingOffset) {
       public BlendingOutput(double var1, double var3) {
          super();
          this.alpha = var1;
          this.blendingOffset = var3;
       }
+   }
 
-      public double alpha() {
-         return this.alpha;
-      }
-
-      public double blendingOffset() {
-         return this.blendingOffset;
-      }
+   interface CellValueGetter {
+      double get(BlendingData var1, int var2, int var3, int var4);
    }
 
    public interface DistanceGetter {

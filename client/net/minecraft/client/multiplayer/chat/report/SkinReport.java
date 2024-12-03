@@ -58,10 +58,10 @@ public class SkinReport extends Report {
 
       @Nullable
       public Report.CannotBuildReason checkBuildable() {
-         if (((SkinReport)this.report).reason == null) {
+         if ((this.report).reason == null) {
             return Report.CannotBuildReason.NO_REASON;
          } else {
-            return ((SkinReport)this.report).comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : super.checkBuildable();
+            return (this.report).comments.length() > this.limits.maxOpinionCommentsLength() ? Report.CannotBuildReason.COMMENT_TOO_LONG : super.checkBuildable();
          }
       }
 
@@ -70,12 +70,12 @@ public class SkinReport extends Report {
          if (var2 != null) {
             return Either.right(var2);
          } else {
-            String var3 = ((ReportReason)Objects.requireNonNull(((SkinReport)this.report).reason)).backendName();
-            ReportedEntity var4 = new ReportedEntity(((SkinReport)this.report).reportedProfileId);
-            PlayerSkin var5 = (PlayerSkin)((SkinReport)this.report).skinGetter.get();
+            String var3 = ((ReportReason)Objects.requireNonNull((this.report).reason)).backendName();
+            ReportedEntity var4 = new ReportedEntity((this.report).reportedProfileId);
+            PlayerSkin var5 = (PlayerSkin)(this.report).skinGetter.get();
             String var6 = var5.textureUrl();
-            AbuseReport var7 = AbuseReport.skin(((SkinReport)this.report).comments, var3, var6, var4, ((SkinReport)this.report).createdAt);
-            return Either.left(new Report.Result(((SkinReport)this.report).reportId, ReportType.SKIN, var7));
+            AbuseReport var7 = AbuseReport.skin((this.report).comments, var3, var6, var4, (this.report).createdAt);
+            return Either.left(new Report.Result((this.report).reportId, ReportType.SKIN, var7));
          }
       }
    }

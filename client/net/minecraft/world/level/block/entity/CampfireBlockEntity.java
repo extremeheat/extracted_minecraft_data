@@ -40,7 +40,7 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
 
    public CampfireBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.CAMPFIRE, var1, var2);
-      this.items = NonNullList.withSize(4, ItemStack.EMPTY);
+      this.items = NonNullList.<ItemStack>withSize(4, ItemStack.EMPTY);
       this.cookingProgress = new int[4];
       this.cookingTime = new int[4];
    }
@@ -49,15 +49,13 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
       boolean var5 = false;
 
       for(int var6 = 0; var6 < var3.items.size(); ++var6) {
-         ItemStack var7 = (ItemStack)var3.items.get(var6);
+         ItemStack var7 = var3.items.get(var6);
          if (!var7.isEmpty()) {
             var5 = true;
             int var10002 = var3.cookingProgress[var6]++;
             if (var3.cookingProgress[var6] >= var3.cookingTime[var6]) {
                SingleRecipeInput var8 = new SingleRecipeInput(var7);
-               ItemStack var9 = (ItemStack)var4.getRecipeFor(var8, var0).map((var2x) -> {
-                  return ((CampfireCookingRecipe)var2x.value()).assemble(var8, var0.registryAccess());
-               }).orElse(var7);
+               ItemStack var9 = (ItemStack)var4.getRecipeFor(var8, var0).map((var2x) -> ((CampfireCookingRecipe)var2x.value()).assemble(var8, var0.registryAccess())).orElse(var7);
                if (var9.isItemEnabled(var0.enabledFeatures())) {
                   Containers.dropItemStack(var0, (double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), var9);
                   var3.items.set(var6, ItemStack.EMPTY);
@@ -92,18 +90,17 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
 
    public static void particleTick(Level var0, BlockPos var1, BlockState var2, CampfireBlockEntity var3) {
       RandomSource var4 = var0.random;
-      int var5;
       if (var4.nextFloat() < 0.11F) {
-         for(var5 = 0; var5 < var4.nextInt(2) + 2; ++var5) {
+         for(int var5 = 0; var5 < var4.nextInt(2) + 2; ++var5) {
             CampfireBlock.makeParticles(var0, var1, (Boolean)var2.getValue(CampfireBlock.SIGNAL_FIRE), false);
          }
       }
 
-      var5 = ((Direction)var2.getValue(CampfireBlock.FACING)).get2DDataValue();
+      int var16 = ((Direction)var2.getValue(CampfireBlock.FACING)).get2DDataValue();
 
       for(int var6 = 0; var6 < var3.items.size(); ++var6) {
          if (!((ItemStack)var3.items.get(var6)).isEmpty() && var4.nextFloat() < 0.2F) {
-            Direction var7 = Direction.from2DDataValue(Math.floorMod(var6 + var5, 4));
+            Direction var7 = Direction.from2DDataValue(Math.floorMod(var6 + var16, 4));
             float var8 = 0.3125F;
             double var9 = (double)var1.getX() + 0.5 - (double)((float)var7.getStepX() * 0.3125F) + (double)((float)var7.getClockWise().getStepX() * 0.3125F);
             double var11 = (double)var1.getY() + 0.5;
@@ -125,15 +122,14 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
       super.loadAdditional(var1, var2);
       this.items.clear();
       ContainerHelper.loadAllItems(var1, this.items, var2);
-      int[] var3;
       if (var1.contains("CookingTimes", 11)) {
-         var3 = var1.getIntArray("CookingTimes");
+         int[] var3 = var1.getIntArray("CookingTimes");
          System.arraycopy(var3, 0, this.cookingProgress, 0, Math.min(this.cookingTime.length, var3.length));
       }
 
       if (var1.contains("CookingTotalTimes", 11)) {
-         var3 = var1.getIntArray("CookingTotalTimes");
-         System.arraycopy(var3, 0, this.cookingTime, 0, Math.min(this.cookingTime.length, var3.length));
+         int[] var4 = var1.getIntArray("CookingTotalTimes");
+         System.arraycopy(var4, 0, this.cookingTime, 0, Math.min(this.cookingTime.length, var4.length));
       }
 
    }
@@ -157,7 +153,7 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
 
    public boolean placeFood(ServerLevel var1, @Nullable LivingEntity var2, ItemStack var3) {
       for(int var4 = 0; var4 < this.items.size(); ++var4) {
-         ItemStack var5 = (ItemStack)this.items.get(var4);
+         ItemStack var5 = this.items.get(var4);
          if (var5.isEmpty()) {
             Optional var6 = var1.recipeAccess().getRecipeFor(RecipeType.CAMPFIRE_COOKING, new SingleRecipeInput(var3), var1);
             if (var6.isEmpty()) {

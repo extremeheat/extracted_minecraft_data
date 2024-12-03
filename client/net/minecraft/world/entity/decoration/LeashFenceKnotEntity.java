@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.decoration;
 
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -72,10 +71,8 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
             Entity var3 = var2x.getLeashHolder();
             return var3 == var1 || var3 == this;
          });
-         Iterator var5 = var4.iterator();
 
-         while(var5.hasNext()) {
-            Leashable var6 = (Leashable)var5.next();
+         for(Leashable var6 : var4) {
             if (var6.getLeashHolder() == var1) {
                var6.setLeashedTo(this, true);
                var3 = true;
@@ -86,12 +83,9 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
          if (!var3) {
             this.discard();
             if (var1.getAbilities().instabuild) {
-               Iterator var9 = var4.iterator();
-
-               while(var9.hasNext()) {
-                  Leashable var7 = (Leashable)var9.next();
+               for(Leashable var7 : var4) {
                   if (var7.isLeashed() && var7.getLeashHolder() == this) {
-                     var7.dropLeash(true, false);
+                     var7.removeLeash();
                      var8 = true;
                   }
                }
@@ -114,21 +108,16 @@ public class LeashFenceKnotEntity extends BlockAttachedEntity {
       int var2 = var1.getX();
       int var3 = var1.getY();
       int var4 = var1.getZ();
-      List var5 = var0.getEntitiesOfClass(LeashFenceKnotEntity.class, new AABB((double)var2 - 1.0, (double)var3 - 1.0, (double)var4 - 1.0, (double)var2 + 1.0, (double)var3 + 1.0, (double)var4 + 1.0));
-      Iterator var6 = var5.iterator();
 
-      LeashFenceKnotEntity var7;
-      do {
-         if (!var6.hasNext()) {
-            LeashFenceKnotEntity var8 = new LeashFenceKnotEntity(var0, var1);
-            var0.addFreshEntity(var8);
-            return var8;
+      for(LeashFenceKnotEntity var7 : var0.getEntitiesOfClass(LeashFenceKnotEntity.class, new AABB((double)var2 - 1.0, (double)var3 - 1.0, (double)var4 - 1.0, (double)var2 + 1.0, (double)var3 + 1.0, (double)var4 + 1.0))) {
+         if (var7.getPos().equals(var1)) {
+            return var7;
          }
+      }
 
-         var7 = (LeashFenceKnotEntity)var6.next();
-      } while(!var7.getPos().equals(var1));
-
-      return var7;
+      LeashFenceKnotEntity var8 = new LeashFenceKnotEntity(var0, var1);
+      var0.addFreshEntity(var8);
+      return var8;
    }
 
    public void playPlacementSound() {

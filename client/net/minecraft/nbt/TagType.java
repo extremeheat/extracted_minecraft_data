@@ -70,15 +70,6 @@ public interface TagType<T extends Tag> {
       };
    }
 
-   public interface VariableSize<T extends Tag> extends TagType<T> {
-      default void skip(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         for(int var4 = 0; var4 < var2; ++var4) {
-            this.skip(var1, var3);
-         }
-
-      }
-   }
-
    public interface StaticSize<T extends Tag> extends TagType<T> {
       default void skip(DataInput var1, NbtAccounter var2) throws IOException {
          var1.skipBytes(this.size());
@@ -89,5 +80,14 @@ public interface TagType<T extends Tag> {
       }
 
       int size();
+   }
+
+   public interface VariableSize<T extends Tag> extends TagType<T> {
+      default void skip(DataInput var1, int var2, NbtAccounter var3) throws IOException {
+         for(int var4 = 0; var4 < var2; ++var4) {
+            this.skip(var1, var3);
+         }
+
+      }
    }
 }

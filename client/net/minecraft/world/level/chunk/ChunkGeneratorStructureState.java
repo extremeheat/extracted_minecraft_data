@@ -6,7 +6,6 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,16 +43,12 @@ public class ChunkGeneratorStructureState {
    private final List<Holder<StructureSet>> possibleStructureSets;
 
    public static ChunkGeneratorStructureState createForFlat(RandomState var0, long var1, BiomeSource var3, Stream<Holder<StructureSet>> var4) {
-      List var5 = var4.filter((var1x) -> {
-         return hasBiomesForStructureSet((StructureSet)var1x.value(), var3);
-      }).toList();
+      List var5 = var4.filter((var1x) -> hasBiomesForStructureSet((StructureSet)var1x.value(), var3)).toList();
       return new ChunkGeneratorStructureState(var0, var3, var1, 0L, var5);
    }
 
    public static ChunkGeneratorStructureState createForNormal(RandomState var0, long var1, BiomeSource var3, HolderLookup<StructureSet> var4) {
-      List var5 = (List)var4.listElements().filter((var1x) -> {
-         return hasBiomesForStructureSet((StructureSet)var1x.value(), var3);
-      }).collect(Collectors.toUnmodifiableList());
+      List var5 = (List)var4.listElements().filter((var1x) -> hasBiomesForStructureSet((StructureSet)var1x.value(), var3)).collect(Collectors.toUnmodifiableList());
       return new ChunkGeneratorStructureState(var0, var3, var1, var1, var5);
    }
 
@@ -85,17 +80,13 @@ public class ChunkGeneratorStructureState {
       this.possibleStructureSets().forEach((var2) -> {
          StructureSet var3 = (StructureSet)var2.value();
          boolean var4 = false;
-         Iterator var5 = var3.structures().iterator();
 
-         while(var5.hasNext()) {
-            StructureSet.StructureSelectionEntry var6 = (StructureSet.StructureSelectionEntry)var5.next();
+         for(StructureSet.StructureSelectionEntry var6 : var3.structures()) {
             Structure var7 = (Structure)var6.structure().value();
             Stream var10000 = var7.biomes().stream();
             Objects.requireNonNull(var1);
             if (var10000.anyMatch(var1::contains)) {
-               ((List)this.placementsForStructure.computeIfAbsent(var7, (var0) -> {
-                  return new ArrayList();
-               })).add(var3.placement());
+               ((List)this.placementsForStructure.computeIfAbsent(var7, (var0) -> new ArrayList())).add(var3.placement());
                var4 = true;
             }
          }

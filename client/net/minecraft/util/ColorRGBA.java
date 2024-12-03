@@ -21,24 +21,16 @@ public record ColorRGBA(int rgba) {
       return this.formatValue();
    }
 
-   public int rgba() {
-      return this.rgba;
-   }
-
    static {
       CODEC = Codec.STRING.comapFlatMap((var0) -> {
          if (!var0.startsWith("#")) {
-            return DataResult.error(() -> {
-               return "Not a color code: " + var0;
-            });
+            return DataResult.error(() -> "Not a color code: " + var0);
          } else {
             try {
                int var1 = (int)Long.parseLong(var0.substring(1), 16);
                return DataResult.success(new ColorRGBA(var1));
             } catch (NumberFormatException var2) {
-               return DataResult.error(() -> {
-                  return "Exception parsing color code: " + var2.getMessage();
-               });
+               return DataResult.error(() -> "Exception parsing color code: " + var2.getMessage());
             }
          }
       }, ColorRGBA::formatValue);

@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -31,16 +30,11 @@ public class TextRenderingUtils {
    private static List<Line> insertLinks(List<String> var0, List<LineSegment> var1) {
       int var2 = 0;
       ArrayList var3 = Lists.newArrayList();
-      Iterator var4 = var0.iterator();
 
-      while(var4.hasNext()) {
-         String var5 = (String)var4.next();
+      for(String var5 : var0) {
          ArrayList var6 = Lists.newArrayList();
-         List var7 = split(var5, "%link");
-         Iterator var8 = var7.iterator();
 
-         while(var8.hasNext()) {
-            String var9 = (String)var8.next();
+         for(String var9 : split(var5, "%link")) {
             if ("%link".equals(var9)) {
                var6.add((LineSegment)var1.get(var2++));
             } else {
@@ -75,6 +69,38 @@ public class TextRenderingUtils {
          }
 
          return var2;
+      }
+   }
+
+   public static class Line {
+      public final List<LineSegment> segments;
+
+      Line(LineSegment... var1) {
+         this(Arrays.asList(var1));
+      }
+
+      Line(List<LineSegment> var1) {
+         super();
+         this.segments = var1;
+      }
+
+      public String toString() {
+         return "Line{segments=" + String.valueOf(this.segments) + "}";
+      }
+
+      public boolean equals(Object var1) {
+         if (this == var1) {
+            return true;
+         } else if (var1 != null && this.getClass() == var1.getClass()) {
+            Line var2 = (Line)var1;
+            return Objects.equals(this.segments, var2.segments);
+         } else {
+            return false;
+         }
+      }
+
+      public int hashCode() {
+         return Objects.hash(new Object[]{this.segments});
       }
    }
 
@@ -141,38 +167,6 @@ public class TextRenderingUtils {
       @VisibleForTesting
       protected static LineSegment text(String var0) {
          return new LineSegment(var0);
-      }
-   }
-
-   public static class Line {
-      public final List<LineSegment> segments;
-
-      Line(LineSegment... var1) {
-         this(Arrays.asList(var1));
-      }
-
-      Line(List<LineSegment> var1) {
-         super();
-         this.segments = var1;
-      }
-
-      public String toString() {
-         return "Line{segments=" + String.valueOf(this.segments) + "}";
-      }
-
-      public boolean equals(Object var1) {
-         if (this == var1) {
-            return true;
-         } else if (var1 != null && this.getClass() == var1.getClass()) {
-            Line var2 = (Line)var1;
-            return Objects.equals(this.segments, var2.segments);
-         } else {
-            return false;
-         }
-      }
-
-      public int hashCode() {
-         return Objects.hash(new Object[]{this.segments});
       }
    }
 }

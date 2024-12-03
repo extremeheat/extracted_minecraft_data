@@ -30,7 +30,7 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
 
    public ChiseledBookShelfBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.CHISELED_BOOKSHELF, var1, var2);
-      this.items = NonNullList.withSize(6, ItemStack.EMPTY);
+      this.items = NonNullList.<ItemStack>withSize(6, ItemStack.EMPTY);
       this.lastInteractedSlot = -1;
    }
 
@@ -82,11 +82,11 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
    }
 
    public ItemStack getItem(int var1) {
-      return (ItemStack)this.items.get(var1);
+      return this.items.get(var1);
    }
 
    public ItemStack removeItem(int var1, int var2) {
-      ItemStack var3 = (ItemStack)Objects.requireNonNullElse((ItemStack)this.items.get(var1), ItemStack.EMPTY);
+      ItemStack var3 = (ItemStack)Objects.requireNonNullElse(this.items.get(var1), ItemStack.EMPTY);
       this.items.set(var1, ItemStack.EMPTY);
       if (!var3.isEmpty()) {
          this.updateState(var1);

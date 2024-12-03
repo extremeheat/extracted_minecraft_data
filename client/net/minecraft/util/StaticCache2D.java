@@ -14,7 +14,7 @@ public class StaticCache2D<T> {
       int var4 = var0 - var2;
       int var5 = var1 - var2;
       int var6 = 2 * var2 + 1;
-      return new StaticCache2D(var4, var5, var6, var6, var3);
+      return new StaticCache2D<T>(var4, var5, var6, var6, var3);
    }
 
    private StaticCache2D(int var1, int var2, int var3, int var4, Initializer<T> var5) {
@@ -34,11 +34,7 @@ public class StaticCache2D<T> {
    }
 
    public void forEach(Consumer<T> var1) {
-      Object[] var2 = this.cache;
-      int var3 = var2.length;
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         Object var5 = var2[var4];
+      for(Object var5 : this.cache) {
          var1.accept(var5);
       }
 
@@ -48,7 +44,7 @@ public class StaticCache2D<T> {
       if (!this.contains(var1, var2)) {
          throw new IllegalArgumentException("Requested out of range value (" + var1 + "," + var2 + ") from " + String.valueOf(this));
       } else {
-         return this.cache[this.getIndex(var1, var2)];
+         return (T)this.cache[this.getIndex(var1, var2)];
       }
    }
 

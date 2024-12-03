@@ -65,10 +65,6 @@ public class LecternBlock extends BaseEntityBlock {
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(POWERED, false)).setValue(HAS_BOOK, false));
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
-
    protected VoxelShape getOcclusionShape(BlockState var1) {
       return SHAPE_COMMON;
    }

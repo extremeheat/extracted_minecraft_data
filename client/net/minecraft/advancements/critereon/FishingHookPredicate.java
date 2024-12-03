@@ -12,9 +12,7 @@ import net.minecraft.world.phys.Vec3;
 
 public record FishingHookPredicate(Optional<Boolean> inOpenWater) implements EntitySubPredicate {
    public static final FishingHookPredicate ANY = new FishingHookPredicate(Optional.empty());
-   public static final MapCodec<FishingHookPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.BOOL.optionalFieldOf("in_open_water").forGetter(FishingHookPredicate::inOpenWater)).apply(var0, FishingHookPredicate::new);
-   });
+   public static final MapCodec<FishingHookPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("in_open_water").forGetter(FishingHookPredicate::inOpenWater)).apply(var0, FishingHookPredicate::new));
 
    public FishingHookPredicate(Optional<Boolean> var1) {
       super();
@@ -38,9 +36,5 @@ public record FishingHookPredicate(Optional<Boolean> inOpenWater) implements Ent
       } else {
          return false;
       }
-   }
-
-   public Optional<Boolean> inOpenWater() {
-      return this.inOpenWater;
    }
 }

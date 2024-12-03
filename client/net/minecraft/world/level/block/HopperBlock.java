@@ -156,10 +156,6 @@ public class HopperBlock extends BaseEntityBlock {
       super.onRemove(var1, var2, var3, var4, var5);
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
-
    protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }

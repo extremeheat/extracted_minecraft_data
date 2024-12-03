@@ -9,15 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.levelgen.feature.SpikeFeature;
 
 public class SpikeConfiguration implements FeatureConfiguration {
-   public static final Codec<SpikeConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.BOOL.fieldOf("crystal_invulnerable").orElse(false).forGetter((var0x) -> {
-         return var0x.crystalInvulnerable;
-      }), SpikeFeature.EndSpike.CODEC.listOf().fieldOf("spikes").forGetter((var0x) -> {
-         return var0x.spikes;
-      }), BlockPos.CODEC.optionalFieldOf("crystal_beam_target").forGetter((var0x) -> {
-         return Optional.ofNullable(var0x.crystalBeamTarget);
-      })).apply(var0, SpikeConfiguration::new);
-   });
+   public static final Codec<SpikeConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.BOOL.fieldOf("crystal_invulnerable").orElse(false).forGetter((var0x) -> var0x.crystalInvulnerable), SpikeFeature.EndSpike.CODEC.listOf().fieldOf("spikes").forGetter((var0x) -> var0x.spikes), BlockPos.CODEC.optionalFieldOf("crystal_beam_target").forGetter((var0x) -> Optional.ofNullable(var0x.crystalBeamTarget))).apply(var0, SpikeConfiguration::new));
    private final boolean crystalInvulnerable;
    private final List<SpikeFeature.EndSpike> spikes;
    @Nullable

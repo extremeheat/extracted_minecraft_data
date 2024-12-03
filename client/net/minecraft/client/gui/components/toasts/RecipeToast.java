@@ -83,13 +83,5 @@ public class RecipeToast implements Toast {
          this.categoryItem = var1;
          this.unlockedItem = var2;
       }
-
-      public ItemStack categoryItem() {
-         return this.categoryItem;
-      }
-
-      public ItemStack unlockedItem() {
-         return this.unlockedItem;
-      }
    }
 }

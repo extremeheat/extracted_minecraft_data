@@ -3,7 +3,6 @@ package net.minecraft.data.loot;
 import com.google.common.collect.Maps;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -67,9 +66,8 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
    public static LootPool.Builder createSheepDispatchPool(Map<DyeColor, ResourceKey<LootTable>> var0) {
       AlternativesEntry.Builder var1 = AlternativesEntry.alternatives();
 
-      Map.Entry var3;
-      for(Iterator var2 = var0.entrySet().iterator(); var2.hasNext(); var1 = var1.otherwise(NestedLootTable.lootTableReference((ResourceKey)var3.getValue()).when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().subPredicate(SheepPredicate.hasWool((DyeColor)var3.getKey())))))) {
-         var3 = (Map.Entry)var2.next();
+      for(Map.Entry var3 : var0.entrySet()) {
+         var1 = var1.otherwise(NestedLootTable.lootTableReference((ResourceKey)var3.getValue()).when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().subPredicate(SheepPredicate.hasWool((DyeColor)var3.getKey())))));
       }
 
       return LootPool.lootPool().add(var1);
@@ -84,9 +82,8 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
          EntityType var4 = (EntityType)var3.value();
          if (var4.isEnabled(this.allowed)) {
             Optional var5 = var4.getDefaultLootTable();
-            Map var6;
             if (var5.isPresent()) {
-               var6 = (Map)this.map.remove(var4);
+               Map var6 = (Map)this.map.remove(var4);
                if (var4.isEnabled(this.required) && (var6 == null || !var6.containsKey(var5.get()))) {
                   throw new IllegalStateException(String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var5.get(), var3.key().location()));
                }
@@ -101,11 +98,9 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
                   });
                }
             } else {
-               var6 = (Map)this.map.remove(var4);
-               if (var6 != null) {
-                  throw new IllegalStateException(String.format(Locale.ROOT, "Weird loottables '%s' for '%s', not a LivingEntity so should not have loot", var6.keySet().stream().map((var0) -> {
-                     return var0.location().toString();
-                  }).collect(Collectors.joining(",")), var3.key().location()));
+               Map var7 = (Map)this.map.remove(var4);
+               if (var7 != null) {
+                  throw new IllegalStateException(String.format(Locale.ROOT, "Weird loottables '%s' for '%s', not a LivingEntity so should not have loot", var7.keySet().stream().map((var0) -> var0.location().toString()).collect(Collectors.joining(",")), var3.key().location()));
                }
             }
 
@@ -125,14 +120,10 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
    }
 
    protected void add(EntityType<?> var1, LootTable.Builder var2) {
-      this.add(var1, (ResourceKey)var1.getDefaultLootTable().orElseThrow(() -> {
-         return new IllegalStateException("Entity " + String.valueOf(var1) + " has no loot table");
-      }), var2);
+      this.add(var1, (ResourceKey)var1.getDefaultLootTable().orElseThrow(() -> new IllegalStateException("Entity " + String.valueOf(var1) + " has no loot table")), var2);
    }
 
    protected void add(EntityType<?> var1, ResourceKey<LootTable> var2, LootTable.Builder var3) {
-      ((Map)this.map.computeIfAbsent(var1, (var0) -> {
-         return new HashMap();
-      })).put(var2, var3);
+      ((Map)this.map.computeIfAbsent(var1, (var0) -> new HashMap())).put(var2, var3);
    }
 }

@@ -5,15 +5,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -33,8 +33,8 @@ import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -51,6 +51,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.Profiler;
@@ -82,128 +83,125 @@ public class ParticleEngine implements PreparableReloadListener {
    public ParticleEngine(ClientLevel var1, TextureManager var2) {
       super();
       this.textureAtlas = new TextureAtlas(TextureAtlas.LOCATION_PARTICLES);
-      var2.register((ResourceLocation)this.textureAtlas.location(), (AbstractTexture)this.textureAtlas);
+      var2.register(this.textureAtlas.location(), this.textureAtlas);
       this.level = var1;
       this.textureManager = var2;
       this.registerProviders();
    }
 
    private void registerProviders() {
-      this.register(ParticleTypes.ANGRY_VILLAGER, (SpriteParticleRegistration)(HeartParticle.AngryVillagerProvider::new));
-      this.register(ParticleTypes.BLOCK_MARKER, (ParticleProvider)(new BlockMarker.Provider()));
-      this.register(ParticleTypes.BLOCK, (ParticleProvider)(new TerrainParticle.Provider()));
-      this.register(ParticleTypes.BUBBLE, (SpriteParticleRegistration)(BubbleParticle.Provider::new));
-      this.register(ParticleTypes.BUBBLE_COLUMN_UP, (SpriteParticleRegistration)(BubbleColumnUpParticle.Provider::new));
-      this.register(ParticleTypes.BUBBLE_POP, (SpriteParticleRegistration)(BubblePopParticle.Provider::new));
-      this.register(ParticleTypes.CAMPFIRE_COSY_SMOKE, (SpriteParticleRegistration)(CampfireSmokeParticle.CosyProvider::new));
-      this.register(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, (SpriteParticleRegistration)(CampfireSmokeParticle.SignalProvider::new));
-      this.register(ParticleTypes.CLOUD, (SpriteParticleRegistration)(PlayerCloudParticle.Provider::new));
-      this.register(ParticleTypes.COMPOSTER, (SpriteParticleRegistration)(SuspendedTownParticle.ComposterFillProvider::new));
-      this.register(ParticleTypes.CRIT, (SpriteParticleRegistration)(CritParticle.Provider::new));
-      this.register(ParticleTypes.CURRENT_DOWN, (SpriteParticleRegistration)(WaterCurrentDownParticle.Provider::new));
-      this.register(ParticleTypes.DAMAGE_INDICATOR, (SpriteParticleRegistration)(CritParticle.DamageIndicatorProvider::new));
-      this.register(ParticleTypes.DRAGON_BREATH, (SpriteParticleRegistration)(DragonBreathParticle.Provider::new));
-      this.register(ParticleTypes.DOLPHIN, (SpriteParticleRegistration)(SuspendedTownParticle.DolphinSpeedProvider::new));
-      this.register(ParticleTypes.DRIPPING_LAVA, (ParticleProvider.Sprite)(DripParticle::createLavaHangParticle));
-      this.register(ParticleTypes.FALLING_LAVA, (ParticleProvider.Sprite)(DripParticle::createLavaFallParticle));
-      this.register(ParticleTypes.LANDING_LAVA, (ParticleProvider.Sprite)(DripParticle::createLavaLandParticle));
-      this.register(ParticleTypes.DRIPPING_WATER, (ParticleProvider.Sprite)(DripParticle::createWaterHangParticle));
-      this.register(ParticleTypes.FALLING_WATER, (ParticleProvider.Sprite)(DripParticle::createWaterFallParticle));
+      this.register(ParticleTypes.ANGRY_VILLAGER, HeartParticle.AngryVillagerProvider::new);
+      this.register(ParticleTypes.BLOCK_MARKER, new BlockMarker.Provider());
+      this.register(ParticleTypes.BLOCK, new TerrainParticle.Provider());
+      this.register(ParticleTypes.BUBBLE, BubbleParticle.Provider::new);
+      this.register(ParticleTypes.BUBBLE_COLUMN_UP, BubbleColumnUpParticle.Provider::new);
+      this.register(ParticleTypes.BUBBLE_POP, BubblePopParticle.Provider::new);
+      this.register(ParticleTypes.CAMPFIRE_COSY_SMOKE, CampfireSmokeParticle.CosyProvider::new);
+      this.register(ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, CampfireSmokeParticle.SignalProvider::new);
+      this.register(ParticleTypes.CLOUD, PlayerCloudParticle.Provider::new);
+      this.register(ParticleTypes.COMPOSTER, SuspendedTownParticle.ComposterFillProvider::new);
+      this.register(ParticleTypes.CRIT, CritParticle.Provider::new);
+      this.register(ParticleTypes.CURRENT_DOWN, WaterCurrentDownParticle.Provider::new);
+      this.register(ParticleTypes.DAMAGE_INDICATOR, CritParticle.DamageIndicatorProvider::new);
+      this.register(ParticleTypes.DRAGON_BREATH, DragonBreathParticle.Provider::new);
+      this.register(ParticleTypes.DOLPHIN, SuspendedTownParticle.DolphinSpeedProvider::new);
+      this.register(ParticleTypes.DRIPPING_LAVA, DripParticle::createLavaHangParticle);
+      this.register(ParticleTypes.FALLING_LAVA, DripParticle::createLavaFallParticle);
+      this.register(ParticleTypes.LANDING_LAVA, DripParticle::createLavaLandParticle);
+      this.register(ParticleTypes.DRIPPING_WATER, DripParticle::createWaterHangParticle);
+      this.register(ParticleTypes.FALLING_WATER, DripParticle::createWaterFallParticle);
       this.register(ParticleTypes.DUST, DustParticle.Provider::new);
       this.register(ParticleTypes.DUST_COLOR_TRANSITION, DustColorTransitionParticle.Provider::new);
-      this.register(ParticleTypes.EFFECT, (SpriteParticleRegistration)(SpellParticle.Provider::new));
-      this.register(ParticleTypes.ELDER_GUARDIAN, (ParticleProvider)(new MobAppearanceParticle.Provider()));
-      this.register(ParticleTypes.ENCHANTED_HIT, (SpriteParticleRegistration)(CritParticle.MagicProvider::new));
-      this.register(ParticleTypes.ENCHANT, (SpriteParticleRegistration)(FlyTowardsPositionParticle.EnchantProvider::new));
-      this.register(ParticleTypes.END_ROD, (SpriteParticleRegistration)(EndRodParticle.Provider::new));
+      this.register(ParticleTypes.EFFECT, SpellParticle.Provider::new);
+      this.register(ParticleTypes.ELDER_GUARDIAN, new MobAppearanceParticle.Provider());
+      this.register(ParticleTypes.ENCHANTED_HIT, CritParticle.MagicProvider::new);
+      this.register(ParticleTypes.ENCHANT, FlyTowardsPositionParticle.EnchantProvider::new);
+      this.register(ParticleTypes.END_ROD, EndRodParticle.Provider::new);
       this.register(ParticleTypes.ENTITY_EFFECT, SpellParticle.MobEffectProvider::new);
-      this.register(ParticleTypes.EXPLOSION_EMITTER, (ParticleProvider)(new HugeExplosionSeedParticle.Provider()));
-      this.register(ParticleTypes.EXPLOSION, (SpriteParticleRegistration)(HugeExplosionParticle.Provider::new));
-      this.register(ParticleTypes.SONIC_BOOM, (SpriteParticleRegistration)(SonicBoomParticle.Provider::new));
+      this.register(ParticleTypes.EXPLOSION_EMITTER, new HugeExplosionSeedParticle.Provider());
+      this.register(ParticleTypes.EXPLOSION, HugeExplosionParticle.Provider::new);
+      this.register(ParticleTypes.SONIC_BOOM, SonicBoomParticle.Provider::new);
       this.register(ParticleTypes.FALLING_DUST, FallingDustParticle.Provider::new);
-      this.register(ParticleTypes.GUST, (SpriteParticleRegistration)(GustParticle.Provider::new));
-      this.register(ParticleTypes.SMALL_GUST, (SpriteParticleRegistration)(GustParticle.SmallProvider::new));
-      this.register(ParticleTypes.GUST_EMITTER_LARGE, (ParticleProvider)(new GustSeedParticle.Provider(3.0, 7, 0)));
-      this.register(ParticleTypes.GUST_EMITTER_SMALL, (ParticleProvider)(new GustSeedParticle.Provider(1.0, 3, 2)));
-      this.register(ParticleTypes.FIREWORK, (SpriteParticleRegistration)(FireworkParticles.SparkProvider::new));
-      this.register(ParticleTypes.FISHING, (SpriteParticleRegistration)(WakeParticle.Provider::new));
-      this.register(ParticleTypes.FLAME, (SpriteParticleRegistration)(FlameParticle.Provider::new));
-      this.register(ParticleTypes.INFESTED, (SpriteParticleRegistration)(SpellParticle.Provider::new));
-      this.register(ParticleTypes.SCULK_SOUL, (SpriteParticleRegistration)(SoulParticle.EmissiveProvider::new));
+      this.register(ParticleTypes.GUST, GustParticle.Provider::new);
+      this.register(ParticleTypes.SMALL_GUST, GustParticle.SmallProvider::new);
+      this.register(ParticleTypes.GUST_EMITTER_LARGE, new GustSeedParticle.Provider(3.0, 7, 0));
+      this.register(ParticleTypes.GUST_EMITTER_SMALL, new GustSeedParticle.Provider(1.0, 3, 2));
+      this.register(ParticleTypes.FIREWORK, FireworkParticles.SparkProvider::new);
+      this.register(ParticleTypes.FISHING, WakeParticle.Provider::new);
+      this.register(ParticleTypes.FLAME, FlameParticle.Provider::new);
+      this.register(ParticleTypes.INFESTED, SpellParticle.Provider::new);
+      this.register(ParticleTypes.SCULK_SOUL, SoulParticle.EmissiveProvider::new);
       this.register(ParticleTypes.SCULK_CHARGE, SculkChargeParticle.Provider::new);
-      this.register(ParticleTypes.SCULK_CHARGE_POP, (SpriteParticleRegistration)(SculkChargePopParticle.Provider::new));
-      this.register(ParticleTypes.SOUL, (SpriteParticleRegistration)(SoulParticle.Provider::new));
-      this.register(ParticleTypes.SOUL_FIRE_FLAME, (SpriteParticleRegistration)(FlameParticle.Provider::new));
-      this.register(ParticleTypes.FLASH, (SpriteParticleRegistration)(FireworkParticles.FlashProvider::new));
-      this.register(ParticleTypes.HAPPY_VILLAGER, (SpriteParticleRegistration)(SuspendedTownParticle.HappyVillagerProvider::new));
-      this.register(ParticleTypes.HEART, (SpriteParticleRegistration)(HeartParticle.Provider::new));
-      this.register(ParticleTypes.INSTANT_EFFECT, (SpriteParticleRegistration)(SpellParticle.InstantProvider::new));
-      this.register(ParticleTypes.ITEM, (ParticleProvider)(new BreakingItemParticle.Provider()));
-      this.register(ParticleTypes.ITEM_SLIME, (ParticleProvider)(new BreakingItemParticle.SlimeProvider()));
-      this.register(ParticleTypes.ITEM_COBWEB, (ParticleProvider)(new BreakingItemParticle.CobwebProvider()));
-      this.register(ParticleTypes.ITEM_SNOWBALL, (ParticleProvider)(new BreakingItemParticle.SnowballProvider()));
-      this.register(ParticleTypes.LARGE_SMOKE, (SpriteParticleRegistration)(LargeSmokeParticle.Provider::new));
-      this.register(ParticleTypes.LAVA, (SpriteParticleRegistration)(LavaParticle.Provider::new));
-      this.register(ParticleTypes.MYCELIUM, (SpriteParticleRegistration)(SuspendedTownParticle.Provider::new));
-      this.register(ParticleTypes.NAUTILUS, (SpriteParticleRegistration)(FlyTowardsPositionParticle.NautilusProvider::new));
-      this.register(ParticleTypes.NOTE, (SpriteParticleRegistration)(NoteParticle.Provider::new));
-      this.register(ParticleTypes.POOF, (SpriteParticleRegistration)(ExplodeParticle.Provider::new));
-      this.register(ParticleTypes.PORTAL, (SpriteParticleRegistration)(PortalParticle.Provider::new));
-      this.register(ParticleTypes.RAIN, (SpriteParticleRegistration)(WaterDropParticle.Provider::new));
-      this.register(ParticleTypes.SMOKE, (SpriteParticleRegistration)(SmokeParticle.Provider::new));
-      this.register(ParticleTypes.WHITE_SMOKE, (SpriteParticleRegistration)(WhiteSmokeParticle.Provider::new));
-      this.register(ParticleTypes.SNEEZE, (SpriteParticleRegistration)(PlayerCloudParticle.SneezeProvider::new));
-      this.register(ParticleTypes.SNOWFLAKE, (SpriteParticleRegistration)(SnowflakeParticle.Provider::new));
-      this.register(ParticleTypes.SPIT, (SpriteParticleRegistration)(SpitParticle.Provider::new));
-      this.register(ParticleTypes.SWEEP_ATTACK, (SpriteParticleRegistration)(AttackSweepParticle.Provider::new));
-      this.register(ParticleTypes.TOTEM_OF_UNDYING, (SpriteParticleRegistration)(TotemParticle.Provider::new));
-      this.register(ParticleTypes.SQUID_INK, (SpriteParticleRegistration)(SquidInkParticle.Provider::new));
-      this.register(ParticleTypes.UNDERWATER, (SpriteParticleRegistration)(SuspendedParticle.UnderwaterProvider::new));
-      this.register(ParticleTypes.SPLASH, (SpriteParticleRegistration)(SplashParticle.Provider::new));
-      this.register(ParticleTypes.WITCH, (SpriteParticleRegistration)(SpellParticle.WitchProvider::new));
-      this.register(ParticleTypes.DRIPPING_HONEY, (ParticleProvider.Sprite)(DripParticle::createHoneyHangParticle));
-      this.register(ParticleTypes.FALLING_HONEY, (ParticleProvider.Sprite)(DripParticle::createHoneyFallParticle));
-      this.register(ParticleTypes.LANDING_HONEY, (ParticleProvider.Sprite)(DripParticle::createHoneyLandParticle));
-      this.register(ParticleTypes.FALLING_NECTAR, (ParticleProvider.Sprite)(DripParticle::createNectarFallParticle));
-      this.register(ParticleTypes.FALLING_SPORE_BLOSSOM, (ParticleProvider.Sprite)(DripParticle::createSporeBlossomFallParticle));
-      this.register(ParticleTypes.SPORE_BLOSSOM_AIR, (SpriteParticleRegistration)(SuspendedParticle.SporeBlossomAirProvider::new));
-      this.register(ParticleTypes.ASH, (SpriteParticleRegistration)(AshParticle.Provider::new));
-      this.register(ParticleTypes.CRIMSON_SPORE, (SpriteParticleRegistration)(SuspendedParticle.CrimsonSporeProvider::new));
-      this.register(ParticleTypes.WARPED_SPORE, (SpriteParticleRegistration)(SuspendedParticle.WarpedSporeProvider::new));
-      this.register(ParticleTypes.DRIPPING_OBSIDIAN_TEAR, (ParticleProvider.Sprite)(DripParticle::createObsidianTearHangParticle));
-      this.register(ParticleTypes.FALLING_OBSIDIAN_TEAR, (ParticleProvider.Sprite)(DripParticle::createObsidianTearFallParticle));
-      this.register(ParticleTypes.LANDING_OBSIDIAN_TEAR, (ParticleProvider.Sprite)(DripParticle::createObsidianTearLandParticle));
-      this.register(ParticleTypes.REVERSE_PORTAL, (SpriteParticleRegistration)(ReversePortalParticle.ReversePortalProvider::new));
-      this.register(ParticleTypes.WHITE_ASH, (SpriteParticleRegistration)(WhiteAshParticle.Provider::new));
-      this.register(ParticleTypes.SMALL_FLAME, (SpriteParticleRegistration)(FlameParticle.SmallFlameProvider::new));
-      this.register(ParticleTypes.DRIPPING_DRIPSTONE_WATER, (ParticleProvider.Sprite)(DripParticle::createDripstoneWaterHangParticle));
-      this.register(ParticleTypes.FALLING_DRIPSTONE_WATER, (ParticleProvider.Sprite)(DripParticle::createDripstoneWaterFallParticle));
-      this.register(ParticleTypes.CHERRY_LEAVES, (SpriteParticleRegistration)((var0) -> {
-         return (var1, var2, var3, var5, var7, var9, var11, var13) -> {
-            return new CherryParticle(var2, var3, var5, var7, var0);
-         };
-      }));
-      this.register(ParticleTypes.DRIPPING_DRIPSTONE_LAVA, (ParticleProvider.Sprite)(DripParticle::createDripstoneLavaHangParticle));
-      this.register(ParticleTypes.FALLING_DRIPSTONE_LAVA, (ParticleProvider.Sprite)(DripParticle::createDripstoneLavaFallParticle));
+      this.register(ParticleTypes.SCULK_CHARGE_POP, SculkChargePopParticle.Provider::new);
+      this.register(ParticleTypes.SOUL, SoulParticle.Provider::new);
+      this.register(ParticleTypes.SOUL_FIRE_FLAME, FlameParticle.Provider::new);
+      this.register(ParticleTypes.FLASH, FireworkParticles.FlashProvider::new);
+      this.register(ParticleTypes.HAPPY_VILLAGER, SuspendedTownParticle.HappyVillagerProvider::new);
+      this.register(ParticleTypes.HEART, HeartParticle.Provider::new);
+      this.register(ParticleTypes.INSTANT_EFFECT, SpellParticle.InstantProvider::new);
+      this.register(ParticleTypes.ITEM, new BreakingItemParticle.Provider());
+      this.register(ParticleTypes.ITEM_SLIME, new BreakingItemParticle.SlimeProvider());
+      this.register(ParticleTypes.ITEM_COBWEB, new BreakingItemParticle.CobwebProvider());
+      this.register(ParticleTypes.ITEM_SNOWBALL, new BreakingItemParticle.SnowballProvider());
+      this.register(ParticleTypes.LARGE_SMOKE, LargeSmokeParticle.Provider::new);
+      this.register(ParticleTypes.LAVA, LavaParticle.Provider::new);
+      this.register(ParticleTypes.MYCELIUM, SuspendedTownParticle.Provider::new);
+      this.register(ParticleTypes.NAUTILUS, FlyTowardsPositionParticle.NautilusProvider::new);
+      this.register(ParticleTypes.NOTE, NoteParticle.Provider::new);
+      this.register(ParticleTypes.POOF, ExplodeParticle.Provider::new);
+      this.register(ParticleTypes.PORTAL, PortalParticle.Provider::new);
+      this.register(ParticleTypes.RAIN, WaterDropParticle.Provider::new);
+      this.register(ParticleTypes.SMOKE, SmokeParticle.Provider::new);
+      this.register(ParticleTypes.WHITE_SMOKE, WhiteSmokeParticle.Provider::new);
+      this.register(ParticleTypes.SNEEZE, PlayerCloudParticle.SneezeProvider::new);
+      this.register(ParticleTypes.SNOWFLAKE, SnowflakeParticle.Provider::new);
+      this.register(ParticleTypes.SPIT, SpitParticle.Provider::new);
+      this.register(ParticleTypes.SWEEP_ATTACK, AttackSweepParticle.Provider::new);
+      this.register(ParticleTypes.TOTEM_OF_UNDYING, TotemParticle.Provider::new);
+      this.register(ParticleTypes.SQUID_INK, SquidInkParticle.Provider::new);
+      this.register(ParticleTypes.UNDERWATER, SuspendedParticle.UnderwaterProvider::new);
+      this.register(ParticleTypes.SPLASH, SplashParticle.Provider::new);
+      this.register(ParticleTypes.WITCH, SpellParticle.WitchProvider::new);
+      this.register(ParticleTypes.DRIPPING_HONEY, DripParticle::createHoneyHangParticle);
+      this.register(ParticleTypes.FALLING_HONEY, DripParticle::createHoneyFallParticle);
+      this.register(ParticleTypes.LANDING_HONEY, DripParticle::createHoneyLandParticle);
+      this.register(ParticleTypes.FALLING_NECTAR, DripParticle::createNectarFallParticle);
+      this.register(ParticleTypes.FALLING_SPORE_BLOSSOM, DripParticle::createSporeBlossomFallParticle);
+      this.register(ParticleTypes.SPORE_BLOSSOM_AIR, SuspendedParticle.SporeBlossomAirProvider::new);
+      this.register(ParticleTypes.ASH, AshParticle.Provider::new);
+      this.register(ParticleTypes.CRIMSON_SPORE, SuspendedParticle.CrimsonSporeProvider::new);
+      this.register(ParticleTypes.WARPED_SPORE, SuspendedParticle.WarpedSporeProvider::new);
+      this.register(ParticleTypes.DRIPPING_OBSIDIAN_TEAR, DripParticle::createObsidianTearHangParticle);
+      this.register(ParticleTypes.FALLING_OBSIDIAN_TEAR, DripParticle::createObsidianTearFallParticle);
+      this.register(ParticleTypes.LANDING_OBSIDIAN_TEAR, DripParticle::createObsidianTearLandParticle);
+      this.register(ParticleTypes.REVERSE_PORTAL, ReversePortalParticle.ReversePortalProvider::new);
+      this.register(ParticleTypes.WHITE_ASH, WhiteAshParticle.Provider::new);
+      this.register(ParticleTypes.SMALL_FLAME, FlameParticle.SmallFlameProvider::new);
+      this.register(ParticleTypes.DRIPPING_DRIPSTONE_WATER, DripParticle::createDripstoneWaterHangParticle);
+      this.register(ParticleTypes.FALLING_DRIPSTONE_WATER, DripParticle::createDripstoneWaterFallParticle);
+      this.register(ParticleTypes.CHERRY_LEAVES, FallingLeavesParticle.CherryProvider::new);
+      this.register(ParticleTypes.PALE_OAK_LEAVES, FallingLeavesParticle.PaleOakProvider::new);
+      this.register(ParticleTypes.DRIPPING_DRIPSTONE_LAVA, DripParticle::createDripstoneLavaHangParticle);
+      this.register(ParticleTypes.FALLING_DRIPSTONE_LAVA, DripParticle::createDripstoneLavaFallParticle);
       this.register(ParticleTypes.VIBRATION, VibrationSignalParticle.Provider::new);
       this.register(ParticleTypes.TRAIL, TrailParticle.Provider::new);
-      this.register(ParticleTypes.GLOW_SQUID_INK, (SpriteParticleRegistration)(SquidInkParticle.GlowInkProvider::new));
-      this.register(ParticleTypes.GLOW, (SpriteParticleRegistration)(GlowParticle.GlowSquidProvider::new));
-      this.register(ParticleTypes.WAX_ON, (SpriteParticleRegistration)(GlowParticle.WaxOnProvider::new));
-      this.register(ParticleTypes.WAX_OFF, (SpriteParticleRegistration)(GlowParticle.WaxOffProvider::new));
-      this.register(ParticleTypes.ELECTRIC_SPARK, (SpriteParticleRegistration)(GlowParticle.ElectricSparkProvider::new));
-      this.register(ParticleTypes.SCRAPE, (SpriteParticleRegistration)(GlowParticle.ScrapeProvider::new));
+      this.register(ParticleTypes.GLOW_SQUID_INK, SquidInkParticle.GlowInkProvider::new);
+      this.register(ParticleTypes.GLOW, GlowParticle.GlowSquidProvider::new);
+      this.register(ParticleTypes.WAX_ON, GlowParticle.WaxOnProvider::new);
+      this.register(ParticleTypes.WAX_OFF, GlowParticle.WaxOffProvider::new);
+      this.register(ParticleTypes.ELECTRIC_SPARK, GlowParticle.ElectricSparkProvider::new);
+      this.register(ParticleTypes.SCRAPE, GlowParticle.ScrapeProvider::new);
       this.register(ParticleTypes.SHRIEK, ShriekParticle.Provider::new);
-      this.register(ParticleTypes.EGG_CRACK, (SpriteParticleRegistration)(SuspendedTownParticle.EggCrackProvider::new));
-      this.register(ParticleTypes.DUST_PLUME, (SpriteParticleRegistration)(DustPlumeParticle.Provider::new));
-      this.register(ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER, (SpriteParticleRegistration)(TrialSpawnerDetectionParticle.Provider::new));
-      this.register(ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS, (SpriteParticleRegistration)(TrialSpawnerDetectionParticle.Provider::new));
-      this.register(ParticleTypes.VAULT_CONNECTION, (SpriteParticleRegistration)(FlyTowardsPositionParticle.VaultConnectionProvider::new));
-      this.register(ParticleTypes.DUST_PILLAR, (ParticleProvider)(new TerrainParticle.DustPillarProvider()));
-      this.register(ParticleTypes.RAID_OMEN, (SpriteParticleRegistration)(SpellParticle.Provider::new));
-      this.register(ParticleTypes.TRIAL_OMEN, (SpriteParticleRegistration)(SpellParticle.Provider::new));
-      this.register(ParticleTypes.OMINOUS_SPAWNING, (SpriteParticleRegistration)(FlyStraightTowardsParticle.OminousSpawnProvider::new));
-      this.register(ParticleTypes.BLOCK_CRUMBLE, (ParticleProvider)(new TerrainParticle.CrumblingProvider()));
+      this.register(ParticleTypes.EGG_CRACK, SuspendedTownParticle.EggCrackProvider::new);
+      this.register(ParticleTypes.DUST_PLUME, DustPlumeParticle.Provider::new);
+      this.register(ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER, TrialSpawnerDetectionParticle.Provider::new);
+      this.register(ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS, TrialSpawnerDetectionParticle.Provider::new);
+      this.register(ParticleTypes.VAULT_CONNECTION, FlyTowardsPositionParticle.VaultConnectionProvider::new);
+      this.register(ParticleTypes.DUST_PILLAR, new TerrainParticle.DustPillarProvider());
+      this.register(ParticleTypes.RAID_OMEN, SpellParticle.Provider::new);
+      this.register(ParticleTypes.TRIAL_OMEN, SpellParticle.Provider::new);
+      this.register(ParticleTypes.OMINOUS_SPAWNING, FlyStraightTowardsParticle.OminousSpawnProvider::new);
+      this.register(ParticleTypes.BLOCK_CRUMBLE, new TerrainParticle.CrumblingProvider());
    }
 
    private <T extends ParticleOptions> void register(ParticleType<T> var1, ParticleProvider<T> var2) {
@@ -211,16 +209,14 @@ public class ParticleEngine implements PreparableReloadListener {
    }
 
    private <T extends ParticleOptions> void register(ParticleType<T> var1, ParticleProvider.Sprite<T> var2) {
-      this.register(var1, (var1x) -> {
-         return (var2x, var3, var4, var6, var8, var10, var12, var14) -> {
+      this.register(var1, (SpriteParticleRegistration)((var1x) -> (var2x, var3, var4, var6, var8, var10, var12, var14) -> {
             TextureSheetParticle var16 = var2.createParticle(var2x, var3, var4, var6, var8, var10, var12, var14);
             if (var16 != null) {
                var16.pickSprite(var1x);
             }
 
             return var16;
-         };
-      });
+         }));
    }
 
    private <T extends ParticleOptions> void register(ParticleType<T> var1, SpriteParticleRegistration<T> var2) {
@@ -230,9 +226,7 @@ public class ParticleEngine implements PreparableReloadListener {
    }
 
    public CompletableFuture<Void> reload(PreparableReloadListener.PreparationBarrier var1, ResourceManager var2, Executor var3, Executor var4) {
-      CompletableFuture var5 = CompletableFuture.supplyAsync(() -> {
-         return PARTICLE_LISTER.listMatchingResources(var2);
-      }, var3).thenCompose((var2x) -> {
+      CompletableFuture var5 = CompletableFuture.supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(var2), var3).thenCompose((var2x) -> {
          ArrayList var3x = new ArrayList(var2x.size());
          var2x.forEach((var3xx, var4) -> {
             ResourceLocation var5 = PARTICLE_LISTER.fileToId(var3xx);
@@ -242,14 +236,6 @@ public class ParticleEngine implements PreparableReloadListener {
                      super();
                      this.id = var1;
                      this.sprites = var2;
-                  }
-
-                  public ResourceLocation id() {
-                     return this.id;
-                  }
-
-                  public Optional<List<ResourceLocation>> sprites() {
-                     return this.sprites;
                   }
                }
 
@@ -274,10 +260,8 @@ public class ParticleEngine implements PreparableReloadListener {
             Optional var5 = var4x.sprites();
             if (!var5.isEmpty()) {
                ArrayList var6 = new ArrayList();
-               Iterator var7x = ((List)var5.get()).iterator();
 
-               while(var7x.hasNext()) {
-                  ResourceLocation var8 = (ResourceLocation)var7x.next();
+               for(ResourceLocation var8 : (List)var5.get()) {
                   TextureAtlasSprite var9 = (TextureAtlasSprite)var5x.regions().get(var8);
                   if (var9 == null) {
                      var6x.add(var8);
@@ -306,8 +290,39 @@ public class ParticleEngine implements PreparableReloadListener {
       this.textureAtlas.clearTextureData();
    }
 
-   private Optional<List<ResourceLocation>> loadParticleDescription(ResourceLocation param1, Resource param2) {
-      // $FF: Couldn't be decompiled
+   private Optional<List<ResourceLocation>> loadParticleDescription(ResourceLocation var1, Resource var2) {
+      if (!this.spriteSets.containsKey(var1)) {
+         LOGGER.debug("Redundant texture list for particle: {}", var1);
+         return Optional.empty();
+      } else {
+         try {
+            BufferedReader var3 = var2.openAsReader();
+
+            Optional var5;
+            try {
+               ParticleDescription var4 = ParticleDescription.fromJson(GsonHelper.parse((Reader)var3));
+               var5 = Optional.of(var4.getTextures());
+            } catch (Throwable var7) {
+               if (var3 != null) {
+                  try {
+                     ((Reader)var3).close();
+                  } catch (Throwable var6) {
+                     var7.addSuppressed(var6);
+                  }
+               }
+
+               throw var7;
+            }
+
+            if (var3 != null) {
+               ((Reader)var3).close();
+            }
+
+            return var5;
+         } catch (IOException var8) {
+            throw new IllegalStateException("Failed to load description for particle " + String.valueOf(var1), var8);
+         }
+      }
    }
 
    public void createTrackingEmitter(Entity var1, ParticleOptions var2) {
@@ -349,17 +364,15 @@ public class ParticleEngine implements PreparableReloadListener {
    }
 
    public void tick() {
-      this.particles.forEach((var1x, var2x) -> {
+      this.particles.forEach((var1x, var2) -> {
          Profiler.get().push(var1x.toString());
-         this.tickParticleList(var2x);
+         this.tickParticleList(var2);
          Profiler.get().pop();
       });
       if (!this.trackingEmitters.isEmpty()) {
          ArrayList var1 = Lists.newArrayList();
-         Iterator var2 = this.trackingEmitters.iterator();
 
-         while(var2.hasNext()) {
-            TrackingEmitter var3 = (TrackingEmitter)var2.next();
+         for(TrackingEmitter var3 : this.trackingEmitters) {
             var3.tick();
             if (!var3.isAlive()) {
                var1.add(var3);
@@ -372,9 +385,7 @@ public class ParticleEngine implements PreparableReloadListener {
       Particle var4;
       if (!this.particlesToAdd.isEmpty()) {
          while((var4 = (Particle)this.particlesToAdd.poll()) != null) {
-            ((Queue)this.particles.computeIfAbsent(var4.getRenderType(), (var0) -> {
-               return EvictingQueue.create(16384);
-            })).add(var4);
+            ((Queue)this.particles.computeIfAbsent(var4.getRenderType(), (var0) -> EvictingQueue.create(16384))).add(var4);
          }
       }
 
@@ -388,9 +399,7 @@ public class ParticleEngine implements PreparableReloadListener {
             Particle var3 = (Particle)var2.next();
             this.tickParticle(var3);
             if (!var3.isAlive()) {
-               var3.getParticleGroup().ifPresent((var1x) -> {
-                  this.updateCount(var1x, -1);
-               });
+               var3.getParticleGroup().ifPresent((var1x) -> this.updateCount(var1x, -1));
                var2.remove();
             }
          }
@@ -417,57 +426,57 @@ public class ParticleEngine implements PreparableReloadListener {
       }
    }
 
-   public void render(LightTexture var1, Camera var2, float var3) {
-      var1.turnOnLightLayer();
-      RenderSystem.enableDepthTest();
-      Iterator var4 = RENDER_ORDER.iterator();
-
-      while(true) {
-         ParticleRenderType var5;
-         Queue var6;
-         BufferBuilder var8;
-         do {
-            do {
-               do {
-                  if (!var4.hasNext()) {
-                     RenderSystem.depthMask(true);
-                     RenderSystem.disableBlend();
-                     var1.turnOffLightLayer();
-                     return;
-                  }
-
-                  var5 = (ParticleRenderType)var4.next();
-                  var6 = (Queue)this.particles.get(var5);
-               } while(var6 == null);
-            } while(var6.isEmpty());
-
-            Tesselator var7 = Tesselator.getInstance();
-            var8 = var5.begin(var7, this.textureManager);
-         } while(var8 == null);
-
-         Iterator var9 = var6.iterator();
-
-         while(var9.hasNext()) {
-            Particle var10 = (Particle)var9.next();
-
-            try {
-               var10.render(var8, var2, var3);
-            } catch (Throwable var14) {
-               CrashReport var12 = CrashReport.forThrowable(var14, "Rendering Particle");
-               CrashReportCategory var13 = var12.addCategory("Particle being rendered");
-               Objects.requireNonNull(var10);
-               var13.setDetail("Particle", var10::toString);
-               Objects.requireNonNull(var5);
-               var13.setDetail("Particle Type", var5::toString);
-               throw new ReportedException(var12);
-            }
-         }
-
-         MeshData var15 = var8.build();
-         if (var15 != null) {
-            BufferUploader.drawWithShader(var15);
+   public void render(Camera var1, float var2, MultiBufferSource.BufferSource var3) {
+      for(ParticleRenderType var5 : RENDER_ORDER) {
+         Queue var6 = (Queue)this.particles.get(var5);
+         if (var6 != null && !var6.isEmpty()) {
+            renderParticleType(var1, var2, var3, var5, var6);
          }
       }
+
+      Queue var7 = (Queue)this.particles.get(ParticleRenderType.CUSTOM);
+      if (var7 != null && !var7.isEmpty()) {
+         renderCustomParticles(var1, var2, var3, var7);
+      }
+
+      var3.endBatch();
+   }
+
+   private static void renderParticleType(Camera var0, float var1, MultiBufferSource.BufferSource var2, ParticleRenderType var3, Queue<Particle> var4) {
+      VertexConsumer var5 = var2.getBuffer((RenderType)Objects.requireNonNull(var3.renderType()));
+
+      for(Particle var7 : var4) {
+         try {
+            var7.render(var5, var0, var1);
+         } catch (Throwable var11) {
+            CrashReport var9 = CrashReport.forThrowable(var11, "Rendering Particle");
+            CrashReportCategory var10 = var9.addCategory("Particle being rendered");
+            Objects.requireNonNull(var7);
+            var10.setDetail("Particle", var7::toString);
+            Objects.requireNonNull(var3);
+            var10.setDetail("Particle Type", var3::toString);
+            throw new ReportedException(var9);
+         }
+      }
+
+   }
+
+   private static void renderCustomParticles(Camera var0, float var1, MultiBufferSource.BufferSource var2, Queue<Particle> var3) {
+      PoseStack var4 = new PoseStack();
+
+      for(Particle var6 : var3) {
+         try {
+            var6.renderCustom(var4, var2, var0, var1);
+         } catch (Throwable var10) {
+            CrashReport var8 = CrashReport.forThrowable(var10, "Rendering Particle");
+            CrashReportCategory var9 = var8.addCategory("Particle being rendered");
+            Objects.requireNonNull(var6);
+            var9.setDetail("Particle", var6::toString);
+            var9.setDetail("Particle Type", "Custom");
+            throw new ReportedException(var8);
+         }
+      }
+
    }
 
    public void setLevel(@Nullable ClientLevel var1) {
@@ -561,15 +570,10 @@ public class ParticleEngine implements PreparableReloadListener {
    }
 
    static {
-      RENDER_ORDER = ImmutableList.of(ParticleRenderType.TERRAIN_SHEET, ParticleRenderType.PARTICLE_SHEET_OPAQUE, ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT, ParticleRenderType.CUSTOM);
+      RENDER_ORDER = List.of(ParticleRenderType.TERRAIN_SHEET, ParticleRenderType.PARTICLE_SHEET_OPAQUE, ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT);
    }
 
-   @FunctionalInterface
-   private interface SpriteParticleRegistration<T extends ParticleOptions> {
-      ParticleProvider<T> create(SpriteSet var1);
-   }
-
-   private static class MutableSpriteSet implements SpriteSet {
+   static class MutableSpriteSet implements SpriteSet {
       private List<TextureAtlasSprite> sprites;
 
       MutableSpriteSet() {
@@ -587,5 +591,10 @@ public class ParticleEngine implements PreparableReloadListener {
       public void rebind(List<TextureAtlasSprite> var1) {
          this.sprites = ImmutableList.copyOf(var1);
       }
+   }
+
+   @FunctionalInterface
+   interface SpriteParticleRegistration<T extends ParticleOptions> {
+      ParticleProvider<T> create(SpriteSet var1);
    }
 }

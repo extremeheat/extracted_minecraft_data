@@ -22,13 +22,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class EnchantWithLevelsFunction extends LootItemConditionalFunction {
-   public static final MapCodec<EnchantWithLevelsFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(var0.group(NumberProviders.CODEC.fieldOf("levels").forGetter((var0x) -> {
-         return var0x.levels;
-      }), RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).optionalFieldOf("options").forGetter((var0x) -> {
-         return var0x.options;
-      }))).apply(var0, EnchantWithLevelsFunction::new);
-   });
+   public static final MapCodec<EnchantWithLevelsFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(NumberProviders.CODEC.fieldOf("levels").forGetter((var0x) -> var0x.levels), RegistryCodecs.homogeneousList(Registries.ENCHANTMENT).optionalFieldOf("options").forGetter((var0x) -> var0x.options))).apply(var0, EnchantWithLevelsFunction::new));
    private final NumberProvider levels;
    private final Optional<HolderSet<Enchantment>> options;
 

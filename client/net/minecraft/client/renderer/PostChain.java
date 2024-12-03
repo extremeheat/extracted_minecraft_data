@@ -7,13 +7,12 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.resource.GraphicsResourceAllocator;
 import com.mojang.blaze3d.resource.RenderTargetDescriptor;
 import com.mojang.blaze3d.resource.ResourceHandle;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -36,23 +35,15 @@ public class PostChain {
    }
 
    public static PostChain load(PostChainConfig var0, TextureManager var1, ShaderManager var2, Set<ResourceLocation> var3) throws ShaderManager.CompilationException {
-      Stream var4 = var0.passes().stream().flatMap((var0x) -> {
-         return var0x.inputs().stream();
-      }).flatMap((var0x) -> {
-         return var0x.referencedTargets().stream();
-      });
-      Set var5 = (Set)var4.filter((var1x) -> {
-         return !var0.internalTargets().containsKey(var1x);
-      }).collect(Collectors.toSet());
+      Stream var4 = var0.passes().stream().flatMap((var0x) -> var0x.inputs().stream()).flatMap((var0x) -> var0x.referencedTargets().stream());
+      Set var5 = (Set)var4.filter((var1x) -> !var0.internalTargets().containsKey(var1x)).collect(Collectors.toSet());
       Sets.SetView var6 = Sets.difference(var5, var3);
       if (!var6.isEmpty()) {
          throw new ShaderManager.CompilationException("Referenced external targets are not available in this context: " + String.valueOf(var6));
       } else {
          ImmutableList.Builder var7 = ImmutableList.builder();
-         Iterator var8 = var0.passes().iterator();
 
-         while(var8.hasNext()) {
-            PostChainConfig.Pass var9 = (PostChainConfig.Pass)var8.next();
+         for(PostChainConfig.Pass var9 : var0.passes()) {
             var7.add(createPass(var1, var2, var9));
          }
 
@@ -61,218 +52,192 @@ public class PostChain {
    }
 
    private static PostPass createPass(TextureManager var0, ShaderManager var1, PostChainConfig.Pass var2) throws ShaderManager.CompilationException {
-      ResourceLocation var3 = var2.program();
-      CompiledShaderProgram var4 = var1.getProgramForLoading(new ShaderProgram(var3, DefaultVertexFormat.POSITION, ShaderDefines.EMPTY));
-      Iterator var5 = var2.uniforms().iterator();
+      CompiledShaderProgram var3 = var1.getProgramForLoading(var2.program());
 
-      String var7;
-      do {
-         if (!var5.hasNext()) {
-            String var32 = var3.toString();
-            PostPass var33 = new PostPass(var32, var4, var2.outputTarget(), var2.uniforms());
-            Iterator var34 = var2.inputs().iterator();
-
-            while(var34.hasNext()) {
-               PostChainConfig.Input var8 = (PostChainConfig.Input)var34.next();
-               Objects.requireNonNull(var8);
-               byte var10 = 0;
-               String var35;
-               ResourceLocation var36;
-               boolean var39;
-               //$FF: var10->value
-               //0->net/minecraft/client/renderer/PostChainConfig$TextureInput
-               //1->net/minecraft/client/renderer/PostChainConfig$TargetInput
-               switch (var8.typeSwitch<invokedynamic>(var8, var10)) {
-                  case 0:
-                     PostChainConfig.TextureInput var11 = (PostChainConfig.TextureInput)var8;
-                     PostChainConfig.TextureInput var41 = var11;
-
-                     try {
-                        var35 = var41.samplerName();
-                     } catch (Throwable var31) {
-                        throw new MatchException(var31.toString(), var31);
-                     }
-
-                     String var37 = var35;
-                     String var12 = var37;
-                     var41 = var11;
-
-                     try {
-                        var36 = var41.location();
-                     } catch (Throwable var30) {
-                        throw new MatchException(var30.toString(), var30);
-                     }
-
-                     ResourceLocation var38 = var36;
-                     ResourceLocation var13 = var38;
-                     var41 = var11;
-
-                     int var44;
-                     try {
-                        var44 = var41.width();
-                     } catch (Throwable var29) {
-                        throw new MatchException(var29.toString(), var29);
-                     }
-
-                     int var40 = var44;
-                     int var14 = var40;
-                     var41 = var11;
-
-                     try {
-                        var44 = var41.height();
-                     } catch (Throwable var28) {
-                        throw new MatchException(var28.toString(), var28);
-                     }
-
-                     var40 = var44;
-                     int var15 = var40;
-                     var41 = var11;
-
-                     try {
-                        var39 = var41.bilinear();
-                     } catch (Throwable var27) {
-                        throw new MatchException(var27.toString(), var27);
-                     }
-
-                     boolean var42 = var39;
-                     boolean var16 = var42;
-                     AbstractTexture var43 = var0.getTexture(var13.withPath((var0x) -> {
-                        return "textures/effect/" + var0x + ".png";
-                     }));
-                     var43.setFilter(var16, false);
-                     var33.addInput(new PostPass.TextureInput(var12, var43, var14, var15));
-                     break;
-                  case 1:
-                     PostChainConfig.TargetInput var17 = (PostChainConfig.TargetInput)var8;
-                     PostChainConfig.TargetInput var10000 = var17;
-
-                     try {
-                        var35 = var10000.samplerName();
-                     } catch (Throwable var26) {
-                        throw new MatchException(var26.toString(), var26);
-                     }
-
-                     String var22 = var35;
-                     String var18 = var22;
-                     var10000 = var17;
-
-                     try {
-                        var36 = var10000.targetId();
-                     } catch (Throwable var25) {
-                        throw new MatchException(var25.toString(), var25);
-                     }
-
-                     ResourceLocation var45 = var36;
-                     ResourceLocation var19 = var45;
-                     var10000 = var17;
-
-                     try {
-                        var39 = var10000.useDepthBuffer();
-                     } catch (Throwable var24) {
-                        throw new MatchException(var24.toString(), var24);
-                     }
-
-                     boolean var46 = var39;
-                     boolean var20 = var46;
-                     var10000 = var17;
-
-                     try {
-                        var39 = var10000.bilinear();
-                     } catch (Throwable var23) {
-                        throw new MatchException(var23.toString(), var23);
-                     }
-
-                     var46 = var39;
-                     var33.addInput(new PostPass.TargetInput(var18, var19, var20, var46));
-                     break;
-                  default:
-                     throw new MatchException((String)null, (Throwable)null);
-               }
-            }
-
-            return var33;
+      for(PostChainConfig.Uniform var5 : var2.uniforms()) {
+         String var6 = var5.name();
+         if (var3.getUniform(var6) == null) {
+            throw new ShaderManager.CompilationException("Uniform '" + var6 + "' does not exist for " + String.valueOf(var2.programId()));
          }
+      }
 
-         PostChainConfig.Uniform var6 = (PostChainConfig.Uniform)var5.next();
-         var7 = var6.name();
-      } while(var4.getUniform(var7) != null);
+      String var31 = var2.programId().toString();
+      PostPass var32 = new PostPass(var31, var3, var2.outputTarget(), var2.uniforms());
 
-      throw new ShaderManager.CompilationException("Uniform '" + var7 + "' does not exist for " + String.valueOf(var3));
+      for(PostChainConfig.Input var7 : var2.inputs()) {
+         Objects.requireNonNull(var7);
+         byte var9 = 0;
+         //$FF: var9->value
+         //0->net/minecraft/client/renderer/PostChainConfig$TextureInput
+         //1->net/minecraft/client/renderer/PostChainConfig$TargetInput
+         switch (var7.typeSwitch<invokedynamic>(var7, var9)) {
+            case 0:
+               PostChainConfig.TextureInput var10 = (PostChainConfig.TextureInput)var7;
+               PostChainConfig.TextureInput var50 = var10;
+
+               try {
+                  var51 = var50.samplerName();
+               } catch (Throwable var30) {
+                  throw new MatchException(var30.toString(), var30);
+               }
+
+               String var34 = var51;
+               String var11 = var34;
+               var50 = var10;
+
+               try {
+                  var53 = var50.location();
+               } catch (Throwable var29) {
+                  throw new MatchException(var29.toString(), var29);
+               }
+
+               ResourceLocation var35 = var53;
+               ResourceLocation var12 = var35;
+               var50 = var10;
+
+               try {
+                  var55 = var50.width();
+               } catch (Throwable var28) {
+                  throw new MatchException(var28.toString(), var28);
+               }
+
+               int var36 = var55;
+               int var13 = var36;
+               var50 = var10;
+
+               try {
+                  var57 = var50.height();
+               } catch (Throwable var27) {
+                  throw new MatchException(var27.toString(), var27);
+               }
+
+               var36 = var57;
+               int var14 = var36;
+               var50 = var10;
+
+               try {
+                  var59 = var50.bilinear();
+               } catch (Throwable var26) {
+                  throw new MatchException(var26.toString(), var26);
+               }
+
+               var36 = var59;
+               boolean var15 = (boolean)var36;
+               AbstractTexture var39 = var0.getTexture(var12.withPath((UnaryOperator)((var0x) -> "textures/effect/" + var0x + ".png")));
+               var39.setFilter(var15, false);
+               var32.addInput(new PostPass.TextureInput(var11, var39, var13, var14));
+               break;
+            case 1:
+               PostChainConfig.TargetInput var16 = (PostChainConfig.TargetInput)var7;
+               PostChainConfig.TargetInput var10000 = var16;
+
+               try {
+                  var43 = var10000.samplerName();
+               } catch (Throwable var25) {
+                  throw new MatchException(var25.toString(), var25);
+               }
+
+               String var21 = var43;
+               String var17 = var21;
+               var10000 = var16;
+
+               try {
+                  var45 = var10000.targetId();
+               } catch (Throwable var24) {
+                  throw new MatchException(var24.toString(), var24);
+               }
+
+               ResourceLocation var40 = var45;
+               ResourceLocation var18 = var40;
+               var10000 = var16;
+
+               try {
+                  var47 = var10000.useDepthBuffer();
+               } catch (Throwable var23) {
+                  throw new MatchException(var23.toString(), var23);
+               }
+
+               boolean var41 = var47;
+               boolean var19 = var41;
+               var10000 = var16;
+
+               try {
+                  var49 = var10000.bilinear();
+               } catch (Throwable var22) {
+                  throw new MatchException(var22.toString(), var22);
+               }
+
+               var41 = var49;
+               var32.addInput(new PostPass.TargetInput(var17, var18, var19, var41));
+               break;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
+         }
+      }
+
+      return var32;
    }
 
    public void addToFrame(FrameGraphBuilder var1, int var2, int var3, TargetBundle var4) {
       Matrix4f var5 = (new Matrix4f()).setOrtho(0.0F, (float)var2, 0.0F, (float)var3, 0.1F, 1000.0F);
       HashMap var6 = new HashMap(this.internalTargets.size() + this.externalTargets.size());
-      Iterator var7 = this.externalTargets.iterator();
 
-      ResourceLocation var8;
-      while(var7.hasNext()) {
-         var8 = (ResourceLocation)var7.next();
+      for(ResourceLocation var8 : this.externalTargets) {
          var6.put(var8, var4.getOrThrow(var8));
       }
 
-      var7 = this.internalTargets.entrySet().iterator();
-
-      while(var7.hasNext()) {
-         Map.Entry var19 = (Map.Entry)var7.next();
-         ResourceLocation var9 = (ResourceLocation)var19.getKey();
-         PostChainConfig.InternalTarget var10000 = (PostChainConfig.InternalTarget)var19.getValue();
+      for(Map.Entry var22 : this.internalTargets.entrySet()) {
+         ResourceLocation var9 = (ResourceLocation)var22.getKey();
+         PostChainConfig.InternalTarget var10000 = (PostChainConfig.InternalTarget)var22.getValue();
          Objects.requireNonNull(var10000);
          PostChainConfig.InternalTarget var11 = var10000;
          byte var12 = 0;
-         RenderTargetDescriptor var21;
+         RenderTargetDescriptor var27;
          //$FF: var12->value
          //0->net/minecraft/client/renderer/PostChainConfig$FixedSizedTarget
          //1->net/minecraft/client/renderer/PostChainConfig$FullScreenTarget
          switch (var11.typeSwitch<invokedynamic>(var11, var12)) {
             case 0:
                PostChainConfig.FixedSizedTarget var13 = (PostChainConfig.FixedSizedTarget)var11;
-               PostChainConfig.FixedSizedTarget var23 = var13;
+               PostChainConfig.FixedSizedTarget var28 = var13;
 
-               int var24;
                try {
-                  var24 = var23.width();
+                  var29 = var28.width();
                } catch (Throwable var18) {
                   throw new MatchException(var18.toString(), var18);
                }
 
-               int var22 = var24;
-               int var14 = var22;
-               var23 = var13;
+               int var25 = var29;
+               int var14 = var25;
+               var28 = var13;
 
                try {
-                  var24 = var23.height();
+                  var31 = var28.height();
                } catch (Throwable var17) {
                   throw new MatchException(var17.toString(), var17);
                }
 
-               var22 = var24;
-               var21 = new RenderTargetDescriptor(var14, var22, true);
+               var25 = var31;
+               var27 = new RenderTargetDescriptor(var14, var25, true);
                break;
             case 1:
                PostChainConfig.FullScreenTarget var16 = (PostChainConfig.FullScreenTarget)var11;
-               var21 = new RenderTargetDescriptor(var2, var3, true);
+               var27 = new RenderTargetDescriptor(var2, var3, true);
                break;
             default:
                throw new MatchException((String)null, (Throwable)null);
          }
 
-         RenderTargetDescriptor var10 = var21;
+         RenderTargetDescriptor var10 = var27;
          var6.put(var9, var1.createInternal(var9.toString(), var10));
       }
 
-      var7 = this.passes.iterator();
-
-      while(var7.hasNext()) {
-         PostPass var20 = (PostPass)var7.next();
-         var20.addToFrame(var1, var6, var5);
+      for(PostPass var23 : this.passes) {
+         var23.addToFrame(var1, var6, var5);
       }
 
-      var7 = this.externalTargets.iterator();
-
-      while(var7.hasNext()) {
-         var8 = (ResourceLocation)var7.next();
-         var4.replace(var8, (ResourceHandle)var6.get(var8));
+      for(ResourceLocation var24 : this.externalTargets) {
+         var4.replace(var24, (ResourceHandle)var6.get(var24));
       }
 
    }
@@ -287,10 +252,7 @@ public class PostChain {
    }
 
    public void setUniform(String var1, float var2) {
-      Iterator var3 = this.passes.iterator();
-
-      while(var3.hasNext()) {
-         PostPass var4 = (PostPass)var3.next();
+      for(PostPass var4 : this.passes) {
          var4.getShader().safeGetUniform(var1).set(var2);
       }
 

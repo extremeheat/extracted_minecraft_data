@@ -18,8 +18,7 @@ public class ObjectiveRenderTypeFix extends DataFix {
 
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.OBJECTIVE);
-      return this.fixTypeEverywhereTyped("ObjectiveRenderTypeFix", var1, (var0) -> {
-         return var0.update(DSL.remainderFinder(), (var0x) -> {
+      return this.fixTypeEverywhereTyped("ObjectiveRenderTypeFix", var1, (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> {
             Optional var1 = var0x.get("RenderType").asString().result();
             if (var1.isEmpty()) {
                String var2 = var0x.get("CriteriaName").asString("");
@@ -28,7 +27,6 @@ public class ObjectiveRenderTypeFix extends DataFix {
             } else {
                return var0x;
             }
-         });
-      });
+         }));
    }
 }

@@ -83,10 +83,8 @@ public class ServerStatusPinger {
                      var1.players = var1xx;
                      if (!var1xx.sample().isEmpty()) {
                         ArrayList var2x = new ArrayList(var1xx.sample().size());
-                        Iterator var3x = var1xx.sample().iterator();
 
-                        while(var3x.hasNext()) {
-                           GameProfile var4x = (GameProfile)var3x.next();
+                        for(GameProfile var4x : var1xx.sample()) {
                            var2x.add(Component.literal(var4x.getName()));
                         }
 
@@ -99,9 +97,7 @@ public class ServerStatusPinger {
                         var1.playerList = List.of();
                      }
 
-                  }, () -> {
-                     var1.status = Component.translatable("multiplayer.status.unknown").withStyle(ChatFormatting.DARK_GRAY);
-                  });
+                  }, () -> var1.status = Component.translatable("multiplayer.status.unknown").withStyle(ChatFormatting.DARK_GRAY));
                   var2x.favicon().ifPresent((var2xx) -> {
                      if (!Arrays.equals(var2xx.iconBytes(), var1.getIconBytes())) {
                         var1.setIconBytes(ServerData.validateIcon(var2xx.iconBytes()));
@@ -153,7 +149,7 @@ public class ServerStatusPinger {
    }
 
    void pingLegacyServer(InetSocketAddress var1, final ServerAddress var2, final ServerData var3) {
-      ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group((EventLoopGroup)Connection.NETWORK_WORKER_GROUP.get())).handler(new ChannelInitializer<Channel>(this) {
+      ((Bootstrap)((Bootstrap)((Bootstrap)(new Bootstrap()).group((EventLoopGroup)Connection.NETWORK_WORKER_GROUP.get())).handler(new ChannelInitializer<Channel>() {
          protected void initChannel(Channel var1) {
             try {
                var1.config().setOption(ChannelOption.TCP_NODELAY, true);

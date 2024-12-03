@@ -13,11 +13,7 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class ShipwreckStructure extends Structure {
-   public static final MapCodec<ShipwreckStructure> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(settingsCodec(var0), Codec.BOOL.fieldOf("is_beached").forGetter((var0x) -> {
-         return var0x.isBeached;
-      })).apply(var0, ShipwreckStructure::new);
-   });
+   public static final MapCodec<ShipwreckStructure> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(settingsCodec(var0), Codec.BOOL.fieldOf("is_beached").forGetter((var0x) -> var0x.isBeached)).apply(var0, ShipwreckStructure::new));
    public final boolean isBeached;
 
    public ShipwreckStructure(Structure.StructureSettings var1, boolean var2) {
@@ -27,9 +23,7 @@ public class ShipwreckStructure extends Structure {
 
    public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
       Heightmap.Types var2 = this.isBeached ? Heightmap.Types.WORLD_SURFACE_WG : Heightmap.Types.OCEAN_FLOOR_WG;
-      return onTopOfChunkCenter(var1, var2, (var2x) -> {
-         this.generatePieces(var2x, var1);
-      });
+      return onTopOfChunkCenter(var1, var2, (var2x) -> this.generatePieces(var2x, var1));
    }
 
    private void generatePieces(StructurePiecesBuilder var1, Structure.GenerationContext var2) {

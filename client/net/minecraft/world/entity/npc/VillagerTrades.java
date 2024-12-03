@@ -118,9 +118,7 @@ public class VillagerTrades {
    }
 
    private static ItemCost potionCost(Holder<Potion> var0) {
-      return (new ItemCost(Items.POTION)).withComponents((var1) -> {
-         return var1.expect(DataComponents.POTION_CONTENTS, new PotionContents(var0));
-      });
+      return (new ItemCost(Items.POTION)).withComponents((var1) -> var1.expect(DataComponents.POTION_CONTENTS, new PotionContents(var0)));
    }
 
    private static ItemStack potion(Holder<Potion> var0) {
@@ -128,7 +126,7 @@ public class VillagerTrades {
    }
 
    static {
-      WANDERING_TRADER_TRADES = toIntMap(ImmutableMap.of(1, new ItemListing[]{new ItemsForEmeralds(Items.SEA_PICKLE, 2, 1, 5, 1), new ItemsForEmeralds(Items.SLIME_BALL, 4, 1, 5, 1), new ItemsForEmeralds(Items.GLOWSTONE, 2, 1, 5, 1), new ItemsForEmeralds(Items.NAUTILUS_SHELL, 5, 1, 5, 1), new ItemsForEmeralds(Items.FERN, 1, 1, 12, 1), new ItemsForEmeralds(Items.SUGAR_CANE, 1, 1, 8, 1), new ItemsForEmeralds(Items.PUMPKIN, 1, 1, 4, 1), new ItemsForEmeralds(Items.KELP, 3, 1, 12, 1), new ItemsForEmeralds(Items.CACTUS, 3, 1, 8, 1), new ItemsForEmeralds(Items.DANDELION, 1, 1, 12, 1), new ItemsForEmeralds(Items.POPPY, 1, 1, 12, 1), new ItemsForEmeralds(Items.BLUE_ORCHID, 1, 1, 8, 1), new ItemsForEmeralds(Items.ALLIUM, 1, 1, 12, 1), new ItemsForEmeralds(Items.AZURE_BLUET, 1, 1, 12, 1), new ItemsForEmeralds(Items.RED_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.ORANGE_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.WHITE_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.PINK_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.OXEYE_DAISY, 1, 1, 12, 1), new ItemsForEmeralds(Items.CORNFLOWER, 1, 1, 12, 1), new ItemsForEmeralds(Items.LILY_OF_THE_VALLEY, 1, 1, 7, 1), new ItemsForEmeralds(Items.WHEAT_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.BEETROOT_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.PUMPKIN_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.MELON_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.ACACIA_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.BIRCH_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.DARK_OAK_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.JUNGLE_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.OAK_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.SPRUCE_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.CHERRY_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.MANGROVE_PROPAGULE, 5, 1, 8, 1), new ItemsForEmeralds(Items.RED_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.WHITE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BLUE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.PINK_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BLACK_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.GREEN_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.LIGHT_GRAY_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.MAGENTA_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.YELLOW_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.GRAY_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.PURPLE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.LIGHT_BLUE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.LIME_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.ORANGE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BROWN_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.CYAN_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BRAIN_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.BUBBLE_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.FIRE_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.HORN_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.TUBE_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.VINE, 1, 1, 12, 1), new ItemsForEmeralds(Items.BROWN_MUSHROOM, 1, 1, 12, 1), new ItemsForEmeralds(Items.RED_MUSHROOM, 1, 1, 12, 1), new ItemsForEmeralds(Items.LILY_PAD, 1, 2, 5, 1), new ItemsForEmeralds(Items.SMALL_DRIPLEAF, 1, 2, 5, 1), new ItemsForEmeralds(Items.SAND, 1, 8, 8, 1), new ItemsForEmeralds(Items.RED_SAND, 1, 4, 6, 1), new ItemsForEmeralds(Items.POINTED_DRIPSTONE, 1, 2, 5, 1), new ItemsForEmeralds(Items.ROOTED_DIRT, 1, 2, 5, 1), new ItemsForEmeralds(Items.MOSS_BLOCK, 1, 2, 5, 1)}, 2, new ItemListing[]{new ItemsForEmeralds(Items.TROPICAL_FISH_BUCKET, 5, 1, 4, 1), new ItemsForEmeralds(Items.PUFFERFISH_BUCKET, 5, 1, 4, 1), new ItemsForEmeralds(Items.PACKED_ICE, 3, 1, 6, 1), new ItemsForEmeralds(Items.BLUE_ICE, 6, 1, 6, 1), new ItemsForEmeralds(Items.GUNPOWDER, 1, 1, 8, 1), new ItemsForEmeralds(Items.PODZOL, 3, 3, 6, 1)}));
+      WANDERING_TRADER_TRADES = toIntMap(ImmutableMap.of(1, new ItemListing[]{new ItemsForEmeralds(Items.SEA_PICKLE, 2, 1, 5, 1), new ItemsForEmeralds(Items.SLIME_BALL, 4, 1, 5, 1), new ItemsForEmeralds(Items.GLOWSTONE, 2, 1, 5, 1), new ItemsForEmeralds(Items.NAUTILUS_SHELL, 5, 1, 5, 1), new ItemsForEmeralds(Items.FERN, 1, 1, 12, 1), new ItemsForEmeralds(Items.SUGAR_CANE, 1, 1, 8, 1), new ItemsForEmeralds(Items.PUMPKIN, 1, 1, 4, 1), new ItemsForEmeralds(Items.KELP, 3, 1, 12, 1), new ItemsForEmeralds(Items.CACTUS, 3, 1, 8, 1), new ItemsForEmeralds(Items.DANDELION, 1, 1, 12, 1), new ItemsForEmeralds(Items.POPPY, 1, 1, 12, 1), new ItemsForEmeralds(Items.BLUE_ORCHID, 1, 1, 8, 1), new ItemsForEmeralds(Items.ALLIUM, 1, 1, 12, 1), new ItemsForEmeralds(Items.AZURE_BLUET, 1, 1, 12, 1), new ItemsForEmeralds(Items.RED_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.ORANGE_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.WHITE_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.PINK_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.OXEYE_DAISY, 1, 1, 12, 1), new ItemsForEmeralds(Items.CORNFLOWER, 1, 1, 12, 1), new ItemsForEmeralds(Items.LILY_OF_THE_VALLEY, 1, 1, 7, 1), new ItemsForEmeralds(Items.OPEN_EYEBLOSSOM, 1, 1, 7, 1), new ItemsForEmeralds(Items.WHEAT_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.BEETROOT_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.PUMPKIN_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.MELON_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.ACACIA_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.BIRCH_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.DARK_OAK_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.JUNGLE_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.OAK_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.SPRUCE_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.CHERRY_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.PALE_OAK_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.MANGROVE_PROPAGULE, 5, 1, 8, 1), new ItemsForEmeralds(Items.RED_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.WHITE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BLUE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.PINK_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BLACK_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.GREEN_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.LIGHT_GRAY_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.MAGENTA_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.YELLOW_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.GRAY_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.PURPLE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.LIGHT_BLUE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.LIME_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.ORANGE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BROWN_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.CYAN_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BRAIN_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.BUBBLE_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.FIRE_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.HORN_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.TUBE_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.VINE, 1, 1, 12, 1), new ItemsForEmeralds(Items.PALE_HANGING_MOSS, 1, 1, 12, 1), new ItemsForEmeralds(Items.BROWN_MUSHROOM, 1, 1, 12, 1), new ItemsForEmeralds(Items.RED_MUSHROOM, 1, 1, 12, 1), new ItemsForEmeralds(Items.LILY_PAD, 1, 2, 5, 1), new ItemsForEmeralds(Items.SMALL_DRIPLEAF, 1, 2, 5, 1), new ItemsForEmeralds(Items.SAND, 1, 8, 8, 1), new ItemsForEmeralds(Items.RED_SAND, 1, 4, 6, 1), new ItemsForEmeralds(Items.POINTED_DRIPSTONE, 1, 2, 5, 1), new ItemsForEmeralds(Items.ROOTED_DIRT, 1, 2, 5, 1), new ItemsForEmeralds(Items.MOSS_BLOCK, 1, 2, 5, 1), new ItemsForEmeralds(Items.PALE_MOSS_BLOCK, 1, 2, 5, 1)}, 2, new ItemListing[]{new ItemsForEmeralds(Items.TROPICAL_FISH_BUCKET, 5, 1, 4, 1), new ItemsForEmeralds(Items.PUFFERFISH_BUCKET, 5, 1, 4, 1), new ItemsForEmeralds(Items.PACKED_ICE, 3, 1, 6, 1), new ItemsForEmeralds(Items.BLUE_ICE, 6, 1, 6, 1), new ItemsForEmeralds(Items.GUNPOWDER, 1, 1, 8, 1), new ItemsForEmeralds(Items.PODZOL, 3, 3, 6, 1)}));
       DESERT_MAP = new TreasureMapForEmeralds(8, StructureTags.ON_DESERT_VILLAGE_MAPS, "filled_map.village_desert", MapDecorationTypes.DESERT_VILLAGE, 12, 5);
       SAVANNA_MAP = new TreasureMapForEmeralds(8, StructureTags.ON_SAVANNA_VILLAGE_MAPS, "filled_map.village_savanna", MapDecorationTypes.SAVANNA_VILLAGE, 12, 5);
       PLAINS_MAP = new TreasureMapForEmeralds(8, StructureTags.ON_PLAINS_VILLAGE_MAPS, "filled_map.village_plains", MapDecorationTypes.PLAINS_VILLAGE, 12, 5);
@@ -137,91 +135,10 @@ public class VillagerTrades {
       JUNGLE_MAP = new TreasureMapForEmeralds(8, StructureTags.ON_JUNGLE_EXPLORER_MAPS, "filled_map.explorer_jungle", MapDecorationTypes.JUNGLE_TEMPLE, 12, 5);
       SWAMP_MAP = new TreasureMapForEmeralds(8, StructureTags.ON_SWAMP_EXPLORER_MAPS, "filled_map.explorer_swamp", MapDecorationTypes.SWAMP_HUT, 12, 5);
       EXPERIMENTAL_TRADES = Map.of(VillagerProfession.LIBRARIAN, toIntMap(ImmutableMap.builder().put(1, new ItemListing[]{new EmeraldForItems(Items.PAPER, 24, 16, 2), commonBooks(1), new ItemsForEmeralds(Blocks.BOOKSHELF, 9, 1, 12, 1)}).put(2, new ItemListing[]{new EmeraldForItems(Items.BOOK, 4, 12, 10), commonBooks(5), new ItemsForEmeralds(Items.LANTERN, 1, 1, 5)}).put(3, new ItemListing[]{new EmeraldForItems(Items.INK_SAC, 5, 12, 20), commonBooks(10), new ItemsForEmeralds(Items.GLASS, 1, 4, 10)}).put(4, new ItemListing[]{new EmeraldForItems(Items.WRITABLE_BOOK, 2, 12, 30), new ItemsForEmeralds(Items.CLOCK, 5, 1, 15), new ItemsForEmeralds(Items.COMPASS, 4, 1, 15)}).put(5, new ItemListing[]{specialBooks(), new ItemsForEmeralds(Items.NAME_TAG, 20, 1, 30)}).build()), VillagerProfession.ARMORER, toIntMap(ImmutableMap.builder().put(1, new ItemListing[]{new EmeraldForItems(Items.COAL, 15, 12, 2), new EmeraldForItems(Items.IRON_INGOT, 5, 12, 2)}).put(2, new ItemListing[]{VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_BOOTS, 4, 1, 12, 5, 0.05F), VillagerType.DESERT, VillagerType.PLAINS, VillagerType.SAVANNA, VillagerType.SNOW, VillagerType.TAIGA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_BOOTS, 4, 1, 12, 5, 0.05F), VillagerType.JUNGLE, VillagerType.SWAMP), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_HELMET, 5, 1, 12, 5, 0.05F), VillagerType.DESERT, VillagerType.PLAINS, VillagerType.SAVANNA, VillagerType.SNOW, VillagerType.TAIGA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_HELMET, 5, 1, 12, 5, 0.05F), VillagerType.JUNGLE, VillagerType.SWAMP), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_LEGGINGS, 7, 1, 12, 5, 0.05F), VillagerType.DESERT, VillagerType.PLAINS, VillagerType.SAVANNA, VillagerType.SNOW, VillagerType.TAIGA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_LEGGINGS, 7, 1, 12, 5, 0.05F), VillagerType.JUNGLE, VillagerType.SWAMP), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_CHESTPLATE, 9, 1, 12, 5, 0.05F), VillagerType.DESERT, VillagerType.PLAINS, VillagerType.SAVANNA, VillagerType.SNOW, VillagerType.TAIGA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_CHESTPLATE, 9, 1, 12, 5, 0.05F), VillagerType.JUNGLE, VillagerType.SWAMP)}).put(3, new ItemListing[]{new EmeraldForItems(Items.LAVA_BUCKET, 1, 12, 20), new ItemsForEmeralds(Items.SHIELD, 5, 1, 12, 10, 0.05F), new ItemsForEmeralds(Items.BELL, 36, 1, 12, 10, 0.2F)}).put(4, new ItemListing[]{VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_BOOTS, 8, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_DESERT_ARMORER_BOOTS_4), VillagerType.DESERT), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_HELMET, 9, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_DESERT_ARMORER_HELMET_4), VillagerType.DESERT), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_LEGGINGS, 11, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_DESERT_ARMORER_LEGGINGS_4), VillagerType.DESERT), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_CHESTPLATE, 13, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_DESERT_ARMORER_CHESTPLATE_4), VillagerType.DESERT), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_BOOTS, 8, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_PLAINS_ARMORER_BOOTS_4), VillagerType.PLAINS), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_HELMET, 9, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_PLAINS_ARMORER_HELMET_4), VillagerType.PLAINS), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_LEGGINGS, 11, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_PLAINS_ARMORER_LEGGINGS_4), VillagerType.PLAINS), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_CHESTPLATE, 13, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_PLAINS_ARMORER_CHESTPLATE_4), VillagerType.PLAINS), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_BOOTS, 2, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SAVANNA_ARMORER_BOOTS_4), VillagerType.SAVANNA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_HELMET, 3, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SAVANNA_ARMORER_HELMET_4), VillagerType.SAVANNA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_LEGGINGS, 5, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SAVANNA_ARMORER_LEGGINGS_4), VillagerType.SAVANNA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_CHESTPLATE, 7, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SAVANNA_ARMORER_CHESTPLATE_4), VillagerType.SAVANNA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_BOOTS, 8, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SNOW_ARMORER_BOOTS_4), VillagerType.SNOW), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.IRON_HELMET, 9, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SNOW_ARMORER_HELMET_4), VillagerType.SNOW), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_BOOTS, 8, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_JUNGLE_ARMORER_BOOTS_4), VillagerType.JUNGLE), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_HELMET, 9, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_JUNGLE_ARMORER_HELMET_4), VillagerType.JUNGLE), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_LEGGINGS, 11, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_JUNGLE_ARMORER_LEGGINGS_4), VillagerType.JUNGLE), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_CHESTPLATE, 13, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_JUNGLE_ARMORER_CHESTPLATE_4), VillagerType.JUNGLE), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_BOOTS, 8, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SWAMP_ARMORER_BOOTS_4), VillagerType.SWAMP), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_HELMET, 9, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SWAMP_ARMORER_HELMET_4), VillagerType.SWAMP), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_LEGGINGS, 11, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SWAMP_ARMORER_LEGGINGS_4), VillagerType.SWAMP), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_CHESTPLATE, 13, 1, 3, 15, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SWAMP_ARMORER_CHESTPLATE_4), VillagerType.SWAMP), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsAndEmeraldsToItems(Items.DIAMOND_BOOTS, 1, 4, Items.DIAMOND_LEGGINGS, 1, 3, 15, 0.05F), VillagerType.TAIGA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsAndEmeraldsToItems(Items.DIAMOND_LEGGINGS, 1, 4, Items.DIAMOND_CHESTPLATE, 1, 3, 15, 0.05F), VillagerType.TAIGA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsAndEmeraldsToItems(Items.DIAMOND_HELMET, 1, 4, Items.DIAMOND_BOOTS, 1, 3, 15, 0.05F), VillagerType.TAIGA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsAndEmeraldsToItems(Items.DIAMOND_CHESTPLATE, 1, 2, Items.DIAMOND_HELMET, 1, 3, 15, 0.05F), VillagerType.TAIGA)}).put(5, new ItemListing[]{VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsAndEmeraldsToItems(Items.DIAMOND, 4, 16, Items.DIAMOND_CHESTPLATE, 1, 3, 30, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_DESERT_ARMORER_CHESTPLATE_5), VillagerType.DESERT), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsAndEmeraldsToItems(Items.DIAMOND, 3, 16, Items.DIAMOND_LEGGINGS, 1, 3, 30, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_DESERT_ARMORER_LEGGINGS_5), VillagerType.DESERT), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsAndEmeraldsToItems(Items.DIAMOND, 3, 16, Items.DIAMOND_LEGGINGS, 1, 3, 30, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_PLAINS_ARMORER_LEGGINGS_5), VillagerType.PLAINS), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsAndEmeraldsToItems(Items.DIAMOND, 2, 12, Items.DIAMOND_BOOTS, 1, 3, 30, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_PLAINS_ARMORER_BOOTS_5), VillagerType.PLAINS), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsAndEmeraldsToItems(Items.DIAMOND, 2, 6, Items.DIAMOND_HELMET, 1, 3, 30, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SAVANNA_ARMORER_HELMET_5), VillagerType.SAVANNA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsAndEmeraldsToItems(Items.DIAMOND, 3, 8, Items.DIAMOND_CHESTPLATE, 1, 3, 30, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SAVANNA_ARMORER_CHESTPLATE_5), VillagerType.SAVANNA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsAndEmeraldsToItems(Items.DIAMOND, 2, 12, Items.DIAMOND_BOOTS, 1, 3, 30, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SNOW_ARMORER_BOOTS_5), VillagerType.SNOW), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsAndEmeraldsToItems(Items.DIAMOND, 3, 12, Items.DIAMOND_HELMET, 1, 3, 30, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SNOW_ARMORER_HELMET_5), VillagerType.SNOW), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_HELMET, 9, 1, 3, 30, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_JUNGLE_ARMORER_HELMET_5), VillagerType.JUNGLE), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_BOOTS, 8, 1, 3, 30, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_JUNGLE_ARMORER_BOOTS_5), VillagerType.JUNGLE), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_HELMET, 9, 1, 3, 30, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SWAMP_ARMORER_HELMET_5), VillagerType.SWAMP), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsForEmeralds(Items.CHAINMAIL_BOOTS, 8, 1, 3, 30, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_SWAMP_ARMORER_BOOTS_5), VillagerType.SWAMP), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsAndEmeraldsToItems(Items.DIAMOND, 4, 18, Items.DIAMOND_CHESTPLATE, 1, 3, 30, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_TAIGA_ARMORER_CHESTPLATE_5), VillagerType.TAIGA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new ItemsAndEmeraldsToItems(Items.DIAMOND, 3, 18, Items.DIAMOND_LEGGINGS, 1, 3, 30, 0.05F, TradeRebalanceEnchantmentProviders.TRADES_TAIGA_ARMORER_LEGGINGS_5), VillagerType.TAIGA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new EmeraldForItems(Items.DIAMOND_BLOCK, 1, 12, 30, 42), VillagerType.TAIGA), VillagerTrades.TypeSpecificTrade.oneTradeInBiomes(new EmeraldForItems(Items.IRON_BLOCK, 1, 12, 30, 4), VillagerType.DESERT, VillagerType.JUNGLE, VillagerType.PLAINS, VillagerType.SAVANNA, VillagerType.SNOW, VillagerType.SWAMP)}).build()), VillagerProfession.CARTOGRAPHER, toIntMap(ImmutableMap.of(1, new ItemListing[]{new EmeraldForItems(Items.PAPER, 24, 16, 2), new ItemsForEmeralds(Items.MAP, 7, 1, 1)}, 2, new ItemListing[]{new EmeraldForItems(Items.GLASS_PANE, 11, 16, 10), new TypeSpecificTrade(ImmutableMap.builder().put(VillagerType.DESERT, SAVANNA_MAP).put(VillagerType.SAVANNA, PLAINS_MAP).put(VillagerType.PLAINS, TAIGA_MAP).put(VillagerType.TAIGA, SNOWY_MAP).put(VillagerType.SNOW, PLAINS_MAP).put(VillagerType.JUNGLE, SAVANNA_MAP).put(VillagerType.SWAMP, SNOWY_MAP).build()), new TypeSpecificTrade(ImmutableMap.builder().put(VillagerType.DESERT, PLAINS_MAP).put(VillagerType.SAVANNA, DESERT_MAP).put(VillagerType.PLAINS, SAVANNA_MAP).put(VillagerType.TAIGA, PLAINS_MAP).put(VillagerType.SNOW, TAIGA_MAP).put(VillagerType.JUNGLE, DESERT_MAP).put(VillagerType.SWAMP, TAIGA_MAP).build()), new TypeSpecificTrade(ImmutableMap.builder().put(VillagerType.DESERT, JUNGLE_MAP).put(VillagerType.SAVANNA, JUNGLE_MAP).put(VillagerType.PLAINS, new FailureItemListing()).put(VillagerType.TAIGA, SWAMP_MAP).put(VillagerType.SNOW, SWAMP_MAP).put(VillagerType.JUNGLE, SWAMP_MAP).put(VillagerType.SWAMP, JUNGLE_MAP).build())}, 3, new ItemListing[]{new EmeraldForItems(Items.COMPASS, 1, 12, 20), new TreasureMapForEmeralds(13, StructureTags.ON_OCEAN_EXPLORER_MAPS, "filled_map.monument", MapDecorationTypes.OCEAN_MONUMENT, 12, 10), new TreasureMapForEmeralds(12, StructureTags.ON_TRIAL_CHAMBERS_MAPS, "filled_map.trial_chambers", MapDecorationTypes.TRIAL_CHAMBERS, 12, 10)}, 4, new ItemListing[]{new ItemsForEmeralds(Items.ITEM_FRAME, 7, 1, 15), new ItemsForEmeralds(Items.WHITE_BANNER, 3, 1, 15), new ItemsForEmeralds(Items.BLUE_BANNER, 3, 1, 15), new ItemsForEmeralds(Items.LIGHT_BLUE_BANNER, 3, 1, 15), new ItemsForEmeralds(Items.RED_BANNER, 3, 1, 15), new ItemsForEmeralds(Items.PINK_BANNER, 3, 1, 15), new ItemsForEmeralds(Items.GREEN_BANNER, 3, 1, 15), new ItemsForEmeralds(Items.LIME_BANNER, 3, 1, 15), new ItemsForEmeralds(Items.GRAY_BANNER, 3, 1, 15), new ItemsForEmeralds(Items.BLACK_BANNER, 3, 1, 15), new ItemsForEmeralds(Items.PURPLE_BANNER, 3, 1, 15), new ItemsForEmeralds(Items.MAGENTA_BANNER, 3, 1, 15), new ItemsForEmeralds(Items.CYAN_BANNER, 3, 1, 15), new ItemsForEmeralds(Items.BROWN_BANNER, 3, 1, 15), new ItemsForEmeralds(Items.YELLOW_BANNER, 3, 1, 15), new ItemsForEmeralds(Items.ORANGE_BANNER, 3, 1, 15), new ItemsForEmeralds(Items.LIGHT_GRAY_BANNER, 3, 1, 15)}, 5, new ItemListing[]{new ItemsForEmeralds(Items.GLOBE_BANNER_PATTERN, 8, 1, 30), new TreasureMapForEmeralds(14, StructureTags.ON_WOODLAND_EXPLORER_MAPS, "filled_map.mansion", MapDecorationTypes.WOODLAND_MANSION, 1, 30)})));
-      EXPERIMENTAL_WANDERING_TRADER_TRADES = ImmutableList.builder().add(Pair.of(new ItemListing[]{new EmeraldForItems(potionCost(Potions.WATER), 1, 1, 1), new EmeraldForItems(Items.WATER_BUCKET, 1, 1, 1, 2), new EmeraldForItems(Items.MILK_BUCKET, 1, 1, 1, 2), new EmeraldForItems(Items.FERMENTED_SPIDER_EYE, 1, 1, 1, 3), new EmeraldForItems(Items.BAKED_POTATO, 4, 1, 1), new EmeraldForItems(Items.HAY_BLOCK, 1, 1, 1)}, 2)).add(Pair.of(new ItemListing[]{new ItemsForEmeralds(Items.PACKED_ICE, 1, 1, 6, 1), new ItemsForEmeralds(Items.BLUE_ICE, 6, 1, 6, 1), new ItemsForEmeralds(Items.GUNPOWDER, 1, 4, 2, 1), new ItemsForEmeralds(Items.PODZOL, 3, 3, 6, 1), new ItemsForEmeralds(Blocks.ACACIA_LOG, 1, 8, 4, 1), new ItemsForEmeralds(Blocks.BIRCH_LOG, 1, 8, 4, 1), new ItemsForEmeralds(Blocks.DARK_OAK_LOG, 1, 8, 4, 1), new ItemsForEmeralds(Blocks.JUNGLE_LOG, 1, 8, 4, 1), new ItemsForEmeralds(Blocks.OAK_LOG, 1, 8, 4, 1), new ItemsForEmeralds(Blocks.SPRUCE_LOG, 1, 8, 4, 1), new ItemsForEmeralds(Blocks.CHERRY_LOG, 1, 8, 4, 1), new EnchantedItemForEmeralds(Items.IRON_PICKAXE, 1, 1, 1, 0.2F), new ItemsForEmeralds(potion(Potions.LONG_INVISIBILITY), 5, 1, 1, 1)}, 2)).add(Pair.of(new ItemListing[]{new ItemsForEmeralds(Items.TROPICAL_FISH_BUCKET, 3, 1, 4, 1), new ItemsForEmeralds(Items.PUFFERFISH_BUCKET, 3, 1, 4, 1), new ItemsForEmeralds(Items.SEA_PICKLE, 2, 1, 5, 1), new ItemsForEmeralds(Items.SLIME_BALL, 4, 1, 5, 1), new ItemsForEmeralds(Items.GLOWSTONE, 2, 1, 5, 1), new ItemsForEmeralds(Items.NAUTILUS_SHELL, 5, 1, 5, 1), new ItemsForEmeralds(Items.FERN, 1, 1, 12, 1), new ItemsForEmeralds(Items.SUGAR_CANE, 1, 1, 8, 1), new ItemsForEmeralds(Items.PUMPKIN, 1, 1, 4, 1), new ItemsForEmeralds(Items.KELP, 3, 1, 12, 1), new ItemsForEmeralds(Items.CACTUS, 3, 1, 8, 1), new ItemsForEmeralds(Items.DANDELION, 1, 1, 12, 1), new ItemsForEmeralds(Items.POPPY, 1, 1, 12, 1), new ItemsForEmeralds(Items.BLUE_ORCHID, 1, 1, 8, 1), new ItemsForEmeralds(Items.ALLIUM, 1, 1, 12, 1), new ItemsForEmeralds(Items.AZURE_BLUET, 1, 1, 12, 1), new ItemsForEmeralds(Items.RED_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.ORANGE_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.WHITE_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.PINK_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.OXEYE_DAISY, 1, 1, 12, 1), new ItemsForEmeralds(Items.CORNFLOWER, 1, 1, 12, 1), new ItemsForEmeralds(Items.LILY_OF_THE_VALLEY, 1, 1, 7, 1), new ItemsForEmeralds(Items.WHEAT_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.BEETROOT_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.PUMPKIN_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.MELON_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.ACACIA_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.BIRCH_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.DARK_OAK_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.JUNGLE_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.OAK_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.SPRUCE_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.CHERRY_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.MANGROVE_PROPAGULE, 5, 1, 8, 1), new ItemsForEmeralds(Items.RED_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.WHITE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BLUE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.PINK_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BLACK_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.GREEN_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.LIGHT_GRAY_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.MAGENTA_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.YELLOW_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.GRAY_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.PURPLE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.LIGHT_BLUE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.LIME_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.ORANGE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BROWN_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.CYAN_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BRAIN_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.BUBBLE_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.FIRE_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.HORN_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.TUBE_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.VINE, 1, 3, 4, 1), new ItemsForEmeralds(Items.BROWN_MUSHROOM, 1, 3, 4, 1), new ItemsForEmeralds(Items.RED_MUSHROOM, 1, 3, 4, 1), new ItemsForEmeralds(Items.LILY_PAD, 1, 5, 2, 1), new ItemsForEmeralds(Items.SMALL_DRIPLEAF, 1, 2, 5, 1), new ItemsForEmeralds(Items.SAND, 1, 8, 8, 1), new ItemsForEmeralds(Items.RED_SAND, 1, 4, 6, 1), new ItemsForEmeralds(Items.POINTED_DRIPSTONE, 1, 2, 5, 1), new ItemsForEmeralds(Items.ROOTED_DIRT, 1, 2, 5, 1), new ItemsForEmeralds(Items.MOSS_BLOCK, 1, 2, 5, 1)}, 5)).build();
+      EXPERIMENTAL_WANDERING_TRADER_TRADES = ImmutableList.builder().add(Pair.of(new ItemListing[]{new EmeraldForItems(potionCost(Potions.WATER), 1, 1, 1), new EmeraldForItems(Items.WATER_BUCKET, 1, 1, 1, 2), new EmeraldForItems(Items.MILK_BUCKET, 1, 1, 1, 2), new EmeraldForItems(Items.FERMENTED_SPIDER_EYE, 1, 1, 1, 3), new EmeraldForItems(Items.BAKED_POTATO, 4, 1, 1), new EmeraldForItems(Items.HAY_BLOCK, 1, 1, 1)}, 2)).add(Pair.of(new ItemListing[]{new ItemsForEmeralds(Items.PACKED_ICE, 1, 1, 6, 1), new ItemsForEmeralds(Items.BLUE_ICE, 6, 1, 6, 1), new ItemsForEmeralds(Items.GUNPOWDER, 1, 4, 2, 1), new ItemsForEmeralds(Items.PODZOL, 3, 3, 6, 1), new ItemsForEmeralds(Blocks.ACACIA_LOG, 1, 8, 4, 1), new ItemsForEmeralds(Blocks.BIRCH_LOG, 1, 8, 4, 1), new ItemsForEmeralds(Blocks.DARK_OAK_LOG, 1, 8, 4, 1), new ItemsForEmeralds(Blocks.JUNGLE_LOG, 1, 8, 4, 1), new ItemsForEmeralds(Blocks.OAK_LOG, 1, 8, 4, 1), new ItemsForEmeralds(Blocks.SPRUCE_LOG, 1, 8, 4, 1), new ItemsForEmeralds(Blocks.CHERRY_LOG, 1, 8, 4, 1), new EnchantedItemForEmeralds(Items.IRON_PICKAXE, 1, 1, 1, 0.2F), new ItemsForEmeralds(potion(Potions.LONG_INVISIBILITY), 5, 1, 1, 1)}, 2)).add(Pair.of(new ItemListing[]{new ItemsForEmeralds(Items.TROPICAL_FISH_BUCKET, 3, 1, 4, 1), new ItemsForEmeralds(Items.PUFFERFISH_BUCKET, 3, 1, 4, 1), new ItemsForEmeralds(Items.SEA_PICKLE, 2, 1, 5, 1), new ItemsForEmeralds(Items.SLIME_BALL, 4, 1, 5, 1), new ItemsForEmeralds(Items.GLOWSTONE, 2, 1, 5, 1), new ItemsForEmeralds(Items.NAUTILUS_SHELL, 5, 1, 5, 1), new ItemsForEmeralds(Items.FERN, 1, 1, 12, 1), new ItemsForEmeralds(Items.SUGAR_CANE, 1, 1, 8, 1), new ItemsForEmeralds(Items.PUMPKIN, 1, 1, 4, 1), new ItemsForEmeralds(Items.KELP, 3, 1, 12, 1), new ItemsForEmeralds(Items.CACTUS, 3, 1, 8, 1), new ItemsForEmeralds(Items.DANDELION, 1, 1, 12, 1), new ItemsForEmeralds(Items.POPPY, 1, 1, 12, 1), new ItemsForEmeralds(Items.BLUE_ORCHID, 1, 1, 8, 1), new ItemsForEmeralds(Items.ALLIUM, 1, 1, 12, 1), new ItemsForEmeralds(Items.AZURE_BLUET, 1, 1, 12, 1), new ItemsForEmeralds(Items.RED_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.ORANGE_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.WHITE_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.PINK_TULIP, 1, 1, 12, 1), new ItemsForEmeralds(Items.OXEYE_DAISY, 1, 1, 12, 1), new ItemsForEmeralds(Items.CORNFLOWER, 1, 1, 12, 1), new ItemsForEmeralds(Items.LILY_OF_THE_VALLEY, 1, 1, 7, 1), new ItemsForEmeralds(Items.OPEN_EYEBLOSSOM, 1, 1, 7, 1), new ItemsForEmeralds(Items.WHEAT_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.BEETROOT_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.PUMPKIN_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.MELON_SEEDS, 1, 1, 12, 1), new ItemsForEmeralds(Items.ACACIA_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.BIRCH_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.DARK_OAK_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.JUNGLE_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.OAK_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.SPRUCE_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.CHERRY_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.PALE_OAK_SAPLING, 5, 1, 8, 1), new ItemsForEmeralds(Items.MANGROVE_PROPAGULE, 5, 1, 8, 1), new ItemsForEmeralds(Items.RED_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.WHITE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BLUE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.PINK_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BLACK_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.GREEN_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.LIGHT_GRAY_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.MAGENTA_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.YELLOW_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.GRAY_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.PURPLE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.LIGHT_BLUE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.LIME_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.ORANGE_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BROWN_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.CYAN_DYE, 1, 3, 12, 1), new ItemsForEmeralds(Items.BRAIN_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.BUBBLE_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.FIRE_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.HORN_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.TUBE_CORAL_BLOCK, 3, 1, 8, 1), new ItemsForEmeralds(Items.VINE, 1, 3, 4, 1), new ItemsForEmeralds(Items.PALE_HANGING_MOSS, 1, 3, 4, 1), new ItemsForEmeralds(Items.BROWN_MUSHROOM, 1, 3, 4, 1), new ItemsForEmeralds(Items.RED_MUSHROOM, 1, 3, 4, 1), new ItemsForEmeralds(Items.LILY_PAD, 1, 5, 2, 1), new ItemsForEmeralds(Items.SMALL_DRIPLEAF, 1, 2, 5, 1), new ItemsForEmeralds(Items.SAND, 1, 8, 8, 1), new ItemsForEmeralds(Items.RED_SAND, 1, 4, 6, 1), new ItemsForEmeralds(Items.POINTED_DRIPSTONE, 1, 2, 5, 1), new ItemsForEmeralds(Items.ROOTED_DIRT, 1, 2, 5, 1), new ItemsForEmeralds(Items.MOSS_BLOCK, 1, 2, 5, 1), new ItemsForEmeralds(Items.PALE_MOSS_BLOCK, 1, 2, 5, 1)}, 5)).build();
    }
 
-   private static record TypeSpecificTrade(Map<VillagerType, ItemListing> trades) implements ItemListing {
-      TypeSpecificTrade(Map<VillagerType, ItemListing> var1) {
-         super();
-         this.trades = var1;
-      }
-
-      public static TypeSpecificTrade oneTradeInBiomes(ItemListing var0, VillagerType... var1) {
-         return new TypeSpecificTrade((Map)Arrays.stream(var1).collect(Collectors.toMap((var0x) -> {
-            return var0x;
-         }, (var1x) -> {
-            return var0;
-         })));
-      }
-
-      @Nullable
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         if (var1 instanceof VillagerDataHolder var3) {
-            VillagerType var4 = var3.getVillagerData().getType();
-            ItemListing var5 = (ItemListing)this.trades.get(var4);
-            return var5 == null ? null : var5.getOffer(var1, var2);
-         } else {
-            return null;
-         }
-      }
-
-      public Map<VillagerType, ItemListing> trades() {
-         return this.trades;
-      }
-   }
-
-   static class EnchantBookForEmeralds implements ItemListing {
-      private final int villagerXp;
-      private final TagKey<Enchantment> tradeableEnchantments;
-      private final int minLevel;
-      private final int maxLevel;
-
-      public EnchantBookForEmeralds(int var1, TagKey<Enchantment> var2) {
-         this(var1, 0, 2147483647, var2);
-      }
-
-      public EnchantBookForEmeralds(int var1, int var2, int var3, TagKey<Enchantment> var4) {
-         super();
-         this.minLevel = var2;
-         this.maxLevel = var3;
-         this.villagerXp = var1;
-         this.tradeableEnchantments = var4;
-      }
-
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         Optional var3 = var1.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getRandomElementOf(this.tradeableEnchantments, var2);
-         int var4;
-         ItemStack var5;
-         if (!var3.isEmpty()) {
-            Holder var6 = (Holder)var3.get();
-            Enchantment var7 = (Enchantment)var6.value();
-            int var8 = Math.max(var7.getMinLevel(), this.minLevel);
-            int var9 = Math.min(var7.getMaxLevel(), this.maxLevel);
-            int var10 = Mth.nextInt(var2, var8, var9);
-            var5 = EnchantmentHelper.createBook(new EnchantmentInstance(var6, var10));
-            var4 = 2 + var2.nextInt(5 + var10 * 10) + 3 * var10;
-            if (var6.is(EnchantmentTags.DOUBLE_TRADE_PRICE)) {
-               var4 *= 2;
-            }
-
-            if (var4 > 64) {
-               var4 = 64;
-            }
-         } else {
-            var4 = 1;
-            var5 = new ItemStack(Items.BOOK);
-         }
-
-         return new MerchantOffer(new ItemCost(Items.EMERALD, var4), Optional.of(new ItemCost(Items.BOOK)), var5, 12, this.villagerXp, 0.2F);
-      }
-   }
-
-   public interface ItemListing {
-      @Nullable
-      MerchantOffer getOffer(Entity var1, RandomSource var2);
-   }
-
-   private static class EmeraldForItems implements ItemListing {
+   static class EmeraldForItems implements ItemListing {
       private final ItemCost itemStack;
       private final int maxUses;
       private final int villagerXp;
@@ -247,6 +164,56 @@ public class VillagerTrades {
 
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
          return new MerchantOffer(this.itemStack, new ItemStack(Items.EMERALD, this.emeraldAmount), this.maxUses, this.villagerXp, this.priceMultiplier);
+      }
+   }
+
+   static record TypeSpecificTrade(Map<VillagerType, ItemListing> trades) implements ItemListing {
+      TypeSpecificTrade(Map<VillagerType, ItemListing> var1) {
+         super();
+         this.trades = var1;
+      }
+
+      public static TypeSpecificTrade oneTradeInBiomes(ItemListing var0, VillagerType... var1) {
+         return new TypeSpecificTrade((Map)Arrays.stream(var1).collect(Collectors.toMap((var0x) -> var0x, (var1x) -> var0)));
+      }
+
+      @Nullable
+      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
+         if (var1 instanceof VillagerDataHolder var3) {
+            VillagerType var4 = var3.getVillagerData().getType();
+            ItemListing var5 = (ItemListing)this.trades.get(var4);
+            return var5 == null ? null : var5.getOffer(var1, var2);
+         } else {
+            return null;
+         }
+      }
+   }
+
+   static class EmeraldsForVillagerTypeItem implements ItemListing {
+      private final Map<VillagerType, Item> trades;
+      private final int cost;
+      private final int maxUses;
+      private final int villagerXp;
+
+      public EmeraldsForVillagerTypeItem(int var1, int var2, int var3, Map<VillagerType, Item> var4) {
+         super();
+         BuiltInRegistries.VILLAGER_TYPE.stream().filter((var1x) -> !var4.containsKey(var1x)).findAny().ifPresent((var0) -> {
+            throw new IllegalStateException("Missing trade for villager type: " + String.valueOf(BuiltInRegistries.VILLAGER_TYPE.getKey(var0)));
+         });
+         this.trades = var4;
+         this.cost = var1;
+         this.maxUses = var2;
+         this.villagerXp = var3;
+      }
+
+      @Nullable
+      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
+         if (var1 instanceof VillagerDataHolder var3) {
+            ItemCost var4 = new ItemCost((ItemLike)this.trades.get(var3.getVillagerData().getType()), this.cost);
+            return new MerchantOffer(var4, new ItemStack(Items.EMERALD), this.maxUses, this.villagerXp, 0.05F);
+         } else {
+            return null;
+         }
       }
    }
 
@@ -300,9 +267,7 @@ public class VillagerTrades {
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
          ItemStack var3 = this.itemStack.copy();
          Level var4 = var1.level();
-         this.enchantmentProvider.ifPresent((var4x) -> {
-            EnchantmentHelper.enchantItemFromProvider(var3, var4.registryAccess(), var4x, var4.getCurrentDifficultyAt(var1.blockPosition()), var2);
-         });
+         this.enchantmentProvider.ifPresent((var4x) -> EnchantmentHelper.enchantItemFromProvider(var3, var4.registryAccess(), var4x, var4.getCurrentDifficultyAt(var1.blockPosition()), var2));
          return new MerchantOffer(new ItemCost(Items.EMERALD, this.emeraldCost), var3, this.maxUses, this.villagerXp, this.priceMultiplier);
       }
    }
@@ -328,49 +293,6 @@ public class VillagerTrades {
          ItemStack var3 = new ItemStack(Items.SUSPICIOUS_STEW, 1);
          var3.set(DataComponents.SUSPICIOUS_STEW_EFFECTS, this.effects);
          return new MerchantOffer(new ItemCost(Items.EMERALD), var3, 12, this.xp, this.priceMultiplier);
-      }
-   }
-
-   static class ItemsAndEmeraldsToItems implements ItemListing {
-      private final ItemCost fromItem;
-      private final int emeraldCost;
-      private final ItemStack toItem;
-      private final int maxUses;
-      private final int villagerXp;
-      private final float priceMultiplier;
-      private final Optional<ResourceKey<EnchantmentProvider>> enchantmentProvider;
-
-      public ItemsAndEmeraldsToItems(ItemLike var1, int var2, int var3, Item var4, int var5, int var6, int var7, float var8) {
-         this(var1, var2, var3, new ItemStack(var4), var5, var6, var7, var8);
-      }
-
-      private ItemsAndEmeraldsToItems(ItemLike var1, int var2, int var3, ItemStack var4, int var5, int var6, int var7, float var8) {
-         this(new ItemCost(var1, var2), var3, var4.copyWithCount(var5), var6, var7, var8, Optional.empty());
-      }
-
-      ItemsAndEmeraldsToItems(ItemLike var1, int var2, int var3, ItemLike var4, int var5, int var6, int var7, float var8, ResourceKey<EnchantmentProvider> var9) {
-         this(new ItemCost(var1, var2), var3, new ItemStack(var4, var5), var6, var7, var8, Optional.of(var9));
-      }
-
-      public ItemsAndEmeraldsToItems(ItemCost var1, int var2, ItemStack var3, int var4, int var5, float var6, Optional<ResourceKey<EnchantmentProvider>> var7) {
-         super();
-         this.fromItem = var1;
-         this.emeraldCost = var2;
-         this.toItem = var3;
-         this.maxUses = var4;
-         this.villagerXp = var5;
-         this.priceMultiplier = var6;
-         this.enchantmentProvider = var7;
-      }
-
-      @Nullable
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         ItemStack var3 = this.toItem.copy();
-         Level var4 = var1.level();
-         this.enchantmentProvider.ifPresent((var4x) -> {
-            EnchantmentHelper.enchantItemFromProvider(var3, var4.registryAccess(), var4x, var4.getCurrentDifficultyAt(var1.blockPosition()), var2);
-         });
-         return new MerchantOffer(new ItemCost(Items.EMERALD, this.emeraldCost), Optional.of(this.fromItem), var3, 0, this.maxUses, this.villagerXp, this.priceMultiplier);
       }
    }
 
@@ -405,37 +327,7 @@ public class VillagerTrades {
       }
    }
 
-   private static class EmeraldsForVillagerTypeItem implements ItemListing {
-      private final Map<VillagerType, Item> trades;
-      private final int cost;
-      private final int maxUses;
-      private final int villagerXp;
-
-      public EmeraldsForVillagerTypeItem(int var1, int var2, int var3, Map<VillagerType, Item> var4) {
-         super();
-         BuiltInRegistries.VILLAGER_TYPE.stream().filter((var1x) -> {
-            return !var4.containsKey(var1x);
-         }).findAny().ifPresent((var0) -> {
-            throw new IllegalStateException("Missing trade for villager type: " + String.valueOf(BuiltInRegistries.VILLAGER_TYPE.getKey(var0)));
-         });
-         this.trades = var4;
-         this.cost = var1;
-         this.maxUses = var2;
-         this.villagerXp = var3;
-      }
-
-      @Nullable
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         if (var1 instanceof VillagerDataHolder var3) {
-            ItemCost var4 = new ItemCost((ItemLike)this.trades.get(var3.getVillagerData().getType()), this.cost);
-            return new MerchantOffer(var4, new ItemStack(Items.EMERALD), this.maxUses, this.villagerXp, 0.05F);
-         } else {
-            return null;
-         }
-      }
-   }
-
-   private static class TippedArrowForItemsAndEmeralds implements ItemListing {
+   static class TippedArrowForItemsAndEmeralds implements ItemListing {
       private final ItemStack toItem;
       private final int toCount;
       private final int emeraldCost;
@@ -459,51 +351,11 @@ public class VillagerTrades {
 
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
          ItemCost var3 = new ItemCost(Items.EMERALD, this.emeraldCost);
-         List var4 = (List)BuiltInRegistries.POTION.listElements().filter((var1x) -> {
-            return !((Potion)var1x.value()).getEffects().isEmpty() && var1.level().potionBrewing().isBrewablePotion(var1x);
-         }).collect(Collectors.toList());
+         List var4 = (List)BuiltInRegistries.POTION.listElements().filter((var1x) -> !((Potion)var1x.value()).getEffects().isEmpty() && var1.level().potionBrewing().isBrewablePotion(var1x)).collect(Collectors.toList());
          Holder var5 = (Holder)Util.getRandom(var4, var2);
          ItemStack var6 = new ItemStack(this.toItem.getItem(), this.toCount);
          var6.set(DataComponents.POTION_CONTENTS, new PotionContents(var5));
          return new MerchantOffer(var3, Optional.of(new ItemCost(this.fromItem, this.fromCount)), var6, this.maxUses, this.villagerXp, this.priceMultiplier);
-      }
-   }
-
-   private static class TreasureMapForEmeralds implements ItemListing {
-      private final int emeraldCost;
-      private final TagKey<Structure> destination;
-      private final String displayName;
-      private final Holder<MapDecorationType> destinationType;
-      private final int maxUses;
-      private final int villagerXp;
-
-      public TreasureMapForEmeralds(int var1, TagKey<Structure> var2, String var3, Holder<MapDecorationType> var4, int var5, int var6) {
-         super();
-         this.emeraldCost = var1;
-         this.destination = var2;
-         this.displayName = var3;
-         this.destinationType = var4;
-         this.maxUses = var5;
-         this.villagerXp = var6;
-      }
-
-      @Nullable
-      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         if (!(var1.level() instanceof ServerLevel)) {
-            return null;
-         } else {
-            ServerLevel var3 = (ServerLevel)var1.level();
-            BlockPos var4 = var3.findNearestMapStructure(this.destination, var1.blockPosition(), 100, true);
-            if (var4 != null) {
-               ItemStack var5 = MapItem.create(var3, var4.getX(), var4.getZ(), (byte)2, true, true);
-               MapItem.renderBiomePreviewMap(var3, var5);
-               MapItemSavedData.addTargetDecoration(var5, var4, "+", this.destinationType);
-               var5.set(DataComponents.ITEM_NAME, Component.translatable(this.displayName));
-               return new MerchantOffer(new ItemCost(Items.EMERALD, this.emeraldCost), Optional.of(new ItemCost(Items.COMPASS)), var5, this.maxUses, this.villagerXp, 0.2F);
-            } else {
-               return null;
-            }
-         }
       }
    }
 
@@ -550,6 +402,52 @@ public class VillagerTrades {
       }
    }
 
+   static class EnchantBookForEmeralds implements ItemListing {
+      private final int villagerXp;
+      private final TagKey<Enchantment> tradeableEnchantments;
+      private final int minLevel;
+      private final int maxLevel;
+
+      public EnchantBookForEmeralds(int var1, TagKey<Enchantment> var2) {
+         this(var1, 0, 2147483647, var2);
+      }
+
+      public EnchantBookForEmeralds(int var1, int var2, int var3, TagKey<Enchantment> var4) {
+         super();
+         this.minLevel = var2;
+         this.maxLevel = var3;
+         this.villagerXp = var1;
+         this.tradeableEnchantments = var4;
+      }
+
+      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
+         Optional var3 = var1.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getRandomElementOf(this.tradeableEnchantments, var2);
+         int var4;
+         ItemStack var5;
+         if (!var3.isEmpty()) {
+            Holder var6 = (Holder)var3.get();
+            Enchantment var7 = (Enchantment)var6.value();
+            int var8 = Math.max(var7.getMinLevel(), this.minLevel);
+            int var9 = Math.min(var7.getMaxLevel(), this.maxLevel);
+            int var10 = Mth.nextInt(var2, var8, var9);
+            var5 = EnchantmentHelper.createBook(new EnchantmentInstance(var6, var10));
+            var4 = 2 + var2.nextInt(5 + var10 * 10) + 3 * var10;
+            if (var6.is(EnchantmentTags.DOUBLE_TRADE_PRICE)) {
+               var4 *= 2;
+            }
+
+            if (var4 > 64) {
+               var4 = 64;
+            }
+         } else {
+            var4 = 1;
+            var5 = new ItemStack(Items.BOOK);
+         }
+
+         return new MerchantOffer(new ItemCost(Items.EMERALD, var4), Optional.of(new ItemCost(Items.BOOK)), var5, 12, this.villagerXp, 0.2F);
+      }
+   }
+
    static class FailureItemListing implements ItemListing {
       FailureItemListing() {
          super();
@@ -558,5 +456,89 @@ public class VillagerTrades {
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
          return null;
       }
+   }
+
+   static class TreasureMapForEmeralds implements ItemListing {
+      private final int emeraldCost;
+      private final TagKey<Structure> destination;
+      private final String displayName;
+      private final Holder<MapDecorationType> destinationType;
+      private final int maxUses;
+      private final int villagerXp;
+
+      public TreasureMapForEmeralds(int var1, TagKey<Structure> var2, String var3, Holder<MapDecorationType> var4, int var5, int var6) {
+         super();
+         this.emeraldCost = var1;
+         this.destination = var2;
+         this.displayName = var3;
+         this.destinationType = var4;
+         this.maxUses = var5;
+         this.villagerXp = var6;
+      }
+
+      @Nullable
+      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
+         if (!(var1.level() instanceof ServerLevel)) {
+            return null;
+         } else {
+            ServerLevel var3 = (ServerLevel)var1.level();
+            BlockPos var4 = var3.findNearestMapStructure(this.destination, var1.blockPosition(), 100, true);
+            if (var4 != null) {
+               ItemStack var5 = MapItem.create(var3, var4.getX(), var4.getZ(), (byte)2, true, true);
+               MapItem.renderBiomePreviewMap(var3, var5);
+               MapItemSavedData.addTargetDecoration(var5, var4, "+", this.destinationType);
+               var5.set(DataComponents.ITEM_NAME, Component.translatable(this.displayName));
+               return new MerchantOffer(new ItemCost(Items.EMERALD, this.emeraldCost), Optional.of(new ItemCost(Items.COMPASS)), var5, this.maxUses, this.villagerXp, 0.2F);
+            } else {
+               return null;
+            }
+         }
+      }
+   }
+
+   static class ItemsAndEmeraldsToItems implements ItemListing {
+      private final ItemCost fromItem;
+      private final int emeraldCost;
+      private final ItemStack toItem;
+      private final int maxUses;
+      private final int villagerXp;
+      private final float priceMultiplier;
+      private final Optional<ResourceKey<EnchantmentProvider>> enchantmentProvider;
+
+      public ItemsAndEmeraldsToItems(ItemLike var1, int var2, int var3, Item var4, int var5, int var6, int var7, float var8) {
+         this(var1, var2, var3, new ItemStack(var4), var5, var6, var7, var8);
+      }
+
+      private ItemsAndEmeraldsToItems(ItemLike var1, int var2, int var3, ItemStack var4, int var5, int var6, int var7, float var8) {
+         this(new ItemCost(var1, var2), var3, var4.copyWithCount(var5), var6, var7, var8, Optional.empty());
+      }
+
+      ItemsAndEmeraldsToItems(ItemLike var1, int var2, int var3, ItemLike var4, int var5, int var6, int var7, float var8, ResourceKey<EnchantmentProvider> var9) {
+         this(new ItemCost(var1, var2), var3, new ItemStack(var4, var5), var6, var7, var8, Optional.of(var9));
+      }
+
+      public ItemsAndEmeraldsToItems(ItemCost var1, int var2, ItemStack var3, int var4, int var5, float var6, Optional<ResourceKey<EnchantmentProvider>> var7) {
+         super();
+         this.fromItem = var1;
+         this.emeraldCost = var2;
+         this.toItem = var3;
+         this.maxUses = var4;
+         this.villagerXp = var5;
+         this.priceMultiplier = var6;
+         this.enchantmentProvider = var7;
+      }
+
+      @Nullable
+      public MerchantOffer getOffer(Entity var1, RandomSource var2) {
+         ItemStack var3 = this.toItem.copy();
+         Level var4 = var1.level();
+         this.enchantmentProvider.ifPresent((var4x) -> EnchantmentHelper.enchantItemFromProvider(var3, var4.registryAccess(), var4x, var4.getCurrentDifficultyAt(var1.blockPosition()), var2));
+         return new MerchantOffer(new ItemCost(Items.EMERALD, this.emeraldCost), Optional.of(this.fromItem), var3, 0, this.maxUses, this.villagerXp, this.priceMultiplier);
+      }
+   }
+
+   public interface ItemListing {
+      @Nullable
+      MerchantOffer getOffer(Entity var1, RandomSource var2);
    }
 }

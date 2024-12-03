@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ClientboundDeleteChatPacket(MessageSignature.Packed messageSignature) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundDeleteChatPacket> STREAM_CODEC = Packet.codec(ClientboundDeleteChatPacket::write, ClientboundDeleteChatPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundDeleteChatPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundDeleteChatPacket>codec(ClientboundDeleteChatPacket::write, ClientboundDeleteChatPacket::new);
 
    private ClientboundDeleteChatPacket(FriendlyByteBuf var1) {
       this(MessageSignature.Packed.read(var1));
@@ -28,9 +28,5 @@ public record ClientboundDeleteChatPacket(MessageSignature.Packed messageSignatu
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleDeleteChat(this);
-   }
-
-   public MessageSignature.Packed messageSignature() {
-      return this.messageSignature;
    }
 }

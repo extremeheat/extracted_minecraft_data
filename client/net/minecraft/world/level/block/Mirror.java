@@ -11,7 +11,7 @@ public enum Mirror implements StringRepresentable {
    LEFT_RIGHT("left_right", OctahedralGroup.INVERT_Z),
    FRONT_BACK("front_back", OctahedralGroup.INVERT_X);
 
-   public static final Codec<Mirror> CODEC = StringRepresentable.fromEnum(Mirror::values);
+   public static final Codec<Mirror> CODEC = StringRepresentable.<Mirror>fromEnum(Mirror::values);
    private final String id;
    private final Component symbol;
    private final OctahedralGroup rotation;

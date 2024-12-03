@@ -8,7 +8,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustColorTransitionOptions;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -145,13 +144,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return !var1.isClientSide ? createTickerHelper(var3, BlockEntityType.SCULK_SENSOR, (var0, var1x, var2x, var3x) -> {
-         VibrationSystem.Ticker.tick(var0, var3x.getVibrationData(), var3x.getVibrationUser());
-      }) : null;
-   }
-
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
+      return !var1.isClientSide ? createTickerHelper(var3, BlockEntityType.SCULK_SENSOR, (var0, var1x, var2x, var3x) -> VibrationSystem.Ticker.tick(var0, var3x.getVibrationData(), var3x.getVibrationUser())) : null;
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -196,17 +189,13 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
       tryResonateVibration(var1, var2, var3, var6);
       var2.gameEvent(var1, GameEvent.SCULK_SENSOR_TENDRILS_CLICKING, var3);
       if (!(Boolean)var4.getValue(WATERLOGGED)) {
-         var2.playSound((Player)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, (SoundEvent)SoundEvents.SCULK_CLICKING, SoundSource.BLOCKS, 1.0F, var2.random.nextFloat() * 0.2F + 0.8F);
+         var2.playSound((Player)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, SoundEvents.SCULK_CLICKING, SoundSource.BLOCKS, 1.0F, var2.random.nextFloat() * 0.2F + 0.8F);
       }
 
    }
 
    public static void tryResonateVibration(@Nullable Entity var0, Level var1, BlockPos var2, int var3) {
-      Direction[] var4 = Direction.values();
-      int var5 = var4.length;
-
-      for(int var6 = 0; var6 < var5; ++var6) {
-         Direction var7 = var4[var6];
+      for(Direction var7 : Direction.values()) {
          BlockPos var8 = var2.relative(var7);
          BlockState var9 = var1.getBlockState(var8);
          if (var9.is(BlockTags.VIBRATION_RESONATORS)) {

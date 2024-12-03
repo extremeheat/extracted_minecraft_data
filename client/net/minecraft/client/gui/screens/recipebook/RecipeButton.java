@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.recipebook;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -29,21 +30,23 @@ public class RecipeButton extends AbstractWidget {
    private static final int BACKGROUND_SIZE = 25;
    private static final Component MORE_RECIPES_TOOLTIP = Component.translatable("gui.recipebook.moreRecipes");
    private RecipeCollection collection;
-   private List<ResolvedEntry> selectedEntries = List.of();
+   private List<ResolvedEntry> selectedEntries;
+   private boolean allRecipesHaveSameResultDisplay;
    private final SlotSelectTime slotSelectTime;
    private float animationTime;
 
    public RecipeButton(SlotSelectTime var1) {
       super(0, 0, 25, 25, CommonComponents.EMPTY);
+      this.collection = RecipeCollection.EMPTY;
+      this.selectedEntries = List.of();
       this.slotSelectTime = var1;
    }
 
    public void init(RecipeCollection var1, boolean var2, RecipeBookPage var3, ContextMap var4) {
       this.collection = var1;
       List var5 = var1.getSelectedRecipes(var2 ? RecipeCollection.CraftableStatus.CRAFTABLE : RecipeCollection.CraftableStatus.ANY);
-      this.selectedEntries = var5.stream().map((var1x) -> {
-         return new ResolvedEntry(var1x.id(), var1x.resultItems(var4));
-      }).toList();
+      this.selectedEntries = var5.stream().map((var1x) -> new ResolvedEntry(var1x.id(), var1x.resultItems(var4))).toList();
+      this.allRecipesHaveSameResultDisplay = allRecipesHaveSameResultDisplay(this.selectedEntries);
       Stream var10000 = var5.stream().map(RecipeDisplayEntry::id);
       ClientRecipeBook var10001 = var3.getRecipeBook();
       Objects.requireNonNull(var10001);
@@ -54,6 +57,24 @@ public class RecipeButton extends AbstractWidget {
          this.animationTime = 15.0F;
       }
 
+   }
+
+   private static boolean allRecipesHaveSameResultDisplay(List<ResolvedEntry> var0) {
+      Iterator var1 = var0.stream().flatMap((var0x) -> var0x.displayItems().stream()).iterator();
+      if (!var1.hasNext()) {
+         return true;
+      } else {
+         ItemStack var2 = (ItemStack)var1.next();
+
+         while(var1.hasNext()) {
+            ItemStack var3 = (ItemStack)var1.next();
+            if (!ItemStack.isSameItemSameComponents(var2, var3)) {
+               return false;
+            }
+         }
+
+         return true;
+      }
    }
 
    public RecipeCollection getCollection() {
@@ -87,7 +108,7 @@ public class RecipeButton extends AbstractWidget {
       var1.blitSprite(RenderType::guiTextured, var5, this.getX(), this.getY(), this.width, this.height);
       ItemStack var9 = this.getDisplayStack();
       int var8 = 4;
-      if (this.collection.hasSingleResultItem() && this.hasMultipleRecipes()) {
+      if (this.hasMultipleRecipes() && this.allRecipesHaveSameResultDisplay) {
          var1.renderItem(var9, this.getX() + var8 + 1, this.getY() + var8 + 1, 0, 10);
          --var8;
       }
@@ -163,14 +184,6 @@ public class RecipeButton extends AbstractWidget {
             int var2 = var1 % this.displayItems.size();
             return (ItemStack)this.displayItems.get(var2);
          }
-      }
-
-      public RecipeDisplayId id() {
-         return this.id;
-      }
-
-      public List<ItemStack> displayItems() {
-         return this.displayItems;
       }
    }
 }

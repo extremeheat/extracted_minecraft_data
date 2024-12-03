@@ -22,10 +22,6 @@ public class PoolAliasBindings {
    }
 
    public static void registerTargetsAsPools(BootstrapContext<StructureTemplatePool> var0, Holder<StructureTemplatePool> var1, List<PoolAliasBinding> var2) {
-      var2.stream().flatMap(PoolAliasBinding::allTargets).map((var0x) -> {
-         return var0x.location().getPath();
-      }).forEach((var2x) -> {
-         Pools.register(var0, var2x, new StructureTemplatePool(var1, List.of(Pair.of(StructurePoolElement.single(var2x), 1)), StructureTemplatePool.Projection.RIGID));
-      });
+      var2.stream().flatMap(PoolAliasBinding::allTargets).map((var0x) -> var0x.location().getPath()).forEach((var2x) -> Pools.register(var0, var2x, new StructureTemplatePool(var1, List.of(Pair.of(StructurePoolElement.single(var2x), 1)), StructureTemplatePool.Projection.RIGID)));
    }
 }

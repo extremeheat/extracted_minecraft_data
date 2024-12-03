@@ -7,8 +7,4 @@ public record BundleTooltip(BundleContents contents) implements TooltipComponent
       super();
       this.contents = var1;
    }
-
-   public BundleContents contents() {
-      return this.contents;
-   }
 }

@@ -41,10 +41,6 @@ public class BrewingStandBlock extends BaseEntityBlock {
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(HAS_BOTTLE[0], false)).setValue(HAS_BOTTLE[1], false)).setValue(HAS_BOTTLE[2], false));
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
-
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new BrewingStandBlockEntity(var1, var2);
    }

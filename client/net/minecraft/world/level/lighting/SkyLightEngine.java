@@ -136,11 +136,8 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
    protected void propagateIncrease(long var1, long var3, int var5) {
       BlockState var6 = null;
       int var7 = this.countEmptySectionsBelowIfAtBorder(var1);
-      Direction[] var8 = PROPAGATION_DIRECTIONS;
-      int var9 = var8.length;
 
-      for(int var10 = 0; var10 < var9; ++var10) {
-         Direction var11 = var8[var10];
+      for(Direction var11 : PROPAGATION_DIRECTIONS) {
          if (LightEngine.QueueEntry.shouldPropagateInDirection(var3, var11)) {
             long var12 = BlockPos.offset(var1, var11);
             if (((SkyLightSectionStorage)this.storage).storingLightForSection(SectionPos.blockToSection(var12))) {
@@ -174,11 +171,8 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
    protected void propagateDecrease(long var1, long var3) {
       int var5 = this.countEmptySectionsBelowIfAtBorder(var1);
       int var6 = LightEngine.QueueEntry.getFromLevel(var3);
-      Direction[] var7 = PROPAGATION_DIRECTIONS;
-      int var8 = var7.length;
 
-      for(int var9 = 0; var9 < var8; ++var9) {
-         Direction var10 = var7[var9];
+      for(Direction var10 : PROPAGATION_DIRECTIONS) {
          if (LightEngine.QueueEntry.shouldPropagateInDirection(var3, var10)) {
             long var11 = BlockPos.offset(var1, var10);
             if (((SkyLightSectionStorage)this.storage).storingLightForSection(SectionPos.blockToSection(var11))) {
@@ -235,32 +229,29 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
             int var12 = SectionPos.blockToSectionCoord(var9) - 1;
             int var13 = var12 - var6 + 1;
 
-            while(true) {
-               while(var12 >= var13) {
-                  if (!((SkyLightSectionStorage)this.storage).storingLightForSection(SectionPos.asLong(var10, var12, var11))) {
-                     --var12;
-                  } else {
-                     int var14 = SectionPos.sectionToBlockCoord(var12);
+            while(var12 >= var13) {
+               if (!((SkyLightSectionStorage)this.storage).storingLightForSection(SectionPos.asLong(var10, var12, var11))) {
+                  --var12;
+               } else {
+                  int var14 = SectionPos.sectionToBlockCoord(var12);
 
-                     for(int var15 = 15; var15 >= 0; --var15) {
-                        long var16 = BlockPos.asLong(var7, var14 + var15, var8);
-                        if (var5) {
-                           ((SkyLightSectionStorage)this.storage).setStoredLevel(var16, var4);
-                           if (var4 > 1) {
-                              this.enqueueIncrease(var16, LightEngine.QueueEntry.increaseSkipOneDirection(var4, true, var3.getOpposite()));
-                           }
-                        } else {
-                           ((SkyLightSectionStorage)this.storage).setStoredLevel(var16, 0);
-                           this.enqueueDecrease(var16, LightEngine.QueueEntry.decreaseSkipOneDirection(var4, var3.getOpposite()));
+                  for(int var15 = 15; var15 >= 0; --var15) {
+                     long var16 = BlockPos.asLong(var7, var14 + var15, var8);
+                     if (var5) {
+                        ((SkyLightSectionStorage)this.storage).setStoredLevel(var16, var4);
+                        if (var4 > 1) {
+                           this.enqueueIncrease(var16, LightEngine.QueueEntry.increaseSkipOneDirection(var4, true, var3.getOpposite()));
                         }
+                     } else {
+                        ((SkyLightSectionStorage)this.storage).setStoredLevel(var16, 0);
+                        this.enqueueDecrease(var16, LightEngine.QueueEntry.decreaseSkipOneDirection(var4, var3.getOpposite()));
                      }
-
-                     --var12;
                   }
-               }
 
-               return;
+                  --var12;
+               }
             }
+
          }
       }
    }

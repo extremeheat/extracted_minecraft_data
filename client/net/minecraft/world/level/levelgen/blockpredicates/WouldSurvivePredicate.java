@@ -8,13 +8,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class WouldSurvivePredicate implements BlockPredicate {
-   public static final MapCodec<WouldSurvivePredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Vec3i.offsetCodec(16).optionalFieldOf("offset", Vec3i.ZERO).forGetter((var0x) -> {
-         return var0x.offset;
-      }), BlockState.CODEC.fieldOf("state").forGetter((var0x) -> {
-         return var0x.state;
-      })).apply(var0, WouldSurvivePredicate::new);
-   });
+   public static final MapCodec<WouldSurvivePredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Vec3i.offsetCodec(16).optionalFieldOf("offset", Vec3i.ZERO).forGetter((var0x) -> var0x.offset), BlockState.CODEC.fieldOf("state").forGetter((var0x) -> var0x.state)).apply(var0, WouldSurvivePredicate::new));
    private final Vec3i offset;
    private final BlockState state;
 

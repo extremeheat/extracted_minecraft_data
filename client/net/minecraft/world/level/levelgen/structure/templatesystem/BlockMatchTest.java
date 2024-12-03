@@ -24,8 +24,6 @@ public class BlockMatchTest extends RuleTest {
    }
 
    static {
-      CODEC = BuiltInRegistries.BLOCK.byNameCodec().fieldOf("block").xmap(BlockMatchTest::new, (var0) -> {
-         return var0.block;
-      });
+      CODEC = BuiltInRegistries.BLOCK.byNameCodec().fieldOf("block").xmap(BlockMatchTest::new, (var0) -> var0.block);
    }
 }

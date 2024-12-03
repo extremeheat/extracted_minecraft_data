@@ -16,13 +16,11 @@ public class SingletonArgumentInfo<A extends ArgumentType<?>> implements Argumen
    }
 
    public static <T extends ArgumentType<?>> SingletonArgumentInfo<T> contextFree(Supplier<T> var0) {
-      return new SingletonArgumentInfo((var1) -> {
-         return (ArgumentType)var0.get();
-      });
+      return new SingletonArgumentInfo<T>((var1) -> (ArgumentType)var0.get());
    }
 
    public static <T extends ArgumentType<?>> SingletonArgumentInfo<T> contextAware(Function<CommandBuildContext, T> var0) {
-      return new SingletonArgumentInfo(var0);
+      return new SingletonArgumentInfo<T>(var0);
    }
 
    public void serializeToNetwork(SingletonArgumentInfo<A>.Template var1, FriendlyByteBuf var2) {
@@ -58,7 +56,7 @@ public class SingletonArgumentInfo<A extends ArgumentType<?>> implements Argumen
       }
 
       public A instantiate(CommandBuildContext var1) {
-         return (ArgumentType)this.constructor.apply(var1);
+         return (A)((ArgumentType)this.constructor.apply(var1));
       }
 
       public ArgumentTypeInfo<A, ?> type() {

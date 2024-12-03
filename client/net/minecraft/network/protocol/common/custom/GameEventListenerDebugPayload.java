@@ -19,16 +19,8 @@ public record GameEventListenerDebugPayload(PositionSource listenerPos, int list
       return TYPE;
    }
 
-   public PositionSource listenerPos() {
-      return this.listenerPos;
-   }
-
-   public int listenerRange() {
-      return this.listenerRange;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(PositionSource.STREAM_CODEC, GameEventListenerDebugPayload::listenerPos, ByteBufCodecs.VAR_INT, GameEventListenerDebugPayload::listenerRange, GameEventListenerDebugPayload::new);
-      TYPE = CustomPacketPayload.createType("debug/game_event_listeners");
+      TYPE = CustomPacketPayload.<GameEventListenerDebugPayload>createType("debug/game_event_listeners");
    }
 }

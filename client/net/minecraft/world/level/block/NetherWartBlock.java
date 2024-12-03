@@ -52,7 +52,7 @@ public class NetherWartBlock extends BushBlock {
 
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return new ItemStack(Items.NETHER_WART);
    }
 

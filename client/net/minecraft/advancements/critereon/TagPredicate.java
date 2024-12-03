@@ -15,28 +15,18 @@ public record TagPredicate<T>(TagKey<T> tag, boolean expected) {
    }
 
    public static <T> Codec<TagPredicate<T>> codec(ResourceKey<? extends Registry<T>> var0) {
-      return RecordCodecBuilder.create((var1) -> {
-         return var1.group(TagKey.codec(var0).fieldOf("id").forGetter(TagPredicate::tag), Codec.BOOL.fieldOf("expected").forGetter(TagPredicate::expected)).apply(var1, TagPredicate::new);
-      });
+      return RecordCodecBuilder.create((var1) -> var1.group(TagKey.codec(var0).fieldOf("id").forGetter(TagPredicate::tag), Codec.BOOL.fieldOf("expected").forGetter(TagPredicate::expected)).apply(var1, TagPredicate::new));
    }
 
    public static <T> TagPredicate<T> is(TagKey<T> var0) {
-      return new TagPredicate(var0, true);
+      return new TagPredicate<T>(var0, true);
    }
 
    public static <T> TagPredicate<T> isNot(TagKey<T> var0) {
-      return new TagPredicate(var0, false);
+      return new TagPredicate<T>(var0, false);
    }
 
    public boolean matches(Holder<T> var1) {
       return var1.is(this.tag) == this.expected;
-   }
-
-   public TagKey<T> tag() {
-      return this.tag;
-   }
-
-   public boolean expected() {
-      return this.expected;
    }
 }

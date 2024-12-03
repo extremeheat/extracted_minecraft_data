@@ -19,11 +19,7 @@ public enum FrontAndTop implements StringRepresentable {
 
    private static final int NUM_DIRECTIONS = Direction.values().length;
    private static final FrontAndTop[] BY_TOP_FRONT = (FrontAndTop[])Util.make(new FrontAndTop[NUM_DIRECTIONS * NUM_DIRECTIONS], (var0) -> {
-      FrontAndTop[] var1 = values();
-      int var2 = var1.length;
-
-      for(int var3 = 0; var3 < var2; ++var3) {
-         FrontAndTop var4 = var1[var3];
+      for(FrontAndTop var4 : values()) {
          var0[lookupKey(var4.front, var4.top)] = var4;
       }
 

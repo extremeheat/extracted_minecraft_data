@@ -13,9 +13,7 @@ public class V1470 extends NamespacedSchema {
    }
 
    protected static void registerMob(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      var0.register(var1, var2, () -> {
-         return V100.equipment(var0);
-      });
+      var0.register(var1, var2, () -> V100.equipment(var0));
    }
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
@@ -28,9 +26,7 @@ public class V1470 extends NamespacedSchema {
       registerMob(var1, var2, "minecraft:phantom");
       registerMob(var1, var2, "minecraft:dolphin");
       registerMob(var1, var2, "minecraft:drowned");
-      var1.register(var2, "minecraft:trident", (var1x) -> {
-         return DSL.optionalFields("inBlockState", References.BLOCK_STATE.in(var1), "Trident", References.ITEM_STACK.in(var1));
-      });
+      var1.register(var2, "minecraft:trident", (var1x) -> DSL.optionalFields("inBlockState", References.BLOCK_STATE.in(var1), "Trident", References.ITEM_STACK.in(var1)));
       return var2;
    }
 }

@@ -32,7 +32,7 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
    private final Font font;
    protected float shadowRadius;
    protected float shadowStrength = 1.0F;
-   private final S reusedState = this.createRenderState();
+   private final S reusedState = (S)this.createRenderState();
 
    protected EntityRenderer(EntityRendererProvider.Context var1) {
       super();
@@ -117,13 +117,12 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       VertexConsumer var10 = var1.getBuffer(RenderType.leash());
       Matrix4f var11 = var0.last().pose();
 
-      int var12;
-      for(var12 = 0; var12 <= 24; ++var12) {
+      for(int var12 = 0; var12 <= 24; ++var12) {
          addVertexPair(var10, var11, var4, var5, var6, var2.startBlockLight, var2.endBlockLight, var2.startSkyLight, var2.endSkyLight, 0.025F, 0.025F, var8, var9, var12, false);
       }
 
-      for(var12 = 24; var12 >= 0; --var12) {
-         addVertexPair(var10, var11, var4, var5, var6, var2.startBlockLight, var2.endBlockLight, var2.startSkyLight, var2.endSkyLight, 0.025F, 0.0F, var8, var9, var12, true);
+      for(int var13 = 24; var13 >= 0; --var13) {
+         addVertexPair(var10, var11, var4, var5, var6, var2.startBlockLight, var2.endBlockLight, var2.startSkyLight, var2.endSkyLight, 0.025F, 0.0F, var8, var9, var13, true);
       }
 
       var0.popPose();
@@ -184,12 +183,16 @@ public abstract class EntityRenderer<T extends Entity, S extends EntityRenderSta
       return this.shadowRadius;
    }
 
+   protected float getShadowStrength(S var1) {
+      return this.shadowStrength;
+   }
+
    public abstract S createRenderState();
 
    public final S createRenderState(T var1, float var2) {
       EntityRenderState var3 = this.reusedState;
       this.extractRenderState(var1, var3, var2);
-      return var3;
+      return (S)var3;
    }
 
    public void extractRenderState(T var1, S var2, float var3) {

@@ -23,8 +23,7 @@ public class NbtProviders {
 
    static {
       TYPED_CODEC = BuiltInRegistries.LOOT_NBT_PROVIDER_TYPE.byNameCodec().dispatch(NbtProvider::getType, LootNbtProviderType::codec);
-      CODEC = Codec.lazyInitialized(() -> {
-         return Codec.either(ContextNbtProvider.INLINE_CODEC, TYPED_CODEC).xmap(Either::unwrap, (var0) -> {
+      CODEC = Codec.lazyInitialized(() -> Codec.either(ContextNbtProvider.INLINE_CODEC, TYPED_CODEC).xmap(Either::unwrap, (var0) -> {
             Either var10000;
             if (var0 instanceof ContextNbtProvider var1) {
                var10000 = Either.left(var1);
@@ -33,8 +32,7 @@ public class NbtProviders {
             }
 
             return var10000;
-         });
-      });
+         }));
       STORAGE = register("storage", StorageNbtProvider.CODEC);
       CONTEXT = register("context", ContextNbtProvider.CODEC);
    }

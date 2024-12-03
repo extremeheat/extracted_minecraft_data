@@ -44,8 +44,4 @@ public record VanillaGiftLoot(HolderLookup.Provider registries) implements LootT
       var1.accept(BuiltInLootTables.CHICKEN_LAY, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.EGG))));
       var1.accept(BuiltInLootTables.ARMADILLO_SHED, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.ARMADILLO_SCUTE))));
    }
-
-   public HolderLookup.Provider registries() {
-      return this.registries;
-   }
 }

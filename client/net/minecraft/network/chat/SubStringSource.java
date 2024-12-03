@@ -50,23 +50,19 @@ public class SubStringSource {
             var4.add(var3 ? FormattedCharSequence.backward(var11, var5, this.reverseCharModifier) : FormattedCharSequence.forward(var11, var5));
          }
 
-         return (List)(var3 ? Lists.reverse(var4) : var4);
+         return (List<FormattedCharSequence>)(var3 ? Lists.reverse(var4) : var4);
       }
    }
 
    public static SubStringSource create(FormattedText var0) {
-      return create(var0, (var0x) -> {
-         return var0x;
-      }, (var0x) -> {
-         return var0x;
-      });
+      return create(var0, (var0x) -> var0x, (var0x) -> var0x);
    }
 
    public static SubStringSource create(FormattedText var0, Int2IntFunction var1, UnaryOperator<String> var2) {
       StringBuilder var3 = new StringBuilder();
       ArrayList var4 = Lists.newArrayList();
       var0.visit((var2x, var3x) -> {
-         StringDecomposer.iterateFormatted(var3x, var2x, (var2, var3xx, var4x) -> {
+         StringDecomposer.iterateFormatted((String)var3x, var2x, (var2, var3xx, var4x) -> {
             var3.appendCodePoint(var4x);
             int var5 = Character.charCount(var4x);
 

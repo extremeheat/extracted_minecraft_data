@@ -6,7 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 
 public record PoiTicketCountDebugPayload(BlockPos pos, int freeTicketCount) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, PoiTicketCountDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(PoiTicketCountDebugPayload::write, PoiTicketCountDebugPayload::new);
-   public static final CustomPacketPayload.Type<PoiTicketCountDebugPayload> TYPE = CustomPacketPayload.createType("debug/poi_ticket_count");
+   public static final CustomPacketPayload.Type<PoiTicketCountDebugPayload> TYPE = CustomPacketPayload.<PoiTicketCountDebugPayload>createType("debug/poi_ticket_count");
 
    private PoiTicketCountDebugPayload(FriendlyByteBuf var1) {
       this(var1.readBlockPos(), var1.readInt());
@@ -25,13 +25,5 @@ public record PoiTicketCountDebugPayload(BlockPos pos, int freeTicketCount) impl
 
    public CustomPacketPayload.Type<PoiTicketCountDebugPayload> type() {
       return TYPE;
-   }
-
-   public BlockPos pos() {
-      return this.pos;
-   }
-
-   public int freeTicketCount() {
-      return this.freeTicketCount;
    }
 }

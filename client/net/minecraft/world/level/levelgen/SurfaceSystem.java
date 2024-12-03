@@ -70,7 +70,7 @@ public class SurfaceSystem {
       final ChunkPos var10 = var6.getPos();
       int var11 = var10.getMinBlockX();
       int var12 = var10.getMinBlockZ();
-      BlockColumn var13 = new BlockColumn(this) {
+      BlockColumn var13 = new BlockColumn() {
          public BlockState getBlock(int var1) {
             return var6.getBlockState(var9.setY(var1));
          }
@@ -123,13 +123,11 @@ public class SurfaceSystem {
                      var25 = var28 + 1;
                   }
                } else {
-                  int var30;
-                  BlockState var31;
                   if (var26 >= var28) {
                      var26 = DimensionType.WAY_BELOW_MIN_Y;
 
-                     for(var30 = var28 - 1; var30 >= var27 - 1; --var30) {
-                        var31 = var13.getBlock(var30);
+                     for(int var30 = var28 - 1; var30 >= var27 - 1; --var30) {
+                        BlockState var31 = var13.getBlock(var30);
                         if (!this.isStone(var31)) {
                            var26 = var30 + 1;
                            break;
@@ -138,12 +136,12 @@ public class SurfaceSystem {
                   }
 
                   ++var24;
-                  var30 = var28 - var26 + 1;
-                  var14.updateY(var24, var30, var25, var19, var28, var20);
+                  int var32 = var28 - var26 + 1;
+                  var14.updateY(var24, var32, var25, var19, var28, var20);
                   if (var29 == this.defaultBlock) {
-                     var31 = var15.tryApply(var19, var28, var20);
-                     if (var31 != null) {
-                        var13.setBlock(var28, var31);
+                     BlockState var33 = var15.tryApply(var19, var28, var20);
+                     if (var33 != null) {
+                        var13.setBlock(var28, var33);
                      }
                   }
                }
@@ -198,8 +196,7 @@ public class SurfaceSystem {
          double var16 = 64.0 + Math.min(var8 * var8 * 2.5, Math.ceil(var14 * 50.0) + 24.0);
          int var18 = Mth.floor(var16);
          if (var4 <= var18) {
-            int var19;
-            for(var19 = var18; var19 >= var5.getMinY(); --var19) {
+            for(int var19 = var18; var19 >= var5.getMinY(); --var19) {
                BlockState var20 = var1.getBlock(var19);
                if (var20.is(this.defaultBlock.getBlock())) {
                   break;
@@ -210,8 +207,8 @@ public class SurfaceSystem {
                }
             }
 
-            for(var19 = var18; var19 >= var5.getMinY() && var1.getBlock(var19).isAir(); --var19) {
-               var1.setBlock(var19, this.defaultBlock);
+            for(int var21 = var18; var21 >= var5.getMinY() && var1.getBlock(var21).isAir(); --var21) {
+               var1.setBlock(var21, this.defaultBlock);
             }
 
          }
@@ -263,21 +260,20 @@ public class SurfaceSystem {
       BlockState[] var1 = new BlockState[192];
       Arrays.fill(var1, TERRACOTTA);
 
-      int var2;
-      for(var2 = 0; var2 < var1.length; ++var2) {
-         var2 += var0.nextInt(5) + 1;
-         if (var2 < var1.length) {
-            var1[var2] = ORANGE_TERRACOTTA;
+      for(int var5 = 0; var5 < var1.length; ++var5) {
+         var5 += var0.nextInt(5) + 1;
+         if (var5 < var1.length) {
+            var1[var5] = ORANGE_TERRACOTTA;
          }
       }
 
       makeBands(var0, var1, 1, YELLOW_TERRACOTTA);
       makeBands(var0, var1, 2, BROWN_TERRACOTTA);
       makeBands(var0, var1, 1, RED_TERRACOTTA);
-      var2 = var0.nextIntBetweenInclusive(9, 15);
+      int var6 = var0.nextIntBetweenInclusive(9, 15);
       int var3 = 0;
 
-      for(int var4 = 0; var3 < var2 && var4 < var1.length; var4 += var0.nextInt(16) + 4) {
+      for(int var4 = 0; var3 < var6 && var4 < var1.length; var4 += var0.nextInt(16) + 4) {
          var1[var4] = WHITE_TERRACOTTA;
          if (var4 - 1 > 0 && var0.nextBoolean()) {
             var1[var4 - 1] = LIGHT_GRAY_TERRACOTTA;

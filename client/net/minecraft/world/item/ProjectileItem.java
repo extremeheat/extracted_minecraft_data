@@ -35,26 +35,8 @@ public interface ProjectileItem {
          return new Builder();
       }
 
-      public PositionFunction positionFunction() {
-         return this.positionFunction;
-      }
-
-      public float uncertainty() {
-         return this.uncertainty;
-      }
-
-      public float power() {
-         return this.power;
-      }
-
-      public OptionalInt overrideDispenseEvent() {
-         return this.overrideDispenseEvent;
-      }
-
       public static class Builder {
-         private PositionFunction positionFunction = (var0, var1) -> {
-            return DispenserBlock.getDispensePosition(var0, 0.7, new Vec3(0.0, 0.1, 0.0));
-         };
+         private PositionFunction positionFunction = (var0, var1) -> DispenserBlock.getDispensePosition(var0, 0.7, new Vec3(0.0, 0.1, 0.0));
          private float uncertainty = 6.0F;
          private float power = 1.1F;
          private OptionalInt overrideDispenseEvent = OptionalInt.empty();

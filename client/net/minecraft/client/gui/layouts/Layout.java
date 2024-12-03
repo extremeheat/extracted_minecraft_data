@@ -7,9 +7,7 @@ public interface Layout extends LayoutElement {
    void visitChildren(Consumer<LayoutElement> var1);
 
    default void visitWidgets(Consumer<AbstractWidget> var1) {
-      this.visitChildren((var1x) -> {
-         var1x.visitWidgets(var1);
-      });
+      this.visitChildren((var1x) -> var1x.visitWidgets(var1));
    }
 
    default void arrangeElements() {

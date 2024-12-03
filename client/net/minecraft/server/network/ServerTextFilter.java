@@ -140,16 +140,16 @@ public abstract class ServerTextFilter implements AutoCloseable {
       HttpURLConnection var3 = this.makeRequest(var1, var2);
       InputStream var4 = var3.getInputStream();
 
-      JsonObject var5;
-      label90: {
+      JsonObject var13;
+      label89: {
          try {
             if (var3.getResponseCode() == 204) {
-               var5 = new JsonObject();
-               break label90;
+               var13 = new JsonObject();
+               break label89;
             }
 
             try {
-               var5 = Streams.parse(new JsonReader(new InputStreamReader(var4, StandardCharsets.UTF_8))).getAsJsonObject();
+               var13 = Streams.parse(new JsonReader(new InputStreamReader(var4, StandardCharsets.UTF_8))).getAsJsonObject();
             } finally {
                this.drainStream(var4);
             }
@@ -169,14 +169,14 @@ public abstract class ServerTextFilter implements AutoCloseable {
             var4.close();
          }
 
-         return var5;
+         return var13;
       }
 
       if (var4 != null) {
          var4.close();
       }
 
-      return var5;
+      return var13;
    }
 
    protected HttpURLConnection makeRequest(JsonObject var1, URL var2) throws IOException {
@@ -215,7 +215,7 @@ public abstract class ServerTextFilter implements AutoCloseable {
       if (var12 >= 200 && var12 < 300) {
          return var3;
       } else {
-         throw new RequestFailedException("" + var12 + " " + var3.getResponseMessage());
+         throw new RequestFailedException(var12 + " " + var3.getResponseMessage());
       }
    }
 
@@ -243,40 +243,6 @@ public abstract class ServerTextFilter implements AutoCloseable {
       return new PlayerContext(var1);
    }
 
-   @FunctionalInterface
-   public interface IgnoreStrategy {
-      IgnoreStrategy NEVER_IGNORE = (var0, var1) -> {
-         return false;
-      };
-      IgnoreStrategy IGNORE_FULLY_FILTERED = (var0, var1) -> {
-         return var0.length() == var1;
-      };
-
-      static IgnoreStrategy ignoreOverThreshold(int var0) {
-         return (var1, var2) -> {
-            return var2 >= var0;
-         };
-      }
-
-      static IgnoreStrategy select(int var0) {
-         IgnoreStrategy var10000;
-         switch (var0) {
-            case -1 -> var10000 = NEVER_IGNORE;
-            case 0 -> var10000 = IGNORE_FULLY_FILTERED;
-            default -> var10000 = ignoreOverThreshold(var0);
-         }
-
-         return var10000;
-      }
-
-      boolean shouldIgnore(String var1, int var2);
-   }
-
-   @FunctionalInterface
-   protected interface MessageEncoder {
-      JsonObject encode(GameProfile var1, String var2);
-   }
-
    protected static class RequestFailedException extends RuntimeException {
       protected RequestFailedException(String var1) {
          super(var1);
@@ -296,16 +262,40 @@ public abstract class ServerTextFilter implements AutoCloseable {
       }
 
       public CompletableFuture<List<FilteredText>> processMessageBundle(List<String> var1) {
-         List var2 = (List)var1.stream().map((var1x) -> {
-            return ServerTextFilter.this.requestMessageProcessing(this.profile, var1x, ServerTextFilter.this.chatIgnoreStrategy, this.streamExecutor);
-         }).collect(ImmutableList.toImmutableList());
-         return Util.sequenceFailFast(var2).exceptionally((var0) -> {
-            return ImmutableList.of();
-         });
+         List var2 = (List)var1.stream().map((var1x) -> ServerTextFilter.this.requestMessageProcessing(this.profile, var1x, ServerTextFilter.this.chatIgnoreStrategy, this.streamExecutor)).collect(ImmutableList.toImmutableList());
+         return Util.sequenceFailFast(var2).exceptionally((var0) -> ImmutableList.of());
       }
 
       public CompletableFuture<FilteredText> processStreamMessage(String var1) {
          return ServerTextFilter.this.requestMessageProcessing(this.profile, var1, ServerTextFilter.this.chatIgnoreStrategy, this.streamExecutor);
       }
+   }
+
+   @FunctionalInterface
+   public interface IgnoreStrategy {
+      IgnoreStrategy NEVER_IGNORE = (var0, var1) -> false;
+      IgnoreStrategy IGNORE_FULLY_FILTERED = (var0, var1) -> var0.length() == var1;
+
+      static IgnoreStrategy ignoreOverThreshold(int var0) {
+         return (var1, var2) -> var2 >= var0;
+      }
+
+      static IgnoreStrategy select(int var0) {
+         IgnoreStrategy var10000;
+         switch (var0) {
+            case -1 -> var10000 = NEVER_IGNORE;
+            case 0 -> var10000 = IGNORE_FULLY_FILTERED;
+            default -> var10000 = ignoreOverThreshold(var0);
+         }
+
+         return var10000;
+      }
+
+      boolean shouldIgnore(String var1, int var2);
+   }
+
+   @FunctionalInterface
+   protected interface MessageEncoder {
+      JsonObject encode(GameProfile var1, String var2);
    }
 }

@@ -14,9 +14,7 @@ import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.item.equipment.trim.TrimPattern;
 
 public record ItemTrimPredicate(Optional<HolderSet<TrimMaterial>> material, Optional<HolderSet<TrimPattern>> pattern) implements SingleComponentItemPredicate<ArmorTrim> {
-   public static final Codec<ItemTrimPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(RegistryCodecs.homogeneousList(Registries.TRIM_MATERIAL).optionalFieldOf("material").forGetter(ItemTrimPredicate::material), RegistryCodecs.homogeneousList(Registries.TRIM_PATTERN).optionalFieldOf("pattern").forGetter(ItemTrimPredicate::pattern)).apply(var0, ItemTrimPredicate::new);
-   });
+   public static final Codec<ItemTrimPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.TRIM_MATERIAL).optionalFieldOf("material").forGetter(ItemTrimPredicate::material), RegistryCodecs.homogeneousList(Registries.TRIM_PATTERN).optionalFieldOf("pattern").forGetter(ItemTrimPredicate::pattern)).apply(var0, ItemTrimPredicate::new));
 
    public ItemTrimPredicate(Optional<HolderSet<TrimMaterial>> var1, Optional<HolderSet<TrimPattern>> var2) {
       super();
@@ -34,13 +32,5 @@ public record ItemTrimPredicate(Optional<HolderSet<TrimMaterial>> material, Opti
       } else {
          return !this.pattern.isPresent() || ((HolderSet)this.pattern.get()).contains(var2.pattern());
       }
-   }
-
-   public Optional<HolderSet<TrimMaterial>> material() {
-      return this.material;
-   }
-
-   public Optional<HolderSet<TrimPattern>> pattern() {
-      return this.pattern;
    }
 }

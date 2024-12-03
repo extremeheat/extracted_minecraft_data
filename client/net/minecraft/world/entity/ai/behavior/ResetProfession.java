@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.ai.behavior;
 
+import java.util.function.Function;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.npc.Villager;
@@ -12,9 +13,7 @@ public class ResetProfession {
    }
 
    public static BehaviorControl<Villager> create() {
-      return BehaviorBuilder.create((var0) -> {
-         return var0.group(var0.absent(MemoryModuleType.JOB_SITE)).apply(var0, (var0x) -> {
-            return (var0, var1, var2) -> {
+      return BehaviorBuilder.create((Function)((var0) -> var0.group(var0.absent(MemoryModuleType.JOB_SITE)).apply(var0, (var0x) -> (var0, var1, var2) -> {
                VillagerData var4 = var1.getVillagerData();
                if (var4.getProfession() != VillagerProfession.NONE && var4.getProfession() != VillagerProfession.NITWIT && var1.getVillagerXp() == 0 && var4.getLevel() <= 1) {
                   var1.setVillagerData(var1.getVillagerData().setProfession(VillagerProfession.NONE));
@@ -23,8 +22,6 @@ public class ResetProfession {
                } else {
                   return false;
                }
-            };
-         });
-      });
+            })));
    }
 }

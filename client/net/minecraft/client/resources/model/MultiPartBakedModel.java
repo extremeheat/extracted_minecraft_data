@@ -70,13 +70,5 @@ public class MultiPartBakedModel extends DelegateBakedModel {
          this.condition = var1;
          this.model = var2;
       }
-
-      public Predicate<BlockState> condition() {
-         return this.condition;
-      }
-
-      public BakedModel model() {
-         return this.model;
-      }
    }
 }

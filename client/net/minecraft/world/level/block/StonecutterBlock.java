@@ -54,9 +54,7 @@ public class StonecutterBlock extends Block {
 
    @Nullable
    protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
-      return new SimpleMenuProvider((var2x, var3x, var4) -> {
-         return new StonecutterMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3));
-      }, CONTAINER_TITLE);
+      return new SimpleMenuProvider((var2x, var3x, var4) -> new StonecutterMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), CONTAINER_TITLE);
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -65,10 +63,6 @@ public class StonecutterBlock extends Block {
 
    protected boolean useShapeForLightOcclusion(BlockState var1) {
       return true;
-   }
-
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
    }
 
    protected BlockState rotate(BlockState var1, Rotation var2) {

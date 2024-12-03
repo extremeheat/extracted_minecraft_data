@@ -56,7 +56,7 @@ public class Evoker extends SpellcasterIllager {
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new EvokerCastingSpellGoal());
       this.goalSelector.addGoal(2, new AvoidEntityGoal(this, Player.class, 8.0F, 0.6, 1.0));
-      this.goalSelector.addGoal(3, new AvoidEntityGoal(this, Creaking.class, 8.0F, 1.0, 1.2));
+      this.goalSelector.addGoal(3, new AvoidEntityGoal(this, Creaking.class, 8.0F, 0.6, 1.0));
       this.goalSelector.addGoal(4, new EvokerSummonSpellGoal());
       this.goalSelector.addGoal(5, new EvokerAttackSpellGoal());
       this.goalSelector.addGoal(6, new EvokerWololoSpellGoal());
@@ -149,63 +149,6 @@ public class Evoker extends SpellcasterIllager {
       }
    }
 
-   class EvokerSummonSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
-      private final TargetingConditions vexCountTargeting = TargetingConditions.forNonCombat().range(16.0).ignoreLineOfSight().ignoreInvisibilityTesting();
-
-      EvokerSummonSpellGoal() {
-         super();
-      }
-
-      public boolean canUse() {
-         if (!super.canUse()) {
-            return false;
-         } else {
-            int var1 = getServerLevel(Evoker.this.level()).getNearbyEntities(Vex.class, this.vexCountTargeting, Evoker.this, Evoker.this.getBoundingBox().inflate(16.0)).size();
-            return Evoker.this.random.nextInt(8) + 1 > var1;
-         }
-      }
-
-      protected int getCastingTime() {
-         return 100;
-      }
-
-      protected int getCastingInterval() {
-         return 340;
-      }
-
-      protected void performSpellCasting() {
-         ServerLevel var1 = (ServerLevel)Evoker.this.level();
-         PlayerTeam var2 = Evoker.this.getTeam();
-
-         for(int var3 = 0; var3 < 3; ++var3) {
-            BlockPos var4 = Evoker.this.blockPosition().offset(-2 + Evoker.this.random.nextInt(5), 1, -2 + Evoker.this.random.nextInt(5));
-            Vex var5 = (Vex)EntityType.VEX.create(Evoker.this.level(), EntitySpawnReason.MOB_SUMMONED);
-            if (var5 != null) {
-               var5.moveTo(var4, 0.0F, 0.0F);
-               var5.finalizeSpawn(var1, Evoker.this.level().getCurrentDifficultyAt(var4), EntitySpawnReason.MOB_SUMMONED, (SpawnGroupData)null);
-               var5.setOwner(Evoker.this);
-               var5.setBoundOrigin(var4);
-               var5.setLimitedLife(20 * (30 + Evoker.this.random.nextInt(90)));
-               if (var2 != null) {
-                  var1.getScoreboard().addPlayerToTeam(var5.getScoreboardName(), var2);
-               }
-
-               var1.addFreshEntityWithPassengers(var5);
-               var1.gameEvent(GameEvent.ENTITY_PLACE, var4, GameEvent.Context.of((Entity)Evoker.this));
-            }
-         }
-
-      }
-
-      protected SoundEvent getSpellPrepareSound() {
-         return SoundEvents.EVOKER_PREPARE_SUMMON;
-      }
-
-      protected SpellcasterIllager.IllagerSpell getSpell() {
-         return SpellcasterIllager.IllagerSpell.SUMMON_VEX;
-      }
-   }
-
    class EvokerAttackSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
       EvokerAttackSpellGoal() {
          super();
@@ -224,23 +167,21 @@ public class Evoker extends SpellcasterIllager {
          double var2 = Math.min(var1.getY(), Evoker.this.getY());
          double var4 = Math.max(var1.getY(), Evoker.this.getY()) + 1.0;
          float var6 = (float)Mth.atan2(var1.getZ() - Evoker.this.getZ(), var1.getX() - Evoker.this.getX());
-         int var7;
          if (Evoker.this.distanceToSqr(var1) < 9.0) {
-            float var8;
-            for(var7 = 0; var7 < 5; ++var7) {
-               var8 = var6 + (float)var7 * 3.1415927F * 0.4F;
+            for(int var7 = 0; var7 < 5; ++var7) {
+               float var8 = var6 + (float)var7 * 3.1415927F * 0.4F;
                this.createSpellEntity(Evoker.this.getX() + (double)Mth.cos(var8) * 1.5, Evoker.this.getZ() + (double)Mth.sin(var8) * 1.5, var2, var4, var8, 0);
             }
 
-            for(var7 = 0; var7 < 8; ++var7) {
-               var8 = var6 + (float)var7 * 3.1415927F * 2.0F / 8.0F + 1.2566371F;
-               this.createSpellEntity(Evoker.this.getX() + (double)Mth.cos(var8) * 2.5, Evoker.this.getZ() + (double)Mth.sin(var8) * 2.5, var2, var4, var8, 3);
+            for(int var11 = 0; var11 < 8; ++var11) {
+               float var13 = var6 + (float)var11 * 3.1415927F * 2.0F / 8.0F + 1.2566371F;
+               this.createSpellEntity(Evoker.this.getX() + (double)Mth.cos(var13) * 2.5, Evoker.this.getZ() + (double)Mth.sin(var13) * 2.5, var2, var4, var13, 3);
             }
          } else {
-            for(var7 = 0; var7 < 16; ++var7) {
-               double var11 = 1.25 * (double)(var7 + 1);
-               int var10 = 1 * var7;
-               this.createSpellEntity(Evoker.this.getX() + (double)Mth.cos(var6) * var11, Evoker.this.getZ() + (double)Mth.sin(var6) * var11, var2, var4, var6, var10);
+            for(int var12 = 0; var12 < 16; ++var12) {
+               double var14 = 1.25 * (double)(var12 + 1);
+               int var10 = 1 * var12;
+               this.createSpellEntity(Evoker.this.getX() + (double)Mth.cos(var6) * var14, Evoker.this.getZ() + (double)Mth.sin(var6) * var14, var2, var4, var6, var10);
             }
          }
 
@@ -286,10 +227,65 @@ public class Evoker extends SpellcasterIllager {
       }
    }
 
+   class EvokerSummonSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
+      private final TargetingConditions vexCountTargeting = TargetingConditions.forNonCombat().range(16.0).ignoreLineOfSight().ignoreInvisibilityTesting();
+
+      EvokerSummonSpellGoal() {
+         super();
+      }
+
+      public boolean canUse() {
+         if (!super.canUse()) {
+            return false;
+         } else {
+            int var1 = getServerLevel(Evoker.this.level()).getNearbyEntities(Vex.class, this.vexCountTargeting, Evoker.this, Evoker.this.getBoundingBox().inflate(16.0)).size();
+            return Evoker.this.random.nextInt(8) + 1 > var1;
+         }
+      }
+
+      protected int getCastingTime() {
+         return 100;
+      }
+
+      protected int getCastingInterval() {
+         return 340;
+      }
+
+      protected void performSpellCasting() {
+         ServerLevel var1 = (ServerLevel)Evoker.this.level();
+         PlayerTeam var2 = Evoker.this.getTeam();
+
+         for(int var3 = 0; var3 < 3; ++var3) {
+            BlockPos var4 = Evoker.this.blockPosition().offset(-2 + Evoker.this.random.nextInt(5), 1, -2 + Evoker.this.random.nextInt(5));
+            Vex var5 = EntityType.VEX.create(Evoker.this.level(), EntitySpawnReason.MOB_SUMMONED);
+            if (var5 != null) {
+               var5.moveTo(var4, 0.0F, 0.0F);
+               var5.finalizeSpawn(var1, Evoker.this.level().getCurrentDifficultyAt(var4), EntitySpawnReason.MOB_SUMMONED, (SpawnGroupData)null);
+               var5.setOwner(Evoker.this);
+               var5.setBoundOrigin(var4);
+               var5.setLimitedLife(20 * (30 + Evoker.this.random.nextInt(90)));
+               if (var2 != null) {
+                  var1.getScoreboard().addPlayerToTeam(var5.getScoreboardName(), var2);
+               }
+
+               var1.addFreshEntityWithPassengers(var5);
+               var1.gameEvent(GameEvent.ENTITY_PLACE, var4, GameEvent.Context.of((Entity)Evoker.this));
+            }
+         }
+
+      }
+
+      protected SoundEvent getSpellPrepareSound() {
+         return SoundEvents.EVOKER_PREPARE_SUMMON;
+      }
+
+      protected SpellcasterIllager.IllagerSpell getSpell() {
+         return SpellcasterIllager.IllagerSpell.SUMMON_VEX;
+      }
+   }
+
    public class EvokerWololoSpellGoal extends SpellcasterIllager.SpellcasterUseSpellGoal {
-      private final TargetingConditions wololoTargeting = TargetingConditions.forNonCombat().range(16.0).selector((var0, var1x) -> {
-         return ((Sheep)var0).getColor() == DyeColor.BLUE;
-      });
+      private final TargetingConditions wololoTargeting = TargetingConditions.forNonCombat().range(16.0).selector((var0, var1x) -> ((Sheep)var0).getColor() == DyeColor.BLUE);
 
       public EvokerWololoSpellGoal() {
          super();

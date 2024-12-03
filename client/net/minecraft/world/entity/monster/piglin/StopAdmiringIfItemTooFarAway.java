@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster.piglin;
 
 import java.util.Optional;
+import java.util.function.Function;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -13,9 +14,7 @@ public class StopAdmiringIfItemTooFarAway<E extends Piglin> {
    }
 
    public static BehaviorControl<LivingEntity> create(int var0) {
-      return BehaviorBuilder.create((var1) -> {
-         return var1.group(var1.present(MemoryModuleType.ADMIRING_ITEM), var1.registered(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM)).apply(var1, (var2, var3) -> {
-            return (var4, var5, var6) -> {
+      return BehaviorBuilder.create((Function)((var1) -> var1.group(var1.present(MemoryModuleType.ADMIRING_ITEM), var1.registered(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM)).apply(var1, (var2, var3) -> (var4, var5, var6) -> {
                if (!var5.getOffhandItem().isEmpty()) {
                   return false;
                } else {
@@ -27,8 +26,6 @@ public class StopAdmiringIfItemTooFarAway<E extends Piglin> {
                      return true;
                   }
                }
-            };
-         });
-      });
+            })));
    }
 }

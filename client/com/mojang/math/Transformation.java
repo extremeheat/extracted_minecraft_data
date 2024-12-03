@@ -16,17 +16,7 @@ import org.joml.Vector3fc;
 
 public final class Transformation {
    private final Matrix4f matrix;
-   public static final Codec<Transformation> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ExtraCodecs.VECTOR3F.fieldOf("translation").forGetter((var0x) -> {
-         return var0x.translation;
-      }), ExtraCodecs.QUATERNIONF.fieldOf("left_rotation").forGetter((var0x) -> {
-         return var0x.leftRotation;
-      }), ExtraCodecs.VECTOR3F.fieldOf("scale").forGetter((var0x) -> {
-         return var0x.scale;
-      }), ExtraCodecs.QUATERNIONF.fieldOf("right_rotation").forGetter((var0x) -> {
-         return var0x.rightRotation;
-      })).apply(var0, Transformation::new);
-   });
+   public static final Codec<Transformation> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.VECTOR3F.fieldOf("translation").forGetter((var0x) -> var0x.translation), ExtraCodecs.QUATERNIONF.fieldOf("left_rotation").forGetter((var0x) -> var0x.leftRotation), ExtraCodecs.VECTOR3F.fieldOf("scale").forGetter((var0x) -> var0x.scale), ExtraCodecs.QUATERNIONF.fieldOf("right_rotation").forGetter((var0x) -> var0x.rightRotation)).apply(var0, Transformation::new));
    public static final Codec<Transformation> EXTENDED_CODEC;
    private boolean decomposed;
    @Nullable

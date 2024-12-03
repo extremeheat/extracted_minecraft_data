@@ -27,26 +27,6 @@ public record MapDecorationType(ResourceLocation assetId, boolean showOnItemFram
       return this.mapColor != -1;
    }
 
-   public ResourceLocation assetId() {
-      return this.assetId;
-   }
-
-   public boolean showOnItemFrame() {
-      return this.showOnItemFrame;
-   }
-
-   public int mapColor() {
-      return this.mapColor;
-   }
-
-   public boolean explorationMapElement() {
-      return this.explorationMapElement;
-   }
-
-   public boolean trackCount() {
-      return this.trackCount;
-   }
-
    static {
       CODEC = BuiltInRegistries.MAP_DECORATION_TYPE.holderByNameCodec();
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.MAP_DECORATION_TYPE);

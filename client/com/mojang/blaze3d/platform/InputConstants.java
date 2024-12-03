@@ -166,11 +166,7 @@ public class InputConstants {
       if (InputConstants.Key.NAME_MAP.containsKey(var0)) {
          return (Key)InputConstants.Key.NAME_MAP.get(var0);
       } else {
-         Type[] var1 = InputConstants.Type.values();
-         int var2 = var1.length;
-
-         for(int var3 = 0; var3 < var2; ++var3) {
-            Type var4 = var1[var3];
+         for(Type var4 : InputConstants.Type.values()) {
             if (var0.startsWith(var4.defaultPrefix)) {
                String var5 = var0.substring(var4.defaultPrefix.length() + 1);
                int var6 = Integer.parseInt(var5);
@@ -255,9 +251,7 @@ public class InputConstants {
          String var2 = GLFW.glfwGetKeyName(-1, var0);
          return var2 != null ? Component.literal(var2) : Component.translatable(var1);
       }),
-      MOUSE("key.mouse", (var0, var1) -> {
-         return Language.getInstance().has(var1) ? Component.translatable(var1) : Component.translatable("key.mouse", var0 + 1);
-      });
+      MOUSE("key.mouse", (var0, var1) -> Language.getInstance().has(var1) ? Component.translatable(var1) : Component.translatable("key.mouse", var0 + 1));
 
       private static final String KEY_KEYBOARD_UNKNOWN = "key.keyboard.unknown";
       private final Int2ObjectMap<Key> map = new Int2ObjectOpenHashMap();
@@ -269,7 +263,7 @@ public class InputConstants {
          var0.map.put(var2, var3);
       }
 
-      private Type(final String var3, final BiFunction var4) {
+      private Type(final String var3, final BiFunction<Integer, String, Component> var4) {
          this.defaultPrefix = var3;
          this.displayTextSupplier = var4;
       }
@@ -436,9 +430,7 @@ public class InputConstants {
          this.name = var1;
          this.type = var2;
          this.value = var3;
-         this.displayName = new LazyLoadedValue(() -> {
-            return (Component)var2.displayTextSupplier.apply(var3, var1);
-         });
+         this.displayName = new LazyLoadedValue<Component>(() -> (Component)var2.displayTextSupplier.apply(var3, var1));
          NAME_MAP.put(var1, this);
       }
 
@@ -455,7 +447,7 @@ public class InputConstants {
       }
 
       public Component getDisplayName() {
-         return (Component)this.displayName.get();
+         return this.displayName.get();
       }
 
       public OptionalInt getNumericKeyValue() {

@@ -73,63 +73,43 @@ public abstract class StructurePoolElement {
    }
 
    public static Function<StructureTemplatePool.Projection, EmptyPoolElement> empty() {
-      return (var0) -> {
-         return EmptyPoolElement.INSTANCE;
-      };
+      return (var0) -> EmptyPoolElement.INSTANCE;
    }
 
    public static Function<StructureTemplatePool.Projection, LegacySinglePoolElement> legacy(String var0) {
-      return (var1) -> {
-         return new LegacySinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var1, Optional.empty());
-      };
+      return (var1) -> new LegacySinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var1, Optional.empty());
    }
 
    public static Function<StructureTemplatePool.Projection, LegacySinglePoolElement> legacy(String var0, Holder<StructureProcessorList> var1) {
-      return (var2) -> {
-         return new LegacySinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var2, Optional.empty());
-      };
+      return (var2) -> new LegacySinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var2, Optional.empty());
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0) {
-      return (var1) -> {
-         return new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var1, Optional.empty());
-      };
+      return (var1) -> new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var1, Optional.empty());
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0, Holder<StructureProcessorList> var1) {
-      return (var2) -> {
-         return new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var2, Optional.empty());
-      };
+      return (var2) -> new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var2, Optional.empty());
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0, LiquidSettings var1) {
-      return (var2) -> {
-         return new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var2, Optional.of(var1));
-      };
+      return (var2) -> new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), EMPTY, var2, Optional.of(var1));
    }
 
    public static Function<StructureTemplatePool.Projection, SinglePoolElement> single(String var0, Holder<StructureProcessorList> var1, LiquidSettings var2) {
-      return (var3) -> {
-         return new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var3, Optional.of(var2));
-      };
+      return (var3) -> new SinglePoolElement(Either.left(ResourceLocation.parse(var0)), var1, var3, Optional.of(var2));
    }
 
    public static Function<StructureTemplatePool.Projection, FeaturePoolElement> feature(Holder<PlacedFeature> var0) {
-      return (var1) -> {
-         return new FeaturePoolElement(var0, var1);
-      };
+      return (var1) -> new FeaturePoolElement(var0, var1);
    }
 
    public static Function<StructureTemplatePool.Projection, ListPoolElement> list(List<Function<StructureTemplatePool.Projection, ? extends StructurePoolElement>> var0) {
-      return (var1) -> {
-         return new ListPoolElement((List)var0.stream().map((var1x) -> {
-            return (StructurePoolElement)var1x.apply(var1);
-         }).collect(Collectors.toList()), var1);
-      };
+      return (var1) -> new ListPoolElement((List)var0.stream().map((var1x) -> (StructurePoolElement)var1x.apply(var1)).collect(Collectors.toList()), var1);
    }
 
    static {
       CODEC = BuiltInRegistries.STRUCTURE_POOL_ELEMENT.byNameCodec().dispatch("element_type", StructurePoolElement::getType, StructurePoolElementType::codec);
-      EMPTY = Holder.direct(new StructureProcessorList(List.of()));
+      EMPTY = Holder.<StructureProcessorList>direct(new StructureProcessorList(List.of()));
    }
 }

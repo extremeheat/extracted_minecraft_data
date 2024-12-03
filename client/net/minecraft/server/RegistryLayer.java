@@ -18,7 +18,7 @@ public enum RegistryLayer {
    }
 
    public static LayeredRegistryAccess<RegistryLayer> createRegistryAccess() {
-      return (new LayeredRegistryAccess(VALUES)).replaceFrom(STATIC, (RegistryAccess.Frozen[])(STATIC_ACCESS));
+      return (new LayeredRegistryAccess(VALUES)).replaceFrom(STATIC, STATIC_ACCESS);
    }
 
    // $FF: synthetic method

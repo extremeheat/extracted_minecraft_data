@@ -27,11 +27,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class MangrovePropaguleBlock extends SaplingBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<MangrovePropaguleBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(TreeGrower.CODEC.fieldOf("tree").forGetter((var0x) -> {
-         return var0x.treeGrower;
-      }), propertiesCodec()).apply(var0, MangrovePropaguleBlock::new);
-   });
+   public static final MapCodec<MangrovePropaguleBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(TreeGrower.CODEC.fieldOf("tree").forGetter((var0x) -> var0x.treeGrower), propertiesCodec()).apply(var0, MangrovePropaguleBlock::new));
    public static final IntegerProperty AGE;
    public static final int MAX_AGE = 4;
    private static final VoxelShape[] SHAPE_PER_AGE;

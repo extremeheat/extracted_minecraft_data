@@ -14,9 +14,7 @@ public class StayCloseToTarget {
    }
 
    public static BehaviorControl<LivingEntity> create(Function<LivingEntity, Optional<PositionTracker>> var0, Predicate<LivingEntity> var1, int var2, int var3, float var4) {
-      return BehaviorBuilder.create((var5) -> {
-         return var5.group(var5.registered(MemoryModuleType.LOOK_TARGET), var5.registered(MemoryModuleType.WALK_TARGET)).apply(var5, (var5x, var6) -> {
-            return (var7, var8, var9) -> {
+      return BehaviorBuilder.create((Function)((var5) -> var5.group(var5.registered(MemoryModuleType.LOOK_TARGET), var5.registered(MemoryModuleType.WALK_TARGET)).apply(var5, (var5x, var6) -> (var7, var8, var9) -> {
                Optional var11 = (Optional)var0.apply(var8);
                if (!var11.isEmpty() && var1.test(var8)) {
                   PositionTracker var12 = (PositionTracker)var11.get();
@@ -31,8 +29,6 @@ public class StayCloseToTarget {
                } else {
                   return false;
                }
-            };
-         });
-      });
+            })));
    }
 }

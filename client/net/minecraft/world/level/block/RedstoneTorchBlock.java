@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.google.common.collect.Lists;
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -46,11 +45,8 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
 
    private void notifyNeighbors(Level var1, BlockPos var2, BlockState var3) {
       Orientation var4 = this.randomOrientation(var1, var3);
-      Direction[] var5 = Direction.values();
-      int var6 = var5.length;
 
-      for(int var7 = 0; var7 < var6; ++var7) {
-         Direction var8 = var5[var7];
+      for(Direction var8 : Direction.values()) {
          var1.updateNeighborsAt(var2.relative(var8), this, ExperimentalRedstoneUtils.withFront(var4, var8));
       }
 
@@ -121,18 +117,14 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
    }
 
    private static boolean isToggledTooFrequently(Level var0, BlockPos var1, boolean var2) {
-      List var3 = (List)RECENT_TOGGLES.computeIfAbsent(var0, (var0x) -> {
-         return Lists.newArrayList();
-      });
+      List var3 = (List)RECENT_TOGGLES.computeIfAbsent(var0, (var0x) -> Lists.newArrayList());
       if (var2) {
          var3.add(new Toggle(var1.immutable(), var0.getGameTime()));
       }
 
       int var4 = 0;
-      Iterator var5 = var3.iterator();
 
-      while(var5.hasNext()) {
-         Toggle var6 = (Toggle)var5.next();
+      for(Toggle var6 : var3) {
          if (var6.pos.equals(var1)) {
             ++var4;
             if (var4 >= 8) {

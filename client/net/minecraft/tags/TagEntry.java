@@ -11,11 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 
 public class TagEntry {
-   private static final Codec<TagEntry> FULL_CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ExtraCodecs.TAG_OR_ELEMENT_ID.fieldOf("id").forGetter(TagEntry::elementOrTag), Codec.BOOL.optionalFieldOf("required", true).forGetter((var0x) -> {
-         return var0x.required;
-      })).apply(var0, TagEntry::new);
-   });
+   private static final Codec<TagEntry> FULL_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.TAG_OR_ELEMENT_ID.fieldOf("id").forGetter(TagEntry::elementOrTag), Codec.BOOL.optionalFieldOf("required", true).forGetter((var0x) -> var0x.required)).apply(var0, TagEntry::new));
    public static final Codec<TagEntry> CODEC;
    private final ResourceLocation id;
    private final boolean tag;
@@ -108,15 +104,7 @@ public class TagEntry {
    }
 
    static {
-      CODEC = Codec.either(ExtraCodecs.TAG_OR_ELEMENT_ID, FULL_CODEC).xmap((var0) -> {
-         return (TagEntry)var0.map((var0x) -> {
-            return new TagEntry(var0x, true);
-         }, (var0x) -> {
-            return var0x;
-         });
-      }, (var0) -> {
-         return var0.required ? Either.left(var0.elementOrTag()) : Either.right(var0);
-      });
+      CODEC = Codec.either(ExtraCodecs.TAG_OR_ELEMENT_ID, FULL_CODEC).xmap((var0) -> (TagEntry)var0.map((var0x) -> new TagEntry(var0x, true), (var0x) -> var0x), (var0) -> var0.required ? Either.left(var0.elementOrTag()) : Either.right(var0));
    }
 
    public interface Lookup<T> {

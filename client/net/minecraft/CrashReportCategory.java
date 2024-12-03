@@ -1,7 +1,6 @@
 package net.minecraft;
 
 import com.google.common.collect.Lists;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -40,31 +39,19 @@ public class CrashReportCategory {
 
       var4.append(", ");
 
-      int var5;
-      int var6;
-      int var7;
-      int var8;
-      int var9;
-      int var10;
-      int var11;
-      int var12;
-      int var13;
-      int var14;
-      int var15;
-      int var16;
       try {
-         var5 = SectionPos.blockToSectionCoord(var1);
-         var6 = SectionPos.blockToSectionCoord(var2);
-         var7 = SectionPos.blockToSectionCoord(var3);
-         var8 = var1 & 15;
-         var9 = var2 & 15;
-         var10 = var3 & 15;
-         var11 = SectionPos.sectionToBlockCoord(var5);
-         var12 = var0.getMinY();
-         var13 = SectionPos.sectionToBlockCoord(var7);
-         var14 = SectionPos.sectionToBlockCoord(var5 + 1) - 1;
-         var15 = var0.getMaxY();
-         var16 = SectionPos.sectionToBlockCoord(var7 + 1) - 1;
+         int var5 = SectionPos.blockToSectionCoord(var1);
+         int var6 = SectionPos.blockToSectionCoord(var2);
+         int var7 = SectionPos.blockToSectionCoord(var3);
+         int var8 = var1 & 15;
+         int var9 = var2 & 15;
+         int var10 = var3 & 15;
+         int var11 = SectionPos.sectionToBlockCoord(var5);
+         int var12 = var0.getMinY();
+         int var13 = SectionPos.sectionToBlockCoord(var7);
+         int var14 = SectionPos.sectionToBlockCoord(var5 + 1) - 1;
+         int var15 = var0.getMaxY();
+         int var16 = SectionPos.sectionToBlockCoord(var7 + 1) - 1;
          var4.append(String.format(Locale.ROOT, "Section: (at %d,%d,%d in %d,%d,%d; chunk contains blocks %d,%d,%d to %d,%d,%d)", var8, var9, var10, var5, var6, var7, var11, var12, var13, var14, var15, var16));
       } catch (Throwable var18) {
          var4.append("(Error finding chunk loc)");
@@ -73,19 +60,19 @@ public class CrashReportCategory {
       var4.append(", ");
 
       try {
-         var5 = var1 >> 9;
-         var6 = var3 >> 9;
-         var7 = var5 << 5;
-         var8 = var6 << 5;
-         var9 = (var5 + 1 << 5) - 1;
-         var10 = (var6 + 1 << 5) - 1;
-         var11 = var5 << 9;
-         var12 = var0.getMinY();
-         var13 = var6 << 9;
-         var14 = (var5 + 1 << 9) - 1;
-         var15 = var0.getMaxY();
-         var16 = (var6 + 1 << 9) - 1;
-         var4.append(String.format(Locale.ROOT, "Region: (%d,%d; contains chunks %d,%d to %d,%d, blocks %d,%d,%d to %d,%d,%d)", var5, var6, var7, var8, var9, var10, var11, var12, var13, var14, var15, var16));
+         int var20 = var1 >> 9;
+         int var21 = var3 >> 9;
+         int var22 = var20 << 5;
+         int var23 = var21 << 5;
+         int var24 = (var20 + 1 << 5) - 1;
+         int var25 = (var21 + 1 << 5) - 1;
+         int var26 = var20 << 9;
+         int var27 = var0.getMinY();
+         int var28 = var21 << 9;
+         int var29 = (var20 + 1 << 9) - 1;
+         int var30 = var0.getMaxY();
+         int var31 = (var21 + 1 << 9) - 1;
+         var4.append(String.format(Locale.ROOT, "Region: (%d,%d; contains chunks %d,%d to %d,%d, blocks %d,%d,%d to %d,%d,%d)", var20, var21, var22, var23, var24, var25, var26, var27, var28, var29, var30, var31));
       } catch (Throwable var17) {
          var4.append("(Error finding world loc)");
       }
@@ -109,7 +96,7 @@ public class CrashReportCategory {
    }
 
    public void setDetailError(String var1, Throwable var2) {
-      this.setDetail(var1, (Object)var2);
+      this.setDetail(var1, var2);
    }
 
    public int fillInStackTrace(int var1) {
@@ -152,10 +139,8 @@ public class CrashReportCategory {
    public void getDetails(StringBuilder var1) {
       var1.append("-- ").append(this.title).append(" --\n");
       var1.append("Details:");
-      Iterator var2 = this.entries.iterator();
 
-      while(var2.hasNext()) {
-         Entry var3 = (Entry)var2.next();
+      for(Entry var3 : this.entries) {
          var1.append("\n\t");
          var1.append(var3.getKey());
          var1.append(": ");
@@ -164,11 +149,8 @@ public class CrashReportCategory {
 
       if (this.stackTrace != null && this.stackTrace.length > 0) {
          var1.append("\nStacktrace:");
-         StackTraceElement[] var6 = this.stackTrace;
-         int var7 = var6.length;
 
-         for(int var4 = 0; var4 < var7; ++var4) {
-            StackTraceElement var5 = var6[var4];
+         for(StackTraceElement var5 : this.stackTrace) {
             var1.append("\n\tat ");
             var1.append(var5);
          }
@@ -186,12 +168,10 @@ public class CrashReportCategory {
          var0.setDetail("Block", var3::toString);
       }
 
-      var0.setDetail("Block location", () -> {
-         return formatLocation(var1, var2);
-      });
+      var0.setDetail("Block location", (CrashReportDetail)(() -> formatLocation(var1, var2)));
    }
 
-   private static class Entry {
+   static class Entry {
       private final String key;
       private final String value;
 

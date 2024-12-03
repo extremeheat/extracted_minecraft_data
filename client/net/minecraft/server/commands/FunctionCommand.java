@@ -12,8 +12,6 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.datafixers.util.Pair;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSourceStack;
@@ -41,16 +39,10 @@ import net.minecraft.server.commands.data.DataAccessor;
 import net.minecraft.server.commands.data.DataCommands;
 
 public class FunctionCommand {
-   private static final DynamicCommandExceptionType ERROR_ARGUMENT_NOT_COMPOUND = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("commands.function.error.argument_not_compound", var0);
-   });
-   static final DynamicCommandExceptionType ERROR_NO_FUNCTIONS = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("commands.function.scheduled.no_functions", var0);
-   });
+   private static final DynamicCommandExceptionType ERROR_ARGUMENT_NOT_COMPOUND = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.function.error.argument_not_compound", var0));
+   static final DynamicCommandExceptionType ERROR_NO_FUNCTIONS = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.function.scheduled.no_functions", var0));
    @VisibleForTesting
-   public static final Dynamic2CommandExceptionType ERROR_FUNCTION_INSTANTATION_FAILURE = new Dynamic2CommandExceptionType((var0, var1) -> {
-      return Component.translatableEscape("commands.function.instantiationFailure", var0, var1);
-   });
+   public static final Dynamic2CommandExceptionType ERROR_FUNCTION_INSTANTATION_FAILURE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("commands.function.instantiationFailure", var0, var1));
    public static final SuggestionProvider<CommandSourceStack> SUGGEST_FUNCTION = (var0, var1) -> {
       ServerFunctionManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getFunctions();
       SharedSuggestionProvider.suggestResource(var2.getTagNames(), var1, "#");
@@ -58,9 +50,7 @@ public class FunctionCommand {
    };
    static final Callbacks<CommandSourceStack> FULL_CONTEXT_CALLBACKS = new Callbacks<CommandSourceStack>() {
       public void signalResult(CommandSourceStack var1, ResourceLocation var2, int var3) {
-         var1.sendSuccess(() -> {
-            return Component.translatable("commands.function.result", Component.translationArg(var2), var3);
-         }, true);
+         var1.sendSuccess(() -> Component.translatable("commands.function.result", Component.translationArg(var2), var3), true);
       }
    };
 
@@ -70,26 +60,20 @@ public class FunctionCommand {
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       LiteralArgumentBuilder var1 = Commands.literal("with");
-      Iterator var2 = DataCommands.SOURCE_PROVIDERS.iterator();
 
-      while(var2.hasNext()) {
-         DataCommands.DataProvider var3 = (DataCommands.DataProvider)var2.next();
-         var3.wrap(var1, (var1x) -> {
-            return var1x.executes(new FunctionCustomExecutor() {
+      for(DataCommands.DataProvider var3 : DataCommands.SOURCE_PROVIDERS) {
+         var3.wrap(var1, (var1x) -> var1x.executes(new FunctionCustomExecutor() {
                protected CompoundTag arguments(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
-                  return var0.access(var1).getData();
+                  return var3.access(var1).getData();
                }
             }).then(Commands.argument("path", NbtPathArgument.nbtPath()).executes(new FunctionCustomExecutor() {
                protected CompoundTag arguments(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
-                  return FunctionCommand.getArgumentTag(NbtPathArgument.getPath(var1, "path"), var0.access(var1));
+                  return FunctionCommand.getArgumentTag(NbtPathArgument.getPath(var1, "path"), var3.access(var1));
                }
-            }));
-         });
+            })));
       }
 
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("function").requires((var0x) -> {
-         return var0x.hasPermission(2);
-      })).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("name", FunctionArgument.functions()).suggests(SUGGEST_FUNCTION).executes(new FunctionCustomExecutor() {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("function").requires((var0x) -> var0x.hasPermission(2))).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("name", FunctionArgument.functions()).suggests(SUGGEST_FUNCTION).executes(new FunctionCustomExecutor() {
          @Nullable
          protected CompoundTag arguments(CommandContext<CommandSourceStack> var1) {
             return null;
@@ -143,10 +127,8 @@ public class FunctionCommand {
       CommandDispatcher var6 = var2.dispatcher();
       ExecutionCommandSource var7 = var3.clearCallbacks();
       CommandResultCallback var8 = CommandResultCallback.chain(var2.callback(), var4.currentFrame().returnValueConsumer());
-      Iterator var9 = var0.iterator();
 
-      while(var9.hasNext()) {
-         CommandFunction var10 = (CommandFunction)var9.next();
+      for(CommandFunction var10 : var0) {
          ResourceLocation var11 = var10.id();
          CommandResultCallback var12 = decorateOutputIfNeeded(var2, var5, var11, var8);
          instantiateAndQueueFunctions(var1, var4, var6, var7, var10, var11, var12, true);
@@ -166,10 +148,7 @@ public class FunctionCommand {
             CommandResultCallback var11 = decorateOutputIfNeeded(var2, var5, var10, var8);
             instantiateAndQueueFunctions(var1, var4, var6, var7, var9, var10, var11, false);
          } else if (var8 == CommandResultCallback.EMPTY) {
-            Iterator var15 = var0.iterator();
-
-            while(var15.hasNext()) {
-               CommandFunction var17 = (CommandFunction)var15.next();
+            for(CommandFunction var17 : var0) {
                ResourceLocation var19 = var17.id();
                CommandResultCallback var12 = decorateOutputIfNeeded(var2, var5, var19, var8);
                instantiateAndQueueFunctions(var1, var4, var6, var7, var17, var19, var12, false);
@@ -190,13 +169,9 @@ public class FunctionCommand {
             }
 
             1Accumulator var16 = new 1Accumulator();
-            CommandResultCallback var18 = (var1x, var2x) -> {
-               var16.add(var2x);
-            };
-            Iterator var20 = var0.iterator();
+            CommandResultCallback var18 = (var1x, var2x) -> var16.add(var2x);
 
-            while(var20.hasNext()) {
-               CommandFunction var21 = (CommandFunction)var20.next();
+            for(CommandFunction var21 : var0) {
                ResourceLocation var13 = var21.id();
                CommandResultCallback var14 = decorateOutputIfNeeded(var2, var5, var13, var18);
                instantiateAndQueueFunctions(var1, var4, var6, var7, var21, var13, var14, false);
@@ -211,10 +186,6 @@ public class FunctionCommand {
          }
 
       }
-   }
-
-   public interface Callbacks<T> {
-      void signalResult(T var1, ResourceLocation var2, int var3);
    }
 
    abstract static class FunctionCustomExecutor extends CustomCommandExecutor.WithErrorHandling<CommandSourceStack> implements CustomCommandExecutor.CommandAdapter<CommandSourceStack> {
@@ -235,13 +206,9 @@ public class FunctionCommand {
             CompoundTag var8 = this.arguments(var5);
             CommandSourceStack var9 = FunctionCommand.modifySenderForExecution(var1);
             if (var7.size() == 1) {
-               var1.sendSuccess(() -> {
-                  return Component.translatable("commands.function.scheduled.single", Component.translationArg(((CommandFunction)var7.iterator().next()).id()));
-               }, true);
+               var1.sendSuccess(() -> Component.translatable("commands.function.scheduled.single", Component.translationArg(((CommandFunction)var7.iterator().next()).id())), true);
             } else {
-               var1.sendSuccess(() -> {
-                  return Component.translatable("commands.function.scheduled.multiple", ComponentUtils.formatList(var7.stream().map(CommandFunction::id).toList(), (Function)(Component::translationArg)));
-               }, true);
+               var1.sendSuccess(() -> Component.translatable("commands.function.scheduled.multiple", ComponentUtils.formatList(var7.stream().map(CommandFunction::id).toList(), Component::translationArg)), true);
             }
 
             FunctionCommand.queueFunctions(var7, var8, var1, var9, var4, FunctionCommand.FULL_CONTEXT_CALLBACKS, var3);
@@ -252,5 +219,9 @@ public class FunctionCommand {
       public void runGuarded(final ExecutionCommandSource var1, final ContextChain var2, final ChainModifiers var3, final ExecutionControl var4) throws CommandSyntaxException {
          this.runGuarded((CommandSourceStack)var1, var2, var3, var4);
       }
+   }
+
+   public interface Callbacks<T> {
+      void signalResult(T var1, ResourceLocation var2, int var3);
    }
 }

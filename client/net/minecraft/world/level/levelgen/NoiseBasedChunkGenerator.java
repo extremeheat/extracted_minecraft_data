@@ -7,7 +7,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.text.DecimalFormat;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.OptionalInt;
@@ -49,13 +48,7 @@ import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 public final class NoiseBasedChunkGenerator extends ChunkGenerator {
-   public static final MapCodec<NoiseBasedChunkGenerator> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BiomeSource.CODEC.fieldOf("biome_source").forGetter((var0x) -> {
-         return var0x.biomeSource;
-      }), NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter((var0x) -> {
-         return var0x.settings;
-      })).apply(var0, var0.stable(NoiseBasedChunkGenerator::new));
-   });
+   public static final MapCodec<NoiseBasedChunkGenerator> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BiomeSource.CODEC.fieldOf("biome_source").forGetter((var0x) -> var0x.biomeSource), NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter((var0x) -> var0x.settings)).apply(var0, var0.stable(NoiseBasedChunkGenerator::new)));
    private static final BlockState AIR;
    private final Holder<NoiseGeneratorSettings> settings;
    private final Supplier<Aquifer.FluidPicker> globalFluidPicker;
@@ -63,9 +56,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    public NoiseBasedChunkGenerator(BiomeSource var1, Holder<NoiseGeneratorSettings> var2) {
       super(var1);
       this.settings = var2;
-      this.globalFluidPicker = Suppliers.memoize(() -> {
-         return createFluidPicker((NoiseGeneratorSettings)var2.value());
-      });
+      this.globalFluidPicker = Suppliers.memoize(() -> createFluidPicker((NoiseGeneratorSettings)var2.value()));
    }
 
    private static Aquifer.FluidPicker createFluidPicker(NoiseGeneratorSettings var0) {
@@ -73,9 +64,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
       int var2 = var0.seaLevel();
       Aquifer.FluidStatus var3 = new Aquifer.FluidStatus(var2, var0.defaultFluid());
       Aquifer.FluidStatus var4 = new Aquifer.FluidStatus(DimensionType.MIN_Y * 2, Blocks.AIR.defaultBlockState());
-      return (var4x, var5, var6) -> {
-         return var5 < Math.min(-54, var2) ? var1 : var3;
-      };
+      return (var4x, var5, var6) -> var5 < Math.min(-54, var2) ? var1 : var3;
    }
 
    public CompletableFuture<ChunkAccess> createBiomes(RandomState var1, Blender var2, StructureManager var3, ChunkAccess var4) {
@@ -86,15 +75,13 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    }
 
    private void doCreateBiomes(Blender var1, RandomState var2, StructureManager var3, ChunkAccess var4) {
-      NoiseChunk var5 = var4.getOrCreateNoiseChunk((var4x) -> {
-         return this.createNoiseChunk(var4x, var3, var1, var2);
-      });
+      NoiseChunk var5 = var4.getOrCreateNoiseChunk((var4x) -> this.createNoiseChunk(var4x, var3, var1, var2));
       BiomeResolver var6 = BelowZeroRetrogen.getBiomeResolver(var1.getBiomeResolver(this.biomeSource), var4);
-      var4.fillBiomesFromNoise(var6, var5.cachedClimateSampler(var2.router(), ((NoiseGeneratorSettings)this.settings.value()).spawnTarget()));
+      var4.fillBiomesFromNoise(var6, var5.cachedClimateSampler(var2.router(), (this.settings.value()).spawnTarget()));
    }
 
    private NoiseChunk createNoiseChunk(ChunkAccess var1, StructureManager var2, Blender var3, RandomState var4) {
-      return NoiseChunk.forChunk(var1, var4, Beardifier.forStructuresInChunk(var2, var1.getPos()), (NoiseGeneratorSettings)this.settings.value(), (Aquifer.FluidPicker)this.globalFluidPicker.get(), var3);
+      return NoiseChunk.forChunk(var1, var4, Beardifier.forStructuresInChunk(var2, var1.getPos()), this.settings.value(), (Aquifer.FluidPicker)this.globalFluidPicker.get(), var3);
    }
 
    protected MapCodec<? extends ChunkGenerator> codec() {
@@ -154,7 +141,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
          int var19 = var15 * var13;
          double var20 = (double)var16 / (double)var13;
          double var22 = (double)var17 / (double)var13;
-         NoiseChunk var24 = new NoiseChunk(1, var2, var18, var19, var7, DensityFunctions.BeardifierMarker.INSTANCE, (NoiseGeneratorSettings)this.settings.value(), (Aquifer.FluidPicker)this.globalFluidPicker.get(), Blender.empty());
+         NoiseChunk var24 = new NoiseChunk(1, var2, var18, var19, var7, DensityFunctions.BeardifierMarker.INSTANCE, this.settings.value(), (Aquifer.FluidPicker)this.globalFluidPicker.get(), Blender.empty());
          var24.initializeForFirstCellX();
          var24.advanceCellX(0);
 
@@ -195,23 +182,17 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
 
    @VisibleForTesting
    public void buildSurface(ChunkAccess var1, WorldGenerationContext var2, RandomState var3, StructureManager var4, BiomeManager var5, Registry<Biome> var6, Blender var7) {
-      NoiseChunk var8 = var1.getOrCreateNoiseChunk((var4x) -> {
-         return this.createNoiseChunk(var4x, var4, var7, var3);
-      });
-      NoiseGeneratorSettings var9 = (NoiseGeneratorSettings)this.settings.value();
+      NoiseChunk var8 = var1.getOrCreateNoiseChunk((var4x) -> this.createNoiseChunk(var4x, var4, var7, var3));
+      NoiseGeneratorSettings var9 = this.settings.value();
       var3.surfaceSystem().buildSurface(var3, var5, var6, var9.useLegacyRandomSource(), var2, var1, var8, var9.surfaceRule());
    }
 
    public void applyCarvers(WorldGenRegion var1, long var2, RandomState var4, BiomeManager var5, StructureManager var6, ChunkAccess var7) {
-      BiomeManager var8 = var5.withDifferentSource((var2x, var3, var4x) -> {
-         return this.biomeSource.getNoiseBiome(var2x, var3, var4x, var4.sampler());
-      });
+      BiomeManager var8 = var5.withDifferentSource((var2x, var3, var4x) -> this.biomeSource.getNoiseBiome(var2x, var3, var4x, var4.sampler()));
       WorldgenRandom var9 = new WorldgenRandom(new LegacyRandomSource(RandomSupport.generateUniqueSeed()));
       boolean var10 = true;
       ChunkPos var11 = var7.getPos();
-      NoiseChunk var12 = var7.getOrCreateNoiseChunk((var4x) -> {
-         return this.createNoiseChunk(var4x, var6, Blender.of(var1), var4);
-      });
+      NoiseChunk var12 = var7.getOrCreateNoiseChunk((var4x) -> this.createNoiseChunk(var4x, var6, Blender.of(var1), var4));
       Aquifer var13 = var12.aquifer();
       CarvingContext var14 = new CarvingContext(this, var1.registryAccess(), var7.getHeightAccessorForGeneration(), var12, var4, ((NoiseGeneratorSettings)this.settings.value()).surfaceRule());
       CarvingMask var15 = ((ProtoChunk)var7).getOrCreateCarvingMask();
@@ -220,20 +201,19 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
          for(int var17 = -8; var17 <= 8; ++var17) {
             ChunkPos var18 = new ChunkPos(var11.x + var16, var11.z + var17);
             ChunkAccess var19 = var1.getChunk(var18.x, var18.z);
-            BiomeGenerationSettings var20 = var19.carverBiome(() -> {
-               return this.getBiomeGenerationSettings(this.biomeSource.getNoiseBiome(QuartPos.fromBlock(var18.getMinBlockX()), 0, QuartPos.fromBlock(var18.getMinBlockZ()), var4.sampler()));
-            });
+            BiomeGenerationSettings var20 = var19.carverBiome(() -> this.getBiomeGenerationSettings(this.biomeSource.getNoiseBiome(QuartPos.fromBlock(var18.getMinBlockX()), 0, QuartPos.fromBlock(var18.getMinBlockZ()), var4.sampler())));
             Iterable var21 = var20.getCarvers();
             int var22 = 0;
 
-            for(Iterator var23 = var21.iterator(); var23.hasNext(); ++var22) {
-               Holder var24 = (Holder)var23.next();
+            for(Holder var24 : var21) {
                ConfiguredWorldCarver var25 = (ConfiguredWorldCarver)var24.value();
                var9.setLargeFeatureSeed(var2 + (long)var22, var18.x, var18.z);
                if (var25.isStartChunk(var9)) {
                   Objects.requireNonNull(var8);
                   var25.carve(var14, var7, var8::getBiome, var9, var13, var18, var15);
                }
+
+               ++var22;
             }
          }
       }
@@ -246,50 +226,32 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
       int var7 = Mth.floorDiv(var6, var5.getCellHeight());
       int var8 = Mth.floorDiv(var5.height(), var5.getCellHeight());
       return var8 <= 0 ? CompletableFuture.completedFuture(var4) : CompletableFuture.supplyAsync(() -> {
-         int var9 = var4.getSectionIndex(var8 * var5.getCellHeight() - 1 + var6);
+         Object var9 = var4.getSectionIndex(var8 * var5.getCellHeight() - 1 + var6);
          int var10 = var4.getSectionIndex(var6);
          HashSet var11 = Sets.newHashSet();
 
-         for(int var12 = var9; var12 >= var10; --var12) {
-            LevelChunkSection var13 = var4.getSection(var12);
+         for(ChunkAccess var12 = (ChunkAccess)var9; var12 >= var10; --var12) {
+            LevelChunkSection var13 = var4.getSection((int)var12);
             var13.acquire();
             var11.add(var13);
          }
 
-         boolean var19 = false;
-
-         ChunkAccess var21;
+         ChunkAccess var20;
          try {
-            var19 = true;
-            var21 = this.doFill(var1, var3, var2, var4, var7, var8);
-            var19 = false;
+            var20 = this.doFill(var1, var3, var2, var4, var7, var8);
          } finally {
-            if (var19) {
-               Iterator var16 = var11.iterator();
-
-               while(var16.hasNext()) {
-                  LevelChunkSection var17 = (LevelChunkSection)var16.next();
-                  var17.release();
-               }
-
+            for(LevelChunkSection var17 : var11) {
+               var17.release();
             }
+
          }
 
-         Iterator var22 = var11.iterator();
-
-         while(var22.hasNext()) {
-            LevelChunkSection var14 = (LevelChunkSection)var22.next();
-            var14.release();
-         }
-
-         return var21;
+         return var20;
       }, Util.backgroundExecutor().forName("wgen_fill_noise"));
    }
 
    private ChunkAccess doFill(Blender var1, StructureManager var2, RandomState var3, ChunkAccess var4, int var5, int var6) {
-      NoiseChunk var7 = var4.getOrCreateNoiseChunk((var4x) -> {
-         return this.createNoiseChunk(var4x, var2, var1, var3);
-      });
+      NoiseChunk var7 = var4.getOrCreateNoiseChunk((var4x) -> this.createNoiseChunk(var4x, var2, var1, var3));
       Heightmap var8 = var4.getOrCreateHeightmapUnprimed(Heightmap.Types.OCEAN_FLOOR_WG);
       Heightmap var9 = var4.getOrCreateHeightmapUnprimed(Heightmap.Types.WORLD_SURFACE_WG);
       ChunkPos var10 = var4.getPos();

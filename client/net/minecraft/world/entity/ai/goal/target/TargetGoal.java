@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.goal.target;
 
 import javax.annotation.Nullable;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -115,7 +114,7 @@ public abstract class TargetGoal extends Goal {
 
    private boolean canReach(LivingEntity var1) {
       this.reachCacheTime = reducedTickDelay(10 + this.mob.getRandom().nextInt(5));
-      Path var2 = this.mob.getNavigation().createPath((Entity)var1, 0);
+      Path var2 = this.mob.getNavigation().createPath(var1, 0);
       if (var2 == null) {
          return false;
       } else {

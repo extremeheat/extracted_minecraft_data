@@ -26,13 +26,5 @@ public interface TooltipFlag {
       public Default asCreative() {
          return new Default(this.advanced, true);
       }
-
-      public boolean advanced() {
-         return this.advanced;
-      }
-
-      public boolean creative() {
-         return this.creative;
-      }
    }
 }

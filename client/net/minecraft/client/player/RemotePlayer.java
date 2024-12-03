@@ -63,24 +63,9 @@ public class RemotePlayer extends AbstractClientPlayer {
       }
 
       this.bob += (var1 - this.bob) * 0.4F;
-      Zone var2 = Profiler.get().zone("push");
 
-      try {
+      try (Zone var2 = Profiler.get().zone("push")) {
          this.pushEntities();
-      } catch (Throwable var6) {
-         if (var2 != null) {
-            try {
-               var2.close();
-            } catch (Throwable var5) {
-               var6.addSuppressed(var5);
-            }
-         }
-
-         throw var6;
-      }
-
-      if (var2 != null) {
-         var2.close();
       }
 
    }

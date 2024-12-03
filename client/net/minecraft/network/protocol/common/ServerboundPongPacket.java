@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundPongPacket implements Packet<ServerCommonPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundPongPacket> STREAM_CODEC = Packet.codec(ServerboundPongPacket::write, ServerboundPongPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundPongPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundPongPacket>codec(ServerboundPongPacket::write, ServerboundPongPacket::new);
    private final int id;
 
    public ServerboundPongPacket(int var1) {

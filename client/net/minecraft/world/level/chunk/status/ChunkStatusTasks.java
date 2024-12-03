@@ -37,7 +37,7 @@ public class ChunkStatusTasks {
    static CompletableFuture<ChunkAccess> generateStructureStarts(WorldGenContext var0, ChunkStep var1, StaticCache2D<GenerationChunkHolder> var2, ChunkAccess var3) {
       ServerLevel var4 = var0.level();
       if (var4.getServer().getWorldData().worldGenOptions().generateStructures()) {
-         var0.generator().createStructures(var4.registryAccess(), var4.getChunkSource().getGeneratorState(), var4.structureManager(), var3, var0.structureManager());
+         var0.generator().createStructures(var4.registryAccess(), var4.getChunkSource().getGeneratorState(), var4.structureManager(), var3, var0.structureManager(), var4.dimension());
       }
 
       var4.onStructureStartsAvailable(var3);
@@ -138,9 +138,7 @@ public class ChunkStatusTasks {
          if (var3x instanceof ImposterProtoChunk var6) {
             var4 = var6.getWrapped();
          } else {
-            var4 = new LevelChunk(var5x, var3x, (var2) -> {
-               postLoadProtoChunk(var5x, var3x.getEntities());
-            });
+            var4 = new LevelChunk(var5x, var3x, (var2) -> postLoadProtoChunk(var5x, var3x.getEntities()));
             var5.replaceProtoChunk(new ImposterProtoChunk(var4, false));
          }
 

@@ -43,37 +43,6 @@ public class ItemCombinerMenuSlotDefinition {
       return this.getNumOfInputSlots();
    }
 
-   public static record SlotDefinition(int slotIndex, int x, int y, Predicate<ItemStack> mayPlace) {
-      final int slotIndex;
-      static final SlotDefinition EMPTY = new SlotDefinition(0, 0, 0, (var0) -> {
-         return true;
-      });
-
-      public SlotDefinition(int var1, int var2, int var3, Predicate<ItemStack> var4) {
-         super();
-         this.slotIndex = var1;
-         this.x = var2;
-         this.y = var3;
-         this.mayPlace = var4;
-      }
-
-      public int slotIndex() {
-         return this.slotIndex;
-      }
-
-      public int x() {
-         return this.x;
-      }
-
-      public int y() {
-         return this.y;
-      }
-
-      public Predicate<ItemStack> mayPlace() {
-         return this.mayPlace;
-      }
-   }
-
    public static class Builder {
       private final List<SlotDefinition> inputSlots = new ArrayList();
       private SlotDefinition resultSlot;
@@ -89,9 +58,7 @@ public class ItemCombinerMenuSlotDefinition {
       }
 
       public Builder withResultSlot(int var1, int var2, int var3) {
-         this.resultSlot = new SlotDefinition(var1, var2, var3, (var0) -> {
-            return false;
-         });
+         this.resultSlot = new SlotDefinition(var1, var2, var3, (var0) -> false);
          return this;
       }
 
@@ -110,6 +77,19 @@ public class ItemCombinerMenuSlotDefinition {
          } else {
             return new ItemCombinerMenuSlotDefinition(this.inputSlots, this.resultSlot);
          }
+      }
+   }
+
+   public static record SlotDefinition(int slotIndex, int x, int y, Predicate<ItemStack> mayPlace) {
+      final int slotIndex;
+      static final SlotDefinition EMPTY = new SlotDefinition(0, 0, 0, (var0) -> true);
+
+      public SlotDefinition(int var1, int var2, int var3, Predicate<ItemStack> var4) {
+         super();
+         this.slotIndex = var1;
+         this.x = var2;
+         this.y = var3;
+         this.mayPlace = var4;
       }
    }
 }

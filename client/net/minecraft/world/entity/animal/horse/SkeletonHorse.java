@@ -154,7 +154,7 @@ public class SkeletonHorse extends AbstractHorse {
 
    @Nullable
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (AgeableMob)EntityType.SKELETON_HORSE.create(var1, EntitySpawnReason.BREEDING);
+      return EntityType.SKELETON_HORSE.create(var1, EntitySpawnReason.BREEDING);
    }
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {

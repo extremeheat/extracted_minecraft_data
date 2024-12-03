@@ -55,9 +55,8 @@ public class MaceItem extends Item {
       if (canSmashAttack(var3)) {
          ServerLevel var4 = (ServerLevel)var3.level();
          var3.setDeltaMovement(var3.getDeltaMovement().with(Direction.Axis.Y, 0.009999999776482582));
-         ServerPlayer var5;
          if (var3 instanceof ServerPlayer) {
-            var5 = (ServerPlayer)var3;
+            ServerPlayer var5 = (ServerPlayer)var3;
             var5.currentImpulseImpactPos = this.calculateImpactPosition(var5);
             var5.setIgnoreFallDamageFromCurrentImpulse(true);
             var5.connection.send(new ClientboundSetEntityMotionPacket(var5));
@@ -65,12 +64,12 @@ public class MaceItem extends Item {
 
          if (var2.onGround()) {
             if (var3 instanceof ServerPlayer) {
-               var5 = (ServerPlayer)var3;
-               var5.setSpawnExtraParticlesOnFall(true);
+               ServerPlayer var6 = (ServerPlayer)var3;
+               var6.setSpawnExtraParticlesOnFall(true);
             }
 
-            SoundEvent var6 = var3.fallDistance > 5.0F ? SoundEvents.MACE_SMASH_GROUND_HEAVY : SoundEvents.MACE_SMASH_GROUND;
-            var4.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), var6, var3.getSoundSource(), 1.0F, 1.0F);
+            SoundEvent var7 = var3.fallDistance > 5.0F ? SoundEvents.MACE_SMASH_GROUND_HEAVY : SoundEvents.MACE_SMASH_GROUND;
+            var4.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), var7, var3.getSoundSource(), 1.0F, 1.0F);
          } else {
             var4.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), SoundEvents.MACE_SMASH_AIR, var3.getSoundSource(), 1.0F, 1.0F);
          }
@@ -143,10 +142,10 @@ public class MaceItem extends Item {
 
    private static Predicate<LivingEntity> knockbackPredicate(Entity var0, Entity var1) {
       return (var2) -> {
-         boolean var10000;
          boolean var3;
          boolean var4;
          boolean var5;
+         boolean var10000;
          label62: {
             var3 = !var2.isSpectator();
             var4 = var2 != var0 && var2 != var1;

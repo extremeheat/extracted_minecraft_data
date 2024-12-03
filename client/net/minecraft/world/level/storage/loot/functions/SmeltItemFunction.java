@@ -16,9 +16,7 @@ import org.slf4j.Logger;
 
 public class SmeltItemFunction extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<SmeltItemFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).apply(var0, SmeltItemFunction::new);
-   });
+   public static final MapCodec<SmeltItemFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).apply(var0, SmeltItemFunction::new));
 
    private SmeltItemFunction(List<LootItemCondition> var1) {
       super(var1);

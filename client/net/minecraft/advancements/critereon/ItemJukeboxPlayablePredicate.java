@@ -2,7 +2,6 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
@@ -15,9 +14,7 @@ import net.minecraft.world.item.JukeboxPlayable;
 import net.minecraft.world.item.JukeboxSong;
 
 public record ItemJukeboxPlayablePredicate(Optional<HolderSet<JukeboxSong>> song) implements SingleComponentItemPredicate<JukeboxPlayable> {
-   public static final Codec<ItemJukeboxPlayablePredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(RegistryCodecs.homogeneousList(Registries.JUKEBOX_SONG).optionalFieldOf("song").forGetter(ItemJukeboxPlayablePredicate::song)).apply(var0, ItemJukeboxPlayablePredicate::new);
-   });
+   public static final Codec<ItemJukeboxPlayablePredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.JUKEBOX_SONG).optionalFieldOf("song").forGetter(ItemJukeboxPlayablePredicate::song)).apply(var0, ItemJukeboxPlayablePredicate::new));
 
    public ItemJukeboxPlayablePredicate(Optional<HolderSet<JukeboxSong>> var1) {
       super();
@@ -33,10 +30,8 @@ public record ItemJukeboxPlayablePredicate(Optional<HolderSet<JukeboxSong>> song
          return true;
       } else {
          boolean var3 = false;
-         Iterator var4 = ((HolderSet)this.song.get()).iterator();
 
-         while(var4.hasNext()) {
-            Holder var5 = (Holder)var4.next();
+         for(Holder var5 : (HolderSet)this.song.get()) {
             Optional var6 = var5.unwrapKey();
             if (!var6.isEmpty() && var6.get() == var2.song().key()) {
                var3 = true;
@@ -50,9 +45,5 @@ public record ItemJukeboxPlayablePredicate(Optional<HolderSet<JukeboxSong>> song
 
    public static ItemJukeboxPlayablePredicate any() {
       return new ItemJukeboxPlayablePredicate(Optional.empty());
-   }
-
-   public Optional<HolderSet<JukeboxSong>> song() {
-      return this.song;
    }
 }

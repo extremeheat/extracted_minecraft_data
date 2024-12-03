@@ -63,9 +63,7 @@ public class FireBlock extends BaseFireBlock {
    public FireBlock(BlockBehaviour.Properties var1) {
       super(var1, 1.0F);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(AGE, 0)).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false)).setValue(UP, false));
-      this.shapesCache = ImmutableMap.copyOf((Map)this.stateDefinition.getPossibleStates().stream().filter((var0) -> {
-         return (Integer)var0.getValue(AGE) == 0;
-      }).collect(Collectors.toMap(Function.identity(), FireBlock::calculateShape)));
+      this.shapesCache = ImmutableMap.copyOf((Map)this.stateDefinition.getPossibleStates().stream().filter((var0) -> (Integer)var0.getValue(AGE) == 0).collect(Collectors.toMap(Function.identity(), FireBlock::calculateShape)));
    }
 
    private static VoxelShape calculateShape(BlockState var0) {
@@ -110,11 +108,8 @@ public class FireBlock extends BaseFireBlock {
       BlockState var4 = var1.getBlockState(var3);
       if (!this.canBurn(var4) && !var4.isFaceSturdy(var1, var3, Direction.UP)) {
          BlockState var5 = this.defaultBlockState();
-         Direction[] var6 = Direction.values();
-         int var7 = var6.length;
 
-         for(int var8 = 0; var8 < var7; ++var8) {
-            Direction var9 = var6[var8];
+         for(Direction var9 : Direction.values()) {
             BooleanProperty var10 = (BooleanProperty)PROPERTY_BY_DIRECTION.get(var9);
             if (var10 != null) {
                var5 = (BlockState)var5.setValue(var10, this.canBurn(var1.getBlockState(var2.relative(var9))));
@@ -153,8 +148,8 @@ public class FireBlock extends BaseFireBlock {
 
             if (!var6) {
                if (!this.isValidFireLocation(var2, var3)) {
-                  BlockPos var19 = var3.below();
-                  if (!var2.getBlockState(var19).isFaceSturdy(var2, var19, Direction.UP) || var7 > 3) {
+                  BlockPos var20 = var3.below();
+                  if (!var2.getBlockState(var20).isFaceSturdy(var2, var20, Direction.UP) || var7 > 3) {
                      var2.removeBlock(var3, false);
                   }
 
@@ -245,11 +240,7 @@ public class FireBlock extends BaseFireBlock {
    }
 
    private boolean isValidFireLocation(BlockGetter var1, BlockPos var2) {
-      Direction[] var3 = Direction.values();
-      int var4 = var3.length;
-
-      for(int var5 = 0; var5 < var4; ++var5) {
-         Direction var6 = var3[var5];
+      for(Direction var6 : Direction.values()) {
          if (this.canBurn(var1.getBlockState(var2.relative(var6)))) {
             return true;
          }
@@ -263,11 +254,8 @@ public class FireBlock extends BaseFireBlock {
          return 0;
       } else {
          int var3 = 0;
-         Direction[] var4 = Direction.values();
-         int var5 = var4.length;
 
-         for(int var6 = 0; var6 < var5; ++var6) {
-            Direction var7 = var4[var6];
+         for(Direction var7 : Direction.values()) {
             BlockState var8 = var1.getBlockState(var2.relative(var7));
             var3 = Math.max(this.getIgniteOdds(var8), var3);
          }
@@ -414,6 +402,8 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.LARGE_FERN, 60, 100);
       var0.setFlammable(Blocks.DANDELION, 60, 100);
       var0.setFlammable(Blocks.POPPY, 60, 100);
+      var0.setFlammable(Blocks.OPEN_EYEBLOSSOM, 60, 100);
+      var0.setFlammable(Blocks.CLOSED_EYEBLOSSOM, 60, 100);
       var0.setFlammable(Blocks.BLUE_ORCHID, 60, 100);
       var0.setFlammable(Blocks.ALLIUM, 60, 100);
       var0.setFlammable(Blocks.AZURE_BLUET, 60, 100);
@@ -464,9 +454,9 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.GREEN_CARPET, 60, 20);
       var0.setFlammable(Blocks.RED_CARPET, 60, 20);
       var0.setFlammable(Blocks.BLACK_CARPET, 60, 20);
-      var0.setFlammable(Blocks.PALE_MOSS_BLOCK, 60, 20);
-      var0.setFlammable(Blocks.PALE_MOSS_CARPET, 60, 20);
-      var0.setFlammable(Blocks.PALE_HANGING_MOSS, 60, 100);
+      var0.setFlammable(Blocks.PALE_MOSS_BLOCK, 5, 100);
+      var0.setFlammable(Blocks.PALE_MOSS_CARPET, 5, 100);
+      var0.setFlammable(Blocks.PALE_HANGING_MOSS, 5, 100);
       var0.setFlammable(Blocks.DRIED_KELP_BLOCK, 30, 60);
       var0.setFlammable(Blocks.BAMBOO, 60, 60);
       var0.setFlammable(Blocks.SCAFFOLDING, 60, 60);
@@ -496,9 +486,7 @@ public class FireBlock extends BaseFireBlock {
       SOUTH = PipeBlock.SOUTH;
       WEST = PipeBlock.WEST;
       UP = PipeBlock.UP;
-      PROPERTY_BY_DIRECTION = (Map)PipeBlock.PROPERTY_BY_DIRECTION.entrySet().stream().filter((var0) -> {
-         return var0.getKey() != Direction.DOWN;
-      }).collect(Util.toMap());
+      PROPERTY_BY_DIRECTION = (Map)PipeBlock.PROPERTY_BY_DIRECTION.entrySet().stream().filter((var0) -> var0.getKey() != Direction.DOWN).collect(Util.toMap());
       UP_AABB = Block.box(0.0, 15.0, 0.0, 16.0, 16.0, 16.0);
       WEST_AABB = Block.box(0.0, 0.0, 0.0, 1.0, 16.0, 16.0);
       EAST_AABB = Block.box(15.0, 0.0, 0.0, 16.0, 16.0, 16.0);

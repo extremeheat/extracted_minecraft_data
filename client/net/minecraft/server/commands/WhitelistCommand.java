@@ -6,7 +6,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
-import java.util.Iterator;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -27,37 +26,15 @@ public class WhitelistCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("whitelist").requires((var0x) -> {
-         return var0x.hasPermission(3);
-      })).then(Commands.literal("on").executes((var0x) -> {
-         return enableWhitelist((CommandSourceStack)var0x.getSource());
-      }))).then(Commands.literal("off").executes((var0x) -> {
-         return disableWhitelist((CommandSourceStack)var0x.getSource());
-      }))).then(Commands.literal("list").executes((var0x) -> {
-         return showList((CommandSourceStack)var0x.getSource());
-      }))).then(Commands.literal("add").then(Commands.argument("targets", GameProfileArgument.gameProfile()).suggests((var0x, var1) -> {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("whitelist").requires((var0x) -> var0x.hasPermission(3))).then(Commands.literal("on").executes((var0x) -> enableWhitelist((CommandSourceStack)var0x.getSource())))).then(Commands.literal("off").executes((var0x) -> disableWhitelist((CommandSourceStack)var0x.getSource())))).then(Commands.literal("list").executes((var0x) -> showList((CommandSourceStack)var0x.getSource())))).then(Commands.literal("add").then(Commands.argument("targets", GameProfileArgument.gameProfile()).suggests((var0x, var1) -> {
          PlayerList var2 = ((CommandSourceStack)var0x.getSource()).getServer().getPlayerList();
-         return SharedSuggestionProvider.suggest(var2.getPlayers().stream().filter((var1x) -> {
-            return !var2.getWhiteList().isWhiteListed(var1x.getGameProfile());
-         }).map((var0) -> {
-            return var0.getGameProfile().getName();
-         }), var1);
-      }).executes((var0x) -> {
-         return addPlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets"));
-      })))).then(Commands.literal("remove").then(Commands.argument("targets", GameProfileArgument.gameProfile()).suggests((var0x, var1) -> {
-         return SharedSuggestionProvider.suggest(((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getWhiteListNames(), var1);
-      }).executes((var0x) -> {
-         return removePlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets"));
-      })))).then(Commands.literal("reload").executes((var0x) -> {
-         return reload((CommandSourceStack)var0x.getSource());
-      })));
+         return SharedSuggestionProvider.suggest(var2.getPlayers().stream().filter((var1x) -> !var2.getWhiteList().isWhiteListed(var1x.getGameProfile())).map((var0) -> var0.getGameProfile().getName()), var1);
+      }).executes((var0x) -> addPlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets")))))).then(Commands.literal("remove").then(Commands.argument("targets", GameProfileArgument.gameProfile()).suggests((var0x, var1) -> SharedSuggestionProvider.suggest(((CommandSourceStack)var0x.getSource()).getServer().getPlayerList().getWhiteListNames(), var1)).executes((var0x) -> removePlayers((CommandSourceStack)var0x.getSource(), GameProfileArgument.getGameProfiles(var0x, "targets")))))).then(Commands.literal("reload").executes((var0x) -> reload((CommandSourceStack)var0x.getSource()))));
    }
 
    private static int reload(CommandSourceStack var0) {
       var0.getServer().getPlayerList().reloadWhiteList();
-      var0.sendSuccess(() -> {
-         return Component.translatable("commands.whitelist.reloaded");
-      }, true);
+      var0.sendSuccess(() -> Component.translatable("commands.whitelist.reloaded"), true);
       var0.getServer().kickUnlistedPlayers(var0);
       return 1;
    }
@@ -65,16 +42,12 @@ public class WhitelistCommand {
    private static int addPlayers(CommandSourceStack var0, Collection<GameProfile> var1) throws CommandSyntaxException {
       UserWhiteList var2 = var0.getServer().getPlayerList().getWhiteList();
       int var3 = 0;
-      Iterator var4 = var1.iterator();
 
-      while(var4.hasNext()) {
-         GameProfile var5 = (GameProfile)var4.next();
+      for(GameProfile var5 : var1) {
          if (!var2.isWhiteListed(var5)) {
             UserWhiteListEntry var6 = new UserWhiteListEntry(var5);
             var2.add(var6);
-            var0.sendSuccess(() -> {
-               return Component.translatable("commands.whitelist.add.success", Component.literal(var5.getName()));
-            }, true);
+            var0.sendSuccess(() -> Component.translatable("commands.whitelist.add.success", Component.literal(var5.getName())), true);
             ++var3;
          }
       }
@@ -89,16 +62,12 @@ public class WhitelistCommand {
    private static int removePlayers(CommandSourceStack var0, Collection<GameProfile> var1) throws CommandSyntaxException {
       UserWhiteList var2 = var0.getServer().getPlayerList().getWhiteList();
       int var3 = 0;
-      Iterator var4 = var1.iterator();
 
-      while(var4.hasNext()) {
-         GameProfile var5 = (GameProfile)var4.next();
+      for(GameProfile var5 : var1) {
          if (var2.isWhiteListed(var5)) {
             UserWhiteListEntry var6 = new UserWhiteListEntry(var5);
             var2.remove(var6);
-            var0.sendSuccess(() -> {
-               return Component.translatable("commands.whitelist.remove.success", Component.literal(var5.getName()));
-            }, true);
+            var0.sendSuccess(() -> Component.translatable("commands.whitelist.remove.success", Component.literal(var5.getName())), true);
             ++var3;
          }
       }
@@ -117,9 +86,7 @@ public class WhitelistCommand {
          throw ERROR_ALREADY_ENABLED.create();
       } else {
          var1.setUsingWhiteList(true);
-         var0.sendSuccess(() -> {
-            return Component.translatable("commands.whitelist.enabled");
-         }, true);
+         var0.sendSuccess(() -> Component.translatable("commands.whitelist.enabled"), true);
          var0.getServer().kickUnlistedPlayers(var0);
          return 1;
       }
@@ -131,9 +98,7 @@ public class WhitelistCommand {
          throw ERROR_ALREADY_DISABLED.create();
       } else {
          var1.setUsingWhiteList(false);
-         var0.sendSuccess(() -> {
-            return Component.translatable("commands.whitelist.disabled");
-         }, true);
+         var0.sendSuccess(() -> Component.translatable("commands.whitelist.disabled"), true);
          return 1;
       }
    }
@@ -141,13 +106,9 @@ public class WhitelistCommand {
    private static int showList(CommandSourceStack var0) {
       String[] var1 = var0.getServer().getPlayerList().getWhiteListNames();
       if (var1.length == 0) {
-         var0.sendSuccess(() -> {
-            return Component.translatable("commands.whitelist.none");
-         }, false);
+         var0.sendSuccess(() -> Component.translatable("commands.whitelist.none"), false);
       } else {
-         var0.sendSuccess(() -> {
-            return Component.translatable("commands.whitelist.list", var1.length, String.join(", ", var1));
-         }, false);
+         var0.sendSuccess(() -> Component.translatable("commands.whitelist.list", var1.length, String.join(", ", var1)), false);
       }
 
       return var1.length;

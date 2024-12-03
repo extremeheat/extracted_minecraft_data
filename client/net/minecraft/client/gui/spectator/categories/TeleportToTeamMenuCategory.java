@@ -2,7 +2,6 @@ package net.minecraft.client.gui.spectator.categories;
 
 import com.mojang.authlib.GameProfile;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -36,9 +35,7 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
    }
 
    private static List<SpectatorMenuItem> createTeamEntries(Minecraft var0, Scoreboard var1) {
-      return var1.getPlayerTeams().stream().flatMap((var1x) -> {
-         return TeleportToTeamMenuCategory.TeamSelectionItem.create(var0, var1x).stream();
-      }).toList();
+      return var1.getPlayerTeams().stream().flatMap((var1x) -> TeleportToTeamMenuCategory.TeamSelectionItem.create(var0, var1x).stream()).toList();
    }
 
    public List<SpectatorMenuItem> getItems() {
@@ -79,10 +76,8 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
 
       public static Optional<SpectatorMenuItem> create(Minecraft var0, PlayerTeam var1) {
          ArrayList var2 = new ArrayList();
-         Iterator var3 = var1.getPlayers().iterator();
 
-         while(var3.hasNext()) {
-            String var4 = (String)var3.next();
+         for(String var4 : var1.getPlayers()) {
             PlayerInfo var5 = var0.getConnection().getPlayerInfo(var4);
             if (var5 != null && var5.getGameMode() != GameType.SPECTATOR) {
                var2.add(var5);

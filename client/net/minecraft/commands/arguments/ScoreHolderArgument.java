@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -42,9 +41,7 @@ public class ScoreHolderArgument implements ArgumentType<Result> {
       } catch (CommandSyntaxException var5) {
       }
 
-      return var3.fillSuggestions(var1, (var1x) -> {
-         SharedSuggestionProvider.suggest((Iterable)((CommandSourceStack)var0.getSource()).getOnlinePlayerNames(), var1x);
-      });
+      return var3.fillSuggestions(var1, (var1x) -> SharedSuggestionProvider.suggest(((CommandSourceStack)var0.getSource()).getOnlinePlayerNames(), var1x));
    };
    private static final Collection<String> EXAMPLES = Arrays.asList("Player", "0123", "*", "@e");
    private static final SimpleCommandExceptionType ERROR_NO_RESULTS = new SimpleCommandExceptionType(Component.translatable("argument.scoreHolder.empty"));
@@ -123,9 +120,7 @@ public class ScoreHolderArgument implements ArgumentType<Result> {
          } else {
             List var5 = List.of(ScoreHolder.forNameOnly(var4));
             if (var4.startsWith("#")) {
-               return (var1x, var2x) -> {
-                  return var5;
-               };
+               return (var1x, var2x) -> var5;
             } else {
                try {
                   UUID var6 = UUID.fromString(var4);
@@ -133,10 +128,8 @@ public class ScoreHolderArgument implements ArgumentType<Result> {
                      MinecraftServer var4 = var2x.getServer();
                      Entity var5x = null;
                      ArrayList var6x = null;
-                     Iterator var7 = var4.getAllLevels().iterator();
 
-                     while(var7.hasNext()) {
-                        ServerLevel var8 = (ServerLevel)var7.next();
+                     for(ServerLevel var8 : var4.getAllLevels()) {
                         Entity var9 = var8.getEntity(var6);
                         if (var9 != null) {
                            if (var5x == null) {
@@ -184,11 +177,6 @@ public class ScoreHolderArgument implements ArgumentType<Result> {
    // $FF: synthetic method
    public Object parse(final StringReader var1) throws CommandSyntaxException {
       return this.parse(var1);
-   }
-
-   @FunctionalInterface
-   public interface Result {
-      Collection<ScoreHolder> getNames(CommandSourceStack var1, Supplier<Collection<ScoreHolder>> var2) throws CommandSyntaxException;
    }
 
    public static class SelectorResult implements Result {
@@ -265,5 +253,10 @@ public class ScoreHolderArgument implements ArgumentType<Result> {
             return this.instantiate(var1);
          }
       }
+   }
+
+   @FunctionalInterface
+   public interface Result {
+      Collection<ScoreHolder> getNames(CommandSourceStack var1, Supplier<Collection<ScoreHolder>> var2) throws CommandSyntaxException;
    }
 }

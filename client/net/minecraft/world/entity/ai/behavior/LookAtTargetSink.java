@@ -12,9 +12,7 @@ public class LookAtTargetSink extends Behavior<Mob> {
    }
 
    protected boolean canStillUse(ServerLevel var1, Mob var2, long var3) {
-      return var2.getBrain().getMemory(MemoryModuleType.LOOK_TARGET).filter((var1x) -> {
-         return var1x.isVisibleBy(var2);
-      }).isPresent();
+      return var2.getBrain().getMemory(MemoryModuleType.LOOK_TARGET).filter((var1x) -> var1x.isVisibleBy(var2)).isPresent();
    }
 
    protected void stop(ServerLevel var1, Mob var2, long var3) {
@@ -22,8 +20,6 @@ public class LookAtTargetSink extends Behavior<Mob> {
    }
 
    protected void tick(ServerLevel var1, Mob var2, long var3) {
-      var2.getBrain().getMemory(MemoryModuleType.LOOK_TARGET).ifPresent((var1x) -> {
-         var2.getLookControl().setLookAt(var1x.currentPosition());
-      });
+      var2.getBrain().getMemory(MemoryModuleType.LOOK_TARGET).ifPresent((var1x) -> var2.getLookControl().setLookAt(var1x.currentPosition()));
    }
 }

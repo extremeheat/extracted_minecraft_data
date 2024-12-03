@@ -67,9 +67,7 @@ public class Score implements ReadOnlyScoreInfo {
       }
 
       if (this.numberFormat != null) {
-         NumberFormatTypes.CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this.numberFormat).ifSuccess((var1x) -> {
-            var2.put("format", var1x);
-         });
+         NumberFormatTypes.CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this.numberFormat).ifSuccess((var1x) -> var2.put("format", var1x));
       }
 
       return var2;
@@ -84,9 +82,7 @@ public class Score implements ReadOnlyScoreInfo {
       }
 
       if (var0.contains("format", 10)) {
-         NumberFormatTypes.CODEC.parse(var1.createSerializationContext(NbtOps.INSTANCE), var0.get("format")).ifSuccess((var1x) -> {
-            var2.numberFormat = var1x;
-         });
+         NumberFormatTypes.CODEC.parse(var1.createSerializationContext(NbtOps.INSTANCE), var0.get("format")).ifSuccess((var1x) -> var2.numberFormat = var1x);
       }
 
       return var2;

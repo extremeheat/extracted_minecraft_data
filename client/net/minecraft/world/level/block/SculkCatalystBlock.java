@@ -54,10 +54,6 @@ public class SculkCatalystBlock extends BaseEntityBlock {
       return var1.isClientSide ? null : createTickerHelper(var3, BlockEntityType.SCULK_CATALYST, SculkCatalystBlockEntity::serverTick);
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
-
    protected void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
       super.spawnAfterBreak(var1, var2, var3, var4, var5);
       if (var5) {

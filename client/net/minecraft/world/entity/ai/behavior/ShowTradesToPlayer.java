@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
@@ -96,10 +95,7 @@ public class ShowTradesToPlayer extends Behavior<Villager> {
    }
 
    private void updateDisplayItems(Villager var1) {
-      Iterator var2 = var1.getOffers().iterator();
-
-      while(var2.hasNext()) {
-         MerchantOffer var3 = (MerchantOffer)var2.next();
+      for(MerchantOffer var3 : var1.getOffers()) {
          if (!var3.isOutOfStock() && this.playerItemStackMatchesCostOfOffer(var3)) {
             this.displayItems.add(var3.assemble());
          }
@@ -124,7 +120,7 @@ public class ShowTradesToPlayer extends Behavior<Villager> {
    private LivingEntity lookAtTarget(Villager var1) {
       Brain var2 = var1.getBrain();
       LivingEntity var3 = (LivingEntity)var2.getMemory(MemoryModuleType.INTERACTION_TARGET).get();
-      var2.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityTracker(var3, true)));
+      var2.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var3, true));
       return var3;
    }
 

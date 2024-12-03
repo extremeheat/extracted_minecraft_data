@@ -17,7 +17,6 @@ import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -42,7 +41,6 @@ import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.NoticeWithLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.CommonComponents;
@@ -108,12 +106,8 @@ public class PackSelectionScreen extends Screen {
       this.availablePackList = (TransferableSelectionList)this.addRenderableWidget(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, AVAILABLE_TITLE));
       this.selectedPackList = (TransferableSelectionList)this.addRenderableWidget(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, SELECTED_TITLE));
       LinearLayout var2 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      var2.addChild(Button.builder(OPEN_PACK_FOLDER_TITLE, (var1x) -> {
-         Util.getPlatform().openPath(this.packDir);
-      }).tooltip(Tooltip.create(DIRECTORY_BUTTON_TOOLTIP)).build());
-      this.doneButton = (Button)var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
-         this.onClose();
-      }).build());
+      var2.addChild(Button.builder(OPEN_PACK_FOLDER_TITLE, (var1x) -> Util.getPlatform().openPath(this.packDir)).tooltip(Tooltip.create(DIRECTORY_BUTTON_TOOLTIP)).build());
+      this.doneButton = (Button)var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).build());
       this.reload();
       this.layout.visitWidgets((var1x) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
@@ -234,7 +228,7 @@ public class PackSelectionScreen extends Screen {
          if (var2x) {
             ArrayList var3 = new ArrayList(var1.size());
             HashSet var4 = new HashSet(var1);
-            PackDetector var5 = new PackDetector<Path>(this, this.minecraft.directoryValidator()) {
+            PackDetector var5 = new PackDetector<Path>(this.minecraft.directoryValidator()) {
                protected Path createZipPack(Path var1) {
                   return var1;
                }
@@ -254,11 +248,8 @@ public class PackSelectionScreen extends Screen {
                }
             };
             ArrayList var6 = new ArrayList();
-            Iterator var7 = var1.iterator();
 
-            while(var7.hasNext()) {
-               Path var8 = (Path)var7.next();
-
+            for(Path var8 : var1) {
                try {
                   Path var9 = (Path)var5.detectPackResources(var8, var6);
                   if (var9 == null) {
@@ -273,9 +264,7 @@ public class PackSelectionScreen extends Screen {
             }
 
             if (!var6.isEmpty()) {
-               this.minecraft.setScreen(NoticeWithLinkScreen.createPackSymlinkWarningScreen(() -> {
-                  this.minecraft.setScreen(this);
-               }));
+               this.minecraft.setScreen(NoticeWithLinkScreen.createPackSymlinkWarningScreen(() -> this.minecraft.setScreen(this)));
                return;
             }
 
@@ -286,9 +275,7 @@ public class PackSelectionScreen extends Screen {
 
             if (!var4.isEmpty()) {
                String var11 = (String)extractPackNames(var4).collect(Collectors.joining(", "));
-               this.minecraft.setScreen(new AlertScreen(() -> {
-                  this.minecraft.setScreen(this);
-               }, Component.translatable("pack.dropRejected.title"), Component.translatable("pack.dropRejected.message", var11)));
+               this.minecraft.setScreen(new AlertScreen(() -> this.minecraft.setScreen(this), Component.translatable("pack.dropRejected.title"), Component.translatable("pack.dropRejected.message", var11)));
                return;
             }
          }
@@ -303,66 +290,40 @@ public class PackSelectionScreen extends Screen {
 
    private ResourceLocation loadPackIcon(TextureManager var1, Pack var2) {
       try {
-         PackResources var3 = var2.open();
+         ResourceLocation var9;
+         try (PackResources var3 = var2.open()) {
+            IoSupplier var4 = var3.getRootResource("pack.png");
+            if (var4 == null) {
+               return DEFAULT_ICON;
+            }
 
-         ResourceLocation var15;
-         label70: {
-            ResourceLocation var9;
+            String var5 = var2.getId();
+            String var10000 = Util.sanitizeName(var5, ResourceLocation::validPathChar);
+            ResourceLocation var6 = ResourceLocation.withDefaultNamespace("pack/" + var10000 + "/" + String.valueOf(Hashing.sha1().hashUnencodedChars(var5)) + "/icon");
+            InputStream var7 = (InputStream)var4.get();
+
             try {
-               IoSupplier var4 = var3.getRootResource("pack.png");
-               if (var4 == null) {
-                  var15 = DEFAULT_ICON;
-                  break label70;
-               }
-
-               String var5 = var2.getId();
-               String var10000 = Util.sanitizeName(var5, ResourceLocation::validPathChar);
-               ResourceLocation var6 = ResourceLocation.withDefaultNamespace("pack/" + var10000 + "/" + String.valueOf(Hashing.sha1().hashUnencodedChars(var5)) + "/icon");
-               InputStream var7 = (InputStream)var4.get();
-
-               try {
-                  NativeImage var8 = NativeImage.read(var7);
-                  var1.register((ResourceLocation)var6, (AbstractTexture)(new DynamicTexture(var8)));
-                  var9 = var6;
-               } catch (Throwable var12) {
-                  if (var7 != null) {
-                     try {
-                        var7.close();
-                     } catch (Throwable var11) {
-                        var12.addSuppressed(var11);
-                     }
-                  }
-
-                  throw var12;
-               }
-
+               NativeImage var8 = NativeImage.read(var7);
+               var1.register(var6, new DynamicTexture(var8));
+               var9 = var6;
+            } catch (Throwable var12) {
                if (var7 != null) {
-                  var7.close();
-               }
-            } catch (Throwable var13) {
-               if (var3 != null) {
                   try {
-                     var3.close();
-                  } catch (Throwable var10) {
-                     var13.addSuppressed(var10);
+                     var7.close();
+                  } catch (Throwable var11) {
+                     var12.addSuppressed(var11);
                   }
                }
 
-               throw var13;
+               throw var12;
             }
 
-            if (var3 != null) {
-               var3.close();
+            if (var7 != null) {
+               var7.close();
             }
-
-            return var9;
          }
 
-         if (var3 != null) {
-            var3.close();
-         }
-
-         return var15;
+         return var9;
       } catch (Exception var14) {
          LOGGER.warn("Failed to load icon from pack {}", var2.getId(), var14);
          return DEFAULT_ICON;
@@ -370,9 +331,7 @@ public class PackSelectionScreen extends Screen {
    }
 
    private ResourceLocation getPackIcon(Pack var1) {
-      return (ResourceLocation)this.packIcons.computeIfAbsent(var1.getId(), (var2) -> {
-         return this.loadPackIcon(this.minecraft.getTextureManager(), var1);
-      });
+      return (ResourceLocation)this.packIcons.computeIfAbsent(var1.getId(), (var2) -> this.loadPackIcon(this.minecraft.getTextureManager(), var1));
    }
 
    static {
@@ -395,10 +354,7 @@ public class PackSelectionScreen extends Screen {
             DirectoryStream var2 = Files.newDirectoryStream(var1);
 
             try {
-               Iterator var3 = var2.iterator();
-
-               while(var3.hasNext()) {
-                  Path var4 = (Path)var3.next();
+               for(Path var4 : var2) {
                   if (Files.isDirectory(var4, new LinkOption[]{LinkOption.NOFOLLOW_LINKS})) {
                      this.watchDir(var4);
                   }
@@ -444,11 +400,7 @@ public class PackSelectionScreen extends Screen {
 
          WatchKey var2;
          while((var2 = this.watcher.poll()) != null) {
-            List var3 = var2.pollEvents();
-            Iterator var4 = var3.iterator();
-
-            while(var4.hasNext()) {
-               WatchEvent var5 = (WatchEvent)var4.next();
+            for(WatchEvent var5 : var2.pollEvents()) {
                var1 = true;
                if (var2.watchable() == this.packPath && var5.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
                   Path var6 = this.packPath.resolve((Path)var5.context());

@@ -31,16 +31,14 @@ public class SculkPatchFeature extends Feature<SculkPatchConfiguration> {
          SculkSpreader var6 = SculkSpreader.createWorldGenSpreader();
          int var7 = var4.spreadRounds() + var4.growthRounds();
 
-         int var9;
-         int var10;
          for(int var8 = 0; var8 < var7; ++var8) {
-            for(var9 = 0; var9 < var4.chargeCount(); ++var9) {
+            for(int var9 = 0; var9 < var4.chargeCount(); ++var9) {
                var6.addCursors(var3, var4.amountPerCharge());
             }
 
             boolean var13 = var8 < var4.spreadRounds();
 
-            for(var10 = 0; var10 < var4.spreadAttempts(); ++var10) {
+            for(int var10 = 0; var10 < var4.spreadAttempts(); ++var10) {
                var6.updateCursors(var2, var3, var5, var13);
             }
 
@@ -52,9 +50,9 @@ public class SculkPatchFeature extends Feature<SculkPatchConfiguration> {
             var2.setBlock(var3, Blocks.SCULK_CATALYST.defaultBlockState(), 3);
          }
 
-         var9 = var4.extraRareGrowths().sample(var5);
+         int var14 = var4.extraRareGrowths().sample(var5);
 
-         for(var10 = 0; var10 < var9; ++var10) {
+         for(int var15 = 0; var15 < var14; ++var15) {
             BlockPos var11 = var3.offset(var5.nextInt(5) - 2, 0, var5.nextInt(5) - 2);
             if (var2.getBlockState(var11).isAir() && var2.getBlockState(var11.below()).isFaceSturdy(var2, var11.below(), Direction.UP)) {
                var2.setBlock(var11, (BlockState)Blocks.SCULK_SHRIEKER.defaultBlockState().setValue(SculkShriekerBlock.CAN_SUMMON, true), 3);
@@ -74,9 +72,7 @@ public class SculkPatchFeature extends Feature<SculkPatchConfiguration> {
       } else {
          Stream var10000 = Direction.stream();
          Objects.requireNonNull(var2);
-         return var10000.map(var2::relative).anyMatch((var1x) -> {
-            return var1.getBlockState(var1x).isCollisionShapeFullBlock(var1, var1x);
-         });
+         return var10000.map(var2::relative).anyMatch((var1x) -> var1.getBlockState(var1x).isCollisionShapeFullBlock(var1, var1x));
       }
    }
 }

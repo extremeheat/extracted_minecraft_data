@@ -147,7 +147,7 @@ public class DamageSource {
    }
 
    public DamageType type() {
-      return (DamageType)this.type.value();
+      return this.type.value();
    }
 
    public Holder<DamageType> typeHolder() {

@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.structure;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -60,9 +59,7 @@ public abstract class StructurePiece {
    }
 
    public StructurePiece(StructurePieceType var1, CompoundTag var2) {
-      this(var1, var2.getInt("GD"), (BoundingBox)BoundingBox.CODEC.parse(NbtOps.INSTANCE, var2.get("BB")).getOrThrow((var0) -> {
-         return new IllegalArgumentException("Invalid boundingbox: " + var0);
-      }));
+      this(var1, var2.getInt("GD"), (BoundingBox)BoundingBox.CODEC.parse(NbtOps.INSTANCE, var2.get("BB")).getOrThrow((var0) -> new IllegalArgumentException("Invalid boundingbox: " + var0)));
       int var3 = var2.getInt("O");
       this.setOrientation(var3 == -1 ? null : Direction.from2DDataValue(var3));
    }
@@ -81,9 +78,7 @@ public abstract class StructurePiece {
       DataResult var10000 = BoundingBox.CODEC.encodeStart(NbtOps.INSTANCE, this.boundingBox);
       Logger var10001 = LOGGER;
       Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         var2.put("BB", var1x);
-      });
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var2.put("BB", var1x));
       Direction var3 = this.getOrientation();
       var2.putInt("O", var3 == null ? -1 : var3.get2DDataValue());
       var2.putInt("GD", this.genDepth);
@@ -332,10 +327,8 @@ public abstract class StructurePiece {
 
    public static BlockState reorient(BlockGetter var0, BlockPos var1, BlockState var2) {
       Direction var3 = null;
-      Iterator var4 = Direction.Plane.HORIZONTAL.iterator();
 
-      while(var4.hasNext()) {
-         Direction var5 = (Direction)var4.next();
+      for(Direction var5 : Direction.Plane.HORIZONTAL) {
          BlockPos var6 = var1.relative(var5);
          BlockState var7 = var0.getBlockState(var6);
          if (var7.is(Blocks.CHEST)) {
@@ -416,25 +409,18 @@ public abstract class StructurePiece {
    public static BoundingBox createBoundingBox(Stream<StructurePiece> var0) {
       Stream var10000 = var0.map(StructurePiece::getBoundingBox);
       Objects.requireNonNull(var10000);
-      return (BoundingBox)BoundingBox.encapsulatingBoxes(var10000::iterator).orElseThrow(() -> {
-         return new IllegalStateException("Unable to calculate boundingbox without pieces");
-      });
+      return (BoundingBox)BoundingBox.encapsulatingBoxes(var10000::iterator).orElseThrow(() -> new IllegalStateException("Unable to calculate boundingbox without pieces"));
    }
 
    @Nullable
    public static StructurePiece findCollisionPiece(List<StructurePiece> var0, BoundingBox var1) {
-      Iterator var2 = var0.iterator();
-
-      StructurePiece var3;
-      do {
-         if (!var2.hasNext()) {
-            return null;
+      for(StructurePiece var3 : var0) {
+         if (var3.getBoundingBox().intersects(var1)) {
+            return var3;
          }
+      }
 
-         var3 = (StructurePiece)var2.next();
-      } while(!var3.getBoundingBox().intersects(var1));
-
-      return var3;
+      return null;
    }
 
    @Nullable

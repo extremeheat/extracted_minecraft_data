@@ -3,7 +3,6 @@ package net.minecraft.world.entity;
 import io.netty.buffer.ByteBuf;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -28,11 +27,8 @@ public enum Relative {
    @SafeVarargs
    public static Set<Relative> union(Set<Relative>... var0) {
       HashSet var1 = new HashSet();
-      Set[] var2 = var0;
-      int var3 = var0.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         Set var5 = var2[var4];
+      for(Set var5 : var0) {
          var1.addAll(var5);
       }
 
@@ -53,11 +49,8 @@ public enum Relative {
 
    public static Set<Relative> unpack(int var0) {
       EnumSet var1 = EnumSet.noneOf(Relative.class);
-      Relative[] var2 = values();
-      int var3 = var2.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         Relative var5 = var2[var4];
+      for(Relative var5 : values()) {
          if (var5.isSet(var0)) {
             var1.add(var5);
          }
@@ -69,9 +62,8 @@ public enum Relative {
    public static int pack(Set<Relative> var0) {
       int var1 = 0;
 
-      Relative var3;
-      for(Iterator var2 = var0.iterator(); var2.hasNext(); var1 |= var3.getMask()) {
-         var3 = (Relative)var2.next();
+      for(Relative var3 : var0) {
+         var1 |= var3.getMask();
       }
 
       return var1;

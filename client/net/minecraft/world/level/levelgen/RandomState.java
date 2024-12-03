@@ -56,25 +56,24 @@ public final class RandomState {
 
          public DensityFunction.NoiseHolder visitNoise(DensityFunction.NoiseHolder var1) {
             Holder var2 = var1.noiseData();
-            NormalNoise var3x;
             if (var5) {
                if (var2.is(Noises.TEMPERATURE)) {
-                  var3x = NormalNoise.createLegacyNetherBiome(this.newLegacyInstance(0L), new NormalNoise.NoiseParameters(-7, 1.0, new double[]{1.0}));
-                  return new DensityFunction.NoiseHolder(var2, var3x);
+                  NormalNoise var6 = NormalNoise.createLegacyNetherBiome(this.newLegacyInstance(0L), new NormalNoise.NoiseParameters(-7, 1.0, new double[]{1.0}));
+                  return new DensityFunction.NoiseHolder(var2, var6);
                }
 
                if (var2.is(Noises.VEGETATION)) {
-                  var3x = NormalNoise.createLegacyNetherBiome(this.newLegacyInstance(1L), new NormalNoise.NoiseParameters(-7, 1.0, new double[]{1.0}));
-                  return new DensityFunction.NoiseHolder(var2, var3x);
+                  NormalNoise var5x = NormalNoise.createLegacyNetherBiome(this.newLegacyInstance(1L), new NormalNoise.NoiseParameters(-7, 1.0, new double[]{1.0}));
+                  return new DensityFunction.NoiseHolder(var2, var5x);
                }
 
                if (var2.is(Noises.SHIFT)) {
-                  var3x = NormalNoise.create(RandomState.this.random.fromHashOf(Noises.SHIFT.location()), new NormalNoise.NoiseParameters(0, 0.0, new double[0]));
-                  return new DensityFunction.NoiseHolder(var2, var3x);
+                  NormalNoise var4 = NormalNoise.create(RandomState.this.random.fromHashOf(Noises.SHIFT.location()), new NormalNoise.NoiseParameters(0, 0.0, new double[0]));
+                  return new DensityFunction.NoiseHolder(var2, var4);
                }
             }
 
-            var3x = RandomState.this.getOrCreateNoise((ResourceKey)var2.unwrapKey().orElseThrow());
+            NormalNoise var3x = RandomState.this.getOrCreateNoise((ResourceKey)var2.unwrapKey().orElseThrow());
             return new DensityFunction.NoiseHolder(var2, var3x);
          }
 
@@ -93,7 +92,7 @@ public final class RandomState {
       }
 
       this.router = var1.noiseRouter().mapAll(new 1NoiseWiringHelper());
-      DensityFunction.Visitor var6 = new DensityFunction.Visitor(this) {
+      DensityFunction.Visitor var6 = new DensityFunction.Visitor() {
          private final Map<DensityFunction, DensityFunction> wrapped = new HashMap();
 
          private DensityFunction wrapNew(DensityFunction var1) {
@@ -114,15 +113,11 @@ public final class RandomState {
    }
 
    public NormalNoise getOrCreateNoise(ResourceKey<NormalNoise.NoiseParameters> var1) {
-      return (NormalNoise)this.noiseIntances.computeIfAbsent(var1, (var2) -> {
-         return Noises.instantiate(this.noises, this.random, var1);
-      });
+      return (NormalNoise)this.noiseIntances.computeIfAbsent(var1, (var2) -> Noises.instantiate(this.noises, this.random, var1));
    }
 
    public PositionalRandomFactory getOrCreateRandomFactory(ResourceLocation var1) {
-      return (PositionalRandomFactory)this.positionalRandoms.computeIfAbsent(var1, (var2) -> {
-         return this.random.fromHashOf(var1).forkPositional();
-      });
+      return (PositionalRandomFactory)this.positionalRandoms.computeIfAbsent(var1, (var2) -> this.random.fromHashOf(var1).forkPositional());
    }
 
    public NoiseRouter router() {

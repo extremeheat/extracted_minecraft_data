@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.entity.state;
 
 import net.minecraft.world.entity.animal.Fox;
 
-public class FoxRenderState extends LivingEntityRenderState {
+public class FoxRenderState extends HoldingEntityRenderState {
    public float headRollAngle;
    public float crouchAmount;
    public boolean isCrouching;

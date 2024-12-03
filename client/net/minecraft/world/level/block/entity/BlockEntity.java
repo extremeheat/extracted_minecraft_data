@@ -20,7 +20,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -78,11 +77,7 @@ public abstract class BlockEntity {
 
    public final void loadWithComponents(CompoundTag var1, HolderLookup.Provider var2) {
       this.loadAdditional(var1, var2);
-      BlockEntity.ComponentHelper.COMPONENTS_CODEC.parse(var2.createSerializationContext(NbtOps.INSTANCE), var1).resultOrPartial((var0) -> {
-         LOGGER.warn("Failed to load components: {}", var0);
-      }).ifPresent((var1x) -> {
-         this.components = var1x;
-      });
+      BlockEntity.ComponentHelper.COMPONENTS_CODEC.parse(var2.createSerializationContext(NbtOps.INSTANCE), var1).resultOrPartial((var0) -> LOGGER.warn("Failed to load components: {}", var0)).ifPresent((var1x) -> this.components = var1x);
    }
 
    public final void loadCustomOnly(CompoundTag var1, HolderLookup.Provider var2) {
@@ -107,11 +102,7 @@ public abstract class BlockEntity {
    public final CompoundTag saveWithoutMetadata(HolderLookup.Provider var1) {
       CompoundTag var2 = new CompoundTag();
       this.saveAdditional(var2, var1);
-      BlockEntity.ComponentHelper.COMPONENTS_CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this.components).resultOrPartial((var0) -> {
-         LOGGER.warn("Failed to save components: {}", var0);
-      }).ifPresent((var1x) -> {
-         var2.merge((CompoundTag)var1x);
-      });
+      BlockEntity.ComponentHelper.COMPONENTS_CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this.components).resultOrPartial((var0) -> LOGGER.warn("Failed to save components: {}", var0)).ifPresent((var1x) -> var2.merge((CompoundTag)var1x));
       return var2;
    }
 
@@ -138,14 +129,6 @@ public abstract class BlockEntity {
 
    public static void addEntityType(CompoundTag var0, BlockEntityType<?> var1) {
       var0.putString("id", BlockEntityType.getKey(var1).toString());
-   }
-
-   public void saveToItem(ItemStack var1, HolderLookup.Provider var2) {
-      CompoundTag var3 = this.saveCustomOnly(var2);
-      this.removeComponentsFromTag(var3);
-      var1.clearComponents();
-      BlockItem.setBlockEntityData(var1, this.getType(), var3);
-      var1.applyComponents(this.collectComponents());
    }
 
    private void saveMetadata(CompoundTag var1) {
@@ -246,10 +229,6 @@ public abstract class BlockEntity {
       return var10000 + " // " + this.getClass().getCanonicalName();
    }
 
-   public boolean onlyOpCanSetNbt() {
-      return false;
-   }
-
    public BlockEntityType<?> getType() {
       return this.type;
    }
@@ -271,17 +250,18 @@ public abstract class BlockEntity {
    public final void applyComponents(DataComponentMap var1, DataComponentPatch var2) {
       final HashSet var3 = new HashSet();
       var3.add(DataComponents.BLOCK_ENTITY_DATA);
+      var3.add(DataComponents.BLOCK_STATE);
       final PatchedDataComponentMap var4 = PatchedDataComponentMap.fromPatch(var1, var2);
-      this.applyImplicitComponents(new DataComponentInput(this) {
+      this.applyImplicitComponents(new DataComponentInput() {
          @Nullable
          public <T> T get(DataComponentType<T> var1) {
             var3.add(var1);
-            return var4.get(var1);
+            return (T)var4.get(var1);
          }
 
          public <T> T getOrDefault(DataComponentType<? extends T> var1, T var2) {
             var3.add(var1);
-            return var4.getOrDefault(var1, var2);
+            return (T)var4.getOrDefault(var1, var2);
          }
       });
       Objects.requireNonNull(var3);

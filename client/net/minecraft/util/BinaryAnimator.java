@@ -13,9 +13,7 @@ public class BinaryAnimator {
    }
 
    public BinaryAnimator(int var1) {
-      this(var1, (var0) -> {
-         return var0;
-      });
+      this(var1, (var0) -> var0);
    }
 
    public void tick(boolean var1) {

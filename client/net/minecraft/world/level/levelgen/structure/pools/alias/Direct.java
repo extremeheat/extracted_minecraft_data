@@ -10,9 +10,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 record Direct(ResourceKey<StructureTemplatePool> alias, ResourceKey<StructureTemplatePool> target) implements PoolAliasBinding {
-   static MapCodec<Direct> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(Direct::alias), ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("target").forGetter(Direct::target)).apply(var0, Direct::new);
-   });
+   static MapCodec<Direct> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(Direct::alias), ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("target").forGetter(Direct::target)).apply(var0, Direct::new));
 
    Direct(ResourceKey<StructureTemplatePool> var1, ResourceKey<StructureTemplatePool> var2) {
       super();
@@ -30,13 +28,5 @@ record Direct(ResourceKey<StructureTemplatePool> alias, ResourceKey<StructureTem
 
    public MapCodec<Direct> codec() {
       return CODEC;
-   }
-
-   public ResourceKey<StructureTemplatePool> alias() {
-      return this.alias;
-   }
-
-   public ResourceKey<StructureTemplatePool> target() {
-      return this.target;
    }
 }

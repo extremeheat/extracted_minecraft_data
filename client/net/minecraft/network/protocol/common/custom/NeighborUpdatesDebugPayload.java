@@ -6,7 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 
 public record NeighborUpdatesDebugPayload(long time, BlockPos pos) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, NeighborUpdatesDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(NeighborUpdatesDebugPayload::write, NeighborUpdatesDebugPayload::new);
-   public static final CustomPacketPayload.Type<NeighborUpdatesDebugPayload> TYPE = CustomPacketPayload.createType("debug/neighbors_update");
+   public static final CustomPacketPayload.Type<NeighborUpdatesDebugPayload> TYPE = CustomPacketPayload.<NeighborUpdatesDebugPayload>createType("debug/neighbors_update");
 
    private NeighborUpdatesDebugPayload(FriendlyByteBuf var1) {
       this(var1.readVarLong(), var1.readBlockPos());
@@ -25,13 +25,5 @@ public record NeighborUpdatesDebugPayload(long time, BlockPos pos) implements Cu
 
    public CustomPacketPayload.Type<NeighborUpdatesDebugPayload> type() {
       return TYPE;
-   }
-
-   public long time() {
-      return this.time;
-   }
-
-   public BlockPos pos() {
-      return this.pos;
    }
 }

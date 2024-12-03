@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -37,15 +36,9 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo.bar", "foo[0]", "[0]", "[]", "{foo=bar}");
    public static final SimpleCommandExceptionType ERROR_INVALID_NODE = new SimpleCommandExceptionType(Component.translatable("arguments.nbtpath.node.invalid"));
    public static final SimpleCommandExceptionType ERROR_DATA_TOO_DEEP = new SimpleCommandExceptionType(Component.translatable("arguments.nbtpath.too_deep"));
-   public static final DynamicCommandExceptionType ERROR_NOTHING_FOUND = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("arguments.nbtpath.nothing_found", var0);
-   });
-   static final DynamicCommandExceptionType ERROR_EXPECTED_LIST = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("commands.data.modify.expected_list", var0);
-   });
-   static final DynamicCommandExceptionType ERROR_INVALID_INDEX = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("commands.data.modify.invalid_index", var0);
-   });
+   public static final DynamicCommandExceptionType ERROR_NOTHING_FOUND = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("arguments.nbtpath.nothing_found", var0));
+   static final DynamicCommandExceptionType ERROR_EXPECTED_LIST = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.data.modify.expected_list", var0));
+   static final DynamicCommandExceptionType ERROR_INVALID_INDEX = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.data.modify.invalid_index", var0));
    private static final char INDEX_MATCH_START = '[';
    private static final char INDEX_MATCH_END = ']';
    private static final char KEY_MATCH_START = '{';
@@ -157,9 +150,7 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
    }
 
    static Predicate<Tag> createTagPredicate(CompoundTag var0) {
-      return (var1) -> {
-         return NbtUtils.compareNbt(var0, var1, true);
-      };
+      return (var1) -> NbtUtils.compareNbt(var0, var1, true);
    }
 
    // $FF: synthetic method
@@ -186,11 +177,8 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
 
       public List<Tag> get(Tag var1) throws CommandSyntaxException {
          List var2 = Collections.singletonList(var1);
-         Node[] var3 = this.nodes;
-         int var4 = var3.length;
 
-         for(int var5 = 0; var5 < var4; ++var5) {
-            Node var6 = var3[var5];
+         for(Node var6 : this.nodes) {
             var2 = var6.get(var2);
             if (var2.isEmpty()) {
                throw this.createNotFoundException(var6);
@@ -202,11 +190,8 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
 
       public int countMatching(Tag var1) {
          List var2 = Collections.singletonList(var1);
-         Node[] var3 = this.nodes;
-         int var4 = var3.length;
 
-         for(int var5 = 0; var5 < var4; ++var5) {
-            Node var6 = var3[var5];
+         for(Node var6 : this.nodes) {
             var2 = var6.get(var2);
             if (var2.isEmpty()) {
                return 0;
@@ -240,34 +225,25 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
       }
 
       private static int apply(List<Tag> var0, Function<Tag, Integer> var1) {
-         return (Integer)var0.stream().map(var1).reduce(0, (var0x, var1x) -> {
-            return var0x + var1x;
-         });
+         return (Integer)var0.stream().map(var1).reduce(0, (var0x, var1x) -> var0x + var1x);
       }
 
       public static boolean isTooDeep(Tag var0, int var1) {
          if (var1 >= 512) {
             return true;
          } else {
-            Iterator var4;
             if (var0 instanceof CompoundTag) {
                CompoundTag var2 = (CompoundTag)var0;
-               var4 = var2.getAllKeys().iterator();
 
-               while(var4.hasNext()) {
-                  String var5 = (String)var4.next();
+               for(String var5 : var2.getAllKeys()) {
                   Tag var6 = var2.get(var5);
                   if (var6 != null && isTooDeep(var6, var1 + 1)) {
                      return true;
                   }
                }
             } else if (var0 instanceof ListTag) {
-               ListTag var3 = (ListTag)var0;
-               var4 = var3.iterator();
-
-               while(var4.hasNext()) {
-                  Tag var7 = (Tag)var4.next();
-                  if (isTooDeep(var7, var1 + 1)) {
+               for(Tag var8 : (ListTag)var0) {
+                  if (isTooDeep(var8, var1 + 1)) {
                      return true;
                   }
                }
@@ -288,16 +264,14 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
             } else {
                Node var5 = this.nodes[this.nodes.length - 1];
                MutableBoolean var6 = new MutableBoolean(false);
-               return apply(var4, (var3x) -> {
-                  return var5.setTag(var3x, () -> {
+               return apply(var4, (var3x) -> var5.setTag(var3x, () -> {
                      if (var6.isFalse()) {
                         var6.setTrue();
                         return var3;
                      } else {
                         return var3.copy();
                      }
-                  });
-               });
+                  }));
             }
          }
       }
@@ -308,10 +282,8 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
 
       public int insert(int var1, CompoundTag var2, List<Tag> var3) throws CommandSyntaxException {
          ArrayList var4 = new ArrayList(var3.size());
-         Iterator var5 = var3.iterator();
 
-         while(var5.hasNext()) {
-            Tag var6 = (Tag)var5.next();
+         for(Tag var6 : var3) {
             Tag var7 = var6.copy();
             var4.add(var7);
             if (isTooDeep(var7, this.estimatePathDepth())) {
@@ -323,21 +295,16 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
          int var18 = 0;
          boolean var19 = false;
 
-         boolean var11;
-         for(Iterator var8 = var17.iterator(); var8.hasNext(); var18 += var11 ? 1 : 0) {
-            Tag var9 = (Tag)var8.next();
+         for(Tag var9 : var17) {
             if (!(var9 instanceof CollectionTag)) {
                throw NbtPathArgument.ERROR_EXPECTED_LIST.create(var9);
             }
 
             CollectionTag var10 = (CollectionTag)var9;
-            var11 = false;
+            boolean var11 = false;
             int var12 = var1 < 0 ? var10.size() + var1 + 1 : var1;
-            Iterator var13 = var4.iterator();
 
-            while(var13.hasNext()) {
-               Tag var14 = (Tag)var13.next();
-
+            for(Tag var14 : var4) {
                try {
                   if (var10.addTag(var12, var19 ? var14.copy() : var14)) {
                      ++var12;
@@ -349,6 +316,7 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
             }
 
             var19 = true;
+            var18 += var11 ? 1 : 0;
          }
 
          return var18;
@@ -385,15 +353,13 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
                NbtPath var1 = (new NbtPathArgument()).parse(new StringReader(var0));
                return DataResult.success(var1);
             } catch (CommandSyntaxException var2) {
-               return DataResult.error(() -> {
-                  return "Failed to parse path " + var0 + ": " + var2.getMessage();
-               });
+               return DataResult.error(() -> "Failed to parse path " + var0 + ": " + var2.getMessage());
             }
          }, NbtPath::asString);
       }
    }
 
-   private interface Node {
+   interface Node {
       void getTag(Tag var1, List<Tag> var2);
 
       void getOrCreateTag(Tag var1, Supplier<Tag> var2, List<Tag> var3);
@@ -409,17 +375,13 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
       }
 
       default List<Tag> getOrCreate(List<Tag> var1, Supplier<Tag> var2) {
-         return this.collect(var1, (var2x, var3) -> {
-            this.getOrCreateTag(var2x, var2, var3);
-         });
+         return this.collect(var1, (var2x, var3) -> this.getOrCreateTag(var2x, var2, var3));
       }
 
       default List<Tag> collect(List<Tag> var1, BiConsumer<Tag, List<Tag>> var2) {
          ArrayList var3 = Lists.newArrayList();
-         Iterator var4 = var1.iterator();
 
-         while(var4.hasNext()) {
-            Tag var5 = (Tag)var4.next();
+         for(Tag var5 : var1) {
             var2.accept(var5, var3);
          }
 
@@ -427,17 +389,82 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
       }
    }
 
-   static class MatchRootObjectNode implements Node {
-      private final Predicate<Tag> predicate;
+   static class CompoundChildNode implements Node {
+      private final String name;
 
-      public MatchRootObjectNode(CompoundTag var1) {
+      public CompoundChildNode(String var1) {
          super();
-         this.predicate = NbtPathArgument.createTagPredicate(var1);
+         this.name = var1;
       }
 
       public void getTag(Tag var1, List<Tag> var2) {
-         if (var1 instanceof CompoundTag && this.predicate.test(var1)) {
-            var2.add(var1);
+         if (var1 instanceof CompoundTag) {
+            Tag var3 = ((CompoundTag)var1).get(this.name);
+            if (var3 != null) {
+               var2.add(var3);
+            }
+         }
+
+      }
+
+      public void getOrCreateTag(Tag var1, Supplier<Tag> var2, List<Tag> var3) {
+         if (var1 instanceof CompoundTag var4) {
+            Tag var5;
+            if (var4.contains(this.name)) {
+               var5 = var4.get(this.name);
+            } else {
+               var5 = (Tag)var2.get();
+               var4.put(this.name, var5);
+            }
+
+            var3.add(var5);
+         }
+
+      }
+
+      public Tag createPreferredParentTag() {
+         return new CompoundTag();
+      }
+
+      public int setTag(Tag var1, Supplier<Tag> var2) {
+         if (var1 instanceof CompoundTag var3) {
+            Tag var4 = (Tag)var2.get();
+            Tag var5 = var3.put(this.name, var4);
+            if (!var4.equals(var5)) {
+               return 1;
+            }
+         }
+
+         return 0;
+      }
+
+      public int removeTag(Tag var1) {
+         if (var1 instanceof CompoundTag var2) {
+            if (var2.contains(this.name)) {
+               var2.remove(this.name);
+               return 1;
+            }
+         }
+
+         return 0;
+      }
+   }
+
+   static class IndexedElementNode implements Node {
+      private final int index;
+
+      public IndexedElementNode(int var1) {
+         super();
+         this.index = var1;
+      }
+
+      public void getTag(Tag var1, List<Tag> var2) {
+         if (var1 instanceof CollectionTag var3) {
+            int var4 = var3.size();
+            int var5 = this.index < 0 ? var4 + this.index : this.index;
+            if (0 <= var5 && var5 < var4) {
+               var2.add((Tag)var3.get(var5));
+            }
          }
 
       }
@@ -447,14 +474,35 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
       }
 
       public Tag createPreferredParentTag() {
-         return new CompoundTag();
+         return new ListTag();
       }
 
       public int setTag(Tag var1, Supplier<Tag> var2) {
+         if (var1 instanceof CollectionTag var3) {
+            int var4 = var3.size();
+            int var5 = this.index < 0 ? var4 + this.index : this.index;
+            if (0 <= var5 && var5 < var4) {
+               Tag var6 = (Tag)var3.get(var5);
+               Tag var7 = (Tag)var2.get();
+               if (!var7.equals(var6) && var3.setTag(var5, var7)) {
+                  return 1;
+               }
+            }
+         }
+
          return 0;
       }
 
       public int removeTag(Tag var1) {
+         if (var1 instanceof CollectionTag var2) {
+            int var3 = var2.size();
+            int var4 = this.index < 0 ? var3 + this.index : this.index;
+            if (0 <= var4 && var4 < var3) {
+               var2.remove(var4);
+               return 1;
+            }
+         }
+
          return 0;
       }
    }
@@ -612,63 +660,6 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
       }
    }
 
-   static class IndexedElementNode implements Node {
-      private final int index;
-
-      public IndexedElementNode(int var1) {
-         super();
-         this.index = var1;
-      }
-
-      public void getTag(Tag var1, List<Tag> var2) {
-         if (var1 instanceof CollectionTag var3) {
-            int var4 = var3.size();
-            int var5 = this.index < 0 ? var4 + this.index : this.index;
-            if (0 <= var5 && var5 < var4) {
-               var2.add((Tag)var3.get(var5));
-            }
-         }
-
-      }
-
-      public void getOrCreateTag(Tag var1, Supplier<Tag> var2, List<Tag> var3) {
-         this.getTag(var1, var3);
-      }
-
-      public Tag createPreferredParentTag() {
-         return new ListTag();
-      }
-
-      public int setTag(Tag var1, Supplier<Tag> var2) {
-         if (var1 instanceof CollectionTag var3) {
-            int var4 = var3.size();
-            int var5 = this.index < 0 ? var4 + this.index : this.index;
-            if (0 <= var5 && var5 < var4) {
-               Tag var6 = (Tag)var3.get(var5);
-               Tag var7 = (Tag)var2.get();
-               if (!var7.equals(var6) && var3.setTag(var5, var7)) {
-                  return 1;
-               }
-            }
-         }
-
-         return 0;
-      }
-
-      public int removeTag(Tag var1) {
-         if (var1 instanceof CollectionTag var2) {
-            int var3 = var2.size();
-            int var4 = this.index < 0 ? var3 + this.index : this.index;
-            if (0 <= var4 && var4 < var3) {
-               var2.remove(var4);
-               return 1;
-            }
-         }
-
-         return 0;
-      }
-   }
-
    static class MatchObjectNode implements Node {
       private final String name;
       private final CompoundTag pattern;
@@ -737,37 +728,23 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
       }
    }
 
-   static class CompoundChildNode implements Node {
-      private final String name;
+   static class MatchRootObjectNode implements Node {
+      private final Predicate<Tag> predicate;
 
-      public CompoundChildNode(String var1) {
+      public MatchRootObjectNode(CompoundTag var1) {
          super();
-         this.name = var1;
+         this.predicate = NbtPathArgument.createTagPredicate(var1);
       }
 
       public void getTag(Tag var1, List<Tag> var2) {
-         if (var1 instanceof CompoundTag) {
-            Tag var3 = ((CompoundTag)var1).get(this.name);
-            if (var3 != null) {
-               var2.add(var3);
-            }
+         if (var1 instanceof CompoundTag && this.predicate.test(var1)) {
+            var2.add(var1);
          }
 
       }
 
       public void getOrCreateTag(Tag var1, Supplier<Tag> var2, List<Tag> var3) {
-         if (var1 instanceof CompoundTag var4) {
-            Tag var5;
-            if (var4.contains(this.name)) {
-               var5 = var4.get(this.name);
-            } else {
-               var5 = (Tag)var2.get();
-               var4.put(this.name, var5);
-            }
-
-            var3.add(var5);
-         }
-
+         this.getTag(var1, var3);
       }
 
       public Tag createPreferredParentTag() {
@@ -775,25 +752,10 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
       }
 
       public int setTag(Tag var1, Supplier<Tag> var2) {
-         if (var1 instanceof CompoundTag var3) {
-            Tag var4 = (Tag)var2.get();
-            Tag var5 = var3.put(this.name, var4);
-            if (!var4.equals(var5)) {
-               return 1;
-            }
-         }
-
          return 0;
       }
 
       public int removeTag(Tag var1) {
-         if (var1 instanceof CompoundTag var2) {
-            if (var2.contains(this.name)) {
-               var2.remove(this.name);
-               return 1;
-            }
-         }
-
          return 0;
       }
    }

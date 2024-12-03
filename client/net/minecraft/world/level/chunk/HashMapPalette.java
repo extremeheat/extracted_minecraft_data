@@ -36,7 +36,7 @@ public class HashMapPalette<T> implements Palette<T> {
    }
 
    public static <A> Palette<A> create(int var0, IdMap<A> var1, PaletteResize<A> var2, List<A> var3) {
-      return new HashMapPalette(var1, var0, var2, var3);
+      return new HashMapPalette<A>(var1, var0, var2, var3);
    }
 
    public int idFor(T var1) {
@@ -66,7 +66,7 @@ public class HashMapPalette<T> implements Palette<T> {
       if (var2 == null) {
          throw new MissingPaletteEntryException(var1);
       } else {
-         return var2;
+         return (T)var2;
       }
    }
 
@@ -113,6 +113,6 @@ public class HashMapPalette<T> implements Palette<T> {
    }
 
    public Palette<T> copy(PaletteResize<T> var1) {
-      return new HashMapPalette(this.registry, this.bits, var1, this.values.copy());
+      return new HashMapPalette<T>(this.registry, this.bits, var1, this.values.copy());
    }
 }

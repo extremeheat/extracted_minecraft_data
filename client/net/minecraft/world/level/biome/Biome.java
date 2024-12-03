@@ -18,6 +18,7 @@ import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.LevelReader;
@@ -32,26 +33,8 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public final class Biome {
-   public static final Codec<Biome> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Biome.ClimateSettings.CODEC.forGetter((var0x) -> {
-         return var0x.climateSettings;
-      }), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((var0x) -> {
-         return var0x.specialEffects;
-      }), BiomeGenerationSettings.CODEC.forGetter((var0x) -> {
-         return var0x.generationSettings;
-      }), MobSpawnSettings.CODEC.forGetter((var0x) -> {
-         return var0x.mobSettings;
-      })).apply(var0, Biome::new);
-   });
-   public static final Codec<Biome> NETWORK_CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Biome.ClimateSettings.CODEC.forGetter((var0x) -> {
-         return var0x.climateSettings;
-      }), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((var0x) -> {
-         return var0x.specialEffects;
-      })).apply(var0, (var0x, var1) -> {
-         return new Biome(var0x, var1, BiomeGenerationSettings.EMPTY, MobSpawnSettings.EMPTY);
-      });
-   });
+   public static final Codec<Biome> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Biome.ClimateSettings.CODEC.forGetter((var0x) -> var0x.climateSettings), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((var0x) -> var0x.specialEffects), BiomeGenerationSettings.CODEC.forGetter((var0x) -> var0x.generationSettings), MobSpawnSettings.CODEC.forGetter((var0x) -> var0x.mobSettings)).apply(var0, Biome::new));
+   public static final Codec<Biome> NETWORK_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Biome.ClimateSettings.CODEC.forGetter((var0x) -> var0x.climateSettings), BiomeSpecialEffects.CODEC.fieldOf("effects").forGetter((var0x) -> var0x.specialEffects)).apply(var0, (var0x, var1) -> new Biome(var0x, var1, BiomeGenerationSettings.EMPTY, MobSpawnSettings.EMPTY)));
    public static final Codec<Holder<Biome>> CODEC;
    public static final Codec<HolderSet<Biome>> LIST_CODEC;
    private static final PerlinSimplexNoise TEMPERATURE_NOISE;
@@ -66,16 +49,14 @@ public final class Biome {
    private final BiomeGenerationSettings generationSettings;
    private final MobSpawnSettings mobSettings;
    private final BiomeSpecialEffects specialEffects;
-   private final ThreadLocal<Long2FloatLinkedOpenHashMap> temperatureCache = ThreadLocal.withInitial(() -> {
-      return (Long2FloatLinkedOpenHashMap)Util.make(() -> {
+   private final ThreadLocal<Long2FloatLinkedOpenHashMap> temperatureCache = ThreadLocal.withInitial(() -> (Long2FloatLinkedOpenHashMap)Util.make(() -> {
          Long2FloatLinkedOpenHashMap var1 = new Long2FloatLinkedOpenHashMap(1024, 0.25F) {
             protected void rehash(int var1) {
             }
          };
          var1.defaultReturnValue(0.0F / 0.0F);
          return var1;
-      });
-   });
+      }));
 
    Biome(ClimateSettings var1, BiomeSpecialEffects var2, BiomeGenerationSettings var3, MobSpawnSettings var4) {
       super();
@@ -250,57 +231,20 @@ public final class Biome {
       return this.specialEffects.getAmbientAdditionsSettings();
    }
 
-   public Optional<Music> getBackgroundMusic() {
+   public Optional<SimpleWeightedRandomList<Music>> getBackgroundMusic() {
       return this.specialEffects.getBackgroundMusic();
    }
 
+   public float getBackgroundMusicVolume() {
+      return this.specialEffects.getBackgroundMusicVolume();
+   }
+
    static {
-      CODEC = RegistryFileCodec.create(Registries.BIOME, DIRECT_CODEC);
+      CODEC = RegistryFileCodec.<Holder<Biome>>create(Registries.BIOME, DIRECT_CODEC);
       LIST_CODEC = RegistryCodecs.homogeneousList(Registries.BIOME, DIRECT_CODEC);
       TEMPERATURE_NOISE = new PerlinSimplexNoise(new WorldgenRandom(new LegacyRandomSource(1234L)), ImmutableList.of(0));
       FROZEN_TEMPERATURE_NOISE = new PerlinSimplexNoise(new WorldgenRandom(new LegacyRandomSource(3456L)), ImmutableList.of(-2, -1, 0));
       BIOME_INFO_NOISE = new PerlinSimplexNoise(new WorldgenRandom(new LegacyRandomSource(2345L)), ImmutableList.of(0));
-   }
-
-   private static record ClimateSettings(boolean hasPrecipitation, float temperature, TemperatureModifier temperatureModifier, float downfall) {
-      final float temperature;
-      final TemperatureModifier temperatureModifier;
-      final float downfall;
-      public static final MapCodec<ClimateSettings> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(Codec.BOOL.fieldOf("has_precipitation").forGetter((var0x) -> {
-            return var0x.hasPrecipitation;
-         }), Codec.FLOAT.fieldOf("temperature").forGetter((var0x) -> {
-            return var0x.temperature;
-         }), Biome.TemperatureModifier.CODEC.optionalFieldOf("temperature_modifier", Biome.TemperatureModifier.NONE).forGetter((var0x) -> {
-            return var0x.temperatureModifier;
-         }), Codec.FLOAT.fieldOf("downfall").forGetter((var0x) -> {
-            return var0x.downfall;
-         })).apply(var0, ClimateSettings::new);
-      });
-
-      ClimateSettings(boolean var1, float var2, TemperatureModifier var3, float var4) {
-         super();
-         this.hasPrecipitation = var1;
-         this.temperature = var2;
-         this.temperatureModifier = var3;
-         this.downfall = var4;
-      }
-
-      public boolean hasPrecipitation() {
-         return this.hasPrecipitation;
-      }
-
-      public float temperature() {
-         return this.temperature;
-      }
-
-      public TemperatureModifier temperatureModifier() {
-         return this.temperatureModifier;
-      }
-
-      public float downfall() {
-         return this.downfall;
-      }
    }
 
    public static enum Precipitation implements StringRepresentable {
@@ -308,7 +252,7 @@ public final class Biome {
       RAIN("rain"),
       SNOW("snow");
 
-      public static final Codec<Precipitation> CODEC = StringRepresentable.fromEnum(Precipitation::values);
+      public static final Codec<Precipitation> CODEC = StringRepresentable.<Precipitation>fromEnum(Precipitation::values);
       private final String name;
 
       private Precipitation(final String var3) {
@@ -348,7 +292,7 @@ public final class Biome {
       };
 
       private final String name;
-      public static final Codec<TemperatureModifier> CODEC = StringRepresentable.fromEnum(TemperatureModifier::values);
+      public static final Codec<TemperatureModifier> CODEC = StringRepresentable.<TemperatureModifier>fromEnum(TemperatureModifier::values);
 
       public abstract float modifyTemperature(BlockPos var1, float var2);
 
@@ -435,6 +379,21 @@ public final class Biome {
       public String toString() {
          boolean var10000 = this.hasPrecipitation;
          return "BiomeBuilder{\nhasPrecipitation=" + var10000 + ",\ntemperature=" + this.temperature + ",\ntemperatureModifier=" + String.valueOf(this.temperatureModifier) + ",\ndownfall=" + this.downfall + ",\nspecialEffects=" + String.valueOf(this.specialEffects) + ",\nmobSpawnSettings=" + String.valueOf(this.mobSpawnSettings) + ",\ngenerationSettings=" + String.valueOf(this.generationSettings) + ",\n}";
+      }
+   }
+
+   static record ClimateSettings(boolean hasPrecipitation, float temperature, TemperatureModifier temperatureModifier, float downfall) {
+      final float temperature;
+      final TemperatureModifier temperatureModifier;
+      final float downfall;
+      public static final MapCodec<ClimateSettings> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("has_precipitation").forGetter((var0x) -> var0x.hasPrecipitation), Codec.FLOAT.fieldOf("temperature").forGetter((var0x) -> var0x.temperature), Biome.TemperatureModifier.CODEC.optionalFieldOf("temperature_modifier", Biome.TemperatureModifier.NONE).forGetter((var0x) -> var0x.temperatureModifier), Codec.FLOAT.fieldOf("downfall").forGetter((var0x) -> var0x.downfall)).apply(var0, ClimateSettings::new));
+
+      ClimateSettings(boolean var1, float var2, TemperatureModifier var3, float var4) {
+         super();
+         this.hasPrecipitation = var1;
+         this.temperature = var2;
+         this.temperatureModifier = var3;
+         this.downfall = var4;
       }
    }
 }

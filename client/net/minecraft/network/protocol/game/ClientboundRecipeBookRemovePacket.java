@@ -24,10 +24,6 @@ public record ClientboundRecipeBookRemovePacket(List<RecipeDisplayId> recipes) i
       var1.handleRecipeBookRemove(this);
    }
 
-   public List<RecipeDisplayId> recipes() {
-      return this.recipes;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(RecipeDisplayId.STREAM_CODEC.apply(ByteBufCodecs.list()), ClientboundRecipeBookRemovePacket::recipes, ClientboundRecipeBookRemovePacket::new);
    }

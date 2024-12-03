@@ -57,16 +57,15 @@ public class CauldronBlock extends AbstractCauldronBlock {
    }
 
    protected void receiveStalactiteDrip(BlockState var1, Level var2, BlockPos var3, Fluid var4) {
-      BlockState var5;
       if (var4 == Fluids.WATER) {
-         var5 = Blocks.WATER_CAULDRON.defaultBlockState();
+         BlockState var5 = Blocks.WATER_CAULDRON.defaultBlockState();
          var2.setBlockAndUpdate(var3, var5);
          var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var5));
          var2.levelEvent(1047, var3, 0);
       } else if (var4 == Fluids.LAVA) {
-         var5 = Blocks.LAVA_CAULDRON.defaultBlockState();
-         var2.setBlockAndUpdate(var3, var5);
-         var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var5));
+         BlockState var6 = Blocks.LAVA_CAULDRON.defaultBlockState();
+         var2.setBlockAndUpdate(var3, var6);
+         var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var6));
          var2.levelEvent(1046, var3, 0);
       }
 

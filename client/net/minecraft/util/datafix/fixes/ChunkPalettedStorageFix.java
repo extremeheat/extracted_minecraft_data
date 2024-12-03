@@ -103,615 +103,7 @@ public class ChunkPalettedStorageFix extends DataFix {
       return var4;
    }
 
-   private static final class UpgradeChunk {
-      private int sides;
-      private final Section[] sections = new Section[16];
-      private final Dynamic<?> level;
-      private final int x;
-      private final int z;
-      private final Int2ObjectMap<Dynamic<?>> blockEntities = new Int2ObjectLinkedOpenHashMap(16);
-
-      public UpgradeChunk(Dynamic<?> var1) {
-         super();
-         this.level = var1;
-         this.x = var1.get("xPos").asInt(0) << 4;
-         this.z = var1.get("zPos").asInt(0) << 4;
-         var1.get("TileEntities").asStreamOpt().ifSuccess((var1x) -> {
-            var1x.forEach((var1) -> {
-               int var2 = var1.get("x").asInt(0) - this.x & 15;
-               int var3 = var1.get("y").asInt(0);
-               int var4 = var1.get("z").asInt(0) - this.z & 15;
-               int var5 = var3 << 8 | var4 << 4 | var2;
-               if (this.blockEntities.put(var5, var1) != null) {
-                  ChunkPalettedStorageFix.LOGGER.warn("In chunk: {}x{} found a duplicate block entity at position: [{}, {}, {}]", new Object[]{this.x, this.z, var2, var3, var4});
-               }
-
-            });
-         });
-         boolean var2 = var1.get("convertedFromAlphaFormat").asBoolean(false);
-         var1.get("Sections").asStreamOpt().ifSuccess((var1x) -> {
-            var1x.forEach((var1) -> {
-               Section var2 = new Section(var1);
-               this.sides = var2.upgrade(this.sides);
-               this.sections[var2.y] = var2;
-            });
-         });
-         Section[] var3 = this.sections;
-         int var4 = var3.length;
-
-         label276:
-         for(int var5 = 0; var5 < var4; ++var5) {
-            Section var6 = var3[var5];
-            if (var6 != null) {
-               ObjectIterator var7 = var6.toFix.int2ObjectEntrySet().iterator();
-
-               while(true) {
-                  label266:
-                  while(true) {
-                     if (!var7.hasNext()) {
-                        continue label276;
-                     }
-
-                     Int2ObjectMap.Entry var8 = (Int2ObjectMap.Entry)var7.next();
-                     int var9 = var6.y << 12;
-                     IntListIterator var10;
-                     int var11;
-                     Dynamic var12;
-                     Dynamic var13;
-                     int var14;
-                     String var15;
-                     String var10000;
-                     String var21;
-                     switch (var8.getIntKey()) {
-                        case 2:
-                           var10 = ((IntList)var8.getValue()).iterator();
-
-                           while(true) {
-                              do {
-                                 do {
-                                    if (!var10.hasNext()) {
-                                       continue label266;
-                                    }
-
-                                    var11 = (Integer)var10.next();
-                                    var11 |= var9;
-                                    var12 = this.getBlock(var11);
-                                 } while(!"minecraft:grass_block".equals(ChunkPalettedStorageFix.getName(var12)));
-
-                                 var21 = ChunkPalettedStorageFix.getName(this.getBlock(relative(var11, ChunkPalettedStorageFix.Direction.UP)));
-                              } while(!"minecraft:snow".equals(var21) && !"minecraft:snow_layer".equals(var21));
-
-                              this.setBlock(var11, ChunkPalettedStorageFix.MappingConstants.SNOWY_GRASS);
-                           }
-                        case 3:
-                           var10 = ((IntList)var8.getValue()).iterator();
-
-                           while(true) {
-                              do {
-                                 do {
-                                    if (!var10.hasNext()) {
-                                       continue label266;
-                                    }
-
-                                    var11 = (Integer)var10.next();
-                                    var11 |= var9;
-                                    var12 = this.getBlock(var11);
-                                 } while(!"minecraft:podzol".equals(ChunkPalettedStorageFix.getName(var12)));
-
-                                 var21 = ChunkPalettedStorageFix.getName(this.getBlock(relative(var11, ChunkPalettedStorageFix.Direction.UP)));
-                              } while(!"minecraft:snow".equals(var21) && !"minecraft:snow_layer".equals(var21));
-
-                              this.setBlock(var11, ChunkPalettedStorageFix.MappingConstants.SNOWY_PODZOL);
-                           }
-                        case 25:
-                           var10 = ((IntList)var8.getValue()).iterator();
-
-                           while(true) {
-                              if (!var10.hasNext()) {
-                                 continue label266;
-                              }
-
-                              var11 = (Integer)var10.next();
-                              var11 |= var9;
-                              var12 = this.removeBlockEntity(var11);
-                              if (var12 != null) {
-                                 var10000 = Boolean.toString(var12.get("powered").asBoolean(false));
-                                 var21 = var10000 + (byte)Math.min(Math.max(var12.get("note").asInt(0), 0), 24);
-                                 this.setBlock(var11, (Dynamic)ChunkPalettedStorageFix.MappingConstants.NOTE_BLOCK_MAP.getOrDefault(var21, (Dynamic)ChunkPalettedStorageFix.MappingConstants.NOTE_BLOCK_MAP.get("false0")));
-                              }
-                           }
-                        case 26:
-                           var10 = ((IntList)var8.getValue()).iterator();
-
-                           while(true) {
-                              if (!var10.hasNext()) {
-                                 continue label266;
-                              }
-
-                              var11 = (Integer)var10.next();
-                              var11 |= var9;
-                              var12 = this.getBlockEntity(var11);
-                              var13 = this.getBlock(var11);
-                              if (var12 != null) {
-                                 var14 = var12.get("color").asInt(0);
-                                 if (var14 != 14 && var14 >= 0 && var14 < 16) {
-                                    var10000 = ChunkPalettedStorageFix.getProperty(var13, "facing");
-                                    var15 = var10000 + ChunkPalettedStorageFix.getProperty(var13, "occupied") + ChunkPalettedStorageFix.getProperty(var13, "part") + var14;
-                                    if (ChunkPalettedStorageFix.MappingConstants.BED_BLOCK_MAP.containsKey(var15)) {
-                                       this.setBlock(var11, (Dynamic)ChunkPalettedStorageFix.MappingConstants.BED_BLOCK_MAP.get(var15));
-                                    }
-                                 }
-                              }
-                           }
-                        case 64:
-                        case 71:
-                        case 193:
-                        case 194:
-                        case 195:
-                        case 196:
-                        case 197:
-                           var10 = ((IntList)var8.getValue()).iterator();
-
-                           while(true) {
-                              if (!var10.hasNext()) {
-                                 continue label266;
-                              }
-
-                              var11 = (Integer)var10.next();
-                              var11 |= var9;
-                              var12 = this.getBlock(var11);
-                              if (ChunkPalettedStorageFix.getName(var12).endsWith("_door")) {
-                                 var13 = this.getBlock(var11);
-                                 if ("lower".equals(ChunkPalettedStorageFix.getProperty(var13, "half"))) {
-                                    var14 = relative(var11, ChunkPalettedStorageFix.Direction.UP);
-                                    Dynamic var23 = this.getBlock(var14);
-                                    String var24 = ChunkPalettedStorageFix.getName(var13);
-                                    if (var24.equals(ChunkPalettedStorageFix.getName(var23))) {
-                                       String var17 = ChunkPalettedStorageFix.getProperty(var13, "facing");
-                                       String var18 = ChunkPalettedStorageFix.getProperty(var13, "open");
-                                       String var19 = var2 ? "left" : ChunkPalettedStorageFix.getProperty(var23, "hinge");
-                                       String var20 = var2 ? "false" : ChunkPalettedStorageFix.getProperty(var23, "powered");
-                                       this.setBlock(var11, (Dynamic)ChunkPalettedStorageFix.MappingConstants.DOOR_MAP.get(var24 + var17 + "lower" + var19 + var18 + var20));
-                                       this.setBlock(var14, (Dynamic)ChunkPalettedStorageFix.MappingConstants.DOOR_MAP.get(var24 + var17 + "upper" + var19 + var18 + var20));
-                                    }
-                                 }
-                              }
-                           }
-                        case 86:
-                           var10 = ((IntList)var8.getValue()).iterator();
-
-                           while(true) {
-                              do {
-                                 do {
-                                    if (!var10.hasNext()) {
-                                       continue label266;
-                                    }
-
-                                    var11 = (Integer)var10.next();
-                                    var11 |= var9;
-                                    var12 = this.getBlock(var11);
-                                 } while(!"minecraft:carved_pumpkin".equals(ChunkPalettedStorageFix.getName(var12)));
-
-                                 var21 = ChunkPalettedStorageFix.getName(this.getBlock(relative(var11, ChunkPalettedStorageFix.Direction.DOWN)));
-                              } while(!"minecraft:grass_block".equals(var21) && !"minecraft:dirt".equals(var21));
-
-                              this.setBlock(var11, ChunkPalettedStorageFix.MappingConstants.PUMPKIN);
-                           }
-                        case 110:
-                           var10 = ((IntList)var8.getValue()).iterator();
-
-                           while(true) {
-                              do {
-                                 do {
-                                    if (!var10.hasNext()) {
-                                       continue label266;
-                                    }
-
-                                    var11 = (Integer)var10.next();
-                                    var11 |= var9;
-                                    var12 = this.getBlock(var11);
-                                 } while(!"minecraft:mycelium".equals(ChunkPalettedStorageFix.getName(var12)));
-
-                                 var21 = ChunkPalettedStorageFix.getName(this.getBlock(relative(var11, ChunkPalettedStorageFix.Direction.UP)));
-                              } while(!"minecraft:snow".equals(var21) && !"minecraft:snow_layer".equals(var21));
-
-                              this.setBlock(var11, ChunkPalettedStorageFix.MappingConstants.SNOWY_MYCELIUM);
-                           }
-                        case 140:
-                           var10 = ((IntList)var8.getValue()).iterator();
-
-                           while(true) {
-                              if (!var10.hasNext()) {
-                                 continue label266;
-                              }
-
-                              var11 = (Integer)var10.next();
-                              var11 |= var9;
-                              var12 = this.removeBlockEntity(var11);
-                              if (var12 != null) {
-                                 var10000 = var12.get("Item").asString("");
-                                 var21 = var10000 + var12.get("Data").asInt(0);
-                                 this.setBlock(var11, (Dynamic)ChunkPalettedStorageFix.MappingConstants.FLOWER_POT_MAP.getOrDefault(var21, (Dynamic)ChunkPalettedStorageFix.MappingConstants.FLOWER_POT_MAP.get("minecraft:air0")));
-                              }
-                           }
-                        case 144:
-                           var10 = ((IntList)var8.getValue()).iterator();
-
-                           while(true) {
-                              do {
-                                 if (!var10.hasNext()) {
-                                    continue label266;
-                                 }
-
-                                 var11 = (Integer)var10.next();
-                                 var11 |= var9;
-                                 var12 = this.getBlockEntity(var11);
-                              } while(var12 == null);
-
-                              var21 = String.valueOf(var12.get("SkullType").asInt(0));
-                              var22 = ChunkPalettedStorageFix.getProperty(this.getBlock(var11), "facing");
-                              if (!"up".equals(var22) && !"down".equals(var22)) {
-                                 var15 = var21 + var22;
-                              } else {
-                                 var15 = var21 + String.valueOf(var12.get("Rot").asInt(0));
-                              }
-
-                              var12.remove("SkullType");
-                              var12.remove("facing");
-                              var12.remove("Rot");
-                              this.setBlock(var11, (Dynamic)ChunkPalettedStorageFix.MappingConstants.SKULL_MAP.getOrDefault(var15, (Dynamic)ChunkPalettedStorageFix.MappingConstants.SKULL_MAP.get("0north")));
-                           }
-                        case 175:
-                           var10 = ((IntList)var8.getValue()).iterator();
-
-                           while(true) {
-                              if (!var10.hasNext()) {
-                                 continue label266;
-                              }
-
-                              var11 = (Integer)var10.next();
-                              var11 |= var9;
-                              var12 = this.getBlock(var11);
-                              if ("upper".equals(ChunkPalettedStorageFix.getProperty(var12, "half"))) {
-                                 var13 = this.getBlock(relative(var11, ChunkPalettedStorageFix.Direction.DOWN));
-                                 switch (ChunkPalettedStorageFix.getName(var13)) {
-                                    case "minecraft:sunflower":
-                                       this.setBlock(var11, ChunkPalettedStorageFix.MappingConstants.UPPER_SUNFLOWER);
-                                       break;
-                                    case "minecraft:lilac":
-                                       this.setBlock(var11, ChunkPalettedStorageFix.MappingConstants.UPPER_LILAC);
-                                       break;
-                                    case "minecraft:tall_grass":
-                                       this.setBlock(var11, ChunkPalettedStorageFix.MappingConstants.UPPER_TALL_GRASS);
-                                       break;
-                                    case "minecraft:large_fern":
-                                       this.setBlock(var11, ChunkPalettedStorageFix.MappingConstants.UPPER_LARGE_FERN);
-                                       break;
-                                    case "minecraft:rose_bush":
-                                       this.setBlock(var11, ChunkPalettedStorageFix.MappingConstants.UPPER_ROSE_BUSH);
-                                       break;
-                                    case "minecraft:peony":
-                                       this.setBlock(var11, ChunkPalettedStorageFix.MappingConstants.UPPER_PEONY);
-                                 }
-                              }
-                           }
-                        case 176:
-                        case 177:
-                           var10 = ((IntList)var8.getValue()).iterator();
-
-                           while(var10.hasNext()) {
-                              var11 = (Integer)var10.next();
-                              var11 |= var9;
-                              var12 = this.getBlockEntity(var11);
-                              var13 = this.getBlock(var11);
-                              if (var12 != null) {
-                                 var14 = var12.get("Base").asInt(0);
-                                 if (var14 != 15 && var14 >= 0 && var14 < 16) {
-                                    var10000 = ChunkPalettedStorageFix.getProperty(var13, var8.getIntKey() == 176 ? "rotation" : "facing");
-                                    var15 = var10000 + "_" + var14;
-                                    if (ChunkPalettedStorageFix.MappingConstants.BANNER_BLOCK_MAP.containsKey(var15)) {
-                                       this.setBlock(var11, (Dynamic)ChunkPalettedStorageFix.MappingConstants.BANNER_BLOCK_MAP.get(var15));
-                                    }
-                                 }
-                              }
-                           }
-                     }
-                  }
-               }
-            }
-         }
-
-      }
-
-      @Nullable
-      private Dynamic<?> getBlockEntity(int var1) {
-         return (Dynamic)this.blockEntities.get(var1);
-      }
-
-      @Nullable
-      private Dynamic<?> removeBlockEntity(int var1) {
-         return (Dynamic)this.blockEntities.remove(var1);
-      }
-
-      public static int relative(int var0, Direction var1) {
-         int var10000;
-         int var2;
-         switch (var1.getAxis().ordinal()) {
-            case 0:
-               var2 = (var0 & 15) + var1.getAxisDirection().getStep();
-               var10000 = var2 >= 0 && var2 <= 15 ? var0 & -16 | var2 : -1;
-               break;
-            case 1:
-               var2 = (var0 >> 8) + var1.getAxisDirection().getStep();
-               var10000 = var2 >= 0 && var2 <= 255 ? var0 & 255 | var2 << 8 : -1;
-               break;
-            case 2:
-               var2 = (var0 >> 4 & 15) + var1.getAxisDirection().getStep();
-               var10000 = var2 >= 0 && var2 <= 15 ? var0 & -241 | var2 << 4 : -1;
-               break;
-            default:
-               throw new MatchException((String)null, (Throwable)null);
-         }
-
-         return var10000;
-      }
-
-      private void setBlock(int var1, Dynamic<?> var2) {
-         if (var1 >= 0 && var1 <= 65535) {
-            Section var3 = this.getSection(var1);
-            if (var3 != null) {
-               var3.setBlock(var1 & 4095, var2);
-            }
-         }
-      }
-
-      @Nullable
-      private Section getSection(int var1) {
-         int var2 = var1 >> 12;
-         return var2 < this.sections.length ? this.sections[var2] : null;
-      }
-
-      public Dynamic<?> getBlock(int var1) {
-         if (var1 >= 0 && var1 <= 65535) {
-            Section var2 = this.getSection(var1);
-            return var2 == null ? ChunkPalettedStorageFix.MappingConstants.AIR : var2.getBlock(var1 & 4095);
-         } else {
-            return ChunkPalettedStorageFix.MappingConstants.AIR;
-         }
-      }
-
-      public Dynamic<?> write() {
-         Dynamic var1 = this.level;
-         if (this.blockEntities.isEmpty()) {
-            var1 = var1.remove("TileEntities");
-         } else {
-            var1 = var1.set("TileEntities", var1.createList(this.blockEntities.values().stream()));
-         }
-
-         Dynamic var2 = var1.emptyMap();
-         ArrayList var3 = Lists.newArrayList();
-         Section[] var4 = this.sections;
-         int var5 = var4.length;
-
-         for(int var6 = 0; var6 < var5; ++var6) {
-            Section var7 = var4[var6];
-            if (var7 != null) {
-               var3.add(var7.write());
-               var2 = var2.set(String.valueOf(var7.y), var2.createIntList(Arrays.stream(var7.update.toIntArray())));
-            }
-         }
-
-         Dynamic var8 = var1.emptyMap();
-         var8 = var8.set("Sides", var8.createByte((byte)this.sides));
-         var8 = var8.set("Indices", var2);
-         return var1.set("UpgradeData", var8).set("Sections", var8.createList(var3.stream()));
-      }
-   }
-
-   public static enum Direction {
-      DOWN(ChunkPalettedStorageFix.Direction.AxisDirection.NEGATIVE, ChunkPalettedStorageFix.Direction.Axis.Y),
-      UP(ChunkPalettedStorageFix.Direction.AxisDirection.POSITIVE, ChunkPalettedStorageFix.Direction.Axis.Y),
-      NORTH(ChunkPalettedStorageFix.Direction.AxisDirection.NEGATIVE, ChunkPalettedStorageFix.Direction.Axis.Z),
-      SOUTH(ChunkPalettedStorageFix.Direction.AxisDirection.POSITIVE, ChunkPalettedStorageFix.Direction.Axis.Z),
-      WEST(ChunkPalettedStorageFix.Direction.AxisDirection.NEGATIVE, ChunkPalettedStorageFix.Direction.Axis.X),
-      EAST(ChunkPalettedStorageFix.Direction.AxisDirection.POSITIVE, ChunkPalettedStorageFix.Direction.Axis.X);
-
-      private final Axis axis;
-      private final AxisDirection axisDirection;
-
-      private Direction(final AxisDirection var3, final Axis var4) {
-         this.axis = var4;
-         this.axisDirection = var3;
-      }
-
-      public AxisDirection getAxisDirection() {
-         return this.axisDirection;
-      }
-
-      public Axis getAxis() {
-         return this.axis;
-      }
-
-      // $FF: synthetic method
-      private static Direction[] $values() {
-         return new Direction[]{DOWN, UP, NORTH, SOUTH, WEST, EAST};
-      }
-
-      public static enum Axis {
-         X,
-         Y,
-         Z;
-
-         private Axis() {
-         }
-
-         // $FF: synthetic method
-         private static Axis[] $values() {
-            return new Axis[]{X, Y, Z};
-         }
-      }
-
-      public static enum AxisDirection {
-         POSITIVE(1),
-         NEGATIVE(-1);
-
-         private final int step;
-
-         private AxisDirection(final int var3) {
-            this.step = var3;
-         }
-
-         public int getStep() {
-            return this.step;
-         }
-
-         // $FF: synthetic method
-         private static AxisDirection[] $values() {
-            return new AxisDirection[]{POSITIVE, NEGATIVE};
-         }
-      }
-   }
-
-   private static class DataLayer {
-      private static final int SIZE = 2048;
-      private static final int NIBBLE_SIZE = 4;
-      private final byte[] data;
-
-      public DataLayer() {
-         super();
-         this.data = new byte[2048];
-      }
-
-      public DataLayer(byte[] var1) {
-         super();
-         this.data = var1;
-         if (var1.length != 2048) {
-            throw new IllegalArgumentException("ChunkNibbleArrays should be 2048 bytes not: " + var1.length);
-         }
-      }
-
-      public int get(int var1, int var2, int var3) {
-         int var4 = this.getPosition(var2 << 8 | var3 << 4 | var1);
-         return this.isFirst(var2 << 8 | var3 << 4 | var1) ? this.data[var4] & 15 : this.data[var4] >> 4 & 15;
-      }
-
-      private boolean isFirst(int var1) {
-         return (var1 & 1) == 0;
-      }
-
-      private int getPosition(int var1) {
-         return var1 >> 1;
-      }
-   }
-
-   static class Section {
-      private final CrudeIncrementalIntIdentityHashBiMap<Dynamic<?>> palette = CrudeIncrementalIntIdentityHashBiMap.create(32);
-      private final List<Dynamic<?>> listTag = Lists.newArrayList();
-      private final Dynamic<?> section;
-      private final boolean hasData;
-      final Int2ObjectMap<IntList> toFix = new Int2ObjectLinkedOpenHashMap();
-      final IntList update = new IntArrayList();
-      public final int y;
-      private final Set<Dynamic<?>> seen = Sets.newIdentityHashSet();
-      private final int[] buffer = new int[4096];
-
-      public Section(Dynamic<?> var1) {
-         super();
-         this.section = var1;
-         this.y = var1.get("Y").asInt(0);
-         this.hasData = var1.get("Blocks").result().isPresent();
-      }
-
-      public Dynamic<?> getBlock(int var1) {
-         if (var1 >= 0 && var1 <= 4095) {
-            Dynamic var2 = (Dynamic)this.palette.byId(this.buffer[var1]);
-            return var2 == null ? ChunkPalettedStorageFix.MappingConstants.AIR : var2;
-         } else {
-            return ChunkPalettedStorageFix.MappingConstants.AIR;
-         }
-      }
-
-      public void setBlock(int var1, Dynamic<?> var2) {
-         if (this.seen.add(var2)) {
-            this.listTag.add("%%FILTER_ME%%".equals(ChunkPalettedStorageFix.getName(var2)) ? ChunkPalettedStorageFix.MappingConstants.AIR : var2);
-         }
-
-         this.buffer[var1] = ChunkPalettedStorageFix.idFor(this.palette, var2);
-      }
-
-      public int upgrade(int var1) {
-         if (!this.hasData) {
-            return var1;
-         } else {
-            ByteBuffer var2 = (ByteBuffer)this.section.get("Blocks").asByteBufferOpt().result().get();
-            DataLayer var3 = (DataLayer)this.section.get("Data").asByteBufferOpt().map((var0) -> {
-               return new DataLayer(DataFixUtils.toArray(var0));
-            }).result().orElseGet(DataLayer::new);
-            DataLayer var4 = (DataLayer)this.section.get("Add").asByteBufferOpt().map((var0) -> {
-               return new DataLayer(DataFixUtils.toArray(var0));
-            }).result().orElseGet(DataLayer::new);
-            this.seen.add(ChunkPalettedStorageFix.MappingConstants.AIR);
-            ChunkPalettedStorageFix.idFor(this.palette, ChunkPalettedStorageFix.MappingConstants.AIR);
-            this.listTag.add(ChunkPalettedStorageFix.MappingConstants.AIR);
-
-            for(int var5 = 0; var5 < 4096; ++var5) {
-               int var6 = var5 & 15;
-               int var7 = var5 >> 8 & 15;
-               int var8 = var5 >> 4 & 15;
-               int var9 = var4.get(var6, var7, var8) << 12 | (var2.get(var5) & 255) << 4 | var3.get(var6, var7, var8);
-               if (ChunkPalettedStorageFix.MappingConstants.FIX.get(var9 >> 4)) {
-                  this.addFix(var9 >> 4, var5);
-               }
-
-               if (ChunkPalettedStorageFix.MappingConstants.VIRTUAL.get(var9 >> 4)) {
-                  int var10 = ChunkPalettedStorageFix.getSideMask(var6 == 0, var6 == 15, var8 == 0, var8 == 15);
-                  if (var10 == 0) {
-                     this.update.add(var5);
-                  } else {
-                     var1 |= var10;
-                  }
-               }
-
-               this.setBlock(var5, BlockStateData.getTag(var9));
-            }
-
-            return var1;
-         }
-      }
-
-      private void addFix(int var1, int var2) {
-         Object var3 = (IntList)this.toFix.get(var1);
-         if (var3 == null) {
-            var3 = new IntArrayList();
-            this.toFix.put(var1, var3);
-         }
-
-         ((IntList)var3).add(var2);
-      }
-
-      public Dynamic<?> write() {
-         Dynamic var1 = this.section;
-         if (!this.hasData) {
-            return var1;
-         } else {
-            var1 = var1.set("Palette", var1.createList(this.listTag.stream()));
-            int var2 = Math.max(4, DataFixUtils.ceillog2(this.seen.size()));
-            PackedBitStorage var3 = new PackedBitStorage(var2, 4096);
-
-            for(int var4 = 0; var4 < this.buffer.length; ++var4) {
-               var3.set(var4, this.buffer[var4]);
-            }
-
-            var1 = var1.set("BlockStates", var1.createLongList(Arrays.stream(var3.getRaw())));
-            var1 = var1.remove("Blocks");
-            var1 = var1.remove("Data");
-            var1 = var1.remove("Add");
-            return var1;
-         }
-      }
-   }
-
-   private static class MappingConstants {
+   static class MappingConstants {
       static final BitSet VIRTUAL = new BitSet(256);
       static final BitSet FIX = new BitSet(256);
       static final Dynamic<?> PUMPKIN = ExtraDataFixUtils.blockState("minecraft:pumpkin");
@@ -819,10 +211,10 @@ public class ChunkPalettedStorageFix extends DataFix {
       }
 
       private static void mapSkull(Map<String, Dynamic<?>> var0, int var1, String var2, String var3) {
-         var0.put("" + var1 + "north", ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_" + var3, Map.of("facing", "north")));
-         var0.put("" + var1 + "east", ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_" + var3, Map.of("facing", "east")));
-         var0.put("" + var1 + "south", ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_" + var3, Map.of("facing", "south")));
-         var0.put("" + var1 + "west", ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_" + var3, Map.of("facing", "west")));
+         var0.put(var1 + "north", ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_" + var3, Map.of("facing", "north")));
+         var0.put(var1 + "east", ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_" + var3, Map.of("facing", "east")));
+         var0.put(var1 + "south", ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_" + var3, Map.of("facing", "south")));
+         var0.put(var1 + "west", ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_" + var3, Map.of("facing", "west")));
 
          for(int var4 = 0; var4 < 16; ++var4) {
             var0.put("" + var1 + var4, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_" + var3, Map.of("rotation", String.valueOf(var4))));
@@ -915,7 +307,7 @@ public class ChunkPalettedStorageFix extends DataFix {
 
       private static void addBanners(Map<String, Dynamic<?>> var0, int var1, String var2) {
          for(int var3 = 0; var3 < 16; ++var3) {
-            var0.put("" + var3 + "_" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_banner", Map.of("rotation", String.valueOf(var3))));
+            var0.put(var3 + "_" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_banner", Map.of("rotation", String.valueOf(var3))));
          }
 
          var0.put("north_" + var1, ExtraDataFixUtils.blockState("minecraft:" + var2 + "_wall_banner", Map.of("facing", "north")));
@@ -986,6 +378,545 @@ public class ChunkPalettedStorageFix extends DataFix {
          VIRTUAL.set(139);
          VIRTUAL.set(199);
          AIR = ExtraDataFixUtils.blockState("minecraft:air");
+      }
+   }
+
+   static class Section {
+      private final CrudeIncrementalIntIdentityHashBiMap<Dynamic<?>> palette = CrudeIncrementalIntIdentityHashBiMap.<Dynamic<?>>create(32);
+      private final List<Dynamic<?>> listTag = Lists.newArrayList();
+      private final Dynamic<?> section;
+      private final boolean hasData;
+      final Int2ObjectMap<IntList> toFix = new Int2ObjectLinkedOpenHashMap();
+      final IntList update = new IntArrayList();
+      public final int y;
+      private final Set<Dynamic<?>> seen = Sets.newIdentityHashSet();
+      private final int[] buffer = new int[4096];
+
+      public Section(Dynamic<?> var1) {
+         super();
+         this.section = var1;
+         this.y = var1.get("Y").asInt(0);
+         this.hasData = var1.get("Blocks").result().isPresent();
+      }
+
+      public Dynamic<?> getBlock(int var1) {
+         if (var1 >= 0 && var1 <= 4095) {
+            Dynamic var2 = this.palette.byId(this.buffer[var1]);
+            return var2 == null ? ChunkPalettedStorageFix.MappingConstants.AIR : var2;
+         } else {
+            return ChunkPalettedStorageFix.MappingConstants.AIR;
+         }
+      }
+
+      public void setBlock(int var1, Dynamic<?> var2) {
+         if (this.seen.add(var2)) {
+            this.listTag.add("%%FILTER_ME%%".equals(ChunkPalettedStorageFix.getName(var2)) ? ChunkPalettedStorageFix.MappingConstants.AIR : var2);
+         }
+
+         this.buffer[var1] = ChunkPalettedStorageFix.idFor(this.palette, var2);
+      }
+
+      public int upgrade(int var1) {
+         if (!this.hasData) {
+            return var1;
+         } else {
+            ByteBuffer var2 = (ByteBuffer)this.section.get("Blocks").asByteBufferOpt().result().get();
+            DataLayer var3 = (DataLayer)this.section.get("Data").asByteBufferOpt().map((var0) -> new DataLayer(DataFixUtils.toArray(var0))).result().orElseGet(DataLayer::new);
+            DataLayer var4 = (DataLayer)this.section.get("Add").asByteBufferOpt().map((var0) -> new DataLayer(DataFixUtils.toArray(var0))).result().orElseGet(DataLayer::new);
+            this.seen.add(ChunkPalettedStorageFix.MappingConstants.AIR);
+            ChunkPalettedStorageFix.idFor(this.palette, ChunkPalettedStorageFix.MappingConstants.AIR);
+            this.listTag.add(ChunkPalettedStorageFix.MappingConstants.AIR);
+
+            for(int var5 = 0; var5 < 4096; ++var5) {
+               int var6 = var5 & 15;
+               int var7 = var5 >> 8 & 15;
+               int var8 = var5 >> 4 & 15;
+               int var9 = var4.get(var6, var7, var8) << 12 | (var2.get(var5) & 255) << 4 | var3.get(var6, var7, var8);
+               if (ChunkPalettedStorageFix.MappingConstants.FIX.get(var9 >> 4)) {
+                  this.addFix(var9 >> 4, var5);
+               }
+
+               if (ChunkPalettedStorageFix.MappingConstants.VIRTUAL.get(var9 >> 4)) {
+                  int var10 = ChunkPalettedStorageFix.getSideMask(var6 == 0, var6 == 15, var8 == 0, var8 == 15);
+                  if (var10 == 0) {
+                     this.update.add(var5);
+                  } else {
+                     var1 |= var10;
+                  }
+               }
+
+               this.setBlock(var5, BlockStateData.getTag(var9));
+            }
+
+            return var1;
+         }
+      }
+
+      private void addFix(int var1, int var2) {
+         Object var3 = (IntList)this.toFix.get(var1);
+         if (var3 == null) {
+            var3 = new IntArrayList();
+            this.toFix.put(var1, var3);
+         }
+
+         ((IntList)var3).add(var2);
+      }
+
+      public Dynamic<?> write() {
+         Dynamic var1 = this.section;
+         if (!this.hasData) {
+            return var1;
+         } else {
+            var1 = var1.set("Palette", var1.createList(this.listTag.stream()));
+            int var2 = Math.max(4, DataFixUtils.ceillog2(this.seen.size()));
+            PackedBitStorage var3 = new PackedBitStorage(var2, 4096);
+
+            for(int var4 = 0; var4 < this.buffer.length; ++var4) {
+               var3.set(var4, this.buffer[var4]);
+            }
+
+            var1 = var1.set("BlockStates", var1.createLongList(Arrays.stream(var3.getRaw())));
+            var1 = var1.remove("Blocks");
+            var1 = var1.remove("Data");
+            var1 = var1.remove("Add");
+            return var1;
+         }
+      }
+   }
+
+   static final class UpgradeChunk {
+      private int sides;
+      private final Section[] sections = new Section[16];
+      private final Dynamic<?> level;
+      private final int x;
+      private final int z;
+      private final Int2ObjectMap<Dynamic<?>> blockEntities = new Int2ObjectLinkedOpenHashMap(16);
+
+      public UpgradeChunk(Dynamic<?> var1) {
+         super();
+         this.level = var1;
+         this.x = var1.get("xPos").asInt(0) << 4;
+         this.z = var1.get("zPos").asInt(0) << 4;
+         var1.get("TileEntities").asStreamOpt().ifSuccess((var1x) -> var1x.forEach((var1) -> {
+               int var2 = var1.get("x").asInt(0) - this.x & 15;
+               int var3 = var1.get("y").asInt(0);
+               int var4 = var1.get("z").asInt(0) - this.z & 15;
+               int var5 = var3 << 8 | var4 << 4 | var2;
+               if (this.blockEntities.put(var5, var1) != null) {
+                  ChunkPalettedStorageFix.LOGGER.warn("In chunk: {}x{} found a duplicate block entity at position: [{}, {}, {}]", new Object[]{this.x, this.z, var2, var3, var4});
+               }
+
+            }));
+         boolean var2 = var1.get("convertedFromAlphaFormat").asBoolean(false);
+         var1.get("Sections").asStreamOpt().ifSuccess((var1x) -> var1x.forEach((var1) -> {
+               Section var2 = new Section(var1);
+               this.sides = var2.upgrade(this.sides);
+               this.sections[var2.y] = var2;
+            }));
+
+         for(Section var6 : this.sections) {
+            if (var6 != null) {
+               ObjectIterator var7 = var6.toFix.int2ObjectEntrySet().iterator();
+
+               while(var7.hasNext()) {
+                  Int2ObjectMap.Entry var8 = (Int2ObjectMap.Entry)var7.next();
+                  int var9 = var6.y << 12;
+                  switch (var8.getIntKey()) {
+                     case 2:
+                        IntListIterator var30 = ((IntList)var8.getValue()).iterator();
+
+                        while(var30.hasNext()) {
+                           int var50 = (Integer)var30.next();
+                           var50 |= var9;
+                           Dynamic var61 = this.getBlock(var50);
+                           if ("minecraft:grass_block".equals(ChunkPalettedStorageFix.getName(var61))) {
+                              String var71 = ChunkPalettedStorageFix.getName(this.getBlock(relative(var50, ChunkPalettedStorageFix.Direction.UP)));
+                              if ("minecraft:snow".equals(var71) || "minecraft:snow_layer".equals(var71)) {
+                                 this.setBlock(var50, ChunkPalettedStorageFix.MappingConstants.SNOWY_GRASS);
+                              }
+                           }
+                        }
+                        break;
+                     case 3:
+                        IntListIterator var29 = ((IntList)var8.getValue()).iterator();
+
+                        while(var29.hasNext()) {
+                           int var48 = (Integer)var29.next();
+                           var48 |= var9;
+                           Dynamic var60 = this.getBlock(var48);
+                           if ("minecraft:podzol".equals(ChunkPalettedStorageFix.getName(var60))) {
+                              String var70 = ChunkPalettedStorageFix.getName(this.getBlock(relative(var48, ChunkPalettedStorageFix.Direction.UP)));
+                              if ("minecraft:snow".equals(var70) || "minecraft:snow_layer".equals(var70)) {
+                                 this.setBlock(var48, ChunkPalettedStorageFix.MappingConstants.SNOWY_PODZOL);
+                              }
+                           }
+                        }
+                        break;
+                     case 25:
+                        IntListIterator var28 = ((IntList)var8.getValue()).iterator();
+
+                        while(var28.hasNext()) {
+                           int var46 = (Integer)var28.next();
+                           var46 |= var9;
+                           Dynamic var59 = this.removeBlockEntity(var46);
+                           if (var59 != null) {
+                              String var82 = Boolean.toString(var59.get("powered").asBoolean(false));
+                              String var69 = var82 + (byte)Math.min(Math.max(var59.get("note").asInt(0), 0), 24);
+                              this.setBlock(var46, (Dynamic)ChunkPalettedStorageFix.MappingConstants.NOTE_BLOCK_MAP.getOrDefault(var69, (Dynamic)ChunkPalettedStorageFix.MappingConstants.NOTE_BLOCK_MAP.get("false0")));
+                           }
+                        }
+                        break;
+                     case 26:
+                        IntListIterator var27 = ((IntList)var8.getValue()).iterator();
+
+                        while(var27.hasNext()) {
+                           int var44 = (Integer)var27.next();
+                           var44 |= var9;
+                           Dynamic var58 = this.getBlockEntity(var44);
+                           Dynamic var68 = this.getBlock(var44);
+                           if (var58 != null) {
+                              int var75 = var58.get("color").asInt(0);
+                              if (var75 != 14 && var75 >= 0 && var75 < 16) {
+                                 String var81 = ChunkPalettedStorageFix.getProperty(var68, "facing");
+                                 String var78 = var81 + ChunkPalettedStorageFix.getProperty(var68, "occupied") + ChunkPalettedStorageFix.getProperty(var68, "part") + var75;
+                                 if (ChunkPalettedStorageFix.MappingConstants.BED_BLOCK_MAP.containsKey(var78)) {
+                                    this.setBlock(var44, (Dynamic)ChunkPalettedStorageFix.MappingConstants.BED_BLOCK_MAP.get(var78));
+                                 }
+                              }
+                           }
+                        }
+                        break;
+                     case 64:
+                     case 71:
+                     case 193:
+                     case 194:
+                     case 195:
+                     case 196:
+                     case 197:
+                        IntListIterator var26 = ((IntList)var8.getValue()).iterator();
+
+                        while(var26.hasNext()) {
+                           int var42 = (Integer)var26.next();
+                           var42 |= var9;
+                           Dynamic var57 = this.getBlock(var42);
+                           if (ChunkPalettedStorageFix.getName(var57).endsWith("_door")) {
+                              Dynamic var67 = this.getBlock(var42);
+                              if ("lower".equals(ChunkPalettedStorageFix.getProperty(var67, "half"))) {
+                                 int var74 = relative(var42, ChunkPalettedStorageFix.Direction.UP);
+                                 Dynamic var77 = this.getBlock(var74);
+                                 String var79 = ChunkPalettedStorageFix.getName(var67);
+                                 if (var79.equals(ChunkPalettedStorageFix.getName(var77))) {
+                                    String var17 = ChunkPalettedStorageFix.getProperty(var67, "facing");
+                                    String var18 = ChunkPalettedStorageFix.getProperty(var67, "open");
+                                    String var19 = var2 ? "left" : ChunkPalettedStorageFix.getProperty(var77, "hinge");
+                                    String var20 = var2 ? "false" : ChunkPalettedStorageFix.getProperty(var77, "powered");
+                                    this.setBlock(var42, (Dynamic)ChunkPalettedStorageFix.MappingConstants.DOOR_MAP.get(var79 + var17 + "lower" + var19 + var18 + var20));
+                                    this.setBlock(var74, (Dynamic)ChunkPalettedStorageFix.MappingConstants.DOOR_MAP.get(var79 + var17 + "upper" + var19 + var18 + var20));
+                                 }
+                              }
+                           }
+                        }
+                        break;
+                     case 86:
+                        IntListIterator var25 = ((IntList)var8.getValue()).iterator();
+
+                        while(var25.hasNext()) {
+                           int var40 = (Integer)var25.next();
+                           var40 |= var9;
+                           Dynamic var56 = this.getBlock(var40);
+                           if ("minecraft:carved_pumpkin".equals(ChunkPalettedStorageFix.getName(var56))) {
+                              String var66 = ChunkPalettedStorageFix.getName(this.getBlock(relative(var40, ChunkPalettedStorageFix.Direction.DOWN)));
+                              if ("minecraft:grass_block".equals(var66) || "minecraft:dirt".equals(var66)) {
+                                 this.setBlock(var40, ChunkPalettedStorageFix.MappingConstants.PUMPKIN);
+                              }
+                           }
+                        }
+                        break;
+                     case 110:
+                        IntListIterator var24 = ((IntList)var8.getValue()).iterator();
+
+                        while(var24.hasNext()) {
+                           int var38 = (Integer)var24.next();
+                           var38 |= var9;
+                           Dynamic var55 = this.getBlock(var38);
+                           if ("minecraft:mycelium".equals(ChunkPalettedStorageFix.getName(var55))) {
+                              String var65 = ChunkPalettedStorageFix.getName(this.getBlock(relative(var38, ChunkPalettedStorageFix.Direction.UP)));
+                              if ("minecraft:snow".equals(var65) || "minecraft:snow_layer".equals(var65)) {
+                                 this.setBlock(var38, ChunkPalettedStorageFix.MappingConstants.SNOWY_MYCELIUM);
+                              }
+                           }
+                        }
+                        break;
+                     case 140:
+                        IntListIterator var23 = ((IntList)var8.getValue()).iterator();
+
+                        while(var23.hasNext()) {
+                           int var36 = (Integer)var23.next();
+                           var36 |= var9;
+                           Dynamic var54 = this.removeBlockEntity(var36);
+                           if (var54 != null) {
+                              String var80 = var54.get("Item").asString("");
+                              String var64 = var80 + var54.get("Data").asInt(0);
+                              this.setBlock(var36, (Dynamic)ChunkPalettedStorageFix.MappingConstants.FLOWER_POT_MAP.getOrDefault(var64, (Dynamic)ChunkPalettedStorageFix.MappingConstants.FLOWER_POT_MAP.get("minecraft:air0")));
+                           }
+                        }
+                        break;
+                     case 144:
+                        IntListIterator var22 = ((IntList)var8.getValue()).iterator();
+
+                        while(var22.hasNext()) {
+                           int var34 = (Integer)var22.next();
+                           var34 |= var9;
+                           Dynamic var53 = this.getBlockEntity(var34);
+                           if (var53 != null) {
+                              String var63 = String.valueOf(var53.get("SkullType").asInt(0));
+                              String var73 = ChunkPalettedStorageFix.getProperty(this.getBlock(var34), "facing");
+                              String var76;
+                              if (!"up".equals(var73) && !"down".equals(var73)) {
+                                 var76 = var63 + var73;
+                              } else {
+                                 var76 = var63 + String.valueOf(var53.get("Rot").asInt(0));
+                              }
+
+                              var53.remove("SkullType");
+                              var53.remove("facing");
+                              var53.remove("Rot");
+                              this.setBlock(var34, (Dynamic)ChunkPalettedStorageFix.MappingConstants.SKULL_MAP.getOrDefault(var76, (Dynamic)ChunkPalettedStorageFix.MappingConstants.SKULL_MAP.get("0north")));
+                           }
+                        }
+                        break;
+                     case 175:
+                        IntListIterator var21 = ((IntList)var8.getValue()).iterator();
+
+                        while(var21.hasNext()) {
+                           int var32 = (Integer)var21.next();
+                           var32 |= var9;
+                           Dynamic var52 = this.getBlock(var32);
+                           if ("upper".equals(ChunkPalettedStorageFix.getProperty(var52, "half"))) {
+                              Dynamic var62 = this.getBlock(relative(var32, ChunkPalettedStorageFix.Direction.DOWN));
+                              switch (ChunkPalettedStorageFix.getName(var62)) {
+                                 case "minecraft:sunflower":
+                                    this.setBlock(var32, ChunkPalettedStorageFix.MappingConstants.UPPER_SUNFLOWER);
+                                    break;
+                                 case "minecraft:lilac":
+                                    this.setBlock(var32, ChunkPalettedStorageFix.MappingConstants.UPPER_LILAC);
+                                    break;
+                                 case "minecraft:tall_grass":
+                                    this.setBlock(var32, ChunkPalettedStorageFix.MappingConstants.UPPER_TALL_GRASS);
+                                    break;
+                                 case "minecraft:large_fern":
+                                    this.setBlock(var32, ChunkPalettedStorageFix.MappingConstants.UPPER_LARGE_FERN);
+                                    break;
+                                 case "minecraft:rose_bush":
+                                    this.setBlock(var32, ChunkPalettedStorageFix.MappingConstants.UPPER_ROSE_BUSH);
+                                    break;
+                                 case "minecraft:peony":
+                                    this.setBlock(var32, ChunkPalettedStorageFix.MappingConstants.UPPER_PEONY);
+                              }
+                           }
+                        }
+                        break;
+                     case 176:
+                     case 177:
+                        IntListIterator var10 = ((IntList)var8.getValue()).iterator();
+
+                        while(var10.hasNext()) {
+                           int var11 = (Integer)var10.next();
+                           var11 |= var9;
+                           Dynamic var12 = this.getBlockEntity(var11);
+                           Dynamic var13 = this.getBlock(var11);
+                           if (var12 != null) {
+                              int var14 = var12.get("Base").asInt(0);
+                              if (var14 != 15 && var14 >= 0 && var14 < 16) {
+                                 String var10000 = ChunkPalettedStorageFix.getProperty(var13, var8.getIntKey() == 176 ? "rotation" : "facing");
+                                 String var15 = var10000 + "_" + var14;
+                                 if (ChunkPalettedStorageFix.MappingConstants.BANNER_BLOCK_MAP.containsKey(var15)) {
+                                    this.setBlock(var11, (Dynamic)ChunkPalettedStorageFix.MappingConstants.BANNER_BLOCK_MAP.get(var15));
+                                 }
+                              }
+                           }
+                        }
+                  }
+               }
+            }
+         }
+
+      }
+
+      @Nullable
+      private Dynamic<?> getBlockEntity(int var1) {
+         return (Dynamic)this.blockEntities.get(var1);
+      }
+
+      @Nullable
+      private Dynamic<?> removeBlockEntity(int var1) {
+         return (Dynamic)this.blockEntities.remove(var1);
+      }
+
+      public static int relative(int var0, Direction var1) {
+         int var10000;
+         switch (var1.getAxis().ordinal()) {
+            case 0:
+               int var4 = (var0 & 15) + var1.getAxisDirection().getStep();
+               var10000 = var4 >= 0 && var4 <= 15 ? var0 & -16 | var4 : -1;
+               break;
+            case 1:
+               int var3 = (var0 >> 8) + var1.getAxisDirection().getStep();
+               var10000 = var3 >= 0 && var3 <= 255 ? var0 & 255 | var3 << 8 : -1;
+               break;
+            case 2:
+               int var2 = (var0 >> 4 & 15) + var1.getAxisDirection().getStep();
+               var10000 = var2 >= 0 && var2 <= 15 ? var0 & -241 | var2 << 4 : -1;
+               break;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return var10000;
+      }
+
+      private void setBlock(int var1, Dynamic<?> var2) {
+         if (var1 >= 0 && var1 <= 65535) {
+            Section var3 = this.getSection(var1);
+            if (var3 != null) {
+               var3.setBlock(var1 & 4095, var2);
+            }
+         }
+      }
+
+      @Nullable
+      private Section getSection(int var1) {
+         int var2 = var1 >> 12;
+         return var2 < this.sections.length ? this.sections[var2] : null;
+      }
+
+      public Dynamic<?> getBlock(int var1) {
+         if (var1 >= 0 && var1 <= 65535) {
+            Section var2 = this.getSection(var1);
+            return var2 == null ? ChunkPalettedStorageFix.MappingConstants.AIR : var2.getBlock(var1 & 4095);
+         } else {
+            return ChunkPalettedStorageFix.MappingConstants.AIR;
+         }
+      }
+
+      public Dynamic<?> write() {
+         Dynamic var1 = this.level;
+         if (this.blockEntities.isEmpty()) {
+            var1 = var1.remove("TileEntities");
+         } else {
+            var1 = var1.set("TileEntities", var1.createList(this.blockEntities.values().stream()));
+         }
+
+         Dynamic var2 = var1.emptyMap();
+         ArrayList var3 = Lists.newArrayList();
+
+         for(Section var7 : this.sections) {
+            if (var7 != null) {
+               var3.add(var7.write());
+               var2 = var2.set(String.valueOf(var7.y), var2.createIntList(Arrays.stream(var7.update.toIntArray())));
+            }
+         }
+
+         Dynamic var9 = var1.emptyMap();
+         var9 = var9.set("Sides", var9.createByte((byte)this.sides));
+         var9 = var9.set("Indices", var2);
+         return var1.set("UpgradeData", var9).set("Sections", var9.createList(var3.stream()));
+      }
+   }
+
+   static class DataLayer {
+      private static final int SIZE = 2048;
+      private static final int NIBBLE_SIZE = 4;
+      private final byte[] data;
+
+      public DataLayer() {
+         super();
+         this.data = new byte[2048];
+      }
+
+      public DataLayer(byte[] var1) {
+         super();
+         this.data = var1;
+         if (var1.length != 2048) {
+            throw new IllegalArgumentException("ChunkNibbleArrays should be 2048 bytes not: " + var1.length);
+         }
+      }
+
+      public int get(int var1, int var2, int var3) {
+         int var4 = this.getPosition(var2 << 8 | var3 << 4 | var1);
+         return this.isFirst(var2 << 8 | var3 << 4 | var1) ? this.data[var4] & 15 : this.data[var4] >> 4 & 15;
+      }
+
+      private boolean isFirst(int var1) {
+         return (var1 & 1) == 0;
+      }
+
+      private int getPosition(int var1) {
+         return var1 >> 1;
+      }
+   }
+
+   public static enum Direction {
+      DOWN(ChunkPalettedStorageFix.Direction.AxisDirection.NEGATIVE, ChunkPalettedStorageFix.Direction.Axis.Y),
+      UP(ChunkPalettedStorageFix.Direction.AxisDirection.POSITIVE, ChunkPalettedStorageFix.Direction.Axis.Y),
+      NORTH(ChunkPalettedStorageFix.Direction.AxisDirection.NEGATIVE, ChunkPalettedStorageFix.Direction.Axis.Z),
+      SOUTH(ChunkPalettedStorageFix.Direction.AxisDirection.POSITIVE, ChunkPalettedStorageFix.Direction.Axis.Z),
+      WEST(ChunkPalettedStorageFix.Direction.AxisDirection.NEGATIVE, ChunkPalettedStorageFix.Direction.Axis.X),
+      EAST(ChunkPalettedStorageFix.Direction.AxisDirection.POSITIVE, ChunkPalettedStorageFix.Direction.Axis.X);
+
+      private final Axis axis;
+      private final AxisDirection axisDirection;
+
+      private Direction(final AxisDirection var3, final Axis var4) {
+         this.axis = var4;
+         this.axisDirection = var3;
+      }
+
+      public AxisDirection getAxisDirection() {
+         return this.axisDirection;
+      }
+
+      public Axis getAxis() {
+         return this.axis;
+      }
+
+      // $FF: synthetic method
+      private static Direction[] $values() {
+         return new Direction[]{DOWN, UP, NORTH, SOUTH, WEST, EAST};
+      }
+
+      public static enum Axis {
+         X,
+         Y,
+         Z;
+
+         private Axis() {
+         }
+
+         // $FF: synthetic method
+         private static Axis[] $values() {
+            return new Axis[]{X, Y, Z};
+         }
+      }
+
+      public static enum AxisDirection {
+         POSITIVE(1),
+         NEGATIVE(-1);
+
+         private final int step;
+
+         private AxisDirection(final int var3) {
+            this.step = var3;
+         }
+
+         public int getStep() {
+            return this.step;
+         }
+
+         // $FF: synthetic method
+         private static AxisDirection[] $values() {
+            return new AxisDirection[]{POSITIVE, NEGATIVE};
+         }
       }
    }
 }

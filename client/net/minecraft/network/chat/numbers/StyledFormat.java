@@ -22,12 +22,8 @@ public class StyledFormat implements NumberFormat {
       }
 
       static {
-         CODEC = Style.Serializer.MAP_CODEC.xmap(StyledFormat::new, (var0) -> {
-            return var0.style;
-         });
-         STREAM_CODEC = StreamCodec.composite(Style.Serializer.TRUSTED_STREAM_CODEC, (var0) -> {
-            return var0.style;
-         }, StyledFormat::new);
+         CODEC = Style.Serializer.MAP_CODEC.xmap(StyledFormat::new, (var0) -> var0.style);
+         STREAM_CODEC = StreamCodec.composite(Style.Serializer.TRUSTED_STREAM_CODEC, (var0) -> var0.style, StyledFormat::new);
       }
    };
    public static final StyledFormat NO_STYLE;

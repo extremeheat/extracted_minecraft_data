@@ -31,9 +31,7 @@ public record ChunkStep(ChunkStatus targetStatus, ChunkDependencies directDepend
    public CompletableFuture<ChunkAccess> apply(WorldGenContext var1, StaticCache2D<GenerationChunkHolder> var2, ChunkAccess var3) {
       if (var3.getPersistedStatus().isBefore(this.targetStatus)) {
          ProfiledDuration var4 = JvmProfiler.INSTANCE.onChunkGenerate(var3.getPos(), var1.level().dimension(), this.targetStatus.getName());
-         return this.task.doWork(var1, this, var2, var3).thenApply((var2x) -> {
-            return this.completeChunkGeneration(var2x, var4);
-         });
+         return this.task.doWork(var1, this, var2, var3).thenApply((var2x) -> this.completeChunkGeneration(var2x, var4));
       } else {
          return this.task.doWork(var1, this, var2, var3);
       }
@@ -47,30 +45,10 @@ public record ChunkStep(ChunkStatus targetStatus, ChunkDependencies directDepend
       }
 
       if (var2 != null) {
-         var2.finish();
+         var2.finish(true);
       }
 
       return var1;
-   }
-
-   public ChunkStatus targetStatus() {
-      return this.targetStatus;
-   }
-
-   public ChunkDependencies directDependencies() {
-      return this.directDependencies;
-   }
-
-   public ChunkDependencies accumulatedDependencies() {
-      return this.accumulatedDependencies;
-   }
-
-   public int blockStateWriteRadius() {
-      return this.blockStateWriteRadius;
-   }
-
-   public ChunkStatusTask task() {
-      return this.task;
    }
 
    public static class Builder {

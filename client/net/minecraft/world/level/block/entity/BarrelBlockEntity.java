@@ -27,7 +27,7 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity {
 
    public BarrelBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.BARREL, var1, var2);
-      this.items = NonNullList.withSize(27, ItemStack.EMPTY);
+      this.items = NonNullList.<ItemStack>withSize(27, ItemStack.EMPTY);
       this.openersCounter = new ContainerOpenersCounter() {
          protected void onOpen(Level var1, BlockPos var2, BlockState var3) {
             BarrelBlockEntity.this.playSound(var3, SoundEvents.BARREL_OPEN);
@@ -63,7 +63,7 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity {
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+      this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
          ContainerHelper.loadAllItems(var1, this.items, var2);
       }
@@ -120,6 +120,6 @@ public class BarrelBlockEntity extends RandomizableContainerBlockEntity {
       double var4 = (double)this.worldPosition.getX() + 0.5 + (double)var3.getX() / 2.0;
       double var6 = (double)this.worldPosition.getY() + 0.5 + (double)var3.getY() / 2.0;
       double var8 = (double)this.worldPosition.getZ() + 0.5 + (double)var3.getZ() / 2.0;
-      this.level.playSound((Player)null, var4, var6, var8, (SoundEvent)var2, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
+      this.level.playSound((Player)null, var4, var6, var8, var2, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
    }
 }

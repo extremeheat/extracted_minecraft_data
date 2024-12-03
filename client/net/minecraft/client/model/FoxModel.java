@@ -70,31 +70,29 @@ public class FoxModel extends EntityModel<FoxRenderState> {
       this.rightFrontLeg.visible = true;
       this.leftFrontLeg.visible = true;
       float var4 = var1.ageScale;
-      ModelPart var10000;
-      float var5;
       if (var1.isCrouching) {
-         var10000 = this.body;
+         ModelPart var10000 = this.body;
          var10000.xRot += 0.10471976F;
-         var5 = var1.crouchAmount;
+         float var5 = var1.crouchAmount;
          var10000 = this.body;
          var10000.y += var5 * var4;
          var10000 = this.head;
          var10000.y += var5 * var4;
       } else if (var1.isSleeping) {
          this.body.zRot = -1.5707964F;
-         var10000 = this.body;
-         var10000.y += 5.0F * var4;
+         ModelPart var10 = this.body;
+         var10.y += 5.0F * var4;
          this.tail.xRot = -2.6179938F;
          if (var1.isBaby) {
             this.tail.xRot = -2.1816616F;
-            var10000 = this.body;
-            var10000.z += 2.0F;
+            var10 = this.body;
+            var10.z += 2.0F;
          }
 
-         var10000 = this.head;
-         var10000.x += 2.0F * var4;
-         var10000 = this.head;
-         var10000.y += 2.99F * var4;
+         var10 = this.head;
+         var10.x += 2.0F * var4;
+         var10 = this.head;
+         var10.y += 2.99F * var4;
          this.head.yRot = -2.0943952F;
          this.head.zRot = 0.0F;
          this.rightHindLeg.visible = false;
@@ -103,36 +101,36 @@ public class FoxModel extends EntityModel<FoxRenderState> {
          this.leftFrontLeg.visible = false;
       } else if (var1.isSitting) {
          this.body.xRot = 0.5235988F;
-         var10000 = this.body;
-         var10000.y -= 7.0F * var4;
-         var10000 = this.body;
-         var10000.z += 3.0F * var4;
+         ModelPart var14 = this.body;
+         var14.y -= 7.0F * var4;
+         var14 = this.body;
+         var14.z += 3.0F * var4;
          this.tail.xRot = 0.7853982F;
-         var10000 = this.tail;
-         var10000.z -= 1.0F * var4;
+         var14 = this.tail;
+         var14.z -= 1.0F * var4;
          this.head.xRot = 0.0F;
          this.head.yRot = 0.0F;
          if (var1.isBaby) {
             --this.head.y;
-            var10000 = this.head;
-            var10000.z -= 0.375F;
+            var14 = this.head;
+            var14.z -= 0.375F;
          } else {
-            var10000 = this.head;
-            var10000.y -= 6.5F;
-            var10000 = this.head;
-            var10000.z += 2.75F;
+            var14 = this.head;
+            var14.y -= 6.5F;
+            var14 = this.head;
+            var14.z += 2.75F;
          }
 
          this.rightHindLeg.xRot = -1.3089969F;
-         var10000 = this.rightHindLeg;
-         var10000.y += 4.0F * var4;
-         var10000 = this.rightHindLeg;
-         var10000.z -= 0.25F * var4;
+         var14 = this.rightHindLeg;
+         var14.y += 4.0F * var4;
+         var14 = this.rightHindLeg;
+         var14.z -= 0.25F * var4;
          this.leftHindLeg.xRot = -1.3089969F;
-         var10000 = this.leftHindLeg;
-         var10000.y += 4.0F * var4;
-         var10000 = this.leftHindLeg;
-         var10000.z -= 0.25F * var4;
+         var14 = this.leftHindLeg;
+         var14.y += 4.0F * var4;
+         var14 = this.leftHindLeg;
+         var14.z -= 0.25F * var4;
          this.rightFrontLeg.xRot = -0.2617994F;
          this.leftFrontLeg.xRot = -0.2617994F;
       }
@@ -149,16 +147,16 @@ public class FoxModel extends EntityModel<FoxRenderState> {
       }
 
       if (var1.isCrouching) {
-         var5 = Mth.cos(var1.ageInTicks) * 0.01F;
-         this.body.yRot = var5;
-         this.rightHindLeg.zRot = var5;
-         this.leftHindLeg.zRot = var5;
-         this.rightFrontLeg.zRot = var5 / 2.0F;
-         this.leftFrontLeg.zRot = var5 / 2.0F;
+         float var6 = Mth.cos(var1.ageInTicks) * 0.01F;
+         this.body.yRot = var6;
+         this.rightHindLeg.zRot = var6;
+         this.leftHindLeg.zRot = var6;
+         this.rightFrontLeg.zRot = var6 / 2.0F;
+         this.leftFrontLeg.zRot = var6 / 2.0F;
       }
 
       if (var1.isFaceplanted) {
-         var5 = 0.1F;
+         float var7 = 0.1F;
          this.legMotionPos += 0.67F;
          this.rightHindLeg.xRot = Mth.cos(this.legMotionPos * 0.4662F) * 0.1F;
          this.leftHindLeg.xRot = Mth.cos(this.legMotionPos * 0.4662F + 3.1415927F) * 0.1F;

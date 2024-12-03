@@ -1,7 +1,6 @@
 package net.minecraft.client.model;
 
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.ZombifiedPiglinRenderState;
 
 public class ZombifiedPiglinModel extends AbstractPiglinModel<ZombifiedPiglinRenderState> {
@@ -10,7 +9,7 @@ public class ZombifiedPiglinModel extends AbstractPiglinModel<ZombifiedPiglinRen
    }
 
    public void setupAnim(ZombifiedPiglinRenderState var1) {
-      super.setupAnim((HumanoidRenderState)var1);
+      super.setupAnim(var1);
       AnimationUtils.animateZombieArms(this.leftArm, this.rightArm, var1.isAggressive, var1.attackTime, var1.ageInTicks);
    }
 

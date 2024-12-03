@@ -89,7 +89,7 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
             BlockPos.MutableBlockPos var14 = this.getWorldPos(2, 2, 5);
             if (var5.isInside(var14)) {
                this.spawnedWitch = true;
-               Witch var15 = (Witch)EntityType.WITCH.create(var1.getLevel(), EntitySpawnReason.STRUCTURE);
+               Witch var15 = EntityType.WITCH.create(var1.getLevel(), EntitySpawnReason.STRUCTURE);
                if (var15 != null) {
                   var15.setPersistenceRequired();
                   var15.moveTo((double)((BlockPos)var14).getX() + 0.5, (double)((BlockPos)var14).getY(), (double)((BlockPos)var14).getZ() + 0.5, 0.0F, 0.0F);
@@ -108,7 +108,7 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
          BlockPos.MutableBlockPos var3 = this.getWorldPos(2, 2, 5);
          if (var2.isInside(var3)) {
             this.spawnedCat = true;
-            Cat var4 = (Cat)EntityType.CAT.create(var1.getLevel(), EntitySpawnReason.STRUCTURE);
+            Cat var4 = EntityType.CAT.create(var1.getLevel(), EntitySpawnReason.STRUCTURE);
             if (var4 != null) {
                var4.setPersistenceRequired();
                var4.moveTo((double)((BlockPos)var3).getX() + 0.5, (double)((BlockPos)var3).getY(), (double)((BlockPos)var3).getZ() + 0.5, 0.0F, 0.0F);

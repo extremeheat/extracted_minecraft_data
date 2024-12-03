@@ -10,13 +10,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class GravityProcessor extends StructureProcessor {
-   public static final MapCodec<GravityProcessor> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Heightmap.Types.CODEC.fieldOf("heightmap").orElse(Heightmap.Types.WORLD_SURFACE_WG).forGetter((var0x) -> {
-         return var0x.heightmap;
-      }), Codec.INT.fieldOf("offset").orElse(0).forGetter((var0x) -> {
-         return var0x.offset;
-      })).apply(var0, GravityProcessor::new);
-   });
+   public static final MapCodec<GravityProcessor> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Heightmap.Types.CODEC.fieldOf("heightmap").orElse(Heightmap.Types.WORLD_SURFACE_WG).forGetter((var0x) -> var0x.heightmap), Codec.INT.fieldOf("offset").orElse(0).forGetter((var0x) -> var0x.offset)).apply(var0, GravityProcessor::new));
    private final Heightmap.Types heightmap;
    private final int offset;
 

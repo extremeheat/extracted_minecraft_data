@@ -23,9 +23,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class EntityAnchorArgument implements ArgumentType<Anchor> {
    private static final Collection<String> EXAMPLES = Arrays.asList("eyes", "feet");
-   private static final DynamicCommandExceptionType ERROR_INVALID = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("argument.anchor.invalid", var0);
-   });
+   private static final DynamicCommandExceptionType ERROR_INVALID = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.anchor.invalid", var0));
 
    public EntityAnchorArgument() {
       super();
@@ -52,7 +50,7 @@ public class EntityAnchorArgument implements ArgumentType<Anchor> {
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return SharedSuggestionProvider.suggest((Iterable)EntityAnchorArgument.Anchor.BY_NAME.keySet(), var2);
+      return SharedSuggestionProvider.suggest(EntityAnchorArgument.Anchor.BY_NAME.keySet(), var2);
    }
 
    public Collection<String> getExamples() {
@@ -65,19 +63,11 @@ public class EntityAnchorArgument implements ArgumentType<Anchor> {
    }
 
    public static enum Anchor {
-      FEET("feet", (var0, var1) -> {
-         return var0;
-      }),
-      EYES("eyes", (var0, var1) -> {
-         return new Vec3(var0.x, var0.y + (double)var1.getEyeHeight(), var0.z);
-      });
+      FEET("feet", (var0, var1) -> var0),
+      EYES("eyes", (var0, var1) -> new Vec3(var0.x, var0.y + (double)var1.getEyeHeight(), var0.z));
 
       static final Map<String, Anchor> BY_NAME = (Map)Util.make(Maps.newHashMap(), (var0) -> {
-         Anchor[] var1 = values();
-         int var2 = var1.length;
-
-         for(int var3 = 0; var3 < var2; ++var3) {
-            Anchor var4 = var1[var3];
+         for(Anchor var4 : values()) {
             var0.put(var4.name, var4);
          }
 
@@ -85,7 +75,7 @@ public class EntityAnchorArgument implements ArgumentType<Anchor> {
       private final String name;
       private final BiFunction<Vec3, Entity, Vec3> transform;
 
-      private Anchor(final String var3, final BiFunction var4) {
+      private Anchor(final String var3, final BiFunction<Vec3, Entity, Vec3> var4) {
          this.name = var3;
          this.transform = var4;
       }

@@ -8,7 +8,6 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.BoggedRenderState;
-import net.minecraft.client.renderer.entity.state.SkeletonRenderState;
 
 public class BoggedModel extends SkeletonModel<BoggedRenderState> {
    private final ModelPart mushrooms;
@@ -33,7 +32,7 @@ public class BoggedModel extends SkeletonModel<BoggedRenderState> {
    }
 
    public void setupAnim(BoggedRenderState var1) {
-      super.setupAnim((SkeletonRenderState)var1);
+      super.setupAnim(var1);
       this.mushrooms.visible = !var1.isSheared;
    }
 }

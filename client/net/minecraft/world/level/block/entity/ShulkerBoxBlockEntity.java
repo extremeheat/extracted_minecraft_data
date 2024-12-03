@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
@@ -52,16 +51,24 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
 
    public ShulkerBoxBlockEntity(@Nullable DyeColor var1, BlockPos var2, BlockState var3) {
       super(BlockEntityType.SHULKER_BOX, var2, var3);
-      this.itemStacks = NonNullList.withSize(27, ItemStack.EMPTY);
+      this.itemStacks = NonNullList.<ItemStack>withSize(27, ItemStack.EMPTY);
       this.animationStatus = ShulkerBoxBlockEntity.AnimationStatus.CLOSED;
       this.color = var1;
    }
 
    public ShulkerBoxBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.SHULKER_BOX, var1, var2);
-      this.itemStacks = NonNullList.withSize(27, ItemStack.EMPTY);
+      this.itemStacks = NonNullList.<ItemStack>withSize(27, ItemStack.EMPTY);
       this.animationStatus = ShulkerBoxBlockEntity.AnimationStatus.CLOSED;
-      this.color = ShulkerBoxBlock.getColorFromBlock(var2.getBlock());
+      Block var4 = var2.getBlock();
+      DyeColor var10001;
+      if (var4 instanceof ShulkerBoxBlock var3) {
+         var10001 = var3.getColor();
+      } else {
+         var10001 = null;
+      }
+
+      this.color = var10001;
    }
 
    public static void tick(Level var0, BlockPos var1, BlockState var2, ShulkerBoxBlockEntity var3) {
@@ -111,19 +118,17 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    }
 
    public AABB getBoundingBox(BlockState var1) {
-      return Shulker.getProgressAabb(1.0F, (Direction)var1.getValue(ShulkerBoxBlock.FACING), 0.5F * this.getProgress(1.0F));
+      Vec3 var2 = new Vec3(0.5, 0.0, 0.5);
+      return Shulker.getProgressAabb(1.0F, (Direction)var1.getValue(ShulkerBoxBlock.FACING), 0.5F * this.getProgress(1.0F), var2);
    }
 
    private void moveCollidedEntities(Level var1, BlockPos var2, BlockState var3) {
       if (var3.getBlock() instanceof ShulkerBoxBlock) {
          Direction var4 = (Direction)var3.getValue(ShulkerBoxBlock.FACING);
-         AABB var5 = Shulker.getProgressDeltaAabb(1.0F, var4, this.progressOld, this.progress).move(var2);
+         AABB var5 = Shulker.getProgressDeltaAabb(1.0F, var4, this.progressOld, this.progress, var2.getBottomCenter());
          List var6 = var1.getEntities((Entity)null, var5);
          if (!var6.isEmpty()) {
-            Iterator var7 = var6.iterator();
-
-            while(var7.hasNext()) {
-               Entity var8 = (Entity)var7.next();
+            for(Entity var8 : var6) {
                if (var8.getPistonPushReaction() != PushReaction.IGNORE) {
                   var8.move(MoverType.SHULKER_BOX, new Vec3((var5.getXsize() + 0.01) * (double)var4.getStepX(), (var5.getYsize() + 0.01) * (double)var4.getStepY(), (var5.getZsize() + 0.01) * (double)var4.getStepZ()));
                }
@@ -205,7 +210,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
    }
 
    public void loadFromTag(CompoundTag var1, HolderLookup.Provider var2) {
-      this.itemStacks = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+      this.itemStacks = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
       if (!this.tryLoadLootTable(var1) && var1.contains("Items", 9)) {
          ContainerHelper.loadAllItems(var1, this.itemStacks, var2);
       }

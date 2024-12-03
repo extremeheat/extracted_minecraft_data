@@ -33,13 +33,5 @@ public interface ComponentContents {
       public String getSerializedName() {
          return this.id;
       }
-
-      public MapCodec<T> codec() {
-         return this.codec;
-      }
-
-      public String id() {
-         return this.id;
-      }
    }
 }

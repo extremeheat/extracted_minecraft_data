@@ -13,11 +13,7 @@ import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
 
 public record ChangeItemDamage(LevelBasedValue amount) implements EnchantmentEntityEffect {
-   public static final MapCodec<ChangeItemDamage> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(LevelBasedValue.CODEC.fieldOf("amount").forGetter((var0x) -> {
-         return var0x.amount;
-      })).apply(var0, ChangeItemDamage::new);
-   });
+   public static final MapCodec<ChangeItemDamage> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LevelBasedValue.CODEC.fieldOf("amount").forGetter((var0x) -> var0x.amount)).apply(var0, ChangeItemDamage::new));
 
    public ChangeItemDamage(LevelBasedValue var1) {
       super();
@@ -45,9 +41,5 @@ public record ChangeItemDamage(LevelBasedValue amount) implements EnchantmentEnt
 
    public MapCodec<ChangeItemDamage> codec() {
       return CODEC;
-   }
-
-   public LevelBasedValue amount() {
-      return this.amount;
    }
 }

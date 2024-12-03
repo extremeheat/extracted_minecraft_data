@@ -38,15 +38,11 @@ public class Schedule {
    }
 
    protected List<Timeline> getAllTimelinesExceptFor(Activity var1) {
-      return (List)this.timelines.entrySet().stream().filter((var1x) -> {
-         return var1x.getKey() != var1;
-      }).map(Map.Entry::getValue).collect(Collectors.toList());
+      return (List)this.timelines.entrySet().stream().filter((var1x) -> var1x.getKey() != var1).map(Map.Entry::getValue).collect(Collectors.toList());
    }
 
    public Activity getActivityAt(int var1) {
-      return (Activity)this.timelines.entrySet().stream().max(Comparator.comparingDouble((var1x) -> {
-         return (double)((Timeline)var1x.getValue()).getValueAt(var1);
-      })).map(Map.Entry::getKey).orElse(Activity.IDLE);
+      return (Activity)this.timelines.entrySet().stream().max(Comparator.comparingDouble((var1x) -> (double)((Timeline)var1x.getValue()).getValueAt(var1))).map(Map.Entry::getKey).orElse(Activity.IDLE);
    }
 
    static {

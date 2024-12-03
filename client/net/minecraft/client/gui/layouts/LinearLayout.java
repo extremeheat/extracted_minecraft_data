@@ -33,15 +33,15 @@ public class LinearLayout implements Layout {
    }
 
    public <T extends LayoutElement> T addChild(T var1, LayoutSettings var2) {
-      return this.orientation.addChild(this.wrapped, var1, this.nextChildIndex++, var2);
+      return (T)this.orientation.addChild(this.wrapped, var1, this.nextChildIndex++, var2);
    }
 
    public <T extends LayoutElement> T addChild(T var1) {
-      return this.addChild(var1, this.newCellSettings());
+      return (T)this.addChild(var1, this.newCellSettings());
    }
 
    public <T extends LayoutElement> T addChild(T var1, Consumer<LayoutSettings> var2) {
-      return this.orientation.addChild(this.wrapped, var1, this.nextChildIndex++, (LayoutSettings)Util.make(this.newCellSettings(), var2));
+      return (T)this.orientation.addChild(this.wrapped, var1, this.nextChildIndex++, (LayoutSettings)Util.make(this.newCellSettings(), var2));
    }
 
    public void visitChildren(Consumer<LayoutElement> var1) {
@@ -102,12 +102,12 @@ public class LinearLayout implements Layout {
       public <T extends LayoutElement> T addChild(GridLayout var1, T var2, int var3, LayoutSettings var4) {
          LayoutElement var10000;
          switch (this.ordinal()) {
-            case 0 -> var10000 = (LayoutElement)var1.addChild(var2, 0, var3, (LayoutSettings)var4);
-            case 1 -> var10000 = (LayoutElement)var1.addChild(var2, var3, 0, (LayoutSettings)var4);
+            case 0 -> var10000 = var1.addChild(var2, 0, var3, var4);
+            case 1 -> var10000 = var1.addChild(var2, var3, 0, var4);
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 
-         return var10000;
+         return (T)var10000;
       }
 
       // $FF: synthetic method

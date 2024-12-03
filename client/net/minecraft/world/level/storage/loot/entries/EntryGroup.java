@@ -2,7 +2,6 @@ package net.minecraft.world.level.storage.loot.entries;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
@@ -37,10 +36,7 @@ public class EntryGroup extends CompositeEntryBase {
             break;
          default:
             var10000 = (var1x, var2x) -> {
-               Iterator var3 = var1.iterator();
-
-               while(var3.hasNext()) {
-                  ComposableEntryContainer var4 = (ComposableEntryContainer)var3.next();
+               for(ComposableEntryContainer var4 : var1) {
                   var4.expand(var1x, var2x);
                }
 
@@ -60,11 +56,8 @@ public class EntryGroup extends CompositeEntryBase {
 
       public Builder(LootPoolEntryContainer.Builder<?>... var1) {
          super();
-         LootPoolEntryContainer.Builder[] var2 = var1;
-         int var3 = var1.length;
 
-         for(int var4 = 0; var4 < var3; ++var4) {
-            LootPoolEntryContainer.Builder var5 = var2[var4];
+         for(LootPoolEntryContainer.Builder var5 : var1) {
             this.entries.add(var5.build());
          }
 

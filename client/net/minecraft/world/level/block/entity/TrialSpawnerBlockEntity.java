@@ -3,6 +3,7 @@ package net.minecraft.world.level.block.entity;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import java.util.Objects;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -37,9 +38,7 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, Tri
       DataResult var10000 = this.trialSpawner.codec().parse(var2.createSerializationContext(NbtOps.INSTANCE), var1);
       Logger var10001 = LOGGER;
       Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         this.trialSpawner = var1x;
-      });
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> this.trialSpawner = var1x);
       if (this.level != null) {
          this.markUpdated();
       }
@@ -48,11 +47,7 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, Tri
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
-      this.trialSpawner.codec().encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), this.trialSpawner).ifSuccess((var1x) -> {
-         var1.merge((CompoundTag)var1x);
-      }).ifError((var0) -> {
-         LOGGER.warn("Failed to encode TrialSpawner {}", var0.message());
-      });
+      this.trialSpawner.codec().encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), this.trialSpawner).ifSuccess((var1x) -> var1.merge((CompoundTag)var1x)).ifError((var0) -> LOGGER.warn("Failed to encode TrialSpawner {}", var0.message()));
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
@@ -63,13 +58,13 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, Tri
       return this.trialSpawner.getData().getUpdateTag((TrialSpawnerState)this.getBlockState().getValue(TrialSpawnerBlock.STATE));
    }
 
-   public boolean onlyOpCanSetNbt() {
-      return true;
-   }
-
    public void setEntityId(EntityType<?> var1, RandomSource var2) {
-      this.trialSpawner.getData().setEntityId(this.trialSpawner, var2, var1);
-      this.setChanged();
+      if (this.level == null) {
+         Util.logAndPauseIfInIde("Expected non-null level");
+      } else {
+         this.trialSpawner.overrideEntityToSpawn(var1, this.level);
+         this.setChanged();
+      }
    }
 
    public TrialSpawner getTrialSpawner() {

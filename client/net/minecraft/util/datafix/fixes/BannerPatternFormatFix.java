@@ -21,16 +21,12 @@ public class BannerPatternFormatFix extends NamedEntityFix {
    }
 
    private static Dynamic<?> fixTag(Dynamic<?> var0) {
-      return var0.renameAndFixField("Patterns", "patterns", (var0x) -> {
-         return var0x.createList(var0x.asStream().map(BannerPatternFormatFix::fixLayer));
-      });
+      return var0.renameAndFixField("Patterns", "patterns", (var0x) -> var0x.createList(var0x.asStream().map(BannerPatternFormatFix::fixLayer)));
    }
 
    private static Dynamic<?> fixLayer(Dynamic<?> var0) {
       var0 = var0.renameAndFixField("Pattern", "pattern", (var0x) -> {
-         DataResult var10000 = var0x.asString().map((var0) -> {
-            return (String)PATTERN_ID_MAP.getOrDefault(var0, var0);
-         });
+         DataResult var10000 = var0x.asString().map((var0) -> (String)PATTERN_ID_MAP.getOrDefault(var0, var0));
          Objects.requireNonNull(var0x);
          return (Dynamic)DataFixUtils.orElse(var10000.map(var0x::createString).result(), var0x);
       });

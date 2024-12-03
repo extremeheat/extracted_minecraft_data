@@ -8,7 +8,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -17,6 +16,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 
 public class CompoundTag implements Tag {
@@ -36,10 +36,7 @@ public class CompoundTag implements Tag {
    }
 
    public void write(DataOutput var1) throws IOException {
-      Iterator var2 = this.tags.keySet().iterator();
-
-      while(var2.hasNext()) {
-         String var3 = (String)var2.next();
+      for(String var3 : this.tags.keySet()) {
          Tag var4 = (Tag)this.tags.get(var3);
          writeNamedTag(var3, var4, var1);
       }
@@ -50,11 +47,10 @@ public class CompoundTag implements Tag {
    public int sizeInBytes() {
       int var1 = 48;
 
-      Map.Entry var3;
-      for(Iterator var2 = this.tags.entrySet().iterator(); var2.hasNext(); var1 += ((Tag)var3.getValue()).sizeInBytes()) {
-         var3 = (Map.Entry)var2.next();
+      for(Map.Entry var3 : this.tags.entrySet()) {
          var1 += 28 + 2 * ((String)var3.getKey()).length();
          var1 += 36;
+         var1 += ((Tag)var3.getValue()).sizeInBytes();
       }
 
       return var1;
@@ -301,28 +297,20 @@ public class CompoundTag implements Tag {
    }
 
    public ListTag getList(String var1, int var2) {
-      label28: {
-         try {
-            if (this.getTagType(var1) == 9) {
-               ListTag var3 = (ListTag)this.tags.get(var1);
-               if (!var3.isEmpty() && var3.getElementType() != var2) {
-                  break label28;
-               }
-
-               return var3;
-            }
-         } catch (ClassCastException var5) {
-            throw new ReportedException(this.createReport(var1, ListTag.TYPE, var5));
-         }
-
-         return new ListTag();
-      }
-
       try {
-         return new ListTag();
+         if (this.getTagType(var1) == 9) {
+            ListTag var3 = (ListTag)this.tags.get(var1);
+            if (!var3.isEmpty() && var3.getElementType() != var2) {
+               return new ListTag();
+            }
+
+            return var3;
+         }
       } catch (ClassCastException var4) {
          throw new ReportedException(this.createReport(var1, ListTag.TYPE, var4));
       }
+
+      return new ListTag();
    }
 
    public boolean getBoolean(String var1) {
@@ -344,12 +332,10 @@ public class CompoundTag implements Tag {
    private CrashReport createReport(String var1, TagType<?> var2, ClassCastException var3) {
       CrashReport var4 = CrashReport.forThrowable(var3, "Reading NBT data");
       CrashReportCategory var5 = var4.addCategory("Corrupt NBT tag", 1);
-      var5.setDetail("Tag type found", () -> {
-         return ((Tag)this.tags.get(var1)).getType().getName();
-      });
+      var5.setDetail("Tag type found", (CrashReportDetail)(() -> ((Tag)this.tags.get(var1)).getType().getName()));
       Objects.requireNonNull(var2);
       var5.setDetail("Tag type expected", var2::getName);
-      var5.setDetail("Tag name", (Object)var1);
+      var5.setDetail("Tag name", var1);
       return var4;
    }
 
@@ -388,17 +374,14 @@ public class CompoundTag implements Tag {
       } catch (IOException var7) {
          CrashReport var5 = CrashReport.forThrowable(var7, "Loading NBT data");
          CrashReportCategory var6 = var5.addCategory("NBT Tag");
-         var6.setDetail("Tag name", (Object)var1);
-         var6.setDetail("Tag type", (Object)var0.getName());
+         var6.setDetail("Tag name", var1);
+         var6.setDetail("Tag type", var0.getName());
          throw new ReportedNbtException(var5);
       }
    }
 
    public CompoundTag merge(CompoundTag var1) {
-      Iterator var2 = var1.tags.keySet().iterator();
-
-      while(var2.hasNext()) {
-         String var3 = (String)var2.next();
+      for(String var3 : var1.tags.keySet()) {
          Tag var4 = (Tag)var1.tags.get(var3);
          if (var4.getId() == 10) {
             if (this.contains(var3, 10)) {
@@ -424,10 +407,7 @@ public class CompoundTag implements Tag {
    }
 
    public StreamTagVisitor.ValueResult accept(StreamTagVisitor var1) {
-      Iterator var2 = this.tags.entrySet().iterator();
-
-      while(var2.hasNext()) {
-         Map.Entry var3 = (Map.Entry)var2.next();
+      for(Map.Entry var3 : this.tags.entrySet()) {
          Tag var4 = (Tag)var3.getValue();
          TagType var5 = var4.getType();
          StreamTagVisitor.EntryResult var6 = var1.visitEntry(var5);
@@ -475,13 +455,9 @@ public class CompoundTag implements Tag {
          if (var1 instanceof CompoundTag var2) {
             return DataResult.success(var2 == var0.getValue() ? var2.copy() : var2);
          } else {
-            return DataResult.error(() -> {
-               return "Not a compound tag: " + String.valueOf(var1);
-            });
+            return DataResult.error(() -> "Not a compound tag: " + String.valueOf(var1));
          }
-      }, (var0) -> {
-         return new Dynamic(NbtOps.INSTANCE, var0.copy());
-      });
+      }, (var0) -> new Dynamic(NbtOps.INSTANCE, var0.copy()));
       TYPE = new TagType.VariableSize<CompoundTag>() {
          public CompoundTag load(DataInput var1, NbtAccounter var2) throws IOException {
             var2.pushDepth();

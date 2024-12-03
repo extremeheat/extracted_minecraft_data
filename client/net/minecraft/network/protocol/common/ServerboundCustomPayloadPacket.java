@@ -28,14 +28,8 @@ public record ServerboundCustomPayloadPacket(CustomPacketPayload payload) implem
       var1.handleCustomPayload(this);
    }
 
-   public CustomPacketPayload payload() {
-      return this.payload;
-   }
-
    static {
-      STREAM_CODEC = CustomPacketPayload.codec((var0) -> {
-         return DiscardedPayload.codec(var0, 32767);
-      }, (List)Util.make(Lists.newArrayList(new CustomPacketPayload.TypeAndCodec[]{new CustomPacketPayload.TypeAndCodec(BrandPayload.TYPE, BrandPayload.STREAM_CODEC)}), (var0) -> {
+      STREAM_CODEC = CustomPacketPayload.codec((CustomPacketPayload.FallbackProvider)((var0) -> DiscardedPayload.codec(var0, 32767)), (List)Util.make(Lists.newArrayList(new CustomPacketPayload.TypeAndCodec[]{new CustomPacketPayload.TypeAndCodec(BrandPayload.TYPE, BrandPayload.STREAM_CODEC)}), (var0) -> {
       })).map(ServerboundCustomPayloadPacket::new, ServerboundCustomPayloadPacket::payload);
    }
 }

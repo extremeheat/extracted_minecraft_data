@@ -18,11 +18,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.CommandStorage;
 
 public class StorageDataAccessor implements DataAccessor {
-   static final SuggestionProvider<CommandSourceStack> SUGGEST_STORAGE = (var0, var1) -> {
-      return SharedSuggestionProvider.suggestResource(getGlobalTags(var0).keys(), var1);
-   };
-   public static final Function<String, DataCommands.DataProvider> PROVIDER = (var0) -> {
-      return new DataCommands.DataProvider() {
+   static final SuggestionProvider<CommandSourceStack> SUGGEST_STORAGE = (var0, var1) -> SharedSuggestionProvider.suggestResource(getGlobalTags(var0).keys(), var1);
+   public static final Function<String, DataCommands.DataProvider> PROVIDER = (var0) -> new DataCommands.DataProvider() {
          public DataAccessor access(CommandContext<CommandSourceStack> var1) {
             return new StorageDataAccessor(StorageDataAccessor.getGlobalTags(var1), ResourceLocationArgument.getId(var1, var0));
          }
@@ -31,7 +28,6 @@ public class StorageDataAccessor implements DataAccessor {
             return var1.then(Commands.literal("storage").then((ArgumentBuilder)var2.apply(Commands.argument(var0, ResourceLocationArgument.id()).suggests(StorageDataAccessor.SUGGEST_STORAGE))));
          }
       };
-   };
    private final CommandStorage storage;
    private final ResourceLocation id;
 

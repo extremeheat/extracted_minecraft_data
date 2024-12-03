@@ -50,12 +50,8 @@ public final class MobEffectUtil {
 
    public static List<ServerPlayer> addEffectToPlayersAround(ServerLevel var0, @Nullable Entity var1, Vec3 var2, double var3, MobEffectInstance var5, int var6) {
       Holder var7 = var5.getEffect();
-      List var8 = var0.getPlayers((var7x) -> {
-         return var7x.gameMode.isSurvival() && (var1 == null || !var1.isAlliedTo((Entity)var7x)) && var2.closerThan(var7x.position(), var3) && (!var7x.hasEffect(var7) || var7x.getEffect(var7).getAmplifier() < var5.getAmplifier() || var7x.getEffect(var7).endsWithin(var6 - 1));
-      });
-      var8.forEach((var2x) -> {
-         var2x.addEffect(new MobEffectInstance(var5), var1);
-      });
+      List var8 = var0.getPlayers((var7x) -> var7x.gameMode.isSurvival() && (var1 == null || !var1.isAlliedTo((Entity)var7x)) && var2.closerThan(var7x.position(), var3) && (!var7x.hasEffect(var7) || var7x.getEffect(var7).getAmplifier() < var5.getAmplifier() || var7x.getEffect(var7).endsWithin(var6 - 1)));
+      var8.forEach((var2x) -> var2x.addEffect(new MobEffectInstance(var5), var1));
       return var8;
    }
 }

@@ -1,6 +1,5 @@
 package net.minecraft.util.parsing.packrat;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -19,16 +18,16 @@ public interface Term<S> {
 
    @SafeVarargs
    static <S> Term<S> sequence(Term<S>... var0) {
-      return new Sequence(List.of(var0));
+      return new Sequence<S>(List.of(var0));
    }
 
    @SafeVarargs
    static <S> Term<S> alternative(Term<S>... var0) {
-      return new Alternative(List.of(var0));
+      return new Alternative<S>(List.of(var0));
    }
 
    static <S> Term<S> optional(Term<S> var0) {
-      return new Maybe(var0);
+      return new Maybe<S>(var0);
    }
 
    static <S> Term<S> cut() {
@@ -71,10 +70,6 @@ public interface Term<S> {
             return true;
          }
       }
-
-      public Atom<T> name() {
-         return this.name;
-      }
    }
 
    public static record Marker<S, T>(Atom<T> name, T value) implements Term<S> {
@@ -88,14 +83,6 @@ public interface Term<S> {
          var2.put(this.name, this.value);
          return true;
       }
-
-      public Atom<T> name() {
-         return this.name;
-      }
-
-      public T value() {
-         return this.value;
-      }
    }
 
    public static record Sequence<S>(List<Term<S>> elements) implements Term<S> {
@@ -106,23 +93,15 @@ public interface Term<S> {
 
       public boolean parse(ParseState<S> var1, Scope var2, Control var3) {
          int var4 = var1.mark();
-         Iterator var5 = this.elements.iterator();
 
-         Term var6;
-         do {
-            if (!var5.hasNext()) {
-               return true;
+         for(Term var6 : this.elements) {
+            if (!var6.parse(var1, var2, var3)) {
+               var1.restore(var4);
+               return false;
             }
+         }
 
-            var6 = (Term)var5.next();
-         } while(var6.parse(var1, var2, var3));
-
-         var1.restore(var4);
-         return false;
-      }
-
-      public List<Term<S>> elements() {
-         return this.elements;
+         return true;
       }
    }
 
@@ -137,10 +116,8 @@ public interface Term<S> {
          Objects.requireNonNull(var4);
          Control var5 = var4::setTrue;
          int var6 = var1.mark();
-         Iterator var7 = this.elements.iterator();
 
-         while(var7.hasNext()) {
-            Term var8 = (Term)var7.next();
+         for(Term var8 : this.elements) {
             if (var4.isTrue()) {
                break;
             }
@@ -155,10 +132,6 @@ public interface Term<S> {
          }
 
          return false;
-      }
-
-      public List<Term<S>> elements() {
-         return this.elements;
       }
    }
 
@@ -175,10 +148,6 @@ public interface Term<S> {
          }
 
          return true;
-      }
-
-      public Term<S> term() {
-         return this.term;
       }
    }
 }

@@ -57,11 +57,7 @@ public class BreezeAi {
    }
 
    private static void initIdleActivity(Brain<Breeze> var0) {
-      var0.addActivity(Activity.IDLE, ImmutableList.of(Pair.of(0, StartAttacking.create((var0x, var1) -> {
-         return var1.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE);
-      })), Pair.of(1, StartAttacking.create((var0x, var1) -> {
-         return var1.getHurtBy();
-      })), Pair.of(2, new SlideToTargetSink(20, 40)), Pair.of(3, new RunOne(ImmutableList.of(Pair.of(new DoNothing(20, 100), 1), Pair.of(RandomStroll.stroll(0.6F), 2))))));
+      var0.addActivity(Activity.IDLE, ImmutableList.of(Pair.of(0, StartAttacking.create((var0x, var1) -> var1.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE))), Pair.of(1, StartAttacking.create((var0x, var1) -> var1.getHurtBy())), Pair.of(2, new SlideToTargetSink(20, 40)), Pair.of(3, new RunOne(ImmutableList.of(Pair.of(new DoNothing(20, 100), 1), Pair.of(RandomStroll.stroll(0.6F), 2))))));
    }
 
    private static void initFightActivity(Breeze var0, Brain<Breeze> var1) {

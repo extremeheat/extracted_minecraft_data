@@ -5,7 +5,6 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.nio.IntBuffer;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -50,15 +49,8 @@ public class MainTarget extends RenderTarget {
       this.colorTextureId = TextureUtil.generateTextureId();
       this.depthBufferId = TextureUtil.generateTextureId();
       AttachmentState var3 = MainTarget.AttachmentState.NONE;
-      Iterator var4 = MainTarget.Dimension.listWithFallback(var1, var2).iterator();
 
-      Dimension var5;
-      do {
-         if (!var4.hasNext()) {
-            throw new RuntimeException("Unrecoverable GL_OUT_OF_MEMORY (allocated attachments = " + var3.name() + ")");
-         }
-
-         var5 = (Dimension)var4.next();
+      for(Dimension var5 : MainTarget.Dimension.listWithFallback(var1, var2)) {
          var3 = MainTarget.AttachmentState.NONE;
          if (this.allocateColorAttachment(var5)) {
             var3 = var3.with(MainTarget.AttachmentState.COLOR);
@@ -67,9 +59,13 @@ public class MainTarget extends RenderTarget {
          if (this.allocateDepthAttachment(var5)) {
             var3 = var3.with(MainTarget.AttachmentState.DEPTH);
          }
-      } while(var3 != MainTarget.AttachmentState.COLOR_DEPTH);
 
-      return var5;
+         if (var3 == MainTarget.AttachmentState.COLOR_DEPTH) {
+            return var5;
+         }
+      }
+
+      throw new RuntimeException("Unrecoverable GL_OUT_OF_MEMORY (allocated attachments = " + var3.name() + ")");
    }
 
    private boolean allocateColorAttachment(Dimension var1) {
@@ -88,7 +84,28 @@ public class MainTarget extends RenderTarget {
       return GlStateManager._getError() != 1285;
    }
 
-   private static class Dimension {
+   static enum AttachmentState {
+      NONE,
+      COLOR,
+      DEPTH,
+      COLOR_DEPTH;
+
+      private static final AttachmentState[] VALUES = values();
+
+      private AttachmentState() {
+      }
+
+      AttachmentState with(AttachmentState var1) {
+         return VALUES[this.ordinal() | var1.ordinal()];
+      }
+
+      // $FF: synthetic method
+      private static AttachmentState[] $values() {
+         return new AttachmentState[]{NONE, COLOR, DEPTH, COLOR_DEPTH};
+      }
+   }
+
+   static class Dimension {
       public final int width;
       public final int height;
 
@@ -121,27 +138,6 @@ public class MainTarget extends RenderTarget {
 
       public String toString() {
          return this.width + "x" + this.height;
-      }
-   }
-
-   private static enum AttachmentState {
-      NONE,
-      COLOR,
-      DEPTH,
-      COLOR_DEPTH;
-
-      private static final AttachmentState[] VALUES = values();
-
-      private AttachmentState() {
-      }
-
-      AttachmentState with(AttachmentState var1) {
-         return VALUES[this.ordinal() | var1.ordinal()];
-      }
-
-      // $FF: synthetic method
-      private static AttachmentState[] $values() {
-         return new AttachmentState[]{NONE, COLOR, DEPTH, COLOR_DEPTH};
       }
    }
 }

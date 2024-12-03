@@ -6,7 +6,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -73,33 +72,39 @@ public class ListTag extends CollectionTag<Tag> {
                var2.accountBytes(4L, (long)var4);
                int var5 = 0;
 
-               label34:
-               for(; var5 < var4; ++var5) {
-                  switch (var1.visitElement(var3, var5)) {
-                     case HALT:
-                        return StreamTagVisitor.ValueResult.HALT;
-                     case BREAK:
-                        var3.skip(var0, var2);
-                        break label34;
-                     case SKIP:
-                        var3.skip(var0, var2);
-                        break;
-                     default:
-                        switch (var3.parse(var0, var1, var2)) {
-                           case HALT -> {
+               while(true) {
+                  label45: {
+                     if (var5 < var4) {
+                        switch (var1.visitElement(var3, var5)) {
+                           case HALT:
                               return StreamTagVisitor.ValueResult.HALT;
-                           }
-                           case BREAK -> { }
+                           case BREAK:
+                              var3.skip(var0, var2);
+                              break;
+                           case SKIP:
+                              var3.skip(var0, var2);
+                              break label45;
+                           default:
+                              switch (var3.parse(var0, var1, var2)) {
+                                 case HALT -> {
+                                    return StreamTagVisitor.ValueResult.HALT;
+                                 }
+                                 case BREAK -> { }
+                                 default -> { }
+                              }
                         }
+                     }
+
+                     int var6 = var4 - 1 - var5;
+                     if (var6 > 0) {
+                        var3.skip(var0, var6, var2);
+                     }
+
+                     return var1.visitContainerEnd();
                   }
-               }
 
-               int var6 = var4 - 1 - var5;
-               if (var6 > 0) {
-                  var3.skip(var0, var6, var2);
+                  ++var5;
                }
-
-               return var1.visitContainerEnd();
          }
       }
 
@@ -151,10 +156,8 @@ public class ListTag extends CollectionTag<Tag> {
 
       var1.writeByte(this.type);
       var1.writeInt(this.list.size());
-      Iterator var2 = this.list.iterator();
 
-      while(var2.hasNext()) {
-         Tag var3 = (Tag)var2.next();
+      for(Tag var3 : this.list) {
          var3.write(var1);
       }
 
@@ -164,9 +167,8 @@ public class ListTag extends CollectionTag<Tag> {
       int var1 = 37;
       var1 += 4 * this.list.size();
 
-      Tag var3;
-      for(Iterator var2 = this.list.iterator(); var2.hasNext(); var1 += var3.sizeInBytes()) {
-         var3 = (Tag)var2.next();
+      for(Tag var3 : this.list) {
+         var1 += var3.sizeInBytes();
       }
 
       return var1;

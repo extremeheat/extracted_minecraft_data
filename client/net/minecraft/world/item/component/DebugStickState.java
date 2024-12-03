@@ -22,19 +22,13 @@ public record DebugStickState(Map<Holder<Block>, Property<?>> properties) {
       return new DebugStickState(Util.copyAndPut(this.properties, var1, var2));
    }
 
-   public Map<Holder<Block>, Property<?>> properties() {
-      return this.properties;
-   }
-
    static {
-      CODEC = Codec.dispatchedMap(BuiltInRegistries.BLOCK.holderByNameCodec(), (var0) -> {
-         return Codec.STRING.comapFlatMap((var1) -> {
+      CODEC = Codec.dispatchedMap(BuiltInRegistries.BLOCK.holderByNameCodec(), (var0) -> Codec.STRING.comapFlatMap((var1) -> {
             Property var2 = ((Block)var0.value()).getStateDefinition().getProperty(var1);
             return var2 != null ? DataResult.success(var2) : DataResult.error(() -> {
                String var10000 = var0.getRegisteredName();
                return "No property on " + var10000 + " with name: " + var1;
             });
-         }, Property::getName);
-      }).xmap(DebugStickState::new, DebugStickState::properties);
+         }, Property::getName)).xmap(DebugStickState::new, DebugStickState::properties);
    }
 }

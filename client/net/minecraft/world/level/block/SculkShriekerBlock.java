@@ -58,9 +58,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
       if (var1 instanceof ServerLevel var5) {
          ServerPlayer var6 = SculkShriekerBlockEntity.tryGetPlayer(var4);
          if (var6 != null) {
-            var5.getBlockEntity(var2, BlockEntityType.SCULK_SHRIEKER).ifPresent((var2x) -> {
-               var2x.tryShriek(var5, var6);
-            });
+            var5.getBlockEntity(var2, BlockEntityType.SCULK_SHRIEKER).ifPresent((var2x) -> var2x.tryShriek(var5, var6));
          }
       }
 
@@ -70,9 +68,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
    protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (var2 instanceof ServerLevel var6) {
          if ((Boolean)var1.getValue(SHRIEKING) && !var1.is(var4.getBlock())) {
-            var6.getBlockEntity(var3, BlockEntityType.SCULK_SHRIEKER).ifPresent((var1x) -> {
-               var1x.tryRespond(var6);
-            });
+            var6.getBlockEntity(var3, BlockEntityType.SCULK_SHRIEKER).ifPresent((var1x) -> var1x.tryRespond(var6));
          }
       }
 
@@ -82,15 +78,9 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if ((Boolean)var1.getValue(SHRIEKING)) {
          var2.setBlock(var3, (BlockState)var1.setValue(SHRIEKING, false), 3);
-         var2.getBlockEntity(var3, BlockEntityType.SCULK_SHRIEKER).ifPresent((var1x) -> {
-            var1x.tryRespond(var2);
-         });
+         var2.getBlockEntity(var3, BlockEntityType.SCULK_SHRIEKER).ifPresent((var1x) -> var1x.tryRespond(var2));
       }
 
-   }
-
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -137,9 +127,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
 
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
-      return !var1.isClientSide ? BaseEntityBlock.createTickerHelper(var3, BlockEntityType.SCULK_SHRIEKER, (var0, var1x, var2x, var3x) -> {
-         VibrationSystem.Ticker.tick(var0, var3x.getVibrationData(), var3x.getVibrationUser());
-      }) : null;
+      return !var1.isClientSide ? BaseEntityBlock.createTickerHelper(var3, BlockEntityType.SCULK_SHRIEKER, (var0, var1x, var2x, var3x) -> VibrationSystem.Ticker.tick(var0, var3x.getVibrationData(), var3x.getVibrationUser())) : null;
    }
 
    static {

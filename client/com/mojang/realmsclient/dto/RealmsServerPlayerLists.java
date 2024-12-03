@@ -11,7 +11,6 @@ import com.mojang.authlib.yggdrasil.ProfileResult;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,14 +33,10 @@ public class RealmsServerPlayerLists extends ValueObject {
       try {
          JsonObject var3 = GsonHelper.parse(var0);
          if (GsonHelper.isArrayNode(var3, "lists")) {
-            JsonArray var4 = var3.getAsJsonArray("lists");
-
-            Object var7;
-            JsonObject var8;
-            for(Iterator var5 = var4.iterator(); var5.hasNext(); var2.put(JsonUtils.getLongOr("serverId", var8, -1L), var7)) {
-               JsonElement var6 = (JsonElement)var5.next();
-               var8 = var6.getAsJsonObject();
+            for(JsonElement var6 : var3.getAsJsonArray("lists")) {
+               JsonObject var8 = var6.getAsJsonObject();
                String var9 = JsonUtils.getStringOr("playerList", var8, (String)null);
+               Object var7;
                if (var9 != null) {
                   JsonElement var10 = JsonParser.parseString(var9);
                   if (var10.isJsonArray()) {
@@ -52,6 +47,8 @@ public class RealmsServerPlayerLists extends ValueObject {
                } else {
                   var7 = Lists.newArrayList();
                }
+
+               var2.put(JsonUtils.getLongOr("serverId", var8, -1L), var7);
             }
          }
       } catch (Exception var11) {
@@ -65,10 +62,8 @@ public class RealmsServerPlayerLists extends ValueObject {
    private static List<ProfileResult> parsePlayers(JsonArray var0) {
       ArrayList var1 = new ArrayList(var0.size());
       MinecraftSessionService var2 = Minecraft.getInstance().getMinecraftSessionService();
-      Iterator var3 = var0.iterator();
 
-      while(var3.hasNext()) {
-         JsonElement var4 = (JsonElement)var3.next();
+      for(JsonElement var4 : var0) {
          if (var4.isJsonObject()) {
             UUID var5 = JsonUtils.getUuidOr("playerId", var4.getAsJsonObject(), (UUID)null);
             if (var5 != null && !Minecraft.getInstance().isLocalPlayer(var5)) {

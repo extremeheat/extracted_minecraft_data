@@ -89,26 +89,6 @@ public class MeshData implements AutoCloseable {
          this.mode = var4;
          this.indexType = var5;
       }
-
-      public VertexFormat format() {
-         return this.format;
-      }
-
-      public int vertexCount() {
-         return this.vertexCount;
-      }
-
-      public int indexCount() {
-         return this.indexCount;
-      }
-
-      public VertexFormat.Mode mode() {
-         return this.mode;
-      }
-
-      public VertexFormat.IndexType indexType() {
-         return this.indexType;
-      }
    }
 
    public static record SortState(Vector3f[] centroids, VertexFormat.IndexType indexType) {
@@ -123,11 +103,8 @@ public class MeshData implements AutoCloseable {
          int[] var3 = var2.sort(this.centroids);
          long var4 = var1.reserve(var3.length * 6 * this.indexType.bytes);
          IntConsumer var6 = this.indexWriter(var4, this.indexType);
-         int[] var7 = var3;
-         int var8 = var3.length;
 
-         for(int var9 = 0; var9 < var8; ++var9) {
-            int var10 = var7[var9];
+         for(int var10 : var3) {
             var6.accept(var10 * 4 + 0);
             var6.accept(var10 * 4 + 1);
             var6.accept(var10 * 4 + 2);
@@ -143,24 +120,12 @@ public class MeshData implements AutoCloseable {
          MutableLong var4 = new MutableLong(var1);
          IntConsumer var10000;
          switch (var3) {
-            case SHORT -> var10000 = (var1x) -> {
-   MemoryUtil.memPutShort(var4.getAndAdd(2L), (short)var1x);
-};
-            case INT -> var10000 = (var1x) -> {
-   MemoryUtil.memPutInt(var4.getAndAdd(4L), var1x);
-};
+            case SHORT -> var10000 = (var1x) -> MemoryUtil.memPutShort(var4.getAndAdd(2L), (short)var1x);
+            case INT -> var10000 = (var1x) -> MemoryUtil.memPutInt(var4.getAndAdd(4L), var1x);
             default -> throw new MatchException((String)null, (Throwable)null);
          }
 
          return var10000;
-      }
-
-      public Vector3f[] centroids() {
-         return this.centroids;
-      }
-
-      public VertexFormat.IndexType indexType() {
-         return this.indexType;
       }
    }
 }

@@ -3,7 +3,6 @@ package net.minecraft.world.level.storage.loot.entries;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.MapCodec;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -29,18 +28,13 @@ public class AlternativesEntry extends CompositeEntryBase {
          case 1 -> var10000 = (ComposableEntryContainer)var1.get(0);
          case 2 -> var10000 = ((ComposableEntryContainer)var1.get(0)).or((ComposableEntryContainer)var1.get(1));
          default -> var10000 = (var1x, var2) -> {
-   Iterator var3 = var1.iterator();
-
-   ComposableEntryContainer var4;
-   do {
-      if (!var3.hasNext()) {
-         return false;
+   for(ComposableEntryContainer var4 : var1) {
+      if (var4.expand(var1x, var2)) {
+         return true;
       }
+   }
 
-      var4 = (ComposableEntryContainer)var3.next();
-   } while(!var4.expand(var1x, var2));
-
-   return true;
+   return false;
 };
       }
 
@@ -65,9 +59,7 @@ public class AlternativesEntry extends CompositeEntryBase {
    public static <E> Builder alternatives(Collection<E> var0, Function<E, LootPoolEntryContainer.Builder<?>> var1) {
       Stream var10002 = var0.stream();
       Objects.requireNonNull(var1);
-      return new Builder((LootPoolEntryContainer.Builder[])var10002.map(var1::apply).toArray((var0x) -> {
-         return new LootPoolEntryContainer.Builder[var0x];
-      }));
+      return new Builder((LootPoolEntryContainer.Builder[])var10002.map(var1::apply).toArray((var0x) -> new LootPoolEntryContainer.Builder[var0x]));
    }
 
    public static class Builder extends LootPoolEntryContainer.Builder<Builder> {
@@ -75,11 +67,8 @@ public class AlternativesEntry extends CompositeEntryBase {
 
       public Builder(LootPoolEntryContainer.Builder<?>... var1) {
          super();
-         LootPoolEntryContainer.Builder[] var2 = var1;
-         int var3 = var1.length;
 
-         for(int var4 = 0; var4 < var3; ++var4) {
-            LootPoolEntryContainer.Builder var5 = var2[var4];
+         for(LootPoolEntryContainer.Builder var5 : var1) {
             this.entries.add(var5.build());
          }
 

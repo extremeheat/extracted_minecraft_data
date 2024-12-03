@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.Lists;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -130,10 +129,8 @@ public class RailState {
 
    protected int countPotentialConnections() {
       int var1 = 0;
-      Iterator var2 = Direction.Plane.HORIZONTAL.iterator();
 
-      while(var2.hasNext()) {
-         Direction var3 = (Direction)var2.next();
+      for(Direction var3 : Direction.Plane.HORIZONTAL) {
          if (this.hasRail(this.pos.relative(var3))) {
             ++var1;
          }

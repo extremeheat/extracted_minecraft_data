@@ -21,9 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public record SummonEntityEffect(HolderSet<EntityType<?>> entityTypes, boolean joinTeam) implements EnchantmentEntityEffect {
-   public static final MapCodec<SummonEntityEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE).fieldOf("entity").forGetter(SummonEntityEffect::entityTypes), Codec.BOOL.optionalFieldOf("join_team", false).forGetter(SummonEntityEffect::joinTeam)).apply(var0, SummonEntityEffect::new);
-   });
+   public static final MapCodec<SummonEntityEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE).fieldOf("entity").forGetter(SummonEntityEffect::entityTypes), Codec.BOOL.optionalFieldOf("join_team", false).forGetter(SummonEntityEffect::joinTeam)).apply(var0, SummonEntityEffect::new));
 
    public SummonEntityEffect(HolderSet<EntityType<?>> var1, boolean var2) {
       super();
@@ -59,13 +57,5 @@ public record SummonEntityEffect(HolderSet<EntityType<?>> entityTypes, boolean j
 
    public MapCodec<SummonEntityEffect> codec() {
       return CODEC;
-   }
-
-   public HolderSet<EntityType<?>> entityTypes() {
-      return this.entityTypes;
-   }
-
-   public boolean joinTeam() {
-      return this.joinTeam;
    }
 }

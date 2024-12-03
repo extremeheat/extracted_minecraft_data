@@ -35,9 +35,7 @@ public class ChunkGenerationTask {
 
    public static ChunkGenerationTask create(GeneratingChunkMap var0, ChunkStatus var1, ChunkPos var2) {
       int var3 = ChunkPyramid.GENERATION_PYRAMID.getStepTo(var1).getAccumulatedRadiusOf(ChunkStatus.EMPTY);
-      StaticCache2D var4 = StaticCache2D.create(var2.x, var2.z, var3, (var1x, var2x) -> {
-         return var0.acquireGeneration(ChunkPos.asLong(var1x, var2x));
-      });
+      StaticCache2D var4 = StaticCache2D.create(var2.x, var2.z, var3, (var1x, var2x) -> var0.acquireGeneration(ChunkPos.asLong(var1x, var2x)));
       return new ChunkGenerationTask(var0, var1, var2, var4);
    }
 
@@ -78,7 +76,7 @@ public class ChunkGenerationTask {
    }
 
    private void releaseClaim() {
-      GenerationChunkHolder var1 = (GenerationChunkHolder)this.cache.get(this.pos.x, this.pos.z);
+      GenerationChunkHolder var1 = this.cache.get(this.pos.x, this.pos.z);
       var1.removeTask(this);
       StaticCache2D var10000 = this.cache;
       GeneratingChunkMap var10001 = this.chunkMap;
@@ -114,55 +112,23 @@ public class ChunkGenerationTask {
    }
 
    public GenerationChunkHolder getCenter() {
-      return (GenerationChunkHolder)this.cache.get(this.pos.x, this.pos.z);
+      return this.cache.get(this.pos.x, this.pos.z);
    }
 
    private void scheduleLayer(ChunkStatus var1, boolean var2) {
-      Zone var3 = Profiler.get().zone("scheduleLayer");
+      try (Zone var3 = Profiler.get().zone("scheduleLayer")) {
+         Objects.requireNonNull(var1);
+         var3.addText(var1::getName);
+         int var4 = this.getRadiusForLayer(var1, var2);
 
-      label60: {
-         try {
-            Objects.requireNonNull(var1);
-            var3.addText(var1::getName);
-            int var4 = this.getRadiusForLayer(var1, var2);
-            int var5 = this.pos.x - var4;
-
-            label53:
-            while(true) {
-               if (var5 > this.pos.x + var4) {
-                  break label60;
-               }
-
-               for(int var6 = this.pos.z - var4; var6 <= this.pos.z + var4; ++var6) {
-                  GenerationChunkHolder var7 = (GenerationChunkHolder)this.cache.get(var5, var6);
-                  if (this.markedForCancellation || !this.scheduleChunkInLayer(var1, var2, var7)) {
-                     break label53;
-                  }
-               }
-
-               ++var5;
-            }
-         } catch (Throwable var9) {
-            if (var3 != null) {
-               try {
-                  var3.close();
-               } catch (Throwable var8) {
-                  var9.addSuppressed(var8);
+         for(int var5 = this.pos.x - var4; var5 <= this.pos.x + var4; ++var5) {
+            for(int var6 = this.pos.z - var4; var6 <= this.pos.z + var4; ++var6) {
+               GenerationChunkHolder var7 = this.cache.get(var5, var6);
+               if (this.markedForCancellation || !this.scheduleChunkInLayer(var1, var2, var7)) {
+                  return;
                }
             }
-
-            throw var9;
          }
-
-         if (var3 != null) {
-            var3.close();
-         }
-
-         return;
-      }
-
-      if (var3 != null) {
-         var3.close();
       }
 
    }

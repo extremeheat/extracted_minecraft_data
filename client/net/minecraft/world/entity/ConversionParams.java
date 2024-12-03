@@ -16,23 +16,6 @@ public record ConversionParams(ConversionType type, boolean keepEquipment, boole
       return new ConversionParams(ConversionType.SINGLE, var1, var2, var0.getTeam());
    }
 
-   public ConversionType type() {
-      return this.type;
-   }
-
-   public boolean keepEquipment() {
-      return this.keepEquipment;
-   }
-
-   public boolean preserveCanPickUpLoot() {
-      return this.preserveCanPickUpLoot;
-   }
-
-   @Nullable
-   public PlayerTeam team() {
-      return this.team;
-   }
-
    @FunctionalInterface
    public interface AfterConversion<T extends Mob> {
       void finalizeConversion(T var1);

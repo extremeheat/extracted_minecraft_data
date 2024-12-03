@@ -13,21 +13,13 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 public interface DataComponentType<T> {
-   Codec<DataComponentType<?>> CODEC = Codec.lazyInitialized(() -> {
-      return BuiltInRegistries.DATA_COMPONENT_TYPE.byNameCodec();
-   });
-   StreamCodec<RegistryFriendlyByteBuf, DataComponentType<?>> STREAM_CODEC = StreamCodec.recursive((var0) -> {
-      return ByteBufCodecs.registry(Registries.DATA_COMPONENT_TYPE);
-   });
-   Codec<DataComponentType<?>> PERSISTENT_CODEC = CODEC.validate((var0) -> {
-      return var0.isTransient() ? DataResult.error(() -> {
-         return "Encountered transient component " + String.valueOf(BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(var0));
-      }) : DataResult.success(var0);
-   });
+   Codec<DataComponentType<?>> CODEC = Codec.lazyInitialized(() -> BuiltInRegistries.DATA_COMPONENT_TYPE.byNameCodec());
+   StreamCodec<RegistryFriendlyByteBuf, DataComponentType<?>> STREAM_CODEC = StreamCodec.<RegistryFriendlyByteBuf, DataComponentType<?>>recursive((var0) -> ByteBufCodecs.registry(Registries.DATA_COMPONENT_TYPE));
+   Codec<DataComponentType<?>> PERSISTENT_CODEC = CODEC.validate((var0) -> var0.isTransient() ? DataResult.error(() -> "Encountered transient component " + String.valueOf(BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(var0))) : DataResult.success(var0));
    Codec<Map<DataComponentType<?>, Object>> VALUE_MAP_CODEC = Codec.dispatchedMap(PERSISTENT_CODEC, DataComponentType::codecOrThrow);
 
    static <T> Builder<T> builder() {
-      return new Builder();
+      return new Builder<T>();
    }
 
    @Nullable
@@ -75,14 +67,12 @@ public interface DataComponentType<T> {
       }
 
       public DataComponentType<T> build() {
-         StreamCodec var1 = (StreamCodec)Objects.requireNonNullElseGet(this.streamCodec, () -> {
-            return ByteBufCodecs.fromCodecWithRegistries((Codec)Objects.requireNonNull(this.codec, "Missing Codec for component"));
-         });
+         StreamCodec var1 = (StreamCodec)Objects.requireNonNullElseGet(this.streamCodec, () -> ByteBufCodecs.fromCodecWithRegistries((Codec)Objects.requireNonNull(this.codec, "Missing Codec for component")));
          Codec var2 = this.cacheEncoding && this.codec != null ? DataComponents.ENCODER_CACHE.wrap(this.codec) : this.codec;
-         return new SimpleType(var2, var1);
+         return new SimpleType<T>(var2, var1);
       }
 
-      private static class SimpleType<T> implements DataComponentType<T> {
+      static class SimpleType<T> implements DataComponentType<T> {
          @Nullable
          private final Codec<T> codec;
          private final StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec;

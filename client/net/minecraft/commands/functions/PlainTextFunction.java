@@ -18,12 +18,4 @@ public record PlainTextFunction<T>(ResourceLocation id, List<UnboundEntryAction<
    public InstantiatedFunction<T> instantiate(@Nullable CompoundTag var1, CommandDispatcher<T> var2) throws FunctionInstantiationException {
       return this;
    }
-
-   public ResourceLocation id() {
-      return this.id;
-   }
-
-   public List<UnboundEntryAction<T>> entries() {
-      return this.entries;
-   }
 }

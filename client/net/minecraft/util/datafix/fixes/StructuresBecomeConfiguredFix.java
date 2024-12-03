@@ -12,7 +12,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -37,13 +36,7 @@ public class StructuresBecomeConfiguredFix extends DataFix {
    }
 
    private Dynamic<?> fix(Dynamic<?> var1) {
-      return var1.update("structures", (var2) -> {
-         return var2.update("starts", (var2x) -> {
-            return this.updateStarts(var2x, var1);
-         }).update("References", (var2x) -> {
-            return this.updateReferences(var2x, var1);
-         });
-      });
+      return var1.update("structures", (var2) -> var2.update("starts", (var2x) -> this.updateStarts(var2x, var1)).update("References", (var2x) -> this.updateReferences(var2x, var1)));
    }
 
    private Dynamic<?> updateStarts(Dynamic<?> var1, Dynamic<?> var2) {
@@ -55,9 +48,7 @@ public class StructuresBecomeConfiguredFix extends DataFix {
             if (var5 == null) {
                LOGGER.warn("Encountered unknown structure in datafixer: " + var3x.asString("<missing key>"));
             } else {
-               var4.computeIfAbsent(var5, (var2x) -> {
-                  return var4x.set("id", var5);
-               });
+               var4.computeIfAbsent(var5, (var2x) -> var4x.set("id", var5));
             }
          }
       });
@@ -73,9 +64,7 @@ public class StructuresBecomeConfiguredFix extends DataFix {
             if (var5 == null) {
                LOGGER.warn("Encountered unknown structure in datafixer: " + var3x.asString("<missing key>"));
             } else {
-               var4.compute(var5, (var1, var2x) -> {
-                  return var2x == null ? var4x : var4x.createLongList(LongStream.concat(var2x.asLongStream(), var4x.asLongStream()));
-               });
+               var4.compute(var5, (var1, var2x) -> var2x == null ? var4x : var4x.createLongList(LongStream.concat(var2x.asLongStream(), var4x.asLongStream())));
             }
          }
       });
@@ -103,15 +92,13 @@ public class StructuresBecomeConfiguredFix extends DataFix {
 
    private Optional<String> guessConfiguration(Dynamic<?> var1, Conversion var2) {
       Object2IntArrayMap var3 = new Object2IntArrayMap();
-      var1.get("sections").asList(Function.identity()).forEach((var2x) -> {
-         var2x.get("biomes").get("palette").asList(Function.identity()).forEach((var2xx) -> {
+      var1.get("sections").asList(Function.identity()).forEach((var2x) -> var2x.get("biomes").get("palette").asList(Function.identity()).forEach((var2xx) -> {
             String var3x = (String)var2.biomeMapping().get(var2xx.asString(""));
             if (var3x != null) {
                var3.mergeInt(var3x, 1, Integer::sum);
             }
 
-         });
-      });
+         }));
       return var3.object2IntEntrySet().stream().max(Comparator.comparingInt(Object2IntMap.Entry::getIntValue)).map(Map.Entry::getKey);
    }
 
@@ -134,24 +121,12 @@ public class StructuresBecomeConfiguredFix extends DataFix {
 
       private static Map<String, String> unpack(Map<List<String>, String> var0) {
          ImmutableMap.Builder var1 = ImmutableMap.builder();
-         Iterator var2 = var0.entrySet().iterator();
 
-         while(var2.hasNext()) {
-            Map.Entry var3 = (Map.Entry)var2.next();
-            ((List)var3.getKey()).forEach((var2x) -> {
-               var1.put(var2x, (String)var3.getValue());
-            });
+         for(Map.Entry var3 : var0.entrySet()) {
+            ((List)var3.getKey()).forEach((var2) -> var1.put(var2, (String)var3.getValue()));
          }
 
          return var1.build();
-      }
-
-      public Map<String, String> biomeMapping() {
-         return this.biomeMapping;
-      }
-
-      public String fallback() {
-         return this.fallback;
       }
    }
 }

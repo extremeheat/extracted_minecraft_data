@@ -3,6 +3,7 @@ package net.minecraft.commands.execution.tasks;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.ContextChain;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import java.util.function.Supplier;
 import net.minecraft.commands.ExecutionCommandSource;
 import net.minecraft.commands.execution.ChainModifiers;
 import net.minecraft.commands.execution.ExecutionContext;
@@ -23,9 +24,7 @@ public class ExecuteCommand<T extends ExecutionCommandSource<T>> implements Unbo
    }
 
    public void execute(T var1, ExecutionContext<T> var2, Frame var3) {
-      var2.profiler().push(() -> {
-         return "execute " + this.commandInput;
-      });
+      var2.profiler().push((Supplier)(() -> "execute " + this.commandInput));
 
       try {
          var2.incrementCost();

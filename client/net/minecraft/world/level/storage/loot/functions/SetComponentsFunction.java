@@ -10,11 +10,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetComponentsFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetComponentsFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(DataComponentPatch.CODEC.fieldOf("components").forGetter((var0x) -> {
-         return var0x.components;
-      })).apply(var0, SetComponentsFunction::new);
-   });
+   public static final MapCodec<SetComponentsFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(DataComponentPatch.CODEC.fieldOf("components").forGetter((var0x) -> var0x.components)).apply(var0, SetComponentsFunction::new));
    private final DataComponentPatch components;
 
    private SetComponentsFunction(List<LootItemCondition> var1, DataComponentPatch var2) {
@@ -32,8 +28,6 @@ public class SetComponentsFunction extends LootItemConditionalFunction {
    }
 
    public static <T> LootItemConditionalFunction.Builder<?> setComponent(DataComponentType<T> var0, T var1) {
-      return simpleBuilder((var2) -> {
-         return new SetComponentsFunction(var2, DataComponentPatch.builder().set(var0, var1).build());
-      });
+      return simpleBuilder((var2) -> new SetComponentsFunction(var2, DataComponentPatch.builder().set(var0, var1).build()));
    }
 }

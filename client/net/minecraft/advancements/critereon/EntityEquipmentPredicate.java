@@ -16,9 +16,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BannerPattern;
 
 public record EntityEquipmentPredicate(Optional<ItemPredicate> head, Optional<ItemPredicate> chest, Optional<ItemPredicate> legs, Optional<ItemPredicate> feet, Optional<ItemPredicate> body, Optional<ItemPredicate> mainhand, Optional<ItemPredicate> offhand) {
-   public static final Codec<EntityEquipmentPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ItemPredicate.CODEC.optionalFieldOf("head").forGetter(EntityEquipmentPredicate::head), ItemPredicate.CODEC.optionalFieldOf("chest").forGetter(EntityEquipmentPredicate::chest), ItemPredicate.CODEC.optionalFieldOf("legs").forGetter(EntityEquipmentPredicate::legs), ItemPredicate.CODEC.optionalFieldOf("feet").forGetter(EntityEquipmentPredicate::feet), ItemPredicate.CODEC.optionalFieldOf("body").forGetter(EntityEquipmentPredicate::body), ItemPredicate.CODEC.optionalFieldOf("mainhand").forGetter(EntityEquipmentPredicate::mainhand), ItemPredicate.CODEC.optionalFieldOf("offhand").forGetter(EntityEquipmentPredicate::offhand)).apply(var0, EntityEquipmentPredicate::new);
-   });
+   public static final Codec<EntityEquipmentPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ItemPredicate.CODEC.optionalFieldOf("head").forGetter(EntityEquipmentPredicate::head), ItemPredicate.CODEC.optionalFieldOf("chest").forGetter(EntityEquipmentPredicate::chest), ItemPredicate.CODEC.optionalFieldOf("legs").forGetter(EntityEquipmentPredicate::legs), ItemPredicate.CODEC.optionalFieldOf("feet").forGetter(EntityEquipmentPredicate::feet), ItemPredicate.CODEC.optionalFieldOf("body").forGetter(EntityEquipmentPredicate::body), ItemPredicate.CODEC.optionalFieldOf("mainhand").forGetter(EntityEquipmentPredicate::mainhand), ItemPredicate.CODEC.optionalFieldOf("offhand").forGetter(EntityEquipmentPredicate::offhand)).apply(var0, EntityEquipmentPredicate::new));
 
    public EntityEquipmentPredicate(Optional<ItemPredicate> var1, Optional<ItemPredicate> var2, Optional<ItemPredicate> var3, Optional<ItemPredicate> var4, Optional<ItemPredicate> var5, Optional<ItemPredicate> var6, Optional<ItemPredicate> var7) {
       super();
@@ -55,34 +53,6 @@ public record EntityEquipmentPredicate(Optional<ItemPredicate> head, Optional<It
       } else {
          return false;
       }
-   }
-
-   public Optional<ItemPredicate> head() {
-      return this.head;
-   }
-
-   public Optional<ItemPredicate> chest() {
-      return this.chest;
-   }
-
-   public Optional<ItemPredicate> legs() {
-      return this.legs;
-   }
-
-   public Optional<ItemPredicate> feet() {
-      return this.feet;
-   }
-
-   public Optional<ItemPredicate> body() {
-      return this.body;
-   }
-
-   public Optional<ItemPredicate> mainhand() {
-      return this.mainhand;
-   }
-
-   public Optional<ItemPredicate> offhand() {
-      return this.offhand;
    }
 
    public static class Builder {

@@ -34,15 +34,13 @@ public abstract class NamedEntityWriteReadFix extends DataFix {
    }
 
    private <S, T, A, B> TypeRewriteRule fix(Type<S> var1, Type<T> var2, OpticFinder<A> var3, Type<B> var4, Type<?> var5) {
-      return this.fixTypeEverywhere(this.name, var1, var2, (var5x) -> {
-         return (var6) -> {
+      return this.fixTypeEverywhere(this.name, var1, var2, (var5x) -> (var6) -> {
             Typed var7 = new Typed(var1, var5x, var6);
             return var7.update(var3, var4, (var4x) -> {
                Typed var5xx = new Typed(var5, var5x, var4x);
                return Util.writeAndReadTypedOrThrow(var5xx, var4, this::fix).getValue();
             }).getValue();
-         };
-      });
+         });
    }
 
    protected abstract <T> Dynamic<T> fix(Dynamic<T> var1);

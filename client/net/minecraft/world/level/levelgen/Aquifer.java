@@ -201,28 +201,27 @@ public interface Aquifer {
                   } else {
                      FluidStatus var47 = this.getAquiferStatus(var19);
                      double var33 = similarity(var11, var13);
-                     double var49;
                      if (var33 > 0.0) {
-                        var49 = var41 * var33 * this.calculatePressure(var1, var43, var40, var47);
+                        double var49 = var41 * var33 * this.calculatePressure(var1, var43, var40, var47);
                         if (var2 + var49 > 0.0) {
                            this.shouldScheduleFluidUpdate = false;
                            return null;
                         }
                      }
 
-                     var49 = similarity(var12, var13);
-                     if (var49 > 0.0) {
-                        double var50 = var41 * var49 * this.calculatePressure(var1, var43, var45, var47);
-                        if (var2 + var50 > 0.0) {
+                     double var50 = similarity(var12, var13);
+                     if (var50 > 0.0) {
+                        double var51 = var41 * var50 * this.calculatePressure(var1, var43, var45, var47);
+                        if (var2 + var51 > 0.0) {
                            this.shouldScheduleFluidUpdate = false;
                            return null;
                         }
                      }
 
-                     boolean var51 = !var40.equals(var45);
-                     boolean var38 = var49 >= FLOWING_UPDATE_SIMULARITY && !var45.equals(var47);
+                     boolean var52 = !var40.equals(var45);
+                     boolean var38 = var50 >= FLOWING_UPDATE_SIMULARITY && !var45.equals(var47);
                      boolean var39 = var33 >= FLOWING_UPDATE_SIMULARITY && !var40.equals(var47);
-                     if (!var51 && !var38 && !var39) {
+                     if (!var52 && !var38 && !var39) {
                         this.shouldScheduleFluidUpdate = var33 >= FLOWING_UPDATE_SIMULARITY && similarity(var11, var14) >= FLOWING_UPDATE_SIMULARITY && !var40.equals(this.getAquiferStatus(var21));
                      } else {
                         this.shouldScheduleFluidUpdate = true;
@@ -264,24 +263,23 @@ public interface Aquifer {
                double var25 = 3.0;
                double var27 = var13 - Math.abs(var11);
                double var29;
-               double var31;
                if (var11 > 0.0) {
-                  var31 = 0.0 + var27;
+                  double var31 = 0.0 + var27;
                   if (var31 > 0.0) {
                      var29 = var31 / 1.5;
                   } else {
                      var29 = var31 / 2.5;
                   }
                } else {
-                  var31 = 3.0 + var27;
-                  if (var31 > 0.0) {
-                     var29 = var31 / 3.0;
+                  double var39 = 3.0 + var27;
+                  if (var39 > 0.0) {
+                     var29 = var39 / 3.0;
                   } else {
-                     var29 = var31 / 10.0;
+                     var29 = var39 / 10.0;
                   }
                }
 
-               var31 = 2.0;
+               double var40 = 2.0;
                double var33;
                if (!(var29 < -2.0) && !(var29 > 2.0)) {
                   double var35 = var2.getValue();
@@ -339,11 +337,8 @@ public interface Aquifer {
          int var6 = var2 + 12;
          int var7 = var2 - 12;
          boolean var8 = false;
-         int[][] var9 = SURFACE_SAMPLING_OFFSETS_IN_CHUNKS;
-         int var10 = var9.length;
 
-         for(int var11 = 0; var11 < var10; ++var11) {
-            int[] var12 = var9[var11];
+         for(int[] var12 : SURFACE_SAMPLING_OFFSETS_IN_CHUNKS) {
             int var13 = var1 + SectionPos.sectionToBlockCoord(var12[0]);
             int var14 = var3 + SectionPos.sectionToBlockCoord(var12[1]);
             int var15 = this.noiseChunk.preliminarySurfaceLevel(var13, var14);
@@ -378,12 +373,11 @@ public interface Aquifer {
          DensityFunction.SinglePointContext var7 = new DensityFunction.SinglePointContext(var1, var2, var3);
          double var8;
          double var10;
-         int var12;
          if (OverworldBiomeBuilder.isDeepDarkRegion(this.erosion, this.depth, var7)) {
             var8 = -1.0;
             var10 = -1.0;
          } else {
-            var12 = var5 + 8 - var2;
+            int var12 = var5 + 8 - var2;
             boolean var13 = true;
             double var14 = var6 ? Mth.clampedMap((double)var12, 0.0, 64.0, 1.0, 0.0) : 0.0;
             double var16 = Mth.clamp(this.fluidLevelFloodednessNoise.compute(var7), -1.0, 1.0);
@@ -393,15 +387,16 @@ public interface Aquifer {
             var10 = var16 - var18;
          }
 
+         int var22;
          if (var10 > 0.0) {
-            var12 = var4.fluidLevel;
+            var22 = var4.fluidLevel;
          } else if (var8 > 0.0) {
-            var12 = this.computeRandomizedFluidSurfaceLevel(var1, var2, var3, var5);
+            var22 = this.computeRandomizedFluidSurfaceLevel(var1, var2, var3, var5);
          } else {
-            var12 = DimensionType.WAY_BELOW_MIN_Y;
+            var22 = DimensionType.WAY_BELOW_MIN_Y;
          }
 
-         return var12;
+         return var22;
       }
 
       private int computeRandomizedFluidSurfaceLevel(int var1, int var2, int var3, int var4) {
@@ -436,10 +431,6 @@ public interface Aquifer {
       }
    }
 
-   public interface FluidPicker {
-      FluidStatus computeFluid(int var1, int var2, int var3);
-   }
-
    public static record FluidStatus(int fluidLevel, BlockState fluidType) {
       final int fluidLevel;
       final BlockState fluidType;
@@ -453,13 +444,9 @@ public interface Aquifer {
       public BlockState at(int var1) {
          return var1 < this.fluidLevel ? this.fluidType : Blocks.AIR.defaultBlockState();
       }
+   }
 
-      public int fluidLevel() {
-         return this.fluidLevel;
-      }
-
-      public BlockState fluidType() {
-         return this.fluidType;
-      }
+   public interface FluidPicker {
+      FluidStatus computeFluid(int var1, int var2, int var3);
    }
 }

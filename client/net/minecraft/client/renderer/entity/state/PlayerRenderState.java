@@ -1,12 +1,12 @@
 package net.minecraft.client.renderer.entity.state;
 
 import javax.annotation.Nullable;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.animal.Parrot;
-import net.minecraft.world.item.ItemUseAnimation;
 
 public class PlayerRenderState extends HumanoidRenderState {
    public PlayerSkin skin = DefaultPlayerSkin.getDefaultSkin();
@@ -28,8 +28,6 @@ public class PlayerRenderState extends HumanoidRenderState {
    public boolean shouldApplyFlyingYRot;
    public float flyingYRot;
    public boolean swinging;
-   public HandState mainHandState = new HandState();
-   public HandState offhandState = new HandState();
    @Nullable
    public Component scoreText;
    @Nullable
@@ -38,6 +36,7 @@ public class PlayerRenderState extends HumanoidRenderState {
    public Parrot.Variant parrotOnRightShoulder;
    public int id;
    public String name = "Steve";
+   public final ItemStackRenderState heldOnHead = new ItemStackRenderState();
 
    public PlayerRenderState() {
       super();
@@ -45,16 +44,5 @@ public class PlayerRenderState extends HumanoidRenderState {
 
    public float fallFlyingScale() {
       return Mth.clamp(this.fallFlyingTimeInTicks * this.fallFlyingTimeInTicks / 100.0F, 0.0F, 1.0F);
-   }
-
-   public static class HandState {
-      public boolean isEmpty = true;
-      @Nullable
-      public ItemUseAnimation useAnimation;
-      public boolean holdsChargedCrossbow;
-
-      public HandState() {
-         super();
-      }
    }
 }

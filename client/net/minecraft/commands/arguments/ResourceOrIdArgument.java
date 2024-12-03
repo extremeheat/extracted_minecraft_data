@@ -32,9 +32,7 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
    private static final Collection<String> EXAMPLES = List.of("foo", "foo:bar", "012", "{}", "true");
-   public static final DynamicCommandExceptionType ERROR_FAILED_TO_PARSE = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("argument.resource_or_id.failed_to_parse", var0);
-   });
+   public static final DynamicCommandExceptionType ERROR_FAILED_TO_PARSE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.resource_or_id.failed_to_parse", var0));
    private static final SimpleCommandExceptionType ERROR_INVALID = new SimpleCommandExceptionType(Component.translatable("argument.resource_or_id.invalid"));
    private final HolderLookup.Provider registryLookup;
    private final boolean hasRegistry;
@@ -82,9 +80,7 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
          return null;
       } else {
          RegistryOps var3 = this.registryLookup.createSerializationContext(NbtOps.INSTANCE);
-         return (Holder)this.codec.parse(var3, var2).getOrThrow((var1x) -> {
-            return ERROR_FAILED_TO_PARSE.createWithContext(var1, var1x);
-         });
+         return (Holder)this.codec.parse(var3, var2).getOrThrow((var1x) -> ERROR_FAILED_TO_PARSE.createWithContext(var1, var1x));
       }
    }
 

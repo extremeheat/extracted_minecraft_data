@@ -1,7 +1,6 @@
 package net.minecraft.core.dispenser;
 
 import com.mojang.logging.LogUtils;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -12,7 +11,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -67,9 +65,7 @@ import org.slf4j.Logger;
 
 public interface DispenseItemBehavior {
    Logger LOGGER = LogUtils.getLogger();
-   DispenseItemBehavior NOOP = (var0, var1) -> {
-      return var1;
-   };
+   DispenseItemBehavior NOOP = (var0, var1) -> var1;
 
    ItemStack dispense(BlockSource var1, ItemStack var2);
 
@@ -88,7 +84,7 @@ public interface DispenseItemBehavior {
       DefaultDispenseItemBehavior var0 = new DefaultDispenseItemBehavior() {
          public ItemStack execute(BlockSource var1, ItemStack var2) {
             Direction var3 = (Direction)var1.state().getValue(DispenserBlock.FACING);
-            EntityType var4 = ((SpawnEggItem)var2.getItem()).getType(var2);
+            EntityType var4 = ((SpawnEggItem)var2.getItem()).getType(var1.level().registryAccess(), var2);
 
             try {
                var4.spawn(var1.level(), var2, (Player)null, var1.pos().relative(var3), EntitySpawnReason.DISPENSER, var3 != Direction.UP, false);
@@ -102,10 +98,8 @@ public interface DispenseItemBehavior {
             return var2;
          }
       };
-      Iterator var1 = SpawnEggItem.eggs().iterator();
 
-      while(var1.hasNext()) {
-         SpawnEggItem var2 = (SpawnEggItem)var1.next();
+      for(SpawnEggItem var2 : SpawnEggItem.eggs()) {
          DispenserBlock.registerBehavior(var2, var0);
       }
 
@@ -114,10 +108,8 @@ public interface DispenseItemBehavior {
             Direction var3 = (Direction)var1.state().getValue(DispenserBlock.FACING);
             BlockPos var4 = var1.pos().relative(var3);
             ServerLevel var5 = var1.level();
-            Consumer var6 = EntityType.appendDefaultStackConfig((var1x) -> {
-               var1x.setYRot(var3.toYRot());
-            }, var5, var2, (Player)null);
-            ArmorStand var7 = (ArmorStand)EntityType.ARMOR_STAND.spawn(var5, var6, var4, EntitySpawnReason.DISPENSER, false, false);
+            Consumer var6 = EntityType.appendDefaultStackConfig((var1x) -> var1x.setYRot(var3.toYRot()), var5, var2, (Player)null);
+            ArmorStand var7 = EntityType.ARMOR_STAND.spawn(var5, var6, var4, EntitySpawnReason.DISPENSER, false, false);
             if (var7 != null) {
                var2.shrink(1);
             }
@@ -147,23 +139,16 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.CHEST, new OptionalDispenseItemBehavior() {
          public ItemStack execute(BlockSource var1, ItemStack var2) {
             BlockPos var3 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
-            List var4 = var1.level().getEntitiesOfClass(AbstractChestedHorse.class, new AABB(var3), (var0) -> {
-               return var0.isAlive() && !var0.hasChest();
-            });
-            Iterator var5 = var4.iterator();
 
-            AbstractChestedHorse var6;
-            do {
-               if (!var5.hasNext()) {
-                  return super.execute(var1, var2);
+            for(AbstractChestedHorse var6 : var1.level().getEntitiesOfClass(AbstractChestedHorse.class, new AABB(var3), (var0) -> var0.isAlive() && !var0.hasChest())) {
+               if (var6.isTamed() && var6.getSlot(499).set(var2)) {
+                  var2.shrink(1);
+                  this.setSuccess(true);
+                  return var2;
                }
+            }
 
-               var6 = (AbstractChestedHorse)var5.next();
-            } while(!var6.isTamed() || !var6.getSlot(499).set(var2));
-
-            var2.shrink(1);
-            this.setSuccess(true);
-            return var2;
+            return super.execute(var1, var2);
          }
       });
       DispenserBlock.registerBehavior(Items.OAK_BOAT, new BoatDispenseItemBehavior(EntityType.OAK_BOAT));
@@ -280,7 +265,7 @@ public interface DispenseItemBehavior {
             BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
             PrimedTnt var5 = new PrimedTnt(var3, (double)var4.getX() + 0.5, (double)var4.getY(), (double)var4.getZ() + 0.5, (LivingEntity)null);
             ((Level)var3).addFreshEntity(var5);
-            ((Level)var3).playSound((Player)null, var5.getX(), var5.getY(), var5.getZ(), (SoundEvent)SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+            ((Level)var3).playSound((Player)null, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
             ((Level)var3).gameEvent((Entity)null, GameEvent.ENTITY_PLACE, var4);
             var2.shrink(1);
             return var2;
@@ -329,11 +314,8 @@ public interface DispenseItemBehavior {
          }
       });
       DispenserBlock.registerBehavior(Blocks.SHULKER_BOX.asItem(), new ShulkerBoxDispenseBehavior());
-      DyeColor[] var7 = DyeColor.values();
-      int var3 = var7.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         DyeColor var5 = var7[var4];
+      for(DyeColor var5 : DyeColor.values()) {
          DispenserBlock.registerBehavior(ShulkerBoxBlock.getBlockByColor(var5).asItem(), new ShulkerBoxDispenseBehavior());
       }
 
@@ -348,9 +330,7 @@ public interface DispenseItemBehavior {
             ServerLevel var3 = var1.level();
             BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
             BlockState var5 = var3.getBlockState(var4);
-            if (var5.is(BlockTags.BEEHIVES, (var0) -> {
-               return var0.hasProperty(BeehiveBlock.HONEY_LEVEL) && var0.getBlock() instanceof BeehiveBlock;
-            }) && (Integer)var5.getValue(BeehiveBlock.HONEY_LEVEL) >= 5) {
+            if (var5.is(BlockTags.BEEHIVES, (var0) -> var0.hasProperty(BeehiveBlock.HONEY_LEVEL) && var0.getBlock() instanceof BeehiveBlock) && (Integer)var5.getValue(BeehiveBlock.HONEY_LEVEL) >= 5) {
                ((BeehiveBlock)var5.getBlock()).releaseBeesAndResetHoneyLevel(var3, var5, var4, (Player)null, BeehiveBlockEntity.BeeReleaseStatus.BEE_RELEASED);
                this.setSuccess(true);
                return this.takeLiquid(var1, var2, new ItemStack(Items.HONEY_BOTTLE));
@@ -393,20 +373,15 @@ public interface DispenseItemBehavior {
                this.setSuccess(false);
                return var2;
             } else {
-               Iterator var6 = var5.iterator();
-
-               Armadillo var7;
-               do {
-                  if (!var6.hasNext()) {
-                     this.setSuccess(false);
+               for(Armadillo var7 : var5) {
+                  if (var7.brushOffScute()) {
+                     var2.hurtAndBreak(16, var3, (ServerPlayer)null, (var0) -> {
+                     });
                      return var2;
                   }
+               }
 
-                  var7 = (Armadillo)var6.next();
-               } while(!var7.brushOffScute());
-
-               var2.hurtAndBreak(16, var3, (ServerPlayer)null, (var0) -> {
-               });
+               this.setSuccess(false);
                return var2;
             }
          }

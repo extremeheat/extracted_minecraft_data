@@ -35,6 +35,20 @@ public interface StreamTagVisitor {
 
    ValueResult visitRootEntry(TagType<?> var1);
 
+   public static enum ValueResult {
+      CONTINUE,
+      BREAK,
+      HALT;
+
+      private ValueResult() {
+      }
+
+      // $FF: synthetic method
+      private static ValueResult[] $values() {
+         return new ValueResult[]{CONTINUE, BREAK, HALT};
+      }
+   }
+
    public static enum EntryResult {
       ENTER,
       SKIP,
@@ -47,20 +61,6 @@ public interface StreamTagVisitor {
       // $FF: synthetic method
       private static EntryResult[] $values() {
          return new EntryResult[]{ENTER, SKIP, BREAK, HALT};
-      }
-   }
-
-   public static enum ValueResult {
-      CONTINUE,
-      BREAK,
-      HALT;
-
-      private ValueResult() {
-      }
-
-      // $FF: synthetic method
-      private static ValueResult[] $values() {
-         return new ValueResult[]{CONTINUE, BREAK, HALT};
       }
    }
 }

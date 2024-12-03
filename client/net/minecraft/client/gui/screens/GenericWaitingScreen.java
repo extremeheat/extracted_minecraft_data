@@ -51,9 +51,7 @@ public class GenericWaitingScreen extends Screen {
       Objects.requireNonNull(this.font);
       int var4 = var10000 * 9;
       int var5 = Math.min(120 + var4, this.height - 40);
-      this.button = (Button)this.addRenderableWidget(Button.builder(this.buttonLabel, (var1x) -> {
-         this.onClose();
-      }).bounds((this.width - 150) / 2, var5, 150, 20).build());
+      this.button = (Button)this.addRenderableWidget(Button.builder(this.buttonLabel, (var1x) -> this.onClose()).bounds((this.width - 150) / 2, var5, 150, 20).build());
    }
 
    public void tick() {

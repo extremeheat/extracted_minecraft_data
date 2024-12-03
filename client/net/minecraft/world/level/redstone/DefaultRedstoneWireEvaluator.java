@@ -2,7 +2,6 @@ package net.minecraft.world.level.redstone;
 
 import com.google.common.collect.Sets;
 import java.util.HashSet;
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,18 +23,12 @@ public class DefaultRedstoneWireEvaluator extends RedstoneWireEvaluator {
 
          HashSet var7 = Sets.newHashSet();
          var7.add(var2);
-         Direction[] var8 = Direction.values();
-         int var9 = var8.length;
 
-         for(int var10 = 0; var10 < var9; ++var10) {
-            Direction var11 = var8[var10];
+         for(Direction var11 : Direction.values()) {
             var7.add(var2.relative(var11));
          }
 
-         Iterator var12 = var7.iterator();
-
-         while(var12.hasNext()) {
-            BlockPos var13 = (BlockPos)var12.next();
+         for(BlockPos var13 : var7) {
             var1.updateNeighborsAt(var13, this.wireBlock);
          }
       }

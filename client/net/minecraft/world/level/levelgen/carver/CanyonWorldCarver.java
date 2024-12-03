@@ -64,9 +64,7 @@ public class CanyonWorldCarver extends WorldCarver<CanyonCarverConfiguration> {
                return;
             }
 
-            this.carveEllipsoid(var1, var2, var3, var4, var7, var8, var10, var12, var27, var29, var21, (var2x, var3x, var5x, var7x, var9) -> {
-               return this.shouldSkip(var2x, var23, var3x, var5x, var7x, var9);
-            });
+            this.carveEllipsoid(var1, var2, var3, var4, var7, var8, var10, var12, var27, var29, var21, (var2x, var3x, var5x, var7x, var9) -> this.shouldSkip(var2x, var23, var3x, var5x, var7x, var9));
          }
       }
 

@@ -50,10 +50,9 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
    }
 
    private void findNewTarget(ServerLevel var1) {
-      int var3;
       if (this.currentPath != null && this.currentPath.isDone()) {
          BlockPos var2 = var1.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.dragon.getFightOrigin()));
-         var3 = this.dragon.getDragonFight() == null ? 0 : this.dragon.getDragonFight().getCrystalsAlive();
+         int var3 = this.dragon.getDragonFight() == null ? 0 : this.dragon.getDragonFight().getCrystalsAlive();
          if (this.dragon.getRandom().nextInt(var3 + 3) == 0) {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.LANDING_APPROACH);
             return;
@@ -75,30 +74,30 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
 
       if (this.currentPath == null || this.currentPath.isDone()) {
          int var7 = this.dragon.findClosestNode();
-         var3 = var7;
+         int var8 = var7;
          if (this.dragon.getRandom().nextInt(8) == 0) {
             this.clockwise = !this.clockwise;
-            var3 = var7 + 6;
+            var8 = var7 + 6;
          }
 
          if (this.clockwise) {
-            ++var3;
+            ++var8;
          } else {
-            --var3;
+            --var8;
          }
 
          if (this.dragon.getDragonFight() != null && this.dragon.getDragonFight().getCrystalsAlive() >= 0) {
-            var3 %= 12;
-            if (var3 < 0) {
-               var3 += 12;
+            var8 %= 12;
+            if (var8 < 0) {
+               var8 += 12;
             }
          } else {
-            var3 -= 12;
-            var3 &= 7;
-            var3 += 12;
+            var8 -= 12;
+            var8 &= 7;
+            var8 += 12;
          }
 
-         this.currentPath = this.dragon.findPath(var7, var3, (Node)null);
+         this.currentPath = this.dragon.findPath(var7, var8, (Node)null);
          if (this.currentPath != null) {
             this.currentPath.advance();
          }

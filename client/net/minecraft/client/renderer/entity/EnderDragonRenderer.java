@@ -54,7 +54,6 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
       var2.scale(-1.0F, -1.0F, 1.0F);
       var2.translate(0.0F, -1.501F, 0.0F);
       this.model.setupAnim(var1);
-      VertexConsumer var11;
       if (var1.deathTime > 0.0F) {
          float var7 = var1.deathTime / 200.0F;
          int var8 = ARGB.color(Mth.floor(var7 * 255.0F), -1);
@@ -63,18 +62,18 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon, EnderDragon
          VertexConsumer var10 = var3.getBuffer(DECAL);
          this.model.renderToBuffer(var2, var10, var4, OverlayTexture.pack(0.0F, var1.hasRedOverlay));
       } else {
-         var11 = var3.getBuffer(RENDER_TYPE);
+         VertexConsumer var11 = var3.getBuffer(RENDER_TYPE);
          this.model.renderToBuffer(var2, var11, var4, OverlayTexture.pack(0.0F, var1.hasRedOverlay));
       }
 
-      var11 = var3.getBuffer(EYES);
-      this.model.renderToBuffer(var2, var11, var4, OverlayTexture.NO_OVERLAY);
+      VertexConsumer var12 = var3.getBuffer(EYES);
+      this.model.renderToBuffer(var2, var12, var4, OverlayTexture.NO_OVERLAY);
       if (var1.deathTime > 0.0F) {
-         float var12 = var1.deathTime / 200.0F;
+         float var13 = var1.deathTime / 200.0F;
          var2.pushPose();
          var2.translate(0.0F, -1.0F, -2.0F);
-         renderRays(var2, var12, var3.getBuffer(RenderType.dragonRays()));
-         renderRays(var2, var12, var3.getBuffer(RenderType.dragonRaysDepth()));
+         renderRays(var2, var13, var3.getBuffer(RenderType.dragonRays()));
+         renderRays(var2, var13, var3.getBuffer(RenderType.dragonRaysDepth()));
          var2.popPose();
       }
 

@@ -20,12 +20,11 @@ public class OutlineBufferSource implements MultiBufferSource {
    }
 
    public VertexConsumer getBuffer(RenderType var1) {
-      VertexConsumer var2;
       if (var1.isOutline()) {
-         var2 = this.outlineBufferSource.getBuffer(var1);
-         return new EntityOutlineGenerator(var2, this.teamR, this.teamG, this.teamB, this.teamA);
+         VertexConsumer var6 = this.outlineBufferSource.getBuffer(var1);
+         return new EntityOutlineGenerator(var6, this.teamR, this.teamG, this.teamB, this.teamA);
       } else {
-         var2 = this.bufferSource.getBuffer(var1);
+         VertexConsumer var2 = this.bufferSource.getBuffer(var1);
          Optional var3 = var1.outline();
          if (var3.isPresent()) {
             VertexConsumer var4 = this.outlineBufferSource.getBuffer((RenderType)var3.get());
@@ -83,14 +82,6 @@ public class OutlineBufferSource implements MultiBufferSource {
 
       public VertexConsumer setNormal(float var1, float var2, float var3) {
          return this;
-      }
-
-      public VertexConsumer delegate() {
-         return this.delegate;
-      }
-
-      public int color() {
-         return this.color;
       }
    }
 }

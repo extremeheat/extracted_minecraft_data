@@ -3,7 +3,6 @@ package net.minecraft.server;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -152,10 +151,7 @@ public class ServerScoreboard extends Scoreboard {
    }
 
    protected void setDirty() {
-      Iterator var1 = this.dirtyListeners.iterator();
-
-      while(var1.hasNext()) {
-         Runnable var2 = (Runnable)var1.next();
+      for(Runnable var2 : this.dirtyListeners) {
          var2.run();
       }
 
@@ -164,20 +160,14 @@ public class ServerScoreboard extends Scoreboard {
    public List<Packet<?>> getStartTrackingPackets(Objective var1) {
       ArrayList var2 = Lists.newArrayList();
       var2.add(new ClientboundSetObjectivePacket(var1, 0));
-      DisplaySlot[] var3 = DisplaySlot.values();
-      int var4 = var3.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         DisplaySlot var6 = var3[var5];
+      for(DisplaySlot var6 : DisplaySlot.values()) {
          if (this.getDisplayObjective(var6) == var1) {
             var2.add(new ClientboundSetDisplayObjectivePacket(var6, var1));
          }
       }
 
-      Iterator var7 = this.listPlayerScores(var1).iterator();
-
-      while(var7.hasNext()) {
-         PlayerScoreEntry var8 = (PlayerScoreEntry)var7.next();
+      for(PlayerScoreEntry var8 : this.listPlayerScores(var1)) {
          var2.add(new ClientboundSetScorePacket(var8.owner(), var1.getName(), var8.value(), Optional.ofNullable(var8.display()), Optional.ofNullable(var8.numberFormatOverride())));
       }
 
@@ -186,14 +176,9 @@ public class ServerScoreboard extends Scoreboard {
 
    public void startTrackingObjective(Objective var1) {
       List var2 = this.getStartTrackingPackets(var1);
-      Iterator var3 = this.server.getPlayerList().getPlayers().iterator();
 
-      while(var3.hasNext()) {
-         ServerPlayer var4 = (ServerPlayer)var3.next();
-         Iterator var5 = var2.iterator();
-
-         while(var5.hasNext()) {
-            Packet var6 = (Packet)var5.next();
+      for(ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
+         for(Packet var6 : var2) {
             var4.connection.send(var6);
          }
       }
@@ -204,11 +189,8 @@ public class ServerScoreboard extends Scoreboard {
    public List<Packet<?>> getStopTrackingPackets(Objective var1) {
       ArrayList var2 = Lists.newArrayList();
       var2.add(new ClientboundSetObjectivePacket(var1, 1));
-      DisplaySlot[] var3 = DisplaySlot.values();
-      int var4 = var3.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         DisplaySlot var6 = var3[var5];
+      for(DisplaySlot var6 : DisplaySlot.values()) {
          if (this.getDisplayObjective(var6) == var1) {
             var2.add(new ClientboundSetDisplayObjectivePacket(var6, var1));
          }
@@ -219,14 +201,9 @@ public class ServerScoreboard extends Scoreboard {
 
    public void stopTrackingObjective(Objective var1) {
       List var2 = this.getStopTrackingPackets(var1);
-      Iterator var3 = this.server.getPlayerList().getPlayers().iterator();
 
-      while(var3.hasNext()) {
-         ServerPlayer var4 = (ServerPlayer)var3.next();
-         Iterator var5 = var2.iterator();
-
-         while(var5.hasNext()) {
-            Packet var6 = (Packet)var5.next();
+      for(ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
+         for(Packet var6 : var2) {
             var4.connection.send(var6);
          }
       }
@@ -236,11 +213,8 @@ public class ServerScoreboard extends Scoreboard {
 
    public int getObjectiveDisplaySlotCount(Objective var1) {
       int var2 = 0;
-      DisplaySlot[] var3 = DisplaySlot.values();
-      int var4 = var3.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         DisplaySlot var6 = var3[var5];
+      for(DisplaySlot var6 : DisplaySlot.values()) {
          if (this.getDisplayObjective(var6) == var1) {
             ++var2;
          }
@@ -250,7 +224,7 @@ public class ServerScoreboard extends Scoreboard {
    }
 
    public SavedData.Factory<ScoreboardSaveData> dataFactory() {
-      return new SavedData.Factory(this::createData, this::createData, DataFixTypes.SAVED_DATA_SCOREBOARD);
+      return new SavedData.Factory<ScoreboardSaveData>(this::createData, this::createData, DataFixTypes.SAVED_DATA_SCOREBOARD);
    }
 
    private ScoreboardSaveData createData() {

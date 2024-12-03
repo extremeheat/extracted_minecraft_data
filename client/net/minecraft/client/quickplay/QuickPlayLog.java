@@ -77,37 +77,12 @@ public class QuickPlayLog {
       }
    }
 
-   private static record QuickPlayWorld(Type type, String id, String name) {
-      public static final MapCodec<QuickPlayWorld> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(QuickPlayLog.Type.CODEC.fieldOf("type").forGetter(QuickPlayWorld::type), ExtraCodecs.ESCAPED_STRING.fieldOf("id").forGetter(QuickPlayWorld::id), Codec.STRING.fieldOf("name").forGetter(QuickPlayWorld::name)).apply(var0, QuickPlayWorld::new);
-      });
-
-      QuickPlayWorld(Type var1, String var2, String var3) {
-         super();
-         this.type = var1;
-         this.id = var2;
-         this.name = var3;
-      }
-
-      public Type type() {
-         return this.type;
-      }
-
-      public String id() {
-         return this.id;
-      }
-
-      public String name() {
-         return this.name;
-      }
-   }
-
    public static enum Type implements StringRepresentable {
       SINGLEPLAYER("singleplayer"),
       MULTIPLAYER("multiplayer"),
       REALMS("realms");
 
-      static final Codec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
+      static final Codec<Type> CODEC = StringRepresentable.<Type>fromEnum(Type::values);
       private final String name;
 
       private Type(final String var3) {
@@ -124,28 +99,25 @@ public class QuickPlayLog {
       }
    }
 
+   static record QuickPlayWorld(Type type, String id, String name) {
+      public static final MapCodec<QuickPlayWorld> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(QuickPlayLog.Type.CODEC.fieldOf("type").forGetter(QuickPlayWorld::type), ExtraCodecs.ESCAPED_STRING.fieldOf("id").forGetter(QuickPlayWorld::id), Codec.STRING.fieldOf("name").forGetter(QuickPlayWorld::name)).apply(var0, QuickPlayWorld::new));
+
+      QuickPlayWorld(Type var1, String var2, String var3) {
+         super();
+         this.type = var1;
+         this.id = var2;
+         this.name = var3;
+      }
+   }
+
    static record QuickPlayEntry(QuickPlayWorld quickPlayWorld, Instant lastPlayedTime, GameType gamemode) {
-      public static final Codec<QuickPlayEntry> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(QuickPlayLog.QuickPlayWorld.MAP_CODEC.forGetter(QuickPlayEntry::quickPlayWorld), ExtraCodecs.INSTANT_ISO8601.fieldOf("lastPlayedTime").forGetter(QuickPlayEntry::lastPlayedTime), GameType.CODEC.fieldOf("gamemode").forGetter(QuickPlayEntry::gamemode)).apply(var0, QuickPlayEntry::new);
-      });
+      public static final Codec<QuickPlayEntry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(QuickPlayLog.QuickPlayWorld.MAP_CODEC.forGetter(QuickPlayEntry::quickPlayWorld), ExtraCodecs.INSTANT_ISO8601.fieldOf("lastPlayedTime").forGetter(QuickPlayEntry::lastPlayedTime), GameType.CODEC.fieldOf("gamemode").forGetter(QuickPlayEntry::gamemode)).apply(var0, QuickPlayEntry::new));
 
       QuickPlayEntry(QuickPlayWorld var1, Instant var2, GameType var3) {
          super();
          this.quickPlayWorld = var1;
          this.lastPlayedTime = var2;
          this.gamemode = var3;
-      }
-
-      public QuickPlayWorld quickPlayWorld() {
-         return this.quickPlayWorld;
-      }
-
-      public Instant lastPlayedTime() {
-         return this.lastPlayedTime;
-      }
-
-      public GameType gamemode() {
-         return this.gamemode;
       }
    }
 }

@@ -29,48 +29,43 @@ public class BlockUtil {
       var14[var11] = new IntBounds(getLimit(var5, var6.set(var0), var9, var4), getLimit(var5, var6.set(var0), var10, var4));
       int var15 = var14[var11].min;
 
-      int var16;
-      IntBounds var17;
-      for(var16 = 1; var16 <= var11; ++var16) {
-         var17 = var14[var13 - (var16 - 1)];
+      for(int var16 = 1; var16 <= var11; ++var16) {
+         IntBounds var17 = var14[var13 - (var16 - 1)];
          var14[var13 - var16] = new IntBounds(getLimit(var5, var6.set(var0).move(var7, var16), var9, var17.min), getLimit(var5, var6.set(var0).move(var7, var16), var10, var17.max));
       }
 
-      for(var16 = 1; var16 <= var12; ++var16) {
-         var17 = var14[var13 + var16 - 1];
-         var14[var13 + var16] = new IntBounds(getLimit(var5, var6.set(var0).move(var8, var16), var9, var17.min), getLimit(var5, var6.set(var0).move(var8, var16), var10, var17.max));
+      for(int var26 = 1; var26 <= var12; ++var26) {
+         IntBounds var28 = var14[var13 + var26 - 1];
+         var14[var13 + var26] = new IntBounds(getLimit(var5, var6.set(var0).move(var8, var26), var9, var28.min), getLimit(var5, var6.set(var0).move(var8, var26), var10, var28.max));
       }
 
-      var16 = 0;
-      int var26 = 0;
+      int var27 = 0;
+      int var29 = 0;
       int var18 = 0;
       int var19 = 0;
       int[] var20 = new int[var14.length];
 
       for(int var21 = var15; var21 >= 0; --var21) {
-         IntBounds var23;
-         int var24;
-         int var25;
          for(int var22 = 0; var22 < var14.length; ++var22) {
-            var23 = var14[var22];
-            var24 = var15 - var23.min;
-            var25 = var15 + var23.max;
+            IntBounds var23 = var14[var22];
+            int var24 = var15 - var23.min;
+            int var25 = var15 + var23.max;
             var20[var22] = var21 >= var24 && var21 <= var25 ? var25 + 1 - var21 : 0;
          }
 
-         Pair var27 = getMaxRectangleLocation(var20);
-         var23 = (IntBounds)var27.getFirst();
-         var24 = 1 + var23.max - var23.min;
-         var25 = (Integer)var27.getSecond();
-         if (var24 * var25 > var18 * var19) {
-            var16 = var23.min;
-            var26 = var21;
-            var18 = var24;
-            var19 = var25;
+         Pair var30 = getMaxRectangleLocation(var20);
+         IntBounds var31 = (IntBounds)var30.getFirst();
+         int var32 = 1 + var31.max - var31.min;
+         int var33 = (Integer)var30.getSecond();
+         if (var32 * var33 > var18 * var19) {
+            var27 = var31.min;
+            var29 = var21;
+            var18 = var32;
+            var19 = var33;
          }
       }
 
-      return new FoundRectangle(var0.relative(var1, var16 - var13).relative(var3, var26 - var15), var18, var19);
+      return new FoundRectangle(var0.relative(var1, var27 - var13).relative(var3, var29 - var15), var18, var19);
    }
 
    private static int getLimit(Predicate<BlockPos> var0, BlockPos.MutableBlockPos var1, Direction var2, int var3) {

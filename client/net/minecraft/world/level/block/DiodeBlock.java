@@ -82,11 +82,8 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
          BlockEntity var7 = var1.hasBlockEntity() ? var2.getBlockEntity(var3) : null;
          dropResources(var1, var2, var3, var7);
          var2.removeBlock(var3, false);
-         Direction[] var8 = Direction.values();
-         int var9 = var8.length;
 
-         for(int var10 = 0; var10 < var9; ++var10) {
-            Direction var11 = var8[var10];
+         for(Direction var11 : Direction.values()) {
             var2.updateNeighborsAt(var3.relative(var11), this);
          }
 

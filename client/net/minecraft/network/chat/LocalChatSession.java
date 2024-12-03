@@ -22,12 +22,4 @@ public record LocalChatSession(UUID sessionId, ProfileKeyPair keyPair) {
    public RemoteChatSession asRemote() {
       return new RemoteChatSession(this.sessionId, this.keyPair.publicKey());
    }
-
-   public UUID sessionId() {
-      return this.sessionId;
-   }
-
-   public ProfileKeyPair keyPair() {
-      return this.keyPair;
-   }
 }

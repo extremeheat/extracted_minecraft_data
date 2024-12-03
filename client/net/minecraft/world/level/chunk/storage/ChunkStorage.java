@@ -46,7 +46,7 @@ public class ChunkStorage implements AutoCloseable {
       } else {
          try {
             if (var5 < 1493) {
-               var3 = DataFixTypes.CHUNK.update(this.fixerUpper, (CompoundTag)var3, var5, 1493);
+               var3 = DataFixTypes.CHUNK.update(this.fixerUpper, var3, var5, 1493);
                if (var3.getCompound("Level").getBoolean("hasLegacyStructureData")) {
                   LegacyStructureDataHandler var6 = this.getLegacyStructureHandler(var1, var2);
                   var3 = var6.updateFromLegacy(var3);
@@ -61,7 +61,7 @@ public class ChunkStorage implements AutoCloseable {
          } catch (Exception var9) {
             CrashReport var7 = CrashReport.forThrowable(var9, "Updated chunk");
             CrashReportCategory var8 = var7.addCategory("Updated chunk details");
-            var8.setDetail("Data version", (Object)var5);
+            var8.setDetail("Data version", var5);
             throw new ReportedException(var7);
          }
       }
@@ -84,9 +84,7 @@ public class ChunkStorage implements AutoCloseable {
    public static void injectDatafixingContext(CompoundTag var0, ResourceKey<Level> var1, Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> var2) {
       CompoundTag var3 = new CompoundTag();
       var3.putString("dimension", var1.location().toString());
-      var2.ifPresent((var1x) -> {
-         var3.putString("generator", var1x.location().toString());
-      });
+      var2.ifPresent((var1x) -> var3.putString("generator", var1x.location().toString()));
       var0.put("__context", var3);
    }
 

@@ -3,7 +3,7 @@ package net.minecraft.world.item.trading;
 import com.mojang.serialization.Codec;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -46,10 +46,8 @@ public class MerchantOffers extends ArrayList<MerchantOffer> {
 
    public MerchantOffers copy() {
       MerchantOffers var1 = new MerchantOffers(this.size());
-      Iterator var2 = this.iterator();
 
-      while(var2.hasNext()) {
-         MerchantOffer var3 = (MerchantOffer)var2.next();
+      for(MerchantOffer var3 : this) {
          var1.add(var3.copy());
       }
 
@@ -57,7 +55,7 @@ public class MerchantOffers extends ArrayList<MerchantOffer> {
    }
 
    static {
-      CODEC = MerchantOffer.CODEC.listOf().fieldOf("Recipes").xmap(MerchantOffers::new, Function.identity()).codec();
+      CODEC = MerchantOffer.CODEC.listOf().optionalFieldOf("Recipes", List.of()).xmap(MerchantOffers::new, Function.identity()).codec();
       STREAM_CODEC = MerchantOffer.STREAM_CODEC.apply(ByteBufCodecs.collection(MerchantOffers::new));
    }
 }

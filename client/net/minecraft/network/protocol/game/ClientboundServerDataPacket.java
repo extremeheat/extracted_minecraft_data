@@ -26,14 +26,6 @@ public record ClientboundServerDataPacket(Component motd, Optional<byte[]> iconB
       var1.handleServerData(this);
    }
 
-   public Component motd() {
-      return this.motd;
-   }
-
-   public Optional<byte[]> iconBytes() {
-      return this.iconBytes;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ComponentSerialization.TRUSTED_CONTEXT_FREE_STREAM_CODEC, ClientboundServerDataPacket::motd, ByteBufCodecs.BYTE_ARRAY.apply(ByteBufCodecs::optional), ClientboundServerDataPacket::iconBytes, ClientboundServerDataPacket::new);
    }

@@ -34,7 +34,7 @@ public abstract class BaseSpawner {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int EVENT_SPAWN = 1;
    private int spawnDelay = 20;
-   private SimpleWeightedRandomList<SpawnData> spawnPotentials = SimpleWeightedRandomList.empty();
+   private SimpleWeightedRandomList<SpawnData> spawnPotentials = SimpleWeightedRandomList.<SpawnData>empty();
    @Nullable
    private SpawnData nextSpawnData;
    private double spin;
@@ -184,9 +184,7 @@ public abstract class BaseSpawner {
          this.spawnDelay = this.minSpawnDelay + var3.nextInt(this.maxSpawnDelay - this.minSpawnDelay);
       }
 
-      this.spawnPotentials.getRandom(var3).ifPresent((var3x) -> {
-         this.setNextSpawnData(var1, var2, (SpawnData)var3x.data());
-      });
+      this.spawnPotentials.getRandom(var3).ifPresent((var3x) -> this.setNextSpawnData(var1, var2, (SpawnData)var3x.data()));
       this.broadcastEvent(var1, var2, 1);
    }
 
@@ -194,20 +192,16 @@ public abstract class BaseSpawner {
       this.spawnDelay = var3.getShort("Delay");
       boolean var4 = var3.contains("SpawnData", 10);
       if (var4) {
-         SpawnData var5 = (SpawnData)SpawnData.CODEC.parse(NbtOps.INSTANCE, var3.getCompound("SpawnData")).resultOrPartial((var0) -> {
-            LOGGER.warn("Invalid SpawnData: {}", var0);
-         }).orElseGet(SpawnData::new);
+         SpawnData var5 = (SpawnData)SpawnData.CODEC.parse(NbtOps.INSTANCE, var3.getCompound("SpawnData")).resultOrPartial((var0) -> LOGGER.warn("Invalid SpawnData: {}", var0)).orElseGet(SpawnData::new);
          this.setNextSpawnData(var1, var2, var5);
       }
 
       boolean var7 = var3.contains("SpawnPotentials", 9);
       if (var7) {
          ListTag var6 = var3.getList("SpawnPotentials", 10);
-         this.spawnPotentials = (SimpleWeightedRandomList)SpawnData.LIST_CODEC.parse(NbtOps.INSTANCE, var6).resultOrPartial((var0) -> {
-            LOGGER.warn("Invalid SpawnPotentials list: {}", var0);
-         }).orElseGet(SimpleWeightedRandomList::empty);
+         this.spawnPotentials = (SimpleWeightedRandomList)SpawnData.LIST_CODEC.parse(NbtOps.INSTANCE, var6).resultOrPartial((var0) -> LOGGER.warn("Invalid SpawnPotentials list: {}", var0)).orElseGet(SimpleWeightedRandomList::empty);
       } else {
-         this.spawnPotentials = SimpleWeightedRandomList.single(this.nextSpawnData != null ? this.nextSpawnData : new SpawnData());
+         this.spawnPotentials = SimpleWeightedRandomList.<SpawnData>single(this.nextSpawnData != null ? this.nextSpawnData : new SpawnData());
       }
 
       if (var3.contains("MinSpawnDelay", 99)) {
@@ -237,9 +231,7 @@ public abstract class BaseSpawner {
       var1.putShort("RequiredPlayerRange", (short)this.requiredPlayerRange);
       var1.putShort("SpawnRange", (short)this.spawnRange);
       if (this.nextSpawnData != null) {
-         var1.put("SpawnData", (Tag)SpawnData.CODEC.encodeStart(NbtOps.INSTANCE, this.nextSpawnData).getOrThrow((var0) -> {
-            return new IllegalStateException("Invalid SpawnData: " + var0);
-         }));
+         var1.put("SpawnData", (Tag)SpawnData.CODEC.encodeStart(NbtOps.INSTANCE, this.nextSpawnData).getOrThrow((var0) -> new IllegalStateException("Invalid SpawnData: " + var0)));
       }
 
       var1.put("SpawnPotentials", (Tag)SpawnData.LIST_CODEC.encodeStart(NbtOps.INSTANCE, this.spawnPotentials).getOrThrow());

@@ -78,15 +78,11 @@ public class Goat extends Animal {
    public ItemStack createHorn() {
       RandomSource var1 = RandomSource.create((long)this.getUUID().hashCode());
       TagKey var2 = this.isScreamingGoat() ? InstrumentTags.SCREAMING_GOAT_HORNS : InstrumentTags.REGULAR_GOAT_HORNS;
-      return (ItemStack)this.level().registryAccess().lookupOrThrow(Registries.INSTRUMENT).getRandomElementOf(var2, var1).map((var0) -> {
-         return InstrumentItem.create(Items.GOAT_HORN, var0);
-      }).orElseGet(() -> {
-         return new ItemStack(Items.GOAT_HORN);
-      });
+      return (ItemStack)this.level().registryAccess().lookupOrThrow(Registries.INSTRUMENT).getRandomElementOf(var2, var1).map((var0) -> InstrumentItem.create(Items.GOAT_HORN, var0)).orElseGet(() -> new ItemStack(Items.GOAT_HORN));
    }
 
    protected Brain.Provider<Goat> brainProvider() {
-      return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
+      return Brain.<Goat>provider(MEMORY_TYPES, SENSOR_TYPES);
    }
 
    protected Brain<?> makeBrain(Dynamic<?> var1) {
@@ -134,7 +130,7 @@ public class Goat extends Animal {
 
    @Nullable
    public Goat getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      Goat var3 = (Goat)EntityType.GOAT.create(var1, EntitySpawnReason.BREEDING);
+      Goat var3 = EntityType.GOAT.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          boolean var10000;
          label22: {
@@ -350,8 +346,8 @@ public class Goat extends Animal {
    static {
       SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.NEAREST_ADULT, SensorType.HURT_BY, SensorType.GOAT_TEMPTATIONS);
       MEMORY_TYPES = ImmutableList.of(MemoryModuleType.LOOK_TARGET, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.WALK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.ATE_RECENTLY, MemoryModuleType.BREED_TARGET, MemoryModuleType.LONG_JUMP_COOLDOWN_TICKS, MemoryModuleType.LONG_JUMP_MID_JUMP, MemoryModuleType.TEMPTING_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ADULT, MemoryModuleType.TEMPTATION_COOLDOWN_TICKS, new MemoryModuleType[]{MemoryModuleType.IS_TEMPTED, MemoryModuleType.RAM_COOLDOWN_TICKS, MemoryModuleType.RAM_TARGET, MemoryModuleType.IS_PANICKING});
-      DATA_IS_SCREAMING_GOAT = SynchedEntityData.defineId(Goat.class, EntityDataSerializers.BOOLEAN);
-      DATA_HAS_LEFT_HORN = SynchedEntityData.defineId(Goat.class, EntityDataSerializers.BOOLEAN);
-      DATA_HAS_RIGHT_HORN = SynchedEntityData.defineId(Goat.class, EntityDataSerializers.BOOLEAN);
+      DATA_IS_SCREAMING_GOAT = SynchedEntityData.<Boolean>defineId(Goat.class, EntityDataSerializers.BOOLEAN);
+      DATA_HAS_LEFT_HORN = SynchedEntityData.<Boolean>defineId(Goat.class, EntityDataSerializers.BOOLEAN);
+      DATA_HAS_RIGHT_HORN = SynchedEntityData.<Boolean>defineId(Goat.class, EntityDataSerializers.BOOLEAN);
    }
 }

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import java.util.Iterator;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -17,9 +16,7 @@ public interface ChangeOverTimeBlock<T extends Enum<T>> {
    default void changeOverTime(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       float var5 = 0.05688889F;
       if (var4.nextFloat() < 0.05688889F) {
-         this.getNextState(var1, var2, var3, var4).ifPresent((var2x) -> {
-            var2.setBlockAndUpdate(var3, var2x);
-         });
+         this.getNextState(var1, var2, var3, var4).ifPresent((var2x) -> var2.setBlockAndUpdate(var3, var2x));
       }
 
    }
@@ -30,10 +27,8 @@ public interface ChangeOverTimeBlock<T extends Enum<T>> {
       int var5 = this.getAge().ordinal();
       int var6 = 0;
       int var7 = 0;
-      Iterator var8 = BlockPos.withinManhattan(var3, 4, 4, 4).iterator();
 
-      while(var8.hasNext()) {
-         BlockPos var9 = (BlockPos)var8.next();
+      for(BlockPos var9 : BlockPos.withinManhattan(var3, 4, 4, 4)) {
          int var10 = var9.distManhattan(var3);
          if (var10 > 4) {
             break;

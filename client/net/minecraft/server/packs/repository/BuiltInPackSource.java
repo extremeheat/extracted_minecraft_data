@@ -70,19 +70,13 @@ public abstract class BuiltInPackSource implements RepositorySource {
    }
 
    protected void populatePackList(BiConsumer<String, Function<String, Pack>> var1) {
-      this.vanillaPack.listRawPaths(this.packType, this.packDir, (var2) -> {
-         this.discoverPacksInPath(var2, var1);
-      });
+      this.vanillaPack.listRawPaths(this.packType, this.packDir, (var2) -> this.discoverPacksInPath(var2, var1));
    }
 
    protected void discoverPacksInPath(@Nullable Path var1, BiConsumer<String, Function<String, Pack>> var2) {
       if (var1 != null && Files.isDirectory(var1, new LinkOption[0])) {
          try {
-            FolderRepositorySource.discoverPacks(var1, this.validator, (var2x, var3) -> {
-               var2.accept(pathToId(var2x), (var2xx) -> {
-                  return this.createBuiltinPack(var2xx, var3, this.getPackTitle(var2xx));
-               });
-            });
+            FolderRepositorySource.discoverPacks(var1, this.validator, (var2x, var3) -> var2.accept(pathToId(var2x), (Function)(var2xx) -> this.createBuiltinPack(var2xx, var3, this.getPackTitle(var2xx))));
          } catch (IOException var4) {
             LOGGER.warn("Failed to discover packs in {}", var1, var4);
          }

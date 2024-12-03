@@ -124,9 +124,7 @@ public class Channel {
    }
 
    public void attachStaticBuffer(SoundBuffer var1) {
-      var1.getAlBuffer().ifPresent((var1x) -> {
-         AL10.alSourcei(this.source, 4105, var1x);
-      });
+      var1.getAlBuffer().ifPresent((var1x) -> AL10.alSourcei(this.source, 4105, var1x));
    }
 
    public void attachBufferStream(AudioStream var1) {
@@ -146,9 +144,7 @@ public class Channel {
             for(int var2 = 0; var2 < var1; ++var2) {
                ByteBuffer var3 = this.stream.read(this.streamingBufferSize);
                if (var3 != null) {
-                  (new SoundBuffer(var3, this.stream.getFormat())).releaseAlBuffer().ifPresent((var1x) -> {
-                     AL10.alSourceQueueBuffers(this.source, new int[]{var1x});
-                  });
+                  (new SoundBuffer(var3, this.stream.getFormat())).releaseAlBuffer().ifPresent((var1x) -> AL10.alSourceQueueBuffers(this.source, new int[]{var1x}));
                }
             }
          } catch (IOException var4) {

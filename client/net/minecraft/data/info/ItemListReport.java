@@ -31,9 +31,7 @@ public class ItemListReport implements DataProvider {
          RegistryOps var4 = var2x.createSerializationContext(JsonOps.INSTANCE);
          var2x.lookupOrThrow(Registries.ITEM).listElements().forEach((var2xx) -> {
             JsonObject var3x = new JsonObject();
-            var3x.add("components", (JsonElement)DataComponentMap.CODEC.encodeStart(var4, ((Item)var2xx.value()).components()).getOrThrow((var0) -> {
-               return new IllegalStateException("Failed to encode components: " + var0);
-            }));
+            var3x.add("components", (JsonElement)DataComponentMap.CODEC.encodeStart(var4, ((Item)var2xx.value()).components()).getOrThrow((var0) -> new IllegalStateException("Failed to encode components: " + var0)));
             var3.add(var2xx.getRegisteredName(), var3x);
          });
          return DataProvider.saveStable(var1, var3, var2);

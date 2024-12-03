@@ -72,7 +72,7 @@ public class ChunkStatus {
    }
 
    public static ChunkStatus byName(String var0) {
-      return (ChunkStatus)BuiltInRegistries.CHUNK_STATUS.getValue(ResourceLocation.tryParse(var0));
+      return BuiltInRegistries.CHUNK_STATUS.getValue(ResourceLocation.tryParse(var0));
    }
 
    public EnumSet<Heightmap.Types> heightmapsAfter() {

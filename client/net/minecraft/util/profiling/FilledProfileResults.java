@@ -46,9 +46,7 @@ public class FilledProfileResults implements ProfileResults {
       }
    };
    private static final Splitter SPLITTER = Splitter.on('\u001e');
-   private static final Comparator<Map.Entry<String, CounterCollector>> COUNTER_ENTRY_COMPARATOR = Entry.comparingByValue(Comparator.comparingLong((var0) -> {
-      return var0.totalValue;
-   })).reversed();
+   private static final Comparator<Map.Entry<String, CounterCollector>> COUNTER_ENTRY_COMPARATOR = Entry.comparingByValue(Comparator.comparingLong((var0) -> var0.totalValue)).reversed();
    private final Map<String, ? extends ProfilerPathEntry> entries;
    private final long startTimeNano;
    private final int startTimeTicks;
@@ -72,6 +70,7 @@ public class FilledProfileResults implements ProfileResults {
    }
 
    public List<ResultField> getTimes(String var1) {
+      String var2 = var1;
       ProfilerPathEntry var3 = this.getEntry("root");
       long var4 = var3.getDuration();
       ProfilerPathEntry var6 = this.getEntry(var1);
@@ -83,10 +82,8 @@ public class FilledProfileResults implements ProfileResults {
       }
 
       long var12 = 0L;
-      Iterator var14 = this.entries.keySet().iterator();
 
-      while(var14.hasNext()) {
-         String var15 = (String)var14.next();
+      for(String var15 : this.entries.keySet()) {
          if (isDirectChild(var1, var15)) {
             var12 += this.getEntry(var15).getDuration();
          }
@@ -101,10 +98,7 @@ public class FilledProfileResults implements ProfileResults {
          var4 = var12;
       }
 
-      Iterator var26 = this.entries.keySet().iterator();
-
-      while(var26.hasNext()) {
-         String var16 = (String)var26.next();
+      for(String var16 : this.entries.keySet()) {
          if (isDirectChild(var1, var16)) {
             ProfilerPathEntry var17 = this.getEntry(var16);
             long var18 = var17.getDuration();
@@ -120,7 +114,7 @@ public class FilledProfileResults implements ProfileResults {
       }
 
       Collections.sort(var11);
-      var11.add(0, new ResultField(var1, 100.0, (double)var12 * 100.0 / (double)var4, var9));
+      var11.add(0, new ResultField(var2, 100.0, (double)var12 * 100.0 / (double)var4, var9));
       return var11;
    }
 
@@ -134,11 +128,7 @@ public class FilledProfileResults implements ProfileResults {
          Object2LongMap var3 = var2.getCounters();
          if (!var3.isEmpty()) {
             List var4 = SPLITTER.splitToList(var1x);
-            var3.forEach((var2x, var3x) -> {
-               ((CounterCollector)var1.computeIfAbsent(var2x, (var0) -> {
-                  return new CounterCollector();
-               })).addValue(var4.iterator(), var3x);
-            });
+            var3.forEach((var2x, var3x) -> ((CounterCollector)var1.computeIfAbsent(var2x, (var0) -> new CounterCollector())).addValue(var4.iterator(), var3x));
          }
 
       });
@@ -220,9 +210,7 @@ public class FilledProfileResults implements ProfileResults {
    private void appendProfilerResults(int var1, String var2, StringBuilder var3) {
       List var4 = this.getTimes(var2);
       Object2LongMap var5 = ((ProfilerPathEntry)ObjectUtils.firstNonNull(new ProfilerPathEntry[]{(ProfilerPathEntry)this.entries.get(var2), EMPTY})).getCounters();
-      var5.forEach((var3x, var4x) -> {
-         indentLine(var3, var1).append('#').append(var3x).append(' ').append(var4x).append('/').append(var4x / (long)this.tickDuration).append('\n');
-      });
+      var5.forEach((var3x, var4x) -> indentLine(var3, var1).append('#').append(var3x).append(' ').append(var4x).append('/').append(var4x / (long)this.tickDuration).append('\n'));
       if (var4.size() >= 3) {
          for(int var6 = 1; var6 < var4.size(); ++var6) {
             ResultField var7 = (ResultField)var4.get(var6);
@@ -241,9 +229,7 @@ public class FilledProfileResults implements ProfileResults {
 
    private void appendCounterResults(int var1, String var2, CounterCollector var3, int var4, StringBuilder var5) {
       indentLine(var5, var1).append(var2).append(" total:").append(var3.selfValue).append('/').append(var3.totalValue).append(" average: ").append(var3.selfValue / (long)var4).append('/').append(var3.totalValue / (long)var4).append('\n');
-      var3.children.entrySet().stream().sorted(COUNTER_ENTRY_COMPARATOR).forEach((var4x) -> {
-         this.appendCounterResults(var1 + 1, (String)var4x.getKey(), (CounterCollector)var4x.getValue(), var4, var5);
-      });
+      var3.children.entrySet().stream().sorted(COUNTER_ENTRY_COMPARATOR).forEach((var4x) -> this.appendCounterResults(var1 + 1, (String)var4x.getKey(), (CounterCollector)var4x.getValue(), var4, var5));
    }
 
    private void appendCounters(Map<String, CounterCollector> var1, StringBuilder var2, int var3) {
@@ -272,9 +258,7 @@ public class FilledProfileResults implements ProfileResults {
          if (!var1.hasNext()) {
             this.selfValue += var2;
          } else {
-            ((CounterCollector)this.children.computeIfAbsent((String)var1.next(), (var0) -> {
-               return new CounterCollector();
-            })).addValue(var1, var2);
+            ((CounterCollector)this.children.computeIfAbsent((String)var1.next(), (var0) -> new CounterCollector())).addValue(var1, var2);
          }
 
       }

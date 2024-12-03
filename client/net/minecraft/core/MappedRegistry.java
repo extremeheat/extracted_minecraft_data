@@ -54,15 +54,13 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    public MappedRegistry(ResourceKey<? extends Registry<T>> var1, Lifecycle var2, boolean var3) {
       super();
       this.byId = new ObjectArrayList(256);
-      this.toId = (Reference2IntMap)Util.make(new Reference2IntOpenHashMap(), (var0) -> {
-         var0.defaultReturnValue(-1);
-      });
+      this.toId = (Reference2IntMap)Util.make(new Reference2IntOpenHashMap(), (var0) -> var0.defaultReturnValue(-1));
       this.byLocation = new HashMap();
       this.byKey = new HashMap();
       this.byValue = new IdentityHashMap();
       this.registrationInfos = new IdentityHashMap();
       this.frozenTags = new IdentityHashMap();
-      this.allTags = MappedRegistry.TagSet.unbound();
+      this.allTags = MappedRegistry.TagSet.<T>unbound();
       this.key = var1;
       this.registryLifecycle = var2;
       if (var3) {
@@ -111,9 +109,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
             var4.bindKey(var1);
          } else {
-            var4 = (Holder.Reference)this.byKey.computeIfAbsent(var1, (var1x) -> {
-               return Holder.Reference.createStandAlone(this, var1x);
-            });
+            var4 = (Holder.Reference)this.byKey.computeIfAbsent(var1, (var1x) -> Holder.Reference.createStandAlone(this, var1x));
          }
 
          this.byKey.put(var1, var4);
@@ -144,12 +140,12 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
    @Nullable
    public T getValue(@Nullable ResourceKey<T> var1) {
-      return getValueFromNullable((Holder.Reference)this.byKey.get(var1));
+      return (T)getValueFromNullable((Holder.Reference)this.byKey.get(var1));
    }
 
    @Nullable
    public T byId(int var1) {
-      return var1 >= 0 && var1 < this.byId.size() ? ((Holder.Reference)this.byId.get(var1)).value() : null;
+      return (T)(var1 >= 0 && var1 < this.byId.size() ? ((Holder.Reference)this.byId.get(var1)).value() : null);
    }
 
    public Optional<Holder.Reference<T>> get(int var1) {
@@ -170,7 +166,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
    public Holder<T> wrapAsHolder(T var1) {
       Holder.Reference var2 = (Holder.Reference)this.byValue.get(var1);
-      return (Holder)(var2 != null ? var2 : Holder.direct(var1));
+      return (Holder<T>)(var2 != null ? var2 : Holder.direct(var1));
    }
 
    Holder.Reference<T> getOrCreateHolderOrThrow(ResourceKey<T> var1) {
@@ -203,12 +199,12 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    @Nullable
    public T getValue(@Nullable ResourceLocation var1) {
       Holder.Reference var2 = (Holder.Reference)this.byLocation.get(var1);
-      return getValueFromNullable(var2);
+      return (T)getValueFromNullable(var2);
    }
 
    @Nullable
    private static <T> T getValueFromNullable(@Nullable Holder.Reference<T> var0) {
-      return var0 != null ? var0.value() : null;
+      return (T)(var0 != null ? var0.value() : null);
    }
 
    public Set<ResourceLocation> keySet() {
@@ -236,7 +232,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    }
 
    private HolderSet.Named<T> createTag(TagKey<T> var1) {
-      return new HolderSet.Named(this, var1);
+      return new HolderSet.Named<T>(this, var1);
    }
 
    public boolean isEmpty() {
@@ -244,7 +240,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    }
 
    public Optional<Holder.Reference<T>> getRandom(RandomSource var1) {
-      return Util.getRandomSafe(this.byId, var1);
+      return Util.<Holder.Reference<T>>getRandomSafe(this.byId, var1);
    }
 
    public boolean containsKey(ResourceLocation var1) {
@@ -260,18 +256,11 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
          return this;
       } else {
          this.frozen = true;
-         this.byValue.forEach((var0, var1x) -> {
-            var1x.bindValue(var0);
-         });
-         List var1 = this.byKey.entrySet().stream().filter((var0) -> {
-            return !((Holder.Reference)var0.getValue()).isBound();
-         }).map((var0) -> {
-            return ((ResourceKey)var0.getKey()).location();
-         }).sorted().toList();
-         String var10002;
+         this.byValue.forEach((var0, var1x) -> var1x.bindValue(var0));
+         List var1 = this.byKey.entrySet().stream().filter((var0) -> !((Holder.Reference)var0.getValue()).isBound()).map((var0) -> ((ResourceKey)var0.getKey()).location()).sorted().toList();
          if (!var1.isEmpty()) {
-            var10002 = String.valueOf(this.key());
-            throw new IllegalStateException("Unbound values in registry " + var10002 + ": " + String.valueOf(var1));
+            String var3 = String.valueOf(this.key());
+            throw new IllegalStateException("Unbound values in registry " + var3 + ": " + String.valueOf(var1));
          } else {
             if (this.unregisteredIntrusiveHolders != null) {
                if (!this.unregisteredIntrusiveHolders.isEmpty()) {
@@ -284,16 +273,12 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
             if (this.allTags.isBound()) {
                throw new IllegalStateException("Tags already present before freezing");
             } else {
-               List var2 = this.frozenTags.entrySet().stream().filter((var0) -> {
-                  return !((HolderSet.Named)var0.getValue()).isBound();
-               }).map((var0) -> {
-                  return ((TagKey)var0.getKey()).location();
-               }).sorted().toList();
+               List var2 = this.frozenTags.entrySet().stream().filter((var0) -> !((HolderSet.Named)var0.getValue()).isBound()).map((var0) -> ((TagKey)var0.getKey()).location()).sorted().toList();
                if (!var2.isEmpty()) {
-                  var10002 = String.valueOf(this.key());
+                  String var10002 = String.valueOf(this.key());
                   throw new IllegalStateException("Unbound tags in registry " + var10002 + ": " + String.valueOf(var2));
                } else {
-                  this.allTags = MappedRegistry.TagSet.fromMap(this.frozenTags);
+                  this.allTags = MappedRegistry.TagSet.<T>fromMap(this.frozenTags);
                   this.refreshTagsInHolders();
                   return this;
                }
@@ -307,9 +292,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
          throw new IllegalStateException("This registry can't create intrusive holders");
       } else {
          this.validateWrite();
-         return (Holder.Reference)this.unregisteredIntrusiveHolders.computeIfAbsent(var1, (var1x) -> {
-            return Holder.Reference.createIntrusive(this, var1x);
-         });
+         return (Holder.Reference)this.unregisteredIntrusiveHolders.computeIfAbsent(var1, (var1x) -> Holder.Reference.createIntrusive(this, var1x));
       }
    }
 
@@ -318,15 +301,14 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    }
 
    private Holder.Reference<T> validateAndUnwrapTagElement(TagKey<T> var1, Holder<T> var2) {
-      String var10002;
       if (!var2.canSerializeIn(this)) {
-         var10002 = String.valueOf(var1);
-         throw new IllegalStateException("Can't create named set " + var10002 + " containing value " + String.valueOf(var2) + " from outside registry " + String.valueOf(this));
+         String var4 = String.valueOf(var1);
+         throw new IllegalStateException("Can't create named set " + var4 + " containing value " + String.valueOf(var2) + " from outside registry " + String.valueOf(this));
       } else if (var2 instanceof Holder.Reference) {
          Holder.Reference var3 = (Holder.Reference)var2;
          return var3;
       } else {
-         var10002 = String.valueOf(var2);
+         String var10002 = String.valueOf(var2);
          throw new IllegalStateException("Found direct holder " + var10002 + " value in tag " + String.valueOf(var1));
       }
    }
@@ -338,14 +320,9 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
    void refreshTagsInHolders() {
       IdentityHashMap var1 = new IdentityHashMap();
-      this.byKey.values().forEach((var1x) -> {
-         var1.put(var1x, new ArrayList());
-      });
+      this.byKey.values().forEach((var1x) -> var1.put(var1x, new ArrayList()));
       this.allTags.forEach((var2, var3) -> {
-         Iterator var4 = var3.iterator();
-
-         while(var4.hasNext()) {
-            Holder var5 = (Holder)var4.next();
+         for(Holder var5 : var3) {
             Holder.Reference var6 = this.validateAndUnwrapTagElement(var2, var5);
             ((List)var1.get(var6)).add(var2);
          }
@@ -356,9 +333,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
    public void bindAllTagsToEmpty() {
       this.validateWrite();
-      this.frozenTags.values().forEach((var0) -> {
-         var0.bind(List.of());
-      });
+      this.frozenTags.values().forEach((var0) -> var0.bind(List.of()));
    }
 
    public HolderGetter<T> createRegistrationLookup() {
@@ -429,14 +404,14 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
                   List var3x = (List)var3.getOrDefault(var1, List.of());
                   var2.bind(var3x);
                });
-               MappedRegistry.this.allTags = MappedRegistry.TagSet.fromMap(var4);
+               MappedRegistry.this.allTags = MappedRegistry.TagSet.<T>fromMap(var4);
                MappedRegistry.this.refreshTagsInHolders();
             }
          };
       }
    }
 
-   private interface TagSet<T> {
+   interface TagSet<T> {
       static <T> TagSet<T> unbound() {
          return new TagSet<T>() {
             public boolean isBound() {

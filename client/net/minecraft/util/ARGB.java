@@ -104,7 +104,23 @@ public class ARGB {
       return Mth.floor(var0 * 255.0F);
    }
 
-   public static float from8BitChannel(int var0) {
+   public static float alphaFloat(int var0) {
+      return from8BitChannel(alpha(var0));
+   }
+
+   public static float redFloat(int var0) {
+      return from8BitChannel(red(var0));
+   }
+
+   public static float greenFloat(int var0) {
+      return from8BitChannel(green(var0));
+   }
+
+   public static float blueFloat(int var0) {
+      return from8BitChannel(blue(var0));
+   }
+
+   private static float from8BitChannel(int var0) {
       return (float)var0 / 255.0F;
    }
 

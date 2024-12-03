@@ -6,7 +6,6 @@ import com.mojang.logging.LogUtils;
 import java.lang.StackWalker.Option;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,10 +30,7 @@ public class TracyZoneFiller implements ProfilerFiller {
    }
 
    public void endTick() {
-      Iterator var1 = this.plots.values().iterator();
-
-      while(var1.hasNext()) {
-         PlotAndValue var2 = (PlotAndValue)var1.next();
+      for(PlotAndValue var2 : this.plots.values()) {
          var2.set(0);
       }
 
@@ -45,11 +41,7 @@ public class TracyZoneFiller implements ProfilerFiller {
       String var3 = "";
       int var4 = 0;
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         Optional var5 = (Optional)STACK_WALKER.walk((var0) -> {
-            return var0.filter((var0x) -> {
-               return var0x.getDeclaringClass() != TracyZoneFiller.class && var0x.getDeclaringClass() != ProfilerFiller.CombinedProfileFiller.class;
-            }).findFirst();
-         });
+         Optional var5 = (Optional)STACK_WALKER.walk((var0) -> var0.filter((var0x) -> var0x.getDeclaringClass() != TracyZoneFiller.class && var0x.getDeclaringClass() != ProfilerFiller.CombinedProfileFiller.class).findFirst());
          if (var5.isPresent()) {
             StackWalker.StackFrame var6 = (StackWalker.StackFrame)var5.get();
             var2 = var6.getMethodName();
@@ -89,9 +81,7 @@ public class TracyZoneFiller implements ProfilerFiller {
    }
 
    public void incrementCounter(String var1, int var2) {
-      ((PlotAndValue)this.plots.computeIfAbsent(var1, (var2x) -> {
-         return new PlotAndValue(this.name + " " + var1);
-      })).add(var2);
+      ((PlotAndValue)this.plots.computeIfAbsent(var1, (var2x) -> new PlotAndValue(this.name + " " + var1))).add(var2);
    }
 
    public void incrementCounter(Supplier<String> var1, int var2) {
@@ -118,7 +108,7 @@ public class TracyZoneFiller implements ProfilerFiller {
       STACK_WALKER = StackWalker.getInstance(Set.of(Option.RETAIN_CLASS_REFERENCE), 5);
    }
 
-   private static final class PlotAndValue {
+   static final class PlotAndValue {
       private final Plot plot;
       private int value;
 

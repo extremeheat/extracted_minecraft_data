@@ -68,11 +68,7 @@ public class CompiledShader implements AutoCloseable {
 
       @Nullable
       public static Type byLocation(ResourceLocation var0) {
-         Type[] var1 = TYPES;
-         int var2 = var1.length;
-
-         for(int var3 = 0; var3 < var2; ++var3) {
-            Type var4 = var1[var3];
+         for(Type var4 : TYPES) {
             if (var0.getPath().endsWith(var4.extension)) {
                return var4;
             }

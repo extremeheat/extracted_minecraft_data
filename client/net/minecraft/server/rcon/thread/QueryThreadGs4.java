@@ -172,11 +172,8 @@ public class QueryThreadGs4 extends GenericThread {
          this.rulesResponse.writeString("player_");
          this.rulesResponse.write(0);
          String[] var4 = this.serverInterface.getPlayerNames();
-         String[] var5 = var4;
-         int var6 = var4.length;
 
-         for(int var7 = 0; var7 < var6; ++var7) {
-            String var8 = var5[var7];
+         for(String var8 : var4) {
             this.rulesResponse.writeString(var8);
          }
 
@@ -210,9 +207,7 @@ public class QueryThreadGs4 extends GenericThread {
          long var1 = Util.getMillis();
          if (var1 >= this.lastChallengeCheck + 30000L) {
             this.lastChallengeCheck = var1;
-            this.validChallenges.values().removeIf((var2) -> {
-               return var2.before(var1);
-            });
+            this.validChallenges.values().removeIf((var2) -> var2.before(var1));
          }
       }
    }
@@ -272,7 +267,7 @@ public class QueryThreadGs4 extends GenericThread {
       }
    }
 
-   private static class RequestChallenge {
+   static class RequestChallenge {
       private final long time = (new Date()).getTime();
       private final int challenge;
       private final byte[] identBytes;

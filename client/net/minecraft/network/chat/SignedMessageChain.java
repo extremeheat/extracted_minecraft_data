@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
+import net.minecraft.util.SignatureUpdater;
 import net.minecraft.util.SignatureValidator;
 import net.minecraft.util.Signer;
 import net.minecraft.world.entity.player.ProfilePublicKey;
@@ -29,9 +30,7 @@ public class SignedMessageChain {
             return null;
          } else {
             this.nextLink = var3.advance();
-            return new MessageSignature(var1.sign((var2x) -> {
-               PlayerChatMessage.updateSignature(var2x, var3, var2);
-            }));
+            return new MessageSignature(var1.sign((SignatureUpdater)((var2x) -> PlayerChatMessage.updateSignature(var2x, var3, var2))));
          }
       };
    }
@@ -77,24 +76,10 @@ public class SignedMessageChain {
 
    @FunctionalInterface
    public interface Encoder {
-      Encoder UNSIGNED = (var0) -> {
-         return null;
-      };
+      Encoder UNSIGNED = (var0) -> null;
 
       @Nullable
       MessageSignature pack(SignedMessageBody var1);
-   }
-
-   public static class DecodeException extends ThrowingComponent {
-      static final Component MISSING_PROFILE_KEY = Component.translatable("chat.disabled.missingProfileKey");
-      static final Component CHAIN_BROKEN = Component.translatable("chat.disabled.chain_broken");
-      static final Component EXPIRED_PROFILE_KEY = Component.translatable("chat.disabled.expiredProfileKey");
-      static final Component INVALID_SIGNATURE = Component.translatable("chat.disabled.invalid_signature");
-      static final Component OUT_OF_ORDER_CHAT = Component.translatable("chat.disabled.out_of_order_chat");
-
-      public DecodeException(Component var1) {
-         super(var1);
-      }
    }
 
    @FunctionalInterface
@@ -112,6 +97,18 @@ public class SignedMessageChain {
       PlayerChatMessage unpack(@Nullable MessageSignature var1, SignedMessageBody var2) throws DecodeException;
 
       default void setChainBroken() {
+      }
+   }
+
+   public static class DecodeException extends ThrowingComponent {
+      static final Component MISSING_PROFILE_KEY = Component.translatable("chat.disabled.missingProfileKey");
+      static final Component CHAIN_BROKEN = Component.translatable("chat.disabled.chain_broken");
+      static final Component EXPIRED_PROFILE_KEY = Component.translatable("chat.disabled.expiredProfileKey");
+      static final Component INVALID_SIGNATURE = Component.translatable("chat.disabled.invalid_signature");
+      static final Component OUT_OF_ORDER_CHAT = Component.translatable("chat.disabled.out_of_order_chat");
+
+      public DecodeException(Component var1) {
+         super(var1);
       }
    }
 }

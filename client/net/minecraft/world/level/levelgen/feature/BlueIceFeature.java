@@ -24,12 +24,8 @@ public class BlueIceFeature extends Feature<NoneFeatureConfiguration> {
          return false;
       } else {
          boolean var5 = false;
-         Direction[] var6 = Direction.values();
-         int var7 = var6.length;
 
-         int var8;
-         for(var8 = 0; var8 < var7; ++var8) {
-            Direction var9 = var6[var8];
+         for(Direction var9 : Direction.values()) {
             if (var9 != Direction.DOWN && var3.getBlockState(var2.relative(var9)).is(Blocks.PACKED_ICE)) {
                var5 = true;
                break;
@@ -42,24 +38,20 @@ public class BlueIceFeature extends Feature<NoneFeatureConfiguration> {
             var3.setBlock(var2, Blocks.BLUE_ICE.defaultBlockState(), 2);
 
             for(int var16 = 0; var16 < 200; ++var16) {
-               var7 = var4.nextInt(5) - var4.nextInt(6);
-               var8 = 3;
-               if (var7 < 2) {
-                  var8 += var7 / 2;
+               int var17 = var4.nextInt(5) - var4.nextInt(6);
+               int var18 = 3;
+               if (var17 < 2) {
+                  var18 += var17 / 2;
                }
 
-               if (var8 >= 1) {
-                  BlockPos var17 = var2.offset(var4.nextInt(var8) - var4.nextInt(var8), var7, var4.nextInt(var8) - var4.nextInt(var8));
-                  BlockState var10 = var3.getBlockState(var17);
+               if (var18 >= 1) {
+                  BlockPos var19 = var2.offset(var4.nextInt(var18) - var4.nextInt(var18), var17, var4.nextInt(var18) - var4.nextInt(var18));
+                  BlockState var10 = var3.getBlockState(var19);
                   if (var10.isAir() || var10.is(Blocks.WATER) || var10.is(Blocks.PACKED_ICE) || var10.is(Blocks.ICE)) {
-                     Direction[] var11 = Direction.values();
-                     int var12 = var11.length;
-
-                     for(int var13 = 0; var13 < var12; ++var13) {
-                        Direction var14 = var11[var13];
-                        BlockState var15 = var3.getBlockState(var17.relative(var14));
+                     for(Direction var14 : Direction.values()) {
+                        BlockState var15 = var3.getBlockState(var19.relative(var14));
                         if (var15.is(Blocks.BLUE_ICE)) {
-                           var3.setBlock(var17, Blocks.BLUE_ICE.defaultBlockState(), 2);
+                           var3.setBlock(var19, Blocks.BLUE_ICE.defaultBlockState(), 2);
                            break;
                         }
                      }

@@ -1,7 +1,6 @@
 package net.minecraft.world.level;
 
 import com.google.common.collect.ImmutableList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -35,29 +34,18 @@ public interface EntityGetter {
       if (var2.isEmpty()) {
          return true;
       } else {
-         Iterator var3 = this.getEntities(var1, var2.bounds()).iterator();
+         for(Entity var4 : this.getEntities(var1, var2.bounds())) {
+            if (!var4.isRemoved() && var4.blocksBuilding && (var1 == null || !var4.isPassengerOfSameVehicle(var1)) && Shapes.joinIsNotEmpty(var2, Shapes.create(var4.getBoundingBox()), BooleanOp.AND)) {
+               return false;
+            }
+         }
 
-         Entity var4;
-         do {
-            do {
-               do {
-                  do {
-                     if (!var3.hasNext()) {
-                        return true;
-                     }
-
-                     var4 = (Entity)var3.next();
-                  } while(var4.isRemoved());
-               } while(!var4.blocksBuilding);
-            } while(var1 != null && var4.isPassengerOfSameVehicle(var1));
-         } while(!Shapes.joinIsNotEmpty(var2, Shapes.create(var4.getBoundingBox()), BooleanOp.AND));
-
-         return false;
+         return true;
       }
    }
 
    default <T extends Entity> List<T> getEntitiesOfClass(Class<T> var1, AABB var2) {
-      return this.getEntitiesOfClass(var1, var2, EntitySelector.NO_SPECTATORS);
+      return this.<T>getEntitiesOfClass(var1, var2, EntitySelector.NO_SPECTATORS);
    }
 
    default List<VoxelShape> getEntityCollisions(@Nullable Entity var1, AABB var2) {
@@ -79,10 +67,8 @@ public interface EntityGetter {
             return List.of();
          } else {
             ImmutableList.Builder var5 = ImmutableList.builderWithExpectedSize(var4.size());
-            Iterator var6 = var4.iterator();
 
-            while(var6.hasNext()) {
-               Entity var7 = (Entity)var6.next();
+            for(Entity var7 : var4) {
                var5.add(Shapes.create(var7.getBoundingBox()));
             }
 
@@ -95,28 +81,18 @@ public interface EntityGetter {
    default Player getNearestPlayer(double var1, double var3, double var5, double var7, @Nullable Predicate<Entity> var9) {
       double var10 = -1.0;
       Player var12 = null;
-      Iterator var13 = this.players().iterator();
 
-      while(true) {
-         Player var14;
-         double var15;
-         do {
-            do {
-               do {
-                  if (!var13.hasNext()) {
-                     return var12;
-                  }
-
-                  var14 = (Player)var13.next();
-               } while(var9 != null && !var9.test(var14));
-
-               var15 = var14.distanceToSqr(var1, var3, var5);
-            } while(!(var7 < 0.0) && !(var15 < var7 * var7));
-         } while(var10 != -1.0 && !(var15 < var10));
-
-         var10 = var15;
-         var12 = var14;
+      for(Player var14 : this.players()) {
+         if (var9 == null || var9.test(var14)) {
+            double var15 = var14.distanceToSqr(var1, var3, var5);
+            if ((var7 < 0.0 || var15 < var7 * var7) && (var10 == -1.0 || var15 < var10)) {
+               var10 = var15;
+               var12 = var14;
+            }
+         }
       }
+
+      return var12;
    }
 
    @Nullable
@@ -131,25 +107,16 @@ public interface EntityGetter {
    }
 
    default boolean hasNearbyAlivePlayer(double var1, double var3, double var5, double var7) {
-      Iterator var9 = this.players().iterator();
+      for(Player var10 : this.players()) {
+         if (EntitySelector.NO_SPECTATORS.test(var10) && EntitySelector.LIVING_ENTITY_STILL_ALIVE.test(var10)) {
+            double var11 = var10.distanceToSqr(var1, var3, var5);
+            if (var7 < 0.0 || var11 < var7 * var7) {
+               return true;
+            }
+         }
+      }
 
-      double var11;
-      do {
-         Player var10;
-         do {
-            do {
-               if (!var9.hasNext()) {
-                  return false;
-               }
-
-               var10 = (Player)var9.next();
-            } while(!EntitySelector.NO_SPECTATORS.test(var10));
-         } while(!EntitySelector.LIVING_ENTITY_STILL_ALIVE.test(var10));
-
-         var11 = var10.distanceToSqr(var1, var3, var5);
-      } while(!(var7 < 0.0) && !(var11 < var7 * var7));
-
-      return true;
+      return false;
    }
 
    @Nullable

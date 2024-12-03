@@ -79,12 +79,8 @@ public abstract class SingleQuadParticle extends Particle {
    protected abstract float getV1();
 
    public interface FacingCameraMode {
-      FacingCameraMode LOOKAT_XYZ = (var0, var1, var2) -> {
-         var0.set(var1.rotation());
-      };
-      FacingCameraMode LOOKAT_Y = (var0, var1, var2) -> {
-         var0.set(0.0F, var1.rotation().y, 0.0F, var1.rotation().w);
-      };
+      FacingCameraMode LOOKAT_XYZ = (var0, var1, var2) -> var0.set(var1.rotation());
+      FacingCameraMode LOOKAT_Y = (var0, var1, var2) -> var0.set(0.0F, var1.rotation().y, 0.0F, var1.rotation().w);
 
       void setRotation(Quaternionf var1, Camera var2, float var3);
    }

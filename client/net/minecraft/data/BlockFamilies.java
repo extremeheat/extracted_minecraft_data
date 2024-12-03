@@ -58,6 +58,7 @@ public class BlockFamilies {
    public static final BlockFamily TUFF;
    public static final BlockFamily POLISHED_TUFF;
    public static final BlockFamily TUFF_BRICKS;
+   public static final BlockFamily RESIN_BRICKS;
    public static final BlockFamily NETHER_BRICKS;
    public static final BlockFamily RED_NETHER_BRICKS;
    public static final BlockFamily PRISMARINE;
@@ -146,6 +147,7 @@ public class BlockFamilies {
       TUFF = familyBuilder(Blocks.TUFF).wall(Blocks.TUFF_WALL).stairs(Blocks.TUFF_STAIRS).slab(Blocks.TUFF_SLAB).chiseled(Blocks.CHISELED_TUFF).polished(Blocks.POLISHED_TUFF).getFamily();
       POLISHED_TUFF = familyBuilder(Blocks.POLISHED_TUFF).wall(Blocks.POLISHED_TUFF_WALL).stairs(Blocks.POLISHED_TUFF_STAIRS).slab(Blocks.POLISHED_TUFF_SLAB).polished(Blocks.TUFF_BRICKS).getFamily();
       TUFF_BRICKS = familyBuilder(Blocks.TUFF_BRICKS).wall(Blocks.TUFF_BRICK_WALL).stairs(Blocks.TUFF_BRICK_STAIRS).slab(Blocks.TUFF_BRICK_SLAB).chiseled(Blocks.CHISELED_TUFF_BRICKS).getFamily();
+      RESIN_BRICKS = familyBuilder(Blocks.RESIN_BRICKS).wall(Blocks.RESIN_BRICK_WALL).stairs(Blocks.RESIN_BRICK_STAIRS).slab(Blocks.RESIN_BRICK_SLAB).chiseled(Blocks.CHISELED_RESIN_BRICKS).getFamily();
       NETHER_BRICKS = familyBuilder(Blocks.NETHER_BRICKS).fence(Blocks.NETHER_BRICK_FENCE).wall(Blocks.NETHER_BRICK_WALL).stairs(Blocks.NETHER_BRICK_STAIRS).slab(Blocks.NETHER_BRICK_SLAB).chiseled(Blocks.CHISELED_NETHER_BRICKS).cracked(Blocks.CRACKED_NETHER_BRICKS).getFamily();
       RED_NETHER_BRICKS = familyBuilder(Blocks.RED_NETHER_BRICKS).slab(Blocks.RED_NETHER_BRICK_SLAB).stairs(Blocks.RED_NETHER_BRICK_STAIRS).wall(Blocks.RED_NETHER_BRICK_WALL).getFamily();
       PRISMARINE = familyBuilder(Blocks.PRISMARINE).wall(Blocks.PRISMARINE_WALL).stairs(Blocks.PRISMARINE_STAIRS).slab(Blocks.PRISMARINE_SLAB).getFamily();

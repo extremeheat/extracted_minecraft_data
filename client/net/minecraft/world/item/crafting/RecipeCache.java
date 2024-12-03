@@ -82,7 +82,7 @@ public class RecipeCache {
       public boolean matches(CraftingInput var1) {
          if (this.width == var1.width() && this.height == var1.height()) {
             for(int var2 = 0; var2 < this.key.size(); ++var2) {
-               if (!ItemStack.isSameItemSameComponents((ItemStack)this.key.get(var2), var1.getItem(var2))) {
+               if (!ItemStack.isSameItemSameComponents(this.key.get(var2), var1.getItem(var2))) {
                   return false;
                }
             }
@@ -91,23 +91,6 @@ public class RecipeCache {
          } else {
             return false;
          }
-      }
-
-      public NonNullList<ItemStack> key() {
-         return this.key;
-      }
-
-      public int width() {
-         return this.width;
-      }
-
-      public int height() {
-         return this.height;
-      }
-
-      @Nullable
-      public RecipeHolder<CraftingRecipe> value() {
-         return this.value;
       }
    }
 }

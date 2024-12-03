@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Function;
 import net.minecraft.network.chat.Component;
@@ -86,10 +85,8 @@ public class ServerBossEvent extends BossEvent {
    private void broadcast(Function<BossEvent, ClientboundBossEventPacket> var1) {
       if (this.visible) {
          ClientboundBossEventPacket var2 = (ClientboundBossEventPacket)var1.apply(this);
-         Iterator var3 = this.players.iterator();
 
-         while(var3.hasNext()) {
-            ServerPlayer var4 = (ServerPlayer)var3.next();
+         for(ServerPlayer var4 : this.players) {
             var4.connection.send(var2);
          }
       }
@@ -112,10 +109,7 @@ public class ServerBossEvent extends BossEvent {
 
    public void removeAllPlayers() {
       if (!this.players.isEmpty()) {
-         Iterator var1 = Lists.newArrayList(this.players).iterator();
-
-         while(var1.hasNext()) {
-            ServerPlayer var2 = (ServerPlayer)var1.next();
+         for(ServerPlayer var2 : Lists.newArrayList(this.players)) {
             this.removePlayer(var2);
          }
       }
@@ -129,10 +123,8 @@ public class ServerBossEvent extends BossEvent {
    public void setVisible(boolean var1) {
       if (var1 != this.visible) {
          this.visible = var1;
-         Iterator var2 = this.players.iterator();
 
-         while(var2.hasNext()) {
-            ServerPlayer var3 = (ServerPlayer)var2.next();
+         for(ServerPlayer var3 : this.players) {
             var3.connection.send(var1 ? ClientboundBossEventPacket.createAddPacket(this) : ClientboundBossEventPacket.createRemovePacket(this.getId()));
          }
       }

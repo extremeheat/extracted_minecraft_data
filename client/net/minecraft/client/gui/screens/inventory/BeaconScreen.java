@@ -69,38 +69,33 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       this.addBeaconButton(new BeaconConfirmButton(this.leftPos + 164, this.topPos + 107));
       this.addBeaconButton(new BeaconCancelButton(this.leftPos + 190, this.topPos + 107));
 
-      int var2;
-      int var3;
-      int var4;
-      Holder var5;
-      BeaconPowerButton var6;
       for(int var1 = 0; var1 <= 2; ++var1) {
-         var2 = ((List)BeaconBlockEntity.BEACON_EFFECTS.get(var1)).size();
-         var3 = var2 * 22 + (var2 - 1) * 2;
+         int var2 = ((List)BeaconBlockEntity.BEACON_EFFECTS.get(var1)).size();
+         int var3 = var2 * 22 + (var2 - 1) * 2;
 
-         for(var4 = 0; var4 < var2; ++var4) {
-            var5 = (Holder)((List)BeaconBlockEntity.BEACON_EFFECTS.get(var1)).get(var4);
-            var6 = new BeaconPowerButton(this.leftPos + 76 + var4 * 24 - var3 / 2, this.topPos + 22 + var1 * 25, var5, true, var1);
+         for(int var4 = 0; var4 < var2; ++var4) {
+            Holder var5 = (Holder)((List)BeaconBlockEntity.BEACON_EFFECTS.get(var1)).get(var4);
+            BeaconPowerButton var6 = new BeaconPowerButton(this.leftPos + 76 + var4 * 24 - var3 / 2, this.topPos + 22 + var1 * 25, var5, true, var1);
             var6.active = false;
             this.addBeaconButton(var6);
          }
       }
 
       boolean var7 = true;
-      var2 = ((List)BeaconBlockEntity.BEACON_EFFECTS.get(3)).size() + 1;
-      var3 = var2 * 22 + (var2 - 1) * 2;
+      int var8 = ((List)BeaconBlockEntity.BEACON_EFFECTS.get(3)).size() + 1;
+      int var9 = var8 * 22 + (var8 - 1) * 2;
 
-      for(var4 = 0; var4 < var2 - 1; ++var4) {
-         var5 = (Holder)((List)BeaconBlockEntity.BEACON_EFFECTS.get(3)).get(var4);
-         var6 = new BeaconPowerButton(this.leftPos + 167 + var4 * 24 - var3 / 2, this.topPos + 47, var5, false, 3);
-         var6.active = false;
-         this.addBeaconButton(var6);
+      for(int var10 = 0; var10 < var8 - 1; ++var10) {
+         Holder var12 = (Holder)((List)BeaconBlockEntity.BEACON_EFFECTS.get(3)).get(var10);
+         BeaconPowerButton var14 = new BeaconPowerButton(this.leftPos + 167 + var10 * 24 - var9 / 2, this.topPos + 47, var12, false, 3);
+         var14.active = false;
+         this.addBeaconButton(var14);
       }
 
-      Holder var8 = (Holder)((List)BeaconBlockEntity.BEACON_EFFECTS.get(0)).get(0);
-      BeaconUpgradePowerButton var9 = new BeaconUpgradePowerButton(this.leftPos + 167 + (var2 - 1) * 24 - var3 / 2, this.topPos + 47, var8);
-      var9.visible = false;
-      this.addBeaconButton(var9);
+      Holder var11 = (Holder)((List)BeaconBlockEntity.BEACON_EFFECTS.get(0)).get(0);
+      BeaconUpgradePowerButton var13 = new BeaconUpgradePowerButton(this.leftPos + 167 + (var8 - 1) * 24 - var9 / 2, this.topPos + 47, var11);
+      var13.visible = false;
+      this.addBeaconButton(var13);
    }
 
    public void containerTick() {
@@ -110,9 +105,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
 
    void updateButtons() {
       int var1 = ((BeaconMenu)this.menu).getLevels();
-      this.beaconButtons.forEach((var1x) -> {
-         var1x.updateStatus(var1);
-      });
+      this.beaconButtons.forEach((var1x) -> var1x.updateStatus(var1));
    }
 
    protected void renderLabels(GuiGraphics var1, int var2, int var3) {
@@ -139,39 +132,49 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       this.renderTooltip(var1, var2, var3);
    }
 
-   private interface BeaconButton {
-      void updateStatus(int var1);
+   abstract static class BeaconScreenButton extends AbstractButton implements BeaconButton {
+      private boolean selected;
+
+      protected BeaconScreenButton(int var1, int var2) {
+         super(var1, var2, 22, 22, CommonComponents.EMPTY);
+      }
+
+      protected BeaconScreenButton(int var1, int var2, Component var3) {
+         super(var1, var2, 22, 22, var3);
+      }
+
+      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+         ResourceLocation var5;
+         if (!this.active) {
+            var5 = BeaconScreen.BUTTON_DISABLED_SPRITE;
+         } else if (this.selected) {
+            var5 = BeaconScreen.BUTTON_SELECTED_SPRITE;
+         } else if (this.isHoveredOrFocused()) {
+            var5 = BeaconScreen.BUTTON_HIGHLIGHTED_SPRITE;
+         } else {
+            var5 = BeaconScreen.BUTTON_SPRITE;
+         }
+
+         var1.blitSprite(RenderType::guiTextured, var5, this.getX(), this.getY(), this.width, this.height);
+         this.renderIcon(var1);
+      }
+
+      protected abstract void renderIcon(GuiGraphics var1);
+
+      public boolean isSelected() {
+         return this.selected;
+      }
+
+      public void setSelected(boolean var1) {
+         this.selected = var1;
+      }
+
+      public void updateWidgetNarration(NarrationElementOutput var1) {
+         this.defaultButtonNarrationText(var1);
+      }
    }
 
-   private class BeaconConfirmButton extends BeaconSpriteScreenButton {
-      public BeaconConfirmButton(final int var2, final int var3) {
-         super(var2, var3, BeaconScreen.CONFIRM_SPRITE, CommonComponents.GUI_DONE);
-      }
-
-      public void onPress() {
-         BeaconScreen.this.minecraft.getConnection().send(new ServerboundSetBeaconPacket(Optional.ofNullable(BeaconScreen.this.primary), Optional.ofNullable(BeaconScreen.this.secondary)));
-         BeaconScreen.this.minecraft.player.closeContainer();
-      }
-
-      public void updateStatus(int var1) {
-         this.active = ((BeaconMenu)BeaconScreen.this.menu).hasPayment() && BeaconScreen.this.primary != null;
-      }
-   }
-
-   private class BeaconCancelButton extends BeaconSpriteScreenButton {
-      public BeaconCancelButton(final int var2, final int var3) {
-         super(var2, var3, BeaconScreen.CANCEL_SPRITE, CommonComponents.GUI_CANCEL);
-      }
-
-      public void onPress() {
-         BeaconScreen.this.minecraft.player.closeContainer();
-      }
-
-      public void updateStatus(int var1) {
-      }
-   }
-
-   private class BeaconPowerButton extends BeaconScreenButton {
+   class BeaconPowerButton extends BeaconScreenButton {
       private final boolean isPrimary;
       protected final int tier;
       private Holder<MobEffect> effect;
@@ -220,7 +223,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       }
    }
 
-   private class BeaconUpgradePowerButton extends BeaconPowerButton {
+   class BeaconUpgradePowerButton extends BeaconPowerButton {
       public BeaconUpgradePowerButton(final int var2, final int var3, final Holder<MobEffect> var4) {
          super(var2, var3, var4, false, 3);
       }
@@ -241,7 +244,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       }
    }
 
-   private abstract static class BeaconSpriteScreenButton extends BeaconScreenButton {
+   abstract static class BeaconSpriteScreenButton extends BeaconScreenButton {
       private final ResourceLocation sprite;
 
       protected BeaconSpriteScreenButton(int var1, int var2, ResourceLocation var3, Component var4) {
@@ -254,45 +257,35 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       }
    }
 
-   private abstract static class BeaconScreenButton extends AbstractButton implements BeaconButton {
-      private boolean selected;
-
-      protected BeaconScreenButton(int var1, int var2) {
-         super(var1, var2, 22, 22, CommonComponents.EMPTY);
+   class BeaconConfirmButton extends BeaconSpriteScreenButton {
+      public BeaconConfirmButton(final int var2, final int var3) {
+         super(var2, var3, BeaconScreen.CONFIRM_SPRITE, CommonComponents.GUI_DONE);
       }
 
-      protected BeaconScreenButton(int var1, int var2, Component var3) {
-         super(var1, var2, 22, 22, var3);
+      public void onPress() {
+         BeaconScreen.this.minecraft.getConnection().send(new ServerboundSetBeaconPacket(Optional.ofNullable(BeaconScreen.this.primary), Optional.ofNullable(BeaconScreen.this.secondary)));
+         BeaconScreen.this.minecraft.player.closeContainer();
       }
 
-      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
-         ResourceLocation var5;
-         if (!this.active) {
-            var5 = BeaconScreen.BUTTON_DISABLED_SPRITE;
-         } else if (this.selected) {
-            var5 = BeaconScreen.BUTTON_SELECTED_SPRITE;
-         } else if (this.isHoveredOrFocused()) {
-            var5 = BeaconScreen.BUTTON_HIGHLIGHTED_SPRITE;
-         } else {
-            var5 = BeaconScreen.BUTTON_SPRITE;
-         }
+      public void updateStatus(int var1) {
+         this.active = ((BeaconMenu)BeaconScreen.this.menu).hasPayment() && BeaconScreen.this.primary != null;
+      }
+   }
 
-         var1.blitSprite(RenderType::guiTextured, var5, this.getX(), this.getY(), this.width, this.height);
-         this.renderIcon(var1);
+   class BeaconCancelButton extends BeaconSpriteScreenButton {
+      public BeaconCancelButton(final int var2, final int var3) {
+         super(var2, var3, BeaconScreen.CANCEL_SPRITE, CommonComponents.GUI_CANCEL);
       }
 
-      protected abstract void renderIcon(GuiGraphics var1);
-
-      public boolean isSelected() {
-         return this.selected;
+      public void onPress() {
+         BeaconScreen.this.minecraft.player.closeContainer();
       }
 
-      public void setSelected(boolean var1) {
-         this.selected = var1;
+      public void updateStatus(int var1) {
       }
+   }
 
-      public void updateWidgetNarration(NarrationElementOutput var1) {
-         this.defaultButtonNarrationText(var1);
-      }
+   interface BeaconButton {
+      void updateStatus(int var1);
    }
 }

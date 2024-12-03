@@ -44,7 +44,7 @@ public class MetricSampler {
    }
 
    public static <T> MetricSamplerBuilder<T> builder(String var0, MetricCategory var1, ToDoubleFunction<T> var2, T var3) {
-      return new MetricSamplerBuilder(var0, var1, var2, var3);
+      return new MetricSamplerBuilder<T>(var0, var1, var2, var3);
    }
 
    public void onStartTick() {
@@ -127,47 +127,6 @@ public class MetricSampler {
       return this.name.hashCode();
    }
 
-   public interface ThresholdTest {
-      boolean test(double var1);
-   }
-
-   public static class MetricSamplerBuilder<T> {
-      private final String name;
-      private final MetricCategory category;
-      private final DoubleSupplier sampler;
-      private final T context;
-      @Nullable
-      private Runnable beforeTick;
-      @Nullable
-      private ThresholdTest thresholdTest;
-
-      public MetricSamplerBuilder(String var1, MetricCategory var2, ToDoubleFunction<T> var3, T var4) {
-         super();
-         this.name = var1;
-         this.category = var2;
-         this.sampler = () -> {
-            return var3.applyAsDouble(var4);
-         };
-         this.context = var4;
-      }
-
-      public MetricSamplerBuilder<T> withBeforeTick(Consumer<T> var1) {
-         this.beforeTick = () -> {
-            var1.accept(this.context);
-         };
-         return this;
-      }
-
-      public MetricSamplerBuilder<T> withThresholdAlert(ThresholdTest var1) {
-         this.thresholdTest = var1;
-         return this;
-      }
-
-      public MetricSampler build() {
-         return new MetricSampler(this.name, this.category, this.sampler, this.beforeTick, this.thresholdTest);
-      }
-   }
-
    public static class SamplerResult {
       private final Int2DoubleMap recording;
       private final int firstTick;
@@ -213,5 +172,42 @@ public class MetricSampler {
          this.previousValue = var1;
          return var3;
       }
+   }
+
+   public static class MetricSamplerBuilder<T> {
+      private final String name;
+      private final MetricCategory category;
+      private final DoubleSupplier sampler;
+      private final T context;
+      @Nullable
+      private Runnable beforeTick;
+      @Nullable
+      private ThresholdTest thresholdTest;
+
+      public MetricSamplerBuilder(String var1, MetricCategory var2, ToDoubleFunction<T> var3, T var4) {
+         super();
+         this.name = var1;
+         this.category = var2;
+         this.sampler = () -> var3.applyAsDouble(var4);
+         this.context = var4;
+      }
+
+      public MetricSamplerBuilder<T> withBeforeTick(Consumer<T> var1) {
+         this.beforeTick = () -> var1.accept(this.context);
+         return this;
+      }
+
+      public MetricSamplerBuilder<T> withThresholdAlert(ThresholdTest var1) {
+         this.thresholdTest = var1;
+         return this;
+      }
+
+      public MetricSampler build() {
+         return new MetricSampler(this.name, this.category, this.sampler, this.beforeTick, this.thresholdTest);
+      }
+   }
+
+   public interface ThresholdTest {
+      boolean test(double var1);
    }
 }

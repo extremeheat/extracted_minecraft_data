@@ -13,9 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public record PlaySoundConsumeEffect(Holder<SoundEvent> sound) implements ConsumeEffect {
-   public static final MapCodec<PlaySoundConsumeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(SoundEvent.CODEC.fieldOf("sound").forGetter(PlaySoundConsumeEffect::sound)).apply(var0, PlaySoundConsumeEffect::new);
-   });
+   public static final MapCodec<PlaySoundConsumeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SoundEvent.CODEC.fieldOf("sound").forGetter(PlaySoundConsumeEffect::sound)).apply(var0, PlaySoundConsumeEffect::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, PlaySoundConsumeEffect> STREAM_CODEC;
 
    public PlaySoundConsumeEffect(Holder<SoundEvent> var1) {
@@ -28,12 +26,8 @@ public record PlaySoundConsumeEffect(Holder<SoundEvent> sound) implements Consum
    }
 
    public boolean apply(Level var1, ItemStack var2, LivingEntity var3) {
-      var1.playSound((Player)null, (BlockPos)var3.blockPosition(), (SoundEvent)this.sound.value(), var3.getSoundSource(), 1.0F, 1.0F);
+      var1.playSound((Player)null, (BlockPos)var3.blockPosition(), this.sound.value(), var3.getSoundSource(), 1.0F, 1.0F);
       return true;
-   }
-
-   public Holder<SoundEvent> sound() {
-      return this.sound;
    }
 
    static {

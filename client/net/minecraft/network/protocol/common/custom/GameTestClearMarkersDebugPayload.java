@@ -5,7 +5,7 @@ import net.minecraft.network.codec.StreamCodec;
 
 public record GameTestClearMarkersDebugPayload() implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, GameTestClearMarkersDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(GameTestClearMarkersDebugPayload::write, GameTestClearMarkersDebugPayload::new);
-   public static final CustomPacketPayload.Type<GameTestClearMarkersDebugPayload> TYPE = CustomPacketPayload.createType("debug/game_test_clear");
+   public static final CustomPacketPayload.Type<GameTestClearMarkersDebugPayload> TYPE = CustomPacketPayload.<GameTestClearMarkersDebugPayload>createType("debug/game_test_clear");
 
    private GameTestClearMarkersDebugPayload(FriendlyByteBuf var1) {
       this();

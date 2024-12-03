@@ -9,13 +9,7 @@ import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
 
 public class RandomOffsetPlacement extends PlacementModifier {
-   public static final MapCodec<RandomOffsetPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(IntProvider.codec(-16, 16).fieldOf("xz_spread").forGetter((var0x) -> {
-         return var0x.xzSpread;
-      }), IntProvider.codec(-16, 16).fieldOf("y_spread").forGetter((var0x) -> {
-         return var0x.ySpread;
-      })).apply(var0, RandomOffsetPlacement::new);
-   });
+   public static final MapCodec<RandomOffsetPlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(IntProvider.codec(-16, 16).fieldOf("xz_spread").forGetter((var0x) -> var0x.xzSpread), IntProvider.codec(-16, 16).fieldOf("y_spread").forGetter((var0x) -> var0x.ySpread)).apply(var0, RandomOffsetPlacement::new));
    private final IntProvider xzSpread;
    private final IntProvider ySpread;
 

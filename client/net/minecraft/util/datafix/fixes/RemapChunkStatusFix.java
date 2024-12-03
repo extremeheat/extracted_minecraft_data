@@ -22,13 +22,7 @@ public class RemapChunkStatusFix extends DataFix {
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.CHUNK), (var1) -> {
-         return var1.update(DSL.remainderFinder(), (var1x) -> {
-            return var1x.update("Status", this::fixStatus).update("below_zero_retrogen", (var1) -> {
-               return var1.update("target_status", this::fixStatus);
-            });
-         });
-      });
+      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.CHUNK), (var1) -> var1.update(DSL.remainderFinder(), (var1x) -> var1x.update("Status", this::fixStatus).update("below_zero_retrogen", (var1) -> var1.update("target_status", this::fixStatus))));
    }
 
    private <T> Dynamic<T> fixStatus(Dynamic<T> var1) {

@@ -63,45 +63,45 @@ public class MipmapGenerator {
    private static int alphaBlend(int var0, int var1, int var2, int var3, boolean var4) {
       if (var4) {
          float var13 = 0.0F;
-         float var14 = 0.0F;
          float var15 = 0.0F;
-         float var16 = 0.0F;
+         float var17 = 0.0F;
+         float var19 = 0.0F;
          if (var0 >> 24 != 0) {
             var13 += getPow22(var0 >> 24);
-            var14 += getPow22(var0 >> 16);
-            var15 += getPow22(var0 >> 8);
-            var16 += getPow22(var0 >> 0);
+            var15 += getPow22(var0 >> 16);
+            var17 += getPow22(var0 >> 8);
+            var19 += getPow22(var0 >> 0);
          }
 
          if (var1 >> 24 != 0) {
             var13 += getPow22(var1 >> 24);
-            var14 += getPow22(var1 >> 16);
-            var15 += getPow22(var1 >> 8);
-            var16 += getPow22(var1 >> 0);
+            var15 += getPow22(var1 >> 16);
+            var17 += getPow22(var1 >> 8);
+            var19 += getPow22(var1 >> 0);
          }
 
          if (var2 >> 24 != 0) {
             var13 += getPow22(var2 >> 24);
-            var14 += getPow22(var2 >> 16);
-            var15 += getPow22(var2 >> 8);
-            var16 += getPow22(var2 >> 0);
+            var15 += getPow22(var2 >> 16);
+            var17 += getPow22(var2 >> 8);
+            var19 += getPow22(var2 >> 0);
          }
 
          if (var3 >> 24 != 0) {
             var13 += getPow22(var3 >> 24);
-            var14 += getPow22(var3 >> 16);
-            var15 += getPow22(var3 >> 8);
-            var16 += getPow22(var3 >> 0);
+            var15 += getPow22(var3 >> 16);
+            var17 += getPow22(var3 >> 8);
+            var19 += getPow22(var3 >> 0);
          }
 
          var13 /= 4.0F;
-         var14 /= 4.0F;
          var15 /= 4.0F;
-         var16 /= 4.0F;
+         var17 /= 4.0F;
+         var19 /= 4.0F;
          int var9 = (int)(Math.pow((double)var13, 0.45454545454545453) * 255.0);
-         int var10 = (int)(Math.pow((double)var14, 0.45454545454545453) * 255.0);
-         int var11 = (int)(Math.pow((double)var15, 0.45454545454545453) * 255.0);
-         int var12 = (int)(Math.pow((double)var16, 0.45454545454545453) * 255.0);
+         int var10 = (int)(Math.pow((double)var15, 0.45454545454545453) * 255.0);
+         int var11 = (int)(Math.pow((double)var17, 0.45454545454545453) * 255.0);
+         int var12 = (int)(Math.pow((double)var19, 0.45454545454545453) * 255.0);
          if (var9 < 96) {
             var9 = 0;
          }

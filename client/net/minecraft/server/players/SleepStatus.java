@@ -1,6 +1,5 @@
 package net.minecraft.server.players;
 
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -40,10 +39,8 @@ public class SleepStatus {
       int var3 = this.sleepingPlayers;
       this.activePlayers = 0;
       this.sleepingPlayers = 0;
-      Iterator var4 = var1.iterator();
 
-      while(var4.hasNext()) {
-         ServerPlayer var5 = (ServerPlayer)var4.next();
+      for(ServerPlayer var5 : var1) {
          if (!var5.isSpectator()) {
             ++this.activePlayers;
             if (var5.isSleeping()) {

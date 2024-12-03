@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -21,9 +20,7 @@ public class BlockPatternBuilder {
 
    private BlockPatternBuilder() {
       super();
-      this.lookup.put(' ', (var0) -> {
-         return true;
-      });
+      this.lookup.put(' ', (Predicate)(var0) -> true);
    }
 
    public BlockPatternBuilder aisle(String... var1) {
@@ -36,21 +33,13 @@ public class BlockPatternBuilder {
          if (var1.length != this.height) {
             throw new IllegalArgumentException("Expected aisle with height of " + this.height + ", but was given one with a height of " + var1.length + ")");
          } else {
-            String[] var2 = var1;
-            int var3 = var1.length;
-
-            for(int var4 = 0; var4 < var3; ++var4) {
-               String var5 = var2[var4];
+            for(String var5 : var1) {
                if (var5.length() != this.width) {
                   int var10002 = this.width;
                   throw new IllegalArgumentException("Not all rows in the given aisle are the correct width (expected " + var10002 + ", found one with " + var5.length() + ")");
                }
 
-               char[] var6 = var5.toCharArray();
-               int var7 = var6.length;
-
-               for(int var8 = 0; var8 < var7; ++var8) {
-                  char var9 = var6[var8];
+               for(char var9 : var5.toCharArray()) {
                   if (!this.lookup.containsKey(var9)) {
                      this.lookup.put(var9, (Object)null);
                   }
@@ -95,10 +84,8 @@ public class BlockPatternBuilder {
 
    private void ensureAllCharactersMatched() {
       ArrayList var1 = Lists.newArrayList();
-      Iterator var2 = this.lookup.entrySet().iterator();
 
-      while(var2.hasNext()) {
-         Map.Entry var3 = (Map.Entry)var2.next();
+      for(Map.Entry var3 : this.lookup.entrySet()) {
          if (var3.getValue() == null) {
             var1.add((Character)var3.getKey());
          }

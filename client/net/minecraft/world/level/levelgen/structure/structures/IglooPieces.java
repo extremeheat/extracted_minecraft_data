@@ -67,9 +67,7 @@ public class IglooPieces {
       }
 
       public IglooPiece(StructureTemplateManager var1, CompoundTag var2) {
-         super(StructurePieceType.IGLOO, var2, var1, (var1x) -> {
-            return makeSettings(Rotation.valueOf(var2.getString("Rot")), var1x);
-         });
+         super(StructurePieceType.IGLOO, var2, var1, (var1x) -> makeSettings(Rotation.valueOf(var2.getString("Rot")), var1x));
       }
 
       private static StructurePlaceSettings makeSettings(Rotation var0, ResourceLocation var1) {

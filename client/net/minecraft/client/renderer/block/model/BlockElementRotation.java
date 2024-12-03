@@ -11,20 +11,4 @@ public record BlockElementRotation(Vector3f origin, Direction.Axis axis, float a
       this.angle = var3;
       this.rescale = var4;
    }
-
-   public Vector3f origin() {
-      return this.origin;
-   }
-
-   public Direction.Axis axis() {
-      return this.axis;
-   }
-
-   public float angle() {
-      return this.angle;
-   }
-
-   public boolean rescale() {
-      return this.rescale;
-   }
 }

@@ -14,7 +14,7 @@ public class EncoderCache {
 
    public EncoderCache(int var1) {
       super();
-      this.cache = CacheBuilder.newBuilder().maximumSize((long)var1).concurrencyLevel(1).softValues().build(new CacheLoader<Key<?, ?>, DataResult<?>>(this) {
+      this.cache = CacheBuilder.newBuilder().maximumSize((long)var1).concurrencyLevel(1).softValues().build(new CacheLoader<Key<?, ?>, DataResult<?>>() {
          public DataResult<?> load(Key<?, ?> var1) {
             return var1.resolve();
          }
@@ -44,7 +44,7 @@ public class EncoderCache {
       };
    }
 
-   private static record Key<A, T>(Codec<A> codec, A value, DynamicOps<T> ops) {
+   static record Key<A, T>(Codec<A> codec, A value, DynamicOps<T> ops) {
       Key(Codec<A> var1, A var2, DynamicOps<T> var3) {
          super();
          this.codec = var1;
@@ -72,18 +72,6 @@ public class EncoderCache {
          var1 = 31 * var1 + this.value.hashCode();
          var1 = 31 * var1 + this.ops.hashCode();
          return var1;
-      }
-
-      public Codec<A> codec() {
-         return this.codec;
-      }
-
-      public A value() {
-         return this.value;
-      }
-
-      public DynamicOps<T> ops() {
-         return this.ops;
       }
    }
 }

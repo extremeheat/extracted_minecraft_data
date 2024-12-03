@@ -182,20 +182,12 @@ public class LiquidBlock extends Block implements BucketPickup {
          if (var0 instanceof FlowingFluid var1) {
             var10000 = DataResult.success(var1);
          } else {
-            var10000 = DataResult.error(() -> {
-               return "Not a flowing fluid: " + String.valueOf(var0);
-            });
+            var10000 = DataResult.error(() -> "Not a flowing fluid: " + String.valueOf(var0));
          }
 
          return var10000;
-      }, (var0) -> {
-         return var0;
-      });
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(FLOWING_FLUID.fieldOf("fluid").forGetter((var0x) -> {
-            return var0x.fluid;
-         }), propertiesCodec()).apply(var0, LiquidBlock::new);
-      });
+      }, (var0) -> var0);
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(FLOWING_FLUID.fieldOf("fluid").forGetter((var0x) -> var0x.fluid), propertiesCodec()).apply(var0, LiquidBlock::new));
       LEVEL = BlockStateProperties.LEVEL;
       STABLE_SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 8.0, 16.0);
       POSSIBLE_FLOW_DIRECTIONS = ImmutableList.of(Direction.DOWN, Direction.SOUTH, Direction.NORTH, Direction.EAST, Direction.WEST);

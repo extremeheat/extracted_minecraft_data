@@ -85,17 +85,11 @@ public class ContextNbtProvider implements NbtProvider {
             return forEntity(var1);
          }
       }, Getter::getId);
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(GETTER_CODEC.fieldOf("target").forGetter((var0x) -> {
-            return var0x.getter;
-         })).apply(var0, ContextNbtProvider::new);
-      });
-      INLINE_CODEC = GETTER_CODEC.xmap(ContextNbtProvider::new, (var0) -> {
-         return var0.getter;
-      });
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(GETTER_CODEC.fieldOf("target").forGetter((var0x) -> var0x.getter)).apply(var0, ContextNbtProvider::new));
+      INLINE_CODEC = GETTER_CODEC.xmap(ContextNbtProvider::new, (var0) -> var0.getter);
    }
 
-   private interface Getter {
+   interface Getter {
       @Nullable
       Tag get(LootContext var1);
 

@@ -16,20 +16,4 @@ public record WorldStem(CloseableResourceManager resourceManager, ReloadableServ
    public void close() {
       this.resourceManager.close();
    }
-
-   public CloseableResourceManager resourceManager() {
-      return this.resourceManager;
-   }
-
-   public ReloadableServerResources dataPackResources() {
-      return this.dataPackResources;
-   }
-
-   public LayeredRegistryAccess<RegistryLayer> registries() {
-      return this.registries;
-   }
-
-   public WorldData worldData() {
-      return this.worldData;
-   }
 }

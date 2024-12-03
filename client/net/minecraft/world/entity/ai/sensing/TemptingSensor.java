@@ -30,16 +30,12 @@ public class TemptingSensor extends Sensor<PathfinderMob> {
    protected void doTick(ServerLevel var1, PathfinderMob var2) {
       Brain var3 = var2.getBrain();
       TargetingConditions var4 = TEMPT_TARGETING.copy().range((double)((float)var2.getAttributeValue(Attributes.TEMPT_RANGE)));
-      Stream var10000 = var1.players().stream().filter(EntitySelector.NO_SPECTATORS).filter((var3x) -> {
-         return var4.test(var1, var2, var3x);
-      }).filter(this::playerHoldingTemptation).filter((var1x) -> {
-         return !var2.hasPassenger(var1x);
-      });
+      Stream var10000 = var1.players().stream().filter(EntitySelector.NO_SPECTATORS).filter((var3x) -> var4.test(var1, var2, var3x)).filter(this::playerHoldingTemptation).filter((var1x) -> !var2.hasPassenger(var1x));
       Objects.requireNonNull(var2);
       List var5 = (List)var10000.sorted(Comparator.comparingDouble(var2::distanceToSqr)).collect(Collectors.toList());
       if (!var5.isEmpty()) {
          Player var6 = (Player)var5.get(0);
-         var3.setMemory(MemoryModuleType.TEMPTING_PLAYER, (Object)var6);
+         var3.setMemory(MemoryModuleType.TEMPTING_PLAYER, var6);
       } else {
          var3.eraseMemory(MemoryModuleType.TEMPTING_PLAYER);
       }

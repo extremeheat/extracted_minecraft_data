@@ -92,12 +92,8 @@ public class StructureBlockEditScreen extends Screen {
    }
 
    protected void init() {
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
-         this.onDone();
-      }).bounds(this.width / 2 - 4 - 150, 210, 150, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
-         this.onCancel();
-      }).bounds(this.width / 2 + 4, 210, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onDone()).bounds(this.width / 2 - 4 - 150, 210, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onCancel()).bounds(this.width / 2 + 4, 210, 150, 20).build());
       this.initialMirror = this.structure.getMirror();
       this.initialRotation = this.structure.getRotation();
       this.initialMode = this.structure.getMode();
@@ -118,9 +114,7 @@ public class StructureBlockEditScreen extends Screen {
          }
 
       }).bounds(this.width / 2 + 4 + 100, 185, 50, 20).build());
-      this.addRenderableWidget(CycleButton.builder((var0) -> {
-         return Component.translatable("structure_block.mode." + var0.getSerializedName());
-      }).withValues(DEFAULT_MODES, ALL_MODES).displayOnlyValue().withInitialValue(this.initialMode).create(this.width / 2 - 4 - 150, 185, 50, 20, Component.literal("MODE"), (var1x, var2x) -> {
+      this.addRenderableWidget(CycleButton.builder((var0) -> Component.translatable("structure_block.mode." + var0.getSerializedName())).withValues(DEFAULT_MODES, ALL_MODES).displayOnlyValue().withInitialValue(this.initialMode).create(this.width / 2 - 4 - 150, 185, 50, 20, Component.literal("MODE"), (var1x, var2x) -> {
          this.structure.setMode(var2x);
          this.updateMode(var2x);
       }));
@@ -131,18 +125,10 @@ public class StructureBlockEditScreen extends Screen {
          }
 
       }).bounds(this.width / 2 + 4 + 100, 120, 50, 20).build());
-      this.includeEntitiesButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(!this.structure.isIgnoreEntities()).displayOnlyValue().create(this.width / 2 + 4 + 100, 160, 50, 20, INCLUDE_ENTITIES_LABEL, (var1x, var2x) -> {
-         this.structure.setIgnoreEntities(!var2x);
-      }));
-      this.mirrorButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(Mirror::symbol).withValues((Object[])Mirror.values()).displayOnlyValue().withInitialValue(this.initialMirror).create(this.width / 2 - 20, 185, 40, 20, Component.literal("MIRROR"), (var1x, var2x) -> {
-         this.structure.setMirror(var2x);
-      }));
-      this.toggleAirButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.getShowAir()).displayOnlyValue().create(this.width / 2 + 4 + 100, 80, 50, 20, SHOW_AIR_LABEL, (var1x, var2x) -> {
-         this.structure.setShowAir(var2x);
-      }));
-      this.toggleBoundingBox = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.getShowBoundingBox()).displayOnlyValue().create(this.width / 2 + 4 + 100, 80, 50, 20, SHOW_BOUNDING_BOX_LABEL, (var1x, var2x) -> {
-         this.structure.setShowBoundingBox(var2x);
-      }));
+      this.includeEntitiesButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(!this.structure.isIgnoreEntities()).displayOnlyValue().create(this.width / 2 + 4 + 100, 160, 50, 20, INCLUDE_ENTITIES_LABEL, (var1x, var2x) -> this.structure.setIgnoreEntities(!var2x)));
+      this.mirrorButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(Mirror::symbol).withValues(Mirror.values()).displayOnlyValue().withInitialValue(this.initialMirror).create(this.width / 2 - 20, 185, 40, 20, Component.literal("MIRROR"), (var1x, var2x) -> this.structure.setMirror(var2x)));
+      this.toggleAirButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.getShowAir()).displayOnlyValue().create(this.width / 2 + 4 + 100, 80, 50, 20, SHOW_AIR_LABEL, (var1x, var2x) -> this.structure.setShowAir(var2x)));
+      this.toggleBoundingBox = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.getShowBoundingBox()).displayOnlyValue().create(this.width / 2 + 4 + 100, 80, 50, 20, SHOW_BOUNDING_BOX_LABEL, (var1x, var2x) -> this.structure.setShowBoundingBox(var2x)));
       this.rot0Button = (Button)this.addRenderableWidget(Button.builder(Component.literal("0"), (var1x) -> {
          this.structure.setRotation(Rotation.NONE);
          this.updateDirectionButtons();
@@ -411,8 +397,6 @@ public class StructureBlockEditScreen extends Screen {
    }
 
    static {
-      DEFAULT_MODES = (ImmutableList)ALL_MODES.stream().filter((var0) -> {
-         return var0 != StructureMode.DATA;
-      }).collect(ImmutableList.toImmutableList());
+      DEFAULT_MODES = (ImmutableList)ALL_MODES.stream().filter((var0) -> var0 != StructureMode.DATA).collect(ImmutableList.toImmutableList());
    }
 }

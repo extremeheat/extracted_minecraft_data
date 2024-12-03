@@ -18,9 +18,7 @@ public class BlazeModel extends EntityModel<LivingEntityRenderState> {
       super(var1);
       this.head = var1.getChild("head");
       this.upperBodyParts = new ModelPart[12];
-      Arrays.setAll(this.upperBodyParts, (var1x) -> {
-         return var1.getChild(getPartName(var1x));
-      });
+      Arrays.setAll(this.upperBodyParts, (var1x) -> var1.getChild(getPartName(var1x)));
    }
 
    private static String getPartName(int var0) {
@@ -34,35 +32,31 @@ public class BlazeModel extends EntityModel<LivingEntityRenderState> {
       float var2 = 0.0F;
       CubeListBuilder var3 = CubeListBuilder.create().texOffs(0, 16).addBox(0.0F, 0.0F, 0.0F, 2.0F, 8.0F, 2.0F);
 
-      int var4;
-      float var5;
-      float var6;
-      float var7;
-      for(var4 = 0; var4 < 4; ++var4) {
-         var5 = Mth.cos(var2) * 9.0F;
-         var6 = -2.0F + Mth.cos((float)(var4 * 2) * 0.25F);
-         var7 = Mth.sin(var2) * 9.0F;
+      for(int var4 = 0; var4 < 4; ++var4) {
+         float var5 = Mth.cos(var2) * 9.0F;
+         float var6 = -2.0F + Mth.cos((float)(var4 * 2) * 0.25F);
+         float var7 = Mth.sin(var2) * 9.0F;
          var1.addOrReplaceChild(getPartName(var4), var3, PartPose.offset(var5, var6, var7));
          ++var2;
       }
 
       var2 = 0.7853982F;
 
-      for(var4 = 4; var4 < 8; ++var4) {
-         var5 = Mth.cos(var2) * 7.0F;
-         var6 = 2.0F + Mth.cos((float)(var4 * 2) * 0.25F);
-         var7 = Mth.sin(var2) * 7.0F;
-         var1.addOrReplaceChild(getPartName(var4), var3, PartPose.offset(var5, var6, var7));
+      for(int var10 = 4; var10 < 8; ++var10) {
+         float var12 = Mth.cos(var2) * 7.0F;
+         float var14 = 2.0F + Mth.cos((float)(var10 * 2) * 0.25F);
+         float var16 = Mth.sin(var2) * 7.0F;
+         var1.addOrReplaceChild(getPartName(var10), var3, PartPose.offset(var12, var14, var16));
          ++var2;
       }
 
       var2 = 0.47123894F;
 
-      for(var4 = 8; var4 < 12; ++var4) {
-         var5 = Mth.cos(var2) * 5.0F;
-         var6 = 11.0F + Mth.cos((float)var4 * 1.5F * 0.5F);
-         var7 = Mth.sin(var2) * 5.0F;
-         var1.addOrReplaceChild(getPartName(var4), var3, PartPose.offset(var5, var6, var7));
+      for(int var11 = 8; var11 < 12; ++var11) {
+         float var13 = Mth.cos(var2) * 5.0F;
+         float var15 = 11.0F + Mth.cos((float)var11 * 1.5F * 0.5F);
+         float var17 = Mth.sin(var2) * 5.0F;
+         var1.addOrReplaceChild(getPartName(var11), var3, PartPose.offset(var13, var15, var17));
          ++var2;
       }
 
@@ -73,8 +67,7 @@ public class BlazeModel extends EntityModel<LivingEntityRenderState> {
       super.setupAnim(var1);
       float var2 = var1.ageInTicks * 3.1415927F * -0.1F;
 
-      int var3;
-      for(var3 = 0; var3 < 4; ++var3) {
+      for(int var3 = 0; var3 < 4; ++var3) {
          this.upperBodyParts[var3].y = -2.0F + Mth.cos(((float)(var3 * 2) + var1.ageInTicks) * 0.25F);
          this.upperBodyParts[var3].x = Mth.cos(var2) * 9.0F;
          this.upperBodyParts[var3].z = Mth.sin(var2) * 9.0F;
@@ -83,19 +76,19 @@ public class BlazeModel extends EntityModel<LivingEntityRenderState> {
 
       var2 = 0.7853982F + var1.ageInTicks * 3.1415927F * 0.03F;
 
-      for(var3 = 4; var3 < 8; ++var3) {
-         this.upperBodyParts[var3].y = 2.0F + Mth.cos(((float)(var3 * 2) + var1.ageInTicks) * 0.25F);
-         this.upperBodyParts[var3].x = Mth.cos(var2) * 7.0F;
-         this.upperBodyParts[var3].z = Mth.sin(var2) * 7.0F;
+      for(int var6 = 4; var6 < 8; ++var6) {
+         this.upperBodyParts[var6].y = 2.0F + Mth.cos(((float)(var6 * 2) + var1.ageInTicks) * 0.25F);
+         this.upperBodyParts[var6].x = Mth.cos(var2) * 7.0F;
+         this.upperBodyParts[var6].z = Mth.sin(var2) * 7.0F;
          ++var2;
       }
 
       var2 = 0.47123894F + var1.ageInTicks * 3.1415927F * -0.05F;
 
-      for(var3 = 8; var3 < 12; ++var3) {
-         this.upperBodyParts[var3].y = 11.0F + Mth.cos(((float)var3 * 1.5F + var1.ageInTicks) * 0.5F);
-         this.upperBodyParts[var3].x = Mth.cos(var2) * 5.0F;
-         this.upperBodyParts[var3].z = Mth.sin(var2) * 5.0F;
+      for(int var7 = 8; var7 < 12; ++var7) {
+         this.upperBodyParts[var7].y = 11.0F + Mth.cos(((float)var7 * 1.5F + var1.ageInTicks) * 0.5F);
+         this.upperBodyParts[var7].x = Mth.cos(var2) * 5.0F;
+         this.upperBodyParts[var7].z = Mth.sin(var2) * 5.0F;
          ++var2;
       }
 

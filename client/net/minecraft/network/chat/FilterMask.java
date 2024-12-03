@@ -174,20 +174,14 @@ public class FilterMask {
    }
 
    static enum Type implements StringRepresentable {
-      PASS_THROUGH("pass_through", () -> {
-         return FilterMask.PASS_THROUGH_CODEC;
-      }),
-      FULLY_FILTERED("fully_filtered", () -> {
-         return FilterMask.FULLY_FILTERED_CODEC;
-      }),
-      PARTIALLY_FILTERED("partially_filtered", () -> {
-         return FilterMask.PARTIALLY_FILTERED_CODEC;
-      });
+      PASS_THROUGH("pass_through", () -> FilterMask.PASS_THROUGH_CODEC),
+      FULLY_FILTERED("fully_filtered", () -> FilterMask.FULLY_FILTERED_CODEC),
+      PARTIALLY_FILTERED("partially_filtered", () -> FilterMask.PARTIALLY_FILTERED_CODEC);
 
       private final String serializedName;
       private final Supplier<MapCodec<FilterMask>> codec;
 
-      private Type(final String var3, final Supplier var4) {
+      private Type(final String var3, final Supplier<MapCodec<FilterMask>> var4) {
          this.serializedName = var3;
          this.codec = var4;
       }

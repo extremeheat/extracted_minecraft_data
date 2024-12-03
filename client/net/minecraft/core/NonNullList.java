@@ -14,23 +14,23 @@ public class NonNullList<E> extends AbstractList<E> {
    private final E defaultValue;
 
    public static <E> NonNullList<E> create() {
-      return new NonNullList(Lists.newArrayList(), (Object)null);
+      return new NonNullList<E>(Lists.newArrayList(), (Object)null);
    }
 
    public static <E> NonNullList<E> createWithCapacity(int var0) {
-      return new NonNullList(Lists.newArrayListWithCapacity(var0), (Object)null);
+      return new NonNullList<E>(Lists.newArrayListWithCapacity(var0), (Object)null);
    }
 
    public static <E> NonNullList<E> withSize(int var0, E var1) {
       Validate.notNull(var1);
       Object[] var2 = new Object[var0];
       Arrays.fill(var2, var1);
-      return new NonNullList(Arrays.asList(var2), var1);
+      return new NonNullList<E>(Arrays.asList(var2), var1);
    }
 
    @SafeVarargs
    public static <E> NonNullList<E> of(E var0, E... var1) {
-      return new NonNullList(Arrays.asList(var1), var0);
+      return new NonNullList<E>(Arrays.asList(var1), var0);
    }
 
    protected NonNullList(List<E> var1, @Nullable E var2) {
@@ -41,12 +41,12 @@ public class NonNullList<E> extends AbstractList<E> {
 
    @Nonnull
    public E get(int var1) {
-      return this.list.get(var1);
+      return (E)this.list.get(var1);
    }
 
    public E set(int var1, E var2) {
       Validate.notNull(var2);
-      return this.list.set(var1, var2);
+      return (E)this.list.set(var1, var2);
    }
 
    public void add(int var1, E var2) {
@@ -55,7 +55,7 @@ public class NonNullList<E> extends AbstractList<E> {
    }
 
    public E remove(int var1) {
-      return this.list.remove(var1);
+      return (E)this.list.remove(var1);
    }
 
    public int size() {

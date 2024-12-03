@@ -5,7 +5,6 @@ import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -92,18 +91,10 @@ public class StatsScreen extends Screen {
       LinearLayout var2 = ((LinearLayout)var1.addToFooter(LinearLayout.vertical())).spacing(5);
       var2.defaultCellSetting().alignHorizontallyCenter();
       LinearLayout var3 = ((LinearLayout)var2.addChild(LinearLayout.horizontal())).spacing(5);
-      var3.addChild(Button.builder(GENERAL_BUTTON, (var1x) -> {
-         this.setActiveList(this.statsList);
-      }).width(120).build());
-      Button var4 = (Button)var3.addChild(Button.builder(ITEMS_BUTTON, (var1x) -> {
-         this.setActiveList(this.itemStatsList);
-      }).width(120).build());
-      Button var5 = (Button)var3.addChild(Button.builder(MOBS_BUTTON, (var1x) -> {
-         this.setActiveList(this.mobsStatsList);
-      }).width(120).build());
-      var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
-         this.onClose();
-      }).width(200).build());
+      var3.addChild(Button.builder(GENERAL_BUTTON, (var1x) -> this.setActiveList(this.statsList)).width(120).build());
+      Button var4 = (Button)var3.addChild(Button.builder(ITEMS_BUTTON, (var1x) -> this.setActiveList(this.itemStatsList)).width(120).build());
+      Button var5 = (Button)var3.addChild(Button.builder(MOBS_BUTTON, (var1x) -> this.setActiveList(this.mobsStatsList)).width(120).build());
+      var2.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onClose()).width(200).build());
       if (this.itemStatsList != null && this.itemStatsList.children().isEmpty()) {
          var4.active = false;
       }
@@ -164,13 +155,11 @@ public class StatsScreen extends Screen {
       return "stat." + var10000.replace(':', '.');
    }
 
-   private class GeneralStatisticsList extends ObjectSelectionList<Entry> {
+   class GeneralStatisticsList extends ObjectSelectionList<Entry> {
       public GeneralStatisticsList(final Minecraft var2) {
          super(var2, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 14);
          ObjectArrayList var3 = new ObjectArrayList(Stats.CUSTOM.iterator());
-         var3.sort(Comparator.comparing((var0) -> {
-            return I18n.get(StatsScreen.getTranslationKey(var0));
-         }));
+         var3.sort(Comparator.comparing((var0) -> I18n.get(StatsScreen.getTranslationKey(var0))));
          ObjectListIterator var4 = var3.iterator();
 
          while(var4.hasNext()) {
@@ -184,7 +173,7 @@ public class StatsScreen extends Screen {
          return 280;
       }
 
-      private class Entry extends ObjectSelectionList.Entry<Entry> {
+      class Entry extends ObjectSelectionList.Entry<Entry> {
          private final Stat<ResourceLocation> stat;
          private final Component statDisplay;
 
@@ -231,24 +220,15 @@ public class StatsScreen extends Screen {
       protected int sortOrder;
 
       public ItemStatisticsList(final Minecraft var2) {
-         super(var2, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 22);
+         super(var2, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 22, 22);
          this.blockColumns.add(Stats.BLOCK_MINED);
          this.itemColumns = Lists.newArrayList(new StatType[]{Stats.ITEM_BROKEN, Stats.ITEM_CRAFTED, Stats.ITEM_USED, Stats.ITEM_PICKED_UP, Stats.ITEM_DROPPED});
-         this.setRenderHeader(true, 22);
          Set var3 = Sets.newIdentityHashSet();
-         Iterator var4 = BuiltInRegistries.ITEM.iterator();
 
-         Item var5;
-         boolean var6;
-         Iterator var7;
-         StatType var8;
-         while(var4.hasNext()) {
-            var5 = (Item)var4.next();
-            var6 = false;
-            var7 = this.itemColumns.iterator();
+         for(Item var5 : BuiltInRegistries.ITEM) {
+            boolean var6 = false;
 
-            while(var7.hasNext()) {
-               var8 = (StatType)var7.next();
+            for(StatType var8 : this.itemColumns) {
                if (var8.contains(var5) && StatsScreen.this.stats.getValue(var8.get(var5)) > 0) {
                   var6 = true;
                }
@@ -259,31 +239,24 @@ public class StatsScreen extends Screen {
             }
          }
 
-         var4 = BuiltInRegistries.BLOCK.iterator();
+         for(Block var11 : BuiltInRegistries.BLOCK) {
+            boolean var13 = false;
 
-         while(var4.hasNext()) {
-            Block var9 = (Block)var4.next();
-            var6 = false;
-            var7 = this.blockColumns.iterator();
-
-            while(var7.hasNext()) {
-               var8 = (StatType)var7.next();
-               if (var8.contains(var9) && StatsScreen.this.stats.getValue(var8.get(var9)) > 0) {
-                  var6 = true;
+            for(StatType var15 : this.blockColumns) {
+               if (var15.contains(var11) && StatsScreen.this.stats.getValue(var15.get(var11)) > 0) {
+                  var13 = true;
                }
             }
 
-            if (var6) {
-               var3.add(var9.asItem());
+            if (var13) {
+               var3.add(var11.asItem());
             }
          }
 
          var3.remove(Items.AIR);
-         var4 = var3.iterator();
 
-         while(var4.hasNext()) {
-            var5 = (Item)var4.next();
-            this.addEntry(new ItemRow(var5));
+         for(Item var12 : var3) {
+            this.addEntry(new ItemRow(var12));
          }
 
       }
@@ -297,28 +270,27 @@ public class StatsScreen extends Screen {
             this.headerPressed = -1;
          }
 
-         int var4;
-         ResourceLocation var5;
-         for(var4 = 0; var4 < this.iconSprites.length; ++var4) {
-            var5 = this.headerPressed == var4 ? StatsScreen.SLOT_SPRITE : StatsScreen.HEADER_SPRITE;
+         for(int var4 = 0; var4 < this.iconSprites.length; ++var4) {
+            ResourceLocation var5 = this.headerPressed == var4 ? StatsScreen.SLOT_SPRITE : StatsScreen.HEADER_SPRITE;
             var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var5, var2 + this.getColumnX(var4) - 18, var3 + 1, 18, 18);
          }
 
          if (this.sortColumn != null) {
-            var4 = this.getColumnX(this.getColumnIndex(this.sortColumn)) - 36;
-            var5 = this.sortOrder == 1 ? StatsScreen.SORT_UP_SPRITE : StatsScreen.SORT_DOWN_SPRITE;
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var5, var2 + var4, var3 + 1, 18, 18);
+            int var6 = this.getColumnX(this.getColumnIndex(this.sortColumn)) - 36;
+            ResourceLocation var8 = this.sortOrder == 1 ? StatsScreen.SORT_UP_SPRITE : StatsScreen.SORT_DOWN_SPRITE;
+            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)var8, var2 + var6, var3 + 1, 18, 18);
          }
 
-         for(var4 = 0; var4 < this.iconSprites.length; ++var4) {
-            int var6 = this.headerPressed == var4 ? 1 : 0;
-            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)this.iconSprites[var4], var2 + this.getColumnX(var4) - 18 + var6, var3 + 1 + var6, 18, 18);
+         for(int var7 = 0; var7 < this.iconSprites.length; ++var7) {
+            int var9 = this.headerPressed == var7 ? 1 : 0;
+            var1.blitSprite(RenderType::guiTextured, (ResourceLocation)this.iconSprites[var7], var2 + this.getColumnX(var7) - 18 + var9, var3 + 1 + var9, 18, 18);
          }
 
       }
 
-      public int getRowWidth() {
-         return 280;
+      public boolean mouseClicked(double var1, double var3, int var5) {
+         boolean var6 = super.mouseClicked(var1, var3, var5);
+         return !var6 && this.clickedHeader((int)(var1 - ((double)this.getX() + (double)this.width / 2.0 - (double)this.getRowWidth() / 2.0)), (int)(var3 - (double)this.getY()) + (int)this.scrollAmount() - 4) ? true : var6;
       }
 
       protected boolean clickedHeader(int var1, int var2) {
@@ -337,8 +309,12 @@ public class StatsScreen extends Screen {
             this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
             return true;
          } else {
-            return super.clickedHeader(var1, var2);
+            return false;
          }
+      }
+
+      public int getRowWidth() {
+         return 280;
       }
 
       private StatType<?> getColumn(int var1) {
@@ -364,22 +340,22 @@ public class StatsScreen extends Screen {
                   return;
                }
 
-               Item var10 = var4.getItem();
-               var1.renderTooltip(StatsScreen.this.font, var10.getName(), var2, var3, (ResourceLocation)var10.components().get(DataComponents.TOOLTIP_STYLE));
+               Item var6 = var4.getItem();
+               var1.renderTooltip(StatsScreen.this.font, var6.getName(), var2, var3, (ResourceLocation)var6.components().get(DataComponents.TOOLTIP_STYLE));
             } else {
-               Component var6 = null;
+               Component var10 = null;
                int var7 = var2 - var5;
 
                for(int var8 = 0; var8 < this.iconSprites.length; ++var8) {
                   int var9 = this.getColumnX(var8);
                   if (var7 >= var9 - 18 && var7 <= var9) {
-                     var6 = this.getColumn(var8).getDisplayName();
+                     var10 = this.getColumn(var8).getDisplayName();
                      break;
                   }
                }
 
-               if (var6 != null) {
-                  var1.renderTooltip(StatsScreen.this.font, var6, var2, var3);
+               if (var10 != null) {
+                  var1.renderTooltip(StatsScreen.this.font, var10, var2, var3);
                }
             }
 
@@ -400,7 +376,7 @@ public class StatsScreen extends Screen {
          this.children().sort(this.itemStatSorter);
       }
 
-      private class ItemRowComparator implements Comparator<ItemRow> {
+      class ItemRowComparator implements Comparator<ItemRow> {
          ItemRowComparator() {
             super();
          }
@@ -413,17 +389,14 @@ public class StatsScreen extends Screen {
             if (ItemStatisticsList.this.sortColumn == null) {
                var5 = 0;
                var6 = 0;
+            } else if (ItemStatisticsList.this.blockColumns.contains(ItemStatisticsList.this.sortColumn)) {
+               StatType var7 = ItemStatisticsList.this.sortColumn;
+               var5 = var3 instanceof BlockItem ? StatsScreen.this.stats.getValue(var7, ((BlockItem)var3).getBlock()) : -1;
+               var6 = var4 instanceof BlockItem ? StatsScreen.this.stats.getValue(var7, ((BlockItem)var4).getBlock()) : -1;
             } else {
-               StatType var7;
-               if (ItemStatisticsList.this.blockColumns.contains(ItemStatisticsList.this.sortColumn)) {
-                  var7 = ItemStatisticsList.this.sortColumn;
-                  var5 = var3 instanceof BlockItem ? StatsScreen.this.stats.getValue(var7, ((BlockItem)var3).getBlock()) : -1;
-                  var6 = var4 instanceof BlockItem ? StatsScreen.this.stats.getValue(var7, ((BlockItem)var4).getBlock()) : -1;
-               } else {
-                  var7 = ItemStatisticsList.this.sortColumn;
-                  var5 = StatsScreen.this.stats.getValue(var7, var3);
-                  var6 = StatsScreen.this.stats.getValue(var7, var4);
-               }
+               StatType var8 = ItemStatisticsList.this.sortColumn;
+               var5 = StatsScreen.this.stats.getValue(var8, var3);
+               var6 = StatsScreen.this.stats.getValue(var8, var4);
             }
 
             return var5 == var6 ? ItemStatisticsList.this.sortOrder * Integer.compare(Item.getId(var3), Item.getId(var4)) : ItemStatisticsList.this.sortOrder * Integer.compare(var5, var6);
@@ -435,7 +408,7 @@ public class StatsScreen extends Screen {
          }
       }
 
-      private class ItemRow extends ObjectSelectionList.Entry<ItemRow> {
+      class ItemRow extends ObjectSelectionList.Entry<ItemRow> {
          private final Item item;
 
          ItemRow(final Item var2) {
@@ -451,10 +424,7 @@ public class StatsScreen extends Screen {
             var1.blitSprite(RenderType::guiTextured, (ResourceLocation)StatsScreen.SLOT_SPRITE, var4, var3, 18, 18);
             var1.renderFakeItem(this.item.getDefaultInstance(), var4 + 1, var3 + 1);
             if (StatsScreen.this.itemStatsList != null) {
-               int var11;
-               int var10003;
-               int var10004;
-               for(var11 = 0; var11 < StatsScreen.this.itemStatsList.blockColumns.size(); ++var11) {
+               for(int var11 = 0; var11 < StatsScreen.this.itemStatsList.blockColumns.size(); ++var11) {
                   Item var14 = this.item;
                   Stat var12;
                   if (var14 instanceof BlockItem) {
@@ -464,18 +434,18 @@ public class StatsScreen extends Screen {
                      var12 = null;
                   }
 
-                  var10003 = var4 + ItemStatisticsList.this.getColumnX(var11);
-                  var10004 = var3 + var6 / 2;
+                  int var10003 = var4 + ItemStatisticsList.this.getColumnX(var11);
+                  int var10004 = var3 + var6 / 2;
                   Objects.requireNonNull(StatsScreen.this.font);
                   this.renderStat(var1, var12, var10003, var10004 - 9 / 2, var2 % 2 == 0);
                }
 
-               for(var11 = 0; var11 < StatsScreen.this.itemStatsList.itemColumns.size(); ++var11) {
-                  Stat var10002 = ((StatType)StatsScreen.this.itemStatsList.itemColumns.get(var11)).get(this.item);
-                  var10003 = var4 + ItemStatisticsList.this.getColumnX(var11 + StatsScreen.this.itemStatsList.blockColumns.size());
-                  var10004 = var3 + var6 / 2;
+               for(int var15 = 0; var15 < StatsScreen.this.itemStatsList.itemColumns.size(); ++var15) {
+                  Stat var10002 = ((StatType)StatsScreen.this.itemStatsList.itemColumns.get(var15)).get(this.item);
+                  int var16 = var4 + ItemStatisticsList.this.getColumnX(var15 + StatsScreen.this.itemStatsList.blockColumns.size());
+                  int var17 = var3 + var6 / 2;
                   Objects.requireNonNull(StatsScreen.this.font);
-                  this.renderStat(var1, var10002, var10003, var10004 - 9 / 2, var2 % 2 == 0);
+                  this.renderStat(var1, var10002, var16, var17 - 9 / 2, var2 % 2 == 0);
                }
             }
 
@@ -492,26 +462,19 @@ public class StatsScreen extends Screen {
       }
    }
 
-   private class MobsStatisticsList extends ObjectSelectionList<MobRow> {
+   class MobsStatisticsList extends ObjectSelectionList<MobRow> {
       public MobsStatisticsList(final Minecraft var2) {
          int var10002 = StatsScreen.this.width;
          int var10003 = StatsScreen.this.height - 33 - 58;
          Objects.requireNonNull(StatsScreen.this.font);
          super(var2, var10002, var10003, 33, 9 * 4);
-         Iterator var3 = BuiltInRegistries.ENTITY_TYPE.iterator();
 
-         while(true) {
-            EntityType var4;
-            do {
-               if (!var3.hasNext()) {
-                  return;
-               }
-
-               var4 = (EntityType)var3.next();
-            } while(StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED.get(var4)) <= 0 && StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED_BY.get(var4)) <= 0);
-
-            this.addEntry(new MobRow(var4));
+         for(EntityType var4 : BuiltInRegistries.ENTITY_TYPE) {
+            if (StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED.get(var4)) > 0 || StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED_BY.get(var4)) > 0) {
+               this.addEntry(new MobRow(var4));
+            }
          }
+
       }
 
       public int getRowWidth() {

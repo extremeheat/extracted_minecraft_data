@@ -67,9 +67,7 @@ public class AllayAi {
    }
 
    private static void initIdleActivity(Brain<Allay> var0) {
-      var0.addActivityWithConditions(Activity.IDLE, ImmutableList.of(Pair.of(0, GoToWantedItem.create((var0x) -> {
-         return true;
-      }, 1.75F, true, 32)), Pair.of(1, new GoAndGiveItemsToTarget(AllayAi::getItemDepositPosition, 2.25F, 20)), Pair.of(2, StayCloseToTarget.create(AllayAi::getItemDepositPosition, Predicate.not(AllayAi::hasWantedItem), 4, 16, 2.25F)), Pair.of(3, SetEntityLookTargetSometimes.create(6.0F, UniformInt.of(30, 60))), Pair.of(4, new RunOne(ImmutableList.of(Pair.of(RandomStroll.fly(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new DoNothing(30, 60), 1))))), ImmutableSet.of());
+      var0.addActivityWithConditions(Activity.IDLE, ImmutableList.of(Pair.of(0, GoToWantedItem.create((var0x) -> true, 1.75F, true, 32)), Pair.of(1, new GoAndGiveItemsToTarget(AllayAi::getItemDepositPosition, 2.25F, 20)), Pair.of(2, StayCloseToTarget.create(AllayAi::getItemDepositPosition, Predicate.not(AllayAi::hasWantedItem), 4, 16, 2.25F)), Pair.of(3, SetEntityLookTargetSometimes.create(6.0F, UniformInt.of(30, 60))), Pair.of(4, new RunOne(ImmutableList.of(Pair.of(RandomStroll.fly(1.0F), 2), Pair.of(SetWalkTargetFromLookTarget.create(1.0F, 3), 2), Pair.of(new DoNothing(30, 60), 1))))), ImmutableSet.of());
    }
 
    public static void updateActivity(Allay var0) {
@@ -81,10 +79,10 @@ public class AllayAi {
       GlobalPos var3 = GlobalPos.of(var0.level().dimension(), var1);
       Optional var4 = var2.getMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION);
       if (var4.isEmpty()) {
-         var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION, (Object)var3);
-         var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS, (int)600);
+         var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION, var3);
+         var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS, 600);
       } else if (((GlobalPos)var4.get()).equals(var3)) {
-         var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS, (int)600);
+         var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS, 600);
       }
 
    }
@@ -116,9 +114,7 @@ public class AllayAi {
    }
 
    private static Optional<PositionTracker> getLikedPlayerPositionTracker(LivingEntity var0) {
-      return getLikedPlayer(var0).map((var0x) -> {
-         return new EntityTracker(var0x, true);
-      });
+      return getLikedPlayer(var0).map((var0x) -> new EntityTracker(var0x, true));
    }
 
    public static Optional<ServerPlayer> getLikedPlayer(LivingEntity var0) {

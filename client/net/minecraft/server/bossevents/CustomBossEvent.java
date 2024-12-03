@@ -3,9 +3,9 @@ package net.minecraft.server.bossevents;
 import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.UnaryOperator;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -74,26 +74,17 @@ public class CustomBossEvent extends ServerBossEvent {
    }
 
    public final Component getDisplayName() {
-      return ComponentUtils.wrapInSquareBrackets(this.getName()).withStyle((var1) -> {
-         return var1.withColor(this.getColor().getFormatting()).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(this.getTextId().toString()))).withInsertion(this.getTextId().toString());
-      });
+      return ComponentUtils.wrapInSquareBrackets(this.getName()).withStyle((UnaryOperator)((var1) -> var1.withColor(this.getColor().getFormatting()).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(this.getTextId().toString()))).withInsertion(this.getTextId().toString())));
    }
 
    public boolean setPlayers(Collection<ServerPlayer> var1) {
       HashSet var2 = Sets.newHashSet();
       HashSet var3 = Sets.newHashSet();
-      Iterator var4 = this.players.iterator();
 
-      UUID var5;
-      boolean var6;
-      Iterator var7;
-      while(var4.hasNext()) {
-         var5 = (UUID)var4.next();
-         var6 = false;
-         var7 = var1.iterator();
+      for(UUID var5 : this.players) {
+         boolean var6 = false;
 
-         while(var7.hasNext()) {
-            ServerPlayer var8 = (ServerPlayer)var7.next();
+         for(ServerPlayer var8 : var1) {
             if (var8.getUUID().equals(var5)) {
                var6 = true;
                break;
@@ -105,45 +96,34 @@ public class CustomBossEvent extends ServerBossEvent {
          }
       }
 
-      var4 = var1.iterator();
+      for(ServerPlayer var12 : var1) {
+         boolean var15 = false;
 
-      ServerPlayer var9;
-      while(var4.hasNext()) {
-         var9 = (ServerPlayer)var4.next();
-         var6 = false;
-         var7 = this.players.iterator();
-
-         while(var7.hasNext()) {
-            UUID var12 = (UUID)var7.next();
-            if (var9.getUUID().equals(var12)) {
-               var6 = true;
+         for(UUID var19 : this.players) {
+            if (var12.getUUID().equals(var19)) {
+               var15 = true;
                break;
             }
          }
 
-         if (!var6) {
-            var3.add(var9);
+         if (!var15) {
+            var3.add(var12);
          }
       }
 
-      for(var4 = var2.iterator(); var4.hasNext(); this.players.remove(var5)) {
-         var5 = (UUID)var4.next();
-         Iterator var11 = this.getPlayers().iterator();
-
-         while(var11.hasNext()) {
-            ServerPlayer var10 = (ServerPlayer)var11.next();
-            if (var10.getUUID().equals(var5)) {
-               this.removePlayer(var10);
+      for(UUID var13 : var2) {
+         for(ServerPlayer var18 : this.getPlayers()) {
+            if (var18.getUUID().equals(var13)) {
+               this.removePlayer(var18);
                break;
             }
          }
+
+         this.players.remove(var13);
       }
 
-      var4 = var3.iterator();
-
-      while(var4.hasNext()) {
-         var9 = (ServerPlayer)var4.next();
-         this.addPlayer(var9);
+      for(ServerPlayer var14 : var3) {
+         this.addPlayer(var14);
       }
 
       return !var2.isEmpty() || !var3.isEmpty();
@@ -161,10 +141,8 @@ public class CustomBossEvent extends ServerBossEvent {
       var2.putBoolean("PlayBossMusic", this.shouldPlayBossMusic());
       var2.putBoolean("CreateWorldFog", this.shouldCreateWorldFog());
       ListTag var3 = new ListTag();
-      Iterator var4 = this.players.iterator();
 
-      while(var4.hasNext()) {
-         UUID var5 = (UUID)var4.next();
+      for(UUID var5 : this.players) {
          var3.add(NbtUtils.createUUID(var5));
       }
 
@@ -182,11 +160,8 @@ public class CustomBossEvent extends ServerBossEvent {
       var3.setDarkenScreen(var0.getBoolean("DarkenScreen"));
       var3.setPlayBossMusic(var0.getBoolean("PlayBossMusic"));
       var3.setCreateWorldFog(var0.getBoolean("CreateWorldFog"));
-      ListTag var4 = var0.getList("Players", 11);
-      Iterator var5 = var4.iterator();
 
-      while(var5.hasNext()) {
-         Tag var6 = (Tag)var5.next();
+      for(Tag var6 : var0.getList("Players", 11)) {
          var3.addOfflinePlayer(NbtUtils.loadUUID(var6));
       }
 

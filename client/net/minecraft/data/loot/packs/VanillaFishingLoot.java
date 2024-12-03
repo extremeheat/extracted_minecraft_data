@@ -46,8 +46,4 @@ public record VanillaFishingLoot(HolderLookup.Provider registries) implements Lo
    public static LootTable.Builder fishingFishLootTable() {
       return LootTable.lootTable().withPool(LootPool.lootPool().add(LootItem.lootTableItem(Items.COD).setWeight(60)).add(LootItem.lootTableItem(Items.SALMON).setWeight(25)).add(LootItem.lootTableItem(Items.TROPICAL_FISH).setWeight(2)).add(LootItem.lootTableItem(Items.PUFFERFISH).setWeight(13)));
    }
-
-   public HolderLookup.Provider registries() {
-      return this.registries;
-   }
 }

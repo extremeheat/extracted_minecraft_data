@@ -33,9 +33,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    public static final int INFINITE_DURATION = -1;
    public static final int MIN_AMPLIFIER = 0;
    public static final int MAX_AMPLIFIER = 255;
-   public static final Codec<MobEffectInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(MobEffect.CODEC.fieldOf("id").forGetter(MobEffectInstance::getEffect), MobEffectInstance.Details.MAP_CODEC.forGetter(MobEffectInstance::asDetails)).apply(var0, MobEffectInstance::new);
-   });
+   public static final Codec<MobEffectInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(MobEffect.CODEC.fieldOf("id").forGetter(MobEffectInstance::getEffect), MobEffectInstance.Details.MAP_CODEC.forGetter(MobEffectInstance::asDetails)).apply(var0, MobEffectInstance::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, MobEffectInstance> STREAM_CODEC;
    private final Holder<MobEffect> effect;
    private int duration;
@@ -87,9 +85,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    }
 
    private MobEffectInstance(Holder<MobEffect> var1, Details var2) {
-      this(var1, var2.duration(), var2.amplifier(), var2.ambient(), var2.showParticles(), var2.showIcon(), (MobEffectInstance)var2.hiddenEffect().map((var1x) -> {
-         return new MobEffectInstance(var1, var1x);
-      }).orElse((Object)null));
+      this(var1, var2.duration(), var2.amplifier(), var2.ambient(), var2.showParticles(), var2.showIcon(), (MobEffectInstance)var2.hiddenEffect().map((var1x) -> new MobEffectInstance(var1, var1x)).orElse((Object)null));
    }
 
    private Details asDetails() {
@@ -229,9 +225,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
          this.hiddenEffect.tickDownDuration();
       }
 
-      return this.duration = this.mapDuration((var0) -> {
-         return var0 - 1;
-      });
+      return this.duration = this.mapDuration((var0) -> var0 - 1);
    }
 
    public void onEffectStarted(LivingEntity var1) {
@@ -251,14 +245,13 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    }
 
    public String toString() {
-      String var10000;
       String var1;
       if (this.amplifier > 0) {
-         var10000 = this.getDescriptionId();
+         String var10000 = this.getDescriptionId();
          var1 = var10000 + " x " + (this.amplifier + 1) + ", Duration: " + this.describeDuration();
       } else {
-         var10000 = this.getDescriptionId();
-         var1 = var10000 + ", Duration: " + this.describeDuration();
+         String var2 = this.getDescriptionId();
+         var1 = var2 + ", Duration: " + this.describeDuration();
       }
 
       if (!this.visible) {
@@ -339,6 +332,25 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       STREAM_CODEC = StreamCodec.composite(MobEffect.STREAM_CODEC, MobEffectInstance::getEffect, MobEffectInstance.Details.STREAM_CODEC, MobEffectInstance::asDetails, MobEffectInstance::new);
    }
 
+   static record Details(int amplifier, int duration, boolean ambient, boolean showParticles, boolean showIcon, Optional<Details> hiddenEffect) {
+      public static final MapCodec<Details> MAP_CODEC = MapCodec.recursive("MobEffectInstance.Details", (var0) -> RecordCodecBuilder.mapCodec((var1) -> var1.group(ExtraCodecs.UNSIGNED_BYTE.optionalFieldOf("amplifier", 0).forGetter(Details::amplifier), Codec.INT.optionalFieldOf("duration", 0).forGetter(Details::duration), Codec.BOOL.optionalFieldOf("ambient", false).forGetter(Details::ambient), Codec.BOOL.optionalFieldOf("show_particles", true).forGetter(Details::showParticles), Codec.BOOL.optionalFieldOf("show_icon").forGetter((var0x) -> Optional.of(var0x.showIcon())), var0.optionalFieldOf("hidden_effect").forGetter(Details::hiddenEffect)).apply(var1, Details::create)));
+      public static final StreamCodec<ByteBuf, Details> STREAM_CODEC = StreamCodec.<ByteBuf, Details>recursive((var0) -> StreamCodec.composite(ByteBufCodecs.VAR_INT, Details::amplifier, ByteBufCodecs.VAR_INT, Details::duration, ByteBufCodecs.BOOL, Details::ambient, ByteBufCodecs.BOOL, Details::showParticles, ByteBufCodecs.BOOL, Details::showIcon, var0.apply(ByteBufCodecs::optional), Details::hiddenEffect, Details::new));
+
+      Details(int var1, int var2, boolean var3, boolean var4, boolean var5, Optional<Details> var6) {
+         super();
+         this.amplifier = var1;
+         this.duration = var2;
+         this.ambient = var3;
+         this.showParticles = var4;
+         this.showIcon = var5;
+         this.hiddenEffect = var6;
+      }
+
+      private static Details create(int var0, int var1, boolean var2, boolean var3, Optional<Boolean> var4, Optional<Details> var5) {
+         return new Details(var0, var1, var2, var3, (Boolean)var4.orElse(var3), var5);
+      }
+   }
+
    static class BlendState {
       private float factor;
       private float factorPreviousFrame;
@@ -387,57 +399,6 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
          }
 
          return Mth.lerp(var2, this.factorPreviousFrame, this.factor);
-      }
-   }
-
-   static record Details(int amplifier, int duration, boolean ambient, boolean showParticles, boolean showIcon, Optional<Details> hiddenEffect) {
-      public static final MapCodec<Details> MAP_CODEC = MapCodec.recursive("MobEffectInstance.Details", (var0) -> {
-         return RecordCodecBuilder.mapCodec((var1) -> {
-            return var1.group(ExtraCodecs.UNSIGNED_BYTE.optionalFieldOf("amplifier", 0).forGetter(Details::amplifier), Codec.INT.optionalFieldOf("duration", 0).forGetter(Details::duration), Codec.BOOL.optionalFieldOf("ambient", false).forGetter(Details::ambient), Codec.BOOL.optionalFieldOf("show_particles", true).forGetter(Details::showParticles), Codec.BOOL.optionalFieldOf("show_icon").forGetter((var0x) -> {
-               return Optional.of(var0x.showIcon());
-            }), var0.optionalFieldOf("hidden_effect").forGetter(Details::hiddenEffect)).apply(var1, Details::create);
-         });
-      });
-      public static final StreamCodec<ByteBuf, Details> STREAM_CODEC = StreamCodec.recursive((var0) -> {
-         return StreamCodec.composite(ByteBufCodecs.VAR_INT, Details::amplifier, ByteBufCodecs.VAR_INT, Details::duration, ByteBufCodecs.BOOL, Details::ambient, ByteBufCodecs.BOOL, Details::showParticles, ByteBufCodecs.BOOL, Details::showIcon, var0.apply(ByteBufCodecs::optional), Details::hiddenEffect, Details::new);
-      });
-
-      Details(int var1, int var2, boolean var3, boolean var4, boolean var5, Optional<Details> var6) {
-         super();
-         this.amplifier = var1;
-         this.duration = var2;
-         this.ambient = var3;
-         this.showParticles = var4;
-         this.showIcon = var5;
-         this.hiddenEffect = var6;
-      }
-
-      private static Details create(int var0, int var1, boolean var2, boolean var3, Optional<Boolean> var4, Optional<Details> var5) {
-         return new Details(var0, var1, var2, var3, (Boolean)var4.orElse(var3), var5);
-      }
-
-      public int amplifier() {
-         return this.amplifier;
-      }
-
-      public int duration() {
-         return this.duration;
-      }
-
-      public boolean ambient() {
-         return this.ambient;
-      }
-
-      public boolean showParticles() {
-         return this.showParticles;
-      }
-
-      public boolean showIcon() {
-         return this.showIcon;
-      }
-
-      public Optional<Details> hiddenEffect() {
-         return this.hiddenEffect;
       }
    }
 }

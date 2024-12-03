@@ -23,8 +23,7 @@ public class ScoreboardNameProviders {
 
    static {
       TYPED_CODEC = BuiltInRegistries.LOOT_SCORE_PROVIDER_TYPE.byNameCodec().dispatch(ScoreboardNameProvider::getType, LootScoreProviderType::codec);
-      CODEC = Codec.lazyInitialized(() -> {
-         return Codec.either(ContextScoreboardNameProvider.INLINE_CODEC, TYPED_CODEC).xmap(Either::unwrap, (var0) -> {
+      CODEC = Codec.lazyInitialized(() -> Codec.either(ContextScoreboardNameProvider.INLINE_CODEC, TYPED_CODEC).xmap(Either::unwrap, (var0) -> {
             Either var10000;
             if (var0 instanceof ContextScoreboardNameProvider var1) {
                var10000 = Either.left(var1);
@@ -33,8 +32,7 @@ public class ScoreboardNameProviders {
             }
 
             return var10000;
-         });
-      });
+         }));
       FIXED = register("fixed", FixedScoreboardNameProvider.CODEC);
       CONTEXT = register("context", ContextScoreboardNameProvider.CODEC);
    }

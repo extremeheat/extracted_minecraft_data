@@ -59,9 +59,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
       RealmsMainScreen.refreshPendingInvites();
       this.pendingInvitationSelectionList = new PendingInvitationSelectionList();
       this.pendingInvites.thenAcceptAsync((var1) -> {
-         List var2 = var1.stream().map((var1x) -> {
-            return new Entry(var1x);
-         }).toList();
+         List var2 = var1.stream().map((var1x) -> new Entry(var1x)).toList();
          this.pendingInvitationSelectionList.replaceEntries(var2);
          if (var2.isEmpty()) {
             this.minecraft.getNarrator().say(NO_PENDING_INVITES_TEXT);
@@ -69,15 +67,9 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
 
       }, this.screenExecutor);
       this.addRenderableWidget(this.pendingInvitationSelectionList);
-      this.acceptButton = (Button)this.addRenderableWidget(Button.builder(ACCEPT_INVITE, (var1) -> {
-         this.handleInvitation(true);
-      }).bounds(this.width / 2 - 174, this.height - 32, 100, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> {
-         this.onClose();
-      }).bounds(this.width / 2 - 50, this.height - 32, 100, 20).build());
-      this.rejectButton = (Button)this.addRenderableWidget(Button.builder(REJECT_INVITE, (var1) -> {
-         this.handleInvitation(false);
-      }).bounds(this.width / 2 + 74, this.height - 32, 100, 20).build());
+      this.acceptButton = (Button)this.addRenderableWidget(Button.builder(ACCEPT_INVITE, (var1) -> this.handleInvitation(true)).bounds(this.width / 2 - 174, this.height - 32, 100, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> this.onClose()).bounds(this.width / 2 - 50, this.height - 32, 100, 20).build());
+      this.rejectButton = (Button)this.addRenderableWidget(Button.builder(REJECT_INVITE, (var1) -> this.handleInvitation(false)).bounds(this.width / 2 + 74, this.height - 32, 100, 20).build());
       this.updateButtonStates();
    }
 
@@ -163,7 +155,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
       }
    }
 
-   private class Entry extends ObjectSelectionList.Entry<Entry> {
+   class Entry extends ObjectSelectionList.Entry<Entry> {
       private static final int TEXT_LEFT = 38;
       final PendingInvite pendingInvite;
       private final List<RowButton> rowButtons;
@@ -184,9 +176,9 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
       }
 
       private void renderPendingInvitationItem(GuiGraphics var1, PendingInvite var2, int var3, int var4, int var5, int var6) {
-         var1.drawString(RealmsPendingInvitesScreen.this.font, (String)var2.realmName, var3 + 38, var4 + 1, -1, false);
-         var1.drawString(RealmsPendingInvitesScreen.this.font, var2.realmOwnerName, var3 + 38, var4 + 12, 7105644, false);
-         var1.drawString(RealmsPendingInvitesScreen.this.font, RealmsUtil.convertToAgePresentationFromInstant(var2.date), var3 + 38, var4 + 24, 7105644, false);
+         var1.drawString(RealmsPendingInvitesScreen.this.font, (String)var2.realmName, var3 + 38, var4 + 1, -1);
+         var1.drawString(RealmsPendingInvitesScreen.this.font, var2.realmOwnerName, var3 + 38, var4 + 12, 7105644);
+         var1.drawString(RealmsPendingInvitesScreen.this.font, RealmsUtil.convertToAgePresentationFromInstant(var2.date), var3 + 38, var4 + 24, 7105644);
          RowButton.drawButtonsInRow(var1, this.rowButtons, RealmsPendingInvitesScreen.this.pendingInvitationSelectionList, var3, var4, var5, var6);
          RealmsUtil.renderPlayerFace(var1, var3, var4, 32, var2.realmOwnerUuid);
       }

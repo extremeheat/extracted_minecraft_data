@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.InteractionHand;
 
 public class ServerboundSwingPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundSwingPacket> STREAM_CODEC = Packet.codec(ServerboundSwingPacket::write, ServerboundSwingPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundSwingPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundSwingPacket>codec(ServerboundSwingPacket::write, ServerboundSwingPacket::new);
    private final InteractionHand hand;
 
    public ServerboundSwingPacket(InteractionHand var1) {

@@ -24,9 +24,7 @@ public class BlockEntitySignDoubleSidedEditableTextFix extends NamedEntityFix {
 
    private static <T> Dynamic<T> fixFrontTextTag(Dynamic<T> var0) {
       Dynamic var1 = ComponentDataFixUtils.createEmptyComponent(var0.getOps());
-      List var2 = getLines(var0, "Text").map((var1x) -> {
-         return (Dynamic)var1x.orElse(var1);
-      }).toList();
+      List var2 = getLines(var0, "Text").map((var1x) -> (Dynamic)var1x.orElse(var1)).toList();
       Dynamic var3 = var0.emptyMap().set("messages", var0.createList(var2.stream())).set("color", (Dynamic)var0.get("Color").result().orElse(var0.createString("black"))).set("has_glowing_text", (Dynamic)var0.get("GlowingText").result().orElse(var0.createBoolean(false))).set("_filtered_correct", var0.createBoolean(true));
       List var4 = getLines(var0, "FilteredText").toList();
       if (var4.stream().anyMatch(Optional::isPresent)) {

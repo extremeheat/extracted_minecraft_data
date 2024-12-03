@@ -9,7 +9,7 @@ import net.minecraft.network.protocol.login.custom.DiscardedQueryPayload;
 import net.minecraft.resources.ResourceLocation;
 
 public record ClientboundCustomQueryPacket(int transactionId, CustomQueryPayload payload) implements Packet<ClientLoginPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundCustomQueryPacket> STREAM_CODEC = Packet.codec(ClientboundCustomQueryPacket::write, ClientboundCustomQueryPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundCustomQueryPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundCustomQueryPacket>codec(ClientboundCustomQueryPacket::write, ClientboundCustomQueryPacket::new);
    private static final int MAX_PAYLOAD_SIZE = 1048576;
 
    private ClientboundCustomQueryPacket(FriendlyByteBuf var1) {
@@ -48,13 +48,5 @@ public record ClientboundCustomQueryPacket(int transactionId, CustomQueryPayload
 
    public void handle(ClientLoginPacketListener var1) {
       var1.handleCustomQuery(this);
-   }
-
-   public int transactionId() {
-      return this.transactionId;
-   }
-
-   public CustomQueryPayload payload() {
-      return this.payload;
    }
 }

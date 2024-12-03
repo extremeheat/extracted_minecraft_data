@@ -11,7 +11,7 @@ public class ContextKey<T> {
    }
 
    public static <T> ContextKey<T> vanilla(String var0) {
-      return new ContextKey(ResourceLocation.withDefaultNamespace(var0));
+      return new ContextKey<T>(ResourceLocation.withDefaultNamespace(var0));
    }
 
    public ResourceLocation name() {

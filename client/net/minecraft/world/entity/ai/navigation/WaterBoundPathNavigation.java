@@ -18,6 +18,7 @@ public class WaterBoundPathNavigation extends PathNavigation {
    protected PathFinder createPathFinder(int var1) {
       this.allowBreaching = this.mob.getType() == EntityType.DOLPHIN;
       this.nodeEvaluator = new SwimNodeEvaluator(this.allowBreaching);
+      this.nodeEvaluator.setCanPassDoors(false);
       return new PathFinder(this.nodeEvaluator, var1);
    }
 

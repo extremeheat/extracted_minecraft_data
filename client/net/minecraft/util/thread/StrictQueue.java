@@ -16,6 +16,46 @@ public interface StrictQueue<T extends Runnable> {
 
    int size();
 
+   public static final class QueueStrictQueue implements StrictQueue<Runnable> {
+      private final Queue<Runnable> queue;
+
+      public QueueStrictQueue(Queue<Runnable> var1) {
+         super();
+         this.queue = var1;
+      }
+
+      @Nullable
+      public Runnable pop() {
+         return (Runnable)this.queue.poll();
+      }
+
+      public boolean push(Runnable var1) {
+         return this.queue.add(var1);
+      }
+
+      public boolean isEmpty() {
+         return this.queue.isEmpty();
+      }
+
+      public int size() {
+         return this.queue.size();
+      }
+   }
+
+   public static record RunnableWithPriority(int priority, Runnable task) implements Runnable {
+      final int priority;
+
+      public RunnableWithPriority(int var1, Runnable var2) {
+         super();
+         this.priority = var1;
+         this.task = var2;
+      }
+
+      public void run() {
+         this.task.run();
+      }
+   }
+
    public static final class FixedPriorityQueue implements StrictQueue<RunnableWithPriority> {
       private final Queue<Runnable>[] queues;
       private final AtomicInteger size = new AtomicInteger();
@@ -32,11 +72,7 @@ public interface StrictQueue<T extends Runnable> {
 
       @Nullable
       public Runnable pop() {
-         Queue[] var1 = this.queues;
-         int var2 = var1.length;
-
-         for(int var3 = 0; var3 < var2; ++var3) {
-            Queue var4 = var1[var3];
+         for(Queue var4 : this.queues) {
             Runnable var5 = (Runnable)var4.poll();
             if (var5 != null) {
                this.size.decrementAndGet();
@@ -64,54 +100,6 @@ public interface StrictQueue<T extends Runnable> {
 
       public int size() {
          return this.size.get();
-      }
-   }
-
-   public static record RunnableWithPriority(int priority, Runnable task) implements Runnable {
-      final int priority;
-
-      public RunnableWithPriority(int var1, Runnable var2) {
-         super();
-         this.priority = var1;
-         this.task = var2;
-      }
-
-      public void run() {
-         this.task.run();
-      }
-
-      public int priority() {
-         return this.priority;
-      }
-
-      public Runnable task() {
-         return this.task;
-      }
-   }
-
-   public static final class QueueStrictQueue implements StrictQueue<Runnable> {
-      private final Queue<Runnable> queue;
-
-      public QueueStrictQueue(Queue<Runnable> var1) {
-         super();
-         this.queue = var1;
-      }
-
-      @Nullable
-      public Runnable pop() {
-         return (Runnable)this.queue.poll();
-      }
-
-      public boolean push(Runnable var1) {
-         return this.queue.add(var1);
-      }
-
-      public boolean isEmpty() {
-         return this.queue.isEmpty();
-      }
-
-      public int size() {
-         return this.queue.size();
       }
    }
 }

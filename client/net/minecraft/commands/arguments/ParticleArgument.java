@@ -29,12 +29,8 @@ import net.minecraft.resources.ResourceLocation;
 
 public class ParticleArgument implements ArgumentType<ParticleOptions> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "particle{foo:bar}");
-   public static final DynamicCommandExceptionType ERROR_UNKNOWN_PARTICLE = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("particle.notFound", var0);
-   });
-   public static final DynamicCommandExceptionType ERROR_INVALID_OPTIONS = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("particle.invalidOptions", var0);
-   });
+   public static final DynamicCommandExceptionType ERROR_UNKNOWN_PARTICLE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("particle.notFound", var0));
+   public static final DynamicCommandExceptionType ERROR_INVALID_OPTIONS = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("particle.invalidOptions", var0));
    private final HolderLookup.Provider registries;
 
    public ParticleArgument(CommandBuildContext var1) {
@@ -66,9 +62,7 @@ public class ParticleArgument implements ArgumentType<ParticleOptions> {
    private static ParticleType<?> readParticleType(StringReader var0, HolderLookup<ParticleType<?>> var1) throws CommandSyntaxException {
       ResourceLocation var2 = ResourceLocation.read(var0);
       ResourceKey var3 = ResourceKey.create(Registries.PARTICLE_TYPE, var2);
-      return (ParticleType)((Holder.Reference)var1.get(var3).orElseThrow(() -> {
-         return ERROR_UNKNOWN_PARTICLE.createWithContext(var0, var2);
-      })).value();
+      return (ParticleType)((Holder.Reference)var1.get(var3).orElseThrow(() -> ERROR_UNKNOWN_PARTICLE.createWithContext(var0, var2))).value();
    }
 
    private static <T extends ParticleOptions> T readParticle(StringReader var0, ParticleType<T> var1, HolderLookup.Provider var2) throws CommandSyntaxException {
@@ -82,7 +76,7 @@ public class ParticleArgument implements ArgumentType<ParticleOptions> {
       DataResult var10000 = var1.codec().codec().parse(var2.createSerializationContext(NbtOps.INSTANCE), var3);
       DynamicCommandExceptionType var10001 = ERROR_INVALID_OPTIONS;
       Objects.requireNonNull(var10001);
-      return (ParticleOptions)var10000.getOrThrow(var10001::create);
+      return (T)(var10000.getOrThrow(var10001::create));
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {

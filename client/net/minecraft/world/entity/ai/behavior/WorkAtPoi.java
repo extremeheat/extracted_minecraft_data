@@ -33,10 +33,8 @@ public class WorkAtPoi extends Behavior<Villager> {
 
    protected void start(ServerLevel var1, Villager var2, long var3) {
       Brain var5 = var2.getBrain();
-      var5.setMemory(MemoryModuleType.LAST_WORKED_AT_POI, (Object)var3);
-      var5.getMemory(MemoryModuleType.JOB_SITE).ifPresent((var1x) -> {
-         var5.setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new BlockPosTracker(var1x.pos())));
-      });
+      var5.setMemory(MemoryModuleType.LAST_WORKED_AT_POI, var3);
+      var5.getMemory(MemoryModuleType.JOB_SITE).ifPresent((var1x) -> var5.setMemory(MemoryModuleType.LOOK_TARGET, new BlockPosTracker(var1x.pos())));
       var2.playWorkSound();
       this.useWorkstation(var1, var2);
       if (var2.shouldRestock()) {

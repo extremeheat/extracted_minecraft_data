@@ -2,7 +2,6 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -26,7 +25,7 @@ public interface CollectionContentsPredicate<T, P extends Predicate<T>> extends 
          default -> var10000 = new Multiple(var0);
       }
 
-      return (CollectionContentsPredicate)var10000;
+      return (CollectionContentsPredicate<T, P>)var10000;
    }
 
    public static class Zero<T, P extends Predicate<T>> implements CollectionContentsPredicate<T, P> {
@@ -55,26 +54,17 @@ public interface CollectionContentsPredicate<T, P extends Predicate<T>> extends 
       }
 
       public boolean test(Iterable<T> var1) {
-         Iterator var2 = var1.iterator();
-
-         Object var3;
-         do {
-            if (!var2.hasNext()) {
-               return false;
+         for(Object var3 : var1) {
+            if (this.test.test(var3)) {
+               return true;
             }
+         }
 
-            var3 = var2.next();
-         } while(!this.test.test(var3));
-
-         return true;
+         return false;
       }
 
       public List<P> unpack() {
          return List.of(this.test);
-      }
-
-      public P test() {
-         return this.test;
       }
 
       // $FF: synthetic method
@@ -91,27 +81,18 @@ public interface CollectionContentsPredicate<T, P extends Predicate<T>> extends 
 
       public boolean test(Iterable<T> var1) {
          ArrayList var2 = new ArrayList(this.tests);
-         Iterator var3 = var1.iterator();
 
-         do {
-            if (!var3.hasNext()) {
-               return false;
+         for(Object var4 : var1) {
+            var2.removeIf((var1x) -> var1x.test(var4));
+            if (var2.isEmpty()) {
+               return true;
             }
+         }
 
-            Object var4 = var3.next();
-            var2.removeIf((var1x) -> {
-               return var1x.test(var4);
-            });
-         } while(!var2.isEmpty());
-
-         return true;
+         return false;
       }
 
       public List<P> unpack() {
-         return this.tests;
-      }
-
-      public List<P> tests() {
          return this.tests;
       }
 

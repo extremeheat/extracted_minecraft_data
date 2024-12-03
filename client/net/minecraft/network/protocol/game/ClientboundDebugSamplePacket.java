@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.util.debugchart.RemoteDebugSampleType;
 
 public record ClientboundDebugSamplePacket(long[] sample, RemoteDebugSampleType debugSampleType) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundDebugSamplePacket> STREAM_CODEC = Packet.codec(ClientboundDebugSamplePacket::write, ClientboundDebugSamplePacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundDebugSamplePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundDebugSamplePacket>codec(ClientboundDebugSamplePacket::write, ClientboundDebugSamplePacket::new);
 
    private ClientboundDebugSamplePacket(FriendlyByteBuf var1) {
       this(var1.readLongArray(), (RemoteDebugSampleType)var1.readEnum(RemoteDebugSampleType.class));
@@ -30,13 +30,5 @@ public record ClientboundDebugSamplePacket(long[] sample, RemoteDebugSampleType 
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleDebugSample(this);
-   }
-
-   public long[] sample() {
-      return this.sample;
-   }
-
-   public RemoteDebugSampleType debugSampleType() {
-      return this.debugSampleType;
    }
 }

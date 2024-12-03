@@ -3,7 +3,6 @@ package net.minecraft.world.item;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -18,6 +17,8 @@ import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.phys.Vec3;
 
 public class WindChargeItem extends Item implements ProjectileItem {
+   public static float PROJECTILE_SHOOT_POWER = 1.5F;
+
    public WindChargeItem(Item.Properties var1) {
       super(var1);
    }
@@ -25,12 +26,10 @@ public class WindChargeItem extends Item implements ProjectileItem {
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       if (var1 instanceof ServerLevel var5) {
-         Projectile.spawnProjectileFromRotation((var2x, var3x, var4x) -> {
-            return new WindCharge(var2, var1, var2.position().x(), var2.getEyePosition().y(), var2.position().z());
-         }, var5, var4, var2, 0.0F, 1.5F, 1.0F);
+         Projectile.spawnProjectileFromRotation((var2x, var3x, var4x) -> new WindCharge(var2, var1, var2.position().x(), var2.getEyePosition().y(), var2.position().z()), var5, var4, var2, 0.0F, PROJECTILE_SHOOT_POWER, 1.0F);
       }
 
-      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)SoundEvents.WIND_CHARGE_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
+      var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.WIND_CHARGE_THROW, SoundSource.NEUTRAL, 0.5F, 0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
       var2.awardStat(Stats.ITEM_USED.get(this));
       var4.consume(1, var2);
       return InteractionResult.SUCCESS;
@@ -51,8 +50,6 @@ public class WindChargeItem extends Item implements ProjectileItem {
    }
 
    public ProjectileItem.DispenseConfig createDispenseConfig() {
-      return ProjectileItem.DispenseConfig.builder().positionFunction((var0, var1) -> {
-         return DispenserBlock.getDispensePosition(var0, 1.0, Vec3.ZERO);
-      }).uncertainty(6.6666665F).power(1.0F).overrideDispenseEvent(1051).build();
+      return ProjectileItem.DispenseConfig.builder().positionFunction((var0, var1) -> DispenserBlock.getDispensePosition(var0, 1.0, Vec3.ZERO)).uncertainty(6.6666665F).power(1.0F).overrideDispenseEvent(1051).build();
    }
 }

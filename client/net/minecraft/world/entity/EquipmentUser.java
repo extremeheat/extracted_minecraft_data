@@ -2,7 +2,6 @@ package net.minecraft.world.entity;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -33,10 +32,8 @@ public interface EquipmentUser {
       if (var6 != LootTable.EMPTY) {
          ObjectArrayList var7 = var6.getRandomItems(var2, var3);
          ArrayList var8 = new ArrayList();
-         Iterator var9 = var7.iterator();
 
-         while(var9.hasNext()) {
-            ItemStack var10 = (ItemStack)var9.next();
+         for(ItemStack var10 : var7) {
             EquipmentSlot var11 = this.resolveSlot(var10, var8);
             if (var11 != null) {
                ItemStack var12 = var11.limit(var10);

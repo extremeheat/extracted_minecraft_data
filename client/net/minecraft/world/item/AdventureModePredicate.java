@@ -3,7 +3,6 @@ package net.minecraft.world.item;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -66,21 +65,17 @@ public class AdventureModePredicate {
       } else {
          this.lastCheckedBlock = var1;
          this.checksBlockEntity = false;
-         Iterator var2 = this.predicates.iterator();
 
-         BlockPredicate var3;
-         do {
-            if (!var2.hasNext()) {
-               this.lastResult = false;
-               return false;
+         for(BlockPredicate var3 : this.predicates) {
+            if (var3.matches(var1)) {
+               this.checksBlockEntity |= var3.requiresNbt();
+               this.lastResult = true;
+               return true;
             }
+         }
 
-            var3 = (BlockPredicate)var2.next();
-         } while(!var3.matches(var1));
-
-         this.checksBlockEntity |= var3.requiresNbt();
-         this.lastResult = true;
-         return true;
+         this.lastResult = false;
+         return false;
       }
    }
 
@@ -101,22 +96,13 @@ public class AdventureModePredicate {
    }
 
    private static List<Component> computeTooltip(List<BlockPredicate> var0) {
-      Iterator var1 = var0.iterator();
-
-      BlockPredicate var2;
-      do {
-         if (!var1.hasNext()) {
-            return var0.stream().flatMap((var0x) -> {
-               return ((HolderSet)var0x.blocks().orElseThrow()).stream();
-            }).distinct().map((var0x) -> {
-               return ((Block)var0x.value()).getName().withStyle(ChatFormatting.DARK_GRAY);
-            }).toList();
+      for(BlockPredicate var2 : var0) {
+         if (var2.blocks().isEmpty()) {
+            return List.of(UNKNOWN_USE);
          }
+      }
 
-         var2 = (BlockPredicate)var1.next();
-      } while(!var2.blocks().isEmpty());
-
-      return List.of(UNKNOWN_USE);
+      return var0.stream().flatMap((var0x) -> ((HolderSet)var0x.blocks().orElseThrow()).stream()).distinct().map((var0x) -> ((Block)var0x.value()).getName().withStyle(ChatFormatting.DARK_GRAY)).toList();
    }
 
    public boolean showInTooltip() {
@@ -144,22 +130,10 @@ public class AdventureModePredicate {
    }
 
    static {
-      SIMPLE_CODEC = BlockPredicate.CODEC.flatComapMap((var0) -> {
-         return new AdventureModePredicate(List.of(var0), true);
-      }, (var0) -> {
-         return DataResult.error(() -> {
-            return "Cannot encode";
-         });
-      });
-      FULL_CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(ExtraCodecs.nonEmptyList(BlockPredicate.CODEC.listOf()).fieldOf("predicates").forGetter((var0x) -> {
-            return var0x.predicates;
-         }), Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(AdventureModePredicate::showInTooltip)).apply(var0, AdventureModePredicate::new);
-      });
+      SIMPLE_CODEC = BlockPredicate.CODEC.flatComapMap((var0) -> new AdventureModePredicate(List.of(var0), true), (var0) -> DataResult.error(() -> "Cannot encode"));
+      FULL_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.nonEmptyList(BlockPredicate.CODEC.listOf()).fieldOf("predicates").forGetter((var0x) -> var0x.predicates), Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(AdventureModePredicate::showInTooltip)).apply(var0, AdventureModePredicate::new));
       CODEC = Codec.withAlternative(FULL_CODEC, SIMPLE_CODEC);
-      STREAM_CODEC = StreamCodec.composite(BlockPredicate.STREAM_CODEC.apply(ByteBufCodecs.list()), (var0) -> {
-         return var0.predicates;
-      }, ByteBufCodecs.BOOL, AdventureModePredicate::showInTooltip, AdventureModePredicate::new);
+      STREAM_CODEC = StreamCodec.composite(BlockPredicate.STREAM_CODEC.apply(ByteBufCodecs.list()), (var0) -> var0.predicates, ByteBufCodecs.BOOL, AdventureModePredicate::showInTooltip, AdventureModePredicate::new);
       CAN_BREAK_HEADER = Component.translatable("item.canBreak").withStyle(ChatFormatting.GRAY);
       CAN_PLACE_HEADER = Component.translatable("item.canPlace").withStyle(ChatFormatting.GRAY);
       UNKNOWN_USE = Component.translatable("item.canUse.unknown").withStyle(ChatFormatting.GRAY);

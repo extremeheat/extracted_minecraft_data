@@ -127,9 +127,7 @@ public abstract class BasePressurePlateBlock extends Block {
    }
 
    protected static int getEntityCount(Level var0, AABB var1, Class<? extends Entity> var2) {
-      return var0.getEntitiesOfClass(var2, var1, EntitySelector.NO_SPECTATORS.and((var0x) -> {
-         return !var0x.isIgnoringBlockTriggers();
-      })).size();
+      return var0.getEntitiesOfClass(var2, var1, EntitySelector.NO_SPECTATORS.and((var0x) -> !var0x.isIgnoringBlockTriggers())).size();
    }
 
    protected abstract int getSignalStrength(Level var1, BlockPos var2);

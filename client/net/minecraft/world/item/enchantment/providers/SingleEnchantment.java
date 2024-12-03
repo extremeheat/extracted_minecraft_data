@@ -12,9 +12,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 public record SingleEnchantment(Holder<Enchantment> enchantment, IntProvider level) implements EnchantmentProvider {
-   public static final MapCodec<SingleEnchantment> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Enchantment.CODEC.fieldOf("enchantment").forGetter(SingleEnchantment::enchantment), IntProvider.CODEC.fieldOf("level").forGetter(SingleEnchantment::level)).apply(var0, SingleEnchantment::new);
-   });
+   public static final MapCodec<SingleEnchantment> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Enchantment.CODEC.fieldOf("enchantment").forGetter(SingleEnchantment::enchantment), IntProvider.CODEC.fieldOf("level").forGetter(SingleEnchantment::level)).apply(var0, SingleEnchantment::new));
 
    public SingleEnchantment(Holder<Enchantment> var1, IntProvider var2) {
       super();
@@ -28,13 +26,5 @@ public record SingleEnchantment(Holder<Enchantment> enchantment, IntProvider lev
 
    public MapCodec<SingleEnchantment> codec() {
       return CODEC;
-   }
-
-   public Holder<Enchantment> enchantment() {
-      return this.enchantment;
-   }
-
-   public IntProvider level() {
-      return this.level;
    }
 }

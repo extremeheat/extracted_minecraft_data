@@ -20,9 +20,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public class ItemInput {
-   private static final Dynamic2CommandExceptionType ERROR_STACK_TOO_BIG = new Dynamic2CommandExceptionType((var0, var1) -> {
-      return Component.translatableEscape("arguments.item.overstacked", var0, var1);
-   });
+   private static final Dynamic2CommandExceptionType ERROR_STACK_TOO_BIG = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("arguments.item.overstacked", var0, var1));
    private final Holder<Item> item;
    private final DataComponentPatch components;
 
@@ -33,7 +31,7 @@ public class ItemInput {
    }
 
    public Item getItem() {
-      return (Item)this.item.value();
+      return this.item.value();
    }
 
    public ItemStack createItemStack(int var1, boolean var2) throws CommandSyntaxException {
@@ -81,8 +79,6 @@ public class ItemInput {
    }
 
    private String getItemName() {
-      return this.item.unwrapKey().map(ResourceKey::location).orElseGet(() -> {
-         return "unknown[" + String.valueOf(this.item) + "]";
-      }).toString();
+      return this.item.unwrapKey().map(ResourceKey::location).orElseGet(() -> "unknown[" + String.valueOf(this.item) + "]").toString();
    }
 }

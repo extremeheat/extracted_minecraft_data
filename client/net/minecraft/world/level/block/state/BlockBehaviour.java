@@ -126,9 +126,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    public static <B extends Block> MapCodec<B> simpleCodec(Function<Properties, B> var0) {
-      return RecordCodecBuilder.mapCodec((var1) -> {
-         return var1.group(propertiesCodec()).apply(var1, var0);
-      });
+      return RecordCodecBuilder.mapCodec((var1) -> var1.group(propertiesCodec()).apply(var1, var0));
    }
 
    protected void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, int var4, int var5) {
@@ -184,9 +182,7 @@ public abstract class BlockBehaviour implements FeatureElement {
             }
 
             var1.spawnAfterBreak(var2, var3, ItemStack.EMPTY, var7);
-            var1.getDrops(var9).forEach((var2x) -> {
-               var5.accept(var2x, var3);
-            });
+            var1.getDrops(var9).forEach((var2x) -> var5.accept(var2x, var3));
          }
 
          var2.setBlock(var3, Blocks.AIR.defaultBlockState(), 3);
@@ -382,6 +378,10 @@ public abstract class BlockBehaviour implements FeatureElement {
       return this.soundType;
    }
 
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+      return new ItemStack(this.asItem());
+   }
+
    public abstract Item asItem();
 
    protected abstract Block asBlock();
@@ -398,13 +398,23 @@ public abstract class BlockBehaviour implements FeatureElement {
       UPDATE_SHAPE_ORDER = new Direction[]{Direction.WEST, Direction.EAST, Direction.NORTH, Direction.SOUTH, Direction.DOWN, Direction.UP};
    }
 
+   public static enum OffsetType {
+      NONE,
+      XZ,
+      XYZ;
+
+      private OffsetType() {
+      }
+
+      // $FF: synthetic method
+      private static OffsetType[] $values() {
+         return new OffsetType[]{NONE, XZ, XYZ};
+      }
+   }
+
    public static class Properties {
-      public static final Codec<Properties> CODEC = Codec.unit(() -> {
-         return of();
-      });
-      Function<BlockState, MapColor> mapColor = (var0) -> {
-         return MapColor.NONE;
-      };
+      public static final Codec<Properties> CODEC = Codec.unit(() -> of());
+      Function<BlockState, MapColor> mapColor = (var0) -> MapColor.NONE;
       boolean hasCollision = true;
       SoundType soundType;
       ToIntFunction<BlockState> lightEmission;
@@ -447,38 +457,22 @@ public abstract class BlockBehaviour implements FeatureElement {
       private Properties() {
          super();
          this.soundType = SoundType.STONE;
-         this.lightEmission = (var0) -> {
-            return 0;
-         };
+         this.lightEmission = (var0) -> 0;
          this.friction = 0.6F;
          this.speedFactor = 1.0F;
          this.jumpFactor = 1.0F;
-         this.drops = (var0) -> {
-            return Optional.of(ResourceKey.create(Registries.LOOT_TABLE, var0.location().withPrefix("blocks/")));
-         };
-         this.descriptionId = (var0) -> {
-            return Util.makeDescriptionId("block", var0.location());
-         };
+         this.drops = (var0) -> Optional.of(ResourceKey.create(Registries.LOOT_TABLE, var0.location().withPrefix("blocks/")));
+         this.descriptionId = (var0) -> Util.makeDescriptionId("block", var0.location());
          this.canOcclude = true;
          this.pushReaction = PushReaction.NORMAL;
          this.spawnTerrainParticles = true;
          this.instrument = NoteBlockInstrument.HARP;
-         this.isValidSpawn = (var0, var1, var2, var3) -> {
-            return var0.isFaceSturdy(var1, var2, Direction.UP) && var0.getLightEmission() < 14;
-         };
-         this.isRedstoneConductor = (var0, var1, var2) -> {
-            return var0.isCollisionShapeFullBlock(var1, var2);
-         };
-         this.isSuffocating = (var0, var1, var2) -> {
-            return var0.blocksMotion() && var0.isCollisionShapeFullBlock(var1, var2);
-         };
+         this.isValidSpawn = (var0, var1, var2, var3) -> var0.isFaceSturdy(var1, var2, Direction.UP) && var0.getLightEmission() < 14;
+         this.isRedstoneConductor = (var0, var1, var2) -> var0.isCollisionShapeFullBlock(var1, var2);
+         this.isSuffocating = (var0, var1, var2) -> var0.blocksMotion() && var0.isCollisionShapeFullBlock(var1, var2);
          this.isViewBlocking = this.isSuffocating;
-         this.hasPostProcess = (var0, var1, var2) -> {
-            return false;
-         };
-         this.emissiveRendering = (var0, var1, var2) -> {
-            return false;
-         };
+         this.hasPostProcess = (var0, var1, var2) -> false;
+         this.emissiveRendering = (var0, var1, var2) -> false;
          this.requiredFeatures = FeatureFlags.VANILLA_SET;
       }
 
@@ -533,16 +527,12 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public Properties mapColor(DyeColor var1) {
-         this.mapColor = (var1x) -> {
-            return var1.getMapColor();
-         };
+         this.mapColor = (var1x) -> var1.getMapColor();
          return this;
       }
 
       public Properties mapColor(MapColor var1) {
-         this.mapColor = (var1x) -> {
-            return var1;
-         };
+         this.mapColor = (var1x) -> var1;
          return this;
       }
 
@@ -611,17 +601,17 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public Properties noLootTable() {
-         this.drops = DependantName.fixed(Optional.empty());
+         this.drops = DependantName.<Block, Optional<ResourceKey<LootTable>>>fixed(Optional.empty());
          return this;
       }
 
       public Properties overrideLootTable(Optional<ResourceKey<LootTable>> var1) {
-         this.drops = DependantName.fixed(var1);
+         this.drops = DependantName.<Block, Optional<ResourceKey<LootTable>>>fixed(var1);
          return this;
       }
 
       protected Optional<ResourceKey<LootTable>> effectiveDrops() {
-         return (Optional)this.drops.get((ResourceKey)Objects.requireNonNull(this.id, "Block id not set"));
+         return this.drops.get((ResourceKey)Objects.requireNonNull(this.id, "Block id not set"));
       }
 
       public Properties ignitedByLava() {
@@ -755,28 +745,13 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public Properties overrideDescription(String var1) {
-         this.descriptionId = DependantName.fixed(var1);
+         this.descriptionId = DependantName.<Block, String>fixed(var1);
          return this;
       }
 
       protected String effectiveDescriptionId() {
-         return (String)this.descriptionId.get((ResourceKey)Objects.requireNonNull(this.id, "Block id not set"));
+         return this.descriptionId.get((ResourceKey)Objects.requireNonNull(this.id, "Block id not set"));
       }
-   }
-
-   @FunctionalInterface
-   public interface StateArgumentPredicate<A> {
-      boolean test(BlockState var1, BlockGetter var2, BlockPos var3, A var4);
-   }
-
-   @FunctionalInterface
-   public interface OffsetFunction {
-      Vec3 evaluate(BlockState var1, BlockPos var2);
-   }
-
-   @FunctionalInterface
-   public interface StatePredicate {
-      boolean test(BlockState var1, BlockGetter var2, BlockPos var3);
    }
 
    public abstract static class BlockStateBase extends StateHolder<Block, BlockState> {
@@ -844,9 +819,9 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       private boolean calculateSolid() {
-         if (((Block)this.owner).properties.forceSolidOn) {
+         if ((this.owner).properties.forceSolidOn) {
             return true;
-         } else if (((Block)this.owner).properties.forceSolidOff) {
+         } else if ((this.owner).properties.forceSolidOff) {
             return false;
          } else if (this.cache == null) {
             return false;
@@ -881,11 +856,8 @@ public abstract class BlockBehaviour implements FeatureElement {
             this.occlusionShapesByFace = FULL_BLOCK_OCCLUSION_SHAPES;
          } else {
             this.occlusionShapesByFace = new VoxelShape[DIRECTIONS.length];
-            Direction[] var1 = DIRECTIONS;
-            int var2 = var1.length;
 
-            for(int var3 = 0; var3 < var2; ++var3) {
-               Direction var4 = var1[var3];
+            for(Direction var4 : DIRECTIONS) {
                this.occlusionShapesByFace[var4.ordinal()] = this.occlusionShape.getFaceShape(var4);
             }
          }
@@ -895,7 +867,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public Block getBlock() {
-         return (Block)this.owner;
+         return this.owner;
       }
 
       public Holder<Block> getBlockHolder() {
@@ -1093,11 +1065,8 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       public final void updateNeighbourShapes(LevelAccessor var1, BlockPos var2, int var3, int var4) {
          BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
-         Direction[] var6 = BlockBehaviour.UPDATE_SHAPE_ORDER;
-         int var7 = var6.length;
 
-         for(int var8 = 0; var8 < var7; ++var8) {
-            Direction var9 = var6[var8];
+         for(Direction var9 : BlockBehaviour.UPDATE_SHAPE_ORDER) {
             var5.setWithOffset(var2, (Direction)var9);
             var1.neighborShapeChanged(var9.getOpposite(), var5, var2, this.asState(), var3, var4);
          }
@@ -1270,6 +1239,10 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.cache != null ? this.cache.isCollisionShapeFullBlock : this.getBlock().isCollisionShapeFullBlock(this.asState(), var1, var2);
       }
 
+      public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, boolean var3) {
+         return this.getBlock().getCloneItemStack(var1, var2, this.asState(), var3);
+      }
+
       protected abstract BlockState asState();
 
       public boolean requiresCorrectToolForDrops() {
@@ -1285,15 +1258,11 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       static {
-         EMPTY_OCCLUSION_SHAPES = (VoxelShape[])Util.make(new VoxelShape[DIRECTIONS.length], (var0) -> {
-            Arrays.fill(var0, Shapes.empty());
-         });
-         FULL_BLOCK_OCCLUSION_SHAPES = (VoxelShape[])Util.make(new VoxelShape[DIRECTIONS.length], (var0) -> {
-            Arrays.fill(var0, Shapes.block());
-         });
+         EMPTY_OCCLUSION_SHAPES = (VoxelShape[])Util.make(new VoxelShape[DIRECTIONS.length], (var0) -> Arrays.fill(var0, Shapes.empty()));
+         FULL_BLOCK_OCCLUSION_SHAPES = (VoxelShape[])Util.make(new VoxelShape[DIRECTIONS.length], (var0) -> Arrays.fill(var0, Shapes.block()));
       }
 
-      private static final class Cache {
+      static final class Cache {
          private static final Direction[] DIRECTIONS = Direction.values();
          private static final int SUPPORT_TYPE_COUNT = SupportType.values().length;
          protected final VoxelShape collisionShape;
@@ -1308,20 +1277,11 @@ public abstract class BlockBehaviour implements FeatureElement {
             if (!this.collisionShape.isEmpty() && var1.hasOffsetFunction()) {
                throw new IllegalStateException(String.format(Locale.ROOT, "%s has a collision shape and an offset type, but is not marked as dynamicShape in its properties.", BuiltInRegistries.BLOCK.getKey(var2)));
             } else {
-               this.largeCollisionShape = Arrays.stream(Direction.Axis.values()).anyMatch((var1x) -> {
-                  return this.collisionShape.min(var1x) < 0.0 || this.collisionShape.max(var1x) > 1.0;
-               });
+               this.largeCollisionShape = Arrays.stream(Direction.Axis.values()).anyMatch((var1x) -> this.collisionShape.min(var1x) < 0.0 || this.collisionShape.max(var1x) > 1.0);
                this.faceSturdy = new boolean[DIRECTIONS.length * SUPPORT_TYPE_COUNT];
-               Direction[] var3 = DIRECTIONS;
-               int var4 = var3.length;
 
-               for(int var5 = 0; var5 < var4; ++var5) {
-                  Direction var6 = var3[var5];
-                  SupportType[] var7 = SupportType.values();
-                  int var8 = var7.length;
-
-                  for(int var9 = 0; var9 < var8; ++var9) {
-                     SupportType var10 = var7[var9];
+               for(Direction var6 : DIRECTIONS) {
+                  for(SupportType var10 : SupportType.values()) {
                      this.faceSturdy[getFaceSupportIndex(var6, var10)] = var10.isSupporting(var1, EmptyBlockGetter.INSTANCE, BlockPos.ZERO, var6);
                   }
                }
@@ -1340,17 +1300,18 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
    }
 
-   public static enum OffsetType {
-      NONE,
-      XZ,
-      XYZ;
+   @FunctionalInterface
+   public interface OffsetFunction {
+      Vec3 evaluate(BlockState var1, BlockPos var2);
+   }
 
-      private OffsetType() {
-      }
+   @FunctionalInterface
+   public interface StateArgumentPredicate<A> {
+      boolean test(BlockState var1, BlockGetter var2, BlockPos var3, A var4);
+   }
 
-      // $FF: synthetic method
-      private static OffsetType[] $values() {
-         return new OffsetType[]{NONE, XZ, XYZ};
-      }
+   @FunctionalInterface
+   public interface StatePredicate {
+      boolean test(BlockState var1, BlockGetter var2, BlockPos var3);
    }
 }

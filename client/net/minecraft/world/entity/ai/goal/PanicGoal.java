@@ -29,9 +29,7 @@ public class PanicGoal extends Goal {
    }
 
    public PanicGoal(PathfinderMob var1, double var2, TagKey<DamageType> var4) {
-      this(var1, var2, (var1x) -> {
-         return var4;
-      });
+      this(var1, var2, (Function)((var1x) -> var4));
    }
 
    public PanicGoal(PathfinderMob var1, double var2, Function<PathfinderMob, TagKey<DamageType>> var4) {
@@ -96,8 +94,6 @@ public class PanicGoal extends Goal {
    @Nullable
    protected BlockPos lookForWater(BlockGetter var1, Entity var2, int var3) {
       BlockPos var4 = var2.blockPosition();
-      return !var1.getBlockState(var4).getCollisionShape(var1, var4).isEmpty() ? null : (BlockPos)BlockPos.findClosestMatch(var2.blockPosition(), var3, 1, (var1x) -> {
-         return var1.getFluidState(var1x).is(FluidTags.WATER);
-      }).orElse((Object)null);
+      return !var1.getBlockState(var4).getCollisionShape(var1, var4).isEmpty() ? null : (BlockPos)BlockPos.findClosestMatch(var2.blockPosition(), var3, 1, (var1x) -> var1.getFluidState(var1x).is(FluidTags.WATER)).orElse((Object)null);
    }
 }

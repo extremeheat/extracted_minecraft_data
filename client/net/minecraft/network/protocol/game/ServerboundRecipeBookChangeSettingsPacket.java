@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.inventory.RecipeBookType;
 
 public class ServerboundRecipeBookChangeSettingsPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundRecipeBookChangeSettingsPacket> STREAM_CODEC = Packet.codec(ServerboundRecipeBookChangeSettingsPacket::write, ServerboundRecipeBookChangeSettingsPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundRecipeBookChangeSettingsPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundRecipeBookChangeSettingsPacket>codec(ServerboundRecipeBookChangeSettingsPacket::write, ServerboundRecipeBookChangeSettingsPacket::new);
    private final RecipeBookType bookType;
    private final boolean isOpen;
    private final boolean isFiltering;

@@ -83,6 +83,20 @@ public abstract class DimensionSpecialEffects {
       }
    }
 
+   public static class NetherEffects extends DimensionSpecialEffects {
+      public NetherEffects() {
+         super(0.0F / 0.0F, true, DimensionSpecialEffects.SkyType.NONE, false, true);
+      }
+
+      public Vec3 getBrightnessDependentFogColor(Vec3 var1, float var2) {
+         return var1;
+      }
+
+      public boolean isFoggyAt(int var1, int var2) {
+         return true;
+      }
+   }
+
    public static class OverworldEffects extends DimensionSpecialEffects {
       public static final int CLOUD_LEVEL = 192;
       private static final float SUNRISE_AND_SUNSET_TIMESPAN = 0.4F;
@@ -109,20 +123,6 @@ public abstract class DimensionSpecialEffects {
 
       public boolean isFoggyAt(int var1, int var2) {
          return false;
-      }
-   }
-
-   public static class NetherEffects extends DimensionSpecialEffects {
-      public NetherEffects() {
-         super(0.0F / 0.0F, true, DimensionSpecialEffects.SkyType.NONE, false, true);
-      }
-
-      public Vec3 getBrightnessDependentFogColor(Vec3 var1, float var2) {
-         return var1;
-      }
-
-      public boolean isFoggyAt(int var1, int var2) {
-         return true;
       }
    }
 

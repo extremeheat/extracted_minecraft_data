@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -41,12 +40,7 @@ public class BoundingBox {
       this.maxY = var5;
       this.maxZ = var6;
       if (var4 < var1 || var5 < var2 || var6 < var3) {
-         String var7 = "Invalid bounding box data, inverted bounds for: " + String.valueOf(this);
-         if (SharedConstants.IS_RUNNING_IN_IDE) {
-            throw new IllegalStateException(var7);
-         }
-
-         LOGGER.error(var7);
+         Util.logAndPauseIfInIde("Invalid bounding box data, inverted bounds for: " + String.valueOf(this));
          this.minX = Math.min(var1, var4);
          this.minY = Math.min(var2, var5);
          this.minZ = Math.min(var3, var6);
@@ -258,12 +252,6 @@ public class BoundingBox {
    }
 
    static {
-      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> {
-         return Util.fixedSize((IntStream)var0, 6).map((var0x) -> {
-            return new BoundingBox(var0x[0], var0x[1], var0x[2], var0x[3], var0x[4], var0x[5]);
-         });
-      }, (var0) -> {
-         return IntStream.of(new int[]{var0.minX, var0.minY, var0.minZ, var0.maxX, var0.maxY, var0.maxZ});
-      }).stable();
+      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> Util.fixedSize((IntStream)var0, 6).map((var0x) -> new BoundingBox(var0x[0], var0x[1], var0x[2], var0x[3], var0x[4], var0x[5])), (var0) -> IntStream.of(new int[]{var0.minX, var0.minY, var0.minZ, var0.maxX, var0.maxY, var0.maxZ})).stable();
    }
 }

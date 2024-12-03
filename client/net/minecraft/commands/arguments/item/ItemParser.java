@@ -33,22 +33,12 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 public class ItemParser {
-   static final DynamicCommandExceptionType ERROR_UNKNOWN_ITEM = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("argument.item.id.invalid", var0);
-   });
-   static final DynamicCommandExceptionType ERROR_UNKNOWN_COMPONENT = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("arguments.item.component.unknown", var0);
-   });
-   static final Dynamic2CommandExceptionType ERROR_MALFORMED_COMPONENT = new Dynamic2CommandExceptionType((var0, var1) -> {
-      return Component.translatableEscape("arguments.item.component.malformed", var0, var1);
-   });
+   static final DynamicCommandExceptionType ERROR_UNKNOWN_ITEM = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.item.id.invalid", var0));
+   static final DynamicCommandExceptionType ERROR_UNKNOWN_COMPONENT = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("arguments.item.component.unknown", var0));
+   static final Dynamic2CommandExceptionType ERROR_MALFORMED_COMPONENT = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("arguments.item.component.malformed", var0, var1));
    static final SimpleCommandExceptionType ERROR_EXPECTED_COMPONENT = new SimpleCommandExceptionType(Component.translatable("arguments.item.component.expected"));
-   static final DynamicCommandExceptionType ERROR_REPEATED_COMPONENT = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("arguments.item.component.repeated", var0);
-   });
-   private static final DynamicCommandExceptionType ERROR_MALFORMED_ITEM = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("arguments.item.malformed", var0);
-   });
+   static final DynamicCommandExceptionType ERROR_REPEATED_COMPONENT = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("arguments.item.component.repeated", var0));
+   private static final DynamicCommandExceptionType ERROR_MALFORMED_ITEM = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("arguments.item.malformed", var0));
    public static final char SYNTAX_START_COMPONENTS = '[';
    public static final char SYNTAX_END_COMPONENTS = ']';
    public static final char SYNTAX_COMPONENT_SEPARATOR = ',';
@@ -61,13 +51,13 @@ public class ItemParser {
    public ItemParser(HolderLookup.Provider var1) {
       super();
       this.items = var1.lookupOrThrow(Registries.ITEM);
-      this.registryOps = var1.createSerializationContext(NbtOps.INSTANCE);
+      this.registryOps = var1.<Tag>createSerializationContext(NbtOps.INSTANCE);
    }
 
    public ItemResult parse(StringReader var1) throws CommandSyntaxException {
       final MutableObject var2 = new MutableObject();
       final DataComponentPatch.Builder var3 = DataComponentPatch.builder();
-      this.parse(var1, new Visitor(this) {
+      this.parse(var1, new Visitor() {
          public void visitItem(Holder<Item> var1) {
             var2.setValue(var1);
          }
@@ -89,9 +79,7 @@ public class ItemParser {
    private static void validateComponents(StringReader var0, Holder<Item> var1, DataComponentPatch var2) throws CommandSyntaxException {
       PatchedDataComponentMap var3 = PatchedDataComponentMap.fromPatch(((Item)var1.value()).components(), var2);
       DataResult var4 = ItemStack.validateComponents(var3);
-      var4.getOrThrow((var1x) -> {
-         return ERROR_MALFORMED_ITEM.createWithContext(var0, var1x);
-      });
+      var4.getOrThrow((var1x) -> ERROR_MALFORMED_ITEM.createWithContext(var0, var1x));
    }
 
    public void parse(StringReader var1, Visitor var2) throws CommandSyntaxException {
@@ -119,37 +107,7 @@ public class ItemParser {
       return var3.resolveSuggestions(var1, var2);
    }
 
-   public interface Visitor {
-      default void visitItem(Holder<Item> var1) {
-      }
-
-      default <T> void visitComponent(DataComponentType<T> var1, T var2) {
-      }
-
-      default <T> void visitRemovedComponent(DataComponentType<T> var1) {
-      }
-
-      default void visitSuggestions(Function<SuggestionsBuilder, CompletableFuture<Suggestions>> var1) {
-      }
-   }
-
-   public static record ItemResult(Holder<Item> item, DataComponentPatch components) {
-      public ItemResult(Holder<Item> var1, DataComponentPatch var2) {
-         super();
-         this.item = var1;
-         this.components = var2;
-      }
-
-      public Holder<Item> item() {
-         return this.item;
-      }
-
-      public DataComponentPatch components() {
-         return this.components;
-      }
-   }
-
-   private class State {
+   class State {
       private final StringReader reader;
       private final Visitor visitor;
 
@@ -186,20 +144,19 @@ public class ItemParser {
 
          while(this.reader.canRead() && this.reader.peek() != ']') {
             this.reader.skipWhitespace();
-            DataComponentType var2;
             if (this.reader.canRead() && this.reader.peek() == '!') {
                this.reader.skip();
                this.visitor.visitSuggestions(this::suggestComponent);
-               var2 = readComponentType(this.reader);
-               if (!var1.add(var2)) {
-                  throw ItemParser.ERROR_REPEATED_COMPONENT.create(var2);
+               DataComponentType var3 = readComponentType(this.reader);
+               if (!var1.add(var3)) {
+                  throw ItemParser.ERROR_REPEATED_COMPONENT.create(var3);
                }
 
-               this.visitor.visitRemovedComponent(var2);
+               this.visitor.visitRemovedComponent(var3);
                this.visitor.visitSuggestions(ItemParser.SUGGEST_NOTHING);
                this.reader.skipWhitespace();
             } else {
-               var2 = readComponentType(this.reader);
+               DataComponentType var2 = readComponentType(this.reader);
                if (!var1.add(var2)) {
                   throw ItemParser.ERROR_REPEATED_COMPONENT.create(var2);
                }
@@ -296,9 +253,7 @@ public class ItemParser {
 
       private CompletableFuture<Suggestions> suggestComponent(SuggestionsBuilder var1, String var2) {
          String var3 = var1.getRemaining().toLowerCase(Locale.ROOT);
-         SharedSuggestionProvider.filterResources(BuiltInRegistries.DATA_COMPONENT_TYPE.entrySet(), var3, (var0) -> {
-            return ((ResourceKey)var0.getKey()).location();
-         }, (var2x) -> {
+         SharedSuggestionProvider.filterResources(BuiltInRegistries.DATA_COMPONENT_TYPE.entrySet(), var3, (var0) -> ((ResourceKey)var0.getKey()).location(), (var2x) -> {
             DataComponentType var3 = (DataComponentType)var2x.getValue();
             if (var3.codec() != null) {
                ResourceLocation var4 = ((ResourceKey)var2x.getKey()).location();
@@ -311,7 +266,15 @@ public class ItemParser {
       }
    }
 
-   private static class SuggestionsVisitor implements Visitor {
+   public static record ItemResult(Holder<Item> item, DataComponentPatch components) {
+      public ItemResult(Holder<Item> var1, DataComponentPatch var2) {
+         super();
+         this.item = var1;
+         this.components = var2;
+      }
+   }
+
+   static class SuggestionsVisitor implements Visitor {
       private Function<SuggestionsBuilder, CompletableFuture<Suggestions>> suggestions;
 
       SuggestionsVisitor() {
@@ -325,6 +288,20 @@ public class ItemParser {
 
       public CompletableFuture<Suggestions> resolveSuggestions(SuggestionsBuilder var1, StringReader var2) {
          return (CompletableFuture)this.suggestions.apply(var1.createOffset(var2.getCursor()));
+      }
+   }
+
+   public interface Visitor {
+      default void visitItem(Holder<Item> var1) {
+      }
+
+      default <T> void visitComponent(DataComponentType<T> var1, T var2) {
+      }
+
+      default <T> void visitRemovedComponent(DataComponentType<T> var1) {
+      }
+
+      default void visitSuggestions(Function<SuggestionsBuilder, CompletableFuture<Suggestions>> var1) {
       }
    }
 }

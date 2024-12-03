@@ -17,15 +17,7 @@ import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 
 public class DualNoiseProvider extends NoiseProvider {
-   public static final MapCodec<DualNoiseProvider> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(InclusiveRange.codec(Codec.INT, 1, 64).fieldOf("variety").forGetter((var0x) -> {
-         return var0x.variety;
-      }), NormalNoise.NoiseParameters.DIRECT_CODEC.fieldOf("slow_noise").forGetter((var0x) -> {
-         return var0x.slowNoiseParameters;
-      }), ExtraCodecs.POSITIVE_FLOAT.fieldOf("slow_scale").forGetter((var0x) -> {
-         return var0x.slowScale;
-      })).and(noiseProviderCodec(var0)).apply(var0, DualNoiseProvider::new);
-   });
+   public static final MapCodec<DualNoiseProvider> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(InclusiveRange.codec(Codec.INT, 1, 64).fieldOf("variety").forGetter((var0x) -> var0x.variety), NormalNoise.NoiseParameters.DIRECT_CODEC.fieldOf("slow_noise").forGetter((var0x) -> var0x.slowNoiseParameters), ExtraCodecs.POSITIVE_FLOAT.fieldOf("slow_scale").forGetter((var0x) -> var0x.slowScale)).and(noiseProviderCodec(var0)).apply(var0, DualNoiseProvider::new));
    private final InclusiveRange<Integer> variety;
    private final NormalNoise.NoiseParameters slowNoiseParameters;
    private final float slowScale;

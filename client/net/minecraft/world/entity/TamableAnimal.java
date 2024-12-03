@@ -74,6 +74,9 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
          } catch (Throwable var4) {
             this.setTame(false, true);
          }
+      } else {
+         this.setOwnerUUID((UUID)null);
+         this.setTame(false, true);
       }
 
       this.orderedToSit = var1.getBoolean("Sitting");
@@ -87,7 +90,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
    public boolean handleLeashAtDistance(Entity var1, float var2) {
       if (this.isInSittingPose()) {
          if (var2 > 10.0F) {
-            this.dropLeash(true, true);
+            this.dropLeash();
          }
 
          return false;
@@ -302,13 +305,13 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
    }
 
    static {
-      DATA_FLAGS_ID = SynchedEntityData.defineId(TamableAnimal.class, EntityDataSerializers.BYTE);
-      DATA_OWNERUUID_ID = SynchedEntityData.defineId(TamableAnimal.class, EntityDataSerializers.OPTIONAL_UUID);
+      DATA_FLAGS_ID = SynchedEntityData.<Byte>defineId(TamableAnimal.class, EntityDataSerializers.BYTE);
+      DATA_OWNERUUID_ID = SynchedEntityData.<Optional<UUID>>defineId(TamableAnimal.class, EntityDataSerializers.OPTIONAL_UUID);
    }
 
    public class TamableAnimalPanicGoal extends PanicGoal {
       public TamableAnimalPanicGoal(final double var2, final TagKey<DamageType> var4) {
-         super(TamableAnimal.this, var2, (TagKey)var4);
+         super(TamableAnimal.this, var2, var4);
       }
 
       public TamableAnimalPanicGoal(final double var2) {

@@ -27,8 +27,8 @@ public enum DisplaySlot implements StringRepresentable {
    TEAM_YELLOW(17, "sidebar.team.yellow"),
    TEAM_WHITE(18, "sidebar.team.white");
 
-   public static final StringRepresentable.EnumCodec<DisplaySlot> CODEC = StringRepresentable.fromEnum(DisplaySlot::values);
-   public static final IntFunction<DisplaySlot> BY_ID = ByIdMap.continuous(DisplaySlot::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   public static final StringRepresentable.EnumCodec<DisplaySlot> CODEC = StringRepresentable.<DisplaySlot>fromEnum(DisplaySlot::values);
+   public static final IntFunction<DisplaySlot> BY_ID = ByIdMap.<DisplaySlot>continuous(DisplaySlot::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    private final int id;
    private final String name;
 

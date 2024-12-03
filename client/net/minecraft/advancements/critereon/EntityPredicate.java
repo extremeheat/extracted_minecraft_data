@@ -26,11 +26,7 @@ import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 
 public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional<DistancePredicate> distanceToPlayer, Optional<MovementPredicate> movement, LocationWrapper location, Optional<MobEffectsPredicate> effects, Optional<NbtPredicate> nbt, Optional<EntityFlagsPredicate> flags, Optional<EntityEquipmentPredicate> equipment, Optional<EntitySubPredicate> subPredicate, Optional<Integer> periodicTick, Optional<EntityPredicate> vehicle, Optional<EntityPredicate> passenger, Optional<EntityPredicate> targetedEntity, Optional<String> team, Optional<SlotsPredicate> slots) {
-   public static final Codec<EntityPredicate> CODEC = Codec.recursive("EntityPredicate", (var0) -> {
-      return RecordCodecBuilder.create((var1) -> {
-         return var1.group(EntityTypePredicate.CODEC.optionalFieldOf("type").forGetter(EntityPredicate::entityType), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(EntityPredicate::distanceToPlayer), MovementPredicate.CODEC.optionalFieldOf("movement").forGetter(EntityPredicate::movement), EntityPredicate.LocationWrapper.CODEC.forGetter(EntityPredicate::location), MobEffectsPredicate.CODEC.optionalFieldOf("effects").forGetter(EntityPredicate::effects), NbtPredicate.CODEC.optionalFieldOf("nbt").forGetter(EntityPredicate::nbt), EntityFlagsPredicate.CODEC.optionalFieldOf("flags").forGetter(EntityPredicate::flags), EntityEquipmentPredicate.CODEC.optionalFieldOf("equipment").forGetter(EntityPredicate::equipment), EntitySubPredicate.CODEC.optionalFieldOf("type_specific").forGetter(EntityPredicate::subPredicate), ExtraCodecs.POSITIVE_INT.optionalFieldOf("periodic_tick").forGetter(EntityPredicate::periodicTick), var0.optionalFieldOf("vehicle").forGetter(EntityPredicate::vehicle), var0.optionalFieldOf("passenger").forGetter(EntityPredicate::passenger), var0.optionalFieldOf("targeted_entity").forGetter(EntityPredicate::targetedEntity), Codec.STRING.optionalFieldOf("team").forGetter(EntityPredicate::team), SlotsPredicate.CODEC.optionalFieldOf("slots").forGetter(EntityPredicate::slots)).apply(var1, EntityPredicate::new);
-      });
-   });
+   public static final Codec<EntityPredicate> CODEC = Codec.recursive("EntityPredicate", (var0) -> RecordCodecBuilder.create((var1) -> var1.group(EntityTypePredicate.CODEC.optionalFieldOf("type").forGetter(EntityPredicate::entityType), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(EntityPredicate::distanceToPlayer), MovementPredicate.CODEC.optionalFieldOf("movement").forGetter(EntityPredicate::movement), EntityPredicate.LocationWrapper.CODEC.forGetter(EntityPredicate::location), MobEffectsPredicate.CODEC.optionalFieldOf("effects").forGetter(EntityPredicate::effects), NbtPredicate.CODEC.optionalFieldOf("nbt").forGetter(EntityPredicate::nbt), EntityFlagsPredicate.CODEC.optionalFieldOf("flags").forGetter(EntityPredicate::flags), EntityEquipmentPredicate.CODEC.optionalFieldOf("equipment").forGetter(EntityPredicate::equipment), EntitySubPredicate.CODEC.optionalFieldOf("type_specific").forGetter(EntityPredicate::subPredicate), ExtraCodecs.POSITIVE_INT.optionalFieldOf("periodic_tick").forGetter(EntityPredicate::periodicTick), var0.optionalFieldOf("vehicle").forGetter(EntityPredicate::vehicle), var0.optionalFieldOf("passenger").forGetter(EntityPredicate::passenger), var0.optionalFieldOf("targeted_entity").forGetter(EntityPredicate::targetedEntity), Codec.STRING.optionalFieldOf("team").forGetter(EntityPredicate::team), SlotsPredicate.CODEC.optionalFieldOf("slots").forGetter(EntityPredicate::slots)).apply(var1, EntityPredicate::new)));
    public static final Codec<ContextAwarePredicate> ADVANCEMENT_CODEC;
 
    public EntityPredicate(Optional<EntityTypePredicate> var1, Optional<DistancePredicate> var2, Optional<MovementPredicate> var3, LocationWrapper var4, Optional<MobEffectsPredicate> var5, Optional<NbtPredicate> var6, Optional<EntityFlagsPredicate> var7, Optional<EntityEquipmentPredicate> var8, Optional<EntitySubPredicate> var9, Optional<Integer> var10, Optional<EntityPredicate> var11, Optional<EntityPredicate> var12, Optional<EntityPredicate> var13, Optional<String> var14, Optional<SlotsPredicate> var15) {
@@ -87,9 +83,8 @@ public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional
             return false;
          }
 
-         Vec3 var4;
          if (this.movement.isPresent()) {
-            var4 = var3.getKnownMovement();
+            Vec3 var4 = var3.getKnownMovement();
             Vec3 var5 = var4.scale(20.0);
             if (!((MovementPredicate)this.movement.get()).matches(var5.x, var5.y, var5.z, (double)var3.fallDistance)) {
                return false;
@@ -100,15 +95,15 @@ public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional
             return false;
          } else {
             if (this.location.steppingOn.isPresent()) {
-               var4 = Vec3.atCenterOf(var3.getOnPos());
-               if (!((LocationPredicate)this.location.steppingOn.get()).matches(var1, var4.x(), var4.y(), var4.z())) {
+               Vec3 var6 = Vec3.atCenterOf(var3.getOnPos());
+               if (!((LocationPredicate)this.location.steppingOn.get()).matches(var1, var6.x(), var6.y(), var6.z())) {
                   return false;
                }
             }
 
             if (this.location.affectsMovement.isPresent()) {
-               var4 = Vec3.atCenterOf(var3.getBlockPosBelowThatAffectsMyMovement());
-               if (!((LocationPredicate)this.location.affectsMovement.get()).matches(var1, var4.x(), var4.y(), var4.z())) {
+               Vec3 var7 = Vec3.atCenterOf(var3.getBlockPosBelowThatAffectsMyMovement());
+               if (!((LocationPredicate)this.location.affectsMovement.get()).matches(var1, var7.x(), var7.y(), var7.z())) {
                   return false;
                }
             }
@@ -123,9 +118,7 @@ public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional
                return false;
             } else if (this.vehicle.isPresent() && !((EntityPredicate)this.vehicle.get()).matches(var1, var2, var3.getVehicle())) {
                return false;
-            } else if (this.passenger.isPresent() && var3.getPassengers().stream().noneMatch((var3x) -> {
-               return ((EntityPredicate)this.passenger.get()).matches(var1, var2, var3x);
-            })) {
+            } else if (this.passenger.isPresent() && var3.getPassengers().stream().noneMatch((var3x) -> ((EntityPredicate)this.passenger.get()).matches(var1, var2, var3x))) {
                return false;
             } else if (this.targetedEntity.isPresent() && !((EntityPredicate)this.targetedEntity.get()).matches(var1, var2, var3 instanceof Mob ? ((Mob)var3).getTarget() : null)) {
                return false;
@@ -133,16 +126,18 @@ public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional
                return false;
             } else {
                if (this.team.isPresent()) {
-                  PlayerTeam var6 = var3.getTeam();
-                  if (var6 == null || !((String)this.team.get()).equals(((Team)var6).getName())) {
+                  PlayerTeam var8 = var3.getTeam();
+                  if (var8 == null || !((String)this.team.get()).equals(((Team)var8).getName())) {
                      return false;
                   }
                }
 
                if (this.slots.isPresent() && !((SlotsPredicate)this.slots.get()).matches(var3)) {
                   return false;
+               } else if (this.nbt.isPresent() && !((NbtPredicate)this.nbt.get()).matches(var3)) {
+                  return false;
                } else {
-                  return !this.nbt.isPresent() || ((NbtPredicate)this.nbt.get()).matches(var3);
+                  return true;
                }
             }
          }
@@ -154,66 +149,6 @@ public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional
       return (new LootContext.Builder(var2)).create(Optional.empty());
    }
 
-   public Optional<EntityTypePredicate> entityType() {
-      return this.entityType;
-   }
-
-   public Optional<DistancePredicate> distanceToPlayer() {
-      return this.distanceToPlayer;
-   }
-
-   public Optional<MovementPredicate> movement() {
-      return this.movement;
-   }
-
-   public LocationWrapper location() {
-      return this.location;
-   }
-
-   public Optional<MobEffectsPredicate> effects() {
-      return this.effects;
-   }
-
-   public Optional<NbtPredicate> nbt() {
-      return this.nbt;
-   }
-
-   public Optional<EntityFlagsPredicate> flags() {
-      return this.flags;
-   }
-
-   public Optional<EntityEquipmentPredicate> equipment() {
-      return this.equipment;
-   }
-
-   public Optional<EntitySubPredicate> subPredicate() {
-      return this.subPredicate;
-   }
-
-   public Optional<Integer> periodicTick() {
-      return this.periodicTick;
-   }
-
-   public Optional<EntityPredicate> vehicle() {
-      return this.vehicle;
-   }
-
-   public Optional<EntityPredicate> passenger() {
-      return this.passenger;
-   }
-
-   public Optional<EntityPredicate> targetedEntity() {
-      return this.targetedEntity;
-   }
-
-   public Optional<String> team() {
-      return this.team;
-   }
-
-   public Optional<SlotsPredicate> slots() {
-      return this.slots;
-   }
-
    static {
       ADVANCEMENT_CODEC = Codec.withAlternative(ContextAwarePredicate.CODEC, CODEC, EntityPredicate::wrap);
    }
@@ -222,27 +157,13 @@ public record EntityPredicate(Optional<EntityTypePredicate> entityType, Optional
       final Optional<LocationPredicate> located;
       final Optional<LocationPredicate> steppingOn;
       final Optional<LocationPredicate> affectsMovement;
-      public static final MapCodec<LocationWrapper> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(LocationPredicate.CODEC.optionalFieldOf("location").forGetter(LocationWrapper::located), LocationPredicate.CODEC.optionalFieldOf("stepping_on").forGetter(LocationWrapper::steppingOn), LocationPredicate.CODEC.optionalFieldOf("movement_affected_by").forGetter(LocationWrapper::affectsMovement)).apply(var0, LocationWrapper::new);
-      });
+      public static final MapCodec<LocationWrapper> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LocationPredicate.CODEC.optionalFieldOf("location").forGetter(LocationWrapper::located), LocationPredicate.CODEC.optionalFieldOf("stepping_on").forGetter(LocationWrapper::steppingOn), LocationPredicate.CODEC.optionalFieldOf("movement_affected_by").forGetter(LocationWrapper::affectsMovement)).apply(var0, LocationWrapper::new));
 
       public LocationWrapper(Optional<LocationPredicate> var1, Optional<LocationPredicate> var2, Optional<LocationPredicate> var3) {
          super();
          this.located = var1;
          this.steppingOn = var2;
          this.affectsMovement = var3;
-      }
-
-      public Optional<LocationPredicate> located() {
-         return this.located;
-      }
-
-      public Optional<LocationPredicate> steppingOn() {
-         return this.steppingOn;
-      }
-
-      public Optional<LocationPredicate> affectsMovement() {
-         return this.affectsMovement;
       }
    }
 

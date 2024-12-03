@@ -1,6 +1,5 @@
 package net.minecraft.util.profiling.metrics;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -21,9 +20,7 @@ public class MetricsRegistry {
    }
 
    public List<MetricSampler> getRegisteredSamplers() {
-      Map var1 = (Map)this.measuredInstances.keySet().stream().flatMap((var0) -> {
-         return var0.profiledMetrics().stream();
-      }).collect(Collectors.groupingBy(MetricSampler::getName));
+      Map var1 = (Map)this.measuredInstances.keySet().stream().flatMap((var0) -> var0.profiledMetrics().stream()).collect(Collectors.groupingBy(MetricSampler::getName));
       return aggregateDuplicates(var1);
    }
 
@@ -35,31 +32,20 @@ public class MetricsRegistry {
       }).collect(Collectors.toList());
    }
 
-   private static class AggregatedMetricSampler extends MetricSampler {
+   static class AggregatedMetricSampler extends MetricSampler {
       private final List<MetricSampler> delegates;
 
       AggregatedMetricSampler(String var1, List<MetricSampler> var2) {
-         super(var1, ((MetricSampler)var2.get(0)).getCategory(), () -> {
-            return averageValueFromDelegates(var2);
-         }, () -> {
-            beforeTick(var2);
-         }, thresholdTest(var2));
+         super(var1, ((MetricSampler)var2.get(0)).getCategory(), () -> averageValueFromDelegates(var2), () -> beforeTick(var2), thresholdTest(var2));
          this.delegates = var2;
       }
 
       private static MetricSampler.ThresholdTest thresholdTest(List<MetricSampler> var0) {
-         return (var1) -> {
-            return var0.stream().anyMatch((var2) -> {
-               return var2.thresholdTest != null ? var2.thresholdTest.test(var1) : false;
-            });
-         };
+         return (var1) -> var0.stream().anyMatch((var2) -> var2.thresholdTest != null ? var2.thresholdTest.test(var1) : false);
       }
 
       private static void beforeTick(List<MetricSampler> var0) {
-         Iterator var1 = var0.iterator();
-
-         while(var1.hasNext()) {
-            MetricSampler var2 = (MetricSampler)var1.next();
+         for(MetricSampler var2 : var0) {
             var2.onStartTick();
          }
 
@@ -68,9 +54,8 @@ public class MetricsRegistry {
       private static double averageValueFromDelegates(List<MetricSampler> var0) {
          double var1 = 0.0;
 
-         MetricSampler var4;
-         for(Iterator var3 = var0.iterator(); var3.hasNext(); var1 += var4.getSampler().getAsDouble()) {
-            var4 = (MetricSampler)var3.next();
+         for(MetricSampler var4 : var0) {
+            var1 += var4.getSampler().getAsDouble();
          }
 
          return var1 / (double)var0.size();

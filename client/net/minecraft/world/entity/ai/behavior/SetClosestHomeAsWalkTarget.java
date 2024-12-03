@@ -3,6 +3,7 @@ package net.minecraft.world.entity.ai.behavior;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
@@ -30,16 +31,12 @@ public class SetClosestHomeAsWalkTarget {
    public static BehaviorControl<PathfinderMob> create(float var0) {
       Long2LongOpenHashMap var1 = new Long2LongOpenHashMap();
       MutableLong var2 = new MutableLong(0L);
-      return BehaviorBuilder.create((var3) -> {
-         return var3.group(var3.absent(MemoryModuleType.WALK_TARGET), var3.absent(MemoryModuleType.HOME)).apply(var3, (var3x, var4) -> {
-            return (var4x, var5, var6) -> {
+      return BehaviorBuilder.create((Function)((var3) -> var3.group(var3.absent(MemoryModuleType.WALK_TARGET), var3.absent(MemoryModuleType.HOME)).apply(var3, (var3x, var4) -> (var4x, var5, var6) -> {
                if (var4x.getGameTime() - var2.getValue() < 20L) {
                   return false;
                } else {
                   PoiManager var8 = var4x.getPoiManager();
-                  Optional var9 = var8.findClosest((var0x) -> {
-                     return var0x.is(PoiTypes.HOME);
-                  }, var5.blockPosition(), 48, PoiManager.Occupancy.ANY);
+                  Optional var9 = var8.findClosest((var0x) -> var0x.is(PoiTypes.HOME), var5.blockPosition(), 48, PoiManager.Occupancy.ANY);
                   if (!var9.isEmpty() && !(((BlockPos)var9.get()).distSqr(var5.blockPosition()) <= 4.0)) {
                      MutableInt var10 = new MutableInt(0);
                      var2.setValue(var4x.getGameTime() + (long)var4x.getRandom().nextInt(20));
@@ -54,9 +51,7 @@ public class SetClosestHomeAsWalkTarget {
                            return true;
                         }
                      };
-                     Set var12 = (Set)var8.findAllWithType((var0x) -> {
-                        return var0x.is(PoiTypes.HOME);
-                     }, var11, var5.blockPosition(), 48, PoiManager.Occupancy.ANY).collect(Collectors.toSet());
+                     Set var12 = (Set)var8.findAllWithType((var0x) -> var0x.is(PoiTypes.HOME), var11, var5.blockPosition(), 48, PoiManager.Occupancy.ANY).collect(Collectors.toSet());
                      Path var13 = AcquirePoi.findPathToPois(var5, var12);
                      if (var13 != null && var13.canReach()) {
                         BlockPos var14 = var13.getTarget();
@@ -66,9 +61,7 @@ public class SetClosestHomeAsWalkTarget {
                            DebugPackets.sendPoiTicketCountPacket(var4x, var14);
                         }
                      } else if (var10.getValue() < 5) {
-                        var1.long2LongEntrySet().removeIf((var1x) -> {
-                           return var1x.getLongValue() < var2.getValue();
-                        });
+                        var1.long2LongEntrySet().removeIf((var1x) -> var1x.getLongValue() < var2.getValue());
                      }
 
                      return true;
@@ -76,8 +69,6 @@ public class SetClosestHomeAsWalkTarget {
                      return false;
                   }
                }
-            };
-         });
-      });
+            })));
    }
 }

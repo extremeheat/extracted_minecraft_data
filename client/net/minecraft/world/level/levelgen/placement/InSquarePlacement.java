@@ -7,9 +7,7 @@ import net.minecraft.util.RandomSource;
 
 public class InSquarePlacement extends PlacementModifier {
    private static final InSquarePlacement INSTANCE = new InSquarePlacement();
-   public static final MapCodec<InSquarePlacement> CODEC = MapCodec.unit(() -> {
-      return INSTANCE;
-   });
+   public static final MapCodec<InSquarePlacement> CODEC = MapCodec.unit(() -> INSTANCE);
 
    public InSquarePlacement() {
       super();

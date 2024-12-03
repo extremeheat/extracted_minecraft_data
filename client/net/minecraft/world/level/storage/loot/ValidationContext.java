@@ -58,9 +58,7 @@ public class ValidationContext {
    }
 
    public HolderGetter.Provider resolver() {
-      return (HolderGetter.Provider)this.resolver.orElseThrow(() -> {
-         return new UnsupportedOperationException("References not allowed");
-      });
+      return (HolderGetter.Provider)this.resolver.orElseThrow(() -> new UnsupportedOperationException("References not allowed"));
    }
 
    public boolean allowsReferences() {

@@ -5,7 +5,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -84,15 +83,12 @@ public class WalkNodeEvaluator extends NodeEvaluator {
             }
          }
       } else {
-         while(true) {
-            if (!this.mob.canStandOnFluid(var3.getFluidState())) {
-               --var1;
-               break;
-            }
-
+         while(this.mob.canStandOnFluid(var3.getFluidState())) {
             ++var1;
             var3 = this.currentContext.getBlockState(var2.set(this.mob.getX(), (double)var1, this.mob.getZ()));
          }
+
+         --var1;
       }
 
       BlockPos var6 = this.mob.blockPosition();
@@ -132,11 +128,8 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       }
 
       double var7 = this.getFloorLevel(new BlockPos(var2.x, var2.y, var2.z));
-      Iterator var9 = Direction.Plane.HORIZONTAL.iterator();
 
-      Direction var10;
-      while(var9.hasNext()) {
-         var10 = (Direction)var9.next();
+      for(Direction var10 : Direction.Plane.HORIZONTAL) {
          Node var11 = this.findAcceptedNode(var2.x + var10.getStepX(), var2.y, var2.z + var10.getStepZ(), var4, var7, var10, var6);
          this.reusableNeighbors[var10.get2DDataValue()] = var11;
          if (this.isNeighborValid(var11, var2)) {
@@ -144,13 +137,10 @@ public class WalkNodeEvaluator extends NodeEvaluator {
          }
       }
 
-      var9 = Direction.Plane.HORIZONTAL.iterator();
-
-      while(var9.hasNext()) {
-         var10 = (Direction)var9.next();
-         Direction var13 = var10.getClockWise();
-         if (this.isDiagonalValid(var2, this.reusableNeighbors[var10.get2DDataValue()], this.reusableNeighbors[var13.get2DDataValue()])) {
-            Node var12 = this.findAcceptedNode(var2.x + var10.getStepX() + var13.getStepX(), var2.y, var2.z + var10.getStepZ() + var13.getStepZ(), var4, var7, var10, var6);
+      for(Direction var14 : Direction.Plane.HORIZONTAL) {
+         Direction var15 = var14.getClockWise();
+         if (this.isDiagonalValid(var2, this.reusableNeighbors[var14.get2DDataValue()], this.reusableNeighbors[var15.get2DDataValue()])) {
+            Node var12 = this.findAcceptedNode(var2.x + var14.getStepX() + var15.getStepX(), var2.y, var2.z + var14.getStepZ() + var15.getStepZ(), var4, var7, var14, var6);
             if (this.isDiagonalValid(var12)) {
                var1[var3++] = var12;
             }
@@ -342,15 +332,11 @@ public class WalkNodeEvaluator extends NodeEvaluator {
    }
 
    private boolean hasCollisions(AABB var1) {
-      return this.collisionCache.computeIfAbsent(var1, (var2) -> {
-         return !this.currentContext.level().noCollision(this.mob, var1);
-      });
+      return this.collisionCache.computeIfAbsent(var1, (var2) -> !this.currentContext.level().noCollision(this.mob, var1));
    }
 
    protected PathType getCachedPathType(int var1, int var2, int var3) {
-      return (PathType)this.pathTypesByPosCacheByMob.computeIfAbsent(BlockPos.asLong(var1, var2, var3), (var4) -> {
-         return this.getPathTypeOfMob(this.currentContext, var1, var2, var3, this.mob);
-      });
+      return (PathType)this.pathTypesByPosCacheByMob.computeIfAbsent(BlockPos.asLong(var1, var2, var3), (var4) -> this.getPathTypeOfMob(this.currentContext, var1, var2, var3, this.mob));
    }
 
    public PathType getPathTypeOfMob(PathfindingContext var1, int var2, int var3, int var4, Mob var5) {
@@ -361,10 +347,8 @@ public class WalkNodeEvaluator extends NodeEvaluator {
          return PathType.UNPASSABLE_RAIL;
       } else {
          PathType var7 = PathType.BLOCKED;
-         Iterator var8 = var6.iterator();
 
-         while(var8.hasNext()) {
-            PathType var9 = (PathType)var8.next();
+         for(PathType var9 : var6) {
             if (var5.getPathfindingMalus(var9) < 0.0F) {
                return var9;
             }

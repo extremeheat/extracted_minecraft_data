@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import java.net.SocketAddress;
 import java.nio.file.Path;
 import javax.annotation.Nullable;
+import net.minecraft.core.Holder;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceKey;
@@ -12,10 +13,11 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.storage.RegionFileVersion;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import org.slf4j.Logger;
 
 public interface JvmProfiler {
-   JvmProfiler INSTANCE = Runtime.class.getModule().getLayer().findModule("jdk.jfr").isPresent() ? JfrProfiler.getInstance() : new NoOpProfiler();
+   JvmProfiler INSTANCE = (JvmProfiler)(Runtime.class.getModule().getLayer().findModule("jdk.jfr").isPresent() ? JfrProfiler.getInstance() : new NoOpProfiler());
 
    boolean start(Environment var1);
 
@@ -41,9 +43,12 @@ public interface JvmProfiler {
    @Nullable
    ProfiledDuration onChunkGenerate(ChunkPos var1, ResourceKey<Level> var2, String var3);
 
+   @Nullable
+   ProfiledDuration onStructureGenerate(ChunkPos var1, ResourceKey<Level> var2, Holder<Structure> var3);
+
    public static class NoOpProfiler implements JvmProfiler {
       private static final Logger LOGGER = LogUtils.getLogger();
-      static final ProfiledDuration noOpCommit = () -> {
+      static final ProfiledDuration noOpCommit = (var0) -> {
       };
 
       public NoOpProfiler() {
@@ -89,6 +94,10 @@ public interface JvmProfiler {
       @Nullable
       public ProfiledDuration onChunkGenerate(ChunkPos var1, ResourceKey<Level> var2, String var3) {
          return null;
+      }
+
+      public ProfiledDuration onStructureGenerate(ChunkPos var1, ResourceKey<Level> var2, Holder<Structure> var3) {
+         return noOpCommit;
       }
    }
 }

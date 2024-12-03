@@ -8,11 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class SurfaceWaterDepthFilter extends PlacementFilter {
-   public static final MapCodec<SurfaceWaterDepthFilter> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.INT.fieldOf("max_water_depth").forGetter((var0x) -> {
-         return var0x.maxWaterDepth;
-      })).apply(var0, SurfaceWaterDepthFilter::new);
-   });
+   public static final MapCodec<SurfaceWaterDepthFilter> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.INT.fieldOf("max_water_depth").forGetter((var0x) -> var0x.maxWaterDepth)).apply(var0, SurfaceWaterDepthFilter::new));
    private final int maxWaterDepth;
 
    private SurfaceWaterDepthFilter(int var1) {

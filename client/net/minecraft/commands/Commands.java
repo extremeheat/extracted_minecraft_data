@@ -15,12 +15,12 @@ import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
 import com.mojang.logging.LogUtils;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -270,16 +270,12 @@ public class Commands {
 
    public void performCommand(ParseResults<CommandSourceStack> var1, String var2) {
       CommandSourceStack var3 = (CommandSourceStack)var1.getContext().getSource();
-      Profiler.get().push(() -> {
-         return "/" + var2;
-      });
+      Profiler.get().push((Supplier)(() -> "/" + var2));
       ContextChain var4 = finishParsing(var1, var2, var3);
 
       try {
          if (var4 != null) {
-            executeCommandInContext(var3, (var3x) -> {
-               ExecutionContext.queueInitialCommandExecution(var3x, var2, var4, var3, CommandResultCallback.EMPTY);
-            });
+            executeCommandInContext(var3, (var3x) -> ExecutionContext.queueInitialCommandExecution(var3x, var2, var4, var3, CommandResultCallback.EMPTY));
          }
       } catch (Exception var12) {
          MutableComponent var6 = Component.literal(var12.getMessage() == null ? var12.getClass().getName() : var12.getMessage());
@@ -292,9 +288,7 @@ public class Commands {
             }
          }
 
-         var3.sendFailure(Component.translatable("command.failed").withStyle((var1x) -> {
-            return var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var6));
-         }));
+         var3.sendFailure(Component.translatable("command.failed").withStyle((UnaryOperator)((var1x) -> var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var6)))));
          if (SharedConstants.IS_RUNNING_IN_IDE) {
             var3.sendFailure(Component.literal(Util.describeError(var12)));
             LOGGER.error("'/{}' threw an exception", var2, var12);
@@ -309,16 +303,12 @@ public class Commands {
    private static ContextChain<CommandSourceStack> finishParsing(ParseResults<CommandSourceStack> var0, String var1, CommandSourceStack var2) {
       try {
          validateParseResults(var0);
-         return (ContextChain)ContextChain.tryFlatten(var0.getContext().build(var1)).orElseThrow(() -> {
-            return CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(var0.getReader());
-         });
+         return (ContextChain)ContextChain.tryFlatten(var0.getContext().build(var1)).orElseThrow(() -> CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(var0.getReader()));
       } catch (CommandSyntaxException var7) {
          var2.sendFailure(ComponentUtils.fromMessage(var7.getRawMessage()));
          if (var7.getInput() != null && var7.getCursor() >= 0) {
             int var4 = Math.min(var7.getInput().length(), var7.getCursor());
-            MutableComponent var5 = Component.empty().withStyle(ChatFormatting.GRAY).withStyle((var1x) -> {
-               return var1x.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/" + var1));
-            });
+            MutableComponent var5 = Component.empty().withStyle(ChatFormatting.GRAY).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/" + var1))));
             if (var4 > 10) {
                var5.append(CommonComponents.ELLIPSIS);
             }
@@ -381,19 +371,12 @@ public class Commands {
    }
 
    private void fillUsableCommands(CommandNode<CommandSourceStack> var1, CommandNode<SharedSuggestionProvider> var2, CommandSourceStack var3, Map<CommandNode<CommandSourceStack>, CommandNode<SharedSuggestionProvider>> var4) {
-      Iterator var5 = var1.getChildren().iterator();
-
-      while(var5.hasNext()) {
-         CommandNode var6 = (CommandNode)var5.next();
+      for(CommandNode var6 : var1.getChildren()) {
          if (var6.canUse(var3)) {
             ArgumentBuilder var7 = var6.createBuilder();
-            var7.requires((var0) -> {
-               return true;
-            });
+            var7.requires((var0) -> true);
             if (var7.getCommand() != null) {
-               var7.executes((var0) -> {
-                  return 0;
-               });
+               var7.executes((var0) -> 0);
             }
 
             if (var7 instanceof RequiredArgumentBuilder) {
@@ -474,7 +457,7 @@ public class Commands {
          }
 
          private <T> HolderLookup.RegistryLookup.Delegate<T> createLookup(final HolderLookup.RegistryLookup<T> var1) {
-            return new HolderLookup.RegistryLookup.Delegate<T>(this) {
+            return new HolderLookup.RegistryLookup.Delegate<T>() {
                public HolderLookup.RegistryLookup<T> parent() {
                   return var1;
                }
@@ -485,9 +468,7 @@ public class Commands {
 
                public HolderSet.Named<T> getOrThrow(TagKey<T> var1x) {
                   Optional var2 = this.parent().get(var1x);
-                  return (HolderSet.Named)var2.orElseGet(() -> {
-                     return HolderSet.emptyNamed(this.parent(), var1x);
-                  });
+                  return (HolderSet.Named)var2.orElseGet(() -> HolderSet.emptyNamed(this.parent(), var1x));
                }
             };
          }
@@ -498,17 +479,11 @@ public class Commands {
       CommandBuildContext var0 = createValidationContext(VanillaRegistries.createLookup());
       CommandDispatcher var1 = (new Commands(Commands.CommandSelection.ALL, var0)).getDispatcher();
       RootCommandNode var2 = var1.getRoot();
-      var1.findAmbiguities((var1x, var2x, var3x, var4x) -> {
-         LOGGER.warn("Ambiguity between arguments {} and {} with inputs: {}", new Object[]{var1.getPath(var2x), var1.getPath(var3x), var4x});
-      });
+      var1.findAmbiguities((var1x, var2x, var3x, var4x) -> LOGGER.warn("Ambiguity between arguments {} and {} with inputs: {}", new Object[]{var1.getPath(var2x), var1.getPath(var3x), var4x}));
       Set var3 = ArgumentUtils.findUsedArgumentTypes(var2);
-      Set var4 = (Set)var3.stream().filter((var0x) -> {
-         return !ArgumentTypeInfos.isClassRecognized(var0x.getClass());
-      }).collect(Collectors.toSet());
+      Set var4 = (Set)var3.stream().filter((var0x) -> !ArgumentTypeInfos.isClassRecognized(var0x.getClass())).collect(Collectors.toSet());
       if (!var4.isEmpty()) {
-         LOGGER.warn("Missing type registration for following arguments:\n {}", var4.stream().map((var0x) -> {
-            return "\t" + String.valueOf(var0x);
-         }).collect(Collectors.joining(",\n")));
+         LOGGER.warn("Missing type registration for following arguments:\n {}", var4.stream().map((var0x) -> "\t" + String.valueOf(var0x)).collect(Collectors.joining(",\n")));
          throw new IllegalStateException("Unregistered argument types");
       }
    }

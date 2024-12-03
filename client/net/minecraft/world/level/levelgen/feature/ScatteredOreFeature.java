@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
-import java.util.Iterator;
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
@@ -27,10 +26,8 @@ public class ScatteredOreFeature extends Feature<OreConfiguration> {
       for(int var8 = 0; var8 < var6; ++var8) {
          this.offsetTargetPos(var7, var3, var5, Math.min(var8, 7));
          BlockState var9 = var2.getBlockState(var7);
-         Iterator var10 = var4.targetStates.iterator();
 
-         while(var10.hasNext()) {
-            OreConfiguration.TargetBlockState var11 = (OreConfiguration.TargetBlockState)var10.next();
+         for(OreConfiguration.TargetBlockState var11 : var4.targetStates) {
             Objects.requireNonNull(var2);
             if (OreFeature.canPlaceOre(var9, var2::getBlockState, var3, var4, var11, var7)) {
                var2.setBlock(var7, var11.state, 2);

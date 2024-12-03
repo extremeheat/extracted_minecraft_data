@@ -13,7 +13,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -45,57 +44,45 @@ public class TrappedChestBlockEntityFix extends DataFix {
          } else {
             Type var10 = ((List.ListType)var9).getElement();
             OpticFinder var11 = DSL.typeFinder(var10);
-            return TypeRewriteRule.seq((new AddNewChoices(this.getOutputSchema(), "AddTrappedChestFix", References.BLOCK_ENTITY)).makeRule(), this.fixTypeEverywhereTyped("Trapped Chest fix", var6, (var5x) -> {
-               return var5x.updateTyped(var7, (var4) -> {
+            return TypeRewriteRule.seq((new AddNewChoices(this.getOutputSchema(), "AddTrappedChestFix", References.BLOCK_ENTITY)).makeRule(), this.fixTypeEverywhereTyped("Trapped Chest fix", var6, (var5x) -> var5x.updateTyped(var7, (var4) -> {
                   Optional var5x = var4.getOptionalTyped(var8);
                   if (var5x.isEmpty()) {
                      return var4;
                   } else {
                      java.util.List var6 = ((Typed)var5x.get()).getAllTyped(var11);
                      IntOpenHashSet var7 = new IntOpenHashSet();
-                     Iterator var8x = var6.iterator();
 
-                     while(true) {
-                        TrappedChestSection var10;
-                        do {
-                           if (!var8x.hasNext()) {
-                              Dynamic var13 = (Dynamic)var4.get(DSL.remainderFinder());
-                              int var14 = var13.get("xPos").asInt(0);
-                              int var15 = var13.get("zPos").asInt(0);
-                              TaggedChoice.TaggedChoiceType var16 = this.getInputSchema().findChoiceType(References.BLOCK_ENTITY);
-                              return var4.updateTyped(var5, (var4x) -> {
-                                 return var4x.updateTyped(var16.finder(), (var4) -> {
-                                    Dynamic var5 = (Dynamic)var4.getOrCreate(DSL.remainderFinder());
-                                    int var6 = var5.get("x").asInt(0) - (var14 << 4);
-                                    int var7x = var5.get("y").asInt(0);
-                                    int var8 = var5.get("z").asInt(0) - (var15 << 4);
-                                    return var7.contains(LeavesFix.getIndex(var6, var7x, var8)) ? var4.update(var16.finder(), (var0) -> {
-                                       return var0.mapFirst((var0x) -> {
-                                          if (!Objects.equals(var0x, "minecraft:chest")) {
-                                             LOGGER.warn("Block Entity was expected to be a chest");
-                                          }
-
-                                          return "minecraft:trapped_chest";
-                                       });
-                                    }) : var4;
-                                 });
-                              });
-                           }
-
-                           Typed var9 = (Typed)var8x.next();
-                           var10 = new TrappedChestSection(var9, this.getInputSchema());
-                        } while(var10.isSkippable());
-
-                        for(int var11x = 0; var11x < 4096; ++var11x) {
-                           int var12 = var10.getBlock(var11x);
-                           if (var10.isTrappedChest(var12)) {
-                              var7.add(var10.getIndex() << 12 | var11x);
+                     for(Typed var9 : var6) {
+                        TrappedChestSection var10 = new TrappedChestSection(var9, this.getInputSchema());
+                        if (!var10.isSkippable()) {
+                           for(int var11x = 0; var11x < 4096; ++var11x) {
+                              int var12 = var10.getBlock(var11x);
+                              if (var10.isTrappedChest(var12)) {
+                                 var7.add(var10.getIndex() << 12 | var11x);
+                              }
                            }
                         }
                      }
+
+                     Dynamic var13 = (Dynamic)var4.get(DSL.remainderFinder());
+                     int var14 = var13.get("xPos").asInt(0);
+                     int var15 = var13.get("zPos").asInt(0);
+                     TaggedChoice.TaggedChoiceType var16 = this.getInputSchema().findChoiceType(References.BLOCK_ENTITY);
+                     return var4.updateTyped(var5, (var4x) -> var4x.updateTyped(var16.finder(), (var4) -> {
+                           Dynamic var5 = (Dynamic)var4.getOrCreate(DSL.remainderFinder());
+                           int var6 = var5.get("x").asInt(0) - (var14 << 4);
+                           int var7x = var5.get("y").asInt(0);
+                           int var8 = var5.get("z").asInt(0) - (var15 << 4);
+                           return var7.contains(LeavesFix.getIndex(var6, var7x, var8)) ? var4.update(var16.finder(), (var0) -> var0.mapFirst((var0x) -> {
+                                 if (!Objects.equals(var0x, "minecraft:chest")) {
+                                    LOGGER.warn("Block Entity was expected to be a chest");
+                                 }
+
+                                 return "minecraft:trapped_chest";
+                              })) : var4;
+                        }));
                   }
-               });
-            }));
+               })));
          }
       }
    }

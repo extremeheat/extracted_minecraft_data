@@ -1,11 +1,13 @@
 package net.minecraft.client.particle;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleGroup;
 import net.minecraft.util.Mth;
@@ -144,6 +146,9 @@ public abstract class Particle {
 
    public abstract void render(VertexConsumer var1, Camera var2, float var3);
 
+   public void renderCustom(PoseStack var1, MultiBufferSource var2, Camera var3, float var4) {
+   }
+
    public abstract ParticleRenderType getRenderType();
 
    public String toString() {
@@ -180,6 +185,7 @@ public abstract class Particle {
       if (!this.stoppedByCollision) {
          double var7 = var1;
          double var9 = var3;
+         double var11 = var5;
          if (this.hasPhysics && (var1 != 0.0 || var3 != 0.0 || var5 != 0.0) && var1 * var1 + var3 * var3 + var5 * var5 < MAXIMUM_COLLISION_VELOCITY_SQUARED) {
             Vec3 var13 = Entity.collideBoundingBox((Entity)null, new Vec3(var1, var3, var5), this.getBoundingBox(), this.level, List.of());
             var1 = var13.x;
@@ -192,16 +198,16 @@ public abstract class Particle {
             this.setLocationFromBoundingbox();
          }
 
-         if (Math.abs(var3) >= 9.999999747378752E-6 && Math.abs(var3) < 9.999999747378752E-6) {
+         if (Math.abs(var9) >= 9.999999747378752E-6 && Math.abs(var3) < 9.999999747378752E-6) {
             this.stoppedByCollision = true;
          }
 
-         this.onGround = var3 != var3 && var9 < 0.0;
+         this.onGround = var9 != var3 && var9 < 0.0;
          if (var7 != var1) {
             this.xd = 0.0;
          }
 
-         if (var5 != var5) {
+         if (var11 != var5) {
             this.zd = 0.0;
          }
 
@@ -258,22 +264,6 @@ public abstract class Particle {
             float var4 = Mth.inverseLerp(((float)var1 + var3) / (float)var2, this.startAtNormalizedAge, this.endAtNormalizedAge);
             return Mth.clampedLerp(this.startAlpha, this.endAlpha, var4);
          }
-      }
-
-      public float startAlpha() {
-         return this.startAlpha;
-      }
-
-      public float endAlpha() {
-         return this.endAlpha;
-      }
-
-      public float startAtNormalizedAge() {
-         return this.startAtNormalizedAge;
-      }
-
-      public float endAtNormalizedAge() {
-         return this.endAtNormalizedAge;
       }
    }
 }

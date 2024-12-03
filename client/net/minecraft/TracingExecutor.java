@@ -14,8 +14,7 @@ public record TracingExecutor(ExecutorService service) implements Executor {
 
    public Executor forName(String var1) {
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         return (var2) -> {
-            this.service.execute(() -> {
+         return (var2) -> this.service.execute(() -> {
                Thread var2x = Thread.currentThread();
                String var3 = var2x.getName();
                var2x.setName(var1);
@@ -45,10 +44,8 @@ public record TracingExecutor(ExecutorService service) implements Executor {
                }
 
             });
-         };
       } else {
-         return (Executor)(TracyClient.isAvailable() ? (var2) -> {
-            this.service.execute(() -> {
+         return (Executor)(TracyClient.isAvailable() ? (var2) -> this.service.execute(() -> {
                Zone var2x = TracyClient.beginZone(var1, SharedConstants.IS_RUNNING_IN_IDE);
 
                try {
@@ -69,8 +66,7 @@ public record TracingExecutor(ExecutorService service) implements Executor {
                   var2x.close();
                }
 
-            });
-         } : this.service);
+            }) : this.service);
       }
    }
 
@@ -117,9 +113,5 @@ public record TracingExecutor(ExecutorService service) implements Executor {
          }
 
       };
-   }
-
-   public ExecutorService service() {
-      return this.service;
    }
 }

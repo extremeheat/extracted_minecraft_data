@@ -18,14 +18,12 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.block.model.multipart.MultiPart;
 import net.minecraft.client.renderer.block.model.multipart.Selector;
-import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -99,9 +97,7 @@ public class BlockModelDefinition {
       MultiPart var5;
       if (this.multiPart != null) {
          var5 = this.multiPart.instantiate(var1);
-         var4.forEach((var2x) -> {
-            var3.put(var2x, var5);
-         });
+         var4.forEach((var2x) -> var3.put(var2x, var5));
       } else {
          var5 = null;
       }
@@ -109,11 +105,9 @@ public class BlockModelDefinition {
       this.variants.forEach((var6, var7) -> {
          try {
             var4.stream().filter(VariantSelector.predicate(var1, var6)).forEach((var4x) -> {
-               UnbakedModel var5x = (UnbakedModel)var3.put(var4x, var7);
+               UnbakedBlockStateModel var5x = (UnbakedBlockStateModel)var3.put(var4x, var7);
                if (var5x != null && var5x != var5) {
-                  String var6 = (String)((Map.Entry)this.variants.entrySet().stream().filter((var1) -> {
-                     return var1.getValue() == var5x;
-                  }).findFirst().get()).getKey();
+                  String var6 = (String)((Map.Entry)this.variants.entrySet().stream().filter((var1) -> var1.getValue() == var5x).findFirst().get()).getKey();
                   throw new RuntimeException("Overlapping definition with: " + var6);
                }
             });
@@ -123,12 +117,6 @@ public class BlockModelDefinition {
 
       });
       return var3;
-   }
-
-   protected static class MissingVariantException extends RuntimeException {
-      protected MissingVariantException() {
-         super();
-      }
    }
 
    public static class Deserializer implements JsonDeserializer<BlockModelDefinition> {
@@ -151,10 +139,8 @@ public class BlockModelDefinition {
          HashMap var3 = Maps.newHashMap();
          if (var2.has("variants")) {
             JsonObject var4 = GsonHelper.getAsJsonObject(var2, "variants");
-            Iterator var5 = var4.entrySet().iterator();
 
-            while(var5.hasNext()) {
-               Map.Entry var6 = (Map.Entry)var5.next();
+            for(Map.Entry var6 : var4.entrySet()) {
                var3.put((String)var6.getKey(), (MultiVariant)var1.deserialize((JsonElement)var6.getValue(), MultiVariant.class));
             }
          }
@@ -175,6 +161,12 @@ public class BlockModelDefinition {
       // $FF: synthetic method
       public Object deserialize(final JsonElement var1, final Type var2, final JsonDeserializationContext var3) throws JsonParseException {
          return this.deserialize(var1, var2, var3);
+      }
+   }
+
+   protected static class MissingVariantException extends RuntimeException {
+      protected MissingVariantException() {
+         super();
       }
    }
 }

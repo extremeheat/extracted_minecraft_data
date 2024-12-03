@@ -40,51 +40,13 @@ public abstract class Team {
 
    public abstract CollisionRule getCollisionRule();
 
-   public static enum CollisionRule {
-      ALWAYS("always", 0),
-      NEVER("never", 1),
-      PUSH_OTHER_TEAMS("pushOtherTeams", 2),
-      PUSH_OWN_TEAM("pushOwnTeam", 3);
-
-      private static final Map<String, CollisionRule> BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> {
-         return var0.name;
-      }, (var0) -> {
-         return var0;
-      }));
-      public final String name;
-      public final int id;
-
-      @Nullable
-      public static CollisionRule byName(String var0) {
-         return (CollisionRule)BY_NAME.get(var0);
-      }
-
-      private CollisionRule(final String var3, final int var4) {
-         this.name = var3;
-         this.id = var4;
-      }
-
-      public Component getDisplayName() {
-         return Component.translatable("team.collision." + this.name);
-      }
-
-      // $FF: synthetic method
-      private static CollisionRule[] $values() {
-         return new CollisionRule[]{ALWAYS, NEVER, PUSH_OTHER_TEAMS, PUSH_OWN_TEAM};
-      }
-   }
-
    public static enum Visibility {
       ALWAYS("always", 0),
       NEVER("never", 1),
       HIDE_FOR_OTHER_TEAMS("hideForOtherTeams", 2),
       HIDE_FOR_OWN_TEAM("hideForOwnTeam", 3);
 
-      private static final Map<String, Visibility> BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> {
-         return var0.name;
-      }, (var0) -> {
-         return var0;
-      }));
+      private static final Map<String, Visibility> BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> var0.name, (var0) -> var0));
       public final String name;
       public final int id;
 
@@ -109,6 +71,36 @@ public abstract class Team {
       // $FF: synthetic method
       private static Visibility[] $values() {
          return new Visibility[]{ALWAYS, NEVER, HIDE_FOR_OTHER_TEAMS, HIDE_FOR_OWN_TEAM};
+      }
+   }
+
+   public static enum CollisionRule {
+      ALWAYS("always", 0),
+      NEVER("never", 1),
+      PUSH_OTHER_TEAMS("pushOtherTeams", 2),
+      PUSH_OWN_TEAM("pushOwnTeam", 3);
+
+      private static final Map<String, CollisionRule> BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> var0.name, (var0) -> var0));
+      public final String name;
+      public final int id;
+
+      @Nullable
+      public static CollisionRule byName(String var0) {
+         return (CollisionRule)BY_NAME.get(var0);
+      }
+
+      private CollisionRule(final String var3, final int var4) {
+         this.name = var3;
+         this.id = var4;
+      }
+
+      public Component getDisplayName() {
+         return Component.translatable("team.collision." + this.name);
+      }
+
+      // $FF: synthetic method
+      private static CollisionRule[] $values() {
+         return new CollisionRule[]{ALWAYS, NEVER, PUSH_OTHER_TEAMS, PUSH_OWN_TEAM};
       }
    }
 }

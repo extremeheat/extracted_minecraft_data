@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,7 +30,6 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -49,13 +47,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ShulkerBoxBlock extends BaseEntityBlock {
-   public static final MapCodec<ShulkerBoxBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(DyeColor.CODEC.optionalFieldOf("color").forGetter((var0x) -> {
-         return Optional.ofNullable(var0x.color);
-      }), propertiesCodec()).apply(var0, (var0x, var1) -> {
-         return new ShulkerBoxBlock((DyeColor)var0x.orElse((Object)null), var1);
-      });
-   });
+   public static final MapCodec<ShulkerBoxBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DyeColor.CODEC.optionalFieldOf("color").forGetter((var0x) -> Optional.ofNullable(var0x.color)), propertiesCodec()).apply(var0, (var0x, var1) -> new ShulkerBoxBlock((DyeColor)var0x.orElse((Object)null), var1)));
    private static final Component UNKNOWN_CONTENTS = Component.translatable("container.shulkerBox.unknownContents");
    private static final float OPEN_AABB_SIZE = 1.0F;
    private static final VoxelShape UP_OPEN_AABB = Block.box(0.0, 15.0, 0.0, 16.0, 16.0, 16.0);
@@ -96,10 +88,6 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       return createTickerHelper(var3, BlockEntityType.SHULKER_BOX, ShulkerBoxBlockEntity::tick);
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.ENTITYBLOCK_ANIMATED;
-   }
-
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2 instanceof ServerLevel var6) {
          BlockEntity var8 = var2.getBlockEntity(var3);
@@ -119,7 +107,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       if (var3.getAnimationStatus() != ShulkerBoxBlockEntity.AnimationStatus.CLOSED) {
          return true;
       } else {
-         AABB var4 = Shulker.getProgressDeltaAabb(1.0F, (Direction)var0.getValue(FACING), 0.0F, 0.5F).move(var2).deflate(1.0E-6);
+         AABB var4 = Shulker.getProgressDeltaAabb(1.0F, (Direction)var0.getValue(FACING), 0.0F, 0.5F, var2.getBottomCenter()).deflate(1.0E-6);
          return var1.noCollision(var4);
       }
    }
@@ -182,10 +170,8 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
 
       int var5 = 0;
       int var6 = 0;
-      Iterator var7 = ((ItemContainerContents)var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)).nonEmptyItems().iterator();
 
-      while(var7.hasNext()) {
-         ItemStack var8 = (ItemStack)var7.next();
+      for(ItemStack var8 : ((ItemContainerContents)var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)).nonEmptyItems()) {
          ++var6;
          if (var5 <= 4) {
             ++var5;
@@ -212,7 +198,11 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       BlockEntity var5 = var2.getBlockEntity(var3);
-      return var5 instanceof ShulkerBoxBlockEntity ? Shapes.create(((ShulkerBoxBlockEntity)var5).getBoundingBox(var1)) : Shapes.block();
+      if (var5 instanceof ShulkerBoxBlockEntity var6) {
+         return Shapes.create(var6.getBoundingBox(var1));
+      } else {
+         return Shapes.block();
+      }
    }
 
    protected boolean propagatesSkylightDown(BlockState var1) {
@@ -225,24 +215,6 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
 
    protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
-   }
-
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
-      ItemStack var4 = super.getCloneItemStack(var1, var2, var3);
-      var1.getBlockEntity(var2, BlockEntityType.SHULKER_BOX).ifPresent((var2x) -> {
-         var2x.saveToItem(var4, var1.registryAccess());
-      });
-      return var4;
-   }
-
-   @Nullable
-   public static DyeColor getColorFromItem(Item var0) {
-      return getColorFromBlock(Block.byItem(var0));
-   }
-
-   @Nullable
-   public static DyeColor getColorFromBlock(Block var0) {
-      return var0 instanceof ShulkerBoxBlock ? ((ShulkerBoxBlock)var0).getColor() : null;
    }
 
    public static Block getBlockByColor(@Nullable DyeColor var0) {

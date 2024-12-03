@@ -47,10 +47,8 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
             return DataResult.success(Reference2ObjectMaps.emptyMap());
          } else {
             Reference2ObjectArrayMap var2 = new Reference2ObjectArrayMap(var1);
-            Iterator var3 = var0x.iterator();
 
-            while(var3.hasNext()) {
-               TypedDataComponent var4 = (TypedDataComponent)var3.next();
+            for(TypedDataComponent var4 : var0x) {
                if (!var4.type().isTransient()) {
                   var2.put(var4.type(), var4.value());
                }
@@ -66,7 +64,7 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
          @Nullable
          public <T> T get(DataComponentType<? extends T> var1x) {
             Object var2 = var1.get(var1x);
-            return var2 != null ? var2 : var0.get(var1x);
+            return (T)(var2 != null ? var2 : var0.get(var1x));
          }
 
          public Set<DataComponentType<?>> keySet() {
@@ -89,8 +87,7 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
    }
 
    default <T> T getOrDefault(DataComponentType<? extends T> var1, T var2) {
-      Object var3 = this.get(var1);
-      return var3 != null ? var3 : var2;
+      // $FF: Couldn't be decompiled
    }
 
    @Nullable
@@ -100,9 +97,7 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
    }
 
    default Iterator<TypedDataComponent<?>> iterator() {
-      return Iterators.transform(this.keySet().iterator(), (var1) -> {
-         return (TypedDataComponent)Objects.requireNonNull(this.getTyped(var1));
-      });
+      return Iterators.transform(this.keySet().iterator(), (var1) -> (TypedDataComponent)Objects.requireNonNull(this.getTyped(var1)));
    }
 
    default Stream<TypedDataComponent<?>> stream() {
@@ -121,7 +116,7 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
       return new DataComponentMap() {
          @Nullable
          public <T> T get(DataComponentType<? extends T> var1x) {
-            return var1.test(var1x) ? DataComponentMap.this.get(var1x) : null;
+            return (T)(var1.test(var1x) ? DataComponentMap.this.get(var1x) : null);
          }
 
          public Set<DataComponentType<?>> keySet() {
@@ -155,10 +150,7 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
       }
 
       public Builder addAll(DataComponentMap var1) {
-         Iterator var2 = var1.iterator();
-
-         while(var2.hasNext()) {
-            TypedDataComponent var3 = (TypedDataComponent)var2.next();
+         for(TypedDataComponent var3 : var1) {
             this.map.put(var3.type(), var3.value());
          }
 
@@ -177,7 +169,7 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
          }
       }
 
-      private static record SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> map) implements DataComponentMap {
+      static record SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> map) implements DataComponentMap {
          SimpleMap(Reference2ObjectMap<DataComponentType<?>, Object> var1) {
             super();
             this.map = var1;
@@ -185,7 +177,7 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
 
          @Nullable
          public <T> T get(DataComponentType<? extends T> var1) {
-            return this.map.get(var1);
+            return (T)this.map.get(var1);
          }
 
          public boolean has(DataComponentType<?> var1) {
@@ -206,10 +198,6 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
 
          public String toString() {
             return this.map.toString();
-         }
-
-         public Reference2ObjectMap<DataComponentType<?>, Object> map() {
-            return this.map;
          }
       }
    }

@@ -40,14 +40,6 @@ public record RecipeHolder<T extends Recipe<?>>(ResourceKey<Recipe<?>> id, T val
       return this.id.toString();
    }
 
-   public ResourceKey<Recipe<?>> id() {
-      return this.id;
-   }
-
-   public T value() {
-      return this.value;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ResourceKey.streamCodec(Registries.RECIPE), RecipeHolder::id, Recipe.STREAM_CODEC, RecipeHolder::value, RecipeHolder::new);
    }

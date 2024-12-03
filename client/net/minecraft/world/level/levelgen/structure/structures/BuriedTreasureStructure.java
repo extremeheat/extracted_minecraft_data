@@ -16,9 +16,7 @@ public class BuriedTreasureStructure extends Structure {
    }
 
    public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
-      return onTopOfChunkCenter(var1, Heightmap.Types.OCEAN_FLOOR_WG, (var1x) -> {
-         generatePieces(var1x, var1);
-      });
+      return onTopOfChunkCenter(var1, Heightmap.Types.OCEAN_FLOOR_WG, (var1x) -> generatePieces(var1x, var1));
    }
 
    private static void generatePieces(StructurePiecesBuilder var0, Structure.GenerationContext var1) {

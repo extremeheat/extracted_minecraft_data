@@ -34,9 +34,7 @@ public class PathNavigationRegion implements CollisionGetter {
    public PathNavigationRegion(Level var1, BlockPos var2, BlockPos var3) {
       super();
       this.level = var1;
-      this.plains = Suppliers.memoize(() -> {
-         return var1.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS);
-      });
+      this.plains = Suppliers.memoize(() -> var1.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS));
       this.centerX = SectionPos.blockToSectionCoord(var2.getX());
       this.centerZ = SectionPos.blockToSectionCoord(var2.getZ());
       int var4 = SectionPos.blockToSectionCoord(var3.getX());
@@ -45,17 +43,15 @@ public class PathNavigationRegion implements CollisionGetter {
       ChunkSource var6 = var1.getChunkSource();
       this.allEmpty = true;
 
-      int var7;
-      int var8;
-      for(var7 = this.centerX; var7 <= var4; ++var7) {
-         for(var8 = this.centerZ; var8 <= var5; ++var8) {
+      for(int var7 = this.centerX; var7 <= var4; ++var7) {
+         for(int var8 = this.centerZ; var8 <= var5; ++var8) {
             this.chunks[var7 - this.centerX][var8 - this.centerZ] = var6.getChunkNow(var7, var8);
          }
       }
 
-      for(var7 = SectionPos.blockToSectionCoord(var2.getX()); var7 <= SectionPos.blockToSectionCoord(var3.getX()); ++var7) {
-         for(var8 = SectionPos.blockToSectionCoord(var2.getZ()); var8 <= SectionPos.blockToSectionCoord(var3.getZ()); ++var8) {
-            ChunkAccess var9 = this.chunks[var7 - this.centerX][var8 - this.centerZ];
+      for(int var10 = SectionPos.blockToSectionCoord(var2.getX()); var10 <= SectionPos.blockToSectionCoord(var3.getX()); ++var10) {
+         for(int var11 = SectionPos.blockToSectionCoord(var2.getZ()); var11 <= SectionPos.blockToSectionCoord(var3.getZ()); ++var11) {
+            ChunkAccess var9 = this.chunks[var10 - this.centerX][var11 - this.centerZ];
             if (var9 != null && !var9.isYSpaceEmpty(var2.getY(), var3.getY())) {
                this.allEmpty = false;
                return;

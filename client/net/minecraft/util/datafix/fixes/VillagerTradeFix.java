@@ -23,19 +23,11 @@ public class VillagerTradeFix extends DataFix {
       OpticFinder var3 = var1.findField("buyB");
       OpticFinder var4 = var1.findField("sell");
       OpticFinder var5 = DSL.fieldFinder("id", DSL.named(References.ITEM_NAME.typeName(), NamespacedSchema.namespacedString()));
-      Function var6 = (var2x) -> {
-         return this.updateItemStack(var5, var2x);
-      };
-      return this.fixTypeEverywhereTyped("Villager trade fix", var1, (var4x) -> {
-         return var4x.updateTyped(var2, var6).updateTyped(var3, var6).updateTyped(var4, var6);
-      });
+      Function var6 = (var2x) -> this.updateItemStack(var5, var2x);
+      return this.fixTypeEverywhereTyped("Villager trade fix", var1, (var4x) -> var4x.updateTyped(var2, var6).updateTyped(var3, var6).updateTyped(var4, var6));
    }
 
    private Typed<?> updateItemStack(OpticFinder<Pair<String, String>> var1, Typed<?> var2) {
-      return var2.update(var1, (var0) -> {
-         return var0.mapSecond((var0x) -> {
-            return Objects.equals(var0x, "minecraft:carved_pumpkin") ? "minecraft:pumpkin" : var0x;
-         });
-      });
+      return var2.update(var1, (var0) -> var0.mapSecond((var0x) -> Objects.equals(var0x, "minecraft:carved_pumpkin") ? "minecraft:pumpkin" : var0x));
    }
 }

@@ -85,11 +85,8 @@ public class TripWireHookBlock extends Block {
       Level var3 = var1.getLevel();
       BlockPos var4 = var1.getClickedPos();
       Direction[] var5 = var1.getNearestLookingDirections();
-      Direction[] var6 = var5;
-      int var7 = var5.length;
 
-      for(int var8 = 0; var8 < var7; ++var8) {
-         Direction var9 = var6[var8];
+      for(Direction var9 : var5) {
          if (var9.getAxis().isHorizontal()) {
             Direction var10 = var9.getOpposite();
             var2 = (BlockState)var2.setValue(FACING, var10);
@@ -118,9 +115,8 @@ public class TripWireHookBlock extends Block {
          int var14 = 0;
          BlockState[] var15 = new BlockState[42];
 
-         BlockPos var17;
          for(int var16 = 1; var16 < 42; ++var16) {
-            var17 = var1.relative(var8, var16);
+            BlockPos var17 = var1.relative(var8, var16);
             BlockState var18 = var0.getBlockState(var17);
             if (var18.is(Blocks.TRIPWIRE_HOOK)) {
                if (var18.getValue(FACING) == var8.getOpposite()) {
@@ -150,31 +146,31 @@ public class TripWireHookBlock extends Block {
 
          var12 &= var14 > 1;
          var13 &= var12;
-         BlockState var21 = (BlockState)((BlockState)var11.defaultBlockState().trySetValue(ATTACHED, var12)).trySetValue(POWERED, var13);
+         BlockState var23 = (BlockState)((BlockState)var11.defaultBlockState().trySetValue(ATTACHED, var12)).trySetValue(POWERED, var13);
          if (var14 > 0) {
-            var17 = var1.relative(var8, var14);
-            Direction var23 = var8.getOpposite();
-            var0.setBlock(var17, (BlockState)var21.setValue(FACING, var23), 3);
-            notifyNeighbors(var11, var0, var17, var23);
-            emitState(var0, var17, var12, var13, var9, var10);
+            BlockPos var24 = var1.relative(var8, var14);
+            Direction var26 = var8.getOpposite();
+            var0.setBlock(var24, (BlockState)var23.setValue(FACING, var26), 3);
+            notifyNeighbors(var11, var0, var24, var26);
+            emitState(var0, var24, var12, var13, var9, var10);
          }
 
          emitState(var0, var1, var12, var13, var9, var10);
          if (!var3) {
-            var0.setBlock(var1, (BlockState)var21.setValue(FACING, var8), 3);
+            var0.setBlock(var1, (BlockState)var23.setValue(FACING, var8), 3);
             if (var4) {
                notifyNeighbors(var11, var0, var1, var8);
             }
          }
 
          if (var9 != var12) {
-            for(int var22 = 1; var22 < var14; ++var22) {
-               BlockPos var24 = var1.relative(var8, var22);
-               BlockState var25 = var15[var22];
-               if (var25 != null) {
-                  BlockState var26 = var0.getBlockState(var24);
-                  if (var26.is(Blocks.TRIPWIRE) || var26.is(Blocks.TRIPWIRE_HOOK)) {
-                     var0.setBlock(var24, (BlockState)var25.trySetValue(ATTACHED, var12), 3);
+            for(int var25 = 1; var25 < var14; ++var25) {
+               BlockPos var27 = var1.relative(var8, var25);
+               BlockState var28 = var15[var25];
+               if (var28 != null) {
+                  BlockState var29 = var0.getBlockState(var27);
+                  if (var29.is(Blocks.TRIPWIRE) || var29.is(Blocks.TRIPWIRE_HOOK)) {
+                     var0.setBlock(var27, (BlockState)var28.trySetValue(ATTACHED, var12), 3);
                   }
                }
             }

@@ -13,7 +13,7 @@ import net.minecraft.world.phys.Vec3;
 
 public record BrainDebugPayload(BrainDump brainDump) implements CustomPacketPayload {
    public static final StreamCodec<FriendlyByteBuf, BrainDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(BrainDebugPayload::write, BrainDebugPayload::new);
-   public static final CustomPacketPayload.Type<BrainDebugPayload> TYPE = CustomPacketPayload.createType("debug/brain");
+   public static final CustomPacketPayload.Type<BrainDebugPayload> TYPE = CustomPacketPayload.<BrainDebugPayload>createType("debug/brain");
 
    private BrainDebugPayload(FriendlyByteBuf var1) {
       this(new BrainDump(var1));
@@ -30,10 +30,6 @@ public record BrainDebugPayload(BrainDump brainDump) implements CustomPacketPayl
 
    public CustomPacketPayload.Type<BrainDebugPayload> type() {
       return TYPE;
-   }
-
-   public BrainDump brainDump() {
-      return this.brainDump;
    }
 
    public static record BrainDump(UUID uuid, int id, String name, String profession, int xp, float health, float maxHealth, Vec3 pos, String inventory, @Nullable Path path, boolean wantsGolem, int angerLevel, List<String> activities, List<String> behaviors, List<String> memories, List<String> gossips, Set<BlockPos> pois, Set<BlockPos> potentialPois) {
@@ -73,9 +69,7 @@ public record BrainDebugPayload(BrainDump brainDump) implements CustomPacketPayl
          var1.writeFloat(this.maxHealth);
          var1.writeVec3(this.pos);
          var1.writeUtf(this.inventory);
-         var1.writeNullable(this.path, (var0, var1x) -> {
-            var1x.writeToStream(var0);
-         });
+         var1.writeNullable(this.path, (var0, var1x) -> var1x.writeToStream(var0));
          var1.writeBoolean(this.wantsGolem);
          var1.writeInt(this.angerLevel);
          var1.writeCollection(this.activities, FriendlyByteBuf::writeUtf);
@@ -92,79 +86,6 @@ public record BrainDebugPayload(BrainDump brainDump) implements CustomPacketPayl
 
       public boolean hasPotentialPoi(BlockPos var1) {
          return this.potentialPois.contains(var1);
-      }
-
-      public UUID uuid() {
-         return this.uuid;
-      }
-
-      public int id() {
-         return this.id;
-      }
-
-      public String name() {
-         return this.name;
-      }
-
-      public String profession() {
-         return this.profession;
-      }
-
-      public int xp() {
-         return this.xp;
-      }
-
-      public float health() {
-         return this.health;
-      }
-
-      public float maxHealth() {
-         return this.maxHealth;
-      }
-
-      public Vec3 pos() {
-         return this.pos;
-      }
-
-      public String inventory() {
-         return this.inventory;
-      }
-
-      @Nullable
-      public Path path() {
-         return this.path;
-      }
-
-      public boolean wantsGolem() {
-         return this.wantsGolem;
-      }
-
-      public int angerLevel() {
-         return this.angerLevel;
-      }
-
-      public List<String> activities() {
-         return this.activities;
-      }
-
-      public List<String> behaviors() {
-         return this.behaviors;
-      }
-
-      public List<String> memories() {
-         return this.memories;
-      }
-
-      public List<String> gossips() {
-         return this.gossips;
-      }
-
-      public Set<BlockPos> pois() {
-         return this.pois;
-      }
-
-      public Set<BlockPos> potentialPois() {
-         return this.potentialPois;
       }
    }
 }

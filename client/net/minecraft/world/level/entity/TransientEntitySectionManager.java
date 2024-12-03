@@ -15,18 +15,16 @@ import org.slf4j.Logger;
 public class TransientEntitySectionManager<T extends EntityAccess> {
    static final Logger LOGGER = LogUtils.getLogger();
    final LevelCallback<T> callbacks;
-   final EntityLookup<T> entityStorage = new EntityLookup();
+   final EntityLookup<T> entityStorage = new EntityLookup<T>();
    final EntitySectionStorage<T> sectionStorage;
    private final LongSet tickingChunks = new LongOpenHashSet();
    private final LevelEntityGetter<T> entityGetter;
 
    public TransientEntitySectionManager(Class<T> var1, LevelCallback<T> var2) {
       super();
-      this.sectionStorage = new EntitySectionStorage(var1, (var1x) -> {
-         return this.tickingChunks.contains(var1x) ? Visibility.TICKING : Visibility.TRACKED;
-      });
+      this.sectionStorage = new EntitySectionStorage<T>(var1, (var1x) -> this.tickingChunks.contains(var1x) ? Visibility.TICKING : Visibility.TRACKED);
       this.callbacks = var2;
-      this.entityGetter = new LevelEntityGetterAdapter(this.entityStorage, this.sectionStorage);
+      this.entityGetter = new LevelEntityGetterAdapter<T>(this.entityStorage, this.sectionStorage);
    }
 
    public void startTicking(ChunkPos var1) {
@@ -35,9 +33,7 @@ public class TransientEntitySectionManager<T extends EntityAccess> {
       this.sectionStorage.getExistingSectionsInChunk(var2).forEach((var1x) -> {
          Visibility var2 = var1x.updateChunkStatus(Visibility.TICKING);
          if (!var2.isTicking()) {
-            Stream var10000 = var1x.getEntities().filter((var0) -> {
-               return !var0.isAlwaysTicking();
-            });
+            Stream var10000 = var1x.getEntities().filter((var0) -> !var0.isAlwaysTicking());
             LevelCallback var10001 = this.callbacks;
             Objects.requireNonNull(var10001);
             var10000.forEach(var10001::onTickingStart);
@@ -52,9 +48,7 @@ public class TransientEntitySectionManager<T extends EntityAccess> {
       this.sectionStorage.getExistingSectionsInChunk(var2).forEach((var1x) -> {
          Visibility var2 = var1x.updateChunkStatus(Visibility.TRACKED);
          if (var2.isTicking()) {
-            Stream var10000 = var1x.getEntities().filter((var0) -> {
-               return !var0.isAlwaysTicking();
-            });
+            Stream var10000 = var1x.getEntities().filter((var0) -> !var0.isAlwaysTicking());
             LevelCallback var10001 = this.callbacks;
             Objects.requireNonNull(var10001);
             var10000.forEach(var10001::onTickingEnd);
@@ -96,7 +90,7 @@ public class TransientEntitySectionManager<T extends EntityAccess> {
    @VisibleForDebug
    public String gatherStats() {
       int var10000 = this.entityStorage.count();
-      return "" + var10000 + "," + this.sectionStorage.count() + "," + this.tickingChunks.size();
+      return var10000 + "," + this.sectionStorage.count() + "," + this.tickingChunks.size();
    }
 
    class Callback implements EntityInLevelCallback {
@@ -106,7 +100,7 @@ public class TransientEntitySectionManager<T extends EntityAccess> {
 
       Callback(final T var2, final long var3, final EntitySection<T> var5) {
          super();
-         this.entity = var2;
+         this.entity = (T)var2;
          this.currentSectionKey = var3;
          this.currentSection = var5;
       }

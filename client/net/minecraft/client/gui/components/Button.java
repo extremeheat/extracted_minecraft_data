@@ -12,9 +12,7 @@ public class Button extends AbstractButton {
    public static final int BIG_WIDTH = 200;
    public static final int DEFAULT_HEIGHT = 20;
    public static final int DEFAULT_SPACING = 8;
-   protected static final CreateNarration DEFAULT_NARRATION = (var0) -> {
-      return (MutableComponent)var0.get();
-   };
+   protected static final CreateNarration DEFAULT_NARRATION = (var0) -> (MutableComponent)var0.get();
    protected final OnPress onPress;
    protected final CreateNarration createNarration;
 
@@ -33,9 +31,7 @@ public class Button extends AbstractButton {
    }
 
    protected MutableComponent createNarrationMessage() {
-      return this.createNarration.createNarrationMessage(() -> {
-         return super.createNarrationMessage();
-      });
+      return this.createNarration.createNarrationMessage(() -> super.createNarrationMessage());
    }
 
    public void updateWidgetNarration(NarrationElementOutput var1) {
@@ -98,11 +94,11 @@ public class Button extends AbstractButton {
       }
    }
 
-   public interface OnPress {
-      void onPress(Button var1);
-   }
-
    public interface CreateNarration {
       MutableComponent createNarrationMessage(Supplier<MutableComponent> var1);
+   }
+
+   public interface OnPress {
+      void onPress(Button var1);
    }
 }

@@ -31,26 +31,16 @@ public class EditServerScreen extends Screen {
    protected void init() {
       this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 66, 200, 20, Component.translatable("addServer.enterName"));
       this.nameEdit.setValue(this.serverData.name);
-      this.nameEdit.setResponder((var1) -> {
-         this.updateAddButtonStatus();
-      });
+      this.nameEdit.setResponder((var1) -> this.updateAddButtonStatus());
       this.addWidget(this.nameEdit);
       this.ipEdit = new EditBox(this.font, this.width / 2 - 100, 106, 200, 20, Component.translatable("addServer.enterIp"));
       this.ipEdit.setMaxLength(128);
       this.ipEdit.setValue(this.serverData.ip);
-      this.ipEdit.setResponder((var1) -> {
-         this.updateAddButtonStatus();
-      });
+      this.ipEdit.setResponder((var1) -> this.updateAddButtonStatus());
       this.addWidget(this.ipEdit);
-      this.addRenderableWidget(CycleButton.builder(ServerData.ServerPackStatus::getName).withValues((Object[])ServerData.ServerPackStatus.values()).withInitialValue(this.serverData.getResourcePackStatus()).create(this.width / 2 - 100, this.height / 4 + 72, 200, 20, Component.translatable("addServer.resourcePack"), (var1, var2) -> {
-         this.serverData.setResourcePackStatus(var2);
-      }));
-      this.addButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("addServer.add"), (var1) -> {
-         this.onAdd();
-      }).bounds(this.width / 2 - 100, this.height / 4 + 96 + 18, 200, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> {
-         this.callback.accept(false);
-      }).bounds(this.width / 2 - 100, this.height / 4 + 120 + 18, 200, 20).build());
+      this.addRenderableWidget(CycleButton.builder(ServerData.ServerPackStatus::getName).withValues(ServerData.ServerPackStatus.values()).withInitialValue(this.serverData.getResourcePackStatus()).create(this.width / 2 - 100, this.height / 4 + 72, 200, 20, Component.translatable("addServer.resourcePack"), (var1, var2) -> this.serverData.setResourcePackStatus(var2)));
+      this.addButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("addServer.add"), (var1) -> this.onAdd()).bounds(this.width / 2 - 100, this.height / 4 + 96 + 18, 200, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.callback.accept(false)).bounds(this.width / 2 - 100, this.height / 4 + 120 + 18, 200, 20).build());
       this.updateAddButtonStatus();
    }
 

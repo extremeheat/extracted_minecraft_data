@@ -12,17 +12,13 @@ import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 
 public class RandomSpreadStructurePlacement extends StructurePlacement {
-   public static final MapCodec<RandomSpreadStructurePlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return placementCodec(var0).and(var0.group(Codec.intRange(0, 4096).fieldOf("spacing").forGetter(RandomSpreadStructurePlacement::spacing), Codec.intRange(0, 4096).fieldOf("separation").forGetter(RandomSpreadStructurePlacement::separation), RandomSpreadType.CODEC.optionalFieldOf("spread_type", RandomSpreadType.LINEAR).forGetter(RandomSpreadStructurePlacement::spreadType))).apply(var0, RandomSpreadStructurePlacement::new);
-   }).validate(RandomSpreadStructurePlacement::validate);
+   public static final MapCodec<RandomSpreadStructurePlacement> CODEC = RecordCodecBuilder.mapCodec((var0) -> placementCodec(var0).and(var0.group(Codec.intRange(0, 4096).fieldOf("spacing").forGetter(RandomSpreadStructurePlacement::spacing), Codec.intRange(0, 4096).fieldOf("separation").forGetter(RandomSpreadStructurePlacement::separation), RandomSpreadType.CODEC.optionalFieldOf("spread_type", RandomSpreadType.LINEAR).forGetter(RandomSpreadStructurePlacement::spreadType))).apply(var0, RandomSpreadStructurePlacement::new)).validate(RandomSpreadStructurePlacement::validate);
    private final int spacing;
    private final int separation;
    private final RandomSpreadType spreadType;
 
    private static DataResult<RandomSpreadStructurePlacement> validate(RandomSpreadStructurePlacement var0) {
-      return var0.spacing <= var0.separation ? DataResult.error(() -> {
-         return "Spacing has to be larger than separation";
-      }) : DataResult.success(var0);
+      return var0.spacing <= var0.separation ? DataResult.error(() -> "Spacing has to be larger than separation") : DataResult.success(var0);
    }
 
    public RandomSpreadStructurePlacement(Vec3i var1, StructurePlacement.FrequencyReductionMethod var2, float var3, int var4, Optional<StructurePlacement.ExclusionZone> var5, int var6, int var7, RandomSpreadType var8) {

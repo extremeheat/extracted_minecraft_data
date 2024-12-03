@@ -20,15 +20,11 @@ public class DistanceTrigger extends SimpleCriterionTrigger<TriggerInstance> {
 
    public void trigger(ServerPlayer var1, Vec3 var2) {
       Vec3 var3 = var1.position();
-      this.trigger(var1, (var3x) -> {
-         return var3x.matches(var1.serverLevel(), var2, var3);
-      });
+      this.trigger(var1, (var3x) -> var3x.matches(var1.serverLevel(), var2, var3));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<LocationPredicate> startPosition, Optional<DistancePredicate> distance) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LocationPredicate.CODEC.optionalFieldOf("start_position").forGetter(TriggerInstance::startPosition), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(TriggerInstance::distance)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), LocationPredicate.CODEC.optionalFieldOf("start_position").forGetter(TriggerInstance::startPosition), DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(TriggerInstance::distance)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<LocationPredicate> var2, Optional<DistancePredicate> var3) {
          super();
@@ -55,18 +51,6 @@ public class DistanceTrigger extends SimpleCriterionTrigger<TriggerInstance> {
          } else {
             return !this.distance.isPresent() || ((DistancePredicate)this.distance.get()).matches(var2.x, var2.y, var2.z, var3.x, var3.y, var3.z);
          }
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<LocationPredicate> startPosition() {
-         return this.startPosition;
-      }
-
-      public Optional<DistancePredicate> distance() {
-         return this.distance;
       }
    }
 }

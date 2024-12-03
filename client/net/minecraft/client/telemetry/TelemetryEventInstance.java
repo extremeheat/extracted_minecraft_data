@@ -23,14 +23,6 @@ public record TelemetryEventInstance(TelemetryEventType type, TelemetryPropertyM
       return this.type.export(var1, this.properties);
    }
 
-   public TelemetryEventType type() {
-      return this.type;
-   }
-
-   public TelemetryPropertyMap properties() {
-      return this.properties;
-   }
-
    static {
       CODEC = TelemetryEventType.CODEC.dispatchStable(TelemetryEventInstance::type, TelemetryEventType::codec);
    }

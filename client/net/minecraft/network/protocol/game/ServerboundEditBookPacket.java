@@ -27,18 +27,6 @@ public record ServerboundEditBookPacket(int slot, List<String> pages, Optional<S
       var1.handleEditBook(this);
    }
 
-   public int slot() {
-      return this.slot;
-   }
-
-   public List<String> pages() {
-      return this.pages;
-   }
-
-   public Optional<String> title() {
-      return this.title;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ServerboundEditBookPacket::slot, ByteBufCodecs.stringUtf8(1024).apply(ByteBufCodecs.list(100)), ServerboundEditBookPacket::pages, ByteBufCodecs.stringUtf8(32).apply(ByteBufCodecs::optional), ServerboundEditBookPacket::title, ServerboundEditBookPacket::new);
    }

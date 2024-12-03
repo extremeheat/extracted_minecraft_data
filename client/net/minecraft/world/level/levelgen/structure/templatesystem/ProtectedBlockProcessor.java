@@ -28,8 +28,6 @@ public class ProtectedBlockProcessor extends StructureProcessor {
    }
 
    static {
-      CODEC = TagKey.hashedCodec(Registries.BLOCK).xmap(ProtectedBlockProcessor::new, (var0) -> {
-         return var0.cannotReplace;
-      }).fieldOf("value");
+      CODEC = TagKey.hashedCodec(Registries.BLOCK).xmap(ProtectedBlockProcessor::new, (var0) -> var0.cannotReplace).fieldOf("value");
    }
 }

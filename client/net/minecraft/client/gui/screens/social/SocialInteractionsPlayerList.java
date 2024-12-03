@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -53,10 +52,8 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
 
    private void addOnlinePlayers(Collection<UUID> var1, Map<UUID, PlayerEntry> var2) {
       ClientPacketListener var3 = this.minecraft.player.connection;
-      Iterator var4 = var1.iterator();
 
-      while(var4.hasNext()) {
-         UUID var5 = (UUID)var4.next();
+      for(UUID var5 : var1) {
          PlayerInfo var6 = var3.getPlayerInfo(var5);
          if (var6 != null) {
             boolean var7 = var6.hasVerifiableChat();
@@ -71,31 +68,24 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
    }
 
    private void updatePlayersFromChatLog(Map<UUID, PlayerEntry> var1, boolean var2) {
-      Collection var3 = collectProfilesFromChatLog(this.minecraft.getReportingContext().chatLog());
-      Iterator var4 = var3.iterator();
-
-      while(true) {
+      for(GameProfile var5 : collectProfilesFromChatLog(this.minecraft.getReportingContext().chatLog())) {
          PlayerEntry var6;
-         do {
-            if (!var4.hasNext()) {
-               return;
-            }
-
-            GameProfile var5 = (GameProfile)var4.next();
-            if (var2) {
-               var6 = (PlayerEntry)var1.computeIfAbsent(var5.getId(), (var2x) -> {
-                  PlayerEntry var3 = new PlayerEntry(this.minecraft, this.socialInteractionsScreen, var5.getId(), var5.getName(), this.minecraft.getSkinManager().lookupInsecure(var5), true);
-                  var3.setRemoved(true);
-                  return var3;
-               });
-               break;
-            }
-
+         if (var2) {
+            var6 = (PlayerEntry)var1.computeIfAbsent(var5.getId(), (var2x) -> {
+               PlayerEntry var3 = new PlayerEntry(this.minecraft, this.socialInteractionsScreen, var5.getId(), var5.getName(), this.minecraft.getSkinManager().lookupInsecure(var5), true);
+               var3.setRemoved(true);
+               return var3;
+            });
+         } else {
             var6 = (PlayerEntry)var1.get(var5.getId());
-         } while(var6 == null);
+            if (var6 == null) {
+               continue;
+            }
+         }
 
          var6.setHasRecentMessages(true);
       }
+
    }
 
    private static Collection<GameProfile> collectProfilesFromChatLog(ChatLog var0) {
@@ -147,9 +137,7 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
 
    private void updateFilteredPlayers() {
       if (this.filter != null) {
-         this.players.removeIf((var1) -> {
-            return !var1.getPlayerName().toLowerCase(Locale.ROOT).contains(this.filter);
-         });
+         this.players.removeIf((var1) -> !var1.getPlayerName().toLowerCase(Locale.ROOT).contains(this.filter));
          this.replaceEntries(this.players);
       }
 
@@ -165,11 +153,8 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
 
    public void addPlayer(PlayerInfo var1, SocialInteractionsScreen.Page var2) {
       UUID var3 = var1.getProfile().getId();
-      Iterator var4 = this.players.iterator();
 
-      PlayerEntry var5;
-      while(var4.hasNext()) {
-         var5 = (PlayerEntry)var4.next();
+      for(PlayerEntry var5 : this.players) {
          if (var5.getPlayerId().equals(var3)) {
             var5.setRemoved(false);
             return;
@@ -183,25 +168,20 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
          UUID var10004 = var1.getProfile().getId();
          String var10005 = var1.getProfile().getName();
          Objects.requireNonNull(var1);
-         var5 = new PlayerEntry(var10002, var10003, var10004, var10005, var1::getSkin, var6);
-         this.addEntry(var5);
-         this.players.add(var5);
+         PlayerEntry var7 = new PlayerEntry(var10002, var10003, var10004, var10005, var1::getSkin, var6);
+         this.addEntry(var7);
+         this.players.add(var7);
       }
 
    }
 
    public void removePlayer(UUID var1) {
-      Iterator var2 = this.players.iterator();
-
-      PlayerEntry var3;
-      do {
-         if (!var2.hasNext()) {
+      for(PlayerEntry var3 : this.players) {
+         if (var3.getPlayerId().equals(var1)) {
+            var3.setRemoved(true);
             return;
          }
+      }
 
-         var3 = (PlayerEntry)var2.next();
-      } while(!var3.getPlayerId().equals(var1));
-
-      var3.setRemoved(true);
    }
 }

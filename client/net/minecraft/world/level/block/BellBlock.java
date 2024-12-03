@@ -172,33 +172,28 @@ public class BellBlock extends BaseEntityBlock {
       return this.getVoxelShape(var1);
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
-
    @Nullable
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       Direction var3 = var1.getClickedFace();
       BlockPos var4 = var1.getClickedPos();
       Level var5 = var1.getLevel();
       Direction.Axis var6 = var3.getAxis();
-      BlockState var2;
       if (var6 == Direction.Axis.Y) {
-         var2 = (BlockState)((BlockState)this.defaultBlockState().setValue(ATTACHMENT, var3 == Direction.DOWN ? BellAttachType.CEILING : BellAttachType.FLOOR)).setValue(FACING, var1.getHorizontalDirection());
+         BlockState var2 = (BlockState)((BlockState)this.defaultBlockState().setValue(ATTACHMENT, var3 == Direction.DOWN ? BellAttachType.CEILING : BellAttachType.FLOOR)).setValue(FACING, var1.getHorizontalDirection());
          if (var2.canSurvive(var1.getLevel(), var4)) {
             return var2;
          }
       } else {
          boolean var7 = var6 == Direction.Axis.X && var5.getBlockState(var4.west()).isFaceSturdy(var5, var4.west(), Direction.EAST) && var5.getBlockState(var4.east()).isFaceSturdy(var5, var4.east(), Direction.WEST) || var6 == Direction.Axis.Z && var5.getBlockState(var4.north()).isFaceSturdy(var5, var4.north(), Direction.SOUTH) && var5.getBlockState(var4.south()).isFaceSturdy(var5, var4.south(), Direction.NORTH);
-         var2 = (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var3.getOpposite())).setValue(ATTACHMENT, var7 ? BellAttachType.DOUBLE_WALL : BellAttachType.SINGLE_WALL);
-         if (var2.canSurvive(var1.getLevel(), var1.getClickedPos())) {
-            return var2;
+         BlockState var9 = (BlockState)((BlockState)this.defaultBlockState().setValue(FACING, var3.getOpposite())).setValue(ATTACHMENT, var7 ? BellAttachType.DOUBLE_WALL : BellAttachType.SINGLE_WALL);
+         if (var9.canSurvive(var1.getLevel(), var1.getClickedPos())) {
+            return var9;
          }
 
          boolean var8 = var5.getBlockState(var4.below()).isFaceSturdy(var5, var4.below(), Direction.UP);
-         var2 = (BlockState)var2.setValue(ATTACHMENT, var8 ? BellAttachType.FLOOR : BellAttachType.CEILING);
-         if (var2.canSurvive(var1.getLevel(), var1.getClickedPos())) {
-            return var2;
+         var9 = (BlockState)var9.setValue(ATTACHMENT, var8 ? BellAttachType.FLOOR : BellAttachType.CEILING);
+         if (var9.canSurvive(var1.getLevel(), var1.getClickedPos())) {
+            return var9;
          }
       }
 

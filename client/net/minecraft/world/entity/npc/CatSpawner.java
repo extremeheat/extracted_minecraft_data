@@ -66,9 +66,7 @@ public class CatSpawner implements CustomSpawner {
 
    private int spawnInVillage(ServerLevel var1, BlockPos var2) {
       boolean var3 = true;
-      if (var1.getPoiManager().getCountInRange((var0) -> {
-         return var0.is(PoiTypes.HOME);
-      }, var2, 48, PoiManager.Occupancy.IS_OCCUPIED) > 4L) {
+      if (var1.getPoiManager().getCountInRange((var0) -> var0.is(PoiTypes.HOME), var2, 48, PoiManager.Occupancy.IS_OCCUPIED) > 4L) {
          List var4 = var1.getEntitiesOfClass(Cat.class, (new AABB(var2)).inflate(48.0, 8.0, 48.0));
          if (var4.size() < 5) {
             return this.spawnCat(var2, var1);
@@ -85,7 +83,7 @@ public class CatSpawner implements CustomSpawner {
    }
 
    private int spawnCat(BlockPos var1, ServerLevel var2) {
-      Cat var3 = (Cat)EntityType.CAT.create(var2, EntitySpawnReason.NATURAL);
+      Cat var3 = EntityType.CAT.create(var2, EntitySpawnReason.NATURAL);
       if (var3 == null) {
          return 0;
       } else {

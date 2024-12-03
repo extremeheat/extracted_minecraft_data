@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagNetworkSerialization;
 
 public class ClientboundUpdateTagsPacket implements Packet<ClientCommonPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundUpdateTagsPacket> STREAM_CODEC = Packet.codec(ClientboundUpdateTagsPacket::write, ClientboundUpdateTagsPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundUpdateTagsPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundUpdateTagsPacket>codec(ClientboundUpdateTagsPacket::write, ClientboundUpdateTagsPacket::new);
    private final Map<ResourceKey<? extends Registry<?>>, TagNetworkSerialization.NetworkPayload> tags;
 
    public ClientboundUpdateTagsPacket(Map<ResourceKey<? extends Registry<?>>, TagNetworkSerialization.NetworkPayload> var1) {
@@ -20,13 +20,11 @@ public class ClientboundUpdateTagsPacket implements Packet<ClientCommonPacketLis
 
    private ClientboundUpdateTagsPacket(FriendlyByteBuf var1) {
       super();
-      this.tags = var1.readMap(FriendlyByteBuf::readRegistryKey, TagNetworkSerialization.NetworkPayload::read);
+      this.tags = var1.<ResourceKey<? extends Registry<?>>, TagNetworkSerialization.NetworkPayload>readMap(FriendlyByteBuf::readRegistryKey, TagNetworkSerialization.NetworkPayload::read);
    }
 
    private void write(FriendlyByteBuf var1) {
-      var1.writeMap(this.tags, FriendlyByteBuf::writeResourceKey, (var0, var1x) -> {
-         var1x.write(var0);
-      });
+      var1.writeMap(this.tags, FriendlyByteBuf::writeResourceKey, (var0, var1x) -> var1x.write(var0));
    }
 
    public PacketType<ClientboundUpdateTagsPacket> type() {

@@ -15,9 +15,7 @@ public class SwampHutStructure extends Structure {
    }
 
    public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
-      return onTopOfChunkCenter(var1, Heightmap.Types.WORLD_SURFACE_WG, (var1x) -> {
-         generatePieces(var1x, var1);
-      });
+      return onTopOfChunkCenter(var1, Heightmap.Types.WORLD_SURFACE_WG, (var1x) -> generatePieces(var1x, var1));
    }
 
    private static void generatePieces(StructurePiecesBuilder var0, Structure.GenerationContext var1) {

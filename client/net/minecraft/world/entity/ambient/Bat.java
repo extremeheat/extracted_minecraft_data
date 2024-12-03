@@ -240,7 +240,7 @@ public class Bat extends AmbientCreature {
    }
 
    static {
-      DATA_ID_FLAGS = SynchedEntityData.defineId(Bat.class, EntityDataSerializers.BYTE);
+      DATA_ID_FLAGS = SynchedEntityData.<Byte>defineId(Bat.class, EntityDataSerializers.BYTE);
       BAT_RESTING_TARGETING = TargetingConditions.forNonCombat().range(4.0);
    }
 }

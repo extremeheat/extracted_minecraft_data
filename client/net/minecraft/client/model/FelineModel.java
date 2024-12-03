@@ -13,7 +13,6 @@ import net.minecraft.util.Mth;
 
 public class FelineModel<T extends FelineRenderState> extends EntityModel<T> {
    public static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 10.0F, 4.0F, Set.of("head"));
-   public static final MeshTransformer CAT_TRANSFORMER = MeshTransformer.scaling(0.8F);
    private static final float XO = 0.0F;
    private static final float YO = 16.0F;
    private static final float ZO = -9.0F;
@@ -63,93 +62,93 @@ public class FelineModel<T extends FelineRenderState> extends EntityModel<T> {
 
    public void setupAnim(T var1) {
       super.setupAnim(var1);
-      ModelPart var10000;
+      float var2 = var1.ageScale;
       if (var1.isCrouching) {
-         ++this.body.y;
+         ModelPart var10000 = this.body;
+         var10000.y += 1.0F * var2;
          var10000 = this.head;
-         var10000.y += 2.0F;
-         ++this.tail1.y;
+         var10000.y += 2.0F * var2;
+         var10000 = this.tail1;
+         var10000.y += 1.0F * var2;
          var10000 = this.tail2;
-         var10000.y += -4.0F;
+         var10000.y += -4.0F * var2;
          var10000 = this.tail2;
-         var10000.z += 2.0F;
+         var10000.z += 2.0F * var2;
          this.tail1.xRot = 1.5707964F;
          this.tail2.xRot = 1.5707964F;
       } else if (var1.isSprinting) {
          this.tail2.y = this.tail1.y;
-         var10000 = this.tail2;
-         var10000.z += 2.0F;
+         ModelPart var9 = this.tail2;
+         var9.z += 2.0F * var2;
          this.tail1.xRot = 1.5707964F;
          this.tail2.xRot = 1.5707964F;
       }
 
       this.head.xRot = var1.xRot * 0.017453292F;
       this.head.yRot = var1.yRot * 0.017453292F;
-      float var2;
       if (!var1.isSitting) {
          this.body.xRot = 1.5707964F;
-         var2 = var1.walkAnimationSpeed;
-         float var3 = var1.walkAnimationPos;
+         float var3 = var1.walkAnimationSpeed;
+         float var4 = var1.walkAnimationPos;
          if (var1.isSprinting) {
-            this.leftHindLeg.xRot = Mth.cos(var3 * 0.6662F) * var2;
-            this.rightHindLeg.xRot = Mth.cos(var3 * 0.6662F + 0.3F) * var2;
-            this.leftFrontLeg.xRot = Mth.cos(var3 * 0.6662F + 3.1415927F + 0.3F) * var2;
-            this.rightFrontLeg.xRot = Mth.cos(var3 * 0.6662F + 3.1415927F) * var2;
-            this.tail2.xRot = 1.7278761F + 0.31415927F * Mth.cos(var3) * var2;
+            this.leftHindLeg.xRot = Mth.cos(var4 * 0.6662F) * var3;
+            this.rightHindLeg.xRot = Mth.cos(var4 * 0.6662F + 0.3F) * var3;
+            this.leftFrontLeg.xRot = Mth.cos(var4 * 0.6662F + 3.1415927F + 0.3F) * var3;
+            this.rightFrontLeg.xRot = Mth.cos(var4 * 0.6662F + 3.1415927F) * var3;
+            this.tail2.xRot = 1.7278761F + 0.31415927F * Mth.cos(var4) * var3;
          } else {
-            this.leftHindLeg.xRot = Mth.cos(var3 * 0.6662F) * var2;
-            this.rightHindLeg.xRot = Mth.cos(var3 * 0.6662F + 3.1415927F) * var2;
-            this.leftFrontLeg.xRot = Mth.cos(var3 * 0.6662F + 3.1415927F) * var2;
-            this.rightFrontLeg.xRot = Mth.cos(var3 * 0.6662F) * var2;
+            this.leftHindLeg.xRot = Mth.cos(var4 * 0.6662F) * var3;
+            this.rightHindLeg.xRot = Mth.cos(var4 * 0.6662F + 3.1415927F) * var3;
+            this.leftFrontLeg.xRot = Mth.cos(var4 * 0.6662F + 3.1415927F) * var3;
+            this.rightFrontLeg.xRot = Mth.cos(var4 * 0.6662F) * var3;
             if (!var1.isCrouching) {
-               this.tail2.xRot = 1.7278761F + 0.7853982F * Mth.cos(var3) * var2;
+               this.tail2.xRot = 1.7278761F + 0.7853982F * Mth.cos(var4) * var3;
             } else {
-               this.tail2.xRot = 1.7278761F + 0.47123894F * Mth.cos(var3) * var2;
+               this.tail2.xRot = 1.7278761F + 0.47123894F * Mth.cos(var4) * var3;
             }
          }
       }
 
-      var2 = var1.ageScale;
       if (var1.isSitting) {
          this.body.xRot = 0.7853982F;
-         var10000 = this.body;
-         var10000.y += -4.0F * var2;
-         var10000 = this.body;
-         var10000.z += 5.0F * var2;
-         var10000 = this.head;
-         var10000.y += -3.3F * var2;
-         var10000 = this.head;
-         var10000.z += 1.0F * var2;
-         var10000 = this.tail1;
-         var10000.y += 8.0F * var2;
-         var10000 = this.tail1;
-         var10000.z += -2.0F * var2;
-         var10000 = this.tail2;
-         var10000.y += 2.0F * var2;
-         var10000 = this.tail2;
-         var10000.z += -0.8F * var2;
+         ModelPart var10 = this.body;
+         var10.y += -4.0F * var2;
+         var10 = this.body;
+         var10.z += 5.0F * var2;
+         var10 = this.head;
+         var10.y += -3.3F * var2;
+         var10 = this.head;
+         var10.z += 1.0F * var2;
+         var10 = this.tail1;
+         var10.y += 8.0F * var2;
+         var10 = this.tail1;
+         var10.z += -2.0F * var2;
+         var10 = this.tail2;
+         var10.y += 2.0F * var2;
+         var10 = this.tail2;
+         var10.z += -0.8F * var2;
          this.tail1.xRot = 1.7278761F;
          this.tail2.xRot = 2.670354F;
          this.leftFrontLeg.xRot = -0.15707964F;
-         var10000 = this.leftFrontLeg;
-         var10000.y += 2.0F * var2;
-         var10000 = this.leftFrontLeg;
-         var10000.z -= 2.0F * var2;
+         var10 = this.leftFrontLeg;
+         var10.y += 2.0F * var2;
+         var10 = this.leftFrontLeg;
+         var10.z -= 2.0F * var2;
          this.rightFrontLeg.xRot = -0.15707964F;
-         var10000 = this.rightFrontLeg;
-         var10000.y += 2.0F * var2;
-         var10000 = this.rightFrontLeg;
-         var10000.z -= 2.0F * var2;
+         var10 = this.rightFrontLeg;
+         var10.y += 2.0F * var2;
+         var10 = this.rightFrontLeg;
+         var10.z -= 2.0F * var2;
          this.leftHindLeg.xRot = -1.5707964F;
-         var10000 = this.leftHindLeg;
-         var10000.y += 3.0F * var2;
-         var10000 = this.leftHindLeg;
-         var10000.z -= 4.0F * var2;
+         var10 = this.leftHindLeg;
+         var10.y += 3.0F * var2;
+         var10 = this.leftHindLeg;
+         var10.z -= 4.0F * var2;
          this.rightHindLeg.xRot = -1.5707964F;
-         var10000 = this.rightHindLeg;
-         var10000.y += 3.0F * var2;
-         var10000 = this.rightHindLeg;
-         var10000.z -= 4.0F * var2;
+         var10 = this.rightHindLeg;
+         var10.y += 3.0F * var2;
+         var10 = this.rightHindLeg;
+         var10.z -= 4.0F * var2;
       }
 
       if (var1.lieDownAmount > 0.0F) {
@@ -158,15 +157,15 @@ public class FelineModel<T extends FelineRenderState> extends EntityModel<T> {
          this.leftFrontLeg.xRot = -1.2707963F;
          this.rightFrontLeg.xRot = -0.47079635F;
          this.rightFrontLeg.zRot = -0.2F;
-         var10000 = this.rightFrontLeg;
-         var10000.x += var2;
+         ModelPart var26 = this.rightFrontLeg;
+         var26.x += var2;
          this.leftHindLeg.xRot = -0.4F;
          this.rightHindLeg.xRot = 0.5F;
          this.rightHindLeg.zRot = -0.5F;
-         var10000 = this.rightHindLeg;
-         var10000.x += 0.8F * var2;
-         var10000 = this.rightHindLeg;
-         var10000.y += 2.0F * var2;
+         var26 = this.rightHindLeg;
+         var26.x += 0.8F * var2;
+         var26 = this.rightHindLeg;
+         var26.y += 2.0F * var2;
          this.tail1.xRot = Mth.rotLerp(var1.lieDownAmountTail, this.tail1.xRot, 0.8F);
          this.tail2.xRot = Mth.rotLerp(var1.lieDownAmountTail, this.tail2.xRot, -0.4F);
       }

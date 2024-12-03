@@ -1,9 +1,9 @@
 package net.minecraft.world.level.pathfinder;
 
 import it.unimi.dsi.fastutil.HashCommon;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
-import org.jetbrains.annotations.Nullable;
 
 public class PathTypeCache {
    private static final int SIZE = 4096;
@@ -22,7 +22,8 @@ public class PathTypeCache {
       return var6 != null ? var6 : this.compute(var1, var2, var5, var3);
    }
 
-   private @Nullable PathType get(int var1, long var2) {
+   @Nullable
+   private PathType get(int var1, long var2) {
       return this.positions[var1] == var2 ? this.pathTypes[var1] : null;
    }
 

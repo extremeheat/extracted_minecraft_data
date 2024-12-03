@@ -14,13 +14,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 
 public class BlockRotProcessor extends StructureProcessor {
-   public static final MapCodec<BlockRotProcessor> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("rottable_blocks").forGetter((var0x) -> {
-         return var0x.rottableBlocks;
-      }), Codec.floatRange(0.0F, 1.0F).fieldOf("integrity").forGetter((var0x) -> {
-         return var0x.integrity;
-      })).apply(var0, BlockRotProcessor::new);
-   });
+   public static final MapCodec<BlockRotProcessor> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.BLOCK).optionalFieldOf("rottable_blocks").forGetter((var0x) -> var0x.rottableBlocks), Codec.floatRange(0.0F, 1.0F).fieldOf("integrity").forGetter((var0x) -> var0x.integrity)).apply(var0, BlockRotProcessor::new));
    private final Optional<HolderSet<Block>> rottableBlocks;
    private final float integrity;
 

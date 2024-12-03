@@ -17,17 +17,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class VaultServerData {
    static final String TAG_NAME = "server_data";
-   static Codec<VaultServerData> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(UUIDUtil.CODEC_LINKED_SET.lenientOptionalFieldOf("rewarded_players", Set.of()).forGetter((var0x) -> {
-         return var0x.rewardedPlayers;
-      }), Codec.LONG.lenientOptionalFieldOf("state_updating_resumes_at", 0L).forGetter((var0x) -> {
-         return var0x.stateUpdatingResumesAt;
-      }), ItemStack.CODEC.listOf().lenientOptionalFieldOf("items_to_eject", List.of()).forGetter((var0x) -> {
-         return var0x.itemsToEject;
-      }), Codec.INT.lenientOptionalFieldOf("total_ejections_needed", 0).forGetter((var0x) -> {
-         return var0x.totalEjectionsNeeded;
-      })).apply(var0, VaultServerData::new);
-   });
+   static Codec<VaultServerData> CODEC = RecordCodecBuilder.create((var0) -> var0.group(UUIDUtil.CODEC_LINKED_SET.lenientOptionalFieldOf("rewarded_players", Set.of()).forGetter((var0x) -> var0x.rewardedPlayers), Codec.LONG.lenientOptionalFieldOf("state_updating_resumes_at", 0L).forGetter((var0x) -> var0x.stateUpdatingResumesAt), ItemStack.CODEC.listOf().lenientOptionalFieldOf("items_to_eject", List.of()).forGetter((var0x) -> var0x.itemsToEject), Codec.INT.lenientOptionalFieldOf("total_ejections_needed", 0).forGetter((var0x) -> var0x.totalEjectionsNeeded)).apply(var0, VaultServerData::new));
    private static final int MAX_REWARD_PLAYERS = 128;
    private final Set<UUID> rewardedPlayers = new ObjectLinkedOpenHashSet();
    private long stateUpdatingResumesAt;

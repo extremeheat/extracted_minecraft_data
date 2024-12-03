@@ -1,7 +1,6 @@
 package net.minecraft.util.profiling.metrics.profiling;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -19,15 +18,9 @@ public class ProfilerSamplerAdapter {
    }
 
    public Set<MetricSampler> newSamplersFoundInProfiler(Supplier<ProfileCollector> var1) {
-      Set var2 = (Set)((ProfileCollector)var1.get()).getChartedPaths().stream().filter((var1x) -> {
-         return !this.previouslyFoundSamplerNames.contains(var1x.getLeft());
-      }).map((var1x) -> {
-         return samplerForProfilingPath(var1, (String)var1x.getLeft(), (MetricCategory)var1x.getRight());
-      }).collect(Collectors.toSet());
-      Iterator var3 = var2.iterator();
+      Set var2 = (Set)((ProfileCollector)var1.get()).getChartedPaths().stream().filter((var1x) -> !this.previouslyFoundSamplerNames.contains(var1x.getLeft())).map((var1x) -> samplerForProfilingPath(var1, (String)var1x.getLeft(), (MetricCategory)var1x.getRight())).collect(Collectors.toSet());
 
-      while(var3.hasNext()) {
-         MetricSampler var4 = (MetricSampler)var3.next();
+      for(MetricSampler var4 : var2) {
          this.previouslyFoundSamplerNames.add(var4.getName());
       }
 

@@ -28,10 +28,6 @@ public record EntityTypePredicate(HolderSet<EntityType<?>> types) {
       return var1.is(this.types);
    }
 
-   public HolderSet<EntityType<?>> types() {
-      return this.types;
-   }
-
    static {
       CODEC = RegistryCodecs.homogeneousList(Registries.ENTITY_TYPE).xmap(EntityTypePredicate::new, EntityTypePredicate::types);
    }

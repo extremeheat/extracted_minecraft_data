@@ -39,10 +39,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Parrot;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
@@ -56,11 +57,11 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    public PlayerRenderer(EntityRendererProvider.Context var1, boolean var2) {
       super(var1, new PlayerModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM : ModelLayers.PLAYER), var2), 0.5F);
       this.addLayer(new HumanoidArmorLayer(this, new HumanoidArmorModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM_INNER_ARMOR : ModelLayers.PLAYER_INNER_ARMOR)), new HumanoidArmorModel(var1.bakeLayer(var2 ? ModelLayers.PLAYER_SLIM_OUTER_ARMOR : ModelLayers.PLAYER_OUTER_ARMOR)), var1.getEquipmentRenderer()));
-      this.addLayer(new PlayerItemInHandLayer(this, var1.getItemRenderer()));
+      this.addLayer(new PlayerItemInHandLayer(this));
       this.addLayer(new ArrowLayer(this, var1));
       this.addLayer(new Deadmau5EarsLayer(this, var1.getModelSet()));
-      this.addLayer(new CapeLayer(this, var1.getModelSet(), var1.getEquipmentModels()));
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getItemRenderer()));
+      this.addLayer(new CapeLayer(this, var1.getModelSet(), var1.getEquipmentAssets()));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet()));
       this.addLayer(new WingsLayer(this, var1.getModelSet(), var1.getEquipmentRenderer()));
       this.addLayer(new ParrotOnShoulderLayer(this, var1.getModelSet()));
       this.addLayer(new SpinAttackEffectLayer(this, var1.getModelSet()));
@@ -76,22 +77,24 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       return var1.isCrouching ? var2.add(0.0, (double)(var1.scale * -2.0F) / 16.0, 0.0) : var2;
    }
 
-   public static HumanoidModel.ArmPose getArmPose(PlayerRenderState var0, HumanoidArm var1) {
-      HumanoidModel.ArmPose var2 = getArmPose(var0, var0.mainHandState, InteractionHand.MAIN_HAND);
-      HumanoidModel.ArmPose var3 = getArmPose(var0, var0.offhandState, InteractionHand.OFF_HAND);
-      if (var2.isTwoHanded()) {
-         var3 = var0.offhandState.isEmpty ? HumanoidModel.ArmPose.EMPTY : HumanoidModel.ArmPose.ITEM;
+   private static HumanoidModel.ArmPose getArmPose(AbstractClientPlayer var0, HumanoidArm var1) {
+      ItemStack var2 = var0.getItemInHand(InteractionHand.MAIN_HAND);
+      ItemStack var3 = var0.getItemInHand(InteractionHand.OFF_HAND);
+      HumanoidModel.ArmPose var4 = getArmPose(var0, var2, InteractionHand.MAIN_HAND);
+      HumanoidModel.ArmPose var5 = getArmPose(var0, var3, InteractionHand.OFF_HAND);
+      if (var4.isTwoHanded()) {
+         var5 = var3.isEmpty() ? HumanoidModel.ArmPose.EMPTY : HumanoidModel.ArmPose.ITEM;
       }
 
-      return var0.mainArm == var1 ? var2 : var3;
+      return var0.getMainArm() == var1 ? var4 : var5;
    }
 
-   private static HumanoidModel.ArmPose getArmPose(PlayerRenderState var0, PlayerRenderState.HandState var1, InteractionHand var2) {
-      if (var1.isEmpty) {
+   private static HumanoidModel.ArmPose getArmPose(Player var0, ItemStack var1, InteractionHand var2) {
+      if (var1.isEmpty()) {
          return HumanoidModel.ArmPose.EMPTY;
       } else {
-         if (var0.useItemHand == var2 && var0.useItemRemainingTicks > 0) {
-            ItemUseAnimation var3 = var1.useAnimation;
+         if (var0.getUsedItemHand() == var2 && var0.getUseItemRemainingTicks() > 0) {
+            ItemUseAnimation var3 = var1.getUseAnimation();
             if (var3 == ItemUseAnimation.BLOCK) {
                return HumanoidModel.ArmPose.BLOCK;
             }
@@ -119,7 +122,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
             if (var3 == ItemUseAnimation.BRUSH) {
                return HumanoidModel.ArmPose.BRUSH;
             }
-         } else if (!var0.swinging && var1.holdsChargedCrossbow) {
+         } else if (!var0.swinging && var1.is(Items.CROSSBOW) && CrossbowItem.isCharged(var1)) {
             return HumanoidModel.ArmPose.CROSSBOW_HOLD;
          }
 
@@ -153,8 +156,10 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    }
 
    public void extractRenderState(AbstractClientPlayer var1, PlayerRenderState var2, float var3) {
-      super.extractRenderState((LivingEntity)var1, (LivingEntityRenderState)var2, var3);
-      HumanoidMobRenderer.extractHumanoidRenderState(var1, var2, var3);
+      super.extractRenderState(var1, var2, var3);
+      HumanoidMobRenderer.extractHumanoidRenderState(var1, var2, var3, this.itemModelResolver);
+      var2.leftArmPose = getArmPose(var1, HumanoidArm.LEFT);
+      var2.rightArmPose = getArmPose(var1, HumanoidArm.RIGHT);
       var2.skin = var1.getSkin();
       var2.arrowCount = var1.getArrowCount();
       var2.stingerCount = var1.getStingerCount();
@@ -169,8 +174,6 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var2.showRightSleeve = var1.isModelPartShown(PlayerModelPart.RIGHT_SLEEVE);
       var2.showCape = var1.isModelPartShown(PlayerModelPart.CAPE);
       extractFlightData(var1, var2, var3);
-      this.extractHandState(var1, var2.mainHandState, InteractionHand.MAIN_HAND);
-      this.extractHandState(var1, var2.offhandState, InteractionHand.OFF_HAND);
       extractCapeState(var1, var2, var3);
       if (var2.distanceToCameraSq < 100.0) {
          Scoreboard var4 = var1.getScoreboard();
@@ -190,6 +193,14 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       var2.parrotOnRightShoulder = getParrotOnShoulder(var1, false);
       var2.id = var1.getId();
       var2.name = var1.getGameProfile().getName();
+      var2.heldOnHead.clear();
+      if (var2.isUsingItem) {
+         ItemStack var8 = var1.getItemInHand(var2.useItemHand);
+         if (var8.is(Items.SPYGLASS)) {
+            this.itemModelResolver.updateForLiving(var2.heldOnHead, var8, ItemDisplayContext.HEAD, false, var1);
+         }
+      }
+
    }
 
    private static void extractFlightData(AbstractClientPlayer var0, PlayerRenderState var1, float var2) {
@@ -200,7 +211,7 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
       double var7 = var3.horizontalDistanceSqr();
       if (var5 > 0.0 && var7 > 0.0) {
          var1.shouldApplyFlyingYRot = true;
-         double var9 = (var4.x * var3.x + var4.z * var3.z) / Math.sqrt(var5 * var7);
+         double var9 = Math.min(1.0, (var4.x * var3.x + var4.z * var3.z) / Math.sqrt(var5 * var7));
          double var11 = var4.x * var3.z - var4.z * var3.x;
          var1.flyingYRot = (float)(Math.signum(var11) * Math.acos(var9));
       } else {
@@ -208,13 +219,6 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
          var1.flyingYRot = 0.0F;
       }
 
-   }
-
-   private void extractHandState(AbstractClientPlayer var1, PlayerRenderState.HandState var2, InteractionHand var3) {
-      ItemStack var4 = var1.getItemInHand(var3);
-      var2.isEmpty = var4.isEmpty();
-      var2.useAnimation = !var4.isEmpty() ? var4.getUseAnimation() : null;
-      var2.holdsChargedCrossbow = var4.is(Items.CROSSBOW) && CrossbowItem.isCharged(var4);
    }
 
    private static void extractCapeState(AbstractClientPlayer var0, PlayerRenderState var1, float var2) {
@@ -239,17 +243,15 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    @Nullable
    private static Parrot.Variant getParrotOnShoulder(AbstractClientPlayer var0, boolean var1) {
       CompoundTag var2 = var1 ? var0.getShoulderEntityLeft() : var0.getShoulderEntityRight();
-      return EntityType.byString(var2.getString("id")).filter((var0x) -> {
-         return var0x == EntityType.PARROT;
-      }).isPresent() ? Parrot.Variant.byId(var2.getInt("Variant")) : null;
+      return EntityType.byString(var2.getString("id")).filter((var0x) -> var0x == EntityType.PARROT).isPresent() ? Parrot.Variant.byId(var2.getInt("Variant")) : null;
    }
 
    public void renderRightHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, boolean var5) {
-      this.renderHand(var1, var2, var3, var4, ((PlayerModel)this.model).rightArm, var5);
+      this.renderHand(var1, var2, var3, var4, (this.model).rightArm, var5);
    }
 
    public void renderLeftHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, boolean var5) {
-      this.renderHand(var1, var2, var3, var4, ((PlayerModel)this.model).leftArm, var5);
+      this.renderHand(var1, var2, var3, var4, (this.model).leftArm, var5);
    }
 
    private void renderHand(PoseStack var1, MultiBufferSource var2, int var3, ResourceLocation var4, ModelPart var5, boolean var6) {
@@ -266,10 +268,9 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    protected void setupRotations(PlayerRenderState var1, PoseStack var2, float var3, float var4) {
       float var5 = var1.swimAmount;
       float var6 = var1.xRot;
-      float var7;
       if (var1.isFallFlying) {
          super.setupRotations(var1, var2, var3, var4);
-         var7 = var1.fallFlyingScale();
+         float var7 = var1.fallFlyingScale();
          if (!var1.isAutoSpinAttack) {
             var2.mulPose(Axis.XP.rotationDegrees(var7 * (-90.0F - var6)));
          }
@@ -279,8 +280,8 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
          }
       } else if (var5 > 0.0F) {
          super.setupRotations(var1, var2, var3, var4);
-         var7 = var1.isInWater ? -90.0F - var6 : -90.0F;
-         float var8 = Mth.lerp(var5, 0.0F, var7);
+         float var9 = var1.isInWater ? -90.0F - var6 : -90.0F;
+         float var8 = Mth.lerp(var5, 0.0F, var9);
          var2.mulPose(Axis.XP.rotationDegrees(var8));
          if (var1.isVisuallySwimming) {
             var2.translate(0.0F, -1.0F, 0.3F);

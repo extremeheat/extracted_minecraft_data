@@ -16,7 +16,7 @@ public class CountDownCooldownTicks extends Behavior<LivingEntity> {
    }
 
    private Optional<Integer> getCooldownTickMemory(LivingEntity var1) {
-      return var1.getBrain().getMemory(this.cooldownTicks);
+      return var1.getBrain().<Integer>getMemory(this.cooldownTicks);
    }
 
    protected boolean timedOut(long var1) {
@@ -30,7 +30,7 @@ public class CountDownCooldownTicks extends Behavior<LivingEntity> {
 
    protected void tick(ServerLevel var1, LivingEntity var2, long var3) {
       Optional var5 = this.getCooldownTickMemory(var2);
-      var2.getBrain().setMemory(this.cooldownTicks, (Object)((Integer)var5.get() - 1));
+      var2.getBrain().setMemory(this.cooldownTicks, (Integer)var5.get() - 1);
    }
 
    protected void stop(ServerLevel var1, LivingEntity var2, long var3) {

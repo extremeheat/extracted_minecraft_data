@@ -33,7 +33,7 @@ public class WaterloggedTransparentBlock extends TransparentBlock implements Sim
    @Nullable
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
-      return (BlockState)super.getStateForPlacement(var1).setValue(WATERLOGGED, var2.is((Fluid)Fluids.WATER));
+      return (BlockState)super.getStateForPlacement(var1).setValue(WATERLOGGED, var2.is(Fluids.WATER));
    }
 
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {

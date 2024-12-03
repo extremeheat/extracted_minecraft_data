@@ -29,14 +29,6 @@ public record ClientboundPlayerCombatKillPacket(int playerId, Component message)
       return true;
    }
 
-   public int playerId() {
-      return this.playerId;
-   }
-
-   public Component message() {
-      return this.message;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundPlayerCombatKillPacket::playerId, ComponentSerialization.TRUSTED_STREAM_CODEC, ClientboundPlayerCombatKillPacket::message, ClientboundPlayerCombatKillPacket::new);
    }

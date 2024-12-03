@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
@@ -136,28 +135,18 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
       if ((Boolean)var0.getValue(BASE)) {
          return true;
       } else {
-         Iterator var1 = PROPERTY_BY_DIRECTION.values().iterator();
-
-         EnumProperty var2;
-         do {
-            if (!var1.hasNext()) {
-               return false;
+         for(EnumProperty var2 : PROPERTY_BY_DIRECTION.values()) {
+            if (var0.getValue(var2) != WallSide.NONE) {
+               return true;
             }
+         }
 
-            var2 = (EnumProperty)var1.next();
-         } while(var0.getValue(var2) == WallSide.NONE);
-
-         return true;
+         return false;
       }
    }
 
    private static boolean canSupportAtFace(BlockGetter var0, BlockPos var1, Direction var2) {
-      if (var2 == Direction.UP) {
-         return false;
-      } else {
-         BlockPos var3 = var1.relative(var2);
-         return MultifaceBlock.canAttachTo(var0, var2, var3, var0.getBlockState(var3));
-      }
+      return var2 == Direction.UP ? false : MultifaceBlock.canAttachTo(var0, var1, var2);
    }
 
    private static BlockState getUpdatedState(BlockState var0, BlockGetter var1, BlockPos var2, boolean var3) {
@@ -165,12 +154,9 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
       BlockState var5 = null;
       var3 |= (Boolean)var0.getValue(BASE);
 
-      EnumProperty var8;
-      WallSide var9;
-      for(Iterator var6 = Direction.Plane.HORIZONTAL.iterator(); var6.hasNext(); var0 = (BlockState)var0.setValue(var8, var9)) {
-         Direction var7 = (Direction)var6.next();
-         var8 = getPropertyForFace(var7);
-         var9 = canSupportAtFace(var1, var2, var7) ? (var3 ? WallSide.LOW : (WallSide)var0.getValue(var8)) : WallSide.NONE;
+      for(Direction var7 : Direction.Plane.HORIZONTAL) {
+         EnumProperty var8 = getPropertyForFace(var7);
+         WallSide var9 = canSupportAtFace(var1, var2, var7) ? (var3 ? WallSide.LOW : (WallSide)var0.getValue(var8)) : WallSide.NONE;
          if (var9 == WallSide.LOW) {
             if (var4 == null) {
                var4 = var1.getBlockState(var2.above());
@@ -190,6 +176,8 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
                }
             }
          }
+
+         var0 = (BlockState)var0.setValue(var8, var9);
       }
 
       return var0;
@@ -231,10 +219,8 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
       if ((!var5 || !(Boolean)var4.getValue(BASE)) && (var5 || var4.canBeReplaced())) {
          BlockState var6 = (BlockState)Blocks.PALE_MOSS_CARPET.defaultBlockState().setValue(BASE, false);
          BlockState var7 = getUpdatedState(var6, var0, var1.above(), true);
-         Iterator var8 = Direction.Plane.HORIZONTAL.iterator();
 
-         while(var8.hasNext()) {
-            Direction var9 = (Direction)var8.next();
+         for(Direction var9 : Direction.Plane.HORIZONTAL) {
             EnumProperty var10 = getPropertyForFace(var9);
             if (var7.getValue(var10) != WallSide.NONE && !var2.getAsBoolean()) {
                var7 = (BlockState)var7.setValue(var10, WallSide.NONE);
@@ -293,19 +279,15 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
    }
 
    public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
-      return (Boolean)var3.getValue(BASE);
+      return (Boolean)var3.getValue(BASE) && !createTopperWithSideChance(var1, var2, () -> true).isAir();
    }
 
    public boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      return !createTopperWithSideChance(var1, var3, () -> {
-         return true;
-      }).isAir();
+      return true;
    }
 
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      BlockState var5 = createTopperWithSideChance(var1, var3, () -> {
-         return true;
-      });
+      BlockState var5 = createTopperWithSideChance(var1, var3, () -> true);
       if (!var5.isAir()) {
          var1.setBlock(var3.above(), var5, 3);
       }

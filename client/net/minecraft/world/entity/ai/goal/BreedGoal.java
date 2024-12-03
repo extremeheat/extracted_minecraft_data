@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
@@ -65,10 +64,8 @@ public class BreedGoal extends Goal {
       List var1 = this.level.getNearbyEntities(this.partnerClass, PARTNER_TARGETING, this.animal, this.animal.getBoundingBox().inflate(8.0));
       double var2 = 1.7976931348623157E308;
       Animal var4 = null;
-      Iterator var5 = var1.iterator();
 
-      while(var5.hasNext()) {
-         Animal var6 = (Animal)var5.next();
+      for(Animal var6 : var1) {
          if (this.animal.canMate(var6) && !var6.isPanicking() && this.animal.distanceToSqr(var6) < var2) {
             var4 = var6;
             var2 = this.animal.distanceToSqr(var6);

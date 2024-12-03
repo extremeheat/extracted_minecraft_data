@@ -7,7 +7,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.chars.CharArraySet;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,12 +59,8 @@ public final class ShapedRecipePattern {
       int var3 = var1.length;
       ArrayList var4 = new ArrayList(var2 * var3);
       CharArraySet var5 = new CharArraySet(var0.key.keySet());
-      String[] var6 = var1;
-      int var7 = var1.length;
 
-      for(int var8 = 0; var8 < var7; ++var8) {
-         String var9 = var6[var8];
-
+      for(String var9 : var1) {
          for(int var10 = 0; var10 < var9.length(); ++var10) {
             char var11 = var9.charAt(var10);
             Optional var12;
@@ -74,9 +69,7 @@ public final class ShapedRecipePattern {
             } else {
                Ingredient var13 = (Ingredient)var0.key.get(var11);
                if (var13 == null) {
-                  return DataResult.error(() -> {
-                     return "Pattern references symbol '" + var11 + "' but it's not defined in the key";
-                  });
+                  return DataResult.error(() -> "Pattern references symbol '" + var11 + "' but it's not defined in the key");
                }
 
                var12 = Optional.of(var13);
@@ -88,9 +81,7 @@ public final class ShapedRecipePattern {
       }
 
       if (!var5.isEmpty()) {
-         return DataResult.error(() -> {
-            return "Key defines symbols that aren't used in pattern: " + String.valueOf(var5);
-         });
+         return DataResult.error(() -> "Key defines symbols that aren't used in pattern: " + String.valueOf(var5));
       } else {
          return DataResult.success(new ShapedRecipePattern(var2, var3, var4, Optional.of(var0)));
       }
@@ -199,20 +190,8 @@ public final class ShapedRecipePattern {
    }
 
    static {
-      MAP_CODEC = ShapedRecipePattern.Data.MAP_CODEC.flatXmap(ShapedRecipePattern::unpack, (var0) -> {
-         return (DataResult)var0.data.map(DataResult::success).orElseGet(() -> {
-            return DataResult.error(() -> {
-               return "Cannot encode unpacked recipe";
-            });
-         });
-      });
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, (var0) -> {
-         return var0.width;
-      }, ByteBufCodecs.VAR_INT, (var0) -> {
-         return var0.height;
-      }, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()), (var0) -> {
-         return var0.ingredients;
-      }, ShapedRecipePattern::createFromNetwork);
+      MAP_CODEC = ShapedRecipePattern.Data.MAP_CODEC.flatXmap(ShapedRecipePattern::unpack, (var0) -> (DataResult)var0.data.map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Cannot encode unpacked recipe")));
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, (var0) -> var0.width, ByteBufCodecs.VAR_INT, (var0) -> var0.height, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()), (var0) -> var0.ingredients, ShapedRecipePattern::createFromNetwork);
    }
 
    public static record Data(Map<Character, Ingredient> key, List<String> pattern) {
@@ -228,65 +207,36 @@ public final class ShapedRecipePattern {
          this.pattern = var2;
       }
 
-      public Map<Character, Ingredient> key() {
-         return this.key;
-      }
-
-      public List<String> pattern() {
-         return this.pattern;
-      }
-
       static {
          PATTERN_CODEC = Codec.STRING.listOf().comapFlatMap((var0) -> {
             if (var0.size() > 3) {
-               return DataResult.error(() -> {
-                  return "Invalid pattern: too many rows, 3 is maximum";
-               });
+               return DataResult.error(() -> "Invalid pattern: too many rows, 3 is maximum");
             } else if (var0.isEmpty()) {
-               return DataResult.error(() -> {
-                  return "Invalid pattern: empty pattern not allowed";
-               });
+               return DataResult.error(() -> "Invalid pattern: empty pattern not allowed");
             } else {
                int var1 = ((String)var0.getFirst()).length();
-               Iterator var2 = var0.iterator();
 
-               String var3;
-               do {
-                  if (!var2.hasNext()) {
-                     return DataResult.success(var0);
-                  }
-
-                  var3 = (String)var2.next();
+               for(String var3 : var0) {
                   if (var3.length() > 3) {
-                     return DataResult.error(() -> {
-                        return "Invalid pattern: too many columns, 3 is maximum";
-                     });
+                     return DataResult.error(() -> "Invalid pattern: too many columns, 3 is maximum");
                   }
-               } while(var1 == var3.length());
 
-               return DataResult.error(() -> {
-                  return "Invalid pattern: each row must be the same width";
-               });
+                  if (var1 != var3.length()) {
+                     return DataResult.error(() -> "Invalid pattern: each row must be the same width");
+                  }
+               }
+
+               return DataResult.success(var0);
             }
          }, Function.identity());
          SYMBOL_CODEC = Codec.STRING.comapFlatMap((var0) -> {
             if (var0.length() != 1) {
-               return DataResult.error(() -> {
-                  return "Invalid key entry: '" + var0 + "' is an invalid symbol (must be 1 character only).";
-               });
+               return DataResult.error(() -> "Invalid key entry: '" + var0 + "' is an invalid symbol (must be 1 character only).");
             } else {
-               return " ".equals(var0) ? DataResult.error(() -> {
-                  return "Invalid key entry: ' ' is a reserved symbol.";
-               }) : DataResult.success(var0.charAt(0));
+               return " ".equals(var0) ? DataResult.error(() -> "Invalid key entry: ' ' is a reserved symbol.") : DataResult.success(var0.charAt(0));
             }
          }, String::valueOf);
-         MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-            return var0.group(ExtraCodecs.strictUnboundedMap(SYMBOL_CODEC, Ingredient.CODEC).fieldOf("key").forGetter((var0x) -> {
-               return var0x.key;
-            }), PATTERN_CODEC.fieldOf("pattern").forGetter((var0x) -> {
-               return var0x.pattern;
-            })).apply(var0, Data::new);
-         });
+         MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.strictUnboundedMap(SYMBOL_CODEC, Ingredient.CODEC).fieldOf("key").forGetter((var0x) -> var0x.key), PATTERN_CODEC.fieldOf("pattern").forGetter((var0x) -> var0x.pattern)).apply(var0, Data::new));
       }
    }
 }

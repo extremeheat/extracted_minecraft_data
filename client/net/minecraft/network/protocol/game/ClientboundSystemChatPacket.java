@@ -29,14 +29,6 @@ public record ClientboundSystemChatPacket(Component content, boolean overlay) im
       return true;
    }
 
-   public Component content() {
-      return this.content;
-   }
-
-   public boolean overlay() {
-      return this.overlay;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ComponentSerialization.TRUSTED_STREAM_CODEC, ClientboundSystemChatPacket::content, ByteBufCodecs.BOOL, ClientboundSystemChatPacket::overlay, ClientboundSystemChatPacket::new);
    }

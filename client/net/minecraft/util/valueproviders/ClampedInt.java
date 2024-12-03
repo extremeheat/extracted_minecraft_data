@@ -8,19 +8,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class ClampedInt extends IntProvider {
-   public static final MapCodec<ClampedInt> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(IntProvider.CODEC.fieldOf("source").forGetter((var0x) -> {
-         return var0x.source;
-      }), Codec.INT.fieldOf("min_inclusive").forGetter((var0x) -> {
-         return var0x.minInclusive;
-      }), Codec.INT.fieldOf("max_inclusive").forGetter((var0x) -> {
-         return var0x.maxInclusive;
-      })).apply(var0, ClampedInt::new);
-   }).validate((var0) -> {
-      return var0.maxInclusive < var0.minInclusive ? DataResult.error(() -> {
-         return "Max must be at least min, min_inclusive: " + var0.minInclusive + ", max_inclusive: " + var0.maxInclusive;
-      }) : DataResult.success(var0);
-   });
+   public static final MapCodec<ClampedInt> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(IntProvider.CODEC.fieldOf("source").forGetter((var0x) -> var0x.source), Codec.INT.fieldOf("min_inclusive").forGetter((var0x) -> var0x.minInclusive), Codec.INT.fieldOf("max_inclusive").forGetter((var0x) -> var0x.maxInclusive)).apply(var0, ClampedInt::new)).validate((var0) -> var0.maxInclusive < var0.minInclusive ? DataResult.error(() -> "Max must be at least min, min_inclusive: " + var0.minInclusive + ", max_inclusive: " + var0.maxInclusive) : DataResult.success(var0));
    private final IntProvider source;
    private final int minInclusive;
    private final int maxInclusive;

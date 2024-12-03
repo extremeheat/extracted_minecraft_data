@@ -45,12 +45,6 @@ public class BlockEntityIdFix extends DataFix {
       Type var2 = this.getOutputSchema().getType(References.ITEM_STACK);
       TaggedChoice.TaggedChoiceType var3 = this.getInputSchema().findChoiceType(References.BLOCK_ENTITY);
       TaggedChoice.TaggedChoiceType var4 = this.getOutputSchema().findChoiceType(References.BLOCK_ENTITY);
-      return TypeRewriteRule.seq(this.convertUnchecked("item stack block entity name hook converter", var1, var2), this.fixTypeEverywhere("BlockEntityIdFix", var3, var4, (var0) -> {
-         return (var0x) -> {
-            return var0x.mapFirst((var0) -> {
-               return (String)ID_MAP.getOrDefault(var0, var0);
-            });
-         };
-      }));
+      return TypeRewriteRule.seq(this.convertUnchecked("item stack block entity name hook converter", var1, var2), this.fixTypeEverywhere("BlockEntityIdFix", var3, var4, (var0) -> (var0x) -> var0x.mapFirst((var0) -> (String)ID_MAP.getOrDefault(var0, var0))));
    }
 }

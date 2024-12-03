@@ -32,7 +32,7 @@ public class ChestBlockEntity extends RandomizableContainerBlockEntity implement
 
    protected ChestBlockEntity(BlockEntityType<?> var1, BlockPos var2, BlockState var3) {
       super(var1, var2, var3);
-      this.items = NonNullList.withSize(27, ItemStack.EMPTY);
+      this.items = NonNullList.<ItemStack>withSize(27, ItemStack.EMPTY);
       this.openersCounter = new ContainerOpenersCounter() {
          protected void onOpen(Level var1, BlockPos var2, BlockState var3) {
             ChestBlockEntity.playSound(var1, var2, var3, SoundEvents.CHEST_OPEN);
@@ -72,7 +72,7 @@ public class ChestBlockEntity extends RandomizableContainerBlockEntity implement
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+      this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
          ContainerHelper.loadAllItems(var1, this.items, var2);
       }
@@ -103,7 +103,7 @@ public class ChestBlockEntity extends RandomizableContainerBlockEntity implement
             var9 += (double)var11.getStepZ() * 0.5;
          }
 
-         var0.playSound((Player)null, var5, var7, var9, (SoundEvent)var3, SoundSource.BLOCKS, 0.5F, var0.random.nextFloat() * 0.1F + 0.9F);
+         var0.playSound((Player)null, var5, var7, var9, var3, SoundSource.BLOCKS, 0.5F, var0.random.nextFloat() * 0.1F + 0.9F);
       }
    }
 

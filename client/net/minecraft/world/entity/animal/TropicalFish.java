@@ -2,6 +2,7 @@ package net.minecraft.world.entity.animal;
 
 import com.mojang.serialization.Codec;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -112,9 +113,7 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
 
    public void saveToBucketTag(ItemStack var1) {
       super.saveToBucketTag(var1);
-      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (var1x) -> {
-         var1x.putInt("BucketVariantTag", this.getPackedVariant());
-      });
+      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (Consumer)((var1x) -> var1x.putInt("BucketVariantTag", this.getPackedVariant())));
    }
 
    public ItemStack getBucketItemStack() {
@@ -147,26 +146,26 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
 
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      Object var13 = super.finalizeSpawn(var1, var2, var3, var4);
+      var4 = super.finalizeSpawn(var1, var2, var3, var4);
       RandomSource var6 = var1.getRandom();
       Variant var5;
-      if (var13 instanceof TropicalFishGroupData var7) {
+      if (var4 instanceof TropicalFishGroupData var7) {
          var5 = var7.variant;
       } else if ((double)var6.nextFloat() < 0.9) {
          var5 = (Variant)Util.getRandom(COMMON_VARIANTS, var6);
-         var13 = new TropicalFishGroupData(this, var5);
+         var4 = new TropicalFishGroupData(this, var5);
       } else {
          this.isSchool = false;
          Pattern[] var8 = TropicalFish.Pattern.values();
          DyeColor[] var9 = DyeColor.values();
-         Pattern var10 = (Pattern)Util.getRandom((Object[])var8, var6);
-         DyeColor var11 = (DyeColor)Util.getRandom((Object[])var9, var6);
-         DyeColor var12 = (DyeColor)Util.getRandom((Object[])var9, var6);
+         Pattern var10 = (Pattern)Util.getRandom(var8, var6);
+         DyeColor var11 = (DyeColor)Util.getRandom(var9, var6);
+         DyeColor var12 = (DyeColor)Util.getRandom(var9, var6);
          var5 = new Variant(var10, var11, var12);
       }
 
       this.setPackedVariant(var5.getPackedId());
-      return (SpawnGroupData)var13;
+      return var4;
    }
 
    public static boolean checkTropicalFishSpawnRules(EntityType<TropicalFish> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
@@ -179,8 +178,47 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
    }
 
    static {
-      DATA_ID_TYPE_VARIANT = SynchedEntityData.defineId(TropicalFish.class, EntityDataSerializers.INT);
+      DATA_ID_TYPE_VARIANT = SynchedEntityData.<Integer>defineId(TropicalFish.class, EntityDataSerializers.INT);
       COMMON_VARIANTS = List.of(new Variant(TropicalFish.Pattern.STRIPEY, DyeColor.ORANGE, DyeColor.GRAY), new Variant(TropicalFish.Pattern.FLOPPER, DyeColor.GRAY, DyeColor.GRAY), new Variant(TropicalFish.Pattern.FLOPPER, DyeColor.GRAY, DyeColor.BLUE), new Variant(TropicalFish.Pattern.CLAYFISH, DyeColor.WHITE, DyeColor.GRAY), new Variant(TropicalFish.Pattern.SUNSTREAK, DyeColor.BLUE, DyeColor.GRAY), new Variant(TropicalFish.Pattern.KOB, DyeColor.ORANGE, DyeColor.WHITE), new Variant(TropicalFish.Pattern.SPOTTY, DyeColor.PINK, DyeColor.LIGHT_BLUE), new Variant(TropicalFish.Pattern.BLOCKFISH, DyeColor.PURPLE, DyeColor.YELLOW), new Variant(TropicalFish.Pattern.CLAYFISH, DyeColor.WHITE, DyeColor.RED), new Variant(TropicalFish.Pattern.SPOTTY, DyeColor.WHITE, DyeColor.YELLOW), new Variant(TropicalFish.Pattern.GLITTER, DyeColor.WHITE, DyeColor.GRAY), new Variant(TropicalFish.Pattern.CLAYFISH, DyeColor.WHITE, DyeColor.ORANGE), new Variant(TropicalFish.Pattern.DASHER, DyeColor.CYAN, DyeColor.PINK), new Variant(TropicalFish.Pattern.BRINELY, DyeColor.LIME, DyeColor.LIGHT_BLUE), new Variant(TropicalFish.Pattern.BETTY, DyeColor.RED, DyeColor.WHITE), new Variant(TropicalFish.Pattern.SNOOPER, DyeColor.GRAY, DyeColor.RED), new Variant(TropicalFish.Pattern.BLOCKFISH, DyeColor.RED, DyeColor.WHITE), new Variant(TropicalFish.Pattern.FLOPPER, DyeColor.WHITE, DyeColor.YELLOW), new Variant(TropicalFish.Pattern.KOB, DyeColor.RED, DyeColor.WHITE), new Variant(TropicalFish.Pattern.SUNSTREAK, DyeColor.GRAY, DyeColor.WHITE), new Variant(TropicalFish.Pattern.DASHER, DyeColor.CYAN, DyeColor.YELLOW), new Variant(TropicalFish.Pattern.FLOPPER, DyeColor.YELLOW, DyeColor.YELLOW));
+   }
+
+   public static enum Base {
+      SMALL(0),
+      LARGE(1);
+
+      final int id;
+
+      private Base(final int var3) {
+         this.id = var3;
+      }
+
+      // $FF: synthetic method
+      private static Base[] $values() {
+         return new Base[]{SMALL, LARGE};
+      }
+   }
+
+   public static record Variant(Pattern pattern, DyeColor baseColor, DyeColor patternColor) {
+      public static final Codec<Variant> CODEC;
+
+      public Variant(int var1) {
+         this(TropicalFish.getPattern(var1), TropicalFish.getBaseColor(var1), TropicalFish.getPatternColor(var1));
+      }
+
+      public Variant(Pattern var1, DyeColor var2, DyeColor var3) {
+         super();
+         this.pattern = var1;
+         this.baseColor = var2;
+         this.patternColor = var3;
+      }
+
+      public int getPackedId() {
+         return TropicalFish.packVariant(this.pattern, this.baseColor, this.patternColor);
+      }
+
+      static {
+         CODEC = Codec.INT.xmap(Variant::new, Variant::getPackedId);
+      }
    }
 
    public static enum Pattern implements StringRepresentable {
@@ -197,8 +235,8 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
       BETTY("betty", TropicalFish.Base.LARGE, 4),
       CLAYFISH("clayfish", TropicalFish.Base.LARGE, 5);
 
-      public static final Codec<Pattern> CODEC = StringRepresentable.fromEnum(Pattern::values);
-      private static final IntFunction<Pattern> BY_ID = ByIdMap.sparse(Pattern::getPackedId, values(), KOB);
+      public static final Codec<Pattern> CODEC = StringRepresentable.<Pattern>fromEnum(Pattern::values);
+      private static final IntFunction<Pattern> BY_ID = ByIdMap.<Pattern>sparse(Pattern::getPackedId, values(), KOB);
       private final String name;
       private final Component displayName;
       private final Base base;
@@ -237,63 +275,12 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
       }
    }
 
-   private static class TropicalFishGroupData extends AbstractSchoolingFish.SchoolSpawnGroupData {
+   static class TropicalFishGroupData extends AbstractSchoolingFish.SchoolSpawnGroupData {
       final Variant variant;
 
       TropicalFishGroupData(TropicalFish var1, Variant var2) {
          super(var1);
          this.variant = var2;
-      }
-   }
-
-   public static record Variant(Pattern pattern, DyeColor baseColor, DyeColor patternColor) {
-      public static final Codec<Variant> CODEC;
-
-      public Variant(int var1) {
-         this(TropicalFish.getPattern(var1), TropicalFish.getBaseColor(var1), TropicalFish.getPatternColor(var1));
-      }
-
-      public Variant(Pattern var1, DyeColor var2, DyeColor var3) {
-         super();
-         this.pattern = var1;
-         this.baseColor = var2;
-         this.patternColor = var3;
-      }
-
-      public int getPackedId() {
-         return TropicalFish.packVariant(this.pattern, this.baseColor, this.patternColor);
-      }
-
-      public Pattern pattern() {
-         return this.pattern;
-      }
-
-      public DyeColor baseColor() {
-         return this.baseColor;
-      }
-
-      public DyeColor patternColor() {
-         return this.patternColor;
-      }
-
-      static {
-         CODEC = Codec.INT.xmap(Variant::new, Variant::getPackedId);
-      }
-   }
-
-   public static enum Base {
-      SMALL(0),
-      LARGE(1);
-
-      final int id;
-
-      private Base(final int var3) {
-         this.id = var3;
-      }
-
-      // $FF: synthetic method
-      private static Base[] $values() {
-         return new Base[]{SMALL, LARGE};
       }
    }
 }

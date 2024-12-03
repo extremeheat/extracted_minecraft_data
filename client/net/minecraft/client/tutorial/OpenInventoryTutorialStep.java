@@ -1,6 +1,7 @@
 package net.minecraft.client.tutorial;
 
 import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
 import net.minecraft.network.chat.Component;
 
@@ -24,8 +25,9 @@ public class OpenInventoryTutorialStep implements TutorialStepInstance {
          this.tutorial.setStep(TutorialSteps.NONE);
       } else {
          if (this.timeWaiting >= 600 && this.toast == null) {
-            this.toast = new TutorialToast(TutorialToast.Icons.RECIPE_BOOK, TITLE, DESCRIPTION, false);
-            this.tutorial.getMinecraft().getToastManager().addToast(this.toast);
+            Minecraft var1 = this.tutorial.getMinecraft();
+            this.toast = new TutorialToast(var1.font, TutorialToast.Icons.RECIPE_BOOK, TITLE, DESCRIPTION, false);
+            var1.getToastManager().addToast(this.toast);
          }
 
       }

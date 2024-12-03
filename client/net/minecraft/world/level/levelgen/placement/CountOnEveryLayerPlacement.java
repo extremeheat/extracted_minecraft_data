@@ -13,9 +13,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 /** @deprecated */
 @Deprecated
 public class CountOnEveryLayerPlacement extends PlacementModifier {
-   public static final MapCodec<CountOnEveryLayerPlacement> CODEC = IntProvider.codec(0, 256).fieldOf("count").xmap(CountOnEveryLayerPlacement::new, (var0) -> {
-      return var0.count;
-   });
+   public static final MapCodec<CountOnEveryLayerPlacement> CODEC = IntProvider.codec(0, 256).fieldOf("count").xmap(CountOnEveryLayerPlacement::new, (var0) -> var0.count);
    private final IntProvider count;
 
    private CountOnEveryLayerPlacement(IntProvider var1) {

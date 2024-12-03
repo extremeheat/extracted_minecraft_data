@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import org.slf4j.Logger;
 
@@ -56,11 +55,8 @@ public class DownloadCacheCleaner {
          }
 
          var5.remove(var0);
-         Iterator var14 = var5.iterator();
 
-         while(var14.hasNext()) {
-            Path var15 = (Path)var14.next();
-
+         for(Path var15 : var5) {
             try {
                Files.delete(var15);
             } catch (DirectoryNotEmptyException var10) {
@@ -101,10 +97,8 @@ public class DownloadCacheCleaner {
    private static List<PathAndPriority> prioritizeFilesInDirs(List<PathAndTime> var0) {
       ArrayList var1 = new ArrayList();
       Object2IntOpenHashMap var2 = new Object2IntOpenHashMap();
-      Iterator var3 = var0.iterator();
 
-      while(var3.hasNext()) {
-         PathAndTime var4 = (PathAndTime)var3.next();
+      for(PathAndTime var4 : var0) {
          int var5 = var2.addTo(var4.path.getParent(), 1);
          var1.add(new PathAndPriority(var4.path, var5));
       }
@@ -112,7 +106,7 @@ public class DownloadCacheCleaner {
       return var1;
    }
 
-   private static record PathAndTime(Path path, FileTime modifiedTime) {
+   static record PathAndTime(Path path, FileTime modifiedTime) {
       final Path path;
       public static final Comparator<PathAndTime> NEWEST_FIRST = Comparator.comparing(PathAndTime::modifiedTime).reversed();
 
@@ -121,17 +115,9 @@ public class DownloadCacheCleaner {
          this.path = var1;
          this.modifiedTime = var2;
       }
-
-      public Path path() {
-         return this.path;
-      }
-
-      public FileTime modifiedTime() {
-         return this.modifiedTime;
-      }
    }
 
-   private static record PathAndPriority(Path path, int removalPriority) {
+   static record PathAndPriority(Path path, int removalPriority) {
       final Path path;
       final int removalPriority;
       public static final Comparator<PathAndPriority> HIGHEST_PRIORITY_FIRST = Comparator.comparing(PathAndPriority::removalPriority).reversed();
@@ -140,14 +126,6 @@ public class DownloadCacheCleaner {
          super();
          this.path = var1;
          this.removalPriority = var2;
-      }
-
-      public Path path() {
-         return this.path;
-      }
-
-      public int removalPriority() {
-         return this.removalPriority;
       }
    }
 }

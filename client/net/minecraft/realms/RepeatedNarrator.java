@@ -16,16 +16,14 @@ public class RepeatedNarrator {
    }
 
    public void narrate(GameNarrator var1, Component var2) {
-      Params var3 = (Params)this.params.updateAndGet((var2x) -> {
-         return var2x != null && var2.equals(var2x.narration) ? var2x : new Params(var2, RateLimiter.create((double)this.permitsPerSecond));
-      });
+      Params var3 = (Params)this.params.updateAndGet((var2x) -> var2x != null && var2.equals(var2x.narration) ? var2x : new Params(var2, RateLimiter.create((double)this.permitsPerSecond)));
       if (var3.rateLimiter.tryAcquire(1)) {
          var1.sayNow(var2);
       }
 
    }
 
-   private static class Params {
+   static class Params {
       final Component narration;
       final RateLimiter rateLimiter;
 

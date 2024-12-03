@@ -2,7 +2,6 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.ints.IntList;
-import java.util.Iterator;
 import java.util.Map;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.SlotAccess;
@@ -18,18 +17,13 @@ public record SlotsPredicate(Map<SlotRange, ItemPredicate> slots) {
    }
 
    public boolean matches(Entity var1) {
-      Iterator var2 = this.slots.entrySet().iterator();
-
-      Map.Entry var3;
-      do {
-         if (!var2.hasNext()) {
-            return true;
+      for(Map.Entry var3 : this.slots.entrySet()) {
+         if (!matchSlots(var1, (ItemPredicate)var3.getValue(), ((SlotRange)var3.getKey()).slots())) {
+            return false;
          }
+      }
 
-         var3 = (Map.Entry)var2.next();
-      } while(matchSlots(var1, (ItemPredicate)var3.getValue(), ((SlotRange)var3.getKey()).slots()));
-
-      return false;
+      return true;
    }
 
    private static boolean matchSlots(Entity var0, ItemPredicate var1, IntList var2) {
@@ -42,10 +36,6 @@ public record SlotsPredicate(Map<SlotRange, ItemPredicate> slots) {
       }
 
       return false;
-   }
-
-   public Map<SlotRange, ItemPredicate> slots() {
-      return this.slots;
    }
 
    static {

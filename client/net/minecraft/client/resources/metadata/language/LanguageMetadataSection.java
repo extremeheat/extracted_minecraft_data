@@ -15,12 +15,8 @@ public record LanguageMetadataSection(Map<String, LanguageInfo> languages) {
       this.languages = var1;
    }
 
-   public Map<String, LanguageInfo> languages() {
-      return this.languages;
-   }
-
    static {
       CODEC = Codec.unboundedMap(LANGUAGE_CODE_CODEC, LanguageInfo.CODEC).xmap(LanguageMetadataSection::new, LanguageMetadataSection::languages);
-      TYPE = MetadataSectionType.fromCodec("language", CODEC);
+      TYPE = new MetadataSectionType<LanguageMetadataSection>("language", CODEC);
    }
 }

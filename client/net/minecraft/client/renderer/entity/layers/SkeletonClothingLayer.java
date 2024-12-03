@@ -17,7 +17,7 @@ public class SkeletonClothingLayer<S extends SkeletonRenderState, M extends Enti
    public SkeletonClothingLayer(RenderLayerParent<S, M> var1, EntityModelSet var2, ModelLayerLocation var3, ResourceLocation var4) {
       super(var1);
       this.clothesLocation = var4;
-      this.layerModel = new SkeletonModel(var2.bakeLayer(var3));
+      this.layerModel = new SkeletonModel<S>(var2.bakeLayer(var3));
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, S var4, float var5, float var6) {

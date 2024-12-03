@@ -21,7 +21,7 @@ public class BastionPieces {
       Holder.Reference var2 = var1.getOrThrow(ProcessorLists.BASTION_GENERIC_DEGRADATION);
       HolderGetter var3 = var0.lookup(Registries.TEMPLATE_POOL);
       Holder.Reference var4 = var3.getOrThrow(Pools.EMPTY);
-      var0.register(START, new StructureTemplatePool(var4, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/units/air_base", (Holder)var2), 1), Pair.of(StructurePoolElement.single("bastion/hoglin_stable/air_base", (Holder)var2), 1), Pair.of(StructurePoolElement.single("bastion/treasure/big_air_full", (Holder)var2), 1), Pair.of(StructurePoolElement.single("bastion/bridge/starting_pieces/entrance_base", (Holder)var2), 1)), StructureTemplatePool.Projection.RIGID));
+      var0.register(START, new StructureTemplatePool(var4, ImmutableList.of(Pair.of(StructurePoolElement.single("bastion/units/air_base", var2), 1), Pair.of(StructurePoolElement.single("bastion/hoglin_stable/air_base", var2), 1), Pair.of(StructurePoolElement.single("bastion/treasure/big_air_full", var2), 1), Pair.of(StructurePoolElement.single("bastion/bridge/starting_pieces/entrance_base", var2), 1)), StructureTemplatePool.Projection.RIGID));
       BastionHousingUnitsPools.bootstrap(var0);
       BastionHoglinStablePools.bootstrap(var0);
       BastionTreasureRoomPools.bootstrap(var0);

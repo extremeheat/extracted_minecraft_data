@@ -42,9 +42,7 @@ public final class RandomSupport {
    }
 
    public static long generateUniqueSeed() {
-      return SEED_UNIQUIFIER.updateAndGet((var0) -> {
-         return var0 * 1181783497276652981L;
-      }) ^ System.nanoTime();
+      return SEED_UNIQUIFIER.updateAndGet((var0) -> var0 * 1181783497276652981L) ^ System.nanoTime();
    }
 
    public static record Seed128bit(long seedLo, long seedHi) {
@@ -64,14 +62,6 @@ public final class RandomSupport {
 
       public Seed128bit mixed() {
          return new Seed128bit(RandomSupport.mixStafford13(this.seedLo), RandomSupport.mixStafford13(this.seedHi));
-      }
-
-      public long seedLo() {
-         return this.seedLo;
-      }
-
-      public long seedHi() {
-         return this.seedHi;
       }
    }
 }

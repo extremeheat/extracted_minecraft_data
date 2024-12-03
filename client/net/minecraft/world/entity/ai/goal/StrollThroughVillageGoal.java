@@ -39,9 +39,7 @@ public class StrollThroughVillageGoal extends Goal {
          if (!var1.isCloseToVillage(var2, 6)) {
             return false;
          } else {
-            Vec3 var3 = LandRandomPos.getPos(this.mob, 15, 7, (var1x) -> {
-               return (double)(-var1.sectionsToVillage(SectionPos.of(var1x)));
-            });
+            Vec3 var3 = LandRandomPos.getPos(this.mob, 15, 7, (var1x) -> (double)(-var1.sectionsToVillage(SectionPos.of(var1x))));
             this.wantedPos = var3 == null ? null : BlockPos.containing(var3);
             return this.wantedPos != null;
          }

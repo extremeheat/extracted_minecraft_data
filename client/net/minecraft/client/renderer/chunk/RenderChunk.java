@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
@@ -35,11 +36,8 @@ class RenderChunk {
       } else {
          LevelChunkSection[] var2 = var1.getSections();
          this.sections = new ArrayList(var2.length);
-         LevelChunkSection[] var3 = var2;
-         int var4 = var2.length;
 
-         for(int var5 = 0; var5 < var4; ++var5) {
-            LevelChunkSection var6 = var3[var5];
+         for(LevelChunkSection var6 : var2) {
             this.sections.add(var6.hasOnlyAir() ? null : var6.getStates().copy());
          }
       }
@@ -56,46 +54,33 @@ class RenderChunk {
       int var3 = var1.getY();
       int var4 = var1.getZ();
       if (this.debug) {
-         BlockState var10 = null;
+         BlockState var9 = null;
          if (var3 == 60) {
-            var10 = Blocks.BARRIER.defaultBlockState();
+            var9 = Blocks.BARRIER.defaultBlockState();
          }
 
          if (var3 == 70) {
-            var10 = DebugLevelSource.getBlockStateFor(var2, var4);
+            var9 = DebugLevelSource.getBlockStateFor(var2, var4);
          }
 
-         return var10 == null ? Blocks.AIR.defaultBlockState() : var10;
+         return var9 == null ? Blocks.AIR.defaultBlockState() : var9;
       } else if (this.sections == null) {
          return Blocks.AIR.defaultBlockState();
       } else {
-         CrashReport var6;
-         CrashReportCategory var7;
          try {
             int var5 = this.wrapped.getSectionIndex(var3);
             if (var5 >= 0 && var5 < this.sections.size()) {
-               PalettedContainer var11 = (PalettedContainer)this.sections.get(var5);
-               if (var11 != null) {
-                  return (BlockState)var11.get(var2 & 15, var3 & 15, var4 & 15);
+               PalettedContainer var10 = (PalettedContainer)this.sections.get(var5);
+               if (var10 != null) {
+                  return (BlockState)var10.get(var2 & 15, var3 & 15, var4 & 15);
                }
             }
-         } catch (Throwable var9) {
-            var6 = CrashReport.forThrowable(var9, "Getting block state");
-            var7 = var6.addCategory("Block being got");
-            var7.setDetail("Location", () -> {
-               return CrashReportCategory.formatLocation(this.wrapped, var2, var3, var4);
-            });
-            throw new ReportedException(var6);
-         }
 
-         try {
             return Blocks.AIR.defaultBlockState();
          } catch (Throwable var8) {
-            var6 = CrashReport.forThrowable(var8, "Getting block state");
-            var7 = var6.addCategory("Block being got");
-            var7.setDetail("Location", () -> {
-               return CrashReportCategory.formatLocation(this.wrapped, var2, var3, var4);
-            });
+            CrashReport var6 = CrashReport.forThrowable(var8, "Getting block state");
+            CrashReportCategory var7 = var6.addCategory("Block being got");
+            var7.setDetail("Location", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this.wrapped, var2, var3, var4)));
             throw new ReportedException(var6);
          }
       }

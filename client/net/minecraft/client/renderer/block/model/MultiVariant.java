@@ -8,15 +8,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.function.Function;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
-import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.client.resources.model.UnbakedModel;
+import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.client.resources.model.WeightedBakedModel;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,32 +30,24 @@ public record MultiVariant(List<Variant> variants) implements UnbakedBlockStateM
       return this;
    }
 
-   public void resolveDependencies(UnbakedModel.Resolver var1) {
-      this.variants.forEach((var1x) -> {
-         var1.resolve(var1x.getModelLocation());
-      });
+   public void resolveDependencies(ResolvableModel.Resolver var1) {
+      this.variants.forEach((var1x) -> var1.resolve(var1x.modelLocation()));
    }
 
-   public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3) {
+   public BakedModel bake(ModelBaker var1) {
       if (this.variants.size() == 1) {
-         Variant var8 = (Variant)this.variants.getFirst();
-         return var1.bake(var8.getModelLocation(), var8);
+         Variant var6 = (Variant)this.variants.getFirst();
+         return var1.bake(var6.modelLocation(), var6);
       } else {
-         SimpleWeightedRandomList.Builder var4 = SimpleWeightedRandomList.builder();
-         Iterator var5 = this.variants.iterator();
+         SimpleWeightedRandomList.Builder var2 = SimpleWeightedRandomList.builder();
 
-         while(var5.hasNext()) {
-            Variant var6 = (Variant)var5.next();
-            BakedModel var7 = var1.bake(var6.getModelLocation(), var6);
-            var4.add(var7, var6.getWeight());
+         for(Variant var4 : this.variants) {
+            BakedModel var5 = var1.bake(var4.modelLocation(), var4);
+            var2.add(var5, var4.weight());
          }
 
-         return new WeightedBakedModel(var4.build());
+         return new WeightedBakedModel(var2.build());
       }
-   }
-
-   public List<Variant> variants() {
-      return this.variants;
    }
 
    public static class Deserializer implements JsonDeserializer<MultiVariant> {
@@ -76,10 +63,7 @@ public record MultiVariant(List<Variant> variants) implements UnbakedBlockStateM
                throw new JsonParseException("Empty variant array");
             }
 
-            Iterator var6 = var5.iterator();
-
-            while(var6.hasNext()) {
-               JsonElement var7 = (JsonElement)var6.next();
+            for(JsonElement var7 : var5) {
                var4.add((Variant)var3.deserialize(var7, Variant.class));
             }
          } else {

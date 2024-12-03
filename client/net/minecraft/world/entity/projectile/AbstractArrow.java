@@ -2,7 +2,6 @@ package net.minecraft.world.entity.projectile;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -53,7 +52,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class AbstractArrow extends Projectile {
    private static final double ARROW_BASE_DAMAGE = 2.0;
-   public static final int SHAKE_TIME = 7;
+   private static final int SHAKE_TIME = 7;
+   private static final float WATER_INERTIA = 0.6F;
+   private static final float INERTIA = 0.99F;
    private static final EntityDataAccessor<Byte> ID_FLAGS;
    private static final EntityDataAccessor<Byte> PIERCE_LEVEL;
    private static final EntityDataAccessor<Boolean> IN_GROUND;
@@ -144,7 +145,7 @@ public abstract class AbstractArrow extends Projectile {
    }
 
    public void lerpMotion(double var1, double var3, double var5) {
-      this.setDeltaMovement(var1, var3, var5);
+      super.lerpMotion(var1, var3, var5);
       this.life = 0;
       if (this.isInGround() && Mth.lengthSquared(var1, var3, var5) > 0.0) {
          this.setInGround(false);
@@ -169,10 +170,8 @@ public abstract class AbstractArrow extends Projectile {
          VoxelShape var5 = var4.getCollisionShape(this.level(), var3);
          if (!var5.isEmpty()) {
             Vec3 var6 = this.position();
-            Iterator var7 = var5.toAabbs().iterator();
 
-            while(var7.hasNext()) {
-               AABB var8 = (AABB)var7.next();
+            for(AABB var8 : var5.toAabbs()) {
                if (var8.move(var3).contains(var6)) {
                   this.setInGround(true);
                   break;
@@ -207,6 +206,7 @@ public abstract class AbstractArrow extends Projectile {
          this.inGroundTime = 0;
          Vec3 var9 = this.position();
          if (this.isInWater()) {
+            this.applyInertia(this.getWaterInertia());
             this.addBubbleParticles(var9);
          }
 
@@ -234,7 +234,10 @@ public abstract class AbstractArrow extends Projectile {
             this.applyEffectsFromBlocks();
          }
 
-         this.applyInertia();
+         if (!this.isInWater()) {
+            this.applyInertia(0.99F);
+         }
+
          if (var1 && !this.isInGround()) {
             this.applyGravity();
          }
@@ -277,14 +280,9 @@ public abstract class AbstractArrow extends Projectile {
       }
    }
 
-   private void applyInertia() {
-      Vec3 var1 = this.getDeltaMovement();
-      float var2 = 0.99F;
-      if (this.isInWater()) {
-         var2 = this.getWaterInertia();
-      }
-
-      this.setDeltaMovement(var1.scale((double)var2));
+   private void applyInertia(float var1) {
+      Vec3 var2 = this.getDeltaMovement();
+      this.setDeltaMovement(var2.scale((double)var1));
    }
 
    private void addBubbleParticles(Vec3 var1) {
@@ -349,6 +347,18 @@ public abstract class AbstractArrow extends Projectile {
 
    protected void onItemBreak(Item var1) {
       this.firedFromWeapon = null;
+   }
+
+   public void onInsideBubbleColumn(boolean var1) {
+      if (!this.isInGround()) {
+         super.onInsideBubbleColumn(var1);
+      }
+   }
+
+   public void push(double var1, double var3, double var5) {
+      if (!this.isInGround()) {
+         super.push(var1, var3, var5);
+      }
    }
 
    protected void onHitEntity(EntityHitResult var1) {
@@ -520,9 +530,7 @@ public abstract class AbstractArrow extends Projectile {
          var10002 = null;
       }
 
-      EnchantmentHelper.onHitBlock(var1, var3, var10002, this, (EquipmentSlot)null, var4, var1.getBlockState(var2.getBlockPos()), (var1x) -> {
-         this.firedFromWeapon = null;
-      });
+      EnchantmentHelper.onHitBlock(var1, var3, var10002, this, (EquipmentSlot)null, var4, var1.getBlockState(var2.getBlockPos()), (var1x) -> this.firedFromWeapon = null);
    }
 
    public ItemStack getWeaponItem() {
@@ -767,9 +775,9 @@ public abstract class AbstractArrow extends Projectile {
    }
 
    static {
-      ID_FLAGS = SynchedEntityData.defineId(AbstractArrow.class, EntityDataSerializers.BYTE);
-      PIERCE_LEVEL = SynchedEntityData.defineId(AbstractArrow.class, EntityDataSerializers.BYTE);
-      IN_GROUND = SynchedEntityData.defineId(AbstractArrow.class, EntityDataSerializers.BOOLEAN);
+      ID_FLAGS = SynchedEntityData.<Byte>defineId(AbstractArrow.class, EntityDataSerializers.BYTE);
+      PIERCE_LEVEL = SynchedEntityData.<Byte>defineId(AbstractArrow.class, EntityDataSerializers.BYTE);
+      IN_GROUND = SynchedEntityData.<Boolean>defineId(AbstractArrow.class, EntityDataSerializers.BOOLEAN);
    }
 
    public static enum Pickup {

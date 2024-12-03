@@ -16,9 +16,7 @@ import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.SlabType;
 
 public class BlackstoneReplaceProcessor extends StructureProcessor {
-   public static final MapCodec<BlackstoneReplaceProcessor> CODEC = MapCodec.unit(() -> {
-      return INSTANCE;
-   });
+   public static final MapCodec<BlackstoneReplaceProcessor> CODEC = MapCodec.unit(() -> INSTANCE);
    public static final BlackstoneReplaceProcessor INSTANCE = new BlackstoneReplaceProcessor();
    private final Map<Block, Block> replacements = (Map)Util.make(Maps.newHashMap(), (var0) -> {
       var0.put(Blocks.COBBLESTONE, Blocks.BLACKSTONE);

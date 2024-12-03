@@ -22,7 +22,6 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -97,17 +96,11 @@ public class StructureTemplateManager {
    }
 
    public Stream<ResourceLocation> listTemplates() {
-      return this.sources.stream().flatMap((var0) -> {
-         return (Stream)var0.lister().get();
-      }).distinct();
+      return this.sources.stream().flatMap((var0) -> (Stream)var0.lister().get()).distinct();
    }
 
    private Optional<StructureTemplate> tryLoad(ResourceLocation var1) {
-      Iterator var2 = this.sources.iterator();
-
-      while(var2.hasNext()) {
-         Source var3 = (Source)var2.next();
-
+      for(Source var3 : this.sources) {
          try {
             Optional var4 = (Optional)var3.loader().apply(var1);
             if (var4.isPresent()) {
@@ -127,11 +120,7 @@ public class StructureTemplateManager {
 
    private Optional<StructureTemplate> loadFromResource(ResourceLocation var1) {
       ResourceLocation var2 = RESOURCE_LISTER.idToFile(var1);
-      return this.load(() -> {
-         return this.resourceManager.open(var2);
-      }, (var1x) -> {
-         LOGGER.error("Couldn't load structure {}", var1, var1x);
-      });
+      return this.load(() -> this.resourceManager.open(var2), (var1x) -> LOGGER.error("Couldn't load structure {}", var1, var1x));
    }
 
    private Stream<ResourceLocation> listResources() {
@@ -162,11 +151,7 @@ public class StructureTemplateManager {
          return Optional.empty();
       } else {
          Path var2 = this.createAndValidatePathToGeneratedStructure(var1, ".nbt");
-         return this.load(() -> {
-            return new FileInputStream(var2.toFile());
-         }, (var1x) -> {
-            LOGGER.error("Couldn't load structure from {}", var2, var1x);
-         });
+         return this.load(() -> new FileInputStream(var2.toFile()), (var1x) -> LOGGER.error("Couldn't load structure from {}", var2, var1x));
       }
    }
 
@@ -176,15 +161,10 @@ public class StructureTemplateManager {
       } else {
          try {
             ArrayList var1 = new ArrayList();
-            DirectoryStream var2 = Files.newDirectoryStream(this.generatedDir, (var0) -> {
-               return Files.isDirectory(var0, new LinkOption[0]);
-            });
+            DirectoryStream var2 = Files.newDirectoryStream(this.generatedDir, (var0) -> Files.isDirectory(var0, new LinkOption[0]));
 
             try {
-               Iterator var3 = var2.iterator();
-
-               while(var3.hasNext()) {
-                  Path var4 = (Path)var3.next();
+               for(Path var4 : var2) {
                   String var5 = var4.getFileName().toString();
                   Path var6 = var4.resolve("structures");
                   Objects.requireNonNull(var1);
@@ -215,14 +195,10 @@ public class StructureTemplateManager {
 
    private void listFolderContents(Path var1, String var2, String var3, Consumer<ResourceLocation> var4) {
       int var5 = var3.length();
-      Function var6 = (var1x) -> {
-         return var1x.substring(0, var1x.length() - var5);
-      };
+      Function var6 = (var1x) -> var1x.substring(0, var1x.length() - var5);
 
       try {
-         Stream var7 = Files.find(var1, 2147483647, (var1x, var2x) -> {
-            return var2x.isRegularFile() && var1x.toString().endsWith(var3);
-         }, new FileVisitOption[0]);
+         Stream var7 = Files.find(var1, 2147483647, (var1x, var2x) -> var2x.isRegularFile() && var1x.toString().endsWith(var3), new FileVisitOption[0]);
 
          try {
             var7.forEach((var5x) -> {
@@ -427,14 +403,6 @@ public class StructureTemplateManager {
          super();
          this.loader = var1;
          this.lister = var2;
-      }
-
-      public Function<ResourceLocation, Optional<StructureTemplate>> loader() {
-         return this.loader;
-      }
-
-      public Supplier<Stream<ResourceLocation>> lister() {
-         return this.lister;
       }
    }
 

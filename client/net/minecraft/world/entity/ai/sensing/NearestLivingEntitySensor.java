@@ -21,14 +21,12 @@ public class NearestLivingEntitySensor<T extends LivingEntity> extends Sensor<T>
    protected void doTick(ServerLevel var1, T var2) {
       double var3 = var2.getAttributeValue(Attributes.FOLLOW_RANGE);
       AABB var5 = var2.getBoundingBox().inflate(var3, var3, var3);
-      List var6 = var1.getEntitiesOfClass(LivingEntity.class, var5, (var1x) -> {
-         return var1x != var2 && var1x.isAlive();
-      });
+      List var6 = var1.getEntitiesOfClass(LivingEntity.class, var5, (var1x) -> var1x != var2 && var1x.isAlive());
       Objects.requireNonNull(var2);
       var6.sort(Comparator.comparingDouble(var2::distanceToSqr));
       Brain var7 = var2.getBrain();
-      var7.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, (Object)var6);
-      var7.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, (Object)(new NearestVisibleLivingEntities(var1, var2, var6)));
+      var7.setMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES, var6);
+      var7.setMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, new NearestVisibleLivingEntities(var1, var2, var6));
    }
 
    public Set<MemoryModuleType<?>> requires() {

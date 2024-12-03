@@ -8,13 +8,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.StringRepresentable;
 
 public class ClickEvent {
-   public static final Codec<ClickEvent> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ClickEvent.Action.CODEC.forGetter((var0x) -> {
-         return var0x.action;
-      }), Codec.STRING.fieldOf("value").forGetter((var0x) -> {
-         return var0x.value;
-      })).apply(var0, ClickEvent::new);
-   });
+   public static final Codec<ClickEvent> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ClickEvent.Action.CODEC.forGetter((var0x) -> var0x.action), Codec.STRING.fieldOf("value").forGetter((var0x) -> var0x.value)).apply(var0, ClickEvent::new));
    private final Action action;
    private final String value;
 
@@ -81,9 +75,7 @@ public class ClickEvent {
       }
 
       public static DataResult<Action> filterForSerialization(Action var0) {
-         return !var0.isAllowedFromServer() ? DataResult.error(() -> {
-            return "Action not allowed: " + String.valueOf(var0);
-         }) : DataResult.success(var0, Lifecycle.stable());
+         return !var0.isAllowedFromServer() ? DataResult.error(() -> "Action not allowed: " + String.valueOf(var0)) : DataResult.success(var0, Lifecycle.stable());
       }
 
       // $FF: synthetic method

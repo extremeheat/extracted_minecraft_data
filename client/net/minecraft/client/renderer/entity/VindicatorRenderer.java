@@ -16,10 +16,10 @@ public class VindicatorRenderer extends IllagerRenderer<Vindicator, IllagerRende
 
    public VindicatorRenderer(EntityRendererProvider.Context var1) {
       super(var1, new IllagerModel(var1.bakeLayer(ModelLayers.VINDICATOR)), 0.5F);
-      this.addLayer(new ItemInHandLayer<IllagerRenderState, IllagerModel<IllagerRenderState>>(this, this, var1.getItemRenderer()) {
+      this.addLayer(new ItemInHandLayer<IllagerRenderState, IllagerModel<IllagerRenderState>>(this) {
          public void render(PoseStack var1, MultiBufferSource var2, int var3, IllagerRenderState var4, float var5, float var6) {
             if (var4.isAggressive) {
-               super.render(var1, var2, var3, (LivingEntityRenderState)var4, var5, var6);
+               super.render(var1, var2, var3, var4, var5, var6);
             }
 
          }

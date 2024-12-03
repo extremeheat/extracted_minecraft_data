@@ -33,10 +33,6 @@ public abstract class DelegateBakedModel implements BakedModel {
       return this.parent.usesBlockLight();
    }
 
-   public boolean isCustomRenderer() {
-      return this.parent.isCustomRenderer();
-   }
-
    public TextureAtlasSprite getParticleIcon() {
       return this.parent.getParticleIcon();
    }

@@ -41,9 +41,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CeilingHangingSignBlock extends SignBlock {
-   public static final MapCodec<CeilingHangingSignBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(var0, CeilingHangingSignBlock::new);
-   });
+   public static final MapCodec<CeilingHangingSignBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(var0, CeilingHangingSignBlock::new));
    public static final IntegerProperty ROTATION;
    public static final BooleanProperty ATTACHED;
    protected static final float AABB_OFFSET = 5.0F;

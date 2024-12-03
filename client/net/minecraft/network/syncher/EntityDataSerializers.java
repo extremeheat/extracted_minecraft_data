@@ -37,7 +37,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class EntityDataSerializers {
-   private static final CrudeIncrementalIntIdentityHashBiMap<EntityDataSerializer<?>> SERIALIZERS = CrudeIncrementalIntIdentityHashBiMap.create(16);
+   private static final CrudeIncrementalIntIdentityHashBiMap<EntityDataSerializer<?>> SERIALIZERS = CrudeIncrementalIntIdentityHashBiMap.<EntityDataSerializer<?>>create(16);
    public static final EntityDataSerializer<Byte> BYTE;
    public static final EntityDataSerializer<Integer> INT;
    public static final EntityDataSerializer<Long> LONG;
@@ -78,7 +78,7 @@ public class EntityDataSerializers {
 
    @Nullable
    public static EntityDataSerializer<?> getSerializer(int var0) {
-      return (EntityDataSerializer)SERIALIZERS.byId(var0);
+      return SERIALIZERS.byId(var0);
    }
 
    public static int getSerializedId(EntityDataSerializer<?> var0) {
@@ -90,13 +90,13 @@ public class EntityDataSerializers {
    }
 
    static {
-      BYTE = EntityDataSerializer.forValueType(ByteBufCodecs.BYTE);
-      INT = EntityDataSerializer.forValueType(ByteBufCodecs.VAR_INT);
-      LONG = EntityDataSerializer.forValueType(ByteBufCodecs.VAR_LONG);
-      FLOAT = EntityDataSerializer.forValueType(ByteBufCodecs.FLOAT);
-      STRING = EntityDataSerializer.forValueType(ByteBufCodecs.STRING_UTF8);
-      COMPONENT = EntityDataSerializer.forValueType(ComponentSerialization.TRUSTED_STREAM_CODEC);
-      OPTIONAL_COMPONENT = EntityDataSerializer.forValueType(ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC);
+      BYTE = EntityDataSerializer.<Byte>forValueType(ByteBufCodecs.BYTE);
+      INT = EntityDataSerializer.<Integer>forValueType(ByteBufCodecs.VAR_INT);
+      LONG = EntityDataSerializer.<Long>forValueType(ByteBufCodecs.VAR_LONG);
+      FLOAT = EntityDataSerializer.<Float>forValueType(ByteBufCodecs.FLOAT);
+      STRING = EntityDataSerializer.<String>forValueType(ByteBufCodecs.STRING_UTF8);
+      COMPONENT = EntityDataSerializer.<Component>forValueType(ComponentSerialization.TRUSTED_STREAM_CODEC);
+      OPTIONAL_COMPONENT = EntityDataSerializer.<Optional<Component>>forValueType(ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC);
       ITEM_STACK = new EntityDataSerializer<ItemStack>() {
          public StreamCodec<? super RegistryFriendlyByteBuf, ItemStack> codec() {
             return ItemStack.OPTIONAL_STREAM_CODEC;
@@ -111,7 +111,7 @@ public class EntityDataSerializers {
             return this.copy((ItemStack)var1);
          }
       };
-      BLOCK_STATE = EntityDataSerializer.forValueType(ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY));
+      BLOCK_STATE = EntityDataSerializer.<BlockState>forValueType(ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY));
       OPTIONAL_BLOCK_STATE_CODEC = new StreamCodec<ByteBuf, Optional<BlockState>>() {
          public void encode(ByteBuf var1, Optional<BlockState> var2) {
             if (var2.isPresent()) {
@@ -137,16 +137,16 @@ public class EntityDataSerializers {
             return this.decode((ByteBuf)var1);
          }
       };
-      OPTIONAL_BLOCK_STATE = EntityDataSerializer.forValueType(OPTIONAL_BLOCK_STATE_CODEC);
-      BOOLEAN = EntityDataSerializer.forValueType(ByteBufCodecs.BOOL);
-      PARTICLE = EntityDataSerializer.forValueType(ParticleTypes.STREAM_CODEC);
-      PARTICLES = EntityDataSerializer.forValueType(ParticleTypes.STREAM_CODEC.apply(ByteBufCodecs.list()));
-      ROTATIONS = EntityDataSerializer.forValueType(Rotations.STREAM_CODEC);
-      BLOCK_POS = EntityDataSerializer.forValueType(BlockPos.STREAM_CODEC);
-      OPTIONAL_BLOCK_POS = EntityDataSerializer.forValueType(BlockPos.STREAM_CODEC.apply(ByteBufCodecs::optional));
-      DIRECTION = EntityDataSerializer.forValueType(Direction.STREAM_CODEC);
-      OPTIONAL_UUID = EntityDataSerializer.forValueType(UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs::optional));
-      OPTIONAL_GLOBAL_POS = EntityDataSerializer.forValueType(GlobalPos.STREAM_CODEC.apply(ByteBufCodecs::optional));
+      OPTIONAL_BLOCK_STATE = EntityDataSerializer.<Optional<BlockState>>forValueType(OPTIONAL_BLOCK_STATE_CODEC);
+      BOOLEAN = EntityDataSerializer.<Boolean>forValueType(ByteBufCodecs.BOOL);
+      PARTICLE = EntityDataSerializer.<ParticleOptions>forValueType(ParticleTypes.STREAM_CODEC);
+      PARTICLES = EntityDataSerializer.<List<ParticleOptions>>forValueType(ParticleTypes.STREAM_CODEC.apply(ByteBufCodecs.list()));
+      ROTATIONS = EntityDataSerializer.<Rotations>forValueType(Rotations.STREAM_CODEC);
+      BLOCK_POS = EntityDataSerializer.<BlockPos>forValueType(BlockPos.STREAM_CODEC);
+      OPTIONAL_BLOCK_POS = EntityDataSerializer.<Optional<BlockPos>>forValueType(BlockPos.STREAM_CODEC.apply(ByteBufCodecs::optional));
+      DIRECTION = EntityDataSerializer.<Direction>forValueType(Direction.STREAM_CODEC);
+      OPTIONAL_UUID = EntityDataSerializer.<Optional<UUID>>forValueType(UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs::optional));
+      OPTIONAL_GLOBAL_POS = EntityDataSerializer.<Optional<GlobalPos>>forValueType(GlobalPos.STREAM_CODEC.apply(ByteBufCodecs::optional));
       COMPOUND_TAG = new EntityDataSerializer<CompoundTag>() {
          public StreamCodec<? super RegistryFriendlyByteBuf, CompoundTag> codec() {
             return ByteBufCodecs.TRUSTED_COMPOUND_TAG;
@@ -161,7 +161,7 @@ public class EntityDataSerializers {
             return this.copy((CompoundTag)var1);
          }
       };
-      VILLAGER_DATA = EntityDataSerializer.forValueType(VillagerData.STREAM_CODEC);
+      VILLAGER_DATA = EntityDataSerializer.<VillagerData>forValueType(VillagerData.STREAM_CODEC);
       OPTIONAL_UNSIGNED_INT_CODEC = new StreamCodec<ByteBuf, OptionalInt>() {
          public OptionalInt decode(ByteBuf var1) {
             int var2 = VarInt.read(var1);
@@ -182,16 +182,16 @@ public class EntityDataSerializers {
             return this.decode((ByteBuf)var1);
          }
       };
-      OPTIONAL_UNSIGNED_INT = EntityDataSerializer.forValueType(OPTIONAL_UNSIGNED_INT_CODEC);
-      POSE = EntityDataSerializer.forValueType(Pose.STREAM_CODEC);
-      CAT_VARIANT = EntityDataSerializer.forValueType(CatVariant.STREAM_CODEC);
-      WOLF_VARIANT = EntityDataSerializer.forValueType(WolfVariant.STREAM_CODEC);
-      FROG_VARIANT = EntityDataSerializer.forValueType(FrogVariant.STREAM_CODEC);
-      PAINTING_VARIANT = EntityDataSerializer.forValueType(PaintingVariant.STREAM_CODEC);
-      ARMADILLO_STATE = EntityDataSerializer.forValueType(Armadillo.ArmadilloState.STREAM_CODEC);
-      SNIFFER_STATE = EntityDataSerializer.forValueType(Sniffer.State.STREAM_CODEC);
-      VECTOR3 = EntityDataSerializer.forValueType(ByteBufCodecs.VECTOR3F);
-      QUATERNION = EntityDataSerializer.forValueType(ByteBufCodecs.QUATERNIONF);
+      OPTIONAL_UNSIGNED_INT = EntityDataSerializer.<OptionalInt>forValueType(OPTIONAL_UNSIGNED_INT_CODEC);
+      POSE = EntityDataSerializer.<Pose>forValueType(Pose.STREAM_CODEC);
+      CAT_VARIANT = EntityDataSerializer.<Holder<CatVariant>>forValueType(CatVariant.STREAM_CODEC);
+      WOLF_VARIANT = EntityDataSerializer.<Holder<WolfVariant>>forValueType(WolfVariant.STREAM_CODEC);
+      FROG_VARIANT = EntityDataSerializer.<Holder<FrogVariant>>forValueType(FrogVariant.STREAM_CODEC);
+      PAINTING_VARIANT = EntityDataSerializer.<Holder<PaintingVariant>>forValueType(PaintingVariant.STREAM_CODEC);
+      ARMADILLO_STATE = EntityDataSerializer.<Armadillo.ArmadilloState>forValueType(Armadillo.ArmadilloState.STREAM_CODEC);
+      SNIFFER_STATE = EntityDataSerializer.<Sniffer.State>forValueType(Sniffer.State.STREAM_CODEC);
+      VECTOR3 = EntityDataSerializer.<Vector3f>forValueType(ByteBufCodecs.VECTOR3F);
+      QUATERNION = EntityDataSerializer.<Quaternionf>forValueType(ByteBufCodecs.QUATERNIONF);
       registerSerializer(BYTE);
       registerSerializer(INT);
       registerSerializer(LONG);

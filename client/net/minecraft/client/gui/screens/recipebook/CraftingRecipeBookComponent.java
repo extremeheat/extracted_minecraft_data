@@ -65,7 +65,7 @@ public class CraftingRecipeBookComponent extends RecipeBookComponent<AbstractCra
       switch (var2.typeSwitch<invokedynamic>(var2, var5)) {
          case 0:
             ShapedCraftingRecipeDisplay var6 = (ShapedCraftingRecipeDisplay)var2;
-            List var11 = ((AbstractCraftingMenu)this.menu).getInputGridSlots();
+            List var11 = (this.menu).getInputGridSlots();
             PlaceRecipeHelper.placeRecipe(((AbstractCraftingMenu)this.menu).getGridWidth(), ((AbstractCraftingMenu)this.menu).getGridHeight(), var6.width(), var6.height(), var6.ingredients(), (var3x, var4, var5x, var6x) -> {
                Slot var7 = (Slot)var11.get(var4);
                var1.setInput(var7, var3, var3x);
@@ -73,7 +73,7 @@ public class CraftingRecipeBookComponent extends RecipeBookComponent<AbstractCra
             break;
          case 1:
             ShapelessCraftingRecipeDisplay var7 = (ShapelessCraftingRecipeDisplay)var2;
-            List var8 = ((AbstractCraftingMenu)this.menu).getInputGridSlots();
+            List var8 = (this.menu).getInputGridSlots();
             int var9 = Math.min(var7.ingredients().size(), var8.size());
 
             for(int var10 = 0; var10 < var9; ++var10) {

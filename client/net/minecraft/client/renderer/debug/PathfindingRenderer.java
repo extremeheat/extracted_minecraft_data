@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.debug;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import net.minecraft.Util;
@@ -41,20 +40,14 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       if (!this.pathMap.isEmpty()) {
          long var9 = Util.getMillis();
-         Iterator var11 = this.pathMap.keySet().iterator();
 
-         while(var11.hasNext()) {
-            Integer var12 = (Integer)var11.next();
+         for(Integer var12 : this.pathMap.keySet()) {
             Path var13 = (Path)this.pathMap.get(var12);
             float var14 = (Float)this.pathMaxDist.get(var12);
             renderPath(var1, var2, var13, var14, true, true, var3, var5, var7);
          }
 
-         Integer[] var15 = (Integer[])this.creationMap.keySet().toArray(new Integer[0]);
-         int var16 = var15.length;
-
-         for(int var17 = 0; var17 < var16; ++var17) {
-            Integer var18 = var15[var17];
+         for(Integer var18 : (Integer[])this.creationMap.keySet().toArray(new Integer[0])) {
             if (var9 - (Long)this.creationMap.get(var18) > 5000L) {
                this.pathMap.remove(var18);
                this.creationMap.remove(var18);
@@ -82,35 +75,25 @@ public class PathfindingRenderer implements DebugRenderer.SimpleDebugRenderer {
 
       Path.DebugData var18 = var2.debugData();
       if (var4 && var18 != null) {
-         Node[] var19 = var18.closedSet();
-         int var21 = var19.length;
-
-         Node var17;
-         int var23;
-         for(var23 = 0; var23 < var21; ++var23) {
-            var17 = var19[var23];
+         for(Node var17 : var18.closedSet()) {
             if (distanceToCamera(var17.asBlockPos(), var6, var8, var10) <= 80.0F) {
                DebugRenderer.renderFilledBox(var0, var1, (new AABB((double)((float)var17.x + 0.5F - var3 / 2.0F), (double)((float)var17.y + 0.01F), (double)((float)var17.z + 0.5F - var3 / 2.0F), (double)((float)var17.x + 0.5F + var3 / 2.0F), (double)var17.y + 0.1, (double)((float)var17.z + 0.5F + var3 / 2.0F))).move(-var6, -var8, -var10), 1.0F, 0.8F, 0.8F, 0.5F);
             }
          }
 
-         var19 = var18.openSet();
-         var21 = var19.length;
-
-         for(var23 = 0; var23 < var21; ++var23) {
-            var17 = var19[var23];
-            if (distanceToCamera(var17.asBlockPos(), var6, var8, var10) <= 80.0F) {
-               DebugRenderer.renderFilledBox(var0, var1, (new AABB((double)((float)var17.x + 0.5F - var3 / 2.0F), (double)((float)var17.y + 0.01F), (double)((float)var17.z + 0.5F - var3 / 2.0F), (double)((float)var17.x + 0.5F + var3 / 2.0F), (double)var17.y + 0.1, (double)((float)var17.z + 0.5F + var3 / 2.0F))).move(-var6, -var8, -var10), 0.8F, 1.0F, 1.0F, 0.5F);
+         for(Node var27 : var18.openSet()) {
+            if (distanceToCamera(var27.asBlockPos(), var6, var8, var10) <= 80.0F) {
+               DebugRenderer.renderFilledBox(var0, var1, (new AABB((double)((float)var27.x + 0.5F - var3 / 2.0F), (double)((float)var27.y + 0.01F), (double)((float)var27.z + 0.5F - var3 / 2.0F), (double)((float)var27.x + 0.5F + var3 / 2.0F), (double)var27.y + 0.1, (double)((float)var27.z + 0.5F + var3 / 2.0F))).move(-var6, -var8, -var10), 0.8F, 1.0F, 1.0F, 0.5F);
             }
          }
       }
 
       if (var5) {
-         for(int var20 = 0; var20 < var2.getNodeCount(); ++var20) {
-            Node var22 = var2.getNode(var20);
-            if (distanceToCamera(var22.asBlockPos(), var6, var8, var10) <= 80.0F) {
-               DebugRenderer.renderFloatingText(var0, var1, String.valueOf(var22.type), (double)var22.x + 0.5, (double)var22.y + 0.75, (double)var22.z + 0.5, -1, 0.02F, true, 0.0F, true);
-               DebugRenderer.renderFloatingText(var0, var1, String.format(Locale.ROOT, "%.2f", var22.costMalus), (double)var22.x + 0.5, (double)var22.y + 0.25, (double)var22.z + 0.5, -1, 0.02F, true, 0.0F, true);
+         for(int var21 = 0; var21 < var2.getNodeCount(); ++var21) {
+            Node var24 = var2.getNode(var21);
+            if (distanceToCamera(var24.asBlockPos(), var6, var8, var10) <= 80.0F) {
+               DebugRenderer.renderFloatingText(var0, var1, String.valueOf(var24.type), (double)var24.x + 0.5, (double)var24.y + 0.75, (double)var24.z + 0.5, -1, 0.02F, true, 0.0F, true);
+               DebugRenderer.renderFloatingText(var0, var1, String.format(Locale.ROOT, "%.2f", var24.costMalus), (double)var24.x + 0.5, (double)var24.y + 0.25, (double)var24.z + 0.5, -1, 0.02F, true, 0.0F, true);
             }
          }
       }

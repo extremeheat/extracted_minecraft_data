@@ -122,9 +122,7 @@ public class InventoryScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       }
 
       var8.setRenderShadow(false);
-      var0.drawSpecial((var3x) -> {
-         var8.render(var7, 0.0, 0.0, 0.0, 1.0F, var0.pose(), var3x, 15728880);
-      });
+      var0.drawSpecial((var3x) -> var8.render(var7, 0.0, 0.0, 0.0, 1.0F, var0.pose(), var3x, 15728880));
       var0.flush();
       var8.setRenderShadow(true);
       var0.pose().popPose();

@@ -12,8 +12,8 @@ public enum Difficulty implements StringRepresentable {
    NORMAL(2, "normal"),
    HARD(3, "hard");
 
-   public static final StringRepresentable.EnumCodec<Difficulty> CODEC = StringRepresentable.fromEnum(Difficulty::values);
-   private static final IntFunction<Difficulty> BY_ID = ByIdMap.continuous(Difficulty::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   public static final StringRepresentable.EnumCodec<Difficulty> CODEC = StringRepresentable.<Difficulty>fromEnum(Difficulty::values);
+   private static final IntFunction<Difficulty> BY_ID = ByIdMap.<Difficulty>continuous(Difficulty::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    private final int id;
    private final String key;
 
@@ -40,7 +40,7 @@ public enum Difficulty implements StringRepresentable {
 
    @Nullable
    public static Difficulty byName(String var0) {
-      return (Difficulty)CODEC.byName(var0);
+      return CODEC.byName(var0);
    }
 
    public String getKey() {

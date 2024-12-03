@@ -55,8 +55,4 @@ public record FallLocation(String id) {
    public String languageKey() {
       return "death.fell.accident." + this.id;
    }
-
-   public String id() {
-      return this.id;
-   }
 }

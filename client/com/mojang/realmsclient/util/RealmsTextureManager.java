@@ -9,7 +9,6 @@ import java.util.Base64;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
@@ -35,14 +34,13 @@ public class RealmsTextureManager {
          return var2.textureId;
       } else {
          NativeImage var3 = loadImage(var1);
-         ResourceLocation var4;
          if (var3 == null) {
-            var4 = MissingTextureAtlasSprite.getLocation();
-            TEXTURES.put(var0, new RealmsTexture(var1, var4));
-            return var4;
+            ResourceLocation var5 = MissingTextureAtlasSprite.getLocation();
+            TEXTURES.put(var0, new RealmsTexture(var1, var5));
+            return var5;
          } else {
-            var4 = ResourceLocation.fromNamespaceAndPath("realms", "dynamic/" + var0);
-            Minecraft.getInstance().getTextureManager().register((ResourceLocation)var4, (AbstractTexture)(new DynamicTexture(var3)));
+            ResourceLocation var4 = ResourceLocation.fromNamespaceAndPath("realms", "dynamic/" + var0);
+            Minecraft.getInstance().getTextureManager().register(var4, new DynamicTexture(var3));
             TEXTURES.put(var0, new RealmsTexture(var1, var4));
             return var4;
          }
@@ -73,14 +71,6 @@ public class RealmsTextureManager {
          super();
          this.image = var1;
          this.textureId = var2;
-      }
-
-      public String image() {
-         return this.image;
-      }
-
-      public ResourceLocation textureId() {
-         return this.textureId;
       }
    }
 }

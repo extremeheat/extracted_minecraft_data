@@ -10,12 +10,4 @@ public record LastSeenTrackedEntry(MessageSignature signature, boolean pending) 
    public LastSeenTrackedEntry acknowledge() {
       return this.pending ? new LastSeenTrackedEntry(this.signature, false) : this;
    }
-
-   public MessageSignature signature() {
-      return this.signature;
-   }
-
-   public boolean pending() {
-      return this.pending;
-   }
 }

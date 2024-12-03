@@ -34,11 +34,7 @@ public abstract class FaceAttachedHorizontalDirectionalBlock extends HorizontalD
 
    @Nullable
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      Direction[] var2 = var1.getNearestLookingDirections();
-      int var3 = var2.length;
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         Direction var5 = var2[var4];
+      for(Direction var5 : var1.getNearestLookingDirections()) {
          BlockState var6;
          if (var5.getAxis() == Direction.Axis.Y) {
             var6 = (BlockState)((BlockState)this.defaultBlockState().setValue(FACE, var5 == Direction.UP ? AttachFace.CEILING : AttachFace.FLOOR)).setValue(FACING, var1.getHorizontalDirection());

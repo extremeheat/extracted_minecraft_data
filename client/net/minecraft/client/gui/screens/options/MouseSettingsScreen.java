@@ -21,9 +21,7 @@ public class MouseSettingsScreen extends OptionsSubScreen {
 
    protected void addOptions() {
       if (InputConstants.isRawMouseInputSupported()) {
-         this.list.addSmall((OptionInstance[])Stream.concat(Arrays.stream(options(this.options)), Stream.of(this.options.rawMouseInput())).toArray((var0) -> {
-            return new OptionInstance[var0];
-         }));
+         this.list.addSmall((OptionInstance[])Stream.concat(Arrays.stream(options(this.options)), Stream.of(this.options.rawMouseInput())).toArray((var0) -> new OptionInstance[var0]));
       } else {
          this.list.addSmall(options(this.options));
       }

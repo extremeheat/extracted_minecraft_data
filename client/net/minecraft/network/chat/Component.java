@@ -20,7 +20,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -91,19 +90,14 @@ public interface Component extends Message, FormattedText {
       if (var4.isPresent()) {
          return var4;
       } else {
-         Iterator var5 = this.getSiblings().iterator();
-
-         Optional var7;
-         do {
-            if (!var5.hasNext()) {
-               return Optional.empty();
+         for(Component var6 : this.getSiblings()) {
+            Optional var7 = var6.visit(var1, var3);
+            if (var7.isPresent()) {
+               return var7;
             }
+         }
 
-            Component var6 = (Component)var5.next();
-            var7 = var6.visit(var1, var3);
-         } while(!var7.isPresent());
-
-         return var7;
+         return Optional.empty();
       }
    }
 
@@ -112,19 +106,14 @@ public interface Component extends Message, FormattedText {
       if (var2.isPresent()) {
          return var2;
       } else {
-         Iterator var3 = this.getSiblings().iterator();
-
-         Optional var5;
-         do {
-            if (!var3.hasNext()) {
-               return Optional.empty();
+         for(Component var4 : this.getSiblings()) {
+            Optional var5 = var4.visit(var1);
+            if (var5.isPresent()) {
+               return var5;
             }
+         }
 
-            Component var4 = (Component)var3.next();
-            var5 = var4.visit(var1);
-         } while(!var5.isPresent());
-
-         return var5;
+         return Optional.empty();
       }
    }
 
@@ -244,33 +233,6 @@ public interface Component extends Message, FormattedText {
       return literal(var0.toString());
    }
 
-   public static class SerializerAdapter implements JsonDeserializer<MutableComponent>, JsonSerializer<Component> {
-      private final HolderLookup.Provider registries;
-
-      public SerializerAdapter(HolderLookup.Provider var1) {
-         super();
-         this.registries = var1;
-      }
-
-      public MutableComponent deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
-         return Component.Serializer.deserialize(var1, this.registries);
-      }
-
-      public JsonElement serialize(Component var1, Type var2, JsonSerializationContext var3) {
-         return Component.Serializer.serialize(var1, this.registries);
-      }
-
-      // $FF: synthetic method
-      public JsonElement serialize(final Object var1, final Type var2, final JsonSerializationContext var3) {
-         return this.serialize((Component)var1, var2, var3);
-      }
-
-      // $FF: synthetic method
-      public Object deserialize(final JsonElement var1, final Type var2, final JsonDeserializationContext var3) throws JsonParseException {
-         return this.deserialize(var1, var2, var3);
-      }
-   }
-
    public static class Serializer {
       private static final Gson GSON = (new GsonBuilder()).disableHtmlEscaping().create();
 
@@ -307,6 +269,33 @@ public interface Component extends Message, FormattedText {
          var2.setLenient(true);
          JsonElement var3 = JsonParser.parseReader(var2);
          return var3 == null ? null : deserialize(var3, var1);
+      }
+   }
+
+   public static class SerializerAdapter implements JsonDeserializer<MutableComponent>, JsonSerializer<Component> {
+      private final HolderLookup.Provider registries;
+
+      public SerializerAdapter(HolderLookup.Provider var1) {
+         super();
+         this.registries = var1;
+      }
+
+      public MutableComponent deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
+         return Component.Serializer.deserialize(var1, this.registries);
+      }
+
+      public JsonElement serialize(Component var1, Type var2, JsonSerializationContext var3) {
+         return Component.Serializer.serialize(var1, this.registries);
+      }
+
+      // $FF: synthetic method
+      public JsonElement serialize(final Object var1, final Type var2, final JsonSerializationContext var3) {
+         return this.serialize((Component)var1, var2, var3);
+      }
+
+      // $FF: synthetic method
+      public Object deserialize(final JsonElement var1, final Type var2, final JsonDeserializationContext var3) throws JsonParseException {
+         return this.deserialize(var1, var2, var3);
       }
    }
 }

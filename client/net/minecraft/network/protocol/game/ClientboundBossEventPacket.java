@@ -11,7 +11,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.BossEvent;
 
 public class ClientboundBossEventPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundBossEventPacket> STREAM_CODEC = Packet.codec(ClientboundBossEventPacket::write, ClientboundBossEventPacket::new);
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundBossEventPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundBossEventPacket>codec(ClientboundBossEventPacket::write, ClientboundBossEventPacket::new);
    private static final int FLAG_DARKEN = 1;
    private static final int FLAG_MUSIC = 2;
    private static final int FLAG_FOG = 4;
@@ -40,7 +40,7 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       super();
       this.id = var1.readUUID();
       OperationType var2 = (OperationType)var1.readEnum(OperationType.class);
-      this.operation = (Operation)var2.reader.decode(var1);
+      this.operation = var2.reader.decode(var1);
    }
 
    public static ClientboundBossEventPacket createAddPacket(BossEvent var0) {
@@ -102,19 +102,9 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       this.operation.dispatch(this.id, var1);
    }
 
-   interface Operation {
-      OperationType getType();
-
-      void dispatch(UUID var1, Handler var2);
-
-      void write(RegistryFriendlyByteBuf var1);
-   }
-
-   private static enum OperationType {
+   static enum OperationType {
       ADD(AddOperation::new),
-      REMOVE((var0) -> {
-         return ClientboundBossEventPacket.REMOVE_OPERATION;
-      }),
+      REMOVE((var0) -> ClientboundBossEventPacket.REMOVE_OPERATION),
       UPDATE_PROGRESS(UpdateProgressOperation::new),
       UPDATE_NAME(UpdateNameOperation::new),
       UPDATE_STYLE(UpdateStyleOperation::new),
@@ -122,7 +112,7 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
 
       final StreamDecoder<RegistryFriendlyByteBuf, Operation> reader;
 
-      private OperationType(final StreamDecoder var3) {
+      private OperationType(final StreamDecoder<RegistryFriendlyByteBuf, Operation> var3) {
          this.reader = var3;
       }
 
@@ -132,7 +122,27 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       }
    }
 
-   private static class AddOperation implements Operation {
+   public interface Handler {
+      default void add(UUID var1, Component var2, float var3, BossEvent.BossBarColor var4, BossEvent.BossBarOverlay var5, boolean var6, boolean var7, boolean var8) {
+      }
+
+      default void remove(UUID var1) {
+      }
+
+      default void updateProgress(UUID var1, float var2) {
+      }
+
+      default void updateName(UUID var1, Component var2) {
+      }
+
+      default void updateStyle(UUID var1, BossEvent.BossBarColor var2, BossEvent.BossBarOverlay var3) {
+      }
+
+      default void updateProperties(UUID var1, boolean var2, boolean var3, boolean var4) {
+      }
+   }
+
+   static class AddOperation implements Operation {
       private final Component name;
       private final float progress;
       private final BossEvent.BossBarColor color;
@@ -202,13 +212,9 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       public void write(RegistryFriendlyByteBuf var1) {
          var1.writeFloat(this.progress);
       }
-
-      public float progress() {
-         return this.progress;
-      }
    }
 
-   private static record UpdateNameOperation(Component name) implements Operation {
+   static record UpdateNameOperation(Component name) implements Operation {
       private UpdateNameOperation(RegistryFriendlyByteBuf var1) {
          this((Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1));
       }
@@ -228,10 +234,6 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
 
       public void write(RegistryFriendlyByteBuf var1) {
          ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.name);
-      }
-
-      public Component name() {
-         return this.name;
       }
    }
 
@@ -265,7 +267,7 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       }
    }
 
-   private static class UpdatePropertiesOperation implements Operation {
+   static class UpdatePropertiesOperation implements Operation {
       private final boolean darkenScreen;
       private final boolean playMusic;
       private final boolean createWorldFog;
@@ -298,23 +300,11 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       }
    }
 
-   public interface Handler {
-      default void add(UUID var1, Component var2, float var3, BossEvent.BossBarColor var4, BossEvent.BossBarOverlay var5, boolean var6, boolean var7, boolean var8) {
-      }
+   interface Operation {
+      OperationType getType();
 
-      default void remove(UUID var1) {
-      }
+      void dispatch(UUID var1, Handler var2);
 
-      default void updateProgress(UUID var1, float var2) {
-      }
-
-      default void updateName(UUID var1, Component var2) {
-      }
-
-      default void updateStyle(UUID var1, BossEvent.BossBarColor var2, BossEvent.BossBarOverlay var3) {
-      }
-
-      default void updateProperties(UUID var1, boolean var2, boolean var3, boolean var4) {
-      }
+      void write(RegistryFriendlyByteBuf var1);
    }
 }

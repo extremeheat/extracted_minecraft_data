@@ -21,12 +21,8 @@ public class OutOfMemoryScreen extends Screen {
       this.layout.addTitleHeader(TITLE, this.font);
       this.layout.addToContents(new FocusableTextWidget(300, MESSAGE, this.font));
       LinearLayout var1 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      var1.addChild(Button.builder(CommonComponents.GUI_TO_TITLE, (var1x) -> {
-         this.minecraft.setScreen(new TitleScreen());
-      }).build());
-      var1.addChild(Button.builder(Component.translatable("menu.quit"), (var1x) -> {
-         this.minecraft.stop();
-      }).build());
+      var1.addChild(Button.builder(CommonComponents.GUI_TO_TITLE, (var1x) -> this.minecraft.setScreen(new TitleScreen())).build());
+      var1.addChild(Button.builder(Component.translatable("menu.quit"), (var1x) -> this.minecraft.stop()).build());
       this.layout.visitWidgets(this::addRenderableWidget);
       this.repositionElements();
    }

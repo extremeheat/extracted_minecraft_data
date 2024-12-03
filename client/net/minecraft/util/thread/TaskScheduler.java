@@ -16,9 +16,7 @@ public interface TaskScheduler<R extends Runnable> extends AutoCloseable {
 
    default <Source> CompletableFuture<Source> scheduleWithResult(Consumer<CompletableFuture<Source>> var1) {
       CompletableFuture var2 = new CompletableFuture();
-      this.schedule(this.wrapRunnable(() -> {
-         var1.accept(var2);
-      }));
+      this.schedule(this.wrapRunnable(() -> var1.accept(var2)));
       return var2;
    }
 

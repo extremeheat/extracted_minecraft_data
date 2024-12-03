@@ -29,9 +29,7 @@ public class AvoidEntityGoal<T extends LivingEntity> extends Goal {
    private final TargetingConditions avoidEntityTargeting;
 
    public AvoidEntityGoal(PathfinderMob var1, Class<T> var2, float var3, double var4, double var6) {
-      Predicate var10003 = (var0) -> {
-         return true;
-      };
+      Predicate var10003 = (var0) -> true;
       Predicate var10007 = EntitySelector.NO_CREATIVE_OR_SPECTATOR;
       Objects.requireNonNull(var10007);
       this(var1, var2, var10003, var3, var4, var6, var10007::test);
@@ -48,21 +46,15 @@ public class AvoidEntityGoal<T extends LivingEntity> extends Goal {
       this.predicateOnAvoidEntity = var9;
       this.pathNav = var1.getNavigation();
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
-      this.avoidEntityTargeting = TargetingConditions.forCombat().range((double)var4).selector((var2x, var3x) -> {
-         return var9.test(var2x) && var3.test(var2x);
-      });
+      this.avoidEntityTargeting = TargetingConditions.forCombat().range((double)var4).selector((var2x, var3x) -> var9.test(var2x) && var3.test(var2x));
    }
 
    public AvoidEntityGoal(PathfinderMob var1, Class<T> var2, float var3, double var4, double var6, Predicate<LivingEntity> var8) {
-      this(var1, var2, (var0) -> {
-         return true;
-      }, var3, var4, var6, var8);
+      this(var1, var2, (var0) -> true, var3, var4, var6, var8);
    }
 
    public boolean canUse() {
-      this.toAvoid = getServerLevel(this.mob).getNearestEntity(this.mob.level().getEntitiesOfClass(this.avoidClass, this.mob.getBoundingBox().inflate((double)this.maxDist, 3.0, (double)this.maxDist), (var0) -> {
-         return true;
-      }), this.avoidEntityTargeting, this.mob, this.mob.getX(), this.mob.getY(), this.mob.getZ());
+      this.toAvoid = getServerLevel(this.mob).getNearestEntity(this.mob.level().getEntitiesOfClass(this.avoidClass, this.mob.getBoundingBox().inflate((double)this.maxDist, 3.0, (double)this.maxDist), (var0) -> true), this.avoidEntityTargeting, this.mob, this.mob.getX(), this.mob.getY(), this.mob.getZ());
       if (this.toAvoid == null) {
          return false;
       } else {

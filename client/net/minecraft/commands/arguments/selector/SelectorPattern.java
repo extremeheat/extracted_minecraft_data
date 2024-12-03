@@ -19,9 +19,7 @@ public record SelectorPattern(String pattern, EntitySelector resolved) {
          EntitySelectorParser var1 = new EntitySelectorParser(new StringReader(var0), true);
          return DataResult.success(new SelectorPattern(var0, var1.parse()));
       } catch (CommandSyntaxException var2) {
-         return DataResult.error(() -> {
-            return "Invalid selector component: " + var0 + ": " + var2.getMessage();
-         });
+         return DataResult.error(() -> "Invalid selector component: " + var0 + ": " + var2.getMessage());
       }
    }
 
@@ -44,14 +42,6 @@ public record SelectorPattern(String pattern, EntitySelector resolved) {
 
    public String toString() {
       return this.pattern;
-   }
-
-   public String pattern() {
-      return this.pattern;
-   }
-
-   public EntitySelector resolved() {
-      return this.resolved;
    }
 
    static {

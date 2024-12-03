@@ -23,10 +23,6 @@ public record GameTypePredicate(List<GameType> types) {
       return this.types.contains(var1);
    }
 
-   public List<GameType> types() {
-      return this.types;
-   }
-
    static {
       SURVIVAL_LIKE = of(GameType.SURVIVAL, GameType.ADVENTURE);
       CODEC = GameType.CODEC.listOf().xmap(GameTypePredicate::new, GameTypePredicate::types);

@@ -45,15 +45,9 @@ public class BackupConfirmScreen extends Screen {
          this.addRenderableWidget(this.eraseCache);
       }
 
-      this.addRenderableWidget(Button.builder(this.confirmation, (var1x) -> {
-         this.onProceed.proceed(true, this.eraseCache.selected());
-      }).bounds(this.width / 2 - 155, 100 + var1, 150, 20).build());
-      this.addRenderableWidget(Button.builder(SKIP_AND_JOIN, (var1x) -> {
-         this.onProceed.proceed(false, this.eraseCache.selected());
-      }).bounds(this.width / 2 - 155 + 160, 100 + var1, 150, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
-         this.onCancel.run();
-      }).bounds(this.width / 2 - 155 + 80, 124 + var1, 150, 20).build());
+      this.addRenderableWidget(Button.builder(this.confirmation, (var1x) -> this.onProceed.proceed(true, this.eraseCache.selected())).bounds(this.width / 2 - 155, 100 + var1, 150, 20).build());
+      this.addRenderableWidget(Button.builder(SKIP_AND_JOIN, (var1x) -> this.onProceed.proceed(false, this.eraseCache.selected())).bounds(this.width / 2 - 155 + 160, 100 + var1, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onCancel.run()).bounds(this.width / 2 - 155 + 80, 124 + var1, 150, 20).build());
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

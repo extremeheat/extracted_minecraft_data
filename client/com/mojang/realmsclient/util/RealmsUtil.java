@@ -27,18 +27,15 @@ public class RealmsUtil {
          long var2 = var0 / 1000L;
          if (var2 < 60L) {
             return Component.translatable("mco.time.secondsAgo", var2);
+         } else if (var2 < 3600L) {
+            long var7 = var2 / 60L;
+            return Component.translatable("mco.time.minutesAgo", var7);
+         } else if (var2 < 86400L) {
+            long var6 = var2 / 3600L;
+            return Component.translatable("mco.time.hoursAgo", var6);
          } else {
-            long var4;
-            if (var2 < 3600L) {
-               var4 = var2 / 60L;
-               return Component.translatable("mco.time.minutesAgo", var4);
-            } else if (var2 < 86400L) {
-               var4 = var2 / 3600L;
-               return Component.translatable("mco.time.hoursAgo", var4);
-            } else {
-               var4 = var2 / 86400L;
-               return Component.translatable("mco.time.daysAgo", var4);
-            }
+            long var4 = var2 / 86400L;
+            return Component.translatable("mco.time.daysAgo", var4);
          }
       }
    }

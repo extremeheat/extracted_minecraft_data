@@ -175,10 +175,9 @@ public class Guardian extends Monster {
       if (this.isAlive()) {
          if (this.level().isClientSide) {
             this.clientSideTailAnimationO = this.clientSideTailAnimation;
-            Vec3 var1;
             if (!this.isInWater()) {
                this.clientSideTailAnimationSpeed = 2.0F;
-               var1 = this.getDeltaMovement();
+               Vec3 var1 = this.getDeltaMovement();
                if (var1.y > 0.0 && this.clientSideTouchedGround && !this.isSilent()) {
                   this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), this.getFlopSound(), this.getSoundSource(), 1.0F, 1.0F, false);
                }
@@ -205,10 +204,10 @@ public class Guardian extends Monster {
             }
 
             if (this.isMoving() && this.isInWater()) {
-               var1 = this.getViewVector(0.0F);
+               Vec3 var14 = this.getViewVector(0.0F);
 
                for(int var2 = 0; var2 < 2; ++var2) {
-                  this.level().addParticle(ParticleTypes.BUBBLE, this.getRandomX(0.5) - var1.x * 1.5, this.getRandomY() - var1.y * 1.5, this.getRandomZ(0.5) - var1.z * 1.5, 0.0, 0.0, 0.0);
+                  this.level().addParticle(ParticleTypes.BUBBLE, this.getRandomX(0.5) - var14.x * 1.5, this.getRandomY() - var14.y * 1.5, this.getRandomZ(0.5) - var14.z * 1.5, 0.0, 0.0, 0.0);
                }
             }
 
@@ -217,14 +216,14 @@ public class Guardian extends Monster {
                   ++this.clientSideAttackTime;
                }
 
-               LivingEntity var14 = this.getActiveAttackTarget();
-               if (var14 != null) {
-                  this.getLookControl().setLookAt(var14, 90.0F, 90.0F);
+               LivingEntity var15 = this.getActiveAttackTarget();
+               if (var15 != null) {
+                  this.getLookControl().setLookAt(var15, 90.0F, 90.0F);
                   this.getLookControl().tick();
-                  double var15 = (double)this.getAttackAnimationScale(0.0F);
-                  double var4 = var14.getX() - this.getX();
-                  double var6 = var14.getY(0.5) - this.getEyeY();
-                  double var8 = var14.getZ() - this.getZ();
+                  double var16 = (double)this.getAttackAnimationScale(0.0F);
+                  double var4 = var15.getX() - this.getX();
+                  double var6 = var15.getY(0.5) - this.getEyeY();
+                  double var8 = var15.getZ() - this.getZ();
                   double var10 = Math.sqrt(var4 * var4 + var6 * var6 + var8 * var8);
                   var4 /= var10;
                   var6 /= var10;
@@ -232,7 +231,7 @@ public class Guardian extends Monster {
                   double var12 = this.random.nextDouble();
 
                   while(var12 < var10) {
-                     var12 += 1.8 - var15 + this.random.nextDouble() * (1.7 - var15);
+                     var12 += 1.8 - var16 + this.random.nextDouble() * (1.7 - var16);
                      this.level().addParticle(ParticleTypes.BUBBLE, this.getX() + var4 * var12, this.getEyeY() + var6 * var12, this.getZ() + var8 * var12, 0.0, 0.0, 0.0);
                   }
                }
@@ -319,55 +318,20 @@ public class Guardian extends Monster {
    }
 
    static {
-      DATA_ID_MOVING = SynchedEntityData.defineId(Guardian.class, EntityDataSerializers.BOOLEAN);
-      DATA_ID_ATTACK_TARGET = SynchedEntityData.defineId(Guardian.class, EntityDataSerializers.INT);
+      DATA_ID_MOVING = SynchedEntityData.<Boolean>defineId(Guardian.class, EntityDataSerializers.BOOLEAN);
+      DATA_ID_ATTACK_TARGET = SynchedEntityData.<Integer>defineId(Guardian.class, EntityDataSerializers.INT);
    }
 
-   static class GuardianMoveControl extends MoveControl {
+   static class GuardianAttackSelector implements TargetingConditions.Selector {
       private final Guardian guardian;
 
-      public GuardianMoveControl(Guardian var1) {
-         super(var1);
+      public GuardianAttackSelector(Guardian var1) {
+         super();
          this.guardian = var1;
       }
 
-      public void tick() {
-         if (this.operation == MoveControl.Operation.MOVE_TO && !this.guardian.getNavigation().isDone()) {
-            Vec3 var1 = new Vec3(this.wantedX - this.guardian.getX(), this.wantedY - this.guardian.getY(), this.wantedZ - this.guardian.getZ());
-            double var2 = var1.length();
-            double var4 = var1.x / var2;
-            double var6 = var1.y / var2;
-            double var8 = var1.z / var2;
-            float var10 = (float)(Mth.atan2(var1.z, var1.x) * 57.2957763671875) - 90.0F;
-            this.guardian.setYRot(this.rotlerp(this.guardian.getYRot(), var10, 90.0F));
-            this.guardian.yBodyRot = this.guardian.getYRot();
-            float var11 = (float)(this.speedModifier * this.guardian.getAttributeValue(Attributes.MOVEMENT_SPEED));
-            float var12 = Mth.lerp(0.125F, this.guardian.getSpeed(), var11);
-            this.guardian.setSpeed(var12);
-            double var13 = Math.sin((double)(this.guardian.tickCount + this.guardian.getId()) * 0.5) * 0.05;
-            double var15 = Math.cos((double)(this.guardian.getYRot() * 0.017453292F));
-            double var17 = Math.sin((double)(this.guardian.getYRot() * 0.017453292F));
-            double var19 = Math.sin((double)(this.guardian.tickCount + this.guardian.getId()) * 0.75) * 0.05;
-            this.guardian.setDeltaMovement(this.guardian.getDeltaMovement().add(var13 * var15, var19 * (var17 + var15) * 0.25 + (double)var12 * var6 * 0.1, var13 * var17));
-            LookControl var21 = this.guardian.getLookControl();
-            double var22 = this.guardian.getX() + var4 * 2.0;
-            double var24 = this.guardian.getEyeY() + var6 / var2;
-            double var26 = this.guardian.getZ() + var8 * 2.0;
-            double var28 = var21.getWantedX();
-            double var30 = var21.getWantedY();
-            double var32 = var21.getWantedZ();
-            if (!var21.isLookingAtTarget()) {
-               var28 = var22;
-               var30 = var24;
-               var32 = var26;
-            }
-
-            this.guardian.getLookControl().setLookAt(Mth.lerp(0.125, var28, var22), Mth.lerp(0.125, var30, var24), Mth.lerp(0.125, var32, var26), 10.0F, 40.0F);
-            this.guardian.setMoving(true);
-         } else {
-            this.guardian.setSpeed(0.0F);
-            this.guardian.setMoving(false);
-         }
+      public boolean test(@Nullable LivingEntity var1, ServerLevel var2) {
+         return (var1 instanceof Player || var1 instanceof Squid || var1 instanceof Axolotl) && var1.distanceToSqr(this.guardian) > 9.0;
       }
    }
 
@@ -449,16 +413,51 @@ public class Guardian extends Monster {
       }
    }
 
-   static class GuardianAttackSelector implements TargetingConditions.Selector {
+   static class GuardianMoveControl extends MoveControl {
       private final Guardian guardian;
 
-      public GuardianAttackSelector(Guardian var1) {
-         super();
+      public GuardianMoveControl(Guardian var1) {
+         super(var1);
          this.guardian = var1;
       }
 
-      public boolean test(@Nullable LivingEntity var1, ServerLevel var2) {
-         return (var1 instanceof Player || var1 instanceof Squid || var1 instanceof Axolotl) && var1.distanceToSqr(this.guardian) > 9.0;
+      public void tick() {
+         if (this.operation == MoveControl.Operation.MOVE_TO && !this.guardian.getNavigation().isDone()) {
+            Vec3 var1 = new Vec3(this.wantedX - this.guardian.getX(), this.wantedY - this.guardian.getY(), this.wantedZ - this.guardian.getZ());
+            double var2 = var1.length();
+            double var4 = var1.x / var2;
+            double var6 = var1.y / var2;
+            double var8 = var1.z / var2;
+            float var10 = (float)(Mth.atan2(var1.z, var1.x) * 57.2957763671875) - 90.0F;
+            this.guardian.setYRot(this.rotlerp(this.guardian.getYRot(), var10, 90.0F));
+            this.guardian.yBodyRot = this.guardian.getYRot();
+            float var11 = (float)(this.speedModifier * this.guardian.getAttributeValue(Attributes.MOVEMENT_SPEED));
+            float var12 = Mth.lerp(0.125F, this.guardian.getSpeed(), var11);
+            this.guardian.setSpeed(var12);
+            double var13 = Math.sin((double)(this.guardian.tickCount + this.guardian.getId()) * 0.5) * 0.05;
+            double var15 = Math.cos((double)(this.guardian.getYRot() * 0.017453292F));
+            double var17 = Math.sin((double)(this.guardian.getYRot() * 0.017453292F));
+            double var19 = Math.sin((double)(this.guardian.tickCount + this.guardian.getId()) * 0.75) * 0.05;
+            this.guardian.setDeltaMovement(this.guardian.getDeltaMovement().add(var13 * var15, var19 * (var17 + var15) * 0.25 + (double)var12 * var6 * 0.1, var13 * var17));
+            LookControl var21 = this.guardian.getLookControl();
+            double var22 = this.guardian.getX() + var4 * 2.0;
+            double var24 = this.guardian.getEyeY() + var6 / var2;
+            double var26 = this.guardian.getZ() + var8 * 2.0;
+            double var28 = var21.getWantedX();
+            double var30 = var21.getWantedY();
+            double var32 = var21.getWantedZ();
+            if (!var21.isLookingAtTarget()) {
+               var28 = var22;
+               var30 = var24;
+               var32 = var26;
+            }
+
+            this.guardian.getLookControl().setLookAt(Mth.lerp(0.125, var28, var22), Mth.lerp(0.125, var30, var24), Mth.lerp(0.125, var32, var26), 10.0F, 40.0F);
+            this.guardian.setMoving(true);
+         } else {
+            this.guardian.setSpeed(0.0F);
+            this.guardian.setMoving(false);
+         }
       }
    }
 }

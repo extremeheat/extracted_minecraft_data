@@ -38,15 +38,11 @@ public class PackSelectionModel {
    }
 
    public Stream<Entry> getUnselected() {
-      return this.unselected.stream().map((var1) -> {
-         return new UnselectedPackEntry(var1);
-      });
+      return this.unselected.stream().map((var1) -> new UnselectedPackEntry(var1));
    }
 
    public Stream<Entry> getSelected() {
-      return this.selected.stream().map((var1) -> {
-         return new SelectedPackEntry(var1);
-      });
+      return this.selected.stream().map((var1) -> new SelectedPackEntry(var1));
    }
 
    void updateRepoSelectedList() {
@@ -66,57 +62,51 @@ public class PackSelectionModel {
       this.unselected.removeAll(this.selected);
    }
 
-   class SelectedPackEntry extends EntryBase {
-      public SelectedPackEntry(final Pack var2) {
-         super(var2);
+   public interface Entry {
+      ResourceLocation getIconTexture();
+
+      PackCompatibility getCompatibility();
+
+      String getId();
+
+      Component getTitle();
+
+      Component getDescription();
+
+      PackSource getPackSource();
+
+      default Component getExtendedDescription() {
+         return this.getPackSource().decorate(this.getDescription());
       }
 
-      protected List<Pack> getSelfList() {
-         return PackSelectionModel.this.selected;
+      boolean isFixedPosition();
+
+      boolean isRequired();
+
+      void select();
+
+      void unselect();
+
+      void moveUp();
+
+      void moveDown();
+
+      boolean isSelected();
+
+      default boolean canSelect() {
+         return !this.isSelected();
       }
 
-      protected List<Pack> getOtherList() {
-         return PackSelectionModel.this.unselected;
+      default boolean canUnselect() {
+         return this.isSelected() && !this.isRequired();
       }
 
-      public boolean isSelected() {
-         return true;
-      }
+      boolean canMoveUp();
 
-      public void select() {
-      }
-
-      public void unselect() {
-         this.toggleSelection();
-      }
+      boolean canMoveDown();
    }
 
-   class UnselectedPackEntry extends EntryBase {
-      public UnselectedPackEntry(final Pack var2) {
-         super(var2);
-      }
-
-      protected List<Pack> getSelfList() {
-         return PackSelectionModel.this.unselected;
-      }
-
-      protected List<Pack> getOtherList() {
-         return PackSelectionModel.this.selected;
-      }
-
-      public boolean isSelected() {
-         return false;
-      }
-
-      public void select() {
-         this.toggleSelection();
-      }
-
-      public void unselect() {
-      }
-   }
-
-   private abstract class EntryBase implements Entry {
+   abstract class EntryBase implements Entry {
       private final Pack pack;
 
       public EntryBase(final Pack var2) {
@@ -205,47 +195,53 @@ public class PackSelectionModel {
       }
    }
 
-   public interface Entry {
-      ResourceLocation getIconTexture();
-
-      PackCompatibility getCompatibility();
-
-      String getId();
-
-      Component getTitle();
-
-      Component getDescription();
-
-      PackSource getPackSource();
-
-      default Component getExtendedDescription() {
-         return this.getPackSource().decorate(this.getDescription());
+   class SelectedPackEntry extends EntryBase {
+      public SelectedPackEntry(final Pack var2) {
+         super(var2);
       }
 
-      boolean isFixedPosition();
-
-      boolean isRequired();
-
-      void select();
-
-      void unselect();
-
-      void moveUp();
-
-      void moveDown();
-
-      boolean isSelected();
-
-      default boolean canSelect() {
-         return !this.isSelected();
+      protected List<Pack> getSelfList() {
+         return PackSelectionModel.this.selected;
       }
 
-      default boolean canUnselect() {
-         return this.isSelected() && !this.isRequired();
+      protected List<Pack> getOtherList() {
+         return PackSelectionModel.this.unselected;
       }
 
-      boolean canMoveUp();
+      public boolean isSelected() {
+         return true;
+      }
 
-      boolean canMoveDown();
+      public void select() {
+      }
+
+      public void unselect() {
+         this.toggleSelection();
+      }
+   }
+
+   class UnselectedPackEntry extends EntryBase {
+      public UnselectedPackEntry(final Pack var2) {
+         super(var2);
+      }
+
+      protected List<Pack> getSelfList() {
+         return PackSelectionModel.this.unselected;
+      }
+
+      protected List<Pack> getOtherList() {
+         return PackSelectionModel.this.selected;
+      }
+
+      public boolean isSelected() {
+         return false;
+      }
+
+      public void select() {
+         this.toggleSelection();
+      }
+
+      public void unselect() {
+      }
    }
 }

@@ -45,20 +45,8 @@ public class EntityPaintingItemFrameDirectionFix extends DataFix {
       Type var3 = this.getInputSchema().getChoiceType(References.ENTITY, "ItemFrame");
       OpticFinder var4 = DSL.namedChoice("ItemFrame", var3);
       Type var5 = this.getInputSchema().getType(References.ENTITY);
-      TypeRewriteRule var6 = this.fixTypeEverywhereTyped("EntityPaintingFix", var5, (var3x) -> {
-         return var3x.updateTyped(var2, var1, (var1x) -> {
-            return var1x.update(DSL.remainderFinder(), (var1) -> {
-               return this.doFix(var1, true, false);
-            });
-         });
-      });
-      TypeRewriteRule var7 = this.fixTypeEverywhereTyped("EntityItemFrameFix", var5, (var3x) -> {
-         return var3x.updateTyped(var4, var3, (var1) -> {
-            return var1.update(DSL.remainderFinder(), (var1x) -> {
-               return this.doFix(var1x, false, true);
-            });
-         });
-      });
+      TypeRewriteRule var6 = this.fixTypeEverywhereTyped("EntityPaintingFix", var5, (var3x) -> var3x.updateTyped(var2, var1, (var1x) -> var1x.update(DSL.remainderFinder(), (var1) -> this.doFix(var1, true, false))));
+      TypeRewriteRule var7 = this.fixTypeEverywhereTyped("EntityItemFrameFix", var5, (var3x) -> var3x.updateTyped(var4, var3, (var1) -> var1.update(DSL.remainderFinder(), (var1x) -> this.doFix(var1x, false, true))));
       return TypeRewriteRule.seq(var6, var7);
    }
 }

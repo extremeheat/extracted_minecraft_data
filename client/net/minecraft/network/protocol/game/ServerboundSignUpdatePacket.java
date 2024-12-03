@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundSignUpdatePacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundSignUpdatePacket> STREAM_CODEC = Packet.codec(ServerboundSignUpdatePacket::write, ServerboundSignUpdatePacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundSignUpdatePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundSignUpdatePacket>codec(ServerboundSignUpdatePacket::write, ServerboundSignUpdatePacket::new);
    private static final int MAX_STRING_LENGTH = 384;
    private final BlockPos pos;
    private final String[] lines;

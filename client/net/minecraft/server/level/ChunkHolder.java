@@ -101,9 +101,7 @@ public class ChunkHolder extends GenerationChunkHolder {
       if (this.sendSync.isDone()) {
          this.sendSync = var1;
       } else {
-         this.sendSync = this.sendSync.thenCombine(var1, (var0, var1x) -> {
-            return null;
-         });
+         this.sendSync = this.sendSync.thenCombine(var1, (var0, var1x) -> null);
       }
 
    }
@@ -120,9 +118,7 @@ public class ChunkHolder extends GenerationChunkHolder {
       if (this.saveSync.isDone()) {
          this.saveSync = var1;
       } else {
-         this.saveSync = this.saveSync.thenCombine(var1, (var0, var1x) -> {
-            return null;
-         });
+         this.saveSync = this.saveSync.thenCombine(var1, (var0, var1x) -> null);
       }
 
    }
@@ -179,9 +175,8 @@ public class ChunkHolder extends GenerationChunkHolder {
    public void broadcastChanges(LevelChunk var1) {
       if (this.hasChangesToBroadcast()) {
          Level var2 = var1.getLevel();
-         List var3;
          if (!this.skyChangedLightSectionFilter.isEmpty() || !this.blockChangedLightSectionFilter.isEmpty()) {
-            var3 = this.playerProvider.getPlayers(this.pos, true);
+            List var3 = this.playerProvider.getPlayers(this.pos, true);
             if (!var3.isEmpty()) {
                ClientboundLightUpdatePacket var4 = new ClientboundLightUpdatePacket(var1.getPos(), this.lightEngine, this.skyChangedLightSectionFilter, this.blockChangedLightSectionFilter);
                this.broadcast(var3, var4);
@@ -192,27 +187,25 @@ public class ChunkHolder extends GenerationChunkHolder {
          }
 
          if (this.hasChangedSections) {
-            var3 = this.playerProvider.getPlayers(this.pos, false);
+            List var10 = this.playerProvider.getPlayers(this.pos, false);
 
-            for(int var10 = 0; var10 < this.changedBlocksPerSection.length; ++var10) {
-               ShortSet var5 = this.changedBlocksPerSection[var10];
+            for(int var11 = 0; var11 < this.changedBlocksPerSection.length; ++var11) {
+               ShortSet var5 = this.changedBlocksPerSection[var11];
                if (var5 != null) {
-                  this.changedBlocksPerSection[var10] = null;
-                  if (!var3.isEmpty()) {
-                     int var6 = this.levelHeightAccessor.getSectionYFromSectionIndex(var10);
+                  this.changedBlocksPerSection[var11] = null;
+                  if (!var10.isEmpty()) {
+                     int var6 = this.levelHeightAccessor.getSectionYFromSectionIndex(var11);
                      SectionPos var7 = SectionPos.of(var1.getPos(), var6);
                      if (var5.size() == 1) {
                         BlockPos var8 = var7.relativeToBlockPos(var5.iterator().nextShort());
                         BlockState var9 = var2.getBlockState(var8);
-                        this.broadcast(var3, new ClientboundBlockUpdatePacket(var8, var9));
-                        this.broadcastBlockEntityIfNeeded(var3, var2, var8, var9);
+                        this.broadcast(var10, new ClientboundBlockUpdatePacket(var8, var9));
+                        this.broadcastBlockEntityIfNeeded(var10, var2, var8, var9);
                      } else {
-                        LevelChunkSection var11 = var1.getSection(var10);
-                        ClientboundSectionBlocksUpdatePacket var12 = new ClientboundSectionBlocksUpdatePacket(var7, var5, var11);
-                        this.broadcast(var3, var12);
-                        var12.runUpdates((var3x, var4x) -> {
-                           this.broadcastBlockEntityIfNeeded(var3, var2, var3x, var4x);
-                        });
+                        LevelChunkSection var12 = var1.getSection(var11);
+                        ClientboundSectionBlocksUpdatePacket var13 = new ClientboundSectionBlocksUpdatePacket(var7, var5, var12);
+                        this.broadcast(var10, var13);
+                        var13.runUpdates((var3x, var4x) -> this.broadcastBlockEntityIfNeeded(var10, var2, var3x, var4x));
                      }
                   }
                }
@@ -242,9 +235,7 @@ public class ChunkHolder extends GenerationChunkHolder {
    }
 
    private void broadcast(List<ServerPlayer> var1, Packet<?> var2) {
-      var1.forEach((var1x) -> {
-         var1x.connection.send(var2);
-      });
+      var1.forEach((var1x) -> var1x.connection.send(var2));
    }
 
    public int getTicketLevel() {
@@ -266,15 +257,9 @@ public class ChunkHolder extends GenerationChunkHolder {
    private void scheduleFullChunkPromotion(ChunkMap var1, CompletableFuture<ChunkResult<LevelChunk>> var2, Executor var3, FullChunkStatus var4) {
       this.pendingFullStateConfirmation.cancel(false);
       CompletableFuture var5 = new CompletableFuture();
-      var5.thenRunAsync(() -> {
-         var1.onFullChunkStatusChange(this.pos, var4);
-      }, var3);
+      var5.thenRunAsync(() -> var1.onFullChunkStatusChange(this.pos, var4), var3);
       this.pendingFullStateConfirmation = var5;
-      var2.thenAccept((var1x) -> {
-         var1x.ifSuccess((var1) -> {
-            var5.complete((Object)null);
-         });
-      });
+      var2.thenAccept((var1x) -> var1x.ifSuccess((var1) -> var5.complete((Object)null)));
    }
 
    private void demoteFullChunk(ChunkMap var1, FullChunkStatus var2) {

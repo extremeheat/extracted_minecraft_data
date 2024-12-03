@@ -8,12 +8,4 @@ public record LevelDataAndDimensions(WorldData worldData, WorldDimensions.Comple
       this.worldData = var1;
       this.dimensions = var2;
    }
-
-   public WorldData worldData() {
-      return this.worldData;
-   }
-
-   public WorldDimensions.Complete dimensions() {
-      return this.dimensions;
-   }
 }

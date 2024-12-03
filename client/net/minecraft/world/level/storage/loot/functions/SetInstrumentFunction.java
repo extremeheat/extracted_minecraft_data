@@ -15,11 +15,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetInstrumentFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetInstrumentFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(TagKey.hashedCodec(Registries.INSTRUMENT).fieldOf("options").forGetter((var0x) -> {
-         return var0x.options;
-      })).apply(var0, SetInstrumentFunction::new);
-   });
+   public static final MapCodec<SetInstrumentFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(TagKey.hashedCodec(Registries.INSTRUMENT).fieldOf("options").forGetter((var0x) -> var0x.options)).apply(var0, SetInstrumentFunction::new));
    private final TagKey<Instrument> options;
 
    private SetInstrumentFunction(List<LootItemCondition> var1, TagKey<Instrument> var2) {
@@ -42,8 +38,6 @@ public class SetInstrumentFunction extends LootItemConditionalFunction {
    }
 
    public static LootItemConditionalFunction.Builder<?> setInstrumentOptions(TagKey<Instrument> var0) {
-      return simpleBuilder((var1) -> {
-         return new SetInstrumentFunction(var1, var0);
-      });
+      return simpleBuilder((var1) -> new SetInstrumentFunction(var1, var0));
    }
 }

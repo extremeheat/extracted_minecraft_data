@@ -33,10 +33,6 @@ public record ItemPotionsPredicate(HolderSet<Potion> potions) implements SingleC
       return new ItemPotionsPredicate(var0);
    }
 
-   public HolderSet<Potion> potions() {
-      return this.potions;
-   }
-
    static {
       CODEC = RegistryCodecs.homogeneousList(Registries.POTION).xmap(ItemPotionsPredicate::new, ItemPotionsPredicate::potions);
    }

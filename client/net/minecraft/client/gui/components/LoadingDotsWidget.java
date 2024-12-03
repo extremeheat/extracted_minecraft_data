@@ -30,12 +30,12 @@ public class LoadingDotsWidget extends AbstractWidget {
       Font var10001 = this.font;
       int var10003 = var5 - this.font.width((FormattedText)var7) / 2;
       Objects.requireNonNull(this.font);
-      var1.drawString(var10001, (Component)var7, var10003, var6 - 9, -1, false);
+      var1.drawString(var10001, (Component)var7, var10003, var6 - 9, -1);
       String var8 = LoadingDotsText.get(Util.getMillis());
       var10001 = this.font;
       var10003 = var5 - this.font.width(var8) / 2;
       Objects.requireNonNull(this.font);
-      var1.drawString(var10001, var8, var10003, var6 + 9, -8355712, false);
+      var1.drawString(var10001, var8, var10003, var6 + 9, -8355712);
    }
 
    protected void updateWidgetNarration(NarrationElementOutput var1) {

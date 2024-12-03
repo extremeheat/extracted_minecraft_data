@@ -98,19 +98,15 @@ public class NormalNoise {
    public static record NoiseParameters(int firstOctave, DoubleList amplitudes) {
       final int firstOctave;
       final DoubleList amplitudes;
-      public static final Codec<NoiseParameters> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Codec.INT.fieldOf("firstOctave").forGetter(NoiseParameters::firstOctave), Codec.DOUBLE.listOf().fieldOf("amplitudes").forGetter(NoiseParameters::amplitudes)).apply(var0, NoiseParameters::new);
-      });
+      public static final Codec<NoiseParameters> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("firstOctave").forGetter(NoiseParameters::firstOctave), Codec.DOUBLE.listOf().fieldOf("amplitudes").forGetter(NoiseParameters::amplitudes)).apply(var0, NoiseParameters::new));
       public static final Codec<Holder<NoiseParameters>> CODEC;
 
       public NoiseParameters(int var1, List<Double> var2) {
-         this(var1, (DoubleList)(new DoubleArrayList(var2)));
+         this(var1, new DoubleArrayList(var2));
       }
 
       public NoiseParameters(int var1, double var2, double... var4) {
-         this(var1, (DoubleList)Util.make(new DoubleArrayList(var4), (var2x) -> {
-            var2x.add(0, var2);
-         }));
+         this(var1, (DoubleList)Util.make(new DoubleArrayList(var4), (var2x) -> var2x.add(0, var2)));
       }
 
       public NoiseParameters(int var1, DoubleList var2) {
@@ -119,16 +115,8 @@ public class NormalNoise {
          this.amplitudes = var2;
       }
 
-      public int firstOctave() {
-         return this.firstOctave;
-      }
-
-      public DoubleList amplitudes() {
-         return this.amplitudes;
-      }
-
       static {
-         CODEC = RegistryFileCodec.create(Registries.NOISE, DIRECT_CODEC);
+         CODEC = RegistryFileCodec.<Holder<NoiseParameters>>create(Registries.NOISE, DIRECT_CODEC);
       }
    }
 }

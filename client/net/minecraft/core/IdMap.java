@@ -15,7 +15,7 @@ public interface IdMap<T> extends Iterable<T> {
       if (var2 == null) {
          throw new IllegalArgumentException("No value with id " + var1);
       } else {
-         return var2;
+         return (T)var2;
       }
    }
 

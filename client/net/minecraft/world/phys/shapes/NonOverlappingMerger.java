@@ -20,24 +20,21 @@ public class NonOverlappingMerger extends AbstractDoubleList implements IndexMer
    }
 
    public boolean forMergedIndexes(IndexMerger.IndexConsumer var1) {
-      return this.swap ? this.forNonSwappedIndexes((var1x, var2, var3) -> {
-         return var1.merge(var2, var1x, var3);
-      }) : this.forNonSwappedIndexes(var1);
+      return this.swap ? this.forNonSwappedIndexes((var1x, var2, var3) -> var1.merge(var2, var1x, var3)) : this.forNonSwappedIndexes(var1);
    }
 
    private boolean forNonSwappedIndexes(IndexMerger.IndexConsumer var1) {
       int var2 = this.lower.size();
 
-      int var3;
-      for(var3 = 0; var3 < var2; ++var3) {
+      for(int var3 = 0; var3 < var2; ++var3) {
          if (!var1.merge(var3, -1, var3)) {
             return false;
          }
       }
 
-      var3 = this.upper.size() - 1;
+      int var5 = this.upper.size() - 1;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
+      for(int var4 = 0; var4 < var5; ++var4) {
          if (!var1.merge(var2 - 1, var4, var2 + var4)) {
             return false;
          }

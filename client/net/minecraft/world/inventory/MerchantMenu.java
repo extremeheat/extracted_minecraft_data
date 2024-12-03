@@ -59,7 +59,7 @@ public class MerchantMenu extends AbstractContainerMenu {
    }
 
    public boolean stillValid(Player var1) {
-      return this.trader.getTradingPlayer() == var1;
+      return this.trader.stillValid(var1);
    }
 
    public int getTraderXp() {
@@ -96,7 +96,7 @@ public class MerchantMenu extends AbstractContainerMenu {
 
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = (Slot)this.slots.get(var2);
+      Slot var4 = this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -188,9 +188,7 @@ public class MerchantMenu extends AbstractContainerMenu {
          if (this.tradeContainer.getItem(0).isEmpty() && this.tradeContainer.getItem(1).isEmpty()) {
             MerchantOffer var4 = (MerchantOffer)this.getOffers().get(var1);
             this.moveFromInventoryToPaymentSlot(0, var4.getItemCostA());
-            var4.getItemCostB().ifPresent((var1x) -> {
-               this.moveFromInventoryToPaymentSlot(1, var1x);
-            });
+            var4.getItemCostB().ifPresent((var1x) -> this.moveFromInventoryToPaymentSlot(1, var1x));
          }
 
       }

@@ -75,9 +75,7 @@ public class SmithingMenu extends ItemCombinerMenu {
       this.shrinkStackInSlot(0);
       this.shrinkStackInSlot(1);
       this.shrinkStackInSlot(2);
-      this.access.execute((var0, var1x) -> {
-         var0.levelEvent(1044, var1x, 0);
-      });
+      this.access.execute((var0, var1x) -> var0.levelEvent(1044, var1x, 0));
    }
 
    private List<ItemStack> getRelevantItems() {

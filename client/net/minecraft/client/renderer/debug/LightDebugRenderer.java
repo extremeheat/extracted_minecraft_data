@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.debug;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import java.util.Iterator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -25,10 +24,8 @@ public class LightDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       ClientLevel var9 = this.minecraft.level;
       BlockPos var10 = BlockPos.containing(var3, var5, var7);
       LongOpenHashSet var11 = new LongOpenHashSet();
-      Iterator var12 = BlockPos.betweenClosed(var10.offset(-10, -10, -10), var10.offset(10, 10, 10)).iterator();
 
-      while(var12.hasNext()) {
-         BlockPos var13 = (BlockPos)var12.next();
+      for(BlockPos var13 : BlockPos.betweenClosed(var10.offset(-10, -10, -10), var10.offset(10, 10, 10))) {
          int var14 = ((Level)var9).getBrightness(LightLayer.SKY, var13);
          float var15 = (float)(15 - var14) / 15.0F * 0.5F + 0.16F;
          int var16 = Mth.hsvToRgb(var15, 0.9F, 0.9F);

@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,11 +29,8 @@ public class CoralTreeFeature extends CoralFeature {
       BlockPos var16 = var5.immutable();
       int var8 = var2.nextInt(3) + 2;
       List var9 = Direction.Plane.HORIZONTAL.shuffledCopy(var2);
-      List var10 = var9.subList(0, var8);
-      Iterator var11 = var10.iterator();
 
-      while(var11.hasNext()) {
-         Direction var12 = (Direction)var11.next();
+      for(Direction var12 : var9.subList(0, var8)) {
          var5.set(var16);
          var5.move(var12);
          int var13 = var2.nextInt(5) + 2;

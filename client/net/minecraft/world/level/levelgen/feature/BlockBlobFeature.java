@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
-import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
@@ -36,10 +35,8 @@ public class BlockBlobFeature extends Feature<BlockStateConfiguration> {
             int var8 = var4.nextInt(2);
             int var9 = var4.nextInt(2);
             float var10 = (float)(var7 + var8 + var9) * 0.333F + 0.5F;
-            Iterator var11 = BlockPos.betweenClosed(var2.offset(-var7, -var8, -var9), var2.offset(var7, var8, var9)).iterator();
 
-            while(var11.hasNext()) {
-               BlockPos var12 = (BlockPos)var11.next();
+            for(BlockPos var12 : BlockPos.betweenClosed(var2.offset(-var7, -var8, -var9), var2.offset(var7, var8, var9))) {
                if (var12.distSqr(var2) <= (double)(var10 * var10)) {
                   var3.setBlock(var12, var5.state, 3);
                }

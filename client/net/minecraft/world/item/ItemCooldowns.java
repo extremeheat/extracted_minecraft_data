@@ -75,7 +75,7 @@ public class ItemCooldowns {
    protected void onCooldownEnded(ResourceLocation var1) {
    }
 
-   private static record CooldownInstance(int startTime, int endTime) {
+   static record CooldownInstance(int startTime, int endTime) {
       final int startTime;
       final int endTime;
 
@@ -83,14 +83,6 @@ public class ItemCooldowns {
          super();
          this.startTime = var1;
          this.endTime = var2;
-      }
-
-      public int startTime() {
-         return this.startTime;
-      }
-
-      public int endTime() {
-         return this.endTime;
       }
    }
 }

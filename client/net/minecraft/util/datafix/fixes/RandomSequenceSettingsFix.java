@@ -11,12 +11,6 @@ public class RandomSequenceSettingsFix extends DataFix {
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("RandomSequenceSettingsFix", this.getInputSchema().getType(References.SAVED_DATA_RANDOM_SEQUENCES), (var0) -> {
-         return var0.update(DSL.remainderFinder(), (var0x) -> {
-            return var0x.update("data", (var0) -> {
-               return var0.emptyMap().set("sequences", var0);
-            });
-         });
-      });
+      return this.fixTypeEverywhereTyped("RandomSequenceSettingsFix", this.getInputSchema().getType(References.SAVED_DATA_RANDOM_SEQUENCES), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> var0x.update("data", (var0) -> var0.emptyMap().set("sequences", var0))));
    }
 }

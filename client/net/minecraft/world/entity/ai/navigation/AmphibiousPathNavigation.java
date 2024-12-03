@@ -14,7 +14,6 @@ public class AmphibiousPathNavigation extends PathNavigation {
 
    protected PathFinder createPathFinder(int var1) {
       this.nodeEvaluator = new AmphibiousNodeEvaluator(false);
-      this.nodeEvaluator.setCanPassDoors(true);
       return new PathFinder(this.nodeEvaluator, var1);
    }
 

@@ -12,12 +12,4 @@ public record RegistrationInfo(Optional<KnownPack> knownPackInfo, Lifecycle life
       this.knownPackInfo = var1;
       this.lifecycle = var2;
    }
-
-   public Optional<KnownPack> knownPackInfo() {
-      return this.knownPackInfo;
-   }
-
-   public Lifecycle lifecycle() {
-      return this.lifecycle;
-   }
 }

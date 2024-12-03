@@ -15,9 +15,7 @@ public record CollectionPredicate<T, P extends Predicate<T>>(Optional<Collection
    }
 
    public static <T, P extends Predicate<T>> Codec<CollectionPredicate<T, P>> codec(Codec<P> var0) {
-      return RecordCodecBuilder.create((var1) -> {
-         return var1.group(CollectionContentsPredicate.codec(var0).optionalFieldOf("contains").forGetter(CollectionPredicate::contains), CollectionCountsPredicate.codec(var0).optionalFieldOf("count").forGetter(CollectionPredicate::counts), MinMaxBounds.Ints.CODEC.optionalFieldOf("size").forGetter(CollectionPredicate::size)).apply(var1, CollectionPredicate::new);
-      });
+      return RecordCodecBuilder.create((var1) -> var1.group(CollectionContentsPredicate.codec(var0).optionalFieldOf("contains").forGetter(CollectionPredicate::contains), CollectionCountsPredicate.codec(var0).optionalFieldOf("count").forGetter(CollectionPredicate::counts), MinMaxBounds.Ints.CODEC.optionalFieldOf("size").forGetter(CollectionPredicate::size)).apply(var1, CollectionPredicate::new));
    }
 
    public boolean test(Iterable<T> var1) {
@@ -28,18 +26,6 @@ public record CollectionPredicate<T, P extends Predicate<T>>(Optional<Collection
       } else {
          return !this.size.isPresent() || ((MinMaxBounds.Ints)this.size.get()).matches(Iterables.size(var1));
       }
-   }
-
-   public Optional<CollectionContentsPredicate<T, P>> contains() {
-      return this.contains;
-   }
-
-   public Optional<CollectionCountsPredicate<T, P>> counts() {
-      return this.counts;
-   }
-
-   public Optional<MinMaxBounds.Ints> size() {
-      return this.size;
    }
 
    // $FF: synthetic method

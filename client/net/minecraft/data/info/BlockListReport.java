@@ -6,7 +6,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
@@ -41,15 +40,11 @@ public class BlockListReport implements DataProvider {
             StateDefinition var4x = ((Block)var2xx.value()).getStateDefinition();
             if (!var4x.getProperties().isEmpty()) {
                JsonObject var5 = new JsonObject();
-               Iterator var6 = var4x.getProperties().iterator();
 
-               while(var6.hasNext()) {
-                  Property var7 = (Property)var6.next();
+               for(Property var7 : var4x.getProperties()) {
                   JsonArray var8 = new JsonArray();
-                  Iterator var9 = var7.getPossibleValues().iterator();
 
-                  while(var9.hasNext()) {
-                     Comparable var10 = (Comparable)var9.next();
+                  for(Comparable var10 : var7.getPossibleValues()) {
                      var8.add(Util.getPropertyName(var7, var10));
                   }
 
@@ -66,10 +61,8 @@ public class BlockListReport implements DataProvider {
                BlockState var15 = (BlockState)var13.next();
                var17 = new JsonObject();
                JsonObject var18 = new JsonObject();
-               Iterator var19 = var4x.getProperties().iterator();
 
-               while(var19.hasNext()) {
-                  Property var11 = (Property)var19.next();
+               for(Property var11 : var4x.getProperties()) {
                   var18.addProperty(var11.getName(), Util.getPropertyName(var11, var15.getValue(var11)));
                }
 
@@ -85,9 +78,7 @@ public class BlockListReport implements DataProvider {
 
             var3x.add("states", var12);
             String var14 = var2xx.getRegisteredName();
-            JsonElement var16 = (JsonElement)BlockTypes.CODEC.codec().encodeStart(var4, (Block)var2xx.value()).getOrThrow((var1) -> {
-               return new AssertionError("Failed to serialize block " + var14 + " (is type registered in BlockTypes?): " + var1);
-            });
+            JsonElement var16 = (JsonElement)BlockTypes.CODEC.codec().encodeStart(var4, (Block)var2xx.value()).getOrThrow((var1) -> new AssertionError("Failed to serialize block " + var14 + " (is type registered in BlockTypes?): " + var1));
             var3x.add("definition", var16);
             var3.add(var14, var3x);
          });

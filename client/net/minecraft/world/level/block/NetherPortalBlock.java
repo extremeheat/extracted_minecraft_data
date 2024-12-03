@@ -131,12 +131,8 @@ public class NetherPortalBlock extends Block implements Portal {
       if (var7.isPresent()) {
          BlockPos var10 = (BlockPos)var7.get();
          BlockState var11 = var1.getBlockState(var10);
-         var8 = BlockUtil.getLargestRectangleAround(var10, (Direction.Axis)var11.getValue(BlockStateProperties.HORIZONTAL_AXIS), 21, Direction.Axis.Y, 21, (var2x) -> {
-            return var1.getBlockState(var2x) == var11;
-         });
-         var9 = TeleportTransition.PLAY_PORTAL_SOUND.then((var1x) -> {
-            var1x.placePortalTicket(var10);
-         });
+         var8 = BlockUtil.getLargestRectangleAround(var10, (Direction.Axis)var11.getValue(BlockStateProperties.HORIZONTAL_AXIS), 21, Direction.Axis.Y, 21, (var2x) -> var1.getBlockState(var2x) == var11);
+         var9 = TeleportTransition.PLAY_PORTAL_SOUND.then((var1x) -> var1x.placePortalTicket(var10));
       } else {
          Direction.Axis var12 = (Direction.Axis)var2.level().getBlockState(var3).getOptionalValue(AXIS).orElse(Direction.Axis.X);
          Optional var13 = var1.getPortalForcer().createPortal(var4, var12);
@@ -158,9 +154,7 @@ public class NetherPortalBlock extends Block implements Portal {
       Vec3 var6;
       if (var7.hasProperty(BlockStateProperties.HORIZONTAL_AXIS)) {
          var5 = (Direction.Axis)var7.getValue(BlockStateProperties.HORIZONTAL_AXIS);
-         BlockUtil.FoundRectangle var8 = BlockUtil.getLargestRectangleAround(var1, var5, 21, Direction.Axis.Y, 21, (var2x) -> {
-            return var0.level().getBlockState(var2x) == var7;
-         });
+         BlockUtil.FoundRectangle var8 = BlockUtil.getLargestRectangleAround(var1, var5, 21, Direction.Axis.Y, 21, (var2x) -> var0.level().getBlockState(var2x) == var7);
          var6 = var0.getRelativePortalPosition(var5, var8);
       } else {
          var5 = Direction.Axis.X;
@@ -217,7 +211,7 @@ public class NetherPortalBlock extends Block implements Portal {
 
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return ItemStack.EMPTY;
    }
 

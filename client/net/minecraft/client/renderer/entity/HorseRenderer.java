@@ -8,11 +8,9 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.HorseArmorLayer;
 import net.minecraft.client.renderer.entity.layers.HorseMarkingLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.EquineRenderState;
 import net.minecraft.client.renderer.entity.state.HorseRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.animal.horse.Variant;
 
@@ -28,7 +26,7 @@ public final class HorseRenderer extends AbstractHorseRenderer<Horse, HorseRende
    });
 
    public HorseRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new HorseModel(var1.bakeLayer(ModelLayers.HORSE)), new HorseModel(var1.bakeLayer(ModelLayers.HORSE_BABY)), 1.1F);
+      super(var1, new HorseModel(var1.bakeLayer(ModelLayers.HORSE)), new HorseModel(var1.bakeLayer(ModelLayers.HORSE_BABY)));
       this.addLayer(new HorseMarkingLayer(this));
       this.addLayer(new HorseArmorLayer(this, var1.getModelSet(), var1.getEquipmentRenderer()));
    }
@@ -42,7 +40,7 @@ public final class HorseRenderer extends AbstractHorseRenderer<Horse, HorseRende
    }
 
    public void extractRenderState(Horse var1, HorseRenderState var2, float var3) {
-      super.extractRenderState((AbstractHorse)var1, (EquineRenderState)var2, var3);
+      super.extractRenderState(var1, var2, var3);
       var2.variant = var1.getVariant();
       var2.markings = var1.getMarkings();
       var2.bodyArmorItem = var1.getBodyArmorItem().copy();

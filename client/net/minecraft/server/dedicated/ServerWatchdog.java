@@ -12,6 +12,7 @@ import java.util.TimerTask;
 import java.util.stream.Collectors;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportType;
 import net.minecraft.Util;
 import net.minecraft.server.Bootstrap;
@@ -43,15 +44,11 @@ public class ServerWatchdog implements Runnable {
             CrashReport var7 = createWatchdogCrashReport("Watching Server", this.server.getRunningThread().threadId());
             this.server.fillSystemReport(var7.getSystemReport());
             CrashReportCategory var8 = var7.addCategory("Performance stats");
-            var8.setDetail("Random tick rate", () -> {
-               return ((GameRules.IntegerValue)this.server.getWorldData().getGameRules().getRule(GameRules.RULE_RANDOMTICKING)).toString();
-            });
-            var8.setDetail("Level stats", () -> {
-               return (String)Streams.stream(this.server.getAllLevels()).map((var0) -> {
+            var8.setDetail("Random tick rate", (CrashReportDetail)(() -> ((GameRules.IntegerValue)this.server.getWorldData().getGameRules().getRule(GameRules.RULE_RANDOMTICKING)).toString()));
+            var8.setDetail("Level stats", (CrashReportDetail)(() -> (String)Streams.stream(this.server.getAllLevels()).map((var0) -> {
                   String var10000 = String.valueOf(var0.dimension().location());
                   return var10000 + ": " + var0.getWatchdogStats();
-               }).collect(Collectors.joining(",\n"));
-            });
+               }).collect(Collectors.joining(",\n"))));
             Bootstrap.realStdoutPrintln("Crash report:\n" + var7.getFriendlyReport(ReportType.CRASH));
             Path var9 = this.server.getServerDirectory().resolve("crash-reports").resolve("crash-" + Util.getFilenameFormattedDateTime() + "-server.txt");
             if (var7.saveToFile(var9, ReportType.CRASH)) {
@@ -76,11 +73,8 @@ public class ServerWatchdog implements Runnable {
       ThreadInfo[] var4 = var3.dumpAllThreads(true, true);
       StringBuilder var5 = new StringBuilder();
       Error var6 = new Error("Watchdog");
-      ThreadInfo[] var7 = var4;
-      int var8 = var4.length;
 
-      for(int var9 = 0; var9 < var8; ++var9) {
-         ThreadInfo var10 = var7[var9];
+      for(ThreadInfo var10 : var4) {
          if (var10.getThreadId() == var1) {
             var6.setStackTrace(var10.getStackTrace());
          }
@@ -91,14 +85,14 @@ public class ServerWatchdog implements Runnable {
 
       CrashReport var11 = new CrashReport(var0, var6);
       CrashReportCategory var12 = var11.addCategory("Thread Dump");
-      var12.setDetail("Threads", (Object)var5);
+      var12.setDetail("Threads", var5);
       return var11;
    }
 
    private void exit() {
       try {
          Timer var1 = new Timer();
-         var1.schedule(new TimerTask(this) {
+         var1.schedule(new TimerTask() {
             public void run() {
                Runtime.getRuntime().halt(1);
             }

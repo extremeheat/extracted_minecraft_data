@@ -24,19 +24,19 @@ public class ContextMap {
       if (var2 == null) {
          throw new NoSuchElementException(var1.name().toString());
       } else {
-         return var2;
+         return (T)var2;
       }
    }
 
    @Nullable
    public <T> T getOptional(ContextKey<T> var1) {
-      return this.params.get(var1);
+      return (T)this.params.get(var1);
    }
 
    @Nullable
    @Contract("_,!null->!null; _,_->_")
    public <T> T getOrDefault(ContextKey<T> var1, @Nullable T var2) {
-      return this.params.getOrDefault(var1, var2);
+      return (T)this.params.getOrDefault(var1, var2);
    }
 
    public static class Builder {
@@ -66,13 +66,13 @@ public class ContextMap {
          if (var2 == null) {
             throw new NoSuchElementException(var1.name().toString());
          } else {
-            return var2;
+            return (T)var2;
          }
       }
 
       @Nullable
       public <T> T getOptionalParameter(ContextKey<T> var1) {
-         return this.params.get(var1);
+         return (T)this.params.get(var1);
       }
 
       public ContextMap create(ContextKeySet var1) {

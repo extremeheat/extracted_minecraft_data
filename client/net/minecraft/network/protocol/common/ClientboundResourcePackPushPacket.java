@@ -36,26 +36,6 @@ public record ClientboundResourcePackPushPacket(UUID id, String url, String hash
       var1.handleResourcePackPush(this);
    }
 
-   public UUID id() {
-      return this.id;
-   }
-
-   public String url() {
-      return this.url;
-   }
-
-   public String hash() {
-      return this.hash;
-   }
-
-   public boolean required() {
-      return this.required;
-   }
-
-   public Optional<Component> prompt() {
-      return this.prompt;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(UUIDUtil.STREAM_CODEC, ClientboundResourcePackPushPacket::id, ByteBufCodecs.STRING_UTF8, ClientboundResourcePackPushPacket::url, ByteBufCodecs.stringUtf8(40), ClientboundResourcePackPushPacket::hash, ByteBufCodecs.BOOL, ClientboundResourcePackPushPacket::required, ComponentSerialization.TRUSTED_CONTEXT_FREE_STREAM_CODEC.apply(ByteBufCodecs::optional), ClientboundResourcePackPushPacket::prompt, ClientboundResourcePackPushPacket::new);
    }

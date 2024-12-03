@@ -62,18 +62,14 @@ public abstract class AbstractConsecutiveExecutor<T extends Runnable> implements
    }
 
    public void runAll() {
-      while(true) {
-         try {
-            if (this.pollTask()) {
-               continue;
-            }
-         } finally {
-            this.setSleeping();
-            this.registerForExecution();
+      try {
+         while(this.pollTask()) {
          }
-
-         return;
+      } finally {
+         this.setSleeping();
+         this.registerForExecution();
       }
+
    }
 
    public void schedule(T var1) {
@@ -133,7 +129,7 @@ public abstract class AbstractConsecutiveExecutor<T extends Runnable> implements
       return this.status.get() == AbstractConsecutiveExecutor.Status.CLOSED;
    }
 
-   private static enum Status {
+   static enum Status {
       SLEEPING,
       RUNNING,
       CLOSED;

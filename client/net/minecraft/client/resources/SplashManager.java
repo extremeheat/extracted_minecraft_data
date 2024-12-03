@@ -36,9 +36,7 @@ public class SplashManager extends SimplePreparableReloadListener<List<String>> 
 
          List var4;
          try {
-            var4 = (List)var3.lines().map(String::trim).filter((var0) -> {
-               return var0.hashCode() != 125780783;
-            }).collect(Collectors.toList());
+            var4 = (List)var3.lines().map(String::trim).filter((var0) -> var0.hashCode() != 125780783).collect(Collectors.toList());
          } catch (Throwable var7) {
             if (var3 != null) {
                try {

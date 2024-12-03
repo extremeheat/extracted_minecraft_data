@@ -7,7 +7,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.Util;
@@ -38,9 +37,7 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return (Set)this.effects.stream().flatMap((var0) -> {
-         return var0.duration().getReferencedContextParams().stream();
-      }).collect(ImmutableSet.toImmutableSet());
+      return (Set)this.effects.stream().flatMap((var0) -> var0.duration().getReferencedContextParams().stream()).collect(ImmutableSet.toImmutableSet());
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
@@ -67,46 +64,16 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
    static {
       EFFECTS_LIST = SetStewEffectFunction.EffectEntry.CODEC.listOf().validate((var0) -> {
          ObjectOpenHashSet var1 = new ObjectOpenHashSet();
-         Iterator var2 = var0.iterator();
 
-         EffectEntry var3;
-         do {
-            if (!var2.hasNext()) {
-               return DataResult.success(var0);
+         for(EffectEntry var3 : var0) {
+            if (!var1.add(var3.effect())) {
+               return DataResult.error(() -> "Encountered duplicate mob effect: '" + String.valueOf(var3.effect()) + "'");
             }
+         }
 
-            var3 = (EffectEntry)var2.next();
-         } while(var1.add(var3.effect()));
-
-         return DataResult.error(() -> {
-            return "Encountered duplicate mob effect: '" + String.valueOf(var3.effect()) + "'";
-         });
+         return DataResult.success(var0);
       });
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return commonFields(var0).and(EFFECTS_LIST.optionalFieldOf("effects", List.of()).forGetter((var0x) -> {
-            return var0x.effects;
-         })).apply(var0, SetStewEffectFunction::new);
-      });
-   }
-
-   private static record EffectEntry(Holder<MobEffect> effect, NumberProvider duration) {
-      public static final Codec<EffectEntry> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(MobEffect.CODEC.fieldOf("type").forGetter(EffectEntry::effect), NumberProviders.CODEC.fieldOf("duration").forGetter(EffectEntry::duration)).apply(var0, EffectEntry::new);
-      });
-
-      EffectEntry(Holder<MobEffect> var1, NumberProvider var2) {
-         super();
-         this.effect = var1;
-         this.duration = var2;
-      }
-
-      public Holder<MobEffect> effect() {
-         return this.effect;
-      }
-
-      public NumberProvider duration() {
-         return this.duration;
-      }
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(EFFECTS_LIST.optionalFieldOf("effects", List.of()).forGetter((var0x) -> var0x.effects)).apply(var0, SetStewEffectFunction::new));
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
@@ -132,6 +99,16 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
       // $FF: synthetic method
       protected LootItemConditionalFunction.Builder getThis() {
          return this.getThis();
+      }
+   }
+
+   static record EffectEntry(Holder<MobEffect> effect, NumberProvider duration) {
+      public static final Codec<EffectEntry> CODEC = RecordCodecBuilder.create((var0) -> var0.group(MobEffect.CODEC.fieldOf("type").forGetter(EffectEntry::effect), NumberProviders.CODEC.fieldOf("duration").forGetter(EffectEntry::duration)).apply(var0, EffectEntry::new));
+
+      EffectEntry(Holder<MobEffect> var1, NumberProvider var2) {
+         super();
+         this.effect = var1;
+         this.duration = var2;
       }
    }
 }

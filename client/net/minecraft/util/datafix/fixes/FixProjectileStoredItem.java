@@ -34,17 +34,11 @@ public class FixProjectileStoredItem extends DataFix {
 
    private static <T> Function<Typed<?>, Typed<?>> fixChoiceCap(String var0, SubFixer<?> var1, Type<?> var2, Type<T> var3) {
       OpticFinder var4 = DSL.namedChoice(var0, var2);
-      return (var3x) -> {
-         return var3x.updateTyped(var4, var3, (var2) -> {
-            return var1.fix(var2, var3);
-         });
-      };
+      return (var3x) -> var3x.updateTyped(var4, var3, (var2) -> var1.fix(var2, var3));
    }
 
    private static <T> Typed<T> fixArrow(Typed<?> var0, Type<T> var1) {
-      return Util.writeAndReadTypedOrThrow(var0, var1, (var0x) -> {
-         return var0x.set("item", createItemStack(var0x, getArrowType(var0x)));
-      });
+      return Util.writeAndReadTypedOrThrow(var0, var1, (var0x) -> var0x.set("item", createItemStack(var0x, getArrowType(var0x))));
    }
 
    private static String getArrowType(Dynamic<?> var0) {
@@ -52,9 +46,7 @@ public class FixProjectileStoredItem extends DataFix {
    }
 
    private static <T> Typed<T> fixSpectralArrow(Typed<?> var0, Type<T> var1) {
-      return Util.writeAndReadTypedOrThrow(var0, var1, (var0x) -> {
-         return var0x.set("item", createItemStack(var0x, "minecraft:spectral_arrow"));
-      });
+      return Util.writeAndReadTypedOrThrow(var0, var1, (var0x) -> var0x.set("item", createItemStack(var0x, "minecraft:spectral_arrow")));
    }
 
    private static Dynamic<?> createItemStack(Dynamic<?> var0, String var1) {
@@ -65,7 +57,7 @@ public class FixProjectileStoredItem extends DataFix {
       return new Typed(var1, var0.getOps(), var0.getValue());
    }
 
-   private interface SubFixer<F> {
+   interface SubFixer<F> {
       Typed<F> fix(Typed<?> var1, Type<F> var2);
    }
 }

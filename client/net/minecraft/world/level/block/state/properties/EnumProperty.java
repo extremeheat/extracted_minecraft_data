@@ -2,7 +2,6 @@ package net.minecraft.world.level.block.state.properties;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,19 +22,14 @@ public final class EnumProperty<T extends Enum<T> & StringRepresentable> extends
          this.values = List.copyOf(var3);
          Enum[] var4 = (Enum[])var2.getEnumConstants();
          this.ordinalToIndex = new int[var4.length];
-         Enum[] var5 = var4;
-         int var6 = var4.length;
 
-         for(int var7 = 0; var7 < var6; ++var7) {
-            Enum var8 = var5[var7];
+         for(Enum var8 : var4) {
             this.ordinalToIndex[var8.ordinal()] = var3.indexOf(var8);
          }
 
          ImmutableMap.Builder var9 = ImmutableMap.builder();
-         Iterator var10 = var3.iterator();
 
-         while(var10.hasNext()) {
-            Enum var11 = (Enum)var10.next();
+         for(Enum var11 : var3) {
             String var12 = ((StringRepresentable)var11).getSerializedName();
             var9.put(var12, var11);
          }
@@ -82,9 +76,7 @@ public final class EnumProperty<T extends Enum<T> & StringRepresentable> extends
    }
 
    public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(String var0, Class<T> var1) {
-      return create(var0, var1, (var0x) -> {
-         return true;
-      });
+      return create(var0, var1, (Predicate)((var0x) -> true));
    }
 
    public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(String var0, Class<T> var1, Predicate<T> var2) {
@@ -97,7 +89,7 @@ public final class EnumProperty<T extends Enum<T> & StringRepresentable> extends
    }
 
    public static <T extends Enum<T> & StringRepresentable> EnumProperty<T> create(String var0, Class<T> var1, List<T> var2) {
-      return new EnumProperty(var0, var1, var2);
+      return new EnumProperty<T>(var0, var1, var2);
    }
 
    // $FF: synthetic method

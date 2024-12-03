@@ -29,16 +29,4 @@ public record SmithingRecipeInput(ItemStack template, ItemStack base, ItemStack 
    public boolean isEmpty() {
       return this.template.isEmpty() && this.base.isEmpty() && this.addition.isEmpty();
    }
-
-   public ItemStack template() {
-      return this.template;
-   }
-
-   public ItemStack base() {
-      return this.base;
-   }
-
-   public ItemStack addition() {
-      return this.addition;
-   }
 }

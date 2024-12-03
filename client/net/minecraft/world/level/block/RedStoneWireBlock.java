@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -85,10 +84,8 @@ public class RedStoneWireBlock extends Block {
 
    private VoxelShape calculateShape(BlockState var1) {
       VoxelShape var2 = SHAPE_DOT;
-      Iterator var3 = Direction.Plane.HORIZONTAL.iterator();
 
-      while(var3.hasNext()) {
-         Direction var4 = (Direction)var3.next();
+      for(Direction var4 : Direction.Plane.HORIZONTAL) {
          RedstoneSide var5 = (RedstoneSide)var1.getValue((Property)PROPERTY_BY_DIRECTION.get(var4));
          if (var5 == RedstoneSide.SIDE) {
             var2 = Shapes.or(var2, (VoxelShape)SHAPES_FLOOR.get(var4));
@@ -142,10 +139,8 @@ public class RedStoneWireBlock extends Block {
 
    private BlockState getMissingConnections(BlockGetter var1, BlockState var2, BlockPos var3) {
       boolean var4 = !var1.getBlockState(var3.above()).isRedstoneConductor(var1, var3);
-      Iterator var5 = Direction.Plane.HORIZONTAL.iterator();
 
-      while(var5.hasNext()) {
-         Direction var6 = (Direction)var5.next();
+      for(Direction var6 : Direction.Plane.HORIZONTAL) {
          if (!((RedstoneSide)var2.getValue((Property)PROPERTY_BY_DIRECTION.get(var6))).isConnected()) {
             RedstoneSide var7 = this.getConnectingSide(var1, var3, var6, var4);
             var2 = (BlockState)var2.setValue((Property)PROPERTY_BY_DIRECTION.get(var6), var7);
@@ -176,10 +171,8 @@ public class RedStoneWireBlock extends Block {
 
    protected void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, int var4, int var5) {
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
-      Iterator var7 = Direction.Plane.HORIZONTAL.iterator();
 
-      while(var7.hasNext()) {
-         Direction var8 = (Direction)var7.next();
+      for(Direction var8 : Direction.Plane.HORIZONTAL) {
          RedstoneSide var9 = (RedstoneSide)var1.getValue((Property)PROPERTY_BY_DIRECTION.get(var8));
          if (var9 != RedstoneSide.NONE && !var2.getBlockState(var6.setWithOffset(var3, (Direction)var8)).is(this)) {
             var6.move(Direction.DOWN);
@@ -250,11 +243,8 @@ public class RedStoneWireBlock extends Block {
    private void checkCornerChangeAt(Level var1, BlockPos var2) {
       if (var1.getBlockState(var2).is(this)) {
          var1.updateNeighborsAt(var2, this);
-         Direction[] var3 = Direction.values();
-         int var4 = var3.length;
 
-         for(int var5 = 0; var5 < var4; ++var5) {
-            Direction var6 = var3[var5];
+         for(Direction var6 : Direction.values()) {
             var1.updateNeighborsAt(var2.relative(var6), this);
          }
 
@@ -264,10 +254,8 @@ public class RedStoneWireBlock extends Block {
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var4.is(var1.getBlock()) && !var2.isClientSide) {
          this.updatePowerStrength(var2, var3, var1, (Orientation)null, true);
-         Iterator var6 = Direction.Plane.VERTICAL.iterator();
 
-         while(var6.hasNext()) {
-            Direction var7 = (Direction)var6.next();
+         for(Direction var7 : Direction.Plane.VERTICAL) {
             var2.updateNeighborsAt(var3.relative(var7), this);
          }
 
@@ -279,11 +267,7 @@ public class RedStoneWireBlock extends Block {
       if (!var5 && !var1.is(var4.getBlock())) {
          super.onRemove(var1, var2, var3, var4, var5);
          if (!var2.isClientSide) {
-            Direction[] var6 = Direction.values();
-            int var7 = var6.length;
-
-            for(int var8 = 0; var8 < var7; ++var8) {
-               Direction var9 = var6[var8];
+            for(Direction var9 : Direction.values()) {
                var2.updateNeighborsAt(var3.relative(var9), this);
             }
 
@@ -294,19 +278,12 @@ public class RedStoneWireBlock extends Block {
    }
 
    private void updateNeighborsOfNeighboringWires(Level var1, BlockPos var2) {
-      Iterator var3 = Direction.Plane.HORIZONTAL.iterator();
-
-      Direction var4;
-      while(var3.hasNext()) {
-         var4 = (Direction)var3.next();
+      for(Direction var4 : Direction.Plane.HORIZONTAL) {
          this.checkCornerChangeAt(var1, var2.relative(var4));
       }
 
-      var3 = Direction.Plane.HORIZONTAL.iterator();
-
-      while(var3.hasNext()) {
-         var4 = (Direction)var3.next();
-         BlockPos var5 = var2.relative(var4);
+      for(Direction var7 : Direction.Plane.HORIZONTAL) {
+         BlockPos var5 = var2.relative(var7);
          if (var1.getBlockState(var5).isRedstoneConductor(var1, var5)) {
             this.checkCornerChangeAt(var1, var5.above());
          } else {
@@ -391,10 +368,7 @@ public class RedStoneWireBlock extends Block {
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       int var5 = (Integer)var1.getValue(POWER);
       if (var5 != 0) {
-         Iterator var6 = Direction.Plane.HORIZONTAL.iterator();
-
-         while(var6.hasNext()) {
-            Direction var7 = (Direction)var6.next();
+         for(Direction var7 : Direction.Plane.HORIZONTAL) {
             RedstoneSide var8 = (RedstoneSide)var1.getValue((Property)PROPERTY_BY_DIRECTION.get(var7));
             switch (var8) {
                case UP:
@@ -467,10 +441,8 @@ public class RedStoneWireBlock extends Block {
 
    private void updatesOnShapeChange(Level var1, BlockPos var2, BlockState var3, BlockState var4) {
       Orientation var5 = ExperimentalRedstoneUtils.initialOrientation(var1, (Direction)null, Direction.UP);
-      Iterator var6 = Direction.Plane.HORIZONTAL.iterator();
 
-      while(var6.hasNext()) {
-         Direction var7 = (Direction)var6.next();
+      for(Direction var7 : Direction.Plane.HORIZONTAL) {
          BlockPos var8 = var2.relative(var7);
          if (((RedstoneSide)var3.getValue((Property)PROPERTY_BY_DIRECTION.get(var7))).isConnected() != ((RedstoneSide)var4.getValue((Property)PROPERTY_BY_DIRECTION.get(var7))).isConnected() && var1.getBlockState(var8).isRedstoneConductor(var1, var8)) {
             var1.updateNeighborsAtExceptFromFacing(var8, var4.getBlock(), var7.getOpposite(), ExperimentalRedstoneUtils.withFront(var5, var7));

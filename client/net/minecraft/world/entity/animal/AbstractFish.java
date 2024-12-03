@@ -148,10 +148,23 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
    }
 
    static {
-      FROM_BUCKET = SynchedEntityData.defineId(AbstractFish.class, EntityDataSerializers.BOOLEAN);
+      FROM_BUCKET = SynchedEntityData.<Boolean>defineId(AbstractFish.class, EntityDataSerializers.BOOLEAN);
    }
 
-   private static class FishMoveControl extends MoveControl {
+   static class FishSwimGoal extends RandomSwimmingGoal {
+      private final AbstractFish fish;
+
+      public FishSwimGoal(AbstractFish var1) {
+         super(var1, 1.0, 40);
+         this.fish = var1;
+      }
+
+      public boolean canUse() {
+         return this.fish.canRandomSwim() && super.canUse();
+      }
+   }
+
+   static class FishMoveControl extends MoveControl {
       private final AbstractFish fish;
 
       FishMoveControl(AbstractFish var1) {
@@ -184,19 +197,6 @@ public abstract class AbstractFish extends WaterAnimal implements Bucketable {
          } else {
             this.fish.setSpeed(0.0F);
          }
-      }
-   }
-
-   private static class FishSwimGoal extends RandomSwimmingGoal {
-      private final AbstractFish fish;
-
-      public FishSwimGoal(AbstractFish var1) {
-         super(var1, 1.0, 40);
-         this.fish = var1;
-      }
-
-      public boolean canUse() {
-         return this.fish.canRandomSwim() && super.canUse();
       }
    }
 }

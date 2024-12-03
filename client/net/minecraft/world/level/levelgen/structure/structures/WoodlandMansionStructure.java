@@ -29,9 +29,7 @@ public class WoodlandMansionStructure extends Structure {
    public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
       Rotation var2 = Rotation.getRandom(var1.random());
       BlockPos var3 = this.getLowestYIn5by5BoxOffset7Blocks(var1, var2);
-      return var3.getY() < 60 ? Optional.empty() : Optional.of(new Structure.GenerationStub(var3, (var4) -> {
-         this.generatePieces(var4, var1, var3, var2);
-      }));
+      return var3.getY() < 60 ? Optional.empty() : Optional.of(new Structure.GenerationStub(var3, (var4) -> this.generatePieces(var4, var1, var3, var2)));
    }
 
    private void generatePieces(StructurePiecesBuilder var1, Structure.GenerationContext var2, BlockPos var3, Rotation var4) {

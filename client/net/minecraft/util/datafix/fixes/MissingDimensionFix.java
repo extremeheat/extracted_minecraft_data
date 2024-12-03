@@ -46,9 +46,7 @@ public class MissingDimensionFix extends DataFix {
          throw new IllegalStateException();
       } else {
          OpticFinder var7 = var3.finder();
-         return this.fixTypeEverywhereTyped("MissingDimensionFix", var5, (var4x) -> {
-            return var4x.updateTyped(var6, (var4) -> {
-               return var4.updateTyped(var7, (var3x) -> {
+         return this.fixTypeEverywhereTyped("MissingDimensionFix", var5, (var4x) -> var4x.updateTyped(var6, (var4) -> var4.updateTyped(var7, (var3x) -> {
                   if (!(var3x.getValue() instanceof List)) {
                      throw new IllegalStateException("List exptected");
                   } else if (((List)var3x.getValue()).isEmpty()) {
@@ -58,9 +56,7 @@ public class MissingDimensionFix extends DataFix {
                   } else {
                      return var3x;
                   }
-               });
-            });
-         });
+               })));
       }
    }
 

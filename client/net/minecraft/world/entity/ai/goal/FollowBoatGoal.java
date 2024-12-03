@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.ai.goal;
 
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -28,10 +27,8 @@ public class FollowBoatGoal extends Goal {
    public boolean canUse() {
       List var1 = this.mob.level().getEntitiesOfClass(AbstractBoat.class, this.mob.getBoundingBox().inflate(5.0));
       boolean var2 = false;
-      Iterator var3 = var1.iterator();
 
-      while(var3.hasNext()) {
-         AbstractBoat var4 = (AbstractBoat)var3.next();
+      for(AbstractBoat var4 : var1) {
          LivingEntity var5 = var4.getControllingPassenger();
          if (var5 instanceof Player && (Mth.abs(((Player)var5).xxa) > 0.0F || Mth.abs(((Player)var5).zza) > 0.0F)) {
             var2 = true;
@@ -51,11 +48,7 @@ public class FollowBoatGoal extends Goal {
    }
 
    public void start() {
-      List var1 = this.mob.level().getEntitiesOfClass(AbstractBoat.class, this.mob.getBoundingBox().inflate(5.0));
-      Iterator var2 = var1.iterator();
-
-      while(var2.hasNext()) {
-         AbstractBoat var3 = (AbstractBoat)var2.next();
+      for(AbstractBoat var3 : this.mob.level().getEntitiesOfClass(AbstractBoat.class, this.mob.getBoundingBox().inflate(5.0))) {
          LivingEntity var5 = var3.getControllingPassenger();
          if (var5 instanceof Player var4) {
             this.following = var4;
@@ -87,8 +80,8 @@ public class FollowBoatGoal extends Goal {
                this.currentGoal = BoatGoals.GO_IN_BOAT_DIRECTION;
             }
          } else if (this.currentGoal == BoatGoals.GO_IN_BOAT_DIRECTION) {
-            Direction var5 = this.following.getMotionDirection();
-            BlockPos var4 = this.following.blockPosition().relative((Direction)var5, 10);
+            Direction var6 = this.following.getMotionDirection();
+            BlockPos var4 = this.following.blockPosition().relative((Direction)var6, 10);
             this.mob.getNavigation().moveTo((double)var4.getX(), (double)(var4.getY() - 1), (double)var4.getZ(), 1.0);
             if (this.mob.distanceTo(this.following) > 12.0F) {
                this.timeToRecalcPath = 0;

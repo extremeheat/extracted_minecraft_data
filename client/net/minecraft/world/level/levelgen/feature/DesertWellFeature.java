@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -40,46 +39,39 @@ public class DesertWellFeature extends Feature<NoneFeatureConfiguration> {
       if (!IS_SAND.test(var2.getBlockState(var3))) {
          return false;
       } else {
-         int var4;
-         int var5;
-         for(var4 = -2; var4 <= 2; ++var4) {
-            for(var5 = -2; var5 <= 2; ++var5) {
+         for(int var4 = -2; var4 <= 2; ++var4) {
+            for(int var5 = -2; var5 <= 2; ++var5) {
                if (var2.isEmptyBlock(var3.offset(var4, -1, var5)) && var2.isEmptyBlock(var3.offset(var4, -2, var5))) {
                   return false;
                }
             }
          }
 
-         int var6;
-         for(var4 = -2; var4 <= 0; ++var4) {
-            for(var5 = -2; var5 <= 2; ++var5) {
-               for(var6 = -2; var6 <= 2; ++var6) {
-                  var2.setBlock(var3.offset(var5, var4, var6), this.sandstone, 2);
+         for(int var9 = -2; var9 <= 0; ++var9) {
+            for(int var12 = -2; var12 <= 2; ++var12) {
+               for(int var6 = -2; var6 <= 2; ++var6) {
+                  var2.setBlock(var3.offset(var12, var9, var6), this.sandstone, 2);
                }
             }
          }
 
          var2.setBlock(var3, this.water, 2);
-         Iterator var8 = Direction.Plane.HORIZONTAL.iterator();
 
-         while(var8.hasNext()) {
-            Direction var10 = (Direction)var8.next();
-            var2.setBlock(var3.relative(var10), this.water, 2);
+         for(Direction var13 : Direction.Plane.HORIZONTAL) {
+            var2.setBlock(var3.relative(var13), this.water, 2);
          }
 
-         BlockPos var9 = var3.below();
-         var2.setBlock(var9, this.sand, 2);
-         Iterator var11 = Direction.Plane.HORIZONTAL.iterator();
+         BlockPos var11 = var3.below();
+         var2.setBlock(var11, this.sand, 2);
 
-         while(var11.hasNext()) {
-            Direction var12 = (Direction)var11.next();
-            var2.setBlock(var9.relative(var12), this.sand, 2);
+         for(Direction var18 : Direction.Plane.HORIZONTAL) {
+            var2.setBlock(var11.relative(var18), this.sand, 2);
          }
 
-         for(var5 = -2; var5 <= 2; ++var5) {
-            for(var6 = -2; var6 <= 2; ++var6) {
-               if (var5 == -2 || var5 == 2 || var6 == -2 || var6 == 2) {
-                  var2.setBlock(var3.offset(var5, 1, var6), this.sandstone, 2);
+         for(int var15 = -2; var15 <= 2; ++var15) {
+            for(int var19 = -2; var19 <= 2; ++var19) {
+               if (var15 == -2 || var15 == 2 || var19 == -2 || var19 == 2) {
+                  var2.setBlock(var3.offset(var15, 1, var19), this.sandstone, 2);
                }
             }
          }
@@ -89,36 +81,34 @@ public class DesertWellFeature extends Feature<NoneFeatureConfiguration> {
          var2.setBlock(var3.offset(0, 1, 2), this.sandSlab, 2);
          var2.setBlock(var3.offset(0, 1, -2), this.sandSlab, 2);
 
-         for(var5 = -1; var5 <= 1; ++var5) {
-            for(var6 = -1; var6 <= 1; ++var6) {
-               if (var5 == 0 && var6 == 0) {
-                  var2.setBlock(var3.offset(var5, 4, var6), this.sandstone, 2);
+         for(int var16 = -1; var16 <= 1; ++var16) {
+            for(int var20 = -1; var20 <= 1; ++var20) {
+               if (var16 == 0 && var20 == 0) {
+                  var2.setBlock(var3.offset(var16, 4, var20), this.sandstone, 2);
                } else {
-                  var2.setBlock(var3.offset(var5, 4, var6), this.sandSlab, 2);
+                  var2.setBlock(var3.offset(var16, 4, var20), this.sandSlab, 2);
                }
             }
          }
 
-         for(var5 = 1; var5 <= 3; ++var5) {
-            var2.setBlock(var3.offset(-1, var5, -1), this.sandstone, 2);
-            var2.setBlock(var3.offset(-1, var5, 1), this.sandstone, 2);
-            var2.setBlock(var3.offset(1, var5, -1), this.sandstone, 2);
-            var2.setBlock(var3.offset(1, var5, 1), this.sandstone, 2);
+         for(int var17 = 1; var17 <= 3; ++var17) {
+            var2.setBlock(var3.offset(-1, var17, -1), this.sandstone, 2);
+            var2.setBlock(var3.offset(-1, var17, 1), this.sandstone, 2);
+            var2.setBlock(var3.offset(1, var17, -1), this.sandstone, 2);
+            var2.setBlock(var3.offset(1, var17, 1), this.sandstone, 2);
          }
 
-         List var13 = List.of(var3, var3.east(), var3.south(), var3.west(), var3.north());
+         List var21 = List.of(var3, var3.east(), var3.south(), var3.west(), var3.north());
          RandomSource var7 = var1.random();
-         placeSusSand(var2, ((BlockPos)Util.getRandom(var13, var7)).below(1));
-         placeSusSand(var2, ((BlockPos)Util.getRandom(var13, var7)).below(2));
+         placeSusSand(var2, ((BlockPos)Util.getRandom(var21, var7)).below(1));
+         placeSusSand(var2, ((BlockPos)Util.getRandom(var21, var7)).below(2));
          return true;
       }
    }
 
    private static void placeSusSand(WorldGenLevel var0, BlockPos var1) {
       var0.setBlock(var1, Blocks.SUSPICIOUS_SAND.defaultBlockState(), 3);
-      var0.getBlockEntity(var1, BlockEntityType.BRUSHABLE_BLOCK).ifPresent((var1x) -> {
-         var1x.setLootTable(BuiltInLootTables.DESERT_WELL_ARCHAEOLOGY, var1.asLong());
-      });
+      var0.getBlockEntity(var1, BlockEntityType.BRUSHABLE_BLOCK).ifPresent((var1x) -> var1x.setLootTable(BuiltInLootTables.DESERT_WELL_ARCHAEOLOGY, var1.asLong()));
    }
 
    static {

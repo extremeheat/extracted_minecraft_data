@@ -6,7 +6,6 @@ import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -64,17 +63,13 @@ public class ServerRecipeBook extends RecipeBook {
 
    public int addRecipes(Collection<RecipeHolder<?>> var1, ServerPlayer var2) {
       ArrayList var3 = new ArrayList();
-      Iterator var4 = var1.iterator();
 
-      while(var4.hasNext()) {
-         RecipeHolder var5 = (RecipeHolder)var4.next();
+      for(RecipeHolder var5 : var1) {
          ResourceKey var6 = var5.id();
          if (!this.known.contains(var6) && !var5.value().isSpecial()) {
             this.add(var6);
             this.addHighlight(var6);
-            this.displayResolver.displaysForRecipe(var6, (var2x) -> {
-               var3.add(new ClientboundRecipeBookAddPacket.Entry(var2x, var5.value().showNotification(), true));
-            });
+            this.displayResolver.displaysForRecipe(var6, (var2x) -> var3.add(new ClientboundRecipeBookAddPacket.Entry(var2x, var5.value().showNotification(), true)));
             CriteriaTriggers.RECIPE_UNLOCKED.trigger(var2, var5);
          }
       }
@@ -88,16 +83,12 @@ public class ServerRecipeBook extends RecipeBook {
 
    public int removeRecipes(Collection<RecipeHolder<?>> var1, ServerPlayer var2) {
       ArrayList var3 = Lists.newArrayList();
-      Iterator var4 = var1.iterator();
 
-      while(var4.hasNext()) {
-         RecipeHolder var5 = (RecipeHolder)var4.next();
+      for(RecipeHolder var5 : var1) {
          ResourceKey var6 = var5.id();
          if (this.known.contains(var6)) {
             this.remove(var6);
-            this.displayResolver.displaysForRecipe(var6, (var1x) -> {
-               var3.add(var1x.id());
-            });
+            this.displayResolver.displaysForRecipe(var6, (var1x) -> var3.add(var1x.id()));
          }
       }
 
@@ -112,19 +103,15 @@ public class ServerRecipeBook extends RecipeBook {
       CompoundTag var1 = new CompoundTag();
       this.getBookSettings().write(var1);
       ListTag var2 = new ListTag();
-      Iterator var3 = this.known.iterator();
 
-      while(var3.hasNext()) {
-         ResourceKey var4 = (ResourceKey)var3.next();
+      for(ResourceKey var4 : this.known) {
          var2.add(StringTag.valueOf(var4.location().toString()));
       }
 
       var1.put("recipes", var2);
       ListTag var6 = new ListTag();
-      Iterator var7 = this.highlight.iterator();
 
-      while(var7.hasNext()) {
-         ResourceKey var5 = (ResourceKey)var7.next();
+      for(ResourceKey var5 : this.highlight) {
          var6.add(StringTag.valueOf(var5.location().toString()));
       }
 
@@ -161,13 +148,9 @@ public class ServerRecipeBook extends RecipeBook {
    public void sendInitialRecipeBook(ServerPlayer var1) {
       var1.connection.send(new ClientboundRecipeBookSettingsPacket(this.getBookSettings()));
       ArrayList var2 = new ArrayList(this.known.size());
-      Iterator var3 = this.known.iterator();
 
-      while(var3.hasNext()) {
-         ResourceKey var4 = (ResourceKey)var3.next();
-         this.displayResolver.displaysForRecipe(var4, (var3x) -> {
-            var2.add(new ClientboundRecipeBookAddPacket.Entry(var3x, false, this.highlight.contains(var4)));
-         });
+      for(ResourceKey var4 : this.known) {
+         this.displayResolver.displaysForRecipe(var4, (var3) -> var2.add(new ClientboundRecipeBookAddPacket.Entry(var3, false, this.highlight.contains(var4))));
       }
 
       var1.connection.send(new ClientboundRecipeBookAddPacket(var2, true));

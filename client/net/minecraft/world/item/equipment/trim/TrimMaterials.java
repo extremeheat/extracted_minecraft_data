@@ -14,7 +14,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.equipment.EquipmentModels;
+import net.minecraft.world.item.equipment.EquipmentAsset;
+import net.minecraft.world.item.equipment.EquipmentAssets;
 
 public class TrimMaterials {
    public static final ResourceKey<TrimMaterial> QUARTZ = registryKey("quartz");
@@ -27,37 +28,37 @@ public class TrimMaterials {
    public static final ResourceKey<TrimMaterial> DIAMOND = registryKey("diamond");
    public static final ResourceKey<TrimMaterial> LAPIS = registryKey("lapis");
    public static final ResourceKey<TrimMaterial> AMETHYST = registryKey("amethyst");
+   public static final ResourceKey<TrimMaterial> RESIN = registryKey("resin");
 
    public TrimMaterials() {
       super();
    }
 
    public static void bootstrap(BootstrapContext<TrimMaterial> var0) {
-      register(var0, QUARTZ, Items.QUARTZ, Style.EMPTY.withColor(14931140), 0.1F);
-      register(var0, IRON, Items.IRON_INGOT, Style.EMPTY.withColor(15527148), 0.2F, Map.of(EquipmentModels.IRON, "iron_darker"));
-      register(var0, NETHERITE, Items.NETHERITE_INGOT, Style.EMPTY.withColor(6445145), 0.3F, Map.of(EquipmentModels.NETHERITE, "netherite_darker"));
-      register(var0, REDSTONE, Items.REDSTONE, Style.EMPTY.withColor(9901575), 0.4F);
-      register(var0, COPPER, Items.COPPER_INGOT, Style.EMPTY.withColor(11823181), 0.5F);
-      register(var0, GOLD, Items.GOLD_INGOT, Style.EMPTY.withColor(14594349), 0.6F, Map.of(EquipmentModels.GOLD, "gold_darker"));
-      register(var0, EMERALD, Items.EMERALD, Style.EMPTY.withColor(1155126), 0.7F);
-      register(var0, DIAMOND, Items.DIAMOND, Style.EMPTY.withColor(7269586), 0.8F, Map.of(EquipmentModels.DIAMOND, "diamond_darker"));
-      register(var0, LAPIS, Items.LAPIS_LAZULI, Style.EMPTY.withColor(4288151), 0.9F);
-      register(var0, AMETHYST, Items.AMETHYST_SHARD, Style.EMPTY.withColor(10116294), 1.0F);
+      register(var0, QUARTZ, Items.QUARTZ, Style.EMPTY.withColor(14931140));
+      register(var0, IRON, Items.IRON_INGOT, Style.EMPTY.withColor(15527148), Map.of(EquipmentAssets.IRON, "iron_darker"));
+      register(var0, NETHERITE, Items.NETHERITE_INGOT, Style.EMPTY.withColor(6445145), Map.of(EquipmentAssets.NETHERITE, "netherite_darker"));
+      register(var0, REDSTONE, Items.REDSTONE, Style.EMPTY.withColor(9901575));
+      register(var0, COPPER, Items.COPPER_INGOT, Style.EMPTY.withColor(11823181));
+      register(var0, GOLD, Items.GOLD_INGOT, Style.EMPTY.withColor(14594349), Map.of(EquipmentAssets.GOLD, "gold_darker"));
+      register(var0, EMERALD, Items.EMERALD, Style.EMPTY.withColor(1155126));
+      register(var0, DIAMOND, Items.DIAMOND, Style.EMPTY.withColor(7269586), Map.of(EquipmentAssets.DIAMOND, "diamond_darker"));
+      register(var0, LAPIS, Items.LAPIS_LAZULI, Style.EMPTY.withColor(4288151));
+      register(var0, AMETHYST, Items.AMETHYST_SHARD, Style.EMPTY.withColor(10116294));
+      register(var0, RESIN, Items.RESIN_BRICK, Style.EMPTY.withColor(16545810));
    }
 
    public static Optional<Holder.Reference<TrimMaterial>> getFromIngredient(HolderLookup.Provider var0, ItemStack var1) {
-      return var0.lookupOrThrow(Registries.TRIM_MATERIAL).listElements().filter((var1x) -> {
-         return var1.is(((TrimMaterial)var1x.value()).ingredient());
-      }).findFirst();
+      return var0.lookupOrThrow(Registries.TRIM_MATERIAL).listElements().filter((var1x) -> var1.is(((TrimMaterial)var1x.value()).ingredient())).findFirst();
    }
 
-   private static void register(BootstrapContext<TrimMaterial> var0, ResourceKey<TrimMaterial> var1, Item var2, Style var3, float var4) {
-      register(var0, var1, var2, var3, var4, Map.of());
+   private static void register(BootstrapContext<TrimMaterial> var0, ResourceKey<TrimMaterial> var1, Item var2, Style var3) {
+      register(var0, var1, var2, var3, Map.of());
    }
 
-   private static void register(BootstrapContext<TrimMaterial> var0, ResourceKey<TrimMaterial> var1, Item var2, Style var3, float var4, Map<ResourceLocation, String> var5) {
-      TrimMaterial var6 = TrimMaterial.create(var1.location().getPath(), var2, var4, Component.translatable(Util.makeDescriptionId("trim_material", var1.location())).withStyle(var3), var5);
-      var0.register(var1, var6);
+   private static void register(BootstrapContext<TrimMaterial> var0, ResourceKey<TrimMaterial> var1, Item var2, Style var3, Map<ResourceKey<EquipmentAsset>, String> var4) {
+      TrimMaterial var5 = TrimMaterial.create(var1.location().getPath(), var2, Component.translatable(Util.makeDescriptionId("trim_material", var1.location())).withStyle(var3), var4);
+      var0.register(var1, var5);
    }
 
    private static ResourceKey<TrimMaterial> registryKey(String var0) {

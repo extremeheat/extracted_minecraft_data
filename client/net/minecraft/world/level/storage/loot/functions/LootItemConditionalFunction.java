@@ -26,9 +26,7 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
    public abstract LootItemFunctionType<? extends LootItemConditionalFunction> getType();
 
    protected static <T extends LootItemConditionalFunction> Products.P1<RecordCodecBuilder.Mu<T>, List<LootItemCondition>> commonFields(RecordCodecBuilder.Instance<T> var0) {
-      return var0.group(LootItemCondition.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((var0x) -> {
-         return var0x.predicates;
-      }));
+      return var0.group(LootItemCondition.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter((var0x) -> var0x.predicates));
    }
 
    public final ItemStack apply(ItemStack var1, LootContext var2) {
@@ -55,6 +53,39 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
       return this.apply((ItemStack)var1, (LootContext)var2);
    }
 
+   public abstract static class Builder<T extends Builder<T>> implements LootItemFunction.Builder, ConditionUserBuilder<T> {
+      private final ImmutableList.Builder<LootItemCondition> conditions = ImmutableList.builder();
+
+      public Builder() {
+         super();
+      }
+
+      public T when(LootItemCondition.Builder var1) {
+         this.conditions.add(var1.build());
+         return (T)this.getThis();
+      }
+
+      public final T unwrap() {
+         return (T)this.getThis();
+      }
+
+      protected abstract T getThis();
+
+      protected List<LootItemCondition> getConditions() {
+         return this.conditions.build();
+      }
+
+      // $FF: synthetic method
+      public ConditionUserBuilder unwrap() {
+         return this.unwrap();
+      }
+
+      // $FF: synthetic method
+      public ConditionUserBuilder when(final LootItemCondition.Builder var1) {
+         return this.when(var1);
+      }
+   }
+
    static final class DummyBuilder extends Builder<DummyBuilder> {
       private final Function<List<LootItemCondition>, LootItemFunction> constructor;
 
@@ -74,39 +105,6 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
       // $FF: synthetic method
       protected Builder getThis() {
          return this.getThis();
-      }
-   }
-
-   public abstract static class Builder<T extends Builder<T>> implements LootItemFunction.Builder, ConditionUserBuilder<T> {
-      private final ImmutableList.Builder<LootItemCondition> conditions = ImmutableList.builder();
-
-      public Builder() {
-         super();
-      }
-
-      public T when(LootItemCondition.Builder var1) {
-         this.conditions.add(var1.build());
-         return this.getThis();
-      }
-
-      public final T unwrap() {
-         return this.getThis();
-      }
-
-      protected abstract T getThis();
-
-      protected List<LootItemCondition> getConditions() {
-         return this.conditions.build();
-      }
-
-      // $FF: synthetic method
-      public ConditionUserBuilder unwrap() {
-         return this.unwrap();
-      }
-
-      // $FF: synthetic method
-      public ConditionUserBuilder when(final LootItemCondition.Builder var1) {
-         return this.when(var1);
       }
    }
 }

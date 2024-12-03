@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ServerboundChatCommandPacket(String command) implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundChatCommandPacket> STREAM_CODEC = Packet.codec(ServerboundChatCommandPacket::write, ServerboundChatCommandPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundChatCommandPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundChatCommandPacket>codec(ServerboundChatCommandPacket::write, ServerboundChatCommandPacket::new);
 
    private ServerboundChatCommandPacket(FriendlyByteBuf var1) {
       this(var1.readUtf());
@@ -27,9 +27,5 @@ public record ServerboundChatCommandPacket(String command) implements Packet<Ser
 
    public void handle(ServerGamePacketListener var1) {
       var1.handleChatCommand(this);
-   }
-
-   public String command() {
-      return this.command;
    }
 }

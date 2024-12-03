@@ -27,10 +27,6 @@ public record ClientboundLoginFinishedPacket(GameProfile gameProfile) implements
       return true;
    }
 
-   public GameProfile gameProfile() {
-      return this.gameProfile;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.GAME_PROFILE, ClientboundLoginFinishedPacket::gameProfile, ClientboundLoginFinishedPacket::new);
    }

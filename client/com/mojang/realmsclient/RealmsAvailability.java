@@ -85,15 +85,6 @@ public class RealmsAvailability {
 
          return (Screen)var10000;
       }
-
-      public Type type() {
-         return this.type;
-      }
-
-      @Nullable
-      public RealmsServiceException exception() {
-         return this.exception;
-      }
    }
 
    public static enum Type {

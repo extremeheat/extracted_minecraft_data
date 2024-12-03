@@ -103,24 +103,16 @@ public class ItemSpawnEggFix extends DataFix {
             Dynamic var8x = (Dynamic)var6x.get(DSL.remainderFinder());
             short var9 = var8x.get("Damage").asShort((short)0);
             Optional var10 = var6x.getOptionalTyped(var5);
-            Optional var11 = var10.flatMap((var1) -> {
-               return var1.getOptionalTyped(var6);
-            });
-            Optional var12 = var11.flatMap((var1) -> {
-               return var1.getOptionalTyped(var7);
-            });
-            Optional var13 = var12.flatMap((var1) -> {
-               return var1.getOptional(var4);
-            });
+            Optional var11 = var10.flatMap((var1) -> var1.getOptionalTyped(var6));
+            Optional var12 = var11.flatMap((var1) -> var1.getOptionalTyped(var7));
+            Optional var13 = var12.flatMap((var1) -> var1.getOptional(var4));
             Typed var14 = var6x;
             String var15 = ID_TO_ENTITY[var9 & 255];
             if (var15 != null && (var13.isEmpty() || !Objects.equals(var13.get(), var15))) {
                Typed var16 = var6x.getOrCreateTyped(var5);
                Typed var17 = var16.getOrCreateTyped(var6);
                Typed var18 = var17.getOrCreateTyped(var7);
-               Typed var20 = Util.writeAndReadTypedOrThrow(var18, var8, (var2) -> {
-                  return var2.set("id", var8x.createString(var15));
-               });
+               Typed var20 = Util.writeAndReadTypedOrThrow(var18, var8, (var2) -> var2.set("id", var8x.createString(var15)));
                var14 = var6x.set(var5, var16.set(var6, var17.set(var7, var20)));
             }
 

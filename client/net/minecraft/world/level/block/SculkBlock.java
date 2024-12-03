@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -12,7 +11,6 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
 public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
@@ -70,23 +68,21 @@ public class SculkBlock extends DropExperienceBlock implements SculkBehaviour {
 
    private static boolean canPlaceGrowth(LevelAccessor var0, BlockPos var1) {
       BlockState var2 = var0.getBlockState(var1.above());
-      if (var2.isAir() || var2.is(Blocks.WATER) && var2.getFluidState().is((Fluid)Fluids.WATER)) {
+      if (var2.isAir() || var2.is(Blocks.WATER) && var2.getFluidState().is(Fluids.WATER)) {
          int var3 = 0;
-         Iterator var4 = BlockPos.betweenClosed(var1.offset(-4, 0, -4), var1.offset(4, 2, 4)).iterator();
 
-         do {
-            if (!var4.hasNext()) {
-               return true;
-            }
-
-            BlockPos var5 = (BlockPos)var4.next();
+         for(BlockPos var5 : BlockPos.betweenClosed(var1.offset(-4, 0, -4), var1.offset(4, 2, 4))) {
             BlockState var6 = var0.getBlockState(var5);
             if (var6.is(Blocks.SCULK_SENSOR) || var6.is(Blocks.SCULK_SHRIEKER)) {
                ++var3;
             }
-         } while(var3 <= 2);
 
-         return false;
+            if (var3 > 2) {
+               return false;
+            }
+         }
+
+         return true;
       } else {
          return false;
       }

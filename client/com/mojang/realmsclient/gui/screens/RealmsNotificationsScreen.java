@@ -4,7 +4,6 @@ import com.mojang.realmsclient.RealmsAvailability;
 import com.mojang.realmsclient.dto.RealmsNotification;
 import com.mojang.realmsclient.gui.RealmsDataFetcher;
 import com.mojang.realmsclient.gui.task.DataFetcher;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
@@ -20,9 +19,7 @@ public class RealmsNotificationsScreen extends RealmsScreen {
    private static final ResourceLocation NEWS_SPRITE = ResourceLocation.withDefaultNamespace("icon/news");
    private static final ResourceLocation INVITE_SPRITE = ResourceLocation.withDefaultNamespace("icon/invite");
    private static final ResourceLocation TRIAL_AVAILABLE_SPRITE = ResourceLocation.withDefaultNamespace("icon/trial_available");
-   private final CompletableFuture<Boolean> validClient = RealmsAvailability.get().thenApply((var0) -> {
-      return var0.type() == RealmsAvailability.Type.SUCCESS;
-   });
+   private final CompletableFuture<Boolean> validClient = RealmsAvailability.get().thenApply((var0) -> var0.type() == RealmsAvailability.Type.SUCCESS);
    @Nullable
    private DataFetcher.Subscription realmsDataSubscription;
    @Nullable
@@ -148,12 +145,8 @@ public class RealmsNotificationsScreen extends RealmsScreen {
    }
 
    void addNewsAndInvitesSubscriptions(RealmsDataFetcher var1, DataFetcher.Subscription var2) {
-      var2.subscribe(var1.pendingInvitesTask, (var1x) -> {
-         this.numberOfPendingInvites = var1x;
-      });
-      var2.subscribe(var1.trialAvailabilityTask, (var0) -> {
-         trialAvailable = var0;
-      });
+      var2.subscribe(var1.pendingInvitesTask, (var1x) -> this.numberOfPendingInvites = var1x);
+      var2.subscribe(var1.trialAvailabilityTask, (var0) -> trialAvailable = var0);
       var2.subscribe(var1.newsTask, (var1x) -> {
          var1.newsManager.updateUnreadNews(var1x);
          hasUnreadNews = var1.newsManager.hasUnreadNews();
@@ -163,10 +156,8 @@ public class RealmsNotificationsScreen extends RealmsScreen {
    void addNotificationsSubscriptions(RealmsDataFetcher var1, DataFetcher.Subscription var2) {
       var2.subscribe(var1.notificationsTask, (var0) -> {
          hasUnseenNotifications = false;
-         Iterator var1 = var0.iterator();
 
-         while(var1.hasNext()) {
-            RealmsNotification var2 = (RealmsNotification)var1.next();
+         for(RealmsNotification var2 : var0) {
             if (!var2.seen()) {
                hasUnseenNotifications = true;
                break;
@@ -176,7 +167,7 @@ public class RealmsNotificationsScreen extends RealmsScreen {
       });
    }
 
-   private interface DataFetcherConfiguration {
+   interface DataFetcherConfiguration {
       DataFetcher.Subscription initDataFetcher(RealmsDataFetcher var1);
 
       boolean showOldNotifications();

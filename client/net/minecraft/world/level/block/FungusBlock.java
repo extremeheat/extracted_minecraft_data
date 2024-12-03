@@ -21,13 +21,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FungusBlock extends BushBlock implements BonemealableBlock {
-   public static final MapCodec<FungusBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter((var0x) -> {
-         return var0x.feature;
-      }), BuiltInRegistries.BLOCK.byNameCodec().fieldOf("grows_on").forGetter((var0x) -> {
-         return var0x.requiredBlock;
-      }), propertiesCodec()).apply(var0, FungusBlock::new);
-   });
+   public static final MapCodec<FungusBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter((var0x) -> var0x.feature), BuiltInRegistries.BLOCK.byNameCodec().fieldOf("grows_on").forGetter((var0x) -> var0x.requiredBlock), propertiesCodec()).apply(var0, FungusBlock::new));
    protected static final VoxelShape SHAPE = Block.box(4.0, 0.0, 4.0, 12.0, 9.0, 12.0);
    private static final double BONEMEAL_SUCCESS_PROBABILITY = 0.4;
    private final Block requiredBlock;
@@ -65,8 +59,6 @@ public class FungusBlock extends BushBlock implements BonemealableBlock {
    }
 
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      this.getFeature(var1).ifPresent((var3x) -> {
-         ((ConfiguredFeature)var3x.value()).place(var1, var1.getChunkSource().getGenerator(), var2, var3);
-      });
+      this.getFeature(var1).ifPresent((var3x) -> ((ConfiguredFeature)var3x.value()).place(var1, var1.getChunkSource().getGenerator(), var2, var3));
    }
 }

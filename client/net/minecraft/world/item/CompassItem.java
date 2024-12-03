@@ -1,7 +1,6 @@
 package net.minecraft.world.item;
 
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
@@ -22,11 +21,6 @@ public class CompassItem extends Item {
 
    public CompassItem(Item.Properties var1) {
       super(var1);
-   }
-
-   @Nullable
-   public static GlobalPos getSpawnPosition(Level var0) {
-      return var0.dimensionType().natural() ? GlobalPos.of(var0.dimension(), var0.getSharedSpawnPos()) : null;
    }
 
    public boolean isFoil(ItemStack var1) {

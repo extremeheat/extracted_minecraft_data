@@ -1,5 +1,6 @@
 package net.minecraft.client.resources.model;
 
+import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,92 +9,42 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.client.renderer.block.model.ItemModelGenerator;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.BundleItem;
-import net.minecraft.world.item.Item;
 import org.slf4j.Logger;
 
 public class ModelDiscovery {
    static final Logger LOGGER = LogUtils.getLogger();
-   public static final String INVENTORY_MODEL_PREFIX = "item/";
    private final Map<ResourceLocation, UnbakedModel> inputModels;
    final UnbakedModel missingModel;
-   private final Map<ModelResourceLocation, UnbakedModel> topModels = new HashMap();
+   private final List<ResolvableModel> topModels = new ArrayList();
    private final Map<ResourceLocation, UnbakedModel> referencedModels = new HashMap();
 
    public ModelDiscovery(Map<ResourceLocation, UnbakedModel> var1, UnbakedModel var2) {
       super();
       this.inputModels = var1;
       this.missingModel = var2;
-      this.registerTopModel(MissingBlockModel.VARIANT, var2);
       this.referencedModels.put(MissingBlockModel.LOCATION, var2);
    }
 
-   private static Set<ModelResourceLocation> listMandatoryModels() {
-      HashSet var0 = new HashSet();
-      BuiltInRegistries.ITEM.listElements().forEach((var1) -> {
-         ResourceLocation var2 = (ResourceLocation)((Item)var1.value()).components().get(DataComponents.ITEM_MODEL);
-         if (var2 != null) {
-            var0.add(ModelResourceLocation.inventory(var2));
-         }
-
-         Object var4 = var1.value();
-         if (var4 instanceof BundleItem var3) {
-            var0.add(ModelResourceLocation.inventory(var3.openFrontModel()));
-            var0.add(ModelResourceLocation.inventory(var3.openBackModel()));
-         }
-
-      });
-      var0.add(ItemRenderer.TRIDENT_MODEL);
-      var0.add(ItemRenderer.SPYGLASS_MODEL);
-      return var0;
+   public void registerSpecialModels() {
+      this.referencedModels.put(ItemModelGenerator.GENERATED_ITEM_MODEL_ID, new ItemModelGenerator());
    }
 
-   private void registerTopModel(ModelResourceLocation var1, UnbakedModel var2) {
-      this.topModels.put(var1, var2);
-   }
-
-   public void registerStandardModels(BlockStateModelLoader.LoadedModels var1) {
-      this.referencedModels.put(SpecialModels.BUILTIN_GENERATED, SpecialModels.GENERATED_MARKER);
-      this.referencedModels.put(SpecialModels.BUILTIN_BLOCK_ENTITY, SpecialModels.BLOCK_ENTITY_MARKER);
-      Set var2 = listMandatoryModels();
-      var1.models().forEach((var2x, var3) -> {
-         this.registerTopModel(var2x, var3.model());
-         var2.remove(var2x);
-      });
-      this.inputModels.keySet().forEach((var2x) -> {
-         if (var2x.getPath().startsWith("item/")) {
-            ModelResourceLocation var3 = ModelResourceLocation.inventory(var2x.withPath((var0) -> {
-               return var0.substring("item/".length());
-            }));
-            this.registerTopModel(var3, new ItemModel(var2x));
-            var2.remove(var3);
-         }
-
-      });
-      if (!var2.isEmpty()) {
-         LOGGER.warn("Missing mandatory models: {}", var2.stream().map((var0) -> {
-            return "\n\t" + String.valueOf(var0);
-         }).collect(Collectors.joining()));
-      }
-
+   public void addRoot(ResolvableModel var1) {
+      this.topModels.add(var1);
    }
 
    public void discoverDependencies() {
-      this.topModels.values().forEach((var1) -> {
-         var1.resolveDependencies(new ResolverImpl());
-      });
-   }
-
-   public Map<ModelResourceLocation, UnbakedModel> getTopModels() {
-      return this.topModels;
+      this.topModels.forEach((var1) -> var1.resolveDependencies(new ResolverImpl()));
    }
 
    public Map<ResourceLocation, UnbakedModel> getReferencedModels() {
       return this.referencedModels;
+   }
+
+   public Set<ResourceLocation> getUnreferencedModels() {
+      return Sets.difference(this.inputModels.keySet(), this.referencedModels.keySet());
    }
 
    UnbakedModel getBlockModel(ResourceLocation var1) {
@@ -110,7 +61,7 @@ public class ModelDiscovery {
       }
    }
 
-   class ResolverImpl implements UnbakedModel.Resolver {
+   class ResolverImpl implements ResolvableModel.Resolver {
       private final List<ResourceLocation> stack = new ArrayList();
       private final Set<ResourceLocation> resolvedModels = new HashSet();
 

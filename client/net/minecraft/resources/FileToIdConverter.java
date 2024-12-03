@@ -2,6 +2,8 @@ package net.minecraft.resources;
 
 import java.util.List;
 import java.util.Map;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -19,6 +21,10 @@ public class FileToIdConverter {
       return new FileToIdConverter(var0, ".json");
    }
 
+   public static FileToIdConverter registry(ResourceKey<? extends Registry<?>> var0) {
+      return json(Registries.elementsDirPath(var0));
+   }
+
    public ResourceLocation idToFile(ResourceLocation var1) {
       String var10001 = this.prefix;
       return var1.withPath(var10001 + "/" + var1.getPath() + this.extension);
@@ -30,14 +36,10 @@ public class FileToIdConverter {
    }
 
    public Map<ResourceLocation, Resource> listMatchingResources(ResourceManager var1) {
-      return var1.listResources(this.prefix, (var1x) -> {
-         return var1x.getPath().endsWith(this.extension);
-      });
+      return var1.listResources(this.prefix, (var1x) -> var1x.getPath().endsWith(this.extension));
    }
 
    public Map<ResourceLocation, List<Resource>> listMatchingResourceStacks(ResourceManager var1) {
-      return var1.listResourceStacks(this.prefix, (var1x) -> {
-         return var1x.getPath().endsWith(this.extension);
-      });
+      return var1.listResourceStacks(this.prefix, (var1x) -> var1x.getPath().endsWith(this.extension));
    }
 }

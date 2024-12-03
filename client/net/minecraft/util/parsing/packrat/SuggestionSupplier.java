@@ -6,8 +6,6 @@ public interface SuggestionSupplier<S> {
    Stream<String> possibleValues(ParseState<S> var1);
 
    static <S> SuggestionSupplier<S> empty() {
-      return (var0) -> {
-         return Stream.empty();
-      };
+      return (var0) -> Stream.empty();
    }
 }

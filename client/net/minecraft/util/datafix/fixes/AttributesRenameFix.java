@@ -27,29 +27,19 @@ public class AttributesRenameFix extends DataFix {
    }
 
    private Typed<?> fixDataComponents(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var1x) -> {
-         return var1x.update("minecraft:attribute_modifiers", (var1) -> {
-            return var1.update("modifiers", (var1x) -> {
-               Optional var10000 = var1x.asStreamOpt().result().map((var1) -> {
-                  return var1.map(this::fixTypeField);
-               });
+      return var1.update(DSL.remainderFinder(), (var1x) -> var1x.update("minecraft:attribute_modifiers", (var1) -> var1.update("modifiers", (var1x) -> {
+               Optional var10000 = var1x.asStreamOpt().result().map((var1) -> var1.map(this::fixTypeField));
                Objects.requireNonNull(var1x);
                return (Dynamic)DataFixUtils.orElse(var10000.map(var1x::createList), var1x);
-            });
-         });
-      });
+            })));
    }
 
    private Typed<?> fixEntity(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var1x) -> {
-         return var1x.update("attributes", (var1) -> {
-            Optional var10000 = var1.asStreamOpt().result().map((var1x) -> {
-               return var1x.map(this::fixIdField);
-            });
+      return var1.update(DSL.remainderFinder(), (var1x) -> var1x.update("attributes", (var1) -> {
+            Optional var10000 = var1.asStreamOpt().result().map((var1x) -> var1x.map(this::fixIdField));
             Objects.requireNonNull(var1);
             return (Dynamic)DataFixUtils.orElse(var10000.map(var1::createList), var1);
-         });
-      });
+         }));
    }
 
    private Dynamic<?> fixIdField(Dynamic<?> var1) {

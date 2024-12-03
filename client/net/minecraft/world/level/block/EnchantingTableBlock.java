@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -32,9 +31,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class EnchantingTableBlock extends BaseEntityBlock {
    public static final MapCodec<EnchantingTableBlock> CODEC = simpleCodec(EnchantingTableBlock::new);
    protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
-   public static final List<BlockPos> BOOKSHELF_OFFSETS = BlockPos.betweenClosedStream(-2, 0, -2, 2, 1, 2).filter((var0) -> {
-      return Math.abs(var0.getX()) == 2 || Math.abs(var0.getZ()) == 2;
-   }).map(BlockPos::immutable).toList();
+   public static final List<BlockPos> BOOKSHELF_OFFSETS = BlockPos.betweenClosedStream(-2, 0, -2, 2, 1, 2).filter((var0) -> Math.abs(var0.getX()) == 2 || Math.abs(var0.getZ()) == 2).map(BlockPos::immutable).toList();
 
    public MapCodec<EnchantingTableBlock> codec() {
       return CODEC;
@@ -58,19 +55,13 @@ public class EnchantingTableBlock extends BaseEntityBlock {
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       super.animateTick(var1, var2, var3, var4);
-      Iterator var5 = BOOKSHELF_OFFSETS.iterator();
 
-      while(var5.hasNext()) {
-         BlockPos var6 = (BlockPos)var5.next();
+      for(BlockPos var6 : BOOKSHELF_OFFSETS) {
          if (var4.nextInt(16) == 0 && isValidBookShelf(var2, var3, var6)) {
             var2.addParticle(ParticleTypes.ENCHANT, (double)var3.getX() + 0.5, (double)var3.getY() + 2.0, (double)var3.getZ() + 0.5, (double)((float)var6.getX() + var4.nextFloat()) - 0.5, (double)((float)var6.getY() - var4.nextFloat() - 1.0F), (double)((float)var6.getZ() + var4.nextFloat()) - 0.5);
          }
       }
 
-   }
-
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
    }
 
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
@@ -95,9 +86,7 @@ public class EnchantingTableBlock extends BaseEntityBlock {
       BlockEntity var4 = var2.getBlockEntity(var3);
       if (var4 instanceof EnchantingTableBlockEntity) {
          Component var5 = ((Nameable)var4).getDisplayName();
-         return new SimpleMenuProvider((var2x, var3x, var4x) -> {
-            return new EnchantmentMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3));
-         }, var5);
+         return new SimpleMenuProvider((var2x, var3x, var4x) -> new EnchantmentMenu(var2x, var3x, ContainerLevelAccess.create(var2, var3)), var5);
       } else {
          return null;
       }

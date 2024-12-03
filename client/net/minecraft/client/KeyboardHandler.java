@@ -8,6 +8,7 @@ import com.mojang.blaze3d.platform.TextureUtil;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
@@ -235,9 +236,7 @@ public class KeyboardHandler {
                Path var5 = this.minecraft.gameDirectory.toPath().toAbsolutePath();
                Path var6 = TextureUtil.getDebugTexturePath(var5);
                this.minecraft.getTextureManager().dumpAllSheets(var6);
-               MutableComponent var7 = Component.literal(var5.relativize(var6).toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((var1x) -> {
-                  return var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var6.toFile().toString()));
-               });
+               MutableComponent var7 = Component.literal(var5.relativize(var6).toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var6.toFile().toString()))));
                this.debugFeedbackTranslated("debug.dump_dynamic_textures", var7);
                return true;
             case 84:
@@ -375,21 +374,16 @@ public class KeyboardHandler {
                if (Screen.hasControlDown()) {
                }
 
-               Screenshot.grab(this.minecraft.gameDirectory, this.minecraft.getMainRenderTarget(), (var1x) -> {
-                  this.minecraft.execute(() -> {
-                     this.minecraft.gui.getChat().addMessage(var1x);
-                  });
-               });
+               Screenshot.grab(this.minecraft.gameDirectory, this.minecraft.getMainRenderTarget(), (var1x) -> this.minecraft.execute(() -> this.minecraft.gui.getChat().addMessage(var1x)));
                return;
             }
          }
 
-         boolean var10;
          if (var5 != 0) {
             boolean var9 = var8 == null || !(var8.getFocused() instanceof EditBox) || !((EditBox)var8.getFocused()).canConsumeInput();
             if (var9) {
                if (Screen.hasControlDown() && var3 == 66 && this.minecraft.getNarrator().isActive() && (Boolean)this.minecraft.options.narratorHotkey().get()) {
-                  var10 = this.minecraft.options.narrator().get() == NarratorStatus.OFF;
+                  boolean var10 = this.minecraft.options.narrator().get() == NarratorStatus.OFF;
                   this.minecraft.options.narrator().set(NarratorStatus.byId(((NarratorStatus)this.minecraft.options.narrator().get()).getId() + 1));
                   this.minecraft.options.save();
                   if (var8 != null) {
@@ -397,65 +391,51 @@ public class KeyboardHandler {
                   }
                }
 
-               LocalPlayer var17 = this.minecraft.player;
+               LocalPlayer var16 = this.minecraft.player;
             }
          }
 
          if (var8 != null) {
-            label168: {
-               CrashReportCategory var11;
-               CrashReport var18;
-               try {
-                  if (var5 == 1 || var5 == 2) {
-                     var8.afterKeyboardAction();
-                     if (var8.keyPressed(var3, var4, var6)) {
-                        return;
-                     }
-                     break label168;
-                  }
-               } catch (Throwable var15) {
-                  var18 = CrashReport.forThrowable(var15, "keyPressed event handler");
-                  var8.fillCrashDetails(var18);
-                  var11 = var18.addCategory("Key");
-                  var11.setDetail("Key", (Object)var3);
-                  var11.setDetail("Scancode", (Object)var4);
-                  var11.setDetail("Mods", (Object)var6);
-                  throw new ReportedException(var18);
-               }
-
-               try {
+            try {
+               if (var5 != 1 && var5 != 2) {
                   if (var5 == 0 && var8.keyReleased(var3, var4, var6)) {
                      return;
                   }
-               } catch (Throwable var14) {
-                  var18 = CrashReport.forThrowable(var14, "keyPressed event handler");
-                  var8.fillCrashDetails(var18);
-                  var11 = var18.addCategory("Key");
-                  var11.setDetail("Key", (Object)var3);
-                  var11.setDetail("Scancode", (Object)var4);
-                  var11.setDetail("Mods", (Object)var6);
-                  throw new ReportedException(var18);
+               } else {
+                  var8.afterKeyboardAction();
+                  if (var8.keyPressed(var3, var4, var6)) {
+                     return;
+                  }
                }
+            } catch (Throwable var14) {
+               CrashReport var17 = CrashReport.forThrowable(var14, "keyPressed event handler");
+               var8.fillCrashDetails(var17);
+               CrashReportCategory var11 = var17.addCategory("Key");
+               var11.setDetail("Key", var3);
+               var11.setDetail("Scancode", var4);
+               var11.setDetail("Mods", var6);
+               throw new ReportedException(var17);
             }
          }
 
-         InputConstants.Key var16;
+         InputConstants.Key var15;
+         boolean var18;
          boolean var10000;
-         label206: {
-            var16 = InputConstants.getKey(var3, var4);
-            var10 = this.minecraft.screen == null;
-            if (!var10) {
-               label202: {
+         label201: {
+            var15 = InputConstants.getKey(var3, var4);
+            var18 = this.minecraft.screen == null;
+            if (!var18) {
+               label197: {
                   Screen var13 = this.minecraft.screen;
                   if (var13 instanceof PauseScreen) {
                      PauseScreen var12 = (PauseScreen)var13;
                      if (!var12.showsPauseMenu()) {
-                        break label202;
+                        break label197;
                      }
                   }
 
                   var10000 = false;
-                  break label206;
+                  break label201;
                }
             }
 
@@ -464,7 +444,7 @@ public class KeyboardHandler {
 
          boolean var19 = var10000;
          if (var5 == 0) {
-            KeyMapping.set(var16, false);
+            KeyMapping.set(var15, false);
             if (var19 && var3 == 292) {
                if (this.handledDebugKey) {
                   this.handledDebugKey = false;
@@ -496,12 +476,12 @@ public class KeyboardHandler {
                }
             }
 
-            if (var10) {
+            if (var18) {
                if (var20) {
-                  KeyMapping.set(var16, false);
+                  KeyMapping.set(var15, false);
                } else {
-                  KeyMapping.set(var16, true);
-                  KeyMapping.click(var16);
+                  KeyMapping.set(var15, true);
+                  KeyMapping.click(var15);
                }
             }
 
@@ -525,8 +505,8 @@ public class KeyboardHandler {
                CrashReport var7 = CrashReport.forThrowable(var9, "charTyped event handler");
                var5.fillCrashDetails(var7);
                CrashReportCategory var8 = var7.addCategory("Key");
-               var8.setDetail("Codepoint", (Object)var3);
-               var8.setDetail("Mods", (Object)var4);
+               var8.setDetail("Codepoint", var3);
+               var8.setDetail("Mods", var4);
                throw new ReportedException(var7);
             }
          }
@@ -534,15 +514,7 @@ public class KeyboardHandler {
    }
 
    public void setup(long var1) {
-      InputConstants.setupKeyboardCallbacks(var1, (var1x, var3, var4, var5, var6) -> {
-         this.minecraft.execute(() -> {
-            this.keyPress(var1x, var3, var4, var5, var6);
-         });
-      }, (var1x, var3, var4) -> {
-         this.minecraft.execute(() -> {
-            this.charTyped(var1x, var3, var4);
-         });
-      });
+      InputConstants.setupKeyboardCallbacks(var1, (var1x, var3, var4, var5, var6) -> this.minecraft.execute(() -> this.keyPress(var1x, var3, var4, var5, var6)), (var1x, var3, var4) -> this.minecraft.execute(() -> this.charTyped(var1x, var3, var4)));
    }
 
    public String getClipboard() {

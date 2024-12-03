@@ -5,11 +5,9 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.MinecartRenderState;
 import net.minecraft.client.renderer.entity.state.MinecartTntRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.MinecartTNT;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -51,7 +49,7 @@ public class TntMinecartRenderer extends AbstractMinecartRenderer<MinecartTNT, M
    }
 
    public void extractRenderState(MinecartTNT var1, MinecartTntRenderState var2, float var3) {
-      super.extractRenderState((AbstractMinecart)var1, (MinecartRenderState)var2, var3);
+      super.extractRenderState(var1, var2, var3);
       var2.fuseRemainingInTicks = var1.getFuse() > -1 ? (float)var1.getFuse() - var3 + 1.0F : -1.0F;
    }
 

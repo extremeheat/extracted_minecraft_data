@@ -16,16 +16,4 @@ public record ShaderProgram(ResourceLocation configId, VertexFormat vertexFormat
       String var1 = var10000 + " (" + String.valueOf(this.vertexFormat) + ")";
       return !this.defines.isEmpty() ? var1 + " with " + String.valueOf(this.defines) : var1;
    }
-
-   public ResourceLocation configId() {
-      return this.configId;
-   }
-
-   public VertexFormat vertexFormat() {
-      return this.vertexFormat;
-   }
-
-   public ShaderDefines defines() {
-      return this.defines;
-   }
 }

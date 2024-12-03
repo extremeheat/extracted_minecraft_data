@@ -6,6 +6,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.network.Connection;
@@ -160,9 +161,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
       } catch (Throwable var7) {
          CrashReport var5 = CrashReport.forThrowable(var7, "Sending packet");
          CrashReportCategory var6 = var5.addCategory("Packet being sent");
-         var6.setDetail("Packet class", () -> {
-            return var1.getClass().getCanonicalName();
-         });
+         var6.setDetail("Packet class", (CrashReportDetail)(() -> var1.getClass().getCanonicalName()));
          throw new ReportedException(var5);
       }
    }
@@ -172,9 +171,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    }
 
    public void disconnect(DisconnectionDetails var1) {
-      this.connection.send(new ClientboundDisconnectPacket(var1.reason()), PacketSendListener.thenRun(() -> {
-         this.connection.disconnect(var1);
-      }));
+      this.connection.send(new ClientboundDisconnectPacket(var1.reason()), PacketSendListener.thenRun(() -> this.connection.disconnect(var1)));
       this.connection.setReadOnly();
       MinecraftServer var10000 = this.server;
       Connection var10001 = this.connection;

@@ -5,7 +5,6 @@ import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -22,9 +21,7 @@ import org.slf4j.Logger;
 
 public class Heightmap {
    private static final Logger LOGGER = LogUtils.getLogger();
-   static final Predicate<BlockState> NOT_AIR = (var0) -> {
-      return !var0.isAir();
-   };
+   static final Predicate<BlockState> NOT_AIR = (var0) -> !var0.isAir();
    static final Predicate<BlockState> MATERIAL_MOTION_BLOCKING = BlockBehaviour.BlockStateBase::blocksMotion;
    private final BitStorage data;
    private final Predicate<BlockState> isOpaque;
@@ -48,10 +45,7 @@ public class Heightmap {
 
          for(int var7 = 0; var7 < 16; ++var7) {
             for(int var8 = 0; var8 < 16; ++var8) {
-               Iterator var9 = var1.iterator();
-
-               while(var9.hasNext()) {
-                  Types var10 = (Types)var9.next();
+               for(Types var10 : var1) {
                   var3.add(var0.getOrCreateHeightmapUnprimed(var10));
                }
 
@@ -145,24 +139,34 @@ public class Heightmap {
       return var0 + var1 * 16;
    }
 
+   public static enum Usage {
+      WORLDGEN,
+      LIVE_WORLD,
+      CLIENT;
+
+      private Usage() {
+      }
+
+      // $FF: synthetic method
+      private static Usage[] $values() {
+         return new Usage[]{WORLDGEN, LIVE_WORLD, CLIENT};
+      }
+   }
+
    public static enum Types implements StringRepresentable {
       WORLD_SURFACE_WG("WORLD_SURFACE_WG", Heightmap.Usage.WORLDGEN, Heightmap.NOT_AIR),
       WORLD_SURFACE("WORLD_SURFACE", Heightmap.Usage.CLIENT, Heightmap.NOT_AIR),
       OCEAN_FLOOR_WG("OCEAN_FLOOR_WG", Heightmap.Usage.WORLDGEN, Heightmap.MATERIAL_MOTION_BLOCKING),
       OCEAN_FLOOR("OCEAN_FLOOR", Heightmap.Usage.LIVE_WORLD, Heightmap.MATERIAL_MOTION_BLOCKING),
-      MOTION_BLOCKING("MOTION_BLOCKING", Heightmap.Usage.CLIENT, (var0) -> {
-         return var0.blocksMotion() || !var0.getFluidState().isEmpty();
-      }),
-      MOTION_BLOCKING_NO_LEAVES("MOTION_BLOCKING_NO_LEAVES", Heightmap.Usage.LIVE_WORLD, (var0) -> {
-         return (var0.blocksMotion() || !var0.getFluidState().isEmpty()) && !(var0.getBlock() instanceof LeavesBlock);
-      });
+      MOTION_BLOCKING("MOTION_BLOCKING", Heightmap.Usage.CLIENT, (var0) -> var0.blocksMotion() || !var0.getFluidState().isEmpty()),
+      MOTION_BLOCKING_NO_LEAVES("MOTION_BLOCKING_NO_LEAVES", Heightmap.Usage.LIVE_WORLD, (var0) -> (var0.blocksMotion() || !var0.getFluidState().isEmpty()) && !(var0.getBlock() instanceof LeavesBlock));
 
-      public static final Codec<Types> CODEC = StringRepresentable.fromEnum(Types::values);
+      public static final Codec<Types> CODEC = StringRepresentable.<Types>fromEnum(Types::values);
       private final String serializationKey;
       private final Usage usage;
       private final Predicate<BlockState> isOpaque;
 
-      private Types(final String var3, final Usage var4, final Predicate var5) {
+      private Types(final String var3, final Usage var4, final Predicate<BlockState> var5) {
          this.serializationKey = var3;
          this.usage = var4;
          this.isOpaque = var5;
@@ -191,20 +195,6 @@ public class Heightmap {
       // $FF: synthetic method
       private static Types[] $values() {
          return new Types[]{WORLD_SURFACE_WG, WORLD_SURFACE, OCEAN_FLOOR_WG, OCEAN_FLOOR, MOTION_BLOCKING, MOTION_BLOCKING_NO_LEAVES};
-      }
-   }
-
-   public static enum Usage {
-      WORLDGEN,
-      LIVE_WORLD,
-      CLIENT;
-
-      private Usage() {
-      }
-
-      // $FF: synthetic method
-      private static Usage[] $values() {
-         return new Usage[]{WORLDGEN, LIVE_WORLD, CLIENT};
       }
    }
 }

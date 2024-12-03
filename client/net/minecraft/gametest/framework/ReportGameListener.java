@@ -64,24 +64,21 @@ class ReportGameListener implements GameTestListener {
       ++this.successes;
       if (var1.retryOptions().hasRetries()) {
          this.handleRetry(var1, var2, true);
+      } else if (!var1.isFlaky()) {
+         String var4 = var1.getTestName();
+         reportPassed(var1, var4 + " passed! (" + var1.getRunTime() + "ms)");
       } else {
-         String var10001;
-         if (!var1.isFlaky()) {
-            var10001 = var1.getTestName();
-            reportPassed(var1, var10001 + " passed! (" + var1.getRunTime() + "ms)");
+         if (this.successes >= var1.requiredSuccesses()) {
+            String var10001 = String.valueOf(var1);
+            reportPassed(var1, var10001 + " passed " + this.successes + " times of " + this.attempts + " attempts.");
          } else {
-            if (this.successes >= var1.requiredSuccesses()) {
-               var10001 = String.valueOf(var1);
-               reportPassed(var1, var10001 + " passed " + this.successes + " times of " + this.attempts + " attempts.");
-            } else {
-               ServerLevel var10000 = var1.getLevel();
-               ChatFormatting var3 = ChatFormatting.GREEN;
-               String var10002 = String.valueOf(var1);
-               say(var10000, var3, "Flaky test " + var10002 + " succeeded, attempt: " + this.attempts + " successes: " + this.successes);
-               var2.rerunTest(var1);
-            }
-
+            ServerLevel var10000 = var1.getLevel();
+            ChatFormatting var3 = ChatFormatting.GREEN;
+            String var10002 = String.valueOf(var1);
+            say(var10000, var3, "Flaky test " + var10002 + " succeeded, attempt: " + this.attempts + " successes: " + this.successes);
+            var2.rerunTest(var1);
          }
+
       }
    }
 
@@ -188,9 +185,7 @@ class ReportGameListener implements GameTestListener {
 
    private static ItemStack createBook(String var0, boolean var1, String var2) {
       StringBuffer var3 = new StringBuffer();
-      Arrays.stream(var0.split("\\.")).forEach((var1x) -> {
-         var3.append(var1x).append('\n');
-      });
+      Arrays.stream(var0.split("\\.")).forEach((var1x) -> var3.append(var1x).append('\n'));
       if (!var1) {
          var3.append("(optional)\n");
       }
@@ -204,11 +199,7 @@ class ReportGameListener implements GameTestListener {
    }
 
    protected static void say(ServerLevel var0, ChatFormatting var1, String var2) {
-      var0.getPlayers((var0x) -> {
-         return true;
-      }).forEach((var2x) -> {
-         var2x.sendSystemMessage(Component.literal(var2).withStyle(var1));
-      });
+      var0.getPlayers((var0x) -> true).forEach((var2x) -> var2x.sendSystemMessage(Component.literal(var2).withStyle(var1)));
    }
 
    private static void showRedBox(ServerLevel var0, BlockPos var1, String var2) {

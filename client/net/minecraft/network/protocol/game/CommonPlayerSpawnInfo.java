@@ -43,45 +43,4 @@ public record CommonPlayerSpawnInfo(Holder<DimensionType> dimensionType, Resourc
       var1.writeVarInt(this.portalCooldown);
       var1.writeVarInt(this.seaLevel);
    }
-
-   public Holder<DimensionType> dimensionType() {
-      return this.dimensionType;
-   }
-
-   public ResourceKey<Level> dimension() {
-      return this.dimension;
-   }
-
-   public long seed() {
-      return this.seed;
-   }
-
-   public GameType gameType() {
-      return this.gameType;
-   }
-
-   @Nullable
-   public GameType previousGameType() {
-      return this.previousGameType;
-   }
-
-   public boolean isDebug() {
-      return this.isDebug;
-   }
-
-   public boolean isFlat() {
-      return this.isFlat;
-   }
-
-   public Optional<GlobalPos> lastDeathLocation() {
-      return this.lastDeathLocation;
-   }
-
-   public int portalCooldown() {
-      return this.portalCooldown;
-   }
-
-   public int seaLevel() {
-      return this.seaLevel;
-   }
 }

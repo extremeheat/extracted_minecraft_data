@@ -44,7 +44,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
    public StonecutterMenu(int var1, Inventory var2, final ContainerLevelAccess var3) {
       super(MenuType.STONECUTTER, var1);
       this.selectedRecipeIndex = DataSlot.standalone();
-      this.recipesForInput = SelectableRecipe.SingleInputSet.empty();
+      this.recipesForInput = SelectableRecipe.SingleInputSet.<StonecutterRecipe>empty();
       this.input = ItemStack.EMPTY;
       this.slotUpdateListener = () -> {
       };
@@ -112,12 +112,16 @@ public class StonecutterMenu extends AbstractContainerMenu {
    }
 
    public boolean clickMenuButton(Player var1, int var2) {
-      if (this.isValidRecipeIndex(var2)) {
-         this.selectedRecipeIndex.set(var2);
-         this.setupResultSlot(var2);
-      }
+      if (this.selectedRecipeIndex.get() == var2) {
+         return false;
+      } else {
+         if (this.isValidRecipeIndex(var2)) {
+            this.selectedRecipeIndex.set(var2);
+            this.setupResultSlot(var2);
+         }
 
-      return true;
+         return true;
+      }
    }
 
    private boolean isValidRecipeIndex(int var1) {
@@ -139,7 +143,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
       if (!var1.isEmpty()) {
          this.recipesForInput = this.level.recipeAccess().stonecutterRecipes().selectByInput(var1);
       } else {
-         this.recipesForInput = SelectableRecipe.SingleInputSet.empty();
+         this.recipesForInput = SelectableRecipe.SingleInputSet.<StonecutterRecipe>empty();
       }
 
    }
@@ -177,7 +181,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
 
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = (Slot)this.slots.get(var2);
+      Slot var4 = this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          Item var6 = var5.getItem();
@@ -228,8 +232,6 @@ public class StonecutterMenu extends AbstractContainerMenu {
    public void removed(Player var1) {
       super.removed(var1);
       this.resultContainer.removeItemNoUpdate(1);
-      this.access.execute((var2, var3) -> {
-         this.clearContainer(var1, this.container);
-      });
+      this.access.execute((var2, var3) -> this.clearContainer(var1, this.container));
    }
 }

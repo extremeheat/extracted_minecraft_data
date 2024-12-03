@@ -5,7 +5,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -16,9 +15,7 @@ public record AdvancementRequirements(List<List<String>> requirements) {
    public static final AdvancementRequirements EMPTY;
 
    public AdvancementRequirements(FriendlyByteBuf var1) {
-      this(var1.readList((var0) -> {
-         return var0.readList(FriendlyByteBuf::readUtf);
-      }));
+      this(var1.readList((var0) -> var0.readList(FriendlyByteBuf::readUtf)));
    }
 
    public AdvancementRequirements(List<List<String>> var1) {
@@ -27,9 +24,7 @@ public record AdvancementRequirements(List<List<String>> requirements) {
    }
 
    public void write(FriendlyByteBuf var1) {
-      var1.writeCollection(this.requirements, (var0, var1x) -> {
-         var0.writeCollection(var1x, FriendlyByteBuf::writeUtf);
-      });
+      var1.writeCollection(this.requirements, (var0, var1x) -> var0.writeCollection(var1x, FriendlyByteBuf::writeUtf));
    }
 
    public static AdvancementRequirements allOf(Collection<String> var0) {
@@ -48,27 +43,20 @@ public record AdvancementRequirements(List<List<String>> requirements) {
       if (this.requirements.isEmpty()) {
          return false;
       } else {
-         Iterator var2 = this.requirements.iterator();
-
-         List var3;
-         do {
-            if (!var2.hasNext()) {
-               return true;
+         for(List var3 : this.requirements) {
+            if (!anyMatch(var3, var1)) {
+               return false;
             }
+         }
 
-            var3 = (List)var2.next();
-         } while(anyMatch(var3, var1));
-
-         return false;
+         return true;
       }
    }
 
    public int count(Predicate<String> var1) {
       int var2 = 0;
-      Iterator var3 = this.requirements.iterator();
 
-      while(var3.hasNext()) {
-         List var4 = (List)var3.next();
+      for(List var4 : this.requirements) {
          if (anyMatch(var4, var1)) {
             ++var2;
          }
@@ -78,30 +66,21 @@ public record AdvancementRequirements(List<List<String>> requirements) {
    }
 
    private static boolean anyMatch(List<String> var0, Predicate<String> var1) {
-      Iterator var2 = var0.iterator();
-
-      String var3;
-      do {
-         if (!var2.hasNext()) {
-            return false;
+      for(String var3 : var0) {
+         if (var1.test(var3)) {
+            return true;
          }
+      }
 
-         var3 = (String)var2.next();
-      } while(!var1.test(var3));
-
-      return true;
+      return false;
    }
 
    public DataResult<AdvancementRequirements> validate(Set<String> var1) {
       ObjectOpenHashSet var2 = new ObjectOpenHashSet();
-      Iterator var3 = this.requirements.iterator();
 
-      while(var3.hasNext()) {
-         List var4 = (List)var3.next();
+      for(List var4 : this.requirements) {
          if (var4.isEmpty() && var1.isEmpty()) {
-            return DataResult.error(() -> {
-               return "Requirement entry cannot be empty";
-            });
+            return DataResult.error(() -> "Requirement entry cannot be empty");
          }
 
          var2.addAll(var4);
@@ -129,18 +108,12 @@ public record AdvancementRequirements(List<List<String>> requirements) {
 
    public Set<String> names() {
       ObjectOpenHashSet var1 = new ObjectOpenHashSet();
-      Iterator var2 = this.requirements.iterator();
 
-      while(var2.hasNext()) {
-         List var3 = (List)var2.next();
+      for(List var3 : this.requirements) {
          var1.addAll(var3);
       }
 
       return var1;
-   }
-
-   public List<List<String>> requirements() {
-      return this.requirements;
    }
 
    static {

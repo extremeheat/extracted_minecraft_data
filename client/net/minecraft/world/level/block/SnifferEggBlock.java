@@ -66,7 +66,7 @@ public class SnifferEggBlock extends Block {
       } else {
          var2.playSound((Player)null, var3, SoundEvents.SNIFFER_EGG_HATCH, SoundSource.BLOCKS, 0.7F, 0.9F + var4.nextFloat() * 0.2F);
          var2.destroyBlock(var3, false);
-         Sniffer var5 = (Sniffer)EntityType.SNIFFER.create(var2, EntitySpawnReason.BREEDING);
+         Sniffer var5 = EntityType.SNIFFER.create(var2, EntitySpawnReason.BREEDING);
          if (var5 != null) {
             Vec3 var6 = var3.getCenter();
             var5.setBaby(true);

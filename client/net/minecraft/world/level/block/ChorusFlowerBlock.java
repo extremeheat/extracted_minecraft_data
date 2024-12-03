@@ -2,7 +2,6 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,11 +23,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ChorusFlowerBlock extends Block {
-   public static final MapCodec<ChorusFlowerBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("plant").forGetter((var0x) -> {
-         return var0x.plant;
-      }), propertiesCodec()).apply(var0, ChorusFlowerBlock::new);
-   });
+   public static final MapCodec<ChorusFlowerBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("plant").forGetter((var0x) -> var0x.plant), propertiesCodec()).apply(var0, ChorusFlowerBlock::new));
    public static final int DEAD_AGE = 5;
    public static final IntegerProperty AGE;
    protected static final VoxelShape BLOCK_SUPPORT_SHAPE;
@@ -67,11 +62,10 @@ public class ChorusFlowerBlock extends Block {
             boolean var7 = false;
             boolean var8 = false;
             BlockState var9 = var2.getBlockState(var3.below());
-            int var10;
             if (var9.is(Blocks.END_STONE)) {
                var7 = true;
             } else if (var9.is(this.plant)) {
-               var10 = 1;
+               int var10 = 1;
 
                for(int var11 = 0; var11 < 4; ++var11) {
                   BlockState var12 = var2.getBlockState(var3.below(var10 + 1));
@@ -96,23 +90,23 @@ public class ChorusFlowerBlock extends Block {
                var2.setBlock(var3, ChorusPlantBlock.getStateWithConnections(var2, var3, this.plant.defaultBlockState()), 2);
                this.placeGrownFlower(var2, var5, var6);
             } else if (var6 < 4) {
-               var10 = var4.nextInt(4);
+               int var15 = var4.nextInt(4);
                if (var8) {
-                  ++var10;
+                  ++var15;
                }
 
-               boolean var15 = false;
+               boolean var16 = false;
 
-               for(int var16 = 0; var16 < var10; ++var16) {
+               for(int var17 = 0; var17 < var15; ++var17) {
                   Direction var13 = Direction.Plane.HORIZONTAL.getRandomDirection(var4);
                   BlockPos var14 = var3.relative(var13);
                   if (var2.isEmptyBlock(var14) && var2.isEmptyBlock(var14.below()) && allNeighborsEmpty(var2, var14, var13.getOpposite())) {
                      this.placeGrownFlower(var2, var14, var6 + 1);
-                     var15 = true;
+                     var16 = true;
                   }
                }
 
-               if (var15) {
+               if (var16) {
                   var2.setBlock(var3, ChorusPlantBlock.getStateWithConnections(var2, var3, this.plant.defaultBlockState()), 2);
                } else {
                   this.placeDeadFlower(var2, var3);
@@ -136,18 +130,13 @@ public class ChorusFlowerBlock extends Block {
    }
 
    private static boolean allNeighborsEmpty(LevelReader var0, BlockPos var1, @Nullable Direction var2) {
-      Iterator var3 = Direction.Plane.HORIZONTAL.iterator();
-
-      Direction var4;
-      do {
-         if (!var3.hasNext()) {
-            return true;
+      for(Direction var4 : Direction.Plane.HORIZONTAL) {
+         if (var4 != var2 && !var0.isEmptyBlock(var1.relative(var4))) {
+            return false;
          }
+      }
 
-         var4 = (Direction)var3.next();
-      } while(var4 == var2 || var0.isEmptyBlock(var1.relative(var4)));
-
-      return false;
+      return true;
    }
 
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
@@ -165,10 +154,8 @@ public class ChorusFlowerBlock extends Block {
             return false;
          } else {
             boolean var5 = false;
-            Iterator var6 = Direction.Plane.HORIZONTAL.iterator();
 
-            while(var6.hasNext()) {
-               Direction var7 = (Direction)var6.next();
+            for(Direction var7 : Direction.Plane.HORIZONTAL) {
                BlockState var8 = var2.getBlockState(var3.relative(var7));
                if (var8.is(this.plant)) {
                   if (var5) {

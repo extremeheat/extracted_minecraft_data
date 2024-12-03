@@ -26,9 +26,7 @@ public class AttributesRenameLegacy extends DataFix {
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
       OpticFinder var2 = var1.findField("tag");
-      return TypeRewriteRule.seq(this.fixTypeEverywhereTyped(this.name + " (ItemStack)", var1, (var2x) -> {
-         return var2x.updateTyped(var2, this::fixItemStackTag);
-      }), new TypeRewriteRule[]{this.fixTypeEverywhereTyped(this.name + " (Entity)", this.getInputSchema().getType(References.ENTITY), this::fixEntity), this.fixTypeEverywhereTyped(this.name + " (Player)", this.getInputSchema().getType(References.PLAYER), this::fixEntity)});
+      return TypeRewriteRule.seq(this.fixTypeEverywhereTyped(this.name + " (ItemStack)", var1, (var2x) -> var2x.updateTyped(var2, this::fixItemStackTag)), new TypeRewriteRule[]{this.fixTypeEverywhereTyped(this.name + " (Entity)", this.getInputSchema().getType(References.ENTITY), this::fixEntity), this.fixTypeEverywhereTyped(this.name + " (Player)", this.getInputSchema().getType(References.PLAYER), this::fixEntity)});
    }
 
    private Dynamic<?> fixName(Dynamic<?> var1) {
@@ -38,30 +36,18 @@ public class AttributesRenameLegacy extends DataFix {
    }
 
    private Typed<?> fixItemStackTag(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var1x) -> {
-         return var1x.update("AttributeModifiers", (var1) -> {
-            Optional var10000 = var1.asStreamOpt().result().map((var1x) -> {
-               return var1x.map((var1) -> {
-                  return var1.update("AttributeName", this::fixName);
-               });
-            });
+      return var1.update(DSL.remainderFinder(), (var1x) -> var1x.update("AttributeModifiers", (var1) -> {
+            Optional var10000 = var1.asStreamOpt().result().map((var1x) -> var1x.map((var1) -> var1.update("AttributeName", this::fixName)));
             Objects.requireNonNull(var1);
             return (Dynamic)DataFixUtils.orElse(var10000.map(var1::createList), var1);
-         });
-      });
+         }));
    }
 
    private Typed<?> fixEntity(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var1x) -> {
-         return var1x.update("Attributes", (var1) -> {
-            Optional var10000 = var1.asStreamOpt().result().map((var1x) -> {
-               return var1x.map((var1) -> {
-                  return var1.update("Name", this::fixName);
-               });
-            });
+      return var1.update(DSL.remainderFinder(), (var1x) -> var1x.update("Attributes", (var1) -> {
+            Optional var10000 = var1.asStreamOpt().result().map((var1x) -> var1x.map((var1) -> var1.update("Name", this::fixName)));
             Objects.requireNonNull(var1);
             return (Dynamic)DataFixUtils.orElse(var10000.map(var1::createList), var1);
-         });
-      });
+         }));
    }
 }

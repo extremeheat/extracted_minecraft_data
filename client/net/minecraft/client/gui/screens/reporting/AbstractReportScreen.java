@@ -92,12 +92,8 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
          this.onReportChanged();
       }).build());
       LinearLayout var1 = (LinearLayout)this.layout.addChild(LinearLayout.horizontal().spacing(8));
-      var1.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
-         this.onClose();
-      }).width(120).build());
-      this.sendButton = (Button)var1.addChild(Button.builder(SEND_REPORT, (var1x) -> {
-         this.sendReport();
-      }).width(120).build());
+      var1.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).width(120).build());
+      this.sendButton = (Button)var1.addChild(Button.builder(SEND_REPORT, (var1x) -> this.sendReport()).width(120).build());
    }
 
    protected void onReportChanged() {
@@ -131,16 +127,12 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
 
             return null;
          }, this.minecraft);
-      }).ifRight((var1) -> {
-         this.displayReportSendError(var1.message());
-      });
+      }).ifRight((var1) -> this.displayReportSendError(var1.message()));
    }
 
    private void onReportSendSuccess() {
       this.clearDraft();
-      this.minecraft.setScreen(GenericWaitingScreen.createCompleted(REPORT_SENT_TITLE, REPORT_SENT_MESSAGE, CommonComponents.GUI_DONE, () -> {
-         this.minecraft.setScreen((Screen)null);
-      }));
+      this.minecraft.setScreen(GenericWaitingScreen.createCompleted(REPORT_SENT_TITLE, REPORT_SENT_MESSAGE, CommonComponents.GUI_DONE, () -> this.minecraft.setScreen((Screen)null)));
    }
 
    private void onReportSendError(Throwable var1) {
@@ -158,9 +150,7 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
 
    private void displayReportSendError(Component var1) {
       MutableComponent var2 = var1.copy().withStyle(ChatFormatting.RED);
-      this.minecraft.setScreen(GenericWaitingScreen.createCompleted(REPORT_ERROR_TITLE, var2, CommonComponents.GUI_BACK, () -> {
-         this.minecraft.setScreen(this);
-      }));
+      this.minecraft.setScreen(GenericWaitingScreen.createCompleted(REPORT_ERROR_TITLE, var2, CommonComponents.GUI_BACK, () -> this.minecraft.setScreen(this)));
    }
 
    void saveDraft() {
@@ -203,7 +193,7 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
       LOGGER = LogUtils.getLogger();
    }
 
-   private class DiscardReportWarningScreen extends WarningScreen {
+   class DiscardReportWarningScreen extends WarningScreen {
       private static final Component TITLE;
       private static final Component MESSAGE;
       private static final Component RETURN;
@@ -218,9 +208,7 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
          LinearLayout var1 = LinearLayout.vertical().spacing(8);
          var1.defaultCellSetting().alignHorizontallyCenter();
          LinearLayout var2 = (LinearLayout)var1.addChild(LinearLayout.horizontal().spacing(8));
-         var2.addChild(Button.builder(RETURN, (var1x) -> {
-            this.onClose();
-         }).build());
+         var2.addChild(Button.builder(RETURN, (var1x) -> this.onClose()).build());
          var2.addChild(Button.builder(DRAFT, (var1x) -> {
             AbstractReportScreen.this.saveDraft();
             this.minecraft.setScreen(AbstractReportScreen.this.lastScreen);

@@ -45,9 +45,7 @@ public class ItemUtils {
    public static void onContainerDestroyed(ItemEntity var0, Iterable<ItemStack> var1) {
       Level var2 = var0.level();
       if (!var2.isClientSide) {
-         var1.forEach((var2x) -> {
-            var2.addFreshEntity(new ItemEntity(var2, var0.getX(), var0.getY(), var0.getZ(), var2x));
-         });
+         var1.forEach((var2x) -> var2.addFreshEntity(new ItemEntity(var2, var0.getX(), var0.getY(), var0.getZ(), var2x)));
       }
    }
 }

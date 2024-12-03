@@ -42,14 +42,6 @@ public record AdvancementHolder(ResourceLocation id, Advancement value) {
       return this.id.toString();
    }
 
-   public ResourceLocation id() {
-      return this.id;
-   }
-
-   public Advancement value() {
-      return this.value;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ResourceLocation.STREAM_CODEC, AdvancementHolder::id, Advancement.STREAM_CODEC, AdvancementHolder::value, AdvancementHolder::new);
       LIST_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs.list());

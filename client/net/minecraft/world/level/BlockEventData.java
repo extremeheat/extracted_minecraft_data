@@ -11,20 +11,4 @@ public record BlockEventData(BlockPos pos, Block block, int paramA, int paramB) 
       this.paramA = var3;
       this.paramB = var4;
    }
-
-   public BlockPos pos() {
-      return this.pos;
-   }
-
-   public Block block() {
-      return this.block;
-   }
-
-   public int paramA() {
-      return this.paramA;
-   }
-
-   public int paramB() {
-      return this.paramB;
-   }
 }

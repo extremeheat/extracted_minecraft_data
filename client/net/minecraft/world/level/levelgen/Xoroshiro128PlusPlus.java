@@ -35,12 +35,6 @@ public class Xoroshiro128PlusPlus {
    }
 
    static {
-      CODEC = Codec.LONG_STREAM.comapFlatMap((var0) -> {
-         return Util.fixedSize((LongStream)var0, 2).map((var0x) -> {
-            return new Xoroshiro128PlusPlus(var0x[0], var0x[1]);
-         });
-      }, (var0) -> {
-         return LongStream.of(new long[]{var0.seedLo, var0.seedHi});
-      });
+      CODEC = Codec.LONG_STREAM.comapFlatMap((var0) -> Util.fixedSize((LongStream)var0, 2).map((var0x) -> new Xoroshiro128PlusPlus(var0x[0], var0x[1])), (var0) -> LongStream.of(new long[]{var0.seedLo, var0.seedHi}));
    }
 }

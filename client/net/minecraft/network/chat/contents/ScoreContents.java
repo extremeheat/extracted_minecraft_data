@@ -24,9 +24,7 @@ import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 
 public record ScoreContents(Either<SelectorPattern, String> name, String objective) implements ComponentContents {
-   public static final MapCodec<ScoreContents> INNER_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.either(SelectorPattern.CODEC, Codec.STRING).fieldOf("name").forGetter(ScoreContents::name), Codec.STRING.fieldOf("objective").forGetter(ScoreContents::objective)).apply(var0, ScoreContents::new);
-   });
+   public static final MapCodec<ScoreContents> INNER_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.either(SelectorPattern.CODEC, Codec.STRING).fieldOf("name").forGetter(ScoreContents::name), Codec.STRING.fieldOf("objective").forGetter(ScoreContents::objective)).apply(var0, ScoreContents::new));
    public static final MapCodec<ScoreContents> CODEC;
    public static final ComponentContents.Type<ScoreContents> TYPE;
 
@@ -89,16 +87,8 @@ public record ScoreContents(Either<SelectorPattern, String> name, String objecti
       return "score{name='" + var10000 + "', objective='" + this.objective + "'}";
    }
 
-   public Either<SelectorPattern, String> name() {
-      return this.name;
-   }
-
-   public String objective() {
-      return this.objective;
-   }
-
    static {
       CODEC = INNER_CODEC.fieldOf("score");
-      TYPE = new ComponentContents.Type(CODEC, "score");
+      TYPE = new ComponentContents.Type<ScoreContents>(CODEC, "score");
    }
 }

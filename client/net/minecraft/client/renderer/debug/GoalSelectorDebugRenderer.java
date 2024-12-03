@@ -38,27 +38,21 @@ public class GoalSelectorDebugRenderer implements DebugRenderer.SimpleDebugRende
       BlockPos var10 = BlockPos.containing(var9.getPosition().x, 0.0, var9.getPosition().z);
       ObjectIterator var11 = this.goalSelectors.values().iterator();
 
-      while(true) {
-         EntityGoalInfo var12;
-         BlockPos var13;
-         do {
-            if (!var11.hasNext()) {
-               return;
+      while(var11.hasNext()) {
+         EntityGoalInfo var12 = (EntityGoalInfo)var11.next();
+         BlockPos var13 = var12.entityPos;
+         if (var10.closerThan(var13, 160.0)) {
+            for(int var14 = 0; var14 < var12.goals.size(); ++var14) {
+               GoalDebugPayload.DebugGoal var15 = (GoalDebugPayload.DebugGoal)var12.goals.get(var14);
+               double var16 = (double)var13.getX() + 0.5;
+               double var18 = (double)var13.getY() + 2.0 + (double)var14 * 0.25;
+               double var20 = (double)var13.getZ() + 0.5;
+               int var22 = var15.isRunning() ? -16711936 : -3355444;
+               DebugRenderer.renderFloatingText(var1, var2, var15.name(), var16, var18, var20, var22);
             }
-
-            var12 = (EntityGoalInfo)var11.next();
-            var13 = var12.entityPos;
-         } while(!var10.closerThan(var13, 160.0));
-
-         for(int var14 = 0; var14 < var12.goals.size(); ++var14) {
-            GoalDebugPayload.DebugGoal var15 = (GoalDebugPayload.DebugGoal)var12.goals.get(var14);
-            double var16 = (double)var13.getX() + 0.5;
-            double var18 = (double)var13.getY() + 2.0 + (double)var14 * 0.25;
-            double var20 = (double)var13.getZ() + 0.5;
-            int var22 = var15.isRunning() ? -16711936 : -3355444;
-            DebugRenderer.renderFloatingText(var1, var2, var15.name(), var16, var18, var20, var22);
          }
       }
+
    }
 
    static record EntityGoalInfo(BlockPos entityPos, List<GoalDebugPayload.DebugGoal> goals) {
@@ -69,14 +63,6 @@ public class GoalSelectorDebugRenderer implements DebugRenderer.SimpleDebugRende
          super();
          this.entityPos = var1;
          this.goals = var2;
-      }
-
-      public BlockPos entityPos() {
-         return this.entityPos;
-      }
-
-      public List<GoalDebugPayload.DebugGoal> goals() {
-         return this.goals;
       }
    }
 }

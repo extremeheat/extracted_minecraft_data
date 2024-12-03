@@ -4,7 +4,7 @@ import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.common.ServerCommonPacketListener;
 import net.minecraft.network.protocol.ping.ServerPingPacketListener;
 
-public interface ServerGamePacketListener extends ServerCommonPacketListener, ServerPingPacketListener {
+public interface ServerGamePacketListener extends ServerPingPacketListener, ServerCommonPacketListener {
    default ConnectionProtocol protocol() {
       return ConnectionProtocol.PLAY;
    }
@@ -59,6 +59,8 @@ public interface ServerGamePacketListener extends ServerCommonPacketListener, Se
 
    void handleAcceptTeleportPacket(ServerboundAcceptTeleportationPacket var1);
 
+   void handleAcceptPlayerLoad(ServerboundPlayerLoadedPacket var1);
+
    void handleRecipeBookSeenRecipePacket(ServerboundRecipeBookSeenRecipePacket var1);
 
    void handleBundleItemSelectedPacket(ServerboundSelectBundleItemPacket var1);
@@ -73,7 +75,9 @@ public interface ServerGamePacketListener extends ServerCommonPacketListener, Se
 
    void handleSetCommandMinecart(ServerboundSetCommandMinecartPacket var1);
 
-   void handlePickItem(ServerboundPickItemPacket var1);
+   void handlePickItemFromBlock(ServerboundPickItemFromBlockPacket var1);
+
+   void handlePickItemFromEntity(ServerboundPickItemFromEntityPacket var1);
 
    void handleRenameItem(ServerboundRenameItemPacket var1);
 

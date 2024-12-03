@@ -16,9 +16,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 
 public record ResolvableProfile(Optional<String> name, Optional<UUID> id, PropertyMap properties, GameProfile gameProfile) {
-   private static final Codec<ResolvableProfile> FULL_CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ExtraCodecs.PLAYER_NAME.optionalFieldOf("name").forGetter(ResolvableProfile::name), UUIDUtil.CODEC.optionalFieldOf("id").forGetter(ResolvableProfile::id), ExtraCodecs.PROPERTY_MAP.optionalFieldOf("properties", new PropertyMap()).forGetter(ResolvableProfile::properties)).apply(var0, ResolvableProfile::new);
-   });
+   private static final Codec<ResolvableProfile> FULL_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.PLAYER_NAME.optionalFieldOf("name").forGetter(ResolvableProfile::name), UUIDUtil.CODEC.optionalFieldOf("id").forGetter(ResolvableProfile::id), ExtraCodecs.PROPERTY_MAP.optionalFieldOf("properties", new PropertyMap()).forGetter(ResolvableProfile::properties)).apply(var0, ResolvableProfile::new));
    public static final Codec<ResolvableProfile> CODEC;
    public static final StreamCodec<ByteBuf, ResolvableProfile> STREAM_CODEC;
 
@@ -43,14 +41,10 @@ public record ResolvableProfile(Optional<String> name, Optional<UUID> id, Proper
          return CompletableFuture.completedFuture(this);
       } else {
          return this.id.isPresent() ? SkullBlockEntity.fetchGameProfile((UUID)this.id.get()).thenApply((var1) -> {
-            GameProfile var2 = (GameProfile)var1.orElseGet(() -> {
-               return new GameProfile((UUID)this.id.get(), (String)this.name.orElse(""));
-            });
+            GameProfile var2 = (GameProfile)var1.orElseGet(() -> new GameProfile((UUID)this.id.get(), (String)this.name.orElse("")));
             return new ResolvableProfile(var2);
          }) : SkullBlockEntity.fetchGameProfile((String)this.name.orElseThrow()).thenApply((var1) -> {
-            GameProfile var2 = (GameProfile)var1.orElseGet(() -> {
-               return new GameProfile(Util.NIL_UUID, (String)this.name.get());
-            });
+            GameProfile var2 = (GameProfile)var1.orElseGet(() -> new GameProfile(Util.NIL_UUID, (String)this.name.get()));
             return new ResolvableProfile(var2);
          });
       }
@@ -70,26 +64,8 @@ public record ResolvableProfile(Optional<String> name, Optional<UUID> id, Proper
       }
    }
 
-   public Optional<String> name() {
-      return this.name;
-   }
-
-   public Optional<UUID> id() {
-      return this.id;
-   }
-
-   public PropertyMap properties() {
-      return this.properties;
-   }
-
-   public GameProfile gameProfile() {
-      return this.gameProfile;
-   }
-
    static {
-      CODEC = Codec.withAlternative(FULL_CODEC, ExtraCodecs.PLAYER_NAME, (var0) -> {
-         return new ResolvableProfile(Optional.of(var0), Optional.empty(), new PropertyMap());
-      });
+      CODEC = Codec.withAlternative(FULL_CODEC, ExtraCodecs.PLAYER_NAME, (var0) -> new ResolvableProfile(Optional.of(var0), Optional.empty(), new PropertyMap()));
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.stringUtf8(16).apply(ByteBufCodecs::optional), ResolvableProfile::name, UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs::optional), ResolvableProfile::id, ByteBufCodecs.GAME_PROFILE_PROPERTIES, ResolvableProfile::properties, ResolvableProfile::new);
    }
 }

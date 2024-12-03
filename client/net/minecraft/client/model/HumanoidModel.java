@@ -67,14 +67,10 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       return var2;
    }
 
-   protected ArmPose getArmPose(T var1, HumanoidArm var2) {
-      return HumanoidModel.ArmPose.EMPTY;
-   }
-
    public void setupAnim(T var1) {
       super.setupAnim(var1);
-      ArmPose var2 = this.getArmPose(var1, HumanoidArm.LEFT);
-      ArmPose var3 = this.getArmPose(var1, HumanoidArm.RIGHT);
+      ArmPose var2 = var1.leftArmPose;
+      ArmPose var3 = var1.rightArmPose;
       float var4 = var1.swimAmount;
       boolean var5 = var1.isFallFlying;
       this.head.xRot = var1.xRot * 0.017453292F;
@@ -95,9 +91,8 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       this.leftLeg.yRot = -0.005F;
       this.rightLeg.zRot = 0.005F;
       this.leftLeg.zRot = -0.005F;
-      ModelPart var10000;
       if (var1.isPassenger) {
-         var10000 = this.rightArm;
+         ModelPart var10000 = this.rightArm;
          var10000.xRot += -0.62831855F;
          var10000 = this.leftArm;
          var10000.xRot += -0.62831855F;
@@ -110,17 +105,16 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       }
 
       boolean var8 = var1.mainArm == HumanoidArm.RIGHT;
-      boolean var9;
       if (var1.isUsingItem) {
-         var9 = var1.useItemHand == InteractionHand.MAIN_HAND;
+         boolean var9 = var1.useItemHand == InteractionHand.MAIN_HAND;
          if (var9 == var8) {
             this.poseRightArm(var1, var3);
          } else {
             this.poseLeftArm(var1, var2);
          }
       } else {
-         var9 = var8 ? var2.isTwoHanded() : var3.isTwoHanded();
-         if (var8 != var9) {
+         boolean var15 = var8 ? var2.isTwoHanded() : var3.isTwoHanded();
+         if (var8 != var15) {
             this.poseLeftArm(var1, var2);
             this.poseRightArm(var1, var3);
          } else {
@@ -132,22 +126,22 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       this.setupAttackAnimation(var1, var1.ageInTicks);
       if (var1.isCrouching) {
          this.body.xRot = 0.5F;
-         var10000 = this.rightArm;
-         var10000.xRot += 0.4F;
-         var10000 = this.leftArm;
-         var10000.xRot += 0.4F;
-         var10000 = this.rightLeg;
-         var10000.z += 4.0F;
-         var10000 = this.leftLeg;
-         var10000.z += 4.0F;
-         var10000 = this.head;
-         var10000.y += 4.2F;
-         var10000 = this.body;
-         var10000.y += 3.2F;
-         var10000 = this.leftArm;
-         var10000.y += 3.2F;
-         var10000 = this.rightArm;
-         var10000.y += 3.2F;
+         ModelPart var20 = this.rightArm;
+         var20.xRot += 0.4F;
+         var20 = this.leftArm;
+         var20.xRot += 0.4F;
+         var20 = this.rightLeg;
+         var20.z += 4.0F;
+         var20 = this.leftLeg;
+         var20.z += 4.0F;
+         var20 = this.head;
+         var20.y += 4.2F;
+         var20 = this.body;
+         var20.y += 3.2F;
+         var20 = this.leftArm;
+         var20.y += 3.2F;
+         var20 = this.rightArm;
+         var20.y += 3.2F;
       }
 
       if (var3 != HumanoidModel.ArmPose.SPYGLASS) {
@@ -159,29 +153,28 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
       }
 
       if (var4 > 0.0F) {
-         float var15 = var6 % 26.0F;
+         float var16 = var6 % 26.0F;
          HumanoidArm var10 = var1.attackArm;
          float var11 = var10 == HumanoidArm.RIGHT && var1.attackTime > 0.0F ? 0.0F : var4;
          float var12 = var10 == HumanoidArm.LEFT && var1.attackTime > 0.0F ? 0.0F : var4;
-         float var13;
          if (!var1.isUsingItem) {
-            if (var15 < 14.0F) {
+            if (var16 < 14.0F) {
                this.leftArm.xRot = Mth.rotLerpRad(var12, this.leftArm.xRot, 0.0F);
                this.rightArm.xRot = Mth.lerp(var11, this.rightArm.xRot, 0.0F);
                this.leftArm.yRot = Mth.rotLerpRad(var12, this.leftArm.yRot, 3.1415927F);
                this.rightArm.yRot = Mth.lerp(var11, this.rightArm.yRot, 3.1415927F);
-               this.leftArm.zRot = Mth.rotLerpRad(var12, this.leftArm.zRot, 3.1415927F + 1.8707964F * this.quadraticArmUpdate(var15) / this.quadraticArmUpdate(14.0F));
-               this.rightArm.zRot = Mth.lerp(var11, this.rightArm.zRot, 3.1415927F - 1.8707964F * this.quadraticArmUpdate(var15) / this.quadraticArmUpdate(14.0F));
-            } else if (var15 >= 14.0F && var15 < 22.0F) {
-               var13 = (var15 - 14.0F) / 8.0F;
-               this.leftArm.xRot = Mth.rotLerpRad(var12, this.leftArm.xRot, 1.5707964F * var13);
-               this.rightArm.xRot = Mth.lerp(var11, this.rightArm.xRot, 1.5707964F * var13);
+               this.leftArm.zRot = Mth.rotLerpRad(var12, this.leftArm.zRot, 3.1415927F + 1.8707964F * this.quadraticArmUpdate(var16) / this.quadraticArmUpdate(14.0F));
+               this.rightArm.zRot = Mth.lerp(var11, this.rightArm.zRot, 3.1415927F - 1.8707964F * this.quadraticArmUpdate(var16) / this.quadraticArmUpdate(14.0F));
+            } else if (var16 >= 14.0F && var16 < 22.0F) {
+               float var17 = (var16 - 14.0F) / 8.0F;
+               this.leftArm.xRot = Mth.rotLerpRad(var12, this.leftArm.xRot, 1.5707964F * var17);
+               this.rightArm.xRot = Mth.lerp(var11, this.rightArm.xRot, 1.5707964F * var17);
                this.leftArm.yRot = Mth.rotLerpRad(var12, this.leftArm.yRot, 3.1415927F);
                this.rightArm.yRot = Mth.lerp(var11, this.rightArm.yRot, 3.1415927F);
-               this.leftArm.zRot = Mth.rotLerpRad(var12, this.leftArm.zRot, 5.012389F - 1.8707964F * var13);
-               this.rightArm.zRot = Mth.lerp(var11, this.rightArm.zRot, 1.2707963F + 1.8707964F * var13);
-            } else if (var15 >= 22.0F && var15 < 26.0F) {
-               var13 = (var15 - 22.0F) / 4.0F;
+               this.leftArm.zRot = Mth.rotLerpRad(var12, this.leftArm.zRot, 5.012389F - 1.8707964F * var17);
+               this.rightArm.zRot = Mth.lerp(var11, this.rightArm.zRot, 1.2707963F + 1.8707964F * var17);
+            } else if (var16 >= 22.0F && var16 < 26.0F) {
+               float var13 = (var16 - 22.0F) / 4.0F;
                this.leftArm.xRot = Mth.rotLerpRad(var12, this.leftArm.xRot, 1.5707964F - 1.5707964F * var13);
                this.rightArm.xRot = Mth.lerp(var11, this.rightArm.xRot, 1.5707964F - 1.5707964F * var13);
                this.leftArm.yRot = Mth.rotLerpRad(var12, this.leftArm.yRot, 3.1415927F);
@@ -191,7 +184,7 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
             }
          }
 
-         var13 = 0.3F;
+         float var18 = 0.3F;
          float var14 = 0.33333334F;
          this.leftLeg.xRot = Mth.lerp(var4, this.leftLeg.xRot, 0.3F * Mth.cos(var6 * 0.33333334F + 3.1415927F));
          this.rightLeg.xRot = Mth.lerp(var4, this.rightLeg.xRot, 0.3F * Mth.cos(var6 * 0.33333334F));
@@ -296,9 +289,8 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
          HumanoidArm var4 = var1.attackArm;
          ModelPart var5 = this.getArm(var4);
          this.body.yRot = Mth.sin(Mth.sqrt(var3) * 6.2831855F) * 0.2F;
-         ModelPart var10000;
          if (var4 == HumanoidArm.LEFT) {
-            var10000 = this.body;
+            ModelPart var10000 = this.body;
             var10000.yRot *= -1.0F;
          }
 
@@ -307,12 +299,12 @@ public class HumanoidModel<T extends HumanoidRenderState> extends EntityModel<T>
          this.rightArm.x = -Mth.cos(this.body.yRot) * 5.0F * var7;
          this.leftArm.z = -Mth.sin(this.body.yRot) * 5.0F * var7;
          this.leftArm.x = Mth.cos(this.body.yRot) * 5.0F * var7;
-         var10000 = this.rightArm;
-         var10000.yRot += this.body.yRot;
-         var10000 = this.leftArm;
-         var10000.yRot += this.body.yRot;
-         var10000 = this.leftArm;
-         var10000.xRot += this.body.yRot;
+         ModelPart var13 = this.rightArm;
+         var13.yRot += this.body.yRot;
+         var13 = this.leftArm;
+         var13.yRot += this.body.yRot;
+         var13 = this.leftArm;
+         var13.xRot += this.body.yRot;
          float var6 = 1.0F - var3;
          var6 *= var6;
          var6 *= var6;

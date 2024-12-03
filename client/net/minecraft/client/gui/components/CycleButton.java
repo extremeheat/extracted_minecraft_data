@@ -65,7 +65,7 @@ public class CycleButton<T> extends AbstractButton {
 
    private T getCycledValue(int var1) {
       List var2 = this.values.getSelectedList();
-      return var2.get(Mth.positiveModulo(this.index + var1, var2.size()));
+      return (T)var2.get(Mth.positiveModulo(this.index + var1, var2.size()));
    }
 
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
@@ -130,19 +130,15 @@ public class CycleButton<T> extends AbstractButton {
    }
 
    public static <T> Builder<T> builder(Function<T, Component> var0) {
-      return new Builder(var0);
+      return new Builder<T>(var0);
    }
 
    public static Builder<Boolean> booleanBuilder(Component var0, Component var1) {
-      return (new Builder((var2) -> {
-         return var2 ? var0 : var1;
-      })).withValues((Collection)BOOLEAN_OPTIONS);
+      return (new Builder((var2) -> var2 ? var0 : var1)).withValues(BOOLEAN_OPTIONS);
    }
 
    public static Builder<Boolean> onOffBuilder() {
-      return (new Builder((var0) -> {
-         return var0 ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF;
-      })).withValues((Collection)BOOLEAN_OPTIONS);
+      return (new Builder((var0) -> var0 ? CommonComponents.OPTION_ON : CommonComponents.OPTION_OFF)).withValues(BOOLEAN_OPTIONS);
    }
 
    public static Builder<Boolean> onOffBuilder(boolean var0) {
@@ -153,53 +149,14 @@ public class CycleButton<T> extends AbstractButton {
       BOOLEAN_OPTIONS = ImmutableList.of(Boolean.TRUE, Boolean.FALSE);
    }
 
-   public interface ValueListSupplier<T> {
-      List<T> getSelectedList();
-
-      List<T> getDefaultList();
-
-      static <T> ValueListSupplier<T> create(Collection<T> var0) {
-         final ImmutableList var1 = ImmutableList.copyOf(var0);
-         return new ValueListSupplier<T>() {
-            public List<T> getSelectedList() {
-               return var1;
-            }
-
-            public List<T> getDefaultList() {
-               return var1;
-            }
-         };
-      }
-
-      static <T> ValueListSupplier<T> create(final BooleanSupplier var0, List<T> var1, List<T> var2) {
-         final ImmutableList var3 = ImmutableList.copyOf(var1);
-         final ImmutableList var4 = ImmutableList.copyOf(var2);
-         return new ValueListSupplier<T>() {
-            public List<T> getSelectedList() {
-               return var0.getAsBoolean() ? var4 : var3;
-            }
-
-            public List<T> getDefaultList() {
-               return var3;
-            }
-         };
-      }
-   }
-
-   public interface OnValueChange<T> {
-      void onValueChange(CycleButton<T> var1, T var2);
-   }
-
    public static class Builder<T> {
       private int initialIndex;
       @Nullable
       private T initialValue;
       private final Function<T, Component> valueStringifier;
-      private OptionInstance.TooltipSupplier<T> tooltipSupplier = (var0) -> {
-         return null;
-      };
+      private OptionInstance.TooltipSupplier<T> tooltipSupplier = (var0) -> null;
       private Function<CycleButton<T>, MutableComponent> narrationProvider = CycleButton::createDefaultNarrationMessage;
-      private ValueListSupplier<T> values = CycleButton.ValueListSupplier.create(ImmutableList.of());
+      private ValueListSupplier<T> values = CycleButton.ValueListSupplier.<T>create(ImmutableList.of());
       private boolean displayOnlyValue;
 
       public Builder(Function<T, Component> var1) {
@@ -213,7 +170,7 @@ public class CycleButton<T> extends AbstractButton {
 
       @SafeVarargs
       public final Builder<T> withValues(T... var1) {
-         return this.withValues((Collection)ImmutableList.copyOf(var1));
+         return this.withValues(ImmutableList.copyOf(var1));
       }
 
       public Builder<T> withValues(List<T> var1, List<T> var2) {
@@ -271,8 +228,45 @@ public class CycleButton<T> extends AbstractButton {
             Object var8 = this.initialValue != null ? this.initialValue : var7.get(this.initialIndex);
             Component var9 = (Component)this.valueStringifier.apply(var8);
             Object var10 = this.displayOnlyValue ? var9 : CommonComponents.optionNameValue(var5, var9);
-            return new CycleButton(var1, var2, var3, var4, (Component)var10, var5, this.initialIndex, var8, this.values, this.valueStringifier, this.narrationProvider, var6, this.tooltipSupplier, this.displayOnlyValue);
+            return new CycleButton<T>(var1, var2, var3, var4, (Component)var10, var5, this.initialIndex, var8, this.values, this.valueStringifier, this.narrationProvider, var6, this.tooltipSupplier, this.displayOnlyValue);
          }
       }
+   }
+
+   public interface ValueListSupplier<T> {
+      List<T> getSelectedList();
+
+      List<T> getDefaultList();
+
+      static <T> ValueListSupplier<T> create(Collection<T> var0) {
+         final ImmutableList var1 = ImmutableList.copyOf(var0);
+         return new ValueListSupplier<T>() {
+            public List<T> getSelectedList() {
+               return var1;
+            }
+
+            public List<T> getDefaultList() {
+               return var1;
+            }
+         };
+      }
+
+      static <T> ValueListSupplier<T> create(final BooleanSupplier var0, List<T> var1, List<T> var2) {
+         final ImmutableList var3 = ImmutableList.copyOf(var1);
+         final ImmutableList var4 = ImmutableList.copyOf(var2);
+         return new ValueListSupplier<T>() {
+            public List<T> getSelectedList() {
+               return var0.getAsBoolean() ? var4 : var3;
+            }
+
+            public List<T> getDefaultList() {
+               return var3;
+            }
+         };
+      }
+   }
+
+   public interface OnValueChange<T> {
+      void onValueChange(CycleButton<T> var1, T var2);
    }
 }

@@ -31,14 +31,6 @@ public record ModCheck(Confidence confidence, String description) {
       return this.confidence.description + " " + this.description;
    }
 
-   public Confidence confidence() {
-      return this.confidence;
-   }
-
-   public String description() {
-      return this.description;
-   }
-
    public static enum Confidence {
       PROBABLY_NOT("Probably not.", false),
       VERY_LIKELY("Very likely;", true),

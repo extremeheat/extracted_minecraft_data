@@ -2,7 +2,6 @@ package net.minecraft.world.level.pathfinder;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -51,10 +50,7 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
 
       BlockPos var5 = BlockPos.containing(this.mob.getX(), (double)var1, this.mob.getZ());
       if (!this.canStartAt(var5)) {
-         Iterator var6 = this.iteratePathfindingStartNodeCandidatePositions(this.mob).iterator();
-
-         while(var6.hasNext()) {
-            BlockPos var4 = (BlockPos)var6.next();
+         for(BlockPos var4 : this.iteratePathfindingStartNodeCandidatePositions(this.mob)) {
             if (this.canStartAt(var4)) {
                return super.getStartNode(var4);
             }
@@ -234,9 +230,7 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
    }
 
    protected PathType getCachedPathType(int var1, int var2, int var3) {
-      return (PathType)this.pathTypeByPosCache.computeIfAbsent(BlockPos.asLong(var1, var2, var3), (var4) -> {
-         return this.getPathTypeOfMob(this.currentContext, var1, var2, var3, this.mob);
-      });
+      return (PathType)this.pathTypeByPosCache.computeIfAbsent(BlockPos.asLong(var1, var2, var3), (var4) -> this.getPathTypeOfMob(this.currentContext, var1, var2, var3, this.mob));
    }
 
    public PathType getPathType(PathfindingContext var1, int var2, int var3, int var4) {

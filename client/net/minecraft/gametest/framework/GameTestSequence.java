@@ -33,9 +33,7 @@ public class GameTestSequence {
    }
 
    public GameTestSequence thenExecute(Runnable var1) {
-      this.events.add(GameTestEvent.create(() -> {
-         this.executeWithoutFail(var1);
-      }));
+      this.events.add(GameTestEvent.create(() -> this.executeWithoutFail(var1)));
       return this;
    }
 
@@ -68,16 +66,12 @@ public class GameTestSequence {
    }
 
    public void thenFail(Supplier<Exception> var1) {
-      this.events.add(GameTestEvent.create(() -> {
-         this.parent.fail((Throwable)var1.get());
-      }));
+      this.events.add(GameTestEvent.create(() -> this.parent.fail((Throwable)var1.get())));
    }
 
    public Condition thenTrigger() {
       Condition var1 = new Condition();
-      this.events.add(GameTestEvent.create(() -> {
-         var1.trigger(this.parent.getTick());
-      }));
+      this.events.add(GameTestEvent.create(() -> var1.trigger(this.parent.getTick())));
       return var1;
    }
 

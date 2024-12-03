@@ -168,9 +168,7 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
          DataResult var10000 = MerchantOffers.CODEC.parse(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var1.get("Offers"));
          Logger var10002 = LOGGER;
          Objects.requireNonNull(var10002);
-         var10000.resultOrPartial(Util.prefix("Failed to load offers: ", var10002::warn)).ifPresent((var1x) -> {
-            this.offers = var1x;
-         });
+         var10000.resultOrPartial(Util.prefix("Failed to load offers: ", var10002::warn)).ifPresent((var1x) -> this.offers = var1x);
       }
 
       this.readInventoryFromTag(var1, this.registryAccess());
@@ -240,8 +238,12 @@ public abstract class AbstractVillager extends AgeableMob implements InventoryCa
       return this.level().isClientSide;
    }
 
+   public boolean stillValid(Player var1) {
+      return this.getTradingPlayer() == var1 && this.isAlive() && var1.canInteractWithEntity((Entity)this, 4.0);
+   }
+
    static {
-      DATA_UNHAPPY_COUNTER = SynchedEntityData.defineId(AbstractVillager.class, EntityDataSerializers.INT);
+      DATA_UNHAPPY_COUNTER = SynchedEntityData.<Integer>defineId(AbstractVillager.class, EntityDataSerializers.INT);
       LOGGER = LogUtils.getLogger();
    }
 }

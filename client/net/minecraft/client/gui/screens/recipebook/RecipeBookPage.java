@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.recipebook;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -107,14 +106,12 @@ public class RecipeBookPage {
       if (this.totalPages > 1) {
          MutableComponent var7 = Component.translatable("gui.recipebook.page", this.currentPage + 1, this.totalPages);
          int var8 = this.minecraft.font.width((FormattedText)var7);
-         var1.drawString(this.minecraft.font, (Component)var7, var2 - var8 / 2 + 73, var3 + 141, -1, false);
+         var1.drawString(this.minecraft.font, (Component)var7, var2 - var8 / 2 + 73, var3 + 141, -1);
       }
 
       this.hoveredButton = null;
-      Iterator var9 = this.buttons.iterator();
 
-      while(var9.hasNext()) {
-         RecipeButton var10 = (RecipeButton)var9.next();
+      for(RecipeButton var10 : this.buttons) {
          var10.render(var1, var4, var5, var6);
          if (var10.visible && var10.isHoveredOrFocused()) {
             this.hoveredButton = var10;
@@ -171,25 +168,21 @@ public class RecipeBookPage {
          return true;
       } else {
          ContextMap var10 = SlotDisplayContext.fromLevel(this.minecraft.level);
-         Iterator var11 = this.buttons.iterator();
 
-         RecipeButton var12;
-         do {
-            if (!var11.hasNext()) {
-               return false;
+         for(RecipeButton var12 : this.buttons) {
+            if (var12.mouseClicked(var1, var3, var5)) {
+               if (var5 == 0) {
+                  this.lastClickedRecipe = var12.getCurrentRecipe();
+                  this.lastClickedRecipeCollection = var12.getCollection();
+               } else if (var5 == 1 && !this.overlay.isVisible() && !var12.isOnlyOption()) {
+                  this.overlay.init(var12.getCollection(), var10, this.isFiltering, var12.getX(), var12.getY(), var6 + var8 / 2, var7 + 13 + var9 / 2, (float)var12.getWidth());
+               }
+
+               return true;
             }
-
-            var12 = (RecipeButton)var11.next();
-         } while(!var12.mouseClicked(var1, var3, var5));
-
-         if (var5 == 0) {
-            this.lastClickedRecipe = var12.getCurrentRecipe();
-            this.lastClickedRecipeCollection = var12.getCollection();
-         } else if (var5 == 1 && !this.overlay.isVisible() && !var12.isOnlyOption()) {
-            this.overlay.init(var12.getCollection(), var10, this.isFiltering, var12.getX(), var12.getY(), var6 + var8 / 2, var7 + 13 + var9 / 2, (float)var12.getWidth());
          }
 
-         return true;
+         return false;
       }
    }
 

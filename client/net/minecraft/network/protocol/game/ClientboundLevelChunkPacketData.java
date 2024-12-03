@@ -3,7 +3,6 @@ package net.minecraft.network.protocol.game;
 import com.google.common.collect.Lists;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -32,11 +31,8 @@ public class ClientboundLevelChunkPacketData {
    public ClientboundLevelChunkPacketData(LevelChunk var1) {
       super();
       this.heightmaps = new CompoundTag();
-      Iterator var2 = var1.getHeightmaps().iterator();
 
-      Map.Entry var3;
-      while(var2.hasNext()) {
-         var3 = (Map.Entry)var2.next();
+      for(Map.Entry var3 : var1.getHeightmaps()) {
          if (((Heightmap.Types)var3.getKey()).sendToClient()) {
             this.heightmaps.put(((Heightmap.Types)var3.getKey()).getSerializationKey(), new LongArrayTag(((Heightmap)var3.getValue()).getRawData()));
          }
@@ -45,11 +41,9 @@ public class ClientboundLevelChunkPacketData {
       this.buffer = new byte[calculateChunkSize(var1)];
       extractChunkData(new FriendlyByteBuf(this.getWriteBuffer()), var1);
       this.blockEntitiesData = Lists.newArrayList();
-      var2 = var1.getBlockEntities().entrySet().iterator();
 
-      while(var2.hasNext()) {
-         var3 = (Map.Entry)var2.next();
-         this.blockEntitiesData.add(ClientboundLevelChunkPacketData.BlockEntityInfo.create((BlockEntity)var3.getValue()));
+      for(Map.Entry var5 : var1.getBlockEntities().entrySet()) {
+         this.blockEntitiesData.add(ClientboundLevelChunkPacketData.BlockEntityInfo.create((BlockEntity)var5.getValue()));
       }
 
    }
@@ -80,11 +74,8 @@ public class ClientboundLevelChunkPacketData {
 
    private static int calculateChunkSize(LevelChunk var0) {
       int var1 = 0;
-      LevelChunkSection[] var2 = var0.getSections();
-      int var3 = var2.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         LevelChunkSection var5 = var2[var4];
+      for(LevelChunkSection var5 : var0.getSections()) {
          var1 += var5.getSerializedSize();
       }
 
@@ -98,30 +89,22 @@ public class ClientboundLevelChunkPacketData {
    }
 
    public static void extractChunkData(FriendlyByteBuf var0, LevelChunk var1) {
-      LevelChunkSection[] var2 = var1.getSections();
-      int var3 = var2.length;
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         LevelChunkSection var5 = var2[var4];
+      for(LevelChunkSection var5 : var1.getSections()) {
          var5.write(var0);
       }
 
    }
 
    public Consumer<BlockEntityTagOutput> getBlockEntitiesTagsConsumer(int var1, int var2) {
-      return (var3) -> {
-         this.getBlockEntitiesTags(var3, var1, var2);
-      };
+      return (var3) -> this.getBlockEntitiesTags(var3, var1, var2);
    }
 
    private void getBlockEntitiesTags(BlockEntityTagOutput var1, int var2, int var3) {
       int var4 = 16 * var2;
       int var5 = 16 * var3;
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
-      Iterator var7 = this.blockEntitiesData.iterator();
 
-      while(var7.hasNext()) {
-         BlockEntityInfo var8 = (BlockEntityInfo)var7.next();
+      for(BlockEntityInfo var8 : this.blockEntitiesData) {
          int var9 = var4 + SectionPos.sectionRelative(var8.packedXZ >> 4);
          int var10 = var5 + SectionPos.sectionRelative(var8.packedXZ);
          var6.set(var9, var8.y, var10);
@@ -139,7 +122,7 @@ public class ClientboundLevelChunkPacketData {
    }
 
    static class BlockEntityInfo {
-      public static final StreamCodec<RegistryFriendlyByteBuf, BlockEntityInfo> STREAM_CODEC = StreamCodec.ofMember(BlockEntityInfo::write, BlockEntityInfo::new);
+      public static final StreamCodec<RegistryFriendlyByteBuf, BlockEntityInfo> STREAM_CODEC = StreamCodec.<RegistryFriendlyByteBuf, BlockEntityInfo>ofMember(BlockEntityInfo::write, BlockEntityInfo::new);
       public static final StreamCodec<RegistryFriendlyByteBuf, List<BlockEntityInfo>> LIST_STREAM_CODEC;
       final int packedXZ;
       final int y;

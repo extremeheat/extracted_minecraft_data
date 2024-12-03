@@ -16,11 +16,7 @@ import org.slf4j.Logger;
 
 public class AppendLoot implements RuleBlockEntityModifier {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<AppendLoot> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceKey.codec(Registries.LOOT_TABLE).fieldOf("loot_table").forGetter((var0x) -> {
-         return var0x.lootTable;
-      })).apply(var0, AppendLoot::new);
-   });
+   public static final MapCodec<AppendLoot> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.LOOT_TABLE).fieldOf("loot_table").forGetter((var0x) -> var0x.lootTable)).apply(var0, AppendLoot::new));
    private final ResourceKey<LootTable> lootTable;
 
    public AppendLoot(ResourceKey<LootTable> var1) {
@@ -33,9 +29,7 @@ public class AppendLoot implements RuleBlockEntityModifier {
       DataResult var10000 = ResourceKey.codec(Registries.LOOT_TABLE).encodeStart(NbtOps.INSTANCE, this.lootTable);
       Logger var10001 = LOGGER;
       Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         var3.put("LootTable", var1x);
-      });
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var3.put("LootTable", var1x));
       var3.putLong("LootTableSeed", var1.nextLong());
       return var3;
    }

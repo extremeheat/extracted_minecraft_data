@@ -66,9 +66,7 @@ public class ActiveProfiler implements ProfileCollector {
          this.pop();
          this.started = false;
          if (!this.path.isEmpty()) {
-            LOGGER.error("Profiler tick ended before path was fully popped (remainder: '{}'). Mismatched push/pop?", LogUtils.defer(() -> {
-               return ProfileResults.demanglePath(this.path);
-            }));
+            LOGGER.error("Profiler tick ended before path was fully popped (remainder: '{}'). Mismatched push/pop?", LogUtils.defer(() -> ProfileResults.demanglePath(this.path)));
          }
 
       }
@@ -113,11 +111,7 @@ public class ActiveProfiler implements ProfileCollector {
          var7.maxDuration = Math.max(var7.maxDuration, var5);
          var7.minDuration = Math.min(var7.minDuration, var5);
          if (this.warn && var5 > WARNING_TIME_NANOS) {
-            LOGGER.warn("Something's taking too long! '{}' took aprox {} ms", LogUtils.defer(() -> {
-               return ProfileResults.demanglePath(this.path);
-            }), LogUtils.defer(() -> {
-               return (double)var5 / 1000000.0;
-            }));
+            LOGGER.warn("Something's taking too long! '{}' took aprox {} ms", LogUtils.defer(() -> ProfileResults.demanglePath(this.path)), LogUtils.defer(() -> (double)var5 / 1000000.0));
          }
 
          this.path = this.paths.isEmpty() ? "" : (String)this.paths.get(this.paths.size() - 1);
@@ -137,9 +131,7 @@ public class ActiveProfiler implements ProfileCollector {
 
    private PathEntry getCurrentEntry() {
       if (this.currentEntry == null) {
-         this.currentEntry = (PathEntry)this.entries.computeIfAbsent(this.path, (var0) -> {
-            return new PathEntry();
-         });
+         this.currentEntry = (PathEntry)this.entries.computeIfAbsent(this.path, (var0) -> new PathEntry());
       }
 
       return this.currentEntry;

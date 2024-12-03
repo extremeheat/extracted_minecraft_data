@@ -10,6 +10,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -40,6 +42,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.BannerItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
@@ -97,6 +100,10 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
 
    public void onCrossbowAttackPerformed() {
       this.noActionTime = 0;
+   }
+
+   public TagKey<Item> getPreferredWeaponType() {
+      return ItemTags.PILLAGER_PREFERRED_WEAPONS;
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
@@ -223,6 +230,6 @@ public class Pillager extends AbstractIllager implements CrossbowAttackMob, Inve
    }
 
    static {
-      IS_CHARGING_CROSSBOW = SynchedEntityData.defineId(Pillager.class, EntityDataSerializers.BOOLEAN);
+      IS_CHARGING_CROSSBOW = SynchedEntityData.<Boolean>defineId(Pillager.class, EntityDataSerializers.BOOLEAN);
    }
 }

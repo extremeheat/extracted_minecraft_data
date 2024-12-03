@@ -30,26 +30,6 @@ public record MapDecoration(Holder<MapDecorationType> type, byte x, byte y, byte
       return ((MapDecorationType)this.type.value()).showOnItemFrame();
    }
 
-   public Holder<MapDecorationType> type() {
-      return this.type;
-   }
-
-   public byte x() {
-      return this.x;
-   }
-
-   public byte y() {
-      return this.y;
-   }
-
-   public byte rot() {
-      return this.rot;
-   }
-
-   public Optional<Component> name() {
-      return this.name;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(MapDecorationType.STREAM_CODEC, MapDecoration::type, ByteBufCodecs.BYTE, MapDecoration::x, ByteBufCodecs.BYTE, MapDecoration::y, ByteBufCodecs.BYTE, MapDecoration::rot, ComponentSerialization.OPTIONAL_STREAM_CODEC, MapDecoration::name, MapDecoration::new);
    }

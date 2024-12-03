@@ -22,15 +22,11 @@ public class NarrationThunk<T> {
    }
 
    public static NarrationThunk<?> from(Component var0) {
-      return new NarrationThunk(var0, (var0x, var1) -> {
-         var0x.accept(var1.getString());
-      });
+      return new NarrationThunk(var0, (var0x, var1) -> var0x.accept(var1.getString()));
    }
 
    public static NarrationThunk<?> from(List<Component> var0) {
-      return new NarrationThunk(var0, (var1, var2) -> {
-         var0.stream().map(Component::getString).forEach(var1);
-      });
+      return new NarrationThunk(var0, (var1, var2) -> var0.stream().map(Component::getString).forEach(var1));
    }
 
    public void getText(Consumer<String> var1) {

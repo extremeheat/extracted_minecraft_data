@@ -28,9 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public record JukeboxPlayable(EitherHolder<JukeboxSong> song, boolean showInTooltip) implements TooltipProvider {
-   public static final Codec<JukeboxPlayable> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(EitherHolder.codec(Registries.JUKEBOX_SONG, JukeboxSong.CODEC).fieldOf("song").forGetter(JukeboxPlayable::song), Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(JukeboxPlayable::showInTooltip)).apply(var0, JukeboxPlayable::new);
-   });
+   public static final Codec<JukeboxPlayable> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EitherHolder.codec(Registries.JUKEBOX_SONG, JukeboxSong.CODEC).fieldOf("song").forGetter(JukeboxPlayable::song), Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(JukeboxPlayable::showInTooltip)).apply(var0, JukeboxPlayable::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, JukeboxPlayable> STREAM_CODEC;
 
    public JukeboxPlayable(EitherHolder<JukeboxSong> var1, boolean var2) {
@@ -79,14 +77,6 @@ public record JukeboxPlayable(EitherHolder<JukeboxSong> song, boolean showInTool
             return InteractionResult.TRY_WITH_EMPTY_HAND;
          }
       }
-   }
-
-   public EitherHolder<JukeboxSong> song() {
-      return this.song;
-   }
-
-   public boolean showInTooltip() {
-      return this.showInTooltip;
    }
 
    static {

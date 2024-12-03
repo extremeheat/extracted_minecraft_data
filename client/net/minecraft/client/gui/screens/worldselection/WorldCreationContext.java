@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.worldselection;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
@@ -23,7 +22,7 @@ public record WorldCreationContext(WorldOptions options, Registry<LevelStem> dat
    }
 
    public WorldCreationContext(WorldOptions var1, WorldDimensions var2, LayeredRegistryAccess<RegistryLayer> var3, ReloadableServerResources var4, WorldDataConfiguration var5, InitialWorldCreationOptions var6) {
-      this(var1, var3.getLayer(RegistryLayer.DIMENSIONS).lookupOrThrow(Registries.LEVEL_STEM), var2, var3.replaceFrom(RegistryLayer.DIMENSIONS, (RegistryAccess.Frozen[])()), var4, var5, var6);
+      this(var1, var3.getLayer(RegistryLayer.DIMENSIONS).lookupOrThrow(Registries.LEVEL_STEM), var2, var3.replaceFrom(RegistryLayer.DIMENSIONS), var4, var5, var6);
    }
 
    public WorldCreationContext(WorldOptions var1, Registry<LevelStem> var2, WorldDimensions var3, LayeredRegistryAccess<RegistryLayer> var4, ReloadableServerResources var5, WorldDataConfiguration var6, InitialWorldCreationOptions var7) {
@@ -54,47 +53,16 @@ public record WorldCreationContext(WorldOptions options, Registry<LevelStem> dat
    }
 
    public void validate() {
-      Iterator var1 = this.datapackDimensions().iterator();
-
-      while(var1.hasNext()) {
-         LevelStem var2 = (LevelStem)var1.next();
+      for(LevelStem var2 : this.datapackDimensions()) {
          var2.generator().validate();
       }
 
    }
 
-   public WorldOptions options() {
-      return this.options;
-   }
-
-   public Registry<LevelStem> datapackDimensions() {
-      return this.datapackDimensions;
-   }
-
-   public WorldDimensions selectedDimensions() {
-      return this.selectedDimensions;
-   }
-
-   public LayeredRegistryAccess<RegistryLayer> worldgenRegistries() {
-      return this.worldgenRegistries;
-   }
-
-   public ReloadableServerResources dataPackResources() {
-      return this.dataPackResources;
-   }
-
-   public WorldDataConfiguration dataConfiguration() {
-      return this.dataConfiguration;
-   }
-
-   public InitialWorldCreationOptions initialWorldCreationOptions() {
-      return this.initialWorldCreationOptions;
+   @FunctionalInterface
+   public interface DimensionsUpdater extends BiFunction<RegistryAccess.Frozen, WorldDimensions, WorldDimensions> {
    }
 
    public interface OptionsModifier extends UnaryOperator<WorldOptions> {
-   }
-
-   @FunctionalInterface
-   public interface DimensionsUpdater extends BiFunction<RegistryAccess.Frozen, WorldDimensions, WorldDimensions> {
    }
 }

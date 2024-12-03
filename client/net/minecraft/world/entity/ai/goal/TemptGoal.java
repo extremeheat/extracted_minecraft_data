@@ -35,9 +35,7 @@ public class TemptGoal extends Goal {
       this.items = var4;
       this.canScare = var5;
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-      this.targetingConditions = TEMPT_TARGETING.copy().selector((var1x, var2x) -> {
-         return this.shouldFollow(var1x);
-      });
+      this.targetingConditions = TEMPT_TARGETING.copy().selector((var1x, var2x) -> this.shouldFollow(var1x));
    }
 
    public boolean canUse() {

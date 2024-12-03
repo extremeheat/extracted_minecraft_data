@@ -2,7 +2,6 @@ package net.minecraft.commands.arguments.selector;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -67,7 +66,7 @@ public class EntitySelector {
       this.currentEntity = var9;
       this.playerName = var10;
       this.entityUUID = var11;
-      this.type = (EntityTypeTest)(var12 == null ? ANY_TYPE : var12);
+      this.type = (EntityTypeTest<Entity, ?>)(var12 == null ? ANY_TYPE : var12);
       this.usesSelector = var13;
    }
 
@@ -117,14 +116,11 @@ public class EntitySelector {
          ServerPlayer var9 = var1.getServer().getPlayerList().getPlayerByName(this.playerName);
          return var9 == null ? List.of() : List.of(var9);
       } else if (this.entityUUID != null) {
-         Iterator var8 = var1.getServer().getAllLevels().iterator();
-
-         while(var8.hasNext()) {
-            ServerLevel var10 = (ServerLevel)var8.next();
-            Entity var11 = var10.getEntity(this.entityUUID);
-            if (var11 != null) {
-               if (var11.getType().isEnabled(var1.enabledFeatures())) {
-                  return List.of(var11);
+         for(ServerLevel var10 : var1.getServer().getAllLevels()) {
+            Entity var12 = var10.getEntity(this.entityUUID);
+            if (var12 != null) {
+               if (var12.getType().isEnabled(var1.enabledFeatures())) {
+                  return List.of(var12);
                }
                break;
             }
@@ -134,25 +130,21 @@ public class EntitySelector {
       } else {
          Vec3 var2 = (Vec3)this.position.apply(var1.getPosition());
          AABB var3 = this.getAbsoluteAabb(var2);
-         Predicate var4;
          if (this.currentEntity) {
-            var4 = this.getPredicate(var2, var3, (FeatureFlagSet)null);
-            return var1.getEntity() != null && var4.test(var1.getEntity()) ? List.of(var1.getEntity()) : List.of();
+            Predicate var11 = this.getPredicate(var2, var3, (FeatureFlagSet)null);
+            return var1.getEntity() != null && var11.test(var1.getEntity()) ? List.of(var1.getEntity()) : List.of();
          } else {
-            var4 = this.getPredicate(var2, var3, var1.enabledFeatures());
+            Predicate var4 = this.getPredicate(var2, var3, var1.enabledFeatures());
             ObjectArrayList var5 = new ObjectArrayList();
             if (this.isWorldLimited()) {
                this.addEntities(var5, var1.getLevel(), var3, var4);
             } else {
-               Iterator var6 = var1.getServer().getAllLevels().iterator();
-
-               while(var6.hasNext()) {
-                  ServerLevel var7 = (ServerLevel)var6.next();
+               for(ServerLevel var7 : var1.getServer().getAllLevels()) {
                   this.addEntities(var5, var7, var3, var4);
                }
             }
 
-            return this.sortAndLimit(var2, var5);
+            return this.<Entity>sortAndLimit(var2, var5);
          }
       }
    }
@@ -185,23 +177,22 @@ public class EntitySelector {
 
    public List<ServerPlayer> findPlayers(CommandSourceStack var1) throws CommandSyntaxException {
       this.checkPermissions(var1);
-      ServerPlayer var9;
       if (this.playerName != null) {
-         var9 = var1.getServer().getPlayerList().getPlayerByName(this.playerName);
-         return var9 == null ? List.of() : List.of(var9);
+         ServerPlayer var10 = var1.getServer().getPlayerList().getPlayerByName(this.playerName);
+         return var10 == null ? List.of() : List.of(var10);
       } else if (this.entityUUID != null) {
-         var9 = var1.getServer().getPlayerList().getPlayer(this.entityUUID);
+         ServerPlayer var9 = var1.getServer().getPlayerList().getPlayer(this.entityUUID);
          return var9 == null ? List.of() : List.of(var9);
       } else {
          Vec3 var2 = (Vec3)this.position.apply(var1.getPosition());
          AABB var3 = this.getAbsoluteAabb(var2);
          Predicate var4 = this.getPredicate(var2, var3, (FeatureFlagSet)null);
          if (this.currentEntity) {
-            Entity var11 = var1.getEntity();
-            if (var11 instanceof ServerPlayer) {
-               ServerPlayer var10 = (ServerPlayer)var11;
-               if (var4.test(var10)) {
-                  return List.of(var10);
+            Entity var12 = var1.getEntity();
+            if (var12 instanceof ServerPlayer) {
+               ServerPlayer var11 = (ServerPlayer)var12;
+               if (var4.test(var11)) {
+                  return List.of(var11);
                }
             }
 
@@ -213,20 +204,18 @@ public class EntitySelector {
                var5 = var1.getLevel().getPlayers(var4, var6);
             } else {
                var5 = new ObjectArrayList();
-               Iterator var7 = var1.getServer().getPlayerList().getPlayers().iterator();
 
-               while(var7.hasNext()) {
-                  ServerPlayer var8 = (ServerPlayer)var7.next();
+               for(ServerPlayer var8 : var1.getServer().getPlayerList().getPlayers()) {
                   if (var4.test(var8)) {
                      ((List)var5).add(var8);
                      if (((List)var5).size() >= var6) {
-                        return (List)var5;
+                        return (List<ServerPlayer>)var5;
                      }
                   }
                }
             }
 
-            return this.sortAndLimit(var2, (List)var5);
+            return this.<ServerPlayer>sortAndLimit(var2, (List)var5);
          }
       }
    }
@@ -248,21 +237,15 @@ public class EntitySelector {
          ObjectArrayList var9 = new ObjectArrayList(this.contextFreePredicates.size() + var7);
          var9.addAll(this.contextFreePredicates);
          if (var4) {
-            var9.add((var1x) -> {
-               return var1x.getType().isEnabled(var3);
-            });
+            var9.add((Predicate)(var1x) -> var1x.getType().isEnabled(var3));
          }
 
          if (var5) {
-            var9.add((var1x) -> {
-               return var2.intersects(var1x.getBoundingBox());
-            });
+            var9.add((Predicate)(var1x) -> var2.intersects(var1x.getBoundingBox()));
          }
 
          if (var6) {
-            var9.add((var2x) -> {
-               return this.range.matchesSqr(var2x.distanceToSqr(var1));
-            });
+            var9.add((Predicate)(var2x) -> this.range.matchesSqr(var2x.distanceToSqr(var1)));
          }
 
          var8 = var9;
@@ -280,6 +263,6 @@ public class EntitySelector {
    }
 
    public static Component joinNames(List<? extends Entity> var0) {
-      return ComponentUtils.formatList(var0, (Function)(Entity::getDisplayName));
+      return ComponentUtils.formatList(var0, Entity::getDisplayName);
    }
 }

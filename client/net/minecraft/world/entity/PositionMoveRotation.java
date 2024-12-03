@@ -47,28 +47,12 @@ public record PositionMoveRotation(Vec3 position, Vec3 deltaMovement, float yRot
          var14 = var14.yRot((float)Math.toRadians((double)var15));
       }
 
-      Vec3 var17 = new Vec3(calculateDelta(var14.x, var1.deltaMovement.x, var2, Relative.DELTA_X), calculateDelta(var14.y, var1.deltaMovement.y, var2, Relative.DELTA_Y), calculateDelta(var14.z, var1.deltaMovement.z, var2, Relative.DELTA_Z));
-      return new PositionMoveRotation(var11, var17, var12, var13);
+      Vec3 var18 = new Vec3(calculateDelta(var14.x, var1.deltaMovement.x, var2, Relative.DELTA_X), calculateDelta(var14.y, var1.deltaMovement.y, var2, Relative.DELTA_Y), calculateDelta(var14.z, var1.deltaMovement.z, var2, Relative.DELTA_Z));
+      return new PositionMoveRotation(var11, var18, var12, var13);
    }
 
    private static double calculateDelta(double var0, double var2, Set<Relative> var4, Relative var5) {
       return var4.contains(var5) ? var0 + var2 : var2;
-   }
-
-   public Vec3 position() {
-      return this.position;
-   }
-
-   public Vec3 deltaMovement() {
-      return this.deltaMovement;
-   }
-
-   public float yRot() {
-      return this.yRot;
-   }
-
-   public float xRot() {
-      return this.xRot;
    }
 
    static {

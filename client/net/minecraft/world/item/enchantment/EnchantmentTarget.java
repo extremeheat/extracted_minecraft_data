@@ -8,7 +8,7 @@ public enum EnchantmentTarget implements StringRepresentable {
    DAMAGING_ENTITY("damaging_entity"),
    VICTIM("victim");
 
-   public static final Codec<EnchantmentTarget> CODEC = StringRepresentable.fromEnum(EnchantmentTarget::values);
+   public static final Codec<EnchantmentTarget> CODEC = StringRepresentable.<EnchantmentTarget>fromEnum(EnchantmentTarget::values);
    private final String id;
 
    private EnchantmentTarget(final String var3) {

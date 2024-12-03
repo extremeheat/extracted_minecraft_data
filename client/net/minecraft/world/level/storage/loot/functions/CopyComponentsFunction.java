@@ -22,15 +22,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class CopyComponentsFunction extends LootItemConditionalFunction {
-   public static final MapCodec<CopyComponentsFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(var0.group(CopyComponentsFunction.Source.CODEC.fieldOf("source").forGetter((var0x) -> {
-         return var0x.source;
-      }), DataComponentType.CODEC.listOf().optionalFieldOf("include").forGetter((var0x) -> {
-         return var0x.include;
-      }), DataComponentType.CODEC.listOf().optionalFieldOf("exclude").forGetter((var0x) -> {
-         return var0x.exclude;
-      }))).apply(var0, CopyComponentsFunction::new);
-   });
+   public static final MapCodec<CopyComponentsFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(CopyComponentsFunction.Source.CODEC.fieldOf("source").forGetter((var0x) -> var0x.source), DataComponentType.CODEC.listOf().optionalFieldOf("include").forGetter((var0x) -> var0x.include), DataComponentType.CODEC.listOf().optionalFieldOf("exclude").forGetter((var0x) -> var0x.exclude))).apply(var0, CopyComponentsFunction::new));
    private final Source source;
    private final Optional<List<DataComponentType<?>>> include;
    private final Optional<List<DataComponentType<?>>> exclude;
@@ -42,16 +34,12 @@ public class CopyComponentsFunction extends LootItemConditionalFunction {
       this.include = var3.map(List::copyOf);
       this.exclude = var4.map(List::copyOf);
       ArrayList var5 = new ArrayList(2);
-      var4.ifPresent((var1x) -> {
-         var5.add((var1) -> {
-            return !var1x.contains(var1);
-         });
-      });
+      var4.ifPresent((var1x) -> var5.add((Predicate)(var1) -> !var1x.contains(var1)));
       var3.ifPresent((var1x) -> {
          Objects.requireNonNull(var1x);
          var5.add(var1x::contains);
       });
-      this.bakedPredicate = Util.allOf((List)var5);
+      this.bakedPredicate = Util.allOf(var5);
    }
 
    public LootItemFunctionType<CopyComponentsFunction> getType() {
@@ -70,45 +58,6 @@ public class CopyComponentsFunction extends LootItemConditionalFunction {
 
    public static Builder copyComponents(Source var0) {
       return new Builder(var0);
-   }
-
-   public static enum Source implements StringRepresentable {
-      BLOCK_ENTITY("block_entity");
-
-      public static final Codec<Source> CODEC = StringRepresentable.fromValues(Source::values);
-      private final String name;
-
-      private Source(final String var3) {
-         this.name = var3;
-      }
-
-      public DataComponentMap get(LootContext var1) {
-         switch (this.ordinal()) {
-            case 0:
-               BlockEntity var2 = (BlockEntity)var1.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
-               return var2 != null ? var2.collectComponents() : DataComponentMap.EMPTY;
-            default:
-               throw new MatchException((String)null, (Throwable)null);
-         }
-      }
-
-      public Set<ContextKey<?>> getReferencedContextParams() {
-         switch (this.ordinal()) {
-            case 0 -> {
-               return Set.of(LootContextParams.BLOCK_ENTITY);
-            }
-            default -> throw new MatchException((String)null, (Throwable)null);
-         }
-      }
-
-      public String getSerializedName() {
-         return this.name;
-      }
-
-      // $FF: synthetic method
-      private static Source[] $values() {
-         return new Source[]{BLOCK_ENTITY};
-      }
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
@@ -150,6 +99,45 @@ public class CopyComponentsFunction extends LootItemConditionalFunction {
       // $FF: synthetic method
       protected LootItemConditionalFunction.Builder getThis() {
          return this.getThis();
+      }
+   }
+
+   public static enum Source implements StringRepresentable {
+      BLOCK_ENTITY("block_entity");
+
+      public static final Codec<Source> CODEC = StringRepresentable.<Source>fromValues(Source::values);
+      private final String name;
+
+      private Source(final String var3) {
+         this.name = var3;
+      }
+
+      public DataComponentMap get(LootContext var1) {
+         switch (this.ordinal()) {
+            case 0:
+               BlockEntity var2 = (BlockEntity)var1.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+               return var2 != null ? var2.collectComponents() : DataComponentMap.EMPTY;
+            default:
+               throw new MatchException((String)null, (Throwable)null);
+         }
+      }
+
+      public Set<ContextKey<?>> getReferencedContextParams() {
+         switch (this.ordinal()) {
+            case 0 -> {
+               return Set.of(LootContextParams.BLOCK_ENTITY);
+            }
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+      }
+
+      public String getSerializedName() {
+         return this.name;
+      }
+
+      // $FF: synthetic method
+      private static Source[] $values() {
+         return new Source[]{BLOCK_ENTITY};
       }
    }
 }

@@ -27,21 +27,21 @@ public interface ListAndDeque<T> extends Serializable, Cloneable, Deque<T>, List
    }
 
    default T remove() {
-      return this.removeFirst();
+      return (T)this.removeFirst();
    }
 
    @Nullable
    default T poll() {
-      return this.pollFirst();
+      return (T)this.pollFirst();
    }
 
    default T element() {
-      return this.getFirst();
+      return (T)this.getFirst();
    }
 
    @Nullable
    default T peek() {
-      return this.peekFirst();
+      return (T)this.peekFirst();
    }
 
    default void push(T var1) {
@@ -49,7 +49,7 @@ public interface ListAndDeque<T> extends Serializable, Cloneable, Deque<T>, List
    }
 
    default T pop() {
-      return this.removeFirst();
+      return (T)this.removeFirst();
    }
 
    // $FF: synthetic method

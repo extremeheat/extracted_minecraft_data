@@ -27,9 +27,7 @@ public class RegistrySynchronization {
    }
 
    public static void packRegistries(DynamicOps<Tag> var0, RegistryAccess var1, Set<KnownPack> var2, BiConsumer<ResourceKey<? extends Registry<?>>, List<PackedRegistryEntry>> var3) {
-      RegistryDataLoader.SYNCHRONIZED_REGISTRIES.forEach((var4) -> {
-         packRegistry(var0, var4, var1, var2, var3);
-      });
+      RegistryDataLoader.SYNCHRONIZED_REGISTRIES.forEach((var4) -> packRegistry(var0, var4, var1, var2, var3));
    }
 
    private static <T> void packRegistry(DynamicOps<Tag> var0, RegistryDataLoader.RegistryData<T> var1, RegistryAccess var2, Set<KnownPack> var3, BiConsumer<ResourceKey<? extends Registry<?>>, List<PackedRegistryEntry>> var4) {
@@ -57,9 +55,7 @@ public class RegistrySynchronization {
    }
 
    private static Stream<RegistryAccess.RegistryEntry<?>> ownedNetworkableRegistries(RegistryAccess var0) {
-      return var0.registries().filter((var0x) -> {
-         return isNetworkable(var0x.key());
-      });
+      return var0.registries().filter((var0x) -> isNetworkable(var0x.key()));
    }
 
    public static Stream<RegistryAccess.RegistryEntry<?>> networkedRegistries(LayeredRegistryAccess<RegistryLayer> var0) {
@@ -87,14 +83,6 @@ public class RegistrySynchronization {
          super();
          this.id = var1;
          this.data = var2;
-      }
-
-      public ResourceLocation id() {
-         return this.id;
-      }
-
-      public Optional<Tag> data() {
-         return this.data;
       }
 
       static {

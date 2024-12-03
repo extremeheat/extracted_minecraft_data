@@ -71,9 +71,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
    }
 
    public void init() {
-      this.cancelButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> {
-         this.onClose();
-      }).bounds((this.width - 200) / 2, this.height - 42, 200, 20).build());
+      this.cancelButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.onClose()).bounds((this.width - 200) / 2, this.height - 42, 200, 20).build());
       this.checkDownloadSize();
    }
 
@@ -158,7 +156,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
          ++this.dotIndex;
       }
 
-      var1.drawString(this.font, (String)DOTS[this.dotIndex % DOTS.length], this.width / 2 + var2 / 2 + 5, 50, -1, false);
+      var1.drawString(this.font, (String)DOTS[this.dotIndex % DOTS.length], this.width / 2 + var2 / 2 + 5, 50, -1);
    }
 
    private void drawProgressBar(GuiGraphics var1) {
@@ -194,7 +192,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
    private void drawDownloadSpeed0(GuiGraphics var1, long var2) {
       if (var2 > 0L) {
          int var4 = this.font.width(this.progress);
-         var1.drawString(this.font, (Component)Component.translatable("mco.download.speed", Unit.humanReadable(var2)), this.width / 2 + var4 / 2 + 15, 84, -1, false);
+         var1.drawString(this.font, (Component)Component.translatable("mco.download.speed", Unit.humanReadable(var2)), this.width / 2 + var4 / 2 + 15, 84, -1);
       }
 
    }
@@ -202,12 +200,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
    private void downloadSave() {
       (new Thread(() -> {
          try {
-            try {
-               if (!DOWNLOAD_LOCK.tryLock(1L, TimeUnit.SECONDS)) {
-                  this.status = Component.translatable("mco.download.failed");
-                  return;
-               }
-
+            if (DOWNLOAD_LOCK.tryLock(1L, TimeUnit.SECONDS)) {
                if (this.cancelled) {
                   this.downloadCancelled();
                   return;
@@ -251,22 +244,26 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
                this.status = Component.translatable("mco.download.done");
                this.cancelButton.setMessage(CommonComponents.GUI_DONE);
                return;
-            } catch (InterruptedException var9) {
-               LOGGER.error("Could not acquire upload lock");
-            } catch (Exception var10) {
-               this.errorMessage = Component.translatable("mco.download.failed");
-               LOGGER.info("Exception while downloading world", var10);
             }
 
+            this.status = Component.translatable("mco.download.failed");
+         } catch (InterruptedException var9) {
+            LOGGER.error("Could not acquire upload lock");
+            return;
+         } catch (Exception var10) {
+            this.errorMessage = Component.translatable("mco.download.failed");
+            LOGGER.info("Exception while downloading world", var10);
+            return;
          } finally {
             if (!DOWNLOAD_LOCK.isHeldByCurrentThread()) {
                return;
-            } else {
-               DOWNLOAD_LOCK.unlock();
-               this.showDots = false;
-               this.finished = true;
             }
+
+            DOWNLOAD_LOCK.unlock();
+            this.showDots = false;
+            this.finished = true;
          }
+
       })).start();
    }
 

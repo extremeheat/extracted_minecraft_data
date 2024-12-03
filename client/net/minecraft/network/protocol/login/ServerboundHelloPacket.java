@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ServerboundHelloPacket(String name, UUID profileId) implements Packet<ServerLoginPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundHelloPacket> STREAM_CODEC = Packet.codec(ServerboundHelloPacket::write, ServerboundHelloPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundHelloPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundHelloPacket>codec(ServerboundHelloPacket::write, ServerboundHelloPacket::new);
 
    private ServerboundHelloPacket(FriendlyByteBuf var1) {
       this(var1.readUtf(16), var1.readUUID());
@@ -30,13 +30,5 @@ public record ServerboundHelloPacket(String name, UUID profileId) implements Pac
 
    public void handle(ServerLoginPacketListener var1) {
       var1.handleHello(this);
-   }
-
-   public String name() {
-      return this.name;
-   }
-
-   public UUID profileId() {
-      return this.profileId;
    }
 }

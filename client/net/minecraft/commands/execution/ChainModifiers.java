@@ -30,8 +30,4 @@ public record ChainModifiers(byte flags) {
    public ChainModifiers setReturn() {
       return this.setFlag((byte)2);
    }
-
-   public byte flags() {
-      return this.flags;
-   }
 }

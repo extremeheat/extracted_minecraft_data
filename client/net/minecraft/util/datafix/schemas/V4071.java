@@ -14,20 +14,14 @@ public class V4071 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       Map var2 = super.registerEntities(var1);
-      var1.register(var2, "minecraft:creaking", () -> {
-         return V100.equipment(var1);
-      });
-      var1.register(var2, "minecraft:creaking_transient", () -> {
-         return V100.equipment(var1);
-      });
+      var1.register(var2, "minecraft:creaking", () -> V100.equipment(var1));
+      var1.register(var2, "minecraft:creaking_transient", () -> V100.equipment(var1));
       return var2;
    }
 
    public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {
       Map var2 = super.registerBlockEntities(var1);
-      var1.register(var2, "minecraft:creaking_heart", () -> {
-         return DSL.optionalFields(new Pair[0]);
-      });
+      var1.register(var2, "minecraft:creaking_heart", () -> DSL.optionalFields(new Pair[0]));
       return var2;
    }
 }

@@ -103,9 +103,7 @@ public class CreativeModeTab {
 
    public void buildContents(ItemDisplayParameters var1) {
       ItemDisplayBuilder var2 = new ItemDisplayBuilder(this, var1.enabledFeatures);
-      ResourceKey var10000 = (ResourceKey)BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(this).orElseThrow(() -> {
-         return new IllegalStateException("Unregistered creative tab: " + String.valueOf(this));
-      });
+      ResourceKey var10000 = (ResourceKey)BuiltInRegistries.CREATIVE_MODE_TAB.getResourceKey(this).orElseThrow(() -> new IllegalStateException("Unregistered creative tab: " + String.valueOf(this)));
       this.displayItemsGenerator.accept(var1, var2);
       this.displayItems = var2.tabContents;
       this.displayItemsSearchTab = var2.searchTabContents;
@@ -123,22 +121,19 @@ public class CreativeModeTab {
       return this.displayItemsSearchTab.contains(var1);
    }
 
-   public static enum Row {
-      TOP,
-      BOTTOM;
+   public static record ItemDisplayParameters(FeatureFlagSet enabledFeatures, boolean hasPermissions, HolderLookup.Provider holders) {
+      final FeatureFlagSet enabledFeatures;
 
-      private Row() {
+      public ItemDisplayParameters(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {
+         super();
+         this.enabledFeatures = var1;
+         this.hasPermissions = var2;
+         this.holders = var3;
       }
 
-      // $FF: synthetic method
-      private static Row[] $values() {
-         return new Row[]{TOP, BOTTOM};
+      public boolean needsUpdate(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {
+         return !this.enabledFeatures.equals(var1) || this.hasPermissions != var2 || this.holders != var3;
       }
-   }
-
-   @FunctionalInterface
-   public interface DisplayItemsGenerator {
-      void accept(ItemDisplayParameters var1, Output var2);
    }
 
    public static enum Type {
@@ -156,15 +151,26 @@ public class CreativeModeTab {
       }
    }
 
+   public static enum Row {
+      TOP,
+      BOTTOM;
+
+      private Row() {
+      }
+
+      // $FF: synthetic method
+      private static Row[] $values() {
+         return new Row[]{TOP, BOTTOM};
+      }
+   }
+
    public static class Builder {
       private static final DisplayItemsGenerator EMPTY_GENERATOR = (var0, var1) -> {
       };
       private final Row row;
       private final int column;
       private Component displayName = Component.empty();
-      private Supplier<ItemStack> iconGenerator = () -> {
-         return ItemStack.EMPTY;
-      };
+      private Supplier<ItemStack> iconGenerator = () -> ItemStack.EMPTY;
       private DisplayItemsGenerator displayItemsGenerator;
       private boolean canScroll;
       private boolean showTitle;
@@ -238,7 +244,7 @@ public class CreativeModeTab {
       }
    }
 
-   private static class ItemDisplayBuilder implements Output {
+   static class ItemDisplayBuilder implements Output {
       public final Collection<ItemStack> tabContents = ItemStackLinkedSet.createTypeAndComponentsSet();
       public final Set<ItemStack> searchTabContents = ItemStackLinkedSet.createTypeAndComponentsSet();
       private final CreativeModeTab tab;
@@ -278,30 +284,17 @@ public class CreativeModeTab {
       }
    }
 
-   public static record ItemDisplayParameters(FeatureFlagSet enabledFeatures, boolean hasPermissions, HolderLookup.Provider holders) {
-      final FeatureFlagSet enabledFeatures;
+   protected static enum TabVisibility {
+      PARENT_AND_SEARCH_TABS,
+      PARENT_TAB_ONLY,
+      SEARCH_TAB_ONLY;
 
-      public ItemDisplayParameters(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {
-         super();
-         this.enabledFeatures = var1;
-         this.hasPermissions = var2;
-         this.holders = var3;
+      private TabVisibility() {
       }
 
-      public boolean needsUpdate(FeatureFlagSet var1, boolean var2, HolderLookup.Provider var3) {
-         return !this.enabledFeatures.equals(var1) || this.hasPermissions != var2 || this.holders != var3;
-      }
-
-      public FeatureFlagSet enabledFeatures() {
-         return this.enabledFeatures;
-      }
-
-      public boolean hasPermissions() {
-         return this.hasPermissions;
-      }
-
-      public HolderLookup.Provider holders() {
-         return this.holders;
+      // $FF: synthetic method
+      private static TabVisibility[] $values() {
+         return new TabVisibility[]{PARENT_AND_SEARCH_TABS, PARENT_TAB_ONLY, SEARCH_TAB_ONLY};
       }
    }
 
@@ -321,9 +314,7 @@ public class CreativeModeTab {
       }
 
       default void acceptAll(Collection<ItemStack> var1, TabVisibility var2) {
-         var1.forEach((var2x) -> {
-            this.accept(var2x, var2);
-         });
+         var1.forEach((var2x) -> this.accept(var2x, var2));
       }
 
       default void acceptAll(Collection<ItemStack> var1) {
@@ -331,17 +322,8 @@ public class CreativeModeTab {
       }
    }
 
-   protected static enum TabVisibility {
-      PARENT_AND_SEARCH_TABS,
-      PARENT_TAB_ONLY,
-      SEARCH_TAB_ONLY;
-
-      private TabVisibility() {
-      }
-
-      // $FF: synthetic method
-      private static TabVisibility[] $values() {
-         return new TabVisibility[]{PARENT_AND_SEARCH_TABS, PARENT_TAB_ONLY, SEARCH_TAB_ONLY};
-      }
+   @FunctionalInterface
+   public interface DisplayItemsGenerator {
+      void accept(ItemDisplayParameters var1, Output var2);
    }
 }

@@ -27,10 +27,8 @@ public class ClassInstanceMultiMap<T> extends AbstractCollection<T> {
 
    public boolean add(T var1) {
       boolean var2 = false;
-      Iterator var3 = this.byClass.entrySet().iterator();
 
-      while(var3.hasNext()) {
-         Map.Entry var4 = (Map.Entry)var3.next();
+      for(Map.Entry var4 : this.byClass.entrySet()) {
          if (((Class)var4.getKey()).isInstance(var1)) {
             var2 |= ((List)var4.getValue()).add(var1);
          }
@@ -41,10 +39,8 @@ public class ClassInstanceMultiMap<T> extends AbstractCollection<T> {
 
    public boolean remove(Object var1) {
       boolean var2 = false;
-      Iterator var3 = this.byClass.entrySet().iterator();
 
-      while(var3.hasNext()) {
-         Map.Entry var4 = (Map.Entry)var3.next();
+      for(Map.Entry var4 : this.byClass.entrySet()) {
          if (((Class)var4.getKey()).isInstance(var1)) {
             List var5 = (List)var4.getValue();
             var2 |= var5.remove(var1);
@@ -72,7 +68,7 @@ public class ClassInstanceMultiMap<T> extends AbstractCollection<T> {
    }
 
    public Iterator<T> iterator() {
-      return (Iterator)(this.allInstances.isEmpty() ? Collections.emptyIterator() : Iterators.unmodifiableIterator(this.allInstances.iterator()));
+      return (Iterator<T>)(this.allInstances.isEmpty() ? Collections.emptyIterator() : Iterators.unmodifiableIterator(this.allInstances.iterator()));
    }
 
    public List<T> getAllInstances() {

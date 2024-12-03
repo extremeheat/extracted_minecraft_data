@@ -295,13 +295,7 @@ public class Vec3 implements Position {
    }
 
    static {
-      CODEC = Codec.DOUBLE.listOf().comapFlatMap((var0) -> {
-         return Util.fixedSize((List)var0, 3).map((var0x) -> {
-            return new Vec3((Double)var0x.get(0), (Double)var0x.get(1), (Double)var0x.get(2));
-         });
-      }, (var0) -> {
-         return List.of(var0.x(), var0.y(), var0.z());
-      });
+      CODEC = Codec.DOUBLE.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 3).map((var0x) -> new Vec3((Double)var0x.get(0), (Double)var0x.get(1), (Double)var0x.get(2))), (var0) -> List.of(var0.x(), var0.y(), var0.z()));
       STREAM_CODEC = new StreamCodec<ByteBuf, Vec3>() {
          public Vec3 decode(ByteBuf var1) {
             return FriendlyByteBuf.readVec3(var1);

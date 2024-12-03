@@ -20,9 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
 
 public class StringRepresentableArgument<T extends Enum<T> & StringRepresentable> implements ArgumentType<T> {
-   private static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("argument.enum.invalid", var0);
-   });
+   private static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.enum.invalid", var0));
    private final Codec<T> codec;
    private final Supplier<T[]> values;
 
@@ -34,21 +32,15 @@ public class StringRepresentableArgument<T extends Enum<T> & StringRepresentable
 
    public T parse(StringReader var1) throws CommandSyntaxException {
       String var2 = var1.readUnquotedString();
-      return (Enum)this.codec.parse(JsonOps.INSTANCE, new JsonPrimitive(var2)).result().orElseThrow(() -> {
-         return ERROR_INVALID_VALUE.createWithContext(var1, var2);
-      });
+      return (T)(this.codec.parse(JsonOps.INSTANCE, new JsonPrimitive(var2)).result().orElseThrow(() -> ERROR_INVALID_VALUE.createWithContext(var1, var2)));
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return SharedSuggestionProvider.suggest((Iterable)Arrays.stream((Enum[])this.values.get()).map((var0) -> {
-         return ((StringRepresentable)var0).getSerializedName();
-      }).map(this::convertId).collect(Collectors.toList()), var2);
+      return SharedSuggestionProvider.suggest((Iterable)Arrays.stream((Enum[])this.values.get()).map((var0) -> ((StringRepresentable)var0).getSerializedName()).map(this::convertId).collect(Collectors.toList()), var2);
    }
 
    public Collection<String> getExamples() {
-      return (Collection)Arrays.stream((Enum[])this.values.get()).map((var0) -> {
-         return ((StringRepresentable)var0).getSerializedName();
-      }).map(this::convertId).limit(2L).collect(Collectors.toList());
+      return (Collection)Arrays.stream((Enum[])this.values.get()).map((var0) -> ((StringRepresentable)var0).getSerializedName()).map(this::convertId).limit(2L).collect(Collectors.toList());
    }
 
    protected String convertId(String var1) {

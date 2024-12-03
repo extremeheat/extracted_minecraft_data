@@ -10,11 +10,15 @@ import net.minecraft.client.gui.narration.NarrationSupplier;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.network.chat.Component;
 
-public abstract class ObjectSelectionList<E extends Entry<E>> extends AbstractSelectionList<E> {
+public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>> extends AbstractSelectionList<E> {
    private static final Component USAGE_NARRATION = Component.translatable("narration.selection.usage");
 
    public ObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5) {
       super(var1, var2, var3, var4, var5);
+   }
+
+   public ObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5, int var6) {
+      super(var1, var2, var3, var4, var5, var6);
    }
 
    @Nullable
@@ -24,7 +28,12 @@ public abstract class ObjectSelectionList<E extends Entry<E>> extends AbstractSe
       } else if (this.isFocused() && var1 instanceof FocusNavigationEvent.ArrowNavigation) {
          FocusNavigationEvent.ArrowNavigation var4 = (FocusNavigationEvent.ArrowNavigation)var1;
          Entry var3 = (Entry)this.nextEntry(var4.direction());
-         return var3 != null ? ComponentPath.path((ContainerEventHandler)this, (ComponentPath)ComponentPath.leaf(var3)) : null;
+         if (var3 != null) {
+            return ComponentPath.path((ContainerEventHandler)this, (ComponentPath)ComponentPath.leaf(var3));
+         } else {
+            this.setSelected((AbstractSelectionList.Entry)null);
+            return null;
+         }
       } else if (!this.isFocused()) {
          Entry var2 = (Entry)this.getSelected();
          if (var2 == null) {

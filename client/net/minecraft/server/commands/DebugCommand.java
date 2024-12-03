@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Locale;
 import net.minecraft.Util;
 import net.minecraft.commands.CommandResultCallback;
@@ -54,15 +53,7 @@ public class DebugCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debug").requires((var0x) -> {
-         return var0x.hasPermission(3);
-      })).then(Commands.literal("start").executes((var0x) -> {
-         return start((CommandSourceStack)var0x.getSource());
-      }))).then(Commands.literal("stop").executes((var0x) -> {
-         return stop((CommandSourceStack)var0x.getSource());
-      }))).then(((LiteralArgumentBuilder)Commands.literal("function").requires((var0x) -> {
-         return var0x.hasPermission(3);
-      })).then(Commands.argument("name", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).executes(new TraceCustomExecutor()))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("debug").requires((var0x) -> var0x.hasPermission(3))).then(Commands.literal("start").executes((var0x) -> start((CommandSourceStack)var0x.getSource())))).then(Commands.literal("stop").executes((var0x) -> stop((CommandSourceStack)var0x.getSource())))).then(((LiteralArgumentBuilder)Commands.literal("function").requires((var0x) -> var0x.hasPermission(3))).then(Commands.argument("name", FunctionArgument.functions()).suggests(FunctionCommand.SUGGEST_FUNCTION).executes(new TraceCustomExecutor()))));
    }
 
    private static int start(CommandSourceStack var0) throws CommandSyntaxException {
@@ -71,9 +62,7 @@ public class DebugCommand {
          throw ERROR_ALREADY_RUNNING.create();
       } else {
          var1.startTimeProfiler();
-         var0.sendSuccess(() -> {
-            return Component.translatable("commands.debug.started");
-         }, true);
+         var0.sendSuccess(() -> Component.translatable("commands.debug.started"), true);
          return 0;
       }
    }
@@ -86,14 +75,12 @@ public class DebugCommand {
          ProfileResults var2 = var1.stopTimeProfiler();
          double var3 = (double)var2.getNanoDuration() / (double)TimeUtil.NANOSECONDS_PER_SECOND;
          double var5 = (double)var2.getTickDuration() / var3;
-         var0.sendSuccess(() -> {
-            return Component.translatable("commands.debug.stopped", String.format(Locale.ROOT, "%.2f", var3), var2.getTickDuration(), String.format(Locale.ROOT, "%.2f", var5));
-         }, true);
+         var0.sendSuccess(() -> Component.translatable("commands.debug.stopped", String.format(Locale.ROOT, "%.2f", var3), var2.getTickDuration(), String.format(Locale.ROOT, "%.2f", var5)), true);
          return (int)var5;
       }
    }
 
-   private static class TraceCustomExecutor extends CustomCommandExecutor.WithErrorHandling<CommandSourceStack> implements CustomCommandExecutor.CommandAdapter<CommandSourceStack> {
+   static class TraceCustomExecutor extends CustomCommandExecutor.WithErrorHandling<CommandSourceStack> implements CustomCommandExecutor.CommandAdapter<CommandSourceStack> {
       TraceCustomExecutor() {
          super();
       }
@@ -117,18 +104,15 @@ public class DebugCommand {
                final PrintWriter var12 = new PrintWriter(Files.newBufferedWriter(var11.resolve(var8), StandardCharsets.UTF_8));
                Tracer var13 = new Tracer(var12);
                var4.tracer(var13);
-               Iterator var14 = var6.iterator();
 
-               while(var14.hasNext()) {
-                  final CommandFunction var15 = (CommandFunction)var14.next();
-
+               for(final CommandFunction var15 : var6) {
                   try {
                      CommandSourceStack var16 = var1.withSource(var13).withMaximumPermission(2);
                      InstantiatedFunction var17 = var15.instantiate((CompoundTag)null, var9);
-                     var4.queueNext((new CallFunction<CommandSourceStack>(this, var17, CommandResultCallback.EMPTY, false) {
+                     var4.queueNext((new CallFunction<CommandSourceStack>(var17, CommandResultCallback.EMPTY, false) {
                         public void execute(CommandSourceStack var1, ExecutionContext<CommandSourceStack> var2, Frame var3) {
                            var12.println(var15.id());
-                           super.execute((ExecutionCommandSource)var1, var2, var3);
+                           super.execute(var1, var2, var3);
                         }
 
                         // $FF: synthetic method
@@ -148,13 +132,9 @@ public class DebugCommand {
 
             var4.queueNext((var4x, var5x) -> {
                if (var6.size() == 1) {
-                  var1.sendSuccess(() -> {
-                     return Component.translatable("commands.debug.function.success.single", var10, Component.translationArg(((CommandFunction)var6.iterator().next()).id()), var8);
-                  }, true);
+                  var1.sendSuccess(() -> Component.translatable("commands.debug.function.success.single", var10, Component.translationArg(((CommandFunction)var6.iterator().next()).id()), var8), true);
                } else {
-                  var1.sendSuccess(() -> {
-                     return Component.translatable("commands.debug.function.success.multiple", var10, var6.size(), var8);
-                  }, true);
+                  var1.sendSuccess(() -> Component.translatable("commands.debug.function.success.multiple", var10, var6.size(), var8), true);
                }
 
             });
@@ -167,7 +147,7 @@ public class DebugCommand {
       }
    }
 
-   private static class Tracer implements CommandSource, TraceCallbacks {
+   static class Tracer implements CommandSource, TraceCallbacks {
       public static final int INDENT_OFFSET = 1;
       private final PrintWriter output;
       private int lastIndent;

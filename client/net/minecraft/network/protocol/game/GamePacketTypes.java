@@ -150,12 +150,14 @@ public class GamePacketTypes {
    public static final PacketType<ServerboundMovePlayerPacket.StatusOnly> SERVERBOUND_MOVE_PLAYER_STATUS_ONLY = createServerbound("move_player_status_only");
    public static final PacketType<ServerboundMoveVehiclePacket> SERVERBOUND_MOVE_VEHICLE = createServerbound("move_vehicle");
    public static final PacketType<ServerboundPaddleBoatPacket> SERVERBOUND_PADDLE_BOAT = createServerbound("paddle_boat");
-   public static final PacketType<ServerboundPickItemPacket> SERVERBOUND_PICK_ITEM = createServerbound("pick_item");
+   public static final PacketType<ServerboundPickItemFromBlockPacket> SERVERBOUND_PICK_ITEM_FROM_BLOCK = createServerbound("pick_item_from_block");
+   public static final PacketType<ServerboundPickItemFromEntityPacket> SERVERBOUND_PICK_ITEM_FROM_ENTITY = createServerbound("pick_item_from_entity");
    public static final PacketType<ServerboundPlaceRecipePacket> SERVERBOUND_PLACE_RECIPE = createServerbound("place_recipe");
    public static final PacketType<ServerboundPlayerAbilitiesPacket> SERVERBOUND_PLAYER_ABILITIES = createServerbound("player_abilities");
    public static final PacketType<ServerboundPlayerActionPacket> SERVERBOUND_PLAYER_ACTION = createServerbound("player_action");
    public static final PacketType<ServerboundPlayerCommandPacket> SERVERBOUND_PLAYER_COMMAND = createServerbound("player_command");
    public static final PacketType<ServerboundPlayerInputPacket> SERVERBOUND_PLAYER_INPUT = createServerbound("player_input");
+   public static final PacketType<ServerboundPlayerLoadedPacket> SERVERBOUND_PLAYER_LOADED = createServerbound("player_loaded");
    public static final PacketType<ServerboundRecipeBookChangeSettingsPacket> SERVERBOUND_RECIPE_BOOK_CHANGE_SETTINGS = createServerbound("recipe_book_change_settings");
    public static final PacketType<ServerboundRecipeBookSeenRecipePacket> SERVERBOUND_RECIPE_BOOK_SEEN_RECIPE = createServerbound("recipe_book_seen_recipe");
    public static final PacketType<ServerboundRenameItemPacket> SERVERBOUND_RENAME_ITEM = createServerbound("rename_item");
@@ -184,10 +186,10 @@ public class GamePacketTypes {
    }
 
    private static <T extends Packet<ClientGamePacketListener>> PacketType<T> createClientbound(String var0) {
-      return new PacketType(PacketFlow.CLIENTBOUND, ResourceLocation.withDefaultNamespace(var0));
+      return new PacketType<T>(PacketFlow.CLIENTBOUND, ResourceLocation.withDefaultNamespace(var0));
    }
 
    private static <T extends Packet<ServerGamePacketListener>> PacketType<T> createServerbound(String var0) {
-      return new PacketType(PacketFlow.SERVERBOUND, ResourceLocation.withDefaultNamespace(var0));
+      return new PacketType<T>(PacketFlow.SERVERBOUND, ResourceLocation.withDefaultNamespace(var0));
    }
 }

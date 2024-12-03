@@ -140,22 +140,20 @@ public abstract class GenerationChunkHolder {
          int var2 = var1.getIndex();
          CompletableFuture var3 = (CompletableFuture)this.futures.get(var2);
 
-         CompletableFuture var4;
-         do {
-            if (var3 != null) {
-               return var3;
-            }
-
-            var4 = new CompletableFuture();
+         while(var3 == null) {
+            CompletableFuture var4 = new CompletableFuture();
             var3 = (CompletableFuture)this.futures.compareAndExchange(var2, (Object)null, var4);
-         } while(var3 != null);
+            if (var3 == null) {
+               if (this.isStatusDisallowed(var1)) {
+                  this.failAndClearPendingFuture(var2, var4);
+                  return UNLOADED_CHUNK_FUTURE;
+               }
 
-         if (this.isStatusDisallowed(var1)) {
-            this.failAndClearPendingFuture(var2, var4);
-            return UNLOADED_CHUNK_FUTURE;
-         } else {
-            return var4;
+               return var4;
+            }
          }
+
+         return var3;
       }
    }
 
@@ -182,13 +180,13 @@ public abstract class GenerationChunkHolder {
       ChunkResult var3 = ChunkResult.of(var2);
       int var4 = var1.getIndex();
 
-      do {
-         while(true) {
-            CompletableFuture var5 = (CompletableFuture)this.futures.get(var4);
-            if (var5 == null) {
-               break;
+      while(true) {
+         CompletableFuture var5 = (CompletableFuture)this.futures.get(var4);
+         if (var5 == null) {
+            if (this.futures.compareAndSet(var4, (Object)null, CompletableFuture.completedFuture(var3))) {
+               return;
             }
-
+         } else {
             if (var5.complete(var3)) {
                return;
             }
@@ -199,8 +197,7 @@ public abstract class GenerationChunkHolder {
 
             Thread.yield();
          }
-      } while(!this.futures.compareAndSet(var4, (Object)null, CompletableFuture.completedFuture(var3)));
-
+      }
    }
 
    @Nullable

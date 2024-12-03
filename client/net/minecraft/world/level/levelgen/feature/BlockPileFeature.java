@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
-import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -26,10 +25,8 @@ public class BlockPileFeature extends Feature<BlockPileConfiguration> {
       } else {
          int var6 = 2 + var4.nextInt(2);
          int var7 = 2 + var4.nextInt(2);
-         Iterator var8 = BlockPos.betweenClosed(var2.offset(-var6, 0, -var7), var2.offset(var6, 1, var7)).iterator();
 
-         while(var8.hasNext()) {
-            BlockPos var9 = (BlockPos)var8.next();
+         for(BlockPos var9 : BlockPos.betweenClosed(var2.offset(-var6, 0, -var7), var2.offset(var6, 1, var7))) {
             int var10 = var2.getX() - var9.getX();
             int var11 = var2.getZ() - var9.getZ();
             if ((float)(var10 * var10 + var11 * var11) <= var4.nextFloat() * 10.0F - var4.nextFloat() * 6.0F) {

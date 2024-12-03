@@ -2,15 +2,19 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
+import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.client.renderer.entity.layers.WingsLayer;
+import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.ItemStack;
 
 public abstract class HumanoidMobRenderer<T extends Mob, S extends HumanoidRenderState, M extends HumanoidModel<S>> extends AgeableMobRenderer<T, S, M> {
    public HumanoidMobRenderer(EntityRendererProvider.Context var1, M var2, float var3) {
@@ -23,17 +27,24 @@ public abstract class HumanoidMobRenderer<T extends Mob, S extends HumanoidRende
 
    public HumanoidMobRenderer(EntityRendererProvider.Context var1, M var2, M var3, float var4, CustomHeadLayer.Transforms var5) {
       super(var1, var2, var3, var4);
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var5, var1.getItemRenderer()));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var5));
       this.addLayer(new WingsLayer(this, var1.getModelSet(), var1.getEquipmentRenderer()));
-      this.addLayer(new ItemInHandLayer(this, var1.getItemRenderer()));
+      this.addLayer(new ItemInHandLayer(this));
+   }
+
+   protected HumanoidModel.ArmPose getArmPose(T var1, HumanoidArm var2) {
+      return HumanoidModel.ArmPose.EMPTY;
    }
 
    public void extractRenderState(T var1, S var2, float var3) {
       super.extractRenderState(var1, var2, var3);
-      extractHumanoidRenderState(var1, var2, var3);
+      extractHumanoidRenderState(var1, var2, var3, this.itemModelResolver);
+      var2.leftArmPose = this.getArmPose(var1, HumanoidArm.LEFT);
+      var2.rightArmPose = this.getArmPose(var1, HumanoidArm.RIGHT);
    }
 
-   public static void extractHumanoidRenderState(LivingEntity var0, HumanoidRenderState var1, float var2) {
+   public static void extractHumanoidRenderState(LivingEntity var0, HumanoidRenderState var1, float var2, ItemModelResolver var3) {
+      ArmedEntityRenderState.extractArmedEntityRenderState(var0, var1, var3);
       var1.isCrouching = var0.isCrouching();
       var1.isFallFlying = var0.isFallFlying();
       var1.isVisuallySwimming = var0.isVisuallySwimming();
@@ -59,9 +70,15 @@ public abstract class HumanoidMobRenderer<T extends Mob, S extends HumanoidRende
       var1.elytraRotX = var0.elytraAnimationState.getRotX(var2);
       var1.elytraRotY = var0.elytraAnimationState.getRotY(var2);
       var1.elytraRotZ = var0.elytraAnimationState.getRotZ(var2);
-      var1.chestItem = var0.getItemBySlot(EquipmentSlot.CHEST).copy();
-      var1.legsItem = var0.getItemBySlot(EquipmentSlot.LEGS).copy();
-      var1.feetItem = var0.getItemBySlot(EquipmentSlot.FEET).copy();
+      var1.headEquipment = getEquipmentIfRenderable(var0, EquipmentSlot.HEAD);
+      var1.chestEquipment = getEquipmentIfRenderable(var0, EquipmentSlot.CHEST);
+      var1.legsEquipment = getEquipmentIfRenderable(var0, EquipmentSlot.LEGS);
+      var1.feetEquipment = getEquipmentIfRenderable(var0, EquipmentSlot.FEET);
+   }
+
+   private static ItemStack getEquipmentIfRenderable(LivingEntity var0, EquipmentSlot var1) {
+      ItemStack var2 = var0.getItemBySlot(var1);
+      return HumanoidArmorLayer.shouldRender(var2, var1) ? var2.copy() : ItemStack.EMPTY;
    }
 
    private static HumanoidArm getAttackArm(LivingEntity var0) {

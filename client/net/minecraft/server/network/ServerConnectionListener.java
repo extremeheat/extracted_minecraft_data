@@ -49,12 +49,8 @@ import org.slf4j.Logger;
 
 public class ServerConnectionListener {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final Supplier<NioEventLoopGroup> SERVER_EVENT_GROUP = Suppliers.memoize(() -> {
-      return new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Server IO #%d").setDaemon(true).build());
-   });
-   public static final Supplier<EpollEventLoopGroup> SERVER_EPOLL_EVENT_GROUP = Suppliers.memoize(() -> {
-      return new EpollEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Epoll Server IO #%d").setDaemon(true).build());
-   });
+   public static final Supplier<NioEventLoopGroup> SERVER_EVENT_GROUP = Suppliers.memoize(() -> new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Server IO #%d").setDaemon(true).build()));
+   public static final Supplier<EpollEventLoopGroup> SERVER_EPOLL_EVENT_GROUP = Suppliers.memoize(() -> new EpollEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Epoll Server IO #%d").setDaemon(true).build()));
    final MinecraftServer server;
    public volatile boolean running;
    private final List<ChannelFuture> channels = Collections.synchronizedList(Lists.newArrayList());
@@ -124,11 +120,8 @@ public class ServerConnectionListener {
 
    public void stop() {
       this.running = false;
-      Iterator var1 = this.channels.iterator();
 
-      while(var1.hasNext()) {
-         ChannelFuture var2 = (ChannelFuture)var1.next();
-
+      for(ChannelFuture var2 : this.channels) {
          try {
             var2.channel().close().sync();
          } catch (InterruptedException var4) {
@@ -142,17 +135,9 @@ public class ServerConnectionListener {
       synchronized(this.connections) {
          Iterator var2 = this.connections.iterator();
 
-         while(true) {
-            while(true) {
-               Connection var3;
-               do {
-                  if (!var2.hasNext()) {
-                     return;
-                  }
-
-                  var3 = (Connection)var2.next();
-               } while(var3.isConnecting());
-
+         while(var2.hasNext()) {
+            Connection var3 = (Connection)var2.next();
+            if (!var3.isConnecting()) {
                if (var3.isConnected()) {
                   try {
                      var3.tick();
@@ -163,9 +148,7 @@ public class ServerConnectionListener {
 
                      LOGGER.warn("Failed to handle packet for {}", var3.getLoggableAddress(this.server.logIPs()), var7);
                      MutableComponent var5 = Component.literal("Internal server error");
-                     var3.send(new ClientboundDisconnectPacket(var5), PacketSendListener.thenRun(() -> {
-                        var3.disconnect(var5);
-                     }));
+                     var3.send(new ClientboundDisconnectPacket(var5), PacketSendListener.thenRun(() -> var3.disconnect(var5)));
                      var3.setReadOnly();
                   }
                } else {
@@ -174,6 +157,7 @@ public class ServerConnectionListener {
                }
             }
          }
+
       }
    }
 
@@ -185,7 +169,7 @@ public class ServerConnectionListener {
       return this.connections;
    }
 
-   private static class LatencySimulator extends ChannelInboundHandlerAdapter {
+   static class LatencySimulator extends ChannelInboundHandlerAdapter {
       private static final Timer TIMER = new HashedWheelTimer();
       private final int delay;
       private final int jitter;
@@ -212,7 +196,7 @@ public class ServerConnectionListener {
          var2.ctx.fireChannelRead(var2.msg);
       }
 
-      private static class DelayedMessage {
+      static class DelayedMessage {
          public final ChannelHandlerContext ctx;
          public final Object msg;
 

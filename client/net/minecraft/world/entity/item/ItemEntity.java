@@ -1,7 +1,5 @@
 package net.minecraft.world.entity.item;
 
-import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -212,13 +210,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
    private void mergeWithNeighbours() {
       if (this.isMergable()) {
-         List var1 = this.level().getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.5, 0.0, 0.5), (var1x) -> {
-            return var1x != this && var1x.isMergable();
-         });
-         Iterator var2 = var1.iterator();
-
-         while(var2.hasNext()) {
-            ItemEntity var3 = (ItemEntity)var2.next();
+         for(ItemEntity var3 : this.level().getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate(0.5, 0.0, 0.5), (var1) -> var1 != this && var1.isMergable())) {
             if (var3.isMergable()) {
                this.tryToMerge(var3);
                if (this.isRemoved()) {
@@ -482,6 +474,6 @@ public class ItemEntity extends Entity implements TraceableEntity {
    }
 
    static {
-      DATA_ITEM = SynchedEntityData.defineId(ItemEntity.class, EntityDataSerializers.ITEM_STACK);
+      DATA_ITEM = SynchedEntityData.<ItemStack>defineId(ItemEntity.class, EntityDataSerializers.ITEM_STACK);
    }
 }

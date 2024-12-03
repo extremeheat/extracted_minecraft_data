@@ -7,11 +7,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 
 public class AppendStatic implements RuleBlockEntityModifier {
-   public static final MapCodec<AppendStatic> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(CompoundTag.CODEC.fieldOf("data").forGetter((var0x) -> {
-         return var0x.tag;
-      })).apply(var0, AppendStatic::new);
-   });
+   public static final MapCodec<AppendStatic> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(CompoundTag.CODEC.fieldOf("data").forGetter((var0x) -> var0x.tag)).apply(var0, AppendStatic::new));
    private final CompoundTag tag;
 
    public AppendStatic(CompoundTag var1) {

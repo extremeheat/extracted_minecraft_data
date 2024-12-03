@@ -20,15 +20,11 @@ public class LootTableTrigger extends SimpleCriterionTrigger<TriggerInstance> {
    }
 
    public void trigger(ServerPlayer var1, ResourceKey<LootTable> var2) {
-      this.trigger(var1, (var1x) -> {
-         return var1x.matches(var2);
-      });
+      this.trigger(var1, (var1x) -> var1x.matches(var2));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, ResourceKey<LootTable> lootTable) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ResourceKey.codec(Registries.LOOT_TABLE).fieldOf("loot_table").forGetter(TriggerInstance::lootTable)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ResourceKey.codec(Registries.LOOT_TABLE).fieldOf("loot_table").forGetter(TriggerInstance::lootTable)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, ResourceKey<LootTable> var2) {
          super();
@@ -42,14 +38,6 @@ public class LootTableTrigger extends SimpleCriterionTrigger<TriggerInstance> {
 
       public boolean matches(ResourceKey<LootTable> var1) {
          return this.lootTable == var1;
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public ResourceKey<LootTable> lootTable() {
-         return this.lootTable;
       }
    }
 }

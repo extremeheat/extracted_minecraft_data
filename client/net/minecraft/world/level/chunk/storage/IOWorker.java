@@ -116,28 +116,24 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    }
 
    private boolean isOldChunk(CompoundTag var1) {
-      return var1.contains("DataVersion", 99) && var1.getInt("DataVersion") >= 3441 ? var1.contains("blending_data", 10) : true;
+      return var1.contains("DataVersion", 99) && var1.getInt("DataVersion") >= 4185 ? var1.contains("blending_data", 10) : true;
    }
 
    public CompletableFuture<Void> store(ChunkPos var1, @Nullable CompoundTag var2) {
-      return this.store(var1, () -> {
-         return var2;
-      });
+      return this.store(var1, (Supplier)(() -> var2));
    }
 
    public CompletableFuture<Void> store(ChunkPos var1, Supplier<CompoundTag> var2) {
       return this.submitTask(() -> {
          CompoundTag var3 = (CompoundTag)var2.get();
-         PendingStore var4 = (PendingStore)this.pendingWrites.computeIfAbsent(var1, (var1x) -> {
-            return new PendingStore(var3);
-         });
+         PendingStore var4 = (PendingStore)this.pendingWrites.computeIfAbsent(var1, (var1x) -> new PendingStore(var3));
          var4.data = var3;
          return var4.result;
       }).thenCompose(Function.identity());
    }
 
    public CompletableFuture<Optional<CompoundTag>> loadAsync(ChunkPos var1) {
-      return this.submitThrowingTask(() -> {
+      return this.<Optional<CompoundTag>>submitThrowingTask(() -> {
          PendingStore var2 = (PendingStore)this.pendingWrites.get(var1);
          if (var2 != null) {
             return Optional.ofNullable(var2.copyData());
@@ -154,15 +150,8 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    }
 
    public CompletableFuture<Void> synchronize(boolean var1) {
-      CompletableFuture var2 = this.submitTask(() -> {
-         return CompletableFuture.allOf((CompletableFuture[])this.pendingWrites.values().stream().map((var0) -> {
-            return var0.result;
-         }).toArray((var0) -> {
-            return new CompletableFuture[var0];
-         }));
-      }).thenCompose(Function.identity());
-      return var1 ? var2.thenCompose((var1x) -> {
-         return this.submitThrowingTask(() -> {
+      CompletableFuture var2 = this.submitTask(() -> CompletableFuture.allOf((CompletableFuture[])this.pendingWrites.values().stream().map((var0) -> var0.result).toArray((var0) -> new CompletableFuture[var0]))).thenCompose(Function.identity());
+      return var1 ? var2.thenCompose((var1x) -> this.submitThrowingTask(() -> {
             try {
                this.storage.flush();
                return null;
@@ -170,16 +159,11 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
                LOGGER.warn("Failed to synchronize chunks", var2);
                throw var2;
             }
-         });
-      }) : var2.thenCompose((var1x) -> {
-         return this.submitTask(() -> {
-            return null;
-         });
-      });
+         })) : var2.thenCompose((var1x) -> this.submitTask(() -> null));
    }
 
    public CompletableFuture<Void> scanChunk(ChunkPos var1, StreamTagVisitor var2) {
-      return this.submitThrowingTask(() -> {
+      return this.<Void>submitThrowingTask(() -> {
          try {
             PendingStore var3 = (PendingStore)this.pendingWrites.get(var1);
             if (var3 != null) {
@@ -199,7 +183,7 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    }
 
    private <T> CompletableFuture<T> submitThrowingTask(ThrowingSupplier<T> var1) {
-      return this.consecutiveExecutor.scheduleWithResult(IOWorker.Priority.FOREGROUND.ordinal(), (var2) -> {
+      return this.consecutiveExecutor.<T>scheduleWithResult(IOWorker.Priority.FOREGROUND.ordinal(), (var2) -> {
          if (!this.shutdownRequested.get()) {
             try {
                var2.complete(var1.get());
@@ -213,7 +197,7 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    }
 
    private <T> CompletableFuture<T> submitTask(Supplier<T> var1) {
-      return this.consecutiveExecutor.scheduleWithResult(IOWorker.Priority.FOREGROUND.ordinal(), (var2) -> {
+      return this.consecutiveExecutor.<T>scheduleWithResult(IOWorker.Priority.FOREGROUND.ordinal(), (var2) -> {
          if (!this.shutdownRequested.get()) {
             var2.complete(var1.get());
          }
@@ -260,9 +244,7 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    }
 
    private void waitForShutdown() {
-      this.consecutiveExecutor.scheduleWithResult(IOWorker.Priority.SHUTDOWN.ordinal(), (var0) -> {
-         var0.complete(Unit.INSTANCE);
-      }).join();
+      this.consecutiveExecutor.scheduleWithResult(IOWorker.Priority.SHUTDOWN.ordinal(), (var0) -> var0.complete(Unit.INSTANCE)).join();
    }
 
    public RegionStorageInfo storageInfo() {
@@ -283,13 +265,7 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
       }
    }
 
-   @FunctionalInterface
-   interface ThrowingSupplier<T> {
-      @Nullable
-      T get() throws Exception;
-   }
-
-   private static class PendingStore {
+   static class PendingStore {
       @Nullable
       CompoundTag data;
       final CompletableFuture<Void> result = new CompletableFuture();
@@ -304,5 +280,11 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
          CompoundTag var1 = this.data;
          return var1 == null ? null : var1.copy();
       }
+   }
+
+   @FunctionalInterface
+   interface ThrowingSupplier<T> {
+      @Nullable
+      T get() throws Exception;
    }
 }

@@ -39,12 +39,8 @@ public class ClientTelemetryManager implements AutoCloseable {
       this.minecraft = var1;
       this.userApiService = var2;
       TelemetryPropertyMap.Builder var4 = TelemetryPropertyMap.builder();
-      var3.getXuid().ifPresent((var1x) -> {
-         var4.put(TelemetryProperty.USER_ID, var1x);
-      });
-      var3.getClientId().ifPresent((var1x) -> {
-         var4.put(TelemetryProperty.CLIENT_ID, var1x);
-      });
+      var3.getXuid().ifPresent((var1x) -> var4.put(TelemetryProperty.USER_ID, var1x));
+      var3.getClientId().ifPresent((var1x) -> var4.put(TelemetryProperty.CLIENT_ID, var1x));
       var4.put(TelemetryProperty.MINECRAFT_SESSION_ID, UUID.randomUUID());
       var4.put(TelemetryProperty.GAME_VERSION, SharedConstants.getCurrentVersion().getId());
       var4.put(TelemetryProperty.OPERATING_SYSTEM, Util.getPlatform().telemetryName());
@@ -72,11 +68,7 @@ public class ClientTelemetryManager implements AutoCloseable {
          if (!var1.isEnabled()) {
             return TelemetryEventSender.DISABLED;
          } else {
-            CompletableFuture var2 = this.logManager.thenCompose((var0) -> {
-               return (CompletionStage)var0.map(TelemetryLogManager::openLogger).orElseGet(() -> {
-                  return CompletableFuture.completedFuture(Optional.empty());
-               });
-            });
+            CompletableFuture var2 = this.logManager.thenCompose((var0) -> (CompletionStage)var0.map(TelemetryLogManager::openLogger).orElseGet(() -> CompletableFuture.completedFuture(Optional.empty())));
             return (var3, var4) -> {
                if (!var3.isOptIn() || Minecraft.getInstance().telemetryOptInExtra()) {
                   TelemetryPropertyMap.Builder var5 = TelemetryPropertyMap.builder();
@@ -102,8 +94,6 @@ public class ClientTelemetryManager implements AutoCloseable {
    }
 
    public void close() {
-      this.logManager.thenAccept((var0) -> {
-         var0.ifPresent(TelemetryLogManager::close);
-      });
+      this.logManager.thenAccept((var0) -> var0.ifPresent(TelemetryLogManager::close));
    }
 }

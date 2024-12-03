@@ -27,6 +27,7 @@ import net.minecraft.world.phys.Vec3;
 public class ThrownTrident extends AbstractArrow {
    private static final EntityDataAccessor<Byte> ID_LOYALTY;
    private static final EntityDataAccessor<Boolean> ID_FOIL;
+   private static final float WATER_INERTIA = 0.99F;
    private boolean dealtDamage;
    public int clientSideReturnTridentTickCount;
 
@@ -128,16 +129,14 @@ public class ThrownTrident extends AbstractArrow {
 
          var7 = this.level();
          if (var7 instanceof ServerLevel) {
-            var6 = (ServerLevel)var7;
-            EnchantmentHelper.doPostAttackEffectsWithItemSourceOnBreak(var6, var2, var5, this.getWeaponItem(), (var2x) -> {
-               this.kill(var6);
-            });
+            ServerLevel var8 = (ServerLevel)var7;
+            EnchantmentHelper.doPostAttackEffectsWithItemSourceOnBreak(var8, var2, var5, this.getWeaponItem(), (var2x) -> this.kill(var8));
          }
 
          if (var2 instanceof LivingEntity) {
-            LivingEntity var8 = (LivingEntity)var2;
-            this.doKnockback(var8, var5);
-            this.doPostHurtEffects(var8);
+            LivingEntity var9 = (LivingEntity)var2;
+            this.doKnockback(var9, var5);
+            this.doPostHurtEffects(var9);
          }
       }
 
@@ -156,9 +155,7 @@ public class ThrownTrident extends AbstractArrow {
          var10002 = null;
       }
 
-      EnchantmentHelper.onHitBlock(var1, var3, var10002, this, (EquipmentSlot)null, var4, var1.getBlockState(var2.getBlockPos()), (var2x) -> {
-         this.kill(var1);
-      });
+      EnchantmentHelper.onHitBlock(var1, var3, var10002, this, (EquipmentSlot)null, var4, var1.getBlockState(var2.getBlockPos()), (var2x) -> this.kill(var1));
    }
 
    public ItemStack getWeaponItem() {
@@ -221,7 +218,7 @@ public class ThrownTrident extends AbstractArrow {
    }
 
    static {
-      ID_LOYALTY = SynchedEntityData.defineId(ThrownTrident.class, EntityDataSerializers.BYTE);
-      ID_FOIL = SynchedEntityData.defineId(ThrownTrident.class, EntityDataSerializers.BOOLEAN);
+      ID_LOYALTY = SynchedEntityData.<Byte>defineId(ThrownTrident.class, EntityDataSerializers.BYTE);
+      ID_FOIL = SynchedEntityData.<Boolean>defineId(ThrownTrident.class, EntityDataSerializers.BOOLEAN);
    }
 }

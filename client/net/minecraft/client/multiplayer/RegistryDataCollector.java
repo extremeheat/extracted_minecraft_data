@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
@@ -60,9 +61,7 @@ public class RegistryDataCollector {
       LayeredRegistryAccess var5 = ClientRegistryLayer.createRegistryAccess();
       RegistryAccess.Frozen var6 = var5.getAccessForLoading(ClientRegistryLayer.REMOTE);
       HashMap var7 = new HashMap();
-      var2.elements.forEach((var1x, var2x) -> {
-         var7.put(var1x, new RegistryDataLoader.NetworkedRegistryData(var2x, TagNetworkSerialization.NetworkPayload.EMPTY));
-      });
+      var2.elements.forEach((var1x, var2x) -> var7.put(var1x, new RegistryDataLoader.NetworkedRegistryData(var2x, TagNetworkSerialization.NetworkPayload.EMPTY)));
       ArrayList var8 = new ArrayList();
       if (this.tagCollector != null) {
          this.tagCollector.forEach((var4x, var5x) -> {
@@ -91,27 +90,15 @@ public class RegistryDataCollector {
          throw new ReportedException(var12);
       }
 
-      RegistryAccess.Frozen var4 = var5.replaceFrom(ClientRegistryLayer.REMOTE, (RegistryAccess.Frozen[])(var10)).compositeAccess();
+      RegistryAccess.Frozen var4 = var5.replaceFrom(ClientRegistryLayer.REMOTE, var10).compositeAccess();
       var8.forEach(Registry.PendingTags::apply);
       return var4;
    }
 
    private static void addCrashDetails(CrashReport var0, Map<ResourceKey<? extends Registry<?>>, RegistryDataLoader.NetworkedRegistryData> var1, List<Registry.PendingTags<?>> var2) {
       CrashReportCategory var3 = var0.addCategory("Received Elements and Tags");
-      var3.setDetail("Dynamic Registries", () -> {
-         return (String)var1.entrySet().stream().sorted(Comparator.comparing((var0) -> {
-            return ((ResourceKey)var0.getKey()).location();
-         })).map((var0) -> {
-            return String.format(Locale.ROOT, "\n\t\t%s: elements=%d tags=%d", ((ResourceKey)var0.getKey()).location(), ((RegistryDataLoader.NetworkedRegistryData)var0.getValue()).elements().size(), ((RegistryDataLoader.NetworkedRegistryData)var0.getValue()).tags().size());
-         }).collect(Collectors.joining());
-      });
-      var3.setDetail("Static Registries", () -> {
-         return (String)var2.stream().sorted(Comparator.comparing((var0) -> {
-            return var0.key().location();
-         })).map((var0) -> {
-            return String.format(Locale.ROOT, "\n\t\t%s: tags=%d", var0.key().location(), var0.size());
-         }).collect(Collectors.joining());
-      });
+      var3.setDetail("Dynamic Registries", (CrashReportDetail)(() -> (String)var1.entrySet().stream().sorted(Comparator.comparing((var0) -> ((ResourceKey)var0.getKey()).location())).map((var0) -> String.format(Locale.ROOT, "\n\t\t%s: elements=%d tags=%d", ((ResourceKey)var0.getKey()).location(), ((RegistryDataLoader.NetworkedRegistryData)var0.getValue()).elements().size(), ((RegistryDataLoader.NetworkedRegistryData)var0.getValue()).tags().size())).collect(Collectors.joining())));
+      var3.setDetail("Static Registries", (CrashReportDetail)(() -> (String)var2.stream().sorted(Comparator.comparing((var0) -> var0.key().location())).map((var0) -> String.format(Locale.ROOT, "\n\t\t%s: tags=%d", var0.key().location(), var0.size())).collect(Collectors.joining())));
    }
 
    private void loadOnlyTags(TagCollector var1, RegistryAccess.Frozen var2, boolean var3) {
@@ -138,7 +125,7 @@ public class RegistryDataCollector {
       return ((RegistryAccess)var4).freeze();
    }
 
-   private static class ContentsCollector {
+   static class ContentsCollector {
       final Map<ResourceKey<? extends Registry<?>>, List<RegistrySynchronization.PackedRegistryEntry>> elements = new HashMap();
 
       ContentsCollector() {
@@ -146,13 +133,11 @@ public class RegistryDataCollector {
       }
 
       public void append(ResourceKey<? extends Registry<?>> var1, List<RegistrySynchronization.PackedRegistryEntry> var2) {
-         ((List)this.elements.computeIfAbsent(var1, (var0) -> {
-            return new ArrayList();
-         })).addAll(var2);
+         ((List)this.elements.computeIfAbsent(var1, (var0) -> new ArrayList())).addAll(var2);
       }
    }
 
-   private static class TagCollector {
+   static class TagCollector {
       private final Map<ResourceKey<? extends Registry<?>>, TagNetworkSerialization.NetworkPayload> tags = new HashMap();
 
       TagCollector() {

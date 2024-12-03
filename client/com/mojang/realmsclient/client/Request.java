@@ -151,11 +151,11 @@ public abstract class Request<T extends Request<T>> {
 
    protected T connect() {
       if (this.connected) {
-         return this;
+         return (T)this;
       } else {
          Request var1 = this.doConnect();
          this.connected = true;
-         return var1;
+         return (T)var1;
       }
    }
 
@@ -201,17 +201,16 @@ public abstract class Request<T extends Request<T>> {
       }
    }
 
-   public static class Get extends Request<Get> {
-      public Get(String var1, int var2, int var3) {
+   public static class Delete extends Request<Delete> {
+      public Delete(String var1, int var2, int var3) {
          super(var1, var2, var3);
       }
 
-      public Get doConnect() {
+      public Delete doConnect() {
          try {
-            this.connection.setDoInput(true);
             this.connection.setDoOutput(true);
-            this.connection.setUseCaches(false);
-            this.connection.setRequestMethod("GET");
+            this.connection.setRequestMethod("DELETE");
+            this.connection.connect();
             return this;
          } catch (Exception var2) {
             throw new RealmsHttpException(var2.getMessage(), var2);
@@ -224,51 +223,17 @@ public abstract class Request<T extends Request<T>> {
       }
    }
 
-   public static class Post extends Request<Post> {
-      private final String content;
-
-      public Post(String var1, String var2, int var3, int var4) {
-         super(var1, var3, var4);
-         this.content = var2;
-      }
-
-      public Post doConnect() {
-         try {
-            if (this.content != null) {
-               this.connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-            }
-
-            this.connection.setDoInput(true);
-            this.connection.setDoOutput(true);
-            this.connection.setUseCaches(false);
-            this.connection.setRequestMethod("POST");
-            OutputStream var1 = this.connection.getOutputStream();
-            OutputStreamWriter var2 = new OutputStreamWriter(var1, "UTF-8");
-            var2.write(this.content);
-            var2.close();
-            var1.flush();
-            return this;
-         } catch (Exception var3) {
-            throw new RealmsHttpException(var3.getMessage(), var3);
-         }
-      }
-
-      // $FF: synthetic method
-      public Request doConnect() {
-         return this.doConnect();
-      }
-   }
-
-   public static class Delete extends Request<Delete> {
-      public Delete(String var1, int var2, int var3) {
+   public static class Get extends Request<Get> {
+      public Get(String var1, int var2, int var3) {
          super(var1, var2, var3);
       }
 
-      public Delete doConnect() {
+      public Get doConnect() {
          try {
+            this.connection.setDoInput(true);
             this.connection.setDoOutput(true);
-            this.connection.setRequestMethod("DELETE");
-            this.connection.connect();
+            this.connection.setUseCaches(false);
+            this.connection.setRequestMethod("GET");
             return this;
          } catch (Exception var2) {
             throw new RealmsHttpException(var2.getMessage(), var2);
@@ -298,6 +263,41 @@ public abstract class Request<T extends Request<T>> {
             this.connection.setDoOutput(true);
             this.connection.setDoInput(true);
             this.connection.setRequestMethod("PUT");
+            OutputStream var1 = this.connection.getOutputStream();
+            OutputStreamWriter var2 = new OutputStreamWriter(var1, "UTF-8");
+            var2.write(this.content);
+            var2.close();
+            var1.flush();
+            return this;
+         } catch (Exception var3) {
+            throw new RealmsHttpException(var3.getMessage(), var3);
+         }
+      }
+
+      // $FF: synthetic method
+      public Request doConnect() {
+         return this.doConnect();
+      }
+   }
+
+   public static class Post extends Request<Post> {
+      private final String content;
+
+      public Post(String var1, String var2, int var3, int var4) {
+         super(var1, var3, var4);
+         this.content = var2;
+      }
+
+      public Post doConnect() {
+         try {
+            if (this.content != null) {
+               this.connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+            }
+
+            this.connection.setDoInput(true);
+            this.connection.setDoOutput(true);
+            this.connection.setUseCaches(false);
+            this.connection.setRequestMethod("POST");
             OutputStream var1 = this.connection.getOutputStream();
             OutputStreamWriter var2 = new OutputStreamWriter(var1, "UTF-8");
             var2.write(this.content);

@@ -33,9 +33,7 @@ public class SoundEngineExecutor extends BlockableEventLoop<Runnable> {
 
    private void run() {
       while(!this.shutdown) {
-         this.managedBlock(() -> {
-            return this.shutdown;
-         });
+         this.managedBlock(() -> this.shutdown);
       }
 
    }

@@ -49,10 +49,6 @@ public record NbtPredicate(CompoundTag tag) {
       return var1;
    }
 
-   public CompoundTag tag() {
-      return this.tag;
-   }
-
    static {
       CODEC = TagParser.LENIENT_CODEC.xmap(NbtPredicate::new, NbtPredicate::tag);
       STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(NbtPredicate::new, NbtPredicate::tag);

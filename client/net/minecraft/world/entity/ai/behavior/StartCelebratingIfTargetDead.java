@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -13,9 +14,7 @@ public class StartCelebratingIfTargetDead {
    }
 
    public static BehaviorControl<LivingEntity> create(int var0, BiPredicate<LivingEntity, LivingEntity> var1) {
-      return BehaviorBuilder.create((var2) -> {
-         return var2.group(var2.present(MemoryModuleType.ATTACK_TARGET), var2.registered(MemoryModuleType.ANGRY_AT), var2.absent(MemoryModuleType.CELEBRATE_LOCATION), var2.registered(MemoryModuleType.DANCING)).apply(var2, (var3, var4, var5, var6) -> {
-            return (var7, var8, var9) -> {
+      return BehaviorBuilder.create((Function)((var2) -> var2.group(var2.present(MemoryModuleType.ATTACK_TARGET), var2.registered(MemoryModuleType.ANGRY_AT), var2.absent(MemoryModuleType.CELEBRATE_LOCATION), var2.registered(MemoryModuleType.DANCING)).apply(var2, (var3, var4, var5, var6) -> (var7, var8, var9) -> {
                LivingEntity var11 = (LivingEntity)var2.get(var3);
                if (!var11.isDeadOrDying()) {
                   return false;
@@ -32,8 +31,6 @@ public class StartCelebratingIfTargetDead {
 
                   return true;
                }
-            };
-         });
-      });
+            })));
    }
 }

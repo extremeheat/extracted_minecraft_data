@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundClearTitlesPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundClearTitlesPacket> STREAM_CODEC = Packet.codec(ClientboundClearTitlesPacket::write, ClientboundClearTitlesPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundClearTitlesPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundClearTitlesPacket>codec(ClientboundClearTitlesPacket::write, ClientboundClearTitlesPacket::new);
    private final boolean resetTimes;
 
    public ClientboundClearTitlesPacket(boolean var1) {

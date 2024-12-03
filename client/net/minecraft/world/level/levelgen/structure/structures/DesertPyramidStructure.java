@@ -3,7 +3,6 @@ package net.minecraft.world.level.levelgen.structure.structures;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
-import java.util.Iterator;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -32,10 +31,8 @@ public class DesertPyramidStructure extends SinglePieceStructure {
 
    public void afterPlace(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, PiecesContainer var7) {
       SortedArraySet var8 = SortedArraySet.create(Vec3i::compareTo);
-      Iterator var9 = var7.pieces().iterator();
 
-      while(var9.hasNext()) {
-         StructurePiece var10 = (StructurePiece)var9.next();
+      for(StructurePiece var10 : var7.pieces()) {
          if (var10 instanceof DesertPyramidPiece var11) {
             var8.addAll(var11.getPotentialSuspiciousSandWorldPositions());
             placeSuspiciousSand(var5, var1, var11.getRandomCollapsedRoofPos());
@@ -63,9 +60,7 @@ public class DesertPyramidStructure extends SinglePieceStructure {
    private static void placeSuspiciousSand(BoundingBox var0, WorldGenLevel var1, BlockPos var2) {
       if (var0.isInside(var2)) {
          var1.setBlock(var2, Blocks.SUSPICIOUS_SAND.defaultBlockState(), 2);
-         var1.getBlockEntity(var2, BlockEntityType.BRUSHABLE_BLOCK).ifPresent((var1x) -> {
-            var1x.setLootTable(BuiltInLootTables.DESERT_PYRAMID_ARCHAEOLOGY, var2.asLong());
-         });
+         var1.getBlockEntity(var2, BlockEntityType.BRUSHABLE_BLOCK).ifPresent((var1x) -> var1x.setLootTable(BuiltInLootTables.DESERT_PYRAMID_ARCHAEOLOGY, var2.asLong()));
       }
 
    }

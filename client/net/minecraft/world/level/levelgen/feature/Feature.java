@@ -121,14 +121,12 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    private final MapCodec<ConfiguredFeature<FC, Feature<FC>>> configuredCodec;
 
    private static <C extends FeatureConfiguration, F extends Feature<C>> F register(String var0, F var1) {
-      return (Feature)Registry.register(BuiltInRegistries.FEATURE, (String)var0, var1);
+      return (F)(Registry.register(BuiltInRegistries.FEATURE, (String)var0, var1));
    }
 
    public Feature(Codec<FC> var1) {
       super();
-      this.configuredCodec = var1.fieldOf("config").xmap((var1x) -> {
-         return new ConfiguredFeature(this, var1x);
-      }, ConfiguredFeature::config);
+      this.configuredCodec = var1.fieldOf("config").xmap((var1x) -> new ConfiguredFeature(this, var1x), ConfiguredFeature::config);
    }
 
    public MapCodec<ConfiguredFeature<FC, Feature<FC>>> configuredCodec() {
@@ -140,9 +138,7 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    }
 
    public static Predicate<BlockState> isReplaceable(TagKey<Block> var0) {
-      return (var1) -> {
-         return !var1.is(var0);
-      };
+      return (var1) -> !var1.is(var0);
    }
 
    protected void safeSetBlock(WorldGenLevel var1, BlockPos var2, BlockState var3, Predicate<BlockState> var4) {
@@ -172,11 +168,8 @@ public abstract class Feature<FC extends FeatureConfiguration> {
 
    public static boolean checkNeighbors(Function<BlockPos, BlockState> var0, BlockPos var1, Predicate<BlockState> var2) {
       BlockPos.MutableBlockPos var3 = new BlockPos.MutableBlockPos();
-      Direction[] var4 = Direction.values();
-      int var5 = var4.length;
 
-      for(int var6 = 0; var6 < var5; ++var6) {
-         Direction var7 = var4[var6];
+      for(Direction var7 : Direction.values()) {
          var3.setWithOffset(var1, (Direction)var7);
          if (var2.test((BlockState)var0.apply(var3))) {
             return true;

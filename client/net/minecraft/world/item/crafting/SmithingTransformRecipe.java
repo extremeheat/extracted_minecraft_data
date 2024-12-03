@@ -65,17 +65,7 @@ public class SmithingTransformRecipe implements SmithingRecipe {
    }
 
    public static class Serializer implements RecipeSerializer<SmithingTransformRecipe> {
-      private static final MapCodec<SmithingTransformRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(Ingredient.CODEC.optionalFieldOf("template").forGetter((var0x) -> {
-            return var0x.template;
-         }), Ingredient.CODEC.optionalFieldOf("base").forGetter((var0x) -> {
-            return var0x.base;
-         }), Ingredient.CODEC.optionalFieldOf("addition").forGetter((var0x) -> {
-            return var0x.addition;
-         }), ItemStack.STRICT_CODEC.fieldOf("result").forGetter((var0x) -> {
-            return var0x.result;
-         })).apply(var0, SmithingTransformRecipe::new);
-      });
+      private static final MapCodec<SmithingTransformRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Ingredient.CODEC.optionalFieldOf("template").forGetter((var0x) -> var0x.template), Ingredient.CODEC.optionalFieldOf("base").forGetter((var0x) -> var0x.base), Ingredient.CODEC.optionalFieldOf("addition").forGetter((var0x) -> var0x.addition), ItemStack.STRICT_CODEC.fieldOf("result").forGetter((var0x) -> var0x.result)).apply(var0, SmithingTransformRecipe::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, SmithingTransformRecipe> STREAM_CODEC;
 
       public Serializer() {
@@ -91,15 +81,7 @@ public class SmithingTransformRecipe implements SmithingRecipe {
       }
 
       static {
-         STREAM_CODEC = StreamCodec.composite(Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> {
-            return var0.template;
-         }, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> {
-            return var0.base;
-         }, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> {
-            return var0.addition;
-         }, ItemStack.STREAM_CODEC, (var0) -> {
-            return var0.result;
-         }, SmithingTransformRecipe::new);
+         STREAM_CODEC = StreamCodec.composite(Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> var0.template, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> var0.base, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> var0.addition, ItemStack.STREAM_CODEC, (var0) -> var0.result, SmithingTransformRecipe::new);
       }
    }
 }

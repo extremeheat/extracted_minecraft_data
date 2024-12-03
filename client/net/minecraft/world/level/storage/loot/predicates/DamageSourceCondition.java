@@ -12,9 +12,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
 public record DamageSourceCondition(Optional<DamageSourcePredicate> predicate) implements LootItemCondition {
-   public static final MapCodec<DamageSourceCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(DamageSourcePredicate.CODEC.optionalFieldOf("predicate").forGetter(DamageSourceCondition::predicate)).apply(var0, DamageSourceCondition::new);
-   });
+   public static final MapCodec<DamageSourceCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DamageSourcePredicate.CODEC.optionalFieldOf("predicate").forGetter(DamageSourceCondition::predicate)).apply(var0, DamageSourceCondition::new));
 
    public DamageSourceCondition(Optional<DamageSourcePredicate> var1) {
       super();
@@ -40,13 +38,7 @@ public record DamageSourceCondition(Optional<DamageSourcePredicate> predicate) i
    }
 
    public static LootItemCondition.Builder hasDamageSource(DamageSourcePredicate.Builder var0) {
-      return () -> {
-         return new DamageSourceCondition(Optional.of(var0.build()));
-      };
-   }
-
-   public Optional<DamageSourcePredicate> predicate() {
-      return this.predicate;
+      return () -> new DamageSourceCondition(Optional.of(var0.build()));
    }
 
    // $FF: synthetic method

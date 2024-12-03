@@ -26,15 +26,7 @@ import org.slf4j.Logger;
 
 public class SetNameFunction extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<SetNameFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(var0.group(ComponentSerialization.CODEC.optionalFieldOf("name").forGetter((var0x) -> {
-         return var0x.name;
-      }), LootContext.EntityTarget.CODEC.optionalFieldOf("entity").forGetter((var0x) -> {
-         return var0x.resolutionContext;
-      }), SetNameFunction.Target.CODEC.optionalFieldOf("target", SetNameFunction.Target.CUSTOM_NAME).forGetter((var0x) -> {
-         return var0x.target;
-      }))).apply(var0, SetNameFunction::new);
-   });
+   public static final MapCodec<SetNameFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(ComponentSerialization.CODEC.optionalFieldOf("name").forGetter((var0x) -> var0x.name), LootContext.EntityTarget.CODEC.optionalFieldOf("entity").forGetter((var0x) -> var0x.resolutionContext), SetNameFunction.Target.CODEC.optionalFieldOf("target", SetNameFunction.Target.CUSTOM_NAME).forGetter((var0x) -> var0x.target))).apply(var0, SetNameFunction::new));
    private final Optional<Component> name;
    private final Optional<LootContext.EntityTarget> resolutionContext;
    private final Target target;
@@ -51,9 +43,7 @@ public class SetNameFunction extends LootItemConditionalFunction {
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return (Set)this.resolutionContext.map((var0) -> {
-         return Set.of(var0.getParam());
-      }).orElse(Set.of());
+      return (Set)this.resolutionContext.map((var0) -> Set.of(var0.getParam())).orElse(Set.of());
    }
 
    public static UnaryOperator<Component> createResolver(LootContext var0, @Nullable LootContext.EntityTarget var1) {
@@ -63,7 +53,7 @@ public class SetNameFunction extends LootItemConditionalFunction {
             CommandSourceStack var3 = var2.createCommandSourceStackForNameResolution(var0.getLevel()).withPermission(2);
             return (var2x) -> {
                try {
-                  return ComponentUtils.updateForEntity(var3, (Component)var2x, var2, 0);
+                  return ComponentUtils.updateForEntity(var3, var2x, var2, 0);
                } catch (CommandSyntaxException var4) {
                   LOGGER.warn("Failed to resolve text component", var4);
                   return var2x;
@@ -72,35 +62,27 @@ public class SetNameFunction extends LootItemConditionalFunction {
          }
       }
 
-      return (var0x) -> {
-         return var0x;
-      };
+      return (var0x) -> var0x;
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
-      this.name.ifPresent((var3) -> {
-         var1.set(this.target.component(), (Component)createResolver(var2, (LootContext.EntityTarget)this.resolutionContext.orElse((Object)null)).apply(var3));
-      });
+      this.name.ifPresent((var3) -> var1.set(this.target.component(), (Component)createResolver(var2, (LootContext.EntityTarget)this.resolutionContext.orElse((Object)null)).apply(var3)));
       return var1;
    }
 
    public static LootItemConditionalFunction.Builder<?> setName(Component var0, Target var1) {
-      return simpleBuilder((var2) -> {
-         return new SetNameFunction(var2, Optional.of(var0), Optional.empty(), var1);
-      });
+      return simpleBuilder((var2) -> new SetNameFunction(var2, Optional.of(var0), Optional.empty(), var1));
    }
 
    public static LootItemConditionalFunction.Builder<?> setName(Component var0, Target var1, LootContext.EntityTarget var2) {
-      return simpleBuilder((var3) -> {
-         return new SetNameFunction(var3, Optional.of(var0), Optional.of(var2), var1);
-      });
+      return simpleBuilder((var3) -> new SetNameFunction(var3, Optional.of(var0), Optional.of(var2), var1));
    }
 
    public static enum Target implements StringRepresentable {
       CUSTOM_NAME("custom_name"),
       ITEM_NAME("item_name");
 
-      public static final Codec<Target> CODEC = StringRepresentable.fromEnum(Target::values);
+      public static final Codec<Target> CODEC = StringRepresentable.<Target>fromEnum(Target::values);
       private final String name;
 
       private Target(final String var3) {

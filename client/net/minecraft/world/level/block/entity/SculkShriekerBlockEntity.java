@@ -82,11 +82,7 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
 
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       if (var1.contains("listener", 10)) {
-         VibrationSystem.Data.CODEC.parse(var3, var1.getCompound("listener")).resultOrPartial((var0) -> {
-            LOGGER.error("Failed to parse vibration listener for Sculk Shrieker: '{}'", var0);
-         }).ifPresent((var1x) -> {
-            this.vibrationData = var1x;
-         });
+         VibrationSystem.Data.CODEC.parse(var3, var1.getCompound("listener")).resultOrPartial((var0) -> LOGGER.error("Failed to parse vibration listener for Sculk Shrieker: '{}'", var0)).ifPresent((var1x) -> this.vibrationData = var1x);
       }
 
    }
@@ -95,38 +91,33 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
       super.saveAdditional(var1, var2);
       var1.putInt("warning_level", this.warningLevel);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      VibrationSystem.Data.CODEC.encodeStart(var3, this.vibrationData).resultOrPartial((var0) -> {
-         LOGGER.error("Failed to encode vibration listener for Sculk Shrieker: '{}'", var0);
-      }).ifPresent((var1x) -> {
-         var1.put("listener", var1x);
-      });
+      VibrationSystem.Data.CODEC.encodeStart(var3, this.vibrationData).resultOrPartial((var0) -> LOGGER.error("Failed to encode vibration listener for Sculk Shrieker: '{}'", var0)).ifPresent((var1x) -> var1.put("listener", var1x));
    }
 
    @Nullable
    public static ServerPlayer tryGetPlayer(@Nullable Entity var0) {
-      if (var0 instanceof ServerPlayer var5) {
-         return var5;
+      if (var0 instanceof ServerPlayer var6) {
+         return var6;
       } else {
          if (var0 != null) {
             LivingEntity var2 = var0.getControllingPassenger();
             if (var2 instanceof ServerPlayer) {
-               var5 = (ServerPlayer)var2;
+               ServerPlayer var5 = (ServerPlayer)var2;
                return var5;
             }
          }
 
-         Entity var3;
          if (var0 instanceof Projectile var1) {
-            var3 = var1.getOwner();
-            if (var3 instanceof ServerPlayer var6) {
-               return var6;
+            Entity var3 = var1.getOwner();
+            if (var3 instanceof ServerPlayer var8) {
+               return var8;
             }
          }
 
          if (var0 instanceof ItemEntity var4) {
-            var3 = var4.getOwner();
-            if (var3 instanceof ServerPlayer var6) {
-               return var6;
+            Entity var9 = var4.getOwner();
+            if (var9 instanceof ServerPlayer var7) {
+               return var7;
             }
          }
 
@@ -148,9 +139,7 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
 
    private boolean tryToWarn(ServerLevel var1, ServerPlayer var2) {
       OptionalInt var3 = WardenSpawnTracker.tryWarn(var1, this.getBlockPos(), var2);
-      var3.ifPresent((var1x) -> {
-         this.warningLevel = var1x;
-      });
+      var3.ifPresent((var1x) -> this.warningLevel = var1x);
       return var3.isPresent();
    }
 
@@ -185,13 +174,13 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
          int var4 = var3.getX() + Mth.randomBetweenInclusive(var1.random, -10, 10);
          int var5 = var3.getY() + Mth.randomBetweenInclusive(var1.random, -10, 10);
          int var6 = var3.getZ() + Mth.randomBetweenInclusive(var1.random, -10, 10);
-         var1.playSound((Player)null, (double)var4, (double)var5, (double)var6, (SoundEvent)var2, SoundSource.HOSTILE, 5.0F, 1.0F);
+         var1.playSound((Player)null, (double)var4, (double)var5, (double)var6, var2, SoundSource.HOSTILE, 5.0F, 1.0F);
       }
 
    }
 
    private boolean trySummonWarden(ServerLevel var1) {
-      return this.warningLevel < 4 ? false : SpawnUtil.trySpawnMob(EntityType.WARDEN, EntitySpawnReason.TRIGGERED, var1, this.getBlockPos(), 20, 5, 6, SpawnUtil.Strategy.ON_TOP_OF_COLLIDER).isPresent();
+      return this.warningLevel < 4 ? false : SpawnUtil.trySpawnMob(EntityType.WARDEN, EntitySpawnReason.TRIGGERED, var1, this.getBlockPos(), 20, 5, 6, SpawnUtil.Strategy.ON_TOP_OF_COLLIDER, false).isPresent();
    }
 
    public VibrationSystem.Listener getListener() {

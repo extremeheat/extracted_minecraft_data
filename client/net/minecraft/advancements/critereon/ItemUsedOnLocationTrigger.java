@@ -35,15 +35,11 @@ public class ItemUsedOnLocationTrigger extends SimpleCriterionTrigger<TriggerIns
       BlockState var5 = var4.getBlockState(var2);
       LootParams var6 = (new LootParams.Builder(var4)).withParameter(LootContextParams.ORIGIN, var2.getCenter()).withParameter(LootContextParams.THIS_ENTITY, var1).withParameter(LootContextParams.BLOCK_STATE, var5).withParameter(LootContextParams.TOOL, var3).create(LootContextParamSets.ADVANCEMENT_LOCATION);
       LootContext var7 = (new LootContext.Builder(var6)).create(Optional.empty());
-      this.trigger(var1, (var1x) -> {
-         return var1x.matches(var7);
-      });
+      this.trigger(var1, (var1x) -> var1x.matches(var7));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> location) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ContextAwarePredicate.CODEC.optionalFieldOf("location").forGetter(TriggerInstance::location)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ContextAwarePredicate.CODEC.optionalFieldOf("location").forGetter(TriggerInstance::location)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2) {
          super();
@@ -57,9 +53,7 @@ public class ItemUsedOnLocationTrigger extends SimpleCriterionTrigger<TriggerIns
       }
 
       public static Criterion<TriggerInstance> placedBlock(LootItemCondition.Builder... var0) {
-         ContextAwarePredicate var1 = ContextAwarePredicate.create((LootItemCondition[])Arrays.stream(var0).map(LootItemCondition.Builder::build).toArray((var0x) -> {
-            return new LootItemCondition[var0x];
-         }));
+         ContextAwarePredicate var1 = ContextAwarePredicate.create((LootItemCondition[])Arrays.stream(var0).map(LootItemCondition.Builder::build).toArray((var0x) -> new LootItemCondition[var0x]));
          return CriteriaTriggers.PLACED_BLOCK.createCriterion(new TriggerInstance(Optional.empty(), Optional.of(var1)));
       }
 
@@ -82,17 +76,7 @@ public class ItemUsedOnLocationTrigger extends SimpleCriterionTrigger<TriggerIns
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         this.location.ifPresent((var1x) -> {
-            var1.validate(var1x, LootContextParamSets.ADVANCEMENT_LOCATION, ".location");
-         });
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<ContextAwarePredicate> location() {
-         return this.location;
+         this.location.ifPresent((var1x) -> var1.validate(var1x, LootContextParamSets.ADVANCEMENT_LOCATION, ".location"));
       }
    }
 }

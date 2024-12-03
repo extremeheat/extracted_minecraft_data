@@ -29,10 +29,9 @@ public class EqualSpacingLayout extends AbstractLayout {
          int var1 = 0;
          int var2 = this.orientation.getSecondaryLength((LayoutElement)this);
 
-         ChildContainer var4;
-         for(Iterator var3 = this.children.iterator(); var3.hasNext(); var2 = Math.max(var2, this.orientation.getSecondaryLength(var4))) {
-            var4 = (ChildContainer)var3.next();
+         for(ChildContainer var4 : this.children) {
             var1 += this.orientation.getPrimaryLength(var4);
+            var2 = Math.max(var2, this.orientation.getSecondaryLength(var4));
          }
 
          int var10 = this.orientation.getPrimaryLength((LayoutElement)this) - var1;
@@ -50,12 +49,10 @@ public class EqualSpacingLayout extends AbstractLayout {
             }
          }
 
-         int var12 = this.orientation.getSecondaryPosition(this);
-         Iterator var13 = this.children.iterator();
+         int var14 = this.orientation.getSecondaryPosition(this);
 
-         while(var13.hasNext()) {
-            ChildContainer var9 = (ChildContainer)var13.next();
-            this.orientation.setSecondaryPosition(var9, var12, var2);
+         for(ChildContainer var9 : this.children) {
+            this.orientation.setSecondaryPosition(var9, var14, var2);
          }
 
          switch (this.orientation.ordinal()) {
@@ -67,9 +64,7 @@ public class EqualSpacingLayout extends AbstractLayout {
    }
 
    public void visitChildren(Consumer<LayoutElement> var1) {
-      this.children.forEach((var1x) -> {
-         var1.accept(var1x.child);
-      });
+      this.children.forEach((var1x) -> var1.accept(var1x.child));
    }
 
    public LayoutSettings newChildLayoutSettings() {
@@ -81,16 +76,16 @@ public class EqualSpacingLayout extends AbstractLayout {
    }
 
    public <T extends LayoutElement> T addChild(T var1) {
-      return this.addChild(var1, this.newChildLayoutSettings());
+      return (T)this.addChild(var1, this.newChildLayoutSettings());
    }
 
    public <T extends LayoutElement> T addChild(T var1, LayoutSettings var2) {
       this.children.add(new ChildContainer(var1, var2));
-      return var1;
+      return (T)var1;
    }
 
    public <T extends LayoutElement> T addChild(T var1, Consumer<LayoutSettings> var2) {
-      return this.addChild(var1, (LayoutSettings)Util.make(this.newChildLayoutSettings(), var2));
+      return (T)this.addChild(var1, (LayoutSettings)Util.make(this.newChildLayoutSettings(), var2));
    }
 
    public static enum Orientation {

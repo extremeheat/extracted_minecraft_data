@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.InteractionHand;
 
 public class ClientboundOpenBookPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundOpenBookPacket> STREAM_CODEC = Packet.codec(ClientboundOpenBookPacket::write, ClientboundOpenBookPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundOpenBookPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundOpenBookPacket>codec(ClientboundOpenBookPacket::write, ClientboundOpenBookPacket::new);
    private final InteractionHand hand;
 
    public ClientboundOpenBookPacket(InteractionHand var1) {

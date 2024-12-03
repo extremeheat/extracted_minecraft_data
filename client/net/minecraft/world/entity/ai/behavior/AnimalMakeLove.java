@@ -40,8 +40,8 @@ public class AnimalMakeLove extends Behavior<Animal> {
 
    protected void start(ServerLevel var1, Animal var2, long var3) {
       Animal var5 = (Animal)this.findValidBreedPartner(var2).get();
-      var2.getBrain().setMemory(MemoryModuleType.BREED_TARGET, (Object)var5);
-      var5.getBrain().setMemory(MemoryModuleType.BREED_TARGET, (Object)var2);
+      var2.getBrain().setMemory(MemoryModuleType.BREED_TARGET, var5);
+      var5.getBrain().setMemory(MemoryModuleType.BREED_TARGET, var2);
       BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, this.speedModifier, this.closeEnoughDistance);
       int var6 = 60 + var2.getRandom().nextInt(50);
       this.spawnChildAtTime = var3 + (long)var6;

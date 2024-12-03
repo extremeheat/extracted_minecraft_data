@@ -17,9 +17,7 @@ import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
 
 public record EnchantmentAttributeEffect(ResourceLocation id, Holder<Attribute> attribute, LevelBasedValue amount, AttributeModifier.Operation operation) implements EnchantmentLocationBasedEffect {
-   public static final MapCodec<EnchantmentAttributeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceLocation.CODEC.fieldOf("id").forGetter(EnchantmentAttributeEffect::id), Attribute.CODEC.fieldOf("attribute").forGetter(EnchantmentAttributeEffect::attribute), LevelBasedValue.CODEC.fieldOf("amount").forGetter(EnchantmentAttributeEffect::amount), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(EnchantmentAttributeEffect::operation)).apply(var0, EnchantmentAttributeEffect::new);
-   });
+   public static final MapCodec<EnchantmentAttributeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("id").forGetter(EnchantmentAttributeEffect::id), Attribute.CODEC.fieldOf("attribute").forGetter(EnchantmentAttributeEffect::attribute), LevelBasedValue.CODEC.fieldOf("amount").forGetter(EnchantmentAttributeEffect::amount), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(EnchantmentAttributeEffect::operation)).apply(var0, EnchantmentAttributeEffect::new));
 
    public EnchantmentAttributeEffect(ResourceLocation var1, Holder<Attribute> var2, LevelBasedValue var3, AttributeModifier.Operation var4) {
       super();
@@ -59,21 +57,5 @@ public record EnchantmentAttributeEffect(ResourceLocation id, Holder<Attribute> 
 
    public MapCodec<EnchantmentAttributeEffect> codec() {
       return CODEC;
-   }
-
-   public ResourceLocation id() {
-      return this.id;
-   }
-
-   public Holder<Attribute> attribute() {
-      return this.attribute;
-   }
-
-   public LevelBasedValue amount() {
-      return this.amount;
-   }
-
-   public AttributeModifier.Operation operation() {
-      return this.operation;
    }
 }

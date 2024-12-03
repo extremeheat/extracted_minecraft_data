@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.ai.behavior;
 
+import java.util.function.Function;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -14,9 +15,7 @@ public class Mount {
    }
 
    public static BehaviorControl<LivingEntity> create(float var0) {
-      return BehaviorBuilder.create((var1) -> {
-         return var1.group(var1.registered(MemoryModuleType.LOOK_TARGET), var1.absent(MemoryModuleType.WALK_TARGET), var1.present(MemoryModuleType.RIDE_TARGET)).apply(var1, (var2, var3, var4) -> {
-            return (var5, var6, var7) -> {
+      return BehaviorBuilder.create((Function)((var1) -> var1.group(var1.registered(MemoryModuleType.LOOK_TARGET), var1.absent(MemoryModuleType.WALK_TARGET), var1.present(MemoryModuleType.RIDE_TARGET)).apply(var1, (var2, var3, var4) -> (var5, var6, var7) -> {
                if (var6.isPassenger()) {
                   return false;
                } else {
@@ -30,8 +29,6 @@ public class Mount {
 
                   return true;
                }
-            };
-         });
-      });
+            })));
    }
 }

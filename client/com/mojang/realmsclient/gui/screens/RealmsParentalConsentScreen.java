@@ -36,9 +36,7 @@ public class RealmsParentalConsentScreen extends RealmsScreen {
       LinearLayout var1 = (LinearLayout)this.layout.addChild(LinearLayout.horizontal().spacing(8));
       MutableComponent var2 = Component.translatable("mco.account.privacy.info.button");
       var1.addChild(Button.builder(var2, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.GDPR)).build());
-      var1.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
-         this.onClose();
-      }).build());
+      var1.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).build());
       this.layout.visitWidgets((var1x) -> {
          AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
       });

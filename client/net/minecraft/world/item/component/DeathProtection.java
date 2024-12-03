@@ -2,7 +2,6 @@ package net.minecraft.world.item.component;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -16,9 +15,7 @@ import net.minecraft.world.item.consume_effects.ClearAllStatusEffectsConsumeEffe
 import net.minecraft.world.item.consume_effects.ConsumeEffect;
 
 public record DeathProtection(List<ConsumeEffect> deathEffects) {
-   public static final Codec<DeathProtection> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ConsumeEffect.CODEC.listOf().optionalFieldOf("death_effects", List.of()).forGetter(DeathProtection::deathEffects)).apply(var0, DeathProtection::new);
-   });
+   public static final Codec<DeathProtection> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ConsumeEffect.CODEC.listOf().optionalFieldOf("death_effects", List.of()).forGetter(DeathProtection::deathEffects)).apply(var0, DeathProtection::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, DeathProtection> STREAM_CODEC;
    public static final DeathProtection TOTEM_OF_UNDYING;
 
@@ -28,17 +25,10 @@ public record DeathProtection(List<ConsumeEffect> deathEffects) {
    }
 
    public void applyEffects(ItemStack var1, LivingEntity var2) {
-      Iterator var3 = this.deathEffects.iterator();
-
-      while(var3.hasNext()) {
-         ConsumeEffect var4 = (ConsumeEffect)var3.next();
+      for(ConsumeEffect var4 : this.deathEffects) {
          var4.apply(var2.level(), var1, var2);
       }
 
-   }
-
-   public List<ConsumeEffect> deathEffects() {
-      return this.deathEffects;
    }
 
    static {

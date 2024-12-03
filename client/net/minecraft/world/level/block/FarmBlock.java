@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -111,18 +110,13 @@ public class FarmBlock extends Block {
    }
 
    private static boolean isNearWater(LevelReader var0, BlockPos var1) {
-      Iterator var2 = BlockPos.betweenClosed(var1.offset(-4, 0, -4), var1.offset(4, 1, 4)).iterator();
-
-      BlockPos var3;
-      do {
-         if (!var2.hasNext()) {
-            return false;
+      for(BlockPos var3 : BlockPos.betweenClosed(var1.offset(-4, 0, -4), var1.offset(4, 1, 4))) {
+         if (var0.getFluidState(var3).is(FluidTags.WATER)) {
+            return true;
          }
+      }
 
-         var3 = (BlockPos)var2.next();
-      } while(!var0.getFluidState(var3).is(FluidTags.WATER));
-
-      return true;
+      return false;
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {

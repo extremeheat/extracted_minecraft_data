@@ -45,29 +45,27 @@ public class MatrixUtil {
    }
 
    private static void stepJacobi(Matrix3f var0, Matrix3f var1, Quaternionf var2, Quaternionf var3) {
-      GivensParameters var4;
-      Quaternionf var5;
       if (var0.m01 * var0.m01 + var0.m10 * var0.m10 > 1.0E-6F) {
-         var4 = approxGivensQuat(var0.m00, 0.5F * (var0.m01 + var0.m10), var0.m11);
-         var5 = var4.aroundZ(var2);
+         GivensParameters var4 = approxGivensQuat(var0.m00, 0.5F * (var0.m01 + var0.m10), var0.m11);
+         Quaternionf var5 = var4.aroundZ(var2);
          var3.mul(var5);
          var4.aroundZ(var1);
          similarityTransform(var0, var1);
       }
 
       if (var0.m02 * var0.m02 + var0.m20 * var0.m20 > 1.0E-6F) {
-         var4 = approxGivensQuat(var0.m00, 0.5F * (var0.m02 + var0.m20), var0.m22).inverse();
-         var5 = var4.aroundY(var2);
-         var3.mul(var5);
-         var4.aroundY(var1);
+         GivensParameters var6 = approxGivensQuat(var0.m00, 0.5F * (var0.m02 + var0.m20), var0.m22).inverse();
+         Quaternionf var8 = var6.aroundY(var2);
+         var3.mul(var8);
+         var6.aroundY(var1);
          similarityTransform(var0, var1);
       }
 
       if (var0.m12 * var0.m12 + var0.m21 * var0.m21 > 1.0E-6F) {
-         var4 = approxGivensQuat(var0.m11, 0.5F * (var0.m12 + var0.m21), var0.m22);
-         var5 = var4.aroundX(var2);
-         var3.mul(var5);
-         var4.aroundX(var1);
+         GivensParameters var7 = approxGivensQuat(var0.m11, 0.5F * (var0.m12 + var0.m21), var0.m22);
+         Quaternionf var9 = var7.aroundX(var2);
+         var3.mul(var9);
+         var7.aroundX(var1);
          similarityTransform(var0, var1);
       }
 
@@ -132,6 +130,10 @@ public class MatrixUtil {
       var17.transpose().mul(var15);
       Vector3f var18 = new Vector3f(var17.m00, var17.m11, var17.m22);
       return Triple.of(var9, var18, var2.conjugate());
+   }
+
+   public static boolean isIdentity(Matrix4f var0) {
+      return (var0.properties() & 4) != 0;
    }
 
    public static boolean isPureTranslation(Matrix4f var0) {

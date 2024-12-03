@@ -13,9 +13,7 @@ import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceLocation;
 
 public record SoundEvent(ResourceLocation location, Optional<Float> fixedRange) {
-   public static final Codec<SoundEvent> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ResourceLocation.CODEC.fieldOf("sound_id").forGetter(SoundEvent::location), Codec.FLOAT.lenientOptionalFieldOf("range").forGetter(SoundEvent::fixedRange)).apply(var0, SoundEvent::create);
-   });
+   public static final Codec<SoundEvent> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("sound_id").forGetter(SoundEvent::location), Codec.FLOAT.lenientOptionalFieldOf("range").forGetter(SoundEvent::fixedRange)).apply(var0, SoundEvent::create));
    public static final Codec<Holder<SoundEvent>> CODEC;
    public static final StreamCodec<ByteBuf, SoundEvent> DIRECT_STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<SoundEvent>> STREAM_CODEC;
@@ -27,11 +25,7 @@ public record SoundEvent(ResourceLocation location, Optional<Float> fixedRange) 
    }
 
    private static SoundEvent create(ResourceLocation var0, Optional<Float> var1) {
-      return (SoundEvent)var1.map((var1x) -> {
-         return createFixedRangeEvent(var0, var1x);
-      }).orElseGet(() -> {
-         return createVariableRangeEvent(var0);
-      });
+      return (SoundEvent)var1.map((var1x) -> createFixedRangeEvent(var0, var1x)).orElseGet(() -> createVariableRangeEvent(var0));
    }
 
    public static SoundEvent createVariableRangeEvent(ResourceLocation var0) {
@@ -46,16 +40,8 @@ public record SoundEvent(ResourceLocation location, Optional<Float> fixedRange) 
       return (Float)this.fixedRange.orElse(var1 > 1.0F ? 16.0F * var1 : 16.0F);
    }
 
-   public ResourceLocation location() {
-      return this.location;
-   }
-
-   public Optional<Float> fixedRange() {
-      return this.fixedRange;
-   }
-
    static {
-      CODEC = RegistryFileCodec.create(Registries.SOUND_EVENT, DIRECT_CODEC);
+      CODEC = RegistryFileCodec.<Holder<SoundEvent>>create(Registries.SOUND_EVENT, DIRECT_CODEC);
       DIRECT_STREAM_CODEC = StreamCodec.composite(ResourceLocation.STREAM_CODEC, SoundEvent::location, ByteBufCodecs.FLOAT.apply(ByteBufCodecs::optional), SoundEvent::fixedRange, SoundEvent::create);
       STREAM_CODEC = ByteBufCodecs.holder(Registries.SOUND_EVENT, DIRECT_STREAM_CODEC);
    }

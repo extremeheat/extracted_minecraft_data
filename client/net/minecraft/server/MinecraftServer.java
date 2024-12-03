@@ -52,12 +52,14 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.FileUtil;
 import net.minecraft.ReportType;
 import net.minecraft.ReportedException;
@@ -277,12 +279,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public static <S extends MinecraftServer> S spin(Function<Thread, S> var0) {
       AtomicReference var1 = new AtomicReference();
-      Thread var2 = new Thread(() -> {
-         ((MinecraftServer)var1.get()).runServer();
-      }, "Server thread");
-      var2.setUncaughtExceptionHandler((var0x, var1x) -> {
-         LOGGER.error("Uncaught exception in server thread", var1x);
-      });
+      Thread var2 = new Thread(() -> ((MinecraftServer)var1.get()).runServer(), "Server thread");
+      var2.setUncaughtExceptionHandler((var0x, var1x) -> LOGGER.error("Uncaught exception in server thread", var1x));
       if (Runtime.getRuntime().availableProcessors() > 4) {
          var2.setPriority(8);
       }
@@ -290,15 +288,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       MinecraftServer var3 = (MinecraftServer)var0.apply(var2);
       var1.set(var3);
       var2.start();
-      return var3;
+      return (S)var3;
    }
 
    public MinecraftServer(Thread var1, LevelStorageSource.LevelStorageAccess var2, PackRepository var3, WorldStem var4, Proxy var5, DataFixer var6, Services var7, ChunkProgressListenerFactory var8) {
       super("Server");
       this.metricsRecorder = InactiveMetricsRecorder.INSTANCE;
-      this.onMetricsRecordingStopped = (var1x) -> {
-         this.stopRecordingMetrics();
-      };
+      this.onMetricsRecordingStopped = (var1x) -> this.stopRecordingMetrics();
       this.onMetricsRecordingFinished = (var0) -> {
       };
       this.random = RandomSource.create();
@@ -364,7 +360,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.forceDifficulty();
       this.prepareLevels(var3);
       if (var2 != null) {
-         var2.finish();
+         var2.finish(true);
       }
 
       if (var1) {
@@ -422,10 +418,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
 
       RandomSequences var15 = var12.getRandomSequences();
-      Iterator var24 = var4.entrySet().iterator();
 
-      while(var24.hasNext()) {
-         Map.Entry var17 = (Map.Entry)var24.next();
+      for(Map.Entry var17 : var4.entrySet()) {
          ResourceKey var18 = (ResourceKey)var17.getKey();
          if (var18 != LevelStem.OVERWORLD) {
             ResourceKey var19 = ResourceKey.create(Registries.DIMENSION, var18.location());
@@ -477,11 +471,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          }
 
          if (var2) {
-            var0.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((var0x) -> {
-               return var0x.get(MiscOverworldFeatures.BONUS_CHEST);
-            }).ifPresent((var3x) -> {
-               ((ConfiguredFeature)var3x.value()).place(var0, var4.getGenerator(), var0.random, var1.getSpawnPos());
-            });
+            var0.registryAccess().lookup(Registries.CONFIGURED_FEATURE).flatMap((var0x) -> var0x.get(MiscOverworldFeatures.BONUS_CHEST)).ifPresent((var3x) -> ((ConfiguredFeature)var3x.value()).place(var0, var4.getGenerator(), var0.random, var1.getSpawnPos()));
          }
 
       }
@@ -516,32 +506,24 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
       this.nextTickTimeNanos = Util.getNanos() + PREPARE_LEVELS_DEFAULT_DELAY_NANOS;
       this.waitUntilNextTick();
-      Iterator var7 = this.levels.values().iterator();
 
-      while(true) {
-         ServerLevel var8;
-         ForcedChunksSavedData var9;
-         do {
-            if (!var7.hasNext()) {
-               this.nextTickTimeNanos = Util.getNanos() + PREPARE_LEVELS_DEFAULT_DELAY_NANOS;
-               this.waitUntilNextTick();
-               var1.stop();
-               this.updateMobSpawningFlags();
-               return;
+      for(ServerLevel var8 : this.levels.values()) {
+         ForcedChunksSavedData var9 = (ForcedChunksSavedData)var8.getDataStorage().get(ForcedChunksSavedData.factory(), "chunks");
+         if (var9 != null) {
+            LongIterator var10 = var9.getChunks().iterator();
+
+            while(var10.hasNext()) {
+               long var11 = var10.nextLong();
+               ChunkPos var13 = new ChunkPos(var11);
+               var8.getChunkSource().updateChunkForced(var13, true);
             }
-
-            var8 = (ServerLevel)var7.next();
-            var9 = (ForcedChunksSavedData)var8.getDataStorage().get(ForcedChunksSavedData.factory(), "chunks");
-         } while(var9 == null);
-
-         LongIterator var10 = var9.getChunks().iterator();
-
-         while(var10.hasNext()) {
-            long var11 = var10.nextLong();
-            ChunkPos var13 = new ChunkPos(var11);
-            var8.getChunkSource().updateChunkForced(var13, true);
          }
       }
+
+      this.nextTickTimeNanos = Util.getNanos() + PREPARE_LEVELS_DEFAULT_DELAY_NANOS;
+      this.waitUntilNextTick();
+      var1.stop();
+      this.updateMobSpawningFlags();
    }
 
    public GameType getDefaultGameType() {
@@ -561,13 +543,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    public boolean saveAllChunks(boolean var1, boolean var2, boolean var3) {
       boolean var4 = false;
 
-      for(Iterator var5 = this.getAllLevels().iterator(); var5.hasNext(); var4 = true) {
-         ServerLevel var6 = (ServerLevel)var5.next();
+      for(ServerLevel var6 : this.getAllLevels()) {
          if (!var1) {
             LOGGER.info("Saving chunks for level '{}'/{}", var6, var6.dimension().location());
          }
 
          var6.save((ProgressListener)null, var2, var6.noSave && !var3);
+         var4 = true;
       }
 
       ServerLevel var9 = this.overworld();
@@ -576,10 +558,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.worldData.setCustomBossEvents(this.getCustomBossEvents().save(this.registryAccess()));
       this.storageSource.saveDataTag(this.registryAccess(), this.worldData, this.getPlayerList().getSingleplayerData());
       if (var2) {
-         Iterator var7 = this.getAllLevels().iterator();
-
-         while(var7.hasNext()) {
-            ServerLevel var8 = (ServerLevel)var7.next();
+         for(ServerLevel var8 : this.getAllLevels()) {
             LOGGER.info("ThreadedAnvilChunkStorage ({}): All chunks are saved", var8.getChunkSource().chunkMap.getStorageName());
          }
 
@@ -621,41 +600,30 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
 
       LOGGER.info("Saving worlds");
-      Iterator var1 = this.getAllLevels().iterator();
 
-      ServerLevel var2;
-      while(var1.hasNext()) {
-         var2 = (ServerLevel)var1.next();
+      for(ServerLevel var2 : this.getAllLevels()) {
          if (var2 != null) {
             var2.noSave = false;
          }
       }
 
-      while(this.levels.values().stream().anyMatch((var0) -> {
-         return var0.getChunkSource().chunkMap.hasWork();
-      })) {
+      while(this.levels.values().stream().anyMatch((var0) -> var0.getChunkSource().chunkMap.hasWork())) {
          this.nextTickTimeNanos = Util.getNanos() + TimeUtil.NANOSECONDS_PER_MILLISECOND;
-         var1 = this.getAllLevels().iterator();
 
-         while(var1.hasNext()) {
-            var2 = (ServerLevel)var1.next();
-            var2.getChunkSource().removeTicketsOnClosing();
-            var2.getChunkSource().tick(() -> {
-               return true;
-            }, false);
+         for(ServerLevel var8 : this.getAllLevels()) {
+            var8.getChunkSource().removeTicketsOnClosing();
+            var8.getChunkSource().tick(() -> true, false);
          }
 
          this.waitUntilNextTick();
       }
 
       this.saveAllChunks(false, true, false);
-      var1 = this.getAllLevels().iterator();
 
-      while(var1.hasNext()) {
-         var2 = (ServerLevel)var1.next();
-         if (var2 != null) {
+      for(ServerLevel var9 : this.getAllLevels()) {
+         if (var9 != null) {
             try {
-               var2.close();
+               var9.close();
             } catch (IOException var5) {
                LOGGER.error("Exception closing the level", var5);
             }
@@ -739,9 +707,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                   ProfilerFiller var73 = Profiler.get();
                   var73.push("tick");
                   this.tickFrame.start();
-                  this.tickServer(var72 ? () -> {
-                     return false;
-                  } : this::haveTime);
+                  this.tickServer(var72 ? () -> false : this::haveTime);
                   this.tickFrame.end();
                   var73.popPush("nextTickWait");
                   this.mayHaveDelayedTasks = true;
@@ -873,9 +839,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public void managedBlock(BooleanSupplier var1) {
-      super.managedBlock(() -> {
-         return throwIfFatalException() && var1.getAsBoolean();
-      });
+      super.managedBlock(() -> throwIfFatalException() && var1.getAsBoolean());
    }
 
    protected void waitUntilNextTick() {
@@ -883,9 +847,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.waitingForNextTick = true;
 
       try {
-         this.managedBlock(() -> {
-            return !this.haveTime();
-         });
+         this.managedBlock(() -> !this.haveTime());
       } finally {
          this.waitingForNextTick = false;
       }
@@ -922,10 +884,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          return true;
       } else {
          if (this.tickRateManager.isSprinting() || this.haveTime()) {
-            Iterator var1 = this.getAllLevels().iterator();
-
-            while(var1.hasNext()) {
-               ServerLevel var2 = (ServerLevel)var1.next();
+            for(ServerLevel var2 : this.getAllLevels()) {
                if (var2.getChunkSource().pollTask()) {
                   return true;
                }
@@ -942,13 +901,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    private Optional<ServerStatus.Favicon> loadStatusIcon() {
-      Optional var1 = Optional.of(this.getFile("server-icon.png")).filter((var0) -> {
-         return Files.isRegularFile(var0, new LinkOption[0]);
-      }).or(() -> {
-         return this.storageSource.getIconFile().filter((var0) -> {
-            return Files.isRegularFile(var0, new LinkOption[0]);
-         });
-      });
+      Optional var1 = Optional.of(this.getFile("server-icon.png")).filter((var0) -> Files.isRegularFile(var0, new LinkOption[0])).or(() -> this.storageSource.getIconFile().filter((var0) -> Files.isRegularFile(var0, new LinkOption[0])));
       return var1.flatMap((var0) -> {
          try {
             BufferedImage var1 = ImageIO.read(var0.toFile());
@@ -1097,20 +1050,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    protected void tickChildren(BooleanSupplier var1) {
       ProfilerFiller var2 = Profiler.get();
-      this.getPlayerList().getPlayers().forEach((var0) -> {
-         var0.connection.suspendFlushing();
-      });
+      this.getPlayerList().getPlayers().forEach((var0) -> var0.connection.suspendFlushing());
       var2.push("commandFunctions");
       this.getFunctions().tick();
       var2.popPush("levels");
-      Iterator var3 = this.getAllLevels().iterator();
 
-      while(var3.hasNext()) {
-         ServerLevel var4 = (ServerLevel)var3.next();
-         var2.push(() -> {
+      for(ServerLevel var4 : this.getAllLevels()) {
+         var2.push((Supplier)(() -> {
             String var10000 = String.valueOf(var4);
             return var10000 + " " + String.valueOf(var4.dimension().location());
-         });
+         }));
          if (this.tickCount % 20 == 0) {
             var2.push("timeSync");
             this.synchronizeTime(var4);
@@ -1146,12 +1095,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
 
       var2.popPush("send chunks");
-      var3 = this.playerList.getPlayers().iterator();
 
-      while(var3.hasNext()) {
-         ServerPlayer var9 = (ServerPlayer)var3.next();
-         var9.connection.chunkSender.sendNextChunks(var9);
-         var9.connection.resumeFlushing();
+      for(ServerPlayer var10 : this.playerList.getPlayers()) {
+         var10.connection.chunkSender.sendNextChunks(var10);
+         var10.connection.resumeFlushing();
       }
 
       var2.pop();
@@ -1168,10 +1115,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    public void forceTimeSynchronization() {
       ProfilerFiller var1 = Profiler.get();
       var1.push("timeSync");
-      Iterator var2 = this.getAllLevels().iterator();
 
-      while(var2.hasNext()) {
-         ServerLevel var3 = (ServerLevel)var2.next();
+      for(ServerLevel var3 : this.getAllLevels()) {
          this.synchronizeTime(var3);
       }
 
@@ -1237,38 +1182,24 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public SystemReport fillSystemReport(SystemReport var1) {
-      var1.setDetail("Server Running", () -> {
-         return Boolean.toString(this.running);
-      });
+      var1.setDetail("Server Running", (Supplier)(() -> Boolean.toString(this.running)));
       if (this.playerList != null) {
-         var1.setDetail("Player Count", () -> {
+         var1.setDetail("Player Count", (Supplier)(() -> {
             int var10000 = this.playerList.getPlayerCount();
-            return "" + var10000 + " / " + this.playerList.getMaxPlayers() + "; " + String.valueOf(this.playerList.getPlayers());
-         });
+            return var10000 + " / " + this.playerList.getMaxPlayers() + "; " + String.valueOf(this.playerList.getPlayers());
+         }));
       }
 
-      var1.setDetail("Active Data Packs", () -> {
-         return PackRepository.displayPackList(this.packRepository.getSelectedPacks());
-      });
-      var1.setDetail("Available Data Packs", () -> {
-         return PackRepository.displayPackList(this.packRepository.getAvailablePacks());
-      });
-      var1.setDetail("Enabled Feature Flags", () -> {
-         return (String)FeatureFlags.REGISTRY.toNames(this.worldData.enabledFeatures()).stream().map(ResourceLocation::toString).collect(Collectors.joining(", "));
-      });
-      var1.setDetail("World Generation", () -> {
-         return this.worldData.worldGenSettingsLifecycle().toString();
-      });
-      var1.setDetail("World Seed", () -> {
-         return String.valueOf(this.worldData.worldGenOptions().seed());
-      });
+      var1.setDetail("Active Data Packs", (Supplier)(() -> PackRepository.displayPackList(this.packRepository.getSelectedPacks())));
+      var1.setDetail("Available Data Packs", (Supplier)(() -> PackRepository.displayPackList(this.packRepository.getAvailablePacks())));
+      var1.setDetail("Enabled Feature Flags", (Supplier)(() -> (String)FeatureFlags.REGISTRY.toNames(this.worldData.enabledFeatures()).stream().map(ResourceLocation::toString).collect(Collectors.joining(", "))));
+      var1.setDetail("World Generation", (Supplier)(() -> this.worldData.worldGenSettingsLifecycle().toString()));
+      var1.setDetail("World Seed", (Supplier)(() -> String.valueOf(this.worldData.worldGenOptions().seed())));
       SuppressedExceptionCollector var10002 = this.suppressedExceptions;
       Objects.requireNonNull(var10002);
       var1.setDetail("Suppressed Exceptions", var10002::dump);
       if (this.serverId != null) {
-         var1.setDetail("Server Id", () -> {
-            return this.serverId;
-         });
+         var1.setDetail("Server Id", (Supplier)(() -> this.serverId));
       }
 
       return this.fillServerSystemReport(var1);
@@ -1332,10 +1263,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    private void updateMobSpawningFlags() {
-      Iterator var1 = this.getAllLevels().iterator();
-
-      while(var1.hasNext()) {
-         ServerLevel var2 = (ServerLevel)var1.next();
+      for(ServerLevel var2 : this.getAllLevels()) {
          var2.setSpawnSettings(this.isSpawningMonsters());
       }
 
@@ -1574,9 +1502,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                var2.close();
             }
 
-         }).thenApply((var1) -> {
-            return new ReloadableResources(var2, var1);
-         });
+         }).thenApply((var1) -> new ReloadableResources(var2, var1));
       }).thenAcceptAsync((var2x) -> {
          this.resources.close();
          this.resources = var2x;
@@ -1608,10 +1534,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          return configureRepositoryWithSelection(var0, List.of("vanilla"), var5, false);
       } else {
          LinkedHashSet var7 = Sets.newLinkedHashSet();
-         Iterator var8 = var4.getEnabled().iterator();
 
-         while(var8.hasNext()) {
-            String var9 = (String)var8.next();
+         for(String var9 : var4.getEnabled()) {
             if (var0.isAvailable(var9)) {
                var7.add(var9);
             } else {
@@ -1619,15 +1543,12 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
             }
          }
 
-         var8 = var0.getAvailablePacks().iterator();
-
-         while(var8.hasNext()) {
-            Pack var13 = (Pack)var8.next();
-            String var10 = var13.getId();
+         for(Pack var14 : var0.getAvailablePacks()) {
+            String var10 = var14.getId();
             if (!var4.getDisabled().contains(var10)) {
-               FeatureFlagSet var11 = var13.getRequestedFeatures();
+               FeatureFlagSet var11 = var14.getRequestedFeatures();
                boolean var12 = var7.contains(var10);
-               if (!var12 && var13.getPackSource().shouldAddAutomatically()) {
+               if (!var12 && var14.getPackSource().shouldAddAutomatically()) {
                   if (var11.isSubsetOf(var6)) {
                      LOGGER.info("Found new data pack {}, loading it automatically", var10);
                      var7.add(var10);
@@ -1665,10 +1586,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       FeatureFlagSet var3 = var1.subtract(var2);
       if (!var3.isEmpty()) {
          ObjectArraySet var4 = new ObjectArraySet(var0.getSelectedIds());
-         Iterator var5 = var0.getAvailablePacks().iterator();
 
-         while(var5.hasNext()) {
-            Pack var6 = (Pack)var5.next();
+         for(Pack var6 : var0.getAvailablePacks()) {
             if (var3.isEmpty()) {
                break;
             }
@@ -1694,9 +1613,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private static DataPackConfig getSelectedPacks(PackRepository var0, boolean var1) {
       Collection var2 = var0.getSelectedIds();
       ImmutableList var3 = ImmutableList.copyOf(var2);
-      List var4 = var1 ? var0.getAvailableIds().stream().filter((var1x) -> {
-         return !var2.contains(var1x);
-      }).toList() : List.of();
+      List var4 = var1 ? var0.getAvailableIds().stream().filter((var1x) -> !var2.contains(var1x)).toList() : List.of();
       return new DataPackConfig(var3, var4);
    }
 
@@ -1704,11 +1621,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       if (this.isEnforceWhitelist()) {
          PlayerList var2 = var1.getServer().getPlayerList();
          UserWhiteList var3 = var2.getWhiteList();
-         ArrayList var4 = Lists.newArrayList(var2.getPlayers());
-         Iterator var5 = var4.iterator();
 
-         while(var5.hasNext()) {
-            ServerPlayer var6 = (ServerPlayer)var5.next();
+         for(ServerPlayer var6 : Lists.newArrayList(var2.getPlayers())) {
             if (!var3.isWhiteListed(var6.getGameProfile())) {
                var6.connection.disconnect(Component.translatable("multiplayer.disconnect.not_whitelisted"));
             }
@@ -1814,10 +1728,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       Path var2 = var1.resolve("levels");
 
       try {
-         Iterator var3 = this.levels.entrySet().iterator();
-
-         while(var3.hasNext()) {
-            Map.Entry var4 = (Map.Entry)var3.next();
+         for(Map.Entry var4 : this.levels.entrySet()) {
             ResourceLocation var5 = ((ResourceKey)var4.getKey()).location();
             Path var6 = var2.resolve(var5.getNamespace()).resolve(var5.getPath());
             Files.createDirectories(var6);
@@ -1868,15 +1779,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       try {
          final ArrayList var3 = Lists.newArrayList();
          final GameRules var4 = this.getGameRules();
-         var4.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor(this) {
+         var4.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
             public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> var1, GameRules.Type<T> var2) {
                var3.add(String.format(Locale.ROOT, "%s=%s\n", var1.getId(), var4.getRule(var1)));
             }
          });
-         Iterator var5 = var3.iterator();
 
-         while(var5.hasNext()) {
-            String var6 = (String)var5.next();
+         for(String var6 : var3) {
             ((Writer)var2).write(var6);
          }
       } catch (Throwable var8) {
@@ -1903,10 +1812,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       try {
          String var3 = System.getProperty("java.class.path");
          String var4 = System.getProperty("path.separator");
-         Iterator var5 = Splitter.on(var4).split(var3).iterator();
 
-         while(var5.hasNext()) {
-            String var6 = (String)var5.next();
+         for(String var6 : Splitter.on(var4).split(var3)) {
             ((Writer)var2).write(var6);
             ((Writer)var2).write("\n");
          }
@@ -1935,11 +1842,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       BufferedWriter var4 = Files.newBufferedWriter(var1);
 
       try {
-         ThreadInfo[] var5 = var3;
-         int var6 = var3.length;
-
-         for(int var7 = 0; var7 < var6; ++var7) {
-            ThreadInfo var8 = var5[var7];
+         for(ThreadInfo var8 : var3) {
             ((Writer)var4).write(var8.toString());
             ((Writer)var4).write(10);
          }
@@ -1964,25 +1867,23 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private void dumpNativeModules(Path var1) throws IOException {
       BufferedWriter var2 = Files.newBufferedWriter(var1);
 
-      label50: {
+      label49: {
          try {
-            label51: {
+            label50: {
                ArrayList var3;
                try {
                   var3 = Lists.newArrayList(NativeModuleLister.listModules());
                } catch (Throwable var7) {
                   LOGGER.warn("Failed to list native modules", var7);
-                  break label51;
+                  break label50;
                }
 
-               var3.sort(Comparator.comparing((var0) -> {
-                  return var0.name;
-               }));
+               var3.sort(Comparator.comparing((var0) -> var0.name));
                Iterator var4 = var3.iterator();
 
                while(true) {
                   if (!var4.hasNext()) {
-                     break label50;
+                     break label49;
                   }
 
                   NativeModuleLister.NativeModuleInfo var5 = (NativeModuleLister.NativeModuleInfo)var4.next();
@@ -2018,9 +1919,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private ProfilerFiller createProfiler() {
       if (this.willStartRecordingMetrics) {
          this.metricsRecorder = ActiveMetricsRecorder.createStarted(new ServerMetricsSamplersProvider(Util.timeSource, this.isDedicatedServer()), Util.timeSource, Util.ioPool(), new MetricsPersister("server"), this.onMetricsRecordingStopped, (var1) -> {
-            this.executeBlocking(() -> {
-               this.saveDebugReport(var1.resolve("server"));
-            });
+            this.executeBlocking(() -> this.saveDebugReport(var1.resolve("server")));
             this.onMetricsRecordingFinished.accept(var1);
          });
          this.willStartRecordingMetrics = false;
@@ -2172,9 +2071,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
             CrashReportCategory var10 = var1.addCategory("Chunk Info");
             Objects.requireNonNull(var3);
             var10.setDetail("Level", var3::level);
-            var10.setDetail("Dimension", () -> {
-               return var3.dimension().location().toString();
-            });
+            var10.setDetail("Dimension", (CrashReportDetail)(() -> var3.dimension().location().toString()));
             Objects.requireNonNull(var3);
             var10.setDetail("Storage", var3::type);
             Objects.requireNonNull(var2);
@@ -2245,7 +2142,18 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       fatalException = new AtomicReference();
    }
 
-   private static record ReloadableResources(CloseableResourceManager resourceManager, ReloadableServerResources managers) implements AutoCloseable {
+   public static record ServerResourcePackInfo(UUID id, String url, String hash, boolean isRequired, @Nullable Component prompt) {
+      public ServerResourcePackInfo(UUID var1, String var2, String var3, boolean var4, @Nullable Component var5) {
+         super();
+         this.id = var1;
+         this.url = var2;
+         this.hash = var3;
+         this.isRequired = var4;
+         this.prompt = var5;
+      }
+   }
+
+   static record ReloadableResources(CloseableResourceManager resourceManager, ReloadableServerResources managers) implements AutoCloseable {
       final CloseableResourceManager resourceManager;
       final ReloadableServerResources managers;
 
@@ -2258,17 +2166,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       public void close() {
          this.resourceManager.close();
       }
-
-      public CloseableResourceManager resourceManager() {
-         return this.resourceManager;
-      }
-
-      public ReloadableServerResources managers() {
-         return this.managers;
-      }
    }
 
-   private static class TimeProfiler {
+   static class TimeProfiler {
       final long startNanos;
       final int startTick;
 
@@ -2308,38 +2208,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                return "";
             }
          };
-      }
-   }
-
-   public static record ServerResourcePackInfo(UUID id, String url, String hash, boolean isRequired, @Nullable Component prompt) {
-      public ServerResourcePackInfo(UUID var1, String var2, String var3, boolean var4, @Nullable Component var5) {
-         super();
-         this.id = var1;
-         this.url = var2;
-         this.hash = var3;
-         this.isRequired = var4;
-         this.prompt = var5;
-      }
-
-      public UUID id() {
-         return this.id;
-      }
-
-      public String url() {
-         return this.url;
-      }
-
-      public String hash() {
-         return this.hash;
-      }
-
-      public boolean isRequired() {
-         return this.isRequired;
-      }
-
-      @Nullable
-      public Component prompt() {
-         return this.prompt;
       }
    }
 }

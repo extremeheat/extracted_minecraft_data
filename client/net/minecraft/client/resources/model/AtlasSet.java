@@ -5,7 +5,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -20,7 +19,7 @@ public class AtlasSet implements AutoCloseable {
       super();
       this.atlases = (Map)var1.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (var1x) -> {
          TextureAtlas var2x = new TextureAtlas((ResourceLocation)var1x.getKey());
-         var2.register((ResourceLocation)((ResourceLocation)var1x.getKey()), (AbstractTexture)var2x);
+         var2.register((ResourceLocation)var1x.getKey(), var2x);
          return new AtlasEntry(var2x, (ResourceLocation)var1x.getValue());
       }));
    }
@@ -37,33 +36,8 @@ public class AtlasSet implements AutoCloseable {
    public Map<ResourceLocation, CompletableFuture<StitchResult>> scheduleLoad(ResourceManager var1, int var2, Executor var3) {
       return (Map)this.atlases.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (var3x) -> {
          AtlasEntry var4 = (AtlasEntry)var3x.getValue();
-         return SpriteLoader.create(var4.atlas).loadAndStitch(var1, var4.atlasInfoLocation, var2, var3).thenApply((var1x) -> {
-            return new StitchResult(var4.atlas, var1x);
-         });
+         return SpriteLoader.create(var4.atlas).loadAndStitch(var1, var4.atlasInfoLocation, var2, var3).thenApply((var1x) -> new StitchResult(var4.atlas, var1x));
       }));
-   }
-
-   static record AtlasEntry(TextureAtlas atlas, ResourceLocation atlasInfoLocation) implements AutoCloseable {
-      final TextureAtlas atlas;
-      final ResourceLocation atlasInfoLocation;
-
-      AtlasEntry(TextureAtlas var1, ResourceLocation var2) {
-         super();
-         this.atlas = var1;
-         this.atlasInfoLocation = var2;
-      }
-
-      public void close() {
-         this.atlas.clearTextureData();
-      }
-
-      public TextureAtlas atlas() {
-         return this.atlas;
-      }
-
-      public ResourceLocation atlasInfoLocation() {
-         return this.atlasInfoLocation;
-      }
    }
 
    public static class StitchResult {
@@ -91,6 +65,21 @@ public class AtlasSet implements AutoCloseable {
 
       public void upload() {
          this.atlas.upload(this.preparations);
+      }
+   }
+
+   static record AtlasEntry(TextureAtlas atlas, ResourceLocation atlasInfoLocation) implements AutoCloseable {
+      final TextureAtlas atlas;
+      final ResourceLocation atlasInfoLocation;
+
+      AtlasEntry(TextureAtlas var1, ResourceLocation var2) {
+         super();
+         this.atlas = var1;
+         this.atlasInfoLocation = var2;
+      }
+
+      public void close() {
+         this.atlas.clearTextureData();
       }
    }
 }

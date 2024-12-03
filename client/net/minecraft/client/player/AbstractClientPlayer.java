@@ -72,16 +72,15 @@ public abstract class AbstractClientPlayer extends Player {
       }
 
       float var4 = this.getAbilities().getWalkingSpeed();
-      float var5;
       if (var4 != 0.0F) {
-         var5 = (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED) / var4;
+         float var5 = (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED) / var4;
          var3 *= (var5 + 1.0F) / 2.0F;
       }
 
       if (this.isUsingItem()) {
          if (this.getUseItem().is(Items.BOW)) {
-            var5 = Math.min((float)this.getTicksUsingItem() / 20.0F, 1.0F);
-            var3 *= 1.0F - Mth.square(var5) * 0.15F;
+            float var6 = Math.min((float)this.getTicksUsingItem() / 20.0F, 1.0F);
+            var3 *= 1.0F - Mth.square(var6) * 0.15F;
          } else if (var1 && this.isScoping()) {
             return 0.1F;
          }

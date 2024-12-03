@@ -10,6 +10,12 @@ import net.minecraft.commands.ExecutionCommandSource;
 public interface CustomCommandExecutor<T> {
    void run(T var1, ContextChain<T> var2, ChainModifiers var3, ExecutionControl<T> var4);
 
+   public interface CommandAdapter<T> extends Command<T>, CustomCommandExecutor<T> {
+      default int run(CommandContext<T> var1) throws CommandSyntaxException {
+         throw new UnsupportedOperationException("This function should not run");
+      }
+   }
+
    public abstract static class WithErrorHandling<T extends ExecutionCommandSource<T>> implements CustomCommandExecutor<T> {
       public WithErrorHandling() {
          super();
@@ -30,11 +36,5 @@ public interface CustomCommandExecutor<T> {
       }
 
       protected abstract void runGuarded(T var1, ContextChain<T> var2, ChainModifiers var3, ExecutionControl<T> var4) throws CommandSyntaxException;
-   }
-
-   public interface CommandAdapter<T> extends Command<T>, CustomCommandExecutor<T> {
-      default int run(CommandContext<T> var1) throws CommandSyntaxException {
-         throw new UnsupportedOperationException("This function should not run");
-      }
    }
 }

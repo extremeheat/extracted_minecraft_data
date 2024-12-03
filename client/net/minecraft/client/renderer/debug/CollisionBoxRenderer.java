@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -32,10 +31,8 @@ public class CollisionBoxRenderer implements DebugRenderer.SimpleDebugRenderer {
       }
 
       VertexConsumer var14 = var2.getBuffer(RenderType.lines());
-      Iterator var12 = this.shapes.iterator();
 
-      while(var12.hasNext()) {
-         VoxelShape var13 = (VoxelShape)var12.next();
+      for(VoxelShape var13 : this.shapes) {
          DebugRenderer.renderVoxelShape(var1, var14, var13, -var3, -var5, -var7, 1.0F, 1.0F, 1.0F, 1.0F, true);
       }
 

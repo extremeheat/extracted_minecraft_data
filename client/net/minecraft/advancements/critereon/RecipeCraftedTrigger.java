@@ -24,15 +24,11 @@ public class RecipeCraftedTrigger extends SimpleCriterionTrigger<TriggerInstance
    }
 
    public void trigger(ServerPlayer var1, ResourceKey<Recipe<?>> var2, List<ItemStack> var3) {
-      this.trigger(var1, (var2x) -> {
-         return var2x.matches(var2, var3);
-      });
+      this.trigger(var1, (var2x) -> var2x.matches(var2, var3));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, ResourceKey<Recipe<?>> recipeId, List<ItemPredicate> ingredients) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ResourceKey.codec(Registries.RECIPE).fieldOf("recipe_id").forGetter(TriggerInstance::recipeId), ItemPredicate.CODEC.listOf().optionalFieldOf("ingredients", List.of()).forGetter(TriggerInstance::ingredients)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ResourceKey.codec(Registries.RECIPE).fieldOf("recipe_id").forGetter(TriggerInstance::recipeId), ItemPredicate.CODEC.listOf().optionalFieldOf("ingredients", List.of()).forGetter(TriggerInstance::ingredients)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, ResourceKey<Recipe<?>> var2, List<ItemPredicate> var3) {
          super();
@@ -58,16 +54,9 @@ public class RecipeCraftedTrigger extends SimpleCriterionTrigger<TriggerInstance
             return false;
          } else {
             ArrayList var3 = new ArrayList(var2);
-            Iterator var4 = this.ingredients.iterator();
 
-            boolean var6;
-            do {
-               if (!var4.hasNext()) {
-                  return true;
-               }
-
-               ItemPredicate var5 = (ItemPredicate)var4.next();
-               var6 = false;
+            for(ItemPredicate var5 : this.ingredients) {
+               boolean var6 = false;
                Iterator var7 = var3.iterator();
 
                while(var7.hasNext()) {
@@ -77,22 +66,14 @@ public class RecipeCraftedTrigger extends SimpleCriterionTrigger<TriggerInstance
                      break;
                   }
                }
-            } while(var6);
 
-            return false;
+               if (!var6) {
+                  return false;
+               }
+            }
+
+            return true;
          }
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public ResourceKey<Recipe<?>> recipeId() {
-         return this.recipeId;
-      }
-
-      public List<ItemPredicate> ingredients() {
-         return this.ingredients;
       }
    }
 }

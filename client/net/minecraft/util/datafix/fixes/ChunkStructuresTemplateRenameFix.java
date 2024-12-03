@@ -18,17 +18,11 @@ public class ChunkStructuresTemplateRenameFix extends DataFix {
 
    public TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.STRUCTURE_FEATURE);
-      return this.fixTypeEverywhereTyped("ChunkStructuresTemplateRenameFix", var1, (var1x) -> {
-         return var1x.update(DSL.remainderFinder(), this::fixChildren);
-      });
+      return this.fixTypeEverywhereTyped("ChunkStructuresTemplateRenameFix", var1, (var1x) -> var1x.update(DSL.remainderFinder(), this::fixChildren));
    }
 
    private Dynamic<?> fixChildren(Dynamic<?> var1) {
-      return var1.update("Children", (var2) -> {
-         return var1.createList(var2.asStream().map((var2x) -> {
-            return this.fixTag(var1, var2x);
-         }));
-      });
+      return var1.update("Children", (var2) -> var1.createList(var2.asStream().map((var2x) -> this.fixTag(var1, var2x))));
    }
 
    private Dynamic<?> fixTag(Dynamic<?> var1, Dynamic<?> var2) {

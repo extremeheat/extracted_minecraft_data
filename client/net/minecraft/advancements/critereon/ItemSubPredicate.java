@@ -15,9 +15,5 @@ public interface ItemSubPredicate {
          super();
          this.codec = var1;
       }
-
-      public Codec<T> codec() {
-         return this.codec;
-      }
    }
 }

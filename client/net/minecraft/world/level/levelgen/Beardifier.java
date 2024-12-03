@@ -3,7 +3,7 @@ package net.minecraft.world.level.levelgen;
 import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
-import java.util.Iterator;
+import java.util.function.Predicate;
 import net.minecraft.Util;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
@@ -36,33 +36,19 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
       int var3 = var1.getMinBlockZ();
       ObjectArrayList var4 = new ObjectArrayList(10);
       ObjectArrayList var5 = new ObjectArrayList(32);
-      var0.startsForStructure(var1, (var0x) -> {
-         return var0x.terrainAdaptation() != TerrainAdjustment.NONE;
-      }).forEach((var5x) -> {
+      var0.startsForStructure((ChunkPos)var1, (Predicate)((var0x) -> var0x.terrainAdaptation() != TerrainAdjustment.NONE)).forEach((var5x) -> {
          TerrainAdjustment var6 = var5x.getStructure().terrainAdaptation();
-         Iterator var7 = var5x.getPieces().iterator();
 
-         while(true) {
-            while(true) {
-               StructurePiece var8;
-               do {
-                  if (!var7.hasNext()) {
-                     return;
-                  }
-
-                  var8 = (StructurePiece)var7.next();
-               } while(!var8.isCloseToChunk(var1, 12));
-
-               if (var8 instanceof PoolElementStructurePiece var9) {
+         for(StructurePiece var8 : var5x.getPieces()) {
+            if (var8.isCloseToChunk(var1, 12)) {
+               if (var8 instanceof PoolElementStructurePiece) {
+                  PoolElementStructurePiece var9 = (PoolElementStructurePiece)var8;
                   StructureTemplatePool.Projection var10 = var9.getElement().getProjection();
                   if (var10 == StructureTemplatePool.Projection.RIGID) {
                      var4.add(new Rigid(var9.getBoundingBox(), var6, var9.getGroundLevelDelta()));
                   }
 
-                  Iterator var11 = var9.getJunctions().iterator();
-
-                  while(var11.hasNext()) {
-                     JigsawJunction var12 = (JigsawJunction)var11.next();
+                  for(JigsawJunction var12 : var9.getJunctions()) {
                      int var13 = var12.getSourceX();
                      int var14 = var12.getSourceZ();
                      if (var13 > var2 - 12 && var14 > var3 - 12 && var13 < var2 + 15 + 12 && var14 < var3 + 15 + 12) {
@@ -74,6 +60,7 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
                }
             }
          }
+
       });
       return new Beardifier(var4.iterator(), var5.iterator());
    }
@@ -91,14 +78,12 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
       int var4 = var1.blockZ();
 
       double var5;
-      int var9;
-      int var10;
       double var10001;
       for(var5 = 0.0; this.pieceIterator.hasNext(); var5 += var10001) {
          Rigid var7 = (Rigid)this.pieceIterator.next();
          BoundingBox var8 = var7.box();
-         var9 = var7.groundLevelDelta();
-         var10 = Math.max(0, Math.max(var8.minX() - var2, var2 - var8.maxX()));
+         int var9 = var7.groundLevelDelta();
+         int var10 = Math.max(0, Math.max(var8.minX() - var2, var2 - var8.maxX()));
          int var11 = Math.max(0, Math.max(var8.minZ() - var4, var4 - var8.maxZ()));
          int var12 = var8.minY() + var9;
          int var13 = var3 - var12;
@@ -146,9 +131,9 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
       while(this.junctionIterator.hasNext()) {
          JigsawJunction var15 = (JigsawJunction)this.junctionIterator.next();
          int var16 = var2 - var15.getSourceX();
-         var9 = var3 - var15.getSourceGroundY();
-         var10 = var4 - var15.getSourceZ();
-         var5 += getBeardContribution(var16, var9, var10, var9) * 0.4;
+         int var17 = var3 - var15.getSourceGroundY();
+         int var18 = var4 - var15.getSourceZ();
+         var5 += getBeardContribution(var16, var17, var18, var17) * 0.4;
       }
 
       this.junctionIterator.back(2147483647);
@@ -203,18 +188,6 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
          this.box = var1;
          this.terrainAdjustment = var2;
          this.groundLevelDelta = var3;
-      }
-
-      public BoundingBox box() {
-         return this.box;
-      }
-
-      public TerrainAdjustment terrainAdjustment() {
-         return this.terrainAdjustment;
-      }
-
-      public int groundLevelDelta() {
-         return this.groundLevelDelta;
       }
    }
 }

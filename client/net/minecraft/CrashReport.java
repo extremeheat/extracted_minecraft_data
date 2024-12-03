@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletionException;
@@ -62,11 +61,8 @@ public class CrashReport {
          var1.append("-- Head --\n");
          var1.append("Thread: ").append(Thread.currentThread().getName()).append("\n");
          var1.append("Stacktrace:\n");
-         StackTraceElement[] var2 = this.uncategorizedStackTrace;
-         int var3 = var2.length;
 
-         for(int var4 = 0; var4 < var3; ++var4) {
-            StackTraceElement var5 = var2[var4];
+         for(StackTraceElement var5 : this.uncategorizedStackTrace) {
             var1.append("\t").append("at ").append(var5);
             var1.append("\n");
          }
@@ -74,10 +70,7 @@ public class CrashReport {
          var1.append("\n");
       }
 
-      Iterator var6 = this.details.iterator();
-
-      while(var6.hasNext()) {
-         CrashReportCategory var7 = (CrashReportCategory)var6.next();
+      for(CrashReportCategory var7 : this.details) {
          var7.getDetails(var1);
          var1.append("\n\n");
       }

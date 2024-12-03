@@ -2,7 +2,6 @@ package net.minecraft.client.gui.font;
 
 import com.mojang.serialization.Codec;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import net.minecraft.util.StringRepresentable;
@@ -11,7 +10,7 @@ public enum FontOption implements StringRepresentable {
    UNIFORM("uniform"),
    JAPANESE_VARIANTS("jp");
 
-   public static final Codec<FontOption> CODEC = StringRepresentable.fromEnum(FontOption::values);
+   public static final Codec<FontOption> CODEC = StringRepresentable.<FontOption>fromEnum(FontOption::values);
    private final String name;
 
    private FontOption(final String var3) {
@@ -38,18 +37,13 @@ public enum FontOption implements StringRepresentable {
       }
 
       public boolean apply(Set<FontOption> var1) {
-         Iterator var2 = this.values.entrySet().iterator();
-
-         Map.Entry var3;
-         do {
-            if (!var2.hasNext()) {
-               return true;
+         for(Map.Entry var3 : this.values.entrySet()) {
+            if (var1.contains(var3.getKey()) != (Boolean)var3.getValue()) {
+               return false;
             }
+         }
 
-            var3 = (Map.Entry)var2.next();
-         } while(var1.contains(var3.getKey()) == (Boolean)var3.getValue());
-
-         return false;
+         return true;
       }
 
       public Filter merge(Filter var1) {
@@ -59,9 +53,7 @@ public enum FontOption implements StringRepresentable {
       }
 
       static {
-         CODEC = Codec.unboundedMap(FontOption.CODEC, Codec.BOOL).xmap(Filter::new, (var0) -> {
-            return var0.values;
-         });
+         CODEC = Codec.unboundedMap(FontOption.CODEC, Codec.BOOL).xmap(Filter::new, (var0) -> var0.values);
          ALWAYS_PASS = new Filter(Map.of());
       }
    }

@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -24,21 +23,15 @@ public class WaterloggedVegetationPatchFeature extends VegetationPatchFeature {
       Set var8 = super.placeGroundPatch(var1, var2, var3, var4, var5, var6, var7);
       HashSet var9 = new HashSet();
       BlockPos.MutableBlockPos var10 = new BlockPos.MutableBlockPos();
-      Iterator var11 = var8.iterator();
 
-      BlockPos var12;
-      while(var11.hasNext()) {
-         var12 = (BlockPos)var11.next();
+      for(BlockPos var12 : var8) {
          if (!isExposed(var1, var8, var12, var10)) {
             var9.add(var12);
          }
       }
 
-      var11 = var9.iterator();
-
-      while(var11.hasNext()) {
-         var12 = (BlockPos)var11.next();
-         var1.setBlock(var12, Blocks.WATER.defaultBlockState(), 2);
+      for(BlockPos var14 : var9) {
+         var1.setBlock(var14, Blocks.WATER.defaultBlockState(), 2);
       }
 
       return var9;

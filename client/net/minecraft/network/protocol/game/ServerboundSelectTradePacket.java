@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundSelectTradePacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundSelectTradePacket> STREAM_CODEC = Packet.codec(ServerboundSelectTradePacket::write, ServerboundSelectTradePacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundSelectTradePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundSelectTradePacket>codec(ServerboundSelectTradePacket::write, ServerboundSelectTradePacket::new);
    private final int item;
 
    public ServerboundSelectTradePacket(int var1) {

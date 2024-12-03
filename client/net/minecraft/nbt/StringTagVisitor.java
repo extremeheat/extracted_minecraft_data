@@ -3,7 +3,6 @@ package net.minecraft.nbt;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.regex.Pattern;
 
 public class StringTagVisitor implements TagVisitor {
@@ -111,12 +110,12 @@ public class StringTagVisitor implements TagVisitor {
       ArrayList var2 = Lists.newArrayList(var1.getAllKeys());
       Collections.sort(var2);
 
-      String var4;
-      for(Iterator var3 = var2.iterator(); var3.hasNext(); this.builder.append(handleEscape(var4)).append(':').append((new StringTagVisitor()).visit(var1.get(var4)))) {
-         var4 = (String)var3.next();
+      for(String var4 : var2) {
          if (this.builder.length() != 1) {
             this.builder.append(',');
          }
+
+         this.builder.append(handleEscape(var4)).append(':').append((new StringTagVisitor()).visit(var1.get(var4)));
       }
 
       this.builder.append('}');

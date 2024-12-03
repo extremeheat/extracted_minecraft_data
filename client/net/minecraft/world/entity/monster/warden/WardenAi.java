@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -111,17 +113,11 @@ public class WardenAi {
    }
 
    private static void initFightActivity(Warden var0, Brain<Warden> var1) {
-      var1.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(DIG_COOLDOWN_SETTER, StopAttackingIfTargetInvalid.create((var1x, var2) -> {
-         return !var0.getAngerLevel().isAngry() || !var0.canTargetEntity(var2);
-      }, WardenAi::onTargetInvalid, false), SetEntityLookTarget.create((var1x) -> {
-         return isTarget(var0, var1x);
-      }, (float)var0.getAttributeValue(Attributes.FOLLOW_RANGE)), SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.2F), new SonicBoom(), MeleeAttack.create(18)), MemoryModuleType.ATTACK_TARGET);
+      var1.addActivityAndRemoveMemoryWhenStopped(Activity.FIGHT, 10, ImmutableList.of(DIG_COOLDOWN_SETTER, StopAttackingIfTargetInvalid.create((var1x, var2) -> !var0.getAngerLevel().isAngry() || !var0.canTargetEntity(var2), WardenAi::onTargetInvalid, false), SetEntityLookTarget.create((Predicate)((var1x) -> isTarget(var0, var1x)), (float)var0.getAttributeValue(Attributes.FOLLOW_RANGE)), SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.2F), new SonicBoom(), MeleeAttack.create(18)), MemoryModuleType.ATTACK_TARGET);
    }
 
    private static boolean isTarget(Warden var0, LivingEntity var1) {
-      return var0.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).filter((var1x) -> {
-         return var1x == var1;
-      }).isPresent();
+      return var0.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).filter((var1x) -> var1x == var1).isPresent();
    }
 
    private static void onTargetInvalid(ServerLevel var0, Warden var1, LivingEntity var2) {
@@ -152,16 +148,12 @@ public class WardenAi {
    static {
       SENSOR_TYPES = List.of(SensorType.NEAREST_PLAYERS, SensorType.WARDEN_ENTITY_SENSOR);
       MEMORY_TYPES = List.of(MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_NEMESIS, MemoryModuleType.LOOK_TARGET, MemoryModuleType.WALK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.ATTACK_COOLING_DOWN, MemoryModuleType.NEAREST_ATTACKABLE, MemoryModuleType.ROAR_TARGET, MemoryModuleType.DISTURBANCE_LOCATION, MemoryModuleType.RECENT_PROJECTILE, MemoryModuleType.IS_SNIFFING, MemoryModuleType.IS_EMERGING, MemoryModuleType.ROAR_SOUND_DELAY, MemoryModuleType.DIG_COOLDOWN, MemoryModuleType.ROAR_SOUND_COOLDOWN, MemoryModuleType.SNIFF_COOLDOWN, MemoryModuleType.TOUCH_COOLDOWN, MemoryModuleType.VIBRATION_COOLDOWN, MemoryModuleType.SONIC_BOOM_COOLDOWN, MemoryModuleType.SONIC_BOOM_SOUND_COOLDOWN, MemoryModuleType.SONIC_BOOM_SOUND_DELAY);
-      DIG_COOLDOWN_SETTER = BehaviorBuilder.create((var0) -> {
-         return var0.group(var0.registered(MemoryModuleType.DIG_COOLDOWN)).apply(var0, (var1) -> {
-            return (var2, var3, var4) -> {
+      DIG_COOLDOWN_SETTER = BehaviorBuilder.create((Function)((var0) -> var0.group(var0.registered(MemoryModuleType.DIG_COOLDOWN)).apply(var0, (var1) -> (var2, var3, var4) -> {
                if (var0.tryGet(var1).isPresent()) {
                   var1.setWithExpiry(Unit.INSTANCE, 1200L);
                }
 
                return true;
-            };
-         });
-      });
+            })));
    }
 }

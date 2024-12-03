@@ -11,7 +11,6 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -49,34 +48,25 @@ public class TagLoader<T> {
    public Map<ResourceLocation, List<EntryWithSource>> load(ResourceManager var1) {
       HashMap var2 = new HashMap();
       FileToIdConverter var3 = FileToIdConverter.json(this.directory);
-      Iterator var4 = var3.listMatchingResourceStacks(var1).entrySet().iterator();
 
-      while(var4.hasNext()) {
-         Map.Entry var5 = (Map.Entry)var4.next();
+      for(Map.Entry var5 : var3.listMatchingResourceStacks(var1).entrySet()) {
          ResourceLocation var6 = (ResourceLocation)var5.getKey();
          ResourceLocation var7 = var3.fileToId(var6);
-         Iterator var8 = ((List)var5.getValue()).iterator();
 
-         while(var8.hasNext()) {
-            Resource var9 = (Resource)var8.next();
-
+         for(Resource var9 : (List)var5.getValue()) {
             try {
                BufferedReader var10 = var9.openAsReader();
 
                try {
                   JsonElement var11 = JsonParser.parseReader(var10);
-                  List var12 = (List)var2.computeIfAbsent(var7, (var0) -> {
-                     return new ArrayList();
-                  });
+                  List var12 = (List)var2.computeIfAbsent(var7, (var0) -> new ArrayList());
                   TagFile var13 = (TagFile)TagFile.CODEC.parse(new Dynamic(JsonOps.INSTANCE, var11)).getOrThrow();
                   if (var13.replace()) {
                      var12.clear();
                   }
 
                   String var14 = var9.sourcePackId();
-                  var13.entries().forEach((var2x) -> {
-                     var12.add(new EntryWithSource(var2x, var14));
-                  });
+                  var13.entries().forEach((var2x) -> var12.add(new EntryWithSource(var2x, var14)));
                } catch (Throwable var16) {
                   if (var10 != null) {
                      try {
@@ -104,10 +94,8 @@ public class TagLoader<T> {
    private Either<List<EntryWithSource>, List<T>> tryBuildTag(TagEntry.Lookup<T> var1, List<EntryWithSource> var2) {
       LinkedHashSet var3 = new LinkedHashSet();
       ArrayList var4 = new ArrayList();
-      Iterator var5 = var2.iterator();
 
-      while(var5.hasNext()) {
-         EntryWithSource var6 = (EntryWithSource)var5.next();
+      for(EntryWithSource var6 : var2) {
          TagEntry var10000 = var6.entry();
          Objects.requireNonNull(var3);
          if (!var10000.build(var1, var3::add)) {
@@ -123,7 +111,7 @@ public class TagLoader<T> {
       TagEntry.Lookup var3 = new TagEntry.Lookup<T>() {
          @Nullable
          public T element(ResourceLocation var1, boolean var2x) {
-            return TagLoader.this.elementLookup.get(var1, var2x).orElse((Object)null);
+            return (T)TagLoader.this.elementLookup.get(var1, var2x).orElse((Object)null);
          }
 
          @Nullable
@@ -132,16 +120,8 @@ public class TagLoader<T> {
          }
       };
       DependencySorter var4 = new DependencySorter();
-      var1.forEach((var1x, var2x) -> {
-         var4.addEntry(var1x, new SortingEntry(var2x));
-      });
-      var4.orderByDependencies((var3x, var4x) -> {
-         this.tryBuildTag(var3, var4x.entries).ifLeft((var1) -> {
-            LOGGER.error("Couldn't load tag {} as it is missing following references: {}", var3x, var1.stream().map(Objects::toString).collect(Collectors.joining(", ")));
-         }).ifRight((var2x) -> {
-            var2.put(var3x, var2x);
-         });
-      });
+      var1.forEach((var1x, var2x) -> var4.addEntry(var1x, new SortingEntry(var2x)));
+      var4.orderByDependencies((var3x, var4x) -> this.tryBuildTag(var3, var4x.entries).ifLeft((var1) -> LOGGER.error("Couldn't load tag {} as it is missing following references: {}", var3x, var1.stream().map(Objects::toString).collect(Collectors.joining(", ")))).ifRight((var2x) -> var2.put(var3x, var2x)));
       return var2;
    }
 
@@ -152,23 +132,17 @@ public class TagLoader<T> {
    }
 
    public static List<Registry.PendingTags<?>> loadTagsForExistingRegistries(ResourceManager var0, RegistryAccess var1) {
-      return (List)var1.registries().map((var1x) -> {
-         return loadPendingTags(var0, var1x.value());
-      }).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
+      return (List)var1.registries().map((var1x) -> loadPendingTags(var0, var1x.value())).flatMap(Optional::stream).collect(Collectors.toUnmodifiableList());
    }
 
    public static <T> void loadTagsForRegistry(ResourceManager var0, WritableRegistry<T> var1) {
       ResourceKey var2 = var1.key();
       TagLoader var3 = new TagLoader(TagLoader.ElementLookup.fromWritableRegistry(var1), Registries.tagsDirPath(var2));
-      var3.build(var3.load(var0)).forEach((var2x, var3x) -> {
-         var1.bindTag(TagKey.create(var2, var2x), var3x);
-      });
+      var3.build(var3.load(var0)).forEach((var2x, var3x) -> var1.bindTag(TagKey.create(var2, var2x), var3x));
    }
 
    private static <T> Map<TagKey<T>, List<Holder<T>>> wrapTags(ResourceKey<? extends Registry<T>> var0, Map<ResourceLocation, List<Holder<T>>> var1) {
-      return (Map)var1.entrySet().stream().collect(Collectors.toUnmodifiableMap((var1x) -> {
-         return TagKey.create(var0, (ResourceLocation)var1x.getKey());
-      }, Map.Entry::getValue));
+      return (Map)var1.entrySet().stream().collect(Collectors.toUnmodifiableMap((var1x) -> TagKey.create(var0, (ResourceLocation)var1x.getKey()), Map.Entry::getValue));
    }
 
    private static <T> Optional<Registry.PendingTags<T>> loadPendingTags(ResourceManager var0, Registry<T> var1) {
@@ -189,35 +163,13 @@ public class TagLoader<T> {
 
    @Nullable
    private static Registry.PendingTags<?> findTagsForRegistry(List<Registry.PendingTags<?>> var0, ResourceKey<? extends Registry<?>> var1) {
-      Iterator var2 = var0.iterator();
-
-      Registry.PendingTags var3;
-      do {
-         if (!var2.hasNext()) {
-            return null;
+      for(Registry.PendingTags var3 : var0) {
+         if (var3.key() == var1) {
+            return var3;
          }
-
-         var3 = (Registry.PendingTags)var2.next();
-      } while(var3.key() != var1);
-
-      return var3;
-   }
-
-   public interface ElementLookup<T> {
-      Optional<? extends T> get(ResourceLocation var1, boolean var2);
-
-      static <T> ElementLookup<? extends Holder<T>> fromFrozenRegistry(Registry<T> var0) {
-         return (var1, var2) -> {
-            return var0.get(var1);
-         };
       }
 
-      static <T> ElementLookup<Holder<T>> fromWritableRegistry(WritableRegistry<T> var0) {
-         HolderGetter var1 = var0.createRegistrationLookup();
-         return (var2, var3) -> {
-            return ((HolderGetter)(var3 ? var1 : var0)).get(ResourceKey.create(var0.key(), var2));
-         };
-      }
+      return null;
    }
 
    public static record EntryWithSource(TagEntry entry, String source) {
@@ -233,13 +185,22 @@ public class TagLoader<T> {
          String var10000 = String.valueOf(this.entry);
          return var10000 + " (from " + this.source + ")";
       }
+   }
 
-      public TagEntry entry() {
-         return this.entry;
+   static record SortingEntry(List<EntryWithSource> entries) implements DependencySorter.Entry<ResourceLocation> {
+      final List<EntryWithSource> entries;
+
+      SortingEntry(List<EntryWithSource> var1) {
+         super();
+         this.entries = var1;
       }
 
-      public String source() {
-         return this.source;
+      public void visitRequiredDependencies(Consumer<ResourceLocation> var1) {
+         this.entries.forEach((var1x) -> var1x.entry.visitRequiredDependencies(var1));
+      }
+
+      public void visitOptionalDependencies(Consumer<ResourceLocation> var1) {
+         this.entries.forEach((var1x) -> var1x.entry.visitOptionalDependencies(var1));
       }
    }
 
@@ -251,38 +212,18 @@ public class TagLoader<T> {
          this.key = var1;
          this.tags = var2;
       }
-
-      public ResourceKey<? extends Registry<T>> key() {
-         return this.key;
-      }
-
-      public Map<TagKey<T>, List<Holder<T>>> tags() {
-         return this.tags;
-      }
    }
 
-   private static record SortingEntry(List<EntryWithSource> entries) implements DependencySorter.Entry<ResourceLocation> {
-      final List<EntryWithSource> entries;
+   public interface ElementLookup<T> {
+      Optional<? extends T> get(ResourceLocation var1, boolean var2);
 
-      SortingEntry(List<EntryWithSource> var1) {
-         super();
-         this.entries = var1;
+      static <T> ElementLookup<? extends Holder<T>> fromFrozenRegistry(Registry<T> var0) {
+         return (var1, var2) -> var0.get(var1);
       }
 
-      public void visitRequiredDependencies(Consumer<ResourceLocation> var1) {
-         this.entries.forEach((var1x) -> {
-            var1x.entry.visitRequiredDependencies(var1);
-         });
-      }
-
-      public void visitOptionalDependencies(Consumer<ResourceLocation> var1) {
-         this.entries.forEach((var1x) -> {
-            var1x.entry.visitOptionalDependencies(var1);
-         });
-      }
-
-      public List<EntryWithSource> entries() {
-         return this.entries;
+      static <T> ElementLookup<Holder<T>> fromWritableRegistry(WritableRegistry<T> var0) {
+         HolderGetter var1 = var0.createRegistrationLookup();
+         return (var2, var3) -> ((HolderGetter)(var3 ? var1 : var0)).get(ResourceKey.create(var0.key(), var2));
       }
    }
 }

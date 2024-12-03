@@ -28,8 +28,6 @@ public class RotatedBlockProvider extends BlockStateProvider {
    }
 
    static {
-      CODEC = BlockState.CODEC.fieldOf("state").xmap(BlockBehaviour.BlockStateBase::getBlock, Block::defaultBlockState).xmap(RotatedBlockProvider::new, (var0) -> {
-         return var0.block;
-      });
+      CODEC = BlockState.CODEC.fieldOf("state").xmap(BlockBehaviour.BlockStateBase::getBlock, Block::defaultBlockState).xmap(RotatedBlockProvider::new, (var0) -> var0.block);
    }
 }

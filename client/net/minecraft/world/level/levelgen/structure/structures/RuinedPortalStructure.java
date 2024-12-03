@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,11 +36,7 @@ public class RuinedPortalStructure extends Structure {
    private static final float PROBABILITY_OF_GIANT_PORTAL = 0.05F;
    private static final int MIN_Y_INDEX = 15;
    private final List<Setup> setups;
-   public static final MapCodec<RuinedPortalStructure> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(settingsCodec(var0), ExtraCodecs.nonEmptyList(RuinedPortalStructure.Setup.CODEC.listOf()).fieldOf("setups").forGetter((var0x) -> {
-         return var0x.setups;
-      })).apply(var0, RuinedPortalStructure::new);
-   });
+   public static final MapCodec<RuinedPortalStructure> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(settingsCodec(var0), ExtraCodecs.nonEmptyList(RuinedPortalStructure.Setup.CODEC.listOf()).fieldOf("setups").forGetter((var0x) -> var0x.setups)).apply(var0, RuinedPortalStructure::new));
 
    public RuinedPortalStructure(Structure.StructureSettings var1, List<Setup> var2) {
       super(var1);
@@ -59,16 +54,13 @@ public class RuinedPortalStructure extends Structure {
       if (this.setups.size() > 1) {
          float var5 = 0.0F;
 
-         Setup var7;
-         for(Iterator var6 = this.setups.iterator(); var6.hasNext(); var5 += var7.weight()) {
-            var7 = (Setup)var6.next();
+         for(Setup var7 : this.setups) {
+            var5 += var7.weight();
          }
 
          float var20 = var3.nextFloat();
-         Iterator var22 = this.setups.iterator();
 
-         while(var22.hasNext()) {
-            Setup var8 = (Setup)var22.next();
+         for(Setup var8 : this.setups) {
             var20 -= var8.weight() / var5;
             if (var20 < 0.0F) {
                var4 = var8;
@@ -95,7 +87,7 @@ public class RuinedPortalStructure extends Structure {
          }
 
          StructureTemplate var23 = var1.structureTemplateManager().getOrCreate(var21);
-         Rotation var24 = (Rotation)Util.getRandom((Object[])Rotation.values(), var3);
+         Rotation var24 = (Rotation)Util.getRandom(Rotation.values(), var3);
          Mirror var9 = var3.nextFloat() < 0.5F ? Mirror.NONE : Mirror.FRONT_BACK;
          BlockPos var10 = new BlockPos(var23.getSize().getX() / 2, 0, var23.getSize().getZ() / 2);
          ChunkGenerator var11 = var1.chunkGenerator();
@@ -142,34 +134,27 @@ public class RuinedPortalStructure extends Structure {
          } else {
             var9 = Mth.randomBetweenInclusive(var0, 29, 100);
          }
+      } else if (var2 == RuinedPortalPiece.VerticalPlacement.IN_MOUNTAIN) {
+         int var11 = var4 - var5;
+         var9 = getRandomWithinInterval(var0, 70, var11);
+      } else if (var2 == RuinedPortalPiece.VerticalPlacement.UNDERGROUND) {
+         int var19 = var4 - var5;
+         var9 = getRandomWithinInterval(var0, var10, var19);
+      } else if (var2 == RuinedPortalPiece.VerticalPlacement.PARTLY_BURIED) {
+         var9 = var4 - var5 + Mth.randomBetweenInclusive(var0, 2, 8);
       } else {
-         int var11;
-         if (var2 == RuinedPortalPiece.VerticalPlacement.IN_MOUNTAIN) {
-            var11 = var4 - var5;
-            var9 = getRandomWithinInterval(var0, 70, var11);
-         } else if (var2 == RuinedPortalPiece.VerticalPlacement.UNDERGROUND) {
-            var11 = var4 - var5;
-            var9 = getRandomWithinInterval(var0, var10, var11);
-         } else if (var2 == RuinedPortalPiece.VerticalPlacement.PARTLY_BURIED) {
-            var9 = var4 - var5 + Mth.randomBetweenInclusive(var0, 2, 8);
-         } else {
-            var9 = var4;
-         }
+         var9 = var4;
       }
 
-      ImmutableList var19 = ImmutableList.of(new BlockPos(var6.minX(), 0, var6.minZ()), new BlockPos(var6.maxX(), 0, var6.minZ()), new BlockPos(var6.minX(), 0, var6.maxZ()), new BlockPos(var6.maxX(), 0, var6.maxZ()));
-      List var12 = (List)var19.stream().map((var3x) -> {
-         return var1.getBaseColumn(var3x.getX(), var3x.getZ(), var7, var8);
-      }).collect(Collectors.toList());
+      ImmutableList var20 = ImmutableList.of(new BlockPos(var6.minX(), 0, var6.minZ()), new BlockPos(var6.maxX(), 0, var6.minZ()), new BlockPos(var6.minX(), 0, var6.maxZ()), new BlockPos(var6.maxX(), 0, var6.maxZ()));
+      List var12 = (List)var20.stream().map((var3x) -> var1.getBaseColumn(var3x.getX(), var3x.getZ(), var7, var8)).collect(Collectors.toList());
       Heightmap.Types var13 = var2 == RuinedPortalPiece.VerticalPlacement.ON_OCEAN_FLOOR ? Heightmap.Types.OCEAN_FLOOR_WG : Heightmap.Types.WORLD_SURFACE_WG;
 
       int var14;
       for(var14 = var9; var14 > var10; --var14) {
          int var15 = 0;
-         Iterator var16 = var12.iterator();
 
-         while(var16.hasNext()) {
-            NoiseColumn var17 = (NoiseColumn)var16.next();
+         for(NoiseColumn var17 : var12) {
             BlockState var18 = var17.getBlock(var14);
             if (var13.isOpaque().test(var18)) {
                ++var15;
@@ -192,9 +177,7 @@ public class RuinedPortalStructure extends Structure {
    }
 
    public static record Setup(RuinedPortalPiece.VerticalPlacement placement, float airPocketProbability, float mossiness, boolean overgrown, boolean vines, boolean canBeCold, boolean replaceWithBlackstone, float weight) {
-      public static final Codec<Setup> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(RuinedPortalPiece.VerticalPlacement.CODEC.fieldOf("placement").forGetter(Setup::placement), Codec.floatRange(0.0F, 1.0F).fieldOf("air_pocket_probability").forGetter(Setup::airPocketProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("mossiness").forGetter(Setup::mossiness), Codec.BOOL.fieldOf("overgrown").forGetter(Setup::overgrown), Codec.BOOL.fieldOf("vines").forGetter(Setup::vines), Codec.BOOL.fieldOf("can_be_cold").forGetter(Setup::canBeCold), Codec.BOOL.fieldOf("replace_with_blackstone").forGetter(Setup::replaceWithBlackstone), ExtraCodecs.POSITIVE_FLOAT.fieldOf("weight").forGetter(Setup::weight)).apply(var0, Setup::new);
-      });
+      public static final Codec<Setup> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RuinedPortalPiece.VerticalPlacement.CODEC.fieldOf("placement").forGetter(Setup::placement), Codec.floatRange(0.0F, 1.0F).fieldOf("air_pocket_probability").forGetter(Setup::airPocketProbability), Codec.floatRange(0.0F, 1.0F).fieldOf("mossiness").forGetter(Setup::mossiness), Codec.BOOL.fieldOf("overgrown").forGetter(Setup::overgrown), Codec.BOOL.fieldOf("vines").forGetter(Setup::vines), Codec.BOOL.fieldOf("can_be_cold").forGetter(Setup::canBeCold), Codec.BOOL.fieldOf("replace_with_blackstone").forGetter(Setup::replaceWithBlackstone), ExtraCodecs.POSITIVE_FLOAT.fieldOf("weight").forGetter(Setup::weight)).apply(var0, Setup::new));
 
       public Setup(RuinedPortalPiece.VerticalPlacement var1, float var2, float var3, boolean var4, boolean var5, boolean var6, boolean var7, float var8) {
          super();
@@ -206,38 +189,6 @@ public class RuinedPortalStructure extends Structure {
          this.canBeCold = var6;
          this.replaceWithBlackstone = var7;
          this.weight = var8;
-      }
-
-      public RuinedPortalPiece.VerticalPlacement placement() {
-         return this.placement;
-      }
-
-      public float airPocketProbability() {
-         return this.airPocketProbability;
-      }
-
-      public float mossiness() {
-         return this.mossiness;
-      }
-
-      public boolean overgrown() {
-         return this.overgrown;
-      }
-
-      public boolean vines() {
-         return this.vines;
-      }
-
-      public boolean canBeCold() {
-         return this.canBeCold;
-      }
-
-      public boolean replaceWithBlackstone() {
-         return this.replaceWithBlackstone;
-      }
-
-      public float weight() {
-         return this.weight;
       }
    }
 }

@@ -10,13 +10,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class WeightedPlacedFeature {
-   public static final Codec<WeightedPlacedFeature> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((var0x) -> {
-         return var0x.feature;
-      }), Codec.floatRange(0.0F, 1.0F).fieldOf("chance").forGetter((var0x) -> {
-         return var0x.chance;
-      })).apply(var0, WeightedPlacedFeature::new);
-   });
+   public static final Codec<WeightedPlacedFeature> CODEC = RecordCodecBuilder.create((var0) -> var0.group(PlacedFeature.CODEC.fieldOf("feature").forGetter((var0x) -> var0x.feature), Codec.floatRange(0.0F, 1.0F).fieldOf("chance").forGetter((var0x) -> var0x.chance)).apply(var0, WeightedPlacedFeature::new));
    public final Holder<PlacedFeature> feature;
    public final float chance;
 

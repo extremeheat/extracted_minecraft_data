@@ -19,12 +19,8 @@ import net.minecraft.world.scores.Scoreboard;
 
 public class ObjectiveArgument implements ArgumentType<String> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "*", "012");
-   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_NOT_FOUND = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("arguments.objective.notFound", var0);
-   });
-   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_READ_ONLY = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("arguments.objective.readonly", var0);
-   });
+   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_NOT_FOUND = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("arguments.objective.notFound", var0));
+   private static final DynamicCommandExceptionType ERROR_OBJECTIVE_READ_ONLY = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("arguments.objective.readonly", var0));
 
    public ObjectiveArgument() {
       super();
@@ -61,7 +57,7 @@ public class ObjectiveArgument implements ArgumentType<String> {
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
       Object var3 = var1.getSource();
       if (var3 instanceof CommandSourceStack var4) {
-         return SharedSuggestionProvider.suggest((Iterable)var4.getServer().getScoreboard().getObjectiveNames(), var2);
+         return SharedSuggestionProvider.suggest(var4.getServer().getScoreboard().getObjectiveNames(), var2);
       } else if (var3 instanceof SharedSuggestionProvider var5) {
          return var5.customSuggestion(var1);
       } else {

@@ -8,17 +8,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class LinearPosTest extends PosRuleTest {
-   public static final MapCodec<LinearPosTest> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.FLOAT.fieldOf("min_chance").orElse(0.0F).forGetter((var0x) -> {
-         return var0x.minChance;
-      }), Codec.FLOAT.fieldOf("max_chance").orElse(0.0F).forGetter((var0x) -> {
-         return var0x.maxChance;
-      }), Codec.INT.fieldOf("min_dist").orElse(0).forGetter((var0x) -> {
-         return var0x.minDist;
-      }), Codec.INT.fieldOf("max_dist").orElse(0).forGetter((var0x) -> {
-         return var0x.maxDist;
-      })).apply(var0, LinearPosTest::new);
-   });
+   public static final MapCodec<LinearPosTest> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("min_chance").orElse(0.0F).forGetter((var0x) -> var0x.minChance), Codec.FLOAT.fieldOf("max_chance").orElse(0.0F).forGetter((var0x) -> var0x.maxChance), Codec.INT.fieldOf("min_dist").orElse(0).forGetter((var0x) -> var0x.minDist), Codec.INT.fieldOf("max_dist").orElse(0).forGetter((var0x) -> var0x.maxDist)).apply(var0, LinearPosTest::new));
    private final float minChance;
    private final float maxChance;
    private final int minDist;

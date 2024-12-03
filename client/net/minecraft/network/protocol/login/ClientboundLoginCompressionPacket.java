@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundLoginCompressionPacket implements Packet<ClientLoginPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundLoginCompressionPacket> STREAM_CODEC = Packet.codec(ClientboundLoginCompressionPacket::write, ClientboundLoginCompressionPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundLoginCompressionPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundLoginCompressionPacket>codec(ClientboundLoginCompressionPacket::write, ClientboundLoginCompressionPacket::new);
    private final int compressionThreshold;
 
    public ClientboundLoginCompressionPacket(int var1) {

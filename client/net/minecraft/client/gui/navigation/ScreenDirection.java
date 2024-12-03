@@ -8,9 +8,7 @@ public enum ScreenDirection {
    LEFT,
    RIGHT;
 
-   private final IntComparator coordinateValueComparator = (var1x, var2x) -> {
-      return var1x == var2x ? 0 : (this.isBefore(var1x, var2x) ? -1 : 1);
-   };
+   private final IntComparator coordinateValueComparator = (var1x, var2x) -> var1x == var2x ? 0 : (this.isBefore(var1x, var2x) ? -1 : 1);
 
    private ScreenDirection() {
    }

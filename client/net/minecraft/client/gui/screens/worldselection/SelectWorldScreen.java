@@ -38,29 +38,15 @@ public class SelectWorldScreen extends Screen {
 
    protected void init() {
       this.searchBox = new EditBox(this.font, this.width / 2 - 100, 22, 200, 20, this.searchBox, Component.translatable("selectWorld.search"));
-      this.searchBox.setResponder((var1) -> {
-         this.list.updateFilter(var1);
-      });
+      this.searchBox.setResponder((var1) -> this.list.updateFilter(var1));
       this.addWidget(this.searchBox);
       this.list = (WorldSelectionList)this.addRenderableWidget(new WorldSelectionList(this, this.minecraft, this.width, this.height - 112, 48, 36, this.searchBox.getValue(), this.list));
-      this.selectButton = (Button)this.addRenderableWidget(Button.builder(LevelSummary.PLAY_WORLD, (var1) -> {
-         this.list.getSelectedOpt().ifPresent(WorldSelectionList.WorldListEntry::joinWorld);
-      }).bounds(this.width / 2 - 154, this.height - 52, 150, 20).build());
-      this.addRenderableWidget(Button.builder(Component.translatable("selectWorld.create"), (var1) -> {
-         CreateWorldScreen.openFresh(this.minecraft, this);
-      }).bounds(this.width / 2 + 4, this.height - 52, 150, 20).build());
-      this.renameButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectWorld.edit"), (var1) -> {
-         this.list.getSelectedOpt().ifPresent(WorldSelectionList.WorldListEntry::editWorld);
-      }).bounds(this.width / 2 - 154, this.height - 28, 72, 20).build());
-      this.deleteButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectWorld.delete"), (var1) -> {
-         this.list.getSelectedOpt().ifPresent(WorldSelectionList.WorldListEntry::deleteWorld);
-      }).bounds(this.width / 2 - 76, this.height - 28, 72, 20).build());
-      this.copyButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectWorld.recreate"), (var1) -> {
-         this.list.getSelectedOpt().ifPresent(WorldSelectionList.WorldListEntry::recreateWorld);
-      }).bounds(this.width / 2 + 4, this.height - 28, 72, 20).build());
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1) -> {
-         this.minecraft.setScreen(this.lastScreen);
-      }).bounds(this.width / 2 + 82, this.height - 28, 72, 20).build());
+      this.selectButton = (Button)this.addRenderableWidget(Button.builder(LevelSummary.PLAY_WORLD, (var1) -> this.list.getSelectedOpt().ifPresent(WorldSelectionList.WorldListEntry::joinWorld)).bounds(this.width / 2 - 154, this.height - 52, 150, 20).build());
+      this.addRenderableWidget(Button.builder(Component.translatable("selectWorld.create"), (var1) -> CreateWorldScreen.openFresh(this.minecraft, this)).bounds(this.width / 2 + 4, this.height - 52, 150, 20).build());
+      this.renameButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectWorld.edit"), (var1) -> this.list.getSelectedOpt().ifPresent(WorldSelectionList.WorldListEntry::editWorld)).bounds(this.width / 2 - 154, this.height - 28, 72, 20).build());
+      this.deleteButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectWorld.delete"), (var1) -> this.list.getSelectedOpt().ifPresent(WorldSelectionList.WorldListEntry::deleteWorld)).bounds(this.width / 2 - 76, this.height - 28, 72, 20).build());
+      this.copyButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("selectWorld.recreate"), (var1) -> this.list.getSelectedOpt().ifPresent(WorldSelectionList.WorldListEntry::recreateWorld)).bounds(this.width / 2 + 4, this.height - 28, 72, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 + 82, this.height - 28, 72, 20).build());
       this.updateButtonStatus((LevelSummary)null);
    }
 

@@ -70,26 +70,14 @@ public class EditWorldScreen extends Screen {
       this.nameEdit = (EditBox)this.layout.addChild(new EditBox(var5, 200, 20, NAME_LABEL));
       this.nameEdit.setValue(var3);
       LinearLayout var6 = LinearLayout.horizontal().spacing(4);
-      Button var7 = (Button)var6.addChild(Button.builder(SAVE_BUTTON, (var1x) -> {
-         this.onRename(this.nameEdit.getValue());
-      }).width(98).build());
-      var6.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
-         this.onClose();
-      }).width(98).build());
-      this.nameEdit.setResponder((var1x) -> {
-         var7.active = !StringUtil.isBlank(var1x);
-      });
+      Button var7 = (Button)var6.addChild(Button.builder(SAVE_BUTTON, (var1x) -> this.onRename(this.nameEdit.getValue())).width(98).build());
+      var6.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).width(98).build());
+      this.nameEdit.setResponder((var1x) -> var7.active = !StringUtil.isBlank(var1x));
       ((Button)this.layout.addChild(Button.builder(RESET_ICON_BUTTON, (var1x) -> {
-         var2.getIconFile().ifPresent((var0) -> {
-            FileUtils.deleteQuietly(var0.toFile());
-         });
+         var2.getIconFile().ifPresent((var0) -> FileUtils.deleteQuietly(var0.toFile()));
          var1x.active = false;
-      }).width(200).build())).active = var2.getIconFile().filter((var0) -> {
-         return Files.isRegularFile(var0, new LinkOption[0]);
-      }).isPresent();
-      this.layout.addChild(Button.builder(FOLDER_BUTTON, (var1x) -> {
-         Util.getPlatform().openPath(var2.getLevelPath(LevelResource.ROOT));
-      }).width(200).build());
+      }).width(200).build())).active = var2.getIconFile().filter((var0) -> Files.isRegularFile(var0, new LinkOption[0])).isPresent();
+      this.layout.addChild(Button.builder(FOLDER_BUTTON, (var1x) -> Util.getPlatform().openPath(var2.getLevelPath(LevelResource.ROOT))).width(200).build());
       this.layout.addChild(Button.builder(BACKUP_BUTTON, (var2x) -> {
          boolean var3 = makeBackupAndShowToast(var2);
          this.callback.accept(!var3);
@@ -106,17 +94,13 @@ public class EditWorldScreen extends Screen {
 
          Util.getPlatform().openPath(var3);
       }).width(200).build());
-      this.layout.addChild(Button.builder(OPTIMIZE_BUTTON, (var3x) -> {
-         var1.setScreen(new BackupConfirmScreen(() -> {
-            var1.setScreen(this);
-         }, (var3, var4) -> {
+      this.layout.addChild(Button.builder(OPTIMIZE_BUTTON, (var3x) -> var1.setScreen(new BackupConfirmScreen(() -> var1.setScreen(this), (var3, var4) -> {
             if (var3) {
                makeBackupAndShowToast(var2);
             }
 
             var1.setScreen(OptimizeWorldScreen.create(var1, this.callback, var1.getFixerUpper(), var2, var4));
-         }, OPTIMIZE_TITLE, OPTIMIIZE_DESCRIPTION, OPTIMIIZE_CONFIRMATION, true));
-      }).width(200).build());
+         }, OPTIMIZE_TITLE, OPTIMIIZE_DESCRIPTION, OPTIMIIZE_CONFIRMATION, true))).width(200).build());
       this.layout.addChild(new SpacerElement(200, 20));
       this.layout.addChild(var6);
       this.layout.visitWidgets((var1x) -> {
@@ -162,16 +146,14 @@ public class EditWorldScreen extends Screen {
          var3 = var6;
       }
 
-      MutableComponent var4;
-      MutableComponent var5;
       if (var3 != null) {
-         var4 = Component.translatable("selectWorld.edit.backupFailed");
-         var5 = Component.literal(var3.getMessage());
-         Minecraft.getInstance().getToastManager().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, var4, var5));
+         MutableComponent var7 = Component.translatable("selectWorld.edit.backupFailed");
+         MutableComponent var8 = Component.literal(var3.getMessage());
+         Minecraft.getInstance().getToastManager().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, var7, var8));
          return false;
       } else {
-         var4 = Component.translatable("selectWorld.edit.backupCreated", var0.getLevelId());
-         var5 = Component.translatable("selectWorld.edit.backupSize", Mth.ceil((double)var1 / 1048576.0));
+         MutableComponent var4 = Component.translatable("selectWorld.edit.backupCreated", var0.getLevelId());
+         MutableComponent var5 = Component.translatable("selectWorld.edit.backupSize", Mth.ceil((double)var1 / 1048576.0));
          Minecraft.getInstance().getToastManager().addToast(new SystemToast(SystemToast.SystemToastId.WORLD_BACKUP, var4, var5));
          return true;
       }

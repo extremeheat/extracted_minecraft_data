@@ -12,7 +12,7 @@ public enum AdvancementType implements StringRepresentable {
    CHALLENGE("challenge", ChatFormatting.DARK_PURPLE),
    GOAL("goal", ChatFormatting.GREEN);
 
-   public static final Codec<AdvancementType> CODEC = StringRepresentable.fromEnum(AdvancementType::values);
+   public static final Codec<AdvancementType> CODEC = StringRepresentable.<AdvancementType>fromEnum(AdvancementType::values);
    private final String name;
    private final ChatFormatting chatColor;
    private final Component displayName;

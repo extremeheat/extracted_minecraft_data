@@ -1,6 +1,5 @@
 package net.minecraft.world.phys;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -303,9 +302,8 @@ public class AABB {
       double var8 = var2.y - var1.y;
       double var10 = var2.z - var1.z;
 
-      AABB var13;
-      for(Iterator var12 = var0.iterator(); var12.hasNext(); var5 = getDirection(var13.move(var3), var1, var4, var5, var6, var8, var10)) {
-         var13 = (AABB)var12.next();
+      for(AABB var13 : var0) {
+         var5 = getDirection(var13.move(var3), var1, var4, var5, var6, var8, var10);
       }
 
       if (var5 == null) {
@@ -360,22 +358,19 @@ public class AABB {
    public boolean collidedAlongVector(Vec3 var1, List<AABB> var2) {
       Vec3 var3 = this.getCenter();
       Vec3 var4 = var3.add(var1);
-      Iterator var5 = var2.iterator();
 
-      AABB var7;
-      do {
-         if (!var5.hasNext()) {
-            return false;
-         }
-
-         AABB var6 = (AABB)var5.next();
-         var7 = var6.inflate(this.getXsize() * 0.5, this.getYsize() * 0.5, this.getZsize() * 0.5);
+      for(AABB var6 : var2) {
+         AABB var7 = var6.inflate(this.getXsize() * 0.5, this.getYsize() * 0.5, this.getZsize() * 0.5);
          if (var7.contains(var4) || var7.contains(var3)) {
             return true;
          }
-      } while(!var7.clip(var3, var4).isPresent());
 
-      return true;
+         if (var7.clip(var3, var4).isPresent()) {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    public double distanceToSqr(Vec3 var1) {

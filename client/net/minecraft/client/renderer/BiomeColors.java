@@ -7,12 +7,8 @@ import net.minecraft.world.level.biome.Biome;
 
 public class BiomeColors {
    public static final ColorResolver GRASS_COLOR_RESOLVER = Biome::getGrassColor;
-   public static final ColorResolver FOLIAGE_COLOR_RESOLVER = (var0, var1, var3) -> {
-      return var0.getFoliageColor();
-   };
-   public static final ColorResolver WATER_COLOR_RESOLVER = (var0, var1, var3) -> {
-      return var0.getWaterColor();
-   };
+   public static final ColorResolver FOLIAGE_COLOR_RESOLVER = (var0, var1, var3) -> var0.getFoliageColor();
+   public static final ColorResolver WATER_COLOR_RESOLVER = (var0, var1, var3) -> var0.getWaterColor();
 
    public BiomeColors() {
       super();

@@ -8,9 +8,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
 public record EntityFlagsPredicate(Optional<Boolean> isOnGround, Optional<Boolean> isOnFire, Optional<Boolean> isCrouching, Optional<Boolean> isSprinting, Optional<Boolean> isSwimming, Optional<Boolean> isFlying, Optional<Boolean> isBaby) {
-   public static final Codec<EntityFlagsPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.BOOL.optionalFieldOf("is_on_ground").forGetter(EntityFlagsPredicate::isOnGround), Codec.BOOL.optionalFieldOf("is_on_fire").forGetter(EntityFlagsPredicate::isOnFire), Codec.BOOL.optionalFieldOf("is_sneaking").forGetter(EntityFlagsPredicate::isCrouching), Codec.BOOL.optionalFieldOf("is_sprinting").forGetter(EntityFlagsPredicate::isSprinting), Codec.BOOL.optionalFieldOf("is_swimming").forGetter(EntityFlagsPredicate::isSwimming), Codec.BOOL.optionalFieldOf("is_flying").forGetter(EntityFlagsPredicate::isFlying), Codec.BOOL.optionalFieldOf("is_baby").forGetter(EntityFlagsPredicate::isBaby)).apply(var0, EntityFlagsPredicate::new);
-   });
+   public static final Codec<EntityFlagsPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.BOOL.optionalFieldOf("is_on_ground").forGetter(EntityFlagsPredicate::isOnGround), Codec.BOOL.optionalFieldOf("is_on_fire").forGetter(EntityFlagsPredicate::isOnFire), Codec.BOOL.optionalFieldOf("is_sneaking").forGetter(EntityFlagsPredicate::isCrouching), Codec.BOOL.optionalFieldOf("is_sprinting").forGetter(EntityFlagsPredicate::isSprinting), Codec.BOOL.optionalFieldOf("is_swimming").forGetter(EntityFlagsPredicate::isSwimming), Codec.BOOL.optionalFieldOf("is_flying").forGetter(EntityFlagsPredicate::isFlying), Codec.BOOL.optionalFieldOf("is_baby").forGetter(EntityFlagsPredicate::isBaby)).apply(var0, EntityFlagsPredicate::new));
 
    public EntityFlagsPredicate(Optional<Boolean> var1, Optional<Boolean> var2, Optional<Boolean> var3, Optional<Boolean> var4, Optional<Boolean> var5, Optional<Boolean> var6, Optional<Boolean> var7) {
       super();
@@ -75,34 +73,6 @@ public record EntityFlagsPredicate(Optional<Boolean> isOnGround, Optional<Boolea
 
          return true;
       }
-   }
-
-   public Optional<Boolean> isOnGround() {
-      return this.isOnGround;
-   }
-
-   public Optional<Boolean> isOnFire() {
-      return this.isOnFire;
-   }
-
-   public Optional<Boolean> isCrouching() {
-      return this.isCrouching;
-   }
-
-   public Optional<Boolean> isSprinting() {
-      return this.isSprinting;
-   }
-
-   public Optional<Boolean> isSwimming() {
-      return this.isSwimming;
-   }
-
-   public Optional<Boolean> isFlying() {
-      return this.isFlying;
-   }
-
-   public Optional<Boolean> isBaby() {
-      return this.isBaby;
    }
 
    public static class Builder {

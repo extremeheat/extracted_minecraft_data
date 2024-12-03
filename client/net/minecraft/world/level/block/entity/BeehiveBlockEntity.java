@@ -24,7 +24,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.DebugPackets;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -73,18 +72,13 @@ public class BeehiveBlockEntity extends BlockEntity {
       if (this.level == null) {
          return false;
       } else {
-         Iterator var1 = BlockPos.betweenClosed(this.worldPosition.offset(-1, -1, -1), this.worldPosition.offset(1, 1, 1)).iterator();
-
-         BlockPos var2;
-         do {
-            if (!var1.hasNext()) {
-               return false;
+         for(BlockPos var2 : BlockPos.betweenClosed(this.worldPosition.offset(-1, -1, -1), this.worldPosition.offset(1, 1, 1))) {
+            if (this.level.getBlockState(var2).getBlock() instanceof FireBlock) {
+               return true;
             }
+         }
 
-            var2 = (BlockPos)var1.next();
-         } while(!(this.level.getBlockState(var2).getBlock() instanceof FireBlock));
-
-         return true;
+         return false;
       }
    }
 
@@ -99,10 +93,7 @@ public class BeehiveBlockEntity extends BlockEntity {
    public void emptyAllLivingFromHive(@Nullable Player var1, BlockState var2, BeeReleaseStatus var3) {
       List var4 = this.releaseAllOccupants(var2, var3);
       if (var1 != null) {
-         Iterator var5 = var4.iterator();
-
-         while(var5.hasNext()) {
-            Entity var6 = (Entity)var5.next();
+         for(Entity var6 : var4) {
             if (var6 instanceof Bee) {
                Bee var7 = (Bee)var6;
                if (var1.position().distanceToSqr(var6.position()) <= 16.0) {
@@ -120,9 +111,7 @@ public class BeehiveBlockEntity extends BlockEntity {
 
    private List<Entity> releaseAllOccupants(BlockState var1, BeeReleaseStatus var2) {
       ArrayList var3 = Lists.newArrayList();
-      this.stored.removeIf((var4) -> {
-         return releaseOccupant(this.level, this.worldPosition, var1, var4.toOccupant(), var3, var2, this.savedFlowerPos);
-      });
+      this.stored.removeIf((var4) -> releaseOccupant(this.level, this.worldPosition, var1, var4.toOccupant(), var3, var2, this.savedFlowerPos));
       if (!var3.isEmpty()) {
          super.setChanged();
       }
@@ -144,22 +133,20 @@ public class BeehiveBlockEntity extends BlockEntity {
       return CampfireBlock.isSmokeyPos(this.level, this.getBlockPos());
    }
 
-   public void addOccupant(Entity var1) {
+   public void addOccupant(Bee var1) {
       if (this.stored.size() < 3) {
          var1.stopRiding();
          var1.ejectPassengers();
+         var1.dropLeash();
          this.storeBee(BeehiveBlockEntity.Occupant.of(var1));
          if (this.level != null) {
-            if (var1 instanceof Bee) {
-               Bee var2 = (Bee)var1;
-               if (var2.hasSavedFlowerPos() && (!this.hasSavedFlowerPos() || this.level.random.nextBoolean())) {
-                  this.savedFlowerPos = var2.getSavedFlowerPos();
-               }
+            if (var1.hasSavedFlowerPos() && (!this.hasSavedFlowerPos() || this.level.random.nextBoolean())) {
+               this.savedFlowerPos = var1.getSavedFlowerPos();
             }
 
-            BlockPos var3 = this.getBlockPos();
-            this.level.playSound((Player)null, (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), (SoundEvent)SoundEvents.BEEHIVE_ENTER, SoundSource.BLOCKS, 1.0F, 1.0F);
-            this.level.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var1, this.getBlockState()));
+            BlockPos var2 = this.getBlockPos();
+            this.level.playSound((Player)null, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), SoundEvents.BEEHIVE_ENTER, SoundSource.BLOCKS, 1.0F, 1.0F);
+            this.level.gameEvent(GameEvent.BLOCK_CHANGE, var2, GameEvent.Context.of(var1, this.getBlockState()));
          }
 
          var1.discard();
@@ -191,9 +178,7 @@ public class BeehiveBlockEntity extends BlockEntity {
 
                   if (var5 == BeehiveBlockEntity.BeeReleaseStatus.HONEY_DELIVERED) {
                      var11.dropOffNectar();
-                     if (var2.is(BlockTags.BEEHIVES, (var0x) -> {
-                        return var0x.hasProperty(BeehiveBlock.HONEY_LEVEL);
-                     })) {
+                     if (var2.is(BlockTags.BEEHIVES, (var0x) -> var0x.hasProperty(BeehiveBlock.HONEY_LEVEL))) {
                         int var12 = getHoneyLevel(var2);
                         if (var12 < 5) {
                            int var13 = var0.random.nextInt(100) == 0 ? 2 : 1;
@@ -259,7 +244,7 @@ public class BeehiveBlockEntity extends BlockEntity {
          double var4 = (double)var1.getX() + 0.5;
          double var6 = (double)var1.getY();
          double var8 = (double)var1.getZ() + 0.5;
-         var0.playSound((Player)null, var4, var6, var8, (SoundEvent)SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var0.playSound((Player)null, var4, var6, var8, SoundEvents.BEEHIVE_WORK, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
       DebugPackets.sendHiveInfo(var0, var1, var2, var3);
@@ -269,11 +254,7 @@ public class BeehiveBlockEntity extends BlockEntity {
       super.loadAdditional(var1, var2);
       this.stored.clear();
       if (var1.contains("bees")) {
-         BeehiveBlockEntity.Occupant.LIST_CODEC.parse(NbtOps.INSTANCE, var1.get("bees")).resultOrPartial((var0) -> {
-            LOGGER.error("Failed to parse bees: '{}'", var0);
-         }).ifPresent((var1x) -> {
-            var1x.forEach(this::storeBee);
-         });
+         BeehiveBlockEntity.Occupant.LIST_CODEC.parse(NbtOps.INSTANCE, var1.get("bees")).resultOrPartial((var0) -> LOGGER.error("Failed to parse bees: '{}'", var0)).ifPresent((var1x) -> var1x.forEach(this::storeBee));
       }
 
       this.savedFlowerPos = (BlockPos)NbtUtils.readBlockPos(var1, "flower_pos").orElse((Object)null);
@@ -323,12 +304,33 @@ public class BeehiveBlockEntity extends BlockEntity {
       }
    }
 
+   static class BeeData {
+      private final Occupant occupant;
+      private int ticksInHive;
+
+      BeeData(Occupant var1) {
+         super();
+         this.occupant = var1;
+         this.ticksInHive = var1.ticksInHive();
+      }
+
+      public boolean tick() {
+         return this.ticksInHive++ > this.occupant.minTicksInHive;
+      }
+
+      public Occupant toOccupant() {
+         return new Occupant(this.occupant.entityData, this.ticksInHive, this.occupant.minTicksInHive);
+      }
+
+      public boolean hasNectar() {
+         return this.occupant.entityData.getUnsafe().getBoolean("HasNectar");
+      }
+   }
+
    public static record Occupant(CustomData entityData, int ticksInHive, int minTicksInHive) {
       final CustomData entityData;
       final int minTicksInHive;
-      public static final Codec<Occupant> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(CustomData.CODEC.optionalFieldOf("entity_data", CustomData.EMPTY).forGetter(Occupant::entityData), Codec.INT.fieldOf("ticks_in_hive").forGetter(Occupant::ticksInHive), Codec.INT.fieldOf("min_ticks_in_hive").forGetter(Occupant::minTicksInHive)).apply(var0, Occupant::new);
-      });
+      public static final Codec<Occupant> CODEC = RecordCodecBuilder.create((var0) -> var0.group(CustomData.CODEC.optionalFieldOf("entity_data", CustomData.EMPTY).forGetter(Occupant::entityData), Codec.INT.fieldOf("ticks_in_hive").forGetter(Occupant::ticksInHive), Codec.INT.fieldOf("min_ticks_in_hive").forGetter(Occupant::minTicksInHive)).apply(var0, Occupant::new));
       public static final Codec<List<Occupant>> LIST_CODEC;
       public static final StreamCodec<ByteBuf, Occupant> STREAM_CODEC;
 
@@ -361,9 +363,7 @@ public class BeehiveBlockEntity extends BlockEntity {
          List var10000 = BeehiveBlockEntity.IGNORED_BEE_TAGS;
          Objects.requireNonNull(var3);
          var10000.forEach(var3::remove);
-         Entity var4 = EntityType.loadEntityRecursive(var3, var1, EntitySpawnReason.LOAD, (var0) -> {
-            return var0;
-         });
+         Entity var4 = EntityType.loadEntityRecursive(var3, var1, EntitySpawnReason.LOAD, (var0) -> var0);
          if (var4 != null && var4.getType().is(EntityTypeTags.BEEHIVE_INHABITORS)) {
             var4.setNoGravity(true);
             if (var4 instanceof Bee) {
@@ -389,44 +389,9 @@ public class BeehiveBlockEntity extends BlockEntity {
          var1.setInLoveTime(Math.max(0, var1.getInLoveTime() - var0));
       }
 
-      public CustomData entityData() {
-         return this.entityData;
-      }
-
-      public int ticksInHive() {
-         return this.ticksInHive;
-      }
-
-      public int minTicksInHive() {
-         return this.minTicksInHive;
-      }
-
       static {
          LIST_CODEC = CODEC.listOf();
          STREAM_CODEC = StreamCodec.composite(CustomData.STREAM_CODEC, Occupant::entityData, ByteBufCodecs.VAR_INT, Occupant::ticksInHive, ByteBufCodecs.VAR_INT, Occupant::minTicksInHive, Occupant::new);
-      }
-   }
-
-   static class BeeData {
-      private final Occupant occupant;
-      private int ticksInHive;
-
-      BeeData(Occupant var1) {
-         super();
-         this.occupant = var1;
-         this.ticksInHive = var1.ticksInHive();
-      }
-
-      public boolean tick() {
-         return this.ticksInHive++ > this.occupant.minTicksInHive;
-      }
-
-      public Occupant toOccupant() {
-         return new Occupant(this.occupant.entityData, this.ticksInHive, this.occupant.minTicksInHive);
-      }
-
-      public boolean hasNectar() {
-         return this.occupant.entityData.getUnsafe().getBoolean("HasNectar");
       }
    }
 }

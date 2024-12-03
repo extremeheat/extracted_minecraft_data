@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.screens.inventory.tooltip;
 
+import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
@@ -33,14 +34,10 @@ public class TooltipRenderUtil {
    }
 
    private static ResourceLocation getBackgroundSprite(@Nullable ResourceLocation var0) {
-      return var0 == null ? BACKGROUND_SPRITE : var0.withPath((var0x) -> {
-         return "tooltip/" + var0x + "_background";
-      });
+      return var0 == null ? BACKGROUND_SPRITE : var0.withPath((UnaryOperator)((var0x) -> "tooltip/" + var0x + "_background"));
    }
 
    private static ResourceLocation getFrameSprite(@Nullable ResourceLocation var0) {
-      return var0 == null ? FRAME_SPRITE : var0.withPath((var0x) -> {
-         return "tooltip/" + var0x + "_frame";
-      });
+      return var0 == null ? FRAME_SPRITE : var0.withPath((UnaryOperator)((var0x) -> "tooltip/" + var0x + "_frame"));
    }
 }

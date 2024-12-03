@@ -9,9 +9,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.commands.ExecutionCommandSource;
@@ -54,10 +54,8 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
          throw new FunctionInstantiationException(Component.translatable("commands.function.error.missing_arguments", Component.translationArg(this.id())));
       } else {
          ArrayList var3 = new ArrayList(this.parameters.size());
-         Iterator var4 = this.parameters.iterator();
 
-         while(var4.hasNext()) {
-            String var5 = (String)var4.next();
+         for(String var5 : this.parameters) {
             Tag var6 = var1.get(var5);
             if (var6 == null) {
                throw new FunctionInstantiationException(Component.translatable("commands.function.error.missing_argument", Component.translationArg(this.id()), var5));
@@ -99,31 +97,36 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
 
    private static void lookupValues(List<String> var0, IntList var1, List<String> var2) {
       var2.clear();
-      var1.forEach((var2x) -> {
-         var2.add((String)var0.get(var2x));
-      });
+      var1.forEach((var2x) -> var2.add((String)var0.get(var2x)));
    }
 
    private InstantiatedFunction<T> substituteAndParse(List<String> var1, List<String> var2, CommandDispatcher<T> var3) throws FunctionInstantiationException {
       ArrayList var4 = new ArrayList(this.entries.size());
       ArrayList var5 = new ArrayList(var2.size());
-      Iterator var6 = this.entries.iterator();
 
-      while(var6.hasNext()) {
-         Entry var7 = (Entry)var6.next();
+      for(Entry var7 : this.entries) {
          lookupValues(var2, var7.parameters(), var5);
          var4.add(var7.instantiate(var5, var3, this.id));
       }
 
-      return new PlainTextFunction(this.id().withPath((var1x) -> {
-         return var1x + "/" + var1.hashCode();
-      }), var4);
+      return new PlainTextFunction<T>(this.id().withPath((UnaryOperator)((var1x) -> var1x + "/" + var1.hashCode())), var4);
    }
 
-   interface Entry<T> {
-      IntList parameters();
+   static class PlainTextEntry<T> implements Entry<T> {
+      private final UnboundEntryAction<T> compiledAction;
 
-      UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, ResourceLocation var3) throws FunctionInstantiationException;
+      public PlainTextEntry(UnboundEntryAction<T> var1) {
+         super();
+         this.compiledAction = var1;
+      }
+
+      public IntList parameters() {
+         return IntLists.emptyList();
+      }
+
+      public UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, ResourceLocation var3) {
+         return this.compiledAction;
+      }
    }
 
    static class MacroEntry<T extends ExecutionCommandSource<T>> implements Entry<T> {
@@ -146,27 +149,16 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
          String var4 = this.template.substitute(var1);
 
          try {
-            return CommandFunction.parseCommand(var2, this.compilationContext, new StringReader(var4));
+            return CommandFunction.<T>parseCommand(var2, this.compilationContext, new StringReader(var4));
          } catch (CommandSyntaxException var6) {
             throw new FunctionInstantiationException(Component.translatable("commands.function.error.parse", Component.translationArg(var3), var4, var6.getMessage()));
          }
       }
    }
 
-   static class PlainTextEntry<T> implements Entry<T> {
-      private final UnboundEntryAction<T> compiledAction;
+   interface Entry<T> {
+      IntList parameters();
 
-      public PlainTextEntry(UnboundEntryAction<T> var1) {
-         super();
-         this.compiledAction = var1;
-      }
-
-      public IntList parameters() {
-         return IntLists.emptyList();
-      }
-
-      public UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, ResourceLocation var3) {
-         return this.compiledAction;
-      }
+      UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, ResourceLocation var3) throws FunctionInstantiationException;
    }
 }

@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 import net.minecraft.Optionull;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
@@ -66,16 +65,14 @@ public class ChatSelectionScreen extends Screen {
       int var10006 = this.contextInfoLabel.getLineCount() + 1;
       Objects.requireNonNull(this.font);
       this.chatSelectionList = (ChatSelectionList)this.addRenderableWidget(new ChatSelectionList(var10005, var10006 * 9));
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1) -> {
-         this.onClose();
-      }).bounds(this.width / 2 - 155, this.height - 32, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).bounds(this.width / 2 - 155, this.height - 32, 150, 20).build());
       this.confirmSelectedButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1) -> {
          this.onSelected.accept(this.report);
          this.onClose();
       }).bounds(this.width / 2 - 155 + 160, this.height - 32, 150, 20).build());
       this.updateConfirmSelectedButton();
       this.extendLog();
-      this.chatSelectionList.setScrollAmount((double)this.chatSelectionList.getMaxScroll());
+      this.chatSelectionList.setScrollAmount((double)this.chatSelectionList.maxScrollAmount());
    }
 
    private boolean canReport(LoggedChatMessage var1) {
@@ -97,15 +94,12 @@ public class ChatSelectionScreen extends Screen {
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, 16777215);
+      var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 10, -1);
       AbuseReportLimits var5 = this.reportingContext.sender().reportLimits();
       int var6 = this.report.reportedMessages().size();
       int var7 = var5.maxReportedMessageCount();
       MutableComponent var8 = Component.translatable("gui.chatSelection.selected", var6, var7);
-      Font var10001 = this.font;
-      int var10003 = this.width / 2;
-      Objects.requireNonNull(this.font);
-      var1.drawCenteredString(var10001, (Component)var8, var10003, 16 + 9 * 3 / 2, -1);
+      var1.drawCenteredString(this.font, (Component)var8, this.width / 2, 26, -1);
       this.contextInfoLabel.renderCentered(var1, this.width / 2, this.chatSelectionList.getFooterTop());
    }
 
@@ -126,9 +120,9 @@ public class ChatSelectionScreen extends Screen {
       }
 
       public void setScrollAmount(double var1) {
-         double var3 = this.getScrollAmount();
+         double var3 = this.scrollAmount();
          super.setScrollAmount(var1);
-         if ((float)this.getMaxScroll() > 1.0E-5F && var1 <= 9.999999747378752E-6 && !Mth.equal(var1, var3)) {
+         if ((float)this.maxScrollAmount() > 1.0E-5F && var1 <= 9.999999747378752E-6 && !Mth.equal(var1, var3)) {
             ChatSelectionScreen.this.onReachedScrollTop();
          }
 
@@ -155,9 +149,9 @@ public class ChatSelectionScreen extends Screen {
       }
 
       public void acceptDivider(Component var1) {
-         this.addEntryToTop(new PaddingEntry(this));
+         this.addEntryToTop(new PaddingEntry());
          this.addEntryToTop(new DividerEntry(var1));
-         this.addEntryToTop(new PaddingEntry(this));
+         this.addEntryToTop(new PaddingEntry());
          this.previousHeading = null;
       }
 
@@ -222,6 +216,44 @@ public class ChatSelectionScreen extends Screen {
          return this.nextEntry(var1);
       }
 
+      static record Heading(UUID sender, Entry entry) {
+         Heading(UUID var1, Entry var2) {
+            super();
+            this.sender = var1;
+            this.entry = var2;
+         }
+
+         public boolean canCombine(Heading var1) {
+            return var1.sender.equals(this.sender);
+         }
+      }
+
+      public abstract static class Entry extends ObjectSelectionList.Entry<Entry> {
+         public Entry() {
+            super();
+         }
+
+         public Component getNarration() {
+            return CommonComponents.EMPTY;
+         }
+
+         public boolean isSelected() {
+            return false;
+         }
+
+         public boolean canSelect() {
+            return false;
+         }
+
+         public boolean canReport() {
+            return this.canSelect();
+         }
+
+         public boolean mouseClicked(double var1, double var3, int var5) {
+            return this.canSelect();
+         }
+      }
+
       public class MessageEntry extends Entry {
          private static final int CHECKMARK_WIDTH = 9;
          private static final int CHECKMARK_HEIGHT = 8;
@@ -240,7 +272,7 @@ public class ChatSelectionScreen extends Screen {
          private final boolean playerMessage;
 
          public MessageEntry(final int var2, final Component var3, final Component var4, @Nullable final GuiMessageTag var5, final boolean var6, final boolean var7) {
-            super(ChatSelectionList.this);
+            super();
             this.chatId = var2;
             this.tagIcon = (GuiMessageTag.Icon)Optionull.map(var5, GuiMessageTag::icon);
             this.tagHoverText = var5 != null && var5.text() != null ? ChatSelectionScreen.this.font.split(var5.text(), ChatSelectionList.this.getRowWidth()) : null;
@@ -345,7 +377,7 @@ public class ChatSelectionScreen extends Screen {
          private final boolean canReport;
 
          public MessageHeadingEntry(final GameProfile var2, final Component var3, final boolean var4) {
-            super(ChatSelectionList.this);
+            super();
             this.heading = var3;
             this.canReport = var4;
             this.skin = ChatSelectionList.this.minecraft.getSkinManager().lookupInsecure(var2);
@@ -362,62 +394,11 @@ public class ChatSelectionScreen extends Screen {
          }
       }
 
-      private static record Heading(UUID sender, Entry entry) {
-         Heading(UUID var1, Entry var2) {
-            super();
-            this.sender = var1;
-            this.entry = var2;
-         }
-
-         public boolean canCombine(Heading var1) {
-            return var1.sender.equals(this.sender);
-         }
-
-         public UUID sender() {
-            return this.sender;
-         }
-
-         public Entry entry() {
-            return this.entry;
-         }
-      }
-
-      public abstract class Entry extends ObjectSelectionList.Entry<Entry> {
-         public Entry(final ChatSelectionList var1) {
-            super();
-         }
-
-         public Component getNarration() {
-            return CommonComponents.EMPTY;
-         }
-
-         public boolean isSelected() {
-            return false;
-         }
-
-         public boolean canSelect() {
-            return false;
-         }
-
-         public boolean canReport() {
-            return this.canSelect();
-         }
-      }
-
-      public class PaddingEntry extends Entry {
-         public PaddingEntry(final ChatSelectionList var1) {
-            super(var1);
-         }
-
-         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         }
-      }
-
       public class DividerEntry extends Entry {
          private final Component text;
 
          public DividerEntry(final Component var2) {
-            super(ChatSelectionList.this);
+            super();
             this.text = var2;
          }
 
@@ -433,6 +414,15 @@ public class ChatSelectionScreen extends Screen {
 
          public Component getNarration() {
             return this.text;
+         }
+      }
+
+      public static class PaddingEntry extends Entry {
+         public PaddingEntry() {
+            super();
+         }
+
+         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          }
       }
    }

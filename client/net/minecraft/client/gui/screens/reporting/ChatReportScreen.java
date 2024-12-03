@@ -33,27 +33,21 @@ public class ChatReportScreen extends AbstractReportScreen<ChatReport.Builder> {
    }
 
    protected void addContent() {
-      this.selectMessagesButton = (Button)this.layout.addChild(Button.builder(SELECT_CHAT_MESSAGE, (var1) -> {
-         this.minecraft.setScreen(new ChatSelectionScreen(this, this.reportingContext, (ChatReport.Builder)this.reportBuilder, (var1x) -> {
+      this.selectMessagesButton = (Button)this.layout.addChild(Button.builder(SELECT_CHAT_MESSAGE, (var1) -> this.minecraft.setScreen(new ChatSelectionScreen(this, this.reportingContext, this.reportBuilder, (var1x) -> {
             this.reportBuilder = var1x;
             this.onReportChanged();
-         }));
-      }).width(280).build());
-      this.selectReasonButton = Button.builder(SELECT_REASON, (var1) -> {
-         this.minecraft.setScreen(new ReportReasonSelectionScreen(this, ((ChatReport.Builder)this.reportBuilder).reason(), ReportType.CHAT, (var1x) -> {
+         }))).width(280).build());
+      this.selectReasonButton = Button.builder(SELECT_REASON, (var1) -> this.minecraft.setScreen(new ReportReasonSelectionScreen(this, ((ChatReport.Builder)this.reportBuilder).reason(), ReportType.CHAT, (var1x) -> {
             ((ChatReport.Builder)this.reportBuilder).setReason(var1x);
             this.onReportChanged();
-         }));
-      }).width(280).build();
+         }))).width(280).build();
       this.layout.addChild(CommonLayouts.labeledElement(this.font, this.selectReasonButton, OBSERVED_WHAT_LABEL));
       Objects.requireNonNull(this.font);
       this.commentBox = this.createCommentBox(280, 9 * 8, (var1) -> {
          ((ChatReport.Builder)this.reportBuilder).setComments(var1);
          this.onReportChanged();
       });
-      this.layout.addChild(CommonLayouts.labeledElement(this.font, this.commentBox, MORE_COMMENTS_LABEL, (var0) -> {
-         var0.paddingBottom(12);
-      }));
+      this.layout.addChild(CommonLayouts.labeledElement(this.font, this.commentBox, MORE_COMMENTS_LABEL, (var0) -> var0.paddingBottom(12)));
    }
 
    protected void onReportChanged() {

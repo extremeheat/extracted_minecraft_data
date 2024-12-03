@@ -7,9 +7,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class StainedGlassPaneBlock extends IronBarsBlock implements BeaconBeamBlock {
-   public static final MapCodec<StainedGlassPaneBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(DyeColor.CODEC.fieldOf("color").forGetter(StainedGlassPaneBlock::getColor), propertiesCodec()).apply(var0, StainedGlassPaneBlock::new);
-   });
+   public static final MapCodec<StainedGlassPaneBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DyeColor.CODEC.fieldOf("color").forGetter(StainedGlassPaneBlock::getColor), propertiesCodec()).apply(var0, StainedGlassPaneBlock::new));
    private final DyeColor color;
 
    public MapCodec<StainedGlassPaneBlock> codec() {

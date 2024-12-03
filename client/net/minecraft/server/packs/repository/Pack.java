@@ -41,51 +41,20 @@ public class Pack {
 
    @Nullable
    public static Metadata readPackMetadata(PackLocationInfo var0, ResourcesSupplier var1, int var2) {
-      try {
-         PackResources var3 = var1.openPrimary(var0);
-
-         FeatureFlagsMetadataSection var5;
-         label57: {
-            Metadata var11;
-            try {
-               PackMetadataSection var4 = (PackMetadataSection)var3.getMetadataSection(PackMetadataSection.TYPE);
-               if (var4 == null) {
-                  LOGGER.warn("Missing metadata in pack {}", var0.id());
-                  var5 = null;
-                  break label57;
-               }
-
-               var5 = (FeatureFlagsMetadataSection)var3.getMetadataSection(FeatureFlagsMetadataSection.TYPE);
-               FeatureFlagSet var6 = var5 != null ? var5.flags() : FeatureFlagSet.of();
-               InclusiveRange var7 = getDeclaredPackVersions(var0.id(), var4);
-               PackCompatibility var8 = PackCompatibility.forVersion(var7, var2);
-               OverlayMetadataSection var9 = (OverlayMetadataSection)var3.getMetadataSection(OverlayMetadataSection.TYPE);
-               List var10 = var9 != null ? var9.overlaysForVersion(var2) : List.of();
-               var11 = new Metadata(var4.description(), var8, var6, var10);
-            } catch (Throwable var13) {
-               if (var3 != null) {
-                  try {
-                     var3.close();
-                  } catch (Throwable var12) {
-                     var13.addSuppressed(var12);
-                  }
-               }
-
-               throw var13;
-            }
-
-            if (var3 != null) {
-               var3.close();
-            }
-
-            return var11;
+      try (PackResources var3 = var1.openPrimary(var0)) {
+         PackMetadataSection var4 = (PackMetadataSection)var3.getMetadataSection(PackMetadataSection.TYPE);
+         if (var4 == null) {
+            LOGGER.warn("Missing metadata in pack {}", var0.id());
+            return null;
+         } else {
+            FeatureFlagsMetadataSection var5 = (FeatureFlagsMetadataSection)var3.getMetadataSection(FeatureFlagsMetadataSection.TYPE);
+            FeatureFlagSet var6 = var5 != null ? var5.flags() : FeatureFlagSet.of();
+            InclusiveRange var7 = getDeclaredPackVersions(var0.id(), var4);
+            PackCompatibility var8 = PackCompatibility.forVersion(var7, var2);
+            OverlayMetadataSection var9 = (OverlayMetadataSection)var3.getMetadataSection(OverlayMetadataSection.TYPE);
+            List var10 = var9 != null ? var9.overlaysForVersion(var2) : List.of();
+            return new Metadata(var4.description(), var8, var6, var10);
          }
-
-         if (var3 != null) {
-            var3.close();
-         }
-
-         return var5;
       } catch (Exception var14) {
          LOGGER.warn("Failed to read pack {} metadata", var0.id(), var14);
          return null;
@@ -95,12 +64,12 @@ public class Pack {
    private static InclusiveRange<Integer> getDeclaredPackVersions(String var0, PackMetadataSection var1) {
       int var2 = var1.packFormat();
       if (var1.supportedFormats().isEmpty()) {
-         return new InclusiveRange(var2);
+         return new InclusiveRange<Integer>(var2);
       } else {
          InclusiveRange var3 = (InclusiveRange)var1.supportedFormats().get();
          if (!var3.isValueInRange(var2)) {
             LOGGER.warn("Pack {} declared support for versions {} but declared main format is {}, defaulting to {}", new Object[]{var0, var3, var2, var2});
-            return new InclusiveRange(var2);
+            return new InclusiveRange<Integer>(var2);
          } else {
             return var3;
          }
@@ -174,12 +143,6 @@ public class Pack {
       return this.location.hashCode();
    }
 
-   public interface ResourcesSupplier {
-      PackResources openPrimary(PackLocationInfo var1);
-
-      PackResources openFull(PackLocationInfo var1, Metadata var2);
-   }
-
    public static record Metadata(Component description, PackCompatibility compatibility, FeatureFlagSet requestedFeatures, List<String> overlays) {
       final Component description;
 
@@ -189,22 +152,6 @@ public class Pack {
          this.compatibility = var2;
          this.requestedFeatures = var3;
          this.overlays = var4;
-      }
-
-      public Component description() {
-         return this.description;
-      }
-
-      public PackCompatibility compatibility() {
-         return this.compatibility;
-      }
-
-      public FeatureFlagSet requestedFeatures() {
-         return this.requestedFeatures;
-      }
-
-      public List<String> overlays() {
-         return this.overlays;
       }
    }
 
@@ -217,21 +164,21 @@ public class Pack {
 
       public <T> int insert(List<T> var1, T var2, Function<T, PackSelectionConfig> var3, boolean var4) {
          Position var5 = var4 ? this.opposite() : this;
-         int var6;
-         PackSelectionConfig var7;
          if (var5 == BOTTOM) {
-            for(var6 = 0; var6 < var1.size(); ++var6) {
-               var7 = (PackSelectionConfig)var3.apply(var1.get(var6));
-               if (!var7.fixedPosition() || var7.defaultPosition() != this) {
+            int var8;
+            for(var8 = 0; var8 < var1.size(); ++var8) {
+               PackSelectionConfig var9 = (PackSelectionConfig)var3.apply(var1.get(var8));
+               if (!var9.fixedPosition() || var9.defaultPosition() != this) {
                   break;
                }
             }
 
-            var1.add(var6, var2);
-            return var6;
+            var1.add(var8, var2);
+            return var8;
          } else {
+            int var6;
             for(var6 = var1.size() - 1; var6 >= 0; --var6) {
-               var7 = (PackSelectionConfig)var3.apply(var1.get(var6));
+               PackSelectionConfig var7 = (PackSelectionConfig)var3.apply(var1.get(var6));
                if (!var7.fixedPosition() || var7.defaultPosition() != this) {
                   break;
                }
@@ -250,5 +197,11 @@ public class Pack {
       private static Position[] $values() {
          return new Position[]{TOP, BOTTOM};
       }
+   }
+
+   public interface ResourcesSupplier {
+      PackResources openPrimary(PackLocationInfo var1);
+
+      PackResources openFull(PackLocationInfo var1, Metadata var2);
    }
 }

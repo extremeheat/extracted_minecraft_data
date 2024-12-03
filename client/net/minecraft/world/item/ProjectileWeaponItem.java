@@ -17,9 +17,7 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 
 public abstract class ProjectileWeaponItem extends Item {
-   public static final Predicate<ItemStack> ARROW_ONLY = (var0) -> {
-      return var0.is(ItemTags.ARROWS);
-   };
+   public static final Predicate<ItemStack> ARROW_ONLY = (var0) -> var0.is(ItemTags.ARROWS);
    public static final Predicate<ItemStack> ARROW_OR_FIREWORK;
 
    public ProjectileWeaponItem(Item.Properties var1) {
@@ -53,9 +51,7 @@ public abstract class ProjectileWeaponItem extends Item {
          if (!var15.isEmpty()) {
             float var16 = var12 + var13 * (float)((var14 + 1) / 2) * var11;
             var13 = -var13;
-            Projectile.spawnProjectile(this.createProjectile(var1, var2, var4, var15, var8), var1, var15, (var7x) -> {
-               this.shootProjectile(var2, var7x, var14, var6, var7, var16, var9);
-            });
+            Projectile.spawnProjectile(this.createProjectile(var1, var2, var4, var15, var8), var1, var15, (var7x) -> this.shootProjectile(var2, var7x, var14, var6, var7, var16, var9));
             var4.hurtAndBreak(this.getDurabilityUse(var15), var2, LivingEntity.getSlotForHand(var3));
             if (var4.isEmpty()) {
                break;
@@ -135,27 +131,22 @@ public abstract class ProjectileWeaponItem extends Item {
       int var4 = var10000;
       if (var4 > var1.getCount()) {
          return ItemStack.EMPTY;
+      } else if (var4 == 0) {
+         ItemStack var8 = var1.copyWithCount(1);
+         var8.set(DataComponents.INTANGIBLE_PROJECTILE, Unit.INSTANCE);
+         return var8;
       } else {
-         ItemStack var7;
-         if (var4 == 0) {
-            var7 = var1.copyWithCount(1);
-            var7.set(DataComponents.INTANGIBLE_PROJECTILE, Unit.INSTANCE);
-            return var7;
-         } else {
-            var7 = var1.split(var4);
-            if (var1.isEmpty() && var2 instanceof Player) {
-               Player var8 = (Player)var2;
-               var8.getInventory().removeItem(var1);
-            }
-
-            return var7;
+         ItemStack var7 = var1.split(var4);
+         if (var1.isEmpty() && var2 instanceof Player) {
+            Player var9 = (Player)var2;
+            var9.getInventory().removeItem(var1);
          }
+
+         return var7;
       }
    }
 
    static {
-      ARROW_OR_FIREWORK = ARROW_ONLY.or((var0) -> {
-         return var0.is(Items.FIREWORK_ROCKET);
-      });
+      ARROW_OR_FIREWORK = ARROW_ONLY.or((var0) -> var0.is(Items.FIREWORK_ROCKET));
    }
 }

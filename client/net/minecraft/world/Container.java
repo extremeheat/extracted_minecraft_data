@@ -64,9 +64,7 @@ public interface Container extends Clearable {
    }
 
    default boolean hasAnyOf(Set<Item> var1) {
-      return this.hasAnyMatching((var1x) -> {
-         return !var1x.isEmpty() && var1.contains(var1x.getItem());
-      });
+      return this.hasAnyMatching((var1x) -> !var1x.isEmpty() && var1.contains(var1x.getItem()));
    }
 
    default boolean hasAnyMatching(Predicate<ItemStack> var1) {

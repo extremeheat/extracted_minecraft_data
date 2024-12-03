@@ -12,13 +12,7 @@ public abstract class FeatureSize {
    protected final OptionalInt minClippedHeight;
 
    protected static <S extends FeatureSize> RecordCodecBuilder<S, OptionalInt> minClippedHeightCodec() {
-      return Codec.intRange(0, 80).optionalFieldOf("min_clipped_height").xmap((var0) -> {
-         return (OptionalInt)var0.map(OptionalInt::of).orElse(OptionalInt.empty());
-      }, (var0) -> {
-         return var0.isPresent() ? Optional.of(var0.getAsInt()) : Optional.empty();
-      }).forGetter((var0) -> {
-         return var0.minClippedHeight;
-      });
+      return Codec.intRange(0, 80).optionalFieldOf("min_clipped_height").xmap((var0) -> (OptionalInt)var0.map(OptionalInt::of).orElse(OptionalInt.empty()), (var0) -> var0.isPresent() ? Optional.of(var0.getAsInt()) : Optional.empty()).forGetter((var0) -> var0.minClippedHeight);
    }
 
    public FeatureSize(OptionalInt var1) {

@@ -6,10 +6,10 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.ArrayDeque;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -251,16 +251,15 @@ public class BlockPos extends Vec3i {
       int var8 = var5 - var2 + 1;
       int var9 = var6 - var3 + 1;
       int var10 = var7 - var4 + 1;
-      return () -> {
-         return new AbstractIterator<BlockPos>() {
+      return () -> new AbstractIterator<BlockPos>() {
             final MutableBlockPos nextPos = new MutableBlockPos();
-            int counter = var0;
+            int counter = var1;
 
             protected BlockPos computeNext() {
                if (this.counter <= 0) {
                   return (BlockPos)this.endOfData();
                } else {
-                  MutableBlockPos var1x = this.nextPos.set(var1 + var2.nextInt(var3), var4 + var2.nextInt(var5), var6 + var2.nextInt(var7));
+                  MutableBlockPos var1x = this.nextPos.set(var2 + var0.nextInt(var8), var3 + var0.nextInt(var9), var4 + var0.nextInt(var10));
                   --this.counter;
                   return var1x;
                }
@@ -271,7 +270,6 @@ public class BlockPos extends Vec3i {
                return this.computeNext();
             }
          };
-      };
    }
 
    public static Iterable<BlockPos> withinManhattan(BlockPos var0, int var1, int var2, int var3) {
@@ -279,8 +277,7 @@ public class BlockPos extends Vec3i {
       int var5 = var0.getX();
       int var6 = var0.getY();
       int var7 = var0.getZ();
-      return () -> {
-         return new AbstractIterator<BlockPos>() {
+      return () -> new AbstractIterator<BlockPos>() {
             private final MutableBlockPos cursor = new MutableBlockPos();
             private int currentDepth;
             private int maxX;
@@ -292,7 +289,7 @@ public class BlockPos extends Vec3i {
             protected BlockPos computeNext() {
                if (this.zMirror) {
                   this.zMirror = false;
-                  this.cursor.setZ(var0 - (this.cursor.getZ() - var0));
+                  this.cursor.setZ(var7 - (this.cursor.getZ() - var7));
                   return this.cursor;
                } else {
                   MutableBlockPos var1x;
@@ -301,24 +298,24 @@ public class BlockPos extends Vec3i {
                         ++this.x;
                         if (this.x > this.maxX) {
                            ++this.currentDepth;
-                           if (this.currentDepth > var1) {
+                           if (this.currentDepth > var4) {
                               return (BlockPos)this.endOfData();
                            }
 
-                           this.maxX = Math.min(var2, this.currentDepth);
+                           this.maxX = Math.min(var1, this.currentDepth);
                            this.x = -this.maxX;
                         }
 
-                        this.maxY = Math.min(var3, this.currentDepth - Math.abs(this.x));
+                        this.maxY = Math.min(var2, this.currentDepth - Math.abs(this.x));
                         this.y = -this.maxY;
                      }
 
                      int var2x = this.x;
                      int var3x = this.y;
                      int var4x = this.currentDepth - Math.abs(var2x) - Math.abs(var3x);
-                     if (var4x <= var4) {
+                     if (var4x <= var3) {
                         this.zMirror = var4x != 0;
-                        var1x = this.cursor.set(var5 + var2x, var6 + var3x, var0 + var4x);
+                        var1x = this.cursor.set(var5 + var2x, var6 + var3x, var7 + var4x);
                      }
                   }
 
@@ -331,22 +328,16 @@ public class BlockPos extends Vec3i {
                return this.computeNext();
             }
          };
-      };
    }
 
    public static Optional<BlockPos> findClosestMatch(BlockPos var0, int var1, int var2, Predicate<BlockPos> var3) {
-      Iterator var4 = withinManhattan(var0, var1, var2, var1).iterator();
-
-      BlockPos var5;
-      do {
-         if (!var4.hasNext()) {
-            return Optional.empty();
+      for(BlockPos var5 : withinManhattan(var0, var1, var2, var1)) {
+         if (var3.test(var5)) {
+            return Optional.of(var5);
          }
+      }
 
-         var5 = (BlockPos)var4.next();
-      } while(!var3.test(var5));
-
-      return Optional.of(var5);
+      return Optional.empty();
    }
 
    public static Stream<BlockPos> withinManhattanStream(BlockPos var0, int var1, int var2, int var3) {
@@ -384,21 +375,20 @@ public class BlockPos extends Vec3i {
       int var7 = var4 - var1 + 1;
       int var8 = var5 - var2 + 1;
       int var9 = var6 * var7 * var8;
-      return () -> {
-         return new AbstractIterator<BlockPos>() {
+      return () -> new AbstractIterator<BlockPos>() {
             private final MutableBlockPos cursor = new MutableBlockPos();
             private int index;
 
             protected BlockPos computeNext() {
-               if (this.index == var0) {
+               if (this.index == var9) {
                   return (BlockPos)this.endOfData();
                } else {
-                  int var1x = this.index % var1;
-                  int var2x = this.index / var1;
-                  int var3x = var2x % var2;
-                  int var4x = var2x / var2;
+                  int var1x = this.index % var6;
+                  int var2x = this.index / var6;
+                  int var3 = var2x % var7;
+                  int var4 = var2x / var7;
                   ++this.index;
-                  return this.cursor.set(var3 + var1x, var4 + var3x, var5 + var4x);
+                  return this.cursor.set(var0 + var1x, var1 + var3, var2 + var4);
                }
             }
 
@@ -407,16 +397,14 @@ public class BlockPos extends Vec3i {
                return this.computeNext();
             }
          };
-      };
    }
 
    public static Iterable<MutableBlockPos> spiralAround(BlockPos var0, int var1, Direction var2, Direction var3) {
       Validate.validState(var2.getAxis() != var3.getAxis(), "The two directions cannot be on the same axis", new Object[0]);
-      return () -> {
-         return new AbstractIterator<MutableBlockPos>() {
-            private final Direction[] directions = new Direction[]{var0, var1, var0.getOpposite(), var1.getOpposite()};
-            private final MutableBlockPos cursor = var2.mutable().move(var1);
-            private final int legs = 4 * var3;
+      return () -> new AbstractIterator<MutableBlockPos>() {
+            private final Direction[] directions = new Direction[]{var2, var3, var2.getOpposite(), var3.getOpposite()};
+            private final MutableBlockPos cursor = var0.mutable().move(var3);
+            private final int legs = 4 * var1;
             private int leg = -1;
             private int legSize;
             private int legIndex;
@@ -454,10 +442,9 @@ public class BlockPos extends Vec3i {
                return this.computeNext();
             }
          };
-      };
    }
 
-   public static int breadthFirstTraversal(BlockPos var0, int var1, int var2, BiConsumer<BlockPos, Consumer<BlockPos>> var3, Predicate<BlockPos> var4) {
+   public static int breadthFirstTraversal(BlockPos var0, int var1, int var2, BiConsumer<BlockPos, Consumer<BlockPos>> var3, Function<BlockPos, TraversalNodeStatus> var4) {
       ArrayDeque var5 = new ArrayDeque();
       LongOpenHashSet var6 = new LongOpenHashSet();
       var5.add(Pair.of(var0, 0));
@@ -468,16 +455,21 @@ public class BlockPos extends Vec3i {
          BlockPos var9 = (BlockPos)var8.getLeft();
          int var10 = (Integer)var8.getRight();
          long var11 = var9.asLong();
-         if (var6.add(var11) && var4.test(var9)) {
-            ++var7;
-            if (var7 >= var2) {
-               return var7;
-            }
+         if (var6.add(var11)) {
+            TraversalNodeStatus var13 = (TraversalNodeStatus)var4.apply(var9);
+            if (var13 != BlockPos.TraversalNodeStatus.SKIP) {
+               if (var13 == BlockPos.TraversalNodeStatus.STOP) {
+                  break;
+               }
 
-            if (var10 < var1) {
-               var3.accept(var9, (var2x) -> {
-                  var5.add(Pair.of(var2x, var10 + 1));
-               });
+               ++var7;
+               if (var7 >= var2) {
+                  return var7;
+               }
+
+               if (var10 < var1) {
+                  var3.accept(var9, (Consumer)(var2x) -> var5.add(Pair.of(var2x, var10 + 1)));
+               }
             }
          }
       }
@@ -586,13 +578,7 @@ public class BlockPos extends Vec3i {
    }
 
    static {
-      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> {
-         return Util.fixedSize((IntStream)var0, 3).map((var0x) -> {
-            return new BlockPos(var0x[0], var0x[1], var0x[2]);
-         });
-      }, (var0) -> {
-         return IntStream.of(new int[]{var0.getX(), var0.getY(), var0.getZ()});
-      }).stable();
+      CODEC = Codec.INT_STREAM.comapFlatMap((var0) -> Util.fixedSize((IntStream)var0, 3).map((var0x) -> new BlockPos(var0x[0], var0x[1], var0x[2])), (var0) -> IntStream.of(new int[]{var0.getX(), var0.getY(), var0.getZ()})).stable();
       STREAM_CODEC = new StreamCodec<ByteBuf, BlockPos>() {
          public BlockPos decode(ByteBuf var1) {
             return FriendlyByteBuf.readBlockPos(var1);
@@ -855,6 +841,20 @@ public class BlockPos extends Vec3i {
       // $FF: synthetic method
       public Vec3i setX(final int var1) {
          return this.setX(var1);
+      }
+   }
+
+   public static enum TraversalNodeStatus {
+      ACCEPT,
+      SKIP,
+      STOP;
+
+      private TraversalNodeStatus() {
+      }
+
+      // $FF: synthetic method
+      private static TraversalNodeStatus[] $values() {
+         return new TraversalNodeStatus[]{ACCEPT, SKIP, STOP};
       }
    }
 }

@@ -23,9 +23,7 @@ public class ArrowModel extends EntityModel<ArrowRenderState> {
       CubeListBuilder var2 = CubeListBuilder.create().texOffs(0, 0).addBox(-12.0F, -2.0F, 0.0F, 16.0F, 4.0F, 0.0F, CubeDeformation.NONE, 1.0F, 0.8F);
       var1.addOrReplaceChild("cross_1", var2, PartPose.rotation(0.7853982F, 0.0F, 0.0F));
       var1.addOrReplaceChild("cross_2", var2, PartPose.rotation(2.3561945F, 0.0F, 0.0F));
-      return LayerDefinition.create(var0.transformed((var0x) -> {
-         return var0x.scaled(0.9F);
-      }), 32, 32);
+      return LayerDefinition.create(var0.transformed((var0x) -> var0x.scaled(0.9F)), 32, 32);
    }
 
    public void setupAnim(ArrowRenderState var1) {

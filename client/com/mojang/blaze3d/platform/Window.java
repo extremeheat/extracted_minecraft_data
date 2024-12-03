@@ -58,6 +58,7 @@ public final class Window implements AutoCloseable {
    private boolean dirty;
    private boolean vsync;
    private boolean iconified;
+   private boolean minimized;
 
    public Window(WindowEventHandler var1, ScreenManager var2, DisplayData var3, @Nullable String var4, String var5) {
       super();
@@ -293,6 +294,7 @@ public final class Window implements AutoCloseable {
          int var5 = this.getWidth();
          int var6 = this.getHeight();
          if (var3 != 0 && var4 != 0) {
+            this.minimized = false;
             this.framebufferWidth = var3;
             this.framebufferHeight = var4;
             if (this.getWidth() != var5 || this.getHeight() != var6) {
@@ -301,12 +303,14 @@ public final class Window implements AutoCloseable {
                } catch (Exception var10) {
                   CrashReport var8 = CrashReport.forThrowable(var10, "Window resize");
                   CrashReportCategory var9 = var8.addCategory("Window Dimensions");
-                  var9.setDetail("Old", (Object)("" + var5 + "x" + var6));
-                  var9.setDetail("New", (Object)("" + var3 + "x" + var4));
+                  var9.setDetail("Old", var5 + "x" + var6);
+                  var9.setDetail("New", var3 + "x" + var4);
                   throw new ReportedException(var8);
                }
             }
 
+         } else {
+            this.minimized = true;
          }
       }
    }
@@ -527,13 +531,15 @@ public final class Window implements AutoCloseable {
    }
 
    public void setWindowCloseCallback(Runnable var1) {
-      GLFWWindowCloseCallback var2 = GLFW.glfwSetWindowCloseCallback(this.window, (var1x) -> {
-         var1.run();
-      });
+      GLFWWindowCloseCallback var2 = GLFW.glfwSetWindowCloseCallback(this.window, (var1x) -> var1.run());
       if (var2 != null) {
          var2.free();
       }
 
+   }
+
+   public boolean isMinimized() {
+      return this.minimized;
    }
 
    public static class WindowInitFailed extends SilentInitException {

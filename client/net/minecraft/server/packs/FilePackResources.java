@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -130,7 +129,7 @@ public class FilePackResources extends AbstractPackResources {
       }
    }
 
-   private static class SharedZipFileAccess implements AutoCloseable {
+   static class SharedZipFileAccess implements AutoCloseable {
       final File file;
       @Nullable
       private ZipFile zipFile;
@@ -199,10 +198,8 @@ public class FilePackResources extends AbstractPackResources {
             return var4;
          } else {
             ArrayList var6 = new ArrayList(var5.size());
-            Iterator var7 = var5.iterator();
 
-            while(var7.hasNext()) {
-               String var8 = (String)var7.next();
+            for(String var8 : var5) {
                var6.add(new FilePackResources(var1, var3, var8));
             }
 

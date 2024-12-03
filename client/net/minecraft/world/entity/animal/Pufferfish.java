@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal;
 
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
@@ -115,13 +114,7 @@ public class Pufferfish extends AbstractFish {
       Level var2 = this.level();
       if (var2 instanceof ServerLevel var1) {
          if (this.isAlive() && this.getPuffState() > 0) {
-            List var5 = this.level().getEntitiesOfClass(Mob.class, this.getBoundingBox().inflate(0.3), (var2x) -> {
-               return TARGETING_CONDITIONS.test(var1, this, var2x);
-            });
-            Iterator var3 = var5.iterator();
-
-            while(var3.hasNext()) {
-               Mob var4 = (Mob)var3.next();
+            for(Mob var4 : this.level().getEntitiesOfClass(Mob.class, this.getBoundingBox().inflate(0.3), (var2x) -> TARGETING_CONDITIONS.test(var1, this, var2x))) {
                if (var4.isAlive()) {
                   this.touch(var1, var4);
                }
@@ -189,7 +182,7 @@ public class Pufferfish extends AbstractFish {
    }
 
    static {
-      PUFF_STATE = SynchedEntityData.defineId(Pufferfish.class, EntityDataSerializers.INT);
+      PUFF_STATE = SynchedEntityData.<Integer>defineId(Pufferfish.class, EntityDataSerializers.INT);
       SCARY_MOB = (var0, var1) -> {
          if (var0 instanceof Player var2) {
             if (var2.isCreative()) {
@@ -202,7 +195,7 @@ public class Pufferfish extends AbstractFish {
       TARGETING_CONDITIONS = TargetingConditions.forNonCombat().ignoreInvisibilityTesting().ignoreLineOfSight().selector(SCARY_MOB);
    }
 
-   private static class PufferfishPuffGoal extends Goal {
+   static class PufferfishPuffGoal extends Goal {
       private final Pufferfish fish;
 
       public PufferfishPuffGoal(Pufferfish var1) {
@@ -211,9 +204,7 @@ public class Pufferfish extends AbstractFish {
       }
 
       public boolean canUse() {
-         List var1 = this.fish.level().getEntitiesOfClass(LivingEntity.class, this.fish.getBoundingBox().inflate(2.0), (var1x) -> {
-            return Pufferfish.TARGETING_CONDITIONS.test(getServerLevel(this.fish), this.fish, var1x);
-         });
+         List var1 = this.fish.level().getEntitiesOfClass(LivingEntity.class, this.fish.getBoundingBox().inflate(2.0), (var1x) -> Pufferfish.TARGETING_CONDITIONS.test(getServerLevel(this.fish), this.fish, var1x));
          return !var1.isEmpty();
       }
 

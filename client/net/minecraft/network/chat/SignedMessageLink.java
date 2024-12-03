@@ -12,9 +12,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureUpdater;
 
 public record SignedMessageLink(int index, UUID sender, UUID sessionId) {
-   public static final Codec<SignedMessageLink> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("index").forGetter(SignedMessageLink::index), UUIDUtil.CODEC.fieldOf("sender").forGetter(SignedMessageLink::sender), UUIDUtil.CODEC.fieldOf("session_id").forGetter(SignedMessageLink::sessionId)).apply(var0, SignedMessageLink::new);
-   });
+   public static final Codec<SignedMessageLink> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.fieldOf("index").forGetter(SignedMessageLink::index), UUIDUtil.CODEC.fieldOf("sender").forGetter(SignedMessageLink::sender), UUIDUtil.CODEC.fieldOf("session_id").forGetter(SignedMessageLink::sessionId)).apply(var0, SignedMessageLink::new));
 
    public SignedMessageLink(int var1, UUID var2, UUID var3) {
       super();
@@ -44,17 +42,5 @@ public record SignedMessageLink(int index, UUID sender, UUID sessionId) {
    @Nullable
    public SignedMessageLink advance() {
       return this.index == 2147483647 ? null : new SignedMessageLink(this.index + 1, this.sender, this.sessionId);
-   }
-
-   public int index() {
-      return this.index;
-   }
-
-   public UUID sender() {
-      return this.sender;
-   }
-
-   public UUID sessionId() {
-      return this.sessionId;
    }
 }

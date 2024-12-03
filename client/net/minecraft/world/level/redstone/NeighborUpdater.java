@@ -4,6 +4,7 @@ import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,11 +25,7 @@ public interface NeighborUpdater {
    void neighborChanged(BlockState var1, BlockPos var2, Block var3, @Nullable Orientation var4, boolean var5);
 
    default void updateNeighborsAtExceptFromFacing(BlockPos var1, Block var2, @Nullable Direction var3, @Nullable Orientation var4) {
-      Direction[] var5 = UPDATE_ORDER;
-      int var6 = var5.length;
-
-      for(int var7 = 0; var7 < var6; ++var7) {
-         Direction var8 = var5[var7];
+      for(Direction var8 : UPDATE_ORDER) {
          if (var8 != var3) {
             this.neighborChanged(var1.relative(var8), var2, (Orientation)null);
          }
@@ -50,13 +47,13 @@ public interface NeighborUpdater {
       } catch (Throwable var9) {
          CrashReport var7 = CrashReport.forThrowable(var9, "Exception while updating neighbours");
          CrashReportCategory var8 = var7.addCategory("Block being updated");
-         var8.setDetail("Source block type", () -> {
+         var8.setDetail("Source block type", (CrashReportDetail)(() -> {
             try {
                return String.format(Locale.ROOT, "ID #%s (%s // %s)", BuiltInRegistries.BLOCK.getKey(var3), var3.getDescriptionId(), var3.getClass().getCanonicalName());
             } catch (Throwable var2) {
                return "ID #" + String.valueOf(BuiltInRegistries.BLOCK.getKey(var3));
             }
-         });
+         }));
          CrashReportCategory.populateBlockDetails(var8, var0, var2, var1);
          throw new ReportedException(var7);
       }

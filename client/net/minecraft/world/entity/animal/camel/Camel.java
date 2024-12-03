@@ -368,7 +368,7 @@ public class Camel extends AbstractHorse {
             if (!this.isSilent()) {
                SoundEvent var6 = this.getEatingSound();
                if (var6 != null) {
-                  this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)var6, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+                  this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), var6, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
                }
             }
 
@@ -397,7 +397,7 @@ public class Camel extends AbstractHorse {
 
    @Nullable
    public Camel getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (Camel)EntityType.CAMEL.create(var1, EntitySpawnReason.BREEDING);
+      return EntityType.CAMEL.create(var1, EntitySpawnReason.BREEDING);
    }
 
    @Nullable
@@ -572,22 +572,21 @@ public class Camel extends AbstractHorse {
    }
 
    static {
-      DASH = SynchedEntityData.defineId(Camel.class, EntityDataSerializers.BOOLEAN);
-      LAST_POSE_CHANGE_TICK = SynchedEntityData.defineId(Camel.class, EntityDataSerializers.LONG);
+      DASH = SynchedEntityData.<Boolean>defineId(Camel.class, EntityDataSerializers.BOOLEAN);
+      LAST_POSE_CHANGE_TICK = SynchedEntityData.<Long>defineId(Camel.class, EntityDataSerializers.LONG);
       SITTING_DIMENSIONS = EntityDimensions.scalable(EntityType.CAMEL.getWidth(), EntityType.CAMEL.getHeight() - 1.43F).withEyeHeight(0.845F);
    }
 
-   private class CamelMoveControl extends MoveControl {
-      public CamelMoveControl() {
-         super(Camel.this);
+   class CamelBodyRotationControl extends BodyRotationControl {
+      public CamelBodyRotationControl(final Camel var2) {
+         super(var2);
       }
 
-      public void tick() {
-         if (this.operation == MoveControl.Operation.MOVE_TO && !Camel.this.isLeashed() && Camel.this.isCamelSitting() && !Camel.this.isInPoseTransition() && Camel.this.canCamelChangePose()) {
-            Camel.this.standUp();
+      public void clientTick() {
+         if (!Camel.this.refuseToMove()) {
+            super.clientTick();
          }
 
-         super.tick();
       }
    }
 
@@ -604,16 +603,17 @@ public class Camel extends AbstractHorse {
       }
    }
 
-   class CamelBodyRotationControl extends BodyRotationControl {
-      public CamelBodyRotationControl(final Camel var2) {
-         super(var2);
+   class CamelMoveControl extends MoveControl {
+      public CamelMoveControl() {
+         super(Camel.this);
       }
 
-      public void clientTick() {
-         if (!Camel.this.refuseToMove()) {
-            super.clientTick();
+      public void tick() {
+         if (this.operation == MoveControl.Operation.MOVE_TO && !Camel.this.isLeashed() && Camel.this.isCamelSitting() && !Camel.this.isInPoseTransition() && Camel.this.canCamelChangePose()) {
+            Camel.this.standUp();
          }
 
+         super.tick();
       }
    }
 }

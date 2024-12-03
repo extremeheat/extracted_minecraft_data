@@ -31,11 +31,7 @@ public class Raids extends SavedData {
    private int tick;
 
    public static SavedData.Factory<Raids> factory(ServerLevel var0) {
-      return new SavedData.Factory(() -> {
-         return new Raids(var0);
-      }, (var1, var2) -> {
-         return load(var0, var1);
-      }, DataFixTypes.SAVED_DATA_RAIDS);
+      return new SavedData.Factory<Raids>(() -> new Raids(var0), (var1, var2) -> load(var0, var1), DataFixTypes.SAVED_DATA_RAIDS);
    }
 
    public Raids(ServerLevel var1) {
@@ -93,37 +89,35 @@ public class Raids extends SavedData {
          if (!var3.hasRaids()) {
             return null;
          } else {
-            List var4 = this.level.getPoiManager().getInRange((var0) -> {
-               return var0.is(PoiTypeTags.VILLAGE);
-            }, var2, 64, PoiManager.Occupancy.IS_OCCUPIED).toList();
+            List var4 = this.level.getPoiManager().getInRange((var0) -> var0.is(PoiTypeTags.VILLAGE), var2, 64, PoiManager.Occupancy.IS_OCCUPIED).toList();
             int var5 = 0;
             Vec3 var6 = Vec3.ZERO;
 
-            for(Iterator var7 = var4.iterator(); var7.hasNext(); ++var5) {
-               PoiRecord var8 = (PoiRecord)var7.next();
+            for(PoiRecord var8 : var4) {
                BlockPos var9 = var8.getPos();
                var6 = var6.add((double)var9.getX(), (double)var9.getY(), (double)var9.getZ());
+               ++var5;
             }
 
-            BlockPos var10;
+            BlockPos var11;
             if (var5 > 0) {
                var6 = var6.scale(1.0 / (double)var5);
-               var10 = BlockPos.containing(var6);
+               var11 = BlockPos.containing(var6);
             } else {
-               var10 = var2;
+               var11 = var2;
             }
 
-            Raid var11 = this.getOrCreateRaid(var1.serverLevel(), var10);
-            if (!var11.isStarted() && !this.raidMap.containsKey(var11.getId())) {
-               this.raidMap.put(var11.getId(), var11);
+            Raid var12 = this.getOrCreateRaid(var1.serverLevel(), var11);
+            if (!var12.isStarted() && !this.raidMap.containsKey(var12.getId())) {
+               this.raidMap.put(var12.getId(), var12);
             }
 
-            if (!var11.isStarted() || var11.getRaidOmenLevel() < var11.getMaxRaidOmenLevel()) {
-               var11.absorbRaidOmen(var1);
+            if (!var12.isStarted() || var12.getRaidOmenLevel() < var12.getMaxRaidOmenLevel()) {
+               var12.absorbRaidOmen(var1);
             }
 
             this.setDirty();
-            return var11;
+            return var12;
          }
       }
    }
@@ -152,10 +146,8 @@ public class Raids extends SavedData {
       var1.putInt("NextAvailableID", this.nextAvailableID);
       var1.putInt("Tick", this.tick);
       ListTag var3 = new ListTag();
-      Iterator var4 = this.raidMap.values().iterator();
 
-      while(var4.hasNext()) {
-         Raid var5 = (Raid)var4.next();
+      for(Raid var5 : this.raidMap.values()) {
          CompoundTag var6 = new CompoundTag();
          var5.save(var6);
          var3.add(var6);
@@ -177,10 +169,8 @@ public class Raids extends SavedData {
    public Raid getNearbyRaid(BlockPos var1, int var2) {
       Raid var3 = null;
       double var4 = (double)var2;
-      Iterator var6 = this.raidMap.values().iterator();
 
-      while(var6.hasNext()) {
-         Raid var7 = (Raid)var6.next();
+      for(Raid var7 : this.raidMap.values()) {
          double var8 = var7.getCenter().distSqr(var1);
          if (var7.isActive() && var8 < var4) {
             var3 = var7;

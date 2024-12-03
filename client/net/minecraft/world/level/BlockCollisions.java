@@ -94,7 +94,7 @@ public class BlockCollisions<T> extends AbstractIterator<T> {
                   continue;
                }
 
-               return this.resultProvider.apply(this.pos, var7.move((double)var1, (double)var2, (double)var3));
+               return (T)this.resultProvider.apply(this.pos, var7.move((double)var1, (double)var2, (double)var3));
             }
 
             VoxelShape var8 = var7.move((double)var1, (double)var2, (double)var3);
@@ -102,10 +102,10 @@ public class BlockCollisions<T> extends AbstractIterator<T> {
                continue;
             }
 
-            return this.resultProvider.apply(this.pos, var8);
+            return (T)this.resultProvider.apply(this.pos, var8);
          }
 
-         return this.endOfData();
+         return (T)this.endOfData();
       }
    }
 }

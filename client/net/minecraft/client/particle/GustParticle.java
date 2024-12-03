@@ -32,6 +32,24 @@ public class GustParticle extends TextureSheetParticle {
       }
    }
 
+   public static class Provider implements ParticleProvider<SimpleParticleType> {
+      private final SpriteSet sprites;
+
+      public Provider(SpriteSet var1) {
+         super();
+         this.sprites = var1;
+      }
+
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         return new GustParticle(var2, var3, var5, var7, this.sprites);
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
+   }
+
    public static class SmallProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprites;
 
@@ -44,24 +62,6 @@ public class GustParticle extends TextureSheetParticle {
          GustParticle var15 = new GustParticle(var2, var3, var5, var7, this.sprites);
          ((Particle)var15).scale(0.15F);
          return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
-      }
-   }
-
-   public static class Provider implements ParticleProvider<SimpleParticleType> {
-      private final SpriteSet sprites;
-
-      public Provider(SpriteSet var1) {
-         super();
-         this.sprites = var1;
-      }
-
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         return new GustParticle(var2, var3, var5, var7, this.sprites);
       }
 
       // $FF: synthetic method

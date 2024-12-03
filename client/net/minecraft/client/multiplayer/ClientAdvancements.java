@@ -2,7 +2,6 @@ package net.minecraft.client.multiplayer;
 
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -44,10 +43,8 @@ public class ClientAdvancements {
 
       this.tree.remove(var1.getRemoved());
       this.tree.addAll(var1.getAdded());
-      Iterator var2 = var1.getProgress().entrySet().iterator();
 
-      while(var2.hasNext()) {
-         Map.Entry var3 = (Map.Entry)var2.next();
+      for(Map.Entry var3 : var1.getProgress().entrySet()) {
          AdvancementNode var4 = this.tree.get((ResourceLocation)var3.getKey());
          if (var4 != null) {
             AdvancementProgress var5 = (AdvancementProgress)var3.getValue();

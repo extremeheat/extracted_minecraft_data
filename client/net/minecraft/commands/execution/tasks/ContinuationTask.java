@@ -16,7 +16,7 @@ public class ContinuationTask<T, P> implements EntryAction<T> {
       super();
       this.taskFactory = var1;
       this.arguments = var2;
-      this.selfEntry = new CommandQueueEntry(var3, this);
+      this.selfEntry = new CommandQueueEntry<T>(var3, this);
    }
 
    public void execute(ExecutionContext<T> var1, Frame var2) {

@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -51,9 +50,7 @@ public abstract class PatrollingMonster extends Monster {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      NbtUtils.readBlockPos(var1, "patrol_target").ifPresent((var1x) -> {
-         this.patrolTarget = var1x;
-      });
+      NbtUtils.readBlockPos(var1, "patrol_target").ifPresent((var1x) -> this.patrolTarget = var1x);
       this.patrolLeader = var1.getBoolean("PatrolLeader");
       this.patrolling = var1.getBoolean("Patrolling");
    }
@@ -175,10 +172,7 @@ public abstract class PatrollingMonster extends Monster {
                   this.moveRandomly();
                   this.cooldownUntil = this.mob.level().getGameTime() + 200L;
                } else if (var1) {
-                  Iterator var9 = var3.iterator();
-
-                  while(var9.hasNext()) {
-                     PatrollingMonster var10 = (PatrollingMonster)var9.next();
+                  for(PatrollingMonster var10 : var3) {
                      var10.setPatrolTarget(var8);
                   }
                }
@@ -188,9 +182,7 @@ public abstract class PatrollingMonster extends Monster {
       }
 
       private List<PatrollingMonster> findPatrolCompanions() {
-         return this.mob.level().getEntitiesOfClass(PatrollingMonster.class, this.mob.getBoundingBox().inflate(16.0), (var1) -> {
-            return var1.canJoinPatrol() && !var1.is(this.mob);
-         });
+         return this.mob.level().getEntitiesOfClass(PatrollingMonster.class, this.mob.getBoundingBox().inflate(16.0), (var1) -> var1.canJoinPatrol() && !var1.is(this.mob));
       }
 
       private boolean moveRandomly() {

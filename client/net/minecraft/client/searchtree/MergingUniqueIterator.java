@@ -22,18 +22,18 @@ public class MergingUniqueIterator<T> extends AbstractIterator<T> {
       boolean var1 = !this.firstIterator.hasNext();
       boolean var2 = !this.secondIterator.hasNext();
       if (var1 && var2) {
-         return this.endOfData();
+         return (T)this.endOfData();
       } else if (var1) {
-         return this.secondIterator.next();
+         return (T)this.secondIterator.next();
       } else if (var2) {
-         return this.firstIterator.next();
+         return (T)this.firstIterator.next();
       } else {
          int var3 = this.comparator.compare(this.firstIterator.peek(), this.secondIterator.peek());
          if (var3 == 0) {
             this.secondIterator.next();
          }
 
-         return var3 <= 0 ? this.firstIterator.next() : this.secondIterator.next();
+         return (T)(var3 <= 0 ? this.firstIterator.next() : this.secondIterator.next());
       }
    }
 }

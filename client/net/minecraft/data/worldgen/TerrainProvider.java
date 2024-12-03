@@ -25,25 +25,25 @@ public class TerrainProvider {
       CubicSpline var6 = buildErosionOffsetSpline(var1, var2, -0.1F, 0.03F, 0.1F, 0.1F, 0.01F, -0.03F, false, false, var4);
       CubicSpline var7 = buildErosionOffsetSpline(var1, var2, -0.1F, 0.03F, 0.1F, 0.7F, 0.01F, -0.03F, true, true, var4);
       CubicSpline var8 = buildErosionOffsetSpline(var1, var2, -0.05F, 0.03F, 0.1F, 1.0F, 0.01F, 0.01F, true, true, var4);
-      return CubicSpline.builder(var0, var4).addPoint(-1.1F, 0.044F).addPoint(-1.02F, -0.2222F).addPoint(-0.51F, -0.2222F).addPoint(-0.44F, -0.12F).addPoint(-0.18F, -0.12F).addPoint(-0.16F, var5).addPoint(-0.15F, var5).addPoint(-0.1F, var6).addPoint(0.25F, var7).addPoint(1.0F, var8).build();
+      return CubicSpline.<C, I>builder(var0, var4).addPoint(-1.1F, 0.044F).addPoint(-1.02F, -0.2222F).addPoint(-0.51F, -0.2222F).addPoint(-0.44F, -0.12F).addPoint(-0.18F, -0.12F).addPoint(-0.16F, var5).addPoint(-0.15F, var5).addPoint(-0.1F, var6).addPoint(0.25F, var7).addPoint(1.0F, var8).build();
    }
 
    public static <C, I extends ToFloatFunction<C>> CubicSpline<C, I> overworldFactor(I var0, I var1, I var2, I var3, boolean var4) {
       ToFloatFunction var5 = var4 ? AMPLIFIED_FACTOR : NO_TRANSFORM;
-      return CubicSpline.builder(var0, NO_TRANSFORM).addPoint(-0.19F, 3.95F).addPoint(-0.15F, getErosionFactor(var1, var2, var3, 6.25F, true, NO_TRANSFORM)).addPoint(-0.1F, getErosionFactor(var1, var2, var3, 5.47F, true, var5)).addPoint(0.03F, getErosionFactor(var1, var2, var3, 5.08F, true, var5)).addPoint(0.06F, getErosionFactor(var1, var2, var3, 4.69F, false, var5)).build();
+      return CubicSpline.<C, I>builder(var0, NO_TRANSFORM).addPoint(-0.19F, 3.95F).addPoint(-0.15F, getErosionFactor(var1, var2, var3, 6.25F, true, NO_TRANSFORM)).addPoint(-0.1F, getErosionFactor(var1, var2, var3, 5.47F, true, var5)).addPoint(0.03F, getErosionFactor(var1, var2, var3, 5.08F, true, var5)).addPoint(0.06F, getErosionFactor(var1, var2, var3, 4.69F, false, var5)).build();
    }
 
    public static <C, I extends ToFloatFunction<C>> CubicSpline<C, I> overworldJaggedness(I var0, I var1, I var2, I var3, boolean var4) {
       ToFloatFunction var5 = var4 ? AMPLIFIED_JAGGEDNESS : NO_TRANSFORM;
       float var6 = 0.65F;
-      return CubicSpline.builder(var0, var5).addPoint(-0.11F, 0.0F).addPoint(0.03F, buildErosionJaggednessSpline(var1, var2, var3, 1.0F, 0.5F, 0.0F, 0.0F, var5)).addPoint(0.65F, buildErosionJaggednessSpline(var1, var2, var3, 1.0F, 1.0F, 1.0F, 0.0F, var5)).build();
+      return CubicSpline.<C, I>builder(var0, var5).addPoint(-0.11F, 0.0F).addPoint(0.03F, buildErosionJaggednessSpline(var1, var2, var3, 1.0F, 0.5F, 0.0F, 0.0F, var5)).addPoint(0.65F, buildErosionJaggednessSpline(var1, var2, var3, 1.0F, 1.0F, 1.0F, 0.0F, var5)).build();
    }
 
    private static <C, I extends ToFloatFunction<C>> CubicSpline<C, I> buildErosionJaggednessSpline(I var0, I var1, I var2, float var3, float var4, float var5, float var6, ToFloatFunction<Float> var7) {
       float var8 = -0.5775F;
       CubicSpline var9 = buildRidgeJaggednessSpline(var1, var2, var3, var5, var7);
       CubicSpline var10 = buildRidgeJaggednessSpline(var1, var2, var4, var6, var7);
-      return CubicSpline.builder(var0, var7).addPoint(-1.0F, var9).addPoint(-0.78F, var10).addPoint(-0.5775F, var10).addPoint(-0.375F, 0.0F).build();
+      return CubicSpline.<C, I>builder(var0, var7).addPoint(-1.0F, var9).addPoint(-0.78F, var10).addPoint(-0.5775F, var10).addPoint(-0.375F, 0.0F).build();
    }
 
    private static <C, I extends ToFloatFunction<C>> CubicSpline<C, I> buildRidgeJaggednessSpline(I var0, I var1, float var2, float var3, ToFloatFunction<Float> var4) {
@@ -70,22 +70,20 @@ public class TerrainProvider {
    private static <C, I extends ToFloatFunction<C>> CubicSpline<C, I> buildWeirdnessJaggednessSpline(I var0, float var1, ToFloatFunction<Float> var2) {
       float var3 = 0.63F * var1;
       float var4 = 0.3F * var1;
-      return CubicSpline.builder(var0, var2).addPoint(-0.01F, var3).addPoint(0.01F, var4).build();
+      return CubicSpline.<C, I>builder(var0, var2).addPoint(-0.01F, var3).addPoint(0.01F, var4).build();
    }
 
    private static <C, I extends ToFloatFunction<C>> CubicSpline<C, I> getErosionFactor(I var0, I var1, I var2, float var3, boolean var4, ToFloatFunction<Float> var5) {
       CubicSpline var6 = CubicSpline.builder(var1, var5).addPoint(-0.2F, 6.3F).addPoint(0.2F, var3).build();
       CubicSpline.Builder var7 = CubicSpline.builder(var0, var5).addPoint(-0.6F, var6).addPoint(-0.5F, CubicSpline.builder(var1, var5).addPoint(-0.05F, 6.3F).addPoint(0.05F, 2.67F).build()).addPoint(-0.35F, var6).addPoint(-0.25F, var6).addPoint(-0.1F, CubicSpline.builder(var1, var5).addPoint(-0.05F, 2.67F).addPoint(0.05F, 6.3F).build()).addPoint(0.03F, var6);
-      CubicSpline var8;
-      CubicSpline var9;
       if (var4) {
-         var8 = CubicSpline.builder(var1, var5).addPoint(0.0F, var3).addPoint(0.1F, 0.625F).build();
-         var9 = CubicSpline.builder(var2, var5).addPoint(-0.9F, var3).addPoint(-0.69F, var8).build();
+         CubicSpline var8 = CubicSpline.builder(var1, var5).addPoint(0.0F, var3).addPoint(0.1F, 0.625F).build();
+         CubicSpline var9 = CubicSpline.builder(var2, var5).addPoint(-0.9F, var3).addPoint(-0.69F, var8).build();
          var7.addPoint(0.35F, var3).addPoint(0.45F, var9).addPoint(0.55F, var9).addPoint(0.62F, var3);
       } else {
-         var8 = CubicSpline.builder(var2, var5).addPoint(-0.7F, var6).addPoint(-0.15F, 1.37F).build();
-         var9 = CubicSpline.builder(var2, var5).addPoint(0.45F, var6).addPoint(0.7F, 1.56F).build();
-         var7.addPoint(0.05F, var9).addPoint(0.4F, var9).addPoint(0.45F, var8).addPoint(0.55F, var8).addPoint(0.58F, var3);
+         CubicSpline var10 = CubicSpline.builder(var2, var5).addPoint(-0.7F, var6).addPoint(-0.15F, 1.37F).build();
+         CubicSpline var11 = CubicSpline.builder(var2, var5).addPoint(0.45F, var6).addPoint(0.7F, 1.56F).build();
+         var7.addPoint(0.05F, var11).addPoint(0.4F, var11).addPoint(0.45F, var10).addPoint(0.55F, var10).addPoint(0.58F, var3);
       }
 
       return var7.build();
@@ -104,15 +102,14 @@ public class TerrainProvider {
       float var9 = mountainContinentalness(1.0F, var1, -0.7F);
       float var10 = calculateMountainRidgeZeroContinentalnessPoint(var1);
       float var11 = -0.65F;
-      float var12;
       if (-0.65F < var10 && var10 < 1.0F) {
-         var12 = mountainContinentalness(-0.65F, var1, -0.7F);
+         float var19 = mountainContinentalness(-0.65F, var1, -0.7F);
          float var13 = -0.75F;
          float var14 = mountainContinentalness(-0.75F, var1, -0.7F);
          float var15 = calculateSlope(var7, var14, -1.0F, -0.75F);
          var4.addPoint(-1.0F, var7, var15);
          var4.addPoint(-0.75F, var14);
-         var4.addPoint(-0.65F, var12);
+         var4.addPoint(-0.65F, var19);
          float var16 = mountainContinentalness(var10, var1, -0.7F);
          float var17 = calculateSlope(var16, var9, var10, 1.0F);
          float var18 = 0.01F;
@@ -120,7 +117,7 @@ public class TerrainProvider {
          var4.addPoint(var10, var16, var17);
          var4.addPoint(1.0F, var9, var17);
       } else {
-         var12 = calculateSlope(var7, var9, -1.0F, 1.0F);
+         float var12 = calculateSlope(var7, var9, -1.0F, 1.0F);
          if (var2) {
             var4.addPoint(-1.0F, Math.max(0.2F, var7));
             var4.addPoint(0.0F, Mth.lerp(0.5F, var7, var9), var12);
@@ -177,19 +174,13 @@ public class TerrainProvider {
    private static <C, I extends ToFloatFunction<C>> CubicSpline<C, I> ridgeSpline(I var0, float var1, float var2, float var3, float var4, float var5, float var6, ToFloatFunction<Float> var7) {
       float var8 = Math.max(0.5F * (var2 - var1), var6);
       float var9 = 5.0F * (var3 - var2);
-      return CubicSpline.builder(var0, var7).addPoint(-1.0F, var1, var8).addPoint(-0.4F, var2, Math.min(var8, var9)).addPoint(0.0F, var3, var9).addPoint(0.4F, var4, 2.0F * (var4 - var3)).addPoint(1.0F, var5, 0.7F * (var5 - var4)).build();
+      return CubicSpline.<C, I>builder(var0, var7).addPoint(-1.0F, var1, var8).addPoint(-0.4F, var2, Math.min(var8, var9)).addPoint(0.0F, var3, var9).addPoint(0.4F, var4, 2.0F * (var4 - var3)).addPoint(1.0F, var5, 0.7F * (var5 - var4)).build();
    }
 
    static {
       NO_TRANSFORM = ToFloatFunction.IDENTITY;
-      AMPLIFIED_OFFSET = ToFloatFunction.createUnlimited((var0) -> {
-         return var0 < 0.0F ? var0 : var0 * 2.0F;
-      });
-      AMPLIFIED_FACTOR = ToFloatFunction.createUnlimited((var0) -> {
-         return 1.25F - 6.25F / (var0 + 5.0F);
-      });
-      AMPLIFIED_JAGGEDNESS = ToFloatFunction.createUnlimited((var0) -> {
-         return var0 * 2.0F;
-      });
+      AMPLIFIED_OFFSET = ToFloatFunction.createUnlimited((var0) -> var0 < 0.0F ? var0 : var0 * 2.0F);
+      AMPLIFIED_FACTOR = ToFloatFunction.createUnlimited((var0) -> 1.25F - 6.25F / (var0 + 5.0F));
+      AMPLIFIED_JAGGEDNESS = ToFloatFunction.createUnlimited((var0) -> var0 * 2.0F);
    }
 }

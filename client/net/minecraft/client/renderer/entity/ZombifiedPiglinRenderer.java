@@ -5,11 +5,9 @@ import net.minecraft.client.model.ZombifiedPiglinModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ZombifiedPiglinRenderState;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.ZombifiedPiglin;
 
 public class ZombifiedPiglinRenderer extends HumanoidMobRenderer<ZombifiedPiglin, ZombifiedPiglinRenderState, ZombifiedPiglinModel> {
@@ -29,7 +27,7 @@ public class ZombifiedPiglinRenderer extends HumanoidMobRenderer<ZombifiedPiglin
    }
 
    public void extractRenderState(ZombifiedPiglin var1, ZombifiedPiglinRenderState var2, float var3) {
-      super.extractRenderState((Mob)var1, (HumanoidRenderState)var2, var3);
+      super.extractRenderState(var1, var2, var3);
       var2.isAggressive = var1.isAggressive();
    }
 

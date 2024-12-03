@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
@@ -29,25 +30,19 @@ public class PlayTagWithOtherKids {
    }
 
    public static BehaviorControl<PathfinderMob> create() {
-      return BehaviorBuilder.create((var0) -> {
-         return var0.group(var0.present(MemoryModuleType.VISIBLE_VILLAGER_BABIES), var0.absent(MemoryModuleType.WALK_TARGET), var0.registered(MemoryModuleType.LOOK_TARGET), var0.registered(MemoryModuleType.INTERACTION_TARGET)).apply(var0, (var1, var2, var3, var4) -> {
-            return (var5, var6, var7) -> {
+      return BehaviorBuilder.create((Function)((var0) -> var0.group(var0.present(MemoryModuleType.VISIBLE_VILLAGER_BABIES), var0.absent(MemoryModuleType.WALK_TARGET), var0.registered(MemoryModuleType.LOOK_TARGET), var0.registered(MemoryModuleType.INTERACTION_TARGET)).apply(var0, (var1, var2, var3, var4) -> (var5, var6, var7) -> {
                if (var5.getRandom().nextInt(10) != 0) {
                   return false;
                } else {
                   List var9 = (List)var0.get(var1);
-                  Optional var10 = var9.stream().filter((var1x) -> {
-                     return isFriendChasingMe(var6, var1x);
-                  }).findAny();
+                  Optional var10 = var9.stream().filter((var1x) -> isFriendChasingMe(var6, var1x)).findAny();
                   if (!var10.isPresent()) {
                      Optional var13 = findSomeoneBeingChased(var9);
                      if (var13.isPresent()) {
                         chaseKid(var4, var3, var2, (LivingEntity)var13.get());
                         return true;
                      } else {
-                        var9.stream().findAny().ifPresent((var3x) -> {
-                           chaseKid(var4, var3, var2, var3x);
-                        });
+                        var9.stream().findAny().ifPresent((var3x) -> chaseKid(var4, var3, var2, var3x));
                         return true;
                      }
                   } else {
@@ -62,9 +57,7 @@ public class PlayTagWithOtherKids {
                      return true;
                   }
                }
-            };
-         });
-      });
+            })));
    }
 
    private static void chaseKid(MemoryAccessor<?, LivingEntity> var0, MemoryAccessor<?, PositionTracker> var1, MemoryAccessor<?, WalkTarget> var2, LivingEntity var3) {
@@ -75,18 +68,12 @@ public class PlayTagWithOtherKids {
 
    private static Optional<LivingEntity> findSomeoneBeingChased(List<LivingEntity> var0) {
       Map var1 = checkHowManyChasersEachFriendHas(var0);
-      return var1.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).filter((var0x) -> {
-         return (Integer)var0x.getValue() > 0 && (Integer)var0x.getValue() <= 5;
-      }).map(Map.Entry::getKey).findFirst();
+      return var1.entrySet().stream().sorted(Comparator.comparingInt(Map.Entry::getValue)).filter((var0x) -> (Integer)var0x.getValue() > 0 && (Integer)var0x.getValue() <= 5).map(Map.Entry::getKey).findFirst();
    }
 
    private static Map<LivingEntity, Integer> checkHowManyChasersEachFriendHas(List<LivingEntity> var0) {
       HashMap var1 = Maps.newHashMap();
-      var0.stream().filter(PlayTagWithOtherKids::isChasingSomeone).forEach((var1x) -> {
-         var1.compute(whoAreYouChasing(var1x), (var0, var1xx) -> {
-            return var1xx == null ? 1 : var1xx + 1;
-         });
-      });
+      var0.stream().filter(PlayTagWithOtherKids::isChasingSomeone).forEach((var1x) -> var1.compute(whoAreYouChasing(var1x), (var0, var1xx) -> var1xx == null ? 1 : var1xx + 1));
       return var1;
    }
 
@@ -99,8 +86,6 @@ public class PlayTagWithOtherKids {
    }
 
    private static boolean isFriendChasingMe(LivingEntity var0, LivingEntity var1) {
-      return var1.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).filter((var1x) -> {
-         return var1x == var0;
-      }).isPresent();
+      return var1.getBrain().getMemory(MemoryModuleType.INTERACTION_TARGET).filter((var1x) -> var1x == var0).isPresent();
    }
 }

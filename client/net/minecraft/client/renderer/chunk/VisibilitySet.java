@@ -1,7 +1,6 @@
 package net.minecraft.client.renderer.chunk;
 
 import java.util.BitSet;
-import java.util.Iterator;
 import java.util.Set;
 import net.minecraft.core.Direction;
 
@@ -15,14 +14,8 @@ public class VisibilitySet {
    }
 
    public void add(Set<Direction> var1) {
-      Iterator var2 = var1.iterator();
-
-      while(var2.hasNext()) {
-         Direction var3 = (Direction)var2.next();
-         Iterator var4 = var1.iterator();
-
-         while(var4.hasNext()) {
-            Direction var5 = (Direction)var4.next();
+      for(Direction var3 : var1) {
+         for(Direction var5 : var1) {
             this.set(var3, var5, true);
          }
       }
@@ -45,32 +38,21 @@ public class VisibilitySet {
    public String toString() {
       StringBuilder var1 = new StringBuilder();
       var1.append(' ');
-      Direction[] var2 = Direction.values();
-      int var3 = var2.length;
 
-      int var4;
-      Direction var5;
-      for(var4 = 0; var4 < var3; ++var4) {
-         var5 = var2[var4];
+      for(Direction var5 : Direction.values()) {
          var1.append(' ').append(var5.toString().toUpperCase().charAt(0));
       }
 
       var1.append('\n');
-      var2 = Direction.values();
-      var3 = var2.length;
 
-      for(var4 = 0; var4 < var3; ++var4) {
-         var5 = var2[var4];
-         var1.append(var5.toString().toUpperCase().charAt(0));
-         Direction[] var6 = Direction.values();
-         int var7 = var6.length;
+      for(Direction var14 : Direction.values()) {
+         var1.append(var14.toString().toUpperCase().charAt(0));
 
-         for(int var8 = 0; var8 < var7; ++var8) {
-            Direction var9 = var6[var8];
-            if (var5 == var9) {
+         for(Direction var9 : Direction.values()) {
+            if (var14 == var9) {
                var1.append("  ");
             } else {
-               boolean var10 = this.visibilityBetween(var5, var9);
+               boolean var10 = this.visibilityBetween(var14, var9);
                var1.append(' ').append((char)(var10 ? 'Y' : 'n'));
             }
          }

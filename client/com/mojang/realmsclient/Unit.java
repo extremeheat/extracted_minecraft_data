@@ -34,7 +34,7 @@ public enum Unit {
    public static String humanReadable(long var0) {
       boolean var2 = true;
       if (var0 < 1024L) {
-         return "" + var0 + " B";
+         return var0 + " B";
       } else {
          int var3 = (int)(Math.log((double)var0) / Math.log(1024.0));
          String var4 = "" + "KMGTPE".charAt(var3 - 1);

@@ -41,12 +41,4 @@ public record ScreenPosition(int x, int y) {
 
       return var10000;
    }
-
-   public int x() {
-      return this.x;
-   }
-
-   public int y() {
-      return this.y;
-   }
 }

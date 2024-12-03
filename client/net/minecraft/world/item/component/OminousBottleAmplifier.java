@@ -38,10 +38,6 @@ public record OminousBottleAmplifier(int value) implements ConsumableListener, T
       PotionContents.addPotionTooltip(var4, var2, 1.0F, var1.tickRate());
    }
 
-   public int value() {
-      return this.value;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, OminousBottleAmplifier::value, OminousBottleAmplifier::new);
    }

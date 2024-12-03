@@ -15,19 +15,11 @@ public class BlockParticleOption implements ParticleOptions {
    private final BlockState state;
 
    public static MapCodec<BlockParticleOption> codec(ParticleType<BlockParticleOption> var0) {
-      return BLOCK_STATE_CODEC.xmap((var1) -> {
-         return new BlockParticleOption(var0, var1);
-      }, (var0x) -> {
-         return var0x.state;
-      }).fieldOf("block_state");
+      return BLOCK_STATE_CODEC.xmap((var1) -> new BlockParticleOption(var0, var1), (var0x) -> var0x.state).fieldOf("block_state");
    }
 
    public static StreamCodec<? super RegistryFriendlyByteBuf, BlockParticleOption> streamCodec(ParticleType<BlockParticleOption> var0) {
-      return ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY).map((var1) -> {
-         return new BlockParticleOption(var0, var1);
-      }, (var0x) -> {
-         return var0x.state;
-      });
+      return ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY).map((var1) -> new BlockParticleOption(var0, var1), (var0x) -> var0x.state);
    }
 
    public BlockParticleOption(ParticleType<BlockParticleOption> var1, BlockState var2) {

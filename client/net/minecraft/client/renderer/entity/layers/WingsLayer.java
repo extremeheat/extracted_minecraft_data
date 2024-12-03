@@ -11,10 +11,11 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.equipment.EquipmentModel;
 import net.minecraft.world.item.equipment.Equippable;
 
 public class WingsLayer<S extends HumanoidRenderState, M extends EntityModel<S>> extends RenderLayer<S, M> {
@@ -30,16 +31,15 @@ public class WingsLayer<S extends HumanoidRenderState, M extends EntityModel<S>>
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, S var4, float var5, float var6) {
-      ItemStack var7 = var4.chestItem;
+      ItemStack var7 = var4.chestEquipment;
       Equippable var8 = (Equippable)var7.get(DataComponents.EQUIPPABLE);
-      if (var8 != null && !var8.model().isEmpty()) {
+      if (var8 != null && !var8.assetId().isEmpty()) {
          ResourceLocation var9 = getPlayerElytraTexture(var4);
          ElytraModel var10 = var4.isBaby ? this.elytraBabyModel : this.elytraModel;
-         ResourceLocation var11 = (ResourceLocation)var8.model().get();
          var1.pushPose();
          var1.translate(0.0F, 0.0F, 0.125F);
          var10.setupAnim(var4);
-         this.equipmentRenderer.renderLayers(EquipmentModel.LayerType.WINGS, var11, var10, var7, var1, var2, var3, var9);
+         this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.WINGS, (ResourceKey)var8.assetId().get(), var10, var7, var1, var2, var3, var9);
          var1.popPose();
       }
    }

@@ -18,15 +18,11 @@ public class ItemDurabilityTrigger extends SimpleCriterionTrigger<TriggerInstanc
    }
 
    public void trigger(ServerPlayer var1, ItemStack var2, int var3) {
-      this.trigger(var1, (var2x) -> {
-         return var2x.matches(var2, var3);
-      });
+      this.trigger(var1, (var2x) -> var2x.matches(var2, var3));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item, MinMaxBounds.Ints durability, MinMaxBounds.Ints delta) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item), MinMaxBounds.Ints.CODEC.optionalFieldOf("durability", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::durability), MinMaxBounds.Ints.CODEC.optionalFieldOf("delta", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::delta)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item), MinMaxBounds.Ints.CODEC.optionalFieldOf("durability", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::durability), MinMaxBounds.Ints.CODEC.optionalFieldOf("delta", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::delta)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2, MinMaxBounds.Ints var3, MinMaxBounds.Ints var4) {
          super();
@@ -52,22 +48,6 @@ public class ItemDurabilityTrigger extends SimpleCriterionTrigger<TriggerInstanc
          } else {
             return this.delta.matches(var1.getDamageValue() - var2);
          }
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<ItemPredicate> item() {
-         return this.item;
-      }
-
-      public MinMaxBounds.Ints durability() {
-         return this.durability;
-      }
-
-      public MinMaxBounds.Ints delta() {
-         return this.delta;
       }
    }
 }

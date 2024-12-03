@@ -5,13 +5,17 @@ import com.mojang.math.Transformation;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Objects;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.ItemModelGenerator;
+import net.minecraft.client.renderer.block.model.UnbakedBlockStateModel;
+import net.minecraft.client.renderer.item.ClientItem;
+import net.minecraft.client.renderer.item.ItemModel;
+import net.minecraft.client.renderer.item.MissingItemModel;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
@@ -31,39 +35,55 @@ public class ModelBakery {
    public static final List<ResourceLocation> BREAKING_LOCATIONS;
    public static final List<RenderType> DESTROY_TYPES;
    static final Logger LOGGER;
-   static final ItemModelGenerator ITEM_MODEL_GENERATOR;
+   private final EntityModelSet entityModelSet;
    final Map<BakedCacheKey, BakedModel> bakedCache = new HashMap();
-   private final Map<ModelResourceLocation, BakedModel> bakedTopLevelModels = new HashMap();
-   private final Map<ModelResourceLocation, UnbakedModel> topModels;
-   final Map<ResourceLocation, UnbakedModel> unbakedModels;
+   private final Map<ModelResourceLocation, UnbakedBlockStateModel> unbakedBlockStateModels;
+   private final Map<ResourceLocation, ClientItem> clientInfos;
+   final Map<ResourceLocation, UnbakedModel> unbakedPlainModels;
    final UnbakedModel missingModel;
 
-   public ModelBakery(Map<ModelResourceLocation, UnbakedModel> var1, Map<ResourceLocation, UnbakedModel> var2, UnbakedModel var3) {
+   public ModelBakery(EntityModelSet var1, Map<ModelResourceLocation, UnbakedBlockStateModel> var2, Map<ResourceLocation, ClientItem> var3, Map<ResourceLocation, UnbakedModel> var4, UnbakedModel var5) {
       super();
-      this.topModels = var1;
-      this.unbakedModels = var2;
-      this.missingModel = var3;
+      this.entityModelSet = var1;
+      this.unbakedBlockStateModels = var2;
+      this.clientInfos = var3;
+      this.unbakedPlainModels = var4;
+      this.missingModel = var5;
    }
 
-   public void bakeModels(TextureGetter var1) {
-      this.topModels.forEach((var2, var3) -> {
-         BakedModel var4 = null;
-
+   public BakingResult bakeModels(TextureGetter var1) {
+      BakedModel var2 = UnbakedModel.bakeWithTopModelValues(this.missingModel, new ModelBakerImpl(var1, () -> "missing"), BlockModelRotation.X0_Y0);
+      HashMap var3 = new HashMap(this.unbakedBlockStateModels.size());
+      this.unbakedBlockStateModels.forEach((var3x, var4x) -> {
          try {
-            var4 = (new ModelBakerImpl(var1, var2)).bakeUncached(var3, BlockModelRotation.X0_Y0);
+            Objects.requireNonNull(var3x);
+            BakedModel var5 = var4x.bake(new ModelBakerImpl(var1, var3x::toString));
+            var3.put(var3x, var5);
          } catch (Exception var6) {
-            LOGGER.warn("Unable to bake model: '{}': {}", var2, var6);
-         }
-
-         if (var4 != null) {
-            this.bakedTopLevelModels.put(var2, var4);
+            LOGGER.warn("Unable to bake model: '{}': {}", var3x, var6);
          }
 
       });
-   }
+      MissingItemModel var4 = new MissingItemModel(var2);
+      HashMap var5 = new HashMap(this.clientInfos.size());
+      HashMap var6 = new HashMap(this.clientInfos.size());
+      this.clientInfos.forEach((var5x, var6x) -> {
+         ModelDebugName var7 = () -> String.valueOf(var5x) + "#inventory";
+         ModelBakerImpl var8 = new ModelBakerImpl(var1, var7);
+         ItemModel.BakingContext var9 = new ItemModel.BakingContext(var8, this.entityModelSet, var4);
 
-   public Map<ModelResourceLocation, BakedModel> getBakedTopLevelModels() {
-      return this.bakedTopLevelModels;
+         try {
+            ItemModel var10 = var6x.model().bake(var9);
+            var5.put(var5x, var10);
+            if (!var6x.properties().equals(ClientItem.Properties.DEFAULT)) {
+               var6.put(var5x, var6x.properties());
+            }
+         } catch (Exception var11) {
+            LOGGER.warn("Unable to bake item model: '{}'", var5x, var11);
+         }
+
+      });
+      return new BakingResult(var2, var3, var4, var5, var6);
    }
 
    static {
@@ -75,36 +95,28 @@ public class ModelBakery {
       BANNER_BASE = new Material(Sheets.BANNER_SHEET, ResourceLocation.withDefaultNamespace("entity/banner_base"));
       SHIELD_BASE = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base"));
       NO_PATTERN_SHIELD = new Material(Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("entity/shield_base_nopattern"));
-      DESTROY_STAGES = (List)IntStream.range(0, 10).mapToObj((var0) -> {
-         return ResourceLocation.withDefaultNamespace("block/destroy_stage_" + var0);
-      }).collect(Collectors.toList());
-      BREAKING_LOCATIONS = (List)DESTROY_STAGES.stream().map((var0) -> {
-         return var0.withPath((var0x) -> {
-            return "textures/" + var0x + ".png";
-         });
-      }).collect(Collectors.toList());
+      DESTROY_STAGES = (List)IntStream.range(0, 10).mapToObj((var0) -> ResourceLocation.withDefaultNamespace("block/destroy_stage_" + var0)).collect(Collectors.toList());
+      BREAKING_LOCATIONS = (List)DESTROY_STAGES.stream().map((var0) -> var0.withPath((UnaryOperator)((var0x) -> "textures/" + var0x + ".png"))).collect(Collectors.toList());
       DESTROY_TYPES = (List)BREAKING_LOCATIONS.stream().map(RenderType::crumbling).collect(Collectors.toList());
       LOGGER = LogUtils.getLogger();
-      ITEM_MODEL_GENERATOR = new ItemModelGenerator();
    }
 
-   @FunctionalInterface
-   public interface TextureGetter {
-      TextureAtlasSprite get(ModelResourceLocation var1, Material var2);
-   }
+   class ModelBakerImpl implements ModelBaker {
+      private final ModelDebugName rootName;
+      private final SpriteGetter modelTextureGetter;
 
-   private class ModelBakerImpl implements ModelBaker {
-      private final Function<Material, TextureAtlasSprite> modelTextureGetter;
-
-      ModelBakerImpl(final TextureGetter var2, final ModelResourceLocation var3) {
+      ModelBakerImpl(final TextureGetter var2, final ModelDebugName var3) {
          super();
-         this.modelTextureGetter = (var2x) -> {
-            return var2.get(var3, var2x);
-         };
+         this.modelTextureGetter = var2.bind(var3);
+         this.rootName = var3;
+      }
+
+      public SpriteGetter sprites() {
+         return this.modelTextureGetter;
       }
 
       private UnbakedModel getModel(ResourceLocation var1) {
-         UnbakedModel var2 = (UnbakedModel)ModelBakery.this.unbakedModels.get(var1);
+         UnbakedModel var2 = (UnbakedModel)ModelBakery.this.unbakedPlainModels.get(var1);
          if (var2 == null) {
             ModelBakery.LOGGER.warn("Requested a model that was not discovered previously: {}", var1);
             return ModelBakery.this.missingModel;
@@ -120,41 +132,52 @@ public class ModelBakery {
             return var4;
          } else {
             UnbakedModel var5 = this.getModel(var1);
-            BakedModel var6 = this.bakeUncached(var5, var2);
+            BakedModel var6 = UnbakedModel.bakeWithTopModelValues(var5, this, var2);
             ModelBakery.this.bakedCache.put(var3, var6);
             return var6;
          }
       }
 
-      BakedModel bakeUncached(UnbakedModel var1, ModelState var2) {
-         if (var1 instanceof BlockModel var3) {
-            if (var3.getRootModel() == SpecialModels.GENERATED_MARKER) {
-               return ModelBakery.ITEM_MODEL_GENERATOR.generateBlockModel(this.modelTextureGetter, var3).bake(this.modelTextureGetter, var2, false);
-            }
-         }
-
-         return var1.bake(this, this.modelTextureGetter, var2);
+      public ModelDebugName rootName() {
+         return this.rootName;
       }
    }
 
-   private static record BakedCacheKey(ResourceLocation id, Transformation transformation, boolean isUvLocked) {
+   static record BakedCacheKey(ResourceLocation id, Transformation transformation, boolean isUvLocked) {
       BakedCacheKey(ResourceLocation var1, Transformation var2, boolean var3) {
          super();
          this.id = var1;
          this.transformation = var2;
          this.isUvLocked = var3;
       }
+   }
 
-      public ResourceLocation id() {
-         return this.id;
+   public interface TextureGetter {
+      TextureAtlasSprite get(ModelDebugName var1, Material var2);
+
+      TextureAtlasSprite reportMissingReference(ModelDebugName var1, String var2);
+
+      default SpriteGetter bind(final ModelDebugName var1) {
+         return new SpriteGetter() {
+            public TextureAtlasSprite get(Material var1x) {
+               return TextureGetter.this.get(var1, var1x);
+            }
+
+            public TextureAtlasSprite reportMissingReference(String var1x) {
+               return TextureGetter.this.reportMissingReference(var1, var1x);
+            }
+         };
       }
+   }
 
-      public Transformation transformation() {
-         return this.transformation;
-      }
-
-      public boolean isUvLocked() {
-         return this.isUvLocked;
+   public static record BakingResult(BakedModel missingModel, Map<ModelResourceLocation, BakedModel> blockStateModels, ItemModel missingItemModel, Map<ResourceLocation, ItemModel> itemStackModels, Map<ResourceLocation, ClientItem.Properties> itemProperties) {
+      public BakingResult(BakedModel var1, Map<ModelResourceLocation, BakedModel> var2, ItemModel var3, Map<ResourceLocation, ItemModel> var4, Map<ResourceLocation, ClientItem.Properties> var5) {
+         super();
+         this.missingModel = var1;
+         this.blockStateModels = var2;
+         this.missingItemModel = var3;
+         this.itemStackModels = var4;
+         this.itemProperties = var5;
       }
    }
 }

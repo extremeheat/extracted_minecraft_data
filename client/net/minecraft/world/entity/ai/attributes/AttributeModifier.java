@@ -19,9 +19,7 @@ import org.slf4j.Logger;
 
 public record AttributeModifier(ResourceLocation id, double amount, Operation operation) {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<AttributeModifier> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceLocation.CODEC.fieldOf("id").forGetter(AttributeModifier::id), Codec.DOUBLE.fieldOf("amount").forGetter(AttributeModifier::amount), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(AttributeModifier::operation)).apply(var0, AttributeModifier::new);
-   });
+   public static final MapCodec<AttributeModifier> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("id").forGetter(AttributeModifier::id), Codec.DOUBLE.fieldOf("amount").forGetter(AttributeModifier::amount), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(AttributeModifier::operation)).apply(var0, AttributeModifier::new));
    public static final Codec<AttributeModifier> CODEC;
    public static final StreamCodec<ByteBuf, AttributeModifier> STREAM_CODEC;
 
@@ -52,18 +50,6 @@ public record AttributeModifier(ResourceLocation id, double amount, Operation op
       return var1.equals(this.id);
    }
 
-   public ResourceLocation id() {
-      return this.id;
-   }
-
-   public double amount() {
-      return this.amount;
-   }
-
-   public Operation operation() {
-      return this.operation;
-   }
-
    static {
       CODEC = MAP_CODEC.codec();
       STREAM_CODEC = StreamCodec.composite(ResourceLocation.STREAM_CODEC, AttributeModifier::id, ByteBufCodecs.DOUBLE, AttributeModifier::amount, AttributeModifier.Operation.STREAM_CODEC, AttributeModifier::operation, AttributeModifier::new);
@@ -74,9 +60,9 @@ public record AttributeModifier(ResourceLocation id, double amount, Operation op
       ADD_MULTIPLIED_BASE("add_multiplied_base", 1),
       ADD_MULTIPLIED_TOTAL("add_multiplied_total", 2);
 
-      public static final IntFunction<Operation> BY_ID = ByIdMap.continuous(Operation::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final IntFunction<Operation> BY_ID = ByIdMap.<Operation>continuous(Operation::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       public static final StreamCodec<ByteBuf, Operation> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Operation::id);
-      public static final Codec<Operation> CODEC = StringRepresentable.fromEnum(Operation::values);
+      public static final Codec<Operation> CODEC = StringRepresentable.<Operation>fromEnum(Operation::values);
       private final String name;
       private final int id;
 

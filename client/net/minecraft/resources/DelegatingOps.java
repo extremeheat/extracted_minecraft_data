@@ -24,19 +24,19 @@ public abstract class DelegatingOps<T> implements DynamicOps<T> {
    }
 
    public T empty() {
-      return this.delegate.empty();
+      return (T)this.delegate.empty();
    }
 
    public T emptyMap() {
-      return this.delegate.emptyMap();
+      return (T)this.delegate.emptyMap();
    }
 
    public T emptyList() {
-      return this.delegate.emptyList();
+      return (T)this.delegate.emptyList();
    }
 
    public <U> U convertTo(DynamicOps<U> var1, T var2) {
-      return this.delegate.convertTo(var1, var2);
+      return (U)this.delegate.convertTo(var1, var2);
    }
 
    public DataResult<Number> getNumberValue(T var1) {
@@ -44,31 +44,31 @@ public abstract class DelegatingOps<T> implements DynamicOps<T> {
    }
 
    public T createNumeric(Number var1) {
-      return this.delegate.createNumeric(var1);
+      return (T)this.delegate.createNumeric(var1);
    }
 
    public T createByte(byte var1) {
-      return this.delegate.createByte(var1);
+      return (T)this.delegate.createByte(var1);
    }
 
    public T createShort(short var1) {
-      return this.delegate.createShort(var1);
+      return (T)this.delegate.createShort(var1);
    }
 
    public T createInt(int var1) {
-      return this.delegate.createInt(var1);
+      return (T)this.delegate.createInt(var1);
    }
 
    public T createLong(long var1) {
-      return this.delegate.createLong(var1);
+      return (T)this.delegate.createLong(var1);
    }
 
    public T createFloat(float var1) {
-      return this.delegate.createFloat(var1);
+      return (T)this.delegate.createFloat(var1);
    }
 
    public T createDouble(double var1) {
-      return this.delegate.createDouble(var1);
+      return (T)this.delegate.createDouble(var1);
    }
 
    public DataResult<Boolean> getBooleanValue(T var1) {
@@ -76,7 +76,7 @@ public abstract class DelegatingOps<T> implements DynamicOps<T> {
    }
 
    public T createBoolean(boolean var1) {
-      return this.delegate.createBoolean(var1);
+      return (T)this.delegate.createBoolean(var1);
    }
 
    public DataResult<String> getStringValue(T var1) {
@@ -84,7 +84,7 @@ public abstract class DelegatingOps<T> implements DynamicOps<T> {
    }
 
    public T createString(String var1) {
-      return this.delegate.createString(var1);
+      return (T)this.delegate.createString(var1);
    }
 
    public DataResult<T> mergeToList(T var1, T var2) {
@@ -120,11 +120,11 @@ public abstract class DelegatingOps<T> implements DynamicOps<T> {
    }
 
    public T createMap(Map<T, T> var1) {
-      return this.delegate.createMap(var1);
+      return (T)this.delegate.createMap(var1);
    }
 
    public T createMap(Stream<Pair<T, T>> var1) {
-      return this.delegate.createMap(var1);
+      return (T)this.delegate.createMap(var1);
    }
 
    public DataResult<MapLike<T>> getMap(T var1) {
@@ -140,7 +140,7 @@ public abstract class DelegatingOps<T> implements DynamicOps<T> {
    }
 
    public T createList(Stream<T> var1) {
-      return this.delegate.createList(var1);
+      return (T)this.delegate.createList(var1);
    }
 
    public DataResult<ByteBuffer> getByteBuffer(T var1) {
@@ -148,7 +148,7 @@ public abstract class DelegatingOps<T> implements DynamicOps<T> {
    }
 
    public T createByteList(ByteBuffer var1) {
-      return this.delegate.createByteList(var1);
+      return (T)this.delegate.createByteList(var1);
    }
 
    public DataResult<IntStream> getIntStream(T var1) {
@@ -156,7 +156,7 @@ public abstract class DelegatingOps<T> implements DynamicOps<T> {
    }
 
    public T createIntList(IntStream var1) {
-      return this.delegate.createIntList(var1);
+      return (T)this.delegate.createIntList(var1);
    }
 
    public DataResult<LongStream> getLongStream(T var1) {
@@ -164,11 +164,11 @@ public abstract class DelegatingOps<T> implements DynamicOps<T> {
    }
 
    public T createLongList(LongStream var1) {
-      return this.delegate.createLongList(var1);
+      return (T)this.delegate.createLongList(var1);
    }
 
    public T remove(T var1, String var2) {
-      return this.delegate.remove(var1, var2);
+      return (T)this.delegate.remove(var1, var2);
    }
 
    public boolean compressMaps() {

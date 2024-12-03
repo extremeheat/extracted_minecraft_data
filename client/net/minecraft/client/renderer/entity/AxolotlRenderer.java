@@ -14,11 +14,7 @@ import net.minecraft.world.entity.animal.axolotl.Axolotl;
 
 public class AxolotlRenderer extends AgeableMobRenderer<Axolotl, AxolotlRenderState, AxolotlModel> {
    private static final Map<Axolotl.Variant, ResourceLocation> TEXTURE_BY_TYPE = (Map)Util.make(Maps.newHashMap(), (var0) -> {
-      Axolotl.Variant[] var1 = Axolotl.Variant.values();
-      int var2 = var1.length;
-
-      for(int var3 = 0; var3 < var2; ++var3) {
-         Axolotl.Variant var4 = var1[var3];
+      for(Axolotl.Variant var4 : Axolotl.Variant.values()) {
          var0.put(var4, ResourceLocation.withDefaultNamespace(String.format(Locale.ROOT, "textures/entity/axolotl/axolotl_%s.png", var4.getName())));
       }
 

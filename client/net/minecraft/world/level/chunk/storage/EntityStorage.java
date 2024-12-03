@@ -62,7 +62,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
                   this.level.getServer().reportChunkLoadFailure(var6, this.simpleRegionStorage.storageInfo(), var1);
                }
 
-               CompoundTag var7 = this.simpleRegionStorage.upgradeChunkTag((CompoundTag)((CompoundTag)var2x.get()), -1);
+               CompoundTag var7 = this.simpleRegionStorage.upgradeChunkTag((CompoundTag)var2x.get(), -1);
                ListTag var4 = var7.getList("Entities", 10);
                List var5 = (List)EntityType.loadEntitiesRecursive(var4, this.level, EntitySpawnReason.LOAD).collect(ImmutableList.toImmutableList());
                return new ChunkEntities(var1, var5);
@@ -84,7 +84,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
    }
 
    private static ChunkEntities<Entity> emptyChunk(ChunkPos var0) {
-      return new ChunkEntities(var0, ImmutableList.of());
+      return new ChunkEntities<Entity>(var0, ImmutableList.of());
    }
 
    public void storeEntities(ChunkEntities<Entity> var1) {

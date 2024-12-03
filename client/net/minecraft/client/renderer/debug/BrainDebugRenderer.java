@@ -7,7 +7,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -99,9 +98,7 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    public void removeBrainDump(int var1) {
-      this.brainDumpsPerEntity.values().removeIf((var1x) -> {
-         return var1x.id() == var1;
-      });
+      this.brainDumpsPerEntity.values().removeIf((var1x) -> var1x.id() == var1);
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
@@ -128,10 +125,8 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          }
 
       });
-      Iterator var10 = this.pois.keySet().iterator();
 
-      while(var10.hasNext()) {
-         BlockPos var11 = (BlockPos)var10.next();
+      for(BlockPos var11 : this.pois.keySet()) {
          if (var9.closerThan(var11, 30.0)) {
             highlightPoi(var1, var2, var11);
          }
@@ -216,19 +211,17 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          ++var11;
       }
 
-      String var13;
-      Iterator var14;
       if (var10) {
-         for(var14 = var3.behaviors().iterator(); var14.hasNext(); ++var11) {
-            var13 = (String)var14.next();
+         for(String var13 : var3.behaviors()) {
             renderTextOverMob(var1, var2, var3.pos(), var11, var13, -16711681, 0.02F);
+            ++var11;
          }
       }
 
       if (var10) {
-         for(var14 = var3.activities().iterator(); var14.hasNext(); ++var11) {
-            var13 = (String)var14.next();
-            renderTextOverMob(var1, var2, var3.pos(), var11, var13, -16711936, 0.02F);
+         for(String var19 : var3.activities()) {
+            renderTextOverMob(var1, var2, var3.pos(), var11, var19, -16711936, 0.02F);
+            ++var11;
          }
       }
 
@@ -243,20 +236,21 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       }
 
       if (var10) {
-         for(var14 = var3.gossips().iterator(); var14.hasNext(); ++var11) {
-            var13 = (String)var14.next();
-            if (var13.startsWith(var3.name())) {
-               renderTextOverMob(var1, var2, var3.pos(), var11, var13, -1, 0.02F);
+         for(String var20 : var3.gossips()) {
+            if (var20.startsWith(var3.name())) {
+               renderTextOverMob(var1, var2, var3.pos(), var11, var20, -1, 0.02F);
             } else {
-               renderTextOverMob(var1, var2, var3.pos(), var11, var13, -23296, 0.02F);
+               renderTextOverMob(var1, var2, var3.pos(), var11, var20, -23296, 0.02F);
             }
+
+            ++var11;
          }
       }
 
       if (var10) {
-         for(var14 = Lists.reverse(var3.memories()).iterator(); var14.hasNext(); ++var11) {
-            var13 = (String)var14.next();
-            renderTextOverMob(var1, var2, var3.pos(), var11, var13, -3355444, 0.02F);
+         for(String var21 : Lists.reverse(var3.memories())) {
+            renderTextOverMob(var1, var2, var3.pos(), var11, var21, -3355444, 0.02F);
+            ++var11;
          }
       }
 
@@ -310,31 +304,20 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    private Collection<UUID> getTicketHolders(BlockPos var1) {
-      return (Collection)this.brainDumpsPerEntity.values().stream().filter((var1x) -> {
-         return var1x.hasPoi(var1);
-      }).map(BrainDebugPayload.BrainDump::uuid).collect(Collectors.toSet());
+      return (Collection)this.brainDumpsPerEntity.values().stream().filter((var1x) -> var1x.hasPoi(var1)).map(BrainDebugPayload.BrainDump::uuid).collect(Collectors.toSet());
    }
 
    private Collection<UUID> getPotentialTicketHolders(BlockPos var1) {
-      return (Collection)this.brainDumpsPerEntity.values().stream().filter((var1x) -> {
-         return var1x.hasPotentialPoi(var1);
-      }).map(BrainDebugPayload.BrainDump::uuid).collect(Collectors.toSet());
+      return (Collection)this.brainDumpsPerEntity.values().stream().filter((var1x) -> var1x.hasPotentialPoi(var1)).map(BrainDebugPayload.BrainDump::uuid).collect(Collectors.toSet());
    }
 
    private Map<BlockPos, List<String>> getGhostPois() {
       HashMap var1 = Maps.newHashMap();
-      Iterator var2 = this.brainDumpsPerEntity.values().iterator();
 
-      while(var2.hasNext()) {
-         BrainDebugPayload.BrainDump var3 = (BrainDebugPayload.BrainDump)var2.next();
-         Iterator var4 = Iterables.concat(var3.pois(), var3.potentialPois()).iterator();
-
-         while(var4.hasNext()) {
-            BlockPos var5 = (BlockPos)var4.next();
+      for(BrainDebugPayload.BrainDump var3 : this.brainDumpsPerEntity.values()) {
+         for(BlockPos var5 : Iterables.concat(var3.pois(), var3.potentialPois())) {
             if (!this.pois.containsKey(var5)) {
-               ((List)var1.computeIfAbsent(var5, (var0) -> {
-                  return Lists.newArrayList();
-               })).add(var3.name());
+               ((List)var1.computeIfAbsent(var5, (var0) -> Lists.newArrayList())).add(var3.name());
             }
          }
       }
@@ -343,9 +326,7 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    private void updateLastLookedAtUuid() {
-      DebugRenderer.getTargetedEntity(this.minecraft.getCameraEntity(), 8).ifPresent((var1) -> {
-         this.lastLookedAtUuid = var1.getUUID();
-      });
+      DebugRenderer.getTargetedEntity(this.minecraft.getCameraEntity(), 8).ifPresent((var1) -> this.lastLookedAtUuid = var1.getUUID());
    }
 
    public static class PoiInfo {

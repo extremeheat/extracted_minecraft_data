@@ -30,9 +30,7 @@ public class RealmsSettingsScreen extends RealmsScreen {
       String var2 = this.serverData.state == RealmsServer.State.OPEN ? "mco.configure.world.buttons.close" : "mco.configure.world.buttons.open";
       Button var3 = Button.builder(Component.translatable(var2), (var1x) -> {
          if (this.serverData.state == RealmsServer.State.OPEN) {
-            this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this, Component.translatable("mco.configure.world.close.question.line1"), (var1) -> {
-               this.configureWorldScreen.closeTheWorld();
-            }));
+            this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this, Component.translatable("mco.configure.world.close.question.line1"), (var1) -> this.configureWorldScreen.closeTheWorld()));
          } else {
             this.configureWorldScreen.openTheWorld(false);
          }
@@ -47,15 +45,9 @@ public class RealmsSettingsScreen extends RealmsScreen {
       this.descEdit.setMaxLength(32);
       this.descEdit.setValue(this.serverData.getDescription());
       this.addRenderableWidget(this.descEdit);
-      Button var4 = (Button)this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.buttons.done"), (var1x) -> {
-         this.save();
-      }).bounds(var1 - 2, row(12), 106, 20).build());
-      this.nameEdit.setResponder((var1x) -> {
-         var4.active = !StringUtil.isBlank(var1x);
-      });
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
-         this.onClose();
-      }).bounds(this.width / 2 + 2, row(12), 106, 20).build());
+      Button var4 = (Button)this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.buttons.done"), (var1x) -> this.save()).bounds(var1 - 2, row(12), 106, 20).build());
+      this.nameEdit.setResponder((var1x) -> var4.active = !StringUtil.isBlank(var1x));
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).bounds(this.width / 2 + 2, row(12), 106, 20).build());
    }
 
    protected void setInitialFocus() {
@@ -69,8 +61,8 @@ public class RealmsSettingsScreen extends RealmsScreen {
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, (Component)this.title, this.width / 2, 17, -1);
-      var1.drawString(this.font, (Component)NAME_LABEL, this.width / 2 - 106, row(3), -1, false);
-      var1.drawString(this.font, (Component)DESCRIPTION_LABEL, this.width / 2 - 106, row(7), -1, false);
+      var1.drawString(this.font, (Component)NAME_LABEL, this.width / 2 - 106, row(3), -1);
+      var1.drawString(this.font, (Component)DESCRIPTION_LABEL, this.width / 2 - 106, row(7), -1);
    }
 
    public void save() {

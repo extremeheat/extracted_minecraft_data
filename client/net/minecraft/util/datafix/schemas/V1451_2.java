@@ -14,9 +14,7 @@ public class V1451_2 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {
       Map var2 = super.registerBlockEntities(var1);
-      var1.register(var2, "minecraft:piston", (var1x) -> {
-         return DSL.optionalFields("blockState", References.BLOCK_STATE.in(var1));
-      });
+      var1.register(var2, "minecraft:piston", (var1x) -> DSL.optionalFields("blockState", References.BLOCK_STATE.in(var1)));
       return var2;
    }
 }

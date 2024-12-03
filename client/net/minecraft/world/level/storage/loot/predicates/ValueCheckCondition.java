@@ -11,9 +11,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public record ValueCheckCondition(NumberProvider provider, IntRange range) implements LootItemCondition {
-   public static final MapCodec<ValueCheckCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(NumberProviders.CODEC.fieldOf("value").forGetter(ValueCheckCondition::provider), IntRange.CODEC.fieldOf("range").forGetter(ValueCheckCondition::range)).apply(var0, ValueCheckCondition::new);
-   });
+   public static final MapCodec<ValueCheckCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(NumberProviders.CODEC.fieldOf("value").forGetter(ValueCheckCondition::provider), IntRange.CODEC.fieldOf("range").forGetter(ValueCheckCondition::range)).apply(var0, ValueCheckCondition::new));
 
    public ValueCheckCondition(NumberProvider var1, IntRange var2) {
       super();
@@ -34,17 +32,7 @@ public record ValueCheckCondition(NumberProvider provider, IntRange range) imple
    }
 
    public static LootItemCondition.Builder hasValue(NumberProvider var0, IntRange var1) {
-      return () -> {
-         return new ValueCheckCondition(var0, var1);
-      };
-   }
-
-   public NumberProvider provider() {
-      return this.provider;
-   }
-
-   public IntRange range() {
-      return this.range;
+      return () -> new ValueCheckCondition(var0, var1);
    }
 
    // $FF: synthetic method

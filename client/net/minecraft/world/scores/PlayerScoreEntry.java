@@ -26,22 +26,4 @@ public record PlayerScoreEntry(String owner, int value, @Nullable Component disp
    public MutableComponent formatValue(NumberFormat var1) {
       return ((NumberFormat)Objects.requireNonNullElse(this.numberFormatOverride, var1)).format(this.value);
    }
-
-   public String owner() {
-      return this.owner;
-   }
-
-   public int value() {
-      return this.value;
-   }
-
-   @Nullable
-   public Component display() {
-      return this.display;
-   }
-
-   @Nullable
-   public NumberFormat numberFormatOverride() {
-      return this.numberFormatOverride;
-   }
 }

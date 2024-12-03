@@ -21,23 +21,6 @@ public record BlockElementFace(@Nullable Direction cullForDirection, int tintInd
       this.uv = var4;
    }
 
-   @Nullable
-   public Direction cullForDirection() {
-      return this.cullForDirection;
-   }
-
-   public int tintIndex() {
-      return this.tintIndex;
-   }
-
-   public String texture() {
-      return this.texture;
-   }
-
-   public BlockFaceUV uv() {
-      return this.uv;
-   }
-
    protected static class Deserializer implements JsonDeserializer<BlockElementFace> {
       private static final int DEFAULT_TINT_INDEX = -1;
 

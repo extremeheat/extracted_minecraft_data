@@ -10,7 +10,7 @@ public enum NarratorStatus {
    CHAT(2, "options.narrator.chat"),
    SYSTEM(3, "options.narrator.system");
 
-   private static final IntFunction<NarratorStatus> BY_ID = ByIdMap.continuous(NarratorStatus::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   private static final IntFunction<NarratorStatus> BY_ID = ByIdMap.<NarratorStatus>continuous(NarratorStatus::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    private final int id;
    private final Component name;
 

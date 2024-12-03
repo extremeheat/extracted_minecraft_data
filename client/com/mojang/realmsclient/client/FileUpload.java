@@ -68,9 +68,7 @@ public class FileUpload {
       if (this.uploadTask != null) {
          return (new UploadResult.Builder()).build();
       } else {
-         this.uploadTask = CompletableFuture.supplyAsync(() -> {
-            return this.requestUpload(0);
-         }, Util.backgroundExecutor());
+         this.uploadTask = CompletableFuture.supplyAsync(() -> this.requestUpload(0), Util.backgroundExecutor());
          if (this.cancelled.get()) {
             this.cancel();
             return (new UploadResult.Builder()).build();
@@ -93,27 +91,29 @@ public class FileUpload {
          HttpPost var3 = new HttpPost(this.uploadInfo.getUploadEndpoint().resolve("/upload/" + this.realmId + "/" + this.slotId));
          CloseableHttpClient var4 = HttpClientBuilder.create().setDefaultRequestConfig(this.requestConfig).build();
 
+         UploadResult var8;
          try {
             this.setupRequest(var3);
             CloseableHttpResponse var5 = var4.execute(var3);
             long var6 = this.getRetryDelaySeconds(var5);
-            if (this.shouldRetry(var6, var1)) {
-               UploadResult var8 = this.retryUploadAfter(var6, var1);
-               return var8;
+            if (!this.shouldRetry(var6, var1)) {
+               this.handleResponse(var5, var2);
+               return var2.build();
             }
 
-            this.handleResponse(var5, var2);
+            var8 = this.retryUploadAfter(var6, var1);
          } catch (Exception var12) {
-            if (this.cancelled.get()) {
-               throw new RealmsUploadCanceledException();
+            if (!this.cancelled.get()) {
+               LOGGER.error("Caught exception while uploading: ", var12);
+               return var2.build();
             }
 
-            LOGGER.error("Caught exception while uploading: ", var12);
+            throw new RealmsUploadCanceledException();
          } finally {
             this.cleanup(var3, var4);
          }
 
-         return var2.build();
+         return var8;
       }
    }
 
@@ -194,22 +194,22 @@ public class FileUpload {
 
          try {
             byte[] var3 = new byte[4096];
-            int var4;
+            int var9;
             if (this.length < 0L) {
-               while((var4 = var2.read(var3)) != -1) {
+               while((var9 = var2.read(var3)) != -1) {
                   if (FileUpload.this.cancelled.get()) {
                      throw new RealmsUploadCanceledException();
                   }
 
-                  var1.write(var3, 0, var4);
-                  this.uploadStatus.onWrite((long)var4);
+                  var1.write(var3, 0, var9);
+                  this.uploadStatus.onWrite((long)var9);
                }
             } else {
                long var5 = this.length;
 
                while(var5 > 0L) {
-                  var4 = var2.read(var3, 0, (int)Math.min(4096L, var5));
-                  if (var4 == -1) {
+                  var9 = var2.read(var3, 0, (int)Math.min(4096L, var5));
+                  if (var9 == -1) {
                      break;
                   }
 
@@ -217,9 +217,9 @@ public class FileUpload {
                      throw new RealmsUploadCanceledException();
                   }
 
-                  var1.write(var3, 0, var4);
-                  this.uploadStatus.onWrite((long)var4);
-                  var5 -= (long)var4;
+                  var1.write(var3, 0, var9);
+                  this.uploadStatus.onWrite((long)var9);
+                  var5 -= (long)var9;
                   var1.flush();
                }
             }

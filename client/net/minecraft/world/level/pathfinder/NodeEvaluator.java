@@ -18,7 +18,7 @@ public abstract class NodeEvaluator {
    protected int entityWidth;
    protected int entityHeight;
    protected int entityDepth;
-   protected boolean canPassDoors;
+   protected boolean canPassDoors = true;
    protected boolean canOpenDoors;
    protected boolean canFloat;
    protected boolean canWalkOverFences;
@@ -46,9 +46,7 @@ public abstract class NodeEvaluator {
    }
 
    protected Node getNode(int var1, int var2, int var3) {
-      return (Node)this.nodes.computeIfAbsent(Node.createHash(var1, var2, var3), (var3x) -> {
-         return new Node(var1, var2, var3);
-      });
+      return (Node)this.nodes.computeIfAbsent(Node.createHash(var1, var2, var3), (var3x) -> new Node(var1, var2, var3));
    }
 
    public abstract Node getStart();

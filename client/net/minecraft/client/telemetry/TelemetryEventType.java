@@ -7,7 +7,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -37,9 +36,7 @@ public class TelemetryEventType {
       this.exportKey = var2;
       this.properties = var3;
       this.isOptIn = var4;
-      this.codec = TelemetryPropertyMap.createCodec(var3).xmap((var1x) -> {
-         return new TelemetryEventInstance(this, var1x);
-      }, TelemetryEventInstance::properties);
+      this.codec = TelemetryPropertyMap.createCodec(var3).xmap((var1x) -> new TelemetryEventInstance(this, var1x), TelemetryEventInstance::properties);
    }
 
    public static Builder builder(String var0, String var1) {
@@ -64,10 +61,8 @@ public class TelemetryEventType {
 
    public TelemetryEvent export(TelemetrySession var1, TelemetryPropertyMap var2) {
       TelemetryEvent var3 = var1.createNewEvent(this.exportKey);
-      Iterator var4 = this.properties.iterator();
 
-      while(var4.hasNext()) {
-         TelemetryProperty var5 = (TelemetryProperty)var4.next();
+      for(TelemetryProperty var5 : this.properties) {
          var5.export(var2, var3);
       }
 
@@ -101,9 +96,7 @@ public class TelemetryEventType {
    static {
       CODEC = Codec.STRING.comapFlatMap((var0) -> {
          TelemetryEventType var1 = (TelemetryEventType)REGISTRY.get(var0);
-         return var1 != null ? DataResult.success(var1) : DataResult.error(() -> {
-            return "No TelemetryEventType with key: '" + var0 + "'";
-         });
+         return var1 != null ? DataResult.success(var1) : DataResult.error(() -> "No TelemetryEventType with key: '" + var0 + "'");
       }, TelemetryEventType::id);
       GLOBAL_PROPERTIES = List.of(TelemetryProperty.USER_ID, TelemetryProperty.CLIENT_ID, TelemetryProperty.MINECRAFT_SESSION_ID, TelemetryProperty.GAME_VERSION, TelemetryProperty.OPERATING_SYSTEM, TelemetryProperty.PLATFORM, TelemetryProperty.CLIENT_MODDED, TelemetryProperty.LAUNCHER_NAME, TelemetryProperty.EVENT_TIMESTAMP_UTC, TelemetryProperty.OPT_IN);
       WORLD_SESSION_PROPERTIES = Stream.concat(GLOBAL_PROPERTIES.stream(), Stream.of(TelemetryProperty.WORLD_SESSION_ID, TelemetryProperty.SERVER_MODDED, TelemetryProperty.SERVER_TYPE)).toList();

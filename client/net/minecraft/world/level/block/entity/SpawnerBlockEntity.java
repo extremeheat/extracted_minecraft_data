@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class SpawnerBlockEntity extends BlockEntity implements Spawner {
-   private final BaseSpawner spawner = new BaseSpawner(this) {
+   private final BaseSpawner spawner = new BaseSpawner() {
       public void broadcastEvent(Level var1, BlockPos var2, int var3) {
          var1.blockEvent(var2, Blocks.SPAWNER, var3, 0);
       }
@@ -66,10 +66,6 @@ public class SpawnerBlockEntity extends BlockEntity implements Spawner {
 
    public boolean triggerEvent(int var1, int var2) {
       return this.spawner.onEventTriggered(this.level, var1) ? true : super.triggerEvent(var1, var2);
-   }
-
-   public boolean onlyOpCanSetNbt() {
-      return true;
    }
 
    public void setEntityId(EntityType<?> var1, RandomSource var2) {

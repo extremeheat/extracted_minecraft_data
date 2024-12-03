@@ -49,7 +49,7 @@ public class JukeboxSongPlayer {
    public void play(LevelAccessor var1, Holder<JukeboxSong> var2) {
       this.song = var2;
       this.ticksSinceSongStarted = 0L;
-      int var3 = var1.registryAccess().lookupOrThrow(Registries.JUKEBOX_SONG).getId((JukeboxSong)this.song.value());
+      int var3 = var1.registryAccess().lookupOrThrow(Registries.JUKEBOX_SONG).getId(this.song.value());
       var1.levelEvent((Player)null, 1010, this.blockPos, var3);
       this.onSongChanged.notifyChange();
    }
@@ -58,7 +58,7 @@ public class JukeboxSongPlayer {
       if (this.song != null) {
          this.song = null;
          this.ticksSinceSongStarted = 0L;
-         var1.gameEvent((Holder)GameEvent.JUKEBOX_STOP_PLAY, (BlockPos)this.blockPos, (GameEvent.Context)GameEvent.Context.of(var2));
+         var1.gameEvent(GameEvent.JUKEBOX_STOP_PLAY, (BlockPos)this.blockPos, (GameEvent.Context)GameEvent.Context.of(var2));
          var1.levelEvent(1011, this.blockPos, 0);
          this.onSongChanged.notifyChange();
       }
@@ -70,7 +70,7 @@ public class JukeboxSongPlayer {
             this.stop(var1, var2);
          } else {
             if (this.shouldEmitJukeboxPlayingEvent()) {
-               var1.gameEvent((Holder)GameEvent.JUKEBOX_PLAY, (BlockPos)this.blockPos, (GameEvent.Context)GameEvent.Context.of(var2));
+               var1.gameEvent(GameEvent.JUKEBOX_PLAY, (BlockPos)this.blockPos, (GameEvent.Context)GameEvent.Context.of(var2));
                spawnMusicParticles(var1, this.blockPos);
             }
 

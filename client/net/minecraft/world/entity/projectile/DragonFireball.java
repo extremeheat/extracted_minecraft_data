@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.projectile;
 
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -43,10 +42,7 @@ public class DragonFireball extends AbstractHurtingProjectile {
             var3.setRadiusPerTick((7.0F - var3.getRadius()) / (float)var3.getDuration());
             var3.addEffect(new MobEffectInstance(MobEffects.HARM, 1, 1));
             if (!var2.isEmpty()) {
-               Iterator var5 = var2.iterator();
-
-               while(var5.hasNext()) {
-                  LivingEntity var6 = (LivingEntity)var5.next();
+               for(LivingEntity var6 : var2) {
                   double var7 = this.distanceToSqr(var6);
                   if (var7 < 16.0) {
                      var3.setPos(var6.getX(), var6.getY(), var6.getZ());

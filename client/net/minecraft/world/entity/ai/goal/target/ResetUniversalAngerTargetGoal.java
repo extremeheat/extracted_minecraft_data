@@ -34,11 +34,7 @@ public class ResetUniversalAngerTargetGoal<T extends Mob & NeutralMob> extends G
       this.lastHurtByPlayerTimestamp = this.mob.getLastHurtByMobTimestamp();
       ((NeutralMob)this.mob).forgetCurrentTargetAndRefreshUniversalAnger();
       if (this.alertOthersOfSameType) {
-         this.getNearbyMobsOfSameType().stream().filter((var1) -> {
-            return var1 != this.mob;
-         }).map((var0) -> {
-            return (NeutralMob)var0;
-         }).forEach(NeutralMob::forgetCurrentTargetAndRefreshUniversalAnger);
+         this.getNearbyMobsOfSameType().stream().filter((var1) -> var1 != this.mob).map((var0) -> (NeutralMob)var0).forEach(NeutralMob::forgetCurrentTargetAndRefreshUniversalAnger);
       }
 
       super.start();

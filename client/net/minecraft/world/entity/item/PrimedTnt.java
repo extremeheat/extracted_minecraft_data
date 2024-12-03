@@ -33,7 +33,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    private static final int DEFAULT_FUSE_TIME = 80;
    private static final float DEFAULT_EXPLOSION_POWER = 4.0F;
    private static final String TAG_BLOCK_STATE = "block_state";
-   private static final String TAG_FUSE = "fuse";
+   public static final String TAG_FUSE = "fuse";
    private static final String TAG_EXPLOSION_POWER = "explosion_power";
    private static final ExplosionDamageCalculator USED_PORTAL_DAMAGE_CALCULATOR;
    @Nullable
@@ -181,8 +181,8 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    }
 
    static {
-      DATA_FUSE_ID = SynchedEntityData.defineId(PrimedTnt.class, EntityDataSerializers.INT);
-      DATA_BLOCK_STATE_ID = SynchedEntityData.defineId(PrimedTnt.class, EntityDataSerializers.BLOCK_STATE);
+      DATA_FUSE_ID = SynchedEntityData.<Integer>defineId(PrimedTnt.class, EntityDataSerializers.INT);
+      DATA_BLOCK_STATE_ID = SynchedEntityData.<BlockState>defineId(PrimedTnt.class, EntityDataSerializers.BLOCK_STATE);
       USED_PORTAL_DAMAGE_CALCULATOR = new ExplosionDamageCalculator() {
          public boolean shouldBlockExplode(Explosion var1, BlockGetter var2, BlockPos var3, BlockState var4, float var5) {
             return var4.is(Blocks.NETHER_PORTAL) ? false : super.shouldBlockExplode(var1, var2, var3, var4, var5);

@@ -28,11 +28,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
    @Nullable
    private FT_Face face;
    final float oversample;
-   private final CodepointMap<GlyphEntry> glyphs = new CodepointMap((var0) -> {
-      return new GlyphEntry[var0];
-   }, (var0) -> {
-      return new GlyphEntry[var0][];
-   });
+   private final CodepointMap<GlyphEntry> glyphs = new CodepointMap<GlyphEntry>((var0) -> new GlyphEntry[var0], (var0) -> new GlyphEntry[var0][]);
 
    public TrueTypeGlyphProvider(ByteBuffer var1, FT_Face var2, float var3, float var4, float var5, float var6, String var7) {
       super();
@@ -87,7 +83,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
 
    @Nullable
    public GlyphInfo getGlyph(int var1) {
-      GlyphEntry var2 = (GlyphEntry)this.glyphs.get(var1);
+      GlyphEntry var2 = this.glyphs.get(var1);
       return var2 != null ? this.getOrLoadGlyphInfo(var1, var2) : null;
    }
 
@@ -123,9 +119,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
          int var9 = var5.bitmap_top();
          int var10 = var7.width();
          int var11 = var7.rows();
-         return (GlyphInfo)(var10 > 0 && var11 > 0 ? new Glyph((float)var8, (float)var9, var10, var11, var6, var3) : () -> {
-            return var6 / this.oversample;
-         });
+         return (GlyphInfo)(var10 > 0 && var11 > 0 ? new Glyph((float)var8, (float)var9, var10, var11, var6, var3) : () -> var6 / this.oversample);
       }
    }
 
@@ -213,7 +207,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
                FT_Face var3 = TrueTypeGlyphProvider.this.validateFontOpen();
                NativeImage var4 = new NativeImage(NativeImage.Format.LUMINANCE, Glyph.this.width, Glyph.this.height, false);
                if (var4.copyFromFont(var3, Glyph.this.index)) {
-                  var4.upload(0, var1, var2, 0, 0, Glyph.this.width, Glyph.this.height, false, true);
+                  var4.upload(0, var1, var2, 0, 0, Glyph.this.width, Glyph.this.height, true);
                } else {
                   var4.close();
                }

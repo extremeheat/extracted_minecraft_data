@@ -137,9 +137,7 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
 
    private boolean hasEditableText(Player var1, SignBlockEntity var2, boolean var3) {
       SignText var4 = var2.getText(var3);
-      return Arrays.stream(var4.getMessages(var1.isTextFilteringEnabled())).allMatch((var0) -> {
-         return var0.equals(CommonComponents.EMPTY) || var0.getContents() instanceof PlainTextContents;
-      });
+      return Arrays.stream(var4.getMessages(var1.isTextFilteringEnabled())).allMatch((var0) -> var0.equals(CommonComponents.EMPTY) || var0.getContents() instanceof PlainTextContents);
    }
 
    public abstract float getYRotationDegrees(BlockState var1);

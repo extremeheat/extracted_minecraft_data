@@ -19,12 +19,8 @@ public class Cloner<T> {
    public T clone(T var1, HolderLookup.Provider var2, HolderLookup.Provider var3) {
       RegistryOps var4 = var2.createSerializationContext(JavaOps.INSTANCE);
       RegistryOps var5 = var3.createSerializationContext(JavaOps.INSTANCE);
-      Object var6 = this.directCodec.encodeStart(var4, var1).getOrThrow((var0) -> {
-         return new IllegalStateException("Failed to encode: " + var0);
-      });
-      return this.directCodec.parse(var5, var6).getOrThrow((var0) -> {
-         return new IllegalStateException("Failed to decode: " + var0);
-      });
+      Object var6 = this.directCodec.encodeStart(var4, var1).getOrThrow((var0) -> new IllegalStateException("Failed to encode: " + var0));
+      return (T)this.directCodec.parse(var5, var6).getOrThrow((var0) -> new IllegalStateException("Failed to decode: " + var0));
    }
 
    public static class Factory {

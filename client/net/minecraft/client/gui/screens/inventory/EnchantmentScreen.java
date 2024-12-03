@@ -67,7 +67,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
          double var9 = var1 - (double)(var6 + 60);
          double var11 = var3 - (double)(var7 + 14 + 19 * var8);
          if (var9 >= 0.0 && var11 >= 0.0 && var9 < 108.0 && var11 < 19.0 && ((EnchantmentMenu)this.menu).clickMenuButton(this.minecraft.player, var8)) {
-            this.minecraft.gameMode.handleInventoryButtonClick(((EnchantmentMenu)this.menu).containerId, var8);
+            this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var8);
             return true;
          }
       }
@@ -86,7 +86,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       for(int var8 = 0; var8 < 3; ++var8) {
          int var9 = var5 + 60;
          int var10 = var9 + 20;
-         int var11 = ((EnchantmentMenu)this.menu).costs[var8];
+         int var11 = (this.menu).costs[var8];
          if (var11 == 0) {
             var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ENCHANTMENT_SLOT_DISABLED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
          } else {
@@ -97,7 +97,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
             if ((var7 < var8 + 1 || this.minecraft.player.experienceLevel < var11) && !this.minecraft.player.getAbilities().instabuild) {
                var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ENCHANTMENT_SLOT_DISABLED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
                var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DISABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
-               var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, (var15 & 16711422) >> 1);
+               var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, (var15 & 16711422) >> 1, false);
                var15 = 4226832;
             } else {
                int var16 = var3 - (var5 + 60);
@@ -110,7 +110,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
                }
 
                var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ENABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
-               var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, var15);
+               var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, var15, false);
                var15 = 8453920;
             }
 
@@ -154,10 +154,10 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       int var7 = ((EnchantmentMenu)this.menu).getGoldCount();
 
       for(int var8 = 0; var8 < 3; ++var8) {
-         int var9 = ((EnchantmentMenu)this.menu).costs[var8];
-         Optional var10 = this.minecraft.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get(((EnchantmentMenu)this.menu).enchantClue[var8]);
+         int var9 = (this.menu).costs[var8];
+         Optional var10 = this.minecraft.level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get((this.menu).enchantClue[var8]);
          if (!var10.isEmpty()) {
-            int var11 = ((EnchantmentMenu)this.menu).levelClue[var8];
+            int var11 = (this.menu).levelClue[var8];
             int var12 = var8 + 1;
             if (this.isHovering(60, 14 + 19 * var8, 108, 17, (double)var2, (double)var3) && var9 > 0 && var11 >= 0 && var10 != null) {
                ArrayList var13 = Lists.newArrayList();
@@ -165,7 +165,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
                if (!var6) {
                   var13.add(CommonComponents.EMPTY);
                   if (this.minecraft.player.experienceLevel < var9) {
-                     var13.add(Component.translatable("container.enchant.level.requirement", ((EnchantmentMenu)this.menu).costs[var8]).withStyle(ChatFormatting.RED));
+                     var13.add(Component.translatable("container.enchant.level.requirement", (this.menu).costs[var8]).withStyle(ChatFormatting.RED));
                   } else {
                      MutableComponent var14;
                      if (var12 == 1) {
@@ -209,7 +209,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       boolean var2 = false;
 
       for(int var3 = 0; var3 < 3; ++var3) {
-         if (((EnchantmentMenu)this.menu).costs[var3] != 0) {
+         if ((this.menu).costs[var3] != 0) {
             var2 = true;
          }
       }

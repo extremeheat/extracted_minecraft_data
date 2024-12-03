@@ -37,10 +37,9 @@ public abstract class GlslPreprocessor {
       ArrayList var7 = Lists.newArrayList();
       Matcher var8 = REGEX_MOJ_IMPORT.matcher(var1);
 
-      String var9;
       while(var8.find()) {
          if (!isDirectiveDisabled(var1, var8, var5)) {
-            var9 = var8.group(2);
+            String var9 = var8.group(2);
             boolean var10 = var9 != null;
             if (!var10) {
                var9 = var8.group(3);
@@ -50,14 +49,13 @@ public abstract class GlslPreprocessor {
                String var11 = var1.substring(var5, var8.start(1));
                String var12 = var3 + var9;
                String var13 = this.applyImport(var10, var12);
-               int var14;
                if (!Strings.isNullOrEmpty(var13)) {
                   if (!StringUtil.endsWithNewLine(var13)) {
                      var13 = var13 + System.lineSeparator();
                   }
 
                   ++var2.sourceId;
-                  var14 = var2.sourceId;
+                  int var14 = var2.sourceId;
                   List var15 = this.processImports(var13, var2, var10 ? FileUtil.getFullResourcePath(var12) : "");
                   var15.set(0, String.format(Locale.ROOT, "#line %d %d\n%s", 0, var14, this.processVersions((String)var15.get(0), var2)));
                   if (!StringUtil.isBlank(var11)) {
@@ -66,20 +64,20 @@ public abstract class GlslPreprocessor {
 
                   var7.addAll(var15);
                } else {
-                  String var16 = var10 ? String.format(Locale.ROOT, "/*#moj_import \"%s\"*/", var9) : String.format(Locale.ROOT, "/*#moj_import <%s>*/", var9);
-                  var7.add(var6 + var11 + var16);
+                  String var17 = var10 ? String.format(Locale.ROOT, "/*#moj_import \"%s\"*/", var9) : String.format(Locale.ROOT, "/*#moj_import <%s>*/", var9);
+                  var7.add(var6 + var11 + var17);
                }
 
-               var14 = StringUtil.lineCount(var1.substring(0, var8.end(1)));
-               var6 = String.format(Locale.ROOT, "#line %d %d", var14, var4);
+               int var18 = StringUtil.lineCount(var1.substring(0, var8.end(1)));
+               var6 = String.format(Locale.ROOT, "#line %d %d", var18, var4);
                var5 = var8.end(1);
             }
          }
       }
 
-      var9 = var1.substring(var5);
-      if (!StringUtil.isBlank(var9)) {
-         var7.add(var6 + var9);
+      String var16 = var1.substring(var5);
+      if (!StringUtil.isBlank(var16)) {
+         var7.add(var6 + var16);
       }
 
       return var7;
@@ -139,7 +137,7 @@ public abstract class GlslPreprocessor {
       }
    }
 
-   private static final class Context {
+   static final class Context {
       int glslVersion;
       int sourceId;
 

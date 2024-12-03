@@ -30,14 +30,6 @@ public record ClientboundRegistryDataPacket(ResourceKey<? extends Registry<?>> r
       var1.handleRegistryData(this);
    }
 
-   public ResourceKey<? extends Registry<?>> registry() {
-      return this.registry;
-   }
-
-   public List<RegistrySynchronization.PackedRegistryEntry> entries() {
-      return this.entries;
-   }
-
    static {
       REGISTRY_KEY_STREAM_CODEC = ResourceLocation.STREAM_CODEC.map(ResourceKey::createRegistryKey, ResourceKey::location);
       STREAM_CODEC = StreamCodec.composite(REGISTRY_KEY_STREAM_CODEC, ClientboundRegistryDataPacket::registry, RegistrySynchronization.PackedRegistryEntry.STREAM_CODEC.apply(ByteBufCodecs.list()), ClientboundRegistryDataPacket::entries, ClientboundRegistryDataPacket::new);

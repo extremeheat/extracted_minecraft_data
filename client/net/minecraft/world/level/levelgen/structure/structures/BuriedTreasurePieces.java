@@ -43,11 +43,8 @@ public class BuriedTreasurePieces {
             BlockState var11 = var1.getBlockState(var9.below());
             if (var11 == Blocks.SANDSTONE.defaultBlockState() || var11 == Blocks.STONE.defaultBlockState() || var11 == Blocks.ANDESITE.defaultBlockState() || var11 == Blocks.GRANITE.defaultBlockState() || var11 == Blocks.DIORITE.defaultBlockState()) {
                BlockState var12 = !var10.isAir() && !this.isLiquid(var10) ? var10 : Blocks.SAND.defaultBlockState();
-               Direction[] var13 = Direction.values();
-               int var14 = var13.length;
 
-               for(int var15 = 0; var15 < var14; ++var15) {
-                  Direction var16 = var13[var15];
+               for(Direction var16 : Direction.values()) {
                   BlockPos var17 = var9.relative(var16);
                   BlockState var18 = var1.getBlockState(var17);
                   if (var18.isAir() || this.isLiquid(var18)) {

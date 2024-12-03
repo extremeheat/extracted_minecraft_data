@@ -10,7 +10,6 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
@@ -166,8 +165,8 @@ public class WinScreen extends Screen {
       RandomSource var3 = RandomSource.create(8124371L);
 
       String var4;
-      int var5;
       while((var4 = var2.readLine()) != null) {
+         int var5;
          String var6;
          String var7;
          for(var4 = var4.replaceAll("PLAYERNAME", this.minecraft.getUser().getName()); (var5 = var4.indexOf(OBFUSCATE_TOKEN)) != -1; var4 = var6 + String.valueOf(ChatFormatting.WHITE) + String.valueOf(ChatFormatting.OBFUSCATED) + "XXXXXXXX".substring(0, var3.nextInt(4) + 3) + var7) {
@@ -179,18 +178,14 @@ public class WinScreen extends Screen {
          this.addEmptyLine();
       }
 
-      for(var5 = 0; var5 < 8; ++var5) {
+      for(int var9 = 0; var9 < 8; ++var9) {
          this.addEmptyLine();
       }
 
    }
 
    private void addCreditsFile(Reader var1) {
-      JsonArray var2 = GsonHelper.parseArray(var1);
-      Iterator var3 = var2.iterator();
-
-      while(var3.hasNext()) {
-         JsonElement var4 = (JsonElement)var3.next();
+      for(JsonElement var4 : GsonHelper.parseArray(var1)) {
          JsonObject var5 = var4.getAsJsonObject();
          String var6 = var5.get("section").getAsString();
          this.addCreditsLine(SECTION_HEADING, true);
@@ -198,11 +193,8 @@ public class WinScreen extends Screen {
          this.addCreditsLine(SECTION_HEADING, true);
          this.addEmptyLine();
          this.addEmptyLine();
-         JsonArray var7 = var5.getAsJsonArray("disciplines");
-         Iterator var8 = var7.iterator();
 
-         while(var8.hasNext()) {
-            JsonElement var9 = (JsonElement)var8.next();
+         for(JsonElement var9 : var5.getAsJsonArray("disciplines")) {
             JsonObject var10 = var9.getAsJsonObject();
             String var11 = var10.get("discipline").getAsString();
             if (StringUtils.isNotEmpty(var11)) {
@@ -211,19 +203,13 @@ public class WinScreen extends Screen {
                this.addEmptyLine();
             }
 
-            JsonArray var12 = var10.getAsJsonArray("titles");
-            Iterator var13 = var12.iterator();
-
-            while(var13.hasNext()) {
-               JsonElement var14 = (JsonElement)var13.next();
+            for(JsonElement var14 : var10.getAsJsonArray("titles")) {
                JsonObject var15 = var14.getAsJsonObject();
                String var16 = var15.get("title").getAsString();
                JsonArray var17 = var15.getAsJsonArray("names");
                this.addCreditsLine(Component.literal(var16).withStyle(ChatFormatting.GRAY), false);
-               Iterator var18 = var17.iterator();
 
-               while(var18.hasNext()) {
-                  JsonElement var19 = (JsonElement)var18.next();
+               for(JsonElement var19 : var17) {
                   String var20 = var19.getAsString();
                   this.addCreditsLine(Component.literal("           ").append(var20).withStyle(ChatFormatting.WHITE), false);
                }
@@ -327,7 +313,7 @@ public class WinScreen extends Screen {
    }
 
    @FunctionalInterface
-   private interface CreditsReader {
+   interface CreditsReader {
       void read(Reader var1) throws IOException;
    }
 }

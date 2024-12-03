@@ -26,17 +26,7 @@ public class WardenEntitySensor extends NearestLivingEntitySensor<Warden> {
 
    protected void doTick(ServerLevel var1, Warden var2) {
       super.doTick(var1, var2);
-      getClosest(var2, (var0) -> {
-         return var0.getType() == EntityType.PLAYER;
-      }).or(() -> {
-         return getClosest(var2, (var0) -> {
-            return var0.getType() != EntityType.PLAYER;
-         });
-      }).ifPresentOrElse((var1x) -> {
-         var2.getBrain().setMemory(MemoryModuleType.NEAREST_ATTACKABLE, (Object)var1x);
-      }, () -> {
-         var2.getBrain().eraseMemory(MemoryModuleType.NEAREST_ATTACKABLE);
-      });
+      getClosest(var2, (var0) -> var0.getType() == EntityType.PLAYER).or(() -> getClosest(var2, (var0) -> var0.getType() != EntityType.PLAYER)).ifPresentOrElse((var1x) -> var2.getBrain().setMemory(MemoryModuleType.NEAREST_ATTACKABLE, var1x), () -> var2.getBrain().eraseMemory(MemoryModuleType.NEAREST_ATTACKABLE));
    }
 
    private static Optional<LivingEntity> getClosest(Warden var0, Predicate<LivingEntity> var1) {

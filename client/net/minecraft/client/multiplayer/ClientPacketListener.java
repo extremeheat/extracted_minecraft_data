@@ -242,6 +242,7 @@ import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundConfigurationAcknowledgedPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundMoveVehiclePacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket;
 import net.minecraft.network.protocol.game.VecDeltaCodec;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
 import net.minecraft.resources.ResourceKey;
@@ -601,7 +602,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             var2.positionRider(this.minecraft.player);
             this.minecraft.player.setOldPosAndRot();
             if (var2.isControlledByOrIsLocalPlayer()) {
-               this.connection.send(new ServerboundMoveVehiclePacket(var2));
+               this.connection.send(ServerboundMoveVehiclePacket.fromEntity(var2));
             }
          }
 
@@ -627,8 +628,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleSetHeldSlot(ClientboundSetHeldSlotPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      if (Inventory.isHotbarSlot(var1.getSlot())) {
-         this.minecraft.player.getInventory().selected = var1.getSlot();
+      if (Inventory.isHotbarSlot(var1.slot())) {
+         this.minecraft.player.getInventory().selected = var1.slot();
       }
 
    }
@@ -637,16 +638,14 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       Entity var2 = var1.getEntity(this.level);
       if (var2 != null) {
-         VecDeltaCodec var3;
-         Vec3 var4;
          if (var2.isControlledByLocalInstance()) {
-            var3 = var2.getPositionCodec();
-            var4 = var3.decode((long)var1.getXa(), (long)var1.getYa(), (long)var1.getZa());
-            var3.setBase(var4);
+            VecDeltaCodec var7 = var2.getPositionCodec();
+            Vec3 var8 = var7.decode((long)var1.getXa(), (long)var1.getYa(), (long)var1.getZa());
+            var7.setBase(var8);
          } else {
             if (var1.hasPosition()) {
-               var3 = var2.getPositionCodec();
-               var4 = var3.decode((long)var1.getXa(), (long)var1.getYa(), (long)var1.getZa());
+               VecDeltaCodec var3 = var2.getPositionCodec();
+               Vec3 var4 = var3.decode((long)var1.getXa(), (long)var1.getYa(), (long)var1.getZa());
                var3.setBase(var4);
                float var5 = var1.hasRotation() ? var1.getyRot() : var2.lerpTargetYRot();
                float var6 = var1.hasRotation() ? var1.getxRot() : var2.lerpTargetXRot();
@@ -705,8 +704,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          setValuesFromPositionPacket(var1.change(), var1.relatives(), var2, false);
       }
 
-      this.connection.send(new ServerboundMovePlayerPacket.PosRot(((Player)var2).getX(), ((Player)var2).getY(), ((Player)var2).getZ(), ((Player)var2).getYRot(), ((Player)var2).getXRot(), false, false));
       this.connection.send(new ServerboundAcceptTeleportationPacket(var1.id()));
+      this.connection.send(new ServerboundMovePlayerPacket.PosRot(((Player)var2).getX(), ((Player)var2).getY(), ((Player)var2).getZ(), ((Player)var2).getYRot(), ((Player)var2).getXRot(), false, false));
    }
 
    private static boolean setValuesFromPositionPacket(PositionMoveRotation var0, Set<Relative> var1, Entity var2, boolean var3) {
@@ -740,9 +739,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleChunkBlocksUpdate(ClientboundSectionBlocksUpdatePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      var1.runUpdates((var1x, var2) -> {
-         this.level.setServerVerifiedBlockState(var1x, var2, 19);
-      });
+      var1.runUpdates((var1x, var2) -> this.level.setServerVerifiedBlockState(var1x, var2, 19));
    }
 
    public void handleLevelChunkWithLight(ClientboundLevelChunkWithLightPacket var1) {
@@ -756,6 +753,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          LevelChunk var4x = this.level.getChunkSource().getChunk(var2, var3, false);
          if (var4x != null) {
             this.enableChunkLight(var4x, var2, var3);
+            this.minecraft.levelRenderer.onChunkReadyToRender(var4x.getPos());
          }
 
       });
@@ -763,30 +761,20 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleChunksBiomes(ClientboundChunksBiomesPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      Iterator var2 = var1.chunkBiomeData().iterator();
 
-      ClientboundChunksBiomesPacket.ChunkBiomeData var3;
-      while(var2.hasNext()) {
-         var3 = (ClientboundChunksBiomesPacket.ChunkBiomeData)var2.next();
+      for(ClientboundChunksBiomesPacket.ChunkBiomeData var3 : var1.chunkBiomeData()) {
          this.level.getChunkSource().replaceBiomes(var3.pos().x, var3.pos().z, var3.getReadBuffer());
       }
 
-      var2 = var1.chunkBiomeData().iterator();
-
-      while(var2.hasNext()) {
-         var3 = (ClientboundChunksBiomesPacket.ChunkBiomeData)var2.next();
-         this.level.onChunkLoaded(new ChunkPos(var3.pos().x, var3.pos().z));
+      for(ClientboundChunksBiomesPacket.ChunkBiomeData var9 : var1.chunkBiomeData()) {
+         this.level.onChunkLoaded(new ChunkPos(var9.pos().x, var9.pos().z));
       }
 
-      var2 = var1.chunkBiomeData().iterator();
-
-      while(var2.hasNext()) {
-         var3 = (ClientboundChunksBiomesPacket.ChunkBiomeData)var2.next();
-
+      for(ClientboundChunksBiomesPacket.ChunkBiomeData var10 : var1.chunkBiomeData()) {
          for(int var4 = -1; var4 <= 1; ++var4) {
             for(int var5 = -1; var5 <= 1; ++var5) {
                for(int var6 = this.level.getMinSectionY(); var6 <= this.level.getMaxSectionY(); ++var6) {
-                  this.minecraft.levelRenderer.setSectionDirty(var3.pos().x + var4, var6, var3.pos().z + var5);
+                  this.minecraft.levelRenderer.setSectionDirty(var10.pos().x + var4, var6, var10.pos().z + var5);
                }
             }
          }
@@ -824,15 +812,14 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          LevelLightEngine var2x = this.level.getLightEngine();
          var2x.setLightEnabled(var2, false);
 
-         int var3;
-         for(var3 = var2x.getMinLightSection(); var3 < var2x.getMaxLightSection(); ++var3) {
+         for(int var3 = var2x.getMinLightSection(); var3 < var2x.getMaxLightSection(); ++var3) {
             SectionPos var4 = SectionPos.of(var2, var3);
             var2x.queueSectionData(LightLayer.BLOCK, var4, (DataLayer)null);
             var2x.queueSectionData(LightLayer.SKY, var4, (DataLayer)null);
          }
 
-         for(var3 = this.level.getMinSectionY(); var3 <= this.level.getMaxSectionY(); ++var3) {
-            var2x.updateSectionStatus(SectionPos.of(var2, var3), true);
+         for(int var5 = this.level.getMinSectionY(); var5 <= this.level.getMaxSectionY(); ++var5) {
+            var2x.updateSectionStatus(SectionPos.of(var2, var5), true);
          }
 
       });
@@ -869,7 +856,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             this.level.playLocalSound(var2.getX(), var2.getY(), var2.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, (this.random.nextFloat() - this.random.nextFloat()) * 1.4F + 2.0F, false);
          }
 
-         this.minecraft.particleEngine.add(new ItemPickupParticle(this.minecraft.getEntityRenderDispatcher(), this.minecraft.renderBuffers(), this.level, var2, (Entity)var3));
+         this.minecraft.particleEngine.add(new ItemPickupParticle(this.minecraft.getEntityRenderDispatcher(), this.level, var2, (Entity)var3));
          if (var2 instanceof ItemEntity) {
             ItemEntity var4 = (ItemEntity)var2;
             ItemStack var5 = var4.getItem();
@@ -948,16 +935,15 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       Entity var2 = this.level.getEntity(var1.getId());
       if (var2 != null) {
-         LivingEntity var3;
          if (var1.getAction() == 0) {
-            var3 = (LivingEntity)var2;
+            LivingEntity var3 = (LivingEntity)var2;
             var3.swing(InteractionHand.MAIN_HAND);
          } else if (var1.getAction() == 3) {
-            var3 = (LivingEntity)var2;
-            var3.swing(InteractionHand.OFF_HAND);
+            LivingEntity var4 = (LivingEntity)var2;
+            var4.swing(InteractionHand.OFF_HAND);
          } else if (var1.getAction() == 2) {
-            Player var4 = (Player)var2;
-            var4.stopSleepInBed(false, false);
+            Player var5 = (Player)var2;
+            var5.stopSleepInBed(false, false);
          } else if (var1.getAction() == 4) {
             this.minecraft.particleEngine.createTrackingEmitter(var2, ParticleTypes.CRIT);
          } else if (var1.getAction() == 5) {
@@ -994,11 +980,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       } else {
          boolean var3 = var2.hasIndirectPassenger(this.minecraft.player);
          var2.ejectPassengers();
-         int[] var4 = var1.getPassengers();
-         int var5 = var4.length;
 
-         for(int var6 = 0; var6 < var5; ++var6) {
-            int var7 = var4[var6];
+         for(int var7 : var1.getPassengers()) {
             Entity var8 = this.level.getEntity(var7);
             if (var8 != null) {
                var8.startRiding(var2, true);
@@ -1032,11 +1015,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    private static ItemStack findTotem(Player var0) {
-      InteractionHand[] var1 = InteractionHand.values();
-      int var2 = var1.length;
-
-      for(int var3 = 0; var3 < var2; ++var3) {
-         InteractionHand var4 = var1[var3];
+      for(InteractionHand var4 : InteractionHand.values()) {
          ItemStack var5 = var0.getItemInHand(var4);
          if (var5.has(DataComponents.DEATH_PROTECTION)) {
             return var5;
@@ -1315,9 +1294,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       Entity var2 = this.level.getEntity(var1.getEntity());
       if (var2 instanceof LivingEntity var3) {
-         var1.getSlots().forEach((var1x) -> {
-            var3.setItemSlot((EquipmentSlot)var1x.getFirst(), (ItemStack)var1x.getSecond());
-         });
+         var1.getSlots().forEach((var1x) -> var3.setItemSlot((EquipmentSlot)var1x.getFirst(), (ItemStack)var1x.getSecond()));
       }
 
    }
@@ -1504,10 +1481,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var2.clear();
       }
 
-      Iterator var3 = var1.entries().iterator();
-
-      while(var3.hasNext()) {
-         ClientboundRecipeBookAddPacket.Entry var4 = (ClientboundRecipeBookAddPacket.Entry)var3.next();
+      for(ClientboundRecipeBookAddPacket.Entry var4 : var1.entries()) {
          var2.add(var4.contents());
          if (var4.highlight()) {
             var2.addHighlight(var4.contents().id());
@@ -1524,10 +1498,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleRecipeBookRemove(ClientboundRecipeBookRemovePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       ClientRecipeBook var2 = this.minecraft.player.getRecipeBook();
-      Iterator var3 = var1.recipes().iterator();
 
-      while(var3.hasNext()) {
-         RecipeDisplayId var4 = (RecipeDisplayId)var3.next();
+      for(RecipeDisplayId var4 : var1.recipes()) {
          var2.remove(var4);
       }
 
@@ -1663,7 +1635,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleTitlesClear(ClientboundClearTitlesPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      this.minecraft.gui.clear();
+      this.minecraft.gui.clearTitles();
       if (var1.shouldResetTimes()) {
          this.minecraft.gui.resetTitleTimes();
       }
@@ -1724,10 +1696,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handlePlayerInfoRemove(ClientboundPlayerInfoRemovePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      Iterator var2 = var1.profileIds().iterator();
 
-      while(var2.hasNext()) {
-         UUID var3 = (UUID)var2.next();
+      for(UUID var3 : var1.profileIds()) {
          this.minecraft.getPlayerSocialManager().removePlayer(var3);
          PlayerInfo var4 = (PlayerInfo)this.playerInfoMap.remove(var3);
          if (var4 != null) {
@@ -1739,38 +1709,25 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handlePlayerInfoUpdate(ClientboundPlayerInfoUpdatePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      Iterator var2 = var1.newEntries().iterator();
 
-      ClientboundPlayerInfoUpdatePacket.Entry var3;
-      PlayerInfo var4;
-      while(var2.hasNext()) {
-         var3 = (ClientboundPlayerInfoUpdatePacket.Entry)var2.next();
-         var4 = new PlayerInfo((GameProfile)Objects.requireNonNull(var3.profile()), this.enforcesSecureChat());
+      for(ClientboundPlayerInfoUpdatePacket.Entry var3 : var1.newEntries()) {
+         PlayerInfo var4 = new PlayerInfo((GameProfile)Objects.requireNonNull(var3.profile()), this.enforcesSecureChat());
          if (this.playerInfoMap.putIfAbsent(var3.profileId(), var4) == null) {
             this.minecraft.getPlayerSocialManager().addPlayer(var4);
          }
       }
 
-      var2 = var1.entries().iterator();
-
-      while(true) {
-         while(var2.hasNext()) {
-            var3 = (ClientboundPlayerInfoUpdatePacket.Entry)var2.next();
-            var4 = (PlayerInfo)this.playerInfoMap.get(var3.profileId());
-            if (var4 == null) {
-               LOGGER.warn("Ignoring player info update for unknown player {} ({})", var3.profileId(), var1.actions());
-            } else {
-               Iterator var5 = var1.actions().iterator();
-
-               while(var5.hasNext()) {
-                  ClientboundPlayerInfoUpdatePacket.Action var6 = (ClientboundPlayerInfoUpdatePacket.Action)var5.next();
-                  this.applyPlayerInfoUpdate(var6, var3, var4);
-               }
+      for(ClientboundPlayerInfoUpdatePacket.Entry var8 : var1.entries()) {
+         PlayerInfo var9 = (PlayerInfo)this.playerInfoMap.get(var8.profileId());
+         if (var9 == null) {
+            LOGGER.warn("Ignoring player info update for unknown player {} ({})", var8.profileId(), var1.actions());
+         } else {
+            for(ClientboundPlayerInfoUpdatePacket.Action var6 : var1.actions()) {
+               this.applyPlayerInfoUpdate(var6, var8, var9);
             }
          }
-
-         return;
       }
+
    }
 
    private void applyPlayerInfoUpdate(ClientboundPlayerInfoUpdatePacket.Action var1, ClientboundPlayerInfoUpdatePacket.Entry var2, PlayerInfo var3) {
@@ -1797,6 +1754,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             break;
          case UPDATE_DISPLAY_NAME:
             var3.setTabListDisplayName(var2.displayName());
+            break;
+         case UPDATE_HAT:
+            var3.setShowHat(var2.showHat());
             break;
          case UPDATE_LIST_ORDER:
             var3.setTabListOrder(var2.listOrder());
@@ -1874,14 +1834,14 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       Entity var2 = this.minecraft.player.getRootVehicle();
       if (var2 != this.minecraft.player && var2.isControlledByLocalInstance()) {
-         Vec3 var3 = new Vec3(var1.getX(), var1.getY(), var1.getZ());
+         Vec3 var3 = var1.position();
          Vec3 var4 = new Vec3(var2.lerpTargetX(), var2.lerpTargetY(), var2.lerpTargetZ());
          if (var3.distanceTo(var4) > 9.999999747378752E-6) {
             var2.cancelLerp();
-            var2.absMoveTo(var3.x(), var3.y(), var3.z(), var1.getYRot(), var1.getXRot());
+            var2.absMoveTo(var3.x(), var3.y(), var3.z(), var1.yRot(), var1.xRot());
          }
 
-         this.connection.send(new ServerboundMoveVehiclePacket(var2));
+         this.connection.send(ServerboundMoveVehiclePacket.fromEntity(var2));
       }
 
    }
@@ -2049,21 +2009,13 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var2.setPlayerSuffix(var1x.getPlayerSuffix());
       });
       ClientboundSetPlayerTeamPacket.Action var5 = var1.getPlayerAction();
-      Iterator var6;
-      String var7;
       if (var5 == ClientboundSetPlayerTeamPacket.Action.ADD) {
-         var6 = var1.getPlayers().iterator();
-
-         while(var6.hasNext()) {
-            var7 = (String)var6.next();
+         for(String var7 : var1.getPlayers()) {
             this.scoreboard.addPlayerToTeam(var7, var2);
          }
       } else if (var5 == ClientboundSetPlayerTeamPacket.Action.REMOVE) {
-         var6 = var1.getPlayers().iterator();
-
-         while(var6.hasNext()) {
-            var7 = (String)var6.next();
-            this.scoreboard.removePlayerFromTeam(var7, var2);
+         for(String var9 : var1.getPlayers()) {
+            this.scoreboard.removePlayerFromTeam(var9, var2);
          }
       }
 
@@ -2081,7 +2033,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          double var6 = (double)(var1.getMaxSpeed() * var1.getZDist());
 
          try {
-            this.level.addParticle(var1.getParticle(), var1.isOverrideLimiter(), var1.getX(), var1.getY(), var1.getZ(), var2, var4, var6);
+            this.level.addParticle(var1.getParticle(), var1.isOverrideLimiter(), var1.alwaysShow(), var1.getX(), var1.getY(), var1.getZ(), var2, var4, var6);
          } catch (Throwable var17) {
             LOGGER.warn("Could not spawn particle effect {}", var1.getParticle());
          }
@@ -2095,7 +2047,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             double var13 = this.random.nextGaussian() * (double)var1.getMaxSpeed();
 
             try {
-               this.level.addParticle(var1.getParticle(), var1.isOverrideLimiter(), var1.getX() + var3, var1.getY() + var5, var1.getZ() + var7, var9, var11, var13);
+               this.level.addParticle(var1.getParticle(), var1.isOverrideLimiter(), var1.alwaysShow(), var1.getX() + var3, var1.getY() + var5, var1.getZ() + var7, var9, var11, var13);
             } catch (Throwable var16) {
                LOGGER.warn("Could not spawn particle effect {}", var1.getParticle());
                return;
@@ -2113,28 +2065,21 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             throw new IllegalStateException("Server tried to update attributes of a non-living entity (actually: " + String.valueOf(var2) + ")");
          } else {
             AttributeMap var3 = ((LivingEntity)var2).getAttributes();
-            Iterator var4 = var1.getValues().iterator();
 
-            while(true) {
-               while(var4.hasNext()) {
-                  ClientboundUpdateAttributesPacket.AttributeSnapshot var5 = (ClientboundUpdateAttributesPacket.AttributeSnapshot)var4.next();
-                  AttributeInstance var6 = var3.getInstance(var5.attribute());
-                  if (var6 == null) {
-                     LOGGER.warn("Entity {} does not have attribute {}", var2, var5.attribute().getRegisteredName());
-                  } else {
-                     var6.setBaseValue(var5.base());
-                     var6.removeModifiers();
-                     Iterator var7 = var5.modifiers().iterator();
+            for(ClientboundUpdateAttributesPacket.AttributeSnapshot var5 : var1.getValues()) {
+               AttributeInstance var6 = var3.getInstance(var5.attribute());
+               if (var6 == null) {
+                  LOGGER.warn("Entity {} does not have attribute {}", var2, var5.attribute().getRegisteredName());
+               } else {
+                  var6.setBaseValue(var5.base());
+                  var6.removeModifiers();
 
-                     while(var7.hasNext()) {
-                        AttributeModifier var8 = (AttributeModifier)var7.next();
-                        var6.addTransientModifier(var8);
-                     }
+                  for(AttributeModifier var8 : var5.modifiers()) {
+                     var6.addTransientModifier(var8);
                   }
                }
-
-               return;
             }
+
          }
       }
    }
@@ -2157,9 +2102,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       int var2 = var1.getX();
       int var3 = var1.getZ();
       ClientboundLightUpdatePacketData var4 = var1.getLightData();
-      this.level.queueLightUpdate(() -> {
-         this.applyLightData(var2, var3, var4, true);
-      });
+      this.level.queueLightUpdate(() -> this.applyLightData(var2, var3, var4, true));
    }
 
    private void applyLightData(int var1, int var2, ClientboundLightUpdatePacketData var3, boolean var4) {
@@ -2213,10 +2156,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handleBundlePacket(ClientboundBundlePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      Iterator var2 = var1.subPackets().iterator();
 
-      while(var2.hasNext()) {
-         Packet var3 = (Packet)var2.next();
+      for(Packet var3 : var1.subPackets()) {
          var3.handle(this);
       }
 
@@ -2290,18 +2231,13 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    @Nullable
    public PlayerInfo getPlayerInfo(String var1) {
-      Iterator var2 = this.playerInfoMap.values().iterator();
-
-      PlayerInfo var3;
-      do {
-         if (!var2.hasNext()) {
-            return null;
+      for(PlayerInfo var3 : this.playerInfoMap.values()) {
+         if (var3.getProfile().getName().equals(var1)) {
+            return var3;
          }
+      }
 
-         var3 = (PlayerInfo)var2.next();
-      } while(!var3.getProfile().getName().equals(var1));
-
-      return var3;
+      return null;
    }
 
    public GameProfile getLocalGameProfile() {
@@ -2416,6 +2352,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.telemetryManager.tick();
       if (this.levelLoadStatusManager != null) {
          this.levelLoadStatusManager.tick();
+         if (this.levelLoadStatusManager.levelReady() && !this.minecraft.player.hasClientLoaded()) {
+            this.connection.send(new ServerboundPlayerLoadedPacket());
+            this.minecraft.player.setClientLoaded(true);
+         }
       }
 
    }

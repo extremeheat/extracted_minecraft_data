@@ -3,7 +3,6 @@ package net.minecraft.advancements.critereon;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -19,9 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
 public record ItemPredicate(Optional<HolderSet<Item>> items, MinMaxBounds.Ints count, DataComponentPredicate components, Map<ItemSubPredicate.Type<?>, ItemSubPredicate> subPredicates) implements Predicate<ItemStack> {
-   public static final Codec<ItemPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(RegistryCodecs.homogeneousList(Registries.ITEM).optionalFieldOf("items").forGetter(ItemPredicate::items), MinMaxBounds.Ints.CODEC.optionalFieldOf("count", MinMaxBounds.Ints.ANY).forGetter(ItemPredicate::count), DataComponentPredicate.CODEC.optionalFieldOf("components", DataComponentPredicate.EMPTY).forGetter(ItemPredicate::components), ItemSubPredicate.CODEC.optionalFieldOf("predicates", Map.of()).forGetter(ItemPredicate::subPredicates)).apply(var0, ItemPredicate::new);
-   });
+   public static final Codec<ItemPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.ITEM).optionalFieldOf("items").forGetter(ItemPredicate::items), MinMaxBounds.Ints.CODEC.optionalFieldOf("count", MinMaxBounds.Ints.ANY).forGetter(ItemPredicate::count), DataComponentPredicate.CODEC.optionalFieldOf("components", DataComponentPredicate.EMPTY).forGetter(ItemPredicate::components), ItemSubPredicate.CODEC.optionalFieldOf("predicates", Map.of()).forGetter(ItemPredicate::subPredicates)).apply(var0, ItemPredicate::new));
 
    public ItemPredicate(Optional<HolderSet<Item>> var1, MinMaxBounds.Ints var2, DataComponentPredicate var3, Map<ItemSubPredicate.Type<?>, ItemSubPredicate> var4) {
       super();
@@ -39,35 +36,14 @@ public record ItemPredicate(Optional<HolderSet<Item>> items, MinMaxBounds.Ints c
       } else if (!this.components.test((DataComponentHolder)var1)) {
          return false;
       } else {
-         Iterator var2 = this.subPredicates.values().iterator();
-
-         ItemSubPredicate var3;
-         do {
-            if (!var2.hasNext()) {
-               return true;
+         for(ItemSubPredicate var3 : this.subPredicates.values()) {
+            if (!var3.matches(var1)) {
+               return false;
             }
+         }
 
-            var3 = (ItemSubPredicate)var2.next();
-         } while(var3.matches(var1));
-
-         return false;
+         return true;
       }
-   }
-
-   public Optional<HolderSet<Item>> items() {
-      return this.items;
-   }
-
-   public MinMaxBounds.Ints count() {
-      return this.count;
-   }
-
-   public DataComponentPredicate components() {
-      return this.components;
-   }
-
-   public Map<ItemSubPredicate.Type<?>, ItemSubPredicate> subPredicates() {
-      return this.subPredicates;
    }
 
    // $FF: synthetic method
@@ -93,9 +69,7 @@ public record ItemPredicate(Optional<HolderSet<Item>> items, MinMaxBounds.Ints c
       }
 
       public Builder of(HolderGetter<Item> var1, ItemLike... var2) {
-         this.items = Optional.of(HolderSet.direct((var0) -> {
-            return var0.asItem().builtInRegistryHolder();
-         }, (Object[])var2));
+         this.items = Optional.of(HolderSet.direct((var0) -> var0.asItem().builtInRegistryHolder(), var2));
          return this;
       }
 

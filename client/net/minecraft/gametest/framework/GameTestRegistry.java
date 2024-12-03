@@ -65,9 +65,7 @@ public class GameTestRegistry {
    }
 
    public static Stream<TestFunction> getTestFunctionsForClassName(String var0) {
-      return TEST_FUNCTIONS.stream().filter((var1) -> {
-         return isTestFunctionPartOfClass(var1, var0);
-      });
+      return TEST_FUNCTIONS.stream().filter((var1) -> isTestFunctionPartOfClass(var1, var0));
    }
 
    public static Collection<TestFunction> getAllTestFunctions() {
@@ -83,19 +81,17 @@ public class GameTestRegistry {
    }
 
    public static Consumer<ServerLevel> getBeforeBatchFunction(String var0) {
-      return (Consumer)BEFORE_BATCH_FUNCTIONS.getOrDefault(var0, (var0x) -> {
+      return (Consumer)BEFORE_BATCH_FUNCTIONS.getOrDefault(var0, (Consumer)(var0x) -> {
       });
    }
 
    public static Consumer<ServerLevel> getAfterBatchFunction(String var0) {
-      return (Consumer)AFTER_BATCH_FUNCTIONS.getOrDefault(var0, (var0x) -> {
+      return (Consumer)AFTER_BATCH_FUNCTIONS.getOrDefault(var0, (Consumer)(var0x) -> {
       });
    }
 
    public static Optional<TestFunction> findTestFunction(String var0) {
-      return getAllTestFunctions().stream().filter((var1) -> {
-         return var1.testName().equalsIgnoreCase(var0);
-      }).findFirst();
+      return getAllTestFunctions().stream().filter((var1) -> var1.testName().equalsIgnoreCase(var0)).findFirst();
    }
 
    public static TestFunction getTestFunction(String var0) {

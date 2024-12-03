@@ -66,16 +66,10 @@ public class OperationArgument implements ArgumentType<Operation> {
    private static SimpleOperation getSimpleOperation(String var0) throws CommandSyntaxException {
       SimpleOperation var10000;
       switch (var0) {
-         case "=" -> var10000 = (var0x, var1) -> {
-   return var1;
-};
+         case "=" -> var10000 = (var0x, var1) -> var1;
          case "+=" -> var10000 = Integer::sum;
-         case "-=" -> var10000 = (var0x, var1) -> {
-   return var0x - var1;
-};
-         case "*=" -> var10000 = (var0x, var1) -> {
-   return var0x * var1;
-};
+         case "-=" -> var10000 = (var0x, var1) -> var0x - var1;
+         case "*=" -> var10000 = (var0x, var1) -> var0x * var1;
          case "/=" -> var10000 = (var0x, var1) -> {
    if (var1 == 0) {
       throw ERROR_DIVIDE_BY_ZERO.create();
@@ -104,16 +98,16 @@ public class OperationArgument implements ArgumentType<Operation> {
    }
 
    @FunctionalInterface
-   public interface Operation {
-      void apply(ScoreAccess var1, ScoreAccess var2) throws CommandSyntaxException;
-   }
-
-   @FunctionalInterface
    interface SimpleOperation extends Operation {
       int apply(int var1, int var2) throws CommandSyntaxException;
 
       default void apply(ScoreAccess var1, ScoreAccess var2) throws CommandSyntaxException {
          var1.set(this.apply(var1.get(), var2.get()));
       }
+   }
+
+   @FunctionalInterface
+   public interface Operation {
+      void apply(ScoreAccess var1, ScoreAccess var2) throws CommandSyntaxException;
    }
 }

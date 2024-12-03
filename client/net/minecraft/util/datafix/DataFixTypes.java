@@ -49,9 +49,7 @@ public enum DataFixTypes {
    public <A> Codec<A> wrapCodec(final Codec<A> var1, final DataFixer var2, final int var3) {
       return new Codec<A>() {
          public <T> DataResult<T> encode(A var1x, DynamicOps<T> var2x, T var3x) {
-            return var1.encode(var1x, var2x, var3x).flatMap((var1xx) -> {
-               return var2x.mergeToMap(var1xx, var2x.createString("DataVersion"), var2x.createInt(DataFixTypes.currentVersion()));
-            });
+            return var1.encode(var1x, var2x, var3x).flatMap((var1xx) -> var2x.mergeToMap(var1xx, var2x.createString("DataVersion"), var2x.createInt(DataFixTypes.currentVersion())));
          }
 
          public <T> DataResult<Pair<A, T>> decode(DynamicOps<T> var1x, T var2x) {

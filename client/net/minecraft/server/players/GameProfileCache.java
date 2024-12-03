@@ -159,11 +159,7 @@ public class GameProfileCache {
          if (var2 != null) {
             return var2;
          } else {
-            CompletableFuture var3 = CompletableFuture.supplyAsync(() -> {
-               return this.get(var1);
-            }, Util.backgroundExecutor().forName("getProfile")).whenCompleteAsync((var2x, var3x) -> {
-               this.requests.remove(var1);
-            }, this.executor);
+            CompletableFuture var3 = CompletableFuture.supplyAsync(() -> this.get(var1), Util.backgroundExecutor().forName("getProfile")).whenCompleteAsync((var2x, var3x) -> this.requests.remove(var1), this.executor);
             this.requests.put(var1, var3);
             return var3;
          }
@@ -198,21 +194,21 @@ public class GameProfileCache {
       try {
          BufferedReader var2 = Files.newReader(this.file, StandardCharsets.UTF_8);
 
-         label54: {
-            ArrayList var4;
+         ArrayList var9;
+         label61: {
             try {
                JsonArray var3 = (JsonArray)this.gson.fromJson(var2, JsonArray.class);
-               if (var3 != null) {
-                  DateFormat var9 = createDateFormat();
-                  var3.forEach((var2x) -> {
-                     Optional var10000 = readGameProfile(var2x, var9);
-                     Objects.requireNonNull(var1);
-                     var10000.ifPresent(var1::add);
-                  });
-                  break label54;
+               if (var3 == null) {
+                  var9 = var1;
+                  break label61;
                }
 
-               var4 = var1;
+               DateFormat var4 = createDateFormat();
+               var3.forEach((var2x) -> {
+                  Optional var10000 = readGameProfile(var2x, var4);
+                  Objects.requireNonNull(var1);
+                  var10000.ifPresent(var1::add);
+               });
             } catch (Throwable var6) {
                if (var2 != null) {
                   try {
@@ -229,12 +225,14 @@ public class GameProfileCache {
                ((Reader)var2).close();
             }
 
-            return var4;
+            return var1;
          }
 
          if (var2 != null) {
             ((Reader)var2).close();
          }
+
+         return var9;
       } catch (FileNotFoundException var7) {
       } catch (JsonParseException | IOException var8) {
          LOGGER.warn("Failed to load profile cache {}", this.file, var8);
@@ -246,9 +244,7 @@ public class GameProfileCache {
    public void save() {
       JsonArray var1 = new JsonArray();
       DateFormat var2 = createDateFormat();
-      this.getTopMRUProfiles(1000).forEach((var2x) -> {
-         var1.add(writeGameProfile(var2x, var2));
-      });
+      this.getTopMRUProfiles(1000).forEach((var2x) -> var1.add(writeGameProfile(var2x, var2)));
       String var3 = this.gson.toJson(var1);
 
       try {

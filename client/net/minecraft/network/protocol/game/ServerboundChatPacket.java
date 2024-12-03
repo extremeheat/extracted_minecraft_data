@@ -10,7 +10,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ServerboundChatPacket(String message, Instant timeStamp, long salt, @Nullable MessageSignature signature, LastSeenMessages.Update lastSeenMessages) implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundChatPacket> STREAM_CODEC = Packet.codec(ServerboundChatPacket::write, ServerboundChatPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundChatPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundChatPacket>codec(ServerboundChatPacket::write, ServerboundChatPacket::new);
 
    private ServerboundChatPacket(FriendlyByteBuf var1) {
       this(var1.readUtf(256), var1.readInstant(), var1.readLong(), (MessageSignature)var1.readNullable(MessageSignature::read), new LastSeenMessages.Update(var1));
@@ -39,26 +39,5 @@ public record ServerboundChatPacket(String message, Instant timeStamp, long salt
 
    public void handle(ServerGamePacketListener var1) {
       var1.handleChat(this);
-   }
-
-   public String message() {
-      return this.message;
-   }
-
-   public Instant timeStamp() {
-      return this.timeStamp;
-   }
-
-   public long salt() {
-      return this.salt;
-   }
-
-   @Nullable
-   public MessageSignature signature() {
-      return this.signature;
-   }
-
-   public LastSeenMessages.Update lastSeenMessages() {
-      return this.lastSeenMessages;
    }
 }

@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import org.slf4j.Logger;
 
 public class DynamicTexture extends AbstractTexture implements Dumpable {
@@ -35,9 +34,6 @@ public class DynamicTexture extends AbstractTexture implements Dumpable {
       super();
       this.pixels = new NativeImage(var1, var2, var3);
       TextureUtil.prepareImage(this.getId(), this.pixels.getWidth(), this.pixels.getHeight());
-   }
-
-   public void load(ResourceManager var1) {
    }
 
    public void upload() {

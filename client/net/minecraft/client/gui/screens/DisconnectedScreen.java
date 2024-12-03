@@ -46,23 +46,13 @@ public class DisconnectedScreen extends Screen {
       this.layout.addChild(new StringWidget(this.title, this.font));
       this.layout.addChild((new MultiLineTextWidget(this.details.reason(), this.font)).setMaxWidth(this.width - 50).setCentered(true));
       this.layout.defaultCellSetting().padding(2);
-      this.details.bugReportLink().ifPresent((var1x) -> {
-         this.layout.addChild(Button.builder(REPORT_TO_SERVER_TITLE, ConfirmLinkScreen.confirmLink(this, (URI)var1x, false)).width(200).build());
-      });
-      this.details.report().ifPresent((var1x) -> {
-         this.layout.addChild(Button.builder(OPEN_REPORT_DIR_TITLE, (var1) -> {
-            Util.getPlatform().openPath(var1x.getParent());
-         }).width(200).build());
-      });
+      this.details.bugReportLink().ifPresent((var1x) -> this.layout.addChild(Button.builder(REPORT_TO_SERVER_TITLE, ConfirmLinkScreen.confirmLink(this, (URI)var1x, false)).width(200).build()));
+      this.details.report().ifPresent((var1x) -> this.layout.addChild(Button.builder(OPEN_REPORT_DIR_TITLE, (var1) -> Util.getPlatform().openPath(var1x.getParent())).width(200).build()));
       Button var1;
       if (this.minecraft.allowsMultiplayer()) {
-         var1 = Button.builder(this.buttonText, (var1x) -> {
-            this.minecraft.setScreen(this.parent);
-         }).width(200).build();
+         var1 = Button.builder(this.buttonText, (var1x) -> this.minecraft.setScreen(this.parent)).width(200).build();
       } else {
-         var1 = Button.builder(TO_TITLE, (var1x) -> {
-            this.minecraft.setScreen(new TitleScreen());
-         }).width(200).build();
+         var1 = Button.builder(TO_TITLE, (var1x) -> this.minecraft.setScreen(new TitleScreen())).width(200).build();
       }
 
       this.layout.addChild(var1);

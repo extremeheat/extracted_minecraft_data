@@ -14,9 +14,7 @@ public class SayCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("say").requires((var0x) -> {
-         return var0x.hasPermission(2);
-      })).then(Commands.argument("message", MessageArgument.message()).executes((var0x) -> {
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("say").requires((var0x) -> var0x.hasPermission(2))).then(Commands.argument("message", MessageArgument.message()).executes((var0x) -> {
          MessageArgument.resolveChatMessage(var0x, "message", (var1) -> {
             CommandSourceStack var2 = (CommandSourceStack)var0x.getSource();
             PlayerList var3 = var2.getServer().getPlayerList();

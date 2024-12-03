@@ -130,9 +130,7 @@ public class CandleBlock extends AbstractCandleBlock implements SimpleWaterlogge
    }
 
    public static boolean canLight(BlockState var0) {
-      return var0.is(BlockTags.CANDLES, (var0x) -> {
-         return var0x.hasProperty(LIT) && var0x.hasProperty(WATERLOGGED);
-      }) && !(Boolean)var0.getValue(LIT) && !(Boolean)var0.getValue(WATERLOGGED);
+      return var0.is(BlockTags.CANDLES, (var0x) -> var0x.hasProperty(LIT) && var0x.hasProperty(WATERLOGGED)) && !(Boolean)var0.getValue(LIT) && !(Boolean)var0.getValue(WATERLOGGED);
    }
 
    protected Iterable<Vec3> getParticleOffsets(BlockState var1) {
@@ -151,9 +149,7 @@ public class CandleBlock extends AbstractCandleBlock implements SimpleWaterlogge
       CANDLES = BlockStateProperties.CANDLES;
       LIT = AbstractCandleBlock.LIT;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      LIGHT_EMISSION = (var0) -> {
-         return (Boolean)var0.getValue(LIT) ? 3 * (Integer)var0.getValue(CANDLES) : 0;
-      };
+      LIGHT_EMISSION = (var0) -> (Boolean)var0.getValue(LIT) ? 3 * (Integer)var0.getValue(CANDLES) : 0;
       PARTICLE_OFFSETS = (Int2ObjectMap)Util.make(() -> {
          Int2ObjectOpenHashMap var0 = new Int2ObjectOpenHashMap();
          var0.defaultReturnValue(ImmutableList.of());

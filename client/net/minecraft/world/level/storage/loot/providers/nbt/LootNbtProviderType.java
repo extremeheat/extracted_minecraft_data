@@ -7,8 +7,4 @@ public record LootNbtProviderType(MapCodec<? extends NbtProvider> codec) {
       super();
       this.codec = var1;
    }
-
-   public MapCodec<? extends NbtProvider> codec() {
-      return this.codec;
-   }
 }

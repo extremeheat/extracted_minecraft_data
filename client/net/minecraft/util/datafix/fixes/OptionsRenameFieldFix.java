@@ -20,12 +20,6 @@ public class OptionsRenameFieldFix extends DataFix {
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped(this.fixName, this.getInputSchema().getType(References.OPTIONS), (var1) -> {
-         return var1.update(DSL.remainderFinder(), (var1x) -> {
-            return (Dynamic)DataFixUtils.orElse(var1x.get(this.fieldFrom).result().map((var2) -> {
-               return var1x.set(this.fieldTo, var2).remove(this.fieldFrom);
-            }), var1x);
-         });
-      });
+      return this.fixTypeEverywhereTyped(this.fixName, this.getInputSchema().getType(References.OPTIONS), (var1) -> var1.update(DSL.remainderFinder(), (var1x) -> (Dynamic)DataFixUtils.orElse(var1x.get(this.fieldFrom).result().map((var2) -> var1x.set(this.fieldTo, var2).remove(this.fieldFrom)), var1x)));
    }
 }

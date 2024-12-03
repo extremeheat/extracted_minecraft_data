@@ -19,22 +19,16 @@ public class FixWolfHealth extends NamedEntityFix {
    protected Typed<?> fix(Typed<?> var1) {
       return var1.update(DSL.remainderFinder(), (var0) -> {
          MutableBoolean var1 = new MutableBoolean(false);
-         var0 = var0.update("Attributes", (var1x) -> {
-            return var1x.createList(var1x.asStream().map((var1xx) -> {
-               return "minecraft:generic.max_health".equals(NamespacedSchema.ensureNamespaced(var1xx.get("Name").asString(""))) ? var1xx.update("Base", (var1x) -> {
+         var0 = var0.update("Attributes", (var1x) -> var1x.createList(var1x.asStream().map((var1xx) -> "minecraft:generic.max_health".equals(NamespacedSchema.ensureNamespaced(var1xx.get("Name").asString(""))) ? var1xx.update("Base", (var1x) -> {
                   if (var1x.asDouble(0.0) == 20.0) {
                      var1.setTrue();
                      return var1x.createDouble(40.0);
                   } else {
                      return var1x;
                   }
-               }) : var1xx;
-            }));
-         });
+               }) : var1xx)));
          if (var1.isTrue()) {
-            var0 = var0.update("Health", (var0x) -> {
-               return var0x.createFloat(var0x.asFloat(0.0F) * 2.0F);
-            });
+            var0 = var0.update("Health", (var0x) -> var0x.createFloat(var0x.asFloat(0.0F) * 2.0F));
          }
 
          return var0;

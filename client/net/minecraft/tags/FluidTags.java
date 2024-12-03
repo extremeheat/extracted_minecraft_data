@@ -13,6 +13,6 @@ public final class FluidTags {
    }
 
    private static TagKey<Fluid> create(String var0) {
-      return TagKey.create(Registries.FLUID, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<Fluid>create(Registries.FLUID, ResourceLocation.withDefaultNamespace(var0));
    }
 }

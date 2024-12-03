@@ -49,11 +49,7 @@ public class PoiSection {
    }
 
    public Stream<PoiRecord> getRecords(Predicate<Holder<PoiType>> var1, PoiManager.Occupancy var2) {
-      return this.byType.entrySet().stream().filter((var1x) -> {
-         return var1.test((Holder)var1x.getKey());
-      }).flatMap((var0) -> {
-         return ((Set)var0.getValue()).stream();
-      }).filter(var2.getTest());
+      return this.byType.entrySet().stream().filter((var1x) -> var1.test((Holder)var1x.getKey())).flatMap((var0) -> ((Set)var0.getValue()).stream()).filter(var2.getTest());
    }
 
    public void add(BlockPos var1, Holder<PoiType> var2) {
@@ -78,9 +74,7 @@ public class PoiSection {
       }
 
       this.records.put(var4, var1);
-      ((Set)this.byType.computeIfAbsent(var3, (var0) -> {
-         return Sets.newHashSet();
-      })).add(var1);
+      ((Set)this.byType.computeIfAbsent(var3, (var0) -> Sets.newHashSet())).add(var1);
       return true;
    }
 
@@ -133,11 +127,9 @@ public class PoiSection {
       if (!this.isValid) {
          Short2ObjectOpenHashMap var2 = new Short2ObjectOpenHashMap(this.records);
          this.clear();
-         var1.accept((var2x, var3) -> {
+         var1.accept((BiConsumer)(var2x, var3) -> {
             short var4 = SectionPos.sectionRelativePos(var2x);
-            PoiRecord var5 = (PoiRecord)var2.computeIfAbsent(var4, (var3x) -> {
-               return new PoiRecord(var2x, var3, this.setDirty);
-            });
+            PoiRecord var5 = (PoiRecord)var2.computeIfAbsent(var4, (var3x) -> new PoiRecord(var2x, var3, this.setDirty));
             this.add(var5);
          });
          this.isValid = true;
@@ -156,9 +148,7 @@ public class PoiSection {
    }
 
    public static record Packed(boolean isValid, List<PoiRecord.Packed> records) {
-      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Codec.BOOL.lenientOptionalFieldOf("Valid", false).forGetter(Packed::isValid), PoiRecord.Packed.CODEC.listOf().fieldOf("Records").forGetter(Packed::records)).apply(var0, Packed::new);
-      });
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.BOOL.lenientOptionalFieldOf("Valid", false).forGetter(Packed::isValid), PoiRecord.Packed.CODEC.listOf().fieldOf("Records").forGetter(Packed::records)).apply(var0, Packed::new));
 
       public Packed(boolean var1, List<PoiRecord.Packed> var2) {
          super();
@@ -167,17 +157,7 @@ public class PoiSection {
       }
 
       public PoiSection unpack(Runnable var1) {
-         return new PoiSection(var1, this.isValid, this.records.stream().map((var1x) -> {
-            return var1x.unpack(var1);
-         }).toList());
-      }
-
-      public boolean isValid() {
-         return this.isValid;
-      }
-
-      public List<PoiRecord.Packed> records() {
-         return this.records;
+         return new PoiSection(var1, this.isValid, this.records.stream().map((var1x) -> var1x.unpack(var1)).toList());
       }
    }
 }

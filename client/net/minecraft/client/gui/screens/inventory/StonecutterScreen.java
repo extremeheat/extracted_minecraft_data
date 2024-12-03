@@ -67,7 +67,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
          int var4 = this.leftPos + 52;
          int var5 = this.topPos + 14;
          int var6 = this.startIndex + 12;
-         SelectableRecipe.SingleInputSet var7 = ((StonecutterMenu)this.menu).getVisibleRecipes();
+         SelectableRecipe.SingleInputSet var7 = (this.menu).getVisibleRecipes();
 
          for(int var8 = this.startIndex; var8 < var6 && var8 < var7.size(); ++var8) {
             int var9 = var8 - this.startIndex;
@@ -104,7 +104,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    }
 
    private void renderRecipes(GuiGraphics var1, int var2, int var3, int var4) {
-      SelectableRecipe.SingleInputSet var5 = ((StonecutterMenu)this.menu).getVisibleRecipes();
+      SelectableRecipe.SingleInputSet var5 = (this.menu).getVisibleRecipes();
       ContextMap var6 = SlotDisplayContext.fromLevel(this.minecraft.level);
 
       for(int var7 = this.startIndex; var7 < var4 && var7 < var5.size(); ++var7) {
@@ -131,7 +131,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
             double var13 = var3 - (double)(var7 + var10 / 4 * 18);
             if (var11 >= 0.0 && var13 >= 0.0 && var11 < 16.0 && var13 < 18.0 && ((StonecutterMenu)this.menu).clickMenuButton(this.minecraft.player, var9)) {
                Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_STONECUTTER_SELECT_RECIPE, 1.0F));
-               this.minecraft.gameMode.handleInventoryButtonClick(((StonecutterMenu)this.menu).containerId, var9);
+               this.minecraft.gameMode.handleInventoryButtonClick((this.menu).containerId, var9);
                return true;
             }
          }

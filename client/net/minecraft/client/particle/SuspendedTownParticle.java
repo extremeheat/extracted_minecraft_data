@@ -42,10 +42,30 @@ public class SuspendedTownParticle extends TextureSheetParticle {
       }
    }
 
-   public static class EggCrackProvider implements ParticleProvider<SimpleParticleType> {
+   public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public EggCrackProvider(SpriteSet var1) {
+      public Provider(SpriteSet var1) {
+         super();
+         this.sprite = var1;
+      }
+
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         SuspendedTownParticle var15 = new SuspendedTownParticle(var2, var3, var5, var7, var9, var11, var13);
+         var15.pickSprite(this.sprite);
+         return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
+   }
+
+   public static class HappyVillagerProvider implements ParticleProvider<SimpleParticleType> {
+      private final SpriteSet sprite;
+
+      public HappyVillagerProvider(SpriteSet var1) {
          super();
          this.sprite = var1;
       }
@@ -54,6 +74,28 @@ public class SuspendedTownParticle extends TextureSheetParticle {
          SuspendedTownParticle var15 = new SuspendedTownParticle(var2, var3, var5, var7, var9, var11, var13);
          var15.pickSprite(this.sprite);
          var15.setColor(1.0F, 1.0F, 1.0F);
+         return var15;
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
+   }
+
+   public static class ComposterFillProvider implements ParticleProvider<SimpleParticleType> {
+      private final SpriteSet sprite;
+
+      public ComposterFillProvider(SpriteSet var1) {
+         super();
+         this.sprite = var1;
+      }
+
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         SuspendedTownParticle var15 = new SuspendedTownParticle(var2, var3, var5, var7, var9, var11, var13);
+         var15.pickSprite(this.sprite);
+         var15.setColor(1.0F, 1.0F, 1.0F);
+         var15.setLifetime(3 + var2.getRandom().nextInt(5));
          return var15;
       }
 
@@ -86,10 +128,10 @@ public class SuspendedTownParticle extends TextureSheetParticle {
       }
    }
 
-   public static class ComposterFillProvider implements ParticleProvider<SimpleParticleType> {
+   public static class EggCrackProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public ComposterFillProvider(SpriteSet var1) {
+      public EggCrackProvider(SpriteSet var1) {
          super();
          this.sprite = var1;
       }
@@ -98,48 +140,6 @@ public class SuspendedTownParticle extends TextureSheetParticle {
          SuspendedTownParticle var15 = new SuspendedTownParticle(var2, var3, var5, var7, var9, var11, var13);
          var15.pickSprite(this.sprite);
          var15.setColor(1.0F, 1.0F, 1.0F);
-         var15.setLifetime(3 + var2.getRandom().nextInt(5));
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
-      }
-   }
-
-   public static class HappyVillagerProvider implements ParticleProvider<SimpleParticleType> {
-      private final SpriteSet sprite;
-
-      public HappyVillagerProvider(SpriteSet var1) {
-         super();
-         this.sprite = var1;
-      }
-
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         SuspendedTownParticle var15 = new SuspendedTownParticle(var2, var3, var5, var7, var9, var11, var13);
-         var15.pickSprite(this.sprite);
-         var15.setColor(1.0F, 1.0F, 1.0F);
-         return var15;
-      }
-
-      // $FF: synthetic method
-      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
-         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
-      }
-   }
-
-   public static class Provider implements ParticleProvider<SimpleParticleType> {
-      private final SpriteSet sprite;
-
-      public Provider(SpriteSet var1) {
-         super();
-         this.sprite = var1;
-      }
-
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         SuspendedTownParticle var15 = new SuspendedTownParticle(var2, var3, var5, var7, var9, var11, var13);
-         var15.pickSprite(this.sprite);
          return var15;
       }
 

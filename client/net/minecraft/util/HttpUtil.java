@@ -77,20 +77,19 @@ public class HttpUtil {
          OptionalLong var13 = var11 != -1L ? OptionalLong.of(var11) : OptionalLong.empty();
          FileUtil.createDirectoriesSafe(var0);
          var7.downloadStart(var13);
-         String var10002;
          if (var13.isPresent() && var13.getAsLong() > (long)var5) {
-            var10002 = String.valueOf(var13);
-            throw new IOException("Filesize is bigger than maximum allowed (file is " + var10002 + ", limit is " + var5 + ")");
+            String var41 = String.valueOf(var13);
+            throw new IOException("Filesize is bigger than maximum allowed (file is " + var41 + ", limit is " + var5 + ")");
          }
 
          if (var10 == null) {
-            Path var38 = Files.createTempFile(var0, "download", ".tmp");
+            Path var39 = Files.createTempFile(var0, "download", ".tmp");
 
             try {
-               HashCode var39 = downloadAndHash(var3, var5, var7, var9, var38);
-               Path var16 = cachedFilePath(var0, var39);
-               if (!checkExistingFile(var16, var3, var39)) {
-                  Files.move(var38, var16, StandardCopyOption.REPLACE_EXISTING);
+               HashCode var40 = downloadAndHash(var3, var5, var7, var9, var39);
+               Path var16 = cachedFilePath(var0, var40);
+               if (!checkExistingFile(var16, var3, var40)) {
+                  Files.move(var39, var16, StandardCopyOption.REPLACE_EXISTING);
                } else {
                   updateModificationTime(var16);
                }
@@ -99,13 +98,13 @@ public class HttpUtil {
                Path var17 = var16;
                return var17;
             } finally {
-               Files.deleteIfExists(var38);
+               Files.deleteIfExists(var39);
             }
          }
 
          HashCode var14 = downloadAndHash(var3, var5, var7, var9, var10);
          if (!var14.equals(var4)) {
-            var10002 = String.valueOf(var14);
+            String var10002 = String.valueOf(var14);
             throw new IOException("Hash of downloaded file (" + var10002 + ") did not match requested (" + String.valueOf(var4) + ")");
          }
 

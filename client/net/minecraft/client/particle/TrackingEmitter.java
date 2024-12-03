@@ -36,7 +36,7 @@ public class TrackingEmitter extends NoRenderParticle {
             double var8 = this.entity.getX(var2 / 4.0);
             double var10 = this.entity.getY(0.5 + var4 / 4.0);
             double var12 = this.entity.getZ(var6 / 4.0);
-            this.level.addParticle(this.particleType, false, var8, var10, var12, var2, var4 + 0.2, var6);
+            this.level.addParticle(this.particleType, var8, var10, var12, var2, var4 + 0.2, var6);
          }
       }
 

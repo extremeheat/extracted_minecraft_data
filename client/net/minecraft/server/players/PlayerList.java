@@ -13,10 +13,8 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -154,17 +152,16 @@ public abstract class PlayerList {
       GameProfile var4 = var2.getGameProfile();
       GameProfileCache var5 = this.server.getProfileCache();
       String var6;
-      Optional var7;
       if (var5 != null) {
-         var7 = var5.get(var4.getId());
+         Optional var7 = var5.get(var4.getId());
          var6 = (String)var7.map(GameProfile::getName).orElse(var4.getName());
          var5.add(var4);
       } else {
          var6 = var4.getName();
       }
 
-      var7 = this.load(var2);
-      ResourceKey var8 = (ResourceKey)var7.flatMap((var0) -> {
+      Optional var21 = this.load(var2);
+      ResourceKey var8 = (ResourceKey)var21.flatMap((var0) -> {
          DataResult var10000 = DimensionType.parseLegacy(new Dynamic(NbtOps.INSTANCE, var0.get("Dimension")));
          Logger var10001 = LOGGER;
          Objects.requireNonNull(var10001);
@@ -183,7 +180,7 @@ public abstract class PlayerList {
       String var11 = var1.getLoggableAddress(this.server.logIPs());
       LOGGER.info("{}[{}] logged in with entity id {} at ({}, {}, {})", new Object[]{var2.getName().getString(), var11, var2.getId(), var2.getX(), var2.getY(), var2.getZ()});
       LevelData var12 = var10.getLevelData();
-      var2.loadGameTypes((CompoundTag)var7.orElse((Object)null));
+      var2.loadGameTypes((CompoundTag)var21.orElse((Object)null));
       ServerGamePacketListenerImpl var13 = new ServerGamePacketListenerImpl(this.server, var1, var2, var3);
       var1.setupInboundProtocol(GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess())), var13);
       GameRules var14 = var10.getGameRules();
@@ -223,32 +220,22 @@ public abstract class PlayerList {
       var10.addNewPlayer(var2);
       this.server.getCustomBossEvents().onPlayerConnect(var2);
       this.sendActivePlayerEffects(var2);
-      var2.loadAndSpawnEnderpearls(var7);
-      var2.loadAndSpawnParentVehicle(var7);
+      var2.loadAndSpawnEnderpearls(var21);
+      var2.loadAndSpawnParentVehicle(var21);
       var2.initInventoryMenu();
    }
 
    protected void updateEntireScoreboard(ServerScoreboard var1, ServerPlayer var2) {
       HashSet var3 = Sets.newHashSet();
-      Iterator var4 = var1.getPlayerTeams().iterator();
 
-      while(var4.hasNext()) {
-         PlayerTeam var5 = (PlayerTeam)var4.next();
+      for(PlayerTeam var5 : var1.getPlayerTeams()) {
          var2.connection.send(ClientboundSetPlayerTeamPacket.createAddOrModifyPacket(var5, true));
       }
 
-      DisplaySlot[] var12 = DisplaySlot.values();
-      int var13 = var12.length;
-
-      for(int var6 = 0; var6 < var13; ++var6) {
-         DisplaySlot var7 = var12[var6];
+      for(DisplaySlot var7 : DisplaySlot.values()) {
          Objective var8 = var1.getDisplayObjective(var7);
          if (var8 != null && !var3.contains(var8)) {
-            List var9 = var1.getStartTrackingPackets(var8);
-            Iterator var10 = var9.iterator();
-
-            while(var10.hasNext()) {
-               Packet var11 = (Packet)var10.next();
+            for(Packet var11 : var1.getStartTrackingPackets(var8)) {
                var2.connection.send(var11);
             }
 
@@ -325,17 +312,13 @@ public abstract class PlayerList {
          if (var3.hasExactlyOnePlayerPassenger()) {
             LOGGER.debug("Removing player mount");
             var1.stopRiding();
-            var3.getPassengersAndSelf().forEach((var0) -> {
-               var0.setRemoved(Entity.RemovalReason.UNLOADED_WITH_PLAYER);
-            });
+            var3.getPassengersAndSelf().forEach((var0) -> var0.setRemoved(Entity.RemovalReason.UNLOADED_WITH_PLAYER));
          }
       }
 
       var1.unRide();
-      Iterator var5 = var1.getEnderPearls().iterator();
 
-      while(var5.hasNext()) {
-         ThrownEnderpearl var4 = (ThrownEnderpearl)var5.next();
+      for(ThrownEnderpearl var4 : var1.getEnderPearls()) {
          var4.setRemoved(Entity.RemovalReason.UNLOADED_WITH_PLAYER);
       }
 
@@ -356,20 +339,19 @@ public abstract class PlayerList {
 
    @Nullable
    public Component canPlayerLogin(SocketAddress var1, GameProfile var2) {
-      MutableComponent var4;
       if (this.bans.isBanned(var2)) {
          UserBanListEntry var5 = (UserBanListEntry)this.bans.get(var2);
-         var4 = Component.translatable("multiplayer.disconnect.banned.reason", var5.getReason());
+         MutableComponent var6 = Component.translatable("multiplayer.disconnect.banned.reason", var5.getReason());
          if (var5.getExpires() != null) {
-            var4.append((Component)Component.translatable("multiplayer.disconnect.banned.expiration", BAN_DATE_FORMAT.format(var5.getExpires())));
+            var6.append((Component)Component.translatable("multiplayer.disconnect.banned.expiration", BAN_DATE_FORMAT.format(var5.getExpires())));
          }
 
-         return var4;
+         return var6;
       } else if (!this.isWhiteListed(var2)) {
          return Component.translatable("multiplayer.disconnect.not_whitelisted");
       } else if (this.ipBans.isBanned(var1)) {
          IpBanListEntry var3 = this.ipBans.get(var1);
-         var4 = Component.translatable("multiplayer.disconnect.banned_ip.reason", var3.getReason());
+         MutableComponent var4 = Component.translatable("multiplayer.disconnect.banned_ip.reason", var3.getReason());
          if (var3.getExpires() != null) {
             var4.append((Component)Component.translatable("multiplayer.disconnect.banned_ip.expiration", BAN_DATE_FORMAT.format(var3.getExpires())));
          }
@@ -387,10 +369,8 @@ public abstract class PlayerList {
    public boolean disconnectAllPlayersWithProfile(GameProfile var1) {
       UUID var2 = var1.getId();
       Set var3 = Sets.newIdentityHashSet();
-      Iterator var4 = this.players.iterator();
 
-      while(var4.hasNext()) {
-         ServerPlayer var5 = (ServerPlayer)var4.next();
+      for(ServerPlayer var5 : this.players) {
          if (var5.getUUID().equals(var2)) {
             var3.add(var5);
          }
@@ -401,10 +381,7 @@ public abstract class PlayerList {
          var3.add(var7);
       }
 
-      Iterator var8 = var3.iterator();
-
-      while(var8.hasNext()) {
-         ServerPlayer var6 = (ServerPlayer)var8.next();
+      for(ServerPlayer var6 : var3) {
          var6.connection.disconnect(DUPLICATE_LOGIN_DISCONNECT_MESSAGE);
       }
 
@@ -425,10 +402,7 @@ public abstract class PlayerList {
          var6.copyRespawnPosition(var1);
       }
 
-      Iterator var7 = var1.getTags().iterator();
-
-      while(var7.hasNext()) {
-         String var8 = (String)var7.next();
+      for(String var8 : var1.getTags()) {
          var6.addTag(var8);
       }
 
@@ -471,10 +445,7 @@ public abstract class PlayerList {
    }
 
    public void sendActiveEffects(LivingEntity var1, ServerGamePacketListenerImpl var2) {
-      Iterator var3 = var1.getActiveEffects().iterator();
-
-      while(var3.hasNext()) {
-         MobEffectInstance var4 = (MobEffectInstance)var3.next();
+      for(MobEffectInstance var4 : var1.getActiveEffects()) {
          var2.send(new ClientboundUpdateMobEffectPacket(var1.getId(), var4, false));
       }
 
@@ -495,20 +466,14 @@ public abstract class PlayerList {
    }
 
    public void broadcastAll(Packet<?> var1) {
-      Iterator var2 = this.players.iterator();
-
-      while(var2.hasNext()) {
-         ServerPlayer var3 = (ServerPlayer)var2.next();
+      for(ServerPlayer var3 : this.players) {
          var3.connection.send(var1);
       }
 
    }
 
    public void broadcastAll(Packet<?> var1, ResourceKey<Level> var2) {
-      Iterator var3 = this.players.iterator();
-
-      while(var3.hasNext()) {
-         ServerPlayer var4 = (ServerPlayer)var3.next();
+      for(ServerPlayer var4 : this.players) {
          if (var4.level().dimension() == var2) {
             var4.connection.send(var1);
          }
@@ -519,11 +484,7 @@ public abstract class PlayerList {
    public void broadcastSystemToTeam(Player var1, Component var2) {
       PlayerTeam var3 = var1.getTeam();
       if (var3 != null) {
-         Collection var4 = ((Team)var3).getPlayers();
-         Iterator var5 = var4.iterator();
-
-         while(var5.hasNext()) {
-            String var6 = (String)var5.next();
+         for(String var6 : ((Team)var3).getPlayers()) {
             ServerPlayer var7 = this.getPlayerByName(var6);
             if (var7 != null && var7 != var1) {
                var7.sendSystemMessage(var2);
@@ -703,10 +664,8 @@ public abstract class PlayerList {
 
    public List<ServerPlayer> getPlayersWithAddress(String var1) {
       ArrayList var2 = Lists.newArrayList();
-      Iterator var3 = this.players.iterator();
 
-      while(var3.hasNext()) {
-         ServerPlayer var4 = (ServerPlayer)var3.next();
+      for(ServerPlayer var4 : this.players) {
          if (var4.getIpAddress().equals(var1)) {
             var2.add(var4);
          }
@@ -744,17 +703,13 @@ public abstract class PlayerList {
    }
 
    public void broadcastSystemMessage(Component var1, boolean var2) {
-      this.broadcastSystemMessage(var1, (var1x) -> {
-         return var1;
-      }, var2);
+      this.broadcastSystemMessage(var1, (var1x) -> var1, var2);
    }
 
    public void broadcastSystemMessage(Component var1, Function<ServerPlayer, Component> var2, boolean var3) {
       this.server.sendSystemMessage(var1);
-      Iterator var4 = this.players.iterator();
 
-      while(var4.hasNext()) {
-         ServerPlayer var5 = (ServerPlayer)var4.next();
+      for(ServerPlayer var5 : this.players) {
          Component var6 = (Component)var2.apply(var5);
          if (var6 != null) {
             var5.sendSystemMessage(var6, var3);
@@ -779,11 +734,10 @@ public abstract class PlayerList {
       OutgoingChatMessage var6 = OutgoingChatMessage.create(var1);
       boolean var7 = false;
 
-      boolean var10;
-      for(Iterator var8 = this.players.iterator(); var8.hasNext(); var7 |= var10 && var1.isFullyFiltered()) {
-         ServerPlayer var9 = (ServerPlayer)var8.next();
-         var10 = var2.test(var9);
+      for(ServerPlayer var9 : this.players) {
+         boolean var10 = var2.test(var9);
          var9.sendChatMessage(var6, var10, var4);
+         var7 |= var10 && var1.isFullyFiltered();
       }
 
       if (var7 && var3 != null) {
@@ -833,10 +787,8 @@ public abstract class PlayerList {
    public void setViewDistance(int var1) {
       this.viewDistance = var1;
       this.broadcastAll(new ClientboundSetChunkCacheRadiusPacket(var1));
-      Iterator var2 = this.server.getAllLevels().iterator();
 
-      while(var2.hasNext()) {
-         ServerLevel var3 = (ServerLevel)var2.next();
+      for(ServerLevel var3 : this.server.getAllLevels()) {
          if (var3 != null) {
             var3.getChunkSource().setViewDistance(var1);
          }
@@ -847,10 +799,8 @@ public abstract class PlayerList {
    public void setSimulationDistance(int var1) {
       this.simulationDistance = var1;
       this.broadcastAll(new ClientboundSetSimulationDistancePacket(var1));
-      Iterator var2 = this.server.getAllLevels().iterator();
 
-      while(var2.hasNext()) {
-         ServerLevel var3 = (ServerLevel)var2.next();
+      for(ServerLevel var3 : this.server.getAllLevels()) {
          if (var3 != null) {
             var3.getChunkSource().setSimulationDistance(var1);
          }
@@ -872,20 +822,15 @@ public abstract class PlayerList {
    }
 
    public void reloadResources() {
-      Iterator var1 = this.advancements.values().iterator();
-
-      while(var1.hasNext()) {
-         PlayerAdvancements var2 = (PlayerAdvancements)var1.next();
+      for(PlayerAdvancements var2 : this.advancements.values()) {
          var2.reload(this.server.getAdvancements());
       }
 
       this.broadcastAll(new ClientboundUpdateTagsPacket(TagNetworkSerialization.serializeTagsToNetwork(this.registries)));
       RecipeManager var5 = this.server.getRecipeManager();
       ClientboundUpdateRecipesPacket var6 = new ClientboundUpdateRecipesPacket(var5.getSynchronizedItemProperties(), var5.getSynchronizedStonecutterRecipes());
-      Iterator var3 = this.players.iterator();
 
-      while(var3.hasNext()) {
-         ServerPlayer var4 = (ServerPlayer)var3.next();
+      for(ServerPlayer var4 : this.players) {
          var4.connection.send(var6);
          var4.getRecipeBook().sendInitialRecipeBook(var4);
       }

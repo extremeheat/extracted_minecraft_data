@@ -22,18 +22,6 @@ public record Frame(int depth, CommandResultCallback returnValueConsumer, FrameC
       this.frameControl.discard();
    }
 
-   public int depth() {
-      return this.depth;
-   }
-
-   public CommandResultCallback returnValueConsumer() {
-      return this.returnValueConsumer;
-   }
-
-   public FrameControl frameControl() {
-      return this.frameControl;
-   }
-
    @FunctionalInterface
    public interface FrameControl {
       void discard();

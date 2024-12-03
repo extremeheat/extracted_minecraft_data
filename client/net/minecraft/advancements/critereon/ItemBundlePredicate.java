@@ -9,9 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BundleContents;
 
 public record ItemBundlePredicate(Optional<CollectionPredicate<ItemStack, ItemPredicate>> items) implements SingleComponentItemPredicate<BundleContents> {
-   public static final Codec<ItemBundlePredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(CollectionPredicate.codec(ItemPredicate.CODEC).optionalFieldOf("items").forGetter(ItemBundlePredicate::items)).apply(var0, ItemBundlePredicate::new);
-   });
+   public static final Codec<ItemBundlePredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(CollectionPredicate.codec(ItemPredicate.CODEC).optionalFieldOf("items").forGetter(ItemBundlePredicate::items)).apply(var0, ItemBundlePredicate::new));
 
    public ItemBundlePredicate(Optional<CollectionPredicate<ItemStack, ItemPredicate>> var1) {
       super();
@@ -24,9 +22,5 @@ public record ItemBundlePredicate(Optional<CollectionPredicate<ItemStack, ItemPr
 
    public boolean matches(ItemStack var1, BundleContents var2) {
       return !this.items.isPresent() || ((CollectionPredicate)this.items.get()).test(var2.items());
-   }
-
-   public Optional<CollectionPredicate<ItemStack, ItemPredicate>> items() {
-      return this.items;
    }
 }

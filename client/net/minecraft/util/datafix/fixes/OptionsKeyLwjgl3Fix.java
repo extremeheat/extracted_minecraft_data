@@ -134,10 +134,7 @@ public class OptionsKeyLwjgl3Fix extends DataFix {
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("OptionsKeyLwjgl3Fix", this.getInputSchema().getType(References.OPTIONS), (var0) -> {
-         return var0.update(DSL.remainderFinder(), (var0x) -> {
-            return (Dynamic)var0x.getMapValues().map((var1) -> {
-               return var0x.createMap((Map)var1.entrySet().stream().map((var0) -> {
+      return this.fixTypeEverywhereTyped("OptionsKeyLwjgl3Fix", this.getInputSchema().getType(References.OPTIONS), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> (Dynamic)var0x.getMapValues().map((var1) -> var0x.createMap((Map)var1.entrySet().stream().map((var0) -> {
                   if (((Dynamic)var0.getKey()).asString("").startsWith("key_")) {
                      int var1 = Integer.parseInt(((Dynamic)var0.getValue()).asString(""));
                      if (var1 < 0) {
@@ -161,9 +158,6 @@ public class OptionsKeyLwjgl3Fix extends DataFix {
                   } else {
                      return Pair.of((Dynamic)var0.getKey(), (Dynamic)var0.getValue());
                   }
-               }).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond)));
-            }).result().orElse(var0x);
-         });
-      });
+               }).collect(Collectors.toMap(Pair::getFirst, Pair::getSecond)))).result().orElse(var0x)));
    }
 }

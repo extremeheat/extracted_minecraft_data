@@ -7,7 +7,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -46,11 +45,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PistonBaseBlock extends DirectionalBlock {
-   public static final MapCodec<PistonBaseBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.BOOL.fieldOf("sticky").forGetter((var0x) -> {
-         return var0x.isSticky;
-      }), propertiesCodec()).apply(var0, PistonBaseBlock::new);
-   });
+   public static final MapCodec<PistonBaseBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("sticky").forGetter((var0x) -> var0x.isSticky), propertiesCodec()).apply(var0, PistonBaseBlock::new));
    public static final BooleanProperty EXTENDED;
    public static final int TRIGGER_EXTEND = 0;
    public static final int TRIGGER_CONTRACT = 1;
@@ -150,12 +145,7 @@ public class PistonBaseBlock extends DirectionalBlock {
    }
 
    private boolean getNeighborSignal(SignalGetter var1, BlockPos var2, Direction var3) {
-      Direction[] var4 = Direction.values();
-      int var5 = var4.length;
-
-      int var6;
-      for(var6 = 0; var6 < var5; ++var6) {
-         Direction var7 = var4[var6];
+      for(Direction var7 : Direction.values()) {
          if (var7 != var3 && var1.hasSignal(var2.relative(var7), var7)) {
             return true;
          }
@@ -165,11 +155,8 @@ public class PistonBaseBlock extends DirectionalBlock {
          return true;
       } else {
          BlockPos var9 = var2.above();
-         Direction[] var10 = Direction.values();
-         var6 = var10.length;
 
-         for(int var11 = 0; var11 < var6; ++var11) {
-            Direction var8 = var10[var11];
+         for(Direction var8 : Direction.values()) {
             if (var8 != Direction.DOWN && var1.hasSignal(var9.relative(var8), var8)) {
                return true;
             }
@@ -299,10 +286,8 @@ public class PistonBaseBlock extends DirectionalBlock {
          HashMap var7 = Maps.newHashMap();
          List var8 = var6.getToPush();
          ArrayList var9 = Lists.newArrayList();
-         Iterator var10 = var8.iterator();
 
-         while(var10.hasNext()) {
-            BlockPos var11 = (BlockPos)var10.next();
+         for(BlockPos var11 : var8) {
             BlockState var12 = var1.getBlockState(var11);
             var9.add(var12);
             var7.put(var11, var12);
@@ -313,12 +298,9 @@ public class PistonBaseBlock extends DirectionalBlock {
          Direction var21 = var4 ? var3 : var3.getOpposite();
          int var13 = 0;
 
-         int var14;
-         BlockPos var15;
-         BlockState var16;
-         for(var14 = var19.size() - 1; var14 >= 0; --var14) {
-            var15 = (BlockPos)var19.get(var14);
-            var16 = var1.getBlockState(var15);
+         for(int var14 = var19.size() - 1; var14 >= 0; --var14) {
+            BlockPos var15 = (BlockPos)var19.get(var14);
+            BlockState var16 = var1.getBlockState(var15);
             BlockEntity var17 = var16.hasBlockEntity() ? var1.getBlockEntity(var15) : null;
             dropResources(var16, var1, var15, var17);
             var1.setBlock(var15, Blocks.AIR.defaultBlockState(), 18);
@@ -330,63 +312,56 @@ public class PistonBaseBlock extends DirectionalBlock {
             var20[var13++] = var16;
          }
 
-         BlockState var28;
-         for(var14 = var8.size() - 1; var14 >= 0; --var14) {
-            var15 = (BlockPos)var8.get(var14);
-            var16 = var1.getBlockState(var15);
-            var15 = var15.relative(var21);
-            var7.remove(var15);
-            var28 = (BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(FACING, var3);
-            var1.setBlock(var15, var28, 68);
-            var1.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var15, var28, (BlockState)var9.get(var14), var3, var4, false));
-            var20[var13++] = var16;
+         for(int var23 = var8.size() - 1; var23 >= 0; --var23) {
+            BlockPos var26 = (BlockPos)var8.get(var23);
+            BlockState var32 = var1.getBlockState(var26);
+            var26 = var26.relative(var21);
+            var7.remove(var26);
+            BlockState var38 = (BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(FACING, var3);
+            var1.setBlock(var26, var38, 68);
+            var1.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var26, var38, (BlockState)var9.get(var23), var3, var4, false));
+            var20[var13++] = var32;
          }
 
          if (var4) {
-            PistonType var22 = this.isSticky ? PistonType.STICKY : PistonType.DEFAULT;
-            BlockState var24 = (BlockState)((BlockState)Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.FACING, var3)).setValue(PistonHeadBlock.TYPE, var22);
-            var16 = (BlockState)((BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, var3)).setValue(MovingPistonBlock.TYPE, this.isSticky ? PistonType.STICKY : PistonType.DEFAULT);
+            PistonType var24 = this.isSticky ? PistonType.STICKY : PistonType.DEFAULT;
+            BlockState var28 = (BlockState)((BlockState)Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.FACING, var3)).setValue(PistonHeadBlock.TYPE, var24);
+            BlockState var33 = (BlockState)((BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, var3)).setValue(MovingPistonBlock.TYPE, this.isSticky ? PistonType.STICKY : PistonType.DEFAULT);
             var7.remove(var5);
-            var1.setBlock(var5, var16, 68);
-            var1.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var5, var16, var24, var3, true, true));
+            var1.setBlock(var5, var33, 68);
+            var1.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var5, var33, var28, var3, true, true));
          }
 
-         BlockState var23 = Blocks.AIR.defaultBlockState();
-         Iterator var25 = var7.keySet().iterator();
+         BlockState var25 = Blocks.AIR.defaultBlockState();
 
-         while(var25.hasNext()) {
-            BlockPos var26 = (BlockPos)var25.next();
-            var1.setBlock(var26, var23, 82);
+         for(BlockPos var34 : var7.keySet()) {
+            var1.setBlock(var34, var25, 82);
          }
 
-         var25 = var7.entrySet().iterator();
-
-         while(var25.hasNext()) {
-            Map.Entry var29 = (Map.Entry)var25.next();
-            BlockPos var31 = (BlockPos)var29.getKey();
-            BlockState var18 = (BlockState)var29.getValue();
-            var18.updateIndirectNeighbourShapes(var1, var31, 2);
-            var23.updateNeighbourShapes(var1, var31, 2);
-            var23.updateIndirectNeighbourShapes(var1, var31, 2);
+         for(Map.Entry var35 : var7.entrySet()) {
+            BlockPos var39 = (BlockPos)var35.getKey();
+            BlockState var18 = (BlockState)var35.getValue();
+            var18.updateIndirectNeighbourShapes(var1, var39, 2);
+            var25.updateNeighbourShapes(var1, var39, 2);
+            var25.updateIndirectNeighbourShapes(var1, var39, 2);
          }
 
-         Orientation var27 = ExperimentalRedstoneUtils.initialOrientation(var1, var6.getPushDirection(), (Direction)null);
+         Orientation var31 = ExperimentalRedstoneUtils.initialOrientation(var1, var6.getPushDirection(), (Direction)null);
          var13 = 0;
 
-         int var30;
-         for(var30 = var19.size() - 1; var30 >= 0; --var30) {
-            var28 = var20[var13++];
-            BlockPos var33 = (BlockPos)var19.get(var30);
-            var28.updateIndirectNeighbourShapes(var1, var33, 2);
-            var1.updateNeighborsAt(var33, var28.getBlock(), var27);
+         for(int var36 = var19.size() - 1; var36 >= 0; --var36) {
+            BlockState var40 = var20[var13++];
+            BlockPos var41 = (BlockPos)var19.get(var36);
+            var40.updateIndirectNeighbourShapes(var1, var41, 2);
+            var1.updateNeighborsAt(var41, var40.getBlock(), var31);
          }
 
-         for(var30 = var8.size() - 1; var30 >= 0; --var30) {
-            var1.updateNeighborsAt((BlockPos)var8.get(var30), var20[var13++].getBlock(), var27);
+         for(int var37 = var8.size() - 1; var37 >= 0; --var37) {
+            var1.updateNeighborsAt((BlockPos)var8.get(var37), var20[var13++].getBlock(), var31);
          }
 
          if (var4) {
-            var1.updateNeighborsAt(var5, Blocks.PISTON_HEAD, var27);
+            var1.updateNeighborsAt(var5, Blocks.PISTON_HEAD, var31);
          }
 
          return true;

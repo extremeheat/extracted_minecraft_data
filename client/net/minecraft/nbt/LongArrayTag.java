@@ -78,11 +78,8 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 
    public void write(DataOutput var1) throws IOException {
       var1.writeInt(this.data.length);
-      long[] var2 = this.data;
-      int var3 = var2.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         long var5 = var2[var4];
+      for(long var5 : this.data) {
          var1.writeLong(var5);
       }
 

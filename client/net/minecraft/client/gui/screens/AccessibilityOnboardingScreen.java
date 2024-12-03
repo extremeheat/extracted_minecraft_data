@@ -45,9 +45,7 @@ public class AccessibilityOnboardingScreen extends Screen {
    public void init() {
       LinearLayout var1 = (LinearLayout)this.layout.addToContents(LinearLayout.vertical());
       var1.defaultCellSetting().alignHorizontallyCenter().padding(4);
-      this.textWidget = (FocusableTextWidget)var1.addChild(new FocusableTextWidget(this.width, this.title, this.font), (Consumer)((var0) -> {
-         var0.padding(8);
-      }));
+      this.textWidget = (FocusableTextWidget)var1.addChild(new FocusableTextWidget(this.width, this.title, this.font), (Consumer)((var0) -> var0.padding(8)));
       AbstractWidget var3 = this.options.narrator().createButton(this.options);
       if (var3 instanceof CycleButton var2) {
          this.narratorButton = var2;
@@ -55,15 +53,9 @@ public class AccessibilityOnboardingScreen extends Screen {
          var1.addChild(this.narratorButton);
       }
 
-      var1.addChild(CommonButtons.accessibility(150, (var1x) -> {
-         this.closeAndSetScreen(new AccessibilityOptionsScreen(this, this.minecraft.options));
-      }, false));
-      var1.addChild(CommonButtons.language(150, (var1x) -> {
-         this.closeAndSetScreen(new LanguageSelectScreen(this, this.minecraft.options, this.minecraft.getLanguageManager()));
-      }, false));
-      this.layout.addToFooter(Button.builder(CommonComponents.GUI_CONTINUE, (var1x) -> {
-         this.onClose();
-      }).build());
+      var1.addChild(CommonButtons.accessibility(150, (var1x) -> this.closeAndSetScreen(new AccessibilityOptionsScreen(this, this.minecraft.options)), false));
+      var1.addChild(CommonButtons.language(150, (var1x) -> this.closeAndSetScreen(new LanguageSelectScreen(this, this.minecraft.options, this.minecraft.getLanguageManager())), false));
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_CONTINUE, (var1x) -> this.onClose()).build());
       this.layout.visitWidgets(this::addRenderableWidget);
       this.repositionElements();
    }
@@ -94,9 +86,7 @@ public class AccessibilityOnboardingScreen extends Screen {
    }
 
    private void closeAndSetScreen(Screen var1) {
-      this.close(false, () -> {
-         this.minecraft.setScreen(var1);
-      });
+      this.close(false, () -> this.minecraft.setScreen(var1));
    }
 
    private void close(boolean var1, Runnable var2) {

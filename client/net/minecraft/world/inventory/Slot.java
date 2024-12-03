@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import com.mojang.datafixers.util.Pair;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
@@ -82,7 +81,7 @@ public class Slot {
    }
 
    @Nullable
-   public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
+   public ResourceLocation getNoItemIcon() {
       return null;
    }
 
@@ -120,9 +119,7 @@ public class Slot {
 
    public ItemStack safeTake(int var1, int var2, Player var3) {
       Optional var4 = this.tryRemove(var1, var2, var3);
-      var4.ifPresent((var2x) -> {
-         this.onTake(var3, var2x);
-      });
+      var4.ifPresent((var2x) -> this.onTake(var3, var2x));
       return (ItemStack)var4.orElse(ItemStack.EMPTY);
    }
 

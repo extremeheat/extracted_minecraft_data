@@ -109,12 +109,16 @@ public class PoweredRailBlock extends BaseRailBlock {
          return false;
       } else {
          RailShape var7 = (RailShape)var6.getValue(SHAPE);
-         if (var5 == RailShape.EAST_WEST && (var7 == RailShape.NORTH_SOUTH || var7 == RailShape.ASCENDING_NORTH || var7 == RailShape.ASCENDING_SOUTH)) {
-            return false;
-         } else if (var5 == RailShape.NORTH_SOUTH && (var7 == RailShape.EAST_WEST || var7 == RailShape.ASCENDING_EAST || var7 == RailShape.ASCENDING_WEST)) {
-            return false;
-         } else if ((Boolean)var6.getValue(POWERED)) {
-            return var1.hasNeighborSignal(var2) ? true : this.findPoweredRailSignal(var1, var2, var6, var3, var4 + 1);
+         if (var5 != RailShape.EAST_WEST || var7 != RailShape.NORTH_SOUTH && var7 != RailShape.ASCENDING_NORTH && var7 != RailShape.ASCENDING_SOUTH) {
+            if (var5 != RailShape.NORTH_SOUTH || var7 != RailShape.EAST_WEST && var7 != RailShape.ASCENDING_EAST && var7 != RailShape.ASCENDING_WEST) {
+               if ((Boolean)var6.getValue(POWERED)) {
+                  return var1.hasNeighborSignal(var2) ? true : this.findPoweredRailSignal(var1, var2, var6, var3, var4 + 1);
+               } else {
+                  return false;
+               }
+            } else {
+               return false;
+            }
          } else {
             return false;
          }

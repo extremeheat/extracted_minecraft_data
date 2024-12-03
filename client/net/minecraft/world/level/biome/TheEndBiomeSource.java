@@ -11,9 +11,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.level.levelgen.DensityFunction;
 
 public class TheEndBiomeSource extends BiomeSource {
-   public static final MapCodec<TheEndBiomeSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(RegistryOps.retrieveElement(Biomes.THE_END), RegistryOps.retrieveElement(Biomes.END_HIGHLANDS), RegistryOps.retrieveElement(Biomes.END_MIDLANDS), RegistryOps.retrieveElement(Biomes.SMALL_END_ISLANDS), RegistryOps.retrieveElement(Biomes.END_BARRENS)).apply(var0, var0.stable(TheEndBiomeSource::new));
-   });
+   public static final MapCodec<TheEndBiomeSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryOps.retrieveElement(Biomes.THE_END), RegistryOps.retrieveElement(Biomes.END_HIGHLANDS), RegistryOps.retrieveElement(Biomes.END_MIDLANDS), RegistryOps.retrieveElement(Biomes.SMALL_END_ISLANDS), RegistryOps.retrieveElement(Biomes.END_BARRENS)).apply(var0, var0.stable(TheEndBiomeSource::new)));
    private final Holder<Biome> end;
    private final Holder<Biome> highlands;
    private final Holder<Biome> midlands;

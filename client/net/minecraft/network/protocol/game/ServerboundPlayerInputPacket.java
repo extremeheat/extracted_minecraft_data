@@ -22,10 +22,6 @@ public record ServerboundPlayerInputPacket(Input input) implements Packet<Server
       var1.handlePlayerInput(this);
    }
 
-   public Input input() {
-      return this.input;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(Input.STREAM_CODEC, ServerboundPlayerInputPacket::input, ServerboundPlayerInputPacket::new);
    }

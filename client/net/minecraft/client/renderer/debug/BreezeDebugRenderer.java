@@ -35,15 +35,9 @@ public class BreezeDebugRenderer {
 
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
       LocalPlayer var9 = this.minecraft.player;
-      var9.level().getEntities((EntityTypeTest)EntityType.BREEZE, var9.getBoundingBox().inflate(100.0), (var0) -> {
-         return true;
-      }).forEach((var10) -> {
+      var9.level().getEntities((EntityTypeTest)EntityType.BREEZE, var9.getBoundingBox().inflate(100.0), (var0) -> true).forEach((var10) -> {
          Optional var11 = Optional.ofNullable((BreezeDebugPayload.BreezeInfo)this.perEntity.get(var10.getId()));
-         var11.map(BreezeDebugPayload.BreezeInfo::attackTarget).map((var1x) -> {
-            return var9.level().getEntity(var1x);
-         }).map((var1x) -> {
-            return var1x.getPosition(this.minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(true));
-         }).ifPresent((var9x) -> {
+         var11.map(BreezeDebugPayload.BreezeInfo::attackTarget).map((var1x) -> var9.level().getEntity(var1x)).map((var1x) -> var1x.getPosition(this.minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(true))).ifPresent((var9x) -> {
             drawLine(var1, var2, var3, var5, var7, var10.position(), var9x, TARGET_LINE_COLOR);
             Vec3 var10x = var9x.add(0.0, 0.009999999776482582, 0.0);
             drawCircle(var1.last().pose(), var3, var5, var7, var2.getBuffer(RenderType.debugLineStrip(2.0)), var10x, 4.0F, INNER_CIRCLE_COLOR);

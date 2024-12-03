@@ -27,15 +27,11 @@ public class GameLoadTimesEvent {
    }
 
    public synchronized void beginStep(TelemetryProperty<Measurement> var1) {
-      this.beginStep(var1, (var1x) -> {
-         return Stopwatch.createStarted(this.timeSource);
-      });
+      this.beginStep(var1, (Function)((var1x) -> Stopwatch.createStarted(this.timeSource)));
    }
 
    public synchronized void beginStep(TelemetryProperty<Measurement> var1, Stopwatch var2) {
-      this.beginStep(var1, (var1x) -> {
-         return var2;
-      });
+      this.beginStep(var1, (Function)((var1x) -> var2));
    }
 
    private synchronized void beginStep(TelemetryProperty<Measurement> var1, Function<TelemetryProperty<Measurement>, Stopwatch> var2) {
@@ -66,9 +62,7 @@ public class GameLoadTimesEvent {
                }
 
             });
-            this.bootstrapTime.ifPresent((var1) -> {
-               var1x.put(TelemetryProperty.LOAD_TIME_BOOTSTRAP_MS, new Measurement((int)var1));
-            });
+            this.bootstrapTime.ifPresent((var1) -> var1x.put(TelemetryProperty.LOAD_TIME_BOOTSTRAP_MS, new Measurement((int)var1)));
             this.measurements.clear();
          }
       });
@@ -86,14 +80,8 @@ public class GameLoadTimesEvent {
          this.millis = var1;
       }
 
-      public int millis() {
-         return this.millis;
-      }
-
       static {
-         CODEC = Codec.INT.xmap(Measurement::new, (var0) -> {
-            return var0.millis;
-         });
+         CODEC = Codec.INT.xmap(Measurement::new, (var0) -> var0.millis);
       }
    }
 }

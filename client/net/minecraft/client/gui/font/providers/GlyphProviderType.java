@@ -12,11 +12,11 @@ public enum GlyphProviderType implements StringRepresentable {
    UNIHEX("unihex", UnihexProvider.Definition.CODEC),
    REFERENCE("reference", ProviderReferenceDefinition.CODEC);
 
-   public static final Codec<GlyphProviderType> CODEC = StringRepresentable.fromEnum(GlyphProviderType::values);
+   public static final Codec<GlyphProviderType> CODEC = StringRepresentable.<GlyphProviderType>fromEnum(GlyphProviderType::values);
    private final String name;
    private final MapCodec<? extends GlyphProviderDefinition> codec;
 
-   private GlyphProviderType(final String var3, final MapCodec var4) {
+   private GlyphProviderType(final String var3, final MapCodec<? extends GlyphProviderDefinition> var4) {
       this.name = var3;
       this.codec = var4;
    }

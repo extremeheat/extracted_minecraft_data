@@ -35,9 +35,7 @@ public class ExplosionCondition implements LootItemCondition {
    }
 
    public static LootItemCondition.Builder survivesExplosion() {
-      return () -> {
-         return INSTANCE;
-      };
+      return () -> INSTANCE;
    }
 
    // $FF: synthetic method

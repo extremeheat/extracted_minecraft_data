@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ClientboundTransferPacket(String host, int port) implements Packet<ClientCommonPacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundTransferPacket> STREAM_CODEC = Packet.codec(ClientboundTransferPacket::write, ClientboundTransferPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundTransferPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundTransferPacket>codec(ClientboundTransferPacket::write, ClientboundTransferPacket::new);
 
    private ClientboundTransferPacket(FriendlyByteBuf var1) {
       this(var1.readUtf(), var1.readVarInt());
@@ -29,13 +29,5 @@ public record ClientboundTransferPacket(String host, int port) implements Packet
 
    public void handle(ClientCommonPacketListener var1) {
       var1.handleTransfer(this);
-   }
-
-   public String host() {
-      return this.host;
-   }
-
-   public int port() {
-      return this.port;
    }
 }

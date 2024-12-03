@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.ai.behavior;
 
+import java.util.function.Function;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -14,9 +15,7 @@ public class StrollToPoi {
 
    public static BehaviorControl<PathfinderMob> create(MemoryModuleType<GlobalPos> var0, float var1, int var2, int var3) {
       MutableLong var4 = new MutableLong(0L);
-      return BehaviorBuilder.create((var5) -> {
-         return var5.group(var5.registered(MemoryModuleType.WALK_TARGET), var5.present(var0)).apply(var5, (var5x, var6) -> {
-            return (var7, var8, var9) -> {
+      return BehaviorBuilder.create((Function)((var5) -> var5.group(var5.registered(MemoryModuleType.WALK_TARGET), var5.present(var0)).apply(var5, (var5x, var6) -> (var7, var8, var9) -> {
                GlobalPos var11 = (GlobalPos)var5.get(var6);
                if (var7.dimension() == var11.dimension() && var11.pos().closerToCenterThan(var8.position(), (double)var3)) {
                   if (var9 <= var4.getValue()) {
@@ -29,8 +28,6 @@ public class StrollToPoi {
                } else {
                   return false;
                }
-            };
-         });
-      });
+            })));
    }
 }

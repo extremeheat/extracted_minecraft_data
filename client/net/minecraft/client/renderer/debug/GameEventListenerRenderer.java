@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.debug;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.Util;
@@ -45,14 +44,10 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
       } else {
          Vec3 var10 = new Vec3(var3, 0.0, var7);
          this.trackedGameEvents.removeIf(TrackedGameEvent::isExpired);
-         this.trackedListeners.removeIf((var2x) -> {
-            return var2x.isExpired(var9, var10);
-         });
+         this.trackedListeners.removeIf((var2x) -> var2x.isExpired(var9, var10));
          VertexConsumer var11 = var2.getBuffer(RenderType.lines());
-         Iterator var12 = this.trackedListeners.iterator();
 
-         while(var12.hasNext()) {
-            TrackedListener var13 = (TrackedListener)var12.next();
+         for(TrackedListener var13 : this.trackedListeners) {
             var13.getPosition(var9).ifPresent((var9x) -> {
                double var10 = var9x.x() - (double)var13.getListenerRadius();
                double var12 = var9x.y() - (double)var13.getListenerRadius();
@@ -65,31 +60,20 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
          }
 
          VertexConsumer var30 = var2.getBuffer(RenderType.debugFilledBox());
-         Iterator var31 = this.trackedListeners.iterator();
 
-         TrackedListener var14;
-         while(var31.hasNext()) {
-            var14 = (TrackedListener)var31.next();
-            var14.getPosition(var9).ifPresent((var8) -> {
-               ShapeRenderer.addChainedFilledBoxVertices(var1, var30, var8.x() - 0.25 - var3, var8.y() - var5, var8.z() - 0.25 - var7, var8.x() + 0.25 - var3, var8.y() - var5 + 1.0, var8.z() + 0.25 - var7, 1.0F, 1.0F, 0.0F, 0.35F);
-            });
+         for(TrackedListener var14 : this.trackedListeners) {
+            var14.getPosition(var9).ifPresent((var8) -> ShapeRenderer.addChainedFilledBoxVertices(var1, var30, var8.x() - 0.25 - var3, var8.y() - var5, var8.z() - 0.25 - var7, var8.x() + 0.25 - var3, var8.y() - var5 + 1.0, var8.z() + 0.25 - var7, 1.0F, 1.0F, 0.0F, 0.35F));
          }
 
-         var31 = this.trackedListeners.iterator();
-
-         while(var31.hasNext()) {
-            var14 = (TrackedListener)var31.next();
-            var14.getPosition(var9).ifPresent((var2x) -> {
+         for(TrackedListener var34 : this.trackedListeners) {
+            var34.getPosition(var9).ifPresent((var2x) -> {
                DebugRenderer.renderFloatingText(var1, var2, "Listener Origin", var2x.x(), var2x.y() + 1.7999999523162842, var2x.z(), -1, 0.025F);
                DebugRenderer.renderFloatingText(var1, var2, BlockPos.containing(var2x).toString(), var2x.x(), var2x.y() + 1.5, var2x.z(), -6959665, 0.025F);
             });
          }
 
-         var31 = this.trackedGameEvents.iterator();
-
-         while(var31.hasNext()) {
-            TrackedGameEvent var32 = (TrackedGameEvent)var31.next();
-            Vec3 var15 = var32.position;
+         for(TrackedGameEvent var35 : this.trackedGameEvents) {
+            Vec3 var15 = var35.position;
             double var16 = 0.20000000298023224;
             double var18 = var15.x - 0.20000000298023224;
             double var20 = var15.y - 0.20000000298023224;
@@ -98,7 +82,7 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
             double var26 = var15.y + 0.20000000298023224 + 0.5;
             double var28 = var15.z + 0.20000000298023224;
             renderFilledBox(var1, var2, new AABB(var18, var20, var22, var24, var26, var28), 1.0F, 1.0F, 1.0F, 0.2F);
-            DebugRenderer.renderFloatingText(var1, var2, var32.gameEvent.location().toString(), var15.x, var15.y + 0.8500000238418579, var15.z, -7564911, 0.0075F);
+            DebugRenderer.renderFloatingText(var1, var2, var35.gameEvent.location().toString(), var15.x, var15.y + 0.8500000238418579, var15.z, -7564911, 0.0075F);
          }
 
       }
@@ -120,7 +104,7 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
       this.trackedListeners.add(new TrackedListener(var1, var2));
    }
 
-   private static class TrackedListener implements GameEventListener {
+   static class TrackedListener implements GameEventListener {
       public final PositionSource listenerSource;
       public final int listenerRange;
 
@@ -131,9 +115,7 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
       }
 
       public boolean isExpired(Level var1, Vec3 var2) {
-         return this.listenerSource.getPosition(var1).filter((var1x) -> {
-            return var1x.distanceToSqr(var2) <= 1024.0;
-         }).isPresent();
+         return this.listenerSource.getPosition(var1).filter((var1x) -> var1x.distanceToSqr(var2) <= 1024.0).isPresent();
       }
 
       public Optional<Vec3> getPosition(Level var1) {
@@ -153,7 +135,7 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
       }
    }
 
-   private static record TrackedGameEvent(long timeStamp, ResourceKey<GameEvent> gameEvent, Vec3 position) {
+   static record TrackedGameEvent(long timeStamp, ResourceKey<GameEvent> gameEvent, Vec3 position) {
       final ResourceKey<GameEvent> gameEvent;
       final Vec3 position;
 
@@ -166,18 +148,6 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
 
       public boolean isExpired() {
          return Util.getMillis() - this.timeStamp > 3000L;
-      }
-
-      public long timeStamp() {
-         return this.timeStamp;
-      }
-
-      public ResourceKey<GameEvent> gameEvent() {
-         return this.gameEvent;
-      }
-
-      public Vec3 position() {
-         return this.position;
       }
    }
 }

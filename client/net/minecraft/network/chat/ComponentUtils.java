@@ -6,9 +6,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.DataFixUtils;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
@@ -47,10 +47,8 @@ public class ComponentUtils {
          return var1.copy();
       } else {
          MutableComponent var4 = var1.getContents().resolve(var0, var2, var3 + 1);
-         Iterator var5 = var1.getSiblings().iterator();
 
-         while(var5.hasNext()) {
-            Component var6 = (Component)var5.next();
+         for(Component var6 : var1.getSiblings()) {
             var4.append((Component)updateForEntity(var0, var6, var2, var3 + 1));
          }
 
@@ -72,9 +70,7 @@ public class ComponentUtils {
    }
 
    public static Component formatList(Collection<String> var0) {
-      return formatAndSortList(var0, (var0x) -> {
-         return Component.literal(var0x).withStyle(ChatFormatting.GREEN);
-      });
+      return formatAndSortList(var0, (var0x) -> Component.literal(var0x).withStyle(ChatFormatting.GREEN));
    }
 
    public static <T extends Comparable<T>> Component formatAndSortList(Collection<T> var0, Function<T, Component> var1) {
@@ -85,7 +81,7 @@ public class ComponentUtils {
       } else {
          ArrayList var2 = Lists.newArrayList(var0);
          var2.sort(Comparable::compareTo);
-         return formatList(var2, (Function)var1);
+         return formatList(var2, var1);
       }
    }
 
@@ -110,13 +106,13 @@ public class ComponentUtils {
          MutableComponent var3 = Component.empty();
          boolean var4 = true;
 
-         for(Iterator var5 = var0.iterator(); var5.hasNext(); var4 = false) {
-            Object var6 = var5.next();
+         for(Object var6 : var0) {
             if (!var4) {
                var3.append(var1);
             }
 
             var3.append((Component)var2.apply(var6));
+            var4 = false;
          }
 
          return var3;
@@ -150,9 +146,7 @@ public class ComponentUtils {
    }
 
    public static MutableComponent copyOnClickText(String var0) {
-      return wrapInSquareBrackets(Component.literal(var0).withStyle((var1) -> {
-         return var1.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, var0)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.copy.click"))).withInsertion(var0);
-      }));
+      return wrapInSquareBrackets(Component.literal(var0).withStyle((UnaryOperator)((var1) -> var1.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, var0)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.copy.click"))).withInsertion(var0))));
    }
 
    static {

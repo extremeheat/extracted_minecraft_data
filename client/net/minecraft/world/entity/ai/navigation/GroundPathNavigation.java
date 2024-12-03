@@ -26,7 +26,6 @@ public class GroundPathNavigation extends PathNavigation {
 
    protected PathFinder createPathFinder(int var1) {
       this.nodeEvaluator = new WalkNodeEvaluator();
-      this.nodeEvaluator.setCanPassDoors(true);
       return new PathFinder(this.nodeEvaluator, var1);
    }
 
@@ -43,9 +42,8 @@ public class GroundPathNavigation extends PathNavigation {
       if (var3 == null) {
          return null;
       } else {
-         BlockPos.MutableBlockPos var4;
          if (var3.getBlockState((BlockPos)var1).isAir()) {
-            var4 = ((BlockPos)var1).mutable().move(Direction.DOWN);
+            BlockPos.MutableBlockPos var4 = ((BlockPos)var1).mutable().move(Direction.DOWN);
 
             while(var4.getY() > this.level.getMinY() && var3.getBlockState(var4).isAir()) {
                var4.move(Direction.DOWN);
@@ -67,13 +65,13 @@ public class GroundPathNavigation extends PathNavigation {
          if (!var3.getBlockState((BlockPos)var1).isSolid()) {
             return super.createPath((BlockPos)var1, var2);
          } else {
-            var4 = ((BlockPos)var1).mutable().move(Direction.UP);
+            BlockPos.MutableBlockPos var5 = ((BlockPos)var1).mutable().move(Direction.UP);
 
-            while(var4.getY() <= this.level.getMaxY() && var3.getBlockState(var4).isSolid()) {
-               var4.move(Direction.UP);
+            while(var5.getY() <= this.level.getMaxY() && var3.getBlockState(var5).isSolid()) {
+               var5.move(Direction.UP);
             }
 
-            return super.createPath(var4.immutable(), var2);
+            return super.createPath(var5.immutable(), var2);
          }
       }
    }
@@ -88,17 +86,16 @@ public class GroundPathNavigation extends PathNavigation {
          BlockState var2 = this.level.getBlockState(BlockPos.containing(this.mob.getX(), (double)var1, this.mob.getZ()));
          int var3 = 0;
 
-         do {
-            if (!var2.is(Blocks.WATER)) {
-               return var1;
-            }
-
+         while(var2.is(Blocks.WATER)) {
             ++var1;
             var2 = this.level.getBlockState(BlockPos.containing(this.mob.getX(), (double)var1, this.mob.getZ()));
             ++var3;
-         } while(var3 <= 16);
+            if (var3 > 16) {
+               return this.mob.getBlockY();
+            }
+         }
 
-         return this.mob.getBlockY();
+         return var1;
       } else {
          return Mth.floor(this.mob.getY() + 0.5);
       }
@@ -134,18 +131,6 @@ public class GroundPathNavigation extends PathNavigation {
 
    public void setCanOpenDoors(boolean var1) {
       this.nodeEvaluator.setCanOpenDoors(var1);
-   }
-
-   public boolean canPassDoors() {
-      return this.nodeEvaluator.canPassDoors();
-   }
-
-   public void setCanPassDoors(boolean var1) {
-      this.nodeEvaluator.setCanPassDoors(var1);
-   }
-
-   public boolean canOpenDoors() {
-      return this.nodeEvaluator.canPassDoors();
    }
 
    public void setAvoidSun(boolean var1) {

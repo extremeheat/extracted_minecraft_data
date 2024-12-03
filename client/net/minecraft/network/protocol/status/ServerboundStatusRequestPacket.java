@@ -22,6 +22,6 @@ public class ServerboundStatusRequestPacket implements Packet<ServerStatusPacket
    }
 
    static {
-      STREAM_CODEC = StreamCodec.unit(INSTANCE);
+      STREAM_CODEC = StreamCodec.<ByteBuf, ServerboundStatusRequestPacket>unit(INSTANCE);
    }
 }

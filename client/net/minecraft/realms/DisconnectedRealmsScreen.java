@@ -29,9 +29,7 @@ public class DisconnectedRealmsScreen extends RealmsScreen {
       int var10001 = this.message.getLineCount();
       Objects.requireNonNull(this.font);
       this.textHeight = var10001 * 9;
-      Button.Builder var1 = Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
-         this.minecraft.setScreen(this.parent);
-      });
+      Button.Builder var1 = Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.minecraft.setScreen(this.parent));
       int var10002 = this.width / 2 - 100;
       int var10003 = this.height / 2 + this.textHeight / 2;
       Objects.requireNonNull(this.font);

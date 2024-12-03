@@ -29,12 +29,11 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.tabs.GridLayoutTab;
 import net.minecraft.client.gui.components.tabs.TabManager;
 import net.minecraft.client.gui.components.tabs.TabNavigationBar;
@@ -44,7 +43,6 @@ import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
-import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.GenericMessageScreen;
@@ -53,7 +51,6 @@ import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.LayeredRegistryAccess;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -104,9 +101,9 @@ public class CreateWorldScreen extends Screen {
    public static final ResourceLocation TAB_HEADER_BACKGROUND = ResourceLocation.withDefaultNamespace("textures/gui/tab_header_background.png");
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    final WorldCreationUiState uiState;
-   private final TabManager tabManager = new TabManager(this::addRenderableWidget, (var1x) -> {
-      this.removeWidget(var1x);
-   });
+   private final TabManager tabManager = new TabManager((var1x) -> {
+      AbstractWidget var10000 = (AbstractWidget)this.addRenderableWidget(var1x);
+   }, (var1x) -> this.removeWidget(var1x));
    private boolean recreated;
    private final DirectoryValidator packValidator;
    private final CreateWorldCallback createWorldCallback;
@@ -120,40 +117,26 @@ public class CreateWorldScreen extends Screen {
    private TabNavigationBar tabNavigationBar;
 
    public static void openFresh(Minecraft var0, @Nullable Screen var1) {
-      openFresh(var0, var1, (var0x, var1x, var2, var3) -> {
-         return var0x.createNewWorld(var1x, var2);
-      });
+      openFresh(var0, var1, (var0x, var1x, var2, var3) -> var0x.createNewWorld(var1x, var2));
    }
 
    public static void openFresh(Minecraft var0, @Nullable Screen var1, CreateWorldCallback var2) {
-      WorldCreationContextMapper var3 = (var0x, var1x, var2x) -> {
-         return new WorldCreationContext(var2x.worldGenSettings(), var1x, var0x, var2x.dataConfiguration());
-      };
-      Function var4 = (var0x) -> {
-         return new WorldGenSettings(WorldOptions.defaultWithRandomSeed(), WorldPresets.createNormalWorldDimensions(var0x.datapackWorldgen()));
-      };
+      WorldCreationContextMapper var3 = (var0x, var1x, var2x) -> new WorldCreationContext(var2x.worldGenSettings(), var1x, var0x, var2x.dataConfiguration());
+      Function var4 = (var0x) -> new WorldGenSettings(WorldOptions.defaultWithRandomSeed(), WorldPresets.createNormalWorldDimensions(var0x.datapackWorldgen()));
       openCreateWorldScreen(var0, var1, var4, var3, WorldPresets.NORMAL, var2);
    }
 
    public static void testWorld(Minecraft var0, @Nullable Screen var1) {
-      WorldCreationContextMapper var2 = (var0x, var1x, var2x) -> {
-         return new WorldCreationContext(var2x.worldGenSettings().options(), var2x.worldGenSettings().dimensions(), var1x, var0x, var2x.dataConfiguration(), new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.CREATIVE, Set.of(GameRules.RULE_DAYLIGHT, GameRules.RULE_WEATHER_CYCLE, GameRules.RULE_DOMOBSPAWNING), FlatLevelGeneratorPresets.REDSTONE_READY));
-      };
-      Function var3 = (var0x) -> {
-         return new WorldGenSettings(WorldOptions.testWorldWithRandomSeed(), WorldPresets.createFlatWorldDimensions(var0x.datapackWorldgen()));
-      };
-      openCreateWorldScreen(var0, var1, var3, var2, WorldPresets.FLAT, (var0x, var1x, var2x, var3x) -> {
-         return var0x.createNewWorld(var1x, var2x);
-      });
+      WorldCreationContextMapper var2 = (var0x, var1x, var2x) -> new WorldCreationContext(var2x.worldGenSettings().options(), var2x.worldGenSettings().dimensions(), var1x, var0x, var2x.dataConfiguration(), new InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode.CREATIVE, Set.of(GameRules.RULE_DAYLIGHT, GameRules.RULE_WEATHER_CYCLE, GameRules.RULE_DOMOBSPAWNING), FlatLevelGeneratorPresets.REDSTONE_READY));
+      Function var3 = (var0x) -> new WorldGenSettings(WorldOptions.testWorldWithRandomSeed(), WorldPresets.createFlatWorldDimensions(var0x.datapackWorldgen()));
+      openCreateWorldScreen(var0, var1, var3, var2, WorldPresets.FLAT, (var0x, var1x, var2x, var3x) -> var0x.createNewWorld(var1x, var2x));
    }
 
    private static void openCreateWorldScreen(Minecraft var0, @Nullable Screen var1, Function<WorldLoader.DataLoadContext, WorldGenSettings> var2, WorldCreationContextMapper var3, ResourceKey<WorldPreset> var4, CreateWorldCallback var5) {
       queueLoadScreen(var0, PREPARING_WORLD_DATA);
       PackRepository var6 = new PackRepository(new RepositorySource[]{new ServerPacksSource(var0.directoryValidator())});
       WorldLoader.InitConfig var7 = createDefaultLoadConfig(var6, WorldDataConfiguration.DEFAULT);
-      CompletableFuture var8 = WorldLoader.load(var7, (var1x) -> {
-         return new WorldLoader.DataLoadOutput(new DataPackReloadCookie((WorldGenSettings)var2.apply(var1x), var1x.dataConfiguration()), var1x.datapackDimensions());
-      }, (var1x, var2x, var3x, var4x) -> {
+      CompletableFuture var8 = WorldLoader.load(var7, (var1x) -> new WorldLoader.DataLoadOutput(new DataPackReloadCookie((WorldGenSettings)var2.apply(var1x), var1x.dataConfiguration()), var1x.datapackDimensions()), (var1x, var2x, var3x, var4x) -> {
          var1x.close();
          return var3.apply(var2x, var3x, var4x);
       }, Util.backgroundExecutor(), var0);
@@ -163,9 +146,7 @@ public class CreateWorldScreen extends Screen {
    }
 
    public static CreateWorldScreen createFromExisting(Minecraft var0, @Nullable Screen var1, LevelSettings var2, WorldCreationContext var3, @Nullable Path var4) {
-      CreateWorldScreen var5 = new CreateWorldScreen(var0, var1, var3, WorldPresets.fromSettings(var3.selectedDimensions()), OptionalLong.of(var3.options().seed()), (var0x, var1x, var2x, var3x) -> {
-         return var0x.createNewWorld(var1x, var2x);
-      });
+      CreateWorldScreen var5 = new CreateWorldScreen(var0, var1, var3, WorldPresets.fromSettings(var3.selectedDimensions()), OptionalLong.of(var3.options().seed()), (var0x, var1x, var2x, var3x) -> var0x.createNewWorld(var1x, var2x));
       var5.recreated = true;
       var5.uiState.setName(var2.levelName());
       var5.uiState.setAllowCommands(var2.allowCommands());
@@ -199,12 +180,8 @@ public class CreateWorldScreen extends Screen {
       this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(new GameTab(), new WorldTab(), new MoreTab()).build();
       this.addRenderableWidget(this.tabNavigationBar);
       LinearLayout var1 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      var1.addChild(Button.builder(Component.translatable("selectWorld.create"), (var1x) -> {
-         this.onCreate();
-      }).build());
-      var1.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
-         this.popScreen();
-      }).build());
+      var1.addChild(Button.builder(Component.translatable("selectWorld.create"), (var1x) -> this.onCreate()).build());
+      var1.addChild(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.popScreen()).build());
       this.layout.visitWidgets((var1x) -> {
          var1x.setTabOrderGroup(1);
          this.addRenderableWidget(var1x);
@@ -236,16 +213,14 @@ public class CreateWorldScreen extends Screen {
    private void onCreate() {
       WorldCreationContext var1 = this.uiState.getSettings();
       WorldDimensions.Complete var2 = var1.selectedDimensions().bake(var1.datapackDimensions());
-      LayeredRegistryAccess var3 = var1.worldgenRegistries().replaceFrom(RegistryLayer.DIMENSIONS, (RegistryAccess.Frozen[])(var2.dimensionsRegistryAccess()));
+      LayeredRegistryAccess var3 = var1.worldgenRegistries().replaceFrom(RegistryLayer.DIMENSIONS, var2.dimensionsRegistryAccess());
       Lifecycle var4 = FeatureFlags.isExperimental(var1.dataConfiguration().enabledFeatures()) ? Lifecycle.experimental() : Lifecycle.stable();
       Lifecycle var5 = var3.compositeAccess().allRegistriesLifecycle();
       Lifecycle var6 = var5.add(var4);
       boolean var7 = !this.recreated && var5 == Lifecycle.stable();
       LevelSettings var8 = this.createLevelSettings(var2.specialWorldProperty() == PrimaryLevelData.SpecialWorldProperty.DEBUG);
       PrimaryLevelData var9 = new PrimaryLevelData(var8, this.uiState.getSettings().options(), var2.specialWorldProperty(), var6);
-      WorldOpenFlows.confirmWorldCreation(this.minecraft, this, var6, () -> {
-         this.createWorldAndCleanup(var3, var9);
-      }, var7);
+      WorldOpenFlows.confirmWorldCreation(this.minecraft, this, var6, () -> this.createWorldAndCleanup(var3, var9), var7);
    }
 
    private void createWorldAndCleanup(LayeredRegistryAccess<RegistryLayer> var1, PrimaryLevelData var2) {
@@ -314,14 +289,6 @@ public class CreateWorldScreen extends Screen {
       this.renderMenuBackground(var1, 0, this.layout.getHeaderHeight(), this.width, this.height);
    }
 
-   protected <T extends GuiEventListener & NarratableEntry> T addWidget(T var1) {
-      return super.addWidget(var1);
-   }
-
-   protected <T extends GuiEventListener & Renderable & NarratableEntry> T addRenderableWidget(T var1) {
-      return super.addRenderableWidget(var1);
-   }
-
    @Nullable
    private Path getOrCreateTempDataPackDir() {
       if (this.tempDataPackDir == null) {
@@ -340,9 +307,7 @@ public class CreateWorldScreen extends Screen {
    void openExperimentsScreen(WorldDataConfiguration var1) {
       Pair var2 = this.getDataPackSelectionSettings(var1);
       if (var2 != null) {
-         this.minecraft.setScreen(new ExperimentsScreen(this, (PackRepository)var2.getSecond(), (var1x) -> {
-            this.tryApplyNewDataPacks(var1x, false, this::openExperimentsScreen);
-         }));
+         this.minecraft.setScreen(new ExperimentsScreen(this, (PackRepository)var2.getSecond(), (var1x) -> this.tryApplyNewDataPacks(var1x, false, this::openExperimentsScreen)));
       }
 
    }
@@ -350,18 +315,14 @@ public class CreateWorldScreen extends Screen {
    void openDataPackSelectionScreen(WorldDataConfiguration var1) {
       Pair var2 = this.getDataPackSelectionSettings(var1);
       if (var2 != null) {
-         this.minecraft.setScreen(new PackSelectionScreen((PackRepository)var2.getSecond(), (var1x) -> {
-            this.tryApplyNewDataPacks(var1x, true, this::openDataPackSelectionScreen);
-         }, (Path)var2.getFirst(), Component.translatable("dataPack.title")));
+         this.minecraft.setScreen(new PackSelectionScreen((PackRepository)var2.getSecond(), (var1x) -> this.tryApplyNewDataPacks(var1x, true, this::openDataPackSelectionScreen), (Path)var2.getFirst(), Component.translatable("dataPack.title")));
       }
 
    }
 
    private void tryApplyNewDataPacks(PackRepository var1, boolean var2, Consumer<WorldDataConfiguration> var3) {
       ImmutableList var4 = ImmutableList.copyOf(var1.getSelectedIds());
-      List var5 = (List)var1.getAvailableIds().stream().filter((var1x) -> {
-         return !var4.contains(var1x);
-      }).collect(ImmutableList.toImmutableList());
+      List var5 = (List)var1.getAvailableIds().stream().filter((var1x) -> !var4.contains(var1x)).collect(ImmutableList.toImmutableList());
       WorldDataConfiguration var6 = new WorldDataConfiguration(new DataPackConfig(var4, var5), this.uiState.getSettings().dataConfiguration().enabledFeatures());
       if (this.uiState.tryUpdateDataConfiguration(var6)) {
          this.minecraft.setScreen(this);
@@ -396,11 +357,7 @@ public class CreateWorldScreen extends Screen {
             RegistryOps var3 = var2.worldgenLoadContext().createSerializationContext(JsonOps.INSTANCE);
             DataResult var4 = WorldGenSettings.encode(var3, var2.options(), (WorldDimensions)var2.selectedDimensions()).setLifecycle(Lifecycle.stable());
             RegistryOps var5 = var1x.datapackWorldgen().createSerializationContext(JsonOps.INSTANCE);
-            WorldGenSettings var6 = (WorldGenSettings)var4.flatMap((var1) -> {
-               return WorldGenSettings.CODEC.parse(var5, var1);
-            }).getOrThrow((var0) -> {
-               return new IllegalStateException("Error parsing worldgen settings after loading data packs: " + var0);
-            });
+            WorldGenSettings var6 = (WorldGenSettings)var4.flatMap((var1) -> WorldGenSettings.CODEC.parse(var5, var1)).getOrThrow((var0) -> new IllegalStateException("Error parsing worldgen settings after loading data packs: " + var0));
             return new WorldLoader.DataLoadOutput(new DataPackReloadCookie(var6, var1x.dataConfiguration()), var1x.datapackDimensions());
          }
       }, (var0, var1x, var2x, var3x) -> {
@@ -496,11 +453,7 @@ public class CreateWorldScreen extends Screen {
             try {
                Path var5 = var3.getLevelPath(LevelResource.DATAPACK_DIR);
                FileUtil.createDirectoriesSafe(var5);
-               var4.filter((var1x) -> {
-                  return !var1x.equals(var2);
-               }).forEach((var2x) -> {
-                  copyBetweenDirs(var2, var5, var2x);
-               });
+               var4.filter((var1x) -> !var1x.equals(var2)).forEach((var2x) -> copyBetweenDirs(var2, var5, var2x));
                var6 = Optional.of(var3);
             } catch (Throwable var8) {
                if (var4 != null) {
@@ -538,9 +491,7 @@ public class CreateWorldScreen extends Screen {
          Stream var3 = Files.walk(var0);
 
          try {
-            var3.filter((var1x) -> {
-               return !var1x.equals(var0);
-            }).forEach((var2x) -> {
+            var3.filter((var1x) -> !var1x.equals(var0)).forEach((var2x) -> {
                Path var3 = (Path)var2.getValue();
                if (var3 == null) {
                   try {
@@ -595,7 +546,7 @@ public class CreateWorldScreen extends Screen {
       }
    }
 
-   private class GameTab extends GridLayoutTab {
+   class GameTab extends GridLayoutTab {
       private static final Component TITLE = Component.translatable("createWorld.tab.game.title");
       private static final Component ALLOW_COMMANDS = Component.translatable("selectWorld.allowCommands");
       private final EditBox nameEdit;
@@ -610,48 +561,34 @@ public class CreateWorldScreen extends Screen {
          WorldCreationUiState var10001 = CreateWorldScreen.this.uiState;
          Objects.requireNonNull(var10001);
          var10000.setResponder(var10001::setName);
-         CreateWorldScreen.this.uiState.addListener((var1x) -> {
-            this.nameEdit.setTooltip(Tooltip.create(Component.translatable("selectWorld.targetFolder", Component.literal(var1x.getTargetFolder()).withStyle(ChatFormatting.ITALIC))));
-         });
+         CreateWorldScreen.this.uiState.addListener((var1x) -> this.nameEdit.setTooltip(Tooltip.create(Component.translatable("selectWorld.targetFolder", Component.literal(var1x.getTargetFolder()).withStyle(ChatFormatting.ITALIC)))));
          CreateWorldScreen.this.setInitialFocus(this.nameEdit);
          var2.addChild(CommonLayouts.labeledElement(CreateWorldScreen.this.font, this.nameEdit, CreateWorldScreen.NAME_LABEL), var2.newCellSettings().alignHorizontallyCenter());
-         CycleButton var4 = (CycleButton)var2.addChild(CycleButton.builder((var0) -> {
-            return var0.displayName;
-         }).withValues((Object[])(WorldCreationUiState.SelectedGameMode.SURVIVAL, WorldCreationUiState.SelectedGameMode.HARDCORE, WorldCreationUiState.SelectedGameMode.CREATIVE)).create(0, 0, 210, 20, CreateWorldScreen.GAME_MODEL_LABEL, (var1x, var2x) -> {
-            CreateWorldScreen.this.uiState.setGameMode(var2x);
-         }), var3);
+         CycleButton var4 = (CycleButton)var2.addChild(CycleButton.builder((var0) -> var0.displayName).withValues(WorldCreationUiState.SelectedGameMode.SURVIVAL, WorldCreationUiState.SelectedGameMode.HARDCORE, WorldCreationUiState.SelectedGameMode.CREATIVE).create(0, 0, 210, 20, CreateWorldScreen.GAME_MODEL_LABEL, (var1x, var2x) -> CreateWorldScreen.this.uiState.setGameMode(var2x)), var3);
          CreateWorldScreen.this.uiState.addListener((var1x) -> {
             var4.setValue(var1x.getGameMode());
             var4.active = !var1x.isDebug();
             var4.setTooltip(Tooltip.create(var1x.getGameMode().getInfo()));
          });
-         CycleButton var5 = (CycleButton)var2.addChild(CycleButton.builder(Difficulty::getDisplayName).withValues((Object[])Difficulty.values()).create(0, 0, 210, 20, Component.translatable("options.difficulty"), (var1x, var2x) -> {
-            CreateWorldScreen.this.uiState.setDifficulty(var2x);
-         }), var3);
+         CycleButton var5 = (CycleButton)var2.addChild(CycleButton.builder(Difficulty::getDisplayName).withValues(Difficulty.values()).create(0, 0, 210, 20, Component.translatable("options.difficulty"), (var1x, var2x) -> CreateWorldScreen.this.uiState.setDifficulty(var2x)), var3);
          CreateWorldScreen.this.uiState.addListener((var2x) -> {
             var5.setValue(CreateWorldScreen.this.uiState.getDifficulty());
             var5.active = !CreateWorldScreen.this.uiState.isHardcore();
             var5.setTooltip(Tooltip.create(CreateWorldScreen.this.uiState.getDifficulty().getInfo()));
          });
-         CycleButton var6 = (CycleButton)var2.addChild(CycleButton.onOffBuilder().withTooltip((var0) -> {
-            return Tooltip.create(CreateWorldScreen.ALLOW_COMMANDS_INFO);
-         }).create(0, 0, 210, 20, ALLOW_COMMANDS, (var1x, var2x) -> {
-            CreateWorldScreen.this.uiState.setAllowCommands(var2x);
-         }));
+         CycleButton var6 = (CycleButton)var2.addChild(CycleButton.onOffBuilder().withTooltip((var0) -> Tooltip.create(CreateWorldScreen.ALLOW_COMMANDS_INFO)).create(0, 0, 210, 20, ALLOW_COMMANDS, (var1x, var2x) -> CreateWorldScreen.this.uiState.setAllowCommands(var2x)));
          CreateWorldScreen.this.uiState.addListener((var2x) -> {
             var6.setValue(CreateWorldScreen.this.uiState.isAllowCommands());
             var6.active = !CreateWorldScreen.this.uiState.isDebug() && !CreateWorldScreen.this.uiState.isHardcore();
          });
          if (!SharedConstants.getCurrentVersion().isStable()) {
-            var2.addChild(Button.builder(CreateWorldScreen.EXPERIMENTS_LABEL, (var1x) -> {
-               CreateWorldScreen.this.openExperimentsScreen(CreateWorldScreen.this.uiState.getSettings().dataConfiguration());
-            }).width(210).build());
+            var2.addChild(Button.builder(CreateWorldScreen.EXPERIMENTS_LABEL, (var1x) -> CreateWorldScreen.this.openExperimentsScreen(CreateWorldScreen.this.uiState.getSettings().dataConfiguration())).width(210).build());
          }
 
       }
    }
 
-   private class WorldTab extends GridLayoutTab {
+   class WorldTab extends GridLayoutTab {
       private static final Component TITLE = Component.translatable("createWorld.tab.world.title");
       private static final Component AMPLIFIED_HELP_TEXT = Component.translatable("generator.minecraft.amplified.info");
       private static final Component GENERATE_STRUCTURES = Component.translatable("selectWorld.mapFeatures");
@@ -666,9 +603,7 @@ public class CreateWorldScreen extends Screen {
       WorldTab() {
          super(TITLE);
          GridLayout.RowHelper var2 = this.layout.columnSpacing(10).rowSpacing(8).createRowHelper(2);
-         CycleButton var3 = (CycleButton)var2.addChild(CycleButton.builder(WorldCreationUiState.WorldTypeEntry::describePreset).withValues(this.createWorldTypeValueSupplier()).withCustomNarration(WorldTab::createTypeButtonNarration).create(0, 0, 150, 20, Component.translatable("selectWorld.mapType"), (var1x, var2x) -> {
-            CreateWorldScreen.this.uiState.setWorldType(var2x);
-         }));
+         CycleButton var3 = (CycleButton)var2.addChild(CycleButton.builder(WorldCreationUiState.WorldTypeEntry::describePreset).withValues(this.createWorldTypeValueSupplier()).withCustomNarration(WorldTab::createTypeButtonNarration).create(0, 0, 150, 20, Component.translatable("selectWorld.mapType"), (var1x, var2x) -> CreateWorldScreen.this.uiState.setWorldType(var2x)));
          var3.setValue(CreateWorldScreen.this.uiState.getWorldType());
          CreateWorldScreen.this.uiState.addListener((var2x) -> {
             WorldCreationUiState.WorldTypeEntry var3x = var2x.getWorldType();
@@ -681,48 +616,35 @@ public class CreateWorldScreen extends Screen {
 
             var3.active = CreateWorldScreen.this.uiState.getWorldType().preset() != null;
          });
-         this.customizeTypeButton = (Button)var2.addChild(Button.builder(Component.translatable("selectWorld.customizeType"), (var1x) -> {
-            this.openPresetEditor();
-         }).build());
-         CreateWorldScreen.this.uiState.addListener((var1x) -> {
-            this.customizeTypeButton.active = !var1x.isDebug() && var1x.getPresetEditor() != null;
-         });
-         this.seedEdit = new EditBox(this, CreateWorldScreen.this.font, 308, 20, Component.translatable("selectWorld.enterSeed")) {
+         this.customizeTypeButton = (Button)var2.addChild(Button.builder(Component.translatable("selectWorld.customizeType"), (var1x) -> this.openPresetEditor()).build());
+         CreateWorldScreen.this.uiState.addListener((var1x) -> this.customizeTypeButton.active = !var1x.isDebug() && var1x.getPresetEditor() != null);
+         this.seedEdit = new EditBox(CreateWorldScreen.this.font, 308, 20, Component.translatable("selectWorld.enterSeed")) {
             protected MutableComponent createNarrationMessage() {
                return super.createNarrationMessage().append(CommonComponents.NARRATION_SEPARATOR).append(CreateWorldScreen.WorldTab.SEED_EMPTY_HINT);
             }
          };
          this.seedEdit.setHint(SEED_EMPTY_HINT);
          this.seedEdit.setValue(CreateWorldScreen.this.uiState.getSeed());
-         this.seedEdit.setResponder((var1x) -> {
-            CreateWorldScreen.this.uiState.setSeed(this.seedEdit.getValue());
-         });
+         this.seedEdit.setResponder((var1x) -> CreateWorldScreen.this.uiState.setSeed(this.seedEdit.getValue()));
          var2.addChild(CommonLayouts.labeledElement(CreateWorldScreen.this.font, this.seedEdit, SEED_LABEL), 2);
          SwitchGrid.Builder var4 = SwitchGrid.builder(310);
          Component var10001 = GENERATE_STRUCTURES;
          WorldCreationUiState var10002 = CreateWorldScreen.this.uiState;
          Objects.requireNonNull(var10002);
-         BooleanSupplier var6 = var10002::isGenerateStructures;
+         BooleanSupplier var7 = var10002::isGenerateStructures;
          WorldCreationUiState var10003 = CreateWorldScreen.this.uiState;
          Objects.requireNonNull(var10003);
-         var4.addSwitch(var10001, var6, var10003::setGenerateStructures).withIsActiveCondition(() -> {
-            return !CreateWorldScreen.this.uiState.isDebug();
-         }).withInfo(GENERATE_STRUCTURES_INFO);
+         var4.addSwitch(var10001, var7, var10003::setGenerateStructures).withIsActiveCondition(() -> !CreateWorldScreen.this.uiState.isDebug()).withInfo(GENERATE_STRUCTURES_INFO);
          var10001 = BONUS_CHEST;
-         var10002 = CreateWorldScreen.this.uiState;
-         Objects.requireNonNull(var10002);
-         var6 = var10002::isBonusChest;
+         WorldCreationUiState var8 = CreateWorldScreen.this.uiState;
+         Objects.requireNonNull(var8);
+         BooleanSupplier var9 = var8::isBonusChest;
          var10003 = CreateWorldScreen.this.uiState;
          Objects.requireNonNull(var10003);
-         var4.addSwitch(var10001, var6, var10003::setBonusChest).withIsActiveCondition(() -> {
-            return !CreateWorldScreen.this.uiState.isHardcore() && !CreateWorldScreen.this.uiState.isDebug();
-         });
-         SwitchGrid var5 = var4.build((var1x) -> {
-            var2.addChild(var1x, 2);
-         });
-         CreateWorldScreen.this.uiState.addListener((var1x) -> {
-            var5.refreshStates();
-         });
+         var4.addSwitch(var10001, var9, var10003::setBonusChest).withIsActiveCondition(() -> !CreateWorldScreen.this.uiState.isHardcore() && !CreateWorldScreen.this.uiState.isDebug());
+         SwitchGrid var5 = var4.build();
+         var2.addChild(var5.layout(), 2);
+         CreateWorldScreen.this.uiState.addListener((var1x) -> var5.refreshStates());
       }
 
       private void openPresetEditor() {
@@ -762,15 +684,9 @@ public class CreateWorldScreen extends Screen {
       MoreTab() {
          super(TITLE);
          GridLayout.RowHelper var2 = this.layout.rowSpacing(8).createRowHelper(1);
-         var2.addChild(Button.builder(GAME_RULES_LABEL, (var1x) -> {
-            this.openGameRulesScreen();
-         }).width(210).build());
-         var2.addChild(Button.builder(CreateWorldScreen.EXPERIMENTS_LABEL, (var1x) -> {
-            CreateWorldScreen.this.openExperimentsScreen(CreateWorldScreen.this.uiState.getSettings().dataConfiguration());
-         }).width(210).build());
-         var2.addChild(Button.builder(DATA_PACKS_LABEL, (var1x) -> {
-            CreateWorldScreen.this.openDataPackSelectionScreen(CreateWorldScreen.this.uiState.getSettings().dataConfiguration());
-         }).width(210).build());
+         var2.addChild(Button.builder(GAME_RULES_LABEL, (var1x) -> this.openGameRulesScreen()).width(210).build());
+         var2.addChild(Button.builder(CreateWorldScreen.EXPERIMENTS_LABEL, (var1x) -> CreateWorldScreen.this.openExperimentsScreen(CreateWorldScreen.this.uiState.getSettings().dataConfiguration())).width(210).build());
+         var2.addChild(Button.builder(DATA_PACKS_LABEL, (var1x) -> CreateWorldScreen.this.openDataPackSelectionScreen(CreateWorldScreen.this.uiState.getSettings().dataConfiguration())).width(210).build());
       }
 
       private void openGameRulesScreen() {

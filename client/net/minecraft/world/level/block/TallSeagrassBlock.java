@@ -43,7 +43,7 @@ public class TallSeagrassBlock extends DoublePlantBlock implements LiquidBlockCo
       return var1.isFaceSturdy(var2, var3, Direction.UP) && !var1.is(Blocks.MAGMA_BLOCK);
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return new ItemStack(Blocks.SEAGRASS);
    }
 

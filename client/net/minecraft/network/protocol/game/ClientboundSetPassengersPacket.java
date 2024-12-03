@@ -8,7 +8,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
 
 public class ClientboundSetPassengersPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundSetPassengersPacket> STREAM_CODEC = Packet.codec(ClientboundSetPassengersPacket::write, ClientboundSetPassengersPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetPassengersPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundSetPassengersPacket>codec(ClientboundSetPassengersPacket::write, ClientboundSetPassengersPacket::new);
    private final int vehicle;
    private final int[] passengers;
 

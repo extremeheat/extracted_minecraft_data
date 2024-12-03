@@ -18,20 +18,4 @@ public record BlockSource(ServerLevel level, BlockPos pos, BlockState state, Dis
    public Vec3 center() {
       return this.pos.getCenter();
    }
-
-   public ServerLevel level() {
-      return this.level;
-   }
-
-   public BlockPos pos() {
-      return this.pos;
-   }
-
-   public BlockState state() {
-      return this.state;
-   }
-
-   public DispenserBlockEntity blockEntity() {
-      return this.blockEntity;
-   }
 }

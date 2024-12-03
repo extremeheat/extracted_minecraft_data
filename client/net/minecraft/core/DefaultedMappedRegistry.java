@@ -40,7 +40,7 @@ public class DefaultedMappedRegistry<T> extends MappedRegistry<T> implements Def
    @Nonnull
    public T getValue(@Nullable ResourceLocation var1) {
       Object var2 = super.getValue(var1);
-      return var2 == null ? this.defaultValue.value() : var2;
+      return (T)(var2 == null ? this.defaultValue.value() : var2);
    }
 
    public Optional<T> getOptional(@Nullable ResourceLocation var1) {
@@ -54,13 +54,11 @@ public class DefaultedMappedRegistry<T> extends MappedRegistry<T> implements Def
    @Nonnull
    public T byId(int var1) {
       Object var2 = super.byId(var1);
-      return var2 == null ? this.defaultValue.value() : var2;
+      return (T)(var2 == null ? this.defaultValue.value() : var2);
    }
 
    public Optional<Holder.Reference<T>> getRandom(RandomSource var1) {
-      return super.getRandom(var1).or(() -> {
-         return Optional.of(this.defaultValue);
-      });
+      return super.getRandom(var1).or(() -> Optional.of(this.defaultValue));
    }
 
    public ResourceLocation getDefaultKey() {

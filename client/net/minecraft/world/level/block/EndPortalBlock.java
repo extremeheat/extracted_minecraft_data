@@ -105,11 +105,15 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
       var2.addParticle(ParticleTypes.SMOKE, var5, var7, var9, 0.0, 0.0, 0.0);
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return ItemStack.EMPTY;
    }
 
    protected boolean canBeReplaced(BlockState var1, Fluid var2) {
       return false;
+   }
+
+   protected RenderShape getRenderShape(BlockState var1) {
+      return RenderShape.INVISIBLE;
    }
 }

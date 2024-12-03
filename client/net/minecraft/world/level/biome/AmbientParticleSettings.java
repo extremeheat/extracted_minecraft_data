@@ -7,13 +7,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 
 public class AmbientParticleSettings {
-   public static final Codec<AmbientParticleSettings> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ParticleTypes.CODEC.fieldOf("options").forGetter((var0x) -> {
-         return var0x.options;
-      }), Codec.FLOAT.fieldOf("probability").forGetter((var0x) -> {
-         return var0x.probability;
-      })).apply(var0, AmbientParticleSettings::new);
-   });
+   public static final Codec<AmbientParticleSettings> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ParticleTypes.CODEC.fieldOf("options").forGetter((var0x) -> var0x.options), Codec.FLOAT.fieldOf("probability").forGetter((var0x) -> var0x.probability)).apply(var0, AmbientParticleSettings::new));
    private final ParticleOptions options;
    private final float probability;
 

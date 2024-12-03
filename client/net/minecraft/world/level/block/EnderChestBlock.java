@@ -51,9 +51,7 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
    }
 
    protected EnderChestBlock(BlockBehaviour.Properties var1) {
-      super(var1, () -> {
-         return BlockEntityType.ENDER_CHEST;
-      });
+      super(var1, () -> BlockEntityType.ENDER_CHEST);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(WATERLOGGED, false));
    }
 
@@ -63,10 +61,6 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
-   }
-
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.ENTITYBLOCK_ANIMATED;
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -85,9 +79,7 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
             if (var2 instanceof ServerLevel) {
                ServerLevel var10 = (ServerLevel)var2;
                var6.setActiveChest(var8);
-               var4.openMenu(new SimpleMenuProvider((var1x, var2x, var3x) -> {
-                  return ChestMenu.threeRows(var1x, var2x, var6);
-               }, CONTAINER_TITLE));
+               var4.openMenu(new SimpleMenuProvider((var1x, var2x, var3x) -> ChestMenu.threeRows(var1x, var2x, var6), CONTAINER_TITLE));
                var4.awardStat(Stats.OPEN_ENDERCHEST);
                PiglinAi.angerNearbyPiglins(var10, var4, true);
             }

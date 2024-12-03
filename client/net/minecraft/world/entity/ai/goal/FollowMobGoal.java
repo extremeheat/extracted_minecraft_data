@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -28,9 +27,7 @@ public class FollowMobGoal extends Goal {
    public FollowMobGoal(Mob var1, double var2, float var4, float var5) {
       super();
       this.mob = var1;
-      this.followPredicate = (var1x) -> {
-         return var1x != null && var1.getClass() != var1x.getClass();
-      };
+      this.followPredicate = (var1x) -> var1x != null && var1.getClass() != var1x.getClass();
       this.speedModifier = var2;
       this.navigation = var1.getNavigation();
       this.stopDistance = var4;
@@ -44,10 +41,7 @@ public class FollowMobGoal extends Goal {
    public boolean canUse() {
       List var1 = this.mob.level().getEntitiesOfClass(Mob.class, this.mob.getBoundingBox().inflate((double)this.areaSize), this.followPredicate);
       if (!var1.isEmpty()) {
-         Iterator var2 = var1.iterator();
-
-         while(var2.hasNext()) {
-            Mob var3 = (Mob)var2.next();
+         for(Mob var3 : var1) {
             if (!var3.isInvisible()) {
                this.followingMob = var3;
                return true;

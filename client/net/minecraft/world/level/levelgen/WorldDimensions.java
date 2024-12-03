@@ -33,9 +33,7 @@ import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.storage.PrimaryLevelData;
 
 public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions) {
-   public static final MapCodec<WorldDimensions> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.unboundedMap(ResourceKey.codec(Registries.LEVEL_STEM), LevelStem.CODEC).fieldOf("dimensions").forGetter(WorldDimensions::dimensions)).apply(var0, var0.stable(WorldDimensions::new));
-   });
+   public static final MapCodec<WorldDimensions> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.unboundedMap(ResourceKey.codec(Registries.LEVEL_STEM), LevelStem.CODEC).fieldOf("dimensions").forGetter(WorldDimensions::dimensions)).apply(var0, var0.stable(WorldDimensions::new)));
    private static final Set<ResourceKey<LevelStem>> BUILTIN_ORDER;
    private static final int VANILLA_DIMENSION_COUNT;
 
@@ -54,21 +52,19 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
    }
 
    public static Stream<ResourceKey<LevelStem>> keysInOrder(Stream<ResourceKey<LevelStem>> var0) {
-      return Stream.concat(BUILTIN_ORDER.stream(), var0.filter((var0x) -> {
-         return !BUILTIN_ORDER.contains(var0x);
-      }));
+      return Stream.concat(BUILTIN_ORDER.stream(), var0.filter((var0x) -> !BUILTIN_ORDER.contains(var0x)));
    }
 
    public WorldDimensions replaceOverworldGenerator(HolderLookup.Provider var1, ChunkGenerator var2) {
       HolderLookup.RegistryLookup var3 = var1.lookupOrThrow(Registries.DIMENSION_TYPE);
-      Map var4 = withOverworld((HolderLookup)var3, (Map)this.dimensions, var2);
+      Map var4 = withOverworld(var3, this.dimensions, var2);
       return new WorldDimensions(var4);
    }
 
    public static Map<ResourceKey<LevelStem>, LevelStem> withOverworld(HolderLookup<DimensionType> var0, Map<ResourceKey<LevelStem>, LevelStem> var1, ChunkGenerator var2) {
       LevelStem var3 = (LevelStem)var1.get(LevelStem.OVERWORLD);
       Object var4 = var3 == null ? var0.getOrThrow(BuiltinDimensionTypes.OVERWORLD) : var3.type();
-      return withOverworld((Map)var1, (Holder)var4, var2);
+      return withOverworld(var1, (Holder)var4, var2);
    }
 
    public static Map<ResourceKey<LevelStem>, LevelStem> withOverworld(Map<ResourceKey<LevelStem>, LevelStem> var0, Holder<DimensionType> var1, ChunkGenerator var2) {
@@ -184,10 +180,7 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
    public Complete bake(Registry<LevelStem> var1) {
       Stream var2 = Stream.concat(var1.registryKeySet().stream(), this.dimensions.keySet().stream()).distinct();
       ArrayList var3 = new ArrayList();
-      keysInOrder(var2).forEach((var3x) -> {
-         var1.getOptional(var3x).or(() -> {
-            return Optional.ofNullable((LevelStem)this.dimensions.get(var3x));
-         }).ifPresent((var2) -> {
+      keysInOrder(var2).forEach((var3x) -> var1.getOptional(var3x).or(() -> Optional.ofNullable((LevelStem)this.dimensions.get(var3x))).ifPresent((var2) -> {
             record 1Entry(ResourceKey<LevelStem> key, LevelStem value) {
                final ResourceKey<LevelStem> key;
                final LevelStem value;
@@ -201,31 +194,16 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
                RegistrationInfo registrationInfo() {
                   return new RegistrationInfo(Optional.empty(), WorldDimensions.checkStability(this.key, this.value));
                }
-
-               public ResourceKey<LevelStem> key() {
-                  return this.key;
-               }
-
-               public LevelStem value() {
-                  return this.value;
-               }
             }
 
             var3.add(new 1Entry(var3x, var2));
-         });
-      });
+         }));
       Lifecycle var4 = var3.size() == VANILLA_DIMENSION_COUNT ? Lifecycle.stable() : Lifecycle.experimental();
       MappedRegistry var5 = new MappedRegistry(Registries.LEVEL_STEM, var4);
-      var3.forEach((var1x) -> {
-         var5.register(var1x.key, var1x.value, var1x.registrationInfo());
-      });
+      var3.forEach((var1x) -> var5.register(var1x.key, var1x.value, var1x.registrationInfo()));
       Registry var6 = var5.freeze();
       PrimaryLevelData.SpecialWorldProperty var7 = specialWorldProperty(var6);
       return new Complete(var6.freeze(), var7);
-   }
-
-   public Map<ResourceKey<LevelStem>, LevelStem> dimensions() {
-      return this.dimensions;
    }
 
    static {
@@ -246,14 +224,6 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> dimensions)
 
       public RegistryAccess.Frozen dimensionsRegistryAccess() {
          return (new RegistryAccess.ImmutableRegistryAccess(List.of(this.dimensions))).freeze();
-      }
-
-      public Registry<LevelStem> dimensions() {
-         return this.dimensions;
-      }
-
-      public PrimaryLevelData.SpecialWorldProperty specialWorldProperty() {
-         return this.specialWorldProperty;
       }
    }
 }

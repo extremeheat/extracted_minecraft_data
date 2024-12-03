@@ -43,15 +43,11 @@ public class BehaviorUtils {
    }
 
    public static boolean targetIsValid(Brain<?> var0, MemoryModuleType<? extends LivingEntity> var1, EntityType<?> var2) {
-      return targetIsValid(var0, var1, (var1x) -> {
-         return var1x.getType() == var2;
-      });
+      return targetIsValid(var0, var1, (Predicate)((var1x) -> var1x.getType() == var2));
    }
 
    private static boolean targetIsValid(Brain<?> var0, MemoryModuleType<? extends LivingEntity> var1, Predicate<LivingEntity> var2) {
-      return var0.getMemory(var1).filter(var2).filter(LivingEntity::isAlive).filter((var1x) -> {
-         return entityIsVisible(var0, var1x);
-      }).isPresent();
+      return var0.getMemory(var1).filter(var2).filter(LivingEntity::isAlive).filter((var1x) -> entityIsVisible(var0, var1x)).isPresent();
    }
 
    private static void lookAtEachOther(LivingEntity var0, LivingEntity var1) {
@@ -60,7 +56,7 @@ public class BehaviorUtils {
    }
 
    public static void lookAtEntity(LivingEntity var0, LivingEntity var1) {
-      var0.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityTracker(var1, true)));
+      var0.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var1, true));
    }
 
    private static void setWalkAndLookTargetMemoriesToEachOther(LivingEntity var0, LivingEntity var1, float var2, int var3) {
@@ -78,8 +74,8 @@ public class BehaviorUtils {
 
    public static void setWalkAndLookTargetMemories(LivingEntity var0, PositionTracker var1, float var2, int var3) {
       WalkTarget var4 = new WalkTarget(var1, var2, var3);
-      var0.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, (Object)var1);
-      var0.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)var4);
+      var0.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, var1);
+      var0.getBrain().setMemory(MemoryModuleType.WALK_TARGET, var4);
    }
 
    public static void throwItem(LivingEntity var0, ItemStack var1, Vec3 var2) {
@@ -100,9 +96,7 @@ public class BehaviorUtils {
 
    public static SectionPos findSectionClosestToVillage(ServerLevel var0, SectionPos var1, int var2) {
       int var3 = var0.sectionsToVillage(var1);
-      Stream var10000 = SectionPos.cube(var1, var2).filter((var2x) -> {
-         return var0.sectionsToVillage(var2x) < var3;
-      });
+      Stream var10000 = SectionPos.cube(var1, var2).filter((var2x) -> var0.sectionsToVillage(var2x) < var3);
       Objects.requireNonNull(var0);
       return (SectionPos)var10000.min(Comparator.comparingInt(var0::sectionsToVillage)).orElse(var1);
    }
@@ -147,9 +141,7 @@ public class BehaviorUtils {
 
    public static Optional<LivingEntity> getLivingEntityFromUUIDMemory(LivingEntity var0, MemoryModuleType<UUID> var1) {
       Optional var2 = var0.getBrain().getMemory(var1);
-      return var2.map((var1x) -> {
-         return ((ServerLevel)var0.level()).getEntity(var1x);
-      }).map((var0x) -> {
+      return var2.map((var1x) -> ((ServerLevel)var0.level()).getEntity(var1x)).map((var0x) -> {
          LivingEntity var10000;
          if (var0x instanceof LivingEntity var1) {
             var10000 = var1;

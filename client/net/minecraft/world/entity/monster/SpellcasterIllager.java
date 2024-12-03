@@ -101,35 +101,34 @@ public abstract class SpellcasterIllager extends AbstractIllager {
    protected abstract SoundEvent getCastingSoundEvent();
 
    static {
-      DATA_SPELL_CASTING_ID = SynchedEntityData.defineId(SpellcasterIllager.class, EntityDataSerializers.BYTE);
+      DATA_SPELL_CASTING_ID = SynchedEntityData.<Byte>defineId(SpellcasterIllager.class, EntityDataSerializers.BYTE);
    }
 
-   protected static enum IllagerSpell {
-      NONE(0, 0.0, 0.0, 0.0),
-      SUMMON_VEX(1, 0.7, 0.7, 0.8),
-      FANGS(2, 0.4, 0.3, 0.35),
-      WOLOLO(3, 0.7, 0.5, 0.2),
-      DISAPPEAR(4, 0.3, 0.3, 0.8),
-      BLINDNESS(5, 0.1, 0.1, 0.2);
-
-      private static final IntFunction<IllagerSpell> BY_ID = ByIdMap.continuous((var0) -> {
-         return var0.id;
-      }, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
-      final int id;
-      final double[] spellColor;
-
-      private IllagerSpell(final int var3, final double var4, final double var6, final double var8) {
-         this.id = var3;
-         this.spellColor = new double[]{var4, var6, var8};
+   protected class SpellcasterCastingSpellGoal extends Goal {
+      public SpellcasterCastingSpellGoal() {
+         super();
+         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
       }
 
-      public static IllagerSpell byId(int var0) {
-         return (IllagerSpell)BY_ID.apply(var0);
+      public boolean canUse() {
+         return SpellcasterIllager.this.getSpellCastingTime() > 0;
       }
 
-      // $FF: synthetic method
-      private static IllagerSpell[] $values() {
-         return new IllagerSpell[]{NONE, SUMMON_VEX, FANGS, WOLOLO, DISAPPEAR, BLINDNESS};
+      public void start() {
+         super.start();
+         SpellcasterIllager.this.navigation.stop();
+      }
+
+      public void stop() {
+         super.stop();
+         SpellcasterIllager.this.setIsCastingSpell(SpellcasterIllager.IllagerSpell.NONE);
+      }
+
+      public void tick() {
+         if (SpellcasterIllager.this.getTarget() != null) {
+            SpellcasterIllager.this.getLookControl().setLookAt(SpellcasterIllager.this.getTarget(), (float)SpellcasterIllager.this.getMaxHeadYRot(), (float)SpellcasterIllager.this.getMaxHeadXRot());
+         }
+
       }
    }
 
@@ -196,31 +195,30 @@ public abstract class SpellcasterIllager extends AbstractIllager {
       protected abstract IllagerSpell getSpell();
    }
 
-   protected class SpellcasterCastingSpellGoal extends Goal {
-      public SpellcasterCastingSpellGoal() {
-         super();
-         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
+   protected static enum IllagerSpell {
+      NONE(0, 0.0, 0.0, 0.0),
+      SUMMON_VEX(1, 0.7, 0.7, 0.8),
+      FANGS(2, 0.4, 0.3, 0.35),
+      WOLOLO(3, 0.7, 0.5, 0.2),
+      DISAPPEAR(4, 0.3, 0.3, 0.8),
+      BLINDNESS(5, 0.1, 0.1, 0.2);
+
+      private static final IntFunction<IllagerSpell> BY_ID = ByIdMap.<IllagerSpell>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      final int id;
+      final double[] spellColor;
+
+      private IllagerSpell(final int var3, final double var4, final double var6, final double var8) {
+         this.id = var3;
+         this.spellColor = new double[]{var4, var6, var8};
       }
 
-      public boolean canUse() {
-         return SpellcasterIllager.this.getSpellCastingTime() > 0;
+      public static IllagerSpell byId(int var0) {
+         return (IllagerSpell)BY_ID.apply(var0);
       }
 
-      public void start() {
-         super.start();
-         SpellcasterIllager.this.navigation.stop();
-      }
-
-      public void stop() {
-         super.stop();
-         SpellcasterIllager.this.setIsCastingSpell(SpellcasterIllager.IllagerSpell.NONE);
-      }
-
-      public void tick() {
-         if (SpellcasterIllager.this.getTarget() != null) {
-            SpellcasterIllager.this.getLookControl().setLookAt(SpellcasterIllager.this.getTarget(), (float)SpellcasterIllager.this.getMaxHeadYRot(), (float)SpellcasterIllager.this.getMaxHeadXRot());
-         }
-
+      // $FF: synthetic method
+      private static IllagerSpell[] $values() {
+         return new IllagerSpell[]{NONE, SUMMON_VEX, FANGS, WOLOLO, DISAPPEAR, BLINDNESS};
       }
    }
 }

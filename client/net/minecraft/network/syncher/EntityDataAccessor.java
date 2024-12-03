@@ -25,12 +25,4 @@ public record EntityDataAccessor<T>(int id, EntityDataSerializer<T> serializer) 
    public String toString() {
       return "<entity data: " + this.id + ">";
    }
-
-   public int id() {
-      return this.id;
-   }
-
-   public EntityDataSerializer<T> serializer() {
-      return this.serializer;
-   }
 }

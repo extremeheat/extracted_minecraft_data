@@ -1,11 +1,14 @@
 package net.minecraft.client.gui.components.toasts;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 
 public class TutorialToast implements Toast {
@@ -13,11 +16,14 @@ public class TutorialToast implements Toast {
    public static final int PROGRESS_BAR_WIDTH = 154;
    public static final int PROGRESS_BAR_HEIGHT = 1;
    public static final int PROGRESS_BAR_X = 3;
-   public static final int PROGRESS_BAR_Y = 28;
+   public static final int PROGRESS_BAR_MARGIN_BOTTOM = 4;
+   private static final int PADDING_TOP = 7;
+   private static final int PADDING_BOTTOM = 3;
+   private static final int LINE_SPACING = 11;
+   private static final int TEXT_LEFT = 30;
+   private static final int TEXT_WIDTH = 126;
    private final Icons icon;
-   private final Component title;
-   @Nullable
-   private final Component message;
+   private final List<FormattedCharSequence> lines;
    private Toast.Visibility visibility;
    private long lastSmoothingTime;
    private float smoothedProgress;
@@ -25,18 +31,22 @@ public class TutorialToast implements Toast {
    private final boolean progressable;
    private final int timeToDisplayMs;
 
-   public TutorialToast(Icons var1, Component var2, @Nullable Component var3, boolean var4, int var5) {
+   public TutorialToast(Font var1, Icons var2, Component var3, @Nullable Component var4, boolean var5, int var6) {
       super();
       this.visibility = Toast.Visibility.SHOW;
-      this.icon = var1;
-      this.title = var2;
-      this.message = var3;
-      this.progressable = var4;
-      this.timeToDisplayMs = var5;
+      this.icon = var2;
+      this.lines = new ArrayList(2);
+      this.lines.addAll(var1.split(var3.copy().withColor(-11534256), 126));
+      if (var4 != null) {
+         this.lines.addAll(var1.split(var4, 126));
+      }
+
+      this.progressable = var5;
+      this.timeToDisplayMs = var6;
    }
 
-   public TutorialToast(Icons var1, Component var2, @Nullable Component var3, boolean var4) {
-      this(var1, var2, var3, var4, 0);
+   public TutorialToast(Font var1, Icons var2, Component var3, @Nullable Component var4, boolean var5) {
+      this(var1, var2, var3, var4, var5, 0);
    }
 
    public Toast.Visibility getWantedVisibility() {
@@ -58,26 +68,36 @@ public class TutorialToast implements Toast {
 
    }
 
+   public int height() {
+      return 7 + this.contentHeight() + 3;
+   }
+
+   private int contentHeight() {
+      return Math.max(this.lines.size(), 2) * 11;
+   }
+
    public void render(GuiGraphics var1, Font var2, long var3) {
-      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
+      int var5 = this.height();
+      var1.blitSprite(RenderType::guiTextured, (ResourceLocation)BACKGROUND_SPRITE, 0, 0, this.width(), var5);
       this.icon.render(var1, 6, 6);
-      if (this.message == null) {
-         var1.drawString(var2, (Component)this.title, 30, 12, -11534256, false);
-      } else {
-         var1.drawString(var2, (Component)this.title, 30, 7, -11534256, false);
-         var1.drawString(var2, (Component)this.message, 30, 18, -16777216, false);
+      int var6 = this.lines.size() * 11;
+      int var7 = 7 + (this.contentHeight() - var6) / 2;
+
+      for(int var8 = 0; var8 < this.lines.size(); ++var8) {
+         var1.drawString(var2, (FormattedCharSequence)((FormattedCharSequence)this.lines.get(var8)), 30, var7 + var8 * 11, -16777216, false);
       }
 
       if (this.progressable) {
-         var1.fill(3, 28, 157, 29, -1);
-         int var5;
+         int var10 = var5 - 4;
+         var1.fill(3, var10, 157, var10 + 1, -1);
+         int var9;
          if (this.progress >= this.smoothedProgress) {
-            var5 = -16755456;
+            var9 = -16755456;
          } else {
-            var5 = -11206656;
+            var9 = -11206656;
          }
 
-         var1.fill(3, 28, (int)(3.0F + 154.0F * this.smoothedProgress), 29, var5);
+         var1.fill(3, var10, (int)(3.0F + 154.0F * this.smoothedProgress), var10 + 1, var9);
       }
 
    }

@@ -9,17 +9,7 @@ import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 
 public class CaveCarverConfiguration extends CarverConfiguration {
-   public static final Codec<CaveCarverConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(CarverConfiguration.CODEC.forGetter((var0x) -> {
-         return var0x;
-      }), FloatProvider.CODEC.fieldOf("horizontal_radius_multiplier").forGetter((var0x) -> {
-         return var0x.horizontalRadiusMultiplier;
-      }), FloatProvider.CODEC.fieldOf("vertical_radius_multiplier").forGetter((var0x) -> {
-         return var0x.verticalRadiusMultiplier;
-      }), FloatProvider.codec(-1.0F, 1.0F).fieldOf("floor_level").forGetter((var0x) -> {
-         return var0x.floorLevel;
-      })).apply(var0, CaveCarverConfiguration::new);
-   });
+   public static final Codec<CaveCarverConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(CarverConfiguration.CODEC.forGetter((var0x) -> var0x), FloatProvider.CODEC.fieldOf("horizontal_radius_multiplier").forGetter((var0x) -> var0x.horizontalRadiusMultiplier), FloatProvider.CODEC.fieldOf("vertical_radius_multiplier").forGetter((var0x) -> var0x.verticalRadiusMultiplier), FloatProvider.codec(-1.0F, 1.0F).fieldOf("floor_level").forGetter((var0x) -> var0x.floorLevel)).apply(var0, CaveCarverConfiguration::new));
    public final FloatProvider horizontalRadiusMultiplier;
    public final FloatProvider verticalRadiusMultiplier;
    final FloatProvider floorLevel;

@@ -21,11 +21,7 @@ public class VinesFeature extends Feature<NoneFeatureConfiguration> {
       if (!var2.isEmptyBlock(var3)) {
          return false;
       } else {
-         Direction[] var4 = Direction.values();
-         int var5 = var4.length;
-
-         for(int var6 = 0; var6 < var5; ++var6) {
-            Direction var7 = var4[var6];
+         for(Direction var7 : Direction.values()) {
             if (var7 != Direction.DOWN && VineBlock.isAcceptableNeighbour(var2, var3.relative(var7), var7)) {
                var2.setBlock(var3, (BlockState)Blocks.VINE.defaultBlockState().setValue(VineBlock.getPropertyForFace(var7), true), 2);
                return true;

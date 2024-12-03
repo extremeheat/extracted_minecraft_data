@@ -56,60 +56,56 @@ public abstract class BaseFireBlock extends Block {
 
       BlockPos var5 = var3.below();
       BlockState var6 = var2.getBlockState(var5);
-      int var7;
-      double var8;
-      double var10;
-      double var12;
       if (!this.canBurn(var6) && !var6.isFaceSturdy(var2, var5, Direction.UP)) {
          if (this.canBurn(var2.getBlockState(var3.west()))) {
-            for(var7 = 0; var7 < 2; ++var7) {
-               var8 = (double)var3.getX() + var4.nextDouble() * 0.10000000149011612;
-               var10 = (double)var3.getY() + var4.nextDouble();
-               var12 = (double)var3.getZ() + var4.nextDouble();
-               var2.addParticle(ParticleTypes.LARGE_SMOKE, var8, var10, var12, 0.0, 0.0, 0.0);
+            for(int var14 = 0; var14 < 2; ++var14) {
+               double var19 = (double)var3.getX() + var4.nextDouble() * 0.10000000149011612;
+               double var24 = (double)var3.getY() + var4.nextDouble();
+               double var29 = (double)var3.getZ() + var4.nextDouble();
+               var2.addParticle(ParticleTypes.LARGE_SMOKE, var19, var24, var29, 0.0, 0.0, 0.0);
             }
          }
 
          if (this.canBurn(var2.getBlockState(var3.east()))) {
-            for(var7 = 0; var7 < 2; ++var7) {
-               var8 = (double)(var3.getX() + 1) - var4.nextDouble() * 0.10000000149011612;
-               var10 = (double)var3.getY() + var4.nextDouble();
-               var12 = (double)var3.getZ() + var4.nextDouble();
-               var2.addParticle(ParticleTypes.LARGE_SMOKE, var8, var10, var12, 0.0, 0.0, 0.0);
+            for(int var15 = 0; var15 < 2; ++var15) {
+               double var20 = (double)(var3.getX() + 1) - var4.nextDouble() * 0.10000000149011612;
+               double var25 = (double)var3.getY() + var4.nextDouble();
+               double var30 = (double)var3.getZ() + var4.nextDouble();
+               var2.addParticle(ParticleTypes.LARGE_SMOKE, var20, var25, var30, 0.0, 0.0, 0.0);
             }
          }
 
          if (this.canBurn(var2.getBlockState(var3.north()))) {
-            for(var7 = 0; var7 < 2; ++var7) {
-               var8 = (double)var3.getX() + var4.nextDouble();
-               var10 = (double)var3.getY() + var4.nextDouble();
-               var12 = (double)var3.getZ() + var4.nextDouble() * 0.10000000149011612;
-               var2.addParticle(ParticleTypes.LARGE_SMOKE, var8, var10, var12, 0.0, 0.0, 0.0);
+            for(int var16 = 0; var16 < 2; ++var16) {
+               double var21 = (double)var3.getX() + var4.nextDouble();
+               double var26 = (double)var3.getY() + var4.nextDouble();
+               double var31 = (double)var3.getZ() + var4.nextDouble() * 0.10000000149011612;
+               var2.addParticle(ParticleTypes.LARGE_SMOKE, var21, var26, var31, 0.0, 0.0, 0.0);
             }
          }
 
          if (this.canBurn(var2.getBlockState(var3.south()))) {
-            for(var7 = 0; var7 < 2; ++var7) {
-               var8 = (double)var3.getX() + var4.nextDouble();
-               var10 = (double)var3.getY() + var4.nextDouble();
-               var12 = (double)(var3.getZ() + 1) - var4.nextDouble() * 0.10000000149011612;
-               var2.addParticle(ParticleTypes.LARGE_SMOKE, var8, var10, var12, 0.0, 0.0, 0.0);
+            for(int var17 = 0; var17 < 2; ++var17) {
+               double var22 = (double)var3.getX() + var4.nextDouble();
+               double var27 = (double)var3.getY() + var4.nextDouble();
+               double var32 = (double)(var3.getZ() + 1) - var4.nextDouble() * 0.10000000149011612;
+               var2.addParticle(ParticleTypes.LARGE_SMOKE, var22, var27, var32, 0.0, 0.0, 0.0);
             }
          }
 
          if (this.canBurn(var2.getBlockState(var3.above()))) {
-            for(var7 = 0; var7 < 2; ++var7) {
-               var8 = (double)var3.getX() + var4.nextDouble();
-               var10 = (double)(var3.getY() + 1) - var4.nextDouble() * 0.10000000149011612;
-               var12 = (double)var3.getZ() + var4.nextDouble();
-               var2.addParticle(ParticleTypes.LARGE_SMOKE, var8, var10, var12, 0.0, 0.0, 0.0);
+            for(int var18 = 0; var18 < 2; ++var18) {
+               double var23 = (double)var3.getX() + var4.nextDouble();
+               double var28 = (double)(var3.getY() + 1) - var4.nextDouble() * 0.10000000149011612;
+               double var33 = (double)var3.getZ() + var4.nextDouble();
+               var2.addParticle(ParticleTypes.LARGE_SMOKE, var23, var28, var33, 0.0, 0.0, 0.0);
             }
          }
       } else {
-         for(var7 = 0; var7 < 3; ++var7) {
-            var8 = (double)var3.getX() + var4.nextDouble();
-            var10 = (double)var3.getY() + var4.nextDouble() * 0.5 + 0.5;
-            var12 = (double)var3.getZ() + var4.nextDouble();
+         for(int var7 = 0; var7 < 3; ++var7) {
+            double var8 = (double)var3.getX() + var4.nextDouble();
+            double var10 = (double)var3.getY() + var4.nextDouble() * 0.5 + 0.5;
+            double var12 = (double)var3.getZ() + var4.nextDouble();
             var2.addParticle(ParticleTypes.LARGE_SMOKE, var8, var10, var12, 0.0, 0.0, 0.0);
          }
       }
@@ -183,11 +179,8 @@ public abstract class BaseFireBlock extends Block {
       } else {
          BlockPos.MutableBlockPos var3 = var1.mutable();
          boolean var4 = false;
-         Direction[] var5 = Direction.values();
-         int var6 = var5.length;
 
-         for(int var7 = 0; var7 < var6; ++var7) {
-            Direction var8 = var5[var7];
+         for(Direction var8 : Direction.values()) {
             if (var0.getBlockState(var3.set(var1).move(var8)).is(Blocks.OBSIDIAN)) {
                var4 = true;
                break;

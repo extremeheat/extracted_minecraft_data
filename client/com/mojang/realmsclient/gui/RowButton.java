@@ -1,6 +1,5 @@
 package com.mojang.realmsclient.gui;
 
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
@@ -40,10 +39,7 @@ public abstract class RowButton {
    public abstract void onClick(int var1);
 
    public static void drawButtonsInRow(GuiGraphics var0, List<RowButton> var1, AbstractSelectionList<?> var2, int var3, int var4, int var5, int var6) {
-      Iterator var7 = var1.iterator();
-
-      while(var7.hasNext()) {
-         RowButton var8 = (RowButton)var7.next();
+      for(RowButton var8 : var1) {
          if (var2.getRowWidth() > var8.getRight()) {
             var8.drawForRowAt(var0, var3, var4, var5, var6);
          }
@@ -59,10 +55,8 @@ public abstract class RowButton {
          int var10 = var0.getRowTop(var8);
          int var11 = (int)(var4 - (double)var9);
          int var12 = (int)(var6 - (double)var10);
-         Iterator var13 = var2.iterator();
 
-         while(var13.hasNext()) {
-            RowButton var14 = (RowButton)var13.next();
+         for(RowButton var14 : var2) {
             if (var11 >= var14.xOffset && var11 <= var14.getRight() && var12 >= var14.yOffset && var12 <= var14.getBottom()) {
                var14.onClick(var8);
             }

@@ -29,19 +29,7 @@ public class SetBlockCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setblock").requires((var0x) -> {
-         return var0x.hasPermission(2);
-      })).then(Commands.argument("pos", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("block", BlockStateArgument.block(var1)).executes((var0x) -> {
-         return setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null);
-      })).then(Commands.literal("destroy").executes((var0x) -> {
-         return setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.DESTROY, (Predicate)null);
-      }))).then(Commands.literal("keep").executes((var0x) -> {
-         return setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.REPLACE, (var0) -> {
-            return var0.getLevel().isEmptyBlock(var0.getPos());
-         });
-      }))).then(Commands.literal("replace").executes((var0x) -> {
-         return setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null);
-      })))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("setblock").requires((var0x) -> var0x.hasPermission(2))).then(Commands.argument("pos", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument("block", BlockStateArgument.block(var1)).executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null))).then(Commands.literal("destroy").executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.DESTROY, (Predicate)null)))).then(Commands.literal("keep").executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.REPLACE, (var0) -> var0.getLevel().isEmptyBlock(var0.getPos()))))).then(Commands.literal("replace").executes((var0x) -> setBlock((CommandSourceStack)var0x.getSource(), BlockPosArgument.getLoadedBlockPos(var0x, "pos"), BlockStateArgument.getBlock(var0x, "block"), SetBlockCommand.Mode.REPLACE, (Predicate)null))))));
    }
 
    private static int setBlock(CommandSourceStack var0, BlockPos var1, BlockInput var2, Mode var3, @Nullable Predicate<BlockInWorld> var4) throws CommandSyntaxException {
@@ -63,9 +51,7 @@ public class SetBlockCommand {
             throw ERROR_FAILED.create();
          } else {
             var5.blockUpdated(var1, var2.getState().getBlock());
-            var0.sendSuccess(() -> {
-               return Component.translatable("commands.setblock.success", var1.getX(), var1.getY(), var1.getZ());
-            }, true);
+            var0.sendSuccess(() -> Component.translatable("commands.setblock.success", var1.getX(), var1.getY(), var1.getZ()), true);
             return 1;
          }
       }

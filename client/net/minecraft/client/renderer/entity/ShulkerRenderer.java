@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.client.model.ShulkerModel;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -78,15 +79,7 @@ public class ShulkerRenderer extends MobRenderer<Shulker, ShulkerRenderState, Sh
    }
 
    static {
-      DEFAULT_TEXTURE_LOCATION = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION.texture().withPath((var0) -> {
-         return "textures/" + var0 + ".png";
-      });
-      TEXTURE_LOCATION = (ResourceLocation[])Sheets.SHULKER_TEXTURE_LOCATION.stream().map((var0) -> {
-         return var0.texture().withPath((var0x) -> {
-            return "textures/" + var0x + ".png";
-         });
-      }).toArray((var0) -> {
-         return new ResourceLocation[var0];
-      });
+      DEFAULT_TEXTURE_LOCATION = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION.texture().withPath((UnaryOperator)((var0) -> "textures/" + var0 + ".png"));
+      TEXTURE_LOCATION = (ResourceLocation[])Sheets.SHULKER_TEXTURE_LOCATION.stream().map((var0) -> var0.texture().withPath((UnaryOperator)((var0x) -> "textures/" + var0x + ".png"))).toArray((var0) -> new ResourceLocation[var0]);
    }
 }

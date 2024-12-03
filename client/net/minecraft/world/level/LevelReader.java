@@ -91,8 +91,8 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, Signal
          if (!this.canSeeSky(var2)) {
             return false;
          } else {
-            for(var2 = var2.below(); var2.getY() > var1.getY(); var2 = var2.below()) {
-               BlockState var3 = this.getBlockState(var2);
+            for(BlockPos var4 = var2.below(); var4.getY() > var1.getY(); var4 = var4.below()) {
+               BlockState var3 = this.getBlockState(var4);
                if (var3.getLightBlock() > 0 && !var3.liquid()) {
                   return false;
                }

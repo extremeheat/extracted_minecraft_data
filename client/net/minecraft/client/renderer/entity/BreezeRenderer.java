@@ -51,11 +51,8 @@ public class BreezeRenderer extends MobRenderer<Breeze, BreezeRenderState, Breez
       var0.eyes().visible = false;
       var0.rods().visible = false;
       var0.wind().visible = false;
-      ModelPart[] var2 = var1;
-      int var3 = var1.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         ModelPart var5 = var2[var4];
+      for(ModelPart var5 : var1) {
          var5.visible = true;
       }
 

@@ -23,10 +23,6 @@ public record ClientboundDisconnectPacket(Component reason) implements Packet<Cl
       var1.handleDisconnect(this);
    }
 
-   public Component reason() {
-      return this.reason;
-   }
-
    static {
       STREAM_CODEC = ComponentSerialization.TRUSTED_CONTEXT_FREE_STREAM_CODEC.map(ClientboundDisconnectPacket::new, ClientboundDisconnectPacket::reason);
    }

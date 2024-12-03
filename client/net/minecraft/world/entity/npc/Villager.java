@@ -9,7 +9,6 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -144,7 +143,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    protected Brain.Provider<Villager> brainProvider() {
-      return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
+      return Brain.<Villager>provider(MEMORY_TYPES, SENSOR_TYPES);
    }
 
    protected Brain<?> makeBrain(Dynamic<?> var1) {
@@ -311,10 +310,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    private void resetSpecialPrices() {
       if (!this.level().isClientSide()) {
-         Iterator var1 = this.getOffers().iterator();
-
-         while(var1.hasNext()) {
-            MerchantOffer var2 = (MerchantOffer)var1.next();
+         for(MerchantOffer var2 : this.getOffers()) {
             var2.resetSpecialPriceDiff();
          }
 
@@ -327,10 +323,8 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    public void restock() {
       this.updateDemand();
-      Iterator var1 = this.getOffers().iterator();
 
-      while(var1.hasNext()) {
-         MerchantOffer var2 = (MerchantOffer)var1.next();
+      for(MerchantOffer var2 : this.getOffers()) {
          var2.resetUses();
       }
 
@@ -349,18 +343,13 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    private boolean needsToRestock() {
-      Iterator var1 = this.getOffers().iterator();
-
-      MerchantOffer var2;
-      do {
-         if (!var1.hasNext()) {
-            return false;
+      for(MerchantOffer var2 : this.getOffers()) {
+         if (var2.needsRestock()) {
+            return true;
          }
+      }
 
-         var2 = (MerchantOffer)var1.next();
-      } while(!var2.needsRestock());
-
-      return true;
+      return false;
    }
 
    private boolean allowedToRestock() {
@@ -390,10 +379,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    private void catchUpDemand() {
       int var1 = 2 - this.numberOfRestocksToday;
       if (var1 > 0) {
-         Iterator var2 = this.getOffers().iterator();
-
-         while(var2.hasNext()) {
-            MerchantOffer var3 = (MerchantOffer)var2.next();
+         for(MerchantOffer var3 : this.getOffers()) {
             var3.resetUses();
          }
       }
@@ -406,10 +392,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    private void updateDemand() {
-      Iterator var1 = this.getOffers().iterator();
-
-      while(var1.hasNext()) {
-         MerchantOffer var2 = (MerchantOffer)var1.next();
+      for(MerchantOffer var2 : this.getOffers()) {
          var2.updateDemand();
       }
 
@@ -418,10 +401,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    private void updateSpecialPrices(Player var1) {
       int var2 = this.getPlayerReputation(var1);
       if (var2 != 0) {
-         Iterator var3 = this.getOffers().iterator();
-
-         while(var3.hasNext()) {
-            MerchantOffer var4 = (MerchantOffer)var3.next();
+         for(MerchantOffer var4 : this.getOffers()) {
             var4.addToSpecialPriceDiff(-Mth.floor((float)var2 * var4.getPriceMultiplier()));
          }
       }
@@ -429,10 +409,8 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       if (var1.hasEffect(MobEffects.HERO_OF_THE_VILLAGE)) {
          MobEffectInstance var10 = var1.getEffect(MobEffects.HERO_OF_THE_VILLAGE);
          int var11 = var10.getAmplifier();
-         Iterator var5 = this.getOffers().iterator();
 
-         while(var5.hasNext()) {
-            MerchantOffer var6 = (MerchantOffer)var5.next();
+         for(MerchantOffer var6 : this.getOffers()) {
             double var7 = 0.3 + 0.0625 * (double)var11;
             int var9 = (int)Math.floor(var7 * (double)var6.getBaseCostA().getCount());
             var6.addToSpecialPriceDiff(-Math.max(var9, 1));
@@ -451,9 +429,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       DataResult var10000 = VillagerData.CODEC.encodeStart(NbtOps.INSTANCE, this.getVillagerData());
       Logger var10001 = LOGGER;
       Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         var1.put("VillagerData", var1x);
-      });
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("VillagerData", var1x));
       var1.putByte("FoodLevel", (byte)this.foodLevel);
       var1.put("Gossips", (Tag)this.gossips.store(NbtOps.INSTANCE));
       var1.putInt("Xp", this.villagerXp);
@@ -472,9 +448,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          DataResult var10000 = VillagerData.CODEC.parse(NbtOps.INSTANCE, var1.get("VillagerData"));
          Logger var10001 = LOGGER;
          Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-            this.entityData.set(DATA_VILLAGER_DATA, var1x);
-         });
+         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> this.entityData.set(DATA_VILLAGER_DATA, var1x));
       }
 
       if (var1.contains("FoodLevel", 1)) {
@@ -590,9 +564,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          if (!var4.isEmpty()) {
             NearestVisibleLivingEntities var10000 = (NearestVisibleLivingEntities)var4.get();
             Objects.requireNonNull(ReputationEventHandler.class);
-            var10000.findAll(ReputationEventHandler.class::isInstance).forEach((var2x) -> {
-               var2.onReputationEvent(ReputationEventType.VILLAGER_KILLED, var1, (ReputationEventHandler)var2x);
-            });
+            var10000.findAll(ReputationEventHandler.class::isInstance).forEach((var2x) -> var2.onReputationEvent(ReputationEventType.VILLAGER_KILLED, var1, (ReputationEventHandler)var2x));
          }
       }
    }
@@ -648,9 +620,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    public int getPlayerReputation(Player var1) {
-      return this.gossips.getReputation(var1.getUUID(), (var0) -> {
-         return true;
-      });
+      return this.gossips.getReputation(var1.getUUID(), (var0) -> true);
    }
 
    private void digestFood(int var1) {
@@ -766,15 +736,11 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    private int countFoodPointsInInventory() {
       SimpleContainer var1 = this.getInventory();
-      return FOOD_POINTS.entrySet().stream().mapToInt((var1x) -> {
-         return var1.countItem((Item)var1x.getKey()) * (Integer)var1x.getValue();
-      }).sum();
+      return FOOD_POINTS.entrySet().stream().mapToInt((var1x) -> var1.countItem((Item)var1x.getKey()) * (Integer)var1x.getValue()).sum();
    }
 
    public boolean hasFarmSeeds() {
-      return this.getInventory().hasAnyMatching((var0) -> {
-         return var0.is(ItemTags.VILLAGER_PLANTABLE_SEEDS);
-      });
+      return this.getInventory().hasAnyMatching((var0) -> var0.is(ItemTags.VILLAGER_PLANTABLE_SEEDS));
    }
 
    protected void updateTrades() {
@@ -819,11 +785,9 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       if (this.wantsToSpawnGolem(var2)) {
          AABB var5 = this.getBoundingBox().inflate(10.0, 10.0, 10.0);
          List var6 = var1.getEntitiesOfClass(Villager.class, var5);
-         List var7 = var6.stream().filter((var2x) -> {
-            return var2x.wantsToSpawnGolem(var2);
-         }).limit(5L).toList();
+         List var7 = var6.stream().filter((var2x) -> var2x.wantsToSpawnGolem(var2)).limit(5L).toList();
          if (var7.size() >= var4) {
-            if (!SpawnUtil.trySpawnMob(EntityType.IRON_GOLEM, EntitySpawnReason.MOB_SUMMONED, var1, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM).isEmpty()) {
+            if (!SpawnUtil.trySpawnMob(EntityType.IRON_GOLEM, EntitySpawnReason.MOB_SUMMONED, var1, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM, false).isEmpty()) {
                var6.forEach(GolemSensor::golemDetected);
             }
          }
@@ -880,21 +844,19 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    public void startSleeping(BlockPos var1) {
       super.startSleeping(var1);
-      this.brain.setMemory(MemoryModuleType.LAST_SLEPT, (Object)this.level().getGameTime());
+      this.brain.setMemory(MemoryModuleType.LAST_SLEPT, this.level().getGameTime());
       this.brain.eraseMemory(MemoryModuleType.WALK_TARGET);
       this.brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
    }
 
    public void stopSleeping() {
       super.stopSleeping();
-      this.brain.setMemory(MemoryModuleType.LAST_WOKEN, (Object)this.level().getGameTime());
+      this.brain.setMemory(MemoryModuleType.LAST_WOKEN, this.level().getGameTime());
    }
 
    private boolean golemSpawnConditionsMet(long var1) {
       Optional var3 = this.brain.getMemory(MemoryModuleType.LAST_SLEPT);
-      return var3.filter((var2) -> {
-         return var1 - var2 < 24000L;
-      }).isPresent();
+      return var3.filter((var2) -> var1 - var2 < 24000L).isPresent();
    }
 
    // $FF: synthetic method
@@ -904,18 +866,10 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    static {
-      DATA_VILLAGER_DATA = SynchedEntityData.defineId(Villager.class, EntityDataSerializers.VILLAGER_DATA);
+      DATA_VILLAGER_DATA = SynchedEntityData.<VillagerData>defineId(Villager.class, EntityDataSerializers.VILLAGER_DATA);
       FOOD_POINTS = ImmutableMap.of(Items.BREAD, 4, Items.POTATO, 1, Items.CARROT, 1, Items.BEETROOT, 1);
       MEMORY_TYPES = ImmutableList.of(MemoryModuleType.HOME, MemoryModuleType.JOB_SITE, MemoryModuleType.POTENTIAL_JOB_SITE, MemoryModuleType.MEETING_POINT, MemoryModuleType.NEAREST_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.VISIBLE_VILLAGER_BABIES, MemoryModuleType.NEAREST_PLAYERS, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_ATTACKABLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM, MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS, new MemoryModuleType[]{MemoryModuleType.WALK_TARGET, MemoryModuleType.LOOK_TARGET, MemoryModuleType.INTERACTION_TARGET, MemoryModuleType.BREED_TARGET, MemoryModuleType.PATH, MemoryModuleType.DOORS_TO_CLOSE, MemoryModuleType.NEAREST_BED, MemoryModuleType.HURT_BY, MemoryModuleType.HURT_BY_ENTITY, MemoryModuleType.NEAREST_HOSTILE, MemoryModuleType.SECONDARY_JOB_SITE, MemoryModuleType.HIDING_PLACE, MemoryModuleType.HEARD_BELL_TIME, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.LAST_SLEPT, MemoryModuleType.LAST_WOKEN, MemoryModuleType.LAST_WORKED_AT_POI, MemoryModuleType.GOLEM_DETECTED_RECENTLY});
       SENSOR_TYPES = ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.NEAREST_BED, SensorType.HURT_BY, SensorType.VILLAGER_HOSTILES, SensorType.VILLAGER_BABIES, SensorType.SECONDARY_POIS, SensorType.GOLEM_DETECTED);
-      POI_MEMORIES = ImmutableMap.of(MemoryModuleType.HOME, (var0, var1) -> {
-         return var1.is(PoiTypes.HOME);
-      }, MemoryModuleType.JOB_SITE, (var0, var1) -> {
-         return var0.getVillagerData().getProfession().heldJobSite().test(var1);
-      }, MemoryModuleType.POTENTIAL_JOB_SITE, (var0, var1) -> {
-         return VillagerProfession.ALL_ACQUIRABLE_JOBS.test(var1);
-      }, MemoryModuleType.MEETING_POINT, (var0, var1) -> {
-         return var1.is(PoiTypes.MEETING);
-      });
+      POI_MEMORIES = ImmutableMap.of(MemoryModuleType.HOME, (BiPredicate)(var0, var1) -> var1.is(PoiTypes.HOME), MemoryModuleType.JOB_SITE, (BiPredicate)(var0, var1) -> var0.getVillagerData().getProfession().heldJobSite().test(var1), MemoryModuleType.POTENTIAL_JOB_SITE, (BiPredicate)(var0, var1) -> VillagerProfession.ALL_ACQUIRABLE_JOBS.test(var1), MemoryModuleType.MEETING_POINT, (BiPredicate)(var0, var1) -> var1.is(PoiTypes.MEETING));
    }
 }

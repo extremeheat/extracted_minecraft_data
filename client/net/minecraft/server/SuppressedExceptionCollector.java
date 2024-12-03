@@ -4,13 +4,12 @@ import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import java.util.Iterator;
 import java.util.Queue;
 import net.minecraft.util.ArrayListDeque;
 
 public class SuppressedExceptionCollector {
    private static final int LATEST_ENTRY_COUNT = 8;
-   private final Queue<LongEntry> latestEntries = new ArrayListDeque();
+   private final Queue<LongEntry> latestEntries = new ArrayListDeque<LongEntry>();
    private final Object2IntLinkedOpenHashMap<ShortEntry> entryCounts = new Object2IntLinkedOpenHashMap();
 
    public SuppressedExceptionCollector() {
@@ -40,10 +39,8 @@ public class SuppressedExceptionCollector {
       StringBuilder var3 = new StringBuilder();
       if (!this.latestEntries.isEmpty()) {
          var3.append("\n\t\tLatest entries:\n");
-         Iterator var4 = this.latestEntries.iterator();
 
-         while(var4.hasNext()) {
-            LongEntry var5 = (LongEntry)var4.next();
+         for(LongEntry var5 : this.latestEntries) {
             var3.append("\t\t\t").append(var5.location).append(":").append(var5.cls).append(": ").append(var5.message).append(" (").append(var1 - var5.timestampMs).append("ms ago)").append("\n");
          }
       }
@@ -65,7 +62,7 @@ public class SuppressedExceptionCollector {
       return var3.isEmpty() ? "~~NONE~~" : var3.toString();
    }
 
-   private static record LongEntry(long timestampMs, String location, Class<? extends Throwable> cls, String message) {
+   static record LongEntry(long timestampMs, String location, Class<? extends Throwable> cls, String message) {
       final long timestampMs;
       final String location;
       final Class<? extends Throwable> cls;
@@ -78,22 +75,6 @@ public class SuppressedExceptionCollector {
          this.cls = var4;
          this.message = var5;
       }
-
-      public long timestampMs() {
-         return this.timestampMs;
-      }
-
-      public String location() {
-         return this.location;
-      }
-
-      public Class<? extends Throwable> cls() {
-         return this.cls;
-      }
-
-      public String message() {
-         return this.message;
-      }
    }
 
    static record ShortEntry(String location, Class<? extends Throwable> cls) {
@@ -104,14 +85,6 @@ public class SuppressedExceptionCollector {
          super();
          this.location = var1;
          this.cls = var2;
-      }
-
-      public String location() {
-         return this.location;
-      }
-
-      public Class<? extends Throwable> cls() {
-         return this.cls;
       }
    }
 }

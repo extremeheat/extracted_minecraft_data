@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -66,14 +65,9 @@ public class ClientRecipeBook extends RecipeBook {
          Objects.requireNonNull(var3);
          var2.put(var2x, (List)var10002.peek(var3::add).collect(ImmutableList.toImmutableList()));
       });
-      SearchRecipeBookCategory[] var4 = SearchRecipeBookCategory.values();
-      int var5 = var4.length;
 
-      for(int var6 = 0; var6 < var5; ++var6) {
-         SearchRecipeBookCategory var7 = var4[var6];
-         var2.put(var7, (List)var7.includedCategories().stream().flatMap((var1x) -> {
-            return ((List)var2.getOrDefault(var1x, List.of())).stream();
-         }).collect(ImmutableList.toImmutableList()));
+      for(SearchRecipeBookCategory var7 : SearchRecipeBookCategory.values()) {
+         var2.put(var7, (List)var7.includedCategories().stream().flatMap((var1x) -> ((List)var2.getOrDefault(var1x, List.of())).stream()).collect(ImmutableList.toImmutableList()));
       }
 
       this.collectionsByTab = Map.copyOf(var2);
@@ -83,24 +77,18 @@ public class ClientRecipeBook extends RecipeBook {
    private static Map<RecipeBookCategory, List<List<RecipeDisplayEntry>>> categorizeAndGroupRecipes(Iterable<RecipeDisplayEntry> var0) {
       HashMap var1 = new HashMap();
       HashBasedTable var2 = HashBasedTable.create();
-      Iterator var3 = var0.iterator();
 
-      while(var3.hasNext()) {
-         RecipeDisplayEntry var4 = (RecipeDisplayEntry)var3.next();
+      for(RecipeDisplayEntry var4 : var0) {
          RecipeBookCategory var5 = var4.category();
          OptionalInt var6 = var4.group();
          if (var6.isEmpty()) {
-            ((List)var1.computeIfAbsent(var5, (var0x) -> {
-               return new ArrayList();
-            })).add(List.of(var4));
+            ((List)var1.computeIfAbsent(var5, (var0x) -> new ArrayList())).add(List.of(var4));
          } else {
             Object var7 = (List)var2.get(var5, var6.getAsInt());
             if (var7 == null) {
                var7 = new ArrayList();
                var2.put(var5, var6.getAsInt(), var7);
-               ((List)var1.computeIfAbsent(var5, (var0x) -> {
-                  return new ArrayList();
-               })).add(var7);
+               ((List)var1.computeIfAbsent(var5, (var0x) -> new ArrayList())).add(var7);
             }
 
             ((List)var7).add(var4);

@@ -11,9 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.WritableBookContent;
 
 public record ItemWritableBookPredicate(Optional<CollectionPredicate<Filterable<String>, PagePredicate>> pages) implements SingleComponentItemPredicate<WritableBookContent> {
-   public static final Codec<ItemWritableBookPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(CollectionPredicate.codec(ItemWritableBookPredicate.PagePredicate.CODEC).optionalFieldOf("pages").forGetter(ItemWritableBookPredicate::pages)).apply(var0, ItemWritableBookPredicate::new);
-   });
+   public static final Codec<ItemWritableBookPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(CollectionPredicate.codec(ItemWritableBookPredicate.PagePredicate.CODEC).optionalFieldOf("pages").forGetter(ItemWritableBookPredicate::pages)).apply(var0, ItemWritableBookPredicate::new));
 
    public ItemWritableBookPredicate(Optional<CollectionPredicate<Filterable<String>, PagePredicate>> var1) {
       super();
@@ -25,11 +23,7 @@ public record ItemWritableBookPredicate(Optional<CollectionPredicate<Filterable<
    }
 
    public boolean matches(ItemStack var1, WritableBookContent var2) {
-      return !this.pages.isPresent() || ((CollectionPredicate)this.pages.get()).test((Iterable)var2.pages());
-   }
-
-   public Optional<CollectionPredicate<Filterable<String>, PagePredicate>> pages() {
-      return this.pages;
+      return !this.pages.isPresent() || ((CollectionPredicate)this.pages.get()).test(var2.pages());
    }
 
    public static record PagePredicate(String contents) implements Predicate<Filterable<String>> {
@@ -42,10 +36,6 @@ public record ItemWritableBookPredicate(Optional<CollectionPredicate<Filterable<
 
       public boolean test(Filterable<String> var1) {
          return ((String)var1.raw()).equals(this.contents);
-      }
-
-      public String contents() {
-         return this.contents;
       }
 
       // $FF: synthetic method

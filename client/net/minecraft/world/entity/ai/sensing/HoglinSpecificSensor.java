@@ -3,7 +3,6 @@ package net.minecraft.world.entity.ai.sensing;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
@@ -32,12 +31,8 @@ public class HoglinSpecificSensor extends Sensor<Hoglin> {
       int var5 = 0;
       ArrayList var6 = Lists.newArrayList();
       NearestVisibleLivingEntities var7 = (NearestVisibleLivingEntities)var3.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElse(NearestVisibleLivingEntities.empty());
-      Iterator var8 = var7.findAll((var0) -> {
-         return !var0.isBaby() && (var0 instanceof Piglin || var0 instanceof Hoglin);
-      }).iterator();
 
-      while(var8.hasNext()) {
-         LivingEntity var9 = (LivingEntity)var8.next();
+      for(LivingEntity var9 : var7.findAll((var0) -> !var0.isBaby() && (var0 instanceof Piglin || var0 instanceof Hoglin))) {
          if (var9 instanceof Piglin var10) {
             ++var5;
             if (var4.isEmpty()) {
@@ -51,14 +46,12 @@ public class HoglinSpecificSensor extends Sensor<Hoglin> {
       }
 
       var3.setMemory(MemoryModuleType.NEAREST_VISIBLE_ADULT_PIGLIN, var4);
-      var3.setMemory(MemoryModuleType.NEAREST_VISIBLE_ADULT_HOGLINS, (Object)var6);
-      var3.setMemory(MemoryModuleType.VISIBLE_ADULT_PIGLIN_COUNT, (Object)var5);
-      var3.setMemory(MemoryModuleType.VISIBLE_ADULT_HOGLIN_COUNT, (Object)var6.size());
+      var3.setMemory(MemoryModuleType.NEAREST_VISIBLE_ADULT_HOGLINS, var6);
+      var3.setMemory(MemoryModuleType.VISIBLE_ADULT_PIGLIN_COUNT, var5);
+      var3.setMemory(MemoryModuleType.VISIBLE_ADULT_HOGLIN_COUNT, var6.size());
    }
 
    private Optional<BlockPos> findNearestRepellent(ServerLevel var1, Hoglin var2) {
-      return BlockPos.findClosestMatch(var2.blockPosition(), 8, 4, (var1x) -> {
-         return var1.getBlockState(var1x).is(BlockTags.HOGLIN_REPELLENTS);
-      });
+      return BlockPos.findClosestMatch(var2.blockPosition(), 8, 4, (var1x) -> var1.getBlockState(var1x).is(BlockTags.HOGLIN_REPELLENTS));
    }
 }

@@ -10,8 +10,6 @@ public class BlockEntityShulkerBoxColorFix extends NamedEntityFix {
    }
 
    protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var0) -> {
-         return var0.remove("Color");
-      });
+      return var1.update(DSL.remainderFinder(), (var0) -> var0.remove("Color"));
    }
 }

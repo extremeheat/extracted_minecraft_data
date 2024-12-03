@@ -124,7 +124,7 @@ public enum VaultState implements StringRepresentable {
       return new VaultState[]{INACTIVE, ACTIVE, UNLOCKING, EJECTING};
    }
 
-   private static enum LightLevel {
+   static enum LightLevel {
       HALF_LIT(6),
       LIT(12);
 

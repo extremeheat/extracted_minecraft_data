@@ -70,9 +70,7 @@ public class StringUtil {
    }
 
    public static boolean isValidPlayerName(String var0) {
-      return var0.length() > 16 ? false : var0.chars().filter((var0x) -> {
-         return var0x <= 32 || var0x >= 127;
-      }).findAny().isEmpty();
+      return var0.length() > 16 ? false : var0.chars().filter((var0x) -> var0x <= 32 || var0x >= 127).findAny().isEmpty();
    }
 
    public static String filterText(String var0) {
@@ -81,11 +79,8 @@ public class StringUtil {
 
    public static String filterText(String var0, boolean var1) {
       StringBuilder var2 = new StringBuilder();
-      char[] var3 = var0.toCharArray();
-      int var4 = var3.length;
 
-      for(int var5 = 0; var5 < var4; ++var5) {
-         char var6 = var3[var5];
+      for(char var6 : var0.toCharArray()) {
          if (isAllowedChatCharacter(var6)) {
             var2.append(var6);
          } else if (var1 && var6 == '\n') {

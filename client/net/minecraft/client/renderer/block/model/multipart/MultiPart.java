@@ -10,21 +10,16 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.minecraft.client.renderer.block.model.MultiVariant;
 import net.minecraft.client.renderer.block.model.UnbakedBlockStateModel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
-import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.MultiPartBakedModel;
-import net.minecraft.client.resources.model.UnbakedModel;
+import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -52,39 +47,27 @@ public class MultiPart implements UnbakedBlockStateModel {
             this.model = var1;
             this.selectors = var2;
          }
-
-         public MultiPart model() {
-            return this.model;
-         }
-
-         public IntList selectors() {
-            return this.selectors;
-         }
       }
 
       return new 1Key(this, var2);
    }
 
-   public void resolveDependencies(UnbakedModel.Resolver var1) {
-      this.selectors.forEach((var1x) -> {
-         var1x.variant.resolveDependencies(var1);
-      });
+   public void resolveDependencies(ResolvableModel.Resolver var1) {
+      this.selectors.forEach((var1x) -> var1x.variant.resolveDependencies(var1));
    }
 
-   public BakedModel bake(ModelBaker var1, Function<Material, TextureAtlasSprite> var2, ModelState var3) {
-      ArrayList var4 = new ArrayList(this.selectors.size());
-      Iterator var5 = this.selectors.iterator();
+   public BakedModel bake(ModelBaker var1) {
+      ArrayList var2 = new ArrayList(this.selectors.size());
 
-      while(var5.hasNext()) {
-         InstantiatedSelector var6 = (InstantiatedSelector)var5.next();
-         BakedModel var7 = var6.variant.bake(var1, var2, var3);
-         var4.add(new MultiPartBakedModel.Selector(var6.predicate, var7));
+      for(InstantiatedSelector var4 : this.selectors) {
+         BakedModel var5 = var4.variant.bake(var1);
+         var2.add(new MultiPartBakedModel.Selector(var4.predicate, var5));
       }
 
-      return new MultiPartBakedModel(var4);
+      return new MultiPartBakedModel(var2);
    }
 
-   private static record InstantiatedSelector(Predicate<BlockState> predicate, MultiVariant variant) {
+   static record InstantiatedSelector(Predicate<BlockState> predicate, MultiVariant variant) {
       final Predicate<BlockState> predicate;
       final MultiVariant variant;
 
@@ -93,13 +76,21 @@ public class MultiPart implements UnbakedBlockStateModel {
          this.predicate = var1;
          this.variant = var2;
       }
+   }
 
-      public Predicate<BlockState> predicate() {
-         return this.predicate;
+   public static record Definition(List<Selector> selectors) {
+      public Definition(List<Selector> var1) {
+         super();
+         this.selectors = var1;
       }
 
-      public MultiVariant variant() {
-         return this.variant;
+      public MultiPart instantiate(StateDefinition<Block, BlockState> var1) {
+         List var2 = this.selectors.stream().map((var1x) -> new InstantiatedSelector(var1x.getPredicate(var1), var1x.getVariant())).toList();
+         return new MultiPart(var2);
+      }
+
+      public Set<MultiVariant> getMultiVariants() {
+         return (Set)this.selectors.stream().map(Selector::getVariant).collect(Collectors.toSet());
       }
    }
 
@@ -117,10 +108,7 @@ public class MultiPart implements UnbakedBlockStateModel {
          if (var2.isEmpty()) {
             throw new JsonSyntaxException("Empty selector array");
          } else {
-            Iterator var4 = var2.iterator();
-
-            while(var4.hasNext()) {
-               JsonElement var5 = (JsonElement)var4.next();
+            for(JsonElement var5 : var2) {
                var3.add((Selector)var1.deserialize(var5, Selector.class));
             }
 
@@ -131,28 +119,6 @@ public class MultiPart implements UnbakedBlockStateModel {
       // $FF: synthetic method
       public Object deserialize(final JsonElement var1, final Type var2, final JsonDeserializationContext var3) throws JsonParseException {
          return this.deserialize(var1, var2, var3);
-      }
-   }
-
-   public static record Definition(List<Selector> selectors) {
-      public Definition(List<Selector> var1) {
-         super();
-         this.selectors = var1;
-      }
-
-      public MultiPart instantiate(StateDefinition<Block, BlockState> var1) {
-         List var2 = this.selectors.stream().map((var1x) -> {
-            return new InstantiatedSelector(var1x.getPredicate(var1), var1x.getVariant());
-         }).toList();
-         return new MultiPart(var2);
-      }
-
-      public Set<MultiVariant> getMultiVariants() {
-         return (Set)this.selectors.stream().map(Selector::getVariant).collect(Collectors.toSet());
-      }
-
-      public List<Selector> selectors() {
-         return this.selectors;
       }
    }
 }

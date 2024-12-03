@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.structure;
 
 import com.mojang.logging.LogUtils;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -86,10 +85,8 @@ public final class StructureStart {
          BoundingBox var8 = ((StructurePiece)var7.get(0)).boundingBox;
          BlockPos var9 = var8.getCenter();
          BlockPos var10 = new BlockPos(var9.getX(), var8.minY(), var9.getZ());
-         Iterator var11 = var7.iterator();
 
-         while(var11.hasNext()) {
-            StructurePiece var12 = (StructurePiece)var11.next();
+         for(StructurePiece var12 : var7) {
             if (var12.getBoundingBox().intersects(var5)) {
                var12.postProcess(var1, var2, var3, var4, var5, var6, var10);
             }

@@ -29,7 +29,7 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
       super(var1);
       this.messageLines = MultiLineLabel.EMPTY;
       this.message = var2;
-      this.narrationMessage = CommonComponents.joinForNarration(var1, ComponentUtils.formatList(var2, (Component)CommonComponents.EMPTY));
+      this.narrationMessage = CommonComponents.joinForNarration(var1, ComponentUtils.formatList(var2, CommonComponents.EMPTY));
       this.buttonOptions = var3;
    }
 

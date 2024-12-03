@@ -2,7 +2,6 @@ package net.minecraft.client.resources.model;
 
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.client.renderer.block.model.BakedOverrides;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -19,13 +18,7 @@ public interface BakedModel {
 
    boolean usesBlockLight();
 
-   boolean isCustomRenderer();
-
    TextureAtlasSprite getParticleIcon();
 
    ItemTransforms getTransforms();
-
-   default BakedOverrides overrides() {
-      return BakedOverrides.EMPTY;
-   }
 }

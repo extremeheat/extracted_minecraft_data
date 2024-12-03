@@ -9,9 +9,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.scores.ScoreHolder;
 
 public record FixedScoreboardNameProvider(String name) implements ScoreboardNameProvider {
-   public static final MapCodec<FixedScoreboardNameProvider> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.STRING.fieldOf("name").forGetter(FixedScoreboardNameProvider::name)).apply(var0, FixedScoreboardNameProvider::new);
-   });
+   public static final MapCodec<FixedScoreboardNameProvider> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("name").forGetter(FixedScoreboardNameProvider::name)).apply(var0, FixedScoreboardNameProvider::new));
 
    public FixedScoreboardNameProvider(String var1) {
       super();
@@ -32,9 +30,5 @@ public record FixedScoreboardNameProvider(String name) implements ScoreboardName
 
    public Set<ContextKey<?>> getReferencedContextParams() {
       return Set.of();
-   }
-
-   public String name() {
-      return this.name;
    }
 }

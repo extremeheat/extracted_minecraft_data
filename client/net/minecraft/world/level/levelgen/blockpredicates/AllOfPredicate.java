@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.blockpredicates;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.WorldGenLevel;
@@ -14,18 +13,13 @@ class AllOfPredicate extends CombiningPredicate {
    }
 
    public boolean test(WorldGenLevel var1, BlockPos var2) {
-      Iterator var3 = this.predicates.iterator();
-
-      BlockPredicate var4;
-      do {
-         if (!var3.hasNext()) {
-            return true;
+      for(BlockPredicate var4 : this.predicates) {
+         if (!var4.test(var1, var2)) {
+            return false;
          }
+      }
 
-         var4 = (BlockPredicate)var3.next();
-      } while(var4.test(var1, var2));
-
-      return false;
+      return true;
    }
 
    public BlockPredicateType<?> type() {

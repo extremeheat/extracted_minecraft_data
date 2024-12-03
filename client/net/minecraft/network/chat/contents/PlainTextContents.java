@@ -9,10 +9,8 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 
 public interface PlainTextContents extends ComponentContents {
-   MapCodec<PlainTextContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.STRING.fieldOf("text").forGetter(PlainTextContents::text)).apply(var0, PlainTextContents::create);
-   });
-   ComponentContents.Type<PlainTextContents> TYPE = new ComponentContents.Type(CODEC, "text");
+   MapCodec<PlainTextContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("text").forGetter(PlainTextContents::text)).apply(var0, PlainTextContents::create));
+   ComponentContents.Type<PlainTextContents> TYPE = new ComponentContents.Type<PlainTextContents>(CODEC, "text");
    PlainTextContents EMPTY = new PlainTextContents() {
       public String toString() {
          return "empty";
@@ -49,10 +47,6 @@ public interface PlainTextContents extends ComponentContents {
 
       public String toString() {
          return "literal{" + this.text + "}";
-      }
-
-      public String text() {
-         return this.text;
       }
    }
 }

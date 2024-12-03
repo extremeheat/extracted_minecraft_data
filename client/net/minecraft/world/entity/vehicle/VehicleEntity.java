@@ -126,8 +126,8 @@ public abstract class VehicleEntity extends Entity {
    protected abstract Item getDropItem();
 
    static {
-      DATA_ID_HURT = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.INT);
-      DATA_ID_HURTDIR = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.INT);
-      DATA_ID_DAMAGE = SynchedEntityData.defineId(VehicleEntity.class, EntityDataSerializers.FLOAT);
+      DATA_ID_HURT = SynchedEntityData.<Integer>defineId(VehicleEntity.class, EntityDataSerializers.INT);
+      DATA_ID_HURTDIR = SynchedEntityData.<Integer>defineId(VehicleEntity.class, EntityDataSerializers.INT);
+      DATA_ID_DAMAGE = SynchedEntityData.<Float>defineId(VehicleEntity.class, EntityDataSerializers.FLOAT);
    }
 }

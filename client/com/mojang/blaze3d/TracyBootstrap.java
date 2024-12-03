@@ -15,9 +15,7 @@ public class TracyBootstrap {
       if (!setup) {
          TracyClient.load();
          if (TracyClient.isAvailable()) {
-            LogListeners.addListener("Tracy", (var0, var1) -> {
-               TracyClient.message(var0, messageColor(var1));
-            });
+            LogListeners.addListener("Tracy", (var0, var1) -> TracyClient.message(var0, messageColor(var1)));
             setup = true;
          }
       }

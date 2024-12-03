@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -65,10 +64,8 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
          return null;
       } else {
          ImmutableList.Builder var3 = ImmutableList.builderWithExpectedSize(this.pages.size());
-         Iterator var4 = this.pages.iterator();
 
-         while(var4.hasNext()) {
-            Filterable var5 = (Filterable)var4.next();
+         for(Filterable var5 : this.pages) {
             Optional var6 = resolvePage(var1, var2, var5);
             if (var6.isEmpty()) {
                return null;
@@ -88,7 +85,7 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
    private static Optional<Filterable<Component>> resolvePage(CommandSourceStack var0, @Nullable Player var1, Filterable<Component> var2) {
       return var2.resolve((var2x) -> {
          try {
-            MutableComponent var3 = ComponentUtils.updateForEntity(var0, (Component)var2x, var1, 0);
+            MutableComponent var3 = ComponentUtils.updateForEntity(var0, var2x, var1, 0);
             return isPageTooLarge(var3, var0.registryAccess()) ? Optional.empty() : Optional.of(var3);
          } catch (Exception var4) {
             return Optional.of(var2x);
@@ -101,33 +98,11 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
    }
 
    public List<Component> getPages(boolean var1) {
-      return Lists.transform(this.pages, (var1x) -> {
-         return (Component)var1x.get(var1);
-      });
+      return Lists.transform(this.pages, (var1x) -> (Component)var1x.get(var1));
    }
 
    public WrittenBookContent withReplacedPages(List<Filterable<Component>> var1) {
       return new WrittenBookContent(this.title, this.author, this.generation, var1, false);
-   }
-
-   public Filterable<String> title() {
-      return this.title;
-   }
-
-   public String author() {
-      return this.author;
-   }
-
-   public int generation() {
-      return this.generation;
-   }
-
-   public List<Filterable<Component>> pages() {
-      return this.pages;
-   }
-
-   public boolean resolved() {
-      return this.resolved;
    }
 
    // $FF: synthetic method
@@ -137,9 +112,7 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
 
    static {
       PAGES_CODEC = pagesCodec(CONTENT_CODEC);
-      CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Filterable.codec(Codec.string(0, 32)).fieldOf("title").forGetter(WrittenBookContent::title), Codec.STRING.fieldOf("author").forGetter(WrittenBookContent::author), ExtraCodecs.intRange(0, 3).optionalFieldOf("generation", 0).forGetter(WrittenBookContent::generation), PAGES_CODEC.optionalFieldOf("pages", List.of()).forGetter(WrittenBookContent::pages), Codec.BOOL.optionalFieldOf("resolved", false).forGetter(WrittenBookContent::resolved)).apply(var0, WrittenBookContent::new);
-      });
+      CODEC = RecordCodecBuilder.create((var0) -> var0.group(Filterable.codec(Codec.string(0, 32)).fieldOf("title").forGetter(WrittenBookContent::title), Codec.STRING.fieldOf("author").forGetter(WrittenBookContent::author), ExtraCodecs.intRange(0, 3).optionalFieldOf("generation", 0).forGetter(WrittenBookContent::generation), PAGES_CODEC.optionalFieldOf("pages", List.of()).forGetter(WrittenBookContent::pages), Codec.BOOL.optionalFieldOf("resolved", false).forGetter(WrittenBookContent::resolved)).apply(var0, WrittenBookContent::new));
       STREAM_CODEC = StreamCodec.composite(Filterable.streamCodec(ByteBufCodecs.stringUtf8(32)), WrittenBookContent::title, ByteBufCodecs.STRING_UTF8, WrittenBookContent::author, ByteBufCodecs.VAR_INT, WrittenBookContent::generation, Filterable.streamCodec(ComponentSerialization.STREAM_CODEC).apply(ByteBufCodecs.list()), WrittenBookContent::pages, ByteBufCodecs.BOOL, WrittenBookContent::resolved, WrittenBookContent::new);
    }
 }

@@ -7,8 +7,4 @@ public record LootNumberProviderType(MapCodec<? extends NumberProvider> codec) {
       super();
       this.codec = var1;
    }
-
-   public MapCodec<? extends NumberProvider> codec() {
-      return this.codec;
-   }
 }

@@ -1,6 +1,5 @@
 package net.minecraft.client.animation;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,18 +14,13 @@ public class KeyframeAnimations {
 
    public static void animate(Model var0, AnimationDefinition var1, long var2, float var4, Vector3f var5) {
       float var6 = getElapsedSeconds(var1, var2);
-      Iterator var7 = var1.boneAnimations().entrySet().iterator();
 
-      while(var7.hasNext()) {
-         Map.Entry var8 = (Map.Entry)var7.next();
+      for(Map.Entry var8 : var1.boneAnimations().entrySet()) {
          Optional var9 = var0.getAnyDescendantWithName((String)var8.getKey());
          List var10 = (List)var8.getValue();
-         var9.ifPresent((var4x) -> {
-            var10.forEach((var4xx) -> {
+         var9.ifPresent((var4x) -> var10.forEach((var4xx) -> {
                Keyframe[] var5x = var4xx.keyframes();
-               int var6x = Math.max(0, Mth.binarySearch(0, var5x.length, (var2) -> {
-                  return var6 <= var5x[var2].timestamp();
-               }) - 1);
+               int var6x = Math.max(0, Mth.binarySearch(0, var5x.length, (var2) -> var6 <= var5x[var2].timestamp()) - 1);
                int var7 = Math.min(var5x.length - 1, var6x + 1);
                Keyframe var8 = var5x[var6x];
                Keyframe var9 = var5x[var7];
@@ -40,8 +34,7 @@ public class KeyframeAnimations {
 
                var9.interpolation().apply(var5, var11, var5x, var6x, var7, var4);
                var4xx.target().apply(var4x, var5);
-            });
-         });
+            }));
       }
 
    }

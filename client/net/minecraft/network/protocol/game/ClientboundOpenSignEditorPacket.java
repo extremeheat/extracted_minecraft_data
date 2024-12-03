@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundOpenSignEditorPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundOpenSignEditorPacket> STREAM_CODEC = Packet.codec(ClientboundOpenSignEditorPacket::write, ClientboundOpenSignEditorPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundOpenSignEditorPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundOpenSignEditorPacket>codec(ClientboundOpenSignEditorPacket::write, ClientboundOpenSignEditorPacket::new);
    private final BlockPos pos;
    private final boolean isFrontText;
 

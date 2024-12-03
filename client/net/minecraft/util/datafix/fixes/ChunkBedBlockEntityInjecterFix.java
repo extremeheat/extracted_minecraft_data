@@ -15,7 +15,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Map;
 import java.util.function.Function;
 
 public class ChunkBedBlockEntityInjecterFix extends DataFix {
@@ -39,21 +39,14 @@ public class ChunkBedBlockEntityInjecterFix extends DataFix {
       OpticFinder var4 = DSL.fieldFinder("Level", var1);
       OpticFinder var5 = DSL.fieldFinder("TileEntities", var2);
       boolean var6 = true;
-      return TypeRewriteRule.seq(this.fixTypeEverywhere("InjectBedBlockEntityType", this.getInputSchema().findChoiceType(References.BLOCK_ENTITY), this.getOutputSchema().findChoiceType(References.BLOCK_ENTITY), (var0) -> {
-         return (var0x) -> {
-            return var0x;
-         };
-      }), this.fixTypeEverywhereTyped("BedBlockEntityInjecter", this.getOutputSchema().getType(References.CHUNK), (var3x) -> {
+      return TypeRewriteRule.seq(this.fixTypeEverywhere("InjectBedBlockEntityType", this.getInputSchema().findChoiceType(References.BLOCK_ENTITY), this.getOutputSchema().findChoiceType(References.BLOCK_ENTITY), (var0) -> (var0x) -> var0x), this.fixTypeEverywhereTyped("BedBlockEntityInjecter", this.getOutputSchema().getType(References.CHUNK), (var3x) -> {
          Typed var4x = var3x.getTyped(var4);
          Dynamic var5x = (Dynamic)var4x.get(DSL.remainderFinder());
          int var6 = var5x.get("xPos").asInt(0);
          int var7 = var5x.get("zPos").asInt(0);
          ArrayList var8 = Lists.newArrayList((Iterable)var4x.getOrCreate(var5));
-         java.util.List var9 = var5x.get("Sections").asList(Function.identity());
-         Iterator var10 = var9.iterator();
 
-         while(var10.hasNext()) {
-            Dynamic var11 = (Dynamic)var10.next();
+         for(Dynamic var11 : var5x.get("Sections").asList(Function.identity())) {
             int var12 = var11.get("Y").asInt(0);
             Streams.mapWithIndex(var11.get("Blocks").asIntStream(), (var4xx, var5xx) -> {
                if (416 == (var4xx & 255) << 4) {
@@ -73,9 +66,7 @@ public class ChunkBedBlockEntityInjecterFix extends DataFix {
                }
             }).forEachOrdered((var3xx) -> {
                if (var3xx != null) {
-                  var8.add(((Pair)var3.read(var11.createMap(var3xx)).result().orElseThrow(() -> {
-                     return new IllegalStateException("Could not parse newly created bed block entity.");
-                  })).getFirst());
+                  var8.add(((Pair)var3.read(var11.createMap(var3xx)).result().orElseThrow(() -> new IllegalStateException("Could not parse newly created bed block entity."))).getFirst());
                }
 
             });

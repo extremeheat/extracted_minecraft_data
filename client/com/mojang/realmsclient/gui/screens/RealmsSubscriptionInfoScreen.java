@@ -52,24 +52,16 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
 
    public void init() {
       this.getSubscription(this.serverData.id);
-      this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.subscription.extend"), (var1) -> {
-         ConfirmLinkScreen.confirmLinkNow(this, (String)CommonLinks.extendRealms(this.serverData.remoteSubscriptionId, this.minecraft.getUser().getProfileId()));
-      }).bounds(this.width / 2 - 100, row(6), 200, 20).build());
+      this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.subscription.extend"), (var1) -> ConfirmLinkScreen.confirmLinkNow(this, (String)CommonLinks.extendRealms(this.serverData.remoteSubscriptionId, this.minecraft.getUser().getProfileId()))).bounds(this.width / 2 - 100, row(6), 200, 20).build());
       if (this.serverData.expired) {
-         this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.delete.button"), (var1) -> {
-            this.minecraft.setScreen(RealmsPopups.warningPopupScreen(this, Component.translatable("mco.configure.world.delete.question.line1"), (var1x) -> {
-               this.deleteRealm();
-            }));
-         }).bounds(this.width / 2 - 100, row(10), 200, 20).build());
+         this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.delete.button"), (var1) -> this.minecraft.setScreen(RealmsPopups.warningPopupScreen(this, Component.translatable("mco.configure.world.delete.question.line1"), (var1x) -> this.deleteRealm()))).bounds(this.width / 2 - 100, row(10), 200, 20).build());
       } else if (RealmsMainScreen.isSnapshot() && this.serverData.parentWorldName != null) {
          this.addRenderableWidget(new FittingMultiLineTextWidget(this.width / 2 - 100, row(8), 200, 46, Component.translatable("mco.snapshot.subscription.info", this.serverData.parentWorldName), this.font));
       } else {
          this.addRenderableWidget(new FittingMultiLineTextWidget(this.width / 2 - 100, row(8), 200, 46, RECURRING_INFO, this.font));
       }
 
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1) -> {
-         this.onClose();
-      }).bounds(this.width / 2 - 100, row(12), 200, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).bounds(this.width / 2 - 100, row(12), 200, 20).build());
    }
 
    public Component getNarrationMessage() {
@@ -86,9 +78,7 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
                RealmsSubscriptionInfoScreen.LOGGER.error("Couldn't delete world", var2);
             }
 
-            RealmsSubscriptionInfoScreen.this.minecraft.execute(() -> {
-               RealmsSubscriptionInfoScreen.this.minecraft.setScreen(RealmsSubscriptionInfoScreen.this.mainScreen);
-            });
+            RealmsSubscriptionInfoScreen.this.minecraft.execute(() -> RealmsSubscriptionInfoScreen.this.minecraft.setScreen(RealmsSubscriptionInfoScreen.this.mainScreen));
          }
       }).start();
       this.minecraft.setScreen(this);
@@ -123,15 +113,15 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
       super.render(var1, var2, var3, var4);
       int var5 = this.width / 2 - 100;
       var1.drawCenteredString(this.font, (Component)SUBSCRIPTION_TITLE, this.width / 2, 17, -1);
-      var1.drawString(this.font, SUBSCRIPTION_START_LABEL, var5, row(0), -6250336, false);
-      var1.drawString(this.font, (Component)this.startDate, var5, row(1), -1, false);
+      var1.drawString(this.font, SUBSCRIPTION_START_LABEL, var5, row(0), -6250336);
+      var1.drawString(this.font, (Component)this.startDate, var5, row(1), -1);
       if (this.type == Subscription.SubscriptionType.NORMAL) {
-         var1.drawString(this.font, TIME_LEFT_LABEL, var5, row(3), -6250336, false);
+         var1.drawString(this.font, TIME_LEFT_LABEL, var5, row(3), -6250336);
       } else if (this.type == Subscription.SubscriptionType.RECURRING) {
-         var1.drawString(this.font, DAYS_LEFT_LABEL, var5, row(3), -6250336, false);
+         var1.drawString(this.font, DAYS_LEFT_LABEL, var5, row(3), -6250336);
       }
 
-      var1.drawString(this.font, (Component)this.daysLeft, var5, row(4), -1, false);
+      var1.drawString(this.font, (Component)this.daysLeft, var5, row(4), -1);
    }
 
    private Component daysLeftPresentation(int var1) {

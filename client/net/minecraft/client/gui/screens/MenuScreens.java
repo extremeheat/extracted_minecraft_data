@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens;
 
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
-import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -65,10 +64,8 @@ public class MenuScreens {
 
    public static boolean selfTest() {
       boolean var0 = false;
-      Iterator var1 = BuiltInRegistries.MENU.iterator();
 
-      while(var1.hasNext()) {
-         MenuType var2 = (MenuType)var1.next();
+      for(MenuType var2 : BuiltInRegistries.MENU) {
          if (!SCREENS.containsKey(var2)) {
             LOGGER.debug("Menu {} has no matching screen", BuiltInRegistries.MENU.getKey(var2));
             var0 = true;

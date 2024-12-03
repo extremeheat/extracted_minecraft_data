@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ServerboundChunkBatchReceivedPacket(float desiredChunksPerTick) implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundChunkBatchReceivedPacket> STREAM_CODEC = Packet.codec(ServerboundChunkBatchReceivedPacket::write, ServerboundChunkBatchReceivedPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundChunkBatchReceivedPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundChunkBatchReceivedPacket>codec(ServerboundChunkBatchReceivedPacket::write, ServerboundChunkBatchReceivedPacket::new);
 
    private ServerboundChunkBatchReceivedPacket(FriendlyByteBuf var1) {
       this(var1.readFloat());
@@ -27,9 +27,5 @@ public record ServerboundChunkBatchReceivedPacket(float desiredChunksPerTick) im
 
    public void handle(ServerGamePacketListener var1) {
       var1.handleChunkBatchReceived(this);
-   }
-
-   public float desiredChunksPerTick() {
-      return this.desiredChunksPerTick;
    }
 }

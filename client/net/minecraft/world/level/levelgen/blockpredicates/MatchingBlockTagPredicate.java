@@ -10,11 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class MatchingBlockTagPredicate extends StateTestingPredicate {
    final TagKey<Block> tag;
-   public static final MapCodec<MatchingBlockTagPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return stateTestingCodec(var0).and(TagKey.codec(Registries.BLOCK).fieldOf("tag").forGetter((var0x) -> {
-         return var0x.tag;
-      })).apply(var0, MatchingBlockTagPredicate::new);
-   });
+   public static final MapCodec<MatchingBlockTagPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> stateTestingCodec(var0).and(TagKey.codec(Registries.BLOCK).fieldOf("tag").forGetter((var0x) -> var0x.tag)).apply(var0, MatchingBlockTagPredicate::new));
 
    protected MatchingBlockTagPredicate(Vec3i var1, TagKey<Block> var2) {
       super(var1);

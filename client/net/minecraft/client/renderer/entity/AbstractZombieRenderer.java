@@ -2,11 +2,9 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.ZombieModel;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ZombieRenderState;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Zombie;
 
 public abstract class AbstractZombieRenderer<T extends Zombie, S extends ZombieRenderState, M extends ZombieModel<S>> extends HumanoidMobRenderer<T, S, M> {
@@ -22,7 +20,7 @@ public abstract class AbstractZombieRenderer<T extends Zombie, S extends ZombieR
    }
 
    public void extractRenderState(T var1, S var2, float var3) {
-      super.extractRenderState((Mob)var1, (HumanoidRenderState)var2, var3);
+      super.extractRenderState(var1, var2, var3);
       var2.isAggressive = var1.isAggressive();
       var2.isConverting = var1.isUnderWaterConverting();
    }

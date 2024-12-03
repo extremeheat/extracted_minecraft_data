@@ -8,7 +8,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -64,10 +63,8 @@ public class ChaseServer {
             if (var2 != null && !var2.equals(var1)) {
                var1 = var2;
                byte[] var3 = var2.format().getBytes(StandardCharsets.US_ASCII);
-               Iterator var4 = this.clientSockets.iterator();
 
-               while(var4.hasNext()) {
-                  Socket var5 = (Socket)var4.next();
+               for(Socket var5 : this.clientSockets) {
                   if (!var5.isClosed()) {
                      Util.ioPool().execute(() -> {
                         try {
@@ -105,33 +102,29 @@ public class ChaseServer {
    }
 
    private void runAcceptor() {
-      while(true) {
-         try {
-            if (this.wantsToRun) {
-               if (this.serverSocket != null) {
-                  LOGGER.info("Remote control server is listening for connections on port {}", this.serverPort);
-                  Socket var1 = this.serverSocket.accept();
-                  LOGGER.info("Remote control server received client connection on port {}", var1.getPort());
-                  this.clientSockets.add(var1);
-               }
-               continue;
+      try {
+         while(this.wantsToRun) {
+            if (this.serverSocket != null) {
+               LOGGER.info("Remote control server is listening for connections on port {}", this.serverPort);
+               Socket var1 = this.serverSocket.accept();
+               LOGGER.info("Remote control server received client connection on port {}", var1.getPort());
+               this.clientSockets.add(var1);
             }
-         } catch (ClosedByInterruptException var6) {
-            if (this.wantsToRun) {
-               LOGGER.info("Remote control server closed by interrupt");
-            }
-         } catch (IOException var7) {
-            if (this.wantsToRun) {
-               LOGGER.error("Remote control server closed because of an IO exception", var7);
-            }
-         } finally {
-            IOUtils.closeQuietly(this.serverSocket);
          }
-
-         LOGGER.info("Remote control server is now stopped");
-         this.wantsToRun = false;
-         return;
+      } catch (ClosedByInterruptException var6) {
+         if (this.wantsToRun) {
+            LOGGER.info("Remote control server closed by interrupt");
+         }
+      } catch (IOException var7) {
+         if (this.wantsToRun) {
+            LOGGER.error("Remote control server closed because of an IO exception", var7);
+         }
+      } finally {
+         IOUtils.closeQuietly(this.serverSocket);
       }
+
+      LOGGER.info("Remote control server is now stopped");
+      this.wantsToRun = false;
    }
 
    @Nullable
@@ -146,7 +139,7 @@ public class ChaseServer {
       }
    }
 
-   private static record PlayerPosition(String dimensionName, double x, double y, double z, float yRot, float xRot) {
+   static record PlayerPosition(String dimensionName, double x, double y, double z, float yRot, float xRot) {
       PlayerPosition(String var1, double var2, double var4, double var6, float var8, float var9) {
          super();
          this.dimensionName = var1;
@@ -159,30 +152,6 @@ public class ChaseServer {
 
       String format() {
          return String.format(Locale.ROOT, "t %s %.2f %.2f %.2f %.2f %.2f\n", this.dimensionName, this.x, this.y, this.z, this.yRot, this.xRot);
-      }
-
-      public String dimensionName() {
-         return this.dimensionName;
-      }
-
-      public double x() {
-         return this.x;
-      }
-
-      public double y() {
-         return this.y;
-      }
-
-      public double z() {
-         return this.z;
-      }
-
-      public float yRot() {
-         return this.yRot;
-      }
-
-      public float xRot() {
-         return this.xRot;
       }
    }
 }

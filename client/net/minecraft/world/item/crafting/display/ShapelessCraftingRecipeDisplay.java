@@ -9,9 +9,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.flag.FeatureFlagSet;
 
 public record ShapelessCraftingRecipeDisplay(List<SlotDisplay> ingredients, SlotDisplay result, SlotDisplay craftingStation) implements RecipeDisplay {
-   public static final MapCodec<ShapelessCraftingRecipeDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(SlotDisplay.CODEC.listOf().fieldOf("ingredients").forGetter(ShapelessCraftingRecipeDisplay::ingredients), SlotDisplay.CODEC.fieldOf("result").forGetter(ShapelessCraftingRecipeDisplay::result), SlotDisplay.CODEC.fieldOf("crafting_station").forGetter(ShapelessCraftingRecipeDisplay::craftingStation)).apply(var0, ShapelessCraftingRecipeDisplay::new);
-   });
+   public static final MapCodec<ShapelessCraftingRecipeDisplay> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SlotDisplay.CODEC.listOf().fieldOf("ingredients").forGetter(ShapelessCraftingRecipeDisplay::ingredients), SlotDisplay.CODEC.fieldOf("result").forGetter(ShapelessCraftingRecipeDisplay::result), SlotDisplay.CODEC.fieldOf("crafting_station").forGetter(ShapelessCraftingRecipeDisplay::craftingStation)).apply(var0, ShapelessCraftingRecipeDisplay::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, ShapelessCraftingRecipeDisplay> STREAM_CODEC;
    public static final RecipeDisplay.Type<ShapelessCraftingRecipeDisplay> TYPE;
 
@@ -27,25 +25,11 @@ public record ShapelessCraftingRecipeDisplay(List<SlotDisplay> ingredients, Slot
    }
 
    public boolean isEnabled(FeatureFlagSet var1) {
-      return this.ingredients.stream().allMatch((var1x) -> {
-         return var1x.isEnabled(var1);
-      }) && RecipeDisplay.super.isEnabled(var1);
-   }
-
-   public List<SlotDisplay> ingredients() {
-      return this.ingredients;
-   }
-
-   public SlotDisplay result() {
-      return this.result;
-   }
-
-   public SlotDisplay craftingStation() {
-      return this.craftingStation;
+      return this.ingredients.stream().allMatch((var1x) -> var1x.isEnabled(var1)) && RecipeDisplay.super.isEnabled(var1);
    }
 
    static {
       STREAM_CODEC = StreamCodec.composite(SlotDisplay.STREAM_CODEC.apply(ByteBufCodecs.list()), ShapelessCraftingRecipeDisplay::ingredients, SlotDisplay.STREAM_CODEC, ShapelessCraftingRecipeDisplay::result, SlotDisplay.STREAM_CODEC, ShapelessCraftingRecipeDisplay::craftingStation, ShapelessCraftingRecipeDisplay::new);
-      TYPE = new RecipeDisplay.Type(MAP_CODEC, STREAM_CODEC);
+      TYPE = new RecipeDisplay.Type<ShapelessCraftingRecipeDisplay>(MAP_CODEC, STREAM_CODEC);
    }
 }

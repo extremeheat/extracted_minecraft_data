@@ -29,7 +29,7 @@ public class JsonEventLog<T> implements Closeable {
 
    public static <T> JsonEventLog<T> open(Codec<T> var0, Path var1) throws IOException {
       FileChannel var2 = FileChannel.open(var1, StandardOpenOption.WRITE, StandardOpenOption.READ, StandardOpenOption.CREATE);
-      return new JsonEventLog(var0, var2);
+      return new JsonEventLog<T>(var0, var2);
    }
 
    public void write(T var1) throws IOException {
@@ -60,7 +60,7 @@ public class JsonEventLog<T> implements Closeable {
                   this.position = JsonEventLog.this.channel.position();
                }
 
-               return var1x;
+               return (T)var1x;
             }
 
             public void close() throws IOException {

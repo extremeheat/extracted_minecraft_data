@@ -252,9 +252,7 @@ public class Zombie extends Monster {
    }
 
    protected void convertToZombieType(EntityType<? extends Zombie> var1) {
-      this.convertTo(var1, ConversionParams.single(this, true, true), (var0) -> {
-         var0.handleAttributes(var0.level().getCurrentDifficultyAt(var0.blockPosition()).getSpecialMultiplier());
-      });
+      this.convertTo(var1, ConversionParams.single(this, true, true), (var0) -> var0.handleAttributes(var0.level().getCurrentDifficultyAt(var0.blockPosition()).getSpecialMultiplier()));
    }
 
    @VisibleForTesting
@@ -425,17 +423,17 @@ public class Zombie extends Monster {
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       RandomSource var5 = var1.getRandom();
-      Object var10 = super.finalizeSpawn(var1, var2, var3, var4);
+      var4 = super.finalizeSpawn(var1, var2, var3, var4);
       float var6 = var2.getSpecialMultiplier();
       if (var3 != EntitySpawnReason.CONVERSION) {
          this.setCanPickUpLoot(var5.nextFloat() < 0.55F * var6);
       }
 
-      if (var10 == null) {
-         var10 = new ZombieGroupData(getSpawnAsBabyOdds(var5), true);
+      if (var4 == null) {
+         var4 = new ZombieGroupData(getSpawnAsBabyOdds(var5), true);
       }
 
-      if (var10 instanceof ZombieGroupData var7) {
+      if (var4 instanceof ZombieGroupData var7) {
          if (var7.isBaby) {
             this.setBaby(true);
             if (var7.canSpawnJockey) {
@@ -447,7 +445,7 @@ public class Zombie extends Monster {
                      this.startRiding(var9);
                   }
                } else if ((double)var5.nextFloat() < 0.05) {
-                  Chicken var12 = (Chicken)EntityType.CHICKEN.create(this.level(), EntitySpawnReason.JOCKEY);
+                  Chicken var12 = EntityType.CHICKEN.create(this.level(), EntitySpawnReason.JOCKEY);
                   if (var12 != null) {
                      var12.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
                      var12.finalizeSpawn(var1, var2, EntitySpawnReason.JOCKEY, (SpawnGroupData)null);
@@ -477,7 +475,7 @@ public class Zombie extends Monster {
       }
 
       this.handleAttributes(var6);
-      return (SpawnGroupData)var10;
+      return var4;
    }
 
    @VisibleForTesting
@@ -539,13 +537,22 @@ public class Zombie extends Monster {
       ZOMBIE_REINFORCEMENT_CALLEE_CHARGE = new AttributeModifier(ResourceLocation.withDefaultNamespace("reinforcement_callee_charge"), -0.05000000074505806, AttributeModifier.Operation.ADD_VALUE);
       LEADER_ZOMBIE_BONUS_ID = ResourceLocation.withDefaultNamespace("leader_zombie_bonus");
       ZOMBIE_RANDOM_SPAWN_BONUS_ID = ResourceLocation.withDefaultNamespace("zombie_random_spawn_bonus");
-      DATA_BABY_ID = SynchedEntityData.defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
-      DATA_SPECIAL_TYPE_ID = SynchedEntityData.defineId(Zombie.class, EntityDataSerializers.INT);
-      DATA_DROWNED_CONVERSION_ID = SynchedEntityData.defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
+      DATA_BABY_ID = SynchedEntityData.<Boolean>defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
+      DATA_SPECIAL_TYPE_ID = SynchedEntityData.<Integer>defineId(Zombie.class, EntityDataSerializers.INT);
+      DATA_DROWNED_CONVERSION_ID = SynchedEntityData.<Boolean>defineId(Zombie.class, EntityDataSerializers.BOOLEAN);
       BABY_DIMENSIONS = EntityType.ZOMBIE.getDimensions().scale(0.5F).withEyeHeight(0.93F);
-      DOOR_BREAKING_PREDICATE = (var0) -> {
-         return var0 == Difficulty.HARD;
-      };
+      DOOR_BREAKING_PREDICATE = (var0) -> var0 == Difficulty.HARD;
+   }
+
+   public static class ZombieGroupData implements SpawnGroupData {
+      public final boolean isBaby;
+      public final boolean canSpawnJockey;
+
+      public ZombieGroupData(boolean var1, boolean var2) {
+         super();
+         this.isBaby = var1;
+         this.canSpawnJockey = var2;
+      }
    }
 
    class ZombieAttackTurtleEggGoal extends RemoveBlockGoal {
@@ -563,17 +570,6 @@ public class Zombie extends Monster {
 
       public double acceptedDistance() {
          return 1.14;
-      }
-   }
-
-   public static class ZombieGroupData implements SpawnGroupData {
-      public final boolean isBaby;
-      public final boolean canSpawnJockey;
-
-      public ZombieGroupData(boolean var1, boolean var2) {
-         super();
-         this.isBaby = var1;
-         this.canSpawnJockey = var2;
       }
    }
 }

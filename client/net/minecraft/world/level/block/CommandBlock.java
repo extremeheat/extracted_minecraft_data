@@ -32,11 +32,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.slf4j.Logger;
 
 public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
-   public static final MapCodec<CommandBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.BOOL.fieldOf("automatic").forGetter((var0x) -> {
-         return var0x.automatic;
-      }), propertiesCodec()).apply(var0, CommandBlock::new);
-   });
+   public static final MapCodec<CommandBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("automatic").forGetter((var0x) -> var0x.automatic), propertiesCodec()).apply(var0, CommandBlock::new));
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty CONDITIONAL;
@@ -160,10 +156,6 @@ public class CommandBlock extends BaseEntityBlock implements GameMasterBlock {
          }
 
       }
-   }
-
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
    }
 
    protected BlockState rotate(BlockState var1, Rotation var2) {

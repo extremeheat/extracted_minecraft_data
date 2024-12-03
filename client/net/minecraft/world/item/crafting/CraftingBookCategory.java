@@ -14,8 +14,8 @@ public enum CraftingBookCategory implements StringRepresentable {
    EQUIPMENT("equipment", 2),
    MISC("misc", 3);
 
-   public static final Codec<CraftingBookCategory> CODEC = StringRepresentable.fromEnum(CraftingBookCategory::values);
-   public static final IntFunction<CraftingBookCategory> BY_ID = ByIdMap.continuous(CraftingBookCategory::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+   public static final Codec<CraftingBookCategory> CODEC = StringRepresentable.<CraftingBookCategory>fromEnum(CraftingBookCategory::values);
+   public static final IntFunction<CraftingBookCategory> BY_ID = ByIdMap.<CraftingBookCategory>continuous(CraftingBookCategory::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    public static final StreamCodec<ByteBuf, CraftingBookCategory> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, CraftingBookCategory::id);
    private final String name;
    private final int id;

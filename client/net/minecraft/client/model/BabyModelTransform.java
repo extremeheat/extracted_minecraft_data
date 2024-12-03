@@ -1,6 +1,5 @@
 package net.minecraft.client.model;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
@@ -31,50 +30,16 @@ public record BabyModelTransform(boolean scaleHead, float babyYHeadOffset, float
    public MeshDefinition apply(MeshDefinition var1) {
       float var2 = this.scaleHead ? 1.5F / this.babyHeadScale : 1.0F;
       float var3 = 1.0F / this.babyBodyScale;
-      UnaryOperator var4 = (var2x) -> {
-         return var2x.translated(0.0F, this.babyYHeadOffset, this.babyZHeadOffset).scaled(var2);
-      };
-      UnaryOperator var5 = (var2x) -> {
-         return var2x.translated(0.0F, this.bodyYOffset, 0.0F).scaled(var3);
-      };
+      UnaryOperator var4 = (var2x) -> var2x.translated(0.0F, this.babyYHeadOffset, this.babyZHeadOffset).scaled(var2);
+      UnaryOperator var5 = (var2x) -> var2x.translated(0.0F, this.bodyYOffset, 0.0F).scaled(var3);
       MeshDefinition var6 = new MeshDefinition();
-      Iterator var7 = var1.getRoot().getChildren().iterator();
 
-      while(var7.hasNext()) {
-         Map.Entry var8 = (Map.Entry)var7.next();
+      for(Map.Entry var8 : var1.getRoot().getChildren()) {
          String var9 = (String)var8.getKey();
          PartDefinition var10 = (PartDefinition)var8.getValue();
          var6.getRoot().addOrReplaceChild(var9, var10.transformed(this.headParts.contains(var9) ? var4 : var5));
       }
 
       return var6;
-   }
-
-   public boolean scaleHead() {
-      return this.scaleHead;
-   }
-
-   public float babyYHeadOffset() {
-      return this.babyYHeadOffset;
-   }
-
-   public float babyZHeadOffset() {
-      return this.babyZHeadOffset;
-   }
-
-   public float babyHeadScale() {
-      return this.babyHeadScale;
-   }
-
-   public float babyBodyScale() {
-      return this.babyBodyScale;
-   }
-
-   public float bodyYOffset() {
-      return this.bodyYOffset;
-   }
-
-   public Set<String> headParts() {
-      return this.headParts;
    }
 }

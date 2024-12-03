@@ -68,14 +68,6 @@ public abstract class ParseState<S> {
          this.name = var1;
          this.mark = var2;
       }
-
-      public Atom<T> name() {
-         return this.name;
-      }
-
-      public int mark() {
-         return this.mark;
-      }
    }
 
    static record CacheEntry<T>(Optional<T> value, int mark) {
@@ -85,14 +77,6 @@ public abstract class ParseState<S> {
          super();
          this.value = var1;
          this.mark = var2;
-      }
-
-      public Optional<T> value() {
-         return this.value;
-      }
-
-      public int mark() {
-         return this.mark;
       }
    }
 }

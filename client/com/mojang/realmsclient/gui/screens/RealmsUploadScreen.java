@@ -76,13 +76,9 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
    }
 
    public void init() {
-      this.backButton = (Button)this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
-         this.onBack();
-      }).build());
+      this.backButton = (Button)this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onBack()).build());
       this.backButton.visible = false;
-      this.cancelButton = (Button)this.layout.addToFooter(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
-         this.onCancel();
-      }).build());
+      this.cancelButton = (Button)this.layout.addToFooter(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onCancel()).build());
       if (!this.uploadStarted) {
          if (this.lastScreen.slot == -1) {
             this.uploadStarted = true;
@@ -155,7 +151,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
 
       var1.drawCenteredString(this.font, (Component)this.status, this.width / 2, 50, -1);
       if (this.showDots) {
-         var1.drawString(this.font, (String)DOTS[this.tickCount / 10 % DOTS.length], this.width / 2 + this.font.width((FormattedText)this.status) / 2 + 5, 50, -1, false);
+         var1.drawString(this.font, (String)DOTS[this.tickCount / 10 % DOTS.length], this.width / 2 + this.font.width((FormattedText)this.status) / 2 + 5, 50, -1);
       }
 
       if (this.uploadStatus.uploadStarted() && !this.cancelled) {
@@ -191,7 +187,7 @@ public class RealmsUploadScreen extends RealmsScreen implements RealmsWorldUploa
       if (var2 > 0L && var4 != null) {
          int var5 = this.font.width(var4);
          String var6 = "(" + Unit.humanReadable(var2) + "/s)";
-         var1.drawString(this.font, (String)var6, this.width / 2 + var5 / 2 + 15, 84, -1, false);
+         var1.drawString(this.font, (String)var6, this.width / 2 + var5 / 2 + 15, 84, -1);
       }
 
    }

@@ -24,14 +24,6 @@ public record ClientboundCooldownPacket(ResourceLocation cooldownGroup, int dura
       var1.handleItemCooldown(this);
    }
 
-   public ResourceLocation cooldownGroup() {
-      return this.cooldownGroup;
-   }
-
-   public int duration() {
-      return this.duration;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ResourceLocation.STREAM_CODEC, ClientboundCooldownPacket::cooldownGroup, ByteBufCodecs.VAR_INT, ClientboundCooldownPacket::duration, ClientboundCooldownPacket::new);
    }

@@ -33,14 +33,6 @@ public record ClientboundMoveMinecartPacket(int entityId, List<NewMinecartBehavi
       return var1.getEntity(this.entityId);
    }
 
-   public int entityId() {
-      return this.entityId;
-   }
-
-   public List<NewMinecartBehavior.MinecartStep> lerpSteps() {
-      return this.lerpSteps;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.VAR_INT, ClientboundMoveMinecartPacket::entityId, NewMinecartBehavior.MinecartStep.STREAM_CODEC.apply(ByteBufCodecs.list()), ClientboundMoveMinecartPacket::lerpSteps, ClientboundMoveMinecartPacket::new);
    }

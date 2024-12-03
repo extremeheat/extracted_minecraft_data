@@ -31,22 +31,6 @@ public record ClientboundExplodePacket(Vec3 center, Optional<Vec3> playerKnockba
       var1.handleExplosion(this);
    }
 
-   public Vec3 center() {
-      return this.center;
-   }
-
-   public Optional<Vec3> playerKnockback() {
-      return this.playerKnockback;
-   }
-
-   public ParticleOptions explosionParticle() {
-      return this.explosionParticle;
-   }
-
-   public Holder<SoundEvent> explosionSound() {
-      return this.explosionSound;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(Vec3.STREAM_CODEC, ClientboundExplodePacket::center, Vec3.STREAM_CODEC.apply(ByteBufCodecs::optional), ClientboundExplodePacket::playerKnockback, ParticleTypes.STREAM_CODEC, ClientboundExplodePacket::explosionParticle, SoundEvent.STREAM_CODEC, ClientboundExplodePacket::explosionSound, ClientboundExplodePacket::new);
    }

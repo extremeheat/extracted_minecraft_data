@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -49,10 +48,8 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
 
    public Collection<String> getOnlinePlayerNames() {
       ArrayList var1 = Lists.newArrayList();
-      Iterator var2 = this.connection.getOnlinePlayers().iterator();
 
-      while(var2.hasNext()) {
-         PlayerInfo var3 = (PlayerInfo)var2.next();
+      for(PlayerInfo var3 : this.connection.getOnlinePlayers()) {
          var1.add(var3.getProfile().getName());
       }
 
@@ -70,7 +67,7 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
    }
 
    public Collection<String> getSelectedEntities() {
-      return (Collection)(this.minecraft.hitResult != null && this.minecraft.hitResult.getType() == HitResult.Type.ENTITY ? Collections.singleton(((EntityHitResult)this.minecraft.hitResult).getEntity().getStringUUID()) : Collections.emptyList());
+      return (Collection<String>)(this.minecraft.hitResult != null && this.minecraft.hitResult.getType() == HitResult.Type.ENTITY ? Collections.singleton(((EntityHitResult)this.minecraft.hitResult).getEntity().getStringUUID()) : Collections.emptyList());
    }
 
    public Collection<String> getAllTeams() {
@@ -90,9 +87,7 @@ public class ClientSuggestionProvider implements SharedSuggestionProvider {
       return (CompletableFuture)this.registryAccess().lookup(var1).map((var3x) -> {
          this.suggestRegistryElements(var3x, var2, var3);
          return var3.buildFuture();
-      }).orElseGet(() -> {
-         return this.customSuggestion(var4);
-      });
+      }).orElseGet(() -> this.customSuggestion(var4));
    }
 
    public CompletableFuture<Suggestions> customSuggestion(CommandContext<?> var1) {

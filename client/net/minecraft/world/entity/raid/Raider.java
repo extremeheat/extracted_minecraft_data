@@ -3,7 +3,6 @@ package net.minecraft.world.entity.raid;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -258,10 +257,8 @@ public abstract class Raider extends PatrollingMonster {
    public abstract SoundEvent getCelebrateSound();
 
    static {
-      IS_CELEBRATING = SynchedEntityData.defineId(Raider.class, EntityDataSerializers.BOOLEAN);
-      ALLOWED_ITEMS = (var0) -> {
-         return !var0.hasPickUpDelay() && var0.isAlive() && ItemStack.matches(var0.getItem(), Raid.getOminousBannerInstance(var0.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
-      };
+      IS_CELEBRATING = SynchedEntityData.<Boolean>defineId(Raider.class, EntityDataSerializers.BOOLEAN);
+      ALLOWED_ITEMS = (var0) -> !var0.hasPickUpDelay() && var0.isAlive() && ItemStack.matches(var0.getItem(), Raid.getOminousBannerInstance(var0.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
    }
 
    public class ObtainRaidLeaderBannerGoal<T extends Raider> extends Goal {
@@ -284,16 +281,13 @@ public abstract class Raider extends PatrollingMonster {
          } else {
             Int2LongOpenHashMap var1 = new Int2LongOpenHashMap();
             double var2 = Raider.this.getAttributeValue(Attributes.FOLLOW_RANGE);
-            List var4 = this.mob.level().getEntitiesOfClass(ItemEntity.class, this.mob.getBoundingBox().inflate(var2, 8.0, var2), Raider.ALLOWED_ITEMS);
-            Iterator var5 = var4.iterator();
 
-            while(var5.hasNext()) {
-               ItemEntity var6 = (ItemEntity)var5.next();
+            for(ItemEntity var6 : this.mob.level().getEntitiesOfClass(ItemEntity.class, this.mob.getBoundingBox().inflate(var2, 8.0, var2), Raider.ALLOWED_ITEMS)) {
                long var7 = this.unreachableBannerCache.getOrDefault(var6.getId(), -9223372036854775808L);
                if (Raider.this.level().getGameTime() < var7) {
                   var1.put(var6.getId(), var7);
                } else {
-                  Path var9 = this.mob.getNavigation().createPath((Entity)var6, 1);
+                  Path var9 = this.mob.getNavigation().createPath(var6, 1);
                   if (var9 != null && var9.canReach()) {
                      this.pathToBanner = var9;
                      this.pursuedBannerItemEntity = var6;
@@ -355,7 +349,106 @@ public abstract class Raider extends PatrollingMonster {
       }
    }
 
-   private static class RaiderMoveThroughVillageGoal extends Goal {
+   public class RaiderCelebration extends Goal {
+      private final Raider mob;
+
+      RaiderCelebration(final Raider var2) {
+         super();
+         this.mob = var2;
+         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
+      }
+
+      public boolean canUse() {
+         Raid var1 = this.mob.getCurrentRaid();
+         return this.mob.isAlive() && this.mob.getTarget() == null && var1 != null && var1.isLoss();
+      }
+
+      public void start() {
+         this.mob.setCelebrating(true);
+         super.start();
+      }
+
+      public void stop() {
+         this.mob.setCelebrating(false);
+         super.stop();
+      }
+
+      public void tick() {
+         if (!this.mob.isSilent() && this.mob.random.nextInt(this.adjustedTickDelay(100)) == 0) {
+            Raider.this.makeSound(Raider.this.getCelebrateSound());
+         }
+
+         if (!this.mob.isPassenger() && this.mob.random.nextInt(this.adjustedTickDelay(50)) == 0) {
+            this.mob.getJumpControl().jump();
+         }
+
+         super.tick();
+      }
+   }
+
+   protected static class HoldGroundAttackGoal extends Goal {
+      private final Raider mob;
+      private final float hostileRadiusSqr;
+      public final TargetingConditions shoutTargeting = TargetingConditions.forNonCombat().range(8.0).ignoreLineOfSight().ignoreInvisibilityTesting();
+
+      public HoldGroundAttackGoal(AbstractIllager var1, float var2) {
+         super();
+         this.mob = var1;
+         this.hostileRadiusSqr = var2 * var2;
+         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
+      }
+
+      public boolean canUse() {
+         LivingEntity var1 = this.mob.getLastHurtByMob();
+         return this.mob.getCurrentRaid() == null && this.mob.isPatrolling() && this.mob.getTarget() != null && !this.mob.isAggressive() && (var1 == null || var1.getType() != EntityType.PLAYER);
+      }
+
+      public void start() {
+         super.start();
+         this.mob.getNavigation().stop();
+
+         for(Raider var3 : getServerLevel(this.mob).getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0))) {
+            var3.setTarget(this.mob.getTarget());
+         }
+
+      }
+
+      public void stop() {
+         super.stop();
+         LivingEntity var1 = this.mob.getTarget();
+         if (var1 != null) {
+            for(Raider var4 : getServerLevel(this.mob).getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0))) {
+               var4.setTarget(var1);
+               var4.setAggressive(true);
+            }
+
+            this.mob.setAggressive(true);
+         }
+
+      }
+
+      public boolean requiresUpdateEveryTick() {
+         return true;
+      }
+
+      public void tick() {
+         LivingEntity var1 = this.mob.getTarget();
+         if (var1 != null) {
+            if (this.mob.distanceToSqr(var1) > (double)this.hostileRadiusSqr) {
+               this.mob.getLookControl().setLookAt(var1, 30.0F, 30.0F);
+               if (this.mob.random.nextInt(50) == 0) {
+                  this.mob.playAmbientSound();
+               }
+            } else {
+               this.mob.setAggressive(true);
+            }
+
+            super.tick();
+         }
+      }
+   }
+
+   static class RaiderMoveThroughVillageGoal extends Goal {
       private final Raider raider;
       private final double speedModifier;
       private BlockPos poiPos;
@@ -383,9 +476,7 @@ public abstract class Raider extends PatrollingMonster {
       private boolean hasSuitablePoi() {
          ServerLevel var1 = (ServerLevel)this.raider.level();
          BlockPos var2 = this.raider.blockPosition();
-         Optional var3 = var1.getPoiManager().getRandom((var0) -> {
-            return var0.is(PoiTypes.HOME);
-         }, this::hasNotVisited, PoiManager.Occupancy.ANY, var2, 48, this.raider.random);
+         Optional var3 = var1.getPoiManager().getRandom((var0) -> var0.is(PoiTypes.HOME), this::hasNotVisited, PoiManager.Occupancy.ANY, var2, 48, this.raider.random);
          if (var3.isEmpty()) {
             return false;
          } else {
@@ -435,18 +526,13 @@ public abstract class Raider extends PatrollingMonster {
       }
 
       private boolean hasNotVisited(BlockPos var1) {
-         Iterator var2 = this.visited.iterator();
-
-         BlockPos var3;
-         do {
-            if (!var2.hasNext()) {
-               return true;
+         for(BlockPos var3 : this.visited) {
+            if (Objects.equals(var1, var3)) {
+               return false;
             }
+         }
 
-            var3 = (BlockPos)var2.next();
-         } while(!Objects.equals(var1, var3));
-
-         return false;
+         return true;
       }
 
       private void updateVisited() {
@@ -454,112 +540,6 @@ public abstract class Raider extends PatrollingMonster {
             this.visited.remove(0);
          }
 
-      }
-   }
-
-   public class RaiderCelebration extends Goal {
-      private final Raider mob;
-
-      RaiderCelebration(final Raider var2) {
-         super();
-         this.mob = var2;
-         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
-      }
-
-      public boolean canUse() {
-         Raid var1 = this.mob.getCurrentRaid();
-         return this.mob.isAlive() && this.mob.getTarget() == null && var1 != null && var1.isLoss();
-      }
-
-      public void start() {
-         this.mob.setCelebrating(true);
-         super.start();
-      }
-
-      public void stop() {
-         this.mob.setCelebrating(false);
-         super.stop();
-      }
-
-      public void tick() {
-         if (!this.mob.isSilent() && this.mob.random.nextInt(this.adjustedTickDelay(100)) == 0) {
-            Raider.this.makeSound(Raider.this.getCelebrateSound());
-         }
-
-         if (!this.mob.isPassenger() && this.mob.random.nextInt(this.adjustedTickDelay(50)) == 0) {
-            this.mob.getJumpControl().jump();
-         }
-
-         super.tick();
-      }
-   }
-
-   protected class HoldGroundAttackGoal extends Goal {
-      private final Raider mob;
-      private final float hostileRadiusSqr;
-      public final TargetingConditions shoutTargeting = TargetingConditions.forNonCombat().range(8.0).ignoreLineOfSight().ignoreInvisibilityTesting();
-
-      public HoldGroundAttackGoal(final Raider var1, final AbstractIllager var2, final float var3) {
-         super();
-         this.mob = var2;
-         this.hostileRadiusSqr = var3 * var3;
-         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-      }
-
-      public boolean canUse() {
-         LivingEntity var1 = this.mob.getLastHurtByMob();
-         return this.mob.getCurrentRaid() == null && this.mob.isPatrolling() && this.mob.getTarget() != null && !this.mob.isAggressive() && (var1 == null || var1.getType() != EntityType.PLAYER);
-      }
-
-      public void start() {
-         super.start();
-         this.mob.getNavigation().stop();
-         List var1 = getServerLevel(this.mob).getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0));
-         Iterator var2 = var1.iterator();
-
-         while(var2.hasNext()) {
-            Raider var3 = (Raider)var2.next();
-            var3.setTarget(this.mob.getTarget());
-         }
-
-      }
-
-      public void stop() {
-         super.stop();
-         LivingEntity var1 = this.mob.getTarget();
-         if (var1 != null) {
-            List var2 = getServerLevel(this.mob).getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0));
-            Iterator var3 = var2.iterator();
-
-            while(var3.hasNext()) {
-               Raider var4 = (Raider)var3.next();
-               var4.setTarget(var1);
-               var4.setAggressive(true);
-            }
-
-            this.mob.setAggressive(true);
-         }
-
-      }
-
-      public boolean requiresUpdateEveryTick() {
-         return true;
-      }
-
-      public void tick() {
-         LivingEntity var1 = this.mob.getTarget();
-         if (var1 != null) {
-            if (this.mob.distanceToSqr(var1) > (double)this.hostileRadiusSqr) {
-               this.mob.getLookControl().setLookAt(var1, 30.0F, 30.0F);
-               if (this.mob.random.nextInt(50) == 0) {
-                  this.mob.playAmbientSound();
-               }
-            } else {
-               this.mob.setAggressive(true);
-            }
-
-            super.tick();
-         }
       }
    }
 }

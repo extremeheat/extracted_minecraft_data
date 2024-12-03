@@ -73,11 +73,8 @@ public class BaseCoralWallFanBlock extends BaseCoralFanBlock {
       Level var3 = var1.getLevel();
       BlockPos var4 = var1.getClickedPos();
       Direction[] var5 = var1.getNearestLookingDirections();
-      Direction[] var6 = var5;
-      int var7 = var5.length;
 
-      for(int var8 = 0; var8 < var7; ++var8) {
-         Direction var9 = var6[var8];
+      for(Direction var9 : var5) {
          if (var9.getAxis().isHorizontal()) {
             var2 = (BlockState)var2.setValue(FACING, var9.getOpposite());
             if (var2.canSurvive(var3, var4)) {

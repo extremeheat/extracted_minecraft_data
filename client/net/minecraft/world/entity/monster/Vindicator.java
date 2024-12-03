@@ -47,9 +47,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 
 public class Vindicator extends AbstractIllager {
    private static final String TAG_JOHNNY = "Johnny";
-   static final Predicate<Difficulty> DOOR_BREAKING_PREDICATE = (var0) -> {
-      return var0 == Difficulty.NORMAL || var0 == Difficulty.HARD;
-   };
+   static final Predicate<Difficulty> DOOR_BREAKING_PREDICATE = (var0) -> var0 == Difficulty.NORMAL || var0 == Difficulty.HARD;
    boolean isJohnny;
 
    public Vindicator(EntityType<? extends Vindicator> var1, Level var2) {
@@ -186,11 +184,9 @@ public class Vindicator extends AbstractIllager {
       }
    }
 
-   private static class VindicatorJohnnyAttackGoal extends NearestAttackableTargetGoal<LivingEntity> {
+   static class VindicatorJohnnyAttackGoal extends NearestAttackableTargetGoal<LivingEntity> {
       public VindicatorJohnnyAttackGoal(Vindicator var1) {
-         super(var1, LivingEntity.class, 0, true, true, (var0, var1x) -> {
-            return var0.attackable();
-         });
+         super(var1, LivingEntity.class, 0, true, true, (var0, var1x) -> var0.attackable());
       }
 
       public boolean canUse() {

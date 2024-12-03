@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -37,26 +36,14 @@ public class BundleItem extends Item {
    private static final int TICKS_AFTER_FIRST_THROW = 10;
    private static final int TICKS_BETWEEN_THROWS = 2;
    private static final int TICKS_MAX_THROW_DURATION = 200;
-   private final ResourceLocation openFrontModel;
-   private final ResourceLocation openBackModel;
 
-   public BundleItem(ResourceLocation var1, ResourceLocation var2, Item.Properties var3) {
-      super(var3);
-      this.openFrontModel = var1;
-      this.openBackModel = var2;
+   public BundleItem(Item.Properties var1) {
+      super(var1);
    }
 
    public static float getFullnessDisplay(ItemStack var0) {
       BundleContents var1 = (BundleContents)var0.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
       return var1.weight().floatValue();
-   }
-
-   public ResourceLocation openFrontModel() {
-      return this.openFrontModel;
-   }
-
-   public ResourceLocation openBackModel() {
-      return this.openBackModel;
    }
 
    public boolean overrideStackedOnOther(ItemStack var1, Slot var2, ClickAction var3, Player var4) {
@@ -137,12 +124,8 @@ public class BundleItem extends Item {
    }
 
    public InteractionResult use(Level var1, Player var2, InteractionHand var3) {
-      if (var1.isClientSide) {
-         return InteractionResult.CONSUME;
-      } else {
-         var2.startUsingItem(var3);
-         return InteractionResult.SUCCESS_SERVER;
-      }
+      var2.startUsingItem(var3);
+      return InteractionResult.SUCCESS;
    }
 
    private void dropContent(Level var1, Player var2, ItemStack var3) {
@@ -178,8 +161,8 @@ public class BundleItem extends Item {
    }
 
    public static boolean hasSelectedItem(ItemStack var0) {
-      BundleContents var1 = (BundleContents)var0.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-      return var1.getSelectedItem() != -1;
+      BundleContents var1 = (BundleContents)var0.get(DataComponents.BUNDLE_CONTENTS);
+      return var1 != null && var1.getSelectedItem() != -1;
    }
 
    public static int getSelectedItem(ItemStack var0) {
@@ -188,8 +171,8 @@ public class BundleItem extends Item {
    }
 
    public static ItemStack getSelectedItemStack(ItemStack var0) {
-      BundleContents var1 = (BundleContents)var0.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
-      return var1.getItemUnsafe(var1.getSelectedItem());
+      BundleContents var1 = (BundleContents)var0.get(DataComponents.BUNDLE_CONTENTS);
+      return var1 != null && var1.getSelectedItem() != -1 ? var1.getItemUnsafe(var1.getSelectedItem()) : ItemStack.EMPTY;
    }
 
    public static int getNumberOfItemsToShow(ItemStack var0) {
@@ -225,7 +208,7 @@ public class BundleItem extends Item {
    }
 
    public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
-      if (!var1.isClientSide && var2 instanceof Player var5) {
+      if (var2 instanceof Player var5) {
          int var6 = this.getUseDuration(var3, var2);
          boolean var7 = var4 == var6;
          if (var7 || var4 < var6 - 10 && var4 % 2 == 0) {
@@ -237,6 +220,10 @@ public class BundleItem extends Item {
 
    public int getUseDuration(ItemStack var1, LivingEntity var2) {
       return 200;
+   }
+
+   public ItemUseAnimation getUseAnimation(ItemStack var1) {
+      return ItemUseAnimation.BUNDLE;
    }
 
    public Optional<TooltipComponent> getTooltipImage(ItemStack var1) {
@@ -252,9 +239,7 @@ public class BundleItem extends Item {
    }
 
    public static List<BundleItem> getAllBundleItemColors() {
-      return Stream.of(Items.BUNDLE, Items.WHITE_BUNDLE, Items.ORANGE_BUNDLE, Items.MAGENTA_BUNDLE, Items.LIGHT_BLUE_BUNDLE, Items.YELLOW_BUNDLE, Items.LIME_BUNDLE, Items.PINK_BUNDLE, Items.GRAY_BUNDLE, Items.LIGHT_GRAY_BUNDLE, Items.CYAN_BUNDLE, Items.BLACK_BUNDLE, Items.BROWN_BUNDLE, Items.GREEN_BUNDLE, Items.RED_BUNDLE, Items.BLUE_BUNDLE, Items.PURPLE_BUNDLE).map((var0) -> {
-         return (BundleItem)var0;
-      }).toList();
+      return Stream.of(Items.BUNDLE, Items.WHITE_BUNDLE, Items.ORANGE_BUNDLE, Items.MAGENTA_BUNDLE, Items.LIGHT_BLUE_BUNDLE, Items.YELLOW_BUNDLE, Items.LIME_BUNDLE, Items.PINK_BUNDLE, Items.GRAY_BUNDLE, Items.LIGHT_GRAY_BUNDLE, Items.CYAN_BUNDLE, Items.BLACK_BUNDLE, Items.BROWN_BUNDLE, Items.GREEN_BUNDLE, Items.RED_BUNDLE, Items.BLUE_BUNDLE, Items.PURPLE_BUNDLE).map((var0) -> (BundleItem)var0).toList();
    }
 
    public static Item getByColor(DyeColor var0) {

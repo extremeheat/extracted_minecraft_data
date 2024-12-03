@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -57,10 +57,8 @@ public class ServerFunctionManager {
       ProfilerFiller var10000 = Profiler.get();
       Objects.requireNonNull(var2);
       var10000.push(var2::toString);
-      Iterator var3 = var1.iterator();
 
-      while(var3.hasNext()) {
-         CommandFunction var4 = (CommandFunction)var3.next();
+      for(CommandFunction var4 : var1) {
          this.execute(var4, this.getGameLoopSender());
       }
 
@@ -69,15 +67,11 @@ public class ServerFunctionManager {
 
    public void execute(CommandFunction<CommandSourceStack> var1, CommandSourceStack var2) {
       ProfilerFiller var3 = Profiler.get();
-      var3.push(() -> {
-         return "function " + String.valueOf(var1.id());
-      });
+      var3.push((Supplier)(() -> "function " + String.valueOf(var1.id())));
 
       try {
          InstantiatedFunction var4 = var1.instantiate((CompoundTag)null, this.getDispatcher());
-         Commands.executeCommandInContext(var2, (var2x) -> {
-            ExecutionContext.queueInitialFunctionCall(var2x, var4, var2, CommandResultCallback.EMPTY);
-         });
+         Commands.executeCommandInContext(var2, (var2x) -> ExecutionContext.queueInitialFunctionCall(var2x, var4, var2, CommandResultCallback.EMPTY));
       } catch (FunctionInstantiationException var9) {
       } catch (Exception var10) {
          LOGGER.warn("Failed to execute function {}", var1.id(), var10);

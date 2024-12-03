@@ -22,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class Fluid {
-   public static final IdMapper<FluidState> FLUID_STATE_REGISTRY = new IdMapper();
+   public static final IdMapper<FluidState> FLUID_STATE_REGISTRY = new IdMapper<FluidState>();
    protected final StateDefinition<Fluid, FluidState> stateDefinition;
    private FluidState defaultFluidState;
    private final Holder.Reference<Fluid> builtInRegistryHolder;
@@ -33,7 +33,7 @@ public abstract class Fluid {
       StateDefinition.Builder var1 = new StateDefinition.Builder(this);
       this.createFluidStateDefinition(var1);
       this.stateDefinition = var1.create(Fluid::defaultFluidState, FluidState::new);
-      this.registerDefaultState((FluidState)this.stateDefinition.any());
+      this.registerDefaultState(this.stateDefinition.any());
    }
 
    protected void createFluidStateDefinition(StateDefinition.Builder<Fluid, FluidState> var1) {

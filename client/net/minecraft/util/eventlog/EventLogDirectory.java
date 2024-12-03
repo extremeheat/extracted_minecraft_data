@@ -53,9 +53,7 @@ public class EventLogDirectory {
 
       FileList var2;
       try {
-         var2 = new FileList(var1.filter((var0) -> {
-            return Files.isRegularFile(var0, new LinkOption[0]);
-         }).map(this::parseFile).filter(Objects::nonNull).toList());
+         var2 = new FileList(var1.filter((var0) -> Files.isRegularFile(var0, new LinkOption[0])).map(this::parseFile).filter(Objects::nonNull).toList());
       } catch (Throwable var5) {
          if (var1 != null) {
             try {
@@ -226,6 +224,46 @@ public class EventLogDirectory {
       }
    }
 
+   public static record RawFile(Path path, FileId id) implements File {
+      public RawFile(Path var1, FileId var2) {
+         super();
+         this.path = var1;
+         this.id = var2;
+      }
+
+      public FileChannel openChannel() throws IOException {
+         return FileChannel.open(this.path, StandardOpenOption.WRITE, StandardOpenOption.READ);
+      }
+
+      @Nullable
+      public Reader openReader() throws IOException {
+         return Files.exists(this.path, new LinkOption[0]) ? Files.newBufferedReader(this.path) : null;
+      }
+
+      public CompressedFile compress() throws IOException {
+         Path var1 = this.path.resolveSibling(this.path.getFileName().toString() + ".gz");
+         EventLogDirectory.tryCompress(this.path, var1);
+         return new CompressedFile(var1, this.id);
+      }
+   }
+
+   public static record CompressedFile(Path path, FileId id) implements File {
+      public CompressedFile(Path var1, FileId var2) {
+         super();
+         this.path = var1;
+         this.id = var2;
+      }
+
+      @Nullable
+      public Reader openReader() throws IOException {
+         return !Files.exists(this.path, new LinkOption[0]) ? null : new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(this.path))));
+      }
+
+      public CompressedFile compress() {
+         return this;
+      }
+   }
+
    public static record FileId(LocalDate date, int index) {
       private static final DateTimeFormatter DATE_FORMATTER;
 
@@ -262,72 +300,8 @@ public class EventLogDirectory {
          return var10000 + var1;
       }
 
-      public LocalDate date() {
-         return this.date;
-      }
-
-      public int index() {
-         return this.index;
-      }
-
       static {
          DATE_FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
-      }
-   }
-
-   public static record RawFile(Path path, FileId id) implements File {
-      public RawFile(Path var1, FileId var2) {
-         super();
-         this.path = var1;
-         this.id = var2;
-      }
-
-      public FileChannel openChannel() throws IOException {
-         return FileChannel.open(this.path, StandardOpenOption.WRITE, StandardOpenOption.READ);
-      }
-
-      @Nullable
-      public Reader openReader() throws IOException {
-         return Files.exists(this.path, new LinkOption[0]) ? Files.newBufferedReader(this.path) : null;
-      }
-
-      public CompressedFile compress() throws IOException {
-         Path var1 = this.path.resolveSibling(this.path.getFileName().toString() + ".gz");
-         EventLogDirectory.tryCompress(this.path, var1);
-         return new CompressedFile(var1, this.id);
-      }
-
-      public Path path() {
-         return this.path;
-      }
-
-      public FileId id() {
-         return this.id;
-      }
-   }
-
-   public static record CompressedFile(Path path, FileId id) implements File {
-      public CompressedFile(Path var1, FileId var2) {
-         super();
-         this.path = var1;
-         this.id = var2;
-      }
-
-      @Nullable
-      public Reader openReader() throws IOException {
-         return !Files.exists(this.path, new LinkOption[0]) ? null : new BufferedReader(new InputStreamReader(new GZIPInputStream(Files.newInputStream(this.path))));
-      }
-
-      public CompressedFile compress() {
-         return this;
-      }
-
-      public Path path() {
-         return this.path;
-      }
-
-      public FileId id() {
-         return this.id;
       }
    }
 

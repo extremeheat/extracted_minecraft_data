@@ -38,13 +38,7 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer 
    }
 
    protected static <T extends LootPoolSingletonContainer> Products.P4<RecordCodecBuilder.Mu<T>, Integer, Integer, List<LootItemCondition>, List<LootItemFunction>> singletonFields(RecordCodecBuilder.Instance<T> var0) {
-      return var0.group(Codec.INT.optionalFieldOf("weight", 1).forGetter((var0x) -> {
-         return var0x.weight;
-      }), Codec.INT.optionalFieldOf("quality", 0).forGetter((var0x) -> {
-         return var0x.quality;
-      })).and(commonFields(var0).t1()).and(LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((var0x) -> {
-         return var0x.functions;
-      }));
+      return var0.group(Codec.INT.optionalFieldOf("weight", 1).forGetter((var0x) -> var0x.weight), Codec.INT.optionalFieldOf("quality", 0).forGetter((var0x) -> var0x.quality)).and(commonFields(var0).t1()).and(LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter((var0x) -> var0x.functions));
    }
 
    public void validate(ValidationContext var1) {
@@ -69,6 +63,55 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer 
 
    public static Builder<?> simpleBuilder(EntryConstructor var0) {
       return new DummyBuilder(var0);
+   }
+
+   protected abstract class EntryBase implements LootPoolEntry {
+      protected EntryBase() {
+         super();
+      }
+
+      public int getWeight(float var1) {
+         return Math.max(Mth.floor((float)LootPoolSingletonContainer.this.weight + (float)LootPoolSingletonContainer.this.quality * var1), 0);
+      }
+   }
+
+   public abstract static class Builder<T extends Builder<T>> extends LootPoolEntryContainer.Builder<T> implements FunctionUserBuilder<T> {
+      protected int weight = 1;
+      protected int quality = 0;
+      private final ImmutableList.Builder<LootItemFunction> functions = ImmutableList.builder();
+
+      public Builder() {
+         super();
+      }
+
+      public T apply(LootItemFunction.Builder var1) {
+         this.functions.add(var1.build());
+         return (T)(this.getThis());
+      }
+
+      protected List<LootItemFunction> getFunctions() {
+         return this.functions.build();
+      }
+
+      public T setWeight(int var1) {
+         this.weight = var1;
+         return (T)(this.getThis());
+      }
+
+      public T setQuality(int var1) {
+         this.quality = var1;
+         return (T)(this.getThis());
+      }
+
+      // $FF: synthetic method
+      public FunctionUserBuilder unwrap() {
+         return (FunctionUserBuilder)super.unwrap();
+      }
+
+      // $FF: synthetic method
+      public FunctionUserBuilder apply(final LootItemFunction.Builder var1) {
+         return this.apply(var1);
+      }
    }
 
    static class DummyBuilder extends Builder<DummyBuilder> {
@@ -96,54 +139,5 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer 
    @FunctionalInterface
    protected interface EntryConstructor {
       LootPoolSingletonContainer build(int var1, int var2, List<LootItemCondition> var3, List<LootItemFunction> var4);
-   }
-
-   public abstract static class Builder<T extends Builder<T>> extends LootPoolEntryContainer.Builder<T> implements FunctionUserBuilder<T> {
-      protected int weight = 1;
-      protected int quality = 0;
-      private final ImmutableList.Builder<LootItemFunction> functions = ImmutableList.builder();
-
-      public Builder() {
-         super();
-      }
-
-      public T apply(LootItemFunction.Builder var1) {
-         this.functions.add(var1.build());
-         return (Builder)this.getThis();
-      }
-
-      protected List<LootItemFunction> getFunctions() {
-         return this.functions.build();
-      }
-
-      public T setWeight(int var1) {
-         this.weight = var1;
-         return (Builder)this.getThis();
-      }
-
-      public T setQuality(int var1) {
-         this.quality = var1;
-         return (Builder)this.getThis();
-      }
-
-      // $FF: synthetic method
-      public FunctionUserBuilder unwrap() {
-         return (FunctionUserBuilder)super.unwrap();
-      }
-
-      // $FF: synthetic method
-      public FunctionUserBuilder apply(final LootItemFunction.Builder var1) {
-         return this.apply(var1);
-      }
-   }
-
-   protected abstract class EntryBase implements LootPoolEntry {
-      protected EntryBase() {
-         super();
-      }
-
-      public int getWeight(float var1) {
-         return Math.max(Mth.floor((float)LootPoolSingletonContainer.this.weight + (float)LootPoolSingletonContainer.this.quality * var1), 0);
-      }
    }
 }

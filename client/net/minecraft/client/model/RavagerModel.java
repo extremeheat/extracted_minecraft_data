@@ -51,14 +51,11 @@ public class RavagerModel extends EntityModel<RavagerRenderState> {
       float var2 = var1.stunnedTicksRemaining;
       float var3 = var1.attackTicksRemaining;
       boolean var4 = true;
-      float var5;
-      float var6;
-      float var8;
       if (var3 > 0.0F) {
-         var5 = Mth.triangleWave(var3, 10.0F);
-         var6 = (1.0F + var5) * 0.5F;
+         float var5 = Mth.triangleWave(var3, 10.0F);
+         float var6 = (1.0F + var5) * 0.5F;
          float var7 = var6 * var6 * var6 * 12.0F;
-         var8 = var7 * Mth.sin(this.neck.xRot);
+         float var8 = var7 * Mth.sin(this.neck.xRot);
          this.neck.z = -6.5F + var7;
          this.neck.y = -7.0F - var8;
          if (var3 > 5.0F) {
@@ -67,30 +64,30 @@ public class RavagerModel extends EntityModel<RavagerRenderState> {
             this.mouth.xRot = 0.15707964F * Mth.sin(3.1415927F * var3 / 10.0F);
          }
       } else {
-         var5 = -1.0F;
-         var6 = -1.0F * Mth.sin(this.neck.xRot);
+         float var10 = -1.0F;
+         float var12 = -1.0F * Mth.sin(this.neck.xRot);
          this.neck.x = 0.0F;
-         this.neck.y = -7.0F - var6;
+         this.neck.y = -7.0F - var12;
          this.neck.z = 5.5F;
-         boolean var10 = var2 > 0.0F;
-         this.neck.xRot = var10 ? 0.21991149F : 0.0F;
-         this.mouth.xRot = 3.1415927F * (var10 ? 0.05F : 0.01F);
-         if (var10) {
-            double var11 = (double)var2 / 40.0;
-            this.neck.x = (float)Math.sin(var11 * 10.0) * 3.0F;
+         boolean var14 = var2 > 0.0F;
+         this.neck.xRot = var14 ? 0.21991149F : 0.0F;
+         this.mouth.xRot = 3.1415927F * (var14 ? 0.05F : 0.01F);
+         if (var14) {
+            double var15 = (double)var2 / 40.0;
+            this.neck.x = (float)Math.sin(var15 * 10.0) * 3.0F;
          } else if ((double)var1.roarAnimation > 0.0) {
-            var8 = Mth.sin(var1.roarAnimation * 3.1415927F * 0.25F);
-            this.mouth.xRot = 1.5707964F * var8;
+            float var16 = Mth.sin(var1.roarAnimation * 3.1415927F * 0.25F);
+            this.mouth.xRot = 1.5707964F * var16;
          }
       }
 
       this.head.xRot = var1.xRot * 0.017453292F;
       this.head.yRot = var1.yRot * 0.017453292F;
-      var5 = var1.walkAnimationPos;
-      var6 = 0.4F * var1.walkAnimationSpeed;
-      this.rightHindLeg.xRot = Mth.cos(var5 * 0.6662F) * var6;
-      this.leftHindLeg.xRot = Mth.cos(var5 * 0.6662F + 3.1415927F) * var6;
-      this.rightFrontLeg.xRot = Mth.cos(var5 * 0.6662F + 3.1415927F) * var6;
-      this.leftFrontLeg.xRot = Mth.cos(var5 * 0.6662F) * var6;
+      float var11 = var1.walkAnimationPos;
+      float var13 = 0.4F * var1.walkAnimationSpeed;
+      this.rightHindLeg.xRot = Mth.cos(var11 * 0.6662F) * var13;
+      this.leftHindLeg.xRot = Mth.cos(var11 * 0.6662F + 3.1415927F) * var13;
+      this.rightFrontLeg.xRot = Mth.cos(var11 * 0.6662F + 3.1415927F) * var13;
+      this.leftFrontLeg.xRot = Mth.cos(var11 * 0.6662F) * var13;
    }
 }

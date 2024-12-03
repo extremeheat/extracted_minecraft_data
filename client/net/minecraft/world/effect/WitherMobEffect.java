@@ -3,7 +3,9 @@ package net.minecraft.world.effect;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 
-class WitherMobEffect extends MobEffect {
+public class WitherMobEffect extends MobEffect {
+   public static final int DAMAGE_INTERVAL = 40;
+
    protected WitherMobEffect(MobEffectCategory var1, int var2) {
       super(var1, var2);
    }

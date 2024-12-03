@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
-import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.MoverType;
@@ -40,10 +39,8 @@ public class BreathAirGoal extends Goal {
    private void findAirPosition() {
       Iterable var1 = BlockPos.betweenClosed(Mth.floor(this.mob.getX() - 1.0), this.mob.getBlockY(), Mth.floor(this.mob.getZ() - 1.0), Mth.floor(this.mob.getX() + 1.0), Mth.floor(this.mob.getY() + 8.0), Mth.floor(this.mob.getZ() + 1.0));
       BlockPos var2 = null;
-      Iterator var3 = var1.iterator();
 
-      while(var3.hasNext()) {
-         BlockPos var4 = (BlockPos)var3.next();
+      for(BlockPos var4 : var1) {
          if (this.givesAir(this.mob.level(), var4)) {
             var2 = var4;
             break;

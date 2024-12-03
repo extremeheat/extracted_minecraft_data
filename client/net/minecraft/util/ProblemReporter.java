@@ -20,9 +20,7 @@ public interface ProblemReporter {
       private String pathCache;
 
       public Collector() {
-         this(HashMultimap.create(), () -> {
-            return "";
-         });
+         this(HashMultimap.create(), () -> "");
       }
 
       private Collector(Multimap<String, String> var1, Supplier<String> var2) {

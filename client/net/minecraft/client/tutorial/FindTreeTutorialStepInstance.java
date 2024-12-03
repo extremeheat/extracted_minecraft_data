@@ -1,7 +1,7 @@
 package net.minecraft.client.tutorial;
 
-import java.util.Iterator;
 import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -36,17 +36,18 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
       if (!this.tutorial.isSurvival()) {
          this.tutorial.setStep(TutorialSteps.NONE);
       } else {
+         Minecraft var1 = this.tutorial.getMinecraft();
          if (this.timeWaiting == 1) {
-            LocalPlayer var1 = this.tutorial.getMinecraft().player;
-            if (var1 != null && (hasCollectedTreeItems(var1) || hasPunchedTreesPreviously(var1))) {
+            LocalPlayer var2 = var1.player;
+            if (var2 != null && (hasCollectedTreeItems(var2) || hasPunchedTreesPreviously(var2))) {
                this.tutorial.setStep(TutorialSteps.CRAFT_PLANKS);
                return;
             }
          }
 
          if (this.timeWaiting >= 6000 && this.toast == null) {
-            this.toast = new TutorialToast(TutorialToast.Icons.TREE, TITLE, DESCRIPTION, false);
-            this.tutorial.getMinecraft().getToastManager().addToast(this.toast);
+            this.toast = new TutorialToast(var1.font, TutorialToast.Icons.TREE, TITLE, DESCRIPTION, false);
+            var1.getToastManager().addToast(this.toast);
          }
 
       }
@@ -78,24 +79,17 @@ public class FindTreeTutorialStepInstance implements TutorialStepInstance {
    }
 
    private static boolean hasCollectedTreeItems(LocalPlayer var0) {
-      return var0.getInventory().hasAnyMatching((var0x) -> {
-         return var0x.is(ItemTags.COMPLETES_FIND_TREE_TUTORIAL);
-      });
+      return var0.getInventory().hasAnyMatching((var0x) -> var0x.is(ItemTags.COMPLETES_FIND_TREE_TUTORIAL));
    }
 
    public static boolean hasPunchedTreesPreviously(LocalPlayer var0) {
-      Iterator var1 = BuiltInRegistries.BLOCK.getTagOrEmpty(BlockTags.COMPLETES_FIND_TREE_TUTORIAL).iterator();
-
-      Block var3;
-      do {
-         if (!var1.hasNext()) {
-            return false;
+      for(Holder var2 : BuiltInRegistries.BLOCK.getTagOrEmpty(BlockTags.COMPLETES_FIND_TREE_TUTORIAL)) {
+         Block var3 = (Block)var2.value();
+         if (var0.getStats().getValue(Stats.BLOCK_MINED.get(var3)) > 0) {
+            return true;
          }
+      }
 
-         Holder var2 = (Holder)var1.next();
-         var3 = (Block)var2.value();
-      } while(var0.getStats().getValue(Stats.BLOCK_MINED.get(var3)) <= 0);
-
-      return true;
+      return false;
    }
 }

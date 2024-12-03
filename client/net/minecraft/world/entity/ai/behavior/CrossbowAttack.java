@@ -83,7 +83,7 @@ public class CrossbowAttack<E extends Mob & CrossbowAttackMob, T extends LivingE
    }
 
    private void lookAtTarget(Mob var1, LivingEntity var2) {
-      var1.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, (Object)(new EntityTracker(var2, true)));
+      var1.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var2, true));
    }
 
    private static LivingEntity getAttackTarget(LivingEntity var0) {
@@ -100,7 +100,7 @@ public class CrossbowAttack<E extends Mob & CrossbowAttackMob, T extends LivingE
       this.tick(var1, (Mob)var2, var3);
    }
 
-   private static enum CrossbowState {
+   static enum CrossbowState {
       UNCHARGED,
       CHARGING,
       CHARGED,

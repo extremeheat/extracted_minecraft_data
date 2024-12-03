@@ -11,11 +11,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class LimitCount extends LootItemConditionalFunction {
-   public static final MapCodec<LimitCount> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(IntRange.CODEC.fieldOf("limit").forGetter((var0x) -> {
-         return var0x.limiter;
-      })).apply(var0, LimitCount::new);
-   });
+   public static final MapCodec<LimitCount> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(IntRange.CODEC.fieldOf("limit").forGetter((var0x) -> var0x.limiter)).apply(var0, LimitCount::new));
    private final IntRange limiter;
 
    private LimitCount(List<LootItemCondition> var1, IntRange var2) {
@@ -38,8 +34,6 @@ public class LimitCount extends LootItemConditionalFunction {
    }
 
    public static LootItemConditionalFunction.Builder<?> limitCount(IntRange var0) {
-      return simpleBuilder((var1) -> {
-         return new LimitCount(var1, var0);
-      });
+      return simpleBuilder((var1) -> new LimitCount(var1, var0));
    }
 }

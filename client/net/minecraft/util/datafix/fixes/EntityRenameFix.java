@@ -24,12 +24,11 @@ public abstract class EntityRenameFix extends DataFix {
    public TypeRewriteRule makeRule() {
       TaggedChoice.TaggedChoiceType var1 = this.getInputSchema().findChoiceType(References.ENTITY);
       TaggedChoice.TaggedChoiceType var2 = this.getOutputSchema().findChoiceType(References.ENTITY);
-      Function var3 = Util.memoize((var2x) -> {
+      Function var3 = Util.memoize((Function)((var2x) -> {
          Type var3 = (Type)var1.types().get(var2x);
          return ExtraDataFixUtils.patchSubType(var3, var1, var2);
-      });
-      return this.fixTypeEverywhere(this.name, var1, var2, (var3x) -> {
-         return (var4) -> {
+      }));
+      return this.fixTypeEverywhere(this.name, var1, var2, (var3x) -> (var4) -> {
             String var5 = (String)var4.getFirst();
             Type var6 = (Type)var3.apply(var5);
             Pair var7 = this.fix(var5, this.getEntity(var4.getSecond(), var3x, var6));
@@ -39,8 +38,7 @@ public abstract class EntityRenameFix extends DataFix {
             } else {
                return Pair.of((String)var7.getFirst(), ((Typed)var7.getSecond()).getValue());
             }
-         };
-      });
+         });
    }
 
    private <A> Typed<A> getEntity(Object var1, DynamicOps<?> var2, Type<A> var3) {

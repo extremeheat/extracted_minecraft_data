@@ -16,12 +16,6 @@ public class VariantRenameFix extends NamedEntityFix {
    }
 
    protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), (var1x) -> {
-         return var1x.update("variant", (var1) -> {
-            return (Dynamic)DataFixUtils.orElse(var1.asString().map((var2) -> {
-               return var1.createString((String)this.renames.getOrDefault(var2, var2));
-            }).result(), var1);
-         });
-      });
+      return var1.update(DSL.remainderFinder(), (var1x) -> var1x.update("variant", (var1) -> (Dynamic)DataFixUtils.orElse(var1.asString().map((var2) -> var1.createString((String)this.renames.getOrDefault(var2, var2))).result(), var1)));
    }
 }

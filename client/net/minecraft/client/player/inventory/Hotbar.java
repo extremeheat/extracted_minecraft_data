@@ -6,7 +6,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.Util;
@@ -37,11 +36,7 @@ public class Hotbar {
    }
 
    public List<ItemStack> load(HolderLookup.Provider var1) {
-      return this.items.stream().map((var1x) -> {
-         return (ItemStack)ItemStack.OPTIONAL_CODEC.parse(RegistryOps.injectRegistryContext(var1x, var1)).resultOrPartial((var0) -> {
-            LOGGER.warn("Could not parse hotbar item: {}", var0);
-         }).orElse(ItemStack.EMPTY);
-      }).toList();
+      return this.items.stream().map((var1x) -> (ItemStack)ItemStack.OPTIONAL_CODEC.parse(RegistryOps.injectRegistryContext(var1x, var1)).resultOrPartial((var0) -> LOGGER.warn("Could not parse hotbar item: {}", var0)).orElse(ItemStack.EMPTY)).toList();
    }
 
    public void storeFrom(Inventory var1, RegistryAccess var2) {
@@ -50,11 +45,7 @@ public class Hotbar {
 
       for(int var5 = 0; var5 < SIZE; ++var5) {
          ItemStack var6 = var1.getItem(var5);
-         Optional var7 = ItemStack.OPTIONAL_CODEC.encodeStart(var3, var6).resultOrPartial((var0) -> {
-            LOGGER.warn("Could not encode hotbar item: {}", var0);
-         }).map((var0) -> {
-            return new Dynamic(DEFAULT_OPS, var0);
-         });
+         Optional var7 = ItemStack.OPTIONAL_CODEC.encodeStart(var3, var6).resultOrPartial((var0) -> LOGGER.warn("Could not encode hotbar item: {}", var0)).map((var0) -> new Dynamic(DEFAULT_OPS, var0));
          var4.add((Dynamic)var7.orElse(EMPTY_STACK));
       }
 
@@ -62,18 +53,13 @@ public class Hotbar {
    }
 
    public boolean isEmpty() {
-      Iterator var1 = this.items.iterator();
-
-      Dynamic var2;
-      do {
-         if (!var1.hasNext()) {
-            return true;
+      for(Dynamic var2 : this.items) {
+         if (!isEmpty(var2)) {
+            return false;
          }
+      }
 
-         var2 = (Dynamic)var1.next();
-      } while(isEmpty(var2));
-
-      return false;
+      return true;
    }
 
    private static boolean isEmpty(Dynamic<?> var0) {
@@ -81,11 +67,7 @@ public class Hotbar {
    }
 
    static {
-      CODEC = Codec.PASSTHROUGH.listOf().validate((var0) -> {
-         return Util.fixedSize(var0, SIZE);
-      }).xmap(Hotbar::new, (var0) -> {
-         return var0.items;
-      });
+      CODEC = Codec.PASSTHROUGH.listOf().validate((var0) -> Util.fixedSize(var0, SIZE)).xmap(Hotbar::new, (var0) -> var0.items);
       DEFAULT_OPS = NbtOps.INSTANCE;
       EMPTY_STACK = new Dynamic(DEFAULT_OPS, (Tag)ItemStack.OPTIONAL_CODEC.encodeStart(DEFAULT_OPS, ItemStack.EMPTY).getOrThrow());
    }

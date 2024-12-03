@@ -2,7 +2,6 @@ package net.minecraft.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
@@ -70,13 +69,9 @@ public class PopupScreen extends Screen {
       int var2 = Math.min((this.contentWidth - var1) / this.buttons.size(), 150);
       LinearLayout var3 = LinearLayout.horizontal();
       var3.spacing(6);
-      Iterator var4 = this.buttons.iterator();
 
-      while(var4.hasNext()) {
-         ButtonOption var5 = (ButtonOption)var4.next();
-         var3.addChild(Button.builder(var5.message(), (var2x) -> {
-            var5.action().accept(this);
-         }).width(var2).build());
+      for(ButtonOption var5 : this.buttons) {
+         var3.addChild(Button.builder(var5.message(), (var2x) -> var5.action().accept(this)).width(var2).build());
       }
 
       return var3;
@@ -106,22 +101,6 @@ public class PopupScreen extends Screen {
       }
 
       this.minecraft.setScreen(this.backgroundScreen);
-   }
-
-   static record ButtonOption(Component message, Consumer<PopupScreen> action) {
-      ButtonOption(Component var1, Consumer<PopupScreen> var2) {
-         super();
-         this.message = var1;
-         this.action = var2;
-      }
-
-      public Component message() {
-         return this.message;
-      }
-
-      public Consumer<PopupScreen> action() {
-         return this.action;
-      }
    }
 
    public static class Builder {
@@ -176,6 +155,14 @@ public class PopupScreen extends Screen {
          } else {
             return new PopupScreen(this.backgroundScreen, this.width, this.image, this.title, this.message, List.copyOf(this.buttons), this.onClose);
          }
+      }
+   }
+
+   static record ButtonOption(Component message, Consumer<PopupScreen> action) {
+      ButtonOption(Component var1, Consumer<PopupScreen> var2) {
+         super();
+         this.message = var1;
+         this.action = var2;
       }
    }
 }

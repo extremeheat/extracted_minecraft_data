@@ -8,32 +8,8 @@ import com.google.gson.JsonParseException;
 import java.lang.reflect.Type;
 import net.minecraft.world.item.ItemDisplayContext;
 
-public class ItemTransforms {
-   public static final ItemTransforms NO_TRANSFORMS = new ItemTransforms();
-   public final ItemTransform thirdPersonLeftHand;
-   public final ItemTransform thirdPersonRightHand;
-   public final ItemTransform firstPersonLeftHand;
-   public final ItemTransform firstPersonRightHand;
-   public final ItemTransform head;
-   public final ItemTransform gui;
-   public final ItemTransform ground;
-   public final ItemTransform fixed;
-
-   private ItemTransforms() {
-      this(ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM);
-   }
-
-   public ItemTransforms(ItemTransforms var1) {
-      super();
-      this.thirdPersonLeftHand = var1.thirdPersonLeftHand;
-      this.thirdPersonRightHand = var1.thirdPersonRightHand;
-      this.firstPersonLeftHand = var1.firstPersonLeftHand;
-      this.firstPersonRightHand = var1.firstPersonRightHand;
-      this.head = var1.head;
-      this.gui = var1.gui;
-      this.ground = var1.ground;
-      this.fixed = var1.fixed;
-   }
+public record ItemTransforms(ItemTransform thirdPersonLeftHand, ItemTransform thirdPersonRightHand, ItemTransform firstPersonLeftHand, ItemTransform firstPersonRightHand, ItemTransform head, ItemTransform gui, ItemTransform ground, ItemTransform fixed) {
+   public static final ItemTransforms NO_TRANSFORMS;
 
    public ItemTransforms(ItemTransform var1, ItemTransform var2, ItemTransform var3, ItemTransform var4, ItemTransform var5, ItemTransform var6, ItemTransform var7, ItemTransform var8) {
       super();
@@ -64,8 +40,8 @@ public class ItemTransforms {
       return var10000;
    }
 
-   public boolean hasTransform(ItemDisplayContext var1) {
-      return this.getTransform(var1) != ItemTransform.NO_TRANSFORM;
+   static {
+      NO_TRANSFORMS = new ItemTransforms(ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM, ItemTransform.NO_TRANSFORM);
    }
 
    protected static class Deserializer implements JsonDeserializer<ItemTransforms> {

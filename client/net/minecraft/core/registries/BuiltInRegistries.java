@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.Util;
@@ -239,15 +238,11 @@ public class BuiltInRegistries {
    }
 
    private static <T, R extends WritableRegistry<T>> R internalRegister(ResourceKey<? extends Registry<T>> var0, R var1, RegistryBootstrap<T> var2) {
-      Bootstrap.checkBootstrapCalled(() -> {
-         return "registry " + String.valueOf(var0.location());
-      });
+      Bootstrap.checkBootstrapCalled(() -> "registry " + String.valueOf(var0.location()));
       ResourceLocation var3 = var0.location();
-      LOADERS.put(var3, () -> {
-         return var2.run(var1);
-      });
+      LOADERS.put(var3, (Supplier)() -> var2.run(var1));
       WRITABLE_REGISTRY.register(var0, var1, RegistrationInfo.BUILT_IN);
-      return var1;
+      return (R)var1;
    }
 
    public static void bootStrap() {
@@ -267,10 +262,8 @@ public class BuiltInRegistries {
 
    private static void freeze() {
       REGISTRY.freeze();
-      Iterator var0 = REGISTRY.iterator();
 
-      while(var0.hasNext()) {
-         Registry var1 = (Registry)var0.next();
+      for(Registry var1 : REGISTRY) {
          bindBootstrappedTagsToEmpty(var1);
          var1.freeze();
       }
@@ -293,7 +286,7 @@ public class BuiltInRegistries {
    }
 
    public static <T> HolderGetter<T> acquireBootstrapRegistrationLookup(Registry<T> var0) {
-      return ((WritableRegistry)var0).createRegistrationLookup();
+      return (var0).createRegistrationLookup();
    }
 
    private static void bindBootstrappedTagsToEmpty(Registry<?> var0) {
@@ -301,160 +294,66 @@ public class BuiltInRegistries {
    }
 
    static {
-      WRITABLE_REGISTRY = new MappedRegistry(ResourceKey.createRegistryKey(Registries.ROOT_REGISTRY_NAME), Lifecycle.stable());
+      WRITABLE_REGISTRY = new MappedRegistry<WritableRegistry<?>>(ResourceKey.createRegistryKey(Registries.ROOT_REGISTRY_NAME), Lifecycle.stable());
       GAME_EVENT = registerDefaulted(Registries.GAME_EVENT, "step", GameEvent::bootstrap);
-      SOUND_EVENT = registerSimple(Registries.SOUND_EVENT, (var0) -> {
-         return SoundEvents.ITEM_PICKUP;
-      });
-      FLUID = registerDefaultedWithIntrusiveHolders(Registries.FLUID, "empty", (var0) -> {
-         return Fluids.EMPTY;
-      });
+      SOUND_EVENT = registerSimple(Registries.SOUND_EVENT, (var0) -> SoundEvents.ITEM_PICKUP);
+      FLUID = registerDefaultedWithIntrusiveHolders(Registries.FLUID, "empty", (var0) -> Fluids.EMPTY);
       MOB_EFFECT = registerSimple(Registries.MOB_EFFECT, MobEffects::bootstrap);
-      BLOCK = registerDefaultedWithIntrusiveHolders(Registries.BLOCK, "air", (var0) -> {
-         return Blocks.AIR;
-      });
-      ENTITY_TYPE = registerDefaultedWithIntrusiveHolders(Registries.ENTITY_TYPE, "pig", (var0) -> {
-         return EntityType.PIG;
-      });
-      ITEM = registerDefaultedWithIntrusiveHolders(Registries.ITEM, "air", (var0) -> {
-         return Items.AIR;
-      });
+      BLOCK = registerDefaultedWithIntrusiveHolders(Registries.BLOCK, "air", (var0) -> Blocks.AIR);
+      ENTITY_TYPE = registerDefaultedWithIntrusiveHolders(Registries.ENTITY_TYPE, "pig", (var0) -> EntityType.PIG);
+      ITEM = registerDefaultedWithIntrusiveHolders(Registries.ITEM, "air", (var0) -> Items.AIR);
       POTION = registerSimple(Registries.POTION, Potions::bootstrap);
-      PARTICLE_TYPE = registerSimple(Registries.PARTICLE_TYPE, (var0) -> {
-         return ParticleTypes.BLOCK;
-      });
-      BLOCK_ENTITY_TYPE = registerSimpleWithIntrusiveHolders(Registries.BLOCK_ENTITY_TYPE, (var0) -> {
-         return BlockEntityType.FURNACE;
-      });
-      CUSTOM_STAT = registerSimple(Registries.CUSTOM_STAT, (var0) -> {
-         return Stats.JUMP;
-      });
-      CHUNK_STATUS = registerDefaulted(Registries.CHUNK_STATUS, "empty", (var0) -> {
-         return ChunkStatus.EMPTY;
-      });
-      RULE_TEST = registerSimple(Registries.RULE_TEST, (var0) -> {
-         return RuleTestType.ALWAYS_TRUE_TEST;
-      });
-      RULE_BLOCK_ENTITY_MODIFIER = registerSimple(Registries.RULE_BLOCK_ENTITY_MODIFIER, (var0) -> {
-         return RuleBlockEntityModifierType.PASSTHROUGH;
-      });
-      POS_RULE_TEST = registerSimple(Registries.POS_RULE_TEST, (var0) -> {
-         return PosRuleTestType.ALWAYS_TRUE_TEST;
-      });
-      MENU = registerSimple(Registries.MENU, (var0) -> {
-         return MenuType.ANVIL;
-      });
-      RECIPE_TYPE = registerSimple(Registries.RECIPE_TYPE, (var0) -> {
-         return RecipeType.CRAFTING;
-      });
-      RECIPE_SERIALIZER = registerSimple(Registries.RECIPE_SERIALIZER, (var0) -> {
-         return RecipeSerializer.SHAPELESS_RECIPE;
-      });
+      PARTICLE_TYPE = registerSimple(Registries.PARTICLE_TYPE, (var0) -> ParticleTypes.BLOCK);
+      BLOCK_ENTITY_TYPE = registerSimpleWithIntrusiveHolders(Registries.BLOCK_ENTITY_TYPE, (var0) -> BlockEntityType.FURNACE);
+      CUSTOM_STAT = registerSimple(Registries.CUSTOM_STAT, (var0) -> Stats.JUMP);
+      CHUNK_STATUS = registerDefaulted(Registries.CHUNK_STATUS, "empty", (var0) -> ChunkStatus.EMPTY);
+      RULE_TEST = registerSimple(Registries.RULE_TEST, (var0) -> RuleTestType.ALWAYS_TRUE_TEST);
+      RULE_BLOCK_ENTITY_MODIFIER = registerSimple(Registries.RULE_BLOCK_ENTITY_MODIFIER, (var0) -> RuleBlockEntityModifierType.PASSTHROUGH);
+      POS_RULE_TEST = registerSimple(Registries.POS_RULE_TEST, (var0) -> PosRuleTestType.ALWAYS_TRUE_TEST);
+      MENU = registerSimple(Registries.MENU, (var0) -> MenuType.ANVIL);
+      RECIPE_TYPE = registerSimple(Registries.RECIPE_TYPE, (var0) -> RecipeType.CRAFTING);
+      RECIPE_SERIALIZER = registerSimple(Registries.RECIPE_SERIALIZER, (var0) -> RecipeSerializer.SHAPELESS_RECIPE);
       ATTRIBUTE = registerSimple(Registries.ATTRIBUTE, Attributes::bootstrap);
-      POSITION_SOURCE_TYPE = registerSimple(Registries.POSITION_SOURCE_TYPE, (var0) -> {
-         return PositionSourceType.BLOCK;
-      });
+      POSITION_SOURCE_TYPE = registerSimple(Registries.POSITION_SOURCE_TYPE, (var0) -> PositionSourceType.BLOCK);
       COMMAND_ARGUMENT_TYPE = registerSimple(Registries.COMMAND_ARGUMENT_TYPE, ArgumentTypeInfos::bootstrap);
-      STAT_TYPE = registerSimple(Registries.STAT_TYPE, (var0) -> {
-         return Stats.ITEM_USED;
-      });
-      VILLAGER_TYPE = registerDefaulted(Registries.VILLAGER_TYPE, "plains", (var0) -> {
-         return VillagerType.PLAINS;
-      });
-      VILLAGER_PROFESSION = registerDefaulted(Registries.VILLAGER_PROFESSION, "none", (var0) -> {
-         return VillagerProfession.NONE;
-      });
+      STAT_TYPE = registerSimple(Registries.STAT_TYPE, (var0) -> Stats.ITEM_USED);
+      VILLAGER_TYPE = registerDefaulted(Registries.VILLAGER_TYPE, "plains", (var0) -> VillagerType.PLAINS);
+      VILLAGER_PROFESSION = registerDefaulted(Registries.VILLAGER_PROFESSION, "none", (var0) -> VillagerProfession.NONE);
       POINT_OF_INTEREST_TYPE = registerSimple(Registries.POINT_OF_INTEREST_TYPE, PoiTypes::bootstrap);
-      MEMORY_MODULE_TYPE = registerDefaulted(Registries.MEMORY_MODULE_TYPE, "dummy", (var0) -> {
-         return MemoryModuleType.DUMMY;
-      });
-      SENSOR_TYPE = registerDefaulted(Registries.SENSOR_TYPE, "dummy", (var0) -> {
-         return SensorType.DUMMY;
-      });
-      SCHEDULE = registerSimple(Registries.SCHEDULE, (var0) -> {
-         return Schedule.EMPTY;
-      });
-      ACTIVITY = registerSimple(Registries.ACTIVITY, (var0) -> {
-         return Activity.IDLE;
-      });
-      LOOT_POOL_ENTRY_TYPE = registerSimple(Registries.LOOT_POOL_ENTRY_TYPE, (var0) -> {
-         return LootPoolEntries.EMPTY;
-      });
-      LOOT_FUNCTION_TYPE = registerSimple(Registries.LOOT_FUNCTION_TYPE, (var0) -> {
-         return LootItemFunctions.SET_COUNT;
-      });
-      LOOT_CONDITION_TYPE = registerSimple(Registries.LOOT_CONDITION_TYPE, (var0) -> {
-         return LootItemConditions.INVERTED;
-      });
-      LOOT_NUMBER_PROVIDER_TYPE = registerSimple(Registries.LOOT_NUMBER_PROVIDER_TYPE, (var0) -> {
-         return NumberProviders.CONSTANT;
-      });
-      LOOT_NBT_PROVIDER_TYPE = registerSimple(Registries.LOOT_NBT_PROVIDER_TYPE, (var0) -> {
-         return NbtProviders.CONTEXT;
-      });
-      LOOT_SCORE_PROVIDER_TYPE = registerSimple(Registries.LOOT_SCORE_PROVIDER_TYPE, (var0) -> {
-         return ScoreboardNameProviders.CONTEXT;
-      });
-      FLOAT_PROVIDER_TYPE = registerSimple(Registries.FLOAT_PROVIDER_TYPE, (var0) -> {
-         return FloatProviderType.CONSTANT;
-      });
-      INT_PROVIDER_TYPE = registerSimple(Registries.INT_PROVIDER_TYPE, (var0) -> {
-         return IntProviderType.CONSTANT;
-      });
-      HEIGHT_PROVIDER_TYPE = registerSimple(Registries.HEIGHT_PROVIDER_TYPE, (var0) -> {
-         return HeightProviderType.CONSTANT;
-      });
-      BLOCK_PREDICATE_TYPE = registerSimple(Registries.BLOCK_PREDICATE_TYPE, (var0) -> {
-         return BlockPredicateType.NOT;
-      });
-      CARVER = registerSimple(Registries.CARVER, (var0) -> {
-         return WorldCarver.CAVE;
-      });
-      FEATURE = registerSimple(Registries.FEATURE, (var0) -> {
-         return Feature.ORE;
-      });
-      STRUCTURE_PLACEMENT = registerSimple(Registries.STRUCTURE_PLACEMENT, (var0) -> {
-         return StructurePlacementType.RANDOM_SPREAD;
-      });
-      STRUCTURE_PIECE = registerSimple(Registries.STRUCTURE_PIECE, (var0) -> {
-         return StructurePieceType.MINE_SHAFT_ROOM;
-      });
-      STRUCTURE_TYPE = registerSimple(Registries.STRUCTURE_TYPE, (var0) -> {
-         return StructureType.JIGSAW;
-      });
-      PLACEMENT_MODIFIER_TYPE = registerSimple(Registries.PLACEMENT_MODIFIER_TYPE, (var0) -> {
-         return PlacementModifierType.COUNT;
-      });
-      BLOCKSTATE_PROVIDER_TYPE = registerSimple(Registries.BLOCK_STATE_PROVIDER_TYPE, (var0) -> {
-         return BlockStateProviderType.SIMPLE_STATE_PROVIDER;
-      });
-      FOLIAGE_PLACER_TYPE = registerSimple(Registries.FOLIAGE_PLACER_TYPE, (var0) -> {
-         return FoliagePlacerType.BLOB_FOLIAGE_PLACER;
-      });
-      TRUNK_PLACER_TYPE = registerSimple(Registries.TRUNK_PLACER_TYPE, (var0) -> {
-         return TrunkPlacerType.STRAIGHT_TRUNK_PLACER;
-      });
-      ROOT_PLACER_TYPE = registerSimple(Registries.ROOT_PLACER_TYPE, (var0) -> {
-         return RootPlacerType.MANGROVE_ROOT_PLACER;
-      });
-      TREE_DECORATOR_TYPE = registerSimple(Registries.TREE_DECORATOR_TYPE, (var0) -> {
-         return TreeDecoratorType.LEAVE_VINE;
-      });
-      FEATURE_SIZE_TYPE = registerSimple(Registries.FEATURE_SIZE_TYPE, (var0) -> {
-         return FeatureSizeType.TWO_LAYERS_FEATURE_SIZE;
-      });
+      MEMORY_MODULE_TYPE = registerDefaulted(Registries.MEMORY_MODULE_TYPE, "dummy", (var0) -> MemoryModuleType.DUMMY);
+      SENSOR_TYPE = registerDefaulted(Registries.SENSOR_TYPE, "dummy", (var0) -> SensorType.DUMMY);
+      SCHEDULE = registerSimple(Registries.SCHEDULE, (var0) -> Schedule.EMPTY);
+      ACTIVITY = registerSimple(Registries.ACTIVITY, (var0) -> Activity.IDLE);
+      LOOT_POOL_ENTRY_TYPE = registerSimple(Registries.LOOT_POOL_ENTRY_TYPE, (var0) -> LootPoolEntries.EMPTY);
+      LOOT_FUNCTION_TYPE = registerSimple(Registries.LOOT_FUNCTION_TYPE, (var0) -> LootItemFunctions.SET_COUNT);
+      LOOT_CONDITION_TYPE = registerSimple(Registries.LOOT_CONDITION_TYPE, (var0) -> LootItemConditions.INVERTED);
+      LOOT_NUMBER_PROVIDER_TYPE = registerSimple(Registries.LOOT_NUMBER_PROVIDER_TYPE, (var0) -> NumberProviders.CONSTANT);
+      LOOT_NBT_PROVIDER_TYPE = registerSimple(Registries.LOOT_NBT_PROVIDER_TYPE, (var0) -> NbtProviders.CONTEXT);
+      LOOT_SCORE_PROVIDER_TYPE = registerSimple(Registries.LOOT_SCORE_PROVIDER_TYPE, (var0) -> ScoreboardNameProviders.CONTEXT);
+      FLOAT_PROVIDER_TYPE = registerSimple(Registries.FLOAT_PROVIDER_TYPE, (var0) -> FloatProviderType.CONSTANT);
+      INT_PROVIDER_TYPE = registerSimple(Registries.INT_PROVIDER_TYPE, (var0) -> IntProviderType.CONSTANT);
+      HEIGHT_PROVIDER_TYPE = registerSimple(Registries.HEIGHT_PROVIDER_TYPE, (var0) -> HeightProviderType.CONSTANT);
+      BLOCK_PREDICATE_TYPE = registerSimple(Registries.BLOCK_PREDICATE_TYPE, (var0) -> BlockPredicateType.NOT);
+      CARVER = registerSimple(Registries.CARVER, (var0) -> WorldCarver.CAVE);
+      FEATURE = registerSimple(Registries.FEATURE, (var0) -> Feature.ORE);
+      STRUCTURE_PLACEMENT = registerSimple(Registries.STRUCTURE_PLACEMENT, (var0) -> StructurePlacementType.RANDOM_SPREAD);
+      STRUCTURE_PIECE = registerSimple(Registries.STRUCTURE_PIECE, (var0) -> StructurePieceType.MINE_SHAFT_ROOM);
+      STRUCTURE_TYPE = registerSimple(Registries.STRUCTURE_TYPE, (var0) -> StructureType.JIGSAW);
+      PLACEMENT_MODIFIER_TYPE = registerSimple(Registries.PLACEMENT_MODIFIER_TYPE, (var0) -> PlacementModifierType.COUNT);
+      BLOCKSTATE_PROVIDER_TYPE = registerSimple(Registries.BLOCK_STATE_PROVIDER_TYPE, (var0) -> BlockStateProviderType.SIMPLE_STATE_PROVIDER);
+      FOLIAGE_PLACER_TYPE = registerSimple(Registries.FOLIAGE_PLACER_TYPE, (var0) -> FoliagePlacerType.BLOB_FOLIAGE_PLACER);
+      TRUNK_PLACER_TYPE = registerSimple(Registries.TRUNK_PLACER_TYPE, (var0) -> TrunkPlacerType.STRAIGHT_TRUNK_PLACER);
+      ROOT_PLACER_TYPE = registerSimple(Registries.ROOT_PLACER_TYPE, (var0) -> RootPlacerType.MANGROVE_ROOT_PLACER);
+      TREE_DECORATOR_TYPE = registerSimple(Registries.TREE_DECORATOR_TYPE, (var0) -> TreeDecoratorType.LEAVE_VINE);
+      FEATURE_SIZE_TYPE = registerSimple(Registries.FEATURE_SIZE_TYPE, (var0) -> FeatureSizeType.TWO_LAYERS_FEATURE_SIZE);
       BIOME_SOURCE = registerSimple(Registries.BIOME_SOURCE, BiomeSources::bootstrap);
       CHUNK_GENERATOR = registerSimple(Registries.CHUNK_GENERATOR, ChunkGenerators::bootstrap);
       MATERIAL_CONDITION = registerSimple(Registries.MATERIAL_CONDITION, SurfaceRules.ConditionSource::bootstrap);
       MATERIAL_RULE = registerSimple(Registries.MATERIAL_RULE, SurfaceRules.RuleSource::bootstrap);
       DENSITY_FUNCTION_TYPE = registerSimple(Registries.DENSITY_FUNCTION_TYPE, DensityFunctions::bootstrap);
       BLOCK_TYPE = registerSimple(Registries.BLOCK_TYPE, BlockTypes::bootstrap);
-      STRUCTURE_PROCESSOR = registerSimple(Registries.STRUCTURE_PROCESSOR, (var0) -> {
-         return StructureProcessorType.BLOCK_IGNORE;
-      });
-      STRUCTURE_POOL_ELEMENT = registerSimple(Registries.STRUCTURE_POOL_ELEMENT, (var0) -> {
-         return StructurePoolElementType.EMPTY;
-      });
+      STRUCTURE_PROCESSOR = registerSimple(Registries.STRUCTURE_PROCESSOR, (var0) -> StructureProcessorType.BLOCK_IGNORE);
+      STRUCTURE_POOL_ELEMENT = registerSimple(Registries.STRUCTURE_POOL_ELEMENT, (var0) -> StructurePoolElementType.EMPTY);
       POOL_ALIAS_BINDING_TYPE = registerSimple(Registries.POOL_ALIAS_BINDING, PoolAliasBindings::bootstrap);
       CAT_VARIANT = registerSimple(Registries.CAT_VARIANT, CatVariant::bootstrap);
       FROG_VARIANT = registerSimple(Registries.FROG_VARIANT, FrogVariant::bootstrap);
@@ -472,9 +371,7 @@ public class BuiltInRegistries {
       ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE = registerSimple(Registries.ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE, EnchantmentLocationBasedEffect::bootstrap);
       ENCHANTMENT_VALUE_EFFECT_TYPE = registerSimple(Registries.ENCHANTMENT_VALUE_EFFECT_TYPE, EnchantmentValueEffect::bootstrap);
       ENCHANTMENT_PROVIDER_TYPE = registerSimple(Registries.ENCHANTMENT_PROVIDER_TYPE, EnchantmentProviderTypes::bootstrap);
-      CONSUME_EFFECT_TYPE = registerSimple(Registries.CONSUME_EFFECT_TYPE, (var0) -> {
-         return ConsumeEffect.Type.APPLY_EFFECTS;
-      });
+      CONSUME_EFFECT_TYPE = registerSimple(Registries.CONSUME_EFFECT_TYPE, (var0) -> ConsumeEffect.Type.APPLY_EFFECTS);
       RECIPE_DISPLAY = registerSimple(Registries.RECIPE_DISPLAY, RecipeDisplays::bootstrap);
       SLOT_DISPLAY = registerSimple(Registries.SLOT_DISPLAY, SlotDisplays::bootstrap);
       RECIPE_BOOK_CATEGORY = registerSimple(Registries.RECIPE_BOOK_CATEGORY, RecipeBookCategories::bootstrap);

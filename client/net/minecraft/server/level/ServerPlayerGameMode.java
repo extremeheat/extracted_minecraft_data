@@ -93,9 +93,8 @@ public class ServerPlayerGameMode {
 
    public void tick() {
       ++this.gameTicks;
-      BlockState var1;
       if (this.hasDelayedDestroy) {
-         var1 = this.level.getBlockState(this.delayedDestroyPos);
+         BlockState var1 = this.level.getBlockState(this.delayedDestroyPos);
          if (var1.isAir()) {
             this.hasDelayedDestroy = false;
          } else {
@@ -106,13 +105,13 @@ public class ServerPlayerGameMode {
             }
          }
       } else if (this.isDestroyingBlock) {
-         var1 = this.level.getBlockState(this.destroyPos);
-         if (var1.isAir()) {
+         BlockState var3 = this.level.getBlockState(this.destroyPos);
+         if (var3.isAir()) {
             this.level.destroyBlockProgress(this.player.getId(), this.destroyPos, -1);
             this.lastSentState = -1;
             this.isDestroyingBlock = false;
          } else {
-            this.incrementDestroyProgress(var1, this.destroyPos, this.destroyProgressStart);
+            this.incrementDestroyProgress(var3, this.destroyPos, this.destroyProgressStart);
          }
       }
 
@@ -140,7 +139,6 @@ public class ServerPlayerGameMode {
          this.player.connection.send(new ClientboundBlockUpdatePacket(var1, this.level.getBlockState(var1)));
          this.debugLogging(var1, false, var5, "too high");
       } else {
-         BlockState var7;
          if (var2 == ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK) {
             if (!this.level.mayInteract(this.player, var1)) {
                this.player.connection.send(new ClientboundBlockUpdatePacket(var1, this.level.getBlockState(var1)));
@@ -161,11 +159,9 @@ public class ServerPlayerGameMode {
 
             this.destroyProgressStart = this.gameTicks;
             float var6 = 1.0F;
-            var7 = this.level.getBlockState(var1);
+            BlockState var7 = this.level.getBlockState(var1);
             if (!var7.isAir()) {
-               EnchantmentHelper.onHitBlock(this.level, this.player.getMainHandItem(), this.player, this.player, EquipmentSlot.MAINHAND, Vec3.atCenterOf(var1), var7, (var1x) -> {
-                  this.player.onEquippedItemBroken(var1x, EquipmentSlot.MAINHAND);
-               });
+               EnchantmentHelper.onHitBlock(this.level, this.player.getMainHandItem(), this.player, this.player, EquipmentSlot.MAINHAND, Vec3.atCenterOf(var1), var7, (var1x) -> this.player.onEquippedItemBroken(var1x, EquipmentSlot.MAINHAND));
                var7.attack(this.level, var1, this.player);
                var6 = var7.getDestroyProgress(this.player, this.player.level(), var1);
             }
@@ -188,10 +184,10 @@ public class ServerPlayerGameMode {
          } else if (var2 == ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK) {
             if (var1.equals(this.destroyPos)) {
                int var9 = this.gameTicks - this.destroyProgressStart;
-               var7 = this.level.getBlockState(var1);
-               if (!var7.isAir()) {
-                  float var10 = var7.getDestroyProgress(this.player, this.player.level(), var1) * (float)(var9 + 1);
-                  if (var10 >= 0.7F) {
+               BlockState var10 = this.level.getBlockState(var1);
+               if (!var10.isAir()) {
+                  float var11 = var10.getDestroyProgress(this.player, this.player.level(), var1) * (float)(var9 + 1);
+                  if (var11 >= 0.7F) {
                      this.isDestroyingBlock = false;
                      this.level.destroyBlockProgress(this.player.getId(), var1, -1);
                      this.destroyAndAck(var1, var5, "destroyed");
@@ -325,7 +321,6 @@ public class ServerPlayerGameMode {
          boolean var8 = !var1.getMainHandItem().isEmpty() || !var1.getOffhandItem().isEmpty();
          boolean var9 = var1.isSecondaryUseActive() && var8;
          ItemStack var10 = var3.copy();
-         InteractionResult var12;
          if (!var9) {
             InteractionResult var11 = var7.useItemOn(var1.getItemInHand(var4), var2, var1, var4, var5);
             if (var11.consumesAction()) {
@@ -334,7 +329,7 @@ public class ServerPlayerGameMode {
             }
 
             if (var11 instanceof InteractionResult.TryEmptyHandInteraction && var4 == InteractionHand.MAIN_HAND) {
-               var12 = var7.useWithoutItem(var2, var1, var5);
+               InteractionResult var12 = var7.useWithoutItem(var2, var1, var5);
                if (var12.consumesAction()) {
                   CriteriaTriggers.DEFAULT_BLOCK_USE.trigger(var1, var6);
                   return var12;
@@ -344,19 +339,20 @@ public class ServerPlayerGameMode {
 
          if (!var3.isEmpty() && !var1.getCooldowns().isOnCooldown(var3)) {
             UseOnContext var15 = new UseOnContext(var1, var4, var5);
+            InteractionResult var16;
             if (this.isCreative()) {
                int var13 = var3.getCount();
-               var12 = var3.useOn(var15);
+               var16 = var3.useOn(var15);
                var3.setCount(var13);
             } else {
-               var12 = var3.useOn(var15);
+               var16 = var3.useOn(var15);
             }
 
-            if (var12.consumesAction()) {
+            if (var16.consumesAction()) {
                CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(var1, var6, var10);
             }
 
-            return var12;
+            return var16;
          } else {
             return InteractionResult.PASS;
          }

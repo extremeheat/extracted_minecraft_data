@@ -10,7 +10,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -43,13 +42,9 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
 
    public void update(AdvancementRequirements var1) {
       Set var2 = var1.names();
-      this.criteria.entrySet().removeIf((var1x) -> {
-         return !var2.contains(var1x.getKey());
-      });
-      Iterator var3 = var2.iterator();
+      this.criteria.entrySet().removeIf((var1x) -> !var2.contains(var1x.getKey()));
 
-      while(var3.hasNext()) {
-         String var4 = (String)var3.next();
+      for(String var4 : var2) {
          this.criteria.putIfAbsent(var4, new CriterionProgress());
       }
 
@@ -61,18 +56,13 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
    }
 
    public boolean hasProgress() {
-      Iterator var1 = this.criteria.values().iterator();
-
-      CriterionProgress var2;
-      do {
-         if (!var1.hasNext()) {
-            return false;
+      for(CriterionProgress var2 : this.criteria.values()) {
+         if (var2.isDone()) {
+            return true;
          }
+      }
 
-         var2 = (CriterionProgress)var1.next();
-      } while(!var2.isDone());
-
-      return true;
+      return false;
    }
 
    public boolean grantProgress(String var1) {
@@ -101,9 +91,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
    }
 
    public void serializeToNetwork(FriendlyByteBuf var1) {
-      var1.writeMap(this.criteria, FriendlyByteBuf::writeUtf, (var0, var1x) -> {
-         var1x.serializeToNetwork(var0);
-      });
+      var1.writeMap(this.criteria, FriendlyByteBuf::writeUtf, (var0, var1x) -> var1x.serializeToNetwork(var0));
    }
 
    public static AdvancementProgress fromNetwork(FriendlyByteBuf var0) {
@@ -152,10 +140,8 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
 
    public Iterable<String> getRemainingCriteria() {
       ArrayList var1 = Lists.newArrayList();
-      Iterator var2 = this.criteria.entrySet().iterator();
 
-      while(var2.hasNext()) {
-         Map.Entry var3 = (Map.Entry)var2.next();
+      for(Map.Entry var3 : this.criteria.entrySet()) {
          if (!((CriterionProgress)var3.getValue()).isDone()) {
             var1.add((String)var3.getKey());
          }
@@ -166,10 +152,8 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
 
    public Iterable<String> getCompletedCriteria() {
       ArrayList var1 = Lists.newArrayList();
-      Iterator var2 = this.criteria.entrySet().iterator();
 
-      while(var2.hasNext()) {
-         Map.Entry var3 = (Map.Entry)var2.next();
+      for(Map.Entry var3 : this.criteria.entrySet()) {
          if (((CriterionProgress)var3.getValue()).isDone()) {
             var1.add((String)var3.getKey());
          }
@@ -202,26 +186,8 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
 
    static {
       OBTAINED_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z", Locale.ROOT);
-      OBTAINED_TIME_CODEC = ExtraCodecs.temporalCodec(OBTAINED_TIME_FORMAT).xmap(Instant::from, (var0) -> {
-         return var0.atZone(ZoneId.systemDefault());
-      });
-      CRITERIA_CODEC = Codec.unboundedMap(Codec.STRING, OBTAINED_TIME_CODEC).xmap((var0) -> {
-         return (Map)var0.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (var0x) -> {
-            return new CriterionProgress((Instant)var0x.getValue());
-         }));
-      }, (var0) -> {
-         return (Map)var0.entrySet().stream().filter((var0x) -> {
-            return ((CriterionProgress)var0x.getValue()).isDone();
-         }).collect(Collectors.toMap(Map.Entry::getKey, (var0x) -> {
-            return (Instant)Objects.requireNonNull(((CriterionProgress)var0x.getValue()).getObtained());
-         }));
-      });
-      CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(CRITERIA_CODEC.optionalFieldOf("criteria", Map.of()).forGetter((var0x) -> {
-            return var0x.criteria;
-         }), Codec.BOOL.fieldOf("done").orElse(true).forGetter(AdvancementProgress::isDone)).apply(var0, (var0x, var1) -> {
-            return new AdvancementProgress(new HashMap(var0x));
-         });
-      });
+      OBTAINED_TIME_CODEC = ExtraCodecs.temporalCodec(OBTAINED_TIME_FORMAT).xmap(Instant::from, (var0) -> var0.atZone(ZoneId.systemDefault()));
+      CRITERIA_CODEC = Codec.unboundedMap(Codec.STRING, OBTAINED_TIME_CODEC).xmap((var0) -> (Map)var0.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (var0x) -> new CriterionProgress((Instant)var0x.getValue()))), (var0) -> (Map)var0.entrySet().stream().filter((var0x) -> ((CriterionProgress)var0x.getValue()).isDone()).collect(Collectors.toMap(Map.Entry::getKey, (var0x) -> (Instant)Objects.requireNonNull(((CriterionProgress)var0x.getValue()).getObtained()))));
+      CODEC = RecordCodecBuilder.create((var0) -> var0.group(CRITERIA_CODEC.optionalFieldOf("criteria", Map.of()).forGetter((var0x) -> var0x.criteria), Codec.BOOL.fieldOf("done").orElse(true).forGetter(AdvancementProgress::isDone)).apply(var0, (var0x, var1) -> new AdvancementProgress(new HashMap(var0x))));
    }
 }

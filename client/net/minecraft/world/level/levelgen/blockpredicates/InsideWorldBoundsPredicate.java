@@ -7,11 +7,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.WorldGenLevel;
 
 public class InsideWorldBoundsPredicate implements BlockPredicate {
-   public static final MapCodec<InsideWorldBoundsPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Vec3i.offsetCodec(16).optionalFieldOf("offset", BlockPos.ZERO).forGetter((var0x) -> {
-         return var0x.offset;
-      })).apply(var0, InsideWorldBoundsPredicate::new);
-   });
+   public static final MapCodec<InsideWorldBoundsPredicate> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Vec3i.offsetCodec(16).optionalFieldOf("offset", BlockPos.ZERO).forGetter((var0x) -> var0x.offset)).apply(var0, InsideWorldBoundsPredicate::new));
    private final Vec3i offset;
 
    public InsideWorldBoundsPredicate(Vec3i var1) {

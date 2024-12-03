@@ -69,10 +69,6 @@ public class BarrelBlock extends BaseEntityBlock {
       return new BarrelBlockEntity(var1, var2);
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
-   }
-
    protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }

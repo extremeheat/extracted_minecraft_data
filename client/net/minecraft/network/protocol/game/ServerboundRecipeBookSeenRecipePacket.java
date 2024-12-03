@@ -22,10 +22,6 @@ public record ServerboundRecipeBookSeenRecipePacket(RecipeDisplayId recipe) impl
       var1.handleRecipeBookSeenRecipePacket(this);
    }
 
-   public RecipeDisplayId recipe() {
-      return this.recipe;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(RecipeDisplayId.STREAM_CODEC, ServerboundRecipeBookSeenRecipePacket::recipe, ServerboundRecipeBookSeenRecipePacket::new);
    }

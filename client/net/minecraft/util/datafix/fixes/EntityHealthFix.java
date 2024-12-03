@@ -35,8 +35,6 @@ public class EntityHealthFix extends DataFix {
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("EntityHealthFix", this.getInputSchema().getType(References.ENTITY), (var1) -> {
-         return var1.update(DSL.remainderFinder(), this::fixTag);
-      });
+      return this.fixTypeEverywhereTyped("EntityHealthFix", this.getInputSchema().getType(References.ENTITY), (var1) -> var1.update(DSL.remainderFinder(), this::fixTag));
    }
 }

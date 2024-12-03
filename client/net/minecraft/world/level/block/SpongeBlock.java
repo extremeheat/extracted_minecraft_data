@@ -50,28 +50,24 @@ public class SpongeBlock extends Block {
 
    private boolean removeWaterBreadthFirstSearch(Level var1, BlockPos var2) {
       return BlockPos.breadthFirstTraversal(var2, 6, 65, (var0, var1x) -> {
-         Direction[] var2 = ALL_DIRECTIONS;
-         int var3 = var2.length;
-
-         for(int var4 = 0; var4 < var3; ++var4) {
-            Direction var5 = var2[var4];
+         for(Direction var5 : ALL_DIRECTIONS) {
             var1x.accept(var0.relative(var5));
          }
 
       }, (var2x) -> {
          if (var2x.equals(var2)) {
-            return true;
+            return BlockPos.TraversalNodeStatus.ACCEPT;
          } else {
             BlockState var3 = var1.getBlockState(var2x);
             FluidState var4 = var1.getFluidState(var2x);
             if (!var4.is(FluidTags.WATER)) {
-               return false;
+               return BlockPos.TraversalNodeStatus.SKIP;
             } else {
                Block var6 = var3.getBlock();
                if (var6 instanceof BucketPickup) {
                   BucketPickup var5 = (BucketPickup)var6;
                   if (!var5.pickupBlock((Player)null, var1, var2x, var3).isEmpty()) {
-                     return true;
+                     return BlockPos.TraversalNodeStatus.ACCEPT;
                   }
                }
 
@@ -79,7 +75,7 @@ public class SpongeBlock extends Block {
                   var1.setBlock(var2x, Blocks.AIR.defaultBlockState(), 3);
                } else {
                   if (!var3.is(Blocks.KELP) && !var3.is(Blocks.KELP_PLANT) && !var3.is(Blocks.SEAGRASS) && !var3.is(Blocks.TALL_SEAGRASS)) {
-                     return false;
+                     return BlockPos.TraversalNodeStatus.SKIP;
                   }
 
                   BlockEntity var7 = var3.hasBlockEntity() ? var1.getBlockEntity(var2x) : null;
@@ -87,7 +83,7 @@ public class SpongeBlock extends Block {
                   var1.setBlock(var2x, Blocks.AIR.defaultBlockState(), 3);
                }
 
-               return true;
+               return BlockPos.TraversalNodeStatus.ACCEPT;
             }
          }
       }) > 1;

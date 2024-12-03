@@ -21,7 +21,7 @@ public class GenerationStep {
       VEGETAL_DECORATION("vegetal_decoration"),
       TOP_LAYER_MODIFICATION("top_layer_modification");
 
-      public static final Codec<Decoration> CODEC = StringRepresentable.fromEnum(Decoration::values);
+      public static final Codec<Decoration> CODEC = StringRepresentable.<Decoration>fromEnum(Decoration::values);
       private final String name;
 
       private Decoration(final String var3) {

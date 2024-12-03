@@ -44,15 +44,15 @@ public class SkyLightSectionStorage extends LayerLightSectionStorage<SkyDataLaye
 
    protected void onNodeAdded(long var1) {
       int var3 = SectionPos.y(var1);
-      if (((SkyDataLayerStorageMap)this.updatingSectionData).currentLowestY > var3) {
-         ((SkyDataLayerStorageMap)this.updatingSectionData).currentLowestY = var3;
-         ((SkyDataLayerStorageMap)this.updatingSectionData).topSections.defaultReturnValue(((SkyDataLayerStorageMap)this.updatingSectionData).currentLowestY);
+      if ((this.updatingSectionData).currentLowestY > var3) {
+         (this.updatingSectionData).currentLowestY = var3;
+         (this.updatingSectionData).topSections.defaultReturnValue((this.updatingSectionData).currentLowestY);
       }
 
       long var4 = SectionPos.getZeroNode(var1);
-      int var6 = ((SkyDataLayerStorageMap)this.updatingSectionData).topSections.get(var4);
+      int var6 = (this.updatingSectionData).topSections.get(var4);
       if (var6 < var3 + 1) {
-         ((SkyDataLayerStorageMap)this.updatingSectionData).topSections.put(var4, var3 + 1);
+         (this.updatingSectionData).topSections.put(var4, var3 + 1);
       }
 
    }
@@ -60,16 +60,16 @@ public class SkyLightSectionStorage extends LayerLightSectionStorage<SkyDataLaye
    protected void onNodeRemoved(long var1) {
       long var3 = SectionPos.getZeroNode(var1);
       int var5 = SectionPos.y(var1);
-      if (((SkyDataLayerStorageMap)this.updatingSectionData).topSections.get(var3) == var5 + 1) {
+      if ((this.updatingSectionData).topSections.get(var3) == var5 + 1) {
          long var6;
          for(var6 = var1; !this.storingLightForSection(var6) && this.hasLightDataAtOrBelow(var5); var6 = SectionPos.offset(var6, Direction.DOWN)) {
             --var5;
          }
 
          if (this.storingLightForSection(var6)) {
-            ((SkyDataLayerStorageMap)this.updatingSectionData).topSections.put(var3, var5 + 1);
+            (this.updatingSectionData).topSections.put(var3, var5 + 1);
          } else {
-            ((SkyDataLayerStorageMap)this.updatingSectionData).topSections.remove(var3);
+            (this.updatingSectionData).topSections.remove(var3);
          }
       }
 
@@ -80,8 +80,8 @@ public class SkyLightSectionStorage extends LayerLightSectionStorage<SkyDataLaye
       if (var3 != null) {
          return var3;
       } else {
-         int var4 = ((SkyDataLayerStorageMap)this.updatingSectionData).topSections.get(SectionPos.getZeroNode(var1));
-         if (var4 != ((SkyDataLayerStorageMap)this.updatingSectionData).currentLowestY && SectionPos.y(var1) < var4) {
+         int var4 = (this.updatingSectionData).topSections.get(SectionPos.getZeroNode(var1));
+         if (var4 != (this.updatingSectionData).currentLowestY && SectionPos.y(var1) < var4) {
             DataLayer var7;
             for(long var5 = SectionPos.offset(var1, Direction.UP); (var7 = this.getDataLayer(var5, true)) == null; var5 = SectionPos.offset(var5, Direction.UP)) {
             }
@@ -109,21 +109,21 @@ public class SkyLightSectionStorage extends LayerLightSectionStorage<SkyDataLaye
    }
 
    protected boolean hasLightDataAtOrBelow(int var1) {
-      return var1 >= ((SkyDataLayerStorageMap)this.updatingSectionData).currentLowestY;
+      return var1 >= (this.updatingSectionData).currentLowestY;
    }
 
    protected boolean isAboveData(long var1) {
       long var3 = SectionPos.getZeroNode(var1);
-      int var5 = ((SkyDataLayerStorageMap)this.updatingSectionData).topSections.get(var3);
-      return var5 == ((SkyDataLayerStorageMap)this.updatingSectionData).currentLowestY || SectionPos.y(var1) >= var5;
+      int var5 = (this.updatingSectionData).topSections.get(var3);
+      return var5 == (this.updatingSectionData).currentLowestY || SectionPos.y(var1) >= var5;
    }
 
    protected int getTopSectionY(long var1) {
-      return ((SkyDataLayerStorageMap)this.updatingSectionData).topSections.get(var1);
+      return (this.updatingSectionData).topSections.get(var1);
    }
 
    protected int getBottomSectionY() {
-      return ((SkyDataLayerStorageMap)this.updatingSectionData).currentLowestY;
+      return (this.updatingSectionData).currentLowestY;
    }
 
    protected static final class SkyDataLayerStorageMap extends DataLayerStorageMap<SkyDataLayerStorageMap> {

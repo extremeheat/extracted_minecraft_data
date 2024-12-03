@@ -16,9 +16,13 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
-public abstract class ContainerObjectSelectionList<E extends Entry<E>> extends AbstractSelectionList<E> {
+public abstract class ContainerObjectSelectionList<E extends ContainerObjectSelectionList.Entry<E>> extends AbstractSelectionList<E> {
    public ContainerObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5) {
       super(var1, var2, var3, var4, var5);
+   }
+
+   public ContainerObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5, int var6) {
+      super(var1, var2, var3, var4, var5, var6);
    }
 
    @Nullable
@@ -58,9 +62,7 @@ public abstract class ContainerObjectSelectionList<E extends Entry<E>> extends A
 
             ComponentPath var7;
             do {
-               var6 = (Entry)this.nextEntry(var5, (var0) -> {
-                  return !var0.children().isEmpty();
-               }, var6);
+               var6 = (Entry)this.nextEntry(var5, (var0) -> !var0.children().isEmpty(), var6);
                if (var6 == null) {
                   return null;
                }

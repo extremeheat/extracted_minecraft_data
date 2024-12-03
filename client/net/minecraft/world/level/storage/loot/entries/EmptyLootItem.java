@@ -10,9 +10,7 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class EmptyLootItem extends LootPoolSingletonContainer {
-   public static final MapCodec<EmptyLootItem> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return singletonFields(var0).apply(var0, EmptyLootItem::new);
-   });
+   public static final MapCodec<EmptyLootItem> CODEC = RecordCodecBuilder.mapCodec((var0) -> singletonFields(var0).apply(var0, EmptyLootItem::new));
 
    private EmptyLootItem(int var1, int var2, List<LootItemCondition> var3, List<LootItemFunction> var4) {
       super(var1, var2, var3, var4);

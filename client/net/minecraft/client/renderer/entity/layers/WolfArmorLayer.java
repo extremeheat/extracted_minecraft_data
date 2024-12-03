@@ -12,11 +12,12 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.state.WolfRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Crackiness;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.equipment.EquipmentModel;
 import net.minecraft.world.item.equipment.Equippable;
 
 public class WolfArmorLayer extends RenderLayer<WolfRenderState, WolfModel> {
@@ -35,11 +36,10 @@ public class WolfArmorLayer extends RenderLayer<WolfRenderState, WolfModel> {
    public void render(PoseStack var1, MultiBufferSource var2, int var3, WolfRenderState var4, float var5, float var6) {
       ItemStack var7 = var4.bodyArmorItem;
       Equippable var8 = (Equippable)var7.get(DataComponents.EQUIPPABLE);
-      if (var8 != null && !var8.model().isEmpty()) {
+      if (var8 != null && !var8.assetId().isEmpty()) {
          WolfModel var9 = var4.isBaby ? this.babyModel : this.adultModel;
-         ResourceLocation var10 = (ResourceLocation)var8.model().get();
          var9.setupAnim(var4);
-         this.equipmentRenderer.renderLayers(EquipmentModel.LayerType.WOLF_BODY, var10, var9, var7, var1, var2, var3);
+         this.equipmentRenderer.renderLayers(EquipmentClientInfo.LayerType.WOLF_BODY, (ResourceKey)var8.assetId().get(), var9, var7, var1, var2, var3);
          this.maybeRenderCracks(var1, var2, var3, var7, var9);
       }
    }

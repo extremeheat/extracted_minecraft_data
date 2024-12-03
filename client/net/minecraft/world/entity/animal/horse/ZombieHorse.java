@@ -64,7 +64,7 @@ public class ZombieHorse extends AbstractHorse {
 
    @Nullable
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (AgeableMob)EntityType.ZOMBIE_HORSE.create(var1, EntitySpawnReason.BREEDING);
+      return EntityType.ZOMBIE_HORSE.create(var1, EntitySpawnReason.BREEDING);
    }
 
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {

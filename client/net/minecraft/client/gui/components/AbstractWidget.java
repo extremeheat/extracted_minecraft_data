@@ -95,9 +95,8 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       Objects.requireNonNull(var1);
       int var10 = (var10000 - 9) / 2 + 1;
       int var11 = var6 - var4;
-      int var12;
       if (var9 > var11) {
-         var12 = var9 - var11;
+         int var12 = var9 - var11;
          double var13 = (double)Util.getMillis() / 1000.0;
          double var15 = Math.max((double)var12 * 0.5, 3.0);
          double var17 = Math.sin(1.5707963267948966 * Math.cos(6.283185307179586 * var13 / var15)) / 2.0 + 0.5;
@@ -106,8 +105,8 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
          var0.drawString(var1, var2, var4 - (int)var19, var10, var8);
          var0.disableScissor();
       } else {
-         var12 = Mth.clamp(var3, var4 + var9 / 2, var6 - var9 / 2);
-         var0.drawCenteredString(var1, var2, var12, var10, var8);
+         int var21 = Mth.clamp(var3, var4 + var9 / 2, var6 - var9 / 2);
+         var0.drawCenteredString(var1, var2, var21, var10, var8);
       }
 
    }
@@ -130,7 +129,7 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (this.active && this.visible) {
          if (this.isValidClickButton(var5)) {
-            boolean var6 = this.clicked(var1, var3);
+            boolean var6 = this.isMouseOver(var1, var3);
             if (var6) {
                this.playDownSound(Minecraft.getInstance().getSoundManager());
                this.onClick(var1, var3);
@@ -166,10 +165,6 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       }
    }
 
-   protected boolean clicked(double var1, double var3) {
-      return this.active && this.visible && var1 >= (double)this.getX() && var3 >= (double)this.getY() && var1 < (double)(this.getX() + this.getWidth()) && var3 < (double)(this.getY() + this.getHeight());
-   }
-
    @Nullable
    public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
       if (this.active && this.visible) {
@@ -180,7 +175,7 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    }
 
    public boolean isMouseOver(double var1, double var3) {
-      return this.active && this.visible && var1 >= (double)this.getX() && var3 >= (double)this.getY() && var1 < (double)(this.getX() + this.width) && var3 < (double)(this.getY() + this.height);
+      return this.active && this.visible && var1 >= (double)this.getX() && var3 >= (double)this.getY() && var1 < (double)this.getRight() && var3 < (double)this.getBottom();
    }
 
    public void playDownSound(SoundManager var1) {

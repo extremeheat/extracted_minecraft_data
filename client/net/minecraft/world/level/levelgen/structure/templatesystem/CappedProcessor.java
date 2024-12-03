@@ -13,13 +13,7 @@ import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.ServerLevelAccessor;
 
 public class CappedProcessor extends StructureProcessor {
-   public static final MapCodec<CappedProcessor> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(StructureProcessorType.SINGLE_CODEC.fieldOf("delegate").forGetter((var0x) -> {
-         return var0x.delegate;
-      }), IntProvider.POSITIVE_CODEC.fieldOf("limit").forGetter((var0x) -> {
-         return var0x.limit;
-      })).apply(var0, CappedProcessor::new);
-   });
+   public static final MapCodec<CappedProcessor> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(StructureProcessorType.SINGLE_CODEC.fieldOf("delegate").forGetter((var0x) -> var0x.delegate), IntProvider.POSITIVE_CODEC.fieldOf("limit").forGetter((var0x) -> var0x.limit)).apply(var0, CappedProcessor::new));
    private final StructureProcessor delegate;
    private final IntProvider limit;
 

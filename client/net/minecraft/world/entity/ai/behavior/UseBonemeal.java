@@ -84,8 +84,8 @@ public class UseBonemeal extends Behavior<Villager> {
    private void setCurrentCropAsTarget(Villager var1) {
       this.cropPos.ifPresent((var1x) -> {
          BlockPosTracker var2 = new BlockPosTracker(var1x);
-         var1.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, (Object)var2);
-         var1.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var2, 0.5F, 1)));
+         var1.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, var2);
+         var1.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var2, 0.5F, 1));
       });
    }
 

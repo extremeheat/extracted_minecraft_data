@@ -13,9 +13,7 @@ public class RedstoneWireConnectionsFix extends DataFix {
 
    protected TypeRewriteRule makeRule() {
       Schema var1 = this.getInputSchema();
-      return this.fixTypeEverywhereTyped("RedstoneConnectionsFix", var1.getType(References.BLOCK_STATE), (var1x) -> {
-         return var1x.update(DSL.remainderFinder(), this::updateRedstoneConnections);
-      });
+      return this.fixTypeEverywhereTyped("RedstoneConnectionsFix", var1.getType(References.BLOCK_STATE), (var1x) -> var1x.update(DSL.remainderFinder(), this::updateRedstoneConnections));
    }
 
    private <T> Dynamic<T> updateRedstoneConnections(Dynamic<T> var1) {
@@ -31,15 +29,7 @@ public class RedstoneWireConnectionsFix extends DataFix {
          String var8 = !isConnected(var2) && !var6 ? "side" : var2;
          String var9 = !isConnected(var3) && !var5 ? "side" : var3;
          String var10 = !isConnected(var4) && !var5 ? "side" : var4;
-         return var0.update("east", (var1x) -> {
-            return var1x.createString(var7);
-         }).update("west", (var1x) -> {
-            return var1x.createString(var8);
-         }).update("north", (var1x) -> {
-            return var1x.createString(var9);
-         }).update("south", (var1x) -> {
-            return var1x.createString(var10);
-         });
+         return var0.update("east", (var1x) -> var1x.createString(var7)).update("west", (var1x) -> var1x.createString(var8)).update("north", (var1x) -> var1x.createString(var9)).update("south", (var1x) -> var1x.createString(var10));
       });
    }
 

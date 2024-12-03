@@ -1,6 +1,6 @@
 package net.minecraft.world.entity.ai.behavior;
 
-import java.util.Iterator;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
@@ -22,9 +22,7 @@ public class TryFindLand {
 
    public static BehaviorControl<PathfinderMob> create(int var0, float var1) {
       MutableLong var2 = new MutableLong(0L);
-      return BehaviorBuilder.create((var3) -> {
-         return var3.group(var3.absent(MemoryModuleType.ATTACK_TARGET), var3.absent(MemoryModuleType.WALK_TARGET), var3.registered(MemoryModuleType.LOOK_TARGET)).apply(var3, (var3x, var4, var5) -> {
-            return (var5x, var6, var7) -> {
+      return BehaviorBuilder.create((Function)((var3) -> var3.group(var3.absent(MemoryModuleType.ATTACK_TARGET), var3.absent(MemoryModuleType.WALK_TARGET), var3.registered(MemoryModuleType.LOOK_TARGET)).apply(var3, (var3x, var4, var5) -> (var5x, var6, var7) -> {
                if (!var5x.getFluidState(var6.blockPosition()).is(FluidTags.WATER)) {
                   return false;
                } else if (var7 < var2.getValue()) {
@@ -34,10 +32,8 @@ public class TryFindLand {
                   BlockPos var9 = var6.blockPosition();
                   BlockPos.MutableBlockPos var10 = new BlockPos.MutableBlockPos();
                   CollisionContext var11 = CollisionContext.of(var6);
-                  Iterator var12 = BlockPos.withinManhattan(var9, var0, var0, var0).iterator();
 
-                  while(var12.hasNext()) {
-                     BlockPos var13 = (BlockPos)var12.next();
+                  for(BlockPos var13 : BlockPos.withinManhattan(var9, var0, var0, var0)) {
                      if (var13.getX() != var9.getX() || var13.getZ() != var9.getZ()) {
                         BlockState var14 = var5x.getBlockState(var13);
                         BlockState var15 = var5x.getBlockState(var10.setWithOffset(var13, (Direction)Direction.DOWN));
@@ -53,8 +49,6 @@ public class TryFindLand {
                   var2.setValue(var7 + 60L);
                   return true;
                }
-            };
-         });
-      });
+            })));
    }
 }

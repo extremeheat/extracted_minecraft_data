@@ -16,21 +16,13 @@ public class Ping {
    }
 
    public static List<RegionPingResult> ping(Region... var0) {
-      Region[] var1 = var0;
-      int var2 = var0.length;
-
-      int var3;
-      for(var3 = 0; var3 < var2; ++var3) {
-         Region var4 = var1[var3];
+      for(Region var4 : var0) {
          ping(var4.endpoint);
       }
 
       ArrayList var6 = Lists.newArrayList();
-      Region[] var7 = var0;
-      var3 = var0.length;
 
-      for(int var8 = 0; var8 < var3; ++var8) {
-         Region var5 = var7[var8];
+      for(Region var5 : var0) {
          var6.add(new RegionPingResult(var5.name, ping(var5.endpoint)));
       }
 

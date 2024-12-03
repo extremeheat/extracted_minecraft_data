@@ -50,10 +50,6 @@ public record CatVariant(ResourceLocation texture) {
       return (CatVariant)Registry.register(var0, (ResourceKey)var1, new CatVariant(ResourceLocation.withDefaultNamespace(var2)));
    }
 
-   public ResourceLocation texture() {
-      return this.texture;
-   }
-
    static {
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.CAT_VARIANT);
       TABBY = createKey("tabby");

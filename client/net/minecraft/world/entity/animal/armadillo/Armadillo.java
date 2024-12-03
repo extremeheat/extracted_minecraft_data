@@ -70,7 +70,7 @@ public class Armadillo extends Animal {
 
    @Nullable
    public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (AgeableMob)EntityType.ARMADILLO.create(var1, EntitySpawnReason.BREEDING);
+      return EntityType.ARMADILLO.create(var1, EntitySpawnReason.BREEDING);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -362,7 +362,7 @@ public class Armadillo extends Animal {
    }
 
    static {
-      ARMADILLO_STATE = SynchedEntityData.defineId(Armadillo.class, EntityDataSerializers.ARMADILLO_STATE);
+      ARMADILLO_STATE = SynchedEntityData.<ArmadilloState>defineId(Armadillo.class, EntityDataSerializers.ARMADILLO_STATE);
    }
 
    public static enum ArmadilloState implements StringRepresentable {
@@ -387,8 +387,8 @@ public class Armadillo extends Animal {
          }
       };
 
-      private static final StringRepresentable.EnumCodec<ArmadilloState> CODEC = StringRepresentable.fromEnum(ArmadilloState::values);
-      private static final IntFunction<ArmadilloState> BY_ID = ByIdMap.continuous(ArmadilloState::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      private static final StringRepresentable.EnumCodec<ArmadilloState> CODEC = StringRepresentable.<ArmadilloState>fromEnum(ArmadilloState::values);
+      private static final IntFunction<ArmadilloState> BY_ID = ByIdMap.<ArmadilloState>continuous(ArmadilloState::id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       public static final StreamCodec<ByteBuf, ArmadilloState> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, ArmadilloState::id);
       private final String name;
       private final boolean isThreatened;
@@ -403,7 +403,7 @@ public class Armadillo extends Animal {
       }
 
       public static ArmadilloState fromName(String var0) {
-         return (ArmadilloState)CODEC.byName(var0, (Enum)IDLE);
+         return (ArmadilloState)CODEC.byName(var0, IDLE);
       }
 
       public String getSerializedName() {

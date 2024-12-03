@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -12,6 +13,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -128,7 +130,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       this.dimension = var2;
       this.isClientSide = var5;
       if (var10.coordinateScale() != 1.0) {
-         this.worldBorder = new WorldBorder(this) {
+         this.worldBorder = new WorldBorder() {
             public double getCenterX() {
                return super.getCenterX() / var10.coordinateScale();
             }
@@ -400,7 +402,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public void addParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
    }
 
-   public void addParticle(ParticleOptions var1, boolean var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+   public void addParticle(ParticleOptions var1, boolean var2, boolean var3, double var4, double var6, double var8, double var10, double var12, double var14) {
    }
 
    public void addAlwaysVisibleParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
@@ -571,24 +573,19 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public List<Entity> getEntities(@Nullable Entity var1, AABB var2, Predicate<? super Entity> var3) {
       Profiler.get().incrementCounter("getEntities");
       ArrayList var4 = Lists.newArrayList();
-      this.getEntities().get(var2, (var3x) -> {
+      this.getEntities().get(var2, (Consumer)((var3x) -> {
          if (var3x != var1 && var3.test(var3x)) {
             var4.add(var3x);
          }
 
-         if (var3x instanceof EnderDragon) {
-            EnderDragonPart[] var4x = ((EnderDragon)var3x).getSubEntities();
-            int var5 = var4x.length;
+      }));
 
-            for(int var6 = 0; var6 < var5; ++var6) {
-               EnderDragonPart var7 = var4x[var6];
-               if (var3x != var1 && var3.test(var7)) {
-                  var4.add(var7);
-               }
-            }
+      for(EnderDragonPart var6 : this.dragonParts()) {
+         if (var6 != var1 && var6.parentMob != var1 && var3.test(var6) && var2.intersects(var6.getBoundingBox())) {
+            var4.add(var6);
          }
+      }
 
-      });
       return var4;
    }
 
@@ -613,11 +610,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          }
 
          if (var4x instanceof EnderDragon var5x) {
-            EnderDragonPart[] var6 = var5x.getSubEntities();
-            int var7 = var6.length;
-
-            for(int var8 = 0; var8 < var7; ++var8) {
-               EnderDragonPart var9 = var6[var8];
+            for(EnderDragonPart var9 : var5x.getSubEntities()) {
                Entity var10 = (Entity)var1.tryCast(var9);
                if (var10 != null && var3.test(var10)) {
                   var4.add(var10);
@@ -634,6 +627,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    @Nullable
    public abstract Entity getEntity(int var1);
+
+   public abstract Collection<EnderDragonPart> dragonParts();
 
    public void blockEntityChanged(BlockPos var1) {
       if (this.hasChunkAt(var1)) {
@@ -730,16 +725,14 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public CrashReportCategory fillReportDetails(CrashReport var1) {
       CrashReportCategory var2 = var1.addCategory("Affected level", 1);
-      var2.setDetail("All players", () -> {
+      var2.setDetail("All players", (CrashReportDetail)(() -> {
          int var10000 = this.players().size();
-         return "" + var10000 + " total; " + String.valueOf(this.players());
-      });
+         return var10000 + " total; " + String.valueOf(this.players());
+      }));
       ChunkSource var10002 = this.getChunkSource();
       Objects.requireNonNull(var10002);
       var2.setDetail("Chunk stats", var10002::gatherStats);
-      var2.setDetail("Level dimension", () -> {
-         return this.dimension().location().toString();
-      });
+      var2.setDetail("Level dimension", (CrashReportDetail)(() -> this.dimension().location().toString()));
 
       try {
          this.levelData.fillCrashReportCategory(var2, this);
@@ -758,10 +751,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public abstract Scoreboard getScoreboard();
 
    public void updateNeighbourForOutputSignal(BlockPos var1, Block var2) {
-      Iterator var3 = Direction.Plane.HORIZONTAL.iterator();
-
-      while(var3.hasNext()) {
-         Direction var4 = (Direction)var3.next();
+      for(Direction var4 : Direction.Plane.HORIZONTAL) {
          BlockPos var5 = var1.relative(var4);
          if (this.hasChunkAt(var5)) {
             BlockState var6 = this.getBlockState(var5);
@@ -806,7 +796,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public DimensionType dimensionType() {
-      return (DimensionType)this.dimensionTypeRegistration.value();
+      return this.dimensionTypeRegistration.value();
    }
 
    public Holder<DimensionType> dimensionTypeRegistration() {
@@ -886,7 +876,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       TNT("tnt"),
       TRIGGER("trigger");
 
-      public static final Codec<ExplosionInteraction> CODEC = StringRepresentable.fromEnum(ExplosionInteraction::values);
+      public static final Codec<ExplosionInteraction> CODEC = StringRepresentable.<ExplosionInteraction>fromEnum(ExplosionInteraction::values);
       private final String id;
 
       private ExplosionInteraction(final String var3) {

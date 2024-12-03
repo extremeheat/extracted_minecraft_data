@@ -91,7 +91,7 @@ public class LightSectionDebugRenderer implements DebugRenderer.SimpleDebugRende
       var1.addVertex(var21, var18, var19, var20).setColor(var14.x(), var14.y(), var14.z(), 1.0F);
    }
 
-   private static final class SectionData {
+   static final class SectionData {
       final DiscreteVoxelShape lightAndBlocksShape;
       final DiscreteVoxelShape lightShape;
       final SectionPos minPos;

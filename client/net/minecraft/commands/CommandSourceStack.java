@@ -10,7 +10,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -289,10 +288,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
    private void broadcastToAdmins(Component var1) {
       MutableComponent var2 = Component.translatable("chat.type.admin", this.getDisplayName(), var1).withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC);
       if (this.server.getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK)) {
-         Iterator var3 = this.server.getPlayerList().getPlayers().iterator();
-
-         while(var3.hasNext()) {
-            ServerPlayer var4 = (ServerPlayer)var3.next();
+         for(ServerPlayer var4 : this.server.getPlayerList().getPlayers()) {
             if (var4.commandSource() != this.source && this.server.getPlayerList().isOp(var4.getGameProfile())) {
                var4.sendSystemMessage(var2);
             }
@@ -334,9 +330,7 @@ public class CommandSourceStack implements ExecutionCommandSource<CommandSourceS
 
    public CompletableFuture<Suggestions> suggestRegistryElements(ResourceKey<? extends Registry<?>> var1, SharedSuggestionProvider.ElementSuggestionType var2, SuggestionsBuilder var3, CommandContext<?> var4) {
       if (var1 == Registries.RECIPE) {
-         return SharedSuggestionProvider.suggestResource(this.server.getRecipeManager().getRecipes().stream().map((var0) -> {
-            return var0.id().location();
-         }), var3);
+         return SharedSuggestionProvider.suggestResource(this.server.getRecipeManager().getRecipes().stream().map((var0) -> var0.id().location()), var3);
       } else if (var1 == Registries.ADVANCEMENT) {
          Collection var5 = this.server.getAdvancements().getAllAdvancements();
          return SharedSuggestionProvider.suggestResource(var5.stream().map(AdvancementHolder::id), var3);

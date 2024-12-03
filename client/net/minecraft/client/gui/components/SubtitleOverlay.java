@@ -49,10 +49,8 @@ public class SubtitleOverlay implements SoundEventListener {
          Vec3 var5 = var3.forward();
          Vec3 var6 = var3.right();
          this.audibleSubtitles.clear();
-         Iterator var7 = this.subtitles.iterator();
 
-         while(var7.hasNext()) {
-            Subtitle var8 = (Subtitle)var7.next();
+         for(Subtitle var8 : this.subtitles) {
             if (var8.isAudibleFrom(var4)) {
                this.audibleSubtitles.add(var8);
             }
@@ -64,9 +62,8 @@ public class SubtitleOverlay implements SoundEventListener {
             double var9 = (Double)this.minecraft.options.notificationDisplayTime().get();
             Iterator var11 = this.audibleSubtitles.iterator();
 
-            Subtitle var12;
             while(var11.hasNext()) {
-               var12 = (Subtitle)var11.next();
+               Subtitle var12 = (Subtitle)var11.next();
                var12.purgeOldInstances(3000.0 * var9);
                if (!var12.isStillActive()) {
                   var11.remove();
@@ -76,13 +73,11 @@ public class SubtitleOverlay implements SoundEventListener {
             }
 
             var30 += this.minecraft.font.width("<") + this.minecraft.font.width(" ") + this.minecraft.font.width(">") + this.minecraft.font.width(" ");
-            var11 = this.audibleSubtitles.iterator();
 
-            while(var11.hasNext()) {
-               var12 = (Subtitle)var11.next();
+            for(Subtitle var33 : this.audibleSubtitles) {
                boolean var13 = true;
-               Component var14 = var12.getText();
-               SoundPlayedAt var15 = var12.getClosest(var4);
+               Component var14 = var33.getText();
+               SoundPlayedAt var15 = var33.getClosest(var4);
                if (var15 != null) {
                   Vec3 var16 = var15.location.subtract(var4).normalize();
                   double var17 = var6.dot(var16);
@@ -122,10 +117,7 @@ public class SubtitleOverlay implements SoundEventListener {
       if (var2.getSubtitle() != null) {
          Component var4 = var2.getSubtitle();
          if (!this.subtitles.isEmpty()) {
-            Iterator var5 = this.subtitles.iterator();
-
-            while(var5.hasNext()) {
-               Subtitle var6 = (Subtitle)var5.next();
+            for(Subtitle var6 : this.subtitles) {
                if (var6.getText().equals(var4)) {
                   var6.refresh(new Vec3(var1.getX(), var1.getY(), var1.getZ()));
                   return;
@@ -134,6 +126,17 @@ public class SubtitleOverlay implements SoundEventListener {
          }
 
          this.subtitles.add(new Subtitle(var4, var3, new Vec3(var1.getX(), var1.getY(), var1.getZ())));
+      }
+   }
+
+   static record SoundPlayedAt(Vec3 location, long time) {
+      final Vec3 location;
+      final long time;
+
+      SoundPlayedAt(Vec3 var1, long var2) {
+         super();
+         this.location = var1;
+         this.time = var2;
       }
    }
 
@@ -158,16 +161,12 @@ public class SubtitleOverlay implements SoundEventListener {
          if (this.playedAt.isEmpty()) {
             return null;
          } else {
-            return this.playedAt.size() == 1 ? (SoundPlayedAt)this.playedAt.getFirst() : (SoundPlayedAt)this.playedAt.stream().min(Comparator.comparingDouble((var1x) -> {
-               return var1x.location().distanceTo(var1);
-            })).orElse((Object)null);
+            return this.playedAt.size() == 1 ? (SoundPlayedAt)this.playedAt.getFirst() : (SoundPlayedAt)this.playedAt.stream().min(Comparator.comparingDouble((var1x) -> var1x.location().distanceTo(var1))).orElse((Object)null);
          }
       }
 
       public void refresh(Vec3 var1) {
-         this.playedAt.removeIf((var1x) -> {
-            return var1.equals(var1x.location());
-         });
+         this.playedAt.removeIf((var1x) -> var1.equals(var1x.location()));
          this.playedAt.add(new SoundPlayedAt(var1, Util.getMillis()));
       }
 
@@ -184,32 +183,11 @@ public class SubtitleOverlay implements SoundEventListener {
 
       public void purgeOldInstances(double var1) {
          long var3 = Util.getMillis();
-         this.playedAt.removeIf((var4) -> {
-            return (double)(var3 - var4.time()) > var1;
-         });
+         this.playedAt.removeIf((var4) -> (double)(var3 - var4.time()) > var1);
       }
 
       public boolean isStillActive() {
          return !this.playedAt.isEmpty();
-      }
-   }
-
-   static record SoundPlayedAt(Vec3 location, long time) {
-      final Vec3 location;
-      final long time;
-
-      SoundPlayedAt(Vec3 var1, long var2) {
-         super();
-         this.location = var1;
-         this.time = var2;
-      }
-
-      public Vec3 location() {
-         return this.location;
-      }
-
-      public long time() {
-         return this.time;
       }
    }
 }

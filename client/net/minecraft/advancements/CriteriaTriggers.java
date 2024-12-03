@@ -111,7 +111,7 @@ public class CriteriaTriggers {
    }
 
    private static <T extends CriterionTrigger<?>> T register(String var0, T var1) {
-      return (CriterionTrigger)Registry.register(BuiltInRegistries.TRIGGER_TYPES, (String)var0, var1);
+      return (T)(Registry.register(BuiltInRegistries.TRIGGER_TYPES, (String)var0, var1));
    }
 
    public static CriterionTrigger<?> bootstrap(Registry<CriterionTrigger<?>> var0) {

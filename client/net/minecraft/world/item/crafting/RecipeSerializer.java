@@ -37,6 +37,6 @@ public interface RecipeSerializer<T extends Recipe<?>> {
    StreamCodec<RegistryFriendlyByteBuf, T> streamCodec();
 
    static <S extends RecipeSerializer<T>, T extends Recipe<?>> S register(String var0, S var1) {
-      return (RecipeSerializer)Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, (String)var0, var1);
+      return (S)(Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, (String)var0, var1));
    }
 }

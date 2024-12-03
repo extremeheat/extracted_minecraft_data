@@ -137,9 +137,7 @@ public class Path {
          var1.writeBoolean(this.reached);
          var1.writeInt(this.nextNodeIndex);
          var1.writeBlockPos(this.target);
-         var1.writeCollection(this.nodes, (var0, var1x) -> {
-            var1x.writeToStream(var0);
-         });
+         var1.writeCollection(this.nodes, (var0, var1x) -> var1x.writeToStream(var0));
          this.debugData.write(var1);
       }
    }
@@ -180,11 +178,8 @@ public class Path {
 
    static void writeNodeArray(FriendlyByteBuf var0, Node[] var1) {
       var0.writeVarInt(var1.length);
-      Node[] var2 = var1;
-      int var3 = var1.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         Node var5 = var2[var4];
+      for(Node var5 : var1) {
          var5.writeToStream(var0);
       }
 
@@ -208,9 +203,7 @@ public class Path {
       }
 
       public void write(FriendlyByteBuf var1) {
-         var1.writeCollection(this.targetNodes, (var0, var1x) -> {
-            var1x.writeToStream(var0);
-         });
+         var1.writeCollection(this.targetNodes, (var0, var1x) -> var1x.writeToStream(var0));
          Path.writeNodeArray(var1, this.openSet);
          Path.writeNodeArray(var1, this.closedSet);
       }
@@ -220,18 +213,6 @@ public class Path {
          Node[] var2 = Path.readNodeArray(var0);
          Node[] var3 = Path.readNodeArray(var0);
          return new DebugData(var2, var3, var1);
-      }
-
-      public Node[] openSet() {
-         return this.openSet;
-      }
-
-      public Node[] closedSet() {
-         return this.closedSet;
-      }
-
-      public Set<Target> targetNodes() {
-         return this.targetNodes;
       }
    }
 }

@@ -11,10 +11,6 @@ public record Atom<T>(String name) {
    }
 
    public static <T> Atom<T> of(String var0) {
-      return new Atom(var0);
-   }
-
-   public String name() {
-      return this.name;
+      return new Atom<T>(var0);
    }
 }

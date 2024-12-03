@@ -31,26 +31,6 @@ public record ClientboundSetScorePacket(String owner, String objectiveName, int 
       var1.handleSetScore(this);
    }
 
-   public String owner() {
-      return this.owner;
-   }
-
-   public String objectiveName() {
-      return this.objectiveName;
-   }
-
-   public int score() {
-      return this.score;
-   }
-
-   public Optional<Component> display() {
-      return this.display;
-   }
-
-   public Optional<NumberFormat> numberFormat() {
-      return this.numberFormat;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8, ClientboundSetScorePacket::owner, ByteBufCodecs.STRING_UTF8, ClientboundSetScorePacket::objectiveName, ByteBufCodecs.VAR_INT, ClientboundSetScorePacket::score, ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC, ClientboundSetScorePacket::display, NumberFormatTypes.OPTIONAL_STREAM_CODEC, ClientboundSetScorePacket::numberFormat, ClientboundSetScorePacket::new);
    }

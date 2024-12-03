@@ -13,17 +13,4 @@ public record InitialWorldCreationOptions(WorldCreationUiState.SelectedGameMode 
       this.disabledGameRules = var2;
       this.flatLevelPreset = var3;
    }
-
-   public WorldCreationUiState.SelectedGameMode selectedGameMode() {
-      return this.selectedGameMode;
-   }
-
-   public Set<GameRules.Key<GameRules.BooleanValue>> disabledGameRules() {
-      return this.disabledGameRules;
-   }
-
-   @Nullable
-   public ResourceKey<FlatLevelGeneratorPreset> flatLevelPreset() {
-      return this.flatLevelPreset;
-   }
 }

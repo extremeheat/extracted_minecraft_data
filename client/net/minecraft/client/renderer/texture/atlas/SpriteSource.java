@@ -15,20 +15,18 @@ public interface SpriteSource {
 
    SpriteSourceType type();
 
-   public interface SpriteSupplier extends Function<SpriteResourceLoader, SpriteContents> {
-      default void discard() {
-      }
-   }
-
    public interface Output {
       default void add(ResourceLocation var1, Resource var2) {
-         this.add(var1, (var2x) -> {
-            return var2x.loadSprite(var1, var2);
-         });
+         this.add(var1, (SpriteSupplier)((var2x) -> var2x.loadSprite(var1, var2)));
       }
 
       void add(ResourceLocation var1, SpriteSupplier var2);
 
       void removeAll(Predicate<ResourceLocation> var1);
+   }
+
+   public interface SpriteSupplier extends Function<SpriteResourceLoader, SpriteContents> {
+      default void discard() {
+      }
    }
 }

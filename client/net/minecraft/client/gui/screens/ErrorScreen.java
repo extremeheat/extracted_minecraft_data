@@ -15,9 +15,7 @@ public class ErrorScreen extends Screen {
 
    protected void init() {
       super.init();
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> {
-         this.minecraft.setScreen((Screen)null);
-      }).bounds(this.width / 2 - 100, 140, 200, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1) -> this.minecraft.setScreen((Screen)null)).bounds(this.width / 2 - 100, 140, 200, 20).build());
    }
 
    public void render(GuiGraphics var1, int var2, int var3, float var4) {

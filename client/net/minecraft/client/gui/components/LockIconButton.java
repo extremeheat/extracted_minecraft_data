@@ -39,7 +39,7 @@ public class LockIconButton extends Button {
       var1.blitSprite(RenderType::guiTextured, var5.sprite, this.getX(), this.getY(), this.width, this.height);
    }
 
-   private static enum Icon {
+   static enum Icon {
       LOCKED(ResourceLocation.withDefaultNamespace("widget/locked_button")),
       LOCKED_HOVER(ResourceLocation.withDefaultNamespace("widget/locked_button_highlighted")),
       LOCKED_DISABLED(ResourceLocation.withDefaultNamespace("widget/locked_button_disabled")),

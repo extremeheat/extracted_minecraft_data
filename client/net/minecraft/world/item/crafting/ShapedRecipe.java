@@ -85,26 +85,12 @@ public class ShapedRecipe implements CraftingRecipe {
    }
 
    public List<RecipeDisplay> display() {
-      return List.of(new ShapedCraftingRecipeDisplay(this.pattern.width(), this.pattern.height(), this.pattern.ingredients().stream().map((var0) -> {
-         return (SlotDisplay)var0.map(Ingredient::display).orElse(SlotDisplay.Empty.INSTANCE);
-      }).toList(), new SlotDisplay.ItemStackSlotDisplay(this.result), new SlotDisplay.ItemSlotDisplay(Items.CRAFTING_TABLE)));
+      return List.of(new ShapedCraftingRecipeDisplay(this.pattern.width(), this.pattern.height(), this.pattern.ingredients().stream().map((var0) -> (SlotDisplay)var0.map(Ingredient::display).orElse(SlotDisplay.Empty.INSTANCE)).toList(), new SlotDisplay.ItemStackSlotDisplay(this.result), new SlotDisplay.ItemSlotDisplay(Items.CRAFTING_TABLE)));
    }
 
    public static class Serializer implements RecipeSerializer<ShapedRecipe> {
-      public static final MapCodec<ShapedRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(Codec.STRING.optionalFieldOf("group", "").forGetter((var0x) -> {
-            return var0x.group;
-         }), CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter((var0x) -> {
-            return var0x.category;
-         }), ShapedRecipePattern.MAP_CODEC.forGetter((var0x) -> {
-            return var0x.pattern;
-         }), ItemStack.STRICT_CODEC.fieldOf("result").forGetter((var0x) -> {
-            return var0x.result;
-         }), Codec.BOOL.optionalFieldOf("show_notification", true).forGetter((var0x) -> {
-            return var0x.showNotification;
-         })).apply(var0, ShapedRecipe::new);
-      });
-      public static final StreamCodec<RegistryFriendlyByteBuf, ShapedRecipe> STREAM_CODEC = StreamCodec.of(Serializer::toNetwork, Serializer::fromNetwork);
+      public static final MapCodec<ShapedRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.optionalFieldOf("group", "").forGetter((var0x) -> var0x.group), CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter((var0x) -> var0x.category), ShapedRecipePattern.MAP_CODEC.forGetter((var0x) -> var0x.pattern), ItemStack.STRICT_CODEC.fieldOf("result").forGetter((var0x) -> var0x.result), Codec.BOOL.optionalFieldOf("show_notification", true).forGetter((var0x) -> var0x.showNotification)).apply(var0, ShapedRecipe::new));
+      public static final StreamCodec<RegistryFriendlyByteBuf, ShapedRecipe> STREAM_CODEC = StreamCodec.<RegistryFriendlyByteBuf, ShapedRecipe>of(Serializer::toNetwork, Serializer::fromNetwork);
 
       public Serializer() {
          super();

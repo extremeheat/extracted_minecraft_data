@@ -32,9 +32,7 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
    private final Function<PathfinderMob, TagKey<DamageType>> panicCausingDamageTypes;
 
    public AnimalPanic(float var1) {
-      this(var1, (var0) -> {
-         return DamageTypeTags.PANIC_CAUSES;
-      });
+      this(var1, (var0) -> DamageTypeTags.PANIC_CAUSES);
    }
 
    public AnimalPanic(float var1, Function<PathfinderMob, TagKey<DamageType>> var2) {
@@ -44,9 +42,7 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, E var2) {
-      return (Boolean)var2.getBrain().getMemory(MemoryModuleType.HURT_BY).map((var2x) -> {
-         return var2x.is((TagKey)this.panicCausingDamageTypes.apply(var2));
-      }).orElse(false) || var2.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
+      return (Boolean)var2.getBrain().getMemory(MemoryModuleType.HURT_BY).map((var2x) -> var2x.is((TagKey)this.panicCausingDamageTypes.apply(var2))).orElse(false) || var2.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
    }
 
    protected boolean canStillUse(ServerLevel var1, E var2, long var3) {
@@ -54,7 +50,7 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
    }
 
    protected void start(ServerLevel var1, E var2, long var3) {
-      var2.getBrain().setMemory(MemoryModuleType.IS_PANICKING, (Object)true);
+      var2.getBrain().setMemory(MemoryModuleType.IS_PANICKING, true);
       var2.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
    }
 
@@ -67,7 +63,7 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
       if (var2.getNavigation().isDone()) {
          Vec3 var5 = this.getPanicPos(var2, var1);
          if (var5 != null) {
-            var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, (Object)(new WalkTarget(var5, this.speedMultiplier, 0)));
+            var2.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(var5, this.speedMultiplier, 0));
          }
       }
 
@@ -92,15 +88,9 @@ public class AnimalPanic<E extends PathfinderMob> extends Behavior<E> {
       } else {
          Predicate var4;
          if (Mth.ceil(var2.getBbWidth()) == 2) {
-            var4 = (var1x) -> {
-               return BlockPos.squareOutSouthEast(var1x).allMatch((var1xx) -> {
-                  return var1.getFluidState(var1xx).is(FluidTags.WATER);
-               });
-            };
+            var4 = (var1x) -> BlockPos.squareOutSouthEast(var1x).allMatch((var1xx) -> var1.getFluidState(var1xx).is(FluidTags.WATER));
          } else {
-            var4 = (var1x) -> {
-               return var1.getFluidState(var1x).is(FluidTags.WATER);
-            };
+            var4 = (var1x) -> var1.getFluidState(var1x).is(FluidTags.WATER);
          }
 
          return BlockPos.findClosestMatch(var3, 5, 1, var4);

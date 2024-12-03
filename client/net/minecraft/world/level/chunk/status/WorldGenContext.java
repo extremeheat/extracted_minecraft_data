@@ -17,28 +17,4 @@ public record WorldGenContext(ServerLevel level, ChunkGenerator generator, Struc
       this.mainThreadExecutor = var5;
       this.unsavedListener = var6;
    }
-
-   public ServerLevel level() {
-      return this.level;
-   }
-
-   public ChunkGenerator generator() {
-      return this.generator;
-   }
-
-   public StructureTemplateManager structureManager() {
-      return this.structureManager;
-   }
-
-   public ThreadedLevelLightEngine lightEngine() {
-      return this.lightEngine;
-   }
-
-   public Executor mainThreadExecutor() {
-      return this.mainThreadExecutor;
-   }
-
-   public LevelChunk.UnsavedListener unsavedListener() {
-      return this.unsavedListener;
-   }
 }

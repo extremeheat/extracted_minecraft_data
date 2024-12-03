@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.item.ItemStack;
 
 public class ClientboundContainerSetSlotPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundContainerSetSlotPacket> STREAM_CODEC = Packet.codec(ClientboundContainerSetSlotPacket::write, ClientboundContainerSetSlotPacket::new);
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundContainerSetSlotPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundContainerSetSlotPacket>codec(ClientboundContainerSetSlotPacket::write, ClientboundContainerSetSlotPacket::new);
    private final int containerId;
    private final int stateId;
    private final int slot;

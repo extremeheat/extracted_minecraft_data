@@ -6,7 +6,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
@@ -34,10 +33,6 @@ public class FeatureSorter {
       Comparator var5 = Comparator.comparingInt(1FeatureData::step).thenComparingInt(1FeatureData::featureIndex);
       TreeMap var6 = new TreeMap(var5);
       int var7 = 0;
-      Iterator var8 = var0.iterator();
-
-      ArrayList var10;
-      int var12;
 
       record 1FeatureData(int featureIndex, int step, PlacedFeature feature) {
          _FeatureData/* $FF was: 1FeatureData*/(int var1, int var2, PlacedFeature var3) {
@@ -46,103 +41,79 @@ public class FeatureSorter {
             this.step = var2;
             this.feature = var3;
          }
-
-         public int featureIndex() {
-            return this.featureIndex;
-         }
-
-         public int step() {
-            return this.step;
-         }
-
-         public PlacedFeature feature() {
-            return this.feature;
-         }
       }
 
-      while(var8.hasNext()) {
-         Object var9 = var8.next();
-         var10 = Lists.newArrayList();
+      for(Object var9 : var0) {
+         ArrayList var10 = Lists.newArrayList();
          List var11 = (List)var1.apply(var9);
          var7 = Math.max(var7, var11.size());
 
-         for(var12 = 0; var12 < var11.size(); ++var12) {
-            Iterator var13 = ((HolderSet)var11.get(var12)).iterator();
-
-            while(var13.hasNext()) {
-               Holder var14 = (Holder)var13.next();
+         for(int var12 = 0; var12 < var11.size(); ++var12) {
+            for(Holder var14 : (HolderSet)var11.get(var12)) {
                PlacedFeature var15 = (PlacedFeature)var14.value();
-               var10.add(new 1FeatureData(var3.computeIfAbsent(var15, (var1x) -> {
-                  return var4.getAndIncrement();
-               }), var12, var15));
+               var10.add(new 1FeatureData(var3.computeIfAbsent(var15, (var1x) -> var4.getAndIncrement()), var12, var15));
             }
          }
 
-         for(var12 = 0; var12 < var10.size(); ++var12) {
-            Set var24 = (Set)var6.computeIfAbsent((1FeatureData)var10.get(var12), (var1x) -> {
-               return new TreeSet(var5);
-            });
-            if (var12 < var10.size() - 1) {
-               var24.add((1FeatureData)var10.get(var12 + 1));
+         for(int var24 = 0; var24 < var10.size(); ++var24) {
+            Set var27 = (Set)var6.computeIfAbsent((1FeatureData)var10.get(var24), (var1x) -> new TreeSet(var5));
+            if (var24 < var10.size() - 1) {
+               var27.add((1FeatureData)var10.get(var24 + 1));
             }
          }
       }
 
       TreeSet var19 = new TreeSet(var5);
       TreeSet var20 = new TreeSet(var5);
-      var10 = Lists.newArrayList();
-      Iterator var21 = var6.keySet().iterator();
+      ArrayList var21 = Lists.newArrayList();
 
-      while(var21.hasNext()) {
-         1FeatureData var23 = (1FeatureData)var21.next();
+      for(1FeatureData var25 : var6.keySet()) {
          if (!var20.isEmpty()) {
             throw new IllegalStateException("You somehow broke the universe; DFS bork (iteration finished with non-empty in-progress vertex set");
          }
 
-         if (!var19.contains(var23)) {
-            Objects.requireNonNull(var10);
-            if (Graph.depthFirstSearch(var6, var19, var20, var10::add, var23)) {
+         if (!var19.contains(var25)) {
+            Objects.requireNonNull(var21);
+            if (Graph.depthFirstSearch(var6, var19, var20, var21::add, var25)) {
                if (!var2) {
                   throw new IllegalStateException("Feature order cycle found");
                }
 
-               ArrayList var25 = new ArrayList(var0);
+               ArrayList var28 = new ArrayList(var0);
 
-               int var26;
+               int var29;
                do {
-                  var26 = var25.size();
-                  ListIterator var28 = var25.listIterator();
+                  var29 = var28.size();
+                  ListIterator var31 = var28.listIterator();
 
-                  while(var28.hasNext()) {
-                     Object var16 = var28.next();
-                     var28.remove();
+                  while(var31.hasNext()) {
+                     Object var16 = var31.next();
+                     var31.remove();
 
                      try {
-                        buildFeaturesPerStep(var25, var1, false);
+                        buildFeaturesPerStep(var28, var1, false);
                      } catch (IllegalStateException var18) {
                         continue;
                      }
 
-                     var28.add(var16);
+                     var31.add(var16);
                   }
-               } while(var26 != var25.size());
+               } while(var29 != var28.size());
 
-               throw new IllegalStateException("Feature order cycle found, involved sources: " + String.valueOf(var25));
+               throw new IllegalStateException("Feature order cycle found, involved sources: " + String.valueOf(var28));
             }
          }
       }
 
-      Collections.reverse(var10);
-      ImmutableList.Builder var22 = ImmutableList.builder();
+      Collections.reverse(var21);
+      ImmutableList.Builder var23 = ImmutableList.builder();
 
-      for(var12 = 0; var12 < var7; ++var12) {
-         List var27 = (List)var10.stream().filter((var1x) -> {
-            return var1x.step() == var12;
-         }).map(1FeatureData::feature).collect(Collectors.toList());
-         var22.add(new StepFeatureData(var27));
+      for(int var26 = 0; var26 < var7; ++var26) {
+         List var30 = (List)var21.stream().filter((var1x) -> var1x.step() == var26).map(1FeatureData::feature).collect(Collectors.toList());
+         var23.add(new StepFeatureData(var30));
       }
 
-      return var22.build();
+      return var23.build();
    }
 
    public static record StepFeatureData(List<PlacedFeature> features, ToIntFunction<PlacedFeature> indexMapping) {
@@ -154,14 +125,6 @@ public class FeatureSorter {
          super();
          this.features = var1;
          this.indexMapping = var2;
-      }
-
-      public List<PlacedFeature> features() {
-         return this.features;
-      }
-
-      public ToIntFunction<PlacedFeature> indexMapping() {
-         return this.indexMapping;
       }
    }
 }

@@ -132,17 +132,13 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       this.networkCompressionThreshold = this.get("network-compression-threshold", 256);
       this.broadcastRconToOps = this.get("broadcast-rcon-to-ops", true);
       this.broadcastConsoleToOps = this.get("broadcast-console-to-ops", true);
-      this.maxWorldSize = this.get("max-world-size", (var0) -> {
-         return Mth.clamp(var0, 1, 29999984);
-      }, 29999984);
+      this.maxWorldSize = this.get("max-world-size", (var0) -> Mth.clamp(var0, 1, 29999984), 29999984);
       this.syncChunkWrites = this.get("sync-chunk-writes", true);
       this.regionFileComression = this.get("region-file-compression", "deflate");
       this.enableJmxMonitoring = this.get("enable-jmx-monitoring", false);
       this.enableStatus = this.get("enable-status", true);
       this.hideOnlinePlayers = this.get("hide-online-players", false);
-      this.entityBroadcastRangePercentage = this.get("entity-broadcast-range-percentage", (var0) -> {
-         return Mth.clamp(var0, 10, 1000);
-      }, 100);
+      this.entityBroadcastRangePercentage = this.get("entity-broadcast-range-percentage", (var0) -> Mth.clamp(var0, 10, 1000), 100);
       this.textFilteringConfig = this.get("text-filtering-config", "");
       this.textFilteringVersion = this.get("text-filtering-version", 0);
       this.playerIdleTimeout = this.getMutable("player-idle-timeout", 0);
@@ -155,11 +151,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       boolean var3 = this.get("generate-structures", true);
       long var4 = WorldOptions.parseSeed(var2).orElse(WorldOptions.randomSeed());
       this.worldOptions = new WorldOptions(var4, var3, false);
-      this.worldDimensionData = new WorldDimensionData((JsonObject)this.get("generator-settings", (var0) -> {
-         return GsonHelper.parse(!var0.isEmpty() ? var0 : "{}");
-      }, new JsonObject()), (String)this.get("level-type", (var0) -> {
-         return var0.toLowerCase(Locale.ROOT);
-      }, WorldPresets.NORMAL.location().toString()));
+      this.worldDimensionData = new WorldDimensionData((JsonObject)this.get("generator-settings", (var0) -> GsonHelper.parse(!var0.isEmpty() ? var0 : "{}"), new JsonObject()), (String)this.get("level-type", (var0) -> var0.toLowerCase(Locale.ROOT), WorldPresets.NORMAL.location().toString()));
       this.serverResourcePackInfo = getServerPackInfo(this.get("resource-pack-id", ""), this.get("resource-pack", ""), this.get("resource-pack-sha1", ""), this.getLegacyString("resource-pack-hash"), this.get("require-resource-pack", false), this.get("resource-pack-prompt", ""));
       this.initialDataPackConfiguration = getDatapackConfig(this.get("initial-enabled-packs", String.join(",", WorldDataConfiguration.DEFAULT.dataPacks().getEnabled())), this.get("initial-disabled-packs", String.join(",", WorldDataConfiguration.DEFAULT.dataPacks().getDisabled())));
    }
@@ -252,16 +244,8 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
 
       public WorldDimensions create(HolderLookup.Provider var1) {
          HolderLookup.RegistryLookup var2 = var1.lookupOrThrow(Registries.WORLD_PRESET);
-         Holder.Reference var3 = (Holder.Reference)var2.get(WorldPresets.NORMAL).or(() -> {
-            return var2.listElements().findAny();
-         }).orElseThrow(() -> {
-            return new IllegalStateException("Invalid datapack contents: can't find default preset");
-         });
-         Optional var10000 = Optional.ofNullable(ResourceLocation.tryParse(this.levelType)).map((var0) -> {
-            return ResourceKey.create(Registries.WORLD_PRESET, var0);
-         }).or(() -> {
-            return Optional.ofNullable((ResourceKey)LEGACY_PRESET_NAMES.get(this.levelType));
-         });
+         Holder.Reference var3 = (Holder.Reference)var2.get(WorldPresets.NORMAL).or(() -> var2.listElements().findAny()).orElseThrow(() -> new IllegalStateException("Invalid datapack contents: can't find default preset"));
+         Optional var10000 = Optional.ofNullable(ResourceLocation.tryParse(this.levelType)).map((var0) -> ResourceKey.create(Registries.WORLD_PRESET, var0)).or(() -> Optional.ofNullable((ResourceKey)LEGACY_PRESET_NAMES.get(this.levelType)));
          Objects.requireNonNull(var2);
          Holder var4 = (Holder)var10000.flatMap(var2::get).orElseGet(() -> {
             DedicatedServerProperties.LOGGER.warn("Failed to parse level-type {}, defaulting to {}", this.levelType, var3.key().location());
@@ -280,14 +264,6 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
          }
 
          return var5;
-      }
-
-      public JsonObject generatorSettings() {
-         return this.generatorSettings;
-      }
-
-      public String levelType() {
-         return this.levelType;
       }
 
       static {

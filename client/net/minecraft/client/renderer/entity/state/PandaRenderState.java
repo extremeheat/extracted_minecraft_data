@@ -2,7 +2,7 @@ package net.minecraft.client.renderer.entity.state;
 
 import net.minecraft.world.entity.animal.Panda;
 
-public class PandaRenderState extends LivingEntityRenderState {
+public class PandaRenderState extends HoldingEntityRenderState {
    public Panda.Gene variant;
    public boolean isUnhappy;
    public boolean isSneezing;

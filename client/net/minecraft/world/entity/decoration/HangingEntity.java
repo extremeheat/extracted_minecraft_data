@@ -20,9 +20,7 @@ import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.Validate;
 
 public abstract class HangingEntity extends BlockAttachedEntity {
-   protected static final Predicate<Entity> HANGING_ENTITY = (var0) -> {
-      return var0 instanceof HangingEntity;
-   };
+   protected static final Predicate<Entity> HANGING_ENTITY = (var0) -> var0 instanceof HangingEntity;
    protected Direction direction;
 
    protected HangingEntity(EntityType<? extends HangingEntity> var1, Level var2) {
@@ -63,7 +61,7 @@ public abstract class HangingEntity extends BlockAttachedEntity {
             BlockState var2 = this.level().getBlockState(var1x);
             return var2.isSolid() || DiodeBlock.isDiode(var2);
          });
-         return !var1 ? false : this.level().getEntities((Entity)this, this.getBoundingBox(), HANGING_ENTITY).isEmpty();
+         return !var1 ? false : this.level().getEntities(this, this.getBoundingBox(), HANGING_ENTITY).isEmpty();
       }
    }
 

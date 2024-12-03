@@ -101,9 +101,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
 
    public void flushAll() {
       if (!this.dirtyChunks.isEmpty()) {
-         this.dirtyChunks.forEach((var1) -> {
-            this.writeChunk(new ChunkPos(var1));
-         });
+         this.dirtyChunks.forEach((var1) -> this.writeChunk(new ChunkPos(var1)));
          this.dirtyChunks.clear();
       }
 
@@ -148,13 +146,11 @@ public class SectionStorage<R, P> implements AutoCloseable {
       } else {
          Optional var3 = this.getOrLoad(var1);
          if (var3.isPresent()) {
-            return var3.get();
+            return (R)var3.get();
          } else {
-            Object var4 = this.factory.apply(() -> {
-               this.setDirty(var1);
-            });
+            Object var4 = this.factory.apply((Runnable)() -> this.setDirty(var1));
             this.storage.put(var1, Optional.of(var4));
-            return var4;
+            return (R)var4;
          }
       }
    }
@@ -162,9 +158,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
    public CompletableFuture<?> prefetch(ChunkPos var1) {
       synchronized(this.loadLock) {
          long var3 = var1.toLong();
-         return this.loadedChunks.contains(var3) ? CompletableFuture.completedFuture((Object)null) : (CompletableFuture)this.pendingLoads.computeIfAbsent(var3, (var2) -> {
-            return this.tryRead(var1);
-         });
+         return this.loadedChunks.contains(var3) ? CompletableFuture.completedFuture((Object)null) : (CompletableFuture)this.pendingLoads.computeIfAbsent(var3, (var2) -> this.tryRead(var1));
       }
    }
 
@@ -176,9 +170,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
             return;
          }
 
-         var4 = (CompletableFuture)this.pendingLoads.computeIfAbsent(var2, (var2x) -> {
-            return this.tryRead(var1);
-         });
+         var4 = (CompletableFuture)this.pendingLoads.computeIfAbsent(var2, (var2x) -> this.tryRead(var1));
       }
 
       this.unpackChunk(var1, (PackedChunk)((Optional)var4.join()).orElse((Object)null));
@@ -189,11 +181,11 @@ public class SectionStorage<R, P> implements AutoCloseable {
 
    private CompletableFuture<Optional<PackedChunk<P>>> tryRead(ChunkPos var1) {
       RegistryOps var2 = this.registryAccess.createSerializationContext(NbtOps.INSTANCE);
-      return this.simpleRegionStorage.read(var1).thenApplyAsync((var2x) -> {
-         return var2x.map((var2xx) -> {
-            return SectionStorage.PackedChunk.parse(this.codec, var2, var2xx, this.simpleRegionStorage, this.levelHeightAccessor);
-         });
-      }, Util.backgroundExecutor().forName("parseSection")).exceptionally((var2x) -> {
+      return this.simpleRegionStorage.read(var1).thenApplyAsync((var2x) -> var2x.map((var2xx) -> SectionStorage.PackedChunk.parse(this.codec, var2, var2xx, this.simpleRegionStorage, this.levelHeightAccessor)), Util.backgroundExecutor().forName("parseSection")).exceptionally((var2x) -> {
+         if (var2x instanceof CompletionException) {
+            var2x = var2x.getCause();
+         }
+
          if (var2x instanceof IOException var3) {
             LOGGER.error("Error reading chunk {} data from disk", var1, var3);
             this.errorReporter.reportChunkLoadFailure(var3, this.simpleRegionStorage.storageInfo(), var1);
@@ -214,11 +206,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
 
          for(int var4 = this.levelHeightAccessor.getMinSectionY(); var4 <= this.levelHeightAccessor.getMaxSectionY(); ++var4) {
             long var5 = getKey(var1, var4);
-            Optional var7 = Optional.ofNullable(var2.sectionsByY.get(var4)).map((var3x) -> {
-               return this.unpacker.apply(var3x, () -> {
-                  this.setDirty(var5);
-               });
-            });
+            Optional var7 = Optional.ofNullable(var2.sectionsByY.get(var4)).map((var3x) -> this.unpacker.apply(var3x, (Runnable)() -> this.setDirty(var5)));
             this.storage.put(var5, var7);
             var7.ifPresent((var4x) -> {
                this.onSectionLoad(var5);
@@ -258,9 +246,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
             String var9 = Integer.toString(var4);
             Logger var10001 = LOGGER;
             Objects.requireNonNull(var10001);
-            var8.resultOrPartial(var10001::error).ifPresent((var3x) -> {
-               var3.put(var2.createString(var9), var3x);
-            });
+            var8.resultOrPartial(var10001::error).ifPresent((var3x) -> var3.put(var2.createString(var9), var3x));
          }
       }
 
@@ -298,7 +284,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
       this.simpleRegionStorage.close();
    }
 
-   private static record PackedChunk<T>(Int2ObjectMap<T> sectionsByY, boolean versionChanged) {
+   static record PackedChunk<T>(Int2ObjectMap<T> sectionsByY, boolean versionChanged) {
       final Int2ObjectMap<T> sectionsByY;
 
       private PackedChunk(Int2ObjectMap<T> var1, boolean var2) {
@@ -328,15 +314,7 @@ public class SectionStorage<R, P> implements AutoCloseable {
             }
          }
 
-         return new PackedChunk(var11, var8);
-      }
-
-      public Int2ObjectMap<T> sectionsByY() {
-         return this.sectionsByY;
-      }
-
-      public boolean versionChanged() {
-         return this.versionChanged;
+         return new PackedChunk<T>(var11, var8);
       }
    }
 }

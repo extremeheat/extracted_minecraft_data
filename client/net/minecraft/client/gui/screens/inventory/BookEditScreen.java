@@ -59,16 +59,8 @@ public class BookEditScreen extends Screen {
    private int currentPage;
    private final List<String> pages = Lists.newArrayList();
    private String title = "";
-   private final TextFieldHelper pageEdit = new TextFieldHelper(this::getCurrentPageText, this::setCurrentPageText, this::getClipboard, this::setClipboard, (var1x) -> {
-      return var1x.length() < 1024 && this.font.wordWrapHeight((String)var1x, 114) <= 128;
-   });
-   private final TextFieldHelper titleEdit = new TextFieldHelper(() -> {
-      return this.title;
-   }, (var1x) -> {
-      this.title = var1x;
-   }, this::getClipboard, this::setClipboard, (var0) -> {
-      return var0.length() < 16;
-   });
+   private final TextFieldHelper pageEdit = new TextFieldHelper(this::getCurrentPageText, this::setCurrentPageText, this::getClipboard, this::setClipboard, (var1x) -> var1x.length() < 1024 && this.font.wordWrapHeight((String)var1x, 114) <= 128);
+   private final TextFieldHelper titleEdit = new TextFieldHelper(() -> this.title, (var1x) -> this.title = var1x, this::getClipboard, this::setClipboard, (var0) -> var0.length() < 16);
    private long lastClickTime;
    private int lastIndex = -1;
    private PageButton forwardButton;
@@ -147,12 +139,8 @@ public class BookEditScreen extends Screen {
       }).bounds(this.width / 2 + 2, 196, 98, 20).build());
       int var1 = (this.width - 192) / 2;
       boolean var2 = true;
-      this.forwardButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 116, 159, true, (var1x) -> {
-         this.pageForward();
-      }, true));
-      this.backButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 43, 159, false, (var1x) -> {
-         this.pageBack();
-      }, true));
+      this.forwardButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 116, 159, true, (var1x) -> this.pageForward(), true));
+      this.backButton = (PageButton)this.addRenderableWidget(new PageButton(var1 + 43, 159, false, (var1x) -> this.pageBack(), true));
       this.updateButtonVisibility();
    }
 
@@ -386,27 +374,22 @@ public class BookEditScreen extends Screen {
       this.setFocused((GuiEventListener)null);
       int var5 = (this.width - 192) / 2;
       boolean var6 = true;
-      int var10;
-      int var11;
       if (this.isSigning) {
          boolean var7 = this.frameTick / 6 % 2 == 0;
          FormattedCharSequence var8 = FormattedCharSequence.composite(FormattedCharSequence.forward(this.title, Style.EMPTY), var7 ? BLACK_CURSOR : GRAY_CURSOR);
          int var9 = this.font.width((FormattedText)EDIT_TITLE_LABEL);
          var1.drawString(this.font, (Component)EDIT_TITLE_LABEL, var5 + 36 + (114 - var9) / 2, 34, 0, false);
-         var10 = this.font.width(var8);
+         int var10 = this.font.width(var8);
          var1.drawString(this.font, (FormattedCharSequence)var8, var5 + 36 + (114 - var10) / 2, 50, 0, false);
-         var11 = this.font.width((FormattedText)this.ownerText);
+         int var11 = this.font.width((FormattedText)this.ownerText);
          var1.drawString(this.font, (Component)this.ownerText, var5 + 36 + (114 - var11) / 2, 60, 0, false);
-         var1.drawWordWrap(this.font, FINALIZE_WARNING_LABEL, var5 + 36, 82, 114, 0);
+         var1.drawWordWrap(this.font, FINALIZE_WARNING_LABEL, var5 + 36, 82, 114, 0, false);
       } else {
          int var13 = this.font.width((FormattedText)this.pageMsg);
          var1.drawString(this.font, (Component)this.pageMsg, var5 - var13 + 192 - 44, 18, 0, false);
          DisplayCache var14 = this.getDisplayCache();
-         LineInfo[] var15 = var14.lines;
-         var10 = var15.length;
 
-         for(var11 = 0; var11 < var10; ++var11) {
-            LineInfo var12 = var15[var11];
+         for(LineInfo var12 : var14.lines) {
             var1.drawString(this.font, var12.asComponent, var12.x, var12.y, -16777216, false);
          }
 
@@ -439,11 +422,7 @@ public class BookEditScreen extends Screen {
    }
 
    private void renderHighlight(GuiGraphics var1, Rect2i[] var2) {
-      Rect2i[] var3 = var2;
-      int var4 = var2.length;
-
-      for(int var5 = 0; var5 < var4; ++var5) {
-         Rect2i var6 = var3[var5];
+      for(Rect2i var6 : var2) {
          int var7 = var6.getX();
          int var8 = var6.getY();
          int var9 = var7 + var6.getWidth();
@@ -555,40 +534,37 @@ public class BookEditScreen extends Screen {
          int[] var9 = var4.toIntArray();
          boolean var10 = var2 == var1.length();
          Pos2i var11;
-         int var13;
          if (var10 && var7.isTrue()) {
             int var10003 = var5.size();
             Objects.requireNonNull(this.font);
             var11 = new Pos2i(0, var10003 * 9);
          } else {
             int var12 = findLineFromPos(var9, var2);
-            var13 = this.font.width(var1.substring(var9[var12], var2));
+            int var13 = this.font.width(var1.substring(var9[var12], var2));
             Objects.requireNonNull(this.font);
             var11 = new Pos2i(var13, var12 * 9);
          }
 
          ArrayList var22 = Lists.newArrayList();
          if (var2 != var3) {
-            var13 = Math.min(var2, var3);
+            int var23 = Math.min(var2, var3);
             int var14 = Math.max(var2, var3);
-            int var15 = findLineFromPos(var9, var13);
+            int var15 = findLineFromPos(var9, var23);
             int var16 = findLineFromPos(var9, var14);
-            int var17;
-            int var18;
             if (var15 == var16) {
                Objects.requireNonNull(this.font);
-               var17 = var15 * 9;
-               var18 = var9[var15];
-               var22.add(this.createPartialLineSelection(var1, var8, var13, var14, var17, var18));
+               int var17 = var15 * 9;
+               int var18 = var9[var15];
+               var22.add(this.createPartialLineSelection(var1, var8, var23, var14, var17, var18));
             } else {
-               var17 = var15 + 1 > var9.length ? var1.length() : var9[var15 + 1];
+               int var24 = var15 + 1 > var9.length ? var1.length() : var9[var15 + 1];
                Objects.requireNonNull(this.font);
-               var22.add(this.createPartialLineSelection(var1, var8, var13, var17, var15 * 9, var9[var15]));
+               var22.add(this.createPartialLineSelection(var1, var8, var23, var24, var15 * 9, var9[var15]));
 
-               for(var18 = var15 + 1; var18 < var16; ++var18) {
+               for(int var25 = var15 + 1; var25 < var16; ++var25) {
                   Objects.requireNonNull(this.font);
-                  int var19 = var18 * 9;
-                  String var20 = var1.substring(var9[var18], var9[var18 + 1]);
+                  int var19 = var25 * 9;
+                  String var20 = var1.substring(var9[var25], var9[var25 + 1]);
                   int var21 = (int)var8.stringWidth(var20);
                   Pos2i var10002 = new Pos2i(0, var19);
                   Objects.requireNonNull(this.font);
@@ -633,6 +609,34 @@ public class BookEditScreen extends Screen {
    static {
       BLACK_CURSOR = FormattedCharSequence.forward("_", Style.EMPTY.withColor(ChatFormatting.BLACK));
       GRAY_CURSOR = FormattedCharSequence.forward("_", Style.EMPTY.withColor(ChatFormatting.GRAY));
+   }
+
+   static class Pos2i {
+      public final int x;
+      public final int y;
+
+      Pos2i(int var1, int var2) {
+         super();
+         this.x = var1;
+         this.y = var2;
+      }
+   }
+
+   static class LineInfo {
+      final Style style;
+      final String contents;
+      final Component asComponent;
+      final int x;
+      final int y;
+
+      public LineInfo(Style var1, String var2, int var3, int var4) {
+         super();
+         this.style = var1;
+         this.contents = var2;
+         this.x = var3;
+         this.y = var4;
+         this.asComponent = Component.literal(var2).setStyle(var1);
+      }
    }
 
    static class DisplayCache {
@@ -695,34 +699,6 @@ public class BookEditScreen extends Screen {
 
       static {
          EMPTY = new DisplayCache("", new Pos2i(0, 0), true, new int[]{0}, new LineInfo[]{new LineInfo(Style.EMPTY, "", 0, 0)}, new Rect2i[0]);
-      }
-   }
-
-   private static class LineInfo {
-      final Style style;
-      final String contents;
-      final Component asComponent;
-      final int x;
-      final int y;
-
-      public LineInfo(Style var1, String var2, int var3, int var4) {
-         super();
-         this.style = var1;
-         this.contents = var2;
-         this.x = var3;
-         this.y = var4;
-         this.asComponent = Component.literal(var2).setStyle(var1);
-      }
-   }
-
-   private static class Pos2i {
-      public final int x;
-      public final int y;
-
-      Pos2i(int var1, int var2) {
-         super();
-         this.x = var1;
-         this.y = var2;
       }
    }
 }

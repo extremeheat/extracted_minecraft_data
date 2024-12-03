@@ -25,16 +25,12 @@ public class ProcessorChunkProgressListener implements ChunkProgressListener {
    }
 
    public void updateSpawnPos(ChunkPos var1) {
-      this.consecutiveExecutor.schedule(() -> {
-         this.delegate.updateSpawnPos(var1);
-      });
+      this.consecutiveExecutor.schedule(() -> this.delegate.updateSpawnPos(var1));
    }
 
    public void onStatusChange(ChunkPos var1, @Nullable ChunkStatus var2) {
       if (this.started) {
-         this.consecutiveExecutor.schedule(() -> {
-            this.delegate.onStatusChange(var1, var2);
-         });
+         this.consecutiveExecutor.schedule(() -> this.delegate.onStatusChange(var1, var2));
       }
 
    }

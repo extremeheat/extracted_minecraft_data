@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -31,10 +30,8 @@ public class ReplaceBlobsFeature extends Feature<ReplaceSphereConfiguration> {
          int var9 = var2.radius().sample(var4);
          int var10 = Math.max(var7, Math.max(var8, var9));
          boolean var11 = false;
-         Iterator var12 = BlockPos.withinManhattan(var6, var7, var8, var9).iterator();
 
-         while(var12.hasNext()) {
-            BlockPos var13 = (BlockPos)var12.next();
+         for(BlockPos var13 : BlockPos.withinManhattan(var6, var7, var8, var9)) {
             if (var13.distManhattan(var6) > var10) {
                break;
             }

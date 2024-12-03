@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -76,11 +75,11 @@ public class OceanRuinPieces {
    }
 
    private static ResourceLocation getSmallWarmRuin(RandomSource var0) {
-      return (ResourceLocation)Util.getRandom((Object[])WARM_RUINS, var0);
+      return (ResourceLocation)Util.getRandom(WARM_RUINS, var0);
    }
 
    private static ResourceLocation getBigWarmRuin(RandomSource var0) {
-      return (ResourceLocation)Util.getRandom((Object[])BIG_WARM_RUINS, var0);
+      return (ResourceLocation)Util.getRandom(BIG_WARM_RUINS, var0);
    }
 
    public static void addPieces(StructureTemplateManager var0, BlockPos var1, Rotation var2, StructurePieceAccessor var3, RandomSource var4, OceanRuinStructure var5) {
@@ -174,9 +173,7 @@ public class OceanRuinPieces {
       }
 
       private OceanRuinPiece(StructureTemplateManager var1, CompoundTag var2, Rotation var3, float var4, OceanRuinStructure.Type var5, boolean var6) {
-         super(StructurePieceType.OCEAN_RUIN, var2, var1, (var3x) -> {
-            return makeSettings(var3, var4, var5);
-         });
+         super(StructurePieceType.OCEAN_RUIN, var2, var1, (var3x) -> makeSettings(var3, var4, var5));
          this.integrity = var4;
          this.biomeType = var5;
          this.isLarge = var6;
@@ -211,7 +208,7 @@ public class OceanRuinPieces {
                ((ChestBlockEntity)var6).setLootTable(this.isLarge ? BuiltInLootTables.UNDERWATER_RUIN_BIG : BuiltInLootTables.UNDERWATER_RUIN_SMALL, var4.nextLong());
             }
          } else if ("drowned".equals(var1)) {
-            Drowned var7 = (Drowned)EntityType.DROWNED.create(var3.getLevel(), EntitySpawnReason.STRUCTURE);
+            Drowned var7 = EntityType.DROWNED.create(var3.getLevel(), EntitySpawnReason.STRUCTURE);
             if (var7 != null) {
                var7.setPersistenceRequired();
                var7.moveTo(var2, 0.0F, 0.0F);
@@ -240,10 +237,8 @@ public class OceanRuinPieces {
          int var5 = 512;
          int var6 = var4 - 1;
          int var7 = 0;
-         Iterator var8 = BlockPos.betweenClosed(var1, var3).iterator();
 
-         while(var8.hasNext()) {
-            BlockPos var9 = (BlockPos)var8.next();
+         for(BlockPos var9 : BlockPos.betweenClosed(var1, var3)) {
             int var10 = var9.getX();
             int var11 = var9.getZ();
             int var12 = var1.getY() - 1;

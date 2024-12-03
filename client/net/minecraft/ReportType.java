@@ -1,6 +1,5 @@
 package net.minecraft;
 
-import java.util.Iterator;
 import java.util.List;
 
 public record ReportType(String header, List<String> nuggets) {
@@ -31,23 +30,13 @@ public record ReportType(String header, List<String> nuggets) {
       var1.append("// ");
       var1.append(this.getErrorComment());
       var1.append('\n');
-      Iterator var3 = var2.iterator();
 
-      while(var3.hasNext()) {
-         String var4 = (String)var3.next();
+      for(String var4 : var2) {
          var1.append("// ");
          var1.append(var4);
          var1.append('\n');
       }
 
       var1.append('\n');
-   }
-
-   public String header() {
-      return this.header;
-   }
-
-   public List<String> nuggets() {
-      return this.nuggets;
    }
 }

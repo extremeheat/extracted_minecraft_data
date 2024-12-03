@@ -1,7 +1,5 @@
 package net.minecraft.core.dispenser;
 
-import java.util.Iterator;
-import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -43,9 +41,7 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
 
    private static boolean tryShearBeehive(ServerLevel var0, BlockPos var1) {
       BlockState var2 = var0.getBlockState(var1);
-      if (var2.is(BlockTags.BEEHIVES, (var0x) -> {
-         return var0x.hasProperty(BeehiveBlock.HONEY_LEVEL) && var0x.getBlock() instanceof BeehiveBlock;
-      })) {
+      if (var2.is(BlockTags.BEEHIVES, (var0x) -> var0x.hasProperty(BeehiveBlock.HONEY_LEVEL) && var0x.getBlock() instanceof BeehiveBlock)) {
          int var3 = (Integer)var2.getValue(BeehiveBlock.HONEY_LEVEL);
          if (var3 >= 5) {
             var0.playSound((Player)null, var1, SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
@@ -60,11 +56,7 @@ public class ShearsDispenseItemBehavior extends OptionalDispenseItemBehavior {
    }
 
    private static boolean tryShearLivingEntity(ServerLevel var0, BlockPos var1, ItemStack var2) {
-      List var3 = var0.getEntitiesOfClass(LivingEntity.class, new AABB(var1), EntitySelector.NO_SPECTATORS);
-      Iterator var4 = var3.iterator();
-
-      while(var4.hasNext()) {
-         LivingEntity var5 = (LivingEntity)var4.next();
+      for(LivingEntity var5 : var0.getEntitiesOfClass(LivingEntity.class, new AABB(var1), EntitySelector.NO_SPECTATORS)) {
          if (var5 instanceof Shearable var6) {
             if (var6.readyForShearing()) {
                var6.shear(var0, SoundSource.BLOCKS, var2);

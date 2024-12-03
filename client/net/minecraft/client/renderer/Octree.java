@@ -159,11 +159,8 @@ public class Octree {
          if (var7) {
             var6 = var6 && Octree.this.isClose((double)this.boundingBox.minX(), (double)this.boundingBox.minY(), (double)this.boundingBox.minZ(), (double)this.boundingBox.maxX(), (double)this.boundingBox.maxY(), (double)this.boundingBox.maxZ(), var5);
             var1.visit(this, var2, var4, var6);
-            Node[] var12 = this.nodes;
-            int var9 = var12.length;
 
-            for(int var10 = 0; var10 < var9; ++var10) {
-               Node var11 = var12[var10];
+            for(Node var11 : this.nodes) {
                if (var11 != null) {
                   var11.visitNodes(var1, var2, var3, var4 + 1, var5, var6);
                }
@@ -182,12 +179,33 @@ public class Octree {
       }
    }
 
-   @FunctionalInterface
-   public interface OctreeVisitor {
-      void visit(Node var1, boolean var2, int var3, boolean var4);
+   final class Leaf implements Node {
+      private final SectionRenderDispatcher.RenderSection section;
+
+      Leaf(final SectionRenderDispatcher.RenderSection var2) {
+         super();
+         this.section = var2;
+      }
+
+      public void visitNodes(OctreeVisitor var1, boolean var2, Frustum var3, int var4, int var5, boolean var6) {
+         AABB var7 = this.section.getBoundingBox();
+         if (var2 || var3.isVisible(this.getSection().getBoundingBox())) {
+            var6 = var6 && Octree.this.isClose(var7.minX, var7.minY, var7.minZ, var7.maxX, var7.maxY, var7.maxZ, var5);
+            var1.visit(this, var2, var4, var6);
+         }
+
+      }
+
+      public SectionRenderDispatcher.RenderSection getSection() {
+         return this.section;
+      }
+
+      public AABB getAABB() {
+         return this.section.getBoundingBox();
+      }
    }
 
-   private static enum AxisSorting {
+   static enum AxisSorting {
       XYZ(4, 2, 1),
       XZY(4, 1, 2),
       YXZ(2, 4, 1),
@@ -230,29 +248,8 @@ public class Octree {
       AABB getAABB();
    }
 
-   private final class Leaf implements Node {
-      private final SectionRenderDispatcher.RenderSection section;
-
-      Leaf(final SectionRenderDispatcher.RenderSection var2) {
-         super();
-         this.section = var2;
-      }
-
-      public void visitNodes(OctreeVisitor var1, boolean var2, Frustum var3, int var4, int var5, boolean var6) {
-         AABB var7 = this.section.getBoundingBox();
-         if (var2 || var3.isVisible(this.getSection().getBoundingBox())) {
-            var6 = var6 && Octree.this.isClose(var7.minX, var7.minY, var7.minZ, var7.maxX, var7.maxY, var7.maxZ, var5);
-            var1.visit(this, var2, var4, var6);
-         }
-
-      }
-
-      public SectionRenderDispatcher.RenderSection getSection() {
-         return this.section;
-      }
-
-      public AABB getAABB() {
-         return this.section.getBoundingBox();
-      }
+   @FunctionalInterface
+   public interface OctreeVisitor {
+      void visit(Node var1, boolean var2, int var3, boolean var4);
    }
 }

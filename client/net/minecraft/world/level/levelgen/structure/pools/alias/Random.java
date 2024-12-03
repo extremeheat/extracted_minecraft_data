@@ -12,9 +12,7 @@ import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 record Random(ResourceKey<StructureTemplatePool> alias, SimpleWeightedRandomList<ResourceKey<StructureTemplatePool>> targets) implements PoolAliasBinding {
-   static MapCodec<Random> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(Random::alias), SimpleWeightedRandomList.wrappedCodec(ResourceKey.codec(Registries.TEMPLATE_POOL)).fieldOf("targets").forGetter(Random::targets)).apply(var0, Random::new);
-   });
+   static MapCodec<Random> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(Random::alias), SimpleWeightedRandomList.wrappedCodec(ResourceKey.codec(Registries.TEMPLATE_POOL)).fieldOf("targets").forGetter(Random::targets)).apply(var0, Random::new));
 
    Random(ResourceKey<StructureTemplatePool> var1, SimpleWeightedRandomList<ResourceKey<StructureTemplatePool>> var2) {
       super();
@@ -23,9 +21,7 @@ record Random(ResourceKey<StructureTemplatePool> alias, SimpleWeightedRandomList
    }
 
    public void forEachResolved(RandomSource var1, BiConsumer<ResourceKey<StructureTemplatePool>, ResourceKey<StructureTemplatePool>> var2) {
-      this.targets.getRandom(var1).ifPresent((var2x) -> {
-         var2.accept(this.alias, (ResourceKey)var2x.data());
-      });
+      this.targets.getRandom(var1).ifPresent((var2x) -> var2.accept(this.alias, (ResourceKey)var2x.data()));
    }
 
    public Stream<ResourceKey<StructureTemplatePool>> allTargets() {
@@ -34,13 +30,5 @@ record Random(ResourceKey<StructureTemplatePool> alias, SimpleWeightedRandomList
 
    public MapCodec<Random> codec() {
       return CODEC;
-   }
-
-   public ResourceKey<StructureTemplatePool> alias() {
-      return this.alias;
-   }
-
-   public SimpleWeightedRandomList<ResourceKey<StructureTemplatePool>> targets() {
-      return this.targets;
    }
 }

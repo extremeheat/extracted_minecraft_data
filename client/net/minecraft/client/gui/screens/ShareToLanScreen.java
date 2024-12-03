@@ -43,12 +43,8 @@ public class ShareToLanScreen extends Screen {
       IntegratedServer var1 = this.minecraft.getSingleplayerServer();
       this.gameMode = var1.getDefaultGameType();
       this.commands = var1.getWorldData().isAllowCommands();
-      this.addRenderableWidget(CycleButton.builder(GameType::getShortDisplayName).withValues((Object[])(GameType.SURVIVAL, GameType.SPECTATOR, GameType.CREATIVE, GameType.ADVENTURE)).withInitialValue(this.gameMode).create(this.width / 2 - 155, 100, 150, 20, GAME_MODE_LABEL, (var1x, var2x) -> {
-         this.gameMode = var2x;
-      }));
-      this.addRenderableWidget(CycleButton.onOffBuilder(this.commands).create(this.width / 2 + 5, 100, 150, 20, ALLOW_COMMANDS_LABEL, (var1x, var2x) -> {
-         this.commands = var2x;
-      }));
+      this.addRenderableWidget(CycleButton.builder(GameType::getShortDisplayName).withValues(GameType.SURVIVAL, GameType.SPECTATOR, GameType.CREATIVE, GameType.ADVENTURE).withInitialValue(this.gameMode).create(this.width / 2 - 155, 100, 150, 20, GAME_MODE_LABEL, (var1x, var2x) -> this.gameMode = var2x));
+      this.addRenderableWidget(CycleButton.onOffBuilder(this.commands).create(this.width / 2 + 5, 100, 150, 20, ALLOW_COMMANDS_LABEL, (var1x, var2x) -> this.commands = var2x));
       Button var2 = Button.builder(Component.translatable("lanServer.start"), (var2x) -> {
          this.minecraft.setScreen((Screen)null);
          MutableComponent var3;
@@ -79,9 +75,7 @@ public class ShareToLanScreen extends Screen {
       this.portEdit.setHint(Component.literal("" + this.port).withStyle(ChatFormatting.DARK_GRAY));
       this.addRenderableWidget(this.portEdit);
       this.addRenderableWidget(var2);
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
-         this.onClose();
-      }).bounds(this.width / 2 + 5, this.height - 28, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).bounds(this.width / 2 + 5, this.height - 28, 150, 20).build());
    }
 
    public void onClose() {

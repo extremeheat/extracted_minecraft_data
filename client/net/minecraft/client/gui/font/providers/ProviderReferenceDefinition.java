@@ -6,9 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.ResourceLocation;
 
 public record ProviderReferenceDefinition(ResourceLocation id) implements GlyphProviderDefinition {
-   public static final MapCodec<ProviderReferenceDefinition> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceLocation.CODEC.fieldOf("id").forGetter(ProviderReferenceDefinition::id)).apply(var0, ProviderReferenceDefinition::new);
-   });
+   public static final MapCodec<ProviderReferenceDefinition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("id").forGetter(ProviderReferenceDefinition::id)).apply(var0, ProviderReferenceDefinition::new));
 
    public ProviderReferenceDefinition(ResourceLocation var1) {
       super();
@@ -21,9 +19,5 @@ public record ProviderReferenceDefinition(ResourceLocation id) implements GlyphP
 
    public Either<GlyphProviderDefinition.Loader, GlyphProviderDefinition.Reference> unpack() {
       return Either.right(new GlyphProviderDefinition.Reference(this.id));
-   }
-
-   public ResourceLocation id() {
-      return this.id;
    }
 }

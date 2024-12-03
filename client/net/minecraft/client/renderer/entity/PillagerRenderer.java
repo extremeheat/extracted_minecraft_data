@@ -14,7 +14,7 @@ public class PillagerRenderer extends IllagerRenderer<Pillager, IllagerRenderSta
 
    public PillagerRenderer(EntityRendererProvider.Context var1) {
       super(var1, new IllagerModel(var1.bakeLayer(ModelLayers.PILLAGER)), 0.5F);
-      this.addLayer(new ItemInHandLayer(this, var1.getItemRenderer()));
+      this.addLayer(new ItemInHandLayer(this));
    }
 
    public ResourceLocation getTextureLocation(IllagerRenderState var1) {

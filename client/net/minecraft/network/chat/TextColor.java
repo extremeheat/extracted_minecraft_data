@@ -77,29 +77,19 @@ public final class TextColor {
       if (var0.startsWith("#")) {
          try {
             int var3 = Integer.parseInt(var0.substring(1), 16);
-            return var3 >= 0 && var3 <= 16777215 ? DataResult.success(fromRgb(var3), Lifecycle.stable()) : DataResult.error(() -> {
-               return "Color value out of range: " + var0;
-            });
+            return var3 >= 0 && var3 <= 16777215 ? DataResult.success(fromRgb(var3), Lifecycle.stable()) : DataResult.error(() -> "Color value out of range: " + var0);
          } catch (NumberFormatException var2) {
-            return DataResult.error(() -> {
-               return "Invalid color value: " + var0;
-            });
+            return DataResult.error(() -> "Invalid color value: " + var0);
          }
       } else {
          TextColor var1 = (TextColor)NAMED_COLORS.get(var0);
-         return var1 == null ? DataResult.error(() -> {
-            return "Invalid color name: " + var0;
-         }) : DataResult.success(var1, Lifecycle.stable());
+         return var1 == null ? DataResult.error(() -> "Invalid color name: " + var0) : DataResult.success(var1, Lifecycle.stable());
       }
    }
 
    static {
       CODEC = Codec.STRING.comapFlatMap(TextColor::parseColor, TextColor::serialize);
-      LEGACY_FORMAT_TO_COLOR = (Map)Stream.of(ChatFormatting.values()).filter(ChatFormatting::isColor).collect(ImmutableMap.toImmutableMap(Function.identity(), (var0) -> {
-         return new TextColor(var0.getColor(), var0.getName());
-      }));
-      NAMED_COLORS = (Map)LEGACY_FORMAT_TO_COLOR.values().stream().collect(ImmutableMap.toImmutableMap((var0) -> {
-         return var0.name;
-      }, Function.identity()));
+      LEGACY_FORMAT_TO_COLOR = (Map)Stream.of(ChatFormatting.values()).filter(ChatFormatting::isColor).collect(ImmutableMap.toImmutableMap(Function.identity(), (var0) -> new TextColor(var0.getColor(), var0.getName())));
+      NAMED_COLORS = (Map)LEGACY_FORMAT_TO_COLOR.values().stream().collect(ImmutableMap.toImmutableMap((var0) -> var0.name, Function.identity()));
    }
 }

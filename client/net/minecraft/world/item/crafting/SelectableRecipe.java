@@ -16,56 +16,7 @@ public record SelectableRecipe<T extends Recipe<?>>(SlotDisplay optionDisplay, O
    }
 
    public static <T extends Recipe<?>> StreamCodec<RegistryFriendlyByteBuf, SelectableRecipe<T>> noRecipeCodec() {
-      return StreamCodec.composite(SlotDisplay.STREAM_CODEC, SelectableRecipe::optionDisplay, (var0) -> {
-         return new SelectableRecipe(var0, Optional.empty());
-      });
-   }
-
-   public SlotDisplay optionDisplay() {
-      return this.optionDisplay;
-   }
-
-   public Optional<RecipeHolder<T>> recipe() {
-      return this.recipe;
-   }
-
-   public static record SingleInputSet<T extends Recipe<?>>(List<SingleInputEntry<T>> entries) {
-      public SingleInputSet(List<SingleInputEntry<T>> var1) {
-         super();
-         this.entries = var1;
-      }
-
-      public static <T extends Recipe<?>> SingleInputSet<T> empty() {
-         return new SingleInputSet(List.of());
-      }
-
-      public static <T extends Recipe<?>> StreamCodec<RegistryFriendlyByteBuf, SingleInputSet<T>> noRecipeCodec() {
-         return StreamCodec.composite(SelectableRecipe.SingleInputEntry.noRecipeCodec().apply(ByteBufCodecs.list()), SingleInputSet::entries, SingleInputSet::new);
-      }
-
-      public boolean acceptsInput(ItemStack var1) {
-         return this.entries.stream().anyMatch((var1x) -> {
-            return var1x.input.test(var1);
-         });
-      }
-
-      public SingleInputSet<T> selectByInput(ItemStack var1) {
-         return new SingleInputSet(this.entries.stream().filter((var1x) -> {
-            return var1x.input.test(var1);
-         }).toList());
-      }
-
-      public boolean isEmpty() {
-         return this.entries.isEmpty();
-      }
-
-      public int size() {
-         return this.entries.size();
-      }
-
-      public List<SingleInputEntry<T>> entries() {
-         return this.entries;
-      }
+      return StreamCodec.composite(SlotDisplay.STREAM_CODEC, SelectableRecipe::optionDisplay, (var0) -> new SelectableRecipe(var0, Optional.empty()));
    }
 
    public static record SingleInputEntry<T extends Recipe<?>>(Ingredient input, SelectableRecipe<T> recipe) {
@@ -80,13 +31,36 @@ public record SelectableRecipe<T extends Recipe<?>>(SlotDisplay optionDisplay, O
       public static <T extends Recipe<?>> StreamCodec<RegistryFriendlyByteBuf, SingleInputEntry<T>> noRecipeCodec() {
          return StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC, SingleInputEntry::input, SelectableRecipe.noRecipeCodec(), SingleInputEntry::recipe, SingleInputEntry::new);
       }
+   }
 
-      public Ingredient input() {
-         return this.input;
+   public static record SingleInputSet<T extends Recipe<?>>(List<SingleInputEntry<T>> entries) {
+      public SingleInputSet(List<SingleInputEntry<T>> var1) {
+         super();
+         this.entries = var1;
       }
 
-      public SelectableRecipe<T> recipe() {
-         return this.recipe;
+      public static <T extends Recipe<?>> SingleInputSet<T> empty() {
+         return new SingleInputSet<T>(List.of());
+      }
+
+      public static <T extends Recipe<?>> StreamCodec<RegistryFriendlyByteBuf, SingleInputSet<T>> noRecipeCodec() {
+         return StreamCodec.composite(SelectableRecipe.SingleInputEntry.noRecipeCodec().apply(ByteBufCodecs.list()), SingleInputSet::entries, SingleInputSet::new);
+      }
+
+      public boolean acceptsInput(ItemStack var1) {
+         return this.entries.stream().anyMatch((var1x) -> var1x.input.test(var1));
+      }
+
+      public SingleInputSet<T> selectByInput(ItemStack var1) {
+         return new SingleInputSet<T>(this.entries.stream().filter((var1x) -> var1x.input.test(var1)).toList());
+      }
+
+      public boolean isEmpty() {
+         return this.entries.isEmpty();
+      }
+
+      public int size() {
+         return this.entries.size();
       }
    }
 }

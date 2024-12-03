@@ -49,7 +49,7 @@ public class CaveVinesBlock extends GrowingPlantHeadBlock implements CaveVines {
       return (BlockState)super.getGrowIntoState(var1, var2).setValue(BERRIES, var2.nextFloat() < 0.11F);
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return new ItemStack(Items.GLOW_BERRIES);
    }
 

@@ -19,9 +19,7 @@ public class DragonSittingScanningPhase extends AbstractDragonSittingPhase {
 
    public DragonSittingScanningPhase(EnderDragon var1) {
       super(var1);
-      this.scanTargeting = TargetingConditions.forCombat().range(20.0).selector((var1x, var2) -> {
-         return Math.abs(var1x.getY() - var1.getY()) <= 10.0;
-      });
+      this.scanTargeting = TargetingConditions.forCombat().range(20.0).selector((var1x, var2) -> Math.abs(var1x.getY() - var1.getY()) <= 10.0);
    }
 
    public void doServerTick(ServerLevel var1) {

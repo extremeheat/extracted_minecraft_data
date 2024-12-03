@@ -72,6 +72,8 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.SEAGRASS, var3);
       var0.put(Blocks.TALL_SEAGRASS, var3);
       var0.put(Blocks.DANDELION, var3);
+      var0.put(Blocks.OPEN_EYEBLOSSOM, var3);
+      var0.put(Blocks.CLOSED_EYEBLOSSOM, var3);
       var0.put(Blocks.POPPY, var3);
       var0.put(Blocks.BLUE_ORCHID, var3);
       var0.put(Blocks.ALLIUM, var3);
@@ -134,6 +136,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.PALE_MOSS_CARPET, var3);
       var0.put(Blocks.PALE_HANGING_MOSS, var3);
       var0.put(Blocks.GLOW_LICHEN, var3);
+      var0.put(Blocks.RESIN_CLUMP, var3);
       var0.put(Blocks.LILY_PAD, var3);
       var0.put(Blocks.NETHER_WART, var3);
       var0.put(Blocks.BREWING_STAND, var3);
@@ -152,6 +155,8 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.POTTED_FERN, var3);
       var0.put(Blocks.POTTED_DANDELION, var3);
       var0.put(Blocks.POTTED_POPPY, var3);
+      var0.put(Blocks.POTTED_OPEN_EYEBLOSSOM, var3);
+      var0.put(Blocks.POTTED_CLOSED_EYEBLOSSOM, var3);
       var0.put(Blocks.POTTED_BLUE_ORCHID, var3);
       var0.put(Blocks.POTTED_ALLIUM, var3);
       var0.put(Blocks.POTTED_AZURE_BLUET, var3);

@@ -22,11 +22,7 @@ public class ReorganizePoi extends DataFix {
       if (!Objects.equals(var1, this.getInputSchema().getType(References.POI_CHUNK))) {
          throw new IllegalStateException("Poi type is not what was expected.");
       } else {
-         return this.fixTypeEverywhere("POI reorganization", var1, (var0) -> {
-            return (var0x) -> {
-               return var0x.mapSecond(ReorganizePoi::cap);
-            };
-         });
+         return this.fixTypeEverywhere("POI reorganization", var1, (var0) -> (var0x) -> var0x.mapSecond(ReorganizePoi::cap));
       }
    }
 

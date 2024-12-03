@@ -18,15 +18,11 @@ public class EnchantedItemTrigger extends SimpleCriterionTrigger<TriggerInstance
    }
 
    public void trigger(ServerPlayer var1, ItemStack var2, int var3) {
-      this.trigger(var1, (var2x) -> {
-         return var2x.matches(var2, var3);
-      });
+      this.trigger(var1, (var2x) -> var2x.matches(var2, var3));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ItemPredicate> item, MinMaxBounds.Ints levels) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item), MinMaxBounds.Ints.CODEC.optionalFieldOf("levels", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::levels)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ItemPredicate.CODEC.optionalFieldOf("item").forGetter(TriggerInstance::item), MinMaxBounds.Ints.CODEC.optionalFieldOf("levels", MinMaxBounds.Ints.ANY).forGetter(TriggerInstance::levels)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2, MinMaxBounds.Ints var3) {
          super();
@@ -45,18 +41,6 @@ public class EnchantedItemTrigger extends SimpleCriterionTrigger<TriggerInstance
          } else {
             return this.levels.matches(var2);
          }
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<ItemPredicate> item() {
-         return this.item;
-      }
-
-      public MinMaxBounds.Ints levels() {
-         return this.levels;
       }
    }
 }

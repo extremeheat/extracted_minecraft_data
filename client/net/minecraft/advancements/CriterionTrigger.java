@@ -13,7 +13,7 @@ public interface CriterionTrigger<T extends CriterionTriggerInstance> {
    Codec<T> codec();
 
    default Criterion<T> createCriterion(T var1) {
-      return new Criterion(this, var1);
+      return new Criterion<T>(this, var1);
    }
 
    public static record Listener<T extends CriterionTriggerInstance>(T trigger, AdvancementHolder advancement, String criterion) {
@@ -26,18 +26,6 @@ public interface CriterionTrigger<T extends CriterionTriggerInstance> {
 
       public void run(PlayerAdvancements var1) {
          var1.award(this.advancement, this.criterion);
-      }
-
-      public T trigger() {
-         return this.trigger;
-      }
-
-      public AdvancementHolder advancement() {
-         return this.advancement;
-      }
-
-      public String criterion() {
-         return this.criterion;
       }
    }
 }

@@ -3,6 +3,7 @@ package net.minecraft.world.entity.animal.frog;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
@@ -61,7 +62,7 @@ public class Tadpole extends AbstractFish {
    }
 
    protected Brain.Provider<Tadpole> brainProvider() {
-      return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
+      return Brain.<Tadpole>provider(MEMORY_TYPES, SENSOR_TYPES);
    }
 
    protected Brain<?> makeBrain(Dynamic<?> var1) {
@@ -148,9 +149,7 @@ public class Tadpole extends AbstractFish {
 
    public void saveToBucketTag(ItemStack var1) {
       Bucketable.saveDefaultDataToBucketTag(this, var1);
-      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (var1x) -> {
-         var1x.putInt("Age", this.getAge());
-      });
+      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (Consumer)((var1x) -> var1x.putInt("Age", this.getAge())));
    }
 
    public void loadFromBucketTag(CompoundTag var1) {

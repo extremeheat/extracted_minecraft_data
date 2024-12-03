@@ -12,7 +12,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 public class ServerboundInteractPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundInteractPacket> STREAM_CODEC = Packet.codec(ServerboundInteractPacket::write, ServerboundInteractPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundInteractPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundInteractPacket>codec(ServerboundInteractPacket::write, ServerboundInteractPacket::new);
    private final int entityId;
    private final Action action;
    private final boolean usingSecondaryAction;
@@ -84,15 +84,24 @@ public class ServerboundInteractPacket implements Packet<ServerGamePacketListene
       this.action.dispatch(var1);
    }
 
-   interface Action {
-      ActionType getType();
+   static enum ActionType {
+      INTERACT(InteractionAction::new),
+      ATTACK((var0) -> ServerboundInteractPacket.ATTACK_ACTION),
+      INTERACT_AT(InteractionAtLocationAction::new);
 
-      void dispatch(Handler var1);
+      final Function<FriendlyByteBuf, Action> reader;
 
-      void write(FriendlyByteBuf var1);
+      private ActionType(final Function<FriendlyByteBuf, Action> var3) {
+         this.reader = var3;
+      }
+
+      // $FF: synthetic method
+      private static ActionType[] $values() {
+         return new ActionType[]{INTERACT, ATTACK, INTERACT_AT};
+      }
    }
 
-   private static class InteractionAction implements Action {
+   static class InteractionAction implements Action {
       private final InteractionHand hand;
 
       InteractionAction(InteractionHand var1) {
@@ -118,7 +127,7 @@ public class ServerboundInteractPacket implements Packet<ServerGamePacketListene
       }
    }
 
-   private static class InteractionAtLocationAction implements Action {
+   static class InteractionAtLocationAction implements Action {
       private final InteractionHand hand;
       private final Vec3 location;
 
@@ -150,23 +159,12 @@ public class ServerboundInteractPacket implements Packet<ServerGamePacketListene
       }
    }
 
-   private static enum ActionType {
-      INTERACT(InteractionAction::new),
-      ATTACK((var0) -> {
-         return ServerboundInteractPacket.ATTACK_ACTION;
-      }),
-      INTERACT_AT(InteractionAtLocationAction::new);
+   interface Action {
+      ActionType getType();
 
-      final Function<FriendlyByteBuf, Action> reader;
+      void dispatch(Handler var1);
 
-      private ActionType(final Function var3) {
-         this.reader = var3;
-      }
-
-      // $FF: synthetic method
-      private static ActionType[] $values() {
-         return new ActionType[]{INTERACT, ATTACK, INTERACT_AT};
-      }
+      void write(FriendlyByteBuf var1);
    }
 
    public interface Handler {

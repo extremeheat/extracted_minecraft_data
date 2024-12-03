@@ -48,7 +48,7 @@ public class TransmuteRecipeBuilder implements RecipeBuilder {
    }
 
    public Item getResult() {
-      return (Item)this.result.value();
+      return this.result.value();
    }
 
    public void save(RecipeOutput var1, ResourceKey<Recipe<?>> var2) {

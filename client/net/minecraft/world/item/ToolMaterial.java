@@ -56,30 +56,6 @@ public record ToolMaterial(TagKey<Block> incorrectBlocksForDrops, int durability
       return ItemAttributeModifiers.builder().add(Attributes.ATTACK_DAMAGE, new AttributeModifier(Item.BASE_ATTACK_DAMAGE_ID, (double)(var1 + this.attackDamageBonus), AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).add(Attributes.ATTACK_SPEED, new AttributeModifier(Item.BASE_ATTACK_SPEED_ID, (double)var2, AttributeModifier.Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND).build();
    }
 
-   public TagKey<Block> incorrectBlocksForDrops() {
-      return this.incorrectBlocksForDrops;
-   }
-
-   public int durability() {
-      return this.durability;
-   }
-
-   public float speed() {
-      return this.speed;
-   }
-
-   public float attackDamageBonus() {
-      return this.attackDamageBonus;
-   }
-
-   public int enchantmentValue() {
-      return this.enchantmentValue;
-   }
-
-   public TagKey<Item> repairItems() {
-      return this.repairItems;
-   }
-
    static {
       WOOD = new ToolMaterial(BlockTags.INCORRECT_FOR_WOODEN_TOOL, 59, 2.0F, 0.0F, 15, ItemTags.WOODEN_TOOL_MATERIALS);
       STONE = new ToolMaterial(BlockTags.INCORRECT_FOR_STONE_TOOL, 131, 4.0F, 1.0F, 5, ItemTags.STONE_TOOL_MATERIALS);

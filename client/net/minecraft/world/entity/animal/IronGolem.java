@@ -72,9 +72,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       this.targetSelector.addGoal(1, new DefendVillageTargetGoal(this));
       this.targetSelector.addGoal(2, new HurtByTargetGoal(this, new Class[0]));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, this::isAngryAt));
-      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Mob.class, 5, false, false, (var0, var1) -> {
-         return var0 instanceof Enemy && !(var0 instanceof Creeper);
-      }));
+      this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Mob.class, 5, false, false, (var0, var1) -> var0 instanceof Enemy && !(var0 instanceof Creeper)));
       this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal(this, false));
    }
 
@@ -309,7 +307,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    }
 
    static {
-      DATA_FLAGS_ID = SynchedEntityData.defineId(IronGolem.class, EntityDataSerializers.BYTE);
+      DATA_FLAGS_ID = SynchedEntityData.<Byte>defineId(IronGolem.class, EntityDataSerializers.BYTE);
       PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
    }
 }

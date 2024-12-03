@@ -3,7 +3,6 @@ package net.minecraft.world.flag;
 import it.unimi.dsi.fastutil.HashCommon;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import javax.annotation.Nullable;
 
 public final class FeatureFlagSet {
@@ -42,13 +41,13 @@ public final class FeatureFlagSet {
    }
 
    private static long computeMask(FeatureFlagUniverse var0, long var1, Iterable<FeatureFlag> var3) {
-      FeatureFlag var5;
-      for(Iterator var4 = var3.iterator(); var4.hasNext(); var1 |= var5.mask) {
-         var5 = (FeatureFlag)var4.next();
+      for(FeatureFlag var5 : var3) {
          if (var0 != var5.universe) {
             String var10002 = String.valueOf(var0);
             throw new IllegalStateException("Mismatched feature universe, expected '" + var10002 + "', but got '" + String.valueOf(var5.universe) + "'");
          }
+
+         var1 |= var5.mask;
       }
 
       return var1;

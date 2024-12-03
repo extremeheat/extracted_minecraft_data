@@ -170,7 +170,6 @@ public class MultilineTextField {
          this.insertText("");
          return true;
       } else {
-         StringView var2;
          switch (var1) {
             case 257:
             case 335:
@@ -178,8 +177,8 @@ public class MultilineTextField {
                return true;
             case 259:
                if (Screen.hasControlDown()) {
-                  var2 = this.getPreviousWord();
-                  this.deleteText(var2.beginIndex - this.cursor);
+                  StringView var5 = this.getPreviousWord();
+                  this.deleteText(var5.beginIndex - this.cursor);
                } else {
                   this.deleteText(-1);
                }
@@ -187,8 +186,8 @@ public class MultilineTextField {
                return true;
             case 261:
                if (Screen.hasControlDown()) {
-                  var2 = this.getNextWord();
-                  this.deleteText(var2.beginIndex - this.cursor);
+                  StringView var4 = this.getNextWord();
+                  this.deleteText(var4.beginIndex - this.cursor);
                } else {
                   this.deleteText(1);
                }
@@ -196,8 +195,8 @@ public class MultilineTextField {
                return true;
             case 262:
                if (Screen.hasControlDown()) {
-                  var2 = this.getNextWord();
-                  this.seekCursor(Whence.ABSOLUTE, var2.beginIndex);
+                  StringView var3 = this.getNextWord();
+                  this.seekCursor(Whence.ABSOLUTE, var3.beginIndex);
                } else {
                   this.seekCursor(Whence.RELATIVE, 1);
                }
@@ -205,7 +204,7 @@ public class MultilineTextField {
                return true;
             case 263:
                if (Screen.hasControlDown()) {
-                  var2 = this.getPreviousWord();
+                  StringView var2 = this.getPreviousWord();
                   this.seekCursor(Whence.ABSOLUTE, var2.beginIndex);
                } else {
                   this.seekCursor(Whence.RELATIVE, -1);
@@ -333,9 +332,7 @@ public class MultilineTextField {
       if (this.value.isEmpty()) {
          this.displayLines.add(MultilineTextField.StringView.EMPTY);
       } else {
-         this.font.getSplitter().splitLines(this.value, this.width, Style.EMPTY, false, (var1, var2, var3) -> {
-            this.displayLines.add(new StringView(var2, var3));
-         });
+         this.font.getSplitter().splitLines(this.value, this.width, Style.EMPTY, false, (var1, var2, var3) -> this.displayLines.add(new StringView(var2, var3)));
          if (this.value.charAt(this.value.length() - 1) == '\n') {
             this.displayLines.add(new StringView(this.value.length(), this.value.length()));
          }
@@ -365,14 +362,6 @@ public class MultilineTextField {
          super();
          this.beginIndex = var1;
          this.endIndex = var2;
-      }
-
-      public int beginIndex() {
-         return this.beginIndex;
-      }
-
-      public int endIndex() {
-         return this.endIndex;
       }
    }
 }

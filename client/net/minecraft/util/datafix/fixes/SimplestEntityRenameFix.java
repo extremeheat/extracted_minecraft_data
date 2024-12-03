@@ -25,9 +25,7 @@ public abstract class SimplestEntityRenameFix extends DataFix {
       if (!Objects.equals(this.getOutputSchema().getType(References.ENTITY_NAME), var3)) {
          throw new IllegalStateException("Entity name type is not what was expected.");
       } else {
-         return TypeRewriteRule.seq(this.fixTypeEverywhere(this.name, var1, var2, (var3x) -> {
-            return (var3) -> {
-               return var3.mapFirst((var3x) -> {
+         return TypeRewriteRule.seq(this.fixTypeEverywhere(this.name, var1, var2, (var3x) -> (var3) -> var3.mapFirst((var3x) -> {
                   String var4 = this.rename(var3x);
                   Type var5 = (Type)var1.types().get(var3x);
                   Type var6 = (Type)var2.types().get(var4);
@@ -36,13 +34,7 @@ public abstract class SimplestEntityRenameFix extends DataFix {
                   } else {
                      return var4;
                   }
-               });
-            };
-         }), this.fixTypeEverywhere(this.name + " for entity name", var3, (var1x) -> {
-            return (var1) -> {
-               return var1.mapSecond(this::rename);
-            };
-         }));
+               })), this.fixTypeEverywhere(this.name + " for entity name", var3, (var1x) -> (var1) -> var1.mapSecond(this::rename)));
       }
    }
 

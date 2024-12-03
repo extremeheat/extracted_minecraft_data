@@ -30,11 +30,7 @@ public class AttributeModifierIdFix extends DataFix {
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
       OpticFinder var2 = var1.findField("components");
-      return TypeRewriteRule.seq(this.fixTypeEverywhereTyped("AttributeIdFix (ItemStack)", var1, (var1x) -> {
-         return var1x.updateTyped(var2, (var0) -> {
-            return var0.update(DSL.remainderFinder(), AttributeModifierIdFix::fixItemStackComponents);
-         });
-      }), new TypeRewriteRule[]{this.fixTypeEverywhereTyped("AttributeIdFix (Entity)", this.getInputSchema().getType(References.ENTITY), AttributeModifierIdFix::fixEntity), this.fixTypeEverywhereTyped("AttributeIdFix (Player)", this.getInputSchema().getType(References.PLAYER), AttributeModifierIdFix::fixEntity)});
+      return TypeRewriteRule.seq(this.fixTypeEverywhereTyped("AttributeIdFix (ItemStack)", var1, (var1x) -> var1x.updateTyped(var2, (var0) -> var0.update(DSL.remainderFinder(), AttributeModifierIdFix::fixItemStackComponents))), new TypeRewriteRule[]{this.fixTypeEverywhereTyped("AttributeIdFix (Entity)", this.getInputSchema().getType(References.ENTITY), AttributeModifierIdFix::fixEntity), this.fixTypeEverywhereTyped("AttributeIdFix (Player)", this.getInputSchema().getType(References.PLAYER), AttributeModifierIdFix::fixEntity)});
    }
 
    private static Stream<Dynamic<?>> fixModifiersTypeWrapper(Stream<?> var0) {
@@ -63,9 +59,9 @@ public class AttributeModifierIdFix extends DataFix {
             }
          } else {
             String var10000 = var2 != null ? var2.toString().toLowerCase(Locale.ROOT) : "unknown";
-            String var11 = "minecraft:" + var10000;
-            var1x = var1x.set("id", var1x.createString(var11));
-            var1.put(var11, var1x.remove("uuid").remove("name"));
+            String var14 = "minecraft:" + var10000;
+            var1x = var1x.set("id", var1x.createString(var14));
+            var1.put(var14, var1x.remove("uuid").remove("name"));
          }
 
       });
@@ -87,35 +83,27 @@ public class AttributeModifierIdFix extends DataFix {
    }
 
    private static Dynamic<?> fixItemStackComponents(Dynamic<?> var0) {
-      return var0.update("minecraft:attribute_modifiers", (var0x) -> {
-         return var0x.update("modifiers", (var0) -> {
+      return var0.update("minecraft:attribute_modifiers", (var0x) -> var0x.update("modifiers", (var0) -> {
             Optional var10000 = var0.asStreamOpt().result().map(AttributeModifierIdFix::fixModifiersTypeWrapper);
             Objects.requireNonNull(var0);
             return (Dynamic)DataFixUtils.orElse(var10000.map(var0::createList), var0);
-         });
-      });
+         }));
    }
 
    private static Dynamic<?> fixAttribute(Dynamic<?> var0) {
       return var0.renameField("Name", "id").renameField("Base", "base").renameAndFixField("Modifiers", "modifiers", (var1) -> {
-         Optional var10000 = var1.asStreamOpt().result().map((var0x) -> {
-            return var0x.map(AttributeModifierIdFix::convertModifierForEntity);
-         }).map(AttributeModifierIdFix::fixModifiersTypeWrapper);
+         Optional var10000 = var1.asStreamOpt().result().map((var0x) -> var0x.map(AttributeModifierIdFix::convertModifierForEntity)).map(AttributeModifierIdFix::fixModifiersTypeWrapper);
          Objects.requireNonNull(var0);
          return (Dynamic)DataFixUtils.orElse(var10000.map(var0::createList), var1);
       });
    }
 
    private static Typed<?> fixEntity(Typed<?> var0) {
-      return var0.update(DSL.remainderFinder(), (var0x) -> {
-         return var0x.renameAndFixField("Attributes", "attributes", (var0) -> {
-            Optional var10000 = var0.asStreamOpt().result().map((var0x) -> {
-               return var0x.map(AttributeModifierIdFix::fixAttribute);
-            });
+      return var0.update(DSL.remainderFinder(), (var0x) -> var0x.renameAndFixField("Attributes", "attributes", (var0) -> {
+            Optional var10000 = var0.asStreamOpt().result().map((var0x) -> var0x.map(AttributeModifierIdFix::fixAttribute));
             Objects.requireNonNull(var0);
             return (Dynamic)DataFixUtils.orElse(var10000.map(var0::createList), var0);
-         });
-      });
+         }));
    }
 
    @Nullable

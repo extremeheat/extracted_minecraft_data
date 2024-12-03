@@ -7,9 +7,7 @@ import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
 
 public class CountPlacement extends RepeatingPlacement {
-   public static final MapCodec<CountPlacement> CODEC = IntProvider.codec(0, 256).fieldOf("count").xmap(CountPlacement::new, (var0) -> {
-      return var0.count;
-   });
+   public static final MapCodec<CountPlacement> CODEC = IntProvider.codec(0, 256).fieldOf("count").xmap(CountPlacement::new, (var0) -> var0.count);
    private final IntProvider count;
 
    private CountPlacement(IntProvider var1) {

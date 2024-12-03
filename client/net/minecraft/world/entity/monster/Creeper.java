@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.Collection;
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -241,10 +240,8 @@ public class Creeper extends Monster {
          var2.setWaitTime(10);
          var2.setDuration(var2.getDuration() / 2);
          var2.setRadiusPerTick(-var2.getRadius() / (float)var2.getDuration());
-         Iterator var3 = var1.iterator();
 
-         while(var3.hasNext()) {
-            MobEffectInstance var4 = (MobEffectInstance)var3.next();
+         for(MobEffectInstance var4 : var1) {
             var2.addEffect(new MobEffectInstance(var4));
          }
 
@@ -270,8 +267,8 @@ public class Creeper extends Monster {
    }
 
    static {
-      DATA_SWELL_DIR = SynchedEntityData.defineId(Creeper.class, EntityDataSerializers.INT);
-      DATA_IS_POWERED = SynchedEntityData.defineId(Creeper.class, EntityDataSerializers.BOOLEAN);
-      DATA_IS_IGNITED = SynchedEntityData.defineId(Creeper.class, EntityDataSerializers.BOOLEAN);
+      DATA_SWELL_DIR = SynchedEntityData.<Integer>defineId(Creeper.class, EntityDataSerializers.INT);
+      DATA_IS_POWERED = SynchedEntityData.<Boolean>defineId(Creeper.class, EntityDataSerializers.BOOLEAN);
+      DATA_IS_IGNITED = SynchedEntityData.<Boolean>defineId(Creeper.class, EntityDataSerializers.BOOLEAN);
    }
 }

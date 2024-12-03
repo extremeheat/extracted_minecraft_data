@@ -17,8 +17,7 @@ public class EntityRedundantChanceTagsFix extends DataFix {
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("EntityRedundantChanceTagsFix", this.getInputSchema().getType(References.ENTITY), (var0) -> {
-         return var0.update(DSL.remainderFinder(), (var0x) -> {
+      return this.fixTypeEverywhereTyped("EntityRedundantChanceTagsFix", this.getInputSchema().getType(References.ENTITY), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> {
             if (isZeroList(var0x.get("HandDropChances"), 2)) {
                var0x = var0x.remove("HandDropChances");
             }
@@ -28,18 +27,13 @@ public class EntityRedundantChanceTagsFix extends DataFix {
             }
 
             return var0x;
-         });
-      });
+         }));
    }
 
    private static boolean isZeroList(OptionalDynamic<?> var0, int var1) {
       Codec var10001 = FLOAT_LIST_CODEC;
       Objects.requireNonNull(var10001);
-      return (Boolean)var0.flatMap(var10001::parse).map((var1x) -> {
-         return var1x.size() == var1 && var1x.stream().allMatch((var0) -> {
-            return var0 == 0.0F;
-         });
-      }).result().orElse(false);
+      return (Boolean)var0.flatMap(var10001::parse).map((var1x) -> var1x.size() == var1 && var1x.stream().allMatch((var0) -> var0 == 0.0F)).result().orElse(false);
    }
 
    static {

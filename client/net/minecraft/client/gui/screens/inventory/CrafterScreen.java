@@ -5,7 +5,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -64,9 +63,9 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
 
    private void updateSlotState(int var1, boolean var2) {
       ((CrafterMenu)this.menu).setSlotState(var1, var2);
-      super.handleSlotStateChanged(var1, ((CrafterMenu)this.menu).containerId, var2);
+      super.handleSlotStateChanged(var1, (this.menu).containerId, var2);
       float var3 = var2 ? 1.0F : 0.75F;
-      this.player.playSound((SoundEvent)SoundEvents.UI_BUTTON_CLICK.value(), 0.4F, var3);
+      this.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.4F, var3);
    }
 
    public void renderSlot(GuiGraphics var1, Slot var2) {

@@ -119,8 +119,6 @@ public class AxolotlAi {
    }
 
    public static Predicate<ItemStack> getTemptations() {
-      return (var0) -> {
-         return var0.is(ItemTags.AXOLOTL_FOOD);
-      };
+      return (var0) -> var0.is(ItemTags.AXOLOTL_FOOD);
    }
 }

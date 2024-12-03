@@ -62,9 +62,7 @@ public class MobEffectIdFix extends DataFix {
    }
 
    private static <T> Optional<Dynamic<T>> getAndConvertMobEffectId(Dynamic<T> var0, String var1) {
-      Optional var10000 = var0.get(var1).asNumber().result().map((var0x) -> {
-         return (String)ID_MAP.get(var0x.intValue());
-      });
+      Optional var10000 = var0.get(var1).asNumber().result().map((var0x) -> (String)ID_MAP.get(var0x.intValue()));
       Objects.requireNonNull(var0);
       return var10000.map(var0::createString);
    }
@@ -90,9 +88,7 @@ public class MobEffectIdFix extends DataFix {
    }
 
    private static <T> Dynamic<T> updateMobEffectInstanceList(Dynamic<T> var0, String var1, String var2) {
-      Optional var3 = var0.get(var1).asStreamOpt().result().map((var1x) -> {
-         return var0.createList(var1x.map(MobEffectIdFix::updateMobEffectInstance));
-      });
+      Optional var3 = var0.get(var1).asStreamOpt().result().map((var1x) -> var0.createList(var1x.map(MobEffectIdFix::updateMobEffectInstance)));
       return var0.replaceField(var1, var2, var3);
    }
 
@@ -109,9 +105,7 @@ public class MobEffectIdFix extends DataFix {
    private Typed<?> updateNamedChoice(Typed<?> var1, DSL.TypeReference var2, String var3, Function<Dynamic<?>, Dynamic<?>> var4) {
       Type var5 = this.getInputSchema().getChoiceType(var2, var3);
       Type var6 = this.getOutputSchema().getChoiceType(var2, var3);
-      return var1.updateTyped(DSL.namedChoice(var3, var5), var6, (var1x) -> {
-         return var1x.update(DSL.remainderFinder(), var4);
-      });
+      return var1.updateTyped(DSL.namedChoice(var3, var5), var6, (var1x) -> var1x.update(DSL.remainderFinder(), var4));
    }
 
    private TypeRewriteRule blockEntityFixer() {
@@ -160,15 +154,11 @@ public class MobEffectIdFix extends DataFix {
 
    private TypeRewriteRule playerFixer() {
       Type var1 = this.getInputSchema().getType(References.PLAYER);
-      return this.fixTypeEverywhereTyped("PlayerMobEffectIdFix", var1, (var0) -> {
-         return var0.update(DSL.remainderFinder(), MobEffectIdFix::updateLivingEntityTag);
-      });
+      return this.fixTypeEverywhereTyped("PlayerMobEffectIdFix", var1, (var0) -> var0.update(DSL.remainderFinder(), MobEffectIdFix::updateLivingEntityTag));
    }
 
    private static <T> Dynamic<T> fixSuspiciousStewTag(Dynamic<T> var0) {
-      Optional var1 = var0.get("Effects").asStreamOpt().result().map((var1x) -> {
-         return var0.createList(var1x.map(MobEffectIdFix::updateSuspiciousStewEntry));
-      });
+      Optional var1 = var0.get("Effects").asStreamOpt().result().map((var1x) -> var0.createList(var1x.map(MobEffectIdFix::updateSuspiciousStewEntry)));
       return var0.replaceField("Effects", "effects", var1);
    }
 
@@ -181,17 +171,11 @@ public class MobEffectIdFix extends DataFix {
          if (var3x.isPresent()) {
             String var4 = (String)((Pair)var3x.get()).getSecond();
             if (var4.equals("minecraft:suspicious_stew")) {
-               return var2x.updateTyped(var3, (var0) -> {
-                  return var0.update(DSL.remainderFinder(), MobEffectIdFix::fixSuspiciousStewTag);
-               });
+               return var2x.updateTyped(var3, (var0) -> var0.update(DSL.remainderFinder(), MobEffectIdFix::fixSuspiciousStewTag));
             }
 
             if (MOB_EFFECT_INSTANCE_CARRIER_ITEMS.contains(var4)) {
-               return var2x.updateTyped(var3, (var0) -> {
-                  return var0.update(DSL.remainderFinder(), (var0x) -> {
-                     return updateMobEffectInstanceList(var0x, "CustomPotionEffects", "custom_potion_effects");
-                  });
-               });
+               return var2x.updateTyped(var3, (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> updateMobEffectInstanceList(var0x, "CustomPotionEffects", "custom_potion_effects")));
             }
          }
 

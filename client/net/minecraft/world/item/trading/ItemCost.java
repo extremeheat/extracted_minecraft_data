@@ -17,9 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
 public record ItemCost(Holder<Item> item, int count, DataComponentPredicate components, ItemStack itemStack) {
-   public static final Codec<ItemCost> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Item.CODEC.fieldOf("id").forGetter(ItemCost::item), ExtraCodecs.POSITIVE_INT.fieldOf("count").orElse(1).forGetter(ItemCost::count), DataComponentPredicate.CODEC.optionalFieldOf("components", DataComponentPredicate.EMPTY).forGetter(ItemCost::components)).apply(var0, ItemCost::new);
-   });
+   public static final Codec<ItemCost> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Item.CODEC.fieldOf("id").forGetter(ItemCost::item), ExtraCodecs.POSITIVE_INT.fieldOf("count").orElse(1).forGetter(ItemCost::count), DataComponentPredicate.CODEC.optionalFieldOf("components", DataComponentPredicate.EMPTY).forGetter(ItemCost::components)).apply(var0, ItemCost::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemCost> STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Optional<ItemCost>> OPTIONAL_STREAM_CODEC;
 
@@ -53,22 +51,6 @@ public record ItemCost(Holder<Item> item, int count, DataComponentPredicate comp
 
    public boolean test(ItemStack var1) {
       return var1.is(this.item) && this.components.test((DataComponentHolder)var1);
-   }
-
-   public Holder<Item> item() {
-      return this.item;
-   }
-
-   public int count() {
-      return this.count;
-   }
-
-   public DataComponentPredicate components() {
-      return this.components;
-   }
-
-   public ItemStack itemStack() {
-      return this.itemStack;
    }
 
    static {

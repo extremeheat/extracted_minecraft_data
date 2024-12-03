@@ -26,23 +26,17 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
    private static final String TAG_PATTERNS = "patterns";
    @Nullable
    private Component name;
-   private DyeColor baseColor;
+   private final DyeColor baseColor;
    private BannerPatternLayers patterns;
 
    public BannerBlockEntity(BlockPos var1, BlockState var2) {
-      super(BlockEntityType.BANNER, var1, var2);
-      this.patterns = BannerPatternLayers.EMPTY;
-      this.baseColor = ((AbstractBannerBlock)var2.getBlock()).getColor();
+      this(var1, var2, ((AbstractBannerBlock)var2.getBlock()).getColor());
    }
 
    public BannerBlockEntity(BlockPos var1, BlockState var2, DyeColor var3) {
-      this(var1, var2);
+      super(BlockEntityType.BANNER, var1, var2);
+      this.patterns = BannerPatternLayers.EMPTY;
       this.baseColor = var3;
-   }
-
-   public void fromItem(ItemStack var1, DyeColor var2) {
-      this.baseColor = var2;
-      this.applyComponentsFromItemStack(var1);
    }
 
    public Component getName() {
@@ -73,11 +67,7 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
       }
 
       if (var1.contains("patterns")) {
-         BannerPatternLayers.CODEC.parse(var2.createSerializationContext(NbtOps.INSTANCE), var1.get("patterns")).resultOrPartial((var0) -> {
-            LOGGER.error("Failed to parse banner patterns: '{}'", var0);
-         }).ifPresent((var1x) -> {
-            this.patterns = var1x;
-         });
+         BannerPatternLayers.CODEC.parse(var2.createSerializationContext(NbtOps.INSTANCE), var1.get("patterns")).resultOrPartial((var0) -> LOGGER.error("Failed to parse banner patterns: '{}'", var0)).ifPresent((var1x) -> this.patterns = var1x);
       }
 
    }

@@ -39,11 +39,9 @@ public class WorldUnloadEvent {
    }
 
    public void send(TelemetryEventSender var1) {
-      this.worldLoadedTime.ifPresent((var2) -> {
-         var1.send(TelemetryEventType.WORLD_UNLOADED, (var2x) -> {
+      this.worldLoadedTime.ifPresent((var2) -> var1.send(TelemetryEventType.WORLD_UNLOADED, (var2x) -> {
             var2x.put(TelemetryProperty.SECONDS_SINCE_LOAD, this.getTimeInSecondsSinceLoad(var2));
             var2x.put(TelemetryProperty.TICKS_SINCE_LOAD, (int)this.totalTicks);
-         });
-      });
+         }));
    }
 }

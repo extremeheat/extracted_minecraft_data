@@ -12,7 +12,7 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 
 public class ServerboundContainerClickPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundContainerClickPacket> STREAM_CODEC = Packet.codec(ServerboundContainerClickPacket::write, ServerboundContainerClickPacket::new);
+   public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundContainerClickPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ServerboundContainerClickPacket>codec(ServerboundContainerClickPacket::write, ServerboundContainerClickPacket::new);
    private static final int MAX_SLOT_COUNT = 128;
    private static final StreamCodec<RegistryFriendlyByteBuf, Int2ObjectMap<ItemStack>> SLOTS_STREAM_CODEC;
    private final int containerId;

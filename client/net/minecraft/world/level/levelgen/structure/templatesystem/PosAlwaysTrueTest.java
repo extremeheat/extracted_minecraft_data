@@ -5,9 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 
 public class PosAlwaysTrueTest extends PosRuleTest {
-   public static final MapCodec<PosAlwaysTrueTest> CODEC = MapCodec.unit(() -> {
-      return INSTANCE;
-   });
+   public static final MapCodec<PosAlwaysTrueTest> CODEC = MapCodec.unit(() -> INSTANCE);
    public static final PosAlwaysTrueTest INSTANCE = new PosAlwaysTrueTest();
 
    private PosAlwaysTrueTest() {

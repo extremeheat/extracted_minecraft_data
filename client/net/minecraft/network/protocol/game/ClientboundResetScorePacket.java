@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ClientboundResetScorePacket(String owner, @Nullable String objectiveName) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundResetScorePacket> STREAM_CODEC = Packet.codec(ClientboundResetScorePacket::write, ClientboundResetScorePacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundResetScorePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundResetScorePacket>codec(ClientboundResetScorePacket::write, ClientboundResetScorePacket::new);
 
    private ClientboundResetScorePacket(FriendlyByteBuf var1) {
       this(var1.readUtf(), (String)var1.readNullable(FriendlyByteBuf::readUtf));
@@ -30,14 +30,5 @@ public record ClientboundResetScorePacket(String owner, @Nullable String objecti
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleResetScore(this);
-   }
-
-   public String owner() {
-      return this.owner;
-   }
-
-   @Nullable
-   public String objectiveName() {
-      return this.objectiveName;
    }
 }

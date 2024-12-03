@@ -8,15 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class SurfaceRelativeThresholdFilter extends PlacementFilter {
-   public static final MapCodec<SurfaceRelativeThresholdFilter> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Heightmap.Types.CODEC.fieldOf("heightmap").forGetter((var0x) -> {
-         return var0x.heightmap;
-      }), Codec.INT.optionalFieldOf("min_inclusive", -2147483648).forGetter((var0x) -> {
-         return var0x.minInclusive;
-      }), Codec.INT.optionalFieldOf("max_inclusive", 2147483647).forGetter((var0x) -> {
-         return var0x.maxInclusive;
-      })).apply(var0, SurfaceRelativeThresholdFilter::new);
-   });
+   public static final MapCodec<SurfaceRelativeThresholdFilter> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Heightmap.Types.CODEC.fieldOf("heightmap").forGetter((var0x) -> var0x.heightmap), Codec.INT.optionalFieldOf("min_inclusive", -2147483648).forGetter((var0x) -> var0x.minInclusive), Codec.INT.optionalFieldOf("max_inclusive", 2147483647).forGetter((var0x) -> var0x.maxInclusive)).apply(var0, SurfaceRelativeThresholdFilter::new));
    private final Heightmap.Types heightmap;
    private final int minInclusive;
    private final int maxInclusive;

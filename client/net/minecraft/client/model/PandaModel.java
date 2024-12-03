@@ -8,7 +8,6 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PandaRenderState;
 import net.minecraft.util.Mth;
 
@@ -35,7 +34,7 @@ public class PandaModel extends QuadrupedModel<PandaRenderState> {
    }
 
    public void setupAnim(PandaRenderState var1) {
-      super.setupAnim((LivingEntityRenderState)var1);
+      super.setupAnim(var1);
       if (var1.isUnhappy) {
          this.head.yRot = 0.35F * Mth.sin(0.6F * var1.ageInTicks);
          this.head.zRot = 0.35F * Mth.sin(0.6F * var1.ageInTicks);

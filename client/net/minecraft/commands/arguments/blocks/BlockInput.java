@@ -1,6 +1,5 @@
 package net.minecraft.commands.arguments.blocks;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -40,10 +39,7 @@ public class BlockInput implements Predicate<BlockInWorld> {
       if (!var2.is(this.state.getBlock())) {
          return false;
       } else {
-         Iterator var3 = this.properties.iterator();
-
-         while(var3.hasNext()) {
-            Property var4 = (Property)var3.next();
+         for(Property var4 : this.properties) {
             if (var2.getValue(var4) != this.state.getValue(var4)) {
                return false;
             }
@@ -68,6 +64,7 @@ public class BlockInput implements Predicate<BlockInWorld> {
          var4 = this.state;
       }
 
+      var4 = this.overwriteWithDefinedProperties(var4);
       if (!var1.setBlock(var2, var4, var3)) {
          return false;
       } else {
@@ -80,6 +77,22 @@ public class BlockInput implements Predicate<BlockInWorld> {
 
          return true;
       }
+   }
+
+   private BlockState overwriteWithDefinedProperties(BlockState var1) {
+      if (var1 == this.state) {
+         return var1;
+      } else {
+         for(Property var3 : this.properties) {
+            var1 = copyProperty(var1, this.state, var3);
+         }
+
+         return var1;
+      }
+   }
+
+   private static <T extends Comparable<T>> BlockState copyProperty(BlockState var0, BlockState var1, Property<T> var2) {
+      return (BlockState)var0.setValue(var2, var1.getValue(var2));
    }
 
    // $FF: synthetic method

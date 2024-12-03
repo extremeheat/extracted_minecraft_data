@@ -20,9 +20,7 @@ public abstract class EnchantmentTagsProvider extends TagsProvider<Enchantment> 
    protected void tooltipOrder(HolderLookup.Provider var1, ResourceKey<Enchantment>... var2) {
       this.tag(EnchantmentTags.TOOLTIP_ORDER).add(var2);
       Set var3 = Set.of(var2);
-      List var4 = (List)var1.lookupOrThrow(Registries.ENCHANTMENT).listElements().filter((var1x) -> {
-         return !var3.contains(var1x.unwrapKey().get());
-      }).map(Holder::getRegisteredName).collect(Collectors.toList());
+      List var4 = (List)var1.lookupOrThrow(Registries.ENCHANTMENT).listElements().filter((var1x) -> !var3.contains(var1x.unwrapKey().get())).map(Holder::getRegisteredName).collect(Collectors.toList());
       if (!var4.isEmpty()) {
          throw new IllegalStateException("Not all enchantments were registered for tooltip ordering. Missing: " + String.join(", ", var4));
       }

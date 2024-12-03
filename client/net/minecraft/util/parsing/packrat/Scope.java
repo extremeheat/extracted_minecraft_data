@@ -18,28 +18,24 @@ public final class Scope {
 
    @Nullable
    public <T> T get(Atom<T> var1) {
-      return this.values.get(var1);
+      return (T)this.values.get(var1);
    }
 
    public <T> T getOrThrow(Atom<T> var1) {
-      return Objects.requireNonNull(this.get(var1));
+      return (T)Objects.requireNonNull(this.get(var1));
    }
 
    public <T> T getOrDefault(Atom<T> var1, T var2) {
-      return Objects.requireNonNullElse(this.get(var1), var2);
+      return (T)Objects.requireNonNullElse(this.get(var1), var2);
    }
 
    @Nullable
    @SafeVarargs
    public final <T> T getAny(Atom<T>... var1) {
-      Atom[] var2 = var1;
-      int var3 = var1.length;
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         Atom var5 = var2[var4];
+      for(Atom var5 : var1) {
          Object var6 = this.get(var5);
          if (var6 != null) {
-            return var6;
+            return (T)var6;
          }
       }
 
@@ -48,7 +44,7 @@ public final class Scope {
 
    @SafeVarargs
    public final <T> T getAnyOrThrow(Atom<T>... var1) {
-      return Objects.requireNonNull(this.getAny(var1));
+      return (T)Objects.requireNonNull(this.getAny(var1));
    }
 
    public String toString() {

@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Style;
 import org.joml.Matrix4f;
 
 public class BakedGlyph {
+   public static final float Z_FIGHTER = 0.001F;
    private final GlyphRenderTypes renderTypes;
    private final float u0;
    private final float u1;
@@ -37,74 +38,84 @@ public class BakedGlyph {
       float var7 = var1.x();
       float var8 = var1.y();
       int var9 = var1.color();
-      this.render(var6, var7, var8, var2, var3, var9, var4);
-      if (var5.isBold()) {
-         this.render(var6, var7 + var1.boldOffset(), var8, var2, var3, var9, var4);
+      int var10 = var1.shadowColor();
+      boolean var11 = var5.isBold();
+      if (var1.hasShadow()) {
+         this.render(var6, var7 + var1.shadowOffset(), var8 + var1.shadowOffset(), var2, var3, var10, var11, var4);
+         this.render(var6, var7, var8, 0.03F, var2, var3, var9, var11, var4);
+      } else {
+         this.render(var6, var7, var8, var2, var3, var9, var11, var4);
+      }
+
+      if (var11) {
+         if (var1.hasShadow()) {
+            this.render(var6, var7 + var1.boldOffset() + var1.shadowOffset(), var8 + var1.shadowOffset(), 0.001F, var2, var3, var10, true, var4);
+            this.render(var6, var7 + var1.boldOffset(), var8, 0.03F, var2, var3, var9, true, var4);
+         } else {
+            this.render(var6, var7 + var1.boldOffset(), var8, var2, var3, var9, true, var4);
+         }
       }
 
    }
 
-   private void render(boolean var1, float var2, float var3, Matrix4f var4, VertexConsumer var5, int var6, int var7) {
-      float var8 = var2 + this.left;
-      float var9 = var2 + this.right;
-      float var10 = var3 + this.up;
-      float var11 = var3 + this.down;
-      float var12 = var1 ? 1.0F - 0.25F * this.up : 0.0F;
-      float var13 = var1 ? 1.0F - 0.25F * this.down : 0.0F;
-      var5.addVertex(var4, var8 + var12, var10, 0.0F).setColor(var6).setUv(this.u0, this.v0).setLight(var7);
-      var5.addVertex(var4, var8 + var13, var11, 0.0F).setColor(var6).setUv(this.u0, this.v1).setLight(var7);
-      var5.addVertex(var4, var9 + var13, var11, 0.0F).setColor(var6).setUv(this.u1, this.v1).setLight(var7);
-      var5.addVertex(var4, var9 + var12, var10, 0.0F).setColor(var6).setUv(this.u1, this.v0).setLight(var7);
+   private void render(boolean var1, float var2, float var3, Matrix4f var4, VertexConsumer var5, int var6, boolean var7, int var8) {
+      this.render(var1, var2, var3, 0.0F, var4, var5, var6, var7, var8);
+   }
+
+   private void render(boolean var1, float var2, float var3, float var4, Matrix4f var5, VertexConsumer var6, int var7, boolean var8, int var9) {
+      float var10 = var2 + this.left;
+      float var11 = var2 + this.right;
+      float var12 = var3 + this.up;
+      float var13 = var3 + this.down;
+      float var14 = var1 ? 1.0F - 0.25F * this.up : 0.0F;
+      float var15 = var1 ? 1.0F - 0.25F * this.down : 0.0F;
+      float var16 = var8 ? 0.1F : 0.0F;
+      var6.addVertex(var5, var10 + var14 - var16, var12 - var16, var4).setColor(var7).setUv(this.u0, this.v0).setLight(var9);
+      var6.addVertex(var5, var10 + var15 - var16, var13 + var16, var4).setColor(var7).setUv(this.u0, this.v1).setLight(var9);
+      var6.addVertex(var5, var11 + var15 + var16, var13 + var16, var4).setColor(var7).setUv(this.u1, this.v1).setLight(var9);
+      var6.addVertex(var5, var11 + var14 + var16, var12 - var16, var4).setColor(var7).setUv(this.u1, this.v0).setLight(var9);
    }
 
    public void renderEffect(Effect var1, Matrix4f var2, VertexConsumer var3, int var4) {
-      var3.addVertex(var2, var1.x0, var1.y0, var1.depth).setColor(var1.color).setUv(this.u0, this.v0).setLight(var4);
-      var3.addVertex(var2, var1.x1, var1.y0, var1.depth).setColor(var1.color).setUv(this.u0, this.v1).setLight(var4);
-      var3.addVertex(var2, var1.x1, var1.y1, var1.depth).setColor(var1.color).setUv(this.u1, this.v1).setLight(var4);
-      var3.addVertex(var2, var1.x0, var1.y1, var1.depth).setColor(var1.color).setUv(this.u1, this.v0).setLight(var4);
+      if (var1.hasShadow()) {
+         this.buildEffect(var1, var1.shadowOffset(), 0.0F, var1.shadowColor(), var3, var4, var2);
+         this.buildEffect(var1, 0.0F, 0.03F, var1.color, var3, var4, var2);
+      } else {
+         this.buildEffect(var1, 0.0F, 0.0F, var1.color, var3, var4, var2);
+      }
+
+   }
+
+   private void buildEffect(Effect var1, float var2, float var3, int var4, VertexConsumer var5, int var6, Matrix4f var7) {
+      var5.addVertex(var7, var1.x0 + var2, var1.y0 + var2, var1.depth + var3).setColor(var4).setUv(this.u0, this.v0).setLight(var6);
+      var5.addVertex(var7, var1.x1 + var2, var1.y0 + var2, var1.depth + var3).setColor(var4).setUv(this.u0, this.v1).setLight(var6);
+      var5.addVertex(var7, var1.x1 + var2, var1.y1 + var2, var1.depth + var3).setColor(var4).setUv(this.u1, this.v1).setLight(var6);
+      var5.addVertex(var7, var1.x0 + var2, var1.y1 + var2, var1.depth + var3).setColor(var4).setUv(this.u1, this.v0).setLight(var6);
    }
 
    public RenderType renderType(Font.DisplayMode var1) {
       return this.renderTypes.select(var1);
    }
 
-   public static record GlyphInstance(float x, float y, int color, BakedGlyph glyph, Style style, float boldOffset) {
-      public GlyphInstance(float var1, float var2, int var3, BakedGlyph var4, Style var5, float var6) {
+   public static record GlyphInstance(float x, float y, int color, int shadowColor, BakedGlyph glyph, Style style, float boldOffset, float shadowOffset) {
+      public GlyphInstance(float var1, float var2, int var3, int var4, BakedGlyph var5, Style var6, float var7, float var8) {
          super();
          this.x = var1;
          this.y = var2;
          this.color = var3;
-         this.glyph = var4;
-         this.style = var5;
-         this.boldOffset = var6;
+         this.shadowColor = var4;
+         this.glyph = var5;
+         this.style = var6;
+         this.boldOffset = var7;
+         this.shadowOffset = var8;
       }
 
-      public float x() {
-         return this.x;
-      }
-
-      public float y() {
-         return this.y;
-      }
-
-      public int color() {
-         return this.color;
-      }
-
-      public BakedGlyph glyph() {
-         return this.glyph;
-      }
-
-      public Style style() {
-         return this.style;
-      }
-
-      public float boldOffset() {
-         return this.boldOffset;
+      boolean hasShadow() {
+         return this.shadowColor() != 0;
       }
    }
 
-   public static record Effect(float x0, float y0, float x1, float y1, float depth, int color) {
+   public static record Effect(float x0, float y0, float x1, float y1, float depth, int color, int shadowColor, float shadowOffset) {
       final float x0;
       final float y0;
       final float x1;
@@ -113,6 +124,10 @@ public class BakedGlyph {
       final int color;
 
       public Effect(float var1, float var2, float var3, float var4, float var5, int var6) {
+         this(var1, var2, var3, var4, var5, var6, 0, 0.0F);
+      }
+
+      public Effect(float var1, float var2, float var3, float var4, float var5, int var6, int var7, float var8) {
          super();
          this.x0 = var1;
          this.y0 = var2;
@@ -120,30 +135,12 @@ public class BakedGlyph {
          this.y1 = var4;
          this.depth = var5;
          this.color = var6;
+         this.shadowColor = var7;
+         this.shadowOffset = var8;
       }
 
-      public float x0() {
-         return this.x0;
-      }
-
-      public float y0() {
-         return this.y0;
-      }
-
-      public float x1() {
-         return this.x1;
-      }
-
-      public float y1() {
-         return this.y1;
-      }
-
-      public float depth() {
-         return this.depth;
-      }
-
-      public int color() {
-         return this.color;
+      boolean hasShadow() {
+         return this.shadowColor() != 0;
       }
    }
 }

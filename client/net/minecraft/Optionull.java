@@ -15,36 +15,35 @@ public class Optionull {
    /** @deprecated */
    @Deprecated
    public static <T> T orElse(@Nullable T var0, T var1) {
-      return Objects.requireNonNullElse(var0, var1);
+      return (T)Objects.requireNonNullElse(var0, var1);
    }
 
    @Nullable
    public static <T, R> R map(@Nullable T var0, Function<T, R> var1) {
-      return var0 == null ? null : var1.apply(var0);
+      return (R)(var0 == null ? null : var1.apply(var0));
    }
 
    public static <T, R> R mapOrDefault(@Nullable T var0, Function<T, R> var1, R var2) {
-      return var0 == null ? var2 : var1.apply(var0);
+      // $FF: Couldn't be decompiled
    }
 
    public static <T, R> R mapOrElse(@Nullable T var0, Function<T, R> var1, Supplier<R> var2) {
-      return var0 == null ? var2.get() : var1.apply(var0);
+      return (R)(var0 == null ? var2.get() : var1.apply(var0));
    }
 
    @Nullable
    public static <T> T first(Collection<T> var0) {
       Iterator var1 = var0.iterator();
-      return var1.hasNext() ? var1.next() : null;
+      return (T)(var1.hasNext() ? var1.next() : null);
    }
 
    public static <T> T firstOrDefault(Collection<T> var0, T var1) {
-      Iterator var2 = var0.iterator();
-      return var2.hasNext() ? var2.next() : var1;
+      // $FF: Couldn't be decompiled
    }
 
    public static <T> T firstOrElse(Collection<T> var0, Supplier<T> var1) {
       Iterator var2 = var0.iterator();
-      return var2.hasNext() ? var2.next() : var1.get();
+      return (T)(var2.hasNext() ? var2.next() : var1.get());
    }
 
    public static <T> boolean isNullOrEmpty(@Nullable T[] var0) {

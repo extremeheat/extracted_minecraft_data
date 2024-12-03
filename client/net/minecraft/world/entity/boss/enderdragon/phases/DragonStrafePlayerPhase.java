@@ -36,39 +36,36 @@ public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
          LOGGER.warn("Skipping player strafe phase because no player was found");
          this.dragon.getPhaseManager().setPhase(EnderDragonPhase.HOLDING_PATTERN);
       } else {
-         double var2;
-         double var4;
-         double var10;
          if (this.currentPath != null && this.currentPath.isDone()) {
-            var2 = this.attackTarget.getX();
-            var4 = this.attackTarget.getZ();
+            double var2 = this.attackTarget.getX();
+            double var4 = this.attackTarget.getZ();
             double var6 = var2 - this.dragon.getX();
             double var8 = var4 - this.dragon.getZ();
-            var10 = Math.sqrt(var6 * var6 + var8 * var8);
+            double var10 = Math.sqrt(var6 * var6 + var8 * var8);
             double var12 = Math.min(0.4000000059604645 + var10 / 80.0 - 1.0, 10.0);
             this.targetLocation = new Vec3(var2, this.attackTarget.getY() + var12, var4);
          }
 
-         var2 = this.targetLocation == null ? 0.0 : this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
-         if (var2 < 100.0 || var2 > 22500.0) {
+         double var27 = this.targetLocation == null ? 0.0 : this.targetLocation.distanceToSqr(this.dragon.getX(), this.dragon.getY(), this.dragon.getZ());
+         if (var27 < 100.0 || var27 > 22500.0) {
             this.findNewTarget();
          }
 
-         var4 = 64.0;
+         double var28 = 64.0;
          if (this.attackTarget.distanceToSqr(this.dragon) < 4096.0) {
             if (this.dragon.hasLineOfSight(this.attackTarget)) {
                ++this.fireballCharge;
-               Vec3 var27 = (new Vec3(this.attackTarget.getX() - this.dragon.getX(), 0.0, this.attackTarget.getZ() - this.dragon.getZ())).normalize();
+               Vec3 var29 = (new Vec3(this.attackTarget.getX() - this.dragon.getX(), 0.0, this.attackTarget.getZ() - this.dragon.getZ())).normalize();
                Vec3 var7 = (new Vec3((double)Mth.sin(this.dragon.getYRot() * 0.017453292F), 0.0, (double)(-Mth.cos(this.dragon.getYRot() * 0.017453292F)))).normalize();
-               float var28 = (float)var7.dot(var27);
-               float var9 = (float)(Math.acos((double)var28) * 57.2957763671875);
+               float var30 = (float)var7.dot(var29);
+               float var9 = (float)(Math.acos((double)var30) * 57.2957763671875);
                var9 += 0.5F;
                if (this.fireballCharge >= 5 && var9 >= 0.0F && var9 < 10.0F) {
-                  var10 = 1.0;
-                  Vec3 var29 = this.dragon.getViewVector(1.0F);
-                  double var13 = this.dragon.head.getX() - var29.x * 1.0;
+                  double var32 = 1.0;
+                  Vec3 var33 = this.dragon.getViewVector(1.0F);
+                  double var13 = this.dragon.head.getX() - var33.x * 1.0;
                   double var15 = this.dragon.head.getY(0.5) + 0.5;
-                  double var17 = this.dragon.head.getZ() - var29.z * 1.0;
+                  double var17 = this.dragon.head.getZ() - var33.z * 1.0;
                   double var19 = this.attackTarget.getX() - var13;
                   double var21 = this.attackTarget.getY(0.5) - var15;
                   double var23 = this.attackTarget.getZ() - var17;

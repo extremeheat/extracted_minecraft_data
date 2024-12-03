@@ -35,7 +35,7 @@ import net.minecraft.world.phys.Vec3;
 public class TridentItem extends Item implements ProjectileItem {
    public static final int THROW_THRESHOLD_TIME = 10;
    public static final float BASE_DAMAGE = 8.0F;
-   public static final float SHOOT_POWER = 2.5F;
+   public static final float PROJECTILE_SHOOT_POWER = 2.5F;
 
    public TridentItem(Item.Properties var1) {
       super(var1);
@@ -74,6 +74,7 @@ public class TridentItem extends Item implements ProjectileItem {
                return false;
             } else {
                Holder var8 = (Holder)EnchantmentHelper.pickHighestLevel(var1, EnchantmentEffectComponents.TRIDENT_SOUND).orElse(SoundEvents.TRIDENT_THROW);
+               var5.awardStat(Stats.ITEM_USED.get(this));
                if (var2 instanceof ServerLevel) {
                   ServerLevel var9 = (ServerLevel)var2;
                   var1.hurtWithoutBreaking(1, var5);
@@ -90,7 +91,6 @@ public class TridentItem extends Item implements ProjectileItem {
                   }
                }
 
-               var5.awardStat(Stats.ITEM_USED.get(this));
                if (var7 > 0.0F) {
                   float var16 = var5.getYRot();
                   float var10 = var5.getXRot();

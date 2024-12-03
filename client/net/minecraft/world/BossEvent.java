@@ -112,11 +112,7 @@ public abstract class BossEvent {
       }
 
       public static BossBarColor byName(String var0) {
-         BossBarColor[] var1 = values();
-         int var2 = var1.length;
-
-         for(int var3 = 0; var3 < var2; ++var3) {
-            BossBarColor var4 = var1[var3];
+         for(BossBarColor var4 : values()) {
             if (var4.name.equals(var0)) {
                return var4;
             }
@@ -149,11 +145,7 @@ public abstract class BossEvent {
       }
 
       public static BossBarOverlay byName(String var0) {
-         BossBarOverlay[] var1 = values();
-         int var2 = var1.length;
-
-         for(int var3 = 0; var3 < var2; ++var3) {
-            BossBarOverlay var4 = var1[var3];
+         for(BossBarOverlay var4 : values()) {
             if (var4.name.equals(var0)) {
                return var4;
             }

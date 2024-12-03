@@ -18,15 +18,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetLoreFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetLoreFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(var0.group(ComponentSerialization.CODEC.sizeLimitedListOf(256).fieldOf("lore").forGetter((var0x) -> {
-         return var0x.lore;
-      }), ListOperation.codec(256).forGetter((var0x) -> {
-         return var0x.mode;
-      }), LootContext.EntityTarget.CODEC.optionalFieldOf("entity").forGetter((var0x) -> {
-         return var0x.resolutionContext;
-      }))).apply(var0, SetLoreFunction::new);
-   });
+   public static final MapCodec<SetLoreFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(ComponentSerialization.CODEC.sizeLimitedListOf(256).fieldOf("lore").forGetter((var0x) -> var0x.lore), ListOperation.codec(256).forGetter((var0x) -> var0x.mode), LootContext.EntityTarget.CODEC.optionalFieldOf("entity").forGetter((var0x) -> var0x.resolutionContext))).apply(var0, SetLoreFunction::new));
    private final List<Component> lore;
    private final ListOperation mode;
    private final Optional<LootContext.EntityTarget> resolutionContext;
@@ -43,15 +35,11 @@ public class SetLoreFunction extends LootItemConditionalFunction {
    }
 
    public Set<ContextKey<?>> getReferencedContextParams() {
-      return (Set)this.resolutionContext.map((var0) -> {
-         return Set.of(var0.getParam());
-      }).orElseGet(Set::of);
+      return (Set)this.resolutionContext.map((var0) -> Set.of(var0.getParam())).orElseGet(Set::of);
    }
 
    public ItemStack run(ItemStack var1, LootContext var2) {
-      var1.update(DataComponents.LORE, ItemLore.EMPTY, (var2x) -> {
-         return new ItemLore(this.updateLore(var2x, var2));
-      });
+      var1.update(DataComponents.LORE, ItemLore.EMPTY, (var2x) -> new ItemLore(this.updateLore(var2x, var2)));
       return var1;
    }
 
@@ -61,7 +49,7 @@ public class SetLoreFunction extends LootItemConditionalFunction {
       } else {
          UnaryOperator var3 = SetNameFunction.createResolver(var2, (LootContext.EntityTarget)this.resolutionContext.orElse((Object)null));
          List var4 = this.lore.stream().map(var3).toList();
-         return this.mode.apply(var1.lines(), var4, 256);
+         return this.mode.<Component>apply(var1.lines(), var4, 256);
       }
    }
 

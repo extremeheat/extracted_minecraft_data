@@ -62,13 +62,9 @@ public class RecoverWorldDataScreen extends Screen {
       this.layout.addChild(this.issuesWidget);
       LinearLayout var8 = LinearLayout.horizontal().spacing(5);
       var8.addChild(Button.builder(BUGTRACKER_BUTTON, ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.SNAPSHOT_BUGS_FEEDBACK)).size(120, 20).build());
-      ((Button)var8.addChild(Button.builder(RESTORE_BUTTON, (var2x) -> {
-         this.attemptRestore(var1);
-      }).size(120, 20).tooltip(var7 ? null : Tooltip.create(NO_FALLBACK_TOOLTIP)).build())).active = var7;
+      ((Button)var8.addChild(Button.builder(RESTORE_BUTTON, (var2x) -> this.attemptRestore(var1)).size(120, 20).tooltip(var7 ? null : Tooltip.create(NO_FALLBACK_TOOLTIP)).build())).active = var7;
       this.layout.addChild(var8);
-      this.layout.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> {
-         this.onClose();
-      }).size(120, 20).build());
+      this.layout.addChild(Button.builder(CommonComponents.GUI_BACK, (var1x) -> this.onClose()).size(120, 20).build());
       this.layout.visitWidgets(this::addRenderableWidget);
    }
 
@@ -81,16 +77,12 @@ public class RecoverWorldDataScreen extends Screen {
          if (this.storageAccess.restoreLevelDataFromOld()) {
             var1.setScreen(new ConfirmScreen(this.callback, DONE_TITLE, DONE_SUCCESS, CommonComponents.GUI_CONTINUE, CommonComponents.GUI_BACK));
          } else {
-            var1.setScreen(new AlertScreen(() -> {
-               this.callback.accept(false);
-            }, DONE_TITLE, DONE_FAILED));
+            var1.setScreen(new AlertScreen(() -> this.callback.accept(false), DONE_TITLE, DONE_FAILED));
          }
 
       } else {
          LOGGER.error("Failed to recover world, files not as expected. level.dat: {}, level.dat_old: {}", var2 != null ? var2.getMessage() : "no issues", var3 != null ? var3.getMessage() : "no issues");
-         var1.setScreen(new AlertScreen(() -> {
-            this.callback.accept(false);
-         }, DONE_TITLE, DONE_FAILED));
+         var1.setScreen(new AlertScreen(() -> this.callback.accept(false), DONE_TITLE, DONE_FAILED));
       }
    }
 

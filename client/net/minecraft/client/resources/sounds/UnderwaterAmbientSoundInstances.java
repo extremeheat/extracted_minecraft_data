@@ -10,6 +10,26 @@ public class UnderwaterAmbientSoundInstances {
       super();
    }
 
+   public static class SubSound extends AbstractTickableSoundInstance {
+      private final LocalPlayer player;
+
+      protected SubSound(LocalPlayer var1, SoundEvent var2) {
+         super(var2, SoundSource.AMBIENT, SoundInstance.createUnseededRandom());
+         this.player = var1;
+         this.looping = false;
+         this.delay = 0;
+         this.volume = 1.0F;
+         this.relative = true;
+      }
+
+      public void tick() {
+         if (this.player.isRemoved() || !this.player.isUnderWater()) {
+            this.stop();
+         }
+
+      }
+   }
+
    public static class UnderwaterAmbientSoundInstance extends AbstractTickableSoundInstance {
       public static final int FADE_DURATION = 40;
       private final LocalPlayer player;
@@ -37,26 +57,6 @@ public class UnderwaterAmbientSoundInstances {
          } else {
             this.stop();
          }
-      }
-   }
-
-   public static class SubSound extends AbstractTickableSoundInstance {
-      private final LocalPlayer player;
-
-      protected SubSound(LocalPlayer var1, SoundEvent var2) {
-         super(var2, SoundSource.AMBIENT, SoundInstance.createUnseededRandom());
-         this.player = var1;
-         this.looping = false;
-         this.delay = 0;
-         this.volume = 1.0F;
-         this.relative = true;
-      }
-
-      public void tick() {
-         if (this.player.isRemoved() || !this.player.isUnderWater()) {
-            this.stop();
-         }
-
       }
    }
 }

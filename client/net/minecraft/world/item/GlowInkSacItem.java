@@ -13,9 +13,7 @@ public class GlowInkSacItem extends Item implements SignApplicator {
    }
 
    public boolean tryApplyToSign(Level var1, SignBlockEntity var2, boolean var3, Player var4) {
-      if (var2.updateText((var0) -> {
-         return var0.setHasGlowingText(true);
-      }, var3)) {
+      if (var2.updateText((var0) -> var0.setHasGlowingText(true), var3)) {
          var1.playSound((Player)null, (BlockPos)var2.getBlockPos(), SoundEvents.GLOW_INK_SAC_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
          return true;
       } else {

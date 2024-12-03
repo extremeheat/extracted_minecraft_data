@@ -17,6 +17,7 @@ import java.util.Locale;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Camera;
@@ -308,19 +309,18 @@ public class GameRenderer implements AutoCloseable {
          }
 
          Entity var6 = var1.getEntity();
-         float var8;
          if (var6 instanceof LivingEntity) {
             LivingEntity var5 = (LivingEntity)var6;
             if (var5.isDeadOrDying()) {
-               var8 = Math.min((float)var5.deathTime + var2, 20.0F);
-               var4 /= (1.0F - 500.0F / (var8 + 500.0F)) * 2.0F + 1.0F;
+               float var9 = Math.min((float)var5.deathTime + var2, 20.0F);
+               var4 /= (1.0F - 500.0F / (var9 + 500.0F)) * 2.0F + 1.0F;
             }
          }
 
-         FogType var7 = var1.getFluidInCamera();
-         if (var7 == FogType.LAVA || var7 == FogType.WATER) {
-            var8 = ((Double)this.minecraft.options.fovEffectScale().get()).floatValue();
-            var4 *= Mth.lerp(var8, 1.0F, 0.85714287F);
+         FogType var8 = var1.getFluidInCamera();
+         if (var8 == FogType.LAVA || var8 == FogType.WATER) {
+            float var10 = ((Double)this.minecraft.options.fovEffectScale().get()).floatValue();
+            var4 *= Mth.lerp(var10, 1.0F, 0.85714287F);
          }
 
          return var4;
@@ -331,9 +331,8 @@ public class GameRenderer implements AutoCloseable {
       Entity var4 = this.minecraft.getCameraEntity();
       if (var4 instanceof LivingEntity var3) {
          float var7 = (float)var3.hurtTime - var2;
-         float var5;
          if (var3.isDeadOrDying()) {
-            var5 = Math.min((float)var3.deathTime + var2, 20.0F);
+            float var5 = Math.min((float)var3.deathTime + var2, 20.0F);
             var1.mulPose(Axis.ZP.rotationDegrees(40.0F - 8000.0F / (var5 + 200.0F)));
          }
 
@@ -343,11 +342,11 @@ public class GameRenderer implements AutoCloseable {
 
          var7 /= (float)var3.hurtDuration;
          var7 = Mth.sin(var7 * var7 * var7 * var7 * 3.1415927F);
-         var5 = var3.getHurtDir();
-         var1.mulPose(Axis.YP.rotationDegrees(-var5));
+         float var10 = var3.getHurtDir();
+         var1.mulPose(Axis.YP.rotationDegrees(-var10));
          float var6 = (float)((double)(-var7) * 14.0 * (Double)this.minecraft.options.damageTiltStrength().get());
          var1.mulPose(Axis.ZP.rotationDegrees(var6));
-         var1.mulPose(Axis.YP.rotationDegrees(var5));
+         var1.mulPose(Axis.YP.rotationDegrees(var10));
       }
 
    }
@@ -398,7 +397,9 @@ public class GameRenderer implements AutoCloseable {
          var6.popMatrix();
          var5.popPose();
          if (this.minecraft.options.getCameraType().isFirstPerson() && !var7) {
-            ScreenEffectRenderer.renderScreenEffect(this.minecraft, var5);
+            MultiBufferSource.BufferSource var8 = this.renderBuffers.bufferSource();
+            ScreenEffectRenderer.renderScreenEffect(this.minecraft, var5, var8);
+            var8.endBatch();
          }
 
       }
@@ -477,35 +478,25 @@ public class GameRenderer implements AutoCloseable {
             var3.pop();
          }
 
-         CrashReport var12;
-         CrashReportCategory var13;
          if (this.minecraft.getOverlay() != null) {
             try {
                this.minecraft.getOverlay().render(var10, var5, var6, var1.getGameTimeDeltaTicks());
             } catch (Throwable var17) {
-               var12 = CrashReport.forThrowable(var17, "Rendering overlay");
-               var13 = var12.addCategory("Overlay render details");
-               var13.setDetail("Overlay name", () -> {
-                  return this.minecraft.getOverlay().getClass().getCanonicalName();
-               });
+               CrashReport var12 = CrashReport.forThrowable(var17, "Rendering overlay");
+               CrashReportCategory var13 = var12.addCategory("Overlay render details");
+               var13.setDetail("Overlay name", (CrashReportDetail)(() -> this.minecraft.getOverlay().getClass().getCanonicalName()));
                throw new ReportedException(var12);
             }
          } else if (var4 && this.minecraft.screen != null) {
             try {
                this.minecraft.screen.renderWithTooltip(var10, var5, var6, var1.getGameTimeDeltaTicks());
             } catch (Throwable var16) {
-               var12 = CrashReport.forThrowable(var16, "Rendering screen");
-               var13 = var12.addCategory("Screen render details");
-               var13.setDetail("Screen name", () -> {
-                  return this.minecraft.screen.getClass().getCanonicalName();
-               });
-               var13.setDetail("Mouse location", () -> {
-                  return String.format(Locale.ROOT, "Scaled: (%d, %d). Absolute: (%f, %f)", var5, var6, this.minecraft.mouseHandler.xpos(), this.minecraft.mouseHandler.ypos());
-               });
-               var13.setDetail("Screen size", () -> {
-                  return String.format(Locale.ROOT, "Scaled: (%d, %d). Absolute: (%d, %d). Scale factor of %f", this.minecraft.getWindow().getGuiScaledWidth(), this.minecraft.getWindow().getGuiScaledHeight(), this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), this.minecraft.getWindow().getGuiScale());
-               });
-               throw new ReportedException(var12);
+               CrashReport var20 = CrashReport.forThrowable(var16, "Rendering screen");
+               CrashReportCategory var22 = var20.addCategory("Screen render details");
+               var22.setDetail("Screen name", (CrashReportDetail)(() -> this.minecraft.screen.getClass().getCanonicalName()));
+               var22.setDetail("Mouse location", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Scaled: (%d, %d). Absolute: (%f, %f)", var5, var6, this.minecraft.mouseHandler.xpos(), this.minecraft.mouseHandler.ypos())));
+               var22.setDetail("Screen size", (CrashReportDetail)(() -> String.format(Locale.ROOT, "Scaled: (%d, %d). Absolute: (%d, %d). Scale factor of %f", this.minecraft.getWindow().getGuiScaledWidth(), this.minecraft.getWindow().getGuiScaledHeight(), this.minecraft.getWindow().getWidth(), this.minecraft.getWindow().getHeight(), this.minecraft.getWindow().getGuiScale())));
+               throw new ReportedException(var20);
             }
 
             try {
@@ -513,12 +504,10 @@ public class GameRenderer implements AutoCloseable {
                   this.minecraft.screen.handleDelayedNarration();
                }
             } catch (Throwable var15) {
-               var12 = CrashReport.forThrowable(var15, "Narrating screen");
-               var13 = var12.addCategory("Screen details");
-               var13.setDetail("Screen name", () -> {
-                  return this.minecraft.screen.getClass().getCanonicalName();
-               });
-               throw new ReportedException(var12);
+               CrashReport var21 = CrashReport.forThrowable(var15, "Narrating screen");
+               CrashReportCategory var23 = var21.addCategory("Screen details");
+               var23.setDetail("Screen name", (CrashReportDetail)(() -> this.minecraft.screen.getClass().getCanonicalName()));
+               throw new ReportedException(var21);
             }
          }
 
@@ -527,24 +516,8 @@ public class GameRenderer implements AutoCloseable {
          }
 
          if (var4) {
-            Zone var11 = var3.zone("toasts");
-
-            try {
+            try (Zone var11 = var3.zone("toasts")) {
                this.minecraft.getToastManager().render(var10);
-            } catch (Throwable var18) {
-               if (var11 != null) {
-                  try {
-                     var11.close();
-                  } catch (Throwable var14) {
-                     var18.addSuppressed(var14);
-                  }
-               }
-
-               throw var18;
-            }
-
-            if (var11 != null) {
-               var11.close();
             }
          }
 
@@ -684,17 +657,17 @@ public class GameRenderer implements AutoCloseable {
       }
 
       float var17 = Math.max(var8, (float)(Integer)this.minecraft.options.fov().get());
-      Matrix4f var18 = this.getProjectionMatrix(var17);
+      Matrix4f var19 = this.getProjectionMatrix(var17);
       RenderSystem.setProjectionMatrix(var9, ProjectionType.PERSPECTIVE);
-      Quaternionf var19 = var5.rotation().conjugate(new Quaternionf());
-      Matrix4f var20 = (new Matrix4f()).rotation(var19);
-      this.minecraft.levelRenderer.prepareCullFrustum(var5.getPosition(), var20, var18);
+      Quaternionf var20 = var5.rotation().conjugate(new Quaternionf());
+      Matrix4f var21 = (new Matrix4f()).rotation(var20);
+      this.minecraft.levelRenderer.prepareCullFrustum(var5.getPosition(), var21, var19);
       this.minecraft.getMainRenderTarget().bindWrite(true);
-      this.minecraft.levelRenderer.renderLevel(this.resourcePool, var1, var4, var5, this, this.lightTexture, var20, var9);
+      this.minecraft.levelRenderer.renderLevel(this.resourcePool, var1, var4, var5, this, var21, var9);
       var3.popPush("hand");
       if (this.renderHand) {
          RenderSystem.clear(256);
-         this.renderItemInHand(var5, var2, var20);
+         this.renderItemInHand(var5, var2, var21);
       }
 
       var3.pop();
@@ -732,9 +705,7 @@ public class GameRenderer implements AutoCloseable {
          var11.mulPose(Axis.YP.rotationDegrees(900.0F * Mth.abs(Mth.sin(var8))));
          var11.mulPose(Axis.XP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));
          var11.mulPose(Axis.ZP.rotationDegrees(6.0F * Mth.cos(var4 * 8.0F)));
-         var1.drawSpecial((var2x) -> {
-            this.minecraft.getItemRenderer().renderStatic(this.itemActivationItem, ItemDisplayContext.FIXED, 15728880, OverlayTexture.NO_OVERLAY, var11, var2x, this.minecraft.level, 0);
-         });
+         var1.drawSpecial((var2x) -> this.minecraft.getItemRenderer().renderStatic(this.itemActivationItem, ItemDisplayContext.FIXED, 15728880, OverlayTexture.NO_OVERLAY, var11, var2x, this.minecraft.level, 0));
          var11.popPose();
       }
    }

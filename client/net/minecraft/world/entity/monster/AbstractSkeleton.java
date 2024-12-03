@@ -8,6 +8,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
@@ -49,7 +51,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public abstract class AbstractSkeleton extends Monster implements RangedAttackMob {
    private static final int HARD_ATTACK_INTERVAL = 20;
    private static final int NORMAL_ATTACK_INTERVAL = 40;
-   private final RangedBowAttackGoal<AbstractSkeleton> bowGoal = new RangedBowAttackGoal(this, 1.0, 20, 15.0F);
+   private final RangedBowAttackGoal<AbstractSkeleton> bowGoal = new RangedBowAttackGoal<AbstractSkeleton>(this, 1.0, 20, 15.0F);
    private final MeleeAttackGoal meleeGoal = new MeleeAttackGoal(this, 1.2, false) {
       public void stop() {
          super.stop();
@@ -200,6 +202,10 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
 
    public boolean canFireProjectileWeapon(ProjectileWeaponItem var1) {
       return var1 == Items.BOW;
+   }
+
+   public TagKey<Item> getPreferredWeaponType() {
+      return ItemTags.SKELETON_PREFERRED_WEAPONS;
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {

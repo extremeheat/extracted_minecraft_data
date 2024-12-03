@@ -6,9 +6,7 @@ import java.util.Optional;
 import net.minecraft.world.entity.player.Input;
 
 public record InputPredicate(Optional<Boolean> forward, Optional<Boolean> backward, Optional<Boolean> left, Optional<Boolean> right, Optional<Boolean> jump, Optional<Boolean> sneak, Optional<Boolean> sprint) {
-   public static final Codec<InputPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.BOOL.optionalFieldOf("forward").forGetter(InputPredicate::forward), Codec.BOOL.optionalFieldOf("backward").forGetter(InputPredicate::backward), Codec.BOOL.optionalFieldOf("left").forGetter(InputPredicate::left), Codec.BOOL.optionalFieldOf("right").forGetter(InputPredicate::right), Codec.BOOL.optionalFieldOf("jump").forGetter(InputPredicate::jump), Codec.BOOL.optionalFieldOf("sneak").forGetter(InputPredicate::sneak), Codec.BOOL.optionalFieldOf("sprint").forGetter(InputPredicate::sprint)).apply(var0, InputPredicate::new);
-   });
+   public static final Codec<InputPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.BOOL.optionalFieldOf("forward").forGetter(InputPredicate::forward), Codec.BOOL.optionalFieldOf("backward").forGetter(InputPredicate::backward), Codec.BOOL.optionalFieldOf("left").forGetter(InputPredicate::left), Codec.BOOL.optionalFieldOf("right").forGetter(InputPredicate::right), Codec.BOOL.optionalFieldOf("jump").forGetter(InputPredicate::jump), Codec.BOOL.optionalFieldOf("sneak").forGetter(InputPredicate::sneak), Codec.BOOL.optionalFieldOf("sprint").forGetter(InputPredicate::sprint)).apply(var0, InputPredicate::new));
 
    public InputPredicate(Optional<Boolean> var1, Optional<Boolean> var2, Optional<Boolean> var3, Optional<Boolean> var4, Optional<Boolean> var5, Optional<Boolean> var6, Optional<Boolean> var7) {
       super();
@@ -26,36 +24,6 @@ public record InputPredicate(Optional<Boolean> forward, Optional<Boolean> backwa
    }
 
    private boolean matches(Optional<Boolean> var1, boolean var2) {
-      return (Boolean)var1.map((var1x) -> {
-         return var1x == var2;
-      }).orElse(true);
-   }
-
-   public Optional<Boolean> forward() {
-      return this.forward;
-   }
-
-   public Optional<Boolean> backward() {
-      return this.backward;
-   }
-
-   public Optional<Boolean> left() {
-      return this.left;
-   }
-
-   public Optional<Boolean> right() {
-      return this.right;
-   }
-
-   public Optional<Boolean> jump() {
-      return this.jump;
-   }
-
-   public Optional<Boolean> sneak() {
-      return this.sneak;
-   }
-
-   public Optional<Boolean> sprint() {
-      return this.sprint;
+      return (Boolean)var1.map((var1x) -> var1x == var2).orElse(true);
    }
 }

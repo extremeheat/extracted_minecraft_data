@@ -11,13 +11,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetWritableBookPagesFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetWritableBookPagesFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(var0.group(WritableBookContent.PAGES_CODEC.fieldOf("pages").forGetter((var0x) -> {
-         return var0x.pages;
-      }), ListOperation.codec(100).forGetter((var0x) -> {
-         return var0x.pageOperation;
-      }))).apply(var0, SetWritableBookPagesFunction::new);
-   });
+   public static final MapCodec<SetWritableBookPagesFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(WritableBookContent.PAGES_CODEC.fieldOf("pages").forGetter((var0x) -> var0x.pages), ListOperation.codec(100).forGetter((var0x) -> var0x.pageOperation))).apply(var0, SetWritableBookPagesFunction::new));
    private final List<Filterable<String>> pages;
    private final ListOperation pageOperation;
 

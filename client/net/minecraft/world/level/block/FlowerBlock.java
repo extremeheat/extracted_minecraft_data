@@ -3,10 +3,12 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -48,11 +50,14 @@ public class FlowerBlock extends BushBlock implements SuspiciousEffectHolder {
       return this.suspiciousStewEffects;
    }
 
+   @Nullable
+   public MobEffectInstance getBeeInteractionEffect() {
+      return null;
+   }
+
    static {
       EFFECTS_FIELD = SuspiciousStewEffects.CODEC.fieldOf("suspicious_stew_effects");
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(EFFECTS_FIELD.forGetter(FlowerBlock::getSuspiciousEffects), propertiesCodec()).apply(var0, FlowerBlock::new);
-      });
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(EFFECTS_FIELD.forGetter(FlowerBlock::getSuspiciousEffects), propertiesCodec()).apply(var0, FlowerBlock::new));
       SHAPE = Block.box(5.0, 0.0, 5.0, 11.0, 10.0, 11.0);
    }
 }

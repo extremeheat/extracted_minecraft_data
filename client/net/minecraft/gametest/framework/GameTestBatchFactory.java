@@ -22,11 +22,7 @@ public class GameTestBatchFactory {
       return var2.entrySet().stream().flatMap((var1x) -> {
          String var2 = (String)var1x.getKey();
          List var3 = (List)var1x.getValue();
-         return Streams.mapWithIndex(Lists.partition(var3, 50).stream(), (var2x, var3x) -> {
-            return toGameTestBatch(var2x.stream().map((var1x) -> {
-               return toGameTestInfo(var1x, 0, var1);
-            }).toList(), var2, var3x);
-         });
+         return Streams.mapWithIndex(Lists.partition(var3, 50).stream(), (var2x, var3x) -> toGameTestBatch(var2x.stream().map((var1x) -> toGameTestInfo(var1x, 0, var1)).toList(), var2, var3x));
       }).toList();
    }
 
@@ -40,15 +36,11 @@ public class GameTestBatchFactory {
 
    public static GameTestRunner.GameTestBatcher fromGameTestInfo(int var0) {
       return (var1) -> {
-         Map var2 = (Map)var1.stream().filter(Objects::nonNull).collect(Collectors.groupingBy((var0x) -> {
-            return var0x.getTestFunction().batchName();
-         }));
+         Map var2 = (Map)var1.stream().filter(Objects::nonNull).collect(Collectors.groupingBy((var0x) -> var0x.getTestFunction().batchName()));
          return var2.entrySet().stream().flatMap((var1x) -> {
             String var2 = (String)var1x.getKey();
             List var3 = (List)var1x.getValue();
-            return Streams.mapWithIndex(Lists.partition(var3, var0).stream(), (var1, var2x) -> {
-               return toGameTestBatch(List.copyOf(var1), var2, var2x);
-            });
+            return Streams.mapWithIndex(Lists.partition(var3, var0).stream(), (var1, var2x) -> toGameTestBatch(List.copyOf(var1), var2, var2x));
          }).toList();
       };
    }

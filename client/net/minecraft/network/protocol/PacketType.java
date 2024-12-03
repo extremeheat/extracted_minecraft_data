@@ -13,12 +13,4 @@ public record PacketType<T extends Packet<?>>(PacketFlow flow, ResourceLocation 
       String var10000 = this.flow.id();
       return var10000 + "/" + String.valueOf(this.id);
    }
-
-   public PacketFlow flow() {
-      return this.flow;
-   }
-
-   public ResourceLocation id() {
-      return this.id;
-   }
 }

@@ -5,6 +5,7 @@ import java.util.Date;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
@@ -136,9 +137,7 @@ public abstract class BaseCommandBlock implements CommandSource {
                   CrashReport var4 = CrashReport.forThrowable(var6, "Executing command block");
                   CrashReportCategory var5 = var4.addCategory("Command to be executed");
                   var5.setDetail("Command", this::getCommand);
-                  var5.setDetail("Name", () -> {
-                     return this.getName().getString();
-                  });
+                  var5.setDetail("Name", (CrashReportDetail)(() -> this.getName().getString()));
                   throw new ReportedException(var4);
                }
             }

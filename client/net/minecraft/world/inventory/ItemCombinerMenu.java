@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -43,11 +42,8 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
    }
 
    private void createInputSlots(ItemCombinerMenuSlotDefinition var1) {
-      Iterator var2 = var1.getSlots().iterator();
-
-      while(var2.hasNext()) {
-         final ItemCombinerMenuSlotDefinition.SlotDefinition var3 = (ItemCombinerMenuSlotDefinition.SlotDefinition)var2.next();
-         this.addSlot(new Slot(this, this.inputSlots, var3.slotIndex(), var3.x(), var3.y()) {
+      for(final ItemCombinerMenuSlotDefinition.SlotDefinition var3 : var1.getSlots()) {
+         this.addSlot(new Slot(this.inputSlots, var3.slotIndex(), var3.x(), var3.y()) {
             public boolean mayPlace(ItemStack var1) {
                return var3.mayPlace().test(var1);
             }
@@ -93,20 +89,16 @@ public abstract class ItemCombinerMenu extends AbstractContainerMenu {
 
    public void removed(Player var1) {
       super.removed(var1);
-      this.access.execute((var2, var3) -> {
-         this.clearContainer(var1, this.inputSlots);
-      });
+      this.access.execute((var2, var3) -> this.clearContainer(var1, this.inputSlots));
    }
 
    public boolean stillValid(Player var1) {
-      return (Boolean)this.access.evaluate((var2, var3) -> {
-         return !this.isValidBlock(var2.getBlockState(var3)) ? false : var1.canInteractWithBlock(var3, 4.0);
-      }, true);
+      return (Boolean)this.access.evaluate((var2, var3) -> !this.isValidBlock(var2.getBlockState(var3)) ? false : var1.canInteractWithBlock(var3, 4.0), true);
    }
 
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = (Slot)this.slots.get(var2);
+      Slot var4 = this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();

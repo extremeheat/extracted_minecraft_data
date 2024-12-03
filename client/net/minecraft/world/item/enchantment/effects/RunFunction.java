@@ -17,9 +17,7 @@ import org.slf4j.Logger;
 
 public record RunFunction(ResourceLocation function) implements EnchantmentEntityEffect {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<RunFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceLocation.CODEC.fieldOf("function").forGetter(RunFunction::function)).apply(var0, RunFunction::new);
-   });
+   public static final MapCodec<RunFunction> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("function").forGetter(RunFunction::function)).apply(var0, RunFunction::new));
 
    public RunFunction(ResourceLocation var1) {
       super();
@@ -41,9 +39,5 @@ public record RunFunction(ResourceLocation function) implements EnchantmentEntit
 
    public MapCodec<RunFunction> codec() {
       return CODEC;
-   }
-
-   public ResourceLocation function() {
-      return this.function;
    }
 }

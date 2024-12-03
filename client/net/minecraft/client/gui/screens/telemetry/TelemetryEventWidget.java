@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.telemetry;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
@@ -11,7 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractScrollWidget;
+import net.minecraft.client.gui.components.AbstractTextAreaWidget;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.layouts.Layout;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -23,7 +22,7 @@ import net.minecraft.client.telemetry.TelemetryProperty;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
-public class TelemetryEventWidget extends AbstractScrollWidget {
+public class TelemetryEventWidget extends AbstractTextAreaWidget {
    private static final int HEADER_HORIZONTAL_PADDING = 32;
    private static final String TELEMETRY_REQUIRED_TRANSLATION_KEY = "telemetry.event.required";
    private static final String TELEMETRY_OPTIONAL_TRANSLATION_KEY = "telemetry.event.optional";
@@ -42,12 +41,12 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
 
    public void onOptInChanged(boolean var1) {
       this.content = this.buildContent(var1);
-      this.setScrollAmount(this.scrollAmount());
+      this.refreshScrollAmount();
    }
 
    public void updateLayout() {
       this.content = this.buildContent(Minecraft.getInstance().telemetryOptInExtra());
-      this.setScrollAmount(this.scrollAmount());
+      this.refreshScrollAmount();
    }
 
    private Content buildContent(boolean var1) {
@@ -72,7 +71,7 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
       this.onScrolledListener = var1;
    }
 
-   protected void setScrollAmount(double var1) {
+   public void setScrollAmount(double var1) {
       super.setScrollAmount(var1);
       if (this.onScrolledListener != null) {
          this.onScrolledListener.accept(this.scrollAmount());
@@ -90,13 +89,11 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
    }
 
    protected void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
-      int var5 = this.getY() + this.innerPadding();
-      int var6 = this.getX() + this.innerPadding();
+      int var5 = this.getInnerTop();
+      int var6 = this.getInnerLeft();
       var1.pose().pushPose();
       var1.pose().translate((double)var6, (double)var5, 0.0);
-      this.content.container().visitWidgets((var4x) -> {
-         var4x.render(var1, var2, var3, var4);
-      });
+      this.content.container().visitWidgets((var4x) -> var4x.render(var1, var2, var3, var4));
       var1.pose().popPose();
    }
 
@@ -119,10 +116,7 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
    }
 
    private void addEventTypeProperties(TelemetryEventType var1, ContentBuilder var2, boolean var3) {
-      Iterator var4 = var1.properties().iterator();
-
-      while(var4.hasNext()) {
-         TelemetryProperty var5 = (TelemetryProperty)var4.next();
+      for(TelemetryProperty var5 : var1.properties()) {
          var2.addLine(this.font, this.grayOutIfDisabled(var5.title(), var3));
       }
 
@@ -136,23 +130,7 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
       PROPERTY_TITLE = Component.translatable("telemetry_info.property_title").withStyle(ChatFormatting.UNDERLINE);
    }
 
-   private static record Content(Layout container, Component narration) {
-      Content(Layout var1, Component var2) {
-         super();
-         this.container = var1;
-         this.narration = var2;
-      }
-
-      public Layout container() {
-         return this.container;
-      }
-
-      public Component narration() {
-         return this.narration;
-      }
-   }
-
-   private static class ContentBuilder {
+   static class ContentBuilder {
       private final int width;
       private final LinearLayout layout;
       private final MutableComponent narration = Component.empty();
@@ -170,16 +148,12 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
       }
 
       public void addLine(Font var1, Component var2, int var3) {
-         this.layout.addChild((new MultiLineTextWidget(var2, var1)).setMaxWidth(this.width), (Consumer)((var1x) -> {
-            var1x.paddingBottom(var3);
-         }));
+         this.layout.addChild((new MultiLineTextWidget(var2, var1)).setMaxWidth(this.width), (Consumer)((var1x) -> var1x.paddingBottom(var3)));
          this.narration.append(var2).append("\n");
       }
 
       public void addHeader(Font var1, Component var2) {
-         this.layout.addChild((new MultiLineTextWidget(var2, var1)).setMaxWidth(this.width - 64).setCentered(true), (Consumer)((var0) -> {
-            var0.alignHorizontallyCenter().paddingHorizontal(32);
-         }));
+         this.layout.addChild((new MultiLineTextWidget(var2, var1)).setMaxWidth(this.width - 64).setCentered(true), (Consumer)((var0) -> var0.alignHorizontallyCenter().paddingHorizontal(32)));
          this.narration.append(var2).append("\n");
       }
 
@@ -190,6 +164,14 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
       public Content build() {
          this.layout.arrangeElements();
          return new Content(this.layout, this.narration);
+      }
+   }
+
+   static record Content(Layout container, Component narration) {
+      Content(Layout var1, Component var2) {
+         super();
+         this.container = var1;
+         this.narration = var2;
       }
    }
 }

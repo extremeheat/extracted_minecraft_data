@@ -26,6 +26,25 @@ public class GameConfig {
       this.quickPlay = var5;
    }
 
+   public static class GameData {
+      public final boolean demo;
+      public final String launchVersion;
+      public final String versionType;
+      public final boolean disableMultiplayer;
+      public final boolean disableChat;
+      public final boolean captureTracyImages;
+
+      public GameData(boolean var1, String var2, String var3, boolean var4, boolean var5, boolean var6) {
+         super();
+         this.demo = var1;
+         this.launchVersion = var2;
+         this.versionType = var3;
+         this.disableMultiplayer = var4;
+         this.disableChat = var5;
+         this.captureTracyImages = var6;
+      }
+   }
+
    public static class UserData {
       public final User user;
       public final PropertyMap userProperties;
@@ -61,25 +80,6 @@ public class GameConfig {
       }
    }
 
-   public static class GameData {
-      public final boolean demo;
-      public final String launchVersion;
-      public final String versionType;
-      public final boolean disableMultiplayer;
-      public final boolean disableChat;
-      public final boolean captureTracyImages;
-
-      public GameData(boolean var1, String var2, String var3, boolean var4, boolean var5, boolean var6) {
-         super();
-         this.demo = var1;
-         this.launchVersion = var2;
-         this.versionType = var3;
-         this.disableMultiplayer = var4;
-         this.disableChat = var5;
-         this.captureTracyImages = var6;
-      }
-   }
-
    public static record QuickPlayData(@Nullable String path, @Nullable String singleplayer, @Nullable String multiplayer, @Nullable String realms) {
       public QuickPlayData(@Nullable String var1, @Nullable String var2, @Nullable String var3, @Nullable String var4) {
          super();
@@ -91,26 +91,6 @@ public class GameConfig {
 
       public boolean isEnabled() {
          return !StringUtil.isBlank(this.singleplayer) || !StringUtil.isBlank(this.multiplayer) || !StringUtil.isBlank(this.realms);
-      }
-
-      @Nullable
-      public String path() {
-         return this.path;
-      }
-
-      @Nullable
-      public String singleplayer() {
-         return this.singleplayer;
-      }
-
-      @Nullable
-      public String multiplayer() {
-         return this.multiplayer;
-      }
-
-      @Nullable
-      public String realms() {
-         return this.realms;
       }
    }
 }

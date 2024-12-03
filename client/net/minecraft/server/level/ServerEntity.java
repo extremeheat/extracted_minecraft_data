@@ -6,7 +6,6 @@ import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -110,10 +109,7 @@ public class ServerEntity {
                MapId var4 = (MapId)var26.get(DataComponents.MAP_ID);
                MapItemSavedData var5 = MapItem.getSavedData((MapId)var4, this.level);
                if (var5 != null) {
-                  Iterator var6 = this.level.players().iterator();
-
-                  while(var6.hasNext()) {
-                     ServerPlayer var7 = (ServerPlayer)var6.next();
+                  for(ServerPlayer var7 : this.level.players()) {
                      var5.tickCarriedBy(var7, var26);
                      Packet var8 = var5.getUpdatePacket(var4, var7);
                      if (var8 != null) {
@@ -187,7 +183,7 @@ public class ServerEntity {
                   var12 = true;
                }
 
-               if ((this.trackDelta || this.entity.hasImpulse || this.entity instanceof LivingEntity && ((LivingEntity)this.entity).isFallFlying()) && this.tickCount > 0) {
+               if (this.entity.hasImpulse || this.trackDelta || this.entity instanceof LivingEntity && ((LivingEntity)this.entity).isFallFlying()) {
                   Vec3 var20 = this.entity.getDeltaMovement();
                   double var21 = var20.distanceToSqr(this.lastSentMovement);
                   if (var21 > 1.0E-7 || var21 > 0.0 && var20.lengthSqr() == 0.0) {
@@ -259,9 +255,7 @@ public class ServerEntity {
    }
 
    private static Stream<Entity> removedPassengers(List<Entity> var0, List<Entity> var1) {
-      return var1.stream().filter((var1x) -> {
-         return !var0.contains(var1x);
-      });
+      return var1.stream().filter((var1x) -> !var0.contains(var1x));
    }
 
    public void removePairing(ServerPlayer var1) {
@@ -307,10 +301,8 @@ public class ServerEntity {
       Entity var6 = this.entity;
       if (var6 instanceof LivingEntity var10) {
          ArrayList var12 = Lists.newArrayList();
-         Iterator var7 = EquipmentSlot.VALUES.iterator();
 
-         while(var7.hasNext()) {
-            EquipmentSlot var8 = (EquipmentSlot)var7.next();
+         for(EquipmentSlot var8 : EquipmentSlot.VALUES) {
             ItemStack var9 = var10.getItemBySlot(var8);
             if (!var9.isEmpty()) {
                var12.add(Pair.of(var8, var9.copy()));

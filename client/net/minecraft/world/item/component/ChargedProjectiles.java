@@ -2,7 +2,6 @@ package net.minecraft.world.item.component;
 
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -30,18 +29,13 @@ public final class ChargedProjectiles {
    }
 
    public boolean contains(Item var1) {
-      Iterator var2 = this.items.iterator();
-
-      ItemStack var3;
-      do {
-         if (!var2.hasNext()) {
-            return false;
+      for(ItemStack var3 : this.items) {
+         if (var3.is(var1)) {
+            return true;
          }
+      }
 
-         var3 = (ItemStack)var2.next();
-      } while(!var3.is(var1));
-
-      return true;
+      return false;
    }
 
    public List<ItemStack> getItems() {
@@ -79,11 +73,7 @@ public final class ChargedProjectiles {
    }
 
    static {
-      CODEC = ItemStack.CODEC.listOf().xmap(ChargedProjectiles::new, (var0) -> {
-         return var0.items;
-      });
-      STREAM_CODEC = ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list()).map(ChargedProjectiles::new, (var0) -> {
-         return var0.items;
-      });
+      CODEC = ItemStack.CODEC.listOf().xmap(ChargedProjectiles::new, (var0) -> var0.items);
+      STREAM_CODEC = ItemStack.STREAM_CODEC.apply(ByteBufCodecs.list()).map(ChargedProjectiles::new, (var0) -> var0.items);
    }
 }

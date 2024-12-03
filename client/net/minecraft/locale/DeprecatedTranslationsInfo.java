@@ -9,7 +9,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -17,9 +16,7 @@ import org.slf4j.Logger;
 public record DeprecatedTranslationsInfo(List<String> removed, Map<String, String> renamed) {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final DeprecatedTranslationsInfo EMPTY = new DeprecatedTranslationsInfo(List.of(), Map.of());
-   public static final Codec<DeprecatedTranslationsInfo> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.STRING.listOf().fieldOf("removed").forGetter(DeprecatedTranslationsInfo::removed), Codec.unboundedMap(Codec.STRING, Codec.STRING).fieldOf("renamed").forGetter(DeprecatedTranslationsInfo::renamed)).apply(var0, DeprecatedTranslationsInfo::new);
-   });
+   public static final Codec<DeprecatedTranslationsInfo> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.listOf().fieldOf("removed").forGetter(DeprecatedTranslationsInfo::removed), Codec.unboundedMap(Codec.STRING, Codec.STRING).fieldOf("renamed").forGetter(DeprecatedTranslationsInfo::renamed)).apply(var0, DeprecatedTranslationsInfo::new));
 
    public DeprecatedTranslationsInfo(List<String> var1, Map<String, String> var2) {
       super();
@@ -29,9 +26,7 @@ public record DeprecatedTranslationsInfo(List<String> removed, Map<String, Strin
 
    public static DeprecatedTranslationsInfo loadFromJson(InputStream var0) {
       JsonElement var1 = JsonParser.parseReader(new InputStreamReader(var0, StandardCharsets.UTF_8));
-      return (DeprecatedTranslationsInfo)CODEC.parse(JsonOps.INSTANCE, var1).getOrThrow((var0x) -> {
-         return new IllegalStateException("Failed to parse deprecated language data: " + var0x);
-      });
+      return (DeprecatedTranslationsInfo)CODEC.parse(JsonOps.INSTANCE, var1).getOrThrow((var0x) -> new IllegalStateException("Failed to parse deprecated language data: " + var0x));
    }
 
    public static DeprecatedTranslationsInfo loadFromResource(String var0) {
@@ -80,30 +75,19 @@ public record DeprecatedTranslationsInfo(List<String> removed, Map<String, Strin
    }
 
    public void applyToMap(Map<String, String> var1) {
-      Iterator var2 = this.removed.iterator();
-
-      while(var2.hasNext()) {
-         String var3 = (String)var2.next();
+      for(String var3 : this.removed) {
          var1.remove(var3);
       }
 
-      this.renamed.forEach((var1x, var2x) -> {
+      this.renamed.forEach((var1x, var2) -> {
          String var3 = (String)var1.remove(var1x);
          if (var3 == null) {
             LOGGER.warn("Missing translation key for rename: {}", var1x);
-            var1.remove(var2x);
+            var1.remove(var2);
          } else {
-            var1.put(var2x, var3);
+            var1.put(var2, var3);
          }
 
       });
-   }
-
-   public List<String> removed() {
-      return this.removed;
-   }
-
-   public Map<String, String> renamed() {
-      return this.renamed;
    }
 }

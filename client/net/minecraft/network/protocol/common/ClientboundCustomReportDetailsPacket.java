@@ -28,10 +28,6 @@ public record ClientboundCustomReportDetailsPacket(Map<String, String> details) 
       var1.handleCustomReportDetails(this);
    }
 
-   public Map<String, String> details() {
-      return this.details;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(DETAILS_STREAM_CODEC, ClientboundCustomReportDetailsPacket::details, ClientboundCustomReportDetailsPacket::new);
    }

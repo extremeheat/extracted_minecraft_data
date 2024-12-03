@@ -52,7 +52,7 @@ public class HeavyCoreBlock extends Block implements SimpleWaterloggedBlock {
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
       FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
-      return (BlockState)this.defaultBlockState().setValue(WATERLOGGED, var2.is((Fluid)Fluids.WATER));
+      return (BlockState)this.defaultBlockState().setValue(WATERLOGGED, var2.is(Fluids.WATER));
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {

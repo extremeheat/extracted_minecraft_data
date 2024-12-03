@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.mojang.blaze3d.audio.SoundBuffer;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -23,11 +24,49 @@ public class SoundBufferLibrary {
    }
 
    public CompletableFuture<SoundBuffer> getCompleteBuffer(ResourceLocation var1) {
-      return (CompletableFuture)this.cache.computeIfAbsent(var1, (var1x) -> {
-         return CompletableFuture.supplyAsync(() -> {
-            // $FF: Couldn't be decompiled
-         }, Util.nonCriticalIoPool());
-      });
+      return (CompletableFuture)this.cache.computeIfAbsent(var1, (var1x) -> CompletableFuture.supplyAsync(() -> {
+            try {
+               InputStream var2 = this.resourceManager.open(var1x);
+
+               SoundBuffer var5;
+               try {
+                  JOrbisAudioStream var3 = new JOrbisAudioStream(var2);
+
+                  try {
+                     ByteBuffer var4 = var3.readAll();
+                     var5 = new SoundBuffer(var4, var3.getFormat());
+                  } catch (Throwable var8) {
+                     try {
+                        var3.close();
+                     } catch (Throwable var7) {
+                        var8.addSuppressed(var7);
+                     }
+
+                     throw var8;
+                  }
+
+                  var3.close();
+               } catch (Throwable var9) {
+                  if (var2 != null) {
+                     try {
+                        var2.close();
+                     } catch (Throwable var6) {
+                        var9.addSuppressed(var6);
+                     }
+                  }
+
+                  throw var9;
+               }
+
+               if (var2 != null) {
+                  var2.close();
+               }
+
+               return var5;
+            } catch (IOException var10) {
+               throw new CompletionException(var10);
+            }
+         }, Util.nonCriticalIoPool()));
    }
 
    public CompletableFuture<AudioStream> getStream(ResourceLocation var1, boolean var2) {
@@ -42,17 +81,11 @@ public class SoundBufferLibrary {
    }
 
    public void clear() {
-      this.cache.values().forEach((var0) -> {
-         var0.thenAccept(SoundBuffer::discardAlBuffer);
-      });
+      this.cache.values().forEach((var0) -> var0.thenAccept(SoundBuffer::discardAlBuffer));
       this.cache.clear();
    }
 
    public CompletableFuture<?> preload(Collection<Sound> var1) {
-      return CompletableFuture.allOf((CompletableFuture[])var1.stream().map((var1x) -> {
-         return this.getCompleteBuffer(var1x.getPath());
-      }).toArray((var0) -> {
-         return new CompletableFuture[var0];
-      }));
+      return CompletableFuture.allOf((CompletableFuture[])var1.stream().map((var1x) -> this.getCompleteBuffer(var1x.getPath())).toArray((var0) -> new CompletableFuture[var0]));
    }
 }

@@ -20,29 +20,15 @@ public class ServerPackCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("serverpack").requires((var0x) -> {
-         return var0x.hasPermission(2);
-      })).then(Commands.literal("push").then(((RequiredArgumentBuilder)Commands.argument("url", StringArgumentType.string()).then(((RequiredArgumentBuilder)Commands.argument("uuid", UuidArgument.uuid()).then(Commands.argument("hash", StringArgumentType.word()).executes((var0x) -> {
-         return pushPack((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "url"), Optional.of(UuidArgument.getUuid(var0x, "uuid")), Optional.of(StringArgumentType.getString(var0x, "hash")));
-      }))).executes((var0x) -> {
-         return pushPack((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "url"), Optional.of(UuidArgument.getUuid(var0x, "uuid")), Optional.empty());
-      }))).executes((var0x) -> {
-         return pushPack((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "url"), Optional.empty(), Optional.empty());
-      })))).then(Commands.literal("pop").then(Commands.argument("uuid", UuidArgument.uuid()).executes((var0x) -> {
-         return popPack((CommandSourceStack)var0x.getSource(), UuidArgument.getUuid(var0x, "uuid"));
-      }))));
+      var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("serverpack").requires((var0x) -> var0x.hasPermission(2))).then(Commands.literal("push").then(((RequiredArgumentBuilder)Commands.argument("url", StringArgumentType.string()).then(((RequiredArgumentBuilder)Commands.argument("uuid", UuidArgument.uuid()).then(Commands.argument("hash", StringArgumentType.word()).executes((var0x) -> pushPack((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "url"), Optional.of(UuidArgument.getUuid(var0x, "uuid")), Optional.of(StringArgumentType.getString(var0x, "hash")))))).executes((var0x) -> pushPack((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "url"), Optional.of(UuidArgument.getUuid(var0x, "uuid")), Optional.empty())))).executes((var0x) -> pushPack((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "url"), Optional.empty(), Optional.empty()))))).then(Commands.literal("pop").then(Commands.argument("uuid", UuidArgument.uuid()).executes((var0x) -> popPack((CommandSourceStack)var0x.getSource(), UuidArgument.getUuid(var0x, "uuid"))))));
    }
 
    private static void sendToAllConnections(CommandSourceStack var0, Packet<?> var1) {
-      var0.getServer().getConnection().getConnections().forEach((var1x) -> {
-         var1x.send(var1);
-      });
+      var0.getServer().getConnection().getConnections().forEach((var1x) -> var1x.send(var1));
    }
 
    private static int pushPack(CommandSourceStack var0, String var1, Optional<UUID> var2, Optional<String> var3) {
-      UUID var4 = (UUID)var2.orElseGet(() -> {
-         return UUID.nameUUIDFromBytes(var1.getBytes(StandardCharsets.UTF_8));
-      });
+      UUID var4 = (UUID)var2.orElseGet(() -> UUID.nameUUIDFromBytes(var1.getBytes(StandardCharsets.UTF_8)));
       String var5 = (String)var3.orElse("");
       ClientboundResourcePackPushPacket var6 = new ClientboundResourcePackPushPacket(var4, var1, var5, false, (Optional)null);
       sendToAllConnections(var0, var6);

@@ -9,6 +9,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
@@ -42,6 +44,7 @@ import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ThrownTrident;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -79,9 +82,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       this.goalSelector.addGoal(6, new DrownedSwimUpGoal(this, 1.0, this.level().getSeaLevel()));
       this.goalSelector.addGoal(7, new RandomStrollGoal(this, 1.0));
       this.targetSelector.addGoal(1, (new HurtByTargetGoal(this, new Class[]{Drowned.class})).setAlertOthers(ZombifiedPiglin.class));
-      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (var1, var2) -> {
-         return this.okTarget(var1);
-      }));
+      this.targetSelector.addGoal(2, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (var1, var2) -> this.okTarget(var1)));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, AbstractVillager.class, false));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, IronGolem.class, true));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal(this, Axolotl.class, true, false));
@@ -104,12 +105,14 @@ public class Drowned extends Zombie implements RangedAttackMob {
       } else {
          Holder var5 = var1.getBiome(var3);
          boolean var6 = var1.getDifficulty() != Difficulty.PEACEFUL && (EntitySpawnReason.ignoresLightRequirements(var2) || isDarkEnoughToSpawn(var1, var3, var4)) && (EntitySpawnReason.isSpawner(var2) || var1.getFluidState(var3).is(FluidTags.WATER));
-         if (var6 && (EntitySpawnReason.isSpawner(var2) || var2 == EntitySpawnReason.REINFORCEMENT)) {
-            return true;
-         } else if (var5.is(BiomeTags.MORE_FREQUENT_DROWNED_SPAWNS)) {
-            return var4.nextInt(15) == 0 && var6;
+         if (!var6 || !EntitySpawnReason.isSpawner(var2) && var2 != EntitySpawnReason.REINFORCEMENT) {
+            if (var5.is(BiomeTags.MORE_FREQUENT_DROWNED_SPAWNS)) {
+               return var4.nextInt(15) == 0 && var6;
+            } else {
+               return var4.nextInt(40) == 0 && isDeepEnoughToSpawn(var1, var3) && var6;
+            }
          } else {
-            return var4.nextInt(40) == 0 && isDeepEnoughToSpawn(var1, var3) && var6;
+            return true;
          }
       }
    }
@@ -159,17 +162,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
    }
 
    protected boolean canReplaceCurrentItem(ItemStack var1, ItemStack var2, EquipmentSlot var3) {
-      if (var2.is(Items.NAUTILUS_SHELL)) {
-         return false;
-      } else if (var2.is(Items.TRIDENT)) {
-         if (var1.is(Items.TRIDENT)) {
-            return var1.getDamageValue() < var2.getDamageValue();
-         } else {
-            return false;
-         }
-      } else {
-         return var1.is(Items.TRIDENT) ? true : super.canReplaceCurrentItem(var1, var2, var3);
-      }
+      return var2.is(Items.NAUTILUS_SHELL) ? false : super.canReplaceCurrentItem(var1, var2, var3);
    }
 
    protected boolean convertsInWater() {
@@ -260,50 +253,112 @@ public class Drowned extends Zombie implements RangedAttackMob {
       this.playSound(SoundEvents.DROWNED_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
    }
 
+   public TagKey<Item> getPreferredWeaponType() {
+      return ItemTags.DROWNED_PREFERRED_WEAPONS;
+   }
+
    public void setSearchingForLand(boolean var1) {
       this.searchingForLand = var1;
    }
 
-   static class DrownedMoveControl extends MoveControl {
+   static class DrownedTridentAttackGoal extends RangedAttackGoal {
       private final Drowned drowned;
 
-      public DrownedMoveControl(Drowned var1) {
-         super(var1);
+      public DrownedTridentAttackGoal(RangedAttackMob var1, double var2, int var4, float var5) {
+         super(var1, var2, var4, var5);
+         this.drowned = (Drowned)var1;
+      }
+
+      public boolean canUse() {
+         return super.canUse() && this.drowned.getMainHandItem().is(Items.TRIDENT);
+      }
+
+      public void start() {
+         super.start();
+         this.drowned.setAggressive(true);
+         this.drowned.startUsingItem(InteractionHand.MAIN_HAND);
+      }
+
+      public void stop() {
+         super.stop();
+         this.drowned.stopUsingItem();
+         this.drowned.setAggressive(false);
+      }
+   }
+
+   static class DrownedSwimUpGoal extends Goal {
+      private final Drowned drowned;
+      private final double speedModifier;
+      private final int seaLevel;
+      private boolean stuck;
+
+      public DrownedSwimUpGoal(Drowned var1, double var2, int var4) {
+         super();
          this.drowned = var1;
+         this.speedModifier = var2;
+         this.seaLevel = var4;
+      }
+
+      public boolean canUse() {
+         return !this.drowned.level().isDay() && this.drowned.isInWater() && this.drowned.getY() < (double)(this.seaLevel - 2);
+      }
+
+      public boolean canContinueToUse() {
+         return this.canUse() && !this.stuck;
       }
 
       public void tick() {
-         LivingEntity var1 = this.drowned.getTarget();
-         if (this.drowned.wantsToSwim() && this.drowned.isInWater()) {
-            if (var1 != null && var1.getY() > this.drowned.getY() || this.drowned.searchingForLand) {
-               this.drowned.setDeltaMovement(this.drowned.getDeltaMovement().add(0.0, 0.002, 0.0));
-            }
-
-            if (this.operation != MoveControl.Operation.MOVE_TO || this.drowned.getNavigation().isDone()) {
-               this.drowned.setSpeed(0.0F);
+         if (this.drowned.getY() < (double)(this.seaLevel - 1) && (this.drowned.getNavigation().isDone() || this.drowned.closeToNextPos())) {
+            Vec3 var1 = DefaultRandomPos.getPosTowards(this.drowned, 4, 8, new Vec3(this.drowned.getX(), (double)(this.seaLevel - 1), this.drowned.getZ()), 1.5707963705062866);
+            if (var1 == null) {
+               this.stuck = true;
                return;
             }
 
-            double var2 = this.wantedX - this.drowned.getX();
-            double var4 = this.wantedY - this.drowned.getY();
-            double var6 = this.wantedZ - this.drowned.getZ();
-            double var8 = Math.sqrt(var2 * var2 + var4 * var4 + var6 * var6);
-            var4 /= var8;
-            float var10 = (float)(Mth.atan2(var6, var2) * 57.2957763671875) - 90.0F;
-            this.drowned.setYRot(this.rotlerp(this.drowned.getYRot(), var10, 90.0F));
-            this.drowned.yBodyRot = this.drowned.getYRot();
-            float var11 = (float)(this.speedModifier * this.drowned.getAttributeValue(Attributes.MOVEMENT_SPEED));
-            float var12 = Mth.lerp(0.125F, this.drowned.getSpeed(), var11);
-            this.drowned.setSpeed(var12);
-            this.drowned.setDeltaMovement(this.drowned.getDeltaMovement().add((double)var12 * var2 * 0.005, (double)var12 * var4 * 0.1, (double)var12 * var6 * 0.005));
-         } else {
-            if (!this.drowned.onGround()) {
-               this.drowned.setDeltaMovement(this.drowned.getDeltaMovement().add(0.0, -0.008, 0.0));
-            }
-
-            super.tick();
+            this.drowned.getNavigation().moveTo(var1.x, var1.y, var1.z, this.speedModifier);
          }
 
+      }
+
+      public void start() {
+         this.drowned.setSearchingForLand(true);
+         this.stuck = false;
+      }
+
+      public void stop() {
+         this.drowned.setSearchingForLand(false);
+      }
+   }
+
+   static class DrownedGoToBeachGoal extends MoveToBlockGoal {
+      private final Drowned drowned;
+
+      public DrownedGoToBeachGoal(Drowned var1, double var2) {
+         super(var1, var2, 8, 2);
+         this.drowned = var1;
+      }
+
+      public boolean canUse() {
+         return super.canUse() && !this.drowned.level().isDay() && this.drowned.isInWater() && this.drowned.getY() >= (double)(this.drowned.level().getSeaLevel() - 3);
+      }
+
+      public boolean canContinueToUse() {
+         return super.canContinueToUse();
+      }
+
+      protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
+         BlockPos var3 = var2.above();
+         return var1.isEmptyBlock(var3) && var1.isEmptyBlock(var3.above()) ? var1.getBlockState(var2).entityCanStandOn(var1, var2, this.drowned) : false;
+      }
+
+      public void start() {
+         this.drowned.setSearchingForLand(false);
+         this.drowned.navigation = this.drowned.groundNavigation;
+         super.start();
+      }
+
+      public void stop() {
+         super.stop();
       }
    }
 
@@ -365,32 +420,7 @@ public class Drowned extends Zombie implements RangedAttackMob {
       }
    }
 
-   static class DrownedTridentAttackGoal extends RangedAttackGoal {
-      private final Drowned drowned;
-
-      public DrownedTridentAttackGoal(RangedAttackMob var1, double var2, int var4, float var5) {
-         super(var1, var2, var4, var5);
-         this.drowned = (Drowned)var1;
-      }
-
-      public boolean canUse() {
-         return super.canUse() && this.drowned.getMainHandItem().is(Items.TRIDENT);
-      }
-
-      public void start() {
-         super.start();
-         this.drowned.setAggressive(true);
-         this.drowned.startUsingItem(InteractionHand.MAIN_HAND);
-      }
-
-      public void stop() {
-         super.stop();
-         this.drowned.stopUsingItem();
-         this.drowned.setAggressive(false);
-      }
-   }
-
-   private static class DrownedAttackGoal extends ZombieAttackGoal {
+   static class DrownedAttackGoal extends ZombieAttackGoal {
       private final Drowned drowned;
 
       public DrownedAttackGoal(Drowned var1, double var2, boolean var4) {
@@ -407,79 +437,46 @@ public class Drowned extends Zombie implements RangedAttackMob {
       }
    }
 
-   private static class DrownedGoToBeachGoal extends MoveToBlockGoal {
+   static class DrownedMoveControl extends MoveControl {
       private final Drowned drowned;
 
-      public DrownedGoToBeachGoal(Drowned var1, double var2) {
-         super(var1, var2, 8, 2);
+      public DrownedMoveControl(Drowned var1) {
+         super(var1);
          this.drowned = var1;
-      }
-
-      public boolean canUse() {
-         return super.canUse() && !this.drowned.level().isDay() && this.drowned.isInWater() && this.drowned.getY() >= (double)(this.drowned.level().getSeaLevel() - 3);
-      }
-
-      public boolean canContinueToUse() {
-         return super.canContinueToUse();
-      }
-
-      protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
-         BlockPos var3 = var2.above();
-         return var1.isEmptyBlock(var3) && var1.isEmptyBlock(var3.above()) ? var1.getBlockState(var2).entityCanStandOn(var1, var2, this.drowned) : false;
-      }
-
-      public void start() {
-         this.drowned.setSearchingForLand(false);
-         this.drowned.navigation = this.drowned.groundNavigation;
-         super.start();
-      }
-
-      public void stop() {
-         super.stop();
-      }
-   }
-
-   static class DrownedSwimUpGoal extends Goal {
-      private final Drowned drowned;
-      private final double speedModifier;
-      private final int seaLevel;
-      private boolean stuck;
-
-      public DrownedSwimUpGoal(Drowned var1, double var2, int var4) {
-         super();
-         this.drowned = var1;
-         this.speedModifier = var2;
-         this.seaLevel = var4;
-      }
-
-      public boolean canUse() {
-         return !this.drowned.level().isDay() && this.drowned.isInWater() && this.drowned.getY() < (double)(this.seaLevel - 2);
-      }
-
-      public boolean canContinueToUse() {
-         return this.canUse() && !this.stuck;
       }
 
       public void tick() {
-         if (this.drowned.getY() < (double)(this.seaLevel - 1) && (this.drowned.getNavigation().isDone() || this.drowned.closeToNextPos())) {
-            Vec3 var1 = DefaultRandomPos.getPosTowards(this.drowned, 4, 8, new Vec3(this.drowned.getX(), (double)(this.seaLevel - 1), this.drowned.getZ()), 1.5707963705062866);
-            if (var1 == null) {
-               this.stuck = true;
+         LivingEntity var1 = this.drowned.getTarget();
+         if (this.drowned.wantsToSwim() && this.drowned.isInWater()) {
+            if (var1 != null && var1.getY() > this.drowned.getY() || this.drowned.searchingForLand) {
+               this.drowned.setDeltaMovement(this.drowned.getDeltaMovement().add(0.0, 0.002, 0.0));
+            }
+
+            if (this.operation != MoveControl.Operation.MOVE_TO || this.drowned.getNavigation().isDone()) {
+               this.drowned.setSpeed(0.0F);
                return;
             }
 
-            this.drowned.getNavigation().moveTo(var1.x, var1.y, var1.z, this.speedModifier);
+            double var2 = this.wantedX - this.drowned.getX();
+            double var4 = this.wantedY - this.drowned.getY();
+            double var6 = this.wantedZ - this.drowned.getZ();
+            double var8 = Math.sqrt(var2 * var2 + var4 * var4 + var6 * var6);
+            var4 /= var8;
+            float var10 = (float)(Mth.atan2(var6, var2) * 57.2957763671875) - 90.0F;
+            this.drowned.setYRot(this.rotlerp(this.drowned.getYRot(), var10, 90.0F));
+            this.drowned.yBodyRot = this.drowned.getYRot();
+            float var11 = (float)(this.speedModifier * this.drowned.getAttributeValue(Attributes.MOVEMENT_SPEED));
+            float var12 = Mth.lerp(0.125F, this.drowned.getSpeed(), var11);
+            this.drowned.setSpeed(var12);
+            this.drowned.setDeltaMovement(this.drowned.getDeltaMovement().add((double)var12 * var2 * 0.005, (double)var12 * var4 * 0.1, (double)var12 * var6 * 0.005));
+         } else {
+            if (!this.drowned.onGround()) {
+               this.drowned.setDeltaMovement(this.drowned.getDeltaMovement().add(0.0, -0.008, 0.0));
+            }
+
+            super.tick();
          }
 
-      }
-
-      public void start() {
-         this.drowned.setSearchingForLand(true);
-         this.stuck = false;
-      }
-
-      public void stop() {
-         this.drowned.setSearchingForLand(false);
       }
    }
 }

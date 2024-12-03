@@ -136,12 +136,8 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       int var10017 = var0.get("WanderingTraderSpawnDelay").asInt(0);
       int var10018 = var0.get("WanderingTraderSpawnChance").asInt(0);
       UUID var10019 = (UUID)var0.get("WanderingTraderId").read(UUIDUtil.CODEC).result().orElse((Object)null);
-      Set var10020 = (Set)var0.get("ServerBrands").asStream().flatMap((var0x) -> {
-         return var0x.asString().result().stream();
-      }).collect(Collectors.toCollection(Sets::newLinkedHashSet));
-      Set var10021 = (Set)var0.get("removed_features").asStream().flatMap((var0x) -> {
-         return var0x.asString().result().stream();
-      }).collect(Collectors.toSet());
+      Set var10020 = (Set)var0.get("ServerBrands").asStream().flatMap((var0x) -> var0x.asString().result().stream()).collect(Collectors.toCollection(Sets::newLinkedHashSet));
+      Set var10021 = (Set)var0.get("removed_features").asStream().flatMap((var0x) -> var0x.asString().result().stream()).collect(Collectors.toSet());
       TimerQueue var10022 = new TimerQueue(TimerCallbacks.SERVER_CALLBACKS, var0.get("ScheduledEvents").asStream());
       CompoundTag var10023 = (CompoundTag)var0.get("CustomBossEvents").orElseEmptyMap().getValue();
       DataResult var10024 = var0.get("DragonFight").read(EndDragonFight.Data.CODEC);
@@ -178,9 +174,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       DataResult var10000 = WorldGenSettings.encode(var5, this.worldOptions, (RegistryAccess)var1);
       Logger var10002 = LOGGER;
       Objects.requireNonNull(var10002);
-      var10000.resultOrPartial(Util.prefix("WorldGenSettings: ", var10002::error)).ifPresent((var1x) -> {
-         var2.put("WorldGenSettings", var1x);
-      });
+      var10000.resultOrPartial(Util.prefix("WorldGenSettings: ", var10002::error)).ifPresent((var1x) -> var2.put("WorldGenSettings", var1x));
       var2.putInt("GameType", this.settings.gameType().getId());
       var2.putInt("SpawnX", this.spawnPos.getX());
       var2.putInt("SpawnY", this.spawnPos.getY());
@@ -208,11 +202,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
          var2.put("Player", var3);
       }
 
-      WorldDataConfiguration.CODEC.encodeStart(NbtOps.INSTANCE, this.settings.getDataConfiguration()).ifSuccess((var1x) -> {
-         var2.merge((CompoundTag)var1x);
-      }).ifError((var0) -> {
-         LOGGER.warn("Failed to encode configuration {}", var0.message());
-      });
+      WorldDataConfiguration.CODEC.encodeStart(NbtOps.INSTANCE, this.settings.getDataConfiguration()).ifSuccess((var1x) -> var2.merge((CompoundTag)var1x)).ifError((var0) -> LOGGER.warn("Failed to encode configuration {}", var0.message()));
       if (this.customBossEvents != null) {
          var2.put("CustomBossEvents", this.customBossEvents);
       }

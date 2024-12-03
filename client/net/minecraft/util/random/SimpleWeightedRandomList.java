@@ -21,15 +21,15 @@ public class SimpleWeightedRandomList<E> extends WeightedRandomList<WeightedEntr
    }
 
    public static <E> Builder<E> builder() {
-      return new Builder();
+      return new Builder<E>();
    }
 
    public static <E> SimpleWeightedRandomList<E> empty() {
-      return new SimpleWeightedRandomList(List.of());
+      return new SimpleWeightedRandomList<E>(List.of());
    }
 
    public static <E> SimpleWeightedRandomList<E> single(E var0) {
-      return new SimpleWeightedRandomList(List.of(WeightedEntry.wrap(var0, 1)));
+      return new SimpleWeightedRandomList<E>(List.of(WeightedEntry.wrap(var0, 1)));
    }
 
    public Optional<E> getRandomValue(RandomSource var1) {
@@ -53,7 +53,7 @@ public class SimpleWeightedRandomList<E> extends WeightedRandomList<WeightedEntr
       }
 
       public SimpleWeightedRandomList<E> build() {
-         return new SimpleWeightedRandomList(this.result.build());
+         return new SimpleWeightedRandomList<E>(this.result.build());
       }
    }
 }

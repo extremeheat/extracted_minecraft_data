@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.debug;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.InputConstants;
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
@@ -60,7 +59,7 @@ public class GameModeSwitcherScreen extends Screen {
 
       for(int var1 = 0; var1 < GameModeSwitcherScreen.GameModeIcon.VALUES.length; ++var1) {
          GameModeIcon var2 = GameModeSwitcherScreen.GameModeIcon.VALUES[var1];
-         this.slots.add(new GameModeSlot(this, var2, this.width / 2 - ALL_SLOTS_WIDTH / 2 + var1 * 31, this.height / 2 - 31));
+         this.slots.add(new GameModeSlot(var2, this.width / 2 - ALL_SLOTS_WIDTH / 2 + var1 * 31, this.height / 2 - 31));
       }
 
    }
@@ -82,10 +81,8 @@ public class GameModeSwitcherScreen extends Screen {
          }
 
          boolean var7 = this.firstMouseX == var2 && this.firstMouseY == var3;
-         Iterator var8 = this.slots.iterator();
 
-         while(var8.hasNext()) {
-            GameModeSlot var9 = (GameModeSlot)var8.next();
+         for(GameModeSlot var9 : this.slots) {
             var9.render(var1, var2, var3, var4);
             var9.setSelected(this.currentlyHovered == var9.icon);
             if (!var7 && var9.isHoveredOrFocused()) {
@@ -204,13 +201,13 @@ public class GameModeSwitcherScreen extends Screen {
       }
    }
 
-   public class GameModeSlot extends AbstractWidget {
+   public static class GameModeSlot extends AbstractWidget {
       final GameModeIcon icon;
       private boolean isSelected;
 
-      public GameModeSlot(final GameModeSwitcherScreen var1, final GameModeIcon var2, final int var3, final int var4) {
-         super(var3, var4, 26, 26, var2.getName());
-         this.icon = var2;
+      public GameModeSlot(GameModeIcon var1, int var2, int var3) {
+         super(var2, var3, 26, 26, var1.getName());
+         this.icon = var1;
       }
 
       public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {

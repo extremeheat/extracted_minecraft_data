@@ -81,13 +81,11 @@ public class GameTestServer extends MinecraftServer {
          try {
             LOGGER.debug("Starting resource loading");
             Stopwatch var9 = Stopwatch.createStarted();
-            WorldStem var10 = (WorldStem)Util.blockUntilDone((var2x) -> {
-               return WorldLoader.load(var8, (var1) -> {
+            WorldStem var10 = (WorldStem)Util.blockUntilDone((var2x) -> WorldLoader.load(var8, (var1) -> {
                   Registry var2 = (new MappedRegistry(Registries.LEVEL_STEM, Lifecycle.stable())).freeze();
                   WorldDimensions.Complete var3 = ((WorldPreset)var1.datapackWorldgen().lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(WorldPresets.FLAT).value()).createWorldDimensions().bake(var2);
                   return new WorldLoader.DataLoadOutput(new PrimaryLevelData(var6, WORLD_OPTIONS, var3.specialWorldProperty(), var3.lifecycle()), var3.dimensionsRegistryAccess());
-               }, WorldStem::new, Util.backgroundExecutor(), var2x);
-            }).get();
+               }, WorldStem::new, Util.backgroundExecutor(), var2x)).get();
             var9.stop();
             LOGGER.debug("Finished resource loading after {} ms", var9.elapsed(TimeUnit.MILLISECONDS));
             return new GameTestServer(var0, var1, var2, var10, var3, var4);
@@ -106,7 +104,7 @@ public class GameTestServer extends MinecraftServer {
    }
 
    public boolean initServer() {
-      this.setPlayerList(new PlayerList(this, this, this.registries(), this.playerDataStorage, 1) {
+      this.setPlayerList(new PlayerList(this, this.registries(), this.playerDataStorage, 1) {
       });
       this.loadLevel();
       ServerLevel var1 = this.overworld();
@@ -136,18 +134,14 @@ public class GameTestServer extends MinecraftServer {
          LOGGER.info("========= {} GAME TESTS COMPLETE IN {} ======================", this.testTracker.getTotalCount(), this.stopwatch.stop());
          if (this.testTracker.hasFailedRequired()) {
             LOGGER.info("{} required tests failed :(", this.testTracker.getFailedRequiredCount());
-            this.testTracker.getFailedRequired().forEach((var0) -> {
-               LOGGER.info("   - {}", var0.getTestName());
-            });
+            this.testTracker.getFailedRequired().forEach((var0) -> LOGGER.info("   - {}", var0.getTestName()));
          } else {
             LOGGER.info("All {} required tests passed :)", this.testTracker.getTotalCount());
          }
 
          if (this.testTracker.hasFailedOptional()) {
             LOGGER.info("{} optional tests failed", this.testTracker.getFailedOptionalCount());
-            this.testTracker.getFailedOptional().forEach((var0) -> {
-               LOGGER.info("   - {} with rotation: {}", var0.getTestName(), var0.getRotation());
-            });
+            this.testTracker.getFailedOptional().forEach((var0) -> LOGGER.info("   - {} with rotation: {}", var0.getTestName(), var0.getRotation()));
          }
 
          LOGGER.info("====================================================");

@@ -40,17 +40,16 @@ public class CritParticle extends TextureSheetParticle {
       return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
    }
 
-   public static class DamageIndicatorProvider implements ParticleProvider<SimpleParticleType> {
+   public static class Provider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public DamageIndicatorProvider(SpriteSet var1) {
+      public Provider(SpriteSet var1) {
          super();
          this.sprite = var1;
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         CritParticle var15 = new CritParticle(var2, var3, var5, var7, var9, var11 + 1.0, var13);
-         var15.setLifetime(20);
+         CritParticle var15 = new CritParticle(var2, var3, var5, var7, var9, var11, var13);
          var15.pickSprite(this.sprite);
          return var15;
       }
@@ -83,16 +82,17 @@ public class CritParticle extends TextureSheetParticle {
       }
    }
 
-   public static class Provider implements ParticleProvider<SimpleParticleType> {
+   public static class DamageIndicatorProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
-      public Provider(SpriteSet var1) {
+      public DamageIndicatorProvider(SpriteSet var1) {
          super();
          this.sprite = var1;
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         CritParticle var15 = new CritParticle(var2, var3, var5, var7, var9, var11, var13);
+         CritParticle var15 = new CritParticle(var2, var3, var5, var7, var9, var11 + 1.0, var13);
+         var15.setLifetime(20);
          var15.pickSprite(this.sprite);
          return var15;
       }

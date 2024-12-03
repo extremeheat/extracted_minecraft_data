@@ -29,9 +29,7 @@ public class EntityHorseSplitFix extends EntityRenameFix {
 
          String var5 = var10000;
          Type var6 = (Type)this.getOutputSchema().findChoiceType(References.ENTITY).types().get(var5);
-         return Pair.of(var5, Util.writeAndReadTypedOrThrow(var2, var6, (var0) -> {
-            return var0.remove("Type");
-         }));
+         return Pair.of(var5, Util.writeAndReadTypedOrThrow(var2, var6, (var0) -> var0.remove("Type")));
       } else {
          return Pair.of(var1, var2);
       }

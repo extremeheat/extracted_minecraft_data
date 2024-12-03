@@ -12,7 +12,6 @@ import com.mojang.realmsclient.util.JsonUtils;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -133,18 +132,13 @@ public class RealmsServer extends ValueObject {
    }
 
    private static void sortInvited(RealmsServer var0) {
-      var0.players.sort((var0x, var1) -> {
-         return ComparisonChain.start().compareFalseFirst(var1.getAccepted(), var0x.getAccepted()).compare(var0x.getName().toLowerCase(Locale.ROOT), var1.getName().toLowerCase(Locale.ROOT)).result();
-      });
+      var0.players.sort((var0x, var1) -> ComparisonChain.start().compareFalseFirst(var1.getAccepted(), var0x.getAccepted()).compare(var0x.getName().toLowerCase(Locale.ROOT), var1.getName().toLowerCase(Locale.ROOT)).result());
    }
 
    private static List<PlayerInfo> parseInvited(JsonArray var0) {
       ArrayList var1 = Lists.newArrayList();
-      Iterator var2 = var0.iterator();
 
-      while(var2.hasNext()) {
-         JsonElement var3 = (JsonElement)var2.next();
-
+      for(JsonElement var3 : var0) {
          try {
             JsonObject var4 = var3.getAsJsonObject();
             PlayerInfo var5 = new PlayerInfo();
@@ -163,11 +157,8 @@ public class RealmsServer extends ValueObject {
 
    private static Map<Integer, RealmsWorldOptions> parseSlots(JsonArray var0) {
       HashMap var1 = Maps.newHashMap();
-      Iterator var2 = var0.iterator();
 
-      while(var2.hasNext()) {
-         JsonElement var3 = (JsonElement)var2.next();
-
+      for(JsonElement var3 : var0) {
          try {
             JsonObject var5 = var3.getAsJsonObject();
             JsonElement var6 = JsonParser.parseString(var5.get("options").getAsString());
@@ -196,11 +187,10 @@ public class RealmsServer extends ValueObject {
 
    private static RealmsSettings parseSettings(JsonElement var0) {
       boolean var1 = false;
-      JsonObject var4;
       if (var0.isJsonArray()) {
-         for(Iterator var2 = var0.getAsJsonArray().iterator(); var2.hasNext(); var1 = readBoolean(var4, "hardcore", var1)) {
-            JsonElement var3 = (JsonElement)var2.next();
-            var4 = var3.getAsJsonObject();
+         for(JsonElement var3 : var0.getAsJsonArray()) {
+            JsonObject var4 = var3.getAsJsonObject();
+            var1 = readBoolean(var4, "hardcore", var1);
          }
       }
 
@@ -312,10 +302,8 @@ public class RealmsServer extends ValueObject {
 
    public Map<Integer, RealmsWorldOptions> cloneSlots(Map<Integer, RealmsWorldOptions> var1) {
       HashMap var2 = Maps.newHashMap();
-      Iterator var3 = var1.entrySet().iterator();
 
-      while(var3.hasNext()) {
-         Map.Entry var4 = (Map.Entry)var3.next();
+      for(Map.Entry var4 : var1.entrySet()) {
          var2.put((Integer)var4.getKey(), ((RealmsWorldOptions)var4.getValue()).clone());
       }
 
@@ -343,32 +331,21 @@ public class RealmsServer extends ValueObject {
       return this.clone();
    }
 
-   public static enum Compatibility {
-      UNVERIFIABLE,
-      INCOMPATIBLE,
-      RELEASE_TYPE_INCOMPATIBLE,
-      NEEDS_DOWNGRADE,
-      NEEDS_UPGRADE,
-      COMPATIBLE;
+   public static class McoServerComparator implements Comparator<RealmsServer> {
+      private final String refOwner;
 
-      private Compatibility() {
+      public McoServerComparator(String var1) {
+         super();
+         this.refOwner = var1;
       }
 
-      public boolean isCompatible() {
-         return this == COMPATIBLE;
-      }
-
-      public boolean needsUpgrade() {
-         return this == NEEDS_UPGRADE;
-      }
-
-      public boolean needsDowngrade() {
-         return this == NEEDS_DOWNGRADE;
+      public int compare(RealmsServer var1, RealmsServer var2) {
+         return ComparisonChain.start().compareTrueFirst(var1.isSnapshotRealm(), var2.isSnapshotRealm()).compareTrueFirst(var1.state == RealmsServer.State.UNINITIALIZED, var2.state == RealmsServer.State.UNINITIALIZED).compareTrueFirst(var1.expiredTrial, var2.expiredTrial).compareTrueFirst(Objects.equals(var1.owner, this.refOwner), Objects.equals(var2.owner, this.refOwner)).compareFalseFirst(var1.expired, var2.expired).compareTrueFirst(var1.state == RealmsServer.State.OPEN, var2.state == RealmsServer.State.OPEN).compare(var1.id, var2.id).result();
       }
 
       // $FF: synthetic method
-      private static Compatibility[] $values() {
-         return new Compatibility[]{UNVERIFIABLE, INCOMPATIBLE, RELEASE_TYPE_INCOMPATIBLE, NEEDS_DOWNGRADE, NEEDS_UPGRADE, COMPATIBLE};
+      public int compare(final Object var1, final Object var2) {
+         return this.compare((RealmsServer)var1, (RealmsServer)var2);
       }
    }
 
@@ -402,21 +379,32 @@ public class RealmsServer extends ValueObject {
       }
    }
 
-   public static class McoServerComparator implements Comparator<RealmsServer> {
-      private final String refOwner;
+   public static enum Compatibility {
+      UNVERIFIABLE,
+      INCOMPATIBLE,
+      RELEASE_TYPE_INCOMPATIBLE,
+      NEEDS_DOWNGRADE,
+      NEEDS_UPGRADE,
+      COMPATIBLE;
 
-      public McoServerComparator(String var1) {
-         super();
-         this.refOwner = var1;
+      private Compatibility() {
       }
 
-      public int compare(RealmsServer var1, RealmsServer var2) {
-         return ComparisonChain.start().compareTrueFirst(var1.isSnapshotRealm(), var2.isSnapshotRealm()).compareTrueFirst(var1.state == RealmsServer.State.UNINITIALIZED, var2.state == RealmsServer.State.UNINITIALIZED).compareTrueFirst(var1.expiredTrial, var2.expiredTrial).compareTrueFirst(Objects.equals(var1.owner, this.refOwner), Objects.equals(var2.owner, this.refOwner)).compareFalseFirst(var1.expired, var2.expired).compareTrueFirst(var1.state == RealmsServer.State.OPEN, var2.state == RealmsServer.State.OPEN).compare(var1.id, var2.id).result();
+      public boolean isCompatible() {
+         return this == COMPATIBLE;
+      }
+
+      public boolean needsUpgrade() {
+         return this == NEEDS_UPGRADE;
+      }
+
+      public boolean needsDowngrade() {
+         return this == NEEDS_DOWNGRADE;
       }
 
       // $FF: synthetic method
-      public int compare(final Object var1, final Object var2) {
-         return this.compare((RealmsServer)var1, (RealmsServer)var2);
+      private static Compatibility[] $values() {
+         return new Compatibility[]{UNVERIFIABLE, INCOMPATIBLE, RELEASE_TYPE_INCOMPATIBLE, NEEDS_DOWNGRADE, NEEDS_UPGRADE, COMPATIBLE};
       }
    }
 }

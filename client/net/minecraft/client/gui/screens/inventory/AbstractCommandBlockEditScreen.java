@@ -41,12 +41,8 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
    abstract int getPreviousY();
 
    protected void init() {
-      this.doneButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
-         this.onDone();
-      }).bounds(this.width / 2 - 4 - 150, this.height / 4 + 120 + 12, 150, 20).build());
-      this.cancelButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> {
-         this.onClose();
-      }).bounds(this.width / 2 + 4, this.height / 4 + 120 + 12, 150, 20).build());
+      this.doneButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.onDone()).bounds(this.width / 2 - 4 - 150, this.height / 4 + 120 + 12, 150, 20).build());
+      this.cancelButton = (Button)this.addRenderableWidget(Button.builder(CommonComponents.GUI_CANCEL, (var1x) -> this.onClose()).bounds(this.width / 2 + 4, this.height / 4 + 120 + 12, 150, 20).build());
       boolean var1 = this.getCommandBlock().isTrackOutput();
       this.outputButton = (CycleButton)this.addRenderableWidget(CycleButton.booleanBuilder(Component.literal("O"), Component.literal("X")).withInitialValue(var1).displayOnlyValue().create(this.width / 2 + 150 - 20, this.getPreviousY(), 20, 20, Component.translatable("advMode.trackOutput"), (var1x, var2) -> {
          BaseCommandBlock var3 = this.getCommandBlock();

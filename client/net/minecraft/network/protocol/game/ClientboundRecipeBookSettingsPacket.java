@@ -22,10 +22,6 @@ public record ClientboundRecipeBookSettingsPacket(RecipeBookSettings bookSetting
       var1.handleRecipeBookSettings(this);
    }
 
-   public RecipeBookSettings bookSettings() {
-      return this.bookSettings;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(RecipeBookSettings.STREAM_CODEC, ClientboundRecipeBookSettingsPacket::bookSettings, ClientboundRecipeBookSettingsPacket::new);
    }

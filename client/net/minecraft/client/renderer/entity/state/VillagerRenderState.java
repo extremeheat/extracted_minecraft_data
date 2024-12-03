@@ -4,7 +4,7 @@ import net.minecraft.world.entity.npc.VillagerData;
 import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.npc.VillagerType;
 
-public class VillagerRenderState extends LivingEntityRenderState implements VillagerDataHolderRenderState {
+public class VillagerRenderState extends HoldingEntityRenderState implements VillagerDataHolderRenderState {
    public boolean isUnhappy;
    public VillagerData villagerData;
 

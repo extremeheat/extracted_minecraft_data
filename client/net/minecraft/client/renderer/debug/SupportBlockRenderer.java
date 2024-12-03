@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.debug;
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import net.minecraft.Util;
@@ -36,19 +35,12 @@ public class SupportBlockRenderer implements DebugRenderer.SimpleDebugRenderer {
 
       LocalPlayer var14 = this.minecraft.player;
       if (var14 != null && var14.mainSupportingBlockPos.isPresent()) {
-         this.drawHighlights(var1, var2, var3, var5, var7, var14, () -> {
-            return 0.0;
-         }, 1.0F, 0.0F, 0.0F);
+         this.drawHighlights(var1, var2, var3, var5, var7, var14, () -> 0.0, 1.0F, 0.0F, 0.0F);
       }
 
-      Iterator var12 = this.surroundEntities.iterator();
-
-      while(var12.hasNext()) {
-         Entity var13 = (Entity)var12.next();
+      for(Entity var13 : this.surroundEntities) {
          if (var13 != var14) {
-            this.drawHighlights(var1, var2, var3, var5, var7, var13, () -> {
-               return this.getBias(var13);
-            }, 0.0F, 1.0F, 0.0F);
+            this.drawHighlights(var1, var2, var3, var5, var7, var13, () -> this.getBias(var13), 0.0F, 1.0F, 0.0F);
          }
       }
 

@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -63,30 +62,23 @@ public class ChorusPlantBlock extends PipeBlock {
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockState var4 = var2.getBlockState(var3.below());
       boolean var5 = !var2.getBlockState(var3.above()).isAir() && !var4.isAir();
-      Iterator var6 = Direction.Plane.HORIZONTAL.iterator();
 
-      BlockState var10;
-      do {
-         BlockPos var8;
-         BlockState var9;
-         do {
-            if (!var6.hasNext()) {
-               return var4.is(this) || var4.is(Blocks.END_STONE);
+      for(Direction var7 : Direction.Plane.HORIZONTAL) {
+         BlockPos var8 = var3.relative(var7);
+         BlockState var9 = var2.getBlockState(var8);
+         if (var9.is(this)) {
+            if (var5) {
+               return false;
             }
 
-            Direction var7 = (Direction)var6.next();
-            var8 = var3.relative(var7);
-            var9 = var2.getBlockState(var8);
-         } while(!var9.is(this));
-
-         if (var5) {
-            return false;
+            BlockState var10 = var2.getBlockState(var8.below());
+            if (var10.is(this) || var10.is(Blocks.END_STONE)) {
+               return true;
+            }
          }
+      }
 
-         var10 = var2.getBlockState(var8.below());
-      } while(!var10.is(this) && !var10.is(Blocks.END_STONE));
-
-      return true;
+      return var4.is(this) || var4.is(Blocks.END_STONE);
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {

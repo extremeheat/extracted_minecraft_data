@@ -8,7 +8,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class ServerboundUseItemOnPacket implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundUseItemOnPacket> STREAM_CODEC = Packet.codec(ServerboundUseItemOnPacket::write, ServerboundUseItemOnPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundUseItemOnPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundUseItemOnPacket>codec(ServerboundUseItemOnPacket::write, ServerboundUseItemOnPacket::new);
    private final BlockHitResult blockHit;
    private final InteractionHand hand;
    private final int sequence;

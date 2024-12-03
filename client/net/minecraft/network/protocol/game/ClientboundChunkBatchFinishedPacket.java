@@ -6,7 +6,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ClientboundChunkBatchFinishedPacket(int batchSize) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundChunkBatchFinishedPacket> STREAM_CODEC = Packet.codec(ClientboundChunkBatchFinishedPacket::write, ClientboundChunkBatchFinishedPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundChunkBatchFinishedPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundChunkBatchFinishedPacket>codec(ClientboundChunkBatchFinishedPacket::write, ClientboundChunkBatchFinishedPacket::new);
 
    private ClientboundChunkBatchFinishedPacket(FriendlyByteBuf var1) {
       this(var1.readVarInt());
@@ -27,9 +27,5 @@ public record ClientboundChunkBatchFinishedPacket(int batchSize) implements Pack
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleChunkBatchFinished(this);
-   }
-
-   public int batchSize() {
-      return this.batchSize;
    }
 }

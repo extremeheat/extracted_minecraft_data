@@ -1,6 +1,5 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
-import java.util.Iterator;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -41,7 +40,7 @@ public class ShipwreckPieces {
    }
 
    public static ShipwreckPiece addRandomPiece(StructureTemplateManager var0, BlockPos var1, Rotation var2, StructurePieceAccessor var3, RandomSource var4, boolean var5) {
-      ResourceLocation var6 = (ResourceLocation)Util.getRandom((Object[])(var5 ? STRUCTURE_LOCATION_BEACHED : STRUCTURE_LOCATION_OCEAN), var4);
+      ResourceLocation var6 = (ResourceLocation)Util.getRandom(var5 ? STRUCTURE_LOCATION_BEACHED : STRUCTURE_LOCATION_OCEAN, var4);
       ShipwreckPiece var7 = new ShipwreckPiece(var0, var6, var1, var2, var5);
       var3.addPiece(var7);
       return var7;
@@ -60,9 +59,7 @@ public class ShipwreckPieces {
       }
 
       public ShipwreckPiece(StructureTemplateManager var1, CompoundTag var2) {
-         super(StructurePieceType.SHIPWRECK_PIECE, var2, var1, (var1x) -> {
-            return makeSettings(Rotation.valueOf(var2.getString("Rot")));
-         });
+         super(StructurePieceType.SHIPWRECK_PIECE, var2, var1, (var1x) -> makeSettings(Rotation.valueOf(var2.getString("Rot"))));
          this.isBeached = var2.getBoolean("isBeached");
       }
 
@@ -98,11 +95,10 @@ public class ShipwreckPieces {
             } else {
                BlockPos var13 = this.templatePosition.offset(var10.getX() - 1, 0, var10.getZ() - 1);
 
-               int var16;
-               for(Iterator var14 = BlockPos.betweenClosed(this.templatePosition, var13).iterator(); var14.hasNext(); var8 = Math.min(var8, var16)) {
-                  BlockPos var15 = (BlockPos)var14.next();
-                  var16 = var1.getHeight(var11, var15.getX(), var15.getZ());
+               for(BlockPos var15 : BlockPos.betweenClosed(this.templatePosition, var13)) {
+                  int var16 = var1.getHeight(var11, var15.getX(), var15.getZ());
                   var9 += var16;
+                  var8 = Math.min(var8, var16);
                }
 
                var9 /= var12;

@@ -87,11 +87,7 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
       boolean var11 = var1.getChatStatus().isChatAllowed(var1.isLocalServer());
       boolean var12 = !var1.player.getUUID().equals(var3);
       if (var12 && var11 && !var10.isBlocked(var3)) {
-         this.reportButton = new ImageButton(0, 0, 20, 20, REPORT_BUTTON_SPRITES, (var4x) -> {
-            var7.draftReportHandled(var1, var2, () -> {
-               var1.setScreen(new ReportPlayerScreen(var2, var7, this));
-            }, false);
-         }, Component.translatable("gui.socialInteractions.report")) {
+         this.reportButton = new ImageButton(0, 0, 20, 20, REPORT_BUTTON_SPRITES, (var4x) -> var7.draftReportHandled(var1, var2, () -> var1.setScreen(new ReportPlayerScreen(var2, var7, this)), false), Component.translatable("gui.socialInteractions.report")) {
             protected MutableComponent createNarrationMessage() {
                return PlayerEntry.this.getEntryNarationMessage(super.createNarrationMessage());
             }
@@ -148,11 +144,11 @@ public class PlayerEntry extends ContainerObjectSelectionList.Entry<PlayerEntry>
          Objects.requireNonNull(this.minecraft.font);
          Objects.requireNonNull(this.minecraft.font);
          var14 = var3 + (var6 - (9 + 9)) / 2;
-         var1.drawString(this.minecraft.font, var15, var13, var14 + 12, PLAYER_STATUS_COLOR, false);
+         var1.drawString(this.minecraft.font, var15, var13, var14 + 12, PLAYER_STATUS_COLOR);
       }
 
       PlayerFaceRenderer.draw(var1, (PlayerSkin)this.skinGetter.get(), var11, var12, 24);
-      var1.drawString(this.minecraft.font, this.playerName, var13, var14, PLAYERNAME_COLOR, false);
+      var1.drawString(this.minecraft.font, this.playerName, var13, var14, PLAYERNAME_COLOR);
       if (this.isRemoved) {
          var1.fill(var11, var12, var11 + 24, var12 + 24, SKIN_SHADE);
       }

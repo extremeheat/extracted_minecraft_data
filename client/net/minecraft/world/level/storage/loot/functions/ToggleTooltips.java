@@ -34,9 +34,7 @@ public class ToggleTooltips extends LootItemConditionalFunction {
    }
 
    protected ItemStack run(ItemStack var1, LootContext var2) {
-      this.values.forEach((var1x, var2x) -> {
-         var1x.applyIfPresent(var1, var2x);
-      });
+      this.values.forEach((var1x, var2x) -> var1x.applyIfPresent(var1, var2x));
       return var1;
    }
 
@@ -45,23 +43,15 @@ public class ToggleTooltips extends LootItemConditionalFunction {
    }
 
    static {
-      TOGGLES = (Map)Stream.of(new ComponentToggle(DataComponents.TRIM, ArmorTrim::withTooltip), new ComponentToggle(DataComponents.DYED_COLOR, DyedItemColor::withTooltip), new ComponentToggle(DataComponents.ENCHANTMENTS, ItemEnchantments::withTooltip), new ComponentToggle(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments::withTooltip), new ComponentToggle(DataComponents.UNBREAKABLE, Unbreakable::withTooltip), new ComponentToggle(DataComponents.CAN_BREAK, AdventureModePredicate::withTooltip), new ComponentToggle(DataComponents.CAN_PLACE_ON, AdventureModePredicate::withTooltip), new ComponentToggle(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers::withTooltip), new ComponentToggle(DataComponents.JUKEBOX_PLAYABLE, JukeboxPlayable::withTooltip)).collect(Collectors.toMap(ComponentToggle::type, (var0) -> {
-         return var0;
-      }));
+      TOGGLES = (Map)Stream.of(new ComponentToggle(DataComponents.TRIM, ArmorTrim::withTooltip), new ComponentToggle(DataComponents.DYED_COLOR, DyedItemColor::withTooltip), new ComponentToggle(DataComponents.ENCHANTMENTS, ItemEnchantments::withTooltip), new ComponentToggle(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments::withTooltip), new ComponentToggle(DataComponents.UNBREAKABLE, Unbreakable::withTooltip), new ComponentToggle(DataComponents.CAN_BREAK, AdventureModePredicate::withTooltip), new ComponentToggle(DataComponents.CAN_PLACE_ON, AdventureModePredicate::withTooltip), new ComponentToggle(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers::withTooltip), new ComponentToggle(DataComponents.JUKEBOX_PLAYABLE, JukeboxPlayable::withTooltip)).collect(Collectors.toMap(ComponentToggle::type, (var0) -> var0));
       TOGGLE_CODEC = BuiltInRegistries.DATA_COMPONENT_TYPE.byNameCodec().comapFlatMap((var0) -> {
          ComponentToggle var1 = (ComponentToggle)TOGGLES.get(var0);
-         return var1 != null ? DataResult.success(var1) : DataResult.error(() -> {
-            return "Can't toggle tooltip visiblity for " + String.valueOf(BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(var0));
-         });
+         return var1 != null ? DataResult.success(var1) : DataResult.error(() -> "Can't toggle tooltip visiblity for " + String.valueOf(BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(var0)));
       }, ComponentToggle::type);
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return commonFields(var0).and(Codec.unboundedMap(TOGGLE_CODEC, Codec.BOOL).fieldOf("toggles").forGetter((var0x) -> {
-            return var0x.values;
-         })).apply(var0, ToggleTooltips::new);
-      });
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(Codec.unboundedMap(TOGGLE_CODEC, Codec.BOOL).fieldOf("toggles").forGetter((var0x) -> var0x.values)).apply(var0, ToggleTooltips::new));
    }
 
-   private static record ComponentToggle<T>(DataComponentType<T> type, TooltipWither<T> setter) {
+   static record ComponentToggle<T>(DataComponentType<T> type, TooltipWither<T> setter) {
       ComponentToggle(DataComponentType<T> var1, TooltipWither<T> var2) {
          super();
          this.type = var1;
@@ -75,18 +65,10 @@ public class ToggleTooltips extends LootItemConditionalFunction {
          }
 
       }
-
-      public DataComponentType<T> type() {
-         return this.type;
-      }
-
-      public TooltipWither<T> setter() {
-         return this.setter;
-      }
    }
 
    @FunctionalInterface
-   private interface TooltipWither<T> {
+   interface TooltipWither<T> {
       T withTooltip(T var1, boolean var2);
    }
 }

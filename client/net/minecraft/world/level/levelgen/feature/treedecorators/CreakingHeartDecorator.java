@@ -15,9 +15,7 @@ import net.minecraft.world.level.block.CreakingHeartBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class CreakingHeartDecorator extends TreeDecorator {
-   public static final MapCodec<CreakingHeartDecorator> CODEC = Codec.floatRange(0.0F, 1.0F).fieldOf("probability").xmap(CreakingHeartDecorator::new, (var0) -> {
-      return var0.probability;
-   });
+   public static final MapCodec<CreakingHeartDecorator> CODEC = Codec.floatRange(0.0F, 1.0F).fieldOf("probability").xmap(CreakingHeartDecorator::new, (var0) -> var0.probability);
    private final float probability;
 
    public CreakingHeartDecorator(float var1) {
@@ -37,14 +35,8 @@ public class CreakingHeartDecorator extends TreeDecorator {
             ArrayList var4 = new ArrayList(var3);
             Util.shuffle(var4, var2);
             Optional var5 = var4.stream().filter((var1x) -> {
-               Direction[] var2 = Direction.values();
-               int var3 = var2.length;
-
-               for(int var4 = 0; var4 < var3; ++var4) {
-                  Direction var5 = var2[var4];
-                  if (!var1.checkBlock(var1x.relative(var5), (var0) -> {
-                     return var0.is(BlockTags.LOGS);
-                  })) {
+               for(Direction var5 : Direction.values()) {
+                  if (!var1.checkBlock(var1x.relative(var5), (var0) -> var0.is(BlockTags.LOGS))) {
                      return false;
                   }
                }
@@ -52,7 +44,7 @@ public class CreakingHeartDecorator extends TreeDecorator {
                return true;
             }).findFirst();
             if (!var5.isEmpty()) {
-               var1.setBlock((BlockPos)var5.get(), (BlockState)Blocks.CREAKING_HEART.defaultBlockState().setValue(CreakingHeartBlock.CREAKING, CreakingHeartBlock.CreakingHeartState.DORMANT));
+               var1.setBlock((BlockPos)var5.get(), (BlockState)((BlockState)Blocks.CREAKING_HEART.defaultBlockState().setValue(CreakingHeartBlock.ACTIVE, true)).setValue(CreakingHeartBlock.NATURAL, true));
             }
          }
       }

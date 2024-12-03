@@ -34,20 +34,22 @@ public class MobAppearanceParticle extends Particle {
       return ParticleRenderType.CUSTOM;
    }
 
-   public void render(VertexConsumer var1, Camera var2, float var3) {
-      float var4 = ((float)this.age + var3) / (float)this.lifetime;
-      float var5 = 0.05F + 0.5F * Mth.sin(var4 * 3.1415927F);
-      int var6 = ARGB.colorFromFloat(var5, 1.0F, 1.0F, 1.0F);
-      PoseStack var7 = new PoseStack();
-      var7.mulPose(var2.rotation());
-      var7.mulPose(Axis.XP.rotationDegrees(60.0F - 150.0F * var4));
+   public void renderCustom(PoseStack var1, MultiBufferSource var2, Camera var3, float var4) {
+      float var5 = ((float)this.age + var4) / (float)this.lifetime;
+      float var6 = 0.05F + 0.5F * Mth.sin(var5 * 3.1415927F);
+      int var7 = ARGB.colorFromFloat(var6, 1.0F, 1.0F, 1.0F);
+      var1.pushPose();
+      var1.mulPose(var3.rotation());
+      var1.mulPose(Axis.XP.rotationDegrees(60.0F - 150.0F * var5));
       float var8 = 0.42553192F;
-      var7.scale(0.42553192F, -0.42553192F, -0.42553192F);
-      var7.translate(0.0F, -0.56F, 3.5F);
-      MultiBufferSource.BufferSource var9 = Minecraft.getInstance().renderBuffers().bufferSource();
-      VertexConsumer var10 = var9.getBuffer(this.renderType);
-      this.model.renderToBuffer(var7, var10, 15728880, OverlayTexture.NO_OVERLAY, var6);
-      var9.endBatch();
+      var1.scale(0.42553192F, -0.42553192F, -0.42553192F);
+      var1.translate(0.0F, -0.56F, 3.5F);
+      VertexConsumer var9 = var2.getBuffer(this.renderType);
+      this.model.renderToBuffer(var1, var9, 15728880, OverlayTexture.NO_OVERLAY, var7);
+      var1.popPose();
+   }
+
+   public void render(VertexConsumer var1, Camera var2, float var3) {
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {

@@ -52,9 +52,7 @@ public class RealmsGenericErrorScreen extends RealmsScreen {
    }
 
    public void init() {
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_OK, (var1) -> {
-         this.onClose();
-      }).bounds(this.width / 2 - 100, this.height - 52, 200, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_OK, (var1) -> this.onClose()).bounds(this.width / 2 - 100, this.height - 52, 200, 20).build());
       this.line2Split = MultiLineLabel.create(this.font, this.lines.detail, this.width * 3 / 4);
    }
 
@@ -75,7 +73,7 @@ public class RealmsGenericErrorScreen extends RealmsScreen {
       var10000.renderCentered(var1, var10002, 100, 9, -2142128);
    }
 
-   private static record ErrorMessage(Component title, Component detail) {
+   static record ErrorMessage(Component title, Component detail) {
       final Component title;
       final Component detail;
 
@@ -83,14 +81,6 @@ public class RealmsGenericErrorScreen extends RealmsScreen {
          super();
          this.title = var1;
          this.detail = var2;
-      }
-
-      public Component title() {
-         return this.title;
-      }
-
-      public Component detail() {
-         return this.detail;
       }
    }
 }

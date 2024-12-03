@@ -15,6 +15,20 @@ public sealed interface InteractionResult {
       return false;
    }
 
+   public static enum SwingSource {
+      NONE,
+      CLIENT,
+      SERVER;
+
+      private SwingSource() {
+      }
+
+      // $FF: synthetic method
+      private static SwingSource[] $values() {
+         return new SwingSource[]{NONE, CLIENT, SERVER};
+      }
+   }
+
    public static record Success(SwingSource swingSource, ItemContext itemContext) implements InteractionResult {
       public Success(SwingSource var1, ItemContext var2) {
          super();
@@ -42,28 +56,6 @@ public sealed interface InteractionResult {
       public ItemStack heldItemTransformedTo() {
          return this.itemContext.heldItemTransformedTo;
       }
-
-      public SwingSource swingSource() {
-         return this.swingSource;
-      }
-
-      public ItemContext itemContext() {
-         return this.itemContext;
-      }
-   }
-
-   public static enum SwingSource {
-      NONE,
-      CLIENT,
-      SERVER;
-
-      private SwingSource() {
-      }
-
-      // $FF: synthetic method
-      private static SwingSource[] $values() {
-         return new SwingSource[]{NONE, CLIENT, SERVER};
-      }
    }
 
    public static record ItemContext(boolean wasItemInteraction, @Nullable ItemStack heldItemTransformedTo) {
@@ -77,15 +69,6 @@ public sealed interface InteractionResult {
          super();
          this.wasItemInteraction = var1;
          this.heldItemTransformedTo = var2;
-      }
-
-      public boolean wasItemInteraction() {
-         return this.wasItemInteraction;
-      }
-
-      @Nullable
-      public ItemStack heldItemTransformedTo() {
-         return this.heldItemTransformedTo;
       }
    }
 

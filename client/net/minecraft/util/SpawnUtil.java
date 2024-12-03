@@ -21,22 +21,23 @@ public class SpawnUtil {
       super();
    }
 
-   public static <T extends Mob> Optional<T> trySpawnMob(EntityType<T> var0, EntitySpawnReason var1, ServerLevel var2, BlockPos var3, int var4, int var5, int var6, Strategy var7) {
-      BlockPos.MutableBlockPos var8 = var3.mutable();
+   public static <T extends Mob> Optional<T> trySpawnMob(EntityType<T> var0, EntitySpawnReason var1, ServerLevel var2, BlockPos var3, int var4, int var5, int var6, Strategy var7, boolean var8) {
+      BlockPos.MutableBlockPos var9 = var3.mutable();
 
-      for(int var9 = 0; var9 < var4; ++var9) {
-         int var10 = Mth.randomBetweenInclusive(var2.random, -var5, var5);
+      for(int var10 = 0; var10 < var4; ++var10) {
          int var11 = Mth.randomBetweenInclusive(var2.random, -var5, var5);
-         var8.setWithOffset(var3, var10, var6, var11);
-         if (var2.getWorldBorder().isWithinBounds((BlockPos)var8) && moveToPossibleSpawnPosition(var2, var6, var8, var7)) {
-            Mob var12 = (Mob)var0.create(var2, (Consumer)null, var8, var1, false, false);
-            if (var12 != null) {
-               if (var12.checkSpawnRules(var2, var1) && var12.checkSpawnObstruction(var2)) {
-                  var2.addFreshEntityWithPassengers(var12);
-                  return Optional.of(var12);
+         int var12 = Mth.randomBetweenInclusive(var2.random, -var5, var5);
+         var9.setWithOffset(var3, var11, var6, var12);
+         if (var2.getWorldBorder().isWithinBounds((BlockPos)var9) && moveToPossibleSpawnPosition(var2, var6, var9, var7) && (!var8 || var2.noCollision(var0.getSpawnAABB((double)var9.getX() + 0.5, (double)var9.getY(), (double)var9.getZ() + 0.5)))) {
+            Mob var13 = (Mob)var0.create(var2, (Consumer)null, var9, var1, false, false);
+            if (var13 != null) {
+               if (var13.checkSpawnRules(var2, var1) && var13.checkSpawnObstruction(var2)) {
+                  var2.addFreshEntityWithPassengers(var13);
+                  var13.playAmbientSound();
+                  return Optional.of(var13);
                }
 
-               var12.discard();
+               var13.discard();
             }
          }
       }
@@ -73,12 +74,8 @@ public class SpawnUtil {
             return false;
          }
       };
-      Strategy ON_TOP_OF_COLLIDER = (var0, var1, var2, var3, var4) -> {
-         return var4.getCollisionShape(var0, var3).isEmpty() && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
-      };
-      Strategy ON_TOP_OF_COLLIDER_NO_LEAVES = (var0, var1, var2, var3, var4) -> {
-         return var4.getCollisionShape(var0, var3).isEmpty() && !var2.is(BlockTags.LEAVES) && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
-      };
+      Strategy ON_TOP_OF_COLLIDER = (var0, var1, var2, var3, var4) -> var4.getCollisionShape(var0, var3).isEmpty() && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
+      Strategy ON_TOP_OF_COLLIDER_NO_LEAVES = (var0, var1, var2, var3, var4) -> var4.getCollisionShape(var0, var3).isEmpty() && !var2.is(BlockTags.LEAVES) && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
 
       boolean canSpawnOn(ServerLevel var1, BlockPos var2, BlockState var3, BlockPos var4, BlockState var5);
    }

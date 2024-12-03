@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import java.util.Comparator;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -56,7 +55,7 @@ public class Phantom extends FlyingMob implements Enemy {
       this.attackPhase = Phantom.AttackPhase.CIRCLE;
       this.xpReward = 5;
       this.moveControl = new PhantomMoveControl(this);
-      this.lookControl = new PhantomLookControl(this, this);
+      this.lookControl = new PhantomLookControl(this);
    }
 
    public boolean isFlapping() {
@@ -197,10 +196,10 @@ public class Phantom extends FlyingMob implements Enemy {
    }
 
    static {
-      ID_SIZE = SynchedEntityData.defineId(Phantom.class, EntityDataSerializers.INT);
+      ID_SIZE = SynchedEntityData.<Integer>defineId(Phantom.class, EntityDataSerializers.INT);
    }
 
-   private static enum AttackPhase {
+   static enum AttackPhase {
       CIRCLE,
       SWOOP;
 
@@ -261,15 +260,6 @@ public class Phantom extends FlyingMob implements Enemy {
       }
    }
 
-   class PhantomLookControl extends LookControl {
-      public PhantomLookControl(final Phantom var1, final Mob var2) {
-         super(var2);
-      }
-
-      public void tick() {
-      }
-   }
-
    class PhantomBodyRotationControl extends BodyRotationControl {
       public PhantomBodyRotationControl(final Mob var2) {
          super(var2);
@@ -281,121 +271,23 @@ public class Phantom extends FlyingMob implements Enemy {
       }
    }
 
-   class PhantomAttackStrategyGoal extends Goal {
-      private int nextSweepTick;
-
-      PhantomAttackStrategyGoal() {
-         super();
-      }
-
-      public boolean canUse() {
-         LivingEntity var1 = Phantom.this.getTarget();
-         return var1 != null ? Phantom.this.canAttack(getServerLevel(Phantom.this.level()), var1, TargetingConditions.DEFAULT) : false;
-      }
-
-      public void start() {
-         this.nextSweepTick = this.adjustedTickDelay(10);
-         Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;
-         this.setAnchorAboveTarget();
-      }
-
-      public void stop() {
-         Phantom.this.anchorPoint = Phantom.this.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, Phantom.this.anchorPoint).above(10 + Phantom.this.random.nextInt(20));
+   static class PhantomLookControl extends LookControl {
+      public PhantomLookControl(Mob var1) {
+         super(var1);
       }
 
       public void tick() {
-         if (Phantom.this.attackPhase == Phantom.AttackPhase.CIRCLE) {
-            --this.nextSweepTick;
-            if (this.nextSweepTick <= 0) {
-               Phantom.this.attackPhase = Phantom.AttackPhase.SWOOP;
-               this.setAnchorAboveTarget();
-               this.nextSweepTick = this.adjustedTickDelay((8 + Phantom.this.random.nextInt(4)) * 20);
-               Phantom.this.playSound(SoundEvents.PHANTOM_SWOOP, 10.0F, 0.95F + Phantom.this.random.nextFloat() * 0.1F);
-            }
-         }
-
-      }
-
-      private void setAnchorAboveTarget() {
-         Phantom.this.anchorPoint = Phantom.this.getTarget().blockPosition().above(20 + Phantom.this.random.nextInt(20));
-         if (Phantom.this.anchorPoint.getY() < Phantom.this.level().getSeaLevel()) {
-            Phantom.this.anchorPoint = new BlockPos(Phantom.this.anchorPoint.getX(), Phantom.this.level().getSeaLevel() + 1, Phantom.this.anchorPoint.getZ());
-         }
-
       }
    }
 
-   class PhantomSweepAttackGoal extends PhantomMoveTargetGoal {
-      private static final int CAT_SEARCH_TICK_DELAY = 20;
-      private boolean isScaredOfCat;
-      private int catSearchTick;
-
-      PhantomSweepAttackGoal() {
+   abstract class PhantomMoveTargetGoal extends Goal {
+      public PhantomMoveTargetGoal() {
          super();
+         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
       }
 
-      public boolean canUse() {
-         return Phantom.this.getTarget() != null && Phantom.this.attackPhase == Phantom.AttackPhase.SWOOP;
-      }
-
-      public boolean canContinueToUse() {
-         LivingEntity var1 = Phantom.this.getTarget();
-         if (var1 == null) {
-            return false;
-         } else if (!var1.isAlive()) {
-            return false;
-         } else {
-            if (var1 instanceof Player) {
-               Player var2 = (Player)var1;
-               if (var1.isSpectator() || var2.isCreative()) {
-                  return false;
-               }
-            }
-
-            if (!this.canUse()) {
-               return false;
-            } else {
-               if (Phantom.this.tickCount > this.catSearchTick) {
-                  this.catSearchTick = Phantom.this.tickCount + 20;
-                  List var5 = Phantom.this.level().getEntitiesOfClass(Cat.class, Phantom.this.getBoundingBox().inflate(16.0), EntitySelector.ENTITY_STILL_ALIVE);
-                  Iterator var3 = var5.iterator();
-
-                  while(var3.hasNext()) {
-                     Cat var4 = (Cat)var3.next();
-                     var4.hiss();
-                  }
-
-                  this.isScaredOfCat = !var5.isEmpty();
-               }
-
-               return !this.isScaredOfCat;
-            }
-         }
-      }
-
-      public void start() {
-      }
-
-      public void stop() {
-         Phantom.this.setTarget((LivingEntity)null);
-         Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;
-      }
-
-      public void tick() {
-         LivingEntity var1 = Phantom.this.getTarget();
-         if (var1 != null) {
-            Phantom.this.moveTargetPoint = new Vec3(var1.getX(), var1.getY(0.5), var1.getZ());
-            if (Phantom.this.getBoundingBox().inflate(0.20000000298023224).intersects(var1.getBoundingBox())) {
-               Phantom.this.doHurtTarget(getServerLevel(Phantom.this.level()), var1);
-               Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;
-               if (!Phantom.this.isSilent()) {
-                  Phantom.this.level().levelEvent(1039, Phantom.this.blockPosition(), 0);
-               }
-            } else if (Phantom.this.horizontalCollision || Phantom.this.hurtTime > 0) {
-               Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;
-            }
-
-         }
+      protected boolean touchingTarget() {
+         return Phantom.this.moveTargetPoint.distanceToSqr(Phantom.this.getX(), Phantom.this.getY(), Phantom.this.getZ()) < 4.0;
       }
    }
 
@@ -464,6 +356,122 @@ public class Phantom extends FlyingMob implements Enemy {
       }
    }
 
+   class PhantomSweepAttackGoal extends PhantomMoveTargetGoal {
+      private static final int CAT_SEARCH_TICK_DELAY = 20;
+      private boolean isScaredOfCat;
+      private int catSearchTick;
+
+      PhantomSweepAttackGoal() {
+         super();
+      }
+
+      public boolean canUse() {
+         return Phantom.this.getTarget() != null && Phantom.this.attackPhase == Phantom.AttackPhase.SWOOP;
+      }
+
+      public boolean canContinueToUse() {
+         LivingEntity var1 = Phantom.this.getTarget();
+         if (var1 == null) {
+            return false;
+         } else if (!var1.isAlive()) {
+            return false;
+         } else {
+            if (var1 instanceof Player) {
+               Player var2 = (Player)var1;
+               if (var1.isSpectator() || var2.isCreative()) {
+                  return false;
+               }
+            }
+
+            if (!this.canUse()) {
+               return false;
+            } else {
+               if (Phantom.this.tickCount > this.catSearchTick) {
+                  this.catSearchTick = Phantom.this.tickCount + 20;
+                  List var5 = Phantom.this.level().getEntitiesOfClass(Cat.class, Phantom.this.getBoundingBox().inflate(16.0), EntitySelector.ENTITY_STILL_ALIVE);
+
+                  for(Cat var4 : var5) {
+                     var4.hiss();
+                  }
+
+                  this.isScaredOfCat = !var5.isEmpty();
+               }
+
+               return !this.isScaredOfCat;
+            }
+         }
+      }
+
+      public void start() {
+      }
+
+      public void stop() {
+         Phantom.this.setTarget((LivingEntity)null);
+         Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;
+      }
+
+      public void tick() {
+         LivingEntity var1 = Phantom.this.getTarget();
+         if (var1 != null) {
+            Phantom.this.moveTargetPoint = new Vec3(var1.getX(), var1.getY(0.5), var1.getZ());
+            if (Phantom.this.getBoundingBox().inflate(0.20000000298023224).intersects(var1.getBoundingBox())) {
+               Phantom.this.doHurtTarget(getServerLevel(Phantom.this.level()), var1);
+               Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;
+               if (!Phantom.this.isSilent()) {
+                  Phantom.this.level().levelEvent(1039, Phantom.this.blockPosition(), 0);
+               }
+            } else if (Phantom.this.horizontalCollision || Phantom.this.hurtTime > 0) {
+               Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;
+            }
+
+         }
+      }
+   }
+
+   class PhantomAttackStrategyGoal extends Goal {
+      private int nextSweepTick;
+
+      PhantomAttackStrategyGoal() {
+         super();
+      }
+
+      public boolean canUse() {
+         LivingEntity var1 = Phantom.this.getTarget();
+         return var1 != null ? Phantom.this.canAttack(getServerLevel(Phantom.this.level()), var1, TargetingConditions.DEFAULT) : false;
+      }
+
+      public void start() {
+         this.nextSweepTick = this.adjustedTickDelay(10);
+         Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;
+         this.setAnchorAboveTarget();
+      }
+
+      public void stop() {
+         Phantom.this.anchorPoint = Phantom.this.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, Phantom.this.anchorPoint).above(10 + Phantom.this.random.nextInt(20));
+      }
+
+      public void tick() {
+         if (Phantom.this.attackPhase == Phantom.AttackPhase.CIRCLE) {
+            --this.nextSweepTick;
+            if (this.nextSweepTick <= 0) {
+               Phantom.this.attackPhase = Phantom.AttackPhase.SWOOP;
+               this.setAnchorAboveTarget();
+               this.nextSweepTick = this.adjustedTickDelay((8 + Phantom.this.random.nextInt(4)) * 20);
+               Phantom.this.playSound(SoundEvents.PHANTOM_SWOOP, 10.0F, 0.95F + Phantom.this.random.nextFloat() * 0.1F);
+            }
+         }
+
+      }
+
+      private void setAnchorAboveTarget() {
+         Phantom.this.anchorPoint = Phantom.this.getTarget().blockPosition().above(20 + Phantom.this.random.nextInt(20));
+         if (Phantom.this.anchorPoint.getY() < Phantom.this.level().getSeaLevel()) {
+            Phantom.this.anchorPoint = new BlockPos(Phantom.this.anchorPoint.getX(), Phantom.this.level().getSeaLevel() + 1, Phantom.this.anchorPoint.getZ());
+         }
+
+      }
+   }
+
    class PhantomAttackPlayerTargetGoal extends Goal {
       private final TargetingConditions attackTargeting = TargetingConditions.forCombat().range(64.0);
       private int nextScanTick = reducedTickDelay(20);
@@ -482,10 +490,8 @@ public class Phantom extends FlyingMob implements Enemy {
             List var2 = var1.getNearbyPlayers(this.attackTargeting, Phantom.this, Phantom.this.getBoundingBox().inflate(16.0, 64.0, 16.0));
             if (!var2.isEmpty()) {
                var2.sort(Comparator.comparing(Entity::getY).reversed());
-               Iterator var3 = var2.iterator();
 
-               while(var3.hasNext()) {
-                  Player var4 = (Player)var3.next();
+               for(Player var4 : var2) {
                   if (Phantom.this.canAttack(var1, var4, TargetingConditions.DEFAULT)) {
                      Phantom.this.setTarget(var4);
                      return true;
@@ -500,17 +506,6 @@ public class Phantom extends FlyingMob implements Enemy {
       public boolean canContinueToUse() {
          LivingEntity var1 = Phantom.this.getTarget();
          return var1 != null ? Phantom.this.canAttack(getServerLevel(Phantom.this.level()), var1, TargetingConditions.DEFAULT) : false;
-      }
-   }
-
-   abstract class PhantomMoveTargetGoal extends Goal {
-      public PhantomMoveTargetGoal() {
-         super();
-         this.setFlags(EnumSet.of(Goal.Flag.MOVE));
-      }
-
-      protected boolean touchingTarget() {
-         return Phantom.this.moveTargetPoint.distanceToSqr(Phantom.this.getX(), Phantom.this.getY(), Phantom.this.getZ()) < 4.0;
       }
    }
 }

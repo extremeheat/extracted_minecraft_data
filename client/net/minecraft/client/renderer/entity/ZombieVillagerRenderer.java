@@ -5,11 +5,9 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.VillagerProfessionLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.ZombieVillagerRenderState;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.ZombieVillager;
 
 public class ZombieVillagerRenderer extends HumanoidMobRenderer<ZombieVillager, ZombieVillagerRenderState, ZombieVillagerModel<ZombieVillagerRenderState>> {
@@ -30,7 +28,7 @@ public class ZombieVillagerRenderer extends HumanoidMobRenderer<ZombieVillager, 
    }
 
    public void extractRenderState(ZombieVillager var1, ZombieVillagerRenderState var2, float var3) {
-      super.extractRenderState((Mob)var1, (HumanoidRenderState)var2, var3);
+      super.extractRenderState(var1, var2, var3);
       var2.isConverting = var1.isConverting();
       var2.villagerData = var1.getVillagerData();
       var2.isAggressive = var1.isAggressive();

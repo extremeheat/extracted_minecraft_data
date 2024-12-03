@@ -12,9 +12,7 @@ import org.slf4j.Logger;
 
 public record ConditionReference(ResourceKey<LootItemCondition> name) implements LootItemCondition {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<ConditionReference> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceKey.codec(Registries.PREDICATE).fieldOf("name").forGetter(ConditionReference::name)).apply(var0, ConditionReference::new);
-   });
+   public static final MapCodec<ConditionReference> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.PREDICATE).fieldOf("name").forGetter(ConditionReference::name)).apply(var0, ConditionReference::new));
 
    public ConditionReference(ResourceKey<LootItemCondition> var1) {
       super();
@@ -32,11 +30,7 @@ public record ConditionReference(ResourceKey<LootItemCondition> name) implements
          var1.reportProblem("Condition " + String.valueOf(this.name.location()) + " is recursively called");
       } else {
          LootItemCondition.super.validate(var1);
-         var1.resolver().get(this.name).ifPresentOrElse((var2) -> {
-            ((LootItemCondition)var2.value()).validate(var1.enterElement(".{" + String.valueOf(this.name.location()) + "}", this.name));
-         }, () -> {
-            var1.reportProblem("Unknown condition table called " + String.valueOf(this.name.location()));
-         });
+         var1.resolver().get(this.name).ifPresentOrElse((var2) -> ((LootItemCondition)var2.value()).validate(var1.enterElement(".{" + String.valueOf(this.name.location()) + "}", this.name)), () -> var1.reportProblem("Unknown condition table called " + String.valueOf(this.name.location())));
       }
    }
 
@@ -64,13 +58,7 @@ public record ConditionReference(ResourceKey<LootItemCondition> name) implements
    }
 
    public static LootItemCondition.Builder conditionReference(ResourceKey<LootItemCondition> var0) {
-      return () -> {
-         return new ConditionReference(var0);
-      };
-   }
-
-   public ResourceKey<LootItemCondition> name() {
-      return this.name;
+      return () -> new ConditionReference(var0);
    }
 
    // $FF: synthetic method

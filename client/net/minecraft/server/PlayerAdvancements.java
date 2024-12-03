@@ -20,7 +20,6 @@ import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -71,7 +70,7 @@ public class PlayerAdvancements {
       this.player = var5;
       this.tree = var3.tree();
       boolean var6 = true;
-      this.codec = DataFixTypes.ADVANCEMENTS.wrapCodec(PlayerAdvancements.Data.CODEC, var1, 1343);
+      this.codec = DataFixTypes.ADVANCEMENTS.<Data>wrapCodec(PlayerAdvancements.Data.CODEC, var1, 1343);
       this.load(var3);
    }
 
@@ -80,10 +79,7 @@ public class PlayerAdvancements {
    }
 
    public void stopListening() {
-      Iterator var1 = BuiltInRegistries.TRIGGER_TYPES.iterator();
-
-      while(var1.hasNext()) {
-         CriterionTrigger var2 = (CriterionTrigger)var1.next();
+      for(CriterionTrigger var2 : BuiltInRegistries.TRIGGER_TYPES) {
          var2.removePlayerListeners(this);
       }
 
@@ -102,20 +98,14 @@ public class PlayerAdvancements {
    }
 
    private void registerListeners(ServerAdvancementManager var1) {
-      Iterator var2 = var1.getAllAdvancements().iterator();
-
-      while(var2.hasNext()) {
-         AdvancementHolder var3 = (AdvancementHolder)var2.next();
+      for(AdvancementHolder var3 : var1.getAllAdvancements()) {
          this.registerListeners(var3);
       }
 
    }
 
    private void checkForAutomaticTriggers(ServerAdvancementManager var1) {
-      Iterator var2 = var1.getAllAdvancements().iterator();
-
-      while(var2.hasNext()) {
-         AdvancementHolder var3 = (AdvancementHolder)var2.next();
+      for(AdvancementHolder var3 : var1.getAllAdvancements()) {
          Advancement var4 = var3.value();
          if (var4.criteria().isEmpty()) {
             this.award(var3, "");
@@ -265,10 +255,7 @@ public class PlayerAdvancements {
    private void registerListeners(AdvancementHolder var1) {
       AdvancementProgress var2 = this.getOrStartProgress(var1);
       if (!var2.isDone()) {
-         Iterator var3 = var1.value().criteria().entrySet().iterator();
-
-         while(var3.hasNext()) {
-            Map.Entry var4 = (Map.Entry)var3.next();
+         for(Map.Entry var4 : var1.value().criteria().entrySet()) {
             CriterionProgress var5 = var2.getCriterion((String)var4.getKey());
             if (var5 != null && !var5.isDone()) {
                this.registerListener(var1, (String)var4.getKey(), (Criterion)var4.getValue());
@@ -284,24 +271,14 @@ public class PlayerAdvancements {
 
    private void unregisterListeners(AdvancementHolder var1) {
       AdvancementProgress var2 = this.getOrStartProgress(var1);
-      Iterator var3 = var1.value().criteria().entrySet().iterator();
 
-      while(true) {
-         Map.Entry var4;
-         CriterionProgress var5;
-         do {
-            do {
-               if (!var3.hasNext()) {
-                  return;
-               }
-
-               var4 = (Map.Entry)var3.next();
-               var5 = var2.getCriterion((String)var4.getKey());
-            } while(var5 == null);
-         } while(!var5.isDone() && !var2.isDone());
-
-         this.removeListener(var1, (String)var4.getKey(), (Criterion)var4.getValue());
+      for(Map.Entry var4 : var1.value().criteria().entrySet()) {
+         CriterionProgress var5 = var2.getCriterion((String)var4.getKey());
+         if (var5 != null && (var5.isDone() || var2.isDone())) {
+            this.removeListener(var1, (String)var4.getKey(), (Criterion)var4.getValue());
+         }
       }
+
    }
 
    private <T extends CriterionTriggerInstance> void removeListener(AdvancementHolder var1, String var2, Criterion<T> var3) {
@@ -313,20 +290,16 @@ public class PlayerAdvancements {
          HashMap var2 = new HashMap();
          HashSet var3 = new HashSet();
          HashSet var4 = new HashSet();
-         Iterator var5 = this.rootsToUpdate.iterator();
 
-         while(var5.hasNext()) {
-            AdvancementNode var6 = (AdvancementNode)var5.next();
+         for(AdvancementNode var6 : this.rootsToUpdate) {
             this.updateTreeVisibility(var6, var3, var4);
          }
 
          this.rootsToUpdate.clear();
-         var5 = this.progressChanged.iterator();
 
-         while(var5.hasNext()) {
-            AdvancementHolder var7 = (AdvancementHolder)var5.next();
-            if (this.visible.contains(var7)) {
-               var2.put(var7.id(), (AdvancementProgress)this.progress.get(var7));
+         for(AdvancementHolder var8 : this.progressChanged) {
+            if (this.visible.contains(var8)) {
+               var2.put(var8.id(), (AdvancementProgress)this.progress.get(var8));
             }
          }
 
@@ -369,9 +342,7 @@ public class PlayerAdvancements {
    }
 
    private void updateTreeVisibility(AdvancementNode var1, Set<AdvancementHolder> var2, Set<ResourceLocation> var3) {
-      AdvancementVisibilityEvaluator.evaluateVisibility(var1, (var1x) -> {
-         return this.getOrStartProgress(var1x.holder()).isDone();
-      }, (var3x, var4) -> {
+      AdvancementVisibilityEvaluator.evaluateVisibility(var1, (var1x) -> this.getOrStartProgress(var1x.holder()).isDone(), (var3x, var4) -> {
          AdvancementHolder var5 = var3x.holder();
          if (var4) {
             if (this.visible.add(var5)) {
@@ -387,7 +358,7 @@ public class PlayerAdvancements {
       });
    }
 
-   private static record Data(Map<ResourceLocation, AdvancementProgress> map) {
+   static record Data(Map<ResourceLocation, AdvancementProgress> map) {
       public static final Codec<Data> CODEC;
 
       Data(Map<ResourceLocation, AdvancementProgress> var1) {
@@ -396,13 +367,7 @@ public class PlayerAdvancements {
       }
 
       public void forEach(BiConsumer<ResourceLocation, AdvancementProgress> var1) {
-         this.map.entrySet().stream().sorted(Entry.comparingByValue()).forEach((var1x) -> {
-            var1.accept((ResourceLocation)var1x.getKey(), (AdvancementProgress)var1x.getValue());
-         });
-      }
-
-      public Map<ResourceLocation, AdvancementProgress> map() {
-         return this.map;
+         this.map.entrySet().stream().sorted(Entry.comparingByValue()).forEach((var1x) -> var1.accept((ResourceLocation)var1x.getKey(), (AdvancementProgress)var1x.getValue()));
       }
 
       static {

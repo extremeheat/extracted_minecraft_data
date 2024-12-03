@@ -95,7 +95,7 @@ public class WorldPresets {
       return ((WorldPreset)var0.lookupOrThrow(Registries.WORLD_PRESET).getOrThrow(FLAT).value()).createWorldDimensions();
    }
 
-   private static class Bootstrap {
+   static class Bootstrap {
       private final BootstrapContext<WorldPreset> context;
       private final HolderGetter<NoiseGeneratorSettings> noiseSettings;
       private final HolderGetter<Biome> biomes;
@@ -110,11 +110,11 @@ public class WorldPresets {
          super();
          this.context = var1;
          HolderGetter var2 = var1.lookup(Registries.DIMENSION_TYPE);
-         this.noiseSettings = var1.lookup(Registries.NOISE_SETTINGS);
-         this.biomes = var1.lookup(Registries.BIOME);
-         this.placedFeatures = var1.lookup(Registries.PLACED_FEATURE);
-         this.structureSets = var1.lookup(Registries.STRUCTURE_SET);
-         this.multiNoiseBiomeSourceParameterLists = var1.lookup(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST);
+         this.noiseSettings = var1.<NoiseGeneratorSettings>lookup(Registries.NOISE_SETTINGS);
+         this.biomes = var1.<Biome>lookup(Registries.BIOME);
+         this.placedFeatures = var1.<PlacedFeature>lookup(Registries.PLACED_FEATURE);
+         this.structureSets = var1.<StructureSet>lookup(Registries.STRUCTURE_SET);
+         this.multiNoiseBiomeSourceParameterLists = var1.<MultiNoiseBiomeSourceParameterList>lookup(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST);
          this.overworldDimensionType = var2.getOrThrow(BuiltinDimensionTypes.OVERWORLD);
          Holder.Reference var3 = var2.getOrThrow(BuiltinDimensionTypes.NETHER);
          Holder.Reference var4 = this.noiseSettings.getOrThrow(NoiseGeneratorSettings.NETHER);

@@ -64,9 +64,7 @@ public class ObjectiveCriteria {
          return Optional.of(var1);
       } else {
          int var2 = var0.indexOf(58);
-         return var2 < 0 ? Optional.empty() : BuiltInRegistries.STAT_TYPE.getOptional(ResourceLocation.bySeparator(var0.substring(0, var2), '.')).flatMap((var2x) -> {
-            return getStat(var2x, ResourceLocation.bySeparator(var0.substring(var2 + 1), '.'));
-         });
+         return var2 < 0 ? Optional.empty() : BuiltInRegistries.STAT_TYPE.getOptional(ResourceLocation.bySeparator(var0.substring(0, var2), '.')).flatMap((var2x) -> getStat(var2x, ResourceLocation.bySeparator(var0.substring(var2 + 1), '.')));
       }
    }
 
@@ -104,7 +102,7 @@ public class ObjectiveCriteria {
       HEARTS("hearts");
 
       private final String id;
-      public static final StringRepresentable.EnumCodec<RenderType> CODEC = StringRepresentable.fromEnum(RenderType::values);
+      public static final StringRepresentable.EnumCodec<RenderType> CODEC = StringRepresentable.<RenderType>fromEnum(RenderType::values);
 
       private RenderType(final String var3) {
          this.id = var3;
@@ -119,7 +117,7 @@ public class ObjectiveCriteria {
       }
 
       public static RenderType byId(String var0) {
-         return (RenderType)CODEC.byName(var0, (Enum)INTEGER);
+         return (RenderType)CODEC.byName(var0, INTEGER);
       }
 
       // $FF: synthetic method

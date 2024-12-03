@@ -50,9 +50,7 @@ public class RealmsWorldUpload {
 
          try {
             UploadInfo var2 = this.requestUploadInfoWithRetries();
-            var1 = RealmsUploadWorldPacker.pack(this.worldFolder, () -> {
-               return this.cancelled;
-            });
+            var1 = RealmsUploadWorldPacker.pack(this.worldFolder, () -> this.cancelled);
             this.statusCallback.setUploading();
             FileUpload var3 = new FileUpload(var1, this.realmId, this.slotId, var2, this.user, SharedConstants.getCurrentVersion().getName(), this.worldOptions.version, this.statusCallback.getUploadStatus());
             this.uploadTask = var3;

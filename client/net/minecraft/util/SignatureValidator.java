@@ -12,17 +12,13 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 
 public interface SignatureValidator {
-   SignatureValidator NO_VALIDATION = (var0, var1) -> {
-      return true;
-   };
+   SignatureValidator NO_VALIDATION = (var0, var1) -> true;
    Logger LOGGER = LogUtils.getLogger();
 
    boolean validate(SignatureUpdater var1, byte[] var2);
 
    default boolean validate(byte[] var1, byte[] var2) {
-      return this.validate((var1x) -> {
-         var1x.update(var1);
-      }, var2);
+      return this.validate((SignatureUpdater)((var1x) -> var1x.update(var1)), var2);
    }
 
    private static boolean verifySignature(SignatureUpdater var0, byte[] var1, Signature var2) throws SignatureException {
@@ -47,8 +43,7 @@ public interface SignatureValidator {
    @Nullable
    static SignatureValidator from(ServicesKeySet var0, ServicesKeyType var1) {
       Collection var2 = var0.keys(var1);
-      return var2.isEmpty() ? null : (var1x, var2x) -> {
-         return var2.stream().anyMatch((var2xx) -> {
+      return var2.isEmpty() ? null : (var1x, var2x) -> var2.stream().anyMatch((var2xx) -> {
             Signature var3 = var2xx.signature();
 
             try {
@@ -58,6 +53,5 @@ public interface SignatureValidator {
                return false;
             }
          });
-      };
    }
 }

@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
@@ -170,9 +171,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    }
 
    public Heightmap getOrCreateHeightmapUnprimed(Heightmap.Types var1) {
-      return (Heightmap)this.heightmaps.computeIfAbsent(var1, (var1x) -> {
-         return new Heightmap(this, var1x);
-      });
+      return (Heightmap)this.heightmaps.computeIfAbsent(var1, (var1x) -> new Heightmap(this, var1x));
    }
 
    public boolean hasPrimedHeightmap(Heightmap.Types var1) {
@@ -222,9 +221,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    }
 
    public void addReferenceForStructure(Structure var1, long var2) {
-      ((LongSet)this.structuresRefences.computeIfAbsent(var1, (var0) -> {
-         return new LongOpenHashSet();
-      })).add(var2);
+      ((LongSet)this.structuresRefences.computeIfAbsent(var1, (var0) -> new LongOpenHashSet())).add(var2);
       this.markUnsaved();
    }
 
@@ -305,7 +302,11 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    }
 
    public void setBlockEntityNbt(CompoundTag var1) {
-      this.pendingBlockEntities.put(BlockEntity.getPosFromTag(var1), var1);
+      BlockPos var2 = BlockEntity.getPosFromTag(var1);
+      if (!this.blockEntities.containsKey(var2)) {
+         this.pendingBlockEntities.put(var2, var1);
+      }
+
    }
 
    @Nullable
@@ -317,9 +318,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
    public abstract CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2);
 
    public final void findBlockLightSources(BiConsumer<BlockPos, BlockState> var1) {
-      this.findBlocks((var0) -> {
-         return var0.getLightEmission() != 0;
-      }, var1);
+      this.findBlocks((var0) -> var0.getLightEmission() != 0, var1);
    }
 
    public void findBlocks(Predicate<BlockState> var1, BiConsumer<BlockPos, BlockState> var2) {
@@ -433,9 +432,7 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
       } catch (Throwable var8) {
          CrashReport var5 = CrashReport.forThrowable(var8, "Getting biome");
          CrashReportCategory var6 = var5.addCategory("Biome being got");
-         var6.setDetail("Location", () -> {
-            return CrashReportCategory.formatLocation(this, var1, var2, var3);
-         });
+         var6.setDetail("Location", (CrashReportDetail)(() -> CrashReportCategory.formatLocation(this, var1, var2, var3)));
          throw new ReportedException(var5);
       }
    }
@@ -484,14 +481,6 @@ public abstract class ChunkAccess implements BiomeManager.NoiseBiomeSource, Ligh
          super();
          this.blocks = var1;
          this.fluids = var2;
-      }
-
-      public List<SavedTick<Block>> blocks() {
-         return this.blocks;
-      }
-
-      public List<SavedTick<Fluid>> fluids() {
-         return this.fluids;
       }
    }
 }

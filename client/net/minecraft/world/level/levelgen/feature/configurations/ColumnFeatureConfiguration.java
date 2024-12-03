@@ -5,13 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.valueproviders.IntProvider;
 
 public class ColumnFeatureConfiguration implements FeatureConfiguration {
-   public static final Codec<ColumnFeatureConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(IntProvider.codec(0, 3).fieldOf("reach").forGetter((var0x) -> {
-         return var0x.reach;
-      }), IntProvider.codec(1, 10).fieldOf("height").forGetter((var0x) -> {
-         return var0x.height;
-      })).apply(var0, ColumnFeatureConfiguration::new);
-   });
+   public static final Codec<ColumnFeatureConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(IntProvider.codec(0, 3).fieldOf("reach").forGetter((var0x) -> var0x.reach), IntProvider.codec(1, 10).fieldOf("height").forGetter((var0x) -> var0x.height)).apply(var0, ColumnFeatureConfiguration::new));
    private final IntProvider reach;
    private final IntProvider height;
 

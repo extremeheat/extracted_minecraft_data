@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,17 +49,13 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
       super();
       this.metricsSamplerProvider = var1;
       this.wallTimeSource = var2;
-      this.taskProfiler = new ContinuousProfiler(var2, () -> {
-         return this.currentTick;
-      });
+      this.taskProfiler = new ContinuousProfiler(var2, () -> this.currentTick);
       this.ioExecutor = var3;
       this.metricsPersister = var4;
       this.onProfilingEnd = var5;
       this.onReportFinished = globalOnReportFinished == null ? var6 : var6.andThen(globalOnReportFinished);
       this.deadlineNano = var2.getAsLong() + TimeUnit.NANOSECONDS.convert(10L, TimeUnit.SECONDS);
-      this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> {
-         return this.currentTick;
-      }, false);
+      this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> this.currentTick, false);
       this.taskProfiler.enable();
    }
 
@@ -84,13 +79,9 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
 
    public void startTick() {
       this.verifyStarted();
-      this.thisTickSamplers = this.metricsSamplerProvider.samplers(() -> {
-         return this.singleTickProfiler;
-      });
-      Iterator var1 = this.thisTickSamplers.iterator();
+      this.thisTickSamplers = this.metricsSamplerProvider.samplers(() -> this.singleTickProfiler);
 
-      while(var1.hasNext()) {
-         MetricSampler var2 = (MetricSampler)var1.next();
+      for(MetricSampler var2 : this.thisTickSamplers) {
          var2.onStartTick();
       }
 
@@ -100,23 +91,16 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
    public void endTick() {
       this.verifyStarted();
       if (this.currentTick != 0) {
-         Iterator var1 = this.thisTickSamplers.iterator();
-
-         while(var1.hasNext()) {
-            MetricSampler var2 = (MetricSampler)var1.next();
+         for(MetricSampler var2 : this.thisTickSamplers) {
             var2.onEndTick(this.currentTick);
             if (var2.triggersThreshold()) {
                RecordedDeviation var3 = new RecordedDeviation(Instant.now(), this.currentTick, this.singleTickProfiler.getResults());
-               ((List)this.deviationsBySampler.computeIfAbsent(var2, (var0) -> {
-                  return Lists.newArrayList();
-               })).add(var3);
+               ((List)this.deviationsBySampler.computeIfAbsent(var2, (var0) -> Lists.newArrayList())).add(var3);
             }
          }
 
          if (!this.killSwitch && this.wallTimeSource.getAsLong() <= this.deadlineNano) {
-            this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> {
-               return this.currentTick;
-            }, false);
+            this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> this.currentTick, false);
          } else {
             this.killSwitch = false;
             ProfileResults var4 = this.taskProfiler.getResults();
@@ -151,10 +135,7 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
    }
 
    private void cleanup(Collection<MetricSampler> var1) {
-      Iterator var2 = var1.iterator();
-
-      while(var2.hasNext()) {
-         MetricSampler var3 = (MetricSampler)var2.next();
+      for(MetricSampler var3 : var1) {
          var3.onFinished();
       }
 

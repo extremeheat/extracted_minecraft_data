@@ -16,9 +16,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 public record BlockDataSource(String posPattern, @Nullable Coordinates compiledPos) implements DataSource {
-   public static final MapCodec<BlockDataSource> SUB_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.STRING.fieldOf("block").forGetter(BlockDataSource::posPattern)).apply(var0, BlockDataSource::new);
-   });
+   public static final MapCodec<BlockDataSource> SUB_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("block").forGetter(BlockDataSource::posPattern)).apply(var0, BlockDataSource::new));
    public static final DataSource.Type<BlockDataSource> TYPE;
 
    public BlockDataSource(String var1) {
@@ -85,16 +83,7 @@ public record BlockDataSource(String posPattern, @Nullable Coordinates compiledP
       return this.posPattern.hashCode();
    }
 
-   public String posPattern() {
-      return this.posPattern;
-   }
-
-   @Nullable
-   public Coordinates compiledPos() {
-      return this.compiledPos;
-   }
-
    static {
-      TYPE = new DataSource.Type(SUB_CODEC, "block");
+      TYPE = new DataSource.Type<BlockDataSource>(SUB_CODEC, "block");
    }
 }

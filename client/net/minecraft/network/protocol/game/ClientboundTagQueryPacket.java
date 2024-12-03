@@ -8,7 +8,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundTagQueryPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundTagQueryPacket> STREAM_CODEC = Packet.codec(ClientboundTagQueryPacket::write, ClientboundTagQueryPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundTagQueryPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundTagQueryPacket>codec(ClientboundTagQueryPacket::write, ClientboundTagQueryPacket::new);
    private final int transactionId;
    @Nullable
    private final CompoundTag tag;

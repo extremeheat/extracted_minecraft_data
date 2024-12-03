@@ -15,23 +15,9 @@ public class SavedDataUUIDFix extends AbstractUUIDFix {
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("SavedDataUUIDFix", this.getInputSchema().getType(this.typeReference), (var0) -> {
-         return var0.update(DSL.remainderFinder(), (var0x) -> {
-            return var0x.update("data", (var0) -> {
-               return var0.update("Raids", (var0x) -> {
-                  return var0x.createList(var0x.asStream().map((var0) -> {
-                     return var0.update("HeroesOfTheVillage", (var0x) -> {
-                        return var0x.createList(var0x.asStream().map((var0) -> {
-                           return (Dynamic)createUUIDFromLongs(var0, "UUIDMost", "UUIDLeast").orElseGet(() -> {
+      return this.fixTypeEverywhereTyped("SavedDataUUIDFix", this.getInputSchema().getType(this.typeReference), (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> var0x.update("data", (var0) -> var0.update("Raids", (var0x) -> var0x.createList(var0x.asStream().map((var0) -> var0.update("HeroesOfTheVillage", (var0x) -> var0x.createList(var0x.asStream().map((var0) -> (Dynamic)createUUIDFromLongs(var0, "UUIDMost", "UUIDLeast").orElseGet(() -> {
                               LOGGER.warn("HeroesOfTheVillage contained invalid UUIDs.");
                               return var0;
-                           });
-                        }));
-                     });
-                  }));
-               });
-            });
-         });
-      });
+                           }))))))))));
    }
 }

@@ -13,7 +13,6 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -21,7 +20,6 @@ import java.util.function.IntFunction;
 import java.util.stream.Stream;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.client.gui.font.glyphs.SpecialGlyphs;
-import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -38,16 +36,8 @@ public class FontSet implements AutoCloseable {
    private BakedGlyph whiteGlyph;
    private List<GlyphProvider.Conditional> allProviders = List.of();
    private List<GlyphProvider> activeProviders = List.of();
-   private final CodepointMap<BakedGlyph> glyphs = new CodepointMap((var0) -> {
-      return new BakedGlyph[var0];
-   }, (var0) -> {
-      return new BakedGlyph[var0][];
-   });
-   private final CodepointMap<GlyphInfoFilter> glyphInfos = new CodepointMap((var0) -> {
-      return new GlyphInfoFilter[var0];
-   }, (var0) -> {
-      return new GlyphInfoFilter[var0][];
-   });
+   private final CodepointMap<BakedGlyph> glyphs = new CodepointMap<BakedGlyph>((var0) -> new BakedGlyph[var0], (var0) -> new BakedGlyph[var0][]);
+   private final CodepointMap<GlyphInfoFilter> glyphInfos = new CodepointMap<GlyphInfoFilter>((var0) -> new GlyphInfoFilter[var0], (var0) -> new GlyphInfoFilter[var0][]);
    private final Int2ObjectMap<IntList> glyphsByWidth = new Int2ObjectOpenHashMap();
    private final List<FontTexture> textures = Lists.newArrayList();
    private final IntFunction<GlyphInfoFilter> glyphInfoGetter = this::computeGlyphInfo;
@@ -82,10 +72,8 @@ public class FontSet implements AutoCloseable {
    private List<GlyphProvider> selectProviders(List<GlyphProvider.Conditional> var1, Set<FontOption> var2) {
       IntOpenHashSet var3 = new IntOpenHashSet();
       ArrayList var4 = new ArrayList();
-      Iterator var5 = var1.iterator();
 
-      while(var5.hasNext()) {
-         GlyphProvider.Conditional var6 = (GlyphProvider.Conditional)var5.next();
+      for(GlyphProvider.Conditional var6 : var1) {
          if (var6.filter().apply(var2)) {
             var4.add(var6.provider());
             var3.addAll(var6.provider().getSupportedGlyphs());
@@ -94,17 +82,12 @@ public class FontSet implements AutoCloseable {
 
       HashSet var7 = Sets.newHashSet();
       var3.forEach((var3x) -> {
-         Iterator var4x = var4.iterator();
-
-         while(var4x.hasNext()) {
-            GlyphProvider var5 = (GlyphProvider)var4x.next();
+         for(GlyphProvider var5 : var4) {
             GlyphInfo var6 = var5.getGlyph(var3x);
             if (var6 != null) {
                var7.add(var5);
                if (var6 != SpecialGlyphs.MISSING) {
-                  ((IntList)this.glyphsByWidth.computeIfAbsent(Mth.ceil(var6.getAdvance(false)), (var0) -> {
-                     return new IntArrayList();
-                  })).add(var3x);
+                  ((IntList)this.glyphsByWidth.computeIfAbsent(Mth.ceil(var6.getAdvance(false)), (var0) -> new IntArrayList())).add(var3x);
                }
                break;
             }
@@ -121,10 +104,7 @@ public class FontSet implements AutoCloseable {
    }
 
    private void closeTextures() {
-      Iterator var1 = this.textures.iterator();
-
-      while(var1.hasNext()) {
-         FontTexture var2 = (FontTexture)var1.next();
+      for(FontTexture var2 : this.textures) {
          var2.close();
       }
 
@@ -143,10 +123,8 @@ public class FontSet implements AutoCloseable {
 
    private GlyphInfoFilter computeGlyphInfo(int var1) {
       GlyphInfo var2 = null;
-      Iterator var3 = this.activeProviders.iterator();
 
-      while(var3.hasNext()) {
-         GlyphProvider var4 = (GlyphProvider)var3.next();
+      for(GlyphProvider var4 : this.activeProviders) {
          GlyphInfo var5 = var4.getGlyph(var1);
          if (var5 != null) {
             if (var2 == null) {
@@ -171,47 +149,37 @@ public class FontSet implements AutoCloseable {
    }
 
    private BakedGlyph computeBakedGlyph(int var1) {
-      Iterator var2 = this.activeProviders.iterator();
-
-      GlyphInfo var4;
-      do {
-         if (!var2.hasNext()) {
-            LOGGER.warn("Couldn't find glyph for character {} (\\u{})", Character.toString(var1), String.format("%04x", var1));
-            return this.missingGlyph;
+      for(GlyphProvider var3 : this.activeProviders) {
+         GlyphInfo var4 = var3.getGlyph(var1);
+         if (var4 != null) {
+            return var4.bake(this::stitch);
          }
+      }
 
-         GlyphProvider var3 = (GlyphProvider)var2.next();
-         var4 = var3.getGlyph(var1);
-      } while(var4 == null);
-
-      return var4.bake(this::stitch);
+      LOGGER.warn("Couldn't find glyph for character {} (\\u{})", Character.toString(var1), String.format("%04x", var1));
+      return this.missingGlyph;
    }
 
    public BakedGlyph getGlyph(int var1) {
-      return (BakedGlyph)this.glyphs.computeIfAbsent(var1, this.glyphGetter);
+      return this.glyphs.computeIfAbsent(var1, this.glyphGetter);
    }
 
    private BakedGlyph stitch(SheetGlyphInfo var1) {
-      Iterator var2 = this.textures.iterator();
-
-      BakedGlyph var4;
-      do {
-         if (!var2.hasNext()) {
-            ResourceLocation var7 = this.name.withSuffix("/" + this.textures.size());
-            boolean var8 = var1.isColored();
-            GlyphRenderTypes var9 = var8 ? GlyphRenderTypes.createForColorTexture(var7) : GlyphRenderTypes.createForIntensityTexture(var7);
-            FontTexture var5 = new FontTexture(var9, var8);
-            this.textures.add(var5);
-            this.textureManager.register((ResourceLocation)var7, (AbstractTexture)var5);
-            BakedGlyph var6 = var5.add(var1);
-            return var6 == null ? this.missingGlyph : var6;
+      for(FontTexture var3 : this.textures) {
+         BakedGlyph var4 = var3.add(var1);
+         if (var4 != null) {
+            return var4;
          }
+      }
 
-         FontTexture var3 = (FontTexture)var2.next();
-         var4 = var3.add(var1);
-      } while(var4 == null);
-
-      return var4;
+      ResourceLocation var7 = this.name.withSuffix("/" + this.textures.size());
+      boolean var8 = var1.isColored();
+      GlyphRenderTypes var9 = var8 ? GlyphRenderTypes.createForColorTexture(var7) : GlyphRenderTypes.createForIntensityTexture(var7);
+      FontTexture var5 = new FontTexture(var9, var8);
+      this.textures.add(var5);
+      this.textureManager.register(var7, var5);
+      BakedGlyph var6 = var5.add(var1);
+      return var6 == null ? this.missingGlyph : var6;
    }
 
    public BakedGlyph getRandomGlyph(GlyphInfo var1) {
@@ -227,7 +195,7 @@ public class FontSet implements AutoCloseable {
       return this.whiteGlyph;
    }
 
-   private static record GlyphInfoFilter(GlyphInfo glyphInfo, GlyphInfo glyphInfoNotFishy) {
+   static record GlyphInfoFilter(GlyphInfo glyphInfo, GlyphInfo glyphInfoNotFishy) {
       static final GlyphInfoFilter MISSING;
 
       GlyphInfoFilter(GlyphInfo var1, GlyphInfo var2) {
@@ -238,14 +206,6 @@ public class FontSet implements AutoCloseable {
 
       GlyphInfo select(boolean var1) {
          return var1 ? this.glyphInfoNotFishy : this.glyphInfo;
-      }
-
-      public GlyphInfo glyphInfo() {
-         return this.glyphInfo;
-      }
-
-      public GlyphInfo glyphInfoNotFishy() {
-         return this.glyphInfoNotFishy;
       }
 
       static {

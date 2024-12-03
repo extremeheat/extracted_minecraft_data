@@ -14,9 +14,7 @@ public class EntityShulkerRotationFix extends NamedEntityFix {
    }
 
    public Dynamic<?> fixTag(Dynamic<?> var1) {
-      List var2 = var1.get("Rotation").asList((var0) -> {
-         return var0.asDouble(180.0);
-      });
+      List var2 = var1.get("Rotation").asList((var0) -> var0.asDouble(180.0));
       if (!var2.isEmpty()) {
          var2.set(0, (Double)var2.get(0) - 180.0);
          Stream var10003 = var2.stream();

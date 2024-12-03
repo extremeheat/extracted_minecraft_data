@@ -6,13 +6,11 @@ public interface Rule<S, T> {
    Optional<T> parse(ParseState<S> var1);
 
    static <S, T> Rule<S, T> fromTerm(Term<S> var0, RuleAction<S, T> var1) {
-      return new WrappedTerm(var1, var0);
+      return new WrappedTerm<S, T>(var1, var0);
    }
 
    static <S, T> Rule<S, T> fromTerm(Term<S> var0, SimpleRuleAction<T> var1) {
-      return new WrappedTerm((var1x, var2) -> {
-         return Optional.of(var1.run(var2));
-      }, var0);
+      return new WrappedTerm<S, T>((var1x, var2) -> Optional.of(var1.run(var2)), var0);
    }
 
    public static record WrappedTerm<S, T>(RuleAction<S, T> action, Term<S> child) implements Rule<S, T> {
@@ -25,14 +23,6 @@ public interface Rule<S, T> {
       public Optional<T> parse(ParseState<S> var1) {
          Scope var2 = new Scope();
          return this.child.parse(var1, var2, Control.UNBOUND) ? this.action.run(var1, var2) : Optional.empty();
-      }
-
-      public RuleAction<S, T> action() {
-         return this.action;
-      }
-
-      public Term<S> child() {
-         return this.child;
       }
    }
 

@@ -5,9 +5,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class AlwaysTrueTest extends RuleTest {
-   public static final MapCodec<AlwaysTrueTest> CODEC = MapCodec.unit(() -> {
-      return INSTANCE;
-   });
+   public static final MapCodec<AlwaysTrueTest> CODEC = MapCodec.unit(() -> INSTANCE);
    public static final AlwaysTrueTest INSTANCE = new AlwaysTrueTest();
 
    private AlwaysTrueTest() {

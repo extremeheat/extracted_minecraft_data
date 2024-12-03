@@ -3,7 +3,6 @@ package net.minecraft.world.item.component;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -35,15 +34,13 @@ public record BlockItemStateProperties(Map<String, String> properties) {
    @Nullable
    public <T extends Comparable<T>> T get(Property<T> var1) {
       String var2 = (String)this.properties.get(var1.getName());
-      return var2 == null ? null : (Comparable)var1.getValue(var2).orElse((Object)null);
+      return (T)(var2 == null ? null : (Comparable)var1.getValue(var2).orElse((Object)null));
    }
 
    public BlockState apply(BlockState var1) {
       StateDefinition var2 = var1.getBlock().getStateDefinition();
-      Iterator var3 = this.properties.entrySet().iterator();
 
-      while(var3.hasNext()) {
-         Map.Entry var4 = (Map.Entry)var3.next();
+      for(Map.Entry var4 : this.properties.entrySet()) {
          Property var5 = var2.getProperty((String)var4.getKey());
          if (var5 != null) {
             var1 = updateState(var1, var5, (String)var4.getValue());
@@ -54,17 +51,11 @@ public record BlockItemStateProperties(Map<String, String> properties) {
    }
 
    private static <T extends Comparable<T>> BlockState updateState(BlockState var0, Property<T> var1, String var2) {
-      return (BlockState)var1.getValue(var2).map((var2x) -> {
-         return (BlockState)var0.setValue(var1, var2x);
-      }).orElse(var0);
+      return (BlockState)var1.getValue(var2).map((var2x) -> (BlockState)var0.setValue(var1, var2x)).orElse(var0);
    }
 
    public boolean isEmpty() {
       return this.properties.isEmpty();
-   }
-
-   public Map<String, String> properties() {
-      return this.properties;
    }
 
    static {

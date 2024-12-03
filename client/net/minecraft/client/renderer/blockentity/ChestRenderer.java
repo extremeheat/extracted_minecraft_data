@@ -28,18 +28,18 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
    private final ChestModel singleModel;
    private final ChestModel doubleLeftModel;
    private final ChestModel doubleRightModel;
-   private boolean xmasTextures;
+   private final boolean xmasTextures = xmasTextures();
 
    public ChestRenderer(BlockEntityRendererProvider.Context var1) {
       super();
-      Calendar var2 = Calendar.getInstance();
-      if (var2.get(2) + 1 == 12 && var2.get(5) >= 24 && var2.get(5) <= 26) {
-         this.xmasTextures = true;
-      }
-
       this.singleModel = new ChestModel(var1.bakeLayer(ModelLayers.CHEST));
       this.doubleLeftModel = new ChestModel(var1.bakeLayer(ModelLayers.DOUBLE_CHEST_LEFT));
       this.doubleRightModel = new ChestModel(var1.bakeLayer(ModelLayers.DOUBLE_CHEST_RIGHT));
+   }
+
+   public static boolean xmasTextures() {
+      Calendar var0 = Calendar.getInstance();
+      return var0.get(2) + 1 == 12 && var0.get(5) >= 24 && var0.get(5) <= 26;
    }
 
    public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {

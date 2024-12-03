@@ -35,7 +35,7 @@ public class SkeletonTrapGoal extends Goal {
       this.horse.setTrap(false);
       this.horse.setTamed(true);
       this.horse.setAge(0);
-      LightningBolt var3 = (LightningBolt)EntityType.LIGHTNING_BOLT.create(var1, EntitySpawnReason.TRIGGERED);
+      LightningBolt var3 = EntityType.LIGHTNING_BOLT.create(var1, EntitySpawnReason.TRIGGERED);
       if (var3 != null) {
          var3.moveTo(this.horse.getX(), this.horse.getY(), this.horse.getZ());
          var3.setVisualOnly(true);
@@ -63,7 +63,7 @@ public class SkeletonTrapGoal extends Goal {
 
    @Nullable
    private AbstractHorse createHorse(DifficultyInstance var1) {
-      SkeletonHorse var2 = (SkeletonHorse)EntityType.SKELETON_HORSE.create(this.horse.level(), EntitySpawnReason.TRIGGERED);
+      SkeletonHorse var2 = EntityType.SKELETON_HORSE.create(this.horse.level(), EntitySpawnReason.TRIGGERED);
       if (var2 != null) {
          var2.finalizeSpawn((ServerLevel)this.horse.level(), var1, EntitySpawnReason.TRIGGERED, (SpawnGroupData)null);
          var2.setPos(this.horse.getX(), this.horse.getY(), this.horse.getZ());
@@ -78,7 +78,7 @@ public class SkeletonTrapGoal extends Goal {
 
    @Nullable
    private Skeleton createSkeleton(DifficultyInstance var1, AbstractHorse var2) {
-      Skeleton var3 = (Skeleton)EntityType.SKELETON.create(var2.level(), EntitySpawnReason.TRIGGERED);
+      Skeleton var3 = EntityType.SKELETON.create(var2.level(), EntitySpawnReason.TRIGGERED);
       if (var3 != null) {
          var3.finalizeSpawn((ServerLevel)var2.level(), var1, EntitySpawnReason.TRIGGERED, (SpawnGroupData)null);
          var3.setPos(var2.getX(), var2.getY(), var2.getZ());

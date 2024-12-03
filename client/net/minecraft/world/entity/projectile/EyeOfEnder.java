@@ -183,6 +183,6 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
    }
 
    static {
-      DATA_ITEM_STACK = SynchedEntityData.defineId(EyeOfEnder.class, EntityDataSerializers.ITEM_STACK);
+      DATA_ITEM_STACK = SynchedEntityData.<ItemStack>defineId(EyeOfEnder.class, EntityDataSerializers.ITEM_STACK);
    }
 }

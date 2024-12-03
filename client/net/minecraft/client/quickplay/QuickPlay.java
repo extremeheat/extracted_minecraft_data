@@ -55,9 +55,7 @@ public class QuickPlay {
          SelectWorldScreen var2 = new SelectWorldScreen(new TitleScreen());
          var0.setScreen(new DisconnectedScreen(var2, ERROR_TITLE, INVALID_IDENTIFIER, TO_WORLD_LIST));
       } else {
-         var0.createWorldOpenFlows().openWorld(var1, () -> {
-            var0.setScreen(new TitleScreen());
-         });
+         var0.createWorldOpenFlows().openWorld(var1, () -> var0.setScreen(new TitleScreen()));
       }
    }
 
@@ -78,31 +76,27 @@ public class QuickPlay {
    private static void joinRealmsWorld(Minecraft var0, RealmsClient var1, String var2) {
       long var3;
       RealmsServerList var5;
-      TitleScreen var7;
-      RealmsMainScreen var11;
       try {
          var3 = Long.parseLong(var2);
          var5 = var1.listRealms();
       } catch (NumberFormatException var9) {
-         var11 = new RealmsMainScreen(new TitleScreen());
+         RealmsMainScreen var11 = new RealmsMainScreen(new TitleScreen());
          var0.setScreen(new DisconnectedScreen(var11, ERROR_TITLE, INVALID_IDENTIFIER, TO_REALMS_LIST));
          return;
       } catch (RealmsServiceException var10) {
-         var7 = new TitleScreen();
+         TitleScreen var7 = new TitleScreen();
          var0.setScreen(new DisconnectedScreen(var7, ERROR_TITLE, REALM_CONNECT, TO_TITLE));
          return;
       }
 
-      RealmsServer var6 = (RealmsServer)var5.servers.stream().filter((var2x) -> {
-         return var2x.id == var3;
-      }).findFirst().orElse((Object)null);
+      RealmsServer var6 = (RealmsServer)var5.servers.stream().filter((var2x) -> var2x.id == var3).findFirst().orElse((Object)null);
       if (var6 == null) {
-         var11 = new RealmsMainScreen(new TitleScreen());
-         var0.setScreen(new DisconnectedScreen(var11, ERROR_TITLE, REALM_PERMISSION, TO_REALMS_LIST));
+         RealmsMainScreen var13 = new RealmsMainScreen(new TitleScreen());
+         var0.setScreen(new DisconnectedScreen(var13, ERROR_TITLE, REALM_PERMISSION, TO_REALMS_LIST));
       } else {
-         var7 = new TitleScreen();
-         GetServerDetailsTask var8 = new GetServerDetailsTask(var7, var6);
-         var0.setScreen(new RealmsLongRunningMcoTaskScreen(var7, new LongRunningTask[]{var8}));
+         TitleScreen var12 = new TitleScreen();
+         GetServerDetailsTask var8 = new GetServerDetailsTask(var12, var6);
+         var0.setScreen(new RealmsLongRunningMcoTaskScreen(var12, new LongRunningTask[]{var8}));
       }
    }
 }

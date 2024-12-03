@@ -43,7 +43,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
 
    public BrewingStandBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.BREWING_STAND, var1, var2);
-      this.items = NonNullList.withSize(5, ItemStack.EMPTY);
+      this.items = NonNullList.<ItemStack>withSize(5, ItemStack.EMPTY);
       this.dataAccess = new ContainerData() {
          public int get(int var1) {
             int var10000;
@@ -87,7 +87,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    }
 
    public static void serverTick(Level var0, BlockPos var1, BlockState var2, BrewingStandBlockEntity var3) {
-      ItemStack var4 = (ItemStack)var3.items.get(4);
+      ItemStack var4 = var3.items.get(4);
       if (var3.fuel <= 0 && var4.is(ItemTags.BREWING_FUEL)) {
          var3.fuel = 20;
          var4.shrink(1);
@@ -96,7 +96,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
 
       boolean var5 = isBrewable(var0.potionBrewing(), var3.items);
       boolean var6 = var3.brewTime > 0;
-      ItemStack var7 = (ItemStack)var3.items.get(3);
+      ItemStack var7 = var3.items.get(3);
       if (var6) {
          --var3.brewTime;
          boolean var8 = var3.brewTime == 0;
@@ -185,7 +185,7 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+      this.items = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
       ContainerHelper.loadAllItems(var1, this.items, var2);
       this.brewTime = var1.getShort("BrewTime");
       if (this.brewTime > 0) {

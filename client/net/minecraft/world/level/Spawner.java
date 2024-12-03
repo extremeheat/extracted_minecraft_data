@@ -33,9 +33,7 @@ public interface Spawner {
    static Component getSpawnEntityDisplayName(ItemStack var0, String var1) {
       CompoundTag var2 = ((CustomData)var0.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY)).getUnsafe();
       ResourceLocation var3 = getEntityKey(var2, var1);
-      return var3 != null ? (Component)BuiltInRegistries.ENTITY_TYPE.getOptional(var3).map((var0x) -> {
-         return Component.translatable(var0x.getDescriptionId()).withStyle(ChatFormatting.GRAY);
-      }).orElse((Object)null) : null;
+      return var3 != null ? (Component)BuiltInRegistries.ENTITY_TYPE.getOptional(var3).map((var0x) -> Component.translatable(var0x.getDescriptionId()).withStyle(ChatFormatting.GRAY)).orElse((Object)null) : null;
    }
 
    @Nullable

@@ -32,17 +32,12 @@ public class VillagerRebuildLevelAndXpFix extends DataFix {
       OpticFinder var5 = var4.findField("Recipes");
       List.ListType var6 = (List.ListType)var5.type();
       OpticFinder var7 = var6.getElement().finder();
-      return this.fixTypeEverywhereTyped("Villager level and xp rebuild", this.getInputSchema().getType(References.ENTITY), (var5x) -> {
-         return var5x.updateTyped(var2, var1, (var3x) -> {
+      return this.fixTypeEverywhereTyped("Villager level and xp rebuild", this.getInputSchema().getType(References.ENTITY), (var5x) -> var5x.updateTyped(var2, var1, (var3x) -> {
             Dynamic var4 = (Dynamic)var3x.get(DSL.remainderFinder());
             int var5x = var4.get("VillagerData").get("level").asInt(0);
             Typed var6 = var3x;
             if (var5x == 0 || var5x == 1) {
-               int var7x = (Integer)var3x.getOptionalTyped(var3).flatMap((var1) -> {
-                  return var1.getOptionalTyped(var5);
-               }).map((var1) -> {
-                  return var1.getAllTyped(var7).size();
-               }).orElse(0);
+               int var7x = (Integer)var3x.getOptionalTyped(var3).flatMap((var1) -> var1.getOptionalTyped(var5)).map((var1) -> var1.getAllTyped(var7).size()).orElse(0);
                var5x = Mth.clamp(var7x / 2, 1, 5);
                if (var5x > 1) {
                   var6 = addLevel(var3x, var5x);
@@ -55,22 +50,15 @@ public class VillagerRebuildLevelAndXpFix extends DataFix {
             }
 
             return var6;
-         });
-      });
+         }));
    }
 
    private static Typed<?> addLevel(Typed<?> var0, int var1) {
-      return var0.update(DSL.remainderFinder(), (var1x) -> {
-         return var1x.update("VillagerData", (var1xx) -> {
-            return var1xx.set("level", var1xx.createInt(var1));
-         });
-      });
+      return var0.update(DSL.remainderFinder(), (var1x) -> var1x.update("VillagerData", (var1xx) -> var1xx.set("level", var1xx.createInt(var1))));
    }
 
    private static Typed<?> addXpFromLevel(Typed<?> var0, int var1) {
       int var2 = getMinXpPerLevel(var1);
-      return var0.update(DSL.remainderFinder(), (var1x) -> {
-         return var1x.set("Xp", var1x.createInt(var2));
-      });
+      return var0.update(DSL.remainderFinder(), (var1x) -> var1x.set("Xp", var1x.createInt(var2)));
    }
 }

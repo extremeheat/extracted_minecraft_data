@@ -3,7 +3,6 @@ package net.minecraft.world.entity.vehicle;
 import com.google.common.collect.Lists;
 import com.google.common.collect.UnmodifiableIterator;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -277,7 +276,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
                   Vec3 var3 = this.getViewVector(1.0F);
                   double var4 = var1 == 1 ? -var3.z : var3.z;
                   double var6 = var1 == 1 ? var3.x : -var3.x;
-                  this.level().playSound((Player)null, this.getX() + var4, this.getY(), this.getZ() + var6, (SoundEvent)var2, this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat());
+                  this.level().playSound((Player)null, this.getX() + var4, this.getY(), this.getZ() + var6, var2, this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat());
                }
             }
 
@@ -288,22 +287,12 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
          }
       }
 
-      List var8 = this.level().getEntities((Entity)this, this.getBoundingBox().inflate(0.20000000298023224, -0.009999999776482582, 0.20000000298023224), EntitySelector.pushableBy(this));
+      List var8 = this.level().getEntities(this, this.getBoundingBox().inflate(0.20000000298023224, -0.009999999776482582, 0.20000000298023224), EntitySelector.pushableBy(this));
       if (!var8.isEmpty()) {
          boolean var9 = !this.level().isClientSide && !(this.getControllingPassenger() instanceof Player);
-         Iterator var10 = var8.iterator();
 
-         while(true) {
-            while(true) {
-               Entity var11;
-               do {
-                  if (!var10.hasNext()) {
-                     return;
-                  }
-
-                  var11 = (Entity)var10.next();
-               } while(var11.hasPassenger((Entity)this));
-
+         for(Entity var11 : var8) {
+            if (!var11.hasPassenger(this)) {
                if (var9 && this.getPassengers().size() < this.getMaxPassengers() && !var11.isPassenger() && this.hasEnoughSpaceFor(var11) && var11 instanceof LivingEntity && !(var11 instanceof WaterAnimal) && !(var11 instanceof Player) && !(var11 instanceof Creaking)) {
                   var11.startRiding(this);
                } else {
@@ -312,12 +301,12 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
             }
          }
       }
+
    }
 
    private void tickBubbleColumn() {
-      int var1;
       if (this.level().isClientSide) {
-         var1 = this.getBubbleTime();
+         int var1 = this.getBubbleTime();
          if (var1 > 0) {
             this.bubbleMultiplier += 0.05F;
          } else {
@@ -332,21 +321,19 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
             this.setBubbleTime(0);
          }
 
-         var1 = this.getBubbleTime();
-         if (var1 > 0) {
-            --var1;
-            this.setBubbleTime(var1);
-            int var2 = 60 - var1 - 1;
-            if (var2 > 0 && var1 == 0) {
+         int var4 = this.getBubbleTime();
+         if (var4 > 0) {
+            --var4;
+            this.setBubbleTime(var4);
+            int var2 = 60 - var4 - 1;
+            if (var2 > 0 && var4 == 0) {
                this.setBubbleTime(0);
                Vec3 var3 = this.getDeltaMovement();
                if (this.bubbleColumnDirectionIsDown) {
                   this.setDeltaMovement(var3.add(0.0, -0.7, 0.0));
                   this.ejectPassengers();
                } else {
-                  this.setDeltaMovement(var3.x, this.hasPassenger((var0) -> {
-                     return var0 instanceof Player;
-                  }) ? 2.7 : 0.6, var3.z);
+                  this.setDeltaMovement(var3.x, this.hasPassenger((var0) -> var0 instanceof Player) ? 2.7 : 0.6, var3.z);
                }
             }
 
@@ -679,10 +666,8 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
 
          while(var14.hasNext()) {
             Pose var15 = (Pose)var14.next();
-            Iterator var16 = var9.iterator();
 
-            while(var16.hasNext()) {
-               Vec3 var17 = (Vec3)var16.next();
+            for(Vec3 var17 : var9) {
                if (DismountHelper.canDismountTo(this.level(), var17, var1, var15)) {
                   var1.setPose(var15);
                   return var17;
@@ -712,7 +697,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    }
 
    protected void readAdditionalSaveData(CompoundTag var1) {
-      this.leashData = this.readLeashData(var1);
+      this.readLeashData(var1);
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
@@ -726,7 +711,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
 
    public void remove(Entity.RemovalReason var1) {
       if (!this.level().isClientSide && var1.shouldDestroy() && this.isLeashed()) {
-         this.dropLeash(true, true);
+         this.dropLeash();
       }
 
       super.remove(var1);
@@ -801,9 +786,9 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
    }
 
    static {
-      DATA_ID_PADDLE_LEFT = SynchedEntityData.defineId(AbstractBoat.class, EntityDataSerializers.BOOLEAN);
-      DATA_ID_PADDLE_RIGHT = SynchedEntityData.defineId(AbstractBoat.class, EntityDataSerializers.BOOLEAN);
-      DATA_ID_BUBBLE_TIME = SynchedEntityData.defineId(AbstractBoat.class, EntityDataSerializers.INT);
+      DATA_ID_PADDLE_LEFT = SynchedEntityData.<Boolean>defineId(AbstractBoat.class, EntityDataSerializers.BOOLEAN);
+      DATA_ID_PADDLE_RIGHT = SynchedEntityData.<Boolean>defineId(AbstractBoat.class, EntityDataSerializers.BOOLEAN);
+      DATA_ID_BUBBLE_TIME = SynchedEntityData.<Integer>defineId(AbstractBoat.class, EntityDataSerializers.INT);
    }
 
    public static enum Status {

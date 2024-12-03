@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.projectile;
 
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -102,24 +101,14 @@ public class Arrow extends AbstractArrow {
       super.doPostHurtEffects(var1);
       Entity var2 = this.getEffectSource();
       PotionContents var3 = this.getPotionContents();
-      Iterator var4;
-      MobEffectInstance var5;
       if (var3.potion().isPresent()) {
-         var4 = ((Potion)((Holder)var3.potion().get()).value()).getEffects().iterator();
-
-         while(var4.hasNext()) {
-            var5 = (MobEffectInstance)var4.next();
-            var1.addEffect(new MobEffectInstance(var5.getEffect(), Math.max(var5.mapDuration((var0) -> {
-               return var0 / 8;
-            }), 1), var5.getAmplifier(), var5.isAmbient(), var5.isVisible()), var2);
+         for(MobEffectInstance var5 : ((Potion)((Holder)var3.potion().get()).value()).getEffects()) {
+            var1.addEffect(new MobEffectInstance(var5.getEffect(), Math.max(var5.mapDuration((var0) -> var0 / 8), 1), var5.getAmplifier(), var5.isAmbient(), var5.isVisible()), var2);
          }
       }
 
-      var4 = var3.customEffects().iterator();
-
-      while(var4.hasNext()) {
-         var5 = (MobEffectInstance)var4.next();
-         var1.addEffect(var5, var2);
+      for(MobEffectInstance var7 : var3.customEffects()) {
+         var1.addEffect(var7, var2);
       }
 
    }
@@ -147,6 +136,6 @@ public class Arrow extends AbstractArrow {
    }
 
    static {
-      ID_EFFECT_COLOR = SynchedEntityData.defineId(Arrow.class, EntityDataSerializers.INT);
+      ID_EFFECT_COLOR = SynchedEntityData.<Integer>defineId(Arrow.class, EntityDataSerializers.INT);
    }
 }

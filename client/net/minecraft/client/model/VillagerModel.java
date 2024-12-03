@@ -1,20 +1,24 @@
 package net.minecraft.client.model;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
+import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.VillagerRenderState;
 import net.minecraft.util.Mth;
 
-public class VillagerModel extends EntityModel<VillagerRenderState> implements HeadedModel, VillagerHeadModel {
+public class VillagerModel extends EntityModel<VillagerRenderState> implements HeadedModel, VillagerLikeModel {
+   public static final MeshTransformer BABY_TRANSFORMER = MeshTransformer.scaling(0.5F);
    private final ModelPart head;
    private final ModelPart hat;
    private final ModelPart hatRim;
    private final ModelPart rightLeg;
    private final ModelPart leftLeg;
+   private final ModelPart arms;
 
    public VillagerModel(ModelPart var1) {
       super(var1);
@@ -23,6 +27,7 @@ public class VillagerModel extends EntityModel<VillagerRenderState> implements H
       this.hatRim = this.hat.getChild("hat_rim");
       this.rightLeg = var1.getChild("right_leg");
       this.leftLeg = var1.getChild("left_leg");
+      this.arms = var1.getChild("arms");
    }
 
    public static MeshDefinition createBodyModel() {
@@ -66,5 +71,10 @@ public class VillagerModel extends EntityModel<VillagerRenderState> implements H
       this.head.visible = var1;
       this.hat.visible = var1;
       this.hatRim.visible = var1;
+   }
+
+   public void translateToArms(PoseStack var1) {
+      this.root.translateAndRotate(var1);
+      this.arms.translateAndRotate(var1);
    }
 }

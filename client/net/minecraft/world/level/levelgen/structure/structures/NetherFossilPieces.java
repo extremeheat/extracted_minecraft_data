@@ -30,7 +30,7 @@ public class NetherFossilPieces {
 
    public static void addPieces(StructureTemplateManager var0, StructurePieceAccessor var1, RandomSource var2, BlockPos var3) {
       Rotation var4 = Rotation.getRandom(var2);
-      var1.addPiece(new NetherFossilPiece(var0, (ResourceLocation)Util.getRandom((Object[])FOSSILS, var2), var3, var4));
+      var1.addPiece(new NetherFossilPiece(var0, (ResourceLocation)Util.getRandom(FOSSILS, var2), var3, var4));
    }
 
    public static class NetherFossilPiece extends TemplateStructurePiece {
@@ -39,9 +39,7 @@ public class NetherFossilPieces {
       }
 
       public NetherFossilPiece(StructureTemplateManager var1, CompoundTag var2) {
-         super(StructurePieceType.NETHER_FOSSIL, var2, var1, (var1x) -> {
-            return makeSettings(Rotation.valueOf(var2.getString("Rot")));
-         });
+         super(StructurePieceType.NETHER_FOSSIL, var2, var1, (var1x) -> makeSettings(Rotation.valueOf(var2.getString("Rot"))));
       }
 
       private static StructurePlaceSettings makeSettings(Rotation var0) {

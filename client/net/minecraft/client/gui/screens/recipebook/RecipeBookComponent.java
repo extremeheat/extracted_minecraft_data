@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.recipebook;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -98,9 +97,7 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       super();
       this.menu = var1;
       this.tabInfos = var2;
-      SlotSelectTime var3 = () -> {
-         return Mth.floor(this.time / 30.0F);
-      };
+      SlotSelectTime var3 = () -> Mth.floor(this.time / 30.0F);
       this.ghostSlots = new GhostSlots(var3);
       this.recipeBookPage = new RecipeBookPage(this, var3, var1 instanceof AbstractFurnaceMenu);
    }
@@ -144,17 +141,13 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       this.updateFilterButtonTooltip();
       this.initFilterButtonTextures();
       this.tabButtons.clear();
-      Iterator var5 = this.tabInfos.iterator();
 
-      while(var5.hasNext()) {
-         TabInfo var6 = (TabInfo)var5.next();
+      for(TabInfo var6 : this.tabInfos) {
          this.tabButtons.add(new RecipeBookTabButton(var6));
       }
 
       if (this.selectedTab != null) {
-         this.selectedTab = (RecipeBookTabButton)this.tabButtons.stream().filter((var1x) -> {
-            return var1x.getCategory().equals(this.selectedTab.getCategory());
-         }).findFirst().orElse((Object)null);
+         this.selectedTab = (RecipeBookTabButton)this.tabButtons.stream().filter((var1x) -> var1x.getCategory().equals(this.selectedTab.getCategory())).findFirst().orElse((Object)null);
       }
 
       if (this.selectedTab == null) {
@@ -232,14 +225,8 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
    }
 
    private void selectMatchingRecipes() {
-      Iterator var1 = this.tabInfos.iterator();
-
-      while(var1.hasNext()) {
-         TabInfo var2 = (TabInfo)var1.next();
-         Iterator var3 = this.book.getCollection(var2.category()).iterator();
-
-         while(var3.hasNext()) {
-            RecipeCollection var4 = (RecipeCollection)var3.next();
+      for(TabInfo var2 : this.tabInfos) {
+         for(RecipeCollection var4 : this.book.getCollection(var2.category())) {
             this.selectMatchingRecipes(var4, this.stackedContents);
          }
       }
@@ -251,24 +238,18 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
    private void updateCollections(boolean var1, boolean var2) {
       List var3 = this.book.getCollection(this.selectedTab.getCategory());
       ArrayList var4 = Lists.newArrayList(var3);
-      var4.removeIf((var0) -> {
-         return !var0.hasAnySelected();
-      });
+      var4.removeIf((var0) -> !var0.hasAnySelected());
       String var5 = this.searchBox.getValue();
       if (!var5.isEmpty()) {
          ClientPacketListener var6 = this.minecraft.getConnection();
          if (var6 != null) {
             ObjectLinkedOpenHashSet var7 = new ObjectLinkedOpenHashSet(var6.searchTrees().recipes().search(var5.toLowerCase(Locale.ROOT)));
-            var4.removeIf((var1x) -> {
-               return !var7.contains(var1x);
-            });
+            var4.removeIf((var1x) -> !var7.contains(var1x));
          }
       }
 
       if (var2) {
-         var4.removeIf((var0) -> {
-            return !var0.hasCraftable();
-         });
+         var4.removeIf((var0) -> !var0.hasCraftable());
       }
 
       this.recipeBookPage.updateCollections(var4, var1, var2);
@@ -279,10 +260,8 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
       int var3 = (this.height - 166) / 2 + 3;
       boolean var4 = true;
       int var5 = 0;
-      Iterator var6 = this.tabButtons.iterator();
 
-      while(var6.hasNext()) {
-         RecipeBookTabButton var7 = (RecipeBookTabButton)var6.next();
+      for(RecipeBookTabButton var7 : this.tabButtons) {
          ExtendedRecipeBookCategory var8 = var7.getCategory();
          if (var8 instanceof SearchRecipeBookCategory) {
             var7.visible = true;
@@ -334,10 +313,8 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
          int var6 = this.getYOrigin();
          var1.blit(RenderType::guiTextured, RECIPE_BOOK_LOCATION, var5, var6, 1.0F, 1.0F, 147, 166, 256, 256);
          this.searchBox.render(var1, var2, var3, var4);
-         Iterator var7 = this.tabButtons.iterator();
 
-         while(var7.hasNext()) {
-            RecipeBookTabButton var8 = (RecipeBookTabButton)var7.next();
+         for(RecipeBookTabButton var8 : this.tabButtons) {
             var8.render(var1, var2, var3, var4);
          }
 
@@ -363,15 +340,15 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (this.isVisible() && !this.minecraft.player.isSpectator()) {
          if (this.recipeBookPage.mouseClicked(var1, var3, var5, this.getXOrigin(), this.getYOrigin(), 147, 166)) {
-            RecipeDisplayId var9 = this.recipeBookPage.getLastClickedRecipe();
-            RecipeCollection var10 = this.recipeBookPage.getLastClickedRecipeCollection();
-            if (var9 != null && var10 != null) {
-               if (!this.tryPlaceRecipe(var10, var9)) {
+            RecipeDisplayId var10 = this.recipeBookPage.getLastClickedRecipe();
+            RecipeCollection var11 = this.recipeBookPage.getLastClickedRecipeCollection();
+            if (var10 != null && var11 != null) {
+               if (!this.tryPlaceRecipe(var11, var10)) {
                   return false;
                }
 
-               this.lastRecipeCollection = var10;
-               this.lastRecipe = var9;
+               this.lastRecipeCollection = var11;
+               this.lastRecipe = var10;
                if (!this.isOffsetNextToMainGUI()) {
                   this.setVisible(false);
                }
@@ -379,9 +356,8 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
 
             return true;
          } else {
-            boolean var6;
             if (this.searchBox != null) {
-               var6 = this.magnifierIconPlacement != null && this.magnifierIconPlacement.containsPoint(Mth.floor(var1), Mth.floor(var3));
+               boolean var6 = this.magnifierIconPlacement != null && this.magnifierIconPlacement.containsPoint(Mth.floor(var1), Mth.floor(var3));
                if (var6 || this.searchBox.mouseClicked(var1, var3, var5)) {
                   this.searchBox.setFocused(true);
                   return true;
@@ -391,35 +367,30 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
             }
 
             if (this.filterButton.mouseClicked(var1, var3, var5)) {
-               var6 = this.toggleFiltering();
-               this.filterButton.setStateTriggered(var6);
+               boolean var9 = this.toggleFiltering();
+               this.filterButton.setStateTriggered(var9);
                this.updateFilterButtonTooltip();
                this.sendUpdateSettings();
-               this.updateCollections(false, var6);
+               this.updateCollections(false, var9);
                return true;
             } else {
-               Iterator var8 = this.tabButtons.iterator();
+               for(RecipeBookTabButton var7 : this.tabButtons) {
+                  if (var7.mouseClicked(var1, var3, var5)) {
+                     if (this.selectedTab != var7) {
+                        if (this.selectedTab != null) {
+                           this.selectedTab.setStateTriggered(false);
+                        }
 
-               RecipeBookTabButton var7;
-               do {
-                  if (!var8.hasNext()) {
-                     return false;
+                        this.selectedTab = var7;
+                        this.selectedTab.setStateTriggered(true);
+                        this.updateCollections(true, this.isFiltering());
+                     }
+
+                     return true;
                   }
-
-                  var7 = (RecipeBookTabButton)var8.next();
-               } while(!var7.mouseClicked(var1, var3, var5));
-
-               if (this.selectedTab != var7) {
-                  if (this.selectedTab != null) {
-                     this.selectedTab.setStateTriggered(false);
-                  }
-
-                  this.selectedTab = var7;
-                  this.selectedTab.setStateTriggered(true);
-                  this.updateCollections(true, this.isFiltering());
                }
 
-               return true;
+               return false;
             }
          }
       } else {
@@ -619,18 +590,6 @@ public abstract class RecipeBookComponent<T extends RecipeBookMenu> implements R
          this.primaryIcon = var1;
          this.secondaryIcon = var2;
          this.category = var3;
-      }
-
-      public ItemStack primaryIcon() {
-         return this.primaryIcon;
-      }
-
-      public Optional<ItemStack> secondaryIcon() {
-         return this.secondaryIcon;
-      }
-
-      public ExtendedRecipeBookCategory category() {
-         return this.category;
       }
    }
 }

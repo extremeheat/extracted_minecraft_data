@@ -23,22 +23,10 @@ public class RegionFileVersion {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Int2ObjectMap<RegionFileVersion> VERSIONS = new Int2ObjectOpenHashMap();
    private static final Object2ObjectMap<String, RegionFileVersion> VERSIONS_BY_NAME = new Object2ObjectOpenHashMap();
-   public static final RegionFileVersion VERSION_GZIP = register(new RegionFileVersion(1, (String)null, (var0) -> {
-      return new FastBufferedInputStream(new GZIPInputStream(var0));
-   }, (var0) -> {
-      return new BufferedOutputStream(new GZIPOutputStream(var0));
-   }));
-   public static final RegionFileVersion VERSION_DEFLATE = register(new RegionFileVersion(2, "deflate", (var0) -> {
-      return new FastBufferedInputStream(new InflaterInputStream(var0));
-   }, (var0) -> {
-      return new BufferedOutputStream(new DeflaterOutputStream(var0));
-   }));
+   public static final RegionFileVersion VERSION_GZIP = register(new RegionFileVersion(1, (String)null, (var0) -> new FastBufferedInputStream(new GZIPInputStream(var0)), (var0) -> new BufferedOutputStream(new GZIPOutputStream(var0))));
+   public static final RegionFileVersion VERSION_DEFLATE = register(new RegionFileVersion(2, "deflate", (var0) -> new FastBufferedInputStream(new InflaterInputStream(var0)), (var0) -> new BufferedOutputStream(new DeflaterOutputStream(var0))));
    public static final RegionFileVersion VERSION_NONE = register(new RegionFileVersion(3, "none", FastBufferedInputStream::new, BufferedOutputStream::new));
-   public static final RegionFileVersion VERSION_LZ4 = register(new RegionFileVersion(4, "lz4", (var0) -> {
-      return new FastBufferedInputStream(new LZ4BlockInputStream(var0));
-   }, (var0) -> {
-      return new BufferedOutputStream(new LZ4BlockOutputStream(var0));
-   }));
+   public static final RegionFileVersion VERSION_LZ4 = register(new RegionFileVersion(4, "lz4", (var0) -> new FastBufferedInputStream(new LZ4BlockInputStream(var0)), (var0) -> new BufferedOutputStream(new LZ4BlockOutputStream(var0))));
    public static final RegionFileVersion VERSION_CUSTOM = register(new RegionFileVersion(127, (String)null, (var0) -> {
       throw new UnsupportedOperationException();
    }, (var0) -> {
@@ -97,11 +85,11 @@ public class RegionFileVersion {
    }
 
    public OutputStream wrap(OutputStream var1) throws IOException {
-      return (OutputStream)this.outputWrapper.wrap(var1);
+      return this.outputWrapper.wrap(var1);
    }
 
    public InputStream wrap(InputStream var1) throws IOException {
-      return (InputStream)this.inputWrapper.wrap(var1);
+      return this.inputWrapper.wrap(var1);
    }
 
    static {

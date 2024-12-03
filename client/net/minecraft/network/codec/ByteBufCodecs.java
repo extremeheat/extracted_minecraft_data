@@ -11,7 +11,6 @@ import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -162,11 +161,7 @@ public interface ByteBufCodecs {
          return this.decode((ByteBuf)var1);
       }
    };
-   StreamCodec<ByteBuf, OptionalInt> OPTIONAL_VAR_INT = VAR_INT.map((var0) -> {
-      return var0 == 0 ? OptionalInt.empty() : OptionalInt.of(var0 - 1);
-   }, (var0) -> {
-      return var0.isPresent() ? var0.getAsInt() + 1 : 0;
-   });
+   StreamCodec<ByteBuf, OptionalInt> OPTIONAL_VAR_INT = VAR_INT.map((var0) -> var0 == 0 ? OptionalInt.empty() : OptionalInt.of(var0 - 1), (var0) -> var0.isPresent() ? var0.getAsInt() + 1 : 0);
    StreamCodec<ByteBuf, Long> LONG = new StreamCodec<ByteBuf, Long>() {
       public Long decode(ByteBuf var1) {
          return var1.readLong();
@@ -263,13 +258,9 @@ public interface ByteBufCodecs {
       }
    };
    StreamCodec<ByteBuf, String> STRING_UTF8 = stringUtf8(32767);
-   StreamCodec<ByteBuf, Tag> TAG = tagCodec(() -> {
-      return NbtAccounter.create(2097152L);
-   });
+   StreamCodec<ByteBuf, Tag> TAG = tagCodec(() -> NbtAccounter.create(2097152L));
    StreamCodec<ByteBuf, Tag> TRUSTED_TAG = tagCodec(NbtAccounter::unlimitedHeap);
-   StreamCodec<ByteBuf, CompoundTag> COMPOUND_TAG = compoundTagCodec(() -> {
-      return NbtAccounter.create(2097152L);
-   });
+   StreamCodec<ByteBuf, CompoundTag> COMPOUND_TAG = compoundTagCodec(() -> NbtAccounter.create(2097152L));
    StreamCodec<ByteBuf, CompoundTag> TRUSTED_COMPOUND_TAG = compoundTagCodec(NbtAccounter::unlimitedHeap);
    StreamCodec<ByteBuf, Optional<CompoundTag>> OPTIONAL_COMPOUND_TAG = new StreamCodec<ByteBuf, Optional<CompoundTag>>() {
       public Optional<CompoundTag> decode(ByteBuf var1) {
@@ -360,9 +351,7 @@ public interface ByteBufCodecs {
          for(int var4 = 0; var4 < var2; ++var4) {
             String var5 = Utf8String.read(var1, 64);
             String var6 = Utf8String.read(var1, 32767);
-            String var7 = (String)FriendlyByteBuf.readNullable(var1, (var0) -> {
-               return Utf8String.read(var0, 1024);
-            });
+            String var7 = (String)FriendlyByteBuf.readNullable(var1, (var0) -> Utf8String.read(var0, 1024));
             Property var8 = new Property(var5, var6, var7);
             var3.put(var8.name(), var8);
          }
@@ -372,15 +361,11 @@ public interface ByteBufCodecs {
 
       public void encode(ByteBuf var1, PropertyMap var2) {
          ByteBufCodecs.writeCount(var1, var2.size(), 16);
-         Iterator var3 = var2.values().iterator();
 
-         while(var3.hasNext()) {
-            Property var4 = (Property)var3.next();
+         for(Property var4 : var2.values()) {
             Utf8String.write(var1, var4.name(), 64);
             Utf8String.write(var1, var4.value(), 32767);
-            FriendlyByteBuf.writeNullable(var1, var4.signature(), (var0, var1x) -> {
-               Utf8String.write(var0, var1x, 1024);
-            });
+            FriendlyByteBuf.writeNullable(var1, var4.signature(), (var0, var1x) -> Utf8String.write(var0, var1x, 1024));
          }
 
       }
@@ -507,9 +492,7 @@ public interface ByteBufCodecs {
          } else {
             throw new DecoderException("Not a compound tag: " + String.valueOf(var0x));
          }
-      }, (var0x) -> {
-         return var0x;
-      });
+      }, (var0x) -> var0x);
    }
 
    static <T> StreamCodec<ByteBuf, T> fromCodecTrusted(Codec<T> var0) {
@@ -517,21 +500,11 @@ public interface ByteBufCodecs {
    }
 
    static <T> StreamCodec<ByteBuf, T> fromCodec(Codec<T> var0) {
-      return fromCodec(var0, () -> {
-         return NbtAccounter.create(2097152L);
-      });
+      return fromCodec(var0, () -> NbtAccounter.create(2097152L));
    }
 
    static <T> StreamCodec<ByteBuf, T> fromCodec(Codec<T> var0, Supplier<NbtAccounter> var1) {
-      return tagCodec(var1).map((var1x) -> {
-         return var0.parse(NbtOps.INSTANCE, var1x).getOrThrow((var1) -> {
-            return new DecoderException("Failed to decode: " + var1 + " " + String.valueOf(var1x));
-         });
-      }, (var1x) -> {
-         return (Tag)var0.encodeStart(NbtOps.INSTANCE, var1x).getOrThrow((var1) -> {
-            return new EncoderException("Failed to encode: " + var1 + " " + String.valueOf(var1x));
-         });
-      });
+      return tagCodec(var1).map((var1x) -> var0.parse(NbtOps.INSTANCE, var1x).getOrThrow((var1) -> new DecoderException("Failed to decode: " + var1 + " " + String.valueOf(var1x))), (var1x) -> (Tag)var0.encodeStart(NbtOps.INSTANCE, var1x).getOrThrow((var1) -> new EncoderException("Failed to encode: " + var1 + " " + String.valueOf(var1x))));
    }
 
    static <T> StreamCodec<RegistryFriendlyByteBuf, T> fromCodecWithRegistriesTrusted(Codec<T> var0) {
@@ -539,9 +512,7 @@ public interface ByteBufCodecs {
    }
 
    static <T> StreamCodec<RegistryFriendlyByteBuf, T> fromCodecWithRegistries(Codec<T> var0) {
-      return fromCodecWithRegistries(var0, () -> {
-         return NbtAccounter.create(2097152L);
-      });
+      return fromCodecWithRegistries(var0, () -> NbtAccounter.create(2097152L));
    }
 
    static <T> StreamCodec<RegistryFriendlyByteBuf, T> fromCodecWithRegistries(final Codec<T> var0, Supplier<NbtAccounter> var1) {
@@ -550,16 +521,12 @@ public interface ByteBufCodecs {
          public T decode(RegistryFriendlyByteBuf var1) {
             Tag var2x = (Tag)var2.decode(var1);
             RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-            return var0.parse(var3, var2x).getOrThrow((var1x) -> {
-               return new DecoderException("Failed to decode: " + var1x + " " + String.valueOf(var2x));
-            });
+            return (T)var0.parse(var3, var2x).getOrThrow((var1x) -> new DecoderException("Failed to decode: " + var1x + " " + String.valueOf(var2x)));
          }
 
          public void encode(RegistryFriendlyByteBuf var1, T var2x) {
             RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-            Tag var4 = (Tag)var0.encodeStart(var3, var2x).getOrThrow((var1x) -> {
-               return new EncoderException("Failed to encode: " + var1x + " " + String.valueOf(var2x));
-            });
+            Tag var4 = (Tag)var0.encodeStart(var3, var2x).getOrThrow((var1x) -> new EncoderException("Failed to encode: " + var1x + " " + String.valueOf(var2x)));
             var2.encode(var1, var4);
          }
 
@@ -606,7 +573,7 @@ public interface ByteBufCodecs {
    static int readCount(ByteBuf var0, int var1) {
       int var2 = VarInt.read(var0);
       if (var2 > var1) {
-         throw new DecoderException("" + var2 + " elements exceeded max size of: " + var1);
+         throw new DecoderException(var2 + " elements exceeded max size of: " + var1);
       } else {
          return var2;
       }
@@ -614,7 +581,7 @@ public interface ByteBufCodecs {
 
    static void writeCount(ByteBuf var0, int var1, int var2) {
       if (var1 > var2) {
-         throw new EncoderException("" + var1 + " elements exceeded max size of: " + var2);
+         throw new EncoderException(var1 + " elements exceeded max size of: " + var2);
       } else {
          VarInt.write(var0, var1);
       }
@@ -634,15 +601,13 @@ public interface ByteBufCodecs {
                var3.add(var1.decode(var1x));
             }
 
-            return var3;
+            return (C)var3;
          }
 
          public void encode(B var1x, C var2x) {
             ByteBufCodecs.writeCount(var1x, var2x.size(), var2);
-            Iterator var3 = var2x.iterator();
 
-            while(var3.hasNext()) {
-               Object var4 = var3.next();
+            for(Object var4 : var2x) {
                var1.encode(var1x, var4);
             }
 
@@ -661,21 +626,15 @@ public interface ByteBufCodecs {
    }
 
    static <B extends ByteBuf, V, C extends Collection<V>> StreamCodec.CodecOperation<B, V, C> collection(IntFunction<C> var0) {
-      return (var1) -> {
-         return collection(var0, var1);
-      };
+      return (var1) -> collection(var0, var1);
    }
 
    static <B extends ByteBuf, V> StreamCodec.CodecOperation<B, V, List<V>> list() {
-      return (var0) -> {
-         return collection(ArrayList::new, var0);
-      };
+      return (var0) -> collection(ArrayList::new, var0);
    }
 
    static <B extends ByteBuf, V> StreamCodec.CodecOperation<B, V, List<V>> list(int var0) {
-      return (var1) -> {
-         return collection(ArrayList::new, var1, var0);
-      };
+      return (var1) -> collection(ArrayList::new, var1, var0);
    }
 
    static <B extends ByteBuf, K, V, M extends Map<K, V>> StreamCodec<B, M> map(IntFunction<? extends M> var0, StreamCodec<? super B, K> var1, StreamCodec<? super B, V> var2) {
@@ -702,7 +661,7 @@ public interface ByteBufCodecs {
                var3x.put(var5, var6);
             }
 
-            return var3x;
+            return (M)var3x;
          }
 
          // $FF: synthetic method
@@ -749,7 +708,7 @@ public interface ByteBufCodecs {
       return new StreamCodec<ByteBuf, T>() {
          public T decode(ByteBuf var1x) {
             int var2 = VarInt.read(var1x);
-            return var0.apply(var2);
+            return (T)var0.apply(var2);
          }
 
          public void encode(ByteBuf var1x, T var2) {
@@ -784,7 +743,7 @@ public interface ByteBufCodecs {
 
          public R decode(RegistryFriendlyByteBuf var1x) {
             int var2 = VarInt.read(var1x);
-            return this.getRegistryOrThrow(var1x).byIdOrThrow(var2);
+            return (R)this.getRegistryOrThrow(var1x).byIdOrThrow(var2);
          }
 
          public void encode(RegistryFriendlyByteBuf var1x, R var2) {
@@ -805,9 +764,7 @@ public interface ByteBufCodecs {
    }
 
    static <T> StreamCodec<RegistryFriendlyByteBuf, T> registry(ResourceKey<? extends Registry<T>> var0) {
-      return registry(var0, (var0x) -> {
-         return var0x;
-      });
+      return registry(var0, (var0x) -> var0x);
    }
 
    static <T> StreamCodec<RegistryFriendlyByteBuf, Holder<T>> holderRegistry(ResourceKey<? extends Registry<T>> var0) {
@@ -869,7 +826,7 @@ public interface ByteBufCodecs {
                   var3.add((Holder)this.holderCodec.decode(var1));
                }
 
-               return HolderSet.direct((List)var3);
+               return HolderSet.direct(var3);
             }
          }
 
@@ -880,10 +837,8 @@ public interface ByteBufCodecs {
                ResourceLocation.STREAM_CODEC.encode(var1, ((TagKey)var3.get()).location());
             } else {
                VarInt.write(var1, var2.size() + 1);
-               Iterator var4 = var2.iterator();
 
-               while(var4.hasNext()) {
-                  Holder var5 = (Holder)var4.next();
+               for(Holder var5 : var2) {
                   this.holderCodec.encode(var1, var5);
                }
             }

@@ -15,9 +15,7 @@ import org.slf4j.Logger;
 
 public class JigsawReplacementProcessor extends StructureProcessor {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<JigsawReplacementProcessor> CODEC = MapCodec.unit(() -> {
-      return INSTANCE;
-   });
+   public static final MapCodec<JigsawReplacementProcessor> CODEC = MapCodec.unit(() -> INSTANCE);
    public static final JigsawReplacementProcessor INSTANCE = new JigsawReplacementProcessor();
 
    private JigsawReplacementProcessor() {

@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.structure.pools;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -20,11 +19,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public class ListPoolElement extends StructurePoolElement {
-   public static final MapCodec<ListPoolElement> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(StructurePoolElement.CODEC.listOf().fieldOf("elements").forGetter((var0x) -> {
-         return var0x.elements;
-      }), projectionCodec()).apply(var0, ListPoolElement::new);
-   });
+   public static final MapCodec<ListPoolElement> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(StructurePoolElement.CODEC.listOf().fieldOf("elements").forGetter((var0x) -> var0x.elements), projectionCodec()).apply(var0, ListPoolElement::new));
    private final List<StructurePoolElement> elements;
 
    public ListPoolElement(List<StructurePoolElement> var1, StructureTemplatePool.Projection var2) {
@@ -42,12 +37,11 @@ public class ListPoolElement extends StructurePoolElement {
       int var4 = 0;
       int var5 = 0;
 
-      Vec3i var8;
-      for(Iterator var6 = this.elements.iterator(); var6.hasNext(); var5 = Math.max(var5, var8.getZ())) {
-         StructurePoolElement var7 = (StructurePoolElement)var6.next();
-         var8 = var7.getSize(var1, var2);
+      for(StructurePoolElement var7 : this.elements) {
+         Vec3i var8 = var7.getSize(var1, var2);
          var3 = Math.max(var3, var8.getX());
          var4 = Math.max(var4, var8.getY());
+         var5 = Math.max(var5, var8.getZ());
       }
 
       return new Vec3i(var3, var4, var5);
@@ -58,30 +52,19 @@ public class ListPoolElement extends StructurePoolElement {
    }
 
    public BoundingBox getBoundingBox(StructureTemplateManager var1, BlockPos var2, Rotation var3) {
-      Stream var4 = this.elements.stream().filter((var0) -> {
-         return var0 != EmptyPoolElement.INSTANCE;
-      }).map((var3x) -> {
-         return var3x.getBoundingBox(var1, var2, var3);
-      });
+      Stream var4 = this.elements.stream().filter((var0) -> var0 != EmptyPoolElement.INSTANCE).map((var3x) -> var3x.getBoundingBox(var1, var2, var3));
       Objects.requireNonNull(var4);
-      return (BoundingBox)BoundingBox.encapsulatingBoxes(var4::iterator).orElseThrow(() -> {
-         return new IllegalStateException("Unable to calculate boundingbox for ListPoolElement");
-      });
+      return (BoundingBox)BoundingBox.encapsulatingBoxes(var4::iterator).orElseThrow(() -> new IllegalStateException("Unable to calculate boundingbox for ListPoolElement"));
    }
 
    public boolean place(StructureTemplateManager var1, WorldGenLevel var2, StructureManager var3, ChunkGenerator var4, BlockPos var5, BlockPos var6, Rotation var7, BoundingBox var8, RandomSource var9, LiquidSettings var10, boolean var11) {
-      Iterator var12 = this.elements.iterator();
-
-      StructurePoolElement var13;
-      do {
-         if (!var12.hasNext()) {
-            return true;
+      for(StructurePoolElement var13 : this.elements) {
+         if (!var13.place(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11)) {
+            return false;
          }
+      }
 
-         var13 = (StructurePoolElement)var12.next();
-      } while(var13.place(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11));
-
-      return false;
+      return true;
    }
 
    public StructurePoolElementType<?> getType() {
@@ -100,8 +83,6 @@ public class ListPoolElement extends StructurePoolElement {
    }
 
    private void setProjectionOnEachElement(StructureTemplatePool.Projection var1) {
-      this.elements.forEach((var1x) -> {
-         var1x.setProjection(var1);
-      });
+      this.elements.forEach((var1x) -> var1x.setProjection(var1));
    }
 }

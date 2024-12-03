@@ -168,6 +168,20 @@ public class ServerData {
       }
    }
 
+   public static enum Type {
+      LAN,
+      REALM,
+      OTHER;
+
+      private Type() {
+      }
+
+      // $FF: synthetic method
+      private static Type[] $values() {
+         return new Type[]{LAN, REALM, OTHER};
+      }
+   }
+
    public static enum State {
       INITIAL,
       PINGING,
@@ -181,20 +195,6 @@ public class ServerData {
       // $FF: synthetic method
       private static State[] $values() {
          return new State[]{INITIAL, PINGING, UNREACHABLE, INCOMPATIBLE, SUCCESSFUL};
-      }
-   }
-
-   public static enum Type {
-      LAN,
-      REALM,
-      OTHER;
-
-      private Type() {
-      }
-
-      // $FF: synthetic method
-      private static Type[] $values() {
-         return new Type[]{LAN, REALM, OTHER};
       }
    }
 }

@@ -23,9 +23,7 @@ public record ArgumentSignatures(List<Entry> entries) {
    }
 
    public void write(FriendlyByteBuf var1) {
-      var1.writeCollection(this.entries, (var0, var1x) -> {
-         var1x.write(var0);
-      });
+      var1.writeCollection(this.entries, (var0, var1x) -> var1x.write(var0));
    }
 
    public static ArgumentSignatures signCommand(SignableCommand<?> var0, Signer var1) {
@@ -34,16 +32,6 @@ public record ArgumentSignatures(List<Entry> entries) {
          return var2 != null ? new Entry(var1x.name(), var2) : null;
       }).filter(Objects::nonNull).toList();
       return new ArgumentSignatures(var2);
-   }
-
-   public List<Entry> entries() {
-      return this.entries;
-   }
-
-   @FunctionalInterface
-   public interface Signer {
-      @Nullable
-      MessageSignature sign(String var1);
    }
 
    public static record Entry(String name, MessageSignature signature) {
@@ -61,13 +49,11 @@ public record ArgumentSignatures(List<Entry> entries) {
          var1.writeUtf(this.name, 16);
          MessageSignature.write(var1, this.signature);
       }
+   }
 
-      public String name() {
-         return this.name;
-      }
-
-      public MessageSignature signature() {
-         return this.signature;
-      }
+   @FunctionalInterface
+   public interface Signer {
+      @Nullable
+      MessageSignature sign(String var1);
    }
 }

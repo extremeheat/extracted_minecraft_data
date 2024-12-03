@@ -140,7 +140,7 @@ public class NoteBlock extends Block {
          var10 = var7.getSoundEvent();
       }
 
-      var2.playSeededSound((Player)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, (Holder)var10, SoundSource.RECORDS, 3.0F, var6, var2.random.nextLong());
+      var2.playSeededSound((Player)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, var10, SoundSource.RECORDS, 3.0F, var6, var2.random.nextLong());
       return true;
    }
 

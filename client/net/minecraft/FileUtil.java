@@ -11,7 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,11 +27,7 @@ public class FileUtil {
    }
 
    public static String sanitizeName(String var0) {
-      char[] var1 = SharedConstants.ILLEGAL_FILE_CHARACTERS;
-      int var2 = var1.length;
-
-      for(int var3 = 0; var3 < var2; ++var3) {
-         char var4 = var1[var3];
+      for(char var4 : SharedConstants.ILLEGAL_FILE_CHARACTERS) {
          var0 = var0.replace(var4, '_');
       }
 
@@ -69,12 +64,12 @@ public class FileUtil {
          }
 
          var5 = var5 + var2;
-         Path var9 = var0.resolve(var5);
+         Path var11 = var0.resolve(var5);
 
          try {
-            Path var10 = Files.createDirectory(var9);
-            Files.deleteIfExists(var10);
-            return var0.relativize(var10).toString();
+            Path var12 = Files.createDirectory(var11);
+            Files.deleteIfExists(var12);
+            return var0.relativize(var12).toString();
          } catch (FileAlreadyExistsException var8) {
             ++var4;
          }
@@ -87,18 +82,13 @@ public class FileUtil {
    }
 
    public static boolean isPathPortable(Path var0) {
-      Iterator var1 = var0.iterator();
-
-      Path var2;
-      do {
-         if (!var1.hasNext()) {
-            return true;
+      for(Path var2 : var0) {
+         if (RESERVED_WINDOWS_FILENAMES.matcher(var2.toString()).matches()) {
+            return false;
          }
+      }
 
-         var2 = (Path)var1.next();
-      } while(!RESERVED_WINDOWS_FILENAMES.matcher(var2.toString()).matches());
-
-      return false;
+      return true;
    }
 
    public static Path createPathToResource(Path var0, String var1, String var2) {
@@ -127,14 +117,10 @@ public class FileUtil {
             case "":
             case ".":
             case "..":
-               var10000 = DataResult.error(() -> {
-                  return "Invalid path '" + var0 + "'";
-               });
+               var10000 = DataResult.error(() -> "Invalid path '" + var0 + "'");
                break;
             default:
-               var10000 = !isValidStrictPathSegment(var0) ? DataResult.error(() -> {
-                  return "Invalid path '" + var0 + "'";
-               }) : DataResult.success(List.of(var0));
+               var10000 = !isValidStrictPathSegment(var0) ? DataResult.error(() -> "Invalid path '" + var0 + "'") : DataResult.success(List.of(var0));
          }
 
          return var10000;
@@ -148,15 +134,11 @@ public class FileUtil {
                case "":
                case ".":
                case "..":
-                  return DataResult.error(() -> {
-                     return "Invalid segment '" + var5 + "' in path '" + var0 + "'";
-                  });
+                  return DataResult.error(() -> "Invalid segment '" + var5 + "' in path '" + var0 + "'");
             }
 
             if (!isValidStrictPathSegment(var5)) {
-               return DataResult.error(() -> {
-                  return "Invalid segment '" + var5 + "' in path '" + var0 + "'";
-               });
+               return DataResult.error(() -> "Invalid segment '" + var5 + "' in path '" + var0 + "'");
             }
 
             var2.add(var5);
@@ -205,11 +187,7 @@ public class FileUtil {
       if (var0.length == 0) {
          throw new IllegalArgumentException("Path must have at least one element");
       } else {
-         String[] var1 = var0;
-         int var2 = var0.length;
-
-         for(int var3 = 0; var3 < var2; ++var3) {
-            String var4 = var1[var3];
+         for(String var4 : var0) {
             if (var4.equals("..") || var4.equals(".") || !isValidStrictPathSegment(var4)) {
                throw new IllegalArgumentException("Illegal segment " + var4 + " in path " + Arrays.toString(var0));
             }

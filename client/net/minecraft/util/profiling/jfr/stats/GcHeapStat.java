@@ -25,9 +25,7 @@ public record GcHeapStat(Instant timestamp, long heapUsed, Timing timing) {
 
    private static double calculateAllocationRatePerSecond(List<GcHeapStat> var0) {
       long var1 = 0L;
-      Map var3 = (Map)var0.stream().collect(Collectors.groupingBy((var0x) -> {
-         return var0x.timing;
-      }));
+      Map var3 = (Map)var0.stream().collect(Collectors.groupingBy((var0x) -> var0x.timing));
       List var4 = (List)var3.get(GcHeapStat.Timing.BEFORE_GC);
       List var5 = (List)var3.get(GcHeapStat.Timing.AFTER_GC);
 
@@ -39,31 +37,6 @@ public record GcHeapStat(Instant timestamp, long heapUsed, Timing timing) {
 
       Duration var9 = Duration.between(((GcHeapStat)var0.get(1)).timestamp, ((GcHeapStat)var0.get(var0.size() - 1)).timestamp);
       return (double)var1 / (double)var9.getSeconds();
-   }
-
-   public Instant timestamp() {
-      return this.timestamp;
-   }
-
-   public long heapUsed() {
-      return this.heapUsed;
-   }
-
-   public Timing timing() {
-      return this.timing;
-   }
-
-   static enum Timing {
-      BEFORE_GC,
-      AFTER_GC;
-
-      private Timing() {
-      }
-
-      // $FF: synthetic method
-      private static Timing[] $values() {
-         return new Timing[]{BEFORE_GC, AFTER_GC};
-      }
    }
 
    public static record Summary(Duration duration, Duration gcTotalDuration, int totalGCs, double allocationRateBytesPerSecond) {
@@ -78,21 +51,18 @@ public record GcHeapStat(Instant timestamp, long heapUsed, Timing timing) {
       public float gcOverHead() {
          return (float)this.gcTotalDuration.toMillis() / (float)this.duration.toMillis();
       }
+   }
 
-      public Duration duration() {
-         return this.duration;
+   static enum Timing {
+      BEFORE_GC,
+      AFTER_GC;
+
+      private Timing() {
       }
 
-      public Duration gcTotalDuration() {
-         return this.gcTotalDuration;
-      }
-
-      public int totalGCs() {
-         return this.totalGCs;
-      }
-
-      public double allocationRateBytesPerSecond() {
-         return this.allocationRateBytesPerSecond;
+      // $FF: synthetic method
+      private static Timing[] $values() {
+         return new Timing[]{BEFORE_GC, AFTER_GC};
       }
    }
 }

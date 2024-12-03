@@ -26,12 +26,6 @@ public class SoundOptionsScreen extends OptionsSubScreen {
    }
 
    private OptionInstance<?>[] getAllSoundOptionsExceptMaster() {
-      return (OptionInstance[])Arrays.stream(SoundSource.values()).filter((var0) -> {
-         return var0 != SoundSource.MASTER;
-      }).map((var1) -> {
-         return this.options.getSoundSourceOptionInstance(var1);
-      }).toArray((var0) -> {
-         return new OptionInstance[var0];
-      });
+      return (OptionInstance[])Arrays.stream(SoundSource.values()).filter((var0) -> var0 != SoundSource.MASTER).map((var1) -> this.options.getSoundSourceOptionInstance(var1)).toArray((var0) -> new OptionInstance[var0]);
    }
 }

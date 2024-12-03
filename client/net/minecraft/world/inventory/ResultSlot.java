@@ -67,11 +67,7 @@ public class ResultSlot extends Slot {
 
    private NonNullList<ItemStack> getRemainingItems(CraftingInput var1, Level var2) {
       if (var2 instanceof ServerLevel var3) {
-         return (NonNullList)var3.recipeAccess().getRecipeFor(RecipeType.CRAFTING, var1, var3).map((var1x) -> {
-            return ((CraftingRecipe)var1x.value()).getRemainingItems(var1);
-         }).orElseGet(() -> {
-            return copyAllInputItems(var1);
-         });
+         return (NonNullList)var3.recipeAccess().getRecipeFor(RecipeType.CRAFTING, var1, var3).map((var1x) -> ((CraftingRecipe)var1x.value()).getRemainingItems(var1)).orElseGet(() -> copyAllInputItems(var1));
       } else {
          return CraftingRecipe.defaultCraftingReminder(var1);
       }

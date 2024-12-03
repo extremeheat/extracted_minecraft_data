@@ -22,11 +22,7 @@ public abstract class ItemRenameFix extends DataFix {
       if (!Objects.equals(this.getInputSchema().getType(References.ITEM_NAME), var1)) {
          throw new IllegalStateException("item name type is not what was expected.");
       } else {
-         return this.fixTypeEverywhere(this.name, var1, (var1x) -> {
-            return (var1) -> {
-               return var1.mapSecond(this::fixItem);
-            };
-         });
+         return this.fixTypeEverywhere(this.name, var1, (var1x) -> (var1) -> var1.mapSecond(this::fixItem));
       }
    }
 

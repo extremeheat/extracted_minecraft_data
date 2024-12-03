@@ -21,15 +21,15 @@ public class Minecart extends AbstractMinecart {
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (var1.isSecondaryUseActive() || this.isVehicle() || !this.level().isClientSide && !var1.startRiding(this)) {
-         return InteractionResult.PASS;
-      } else {
+      if (!var1.isSecondaryUseActive() && !this.isVehicle() && (this.level().isClientSide || var1.startRiding(this))) {
          this.playerRotationOffset = this.rotationOffset;
          if (!this.level().isClientSide) {
             return (InteractionResult)(var1.startRiding(this) ? InteractionResult.CONSUME : InteractionResult.PASS);
          } else {
             return InteractionResult.SUCCESS;
          }
+      } else {
+         return InteractionResult.PASS;
       }
    }
 

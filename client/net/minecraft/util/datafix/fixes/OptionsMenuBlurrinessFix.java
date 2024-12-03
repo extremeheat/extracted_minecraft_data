@@ -11,13 +11,7 @@ public class OptionsMenuBlurrinessFix extends DataFix {
    }
 
    public TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("OptionsMenuBlurrinessFix", this.getInputSchema().getType(References.OPTIONS), (var1) -> {
-         return var1.update(DSL.remainderFinder(), (var1x) -> {
-            return var1x.update("menuBackgroundBlurriness", (var1) -> {
-               return var1.createInt(this.convertToIntRange(var1.asString("0.5")));
-            });
-         });
-      });
+      return this.fixTypeEverywhereTyped("OptionsMenuBlurrinessFix", this.getInputSchema().getType(References.OPTIONS), (var1) -> var1.update(DSL.remainderFinder(), (var1x) -> var1x.update("menuBackgroundBlurriness", (var1) -> var1.createInt(this.convertToIntRange(var1.asString("0.5"))))));
    }
 
    private int convertToIntRange(String var1) {

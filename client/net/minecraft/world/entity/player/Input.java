@@ -14,14 +14,14 @@ public record Input(boolean forward, boolean backward, boolean left, boolean rig
    public static final StreamCodec<FriendlyByteBuf, Input> STREAM_CODEC = new StreamCodec<FriendlyByteBuf, Input>() {
       public void encode(FriendlyByteBuf var1, Input var2) {
          byte var3 = 0;
-         byte var4 = (byte)(var3 | (var2.forward() ? 1 : 0));
-         var4 = (byte)(var4 | (var2.backward() ? 2 : 0));
-         var4 = (byte)(var4 | (var2.left() ? 4 : 0));
-         var4 = (byte)(var4 | (var2.right() ? 8 : 0));
-         var4 = (byte)(var4 | (var2.jump() ? 16 : 0));
-         var4 = (byte)(var4 | (var2.shift() ? 32 : 0));
-         var4 = (byte)(var4 | (var2.sprint() ? 64 : 0));
-         var1.writeByte(var4);
+         var3 = (byte)(var3 | (var2.forward() ? 1 : 0));
+         var3 = (byte)(var3 | (var2.backward() ? 2 : 0));
+         var3 = (byte)(var3 | (var2.left() ? 4 : 0));
+         var3 = (byte)(var3 | (var2.right() ? 8 : 0));
+         var3 = (byte)(var3 | (var2.jump() ? 16 : 0));
+         var3 = (byte)(var3 | (var2.shift() ? 32 : 0));
+         var3 = (byte)(var3 | (var2.sprint() ? 64 : 0));
+         var1.writeByte(var3);
       }
 
       public Input decode(FriendlyByteBuf var1) {
@@ -57,33 +57,5 @@ public record Input(boolean forward, boolean backward, boolean left, boolean rig
       this.jump = var5;
       this.shift = var6;
       this.sprint = var7;
-   }
-
-   public boolean forward() {
-      return this.forward;
-   }
-
-   public boolean backward() {
-      return this.backward;
-   }
-
-   public boolean left() {
-      return this.left;
-   }
-
-   public boolean right() {
-      return this.right;
-   }
-
-   public boolean jump() {
-      return this.jump;
-   }
-
-   public boolean shift() {
-      return this.shift;
-   }
-
-   public boolean sprint() {
-      return this.sprint;
    }
 }

@@ -8,7 +8,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelParticlesPacket> STREAM_CODEC = Packet.codec(ClientboundLevelParticlesPacket::write, ClientboundLevelParticlesPacket::new);
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelParticlesPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundLevelParticlesPacket>codec(ClientboundLevelParticlesPacket::write, ClientboundLevelParticlesPacket::new);
    private final double x;
    private final double y;
    private final double z;
@@ -18,25 +18,28 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
    private final float maxSpeed;
    private final int count;
    private final boolean overrideLimiter;
+   private final boolean alwaysShow;
    private final ParticleOptions particle;
 
-   public <T extends ParticleOptions> ClientboundLevelParticlesPacket(T var1, boolean var2, double var3, double var5, double var7, float var9, float var10, float var11, float var12, int var13) {
+   public <T extends ParticleOptions> ClientboundLevelParticlesPacket(T var1, boolean var2, boolean var3, double var4, double var6, double var8, float var10, float var11, float var12, float var13, int var14) {
       super();
       this.particle = var1;
       this.overrideLimiter = var2;
-      this.x = var3;
-      this.y = var5;
-      this.z = var7;
-      this.xDist = var9;
-      this.yDist = var10;
-      this.zDist = var11;
-      this.maxSpeed = var12;
-      this.count = var13;
+      this.alwaysShow = var3;
+      this.x = var4;
+      this.y = var6;
+      this.z = var8;
+      this.xDist = var10;
+      this.yDist = var11;
+      this.zDist = var12;
+      this.maxSpeed = var13;
+      this.count = var14;
    }
 
    private ClientboundLevelParticlesPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.overrideLimiter = var1.readBoolean();
+      this.alwaysShow = var1.readBoolean();
       this.x = var1.readDouble();
       this.y = var1.readDouble();
       this.z = var1.readDouble();
@@ -50,6 +53,7 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
 
    private void write(RegistryFriendlyByteBuf var1) {
       var1.writeBoolean(this.overrideLimiter);
+      var1.writeBoolean(this.alwaysShow);
       var1.writeDouble(this.x);
       var1.writeDouble(this.y);
       var1.writeDouble(this.z);
@@ -71,6 +75,10 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
 
    public boolean isOverrideLimiter() {
       return this.overrideLimiter;
+   }
+
+   public boolean alwaysShow() {
+      return this.alwaysShow;
    }
 
    public double getX() {

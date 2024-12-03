@@ -28,17 +28,11 @@ public interface StringReaderTerms {
          int var4 = var1.mark();
          String var5 = ((StringReader)var1.input()).readUnquotedString();
          if (!var5.equals(this.value)) {
-            var1.errorCollector().store(var4, (var1x) -> {
-               return Stream.of(this.value);
-            }, CommandSyntaxException.BUILT_IN_EXCEPTIONS.literalIncorrect().create(this.value));
+            var1.errorCollector().store(var4, (var1x) -> Stream.of(this.value), CommandSyntaxException.BUILT_IN_EXCEPTIONS.literalIncorrect().create(this.value));
             return false;
          } else {
             return true;
          }
-      }
-
-      public String value() {
-         return this.value;
       }
    }
 
@@ -54,15 +48,9 @@ public interface StringReaderTerms {
          if (((StringReader)var1.input()).canRead() && ((StringReader)var1.input()).read() == this.value) {
             return true;
          } else {
-            var1.errorCollector().store(var4, (var1x) -> {
-               return Stream.of(String.valueOf(this.value));
-            }, CommandSyntaxException.BUILT_IN_EXCEPTIONS.literalIncorrect().create(this.value));
+            var1.errorCollector().store(var4, (var1x) -> Stream.of(String.valueOf(this.value)), CommandSyntaxException.BUILT_IN_EXCEPTIONS.literalIncorrect().create(this.value));
             return false;
          }
-      }
-
-      public char value() {
-         return this.value;
       }
    }
 }

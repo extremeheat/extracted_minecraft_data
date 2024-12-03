@@ -8,7 +8,7 @@ public enum DeathMessageType implements StringRepresentable {
    FALL_VARIANTS("fall_variants"),
    INTENTIONAL_GAME_DESIGN("intentional_game_design");
 
-   public static final Codec<DeathMessageType> CODEC = StringRepresentable.fromEnum(DeathMessageType::values);
+   public static final Codec<DeathMessageType> CODEC = StringRepresentable.<DeathMessageType>fromEnum(DeathMessageType::values);
    private final String id;
 
    private DeathMessageType(final String var3) {

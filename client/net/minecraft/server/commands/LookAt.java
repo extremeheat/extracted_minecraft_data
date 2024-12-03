@@ -10,21 +10,6 @@ import net.minecraft.world.phys.Vec3;
 public interface LookAt {
    void perform(CommandSourceStack var1, Entity var2);
 
-   public static record LookAtPosition(Vec3 position) implements LookAt {
-      public LookAtPosition(Vec3 var1) {
-         super();
-         this.position = var1;
-      }
-
-      public void perform(CommandSourceStack var1, Entity var2) {
-         var2.lookAt(var1.getAnchor(), this.position);
-      }
-
-      public Vec3 position() {
-         return this.position;
-      }
-   }
-
    public static record LookAtEntity(Entity entity, EntityAnchorArgument.Anchor anchor) implements LookAt {
       public LookAtEntity(Entity var1, EntityAnchorArgument.Anchor var2) {
          super();
@@ -40,13 +25,16 @@ public interface LookAt {
          }
 
       }
+   }
 
-      public Entity entity() {
-         return this.entity;
+   public static record LookAtPosition(Vec3 position) implements LookAt {
+      public LookAtPosition(Vec3 var1) {
+         super();
+         this.position = var1;
       }
 
-      public EntityAnchorArgument.Anchor anchor() {
-         return this.anchor;
+      public void perform(CommandSourceStack var1, Entity var2) {
+         var2.lookAt(var1.getAnchor(), this.position);
       }
    }
 }

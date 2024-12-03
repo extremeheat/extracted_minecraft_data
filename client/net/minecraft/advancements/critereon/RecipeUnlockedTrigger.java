@@ -21,9 +21,7 @@ public class RecipeUnlockedTrigger extends SimpleCriterionTrigger<TriggerInstanc
    }
 
    public void trigger(ServerPlayer var1, RecipeHolder<?> var2) {
-      this.trigger(var1, (var1x) -> {
-         return var1x.matches(var2);
-      });
+      this.trigger(var1, (var1x) -> var1x.matches(var2));
    }
 
    public static Criterion<TriggerInstance> unlocked(ResourceKey<Recipe<?>> var0) {
@@ -31,9 +29,7 @@ public class RecipeUnlockedTrigger extends SimpleCriterionTrigger<TriggerInstanc
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, ResourceKey<Recipe<?>> recipe) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ResourceKey.codec(Registries.RECIPE).fieldOf("recipe").forGetter(TriggerInstance::recipe)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ResourceKey.codec(Registries.RECIPE).fieldOf("recipe").forGetter(TriggerInstance::recipe)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, ResourceKey<Recipe<?>> var2) {
          super();
@@ -43,14 +39,6 @@ public class RecipeUnlockedTrigger extends SimpleCriterionTrigger<TriggerInstanc
 
       public boolean matches(RecipeHolder<?> var1) {
          return this.recipe == var1.id();
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public ResourceKey<Recipe<?>> recipe() {
-         return this.recipe;
       }
    }
 }

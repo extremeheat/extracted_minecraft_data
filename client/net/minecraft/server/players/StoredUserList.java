@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -54,7 +53,7 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
    @Nullable
    public V get(K var1) {
       this.removeExpired();
-      return (StoredUserEntry)this.map.get(this.getKeyForUser(var1));
+      return (V)(this.map.get(this.getKeyForUser(var1)));
    }
 
    public void remove(K var1) {
@@ -90,20 +89,15 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
 
    private void removeExpired() {
       ArrayList var1 = Lists.newArrayList();
-      Iterator var2 = this.map.values().iterator();
 
-      while(var2.hasNext()) {
-         StoredUserEntry var3 = (StoredUserEntry)var2.next();
+      for(StoredUserEntry var3 : this.map.values()) {
          if (var3.hasExpired()) {
             var1.add(var3.getUser());
          }
       }
 
-      var2 = var1.iterator();
-
-      while(var2.hasNext()) {
-         Object var4 = var2.next();
-         this.map.remove(this.getKeyForUser(var4));
+      for(Object var5 : var1) {
+         this.map.remove(this.getKeyForUser(var5));
       }
 
    }
@@ -153,20 +147,15 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
             try {
                this.map.clear();
                JsonArray var2 = (JsonArray)GSON.fromJson(var1, JsonArray.class);
-               if (var2 != null) {
-                  Iterator var3 = var2.iterator();
+               if (var2 == null) {
+                  break label54;
+               }
 
-                  while(true) {
-                     if (!var3.hasNext()) {
-                        break label54;
-                     }
-
-                     JsonElement var4 = (JsonElement)var3.next();
-                     JsonObject var5 = GsonHelper.convertToJsonObject(var4, "entry");
-                     StoredUserEntry var6 = this.createEntry(var5);
-                     if (var6.getUser() != null) {
-                        this.map.put(this.getKeyForUser(var6.getUser()), var6);
-                     }
+               for(JsonElement var4 : var2) {
+                  JsonObject var5 = GsonHelper.convertToJsonObject(var4, "entry");
+                  StoredUserEntry var6 = this.createEntry(var5);
+                  if (var6.getUser() != null) {
+                     this.map.put(this.getKeyForUser(var6.getUser()), var6);
                   }
                }
             } catch (Throwable var8) {

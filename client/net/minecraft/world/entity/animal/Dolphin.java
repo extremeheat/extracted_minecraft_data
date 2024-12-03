@@ -83,15 +83,13 @@ public class Dolphin extends AgeableWaterCreature {
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       this.setAirSupply(this.getMaxAirSupply());
       this.setXRot(0.0F);
-      SpawnGroupData var5 = (SpawnGroupData)Objects.requireNonNullElseGet(var4, () -> {
-         return new AgeableMob.AgeableMobGroupData(0.1F);
-      });
+      SpawnGroupData var5 = (SpawnGroupData)Objects.requireNonNullElseGet(var4, () -> new AgeableMob.AgeableMobGroupData(0.1F));
       return super.finalizeSpawn(var1, var2, var3, var5);
    }
 
    @Nullable
    public Dolphin getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (Dolphin)EntityType.DOLPHIN.create(var1, EntitySpawnReason.BREEDING);
+      return EntityType.DOLPHIN.create(var1, EntitySpawnReason.BREEDING);
    }
 
    public float getAgeScale() {
@@ -349,16 +347,127 @@ public class Dolphin extends AgeableWaterCreature {
    }
 
    static {
-      TREASURE_POS = SynchedEntityData.defineId(Dolphin.class, EntityDataSerializers.BLOCK_POS);
-      GOT_FISH = SynchedEntityData.defineId(Dolphin.class, EntityDataSerializers.BOOLEAN);
-      MOISTNESS_LEVEL = SynchedEntityData.defineId(Dolphin.class, EntityDataSerializers.INT);
+      TREASURE_POS = SynchedEntityData.<BlockPos>defineId(Dolphin.class, EntityDataSerializers.BLOCK_POS);
+      GOT_FISH = SynchedEntityData.<Boolean>defineId(Dolphin.class, EntityDataSerializers.BOOLEAN);
+      MOISTNESS_LEVEL = SynchedEntityData.<Integer>defineId(Dolphin.class, EntityDataSerializers.INT);
       SWIM_WITH_PLAYER_TARGETING = TargetingConditions.forNonCombat().range(10.0).ignoreLineOfSight();
-      ALLOWED_ITEMS = (var0) -> {
-         return !var0.hasPickUpDelay() && var0.isAlive() && var0.isInWater();
-      };
+      ALLOWED_ITEMS = (var0) -> !var0.hasPickUpDelay() && var0.isAlive() && var0.isInWater();
    }
 
-   private static class DolphinSwimToTreasureGoal extends Goal {
+   class PlayWithItemsGoal extends Goal {
+      private int cooldown;
+
+      PlayWithItemsGoal() {
+         super();
+      }
+
+      public boolean canUse() {
+         if (this.cooldown > Dolphin.this.tickCount) {
+            return false;
+         } else {
+            List var1 = Dolphin.this.level().getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
+            return !var1.isEmpty() || !Dolphin.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty();
+         }
+      }
+
+      public void start() {
+         List var1 = Dolphin.this.level().getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
+         if (!var1.isEmpty()) {
+            Dolphin.this.getNavigation().moveTo((Entity)var1.get(0), 1.2000000476837158);
+            Dolphin.this.playSound(SoundEvents.DOLPHIN_PLAY, 1.0F, 1.0F);
+         }
+
+         this.cooldown = 0;
+      }
+
+      public void stop() {
+         ItemStack var1 = Dolphin.this.getItemBySlot(EquipmentSlot.MAINHAND);
+         if (!var1.isEmpty()) {
+            this.drop(var1);
+            Dolphin.this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+            this.cooldown = Dolphin.this.tickCount + Dolphin.this.random.nextInt(100);
+         }
+
+      }
+
+      public void tick() {
+         List var1 = Dolphin.this.level().getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
+         ItemStack var2 = Dolphin.this.getItemBySlot(EquipmentSlot.MAINHAND);
+         if (!var2.isEmpty()) {
+            this.drop(var2);
+            Dolphin.this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+         } else if (!var1.isEmpty()) {
+            Dolphin.this.getNavigation().moveTo((Entity)var1.get(0), 1.2000000476837158);
+         }
+
+      }
+
+      private void drop(ItemStack var1) {
+         if (!var1.isEmpty()) {
+            double var2 = Dolphin.this.getEyeY() - 0.30000001192092896;
+            ItemEntity var4 = new ItemEntity(Dolphin.this.level(), Dolphin.this.getX(), var2, Dolphin.this.getZ(), var1);
+            var4.setPickUpDelay(40);
+            var4.setThrower(Dolphin.this);
+            float var5 = 0.3F;
+            float var6 = Dolphin.this.random.nextFloat() * 6.2831855F;
+            float var7 = 0.02F * Dolphin.this.random.nextFloat();
+            var4.setDeltaMovement((double)(0.3F * -Mth.sin(Dolphin.this.getYRot() * 0.017453292F) * Mth.cos(Dolphin.this.getXRot() * 0.017453292F) + Mth.cos(var6) * var7), (double)(0.3F * Mth.sin(Dolphin.this.getXRot() * 0.017453292F) * 1.5F), (double)(0.3F * Mth.cos(Dolphin.this.getYRot() * 0.017453292F) * Mth.cos(Dolphin.this.getXRot() * 0.017453292F) + Mth.sin(var6) * var7));
+            Dolphin.this.level().addFreshEntity(var4);
+         }
+      }
+   }
+
+   static class DolphinSwimWithPlayerGoal extends Goal {
+      private final Dolphin dolphin;
+      private final double speedModifier;
+      @Nullable
+      private Player player;
+
+      DolphinSwimWithPlayerGoal(Dolphin var1, double var2) {
+         super();
+         this.dolphin = var1;
+         this.speedModifier = var2;
+         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
+      }
+
+      public boolean canUse() {
+         this.player = getServerLevel(this.dolphin).getNearestPlayer(Dolphin.SWIM_WITH_PLAYER_TARGETING, this.dolphin);
+         if (this.player == null) {
+            return false;
+         } else {
+            return this.player.isSwimming() && this.dolphin.getTarget() != this.player;
+         }
+      }
+
+      public boolean canContinueToUse() {
+         return this.player != null && this.player.isSwimming() && this.dolphin.distanceToSqr(this.player) < 256.0;
+      }
+
+      public void start() {
+         this.player.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 100), this.dolphin);
+      }
+
+      public void stop() {
+         this.player = null;
+         this.dolphin.getNavigation().stop();
+      }
+
+      public void tick() {
+         this.dolphin.getLookControl().setLookAt(this.player, (float)(this.dolphin.getMaxHeadYRot() + 20), (float)this.dolphin.getMaxHeadXRot());
+         if (this.dolphin.distanceToSqr(this.player) < 6.25) {
+            this.dolphin.getNavigation().stop();
+         } else {
+            this.dolphin.getNavigation().moveTo((Entity)this.player, this.speedModifier);
+         }
+
+         if (this.player.isSwimming() && this.player.level().random.nextInt(6) == 0) {
+            this.player.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 100), this.dolphin);
+         }
+
+      }
+   }
+
+   static class DolphinSwimToTreasureGoal extends Goal {
       private final Dolphin dolphin;
       private boolean stuck;
 
@@ -433,119 +542,6 @@ public class Dolphin extends AgeableWaterCreature {
             }
          }
 
-      }
-   }
-
-   private static class DolphinSwimWithPlayerGoal extends Goal {
-      private final Dolphin dolphin;
-      private final double speedModifier;
-      @Nullable
-      private Player player;
-
-      DolphinSwimWithPlayerGoal(Dolphin var1, double var2) {
-         super();
-         this.dolphin = var1;
-         this.speedModifier = var2;
-         this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-      }
-
-      public boolean canUse() {
-         this.player = getServerLevel(this.dolphin).getNearestPlayer(Dolphin.SWIM_WITH_PLAYER_TARGETING, this.dolphin);
-         if (this.player == null) {
-            return false;
-         } else {
-            return this.player.isSwimming() && this.dolphin.getTarget() != this.player;
-         }
-      }
-
-      public boolean canContinueToUse() {
-         return this.player != null && this.player.isSwimming() && this.dolphin.distanceToSqr(this.player) < 256.0;
-      }
-
-      public void start() {
-         this.player.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 100), this.dolphin);
-      }
-
-      public void stop() {
-         this.player = null;
-         this.dolphin.getNavigation().stop();
-      }
-
-      public void tick() {
-         this.dolphin.getLookControl().setLookAt(this.player, (float)(this.dolphin.getMaxHeadYRot() + 20), (float)this.dolphin.getMaxHeadXRot());
-         if (this.dolphin.distanceToSqr(this.player) < 6.25) {
-            this.dolphin.getNavigation().stop();
-         } else {
-            this.dolphin.getNavigation().moveTo((Entity)this.player, this.speedModifier);
-         }
-
-         if (this.player.isSwimming() && this.player.level().random.nextInt(6) == 0) {
-            this.player.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 100), this.dolphin);
-         }
-
-      }
-   }
-
-   class PlayWithItemsGoal extends Goal {
-      private int cooldown;
-
-      PlayWithItemsGoal() {
-         super();
-      }
-
-      public boolean canUse() {
-         if (this.cooldown > Dolphin.this.tickCount) {
-            return false;
-         } else {
-            List var1 = Dolphin.this.level().getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
-            return !var1.isEmpty() || !Dolphin.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty();
-         }
-      }
-
-      public void start() {
-         List var1 = Dolphin.this.level().getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
-         if (!var1.isEmpty()) {
-            Dolphin.this.getNavigation().moveTo((Entity)var1.get(0), 1.2000000476837158);
-            Dolphin.this.playSound(SoundEvents.DOLPHIN_PLAY, 1.0F, 1.0F);
-         }
-
-         this.cooldown = 0;
-      }
-
-      public void stop() {
-         ItemStack var1 = Dolphin.this.getItemBySlot(EquipmentSlot.MAINHAND);
-         if (!var1.isEmpty()) {
-            this.drop(var1);
-            Dolphin.this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-            this.cooldown = Dolphin.this.tickCount + Dolphin.this.random.nextInt(100);
-         }
-
-      }
-
-      public void tick() {
-         List var1 = Dolphin.this.level().getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
-         ItemStack var2 = Dolphin.this.getItemBySlot(EquipmentSlot.MAINHAND);
-         if (!var2.isEmpty()) {
-            this.drop(var2);
-            Dolphin.this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-         } else if (!var1.isEmpty()) {
-            Dolphin.this.getNavigation().moveTo((Entity)var1.get(0), 1.2000000476837158);
-         }
-
-      }
-
-      private void drop(ItemStack var1) {
-         if (!var1.isEmpty()) {
-            double var2 = Dolphin.this.getEyeY() - 0.30000001192092896;
-            ItemEntity var4 = new ItemEntity(Dolphin.this.level(), Dolphin.this.getX(), var2, Dolphin.this.getZ(), var1);
-            var4.setPickUpDelay(40);
-            var4.setThrower(Dolphin.this);
-            float var5 = 0.3F;
-            float var6 = Dolphin.this.random.nextFloat() * 6.2831855F;
-            float var7 = 0.02F * Dolphin.this.random.nextFloat();
-            var4.setDeltaMovement((double)(0.3F * -Mth.sin(Dolphin.this.getYRot() * 0.017453292F) * Mth.cos(Dolphin.this.getXRot() * 0.017453292F) + Mth.cos(var6) * var7), (double)(0.3F * Mth.sin(Dolphin.this.getXRot() * 0.017453292F) * 1.5F), (double)(0.3F * Mth.cos(Dolphin.this.getYRot() * 0.017453292F) * Mth.cos(Dolphin.this.getXRot() * 0.017453292F) + Mth.sin(var6) * var7));
-            Dolphin.this.level().addFreshEntity(var4);
-         }
       }
    }
 }

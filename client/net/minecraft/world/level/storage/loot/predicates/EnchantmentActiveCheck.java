@@ -9,9 +9,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public record EnchantmentActiveCheck(boolean active) implements LootItemCondition {
-   public static final MapCodec<EnchantmentActiveCheck> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.BOOL.fieldOf("active").forGetter(EnchantmentActiveCheck::active)).apply(var0, EnchantmentActiveCheck::new);
-   });
+   public static final MapCodec<EnchantmentActiveCheck> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("active").forGetter(EnchantmentActiveCheck::active)).apply(var0, EnchantmentActiveCheck::new));
 
    public EnchantmentActiveCheck(boolean var1) {
       super();
@@ -31,19 +29,11 @@ public record EnchantmentActiveCheck(boolean active) implements LootItemConditio
    }
 
    public static LootItemCondition.Builder enchantmentActiveCheck() {
-      return () -> {
-         return new EnchantmentActiveCheck(true);
-      };
+      return () -> new EnchantmentActiveCheck(true);
    }
 
    public static LootItemCondition.Builder enchantmentInactiveCheck() {
-      return () -> {
-         return new EnchantmentActiveCheck(false);
-      };
-   }
-
-   public boolean active() {
-      return this.active;
+      return () -> new EnchantmentActiveCheck(false);
    }
 
    // $FF: synthetic method

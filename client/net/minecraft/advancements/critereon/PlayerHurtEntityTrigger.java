@@ -21,15 +21,11 @@ public class PlayerHurtEntityTrigger extends SimpleCriterionTrigger<TriggerInsta
 
    public void trigger(ServerPlayer var1, Entity var2, DamageSource var3, float var4, float var5, boolean var6) {
       LootContext var7 = EntityPredicate.createContext(var1, var2);
-      this.trigger(var1, (var6x) -> {
-         return var6x.matches(var1, var7, var3, var4, var5, var6);
-      });
+      this.trigger(var1, (var6x) -> var6x.matches(var1, var7, var3, var4, var5, var6));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<DamagePredicate> damage, Optional<ContextAwarePredicate> entity) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), DamagePredicate.CODEC.optionalFieldOf("damage").forGetter(TriggerInstance::damage), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(TriggerInstance::entity)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), DamagePredicate.CODEC.optionalFieldOf("damage").forGetter(TriggerInstance::damage), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(TriggerInstance::entity)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<DamagePredicate> var2, Optional<ContextAwarePredicate> var3) {
          super();
@@ -73,18 +69,6 @@ public class PlayerHurtEntityTrigger extends SimpleCriterionTrigger<TriggerInsta
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
          var1.validateEntity(this.entity, ".entity");
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<DamagePredicate> damage() {
-         return this.damage;
-      }
-
-      public Optional<ContextAwarePredicate> entity() {
-         return this.entity;
       }
    }
 }

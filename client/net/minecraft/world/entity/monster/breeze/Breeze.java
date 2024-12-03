@@ -78,7 +78,7 @@ public class Breeze extends Monster {
    }
 
    protected Brain.Provider<Breeze> brainProvider() {
-      return Brain.provider(BreezeAi.MEMORY_TYPES, BreezeAi.SENSOR_TYPES);
+      return Brain.<Breeze>provider(BreezeAi.MEMORY_TYPES, BreezeAi.SENSOR_TYPES);
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
@@ -118,13 +118,10 @@ public class Breeze extends Monster {
             this.emitJumpTrailParticles();
       }
 
+      this.idle.startIfStopped(this.tickCount);
       if (var1 != Pose.SLIDING && this.slide.isStarted()) {
          this.slideBack.start(this.tickCount);
          this.slide.stop();
-      }
-
-      if (var1 == Pose.STANDING) {
-         this.idle.startIfStopped(this.tickCount);
       }
 
       this.soundTick = this.soundTick == 0 ? this.random.nextIntBetweenInclusive(1, 80) : this.soundTick - 1;
@@ -204,11 +201,7 @@ public class Breeze extends Monster {
    }
 
    public Optional<LivingEntity> getHurtBy() {
-      return this.getBrain().getMemory(MemoryModuleType.HURT_BY).map(DamageSource::getEntity).filter((var0) -> {
-         return var0 instanceof LivingEntity;
-      }).map((var0) -> {
-         return (LivingEntity)var0;
-      });
+      return this.getBrain().getMemory(MemoryModuleType.HURT_BY).map(DamageSource::getEntity).filter((var0) -> var0 instanceof LivingEntity).map((var0) -> (LivingEntity)var0);
    }
 
    public boolean withinInnerCircleRange(Vec3 var1) {

@@ -45,10 +45,6 @@ public class SculkChargeParticle extends TextureSheetParticle {
          return var15;
       }
 
-      public SpriteSet sprite() {
-         return this.sprite;
-      }
-
       // $FF: synthetic method
       public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
          return this.createParticle((SculkChargeParticleOptions)var1, var2, var3, var5, var7, var9, var11, var13);

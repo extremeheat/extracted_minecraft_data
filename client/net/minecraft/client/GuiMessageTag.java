@@ -52,25 +52,6 @@ public record GuiMessageTag(int indicatorColor, @Nullable Icon icon, @Nullable C
       return CHAT_ERROR;
    }
 
-   public int indicatorColor() {
-      return this.indicatorColor;
-   }
-
-   @Nullable
-   public Icon icon() {
-      return this.icon;
-   }
-
-   @Nullable
-   public Component text() {
-      return this.text;
-   }
-
-   @Nullable
-   public String logTag() {
-      return this.logTag;
-   }
-
    static {
       SYSTEM = new GuiMessageTag(13684944, (Icon)null, SYSTEM_TEXT, "System");
       SYSTEM_SINGLE_PLAYER = new GuiMessageTag(13684944, (Icon)null, SYSTEM_TEXT_SINGLE_PLAYER, "System");

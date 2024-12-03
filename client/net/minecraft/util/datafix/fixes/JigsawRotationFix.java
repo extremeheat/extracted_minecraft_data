@@ -25,8 +25,6 @@ public class JigsawRotationFix extends DataFix {
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped("jigsaw_rotation_fix", this.getInputSchema().getType(References.BLOCK_STATE), (var0) -> {
-         return var0.update(DSL.remainderFinder(), JigsawRotationFix::fix);
-      });
+      return this.fixTypeEverywhereTyped("jigsaw_rotation_fix", this.getInputSchema().getType(References.BLOCK_STATE), (var0) -> var0.update(DSL.remainderFinder(), JigsawRotationFix::fix));
    }
 }

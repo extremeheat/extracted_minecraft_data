@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -60,14 +59,14 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
    private void trySpawnGolem(Level var1, BlockPos var2) {
       BlockPattern.BlockPatternMatch var3 = this.getOrCreateSnowGolemFull().find(var1, var2);
       if (var3 != null) {
-         SnowGolem var4 = (SnowGolem)EntityType.SNOW_GOLEM.create(var1, EntitySpawnReason.TRIGGERED);
+         SnowGolem var4 = EntityType.SNOW_GOLEM.create(var1, EntitySpawnReason.TRIGGERED);
          if (var4 != null) {
             spawnGolemInWorld(var1, var3, var4, var3.getBlock(0, 2, 0).getPos());
          }
       } else {
          BlockPattern.BlockPatternMatch var6 = this.getOrCreateIronGolemFull().find(var1, var2);
          if (var6 != null) {
-            IronGolem var5 = (IronGolem)EntityType.IRON_GOLEM.create(var1, EntitySpawnReason.TRIGGERED);
+            IronGolem var5 = EntityType.IRON_GOLEM.create(var1, EntitySpawnReason.TRIGGERED);
             if (var5 != null) {
                var5.setPlayerCreated(true);
                spawnGolemInWorld(var1, var6, var5, var6.getBlock(1, 2, 0).getPos());
@@ -81,10 +80,8 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
       clearPatternBlocks(var0, var1);
       var2.moveTo((double)var3.getX() + 0.5, (double)var3.getY() + 0.05, (double)var3.getZ() + 0.5, 0.0F, 0.0F);
       var0.addFreshEntity(var2);
-      Iterator var4 = var0.getEntitiesOfClass(ServerPlayer.class, var2.getBoundingBox().inflate(5.0)).iterator();
 
-      while(var4.hasNext()) {
-         ServerPlayer var5 = (ServerPlayer)var4.next();
+      for(ServerPlayer var5 : var0.getEntitiesOfClass(ServerPlayer.class, var2.getBoundingBox().inflate(5.0))) {
          CriteriaTriggers.SUMMONED_ENTITY.trigger(var5, var2);
       }
 
@@ -138,9 +135,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
 
    private BlockPattern getOrCreateIronGolemBase() {
       if (this.ironGolemBase == null) {
-         this.ironGolemBase = BlockPatternBuilder.start().aisle("~ ~", "###", "~#~").where('#', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.IRON_BLOCK))).where('~', (var0) -> {
-            return var0.getState().isAir();
-         }).build();
+         this.ironGolemBase = BlockPatternBuilder.start().aisle("~ ~", "###", "~#~").where('#', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.IRON_BLOCK))).where('~', (var0) -> var0.getState().isAir()).build();
       }
 
       return this.ironGolemBase;
@@ -148,9 +143,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
 
    private BlockPattern getOrCreateIronGolemFull() {
       if (this.ironGolemFull == null) {
-         this.ironGolemFull = BlockPatternBuilder.start().aisle("~^~", "###", "~#~").where('^', BlockInWorld.hasState(PUMPKINS_PREDICATE)).where('#', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.IRON_BLOCK))).where('~', (var0) -> {
-            return var0.getState().isAir();
-         }).build();
+         this.ironGolemFull = BlockPatternBuilder.start().aisle("~^~", "###", "~#~").where('^', BlockInWorld.hasState(PUMPKINS_PREDICATE)).where('#', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.IRON_BLOCK))).where('~', (var0) -> var0.getState().isAir()).build();
       }
 
       return this.ironGolemFull;
@@ -158,8 +151,6 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
 
    static {
       FACING = HorizontalDirectionalBlock.FACING;
-      PUMPKINS_PREDICATE = (var0) -> {
-         return var0 != null && (var0.is(Blocks.CARVED_PUMPKIN) || var0.is(Blocks.JACK_O_LANTERN));
-      };
+      PUMPKINS_PREDICATE = (var0) -> var0 != null && (var0.is(Blocks.CARVED_PUMPKIN) || var0.is(Blocks.JACK_O_LANTERN));
    }
 }

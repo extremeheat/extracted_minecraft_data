@@ -19,16 +19,16 @@ public class WeightedRandomList<E extends WeightedEntry> {
    }
 
    public static <E extends WeightedEntry> WeightedRandomList<E> create() {
-      return new WeightedRandomList(ImmutableList.of());
+      return new WeightedRandomList<E>(ImmutableList.of());
    }
 
    @SafeVarargs
    public static <E extends WeightedEntry> WeightedRandomList<E> create(E... var0) {
-      return new WeightedRandomList(ImmutableList.copyOf(var0));
+      return new WeightedRandomList<E>(ImmutableList.copyOf(var0));
    }
 
    public static <E extends WeightedEntry> WeightedRandomList<E> create(List<E> var0) {
-      return new WeightedRandomList(var0);
+      return new WeightedRandomList<E>(var0);
    }
 
    public boolean isEmpty() {
@@ -40,7 +40,7 @@ public class WeightedRandomList<E extends WeightedEntry> {
          return Optional.empty();
       } else {
          int var2 = var1.nextInt(this.totalWeight);
-         return WeightedRandom.getWeightedItem(this.items, var2);
+         return WeightedRandom.<E>getWeightedItem(this.items, var2);
       }
    }
 

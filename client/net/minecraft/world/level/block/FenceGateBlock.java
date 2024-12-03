@@ -35,11 +35,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FenceGateBlock extends HorizontalDirectionalBlock {
-   public static final MapCodec<FenceGateBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter((var0x) -> {
-         return var0x.type;
-      }), propertiesCodec()).apply(var0, FenceGateBlock::new);
-   });
+   public static final MapCodec<FenceGateBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter((var0x) -> var0x.type), propertiesCodec()).apply(var0, FenceGateBlock::new));
    public static final BooleanProperty OPEN;
    public static final BooleanProperty POWERED;
    public static final BooleanProperty IN_WALL;
@@ -154,9 +150,9 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
          var2.setBlock(var3, var1, 10);
       }
 
-      boolean var7 = (Boolean)var1.getValue(OPEN);
-      var2.playSound(var4, var3, var7 ? this.type.fenceGateOpen() : this.type.fenceGateClose(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
-      var2.gameEvent(var4, var7 ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, var3);
+      boolean var8 = (Boolean)var1.getValue(OPEN);
+      var2.playSound(var4, var3, var8 ? this.type.fenceGateOpen() : this.type.fenceGateClose(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
+      var2.gameEvent(var4, var8 ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, var3);
       return InteractionResult.SUCCESS;
    }
 

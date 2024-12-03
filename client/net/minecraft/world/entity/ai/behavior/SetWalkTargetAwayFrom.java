@@ -25,9 +25,7 @@ public class SetWalkTargetAwayFrom {
    }
 
    private static <T> OneShot<PathfinderMob> create(MemoryModuleType<T> var0, float var1, int var2, boolean var3, Function<T, Vec3> var4) {
-      return BehaviorBuilder.create((var5) -> {
-         return var5.group(var5.registered(MemoryModuleType.WALK_TARGET), var5.present(var0)).apply(var5, (var5x, var6) -> {
-            return (var7, var8, var9) -> {
+      return BehaviorBuilder.create((Function)((var5) -> var5.group(var5.registered(MemoryModuleType.WALK_TARGET), var5.present(var0)).apply(var5, (var5x, var6) -> (var7, var8, var9) -> {
                Optional var11 = var5.tryGet(var5x);
                if (var11.isPresent() && !var3) {
                   return false;
@@ -37,19 +35,18 @@ public class SetWalkTargetAwayFrom {
                   if (!var12.closerThan(var13, (double)var2)) {
                      return false;
                   } else {
-                     Vec3 var15;
                      if (var11.isPresent() && ((WalkTarget)var11.get()).getSpeedModifier() == var1) {
                         Vec3 var14 = ((WalkTarget)var11.get()).getTarget().currentPosition().subtract(var12);
-                        var15 = var13.subtract(var12);
+                        Vec3 var15 = var13.subtract(var12);
                         if (var14.dot(var15) < 0.0) {
                            return false;
                         }
                      }
 
                      for(int var16 = 0; var16 < 10; ++var16) {
-                        var15 = LandRandomPos.getPosAway(var8, 16, 7, var13);
-                        if (var15 != null) {
-                           var5x.set(new WalkTarget(var15, var1, 0));
+                        Vec3 var17 = LandRandomPos.getPosAway(var8, 16, 7, var13);
+                        if (var17 != null) {
+                           var5x.set(new WalkTarget(var17, var1, 0));
                            break;
                         }
                      }
@@ -57,8 +54,6 @@ public class SetWalkTargetAwayFrom {
                      return true;
                   }
                }
-            };
-         });
-      });
+            })));
    }
 }

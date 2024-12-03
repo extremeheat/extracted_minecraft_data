@@ -55,10 +55,6 @@ public class ConduitBlock extends BaseEntityBlock implements SimpleWaterloggedBl
       return createTickerHelper(var3, BlockEntityType.CONDUIT, var1.isClientSide ? ConduitBlockEntity::clientTick : ConduitBlockEntity::serverTick);
    }
 
-   protected RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.ENTITYBLOCK_ANIMATED;
-   }
-
    protected FluidState getFluidState(BlockState var1) {
       return (Boolean)var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }

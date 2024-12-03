@@ -25,21 +25,15 @@ public class ModelGroupCollector {
       HashMap var2 = new HashMap();
       HashMap var3 = new HashMap();
       var1.models().forEach((var3x, var4x) -> {
-         List var5 = (List)var2.computeIfAbsent(var4x.state().getBlock(), (var1) -> {
-            return List.copyOf(var0.getColoringProperties(var1));
-         });
+         List var5 = (List)var2.computeIfAbsent(var4x.state().getBlock(), (var1) -> List.copyOf(var0.getColoringProperties(var1)));
          GroupKey var6 = ModelGroupCollector.GroupKey.create(var4x.state(), var4x.model(), var5);
-         ((Set)var3.computeIfAbsent(var6, (var0x) -> {
-            return Sets.newIdentityHashSet();
-         })).add(var4x.state());
+         ((Set)var3.computeIfAbsent(var6, (var0x) -> Sets.newIdentityHashSet())).add(var4x.state());
       });
       int var4 = 1;
       Object2IntOpenHashMap var5 = new Object2IntOpenHashMap();
       var5.defaultReturnValue(-1);
-      Iterator var6 = var3.values().iterator();
 
-      while(var6.hasNext()) {
-         Set var7 = (Set)var6.next();
+      for(Set var7 : var3.values()) {
          Iterator var8 = var7.iterator();
 
          while(var8.hasNext()) {
@@ -52,9 +46,7 @@ public class ModelGroupCollector {
 
          if (var7.size() > 1) {
             int var10 = var4++;
-            var7.forEach((var2x) -> {
-               var5.put(var2x, var10);
-            });
+            var7.forEach((var2x) -> var5.put(var2x, var10));
          }
       }
 
@@ -68,16 +60,9 @@ public class ModelGroupCollector {
          this.coloringValues = var2;
       }
 
-      public static GroupKey create(BlockState var0, UnbakedModel var1, List<Property<?>> var2) {
+      public static GroupKey create(BlockState var0, UnbakedBlockStateModel var1, List<Property<?>> var2) {
          List var3 = getColoringValues(var0, var2);
-         Object var10000;
-         if (var1 instanceof UnbakedBlockStateModel var5) {
-            var10000 = var5.visualEqualityGroup(var0);
-         } else {
-            var10000 = var1;
-         }
-
-         Object var4 = var10000;
+         Object var4 = var1.visualEqualityGroup(var0);
          return new GroupKey(var4, var3);
       }
 
@@ -89,14 +74,6 @@ public class ModelGroupCollector {
          }
 
          return List.of(var2);
-      }
-
-      public Object equalityGroup() {
-         return this.equalityGroup;
-      }
-
-      public List<Object> coloringValues() {
-         return this.coloringValues;
       }
    }
 }

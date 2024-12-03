@@ -13,18 +13,6 @@ public record AnimationDefinition(float lengthInSeconds, boolean looping, Map<St
       this.boneAnimations = var3;
    }
 
-   public float lengthInSeconds() {
-      return this.lengthInSeconds;
-   }
-
-   public boolean looping() {
-      return this.looping;
-   }
-
-   public Map<String, List<AnimationChannel>> boneAnimations() {
-      return this.boneAnimations;
-   }
-
    public static class Builder {
       private final float length;
       private final Map<String, List<AnimationChannel>> animationByBone = Maps.newHashMap();
@@ -45,9 +33,7 @@ public record AnimationDefinition(float lengthInSeconds, boolean looping, Map<St
       }
 
       public Builder addAnimation(String var1, AnimationChannel var2) {
-         ((List)this.animationByBone.computeIfAbsent(var1, (var0) -> {
-            return new ArrayList();
-         })).add(var2);
+         ((List)this.animationByBone.computeIfAbsent(var1, (var0) -> new ArrayList())).add(var2);
          return this;
       }
 

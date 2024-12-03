@@ -2,7 +2,6 @@ package net.minecraft.world.entity.ai.goal;
 
 import com.google.common.collect.Lists;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -63,48 +62,41 @@ public class MoveThroughVillageGoal extends Goal {
                   if (!var1.isVillage(var3x)) {
                      return -1.0 / 0.0;
                   } else {
-                     Optional var4 = var1.getPoiManager().find((var0) -> {
-                        return var0.is(PoiTypeTags.VILLAGE);
-                     }, this::hasNotVisited, var3x, 10, PoiManager.Occupancy.IS_OCCUPIED);
-                     return (Double)var4.map((var1x) -> {
-                        return -var1x.distSqr(var2);
-                     }).orElse(-1.0 / 0.0);
+                     Optional var4 = var1.getPoiManager().find((var0) -> var0.is(PoiTypeTags.VILLAGE), this::hasNotVisited, var3x, 10, PoiManager.Occupancy.IS_OCCUPIED);
+                     return (Double)var4.map((var1x) -> -var1x.distSqr(var2)).orElse(-1.0 / 0.0);
                   }
                });
                if (var3 == null) {
                   return false;
                } else {
-                  Optional var4 = var1.getPoiManager().find((var0) -> {
-                     return var0.is(PoiTypeTags.VILLAGE);
-                  }, this::hasNotVisited, BlockPos.containing(var3), 10, PoiManager.Occupancy.IS_OCCUPIED);
+                  Optional var4 = var1.getPoiManager().find((var0) -> var0.is(PoiTypeTags.VILLAGE), this::hasNotVisited, BlockPos.containing(var3), 10, PoiManager.Occupancy.IS_OCCUPIED);
                   if (var4.isEmpty()) {
                      return false;
                   } else {
                      this.poiPos = ((BlockPos)var4.get()).immutable();
                      GroundPathNavigation var5 = (GroundPathNavigation)this.mob.getNavigation();
-                     boolean var6 = var5.canOpenDoors();
                      var5.setCanOpenDoors(this.canDealWithDoors.getAsBoolean());
                      this.path = var5.createPath((BlockPos)this.poiPos, 0);
-                     var5.setCanOpenDoors(var6);
+                     var5.setCanOpenDoors(true);
                      if (this.path == null) {
-                        Vec3 var7 = DefaultRandomPos.getPosTowards(this.mob, 10, 7, Vec3.atBottomCenterOf(this.poiPos), 1.5707963705062866);
-                        if (var7 == null) {
+                        Vec3 var6 = DefaultRandomPos.getPosTowards(this.mob, 10, 7, Vec3.atBottomCenterOf(this.poiPos), 1.5707963705062866);
+                        if (var6 == null) {
                            return false;
                         }
 
                         var5.setCanOpenDoors(this.canDealWithDoors.getAsBoolean());
-                        this.path = this.mob.getNavigation().createPath(var7.x, var7.y, var7.z, 0);
-                        var5.setCanOpenDoors(var6);
+                        this.path = this.mob.getNavigation().createPath(var6.x, var6.y, var6.z, 0);
+                        var5.setCanOpenDoors(true);
                         if (this.path == null) {
                            return false;
                         }
                      }
 
-                     for(int var10 = 0; var10 < this.path.getNodeCount(); ++var10) {
-                        Node var8 = this.path.getNode(var10);
-                        BlockPos var9 = new BlockPos(var8.x, var8.y + 1, var8.z);
-                        if (DoorBlock.isWoodenDoor(this.mob.level(), var9)) {
-                           this.path = this.mob.getNavigation().createPath((double)var8.x, (double)var8.y, (double)var8.z, 0);
+                     for(int var9 = 0; var9 < this.path.getNodeCount(); ++var9) {
+                        Node var7 = this.path.getNode(var9);
+                        BlockPos var8 = new BlockPos(var7.x, var7.y + 1, var7.z);
+                        if (DoorBlock.isWoodenDoor(this.mob.level(), var8)) {
+                           this.path = this.mob.getNavigation().createPath((double)var7.x, (double)var7.y, (double)var7.z, 0);
                            break;
                         }
                      }
@@ -137,18 +129,13 @@ public class MoveThroughVillageGoal extends Goal {
    }
 
    private boolean hasNotVisited(BlockPos var1) {
-      Iterator var2 = this.visited.iterator();
-
-      BlockPos var3;
-      do {
-         if (!var2.hasNext()) {
-            return true;
+      for(BlockPos var3 : this.visited) {
+         if (Objects.equals(var1, var3)) {
+            return false;
          }
+      }
 
-         var3 = (BlockPos)var2.next();
-      } while(!Objects.equals(var1, var3));
-
-      return false;
+      return true;
    }
 
    private void updateVisited() {

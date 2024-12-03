@@ -11,15 +11,7 @@ import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import org.slf4j.Logger;
 
 public class VeryBiasedToBottomHeight extends HeightProvider {
-   public static final MapCodec<VeryBiasedToBottomHeight> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(VerticalAnchor.CODEC.fieldOf("min_inclusive").forGetter((var0x) -> {
-         return var0x.minInclusive;
-      }), VerticalAnchor.CODEC.fieldOf("max_inclusive").forGetter((var0x) -> {
-         return var0x.maxInclusive;
-      }), Codec.intRange(1, 2147483647).optionalFieldOf("inner", 1).forGetter((var0x) -> {
-         return var0x.inner;
-      })).apply(var0, VeryBiasedToBottomHeight::new);
-   });
+   public static final MapCodec<VeryBiasedToBottomHeight> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(VerticalAnchor.CODEC.fieldOf("min_inclusive").forGetter((var0x) -> var0x.minInclusive), VerticalAnchor.CODEC.fieldOf("max_inclusive").forGetter((var0x) -> var0x.maxInclusive), Codec.intRange(1, 2147483647).optionalFieldOf("inner", 1).forGetter((var0x) -> var0x.inner)).apply(var0, VeryBiasedToBottomHeight::new));
    private static final Logger LOGGER = LogUtils.getLogger();
    private final VerticalAnchor minInclusive;
    private final VerticalAnchor maxInclusive;

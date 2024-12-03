@@ -13,9 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.WrittenBookContent;
 
 public record ItemWrittenBookPredicate(Optional<CollectionPredicate<Filterable<Component>, PagePredicate>> pages, Optional<String> author, Optional<String> title, MinMaxBounds.Ints generation, Optional<Boolean> resolved) implements SingleComponentItemPredicate<WrittenBookContent> {
-   public static final Codec<ItemWrittenBookPredicate> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(CollectionPredicate.codec(ItemWrittenBookPredicate.PagePredicate.CODEC).optionalFieldOf("pages").forGetter(ItemWrittenBookPredicate::pages), Codec.STRING.optionalFieldOf("author").forGetter(ItemWrittenBookPredicate::author), Codec.STRING.optionalFieldOf("title").forGetter(ItemWrittenBookPredicate::title), MinMaxBounds.Ints.CODEC.optionalFieldOf("generation", MinMaxBounds.Ints.ANY).forGetter(ItemWrittenBookPredicate::generation), Codec.BOOL.optionalFieldOf("resolved").forGetter(ItemWrittenBookPredicate::resolved)).apply(var0, ItemWrittenBookPredicate::new);
-   });
+   public static final Codec<ItemWrittenBookPredicate> CODEC = RecordCodecBuilder.create((var0) -> var0.group(CollectionPredicate.codec(ItemWrittenBookPredicate.PagePredicate.CODEC).optionalFieldOf("pages").forGetter(ItemWrittenBookPredicate::pages), Codec.STRING.optionalFieldOf("author").forGetter(ItemWrittenBookPredicate::author), Codec.STRING.optionalFieldOf("title").forGetter(ItemWrittenBookPredicate::title), MinMaxBounds.Ints.CODEC.optionalFieldOf("generation", MinMaxBounds.Ints.ANY).forGetter(ItemWrittenBookPredicate::generation), Codec.BOOL.optionalFieldOf("resolved").forGetter(ItemWrittenBookPredicate::resolved)).apply(var0, ItemWrittenBookPredicate::new));
 
    public ItemWrittenBookPredicate(Optional<CollectionPredicate<Filterable<Component>, PagePredicate>> var1, Optional<String> var2, Optional<String> var3, MinMaxBounds.Ints var4, Optional<Boolean> var5) {
       super();
@@ -40,28 +38,8 @@ public record ItemWrittenBookPredicate(Optional<CollectionPredicate<Filterable<C
       } else if (this.resolved.isPresent() && (Boolean)this.resolved.get() != var2.resolved()) {
          return false;
       } else {
-         return !this.pages.isPresent() || ((CollectionPredicate)this.pages.get()).test((Iterable)var2.pages());
+         return !this.pages.isPresent() || ((CollectionPredicate)this.pages.get()).test(var2.pages());
       }
-   }
-
-   public Optional<CollectionPredicate<Filterable<Component>, PagePredicate>> pages() {
-      return this.pages;
-   }
-
-   public Optional<String> author() {
-      return this.author;
-   }
-
-   public Optional<String> title() {
-      return this.title;
-   }
-
-   public MinMaxBounds.Ints generation() {
-      return this.generation;
-   }
-
-   public Optional<Boolean> resolved() {
-      return this.resolved;
    }
 
    public static record PagePredicate(Component contents) implements Predicate<Filterable<Component>> {
@@ -74,10 +52,6 @@ public record ItemWrittenBookPredicate(Optional<CollectionPredicate<Filterable<C
 
       public boolean test(Filterable<Component> var1) {
          return ((Component)var1.raw()).equals(this.contents);
-      }
-
-      public Component contents() {
-         return this.contents;
       }
 
       // $FF: synthetic method

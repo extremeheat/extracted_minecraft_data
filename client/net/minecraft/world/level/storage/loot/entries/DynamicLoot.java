@@ -11,11 +11,7 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class DynamicLoot extends LootPoolSingletonContainer {
-   public static final MapCodec<DynamicLoot> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceLocation.CODEC.fieldOf("name").forGetter((var0x) -> {
-         return var0x.name;
-      })).and(singletonFields(var0)).apply(var0, DynamicLoot::new);
-   });
+   public static final MapCodec<DynamicLoot> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("name").forGetter((var0x) -> var0x.name)).and(singletonFields(var0)).apply(var0, DynamicLoot::new));
    private final ResourceLocation name;
 
    private DynamicLoot(ResourceLocation var1, int var2, int var3, List<LootItemCondition> var4, List<LootItemFunction> var5) {
@@ -32,8 +28,6 @@ public class DynamicLoot extends LootPoolSingletonContainer {
    }
 
    public static LootPoolSingletonContainer.Builder<?> dynamicEntry(ResourceLocation var0) {
-      return simpleBuilder((var1, var2, var3, var4) -> {
-         return new DynamicLoot(var0, var1, var2, var3, var4);
-      });
+      return simpleBuilder((var1, var2, var3, var4) -> new DynamicLoot(var0, var1, var2, var3, var4));
    }
 }

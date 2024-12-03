@@ -42,8 +42,7 @@ public class BiomeManager {
       int var14 = 0;
       double var15 = 1.0 / 0.0;
 
-      int var17;
-      for(var17 = 0; var17 < 8; ++var17) {
+      for(int var17 = 0; var17 < 8; ++var17) {
          boolean var18 = (var17 & 4) == 0;
          boolean var19 = (var17 & 2) == 0;
          boolean var20 = (var17 & 1) == 0;
@@ -60,10 +59,10 @@ public class BiomeManager {
          }
       }
 
-      var17 = (var14 & 4) == 0 ? var5 : var5 + 1;
-      int var32 = (var14 & 2) == 0 ? var6 : var6 + 1;
-      int var33 = (var14 & 1) == 0 ? var7 : var7 + 1;
-      return this.noiseBiomeSource.getNoiseBiome(var17, var32, var33);
+      int var32 = (var14 & 4) == 0 ? var5 : var5 + 1;
+      int var33 = (var14 & 2) == 0 ? var6 : var6 + 1;
+      int var34 = (var14 & 1) == 0 ? var7 : var7 + 1;
+      return this.noiseBiomeSource.getNoiseBiome(var32, var33, var34);
    }
 
    public Holder<Biome> getNoiseBiomeAtPosition(double var1, double var3, double var5) {

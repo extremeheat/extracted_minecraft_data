@@ -45,10 +45,10 @@ public abstract class PackDetector<T> {
          if (!var2.isEmpty()) {
             return null;
          } else {
-            return !Files.isRegularFile(var3.resolve("pack.mcmeta"), new LinkOption[0]) ? null : this.createDirectoryPack(var3);
+            return (T)(!Files.isRegularFile(var3.resolve("pack.mcmeta"), new LinkOption[0]) ? null : this.createDirectoryPack(var3));
          }
       } else {
-         return var4.isRegularFile() && var3.getFileName().toString().endsWith(".zip") ? this.createZipPack(var3) : null;
+         return (T)(var4.isRegularFile() && var3.getFileName().toString().endsWith(".zip") ? this.createZipPack(var3) : null);
       }
    }
 

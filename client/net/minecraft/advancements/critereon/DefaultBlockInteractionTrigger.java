@@ -26,15 +26,11 @@ public class DefaultBlockInteractionTrigger extends SimpleCriterionTrigger<Trigg
       BlockState var4 = var3.getBlockState(var2);
       LootParams var5 = (new LootParams.Builder(var3)).withParameter(LootContextParams.ORIGIN, var2.getCenter()).withParameter(LootContextParams.THIS_ENTITY, var1).withParameter(LootContextParams.BLOCK_STATE, var4).create(LootContextParamSets.BLOCK_USE);
       LootContext var6 = (new LootContext.Builder(var5)).create(Optional.empty());
-      this.trigger(var1, (var1x) -> {
-         return var1x.matches(var6);
-      });
+      this.trigger(var1, (var1x) -> var1x.matches(var6));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> location) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ContextAwarePredicate.CODEC.optionalFieldOf("location").forGetter(TriggerInstance::location)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), ContextAwarePredicate.CODEC.optionalFieldOf("location").forGetter(TriggerInstance::location)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2) {
          super();
@@ -48,17 +44,7 @@ public class DefaultBlockInteractionTrigger extends SimpleCriterionTrigger<Trigg
 
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
-         this.location.ifPresent((var1x) -> {
-            var1.validate(var1x, LootContextParamSets.BLOCK_USE, ".location");
-         });
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<ContextAwarePredicate> location() {
-         return this.location;
+         this.location.ifPresent((var1x) -> var1.validate(var1x, LootContextParamSets.BLOCK_USE, ".location"));
       }
    }
 }

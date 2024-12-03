@@ -40,68 +40,68 @@ public class RconClient extends GenericThread {
    }
 
    public void run() {
-      while(true) {
+      try {
          try {
-            if (this.running) {
+            while(this.running) {
                BufferedInputStream var1 = new BufferedInputStream(this.client.getInputStream());
                int var2 = var1.read(this.buf, 0, 1460);
-               if (10 <= var2) {
-                  int var3 = 0;
-                  int var4 = PktUtils.intFromByteArray(this.buf, 0, var2);
-                  if (var4 != var2 - 4) {
-                     return;
-                  }
-
-                  var3 += 4;
-                  int var5 = PktUtils.intFromByteArray(this.buf, var3, var2);
-                  var3 += 4;
-                  int var6 = PktUtils.intFromByteArray(this.buf, var3);
-                  var3 += 4;
-                  switch (var6) {
-                     case 2:
-                        if (this.authed) {
-                           String var8 = PktUtils.stringFromByteArray(this.buf, var3, var2);
-
-                           try {
-                              this.sendCmdResponse(var5, this.serverInterface.runCommand(var8));
-                           } catch (Exception var15) {
-                              this.sendCmdResponse(var5, "Error executing: " + var8 + " (" + var15.getMessage() + ")");
-                           }
-                           continue;
-                        }
-
-                        this.sendAuthFailure();
-                        continue;
-                     case 3:
-                        String var7 = PktUtils.stringFromByteArray(this.buf, var3, var2);
-                        int var10000 = var3 + var7.length();
-                        if (!var7.isEmpty() && var7.equals(this.rconPassword)) {
-                           this.authed = true;
-                           this.send(var5, 2, "");
-                           continue;
-                        }
-
-                        this.authed = false;
-                        this.sendAuthFailure();
-                        continue;
-                     default:
-                        this.sendCmdResponse(var5, String.format(Locale.ROOT, "Unknown request %s", Integer.toHexString(var6)));
-                        continue;
-                  }
+               if (10 > var2) {
+                  return;
                }
 
-               return;
+               int var3 = 0;
+               int var4 = PktUtils.intFromByteArray(this.buf, 0, var2);
+               if (var4 != var2 - 4) {
+                  return;
+               }
+
+               var3 += 4;
+               int var5 = PktUtils.intFromByteArray(this.buf, var3, var2);
+               var3 += 4;
+               int var6 = PktUtils.intFromByteArray(this.buf, var3);
+               var3 += 4;
+               switch (var6) {
+                  case 2:
+                     if (this.authed) {
+                        String var8 = PktUtils.stringFromByteArray(this.buf, var3, var2);
+
+                        try {
+                           this.sendCmdResponse(var5, this.serverInterface.runCommand(var8));
+                        } catch (Exception var15) {
+                           this.sendCmdResponse(var5, "Error executing: " + var8 + " (" + var15.getMessage() + ")");
+                        }
+                        break;
+                     }
+
+                     this.sendAuthFailure();
+                     break;
+                  case 3:
+                     String var7 = PktUtils.stringFromByteArray(this.buf, var3, var2);
+                     int var10000 = var3 + var7.length();
+                     if (!var7.isEmpty() && var7.equals(this.rconPassword)) {
+                        this.authed = true;
+                        this.send(var5, 2, "");
+                        break;
+                     }
+
+                     this.authed = false;
+                     this.sendAuthFailure();
+                     break;
+                  default:
+                     this.sendCmdResponse(var5, String.format(Locale.ROOT, "Unknown request %s", Integer.toHexString(var6)));
+               }
             }
+
+            return;
          } catch (IOException var16) {
          } catch (Exception var17) {
             LOGGER.error("Exception whilst parsing RCON input", var17);
-         } finally {
-            this.closeSocket();
-            LOGGER.info("Thread {} shutting down", this.name);
-            this.running = false;
          }
 
-         return;
+      } finally {
+         this.closeSocket();
+         LOGGER.info("Thread {} shutting down", this.name);
+         this.running = false;
       }
    }
 

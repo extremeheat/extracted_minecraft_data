@@ -26,9 +26,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
 public class BrushableBlock extends BaseEntityBlock implements Fallable {
-   public static final MapCodec<BrushableBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("turns_into").forGetter(BrushableBlock::getTurnsInto), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("brush_sound").forGetter(BrushableBlock::getBrushSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("brush_completed_sound").forGetter(BrushableBlock::getBrushCompletedSound), propertiesCodec()).apply(var0, BrushableBlock::new);
-   });
+   public static final MapCodec<BrushableBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("turns_into").forGetter(BrushableBlock::getTurnsInto), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("brush_sound").forGetter(BrushableBlock::getBrushSound), BuiltInRegistries.SOUND_EVENT.byNameCodec().fieldOf("brush_completed_sound").forGetter(BrushableBlock::getBrushCompletedSound), propertiesCodec()).apply(var0, BrushableBlock::new));
    private static final IntegerProperty DUSTED;
    public static final int TICK_DELAY = 2;
    private final Block turnsInto;
@@ -49,10 +47,6 @@ public class BrushableBlock extends BaseEntityBlock implements Fallable {
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(DUSTED);
-   }
-
-   public RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
    }
 
    public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {

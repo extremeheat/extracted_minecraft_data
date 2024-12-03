@@ -9,7 +9,7 @@ public enum PrioritizeChunkUpdates implements OptionEnum {
    PLAYER_AFFECTED(1, "options.prioritizeChunkUpdates.byPlayer"),
    NEARBY(2, "options.prioritizeChunkUpdates.nearby");
 
-   private static final IntFunction<PrioritizeChunkUpdates> BY_ID = ByIdMap.continuous(PrioritizeChunkUpdates::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   private static final IntFunction<PrioritizeChunkUpdates> BY_ID = ByIdMap.<PrioritizeChunkUpdates>continuous(PrioritizeChunkUpdates::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    private final int id;
    private final String key;
 

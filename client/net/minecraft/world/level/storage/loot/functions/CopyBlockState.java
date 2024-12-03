@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -25,13 +24,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class CopyBlockState extends LootItemConditionalFunction {
-   public static final MapCodec<CopyBlockState> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(var0.group(BuiltInRegistries.BLOCK.holderByNameCodec().fieldOf("block").forGetter((var0x) -> {
-         return var0x.block;
-      }), Codec.STRING.listOf().fieldOf("properties").forGetter((var0x) -> {
-         return var0x.properties.stream().map(Property::getName).toList();
-      }))).apply(var0, CopyBlockState::new);
-   });
+   public static final MapCodec<CopyBlockState> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(BuiltInRegistries.BLOCK.holderByNameCodec().fieldOf("block").forGetter((var0x) -> var0x.block), Codec.STRING.listOf().fieldOf("properties").forGetter((var0x) -> var0x.properties.stream().map(Property::getName).toList()))).apply(var0, CopyBlockState::new));
    private final Holder<Block> block;
    private final Set<Property<?>> properties;
 
@@ -60,10 +53,7 @@ public class CopyBlockState extends LootItemConditionalFunction {
       BlockState var3 = (BlockState)var2.getOptionalParameter(LootContextParams.BLOCK_STATE);
       if (var3 != null) {
          var1.update(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY, (var2x) -> {
-            Iterator var3x = this.properties.iterator();
-
-            while(var3x.hasNext()) {
-               Property var4 = (Property)var3x.next();
+            for(Property var4 : this.properties) {
                if (var3.hasProperty(var4)) {
                   var2x = var2x.with(var4, var3);
                }

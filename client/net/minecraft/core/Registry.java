@@ -25,31 +25,19 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
    ResourceKey<? extends Registry<T>> key();
 
    default Codec<T> byNameCodec() {
-      return this.referenceHolderWithLifecycle().flatComapMap(Holder.Reference::value, (var1) -> {
-         return this.safeCastToReference(this.wrapAsHolder(var1));
-      });
+      return this.referenceHolderWithLifecycle().flatComapMap(Holder.Reference::value, (var1) -> this.safeCastToReference(this.wrapAsHolder(var1)));
    }
 
    default Codec<Holder<T>> holderByNameCodec() {
-      return this.referenceHolderWithLifecycle().flatComapMap((var0) -> {
-         return var0;
-      }, this::safeCastToReference);
+      return this.referenceHolderWithLifecycle().flatComapMap((var0) -> var0, this::safeCastToReference);
    }
 
    private Codec<Holder.Reference<T>> referenceHolderWithLifecycle() {
-      Codec var1 = ResourceLocation.CODEC.comapFlatMap((var1x) -> {
-         return (DataResult)this.get(var1x).map(DataResult::success).orElseGet(() -> {
-            return DataResult.error(() -> {
+      Codec var1 = ResourceLocation.CODEC.comapFlatMap((var1x) -> (DataResult)this.get(var1x).map(DataResult::success).orElseGet(() -> DataResult.error(() -> {
                String var10000 = String.valueOf(this.key());
                return "Unknown registry key in " + var10000 + ": " + String.valueOf(var1x);
-            });
-         });
-      }, (var0) -> {
-         return var0.key().location();
-      });
-      return ExtraCodecs.overrideLifecycle(var1, (var1x) -> {
-         return (Lifecycle)this.registrationInfo(var1x.key()).map(RegistrationInfo::lifecycle).orElse(Lifecycle.experimental());
-      });
+            })), (var0) -> var0.key().location());
+      return ExtraCodecs.<Holder.Reference<T>>overrideLifecycle(var1, (var1x) -> (Lifecycle)this.registrationInfo(var1x.key()).map(RegistrationInfo::lifecycle).orElse(Lifecycle.experimental()));
    }
 
    private DataResult<Holder.Reference<T>> safeCastToReference(Holder<T> var1) {
@@ -67,9 +55,7 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
    }
 
    default <U> Stream<U> keys(DynamicOps<U> var1) {
-      return this.keySet().stream().map((var1x) -> {
-         return var1.createString(var1x.toString());
-      });
+      return this.keySet().stream().map((var1x) -> var1.createString(var1x.toString()));
    }
 
    @Nullable
@@ -103,7 +89,7 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
          String var10002 = String.valueOf(this.key());
          throw new IllegalStateException("Missing key in " + var10002 + ": " + String.valueOf(var1));
       } else {
-         return var2;
+         return (T)var2;
       }
    }
 
@@ -124,11 +110,11 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
    boolean containsKey(ResourceKey<T> var1);
 
    static <T> T register(Registry<? super T> var0, String var1, T var2) {
-      return register(var0, ResourceLocation.parse(var1), var2);
+      return (T)register(var0, (ResourceLocation)ResourceLocation.parse(var1), var2);
    }
 
    static <V, T extends V> T register(Registry<V> var0, ResourceLocation var1, T var2) {
-      return register(var0, ResourceKey.create(var0.key(), var1), var2);
+      return (T)register(var0, (ResourceKey)ResourceKey.create(var0.key(), var1), var2);
    }
 
    static <V, T extends V> T register(Registry<V> var0, ResourceKey<V> var1, T var2) {
@@ -159,9 +145,7 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
    }
 
    default Optional<Holder<T>> getRandomElementOf(TagKey<T> var1, RandomSource var2) {
-      return this.get(var1).flatMap((var1x) -> {
-         return var1x.getRandomElement(var2);
-      });
+      return this.get(var1).flatMap((var1x) -> var1x.getRandomElement(var2));
    }
 
    Stream<HolderSet.Named<T>> getTags();
@@ -182,9 +166,7 @@ public interface Registry<T> extends Keyable, HolderLookup.RegistryLookup<T>, Id
          }
 
          public Iterator<Holder<T>> iterator() {
-            return Registry.this.listElements().map((var0) -> {
-               return var0;
-            }).iterator();
+            return Registry.this.listElements().map((var0) -> var0).iterator();
          }
 
          // $FF: synthetic method

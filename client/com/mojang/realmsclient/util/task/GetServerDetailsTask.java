@@ -91,9 +91,8 @@ public class GetServerDetailsTask extends LongRunningTask {
 
    private RealmsServerAddress fetchServerAddress() throws RealmsServiceException, TimeoutException, CancellationException {
       RealmsClient var1 = RealmsClient.create();
-      int var2 = 0;
 
-      while(var2 < 40) {
+      for(int var2 = 0; var2 < 40; ++var2) {
          if (this.aborted()) {
             throw new CancellationException();
          }
@@ -102,7 +101,6 @@ public class GetServerDetailsTask extends LongRunningTask {
             return var1.join(this.server.id);
          } catch (RetryCallException var4) {
             pause((long)var4.delaySeconds);
-            ++var2;
          }
       }
 
@@ -117,9 +115,7 @@ public class GetServerDetailsTask extends LongRunningTask {
       MutableComponent var4 = Component.translatable("mco.configure.world.resourcepack.question");
       return RealmsPopups.infoPopupScreen(this.lastScreen, var4, (var4x) -> {
          setScreen(new GenericMessageScreen(APPLYING_PACK_TEXT));
-         this.scheduleResourcePackDownload(var1, var2).thenRun(() -> {
-            setScreen((Screen)var3.apply(var1));
-         }).exceptionally((var2x) -> {
+         this.scheduleResourcePackDownload(var1, var2).thenRun(() -> setScreen((Screen)var3.apply(var1))).exceptionally((var2x) -> {
             Minecraft.getInstance().getDownloadedPackSource().cleanupAfterDisconnect();
             LOGGER.error("Failed to download resource pack from {}", var1, var2x);
             setScreen(new RealmsGenericErrorScreen(Component.translatable("mco.download.resourcePack.fail"), this.lastScreen));

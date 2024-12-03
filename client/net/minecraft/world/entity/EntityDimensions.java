@@ -54,24 +54,4 @@ public record EntityDimensions(float width, float height, float eyeHeight, Entit
    public EntityDimensions withAttachments(EntityAttachments.Builder var1) {
       return new EntityDimensions(this.width, this.height, this.eyeHeight, var1.build(this.width, this.height), this.fixed);
    }
-
-   public float width() {
-      return this.width;
-   }
-
-   public float height() {
-      return this.height;
-   }
-
-   public float eyeHeight() {
-      return this.eyeHeight;
-   }
-
-   public EntityAttachments attachments() {
-      return this.attachments;
-   }
-
-   public boolean fixed() {
-      return this.fixed;
-   }
 }

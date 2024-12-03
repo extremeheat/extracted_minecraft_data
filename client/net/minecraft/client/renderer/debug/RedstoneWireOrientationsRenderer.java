@@ -32,27 +32,21 @@ public class RedstoneWireOrientationsRenderer implements DebugRenderer.SimpleDeb
       long var10 = this.minecraft.level.getGameTime();
       Iterator var12 = this.updatedWires.iterator();
 
-      while(true) {
-         while(var12.hasNext()) {
-            RedstoneWireOrientationsDebugPayload var13 = (RedstoneWireOrientationsDebugPayload)var12.next();
-            long var14 = var10 - var13.time();
-            if (var14 > 200L) {
-               var12.remove();
-            } else {
-               Iterator var16 = var13.wires().iterator();
-
-               while(var16.hasNext()) {
-                  RedstoneWireOrientationsDebugPayload.Wire var17 = (RedstoneWireOrientationsDebugPayload.Wire)var16.next();
-                  Vector3f var18 = var17.pos().getBottomCenter().subtract(var3, var5 - 0.1, var7).toVector3f();
-                  Orientation var19 = var17.orientation();
-                  ShapeRenderer.renderVector(var1, var9, var18, var19.getFront().getUnitVec3().scale(0.5), -16776961);
-                  ShapeRenderer.renderVector(var1, var9, var18, var19.getUp().getUnitVec3().scale(0.4), -65536);
-                  ShapeRenderer.renderVector(var1, var9, var18, var19.getSide().getUnitVec3().scale(0.3), -256);
-               }
+      while(var12.hasNext()) {
+         RedstoneWireOrientationsDebugPayload var13 = (RedstoneWireOrientationsDebugPayload)var12.next();
+         long var14 = var10 - var13.time();
+         if (var14 > 200L) {
+            var12.remove();
+         } else {
+            for(RedstoneWireOrientationsDebugPayload.Wire var17 : var13.wires()) {
+               Vector3f var18 = var17.pos().getBottomCenter().subtract(var3, var5 - 0.1, var7).toVector3f();
+               Orientation var19 = var17.orientation();
+               ShapeRenderer.renderVector(var1, var9, var18, var19.getFront().getUnitVec3().scale(0.5), -16776961);
+               ShapeRenderer.renderVector(var1, var9, var18, var19.getUp().getUnitVec3().scale(0.4), -65536);
+               ShapeRenderer.renderVector(var1, var9, var18, var19.getSide().getUnitVec3().scale(0.3), -256);
             }
          }
-
-         return;
       }
+
    }
 }

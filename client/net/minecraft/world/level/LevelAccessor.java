@@ -33,11 +33,11 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess, Sch
    long nextSubTickCount();
 
    default <T> ScheduledTick<T> createTick(BlockPos var1, T var2, int var3, TickPriority var4) {
-      return new ScheduledTick(var2, var1, this.getLevelData().getGameTime() + (long)var3, var4, this.nextSubTickCount());
+      return new ScheduledTick<T>(var2, var1, this.getLevelData().getGameTime() + (long)var3, var4, this.nextSubTickCount());
    }
 
    default <T> ScheduledTick<T> createTick(BlockPos var1, T var2, int var3) {
-      return new ScheduledTick(var2, var1, this.getLevelData().getGameTime() + (long)var3, this.nextSubTickCount());
+      return new ScheduledTick<T>(var2, var1, this.getLevelData().getGameTime() + (long)var3, this.nextSubTickCount());
    }
 
    LevelData getLevelData();
@@ -95,6 +95,6 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess, Sch
    }
 
    default void gameEvent(ResourceKey<GameEvent> var1, BlockPos var2, GameEvent.Context var3) {
-      this.gameEvent((Holder)this.registryAccess().lookupOrThrow(Registries.GAME_EVENT).getOrThrow(var1), (BlockPos)var2, (GameEvent.Context)var3);
+      this.gameEvent(this.registryAccess().lookupOrThrow(Registries.GAME_EVENT).getOrThrow(var1), (BlockPos)var2, (GameEvent.Context)var3);
    }
 }

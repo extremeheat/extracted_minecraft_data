@@ -42,29 +42,7 @@ public record ClientboundMapItemDataPacket(MapId mapId, byte scale, boolean lock
       Optional var10000 = this.decorations;
       Objects.requireNonNull(var1);
       var10000.ifPresent(var1::addClientSideDecorations);
-      this.colorPatch.ifPresent((var1x) -> {
-         var1x.applyToMap(var1);
-      });
-   }
-
-   public MapId mapId() {
-      return this.mapId;
-   }
-
-   public byte scale() {
-      return this.scale;
-   }
-
-   public boolean locked() {
-      return this.locked;
-   }
-
-   public Optional<List<MapDecoration>> decorations() {
-      return this.decorations;
-   }
-
-   public Optional<MapItemSavedData.MapPatch> colorPatch() {
-      return this.colorPatch;
+      this.colorPatch.ifPresent((var1x) -> var1x.applyToMap(var1));
    }
 
    static {

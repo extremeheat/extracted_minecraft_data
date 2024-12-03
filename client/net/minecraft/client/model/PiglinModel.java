@@ -1,7 +1,6 @@
 package net.minecraft.client.model;
 
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.PiglinRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.HumanoidArm;
@@ -13,7 +12,7 @@ public class PiglinModel extends AbstractPiglinModel<PiglinRenderState> {
    }
 
    public void setupAnim(PiglinRenderState var1) {
-      super.setupAnim((HumanoidRenderState)var1);
+      super.setupAnim(var1);
       float var2 = 0.5235988F;
       float var3 = var1.attackTime;
       PiglinArmPose var4 = var1.armPose;

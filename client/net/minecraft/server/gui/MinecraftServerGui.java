@@ -124,7 +124,7 @@ public class MinecraftServerGui extends JComponent {
 
          var4.setText("");
       });
-      var2.addFocusListener(new FocusAdapter(this) {
+      var2.addFocusListener(new FocusAdapter() {
          public void focusGained(FocusEvent var1) {
          }
       });
@@ -160,9 +160,7 @@ public class MinecraftServerGui extends JComponent {
 
    public void print(JTextArea var1, JScrollPane var2, String var3) {
       if (!SwingUtilities.isEventDispatchThread()) {
-         SwingUtilities.invokeLater(() -> {
-            this.print(var1, var2, var3);
-         });
+         SwingUtilities.invokeLater(() -> this.print(var1, var2, var3));
       } else {
          Document var4 = var1.getDocument();
          JScrollBar var5 = var2.getVerticalScrollBar();

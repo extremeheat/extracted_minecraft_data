@@ -86,32 +86,10 @@ public record FireworkExplosion(Shape shape, IntList colors, IntList fadeColors,
       return new FireworkExplosion(this.shape, this.colors, new IntArrayList(var1), this.hasTrail, this.hasTwinkle);
    }
 
-   public Shape shape() {
-      return this.shape;
-   }
-
-   public IntList colors() {
-      return this.colors;
-   }
-
-   public IntList fadeColors() {
-      return this.fadeColors;
-   }
-
-   public boolean hasTrail() {
-      return this.hasTrail;
-   }
-
-   public boolean hasTwinkle() {
-      return this.hasTwinkle;
-   }
-
    static {
       DEFAULT = new FireworkExplosion(FireworkExplosion.Shape.SMALL_BALL, IntList.of(), IntList.of(), false, false);
       COLOR_LIST_CODEC = Codec.INT.listOf().xmap(IntArrayList::new, ArrayList::new);
-      CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(FireworkExplosion.Shape.CODEC.fieldOf("shape").forGetter(FireworkExplosion::shape), COLOR_LIST_CODEC.optionalFieldOf("colors", IntList.of()).forGetter(FireworkExplosion::colors), COLOR_LIST_CODEC.optionalFieldOf("fade_colors", IntList.of()).forGetter(FireworkExplosion::fadeColors), Codec.BOOL.optionalFieldOf("has_trail", false).forGetter(FireworkExplosion::hasTrail), Codec.BOOL.optionalFieldOf("has_twinkle", false).forGetter(FireworkExplosion::hasTwinkle)).apply(var0, FireworkExplosion::new);
-      });
+      CODEC = RecordCodecBuilder.create((var0) -> var0.group(FireworkExplosion.Shape.CODEC.fieldOf("shape").forGetter(FireworkExplosion::shape), COLOR_LIST_CODEC.optionalFieldOf("colors", IntList.of()).forGetter(FireworkExplosion::colors), COLOR_LIST_CODEC.optionalFieldOf("fade_colors", IntList.of()).forGetter(FireworkExplosion::fadeColors), Codec.BOOL.optionalFieldOf("has_trail", false).forGetter(FireworkExplosion::hasTrail), Codec.BOOL.optionalFieldOf("has_twinkle", false).forGetter(FireworkExplosion::hasTwinkle)).apply(var0, FireworkExplosion::new));
       COLOR_LIST_STREAM_CODEC = ByteBufCodecs.INT.apply(ByteBufCodecs.list()).map(IntArrayList::new, ArrayList::new);
       STREAM_CODEC = StreamCodec.composite(FireworkExplosion.Shape.STREAM_CODEC, FireworkExplosion::shape, COLOR_LIST_STREAM_CODEC, FireworkExplosion::colors, COLOR_LIST_STREAM_CODEC, FireworkExplosion::fadeColors, ByteBufCodecs.BOOL, FireworkExplosion::hasTrail, ByteBufCodecs.BOOL, FireworkExplosion::hasTwinkle, FireworkExplosion::new);
       CUSTOM_COLOR_NAME = Component.translatable("item.minecraft.firework_star.custom_color");
@@ -124,9 +102,9 @@ public record FireworkExplosion(Shape shape, IntList colors, IntList fadeColors,
       CREEPER(3, "creeper"),
       BURST(4, "burst");
 
-      private static final IntFunction<Shape> BY_ID = ByIdMap.continuous(Shape::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      private static final IntFunction<Shape> BY_ID = ByIdMap.<Shape>continuous(Shape::getId, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       public static final StreamCodec<ByteBuf, Shape> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Shape::getId);
-      public static final Codec<Shape> CODEC = StringRepresentable.fromValues(Shape::values);
+      public static final Codec<Shape> CODEC = StringRepresentable.<Shape>fromValues(Shape::values);
       private final int id;
       private final String name;
 

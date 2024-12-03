@@ -47,9 +47,7 @@ public class SavedDataFeaturePoolElementFix extends DataFix {
             return var0x;
          } else {
             OptionalDynamic var2 = var0x.get("pool_element");
-            return !var2.get("element_type").asString("").equals("minecraft:feature_pool_element") ? var0x : var0x.update("pool_element", (var0) -> {
-               return var0.update("feature", SavedDataFeaturePoolElementFix::fixFeature);
-            });
+            return !var2.get("element_type").asString("").equals("minecraft:feature_pool_element") ? var0x : var0x.update("pool_element", (var0) -> var0.update("feature", SavedDataFeaturePoolElementFix::fixFeature));
          }
       });
    }
@@ -69,9 +67,7 @@ public class SavedDataFeaturePoolElementFix extends DataFix {
                if (var6 >= 0 && var6 < var7.size()) {
                   var2 = new OptionalDynamic(var0.getOps(), DataResult.success((Dynamic)var7.get(var6)));
                } else {
-                  var2 = new OptionalDynamic(var0.getOps(), DataResult.error(() -> {
-                     return "Missing id:" + var6;
-                  }));
+                  var2 = new OptionalDynamic(var0.getOps(), DataResult.error(() -> "Missing id:" + var6));
                }
             } else {
                var2 = var2.get(var4);

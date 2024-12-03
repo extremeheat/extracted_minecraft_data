@@ -18,15 +18,9 @@ public class AdvancementsRenameFix extends DataFix {
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.ADVANCEMENTS), (var1) -> {
-         return var1.update(DSL.remainderFinder(), (var1x) -> {
-            return var1x.updateMapValues((var2) -> {
+      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.ADVANCEMENTS), (var1) -> var1.update(DSL.remainderFinder(), (var1x) -> var1x.updateMapValues((var2) -> {
                String var3 = ((Dynamic)var2.getFirst()).asString("");
-               return var2.mapFirst((var3x) -> {
-                  return var1x.createString((String)this.renamer.apply(var3));
-               });
-            });
-         });
-      });
+               return var2.mapFirst((var3x) -> var1x.createString((String)this.renamer.apply(var3)));
+            })));
    }
 }

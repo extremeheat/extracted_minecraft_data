@@ -7,7 +7,6 @@ import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.CommandNode;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.commands.arguments.SignedArgument;
@@ -33,15 +32,13 @@ public record SignableCommand<S>(List<Argument<S>> arguments) {
          var4.addAll(collectArguments(var1, var5));
       }
 
-      return new SignableCommand(var4);
+      return new SignableCommand<S>(var4);
    }
 
    private static <S> List<Argument<S>> collectArguments(String var0, CommandContextBuilder<S> var1) {
       ArrayList var2 = new ArrayList();
-      Iterator var3 = var1.getNodes().iterator();
 
-      while(var3.hasNext()) {
-         ParsedCommandNode var4 = (ParsedCommandNode)var3.next();
+      for(ParsedCommandNode var4 : var1.getNodes()) {
          CommandNode var6 = var4.getNode();
          if (var6 instanceof ArgumentCommandNode var5) {
             if (var5.getType() instanceof SignedArgument) {
@@ -59,22 +56,13 @@ public record SignableCommand<S>(List<Argument<S>> arguments) {
 
    @Nullable
    public Argument<S> getArgument(String var1) {
-      Iterator var2 = this.arguments.iterator();
-
-      Argument var3;
-      do {
-         if (!var2.hasNext()) {
-            return null;
+      for(Argument var3 : this.arguments) {
+         if (var1.equals(var3.name())) {
+            return var3;
          }
+      }
 
-         var3 = (Argument)var2.next();
-      } while(!var1.equals(var3.name()));
-
-      return var3;
-   }
-
-   public List<Argument<S>> arguments() {
-      return this.arguments;
+      return null;
    }
 
    public static record Argument<S>(ArgumentCommandNode<S, ?> node, String value) {
@@ -86,14 +74,6 @@ public record SignableCommand<S>(List<Argument<S>> arguments) {
 
       public String name() {
          return this.node.getName();
-      }
-
-      public ArgumentCommandNode<S, ?> node() {
-         return this.node;
-      }
-
-      public String value() {
-         return this.value;
       }
    }
 }

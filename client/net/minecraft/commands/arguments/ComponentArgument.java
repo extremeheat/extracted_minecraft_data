@@ -16,9 +16,7 @@ import net.minecraft.network.chat.ComponentSerialization;
 
 public class ComponentArgument implements ArgumentType<Component> {
    private static final Collection<String> EXAMPLES = Arrays.asList("\"hello world\"", "\"\"", "\"{\"text\":\"hello world\"}", "[\"\"]");
-   public static final DynamicCommandExceptionType ERROR_INVALID_JSON = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("argument.component.invalid", var0);
-   });
+   public static final DynamicCommandExceptionType ERROR_INVALID_JSON = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("argument.component.invalid", var0));
    private final HolderLookup.Provider registries;
 
    private ComponentArgument(HolderLookup.Provider var1) {

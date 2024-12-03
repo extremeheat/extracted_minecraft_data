@@ -1,56 +1,71 @@
 package net.minecraft.client.renderer.block.model;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.mojang.datafixers.util.Either;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Map;
+import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.SpriteContents;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.client.resources.model.ResolvableModel;
+import net.minecraft.client.resources.model.SimpleBakedModel;
+import net.minecraft.client.resources.model.SpriteGetter;
+import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Vector3f;
 
-public class ItemModelGenerator {
-   public static final List<String> LAYERS = Lists.newArrayList(new String[]{"layer0", "layer1", "layer2", "layer3", "layer4"});
+public class ItemModelGenerator implements UnbakedModel {
+   public static final ResourceLocation GENERATED_ITEM_MODEL_ID = ResourceLocation.withDefaultNamespace("builtin/generated");
+   public static final List<String> LAYERS = List.of("layer0", "layer1", "layer2", "layer3", "layer4");
    private static final float MIN_Z = 7.5F;
    private static final float MAX_Z = 8.5F;
+   private static final TextureSlots.Data TEXTURE_SLOTS = (new TextureSlots.Data.Builder()).addReference("particle", "layer0").build();
 
    public ItemModelGenerator() {
       super();
    }
 
-   public BlockModel generateBlockModel(Function<Material, TextureAtlasSprite> var1, BlockModel var2) {
-      HashMap var3 = Maps.newHashMap();
-      ArrayList var4 = Lists.newArrayList();
+   public TextureSlots.Data getTextureSlots() {
+      return TEXTURE_SLOTS;
+   }
 
-      for(int var5 = 0; var5 < LAYERS.size(); ++var5) {
-         String var6 = (String)LAYERS.get(var5);
-         if (!var2.hasTexture(var6)) {
+   public void resolveDependencies(ResolvableModel.Resolver var1) {
+   }
+
+   @Nullable
+   public UnbakedModel.GuiLight getGuiLight() {
+      return UnbakedModel.GuiLight.FRONT;
+   }
+
+   public BakedModel bake(TextureSlots var1, ModelBaker var2, ModelState var3, boolean var4, boolean var5, ItemTransforms var6) {
+      return this.bake(var1, var2.sprites(), var3, var4, var5, var6);
+   }
+
+   private BakedModel bake(TextureSlots var1, SpriteGetter var2, ModelState var3, boolean var4, boolean var5, ItemTransforms var6) {
+      TextureSlots.Data.Builder var7 = new TextureSlots.Data.Builder();
+      ArrayList var8 = new ArrayList();
+
+      for(int var9 = 0; var9 < LAYERS.size(); ++var9) {
+         String var10 = (String)LAYERS.get(var9);
+         Material var11 = var1.getMaterial(var10);
+         if (var11 == null) {
             break;
          }
 
-         Material var7 = var2.getMaterial(var6);
-         var3.put(var6, Either.left(var7));
-         SpriteContents var8 = ((TextureAtlasSprite)var1.apply(var7)).contents();
-         var4.addAll(this.processFrames(var5, var6, var8));
+         var7.addTexture(var10, var11);
+         SpriteContents var12 = var2.get(var11).contents();
+         var8.addAll(this.processFrames(var9, var10, var12));
       }
 
-      var3.put("particle", var2.hasTexture("particle") ? Either.left(var2.getMaterial("particle")) : (Either)var3.get("layer0"));
-      BlockModel var9 = new BlockModel((ResourceLocation)null, var4, var3, false, var2.getGuiLight(), var2.getTransforms(), var2.getOverrides());
-      var9.name = var2.name;
-      return var9;
+      return SimpleBakedModel.bakeElements(var8, var1, var2, var3, var4, var5, false, var6);
    }
 
    private List<BlockElement> processFrames(int var1, String var2, SpriteContents var3) {
-      HashMap var4 = Maps.newHashMap();
-      var4.put(Direction.SOUTH, new BlockElementFace((Direction)null, var1, var2, new BlockFaceUV(new float[]{0.0F, 0.0F, 16.0F, 16.0F}, 0)));
-      var4.put(Direction.NORTH, new BlockElementFace((Direction)null, var1, var2, new BlockFaceUV(new float[]{16.0F, 0.0F, 0.0F, 16.0F}, 0)));
-      ArrayList var5 = Lists.newArrayList();
+      Map var4 = Map.of(Direction.SOUTH, new BlockElementFace((Direction)null, var1, var2, new BlockFaceUV(new float[]{0.0F, 0.0F, 16.0F, 16.0F}, 0)), Direction.NORTH, new BlockElementFace((Direction)null, var1, var2, new BlockFaceUV(new float[]{16.0F, 0.0F, 0.0F, 16.0F}, 0)));
+      ArrayList var5 = new ArrayList();
       var5.add(new BlockElement(new Vector3f(0.0F, 0.0F, 7.5F), new Vector3f(16.0F, 16.0F, 8.5F), var4));
       var5.addAll(this.createSideElements(var3, var2, var1));
       return var5;
@@ -59,11 +74,9 @@ public class ItemModelGenerator {
    private List<BlockElement> createSideElements(SpriteContents var1, String var2, int var3) {
       float var4 = (float)var1.width();
       float var5 = (float)var1.height();
-      ArrayList var6 = Lists.newArrayList();
-      Iterator var7 = this.getSpans(var1).iterator();
+      ArrayList var6 = new ArrayList();
 
-      while(var7.hasNext()) {
-         Span var8 = (Span)var7.next();
+      for(Span var8 : this.getSpans(var1)) {
          float var9 = 0.0F;
          float var10 = 0.0F;
          float var11 = 0.0F;
@@ -126,8 +139,7 @@ public class ItemModelGenerator {
          var14 *= var17;
          var15 *= var18;
          var16 *= var18;
-         HashMap var23 = Maps.newHashMap();
-         var23.put(var22.getDirection(), new BlockElementFace((Direction)null, var3, var2, new BlockFaceUV(new float[]{var13, var15, var14, var16}, 0)));
+         Map var23 = Map.of(var22.getDirection(), new BlockElementFace((Direction)null, var3, var2, new BlockFaceUV(new float[]{var13, var15, var14, var16}, 0)));
          switch (var22.ordinal()) {
             case 0:
                var6.add(new BlockElement(new Vector3f(var9, var10, 7.5F), new Vector3f(var11, var10, 8.5F), var23));
@@ -149,7 +161,7 @@ public class ItemModelGenerator {
    private List<Span> getSpans(SpriteContents var1) {
       int var2 = var1.width();
       int var3 = var1.height();
-      ArrayList var4 = Lists.newArrayList();
+      ArrayList var4 = new ArrayList();
       var1.getUniqueFrames().forEach((var5) -> {
          for(int var6 = 0; var6 < var3; ++var6) {
             for(int var7 = 0; var7 < var2; ++var7) {
@@ -175,10 +187,8 @@ public class ItemModelGenerator {
 
    private void createOrExpandSpan(List<Span> var1, SpanFacing var2, int var3, int var4) {
       Span var5 = null;
-      Iterator var6 = var1.iterator();
 
-      while(var6.hasNext()) {
-         Span var7 = (Span)var6.next();
+      for(Span var7 : var1) {
          if (var7.getFacing() == var2) {
             int var8 = var2.isHorizontal() ? var4 : var3;
             if (var7.getAnchor() == var8) {
@@ -202,7 +212,45 @@ public class ItemModelGenerator {
       return var3 >= 0 && var4 >= 0 && var3 < var5 && var4 < var6 ? var1.isTransparent(var2, var3, var4) : true;
    }
 
-   private static class Span {
+   static enum SpanFacing {
+      UP(Direction.UP, 0, -1),
+      DOWN(Direction.DOWN, 0, 1),
+      LEFT(Direction.EAST, -1, 0),
+      RIGHT(Direction.WEST, 1, 0);
+
+      private final Direction direction;
+      private final int xOffset;
+      private final int yOffset;
+
+      private SpanFacing(final Direction var3, final int var4, final int var5) {
+         this.direction = var3;
+         this.xOffset = var4;
+         this.yOffset = var5;
+      }
+
+      public Direction getDirection() {
+         return this.direction;
+      }
+
+      public int getXOffset() {
+         return this.xOffset;
+      }
+
+      public int getYOffset() {
+         return this.yOffset;
+      }
+
+      boolean isHorizontal() {
+         return this == DOWN || this == UP;
+      }
+
+      // $FF: synthetic method
+      private static SpanFacing[] $values() {
+         return new SpanFacing[]{UP, DOWN, LEFT, RIGHT};
+      }
+   }
+
+   static class Span {
       private final SpanFacing facing;
       private int min;
       private int max;
@@ -239,44 +287,6 @@ public class ItemModelGenerator {
 
       public int getAnchor() {
          return this.anchor;
-      }
-   }
-
-   private static enum SpanFacing {
-      UP(Direction.UP, 0, -1),
-      DOWN(Direction.DOWN, 0, 1),
-      LEFT(Direction.EAST, -1, 0),
-      RIGHT(Direction.WEST, 1, 0);
-
-      private final Direction direction;
-      private final int xOffset;
-      private final int yOffset;
-
-      private SpanFacing(final Direction var3, final int var4, final int var5) {
-         this.direction = var3;
-         this.xOffset = var4;
-         this.yOffset = var5;
-      }
-
-      public Direction getDirection() {
-         return this.direction;
-      }
-
-      public int getXOffset() {
-         return this.xOffset;
-      }
-
-      public int getYOffset() {
-         return this.yOffset;
-      }
-
-      boolean isHorizontal() {
-         return this == DOWN || this == UP;
-      }
-
-      // $FF: synthetic method
-      private static SpanFacing[] $values() {
-         return new SpanFacing[]{UP, DOWN, LEFT, RIGHT};
       }
    }
 }

@@ -17,11 +17,7 @@ public class HeightmapRenamingFix extends DataFix {
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.CHUNK);
       OpticFinder var2 = var1.findField("Level");
-      return this.fixTypeEverywhereTyped("HeightmapRenamingFix", var1, (var2x) -> {
-         return var2x.updateTyped(var2, (var1) -> {
-            return var1.update(DSL.remainderFinder(), this::fix);
-         });
-      });
+      return this.fixTypeEverywhereTyped("HeightmapRenamingFix", var1, (var2x) -> var2x.updateTyped(var2, (var1) -> var1.update(DSL.remainderFinder(), this::fix)));
    }
 
    private Dynamic<?> fix(Dynamic<?> var1) {

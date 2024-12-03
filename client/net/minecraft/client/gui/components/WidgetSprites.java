@@ -26,20 +26,4 @@ public record WidgetSprites(ResourceLocation enabled, ResourceLocation disabled,
          return var2 ? this.disabledFocused : this.disabled;
       }
    }
-
-   public ResourceLocation enabled() {
-      return this.enabled;
-   }
-
-   public ResourceLocation disabled() {
-      return this.disabled;
-   }
-
-   public ResourceLocation enabledFocused() {
-      return this.enabledFocused;
-   }
-
-   public ResourceLocation disabledFocused() {
-      return this.disabledFocused;
-   }
 }

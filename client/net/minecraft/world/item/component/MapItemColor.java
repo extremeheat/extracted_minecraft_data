@@ -15,10 +15,6 @@ public record MapItemColor(int rgb) {
       this.rgb = var1;
    }
 
-   public int rgb() {
-      return this.rgb;
-   }
-
    static {
       CODEC = Codec.INT.xmap(MapItemColor::new, MapItemColor::rgb);
       STREAM_CODEC = ByteBufCodecs.INT.map(MapItemColor::new, MapItemColor::rgb);

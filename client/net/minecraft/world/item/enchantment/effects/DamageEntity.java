@@ -13,9 +13,7 @@ import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
 
 public record DamageEntity(LevelBasedValue minDamage, LevelBasedValue maxDamage, Holder<DamageType> damageType) implements EnchantmentEntityEffect {
-   public static final MapCodec<DamageEntity> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(LevelBasedValue.CODEC.fieldOf("min_damage").forGetter(DamageEntity::minDamage), LevelBasedValue.CODEC.fieldOf("max_damage").forGetter(DamageEntity::maxDamage), DamageType.CODEC.fieldOf("damage_type").forGetter(DamageEntity::damageType)).apply(var0, DamageEntity::new);
-   });
+   public static final MapCodec<DamageEntity> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(LevelBasedValue.CODEC.fieldOf("min_damage").forGetter(DamageEntity::minDamage), LevelBasedValue.CODEC.fieldOf("max_damage").forGetter(DamageEntity::maxDamage), DamageType.CODEC.fieldOf("damage_type").forGetter(DamageEntity::damageType)).apply(var0, DamageEntity::new));
 
    public DamageEntity(LevelBasedValue var1, LevelBasedValue var2, Holder<DamageType> var3) {
       super();
@@ -31,17 +29,5 @@ public record DamageEntity(LevelBasedValue minDamage, LevelBasedValue maxDamage,
 
    public MapCodec<DamageEntity> codec() {
       return CODEC;
-   }
-
-   public LevelBasedValue minDamage() {
-      return this.minDamage;
-   }
-
-   public LevelBasedValue maxDamage() {
-      return this.maxDamage;
-   }
-
-   public Holder<DamageType> damageType() {
-      return this.damageType;
    }
 }

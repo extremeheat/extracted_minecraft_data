@@ -1,6 +1,10 @@
 package net.minecraft.client.gui.navigation;
 
+import com.mojang.math.MatrixUtil;
 import javax.annotation.Nullable;
+import net.minecraft.util.Mth;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 public record ScreenRectangle(ScreenPosition position, int width, int height) {
    private static final ScreenRectangle EMPTY = new ScreenRectangle(0, 0, 0, 0);
@@ -104,15 +108,13 @@ public record ScreenRectangle(ScreenPosition position, int width, int height) {
       return var1 >= this.left() && var1 < this.right() && var2 >= this.top() && var2 < this.bottom();
    }
 
-   public ScreenPosition position() {
-      return this.position;
-   }
-
-   public int width() {
-      return this.width;
-   }
-
-   public int height() {
-      return this.height;
+   public ScreenRectangle transformAxisAligned(Matrix4f var1) {
+      if (MatrixUtil.isIdentity(var1)) {
+         return this;
+      } else {
+         Vector3f var2 = var1.transformPosition((float)this.left(), (float)this.top(), 0.0F, new Vector3f());
+         Vector3f var3 = var1.transformPosition((float)this.right(), (float)this.bottom(), 0.0F, new Vector3f());
+         return new ScreenRectangle(Mth.floor(var2.x), Mth.floor(var2.y), Mth.floor(var3.x - var2.x), Mth.floor(var3.y - var2.y));
+      }
    }
 }

@@ -8,7 +8,6 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.EndermanRenderState;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.util.Mth;
 
 public class EndermanModel<T extends EndermanRenderState> extends HumanoidModel<T> {
@@ -31,7 +30,7 @@ public class EndermanModel<T extends EndermanRenderState> extends HumanoidModel<
    }
 
    public void setupAnim(T var1) {
-      super.setupAnim((HumanoidRenderState)var1);
+      super.setupAnim(var1);
       this.head.visible = true;
       ModelPart var10000 = this.rightArm;
       var10000.xRot *= 0.5F;

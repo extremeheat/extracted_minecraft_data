@@ -9,11 +9,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class WeatheringCopperStairBlock extends StairBlock implements WeatheringCopper {
-   public static final MapCodec<WeatheringCopperStairBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(ChangeOverTimeBlock::getAge), BlockState.CODEC.fieldOf("base_state").forGetter((var0x) -> {
-         return var0x.baseState;
-      }), propertiesCodec()).apply(var0, WeatheringCopperStairBlock::new);
-   });
+   public static final MapCodec<WeatheringCopperStairBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(ChangeOverTimeBlock::getAge), BlockState.CODEC.fieldOf("base_state").forGetter((var0x) -> var0x.baseState), propertiesCodec()).apply(var0, WeatheringCopperStairBlock::new));
    private final WeatheringCopper.WeatherState weatherState;
 
    public MapCodec<WeatheringCopperStairBlock> codec() {

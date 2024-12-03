@@ -19,18 +19,6 @@ public record RenderTargetDescriptor(int width, int height, boolean useDepth) im
       var1.destroyBuffers();
    }
 
-   public int width() {
-      return this.width;
-   }
-
-   public int height() {
-      return this.height;
-   }
-
-   public boolean useDepth() {
-      return this.useDepth;
-   }
-
    // $FF: synthetic method
    public Object allocate() {
       return this.allocate();

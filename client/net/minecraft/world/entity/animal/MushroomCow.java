@@ -16,7 +16,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
@@ -83,17 +82,17 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.BOWL) && !this.isBaby()) {
          boolean var12 = false;
-         ItemStack var10;
+         ItemStack var9;
          if (this.stewEffects != null) {
             var12 = true;
-            var10 = new ItemStack(Items.SUSPICIOUS_STEW);
-            var10.set(DataComponents.SUSPICIOUS_STEW_EFFECTS, this.stewEffects);
+            var9 = new ItemStack(Items.SUSPICIOUS_STEW);
+            var9.set(DataComponents.SUSPICIOUS_STEW_EFFECTS, this.stewEffects);
             this.stewEffects = null;
          } else {
-            var10 = new ItemStack(Items.MUSHROOM_STEW);
+            var9 = new ItemStack(Items.MUSHROOM_STEW);
          }
 
-         ItemStack var6 = ItemUtils.createFilledResult(var3, var1, var10, false);
+         ItemStack var6 = ItemUtils.createFilledResult(var3, var1, var9, false);
          var1.setItemInHand(var2, var6);
          SoundEvent var7;
          if (var12) {
@@ -107,35 +106,35 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
       } else if (var3.is(Items.SHEARS) && this.readyForShearing()) {
          Level var11 = this.level();
          if (var11 instanceof ServerLevel) {
-            ServerLevel var9 = (ServerLevel)var11;
-            this.shear(var9, SoundSource.PLAYERS, var3);
+            ServerLevel var8 = (ServerLevel)var11;
+            this.shear(var8, SoundSource.PLAYERS, var3);
             this.gameEvent(GameEvent.SHEAR, var1);
             var3.hurtAndBreak(1, var1, getSlotForHand(var2));
          }
 
          return InteractionResult.SUCCESS;
-      } else if (this.getVariant() == MushroomCow.Variant.BROWN && var3.is(ItemTags.SMALL_FLOWERS)) {
-         if (this.stewEffects != null) {
-            for(int var4 = 0; var4 < 2; ++var4) {
-               this.level().addParticle(ParticleTypes.SMOKE, this.getX() + this.random.nextDouble() / 2.0, this.getY(0.5), this.getZ() + this.random.nextDouble() / 2.0, 0.0, this.random.nextDouble() / 5.0, 0.0);
-            }
+      } else if (this.getVariant() == MushroomCow.Variant.BROWN) {
+         Optional var4 = this.getEffectsFromItemStack(var3);
+         if (var4.isEmpty()) {
+            return super.mobInteract(var1, var2);
          } else {
-            Optional var8 = this.getEffectsFromItemStack(var3);
-            if (var8.isEmpty()) {
-               return InteractionResult.PASS;
+            if (this.stewEffects != null) {
+               for(int var5 = 0; var5 < 2; ++var5) {
+                  this.level().addParticle(ParticleTypes.SMOKE, this.getX() + this.random.nextDouble() / 2.0, this.getY(0.5), this.getZ() + this.random.nextDouble() / 2.0, 0.0, this.random.nextDouble() / 5.0, 0.0);
+               }
+            } else {
+               var3.consume(1, var1);
+
+               for(int var10 = 0; var10 < 4; ++var10) {
+                  this.level().addParticle(ParticleTypes.EFFECT, this.getX() + this.random.nextDouble() / 2.0, this.getY(0.5), this.getZ() + this.random.nextDouble() / 2.0, 0.0, this.random.nextDouble() / 5.0, 0.0);
+               }
+
+               this.stewEffects = (SuspiciousStewEffects)var4.get();
+               this.playSound(SoundEvents.MOOSHROOM_EAT, 2.0F, 1.0F);
             }
 
-            var3.consume(1, var1);
-
-            for(int var5 = 0; var5 < 4; ++var5) {
-               this.level().addParticle(ParticleTypes.EFFECT, this.getX() + this.random.nextDouble() / 2.0, this.getY(0.5), this.getZ() + this.random.nextDouble() / 2.0, 0.0, this.random.nextDouble() / 5.0, 0.0);
-            }
-
-            this.stewEffects = (SuspiciousStewEffects)var8.get();
-            this.playSound(SoundEvents.MOOSHROOM_EAT, 2.0F, 1.0F);
+            return InteractionResult.SUCCESS;
          }
-
-         return InteractionResult.SUCCESS;
       } else {
          return super.mobInteract(var1, var2);
       }
@@ -162,9 +161,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
       super.addAdditionalSaveData(var1);
       var1.putString("Type", this.getVariant().getSerializedName());
       if (this.stewEffects != null) {
-         SuspiciousStewEffects.CODEC.encodeStart(NbtOps.INSTANCE, this.stewEffects).ifSuccess((var1x) -> {
-            var1.put("stew_effects", var1x);
-         });
+         SuspiciousStewEffects.CODEC.encodeStart(NbtOps.INSTANCE, this.stewEffects).ifSuccess((var1x) -> var1.put("stew_effects", var1x));
       }
 
    }
@@ -173,9 +170,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
       super.readAdditionalSaveData(var1);
       this.setVariant(MushroomCow.Variant.byName(var1.getString("Type")));
       if (var1.contains("stew_effects", 9)) {
-         SuspiciousStewEffects.CODEC.parse(NbtOps.INSTANCE, var1.get("stew_effects")).ifSuccess((var1x) -> {
-            this.stewEffects = var1x;
-         });
+         SuspiciousStewEffects.CODEC.parse(NbtOps.INSTANCE, var1.get("stew_effects")).ifSuccess((var1x) -> this.stewEffects = var1x);
       }
 
    }
@@ -195,7 +190,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
 
    @Nullable
    public MushroomCow getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      MushroomCow var3 = (MushroomCow)EntityType.MOOSHROOM.create(var1, EntitySpawnReason.BREEDING);
+      MushroomCow var3 = EntityType.MOOSHROOM.create(var1, EntitySpawnReason.BREEDING);
       if (var3 != null) {
          var3.setVariant(this.getOffspringVariant((MushroomCow)var2));
       }
@@ -234,14 +229,14 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
    }
 
    static {
-      DATA_TYPE = SynchedEntityData.defineId(MushroomCow.class, EntityDataSerializers.STRING);
+      DATA_TYPE = SynchedEntityData.<String>defineId(MushroomCow.class, EntityDataSerializers.STRING);
    }
 
    public static enum Variant implements StringRepresentable {
       RED("red", Blocks.RED_MUSHROOM.defaultBlockState()),
       BROWN("brown", Blocks.BROWN_MUSHROOM.defaultBlockState());
 
-      public static final StringRepresentable.EnumCodec<Variant> CODEC = StringRepresentable.fromEnum(Variant::values);
+      public static final StringRepresentable.EnumCodec<Variant> CODEC = StringRepresentable.<Variant>fromEnum(Variant::values);
       final String type;
       private final BlockState blockState;
 
@@ -259,7 +254,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
       }
 
       static Variant byName(String var0) {
-         return (Variant)CODEC.byName(var0, (Enum)RED);
+         return (Variant)CODEC.byName(var0, RED);
       }
 
       // $FF: synthetic method

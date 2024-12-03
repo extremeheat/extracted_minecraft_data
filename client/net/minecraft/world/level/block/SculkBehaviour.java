@@ -7,7 +7,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
 public interface SculkBehaviour {
@@ -16,7 +15,7 @@ public interface SculkBehaviour {
          if (var4 == null) {
             return ((SculkVeinBlock)Blocks.SCULK_VEIN).getSameSpaceSpreader().spreadAll(var1.getBlockState(var2), var1, var2, var5) > 0L;
          } else if (!var4.isEmpty()) {
-            return !var3.isAir() && !var3.getFluidState().is((Fluid)Fluids.WATER) ? false : SculkVeinBlock.regrow(var1, var2, var3, var4);
+            return !var3.isAir() && !var3.getFluidState().is(Fluids.WATER) ? false : SculkVeinBlock.regrow(var1, var2, var3, var4);
          } else {
             return SculkBehaviour.super.attemptSpreadVein(var1, var2, var3, var4, var5);
          }
@@ -43,7 +42,7 @@ public interface SculkBehaviour {
    }
 
    default boolean attemptSpreadVein(LevelAccessor var1, BlockPos var2, BlockState var3, @Nullable Collection<Direction> var4, boolean var5) {
-      return ((MultifaceBlock)Blocks.SCULK_VEIN).getSpreader().spreadAll(var3, var1, var2, var5) > 0L;
+      return ((MultifaceSpreadeableBlock)Blocks.SCULK_VEIN).getSpreader().spreadAll(var3, var1, var2, var5) > 0L;
    }
 
    default boolean canChangeBlockStateOnSpread() {

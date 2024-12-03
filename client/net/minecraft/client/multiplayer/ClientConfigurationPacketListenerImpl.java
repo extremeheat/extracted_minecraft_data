@@ -92,38 +92,17 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
 
    private <T> T runWithResources(Function<ResourceProvider, T> var1) {
       if (this.knownPacks == null) {
-         return var1.apply(ResourceProvider.EMPTY);
+         return (T)var1.apply(ResourceProvider.EMPTY);
       } else {
-         CloseableResourceManager var2 = this.knownPacks.createResourceManager();
-
-         Object var3;
-         try {
-            var3 = var1.apply(var2);
-         } catch (Throwable var6) {
-            if (var2 != null) {
-               try {
-                  var2.close();
-               } catch (Throwable var5) {
-                  var6.addSuppressed(var5);
-               }
-            }
-
-            throw var6;
+         try (CloseableResourceManager var2 = this.knownPacks.createResourceManager()) {
+            return (T)var1.apply(var2);
          }
-
-         if (var2 != null) {
-            var2.close();
-         }
-
-         return var3;
       }
    }
 
    public void handleConfigurationFinished(ClientboundFinishConfigurationPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      RegistryAccess.Frozen var2 = (RegistryAccess.Frozen)this.runWithResources((var1x) -> {
-         return this.registryDataCollector.collectGameRegistries(var1x, this.receivedRegistries, this.connection.isMemoryConnection());
-      });
+      RegistryAccess.Frozen var2 = (RegistryAccess.Frozen)this.runWithResources((var1x) -> this.registryDataCollector.collectGameRegistries(var1x, this.receivedRegistries, this.connection.isMemoryConnection()));
       this.connection.setupInboundProtocol(GameProtocols.CLIENTBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(var2)), new ClientPacketListener(this.minecraft, this.connection, new CommonListenerCookie(this.localGameProfile, this.telemetryManager, var2, this.enabledFeatures, this.serverBrand, this.serverData, this.postDisconnectScreen, this.serverCookies, this.chatState, this.customReportDetails, this.serverLinks)));
       this.connection.send(ServerboundFinishConfigurationPacket.INSTANCE);
       this.connection.setupOutboundProtocol(GameProtocols.SERVERBOUND_TEMPLATE.bind(RegistryFriendlyByteBuf.decorator(var2)));

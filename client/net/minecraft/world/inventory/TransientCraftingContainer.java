@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.ContainerHelper;
@@ -31,18 +30,13 @@ public class TransientCraftingContainer implements CraftingContainer {
    }
 
    public boolean isEmpty() {
-      Iterator var1 = this.items.iterator();
-
-      ItemStack var2;
-      do {
-         if (!var1.hasNext()) {
-            return true;
+      for(ItemStack var2 : this.items) {
+         if (!var2.isEmpty()) {
+            return false;
          }
+      }
 
-         var2 = (ItemStack)var1.next();
-      } while(var2.isEmpty());
-
-      return false;
+      return true;
    }
 
    public ItemStack getItem(int var1) {
@@ -91,10 +85,7 @@ public class TransientCraftingContainer implements CraftingContainer {
    }
 
    public void fillStackedContents(StackedItemContents var1) {
-      Iterator var2 = this.items.iterator();
-
-      while(var2.hasNext()) {
-         ItemStack var3 = (ItemStack)var2.next();
+      for(ItemStack var3 : this.items) {
          var1.accountSimpleStack(var3);
       }
 

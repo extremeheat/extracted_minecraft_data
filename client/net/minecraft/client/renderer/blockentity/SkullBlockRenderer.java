@@ -1,10 +1,10 @@
 package net.minecraft.client.renderer.blockentity;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Map;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -18,7 +18,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.DefaultPlayerSkin;
-import net.minecraft.client.resources.SkinManager;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.component.ResolvableProfile;
@@ -30,7 +29,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
 
 public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity> {
-   private final Map<SkullBlock.Type, SkullModelBase> modelByType;
+   private final Function<SkullBlock.Type, SkullModelBase> modelByType;
    private static final Map<SkullBlock.Type, ResourceLocation> SKIN_BY_TYPE = (Map)Util.make(Maps.newHashMap(), (var0) -> {
       var0.put(SkullBlock.Types.SKELETON, ResourceLocation.withDefaultNamespace("textures/entity/skeleton/skeleton.png"));
       var0.put(SkullBlock.Types.WITHER_SKELETON, ResourceLocation.withDefaultNamespace("textures/entity/skeleton/wither_skeleton.png"));
@@ -41,21 +40,32 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
       var0.put(SkullBlock.Types.PLAYER, DefaultPlayerSkin.getDefaultTexture());
    });
 
-   public static Map<SkullBlock.Type, SkullModelBase> createSkullRenderers(EntityModelSet var0) {
-      ImmutableMap.Builder var1 = ImmutableMap.builder();
-      var1.put(SkullBlock.Types.SKELETON, new SkullModel(var0.bakeLayer(ModelLayers.SKELETON_SKULL)));
-      var1.put(SkullBlock.Types.WITHER_SKELETON, new SkullModel(var0.bakeLayer(ModelLayers.WITHER_SKELETON_SKULL)));
-      var1.put(SkullBlock.Types.PLAYER, new SkullModel(var0.bakeLayer(ModelLayers.PLAYER_HEAD)));
-      var1.put(SkullBlock.Types.ZOMBIE, new SkullModel(var0.bakeLayer(ModelLayers.ZOMBIE_HEAD)));
-      var1.put(SkullBlock.Types.CREEPER, new SkullModel(var0.bakeLayer(ModelLayers.CREEPER_HEAD)));
-      var1.put(SkullBlock.Types.DRAGON, new DragonHeadModel(var0.bakeLayer(ModelLayers.DRAGON_SKULL)));
-      var1.put(SkullBlock.Types.PIGLIN, new PiglinHeadModel(var0.bakeLayer(ModelLayers.PIGLIN_HEAD)));
-      return var1.build();
+   @Nullable
+   public static SkullModelBase createModel(EntityModelSet var0, SkullBlock.Type var1) {
+      if (var1 instanceof SkullBlock.Types) {
+         SkullBlock.Types var2 = (SkullBlock.Types)var1;
+         Object var10000;
+         switch (var2) {
+            case SKELETON -> var10000 = new SkullModel(var0.bakeLayer(ModelLayers.SKELETON_SKULL));
+            case WITHER_SKELETON -> var10000 = new SkullModel(var0.bakeLayer(ModelLayers.WITHER_SKELETON_SKULL));
+            case PLAYER -> var10000 = new SkullModel(var0.bakeLayer(ModelLayers.PLAYER_HEAD));
+            case ZOMBIE -> var10000 = new SkullModel(var0.bakeLayer(ModelLayers.ZOMBIE_HEAD));
+            case CREEPER -> var10000 = new SkullModel(var0.bakeLayer(ModelLayers.CREEPER_HEAD));
+            case DRAGON -> var10000 = new DragonHeadModel(var0.bakeLayer(ModelLayers.DRAGON_SKULL));
+            case PIGLIN -> var10000 = new PiglinHeadModel(var0.bakeLayer(ModelLayers.PIGLIN_HEAD));
+            default -> throw new MatchException((String)null, (Throwable)null);
+         }
+
+         return (SkullModelBase)var10000;
+      } else {
+         return null;
+      }
    }
 
    public SkullBlockRenderer(BlockEntityRendererProvider.Context var1) {
       super();
-      this.modelByType = createSkullRenderers(var1.getModelSet());
+      EntityModelSet var2 = var1.getModelSet();
+      this.modelByType = Util.memoize((Function)((var1x) -> createModel(var2, var1x)));
    }
 
    public void render(SkullBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
@@ -66,7 +76,7 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
       int var11 = var9 ? RotationSegment.convertToSegment(var10.getOpposite()) : (Integer)var8.getValue(SkullBlock.ROTATION);
       float var12 = RotationSegment.convertToDegrees(var11);
       SkullBlock.Type var13 = ((AbstractSkullBlock)var8.getBlock()).getType();
-      SkullModelBase var14 = (SkullModelBase)this.modelByType.get(var13);
+      SkullModelBase var14 = (SkullModelBase)this.modelByType.apply(var13);
       RenderType var15 = getRenderType(var13, var1.getOwnerProfile());
       renderSkull(var10, var12, var7, var3, var4, var5, var14, var15);
    }
@@ -88,12 +98,10 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
    }
 
    public static RenderType getRenderType(SkullBlock.Type var0, @Nullable ResolvableProfile var1) {
-      ResourceLocation var2 = (ResourceLocation)SKIN_BY_TYPE.get(var0);
-      if (var0 == SkullBlock.Types.PLAYER && var1 != null) {
-         SkinManager var3 = Minecraft.getInstance().getSkinManager();
-         return RenderType.entityTranslucent(var3.getInsecureSkin(var1.gameProfile()).texture());
-      } else {
-         return RenderType.entityCutoutNoCullZOffset(var2);
-      }
+      return getRenderType(var0, var1, (ResourceLocation)null);
+   }
+
+   public static RenderType getRenderType(SkullBlock.Type var0, @Nullable ResolvableProfile var1, @Nullable ResourceLocation var2) {
+      return var0 == SkullBlock.Types.PLAYER && var1 != null ? RenderType.entityTranslucent(var2 != null ? var2 : Minecraft.getInstance().getSkinManager().getInsecureSkin(var1.gameProfile()).texture()) : RenderType.entityCutoutNoCullZOffset(var2 != null ? var2 : (ResourceLocation)SKIN_BY_TYPE.get(var0));
    }
 }

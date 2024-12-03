@@ -22,9 +22,7 @@ import net.minecraft.world.phys.Vec3;
 
 public record TeleportRandomlyConsumeEffect(float diameter) implements ConsumeEffect {
    private static final float DEFAULT_DIAMETER = 16.0F;
-   public static final MapCodec<TeleportRandomlyConsumeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("diameter", 16.0F).forGetter(TeleportRandomlyConsumeEffect::diameter)).apply(var0, TeleportRandomlyConsumeEffect::new);
-   });
+   public static final MapCodec<TeleportRandomlyConsumeEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("diameter", 16.0F).forGetter(TeleportRandomlyConsumeEffect::diameter)).apply(var0, TeleportRandomlyConsumeEffect::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, TeleportRandomlyConsumeEffect> STREAM_CODEC;
 
    public TeleportRandomlyConsumeEffect() {
@@ -76,10 +74,6 @@ public record TeleportRandomlyConsumeEffect(float diameter) implements ConsumeEf
       }
 
       return var4;
-   }
-
-   public float diameter() {
-      return this.diameter;
    }
 
    static {

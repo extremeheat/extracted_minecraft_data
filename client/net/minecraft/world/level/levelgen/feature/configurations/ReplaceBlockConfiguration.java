@@ -8,11 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockStateMatchTest;
 
 public class ReplaceBlockConfiguration implements FeatureConfiguration {
-   public static final Codec<ReplaceBlockConfiguration> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.list(OreConfiguration.TargetBlockState.CODEC).fieldOf("targets").forGetter((var0x) -> {
-         return var0x.targetStates;
-      })).apply(var0, ReplaceBlockConfiguration::new);
-   });
+   public static final Codec<ReplaceBlockConfiguration> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.list(OreConfiguration.TargetBlockState.CODEC).fieldOf("targets").forGetter((var0x) -> var0x.targetStates)).apply(var0, ReplaceBlockConfiguration::new));
    public final List<OreConfiguration.TargetBlockState> targetStates;
 
    public ReplaceBlockConfiguration(BlockState var1, BlockState var2) {

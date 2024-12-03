@@ -40,12 +40,4 @@ public record ColumnPos(int x, int z) {
    public int hashCode() {
       return ChunkPos.hash(this.x, this.z);
    }
-
-   public int x() {
-      return this.x;
-   }
-
-   public int z() {
-      return this.z;
-   }
 }

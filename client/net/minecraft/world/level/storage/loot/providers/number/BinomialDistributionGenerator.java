@@ -9,9 +9,7 @@ import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public record BinomialDistributionGenerator(NumberProvider n, NumberProvider p) implements NumberProvider {
-   public static final MapCodec<BinomialDistributionGenerator> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(NumberProviders.CODEC.fieldOf("n").forGetter(BinomialDistributionGenerator::n), NumberProviders.CODEC.fieldOf("p").forGetter(BinomialDistributionGenerator::p)).apply(var0, BinomialDistributionGenerator::new);
-   });
+   public static final MapCodec<BinomialDistributionGenerator> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(NumberProviders.CODEC.fieldOf("n").forGetter(BinomialDistributionGenerator::n), NumberProviders.CODEC.fieldOf("p").forGetter(BinomialDistributionGenerator::p)).apply(var0, BinomialDistributionGenerator::new));
 
    public BinomialDistributionGenerator(NumberProvider var1, NumberProvider var2) {
       super();
@@ -48,13 +46,5 @@ public record BinomialDistributionGenerator(NumberProvider n, NumberProvider p) 
 
    public Set<ContextKey<?>> getReferencedContextParams() {
       return Sets.union(this.n.getReferencedContextParams(), this.p.getReferencedContextParams());
-   }
-
-   public NumberProvider n() {
-      return this.n;
-   }
-
-   public NumberProvider p() {
-      return this.p;
    }
 }

@@ -49,13 +49,12 @@ public class EnderDragonModel extends EntityModel<EnderDragonRenderState> {
       this.head = var1.getChild("head");
       this.jaw = this.head.getChild("jaw");
 
-      int var2;
-      for(var2 = 0; var2 < this.neckParts.length; ++var2) {
+      for(int var2 = 0; var2 < this.neckParts.length; ++var2) {
          this.neckParts[var2] = var1.getChild(neckName(var2));
       }
 
-      for(var2 = 0; var2 < this.tailParts.length; ++var2) {
-         this.tailParts[var2] = var1.getChild(tailName(var2));
+      for(int var3 = 0; var3 < this.tailParts.length; ++var3) {
+         this.tailParts[var3] = var1.getChild(tailName(var3));
       }
 
       this.body = var1.getChild("body");
@@ -85,30 +84,29 @@ public class EnderDragonModel extends EntityModel<EnderDragonRenderState> {
       var3.addOrReplaceChild("jaw", CubeListBuilder.create().addBox("jaw", -6.0F, 0.0F, -16.0F, 12, 4, 16, 176, 65), PartPose.offset(0.0F, 4.0F, -8.0F));
       CubeListBuilder var4 = CubeListBuilder.create().addBox("box", -5.0F, -5.0F, -5.0F, 10, 10, 10, 192, 104).addBox("scale", -1.0F, -9.0F, -3.0F, 2, 4, 6, 48, 0);
 
-      int var5;
-      for(var5 = 0; var5 < 5; ++var5) {
+      for(int var5 = 0; var5 < 5; ++var5) {
          var1.addOrReplaceChild(neckName(var5), var4, PartPose.offset(0.0F, 20.0F, -12.0F - (float)var5 * 10.0F));
       }
 
-      for(var5 = 0; var5 < 12; ++var5) {
-         var1.addOrReplaceChild(tailName(var5), var4, PartPose.offset(0.0F, 10.0F, 60.0F + (float)var5 * 10.0F));
+      for(int var16 = 0; var16 < 12; ++var16) {
+         var1.addOrReplaceChild(tailName(var16), var4, PartPose.offset(0.0F, 10.0F, 60.0F + (float)var16 * 10.0F));
       }
 
-      PartDefinition var16 = var1.addOrReplaceChild("body", CubeListBuilder.create().addBox("body", -12.0F, 1.0F, -16.0F, 24, 24, 64, 0, 0).addBox("scale", -1.0F, -5.0F, -10.0F, 2, 6, 12, 220, 53).addBox("scale", -1.0F, -5.0F, 10.0F, 2, 6, 12, 220, 53).addBox("scale", -1.0F, -5.0F, 30.0F, 2, 6, 12, 220, 53), PartPose.offset(0.0F, 3.0F, 8.0F));
-      PartDefinition var6 = var16.addOrReplaceChild("left_wing", CubeListBuilder.create().mirror().addBox("bone", 0.0F, -4.0F, -4.0F, 56, 8, 8, 112, 88).addBox("skin", 0.0F, 0.0F, 2.0F, 56, 0, 56, -56, 88), PartPose.offset(12.0F, 2.0F, -6.0F));
+      PartDefinition var17 = var1.addOrReplaceChild("body", CubeListBuilder.create().addBox("body", -12.0F, 1.0F, -16.0F, 24, 24, 64, 0, 0).addBox("scale", -1.0F, -5.0F, -10.0F, 2, 6, 12, 220, 53).addBox("scale", -1.0F, -5.0F, 10.0F, 2, 6, 12, 220, 53).addBox("scale", -1.0F, -5.0F, 30.0F, 2, 6, 12, 220, 53), PartPose.offset(0.0F, 3.0F, 8.0F));
+      PartDefinition var6 = var17.addOrReplaceChild("left_wing", CubeListBuilder.create().mirror().addBox("bone", 0.0F, -4.0F, -4.0F, 56, 8, 8, 112, 88).addBox("skin", 0.0F, 0.0F, 2.0F, 56, 0, 56, -56, 88), PartPose.offset(12.0F, 2.0F, -6.0F));
       var6.addOrReplaceChild("left_wing_tip", CubeListBuilder.create().mirror().addBox("bone", 0.0F, -2.0F, -2.0F, 56, 4, 4, 112, 136).addBox("skin", 0.0F, 0.0F, 2.0F, 56, 0, 56, -56, 144), PartPose.offset(56.0F, 0.0F, 0.0F));
-      PartDefinition var7 = var16.addOrReplaceChild("left_front_leg", CubeListBuilder.create().addBox("main", -4.0F, -4.0F, -4.0F, 8, 24, 8, 112, 104), PartPose.offsetAndRotation(12.0F, 17.0F, -6.0F, 1.3F, 0.0F, 0.0F));
+      PartDefinition var7 = var17.addOrReplaceChild("left_front_leg", CubeListBuilder.create().addBox("main", -4.0F, -4.0F, -4.0F, 8, 24, 8, 112, 104), PartPose.offsetAndRotation(12.0F, 17.0F, -6.0F, 1.3F, 0.0F, 0.0F));
       PartDefinition var8 = var7.addOrReplaceChild("left_front_leg_tip", CubeListBuilder.create().addBox("main", -3.0F, -1.0F, -3.0F, 6, 24, 6, 226, 138), PartPose.offsetAndRotation(0.0F, 20.0F, -1.0F, -0.5F, 0.0F, 0.0F));
       var8.addOrReplaceChild("left_front_foot", CubeListBuilder.create().addBox("main", -4.0F, 0.0F, -12.0F, 8, 4, 16, 144, 104), PartPose.offsetAndRotation(0.0F, 23.0F, 0.0F, 0.75F, 0.0F, 0.0F));
-      PartDefinition var9 = var16.addOrReplaceChild("left_hind_leg", CubeListBuilder.create().addBox("main", -8.0F, -4.0F, -8.0F, 16, 32, 16, 0, 0), PartPose.offsetAndRotation(16.0F, 13.0F, 34.0F, 1.0F, 0.0F, 0.0F));
+      PartDefinition var9 = var17.addOrReplaceChild("left_hind_leg", CubeListBuilder.create().addBox("main", -8.0F, -4.0F, -8.0F, 16, 32, 16, 0, 0), PartPose.offsetAndRotation(16.0F, 13.0F, 34.0F, 1.0F, 0.0F, 0.0F));
       PartDefinition var10 = var9.addOrReplaceChild("left_hind_leg_tip", CubeListBuilder.create().addBox("main", -6.0F, -2.0F, 0.0F, 12, 32, 12, 196, 0), PartPose.offsetAndRotation(0.0F, 32.0F, -4.0F, 0.5F, 0.0F, 0.0F));
       var10.addOrReplaceChild("left_hind_foot", CubeListBuilder.create().addBox("main", -9.0F, 0.0F, -20.0F, 18, 6, 24, 112, 0), PartPose.offsetAndRotation(0.0F, 31.0F, 4.0F, 0.75F, 0.0F, 0.0F));
-      PartDefinition var11 = var16.addOrReplaceChild("right_wing", CubeListBuilder.create().addBox("bone", -56.0F, -4.0F, -4.0F, 56, 8, 8, 112, 88).addBox("skin", -56.0F, 0.0F, 2.0F, 56, 0, 56, -56, 88), PartPose.offset(-12.0F, 2.0F, -6.0F));
+      PartDefinition var11 = var17.addOrReplaceChild("right_wing", CubeListBuilder.create().addBox("bone", -56.0F, -4.0F, -4.0F, 56, 8, 8, 112, 88).addBox("skin", -56.0F, 0.0F, 2.0F, 56, 0, 56, -56, 88), PartPose.offset(-12.0F, 2.0F, -6.0F));
       var11.addOrReplaceChild("right_wing_tip", CubeListBuilder.create().addBox("bone", -56.0F, -2.0F, -2.0F, 56, 4, 4, 112, 136).addBox("skin", -56.0F, 0.0F, 2.0F, 56, 0, 56, -56, 144), PartPose.offset(-56.0F, 0.0F, 0.0F));
-      PartDefinition var12 = var16.addOrReplaceChild("right_front_leg", CubeListBuilder.create().addBox("main", -4.0F, -4.0F, -4.0F, 8, 24, 8, 112, 104), PartPose.offsetAndRotation(-12.0F, 17.0F, -6.0F, 1.3F, 0.0F, 0.0F));
+      PartDefinition var12 = var17.addOrReplaceChild("right_front_leg", CubeListBuilder.create().addBox("main", -4.0F, -4.0F, -4.0F, 8, 24, 8, 112, 104), PartPose.offsetAndRotation(-12.0F, 17.0F, -6.0F, 1.3F, 0.0F, 0.0F));
       PartDefinition var13 = var12.addOrReplaceChild("right_front_leg_tip", CubeListBuilder.create().addBox("main", -3.0F, -1.0F, -3.0F, 6, 24, 6, 226, 138), PartPose.offsetAndRotation(0.0F, 20.0F, -1.0F, -0.5F, 0.0F, 0.0F));
       var13.addOrReplaceChild("right_front_foot", CubeListBuilder.create().addBox("main", -4.0F, 0.0F, -12.0F, 8, 4, 16, 144, 104), PartPose.offsetAndRotation(0.0F, 23.0F, 0.0F, 0.75F, 0.0F, 0.0F));
-      PartDefinition var14 = var16.addOrReplaceChild("right_hind_leg", CubeListBuilder.create().addBox("main", -8.0F, -4.0F, -8.0F, 16, 32, 16, 0, 0), PartPose.offsetAndRotation(-16.0F, 13.0F, 34.0F, 1.0F, 0.0F, 0.0F));
+      PartDefinition var14 = var17.addOrReplaceChild("right_hind_leg", CubeListBuilder.create().addBox("main", -8.0F, -4.0F, -8.0F, 16, 32, 16, 0, 0), PartPose.offsetAndRotation(-16.0F, 13.0F, 34.0F, 1.0F, 0.0F, 0.0F));
       PartDefinition var15 = var14.addOrReplaceChild("right_hind_leg_tip", CubeListBuilder.create().addBox("main", -6.0F, -2.0F, 0.0F, 12, 32, 12, 196, 0), PartPose.offsetAndRotation(0.0F, 32.0F, -4.0F, 0.5F, 0.0F, 0.0F));
       var15.addOrReplaceChild("right_hind_foot", CubeListBuilder.create().addBox("main", -9.0F, 0.0F, -20.0F, 18, 6, 24, 112, 0), PartPose.offsetAndRotation(0.0F, 31.0F, 4.0F, 0.75F, 0.0F, 0.0F));
       return LayerDefinition.create(var0, 256, 256);
@@ -149,10 +147,10 @@ public class EnderDragonModel extends EntityModel<EnderDragonRenderState> {
       this.head.y = var5;
       this.head.z = var6;
       this.head.x = var4;
-      DragonFlightHistory.Sample var16 = var1.getHistoricalPos(0);
-      this.head.yRot = Mth.wrapDegrees(var16.yRot() - var8.yRot()) * 0.017453292F;
-      this.head.xRot = Mth.wrapDegrees(var1.getHeadPartYOffset(6, var8, var16)) * 0.017453292F * 1.5F * 5.0F;
-      this.head.zRot = -Mth.wrapDegrees(var16.yRot() - var10) * 0.017453292F;
+      DragonFlightHistory.Sample var21 = var1.getHistoricalPos(0);
+      this.head.yRot = Mth.wrapDegrees(var21.yRot() - var8.yRot()) * 0.017453292F;
+      this.head.xRot = Mth.wrapDegrees(var1.getHeadPartYOffset(6, var8, var21)) * 0.017453292F * 1.5F * 5.0F;
+      this.head.zRot = -Mth.wrapDegrees(var21.yRot() - var10) * 0.017453292F;
       this.body.zRot = -var9 * 1.5F * 0.017453292F;
       this.leftWing.xRot = 0.125F - Mth.cos(var2) * 0.2F;
       this.leftWing.yRot = -0.25F;
@@ -164,19 +162,19 @@ public class EnderDragonModel extends EntityModel<EnderDragonRenderState> {
       this.rightWingTip.zRot = -this.leftWingTip.zRot;
       this.poseLimbs(var3, this.leftFrontLeg, this.leftFrontLegTip, this.leftFrontFoot, this.leftRearLeg, this.leftRearLegTip, this.leftRearFoot);
       this.poseLimbs(var3, this.rightFrontLeg, this.rightFrontLegTip, this.rightFrontFoot, this.rightRearLeg, this.rightRearLegTip, this.rightRearFoot);
-      float var17 = 0.0F;
+      float var22 = 0.0F;
       var5 = this.tailParts[0].y;
       var6 = this.tailParts[0].z;
       var4 = this.tailParts[0].x;
       var8 = var1.getHistoricalPos(11);
 
-      for(int var18 = 0; var18 < 12; ++var18) {
-         DragonFlightHistory.Sample var19 = var1.getHistoricalPos(12 + var18);
-         var17 += Mth.sin((float)var18 * 0.45F + var2) * 0.05F;
-         ModelPart var15 = this.tailParts[var18];
-         var15.yRot = (Mth.wrapDegrees(var19.yRot() - var8.yRot()) * 1.5F + 180.0F) * 0.017453292F;
-         var15.xRot = var17 + (float)(var19.y() - var8.y()) * 0.017453292F * 1.5F * 5.0F;
-         var15.zRot = Mth.wrapDegrees(var19.yRot() - var10) * 0.017453292F * 1.5F;
+      for(int var23 = 0; var23 < 12; ++var23) {
+         DragonFlightHistory.Sample var24 = var1.getHistoricalPos(12 + var23);
+         var22 += Mth.sin((float)var23 * 0.45F + var2) * 0.05F;
+         ModelPart var15 = this.tailParts[var23];
+         var15.yRot = (Mth.wrapDegrees(var24.yRot() - var8.yRot()) * 1.5F + 180.0F) * 0.017453292F;
+         var15.xRot = var22 + (float)(var24.y() - var8.y()) * 0.017453292F * 1.5F * 5.0F;
+         var15.zRot = Mth.wrapDegrees(var24.yRot() - var10) * 0.017453292F * 1.5F;
          var15.y = var5;
          var15.z = var6;
          var15.x = var4;

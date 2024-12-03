@@ -15,7 +15,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ClientboundPlayerChatPacket(UUID sender, int index, @Nullable MessageSignature signature, SignedMessageBody.Packed body, @Nullable Component unsignedContent, FilterMask filterMask, ChatType.Bound chatType) implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPlayerChatPacket> STREAM_CODEC = Packet.codec(ClientboundPlayerChatPacket::write, ClientboundPlayerChatPacket::new);
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundPlayerChatPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundPlayerChatPacket>codec(ClientboundPlayerChatPacket::write, ClientboundPlayerChatPacket::new);
 
    private ClientboundPlayerChatPacket(RegistryFriendlyByteBuf var1) {
       this(var1.readUUID(), var1.readVarInt(), (MessageSignature)var1.readNullable(MessageSignature::read), new SignedMessageBody.Packed(var1), (Component)FriendlyByteBuf.readNullable(var1, ComponentSerialization.TRUSTED_STREAM_CODEC), FilterMask.read(var1), (ChatType.Bound)ChatType.Bound.STREAM_CODEC.decode(var1));
@@ -52,35 +52,5 @@ public record ClientboundPlayerChatPacket(UUID sender, int index, @Nullable Mess
 
    public boolean isSkippable() {
       return true;
-   }
-
-   public UUID sender() {
-      return this.sender;
-   }
-
-   public int index() {
-      return this.index;
-   }
-
-   @Nullable
-   public MessageSignature signature() {
-      return this.signature;
-   }
-
-   public SignedMessageBody.Packed body() {
-      return this.body;
-   }
-
-   @Nullable
-   public Component unsignedContent() {
-      return this.unsignedContent;
-   }
-
-   public FilterMask filterMask() {
-      return this.filterMask;
-   }
-
-   public ChatType.Bound chatType() {
-      return this.chatType;
    }
 }

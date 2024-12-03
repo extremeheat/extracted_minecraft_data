@@ -67,17 +67,17 @@ public class LoomMenu extends AbstractContainerMenu {
          }
       };
       this.access = var3;
-      this.bannerSlot = this.addSlot(new Slot(this, this.inputContainer, 0, 13, 26) {
+      this.bannerSlot = this.addSlot(new Slot(this.inputContainer, 0, 13, 26) {
          public boolean mayPlace(ItemStack var1) {
             return var1.getItem() instanceof BannerItem;
          }
       });
-      this.dyeSlot = this.addSlot(new Slot(this, this.inputContainer, 1, 33, 26) {
+      this.dyeSlot = this.addSlot(new Slot(this.inputContainer, 1, 33, 26) {
          public boolean mayPlace(ItemStack var1) {
             return var1.getItem() instanceof DyeItem;
          }
       });
-      this.patternSlot = this.addSlot(new Slot(this, this.inputContainer, 2, 23, 45) {
+      this.patternSlot = this.addSlot(new Slot(this.inputContainer, 2, 23, 45) {
          public boolean mayPlace(ItemStack var1) {
             return var1.getItem() instanceof BannerPatternItem;
          }
@@ -205,7 +205,7 @@ public class LoomMenu extends AbstractContainerMenu {
 
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = (Slot)this.slots.get(var2);
+      Slot var4 = this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -257,9 +257,7 @@ public class LoomMenu extends AbstractContainerMenu {
 
    public void removed(Player var1) {
       super.removed(var1);
-      this.access.execute((var2, var3) -> {
-         this.clearContainer(var1, this.inputContainer);
-      });
+      this.access.execute((var2, var3) -> this.clearContainer(var1, this.inputContainer));
    }
 
    private void setupResultSlot(Holder<BannerPattern> var1) {
@@ -269,9 +267,7 @@ public class LoomMenu extends AbstractContainerMenu {
       if (!var2.isEmpty() && !var3.isEmpty()) {
          var4 = var2.copyWithCount(1);
          DyeColor var5 = ((DyeItem)var3.getItem()).getDyeColor();
-         var4.update(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY, (var2x) -> {
-            return (new BannerPatternLayers.Builder()).addAll(var2x).add(var1, var5).build();
-         });
+         var4.update(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY, (var2x) -> (new BannerPatternLayers.Builder()).addAll(var2x).add(var1, var5).build());
       }
 
       if (!ItemStack.matches(var4, this.resultSlot.getItem())) {

@@ -18,7 +18,6 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.IntBuffer;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -51,7 +50,7 @@ public class UnihexProvider implements GlyphProvider {
 
    @Nullable
    public GlyphInfo getGlyph(int var1) {
-      return (GlyphInfo)this.glyphs.get(var1);
+      return this.glyphs.get(var1);
    }
 
    public IntSet getSupportedGlyphs() {
@@ -100,16 +99,15 @@ public class UnihexProvider implements GlyphProvider {
 
          int var6 = 0;
 
-         int var7;
-         for(var7 = 0; var7 < var5; ++var7) {
+         for(int var7 = 0; var7 < var5; ++var7) {
             var6 = var6 << 4 | decodeHex(var2, var3.getByte(var7));
          }
 
          var3.clear();
          copyUntil(var0, var3, 10);
-         var7 = var3.size();
+         int var9 = var3.size();
          LineData var10000;
-         switch (var7) {
+         switch (var9) {
             case 32 -> var10000 = UnihexProvider.ByteContents.read(var2, var3);
             case 64 -> var10000 = UnihexProvider.ShortContents.read(var2, var3);
             case 96 -> var10000 = UnihexProvider.IntContents.read24(var2, var3);
@@ -207,6 +205,156 @@ public class UnihexProvider implements GlyphProvider {
       }
    }
 
+   static record OverrideRange(int from, int to, Dimensions dimensions) {
+      final int from;
+      final int to;
+      final Dimensions dimensions;
+      private static final Codec<OverrideRange> RAW_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.CODEPOINT.fieldOf("from").forGetter(OverrideRange::from), ExtraCodecs.CODEPOINT.fieldOf("to").forGetter(OverrideRange::to), UnihexProvider.Dimensions.MAP_CODEC.forGetter(OverrideRange::dimensions)).apply(var0, OverrideRange::new));
+      public static final Codec<OverrideRange> CODEC;
+
+      private OverrideRange(int var1, int var2, Dimensions var3) {
+         super();
+         this.from = var1;
+         this.to = var2;
+         this.dimensions = var3;
+      }
+
+      static {
+         CODEC = RAW_CODEC.validate((var0) -> var0.from >= var0.to ? DataResult.error(() -> "Invalid range: [" + var0.from + ";" + var0.to + "]") : DataResult.success(var0));
+      }
+   }
+
+   public static record Dimensions(int left, int right) {
+      final int left;
+      final int right;
+      public static final MapCodec<Dimensions> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.INT.fieldOf("left").forGetter(Dimensions::left), Codec.INT.fieldOf("right").forGetter(Dimensions::right)).apply(var0, Dimensions::new));
+      public static final Codec<Dimensions> CODEC;
+
+      public Dimensions(int var1, int var2) {
+         super();
+         this.left = var1;
+         this.right = var2;
+      }
+
+      public int pack() {
+         return pack(this.left, this.right);
+      }
+
+      public static int pack(int var0, int var1) {
+         return (var0 & 255) << 8 | var1 & 255;
+      }
+
+      public static int left(int var0) {
+         return (byte)(var0 >> 8);
+      }
+
+      public static int right(int var0) {
+         return (byte)var0;
+      }
+
+      static {
+         CODEC = MAP_CODEC.codec();
+      }
+   }
+
+   public static class Definition implements GlyphProviderDefinition {
+      public static final MapCodec<Definition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("hex_file").forGetter((var0x) -> var0x.hexFile), UnihexProvider.OverrideRange.CODEC.listOf().fieldOf("size_overrides").forGetter((var0x) -> var0x.sizeOverrides)).apply(var0, Definition::new));
+      private final ResourceLocation hexFile;
+      private final List<OverrideRange> sizeOverrides;
+
+      private Definition(ResourceLocation var1, List<OverrideRange> var2) {
+         super();
+         this.hexFile = var1;
+         this.sizeOverrides = var2;
+      }
+
+      public GlyphProviderType type() {
+         return GlyphProviderType.UNIHEX;
+      }
+
+      public Either<GlyphProviderDefinition.Loader, GlyphProviderDefinition.Reference> unpack() {
+         return Either.left(this::load);
+      }
+
+      private GlyphProvider load(ResourceManager var1) throws IOException {
+         InputStream var2 = var1.open(this.hexFile);
+
+         UnihexProvider var3;
+         try {
+            var3 = this.loadData(var2);
+         } catch (Throwable var6) {
+            if (var2 != null) {
+               try {
+                  var2.close();
+               } catch (Throwable var5) {
+                  var6.addSuppressed(var5);
+               }
+            }
+
+            throw var6;
+         }
+
+         if (var2 != null) {
+            var2.close();
+         }
+
+         return var3;
+      }
+
+      private UnihexProvider loadData(InputStream var1) throws IOException {
+         CodepointMap var2 = new CodepointMap((var0) -> new LineData[var0], (var0) -> new LineData[var0][]);
+         Objects.requireNonNull(var2);
+         ReaderOutput var3 = var2::put;
+         ZipInputStream var4 = new ZipInputStream(var1);
+
+         UnihexProvider var17;
+         try {
+            ZipEntry var5;
+            while((var5 = var4.getNextEntry()) != null) {
+               String var6 = var5.getName();
+               if (var6.endsWith(".hex")) {
+                  UnihexProvider.LOGGER.info("Found {}, loading", var6);
+                  UnihexProvider.readFromStream(new FastBufferedInputStream(var4), var3);
+               }
+            }
+
+            CodepointMap var16 = new CodepointMap((var0) -> new Glyph[var0], (var0) -> new Glyph[var0][]);
+
+            for(OverrideRange var8 : this.sizeOverrides) {
+               int var9 = var8.from;
+               int var10 = var8.to;
+               Dimensions var11 = var8.dimensions;
+
+               for(int var12 = var9; var12 <= var10; ++var12) {
+                  LineData var13 = (LineData)var2.remove(var12);
+                  if (var13 != null) {
+                     var16.put(var12, new Glyph(var13, var11.left, var11.right));
+                  }
+               }
+            }
+
+            var2.forEach((var1x, var2x) -> {
+               int var3 = var2x.calculateWidth();
+               int var4 = UnihexProvider.Dimensions.left(var3);
+               int var5 = UnihexProvider.Dimensions.right(var3);
+               var16.put(var1x, new Glyph(var2x, var4, var5));
+            });
+            var17 = new UnihexProvider(var16);
+         } catch (Throwable var15) {
+            try {
+               var4.close();
+            } catch (Throwable var14) {
+               var15.addSuppressed(var14);
+            }
+
+            throw var15;
+         }
+
+         var4.close();
+         return var17;
+      }
+   }
+
    public interface LineData {
       int line(int var1);
 
@@ -266,13 +414,9 @@ public class UnihexProvider implements GlyphProvider {
       public int bitWidth() {
          return 8;
       }
-
-      public byte[] contents() {
-         return this.contents;
-      }
    }
 
-   private static record ShortContents(short[] contents) implements LineData {
+   static record ShortContents(short[] contents) implements LineData {
       private ShortContents(short[] var1) {
          super();
          this.contents = var1;
@@ -300,10 +444,6 @@ public class UnihexProvider implements GlyphProvider {
 
       public int bitWidth() {
          return 16;
-      }
-
-      public short[] contents() {
-         return this.contents;
       }
    }
 
@@ -361,22 +501,9 @@ public class UnihexProvider implements GlyphProvider {
 
          return new IntContents(var2, 32);
       }
-
-      public int[] contents() {
-         return this.contents;
-      }
-
-      public int bitWidth() {
-         return this.bitWidth;
-      }
    }
 
-   @FunctionalInterface
-   public interface ReaderOutput {
-      void accept(int var1, LineData var2);
-   }
-
-   private static record Glyph(LineData contents, int left, int right) implements GlyphInfo {
+   static record Glyph(LineData contents, int left, int right) implements GlyphInfo {
       final LineData contents;
       final int left;
       final int right;
@@ -430,222 +557,10 @@ public class UnihexProvider implements GlyphProvider {
             }
          });
       }
-
-      public LineData contents() {
-         return this.contents;
-      }
-
-      public int left() {
-         return this.left;
-      }
-
-      public int right() {
-         return this.right;
-      }
    }
 
-   public static class Definition implements GlyphProviderDefinition {
-      public static final MapCodec<Definition> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(ResourceLocation.CODEC.fieldOf("hex_file").forGetter((var0x) -> {
-            return var0x.hexFile;
-         }), UnihexProvider.OverrideRange.CODEC.listOf().fieldOf("size_overrides").forGetter((var0x) -> {
-            return var0x.sizeOverrides;
-         })).apply(var0, Definition::new);
-      });
-      private final ResourceLocation hexFile;
-      private final List<OverrideRange> sizeOverrides;
-
-      private Definition(ResourceLocation var1, List<OverrideRange> var2) {
-         super();
-         this.hexFile = var1;
-         this.sizeOverrides = var2;
-      }
-
-      public GlyphProviderType type() {
-         return GlyphProviderType.UNIHEX;
-      }
-
-      public Either<GlyphProviderDefinition.Loader, GlyphProviderDefinition.Reference> unpack() {
-         return Either.left(this::load);
-      }
-
-      private GlyphProvider load(ResourceManager var1) throws IOException {
-         InputStream var2 = var1.open(this.hexFile);
-
-         UnihexProvider var3;
-         try {
-            var3 = this.loadData(var2);
-         } catch (Throwable var6) {
-            if (var2 != null) {
-               try {
-                  var2.close();
-               } catch (Throwable var5) {
-                  var6.addSuppressed(var5);
-               }
-            }
-
-            throw var6;
-         }
-
-         if (var2 != null) {
-            var2.close();
-         }
-
-         return var3;
-      }
-
-      private UnihexProvider loadData(InputStream var1) throws IOException {
-         CodepointMap var2 = new CodepointMap((var0) -> {
-            return new LineData[var0];
-         }, (var0) -> {
-            return new LineData[var0][];
-         });
-         Objects.requireNonNull(var2);
-         ReaderOutput var3 = var2::put;
-         ZipInputStream var4 = new ZipInputStream(var1);
-
-         UnihexProvider var17;
-         try {
-            ZipEntry var5;
-            while((var5 = var4.getNextEntry()) != null) {
-               String var6 = var5.getName();
-               if (var6.endsWith(".hex")) {
-                  UnihexProvider.LOGGER.info("Found {}, loading", var6);
-                  UnihexProvider.readFromStream(new FastBufferedInputStream(var4), var3);
-               }
-            }
-
-            CodepointMap var16 = new CodepointMap((var0) -> {
-               return new Glyph[var0];
-            }, (var0) -> {
-               return new Glyph[var0][];
-            });
-            Iterator var7 = this.sizeOverrides.iterator();
-
-            label40:
-            while(true) {
-               if (var7.hasNext()) {
-                  OverrideRange var8 = (OverrideRange)var7.next();
-                  int var9 = var8.from;
-                  int var10 = var8.to;
-                  Dimensions var11 = var8.dimensions;
-                  int var12 = var9;
-
-                  while(true) {
-                     if (var12 > var10) {
-                        continue label40;
-                     }
-
-                     LineData var13 = (LineData)var2.remove(var12);
-                     if (var13 != null) {
-                        var16.put(var12, new Glyph(var13, var11.left, var11.right));
-                     }
-
-                     ++var12;
-                  }
-               }
-
-               var2.forEach((var1x, var2x) -> {
-                  int var3 = var2x.calculateWidth();
-                  int var4 = UnihexProvider.Dimensions.left(var3);
-                  int var5 = UnihexProvider.Dimensions.right(var3);
-                  var16.put(var1x, new Glyph(var2x, var4, var5));
-               });
-               var17 = new UnihexProvider(var16);
-               break;
-            }
-         } catch (Throwable var15) {
-            try {
-               var4.close();
-            } catch (Throwable var14) {
-               var15.addSuppressed(var14);
-            }
-
-            throw var15;
-         }
-
-         var4.close();
-         return var17;
-      }
-   }
-
-   public static record Dimensions(int left, int right) {
-      final int left;
-      final int right;
-      public static final MapCodec<Dimensions> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(Codec.INT.fieldOf("left").forGetter(Dimensions::left), Codec.INT.fieldOf("right").forGetter(Dimensions::right)).apply(var0, Dimensions::new);
-      });
-      public static final Codec<Dimensions> CODEC;
-
-      public Dimensions(int var1, int var2) {
-         super();
-         this.left = var1;
-         this.right = var2;
-      }
-
-      public int pack() {
-         return pack(this.left, this.right);
-      }
-
-      public static int pack(int var0, int var1) {
-         return (var0 & 255) << 8 | var1 & 255;
-      }
-
-      public static int left(int var0) {
-         return (byte)(var0 >> 8);
-      }
-
-      public static int right(int var0) {
-         return (byte)var0;
-      }
-
-      public int left() {
-         return this.left;
-      }
-
-      public int right() {
-         return this.right;
-      }
-
-      static {
-         CODEC = MAP_CODEC.codec();
-      }
-   }
-
-   private static record OverrideRange(int from, int to, Dimensions dimensions) {
-      final int from;
-      final int to;
-      final Dimensions dimensions;
-      private static final Codec<OverrideRange> RAW_CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(ExtraCodecs.CODEPOINT.fieldOf("from").forGetter(OverrideRange::from), ExtraCodecs.CODEPOINT.fieldOf("to").forGetter(OverrideRange::to), UnihexProvider.Dimensions.MAP_CODEC.forGetter(OverrideRange::dimensions)).apply(var0, OverrideRange::new);
-      });
-      public static final Codec<OverrideRange> CODEC;
-
-      private OverrideRange(int var1, int var2, Dimensions var3) {
-         super();
-         this.from = var1;
-         this.to = var2;
-         this.dimensions = var3;
-      }
-
-      public int from() {
-         return this.from;
-      }
-
-      public int to() {
-         return this.to;
-      }
-
-      public Dimensions dimensions() {
-         return this.dimensions;
-      }
-
-      static {
-         CODEC = RAW_CODEC.validate((var0) -> {
-            return var0.from >= var0.to ? DataResult.error(() -> {
-               return "Invalid range: [" + var0.from + ";" + var0.to + "]";
-            }) : DataResult.success(var0);
-         });
-      }
+   @FunctionalInterface
+   public interface ReaderOutput {
+      void accept(int var1, LineData var2);
    }
 }

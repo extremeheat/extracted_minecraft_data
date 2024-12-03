@@ -18,9 +18,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WallSkullBlock extends AbstractSkullBlock {
-   public static final MapCodec<WallSkullBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(SkullBlock.Type.CODEC.fieldOf("kind").forGetter(AbstractSkullBlock::getType), propertiesCodec()).apply(var0, WallSkullBlock::new);
-   });
+   public static final MapCodec<WallSkullBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SkullBlock.Type.CODEC.fieldOf("kind").forGetter(AbstractSkullBlock::getType), propertiesCodec()).apply(var0, WallSkullBlock::new));
    public static final EnumProperty<Direction> FACING;
    private static final Map<Direction, VoxelShape> AABBS;
 
@@ -42,11 +40,8 @@ public class WallSkullBlock extends AbstractSkullBlock {
       Level var3 = var1.getLevel();
       BlockPos var4 = var1.getClickedPos();
       Direction[] var5 = var1.getNearestLookingDirections();
-      Direction[] var6 = var5;
-      int var7 = var5.length;
 
-      for(int var8 = 0; var8 < var7; ++var8) {
-         Direction var9 = var6[var8];
+      for(Direction var9 : var5) {
          if (var9.getAxis().isHorizontal()) {
             Direction var10 = var9.getOpposite();
             var2 = (BlockState)var2.setValue(FACING, var10);

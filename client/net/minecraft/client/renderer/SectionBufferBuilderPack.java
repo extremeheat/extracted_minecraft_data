@@ -2,7 +2,6 @@ package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.Util;
@@ -15,10 +14,7 @@ public class SectionBufferBuilderPack implements AutoCloseable {
    public SectionBufferBuilderPack() {
       super();
       this.buffers = (Map)Util.make(new Reference2ObjectArrayMap(RENDER_TYPES.size()), (var0) -> {
-         Iterator var1 = RENDER_TYPES.iterator();
-
-         while(var1.hasNext()) {
-            RenderType var2 = (RenderType)var1.next();
+         for(RenderType var2 : RENDER_TYPES) {
             var0.put(var2, new ByteBufferBuilder(var2.bufferSize()));
          }
 

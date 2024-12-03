@@ -22,11 +22,7 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class MineshaftStructure extends Structure {
-   public static final MapCodec<MineshaftStructure> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(settingsCodec(var0), MineshaftStructure.Type.CODEC.fieldOf("mineshaft_type").forGetter((var0x) -> {
-         return var0x.type;
-      })).apply(var0, MineshaftStructure::new);
-   });
+   public static final MapCodec<MineshaftStructure> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(settingsCodec(var0), MineshaftStructure.Type.CODEC.fieldOf("mineshaft_type").forGetter((var0x) -> var0x.type)).apply(var0, MineshaftStructure::new));
    private final Type type;
 
    public MineshaftStructure(Structure.StructureSettings var1, Type var2) {
@@ -71,8 +67,8 @@ public class MineshaftStructure extends Structure {
       NORMAL("normal", Blocks.OAK_LOG, Blocks.OAK_PLANKS, Blocks.OAK_FENCE),
       MESA("mesa", Blocks.DARK_OAK_LOG, Blocks.DARK_OAK_PLANKS, Blocks.DARK_OAK_FENCE);
 
-      public static final Codec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
-      private static final IntFunction<Type> BY_ID = ByIdMap.continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final Codec<Type> CODEC = StringRepresentable.<Type>fromEnum(Type::values);
+      private static final IntFunction<Type> BY_ID = ByIdMap.<Type>continuous(Enum::ordinal, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
       private final String name;
       private final BlockState woodState;
       private final BlockState planksState;

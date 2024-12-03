@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.npc;
 
-import java.util.Iterator;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -95,11 +94,7 @@ public class WanderingTraderSpawner implements CustomSpawner {
          BlockPos var3 = ((Player)var2).blockPosition();
          boolean var4 = true;
          PoiManager var5 = var1.getPoiManager();
-         Optional var6 = var5.find((var0) -> {
-            return var0.is(PoiTypes.MEETING);
-         }, (var0) -> {
-            return true;
-         }, var3, 48, PoiManager.Occupancy.ANY);
+         Optional var6 = var5.find((var0) -> var0.is(PoiTypes.MEETING), (var0) -> true, var3, 48, PoiManager.Occupancy.ANY);
          BlockPos var7 = (BlockPos)var6.orElse(var3);
          BlockPos var8 = this.findSpawnPositionNear(var1, var7, 48);
          if (var8 != null && this.hasEnoughSpace(var1, var8)) {
@@ -107,7 +102,7 @@ public class WanderingTraderSpawner implements CustomSpawner {
                return false;
             }
 
-            WanderingTrader var9 = (WanderingTrader)EntityType.WANDERING_TRADER.spawn(var1, var8, EntitySpawnReason.EVENT);
+            WanderingTrader var9 = EntityType.WANDERING_TRADER.spawn(var1, var8, EntitySpawnReason.EVENT);
             if (var9 != null) {
                for(int var10 = 0; var10 < 2; ++var10) {
                   this.tryToSpawnLlamaFor(var1, var9, 4);
@@ -128,7 +123,7 @@ public class WanderingTraderSpawner implements CustomSpawner {
    private void tryToSpawnLlamaFor(ServerLevel var1, WanderingTrader var2, int var3) {
       BlockPos var4 = this.findSpawnPositionNear(var1, var2.blockPosition(), var3);
       if (var4 != null) {
-         TraderLlama var5 = (TraderLlama)EntityType.TRADER_LLAMA.spawn(var1, var4, EntitySpawnReason.EVENT);
+         TraderLlama var5 = EntityType.TRADER_LLAMA.spawn(var1, var4, EntitySpawnReason.EVENT);
          if (var5 != null) {
             var5.setLeashedTo(var2, true);
          }
@@ -155,17 +150,12 @@ public class WanderingTraderSpawner implements CustomSpawner {
    }
 
    private boolean hasEnoughSpace(BlockGetter var1, BlockPos var2) {
-      Iterator var3 = BlockPos.betweenClosed(var2, var2.offset(1, 2, 1)).iterator();
-
-      BlockPos var4;
-      do {
-         if (!var3.hasNext()) {
-            return true;
+      for(BlockPos var4 : BlockPos.betweenClosed(var2, var2.offset(1, 2, 1))) {
+         if (!var1.getBlockState(var4).getCollisionShape(var1, var4).isEmpty()) {
+            return false;
          }
+      }
 
-         var4 = (BlockPos)var3.next();
-      } while(var1.getBlockState(var4).getCollisionShape(var1, var4).isEmpty());
-
-      return false;
+      return true;
    }
 }

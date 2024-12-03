@@ -1,10 +1,8 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.tags.BiomeTags;
@@ -30,21 +28,14 @@ public class OceanMonumentStructure extends Structure {
    public Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1) {
       int var2 = var1.chunkPos().getBlockX(9);
       int var3 = var1.chunkPos().getBlockZ(9);
-      Set var4 = var1.biomeSource().getBiomesWithin(var2, var1.chunkGenerator().getSeaLevel(), var3, 29, var1.randomState().sampler());
-      Iterator var5 = var4.iterator();
 
-      Holder var6;
-      do {
-         if (!var5.hasNext()) {
-            return onTopOfChunkCenter(var1, Heightmap.Types.OCEAN_FLOOR_WG, (var1x) -> {
-               generatePieces(var1x, var1);
-            });
+      for(Holder var6 : var1.biomeSource().getBiomesWithin(var2, var1.chunkGenerator().getSeaLevel(), var3, 29, var1.randomState().sampler())) {
+         if (!var6.is(BiomeTags.REQUIRED_OCEAN_MONUMENT_SURROUNDING)) {
+            return Optional.empty();
          }
+      }
 
-         var6 = (Holder)var5.next();
-      } while(var6.is(BiomeTags.REQUIRED_OCEAN_MONUMENT_SURROUNDING));
-
-      return Optional.empty();
+      return onTopOfChunkCenter(var1, Heightmap.Types.OCEAN_FLOOR_WG, (var1x) -> generatePieces(var1x, var1));
    }
 
    private static StructurePiece createTopPiece(ChunkPos var0, WorldgenRandom var1) {

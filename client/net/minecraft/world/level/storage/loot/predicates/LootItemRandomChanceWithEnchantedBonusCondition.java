@@ -18,9 +18,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public record LootItemRandomChanceWithEnchantedBonusCondition(float unenchantedChance, LevelBasedValue enchantedChance, Holder<Enchantment> enchantment) implements LootItemCondition {
-   public static final MapCodec<LootItemRandomChanceWithEnchantedBonusCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.floatRange(0.0F, 1.0F).fieldOf("unenchanted_chance").forGetter(LootItemRandomChanceWithEnchantedBonusCondition::unenchantedChance), LevelBasedValue.CODEC.fieldOf("enchanted_chance").forGetter(LootItemRandomChanceWithEnchantedBonusCondition::enchantedChance), Enchantment.CODEC.fieldOf("enchantment").forGetter(LootItemRandomChanceWithEnchantedBonusCondition::enchantment)).apply(var0, LootItemRandomChanceWithEnchantedBonusCondition::new);
-   });
+   public static final MapCodec<LootItemRandomChanceWithEnchantedBonusCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.floatRange(0.0F, 1.0F).fieldOf("unenchanted_chance").forGetter(LootItemRandomChanceWithEnchantedBonusCondition::unenchantedChance), LevelBasedValue.CODEC.fieldOf("enchanted_chance").forGetter(LootItemRandomChanceWithEnchantedBonusCondition::enchantedChance), Enchantment.CODEC.fieldOf("enchantment").forGetter(LootItemRandomChanceWithEnchantedBonusCondition::enchantment)).apply(var0, LootItemRandomChanceWithEnchantedBonusCondition::new));
 
    public LootItemRandomChanceWithEnchantedBonusCondition(float var1, LevelBasedValue var2, Holder<Enchantment> var3) {
       super();
@@ -53,21 +51,7 @@ public record LootItemRandomChanceWithEnchantedBonusCondition(float unenchantedC
 
    public static LootItemCondition.Builder randomChanceAndLootingBoost(HolderLookup.Provider var0, float var1, float var2) {
       HolderLookup.RegistryLookup var3 = var0.lookupOrThrow(Registries.ENCHANTMENT);
-      return () -> {
-         return new LootItemRandomChanceWithEnchantedBonusCondition(var1, new LevelBasedValue.Linear(var1 + var2, var2), var3.getOrThrow(Enchantments.LOOTING));
-      };
-   }
-
-   public float unenchantedChance() {
-      return this.unenchantedChance;
-   }
-
-   public LevelBasedValue enchantedChance() {
-      return this.enchantedChance;
-   }
-
-   public Holder<Enchantment> enchantment() {
-      return this.enchantment;
+      return () -> new LootItemRandomChanceWithEnchantedBonusCondition(var1, new LevelBasedValue.Linear(var1 + var2, var2), var3.getOrThrow(Enchantments.LOOTING));
    }
 
    // $FF: synthetic method

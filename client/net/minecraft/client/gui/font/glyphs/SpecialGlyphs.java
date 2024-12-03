@@ -7,11 +7,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public enum SpecialGlyphs implements GlyphInfo {
-   WHITE(() -> {
-      return generate(5, 8, (var0, var1) -> {
-         return -1;
-      });
-   }),
+   WHITE(() -> generate(5, 8, (var0, var1) -> -1)),
    MISSING(() -> {
       boolean var0 = true;
       boolean var1 = true;
@@ -36,7 +32,7 @@ public enum SpecialGlyphs implements GlyphInfo {
       return var3;
    }
 
-   private SpecialGlyphs(final Supplier var3) {
+   private SpecialGlyphs(final Supplier<NativeImage> var3) {
       this.image = (NativeImage)var3.get();
    }
 
@@ -74,7 +70,7 @@ public enum SpecialGlyphs implements GlyphInfo {
    }
 
    @FunctionalInterface
-   private interface PixelProvider {
+   interface PixelProvider {
       int getColor(int var1, int var2);
    }
 }

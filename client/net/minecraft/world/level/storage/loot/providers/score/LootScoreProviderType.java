@@ -7,8 +7,4 @@ public record LootScoreProviderType(MapCodec<? extends ScoreboardNameProvider> c
       super();
       this.codec = var1;
    }
-
-   public MapCodec<? extends ScoreboardNameProvider> codec() {
-      return this.codec;
-   }
 }

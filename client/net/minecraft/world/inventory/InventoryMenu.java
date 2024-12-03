@@ -1,6 +1,5 @@
 package net.minecraft.world.inventory;
 
-import com.mojang.datafixers.util.Pair;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
@@ -29,12 +28,11 @@ public class InventoryMenu extends AbstractCraftingMenu {
    public static final int USE_ROW_SLOT_START = 36;
    public static final int USE_ROW_SLOT_END = 45;
    public static final int SHIELD_SLOT = 45;
-   public static final ResourceLocation BLOCK_ATLAS = ResourceLocation.withDefaultNamespace("textures/atlas/blocks.png");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_HELMET = ResourceLocation.withDefaultNamespace("item/empty_armor_slot_helmet");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_CHESTPLATE = ResourceLocation.withDefaultNamespace("item/empty_armor_slot_chestplate");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_LEGGINGS = ResourceLocation.withDefaultNamespace("item/empty_armor_slot_leggings");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_BOOTS = ResourceLocation.withDefaultNamespace("item/empty_armor_slot_boots");
-   public static final ResourceLocation EMPTY_ARMOR_SLOT_SHIELD = ResourceLocation.withDefaultNamespace("item/empty_armor_slot_shield");
+   public static final ResourceLocation EMPTY_ARMOR_SLOT_HELMET = ResourceLocation.withDefaultNamespace("container/slot/helmet");
+   public static final ResourceLocation EMPTY_ARMOR_SLOT_CHESTPLATE = ResourceLocation.withDefaultNamespace("container/slot/chestplate");
+   public static final ResourceLocation EMPTY_ARMOR_SLOT_LEGGINGS = ResourceLocation.withDefaultNamespace("container/slot/leggings");
+   public static final ResourceLocation EMPTY_ARMOR_SLOT_BOOTS = ResourceLocation.withDefaultNamespace("container/slot/boots");
+   public static final ResourceLocation EMPTY_ARMOR_SLOT_SHIELD = ResourceLocation.withDefaultNamespace("container/slot/shield");
    private static final Map<EquipmentSlot, ResourceLocation> TEXTURE_EMPTY_SLOTS;
    private static final EquipmentSlot[] SLOT_IDS;
    public final boolean active;
@@ -54,14 +52,14 @@ public class InventoryMenu extends AbstractCraftingMenu {
       }
 
       this.addStandardInventorySlots(var1, 8, 84);
-      this.addSlot(new Slot(this, var1, 40, 77, 62) {
+      this.addSlot(new Slot(var1, 40, 77, 62) {
          public void setByPlayer(ItemStack var1, ItemStack var2) {
             var3.onEquipItem(EquipmentSlot.OFFHAND, var2, var1);
             super.setByPlayer(var1, var2);
          }
 
-         public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-            return Pair.of(InventoryMenu.BLOCK_ATLAS, InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD);
+         public ResourceLocation getNoItemIcon() {
+            return InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD;
          }
       });
    }
@@ -92,7 +90,7 @@ public class InventoryMenu extends AbstractCraftingMenu {
 
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = (Slot)this.slots.get(var2);
+      Slot var4 = this.slots.get(var2);
       if (var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
@@ -156,7 +154,7 @@ public class InventoryMenu extends AbstractCraftingMenu {
    }
 
    public Slot getResultSlot() {
-      return (Slot)this.slots.get(0);
+      return this.slots.get(0);
    }
 
    public List<Slot> getInputGridSlots() {

@@ -90,9 +90,7 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
 
    private static void placeRootedDirt(WorldGenLevel var0, RootSystemConfiguration var1, RandomSource var2, int var3, int var4, BlockPos.MutableBlockPos var5) {
       int var6 = var1.rootRadius;
-      Predicate var7 = (var1x) -> {
-         return var1x.is(var1.rootReplaceable);
-      };
+      Predicate var7 = (var1x) -> var1x.is(var1.rootReplaceable);
 
       for(int var8 = 0; var8 < var1.rootPlacementAttempts; ++var8) {
          var5.setWithOffset(var5, var2.nextInt(var6) - var2.nextInt(var6), 0, var2.nextInt(var6) - var2.nextInt(var6));

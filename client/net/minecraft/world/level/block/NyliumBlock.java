@@ -68,9 +68,7 @@ public class NyliumBlock extends Block implements BonemealableBlock {
    }
 
    private void place(Registry<ConfiguredFeature<?, ?>> var1, ResourceKey<ConfiguredFeature<?, ?>> var2, ServerLevel var3, ChunkGenerator var4, RandomSource var5, BlockPos var6) {
-      var1.get(var2).ifPresent((var4x) -> {
-         ((ConfiguredFeature)var4x.value()).place(var3, var4, var5, var6);
-      });
+      var1.get(var2).ifPresent((var4x) -> ((ConfiguredFeature)var4x.value()).place(var3, var4, var5, var6));
    }
 
    public BonemealableBlock.Type getType() {

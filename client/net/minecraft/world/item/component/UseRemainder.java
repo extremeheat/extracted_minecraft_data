@@ -45,10 +45,6 @@ public record UseRemainder(ItemStack convertInto) {
       return ItemStack.hashItemAndComponents(this.convertInto);
    }
 
-   public ItemStack convertInto() {
-      return this.convertInto;
-   }
-
    static {
       CODEC = ItemStack.CODEC.xmap(UseRemainder::new, UseRemainder::convertInto);
       STREAM_CODEC = StreamCodec.composite(ItemStack.STREAM_CODEC, UseRemainder::convertInto, UseRemainder::new);

@@ -2,8 +2,6 @@ package net.minecraft.world.level.levelgen.structure;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
-import java.util.Iterator;
-import java.util.List;
 import java.util.function.Function;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
@@ -70,11 +68,7 @@ public abstract class TemplateStructurePiece extends StructurePiece {
       this.placeSettings.setBoundingBox(var5);
       this.boundingBox = this.template.getBoundingBox(this.placeSettings, this.templatePosition);
       if (this.template.placeInWorld(var1, this.templatePosition, var7, this.placeSettings, var4, 2)) {
-         List var8 = this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.STRUCTURE_BLOCK);
-         Iterator var9 = var8.iterator();
-
-         while(var9.hasNext()) {
-            StructureTemplate.StructureBlockInfo var10 = (StructureTemplate.StructureBlockInfo)var9.next();
+         for(StructureTemplate.StructureBlockInfo var10 : this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.STRUCTURE_BLOCK)) {
             if (var10.nbt() != null) {
                StructureMode var11 = StructureMode.valueOf(var10.nbt().getString("mode"));
                if (var11 == StructureMode.DATA) {
@@ -83,22 +77,18 @@ public abstract class TemplateStructurePiece extends StructurePiece {
             }
          }
 
-         List var18 = this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.JIGSAW);
-         Iterator var16 = var18.iterator();
-
-         while(var16.hasNext()) {
-            StructureTemplate.StructureBlockInfo var17 = (StructureTemplate.StructureBlockInfo)var16.next();
-            if (var17.nbt() != null) {
-               String var12 = var17.nbt().getString("final_state");
+         for(StructureTemplate.StructureBlockInfo var18 : this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.JIGSAW)) {
+            if (var18.nbt() != null) {
+               String var12 = var18.nbt().getString("final_state");
                BlockState var13 = Blocks.AIR.defaultBlockState();
 
                try {
                   var13 = BlockStateParser.parseForBlock(var1.holderLookup(Registries.BLOCK), var12, true).blockState();
                } catch (CommandSyntaxException var15) {
-                  LOGGER.error("Error while parsing blockstate {} in jigsaw block @ {}", var12, var17.pos());
+                  LOGGER.error("Error while parsing blockstate {} in jigsaw block @ {}", var12, var18.pos());
                }
 
-               var1.setBlock(var17.pos(), var13, 3);
+               var1.setBlock(var18.pos(), var13, 3);
             }
          }
       }

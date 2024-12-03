@@ -57,16 +57,11 @@ public class Selector {
          if (var1.isEmpty()) {
             throw new JsonParseException("No elements found in selector");
          } else if (var1.size() == 1) {
-            List var2;
             if (var0.has("OR")) {
-               var2 = (List)Streams.stream(GsonHelper.getAsJsonArray(var0, "OR")).map((var0x) -> {
-                  return getCondition(var0x.getAsJsonObject());
-               }).collect(Collectors.toList());
-               return new OrCondition(var2);
+               List var3 = (List)Streams.stream(GsonHelper.getAsJsonArray(var0, "OR")).map((var0x) -> getCondition(var0x.getAsJsonObject())).collect(Collectors.toList());
+               return new OrCondition(var3);
             } else if (var0.has("AND")) {
-               var2 = (List)Streams.stream(GsonHelper.getAsJsonArray(var0, "AND")).map((var0x) -> {
-                  return getCondition(var0x.getAsJsonObject());
-               }).collect(Collectors.toList());
+               List var2 = (List)Streams.stream(GsonHelper.getAsJsonArray(var0, "AND")).map((var0x) -> getCondition(var0x.getAsJsonObject())).collect(Collectors.toList());
                return new AndCondition(var2);
             } else {
                return getKeyValueCondition((Map.Entry)var1.iterator().next());

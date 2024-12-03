@@ -38,19 +38,9 @@ public record ConfiguredFeature<FC extends FeatureConfiguration, F extends Featu
       return "Configured: " + var10000 + ": " + String.valueOf(this.config);
    }
 
-   public F feature() {
-      return this.feature;
-   }
-
-   public FC config() {
-      return this.config;
-   }
-
    static {
-      DIRECT_CODEC = BuiltInRegistries.FEATURE.byNameCodec().dispatch((var0) -> {
-         return var0.feature;
-      }, Feature::configuredCodec);
-      CODEC = RegistryFileCodec.create(Registries.CONFIGURED_FEATURE, DIRECT_CODEC);
+      DIRECT_CODEC = BuiltInRegistries.FEATURE.byNameCodec().dispatch((var0) -> var0.feature, Feature::configuredCodec);
+      CODEC = RegistryFileCodec.<Holder<ConfiguredFeature<?, ?>>>create(Registries.CONFIGURED_FEATURE, DIRECT_CODEC);
       LIST_CODEC = RegistryCodecs.homogeneousList(Registries.CONFIGURED_FEATURE, DIRECT_CODEC);
    }
 }

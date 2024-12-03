@@ -6,12 +6,4 @@ public record FrameSize(int width, int height) {
       this.width = var1;
       this.height = var2;
    }
-
-   public int width() {
-      return this.width;
-   }
-
-   public int height() {
-      return this.height;
-   }
 }

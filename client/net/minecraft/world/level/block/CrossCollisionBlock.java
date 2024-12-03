@@ -151,8 +151,6 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
       SOUTH = PipeBlock.SOUTH;
       WEST = PipeBlock.WEST;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      PROPERTY_BY_DIRECTION = (Map)PipeBlock.PROPERTY_BY_DIRECTION.entrySet().stream().filter((var0) -> {
-         return ((Direction)var0.getKey()).getAxis().isHorizontal();
-      }).collect(Util.toMap());
+      PROPERTY_BY_DIRECTION = (Map)PipeBlock.PROPERTY_BY_DIRECTION.entrySet().stream().filter((var0) -> ((Direction)var0.getKey()).getAxis().isHorizontal()).collect(Util.toMap());
    }
 }

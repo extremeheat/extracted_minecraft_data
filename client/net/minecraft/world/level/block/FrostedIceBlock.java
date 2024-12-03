@@ -41,11 +41,8 @@ public class FrostedIceBlock extends IceBlock {
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if ((var4.nextInt(3) == 0 || this.fewerNeigboursThan(var2, var3, 4)) && var2.getMaxLocalRawBrightness(var3) > 11 - (Integer)var1.getValue(AGE) - var1.getLightBlock() && this.slightlyMelt(var1, var2, var3)) {
          BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
-         Direction[] var6 = Direction.values();
-         int var7 = var6.length;
 
-         for(int var8 = 0; var8 < var7; ++var8) {
-            Direction var9 = var6[var8];
+         for(Direction var9 : Direction.values()) {
             var5.setWithOffset(var3, (Direction)var9);
             BlockState var10 = var2.getBlockState(var5);
             if (var10.is(this) && !this.slightlyMelt(var10, var2, var5)) {
@@ -80,11 +77,8 @@ public class FrostedIceBlock extends IceBlock {
    private boolean fewerNeigboursThan(BlockGetter var1, BlockPos var2, int var3) {
       int var4 = 0;
       BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
-      Direction[] var6 = Direction.values();
-      int var7 = var6.length;
 
-      for(int var8 = 0; var8 < var7; ++var8) {
-         Direction var9 = var6[var8];
+      for(Direction var9 : Direction.values()) {
          var5.setWithOffset(var2, (Direction)var9);
          if (var1.getBlockState(var5).is(this)) {
             ++var4;
@@ -101,7 +95,7 @@ public class FrostedIceBlock extends IceBlock {
       var1.add(AGE);
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return ItemStack.EMPTY;
    }
 

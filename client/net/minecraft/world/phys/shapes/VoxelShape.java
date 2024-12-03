@@ -68,32 +68,24 @@ public abstract class VoxelShape {
 
    public VoxelShape optimize() {
       VoxelShape[] var1 = new VoxelShape[]{Shapes.empty()};
-      this.forAllBoxes((var1x, var3, var5, var7, var9, var11) -> {
-         var1[0] = Shapes.joinUnoptimized(var1[0], Shapes.box(var1x, var3, var5, var7, var9, var11), BooleanOp.OR);
-      });
+      this.forAllBoxes((var1x, var3, var5, var7, var9, var11) -> var1[0] = Shapes.joinUnoptimized(var1[0], Shapes.box(var1x, var3, var5, var7, var9, var11), BooleanOp.OR));
       return var1[0];
    }
 
    public void forAllEdges(Shapes.DoubleLineConsumer var1) {
-      this.shape.forAllEdges((var2, var3, var4, var5, var6, var7) -> {
-         var1.consume(this.get(Direction.Axis.X, var2), this.get(Direction.Axis.Y, var3), this.get(Direction.Axis.Z, var4), this.get(Direction.Axis.X, var5), this.get(Direction.Axis.Y, var6), this.get(Direction.Axis.Z, var7));
-      }, true);
+      this.shape.forAllEdges((var2, var3, var4, var5, var6, var7) -> var1.consume(this.get(Direction.Axis.X, var2), this.get(Direction.Axis.Y, var3), this.get(Direction.Axis.Z, var4), this.get(Direction.Axis.X, var5), this.get(Direction.Axis.Y, var6), this.get(Direction.Axis.Z, var7)), true);
    }
 
    public void forAllBoxes(Shapes.DoubleLineConsumer var1) {
       DoubleList var2 = this.getCoords(Direction.Axis.X);
       DoubleList var3 = this.getCoords(Direction.Axis.Y);
       DoubleList var4 = this.getCoords(Direction.Axis.Z);
-      this.shape.forAllBoxes((var4x, var5, var6, var7, var8, var9) -> {
-         var1.consume(var2.getDouble(var4x), var3.getDouble(var5), var4.getDouble(var6), var2.getDouble(var7), var3.getDouble(var8), var4.getDouble(var9));
-      }, true);
+      this.shape.forAllBoxes((var4x, var5, var6, var7, var8, var9) -> var1.consume(var2.getDouble(var4x), var3.getDouble(var5), var4.getDouble(var6), var2.getDouble(var7), var3.getDouble(var8), var4.getDouble(var9)), true);
    }
 
    public List<AABB> toAabbs() {
       ArrayList var1 = Lists.newArrayList();
-      this.forAllBoxes((var1x, var3, var5, var7, var9, var11) -> {
-         var1.add(new AABB(var1x, var3, var5, var7, var9, var11));
-      });
+      this.forAllBoxes((var1x, var3, var5, var7, var9, var11) -> var1.add(new AABB(var1x, var3, var5, var7, var9, var11)));
       return var1;
    }
 
@@ -116,9 +108,7 @@ public abstract class VoxelShape {
    }
 
    protected int findIndex(Direction.Axis var1, double var2) {
-      return Mth.binarySearch(0, this.shape.getSize(var1) + 1, (var4) -> {
-         return var2 < this.get(var1, var4);
-      }) - 1;
+      return Mth.binarySearch(0, this.shape.getSize(var1) + 1, (var4) -> var2 < this.get(var1, var4)) - 1;
    }
 
    @Nullable
@@ -156,9 +146,8 @@ public abstract class VoxelShape {
 
    public VoxelShape getFaceShape(Direction var1) {
       if (!this.isEmpty() && this != Shapes.block()) {
-         VoxelShape var2;
          if (this.faces != null) {
-            var2 = this.faces[var1.ordinal()];
+            VoxelShape var2 = this.faces[var1.ordinal()];
             if (var2 != null) {
                return var2;
             }
@@ -166,9 +155,9 @@ public abstract class VoxelShape {
             this.faces = new VoxelShape[6];
          }
 
-         var2 = this.calculateFace(var1);
-         this.faces[var1.ordinal()] = var2;
-         return var2;
+         VoxelShape var3 = this.calculateFace(var1);
+         this.faces[var1.ordinal()] = var3;
+         return var3;
       } else {
          return this;
       }
@@ -191,11 +180,7 @@ public abstract class VoxelShape {
    }
 
    protected boolean isCubeLike() {
-      Direction.Axis[] var1 = Direction.Axis.VALUES;
-      int var2 = var1.length;
-
-      for(int var3 = 0; var3 < var2; ++var3) {
-         Direction.Axis var4 = var1[var3];
+      for(Direction.Axis var4 : Direction.Axis.VALUES) {
          if (!this.isCubeLikeAlong(var4)) {
             return false;
          }
@@ -232,16 +217,12 @@ public abstract class VoxelShape {
          int var17 = Math.max(0, this.findIndex(var8, var2.min(var8) + 1.0E-7));
          int var18 = Math.min(this.shape.getSize(var8), this.findIndex(var8, var2.max(var8) - 1.0E-7) + 1);
          int var19 = this.shape.getSize(var6);
-         int var20;
-         int var21;
-         int var22;
-         double var23;
          if (var3 > 0.0) {
-            for(var20 = var14 + 1; var20 < var19; ++var20) {
-               for(var21 = var15; var21 < var16; ++var21) {
-                  for(var22 = var17; var22 < var18; ++var22) {
+            for(int var20 = var14 + 1; var20 < var19; ++var20) {
+               for(int var21 = var15; var21 < var16; ++var21) {
+                  for(int var22 = var17; var22 < var18; ++var22) {
                      if (this.shape.isFullWide(var5, var20, var21, var22)) {
-                        var23 = this.get(var6, var20) - var9;
+                        double var23 = this.get(var6, var20) - var9;
                         if (var23 >= -1.0E-7) {
                            var3 = Math.min(var3, var23);
                         }
@@ -252,13 +233,13 @@ public abstract class VoxelShape {
                }
             }
          } else if (var3 < 0.0) {
-            for(var20 = var13 - 1; var20 >= 0; --var20) {
-               for(var21 = var15; var21 < var16; ++var21) {
-                  for(var22 = var17; var22 < var18; ++var22) {
-                     if (this.shape.isFullWide(var5, var20, var21, var22)) {
-                        var23 = this.get(var6, var20 + 1) - var11;
-                        if (var23 <= 1.0E-7) {
-                           var3 = Math.max(var3, var23);
+            for(int var25 = var13 - 1; var25 >= 0; --var25) {
+               for(int var26 = var15; var26 < var16; ++var26) {
+                  for(int var27 = var17; var27 < var18; ++var27) {
+                     if (this.shape.isFullWide(var5, var25, var26, var27)) {
+                        double var28 = this.get(var6, var25 + 1) - var11;
+                        if (var28 <= 1.0E-7) {
+                           var3 = Math.max(var3, var28);
                         }
 
                         return var3;

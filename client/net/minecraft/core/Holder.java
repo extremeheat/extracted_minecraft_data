@@ -39,13 +39,24 @@ public interface Holder<T> {
    boolean canSerializeIn(HolderOwner<T> var1);
 
    default String getRegisteredName() {
-      return (String)this.unwrapKey().map((var0) -> {
-         return var0.location().toString();
-      }).orElse("[unregistered]");
+      return (String)this.unwrapKey().map((var0) -> var0.location().toString()).orElse("[unregistered]");
    }
 
    static <T> Holder<T> direct(T var0) {
-      return new Direct(var0);
+      return new Direct<T>(var0);
+   }
+
+   public static enum Kind {
+      REFERENCE,
+      DIRECT;
+
+      private Kind() {
+      }
+
+      // $FF: synthetic method
+      private static Kind[] $values() {
+         return new Kind[]{REFERENCE, DIRECT};
+      }
    }
 
    public static record Direct<T>(T value) implements Holder<T> {
@@ -101,10 +112,6 @@ public interface Holder<T> {
       public Stream<TagKey<T>> tags() {
          return Stream.of();
       }
-
-      public T value() {
-         return this.value;
-      }
    }
 
    public static class Reference<T> implements Holder<T> {
@@ -126,13 +133,13 @@ public interface Holder<T> {
       }
 
       public static <T> Reference<T> createStandAlone(HolderOwner<T> var0, ResourceKey<T> var1) {
-         return new Reference(Holder.Reference.Type.STAND_ALONE, var0, var1, (Object)null);
+         return new Reference<T>(Holder.Reference.Type.STAND_ALONE, var0, var1, (Object)null);
       }
 
       /** @deprecated */
       @Deprecated
       public static <T> Reference<T> createIntrusive(HolderOwner<T> var0, @Nullable T var1) {
-         return new Reference(Holder.Reference.Type.INTRUSIVE, var0, (ResourceKey)null, var1);
+         return new Reference<T>(Holder.Reference.Type.INTRUSIVE, var0, (ResourceKey)null, var1);
       }
 
       public ResourceKey<T> key() {
@@ -243,19 +250,6 @@ public interface Holder<T> {
          private static Type[] $values() {
             return new Type[]{STAND_ALONE, INTRUSIVE};
          }
-      }
-   }
-
-   public static enum Kind {
-      REFERENCE,
-      DIRECT;
-
-      private Kind() {
-      }
-
-      // $FF: synthetic method
-      private static Kind[] $values() {
-         return new Kind[]{REFERENCE, DIRECT};
       }
    }
 }

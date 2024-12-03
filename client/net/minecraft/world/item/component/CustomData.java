@@ -11,7 +11,10 @@ import io.netty.buffer.ByteBuf;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -20,6 +23,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -28,6 +33,7 @@ import org.slf4j.Logger;
 public final class CustomData {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final CustomData EMPTY = new CustomData(new CompoundTag());
+   private static final String TYPE_TAG = "id";
    public static final Codec<CustomData> CODEC;
    public static final Codec<CustomData> CODEC_WITH_ID;
    /** @deprecated */
@@ -80,6 +86,17 @@ public final class CustomData {
       return new CustomData(var2);
    }
 
+   @Nullable
+   public ResourceLocation parseEntityId() {
+      return !this.tag.contains("id", 8) ? null : ResourceLocation.tryParse(this.tag.getString("id"));
+   }
+
+   @Nullable
+   public <T> T parseEntityType(HolderLookup.Provider var1, ResourceKey<? extends Registry<T>> var2) {
+      ResourceLocation var3 = this.parseEntityId();
+      return (T)(var3 == null ? null : var1.lookup(var2).flatMap((var2x) -> var2x.get(ResourceKey.create(var2, var3))).map(Holder::value).orElse((Object)null));
+   }
+
    public void loadInto(Entity var1) {
       CompoundTag var2 = var1.saveWithoutId(new CompoundTag());
       UUID var3 = var1.getUUID();
@@ -112,13 +129,11 @@ public final class CustomData {
    }
 
    public <T> DataResult<CustomData> update(DynamicOps<Tag> var1, MapEncoder<T> var2, T var3) {
-      return var2.encode(var3, var1, var1.mapBuilder()).build(this.tag).map((var0) -> {
-         return new CustomData((CompoundTag)var0);
-      });
+      return var2.encode(var3, var1, var1.mapBuilder()).build(this.tag).map((var0) -> new CustomData((CompoundTag)var0));
    }
 
    public <T> DataResult<T> read(MapDecoder<T> var1) {
-      return this.read(NbtOps.INSTANCE, var1);
+      return this.<T>read(NbtOps.INSTANCE, var1);
    }
 
    public <T> DataResult<T> read(DynamicOps<Tag> var1, MapDecoder<T> var2) {
@@ -168,16 +183,8 @@ public final class CustomData {
    }
 
    static {
-      CODEC = Codec.withAlternative(CompoundTag.CODEC, TagParser.AS_CODEC).xmap(CustomData::new, (var0) -> {
-         return var0.tag;
-      });
-      CODEC_WITH_ID = CODEC.validate((var0) -> {
-         return var0.getUnsafe().contains("id", 8) ? DataResult.success(var0) : DataResult.error(() -> {
-            return "Missing id for entity in: " + String.valueOf(var0);
-         });
-      });
-      STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(CustomData::new, (var0) -> {
-         return var0.tag;
-      });
+      CODEC = Codec.withAlternative(CompoundTag.CODEC, TagParser.AS_CODEC).xmap(CustomData::new, (var0) -> var0.tag);
+      CODEC_WITH_ID = CODEC.validate((var0) -> var0.getUnsafe().contains("id", 8) ? DataResult.success(var0) : DataResult.error(() -> "Missing id for entity in: " + String.valueOf(var0)));
+      STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(CustomData::new, (var0) -> var0.tag);
    }
 }

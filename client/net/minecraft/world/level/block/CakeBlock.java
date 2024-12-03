@@ -11,7 +11,6 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -92,12 +91,12 @@ public class CakeBlock extends Block {
          var3.awardStat(Stats.EAT_CAKE_SLICE);
          var3.getFoodData().eat(2, 0.1F);
          int var4 = (Integer)var2.getValue(BITES);
-         var0.gameEvent((Entity)var3, (Holder)GameEvent.EAT, (BlockPos)var1);
+         var0.gameEvent(var3, (Holder)GameEvent.EAT, (BlockPos)var1);
          if (var4 < 6) {
             var0.setBlock(var1, (BlockState)var2.setValue(BITES, var4 + 1), 3);
          } else {
             var0.removeBlock(var1, false);
-            var0.gameEvent((Entity)var3, (Holder)GameEvent.BLOCK_DESTROY, (BlockPos)var1);
+            var0.gameEvent(var3, (Holder)GameEvent.BLOCK_DESTROY, (BlockPos)var1);
          }
 
          return InteractionResult.SUCCESS;

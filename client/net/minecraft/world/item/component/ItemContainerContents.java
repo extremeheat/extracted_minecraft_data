@@ -4,7 +4,6 @@ import com.google.common.collect.Iterables;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.stream.Stream;
@@ -52,10 +51,8 @@ public final class ItemContainerContents {
          return EMPTY;
       } else {
          ItemContainerContents var2 = new ItemContainerContents(var1.getAsInt() + 1);
-         Iterator var3 = var0.iterator();
 
-         while(var3.hasNext()) {
-            Slot var4 = (Slot)var3.next();
+         for(Slot var4 : var0) {
             var2.items.set(var4.index(), var4.item());
          }
 
@@ -92,7 +89,7 @@ public final class ItemContainerContents {
       ArrayList var1 = new ArrayList();
 
       for(int var2 = 0; var2 < this.items.size(); ++var2) {
-         ItemStack var3 = (ItemStack)this.items.get(var2);
+         ItemStack var3 = this.items.get(var2);
          if (!var3.isEmpty()) {
             var1.add(new Slot(var2, var3));
          }
@@ -118,15 +115,11 @@ public final class ItemContainerContents {
    }
 
    public Stream<ItemStack> nonEmptyStream() {
-      return this.items.stream().filter((var0) -> {
-         return !var0.isEmpty();
-      }).map(ItemStack::copy);
+      return this.items.stream().filter((var0) -> !var0.isEmpty()).map(ItemStack::copy);
    }
 
    public Iterable<ItemStack> nonEmptyItems() {
-      return Iterables.filter(this.items, (var0) -> {
-         return !var0.isEmpty();
-      });
+      return Iterables.filter(this.items, (var0) -> !var0.isEmpty());
    }
 
    public Iterable<ItemStack> nonEmptyItemsCopy() {
@@ -157,28 +150,16 @@ public final class ItemContainerContents {
 
    static {
       CODEC = ItemContainerContents.Slot.CODEC.sizeLimitedListOf(256).xmap(ItemContainerContents::fromSlots, ItemContainerContents::asSlots);
-      STREAM_CODEC = ItemStack.OPTIONAL_STREAM_CODEC.apply(ByteBufCodecs.list(256)).map(ItemContainerContents::new, (var0) -> {
-         return var0.items;
-      });
+      STREAM_CODEC = ItemStack.OPTIONAL_STREAM_CODEC.apply(ByteBufCodecs.list(256)).map(ItemContainerContents::new, (var0) -> var0.items);
    }
 
-   private static record Slot(int index, ItemStack item) {
-      public static final Codec<Slot> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Codec.intRange(0, 255).fieldOf("slot").forGetter(Slot::index), ItemStack.CODEC.fieldOf("item").forGetter(Slot::item)).apply(var0, Slot::new);
-      });
+   static record Slot(int index, ItemStack item) {
+      public static final Codec<Slot> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.intRange(0, 255).fieldOf("slot").forGetter(Slot::index), ItemStack.CODEC.fieldOf("item").forGetter(Slot::item)).apply(var0, Slot::new));
 
       Slot(int var1, ItemStack var2) {
          super();
          this.index = var1;
          this.item = var2;
-      }
-
-      public int index() {
-         return this.index;
-      }
-
-      public ItemStack item() {
-         return this.item;
       }
    }
 }

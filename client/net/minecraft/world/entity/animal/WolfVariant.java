@@ -3,6 +3,7 @@ package net.minecraft.world.entity.animal;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
@@ -15,15 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 
 public final class WolfVariant {
-   public static final Codec<WolfVariant> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ResourceLocation.CODEC.fieldOf("wild_texture").forGetter((var0x) -> {
-         return var0x.wildTexture;
-      }), ResourceLocation.CODEC.fieldOf("tame_texture").forGetter((var0x) -> {
-         return var0x.tameTexture;
-      }), ResourceLocation.CODEC.fieldOf("angry_texture").forGetter((var0x) -> {
-         return var0x.angryTexture;
-      }), RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(WolfVariant::biomes)).apply(var0, WolfVariant::new);
-   });
+   public static final Codec<WolfVariant> DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("wild_texture").forGetter((var0x) -> var0x.wildTexture), ResourceLocation.CODEC.fieldOf("tame_texture").forGetter((var0x) -> var0x.tameTexture), ResourceLocation.CODEC.fieldOf("angry_texture").forGetter((var0x) -> var0x.angryTexture), RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(WolfVariant::biomes)).apply(var0, WolfVariant::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, WolfVariant> DIRECT_STREAM_CODEC;
    public static final Codec<Holder<WolfVariant>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<WolfVariant>> STREAM_CODEC;
@@ -47,9 +40,7 @@ public final class WolfVariant {
    }
 
    private static ResourceLocation fullTextureId(ResourceLocation var0) {
-      return var0.withPath((var0x) -> {
-         return "textures/" + var0x + ".png";
-      });
+      return var0.withPath((UnaryOperator)((var0x) -> "textures/" + var0x + ".png"));
    }
 
    public ResourceLocation wildTexture() {
@@ -90,7 +81,7 @@ public final class WolfVariant {
 
    static {
       DIRECT_STREAM_CODEC = StreamCodec.composite(ResourceLocation.STREAM_CODEC, WolfVariant::wildTexture, ResourceLocation.STREAM_CODEC, WolfVariant::tameTexture, ResourceLocation.STREAM_CODEC, WolfVariant::angryTexture, ByteBufCodecs.holderSet(Registries.BIOME), WolfVariant::biomes, WolfVariant::new);
-      CODEC = RegistryFileCodec.create(Registries.WOLF_VARIANT, DIRECT_CODEC);
+      CODEC = RegistryFileCodec.<Holder<WolfVariant>>create(Registries.WOLF_VARIANT, DIRECT_CODEC);
       STREAM_CODEC = ByteBufCodecs.holder(Registries.WOLF_VARIANT, DIRECT_STREAM_CODEC);
    }
 }

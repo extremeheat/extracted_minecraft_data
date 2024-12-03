@@ -65,11 +65,7 @@ public class ChatReportContextBuilder {
       return !this.activeCollectors.isEmpty();
    }
 
-   public interface Handler {
-      void accept(int var1, LoggedChatMessage.Player var2);
-   }
-
-   private class Collector {
+   class Collector {
       private final Set<MessageSignature> lastSeenSignatures;
       private PlayerChatMessage lastChainMessage;
       private boolean collectingChain = true;
@@ -106,5 +102,9 @@ public class ChatReportContextBuilder {
       boolean isComplete() {
          return this.count >= ChatReportContextBuilder.this.leadingCount || !this.collectingChain && this.lastSeenSignatures.isEmpty();
       }
+   }
+
+   public interface Handler {
+      void accept(int var1, LoggedChatMessage.Player var2);
    }
 }

@@ -12,11 +12,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 
 public class KeybindContents implements ComponentContents {
-   public static final MapCodec<KeybindContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.STRING.fieldOf("keybind").forGetter((var0x) -> {
-         return var0x.name;
-      })).apply(var0, KeybindContents::new);
-   });
+   public static final MapCodec<KeybindContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("keybind").forGetter((var0x) -> var0x.name)).apply(var0, KeybindContents::new));
    public static final ComponentContents.Type<KeybindContents> TYPE;
    private final String name;
    @Nullable
@@ -36,11 +32,11 @@ public class KeybindContents implements ComponentContents {
    }
 
    public <T> Optional<T> visit(FormattedText.ContentConsumer<T> var1) {
-      return this.getNestedComponent().visit(var1);
+      return this.getNestedComponent().<T>visit(var1);
    }
 
    public <T> Optional<T> visit(FormattedText.StyledContentConsumer<T> var1, Style var2) {
-      return this.getNestedComponent().visit(var1, var2);
+      return this.getNestedComponent().<T>visit(var1, var2);
    }
 
    public boolean equals(Object var1) {
@@ -78,6 +74,6 @@ public class KeybindContents implements ComponentContents {
    }
 
    static {
-      TYPE = new ComponentContents.Type(CODEC, "keybind");
+      TYPE = new ComponentContents.Type<KeybindContents>(CODEC, "keybind");
    }
 }

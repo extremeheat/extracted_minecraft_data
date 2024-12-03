@@ -21,15 +21,11 @@ public class KilledTrigger extends SimpleCriterionTrigger<TriggerInstance> {
 
    public void trigger(ServerPlayer var1, Entity var2, DamageSource var3) {
       LootContext var4 = EntityPredicate.createContext(var1, var2);
-      this.trigger(var1, (var3x) -> {
-         return var3x.matches(var1, var4, var3);
-      });
+      this.trigger(var1, (var3x) -> var3x.matches(var1, var4, var3));
    }
 
    public static record TriggerInstance(Optional<ContextAwarePredicate> player, Optional<ContextAwarePredicate> entityPredicate, Optional<DamageSourcePredicate> killingBlow) implements SimpleCriterionTrigger.SimpleInstance {
-      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(TriggerInstance::entityPredicate), DamageSourcePredicate.CODEC.optionalFieldOf("killing_blow").forGetter(TriggerInstance::killingBlow)).apply(var0, TriggerInstance::new);
-      });
+      public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create((var0) -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player), EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(TriggerInstance::entityPredicate), DamageSourcePredicate.CODEC.optionalFieldOf("killing_blow").forGetter(TriggerInstance::killingBlow)).apply(var0, TriggerInstance::new));
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2, Optional<DamageSourcePredicate> var3) {
          super();
@@ -109,18 +105,6 @@ public class KilledTrigger extends SimpleCriterionTrigger<TriggerInstance> {
       public void validate(CriterionValidator var1) {
          SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
          var1.validateEntity(this.entityPredicate, ".entity");
-      }
-
-      public Optional<ContextAwarePredicate> player() {
-         return this.player;
-      }
-
-      public Optional<ContextAwarePredicate> entityPredicate() {
-         return this.entityPredicate;
-      }
-
-      public Optional<DamageSourcePredicate> killingBlow() {
-         return this.killingBlow;
       }
    }
 }

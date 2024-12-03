@@ -79,7 +79,7 @@ public class VertexMultiConsumer {
       }
    }
 
-   private static record Multiple(VertexConsumer[] delegates) implements VertexConsumer {
+   static record Multiple(VertexConsumer[] delegates) implements VertexConsumer {
       Multiple(VertexConsumer[] var1) {
          super();
 
@@ -95,66 +95,44 @@ public class VertexMultiConsumer {
       }
 
       private void forEach(Consumer<VertexConsumer> var1) {
-         VertexConsumer[] var2 = this.delegates;
-         int var3 = var2.length;
-
-         for(int var4 = 0; var4 < var3; ++var4) {
-            VertexConsumer var5 = var2[var4];
+         for(VertexConsumer var5 : this.delegates) {
             var1.accept(var5);
          }
 
       }
 
       public VertexConsumer addVertex(float var1, float var2, float var3) {
-         this.forEach((var3x) -> {
-            var3x.addVertex(var1, var2, var3);
-         });
+         this.forEach((var3x) -> var3x.addVertex(var1, var2, var3));
          return this;
       }
 
       public VertexConsumer setColor(int var1, int var2, int var3, int var4) {
-         this.forEach((var4x) -> {
-            var4x.setColor(var1, var2, var3, var4);
-         });
+         this.forEach((var4x) -> var4x.setColor(var1, var2, var3, var4));
          return this;
       }
 
       public VertexConsumer setUv(float var1, float var2) {
-         this.forEach((var2x) -> {
-            var2x.setUv(var1, var2);
-         });
+         this.forEach((var2x) -> var2x.setUv(var1, var2));
          return this;
       }
 
       public VertexConsumer setUv1(int var1, int var2) {
-         this.forEach((var2x) -> {
-            var2x.setUv1(var1, var2);
-         });
+         this.forEach((var2x) -> var2x.setUv1(var1, var2));
          return this;
       }
 
       public VertexConsumer setUv2(int var1, int var2) {
-         this.forEach((var2x) -> {
-            var2x.setUv2(var1, var2);
-         });
+         this.forEach((var2x) -> var2x.setUv2(var1, var2));
          return this;
       }
 
       public VertexConsumer setNormal(float var1, float var2, float var3) {
-         this.forEach((var3x) -> {
-            var3x.setNormal(var1, var2, var3);
-         });
+         this.forEach((var3x) -> var3x.setNormal(var1, var2, var3));
          return this;
       }
 
       public void addVertex(float var1, float var2, float var3, int var4, float var5, float var6, int var7, int var8, float var9, float var10, float var11) {
-         this.forEach((var11x) -> {
-            var11x.addVertex(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11);
-         });
-      }
-
-      public VertexConsumer[] delegates() {
-         return this.delegates;
+         this.forEach((var11x) -> var11x.addVertex(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11));
       }
    }
 }

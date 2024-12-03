@@ -33,19 +33,13 @@ public record BannerPatternLayers(List<Layer> layers) {
       return new BannerPatternLayers(List.copyOf(this.layers.subList(0, this.layers.size() - 1)));
    }
 
-   public List<Layer> layers() {
-      return this.layers;
-   }
-
    static {
       CODEC = BannerPatternLayers.Layer.CODEC.listOf().xmap(BannerPatternLayers::new, BannerPatternLayers::layers);
       STREAM_CODEC = BannerPatternLayers.Layer.STREAM_CODEC.apply(ByteBufCodecs.list()).map(BannerPatternLayers::new, BannerPatternLayers::layers);
    }
 
    public static record Layer(Holder<BannerPattern> pattern, DyeColor color) {
-      public static final Codec<Layer> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(BannerPattern.CODEC.fieldOf("pattern").forGetter(Layer::pattern), DyeColor.CODEC.fieldOf("color").forGetter(Layer::color)).apply(var0, Layer::new);
-      });
+      public static final Codec<Layer> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BannerPattern.CODEC.fieldOf("pattern").forGetter(Layer::pattern), DyeColor.CODEC.fieldOf("color").forGetter(Layer::color)).apply(var0, Layer::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, Layer> STREAM_CODEC;
 
       public Layer(Holder<BannerPattern> var1, DyeColor var2) {
@@ -57,14 +51,6 @@ public record BannerPatternLayers(List<Layer> layers) {
       public MutableComponent description() {
          String var1 = ((BannerPattern)this.pattern.value()).translationKey();
          return Component.translatable(var1 + "." + this.color.getName());
-      }
-
-      public Holder<BannerPattern> pattern() {
-         return this.pattern;
-      }
-
-      public DyeColor color() {
-         return this.color;
       }
 
       static {

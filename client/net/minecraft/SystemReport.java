@@ -6,7 +6,6 @@ import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -38,7 +37,7 @@ public class SystemReport {
       this.setDetail("Operating System", OPERATING_SYSTEM);
       this.setDetail("Java Version", JAVA_VERSION);
       this.setDetail("Java VM Version", JAVA_VM_VERSION);
-      this.setDetail("Memory", () -> {
+      this.setDetail("Memory", (Supplier)(() -> {
          Runtime var0 = Runtime.getRuntime();
          long var1 = var0.maxMemory();
          long var3 = var0.totalMemory();
@@ -46,18 +45,14 @@ public class SystemReport {
          long var7 = var1 / 1048576L;
          long var9 = var3 / 1048576L;
          long var11 = var5 / 1048576L;
-         return "" + var5 + " bytes (" + var11 + " MiB) / " + var3 + " bytes (" + var9 + " MiB) up to " + var1 + " bytes (" + var7 + " MiB)";
-      });
-      this.setDetail("CPUs", () -> {
-         return String.valueOf(Runtime.getRuntime().availableProcessors());
-      });
-      this.ignoreErrors("hardware", () -> {
-         this.putHardware(new SystemInfo());
-      });
-      this.setDetail("JVM Flags", () -> {
+         return var5 + " bytes (" + var11 + " MiB) / " + var3 + " bytes (" + var9 + " MiB) up to " + var1 + " bytes (" + var7 + " MiB)";
+      }));
+      this.setDetail("CPUs", (Supplier)(() -> String.valueOf(Runtime.getRuntime().availableProcessors())));
+      this.ignoreErrors("hardware", () -> this.putHardware(new SystemInfo()));
+      this.setDetail("JVM Flags", (Supplier)(() -> {
          List var0 = (List)Util.getVmArguments().collect(Collectors.toList());
          return String.format(Locale.ROOT, "%d total; %s", var0.size(), String.join(" ", var0));
-      });
+      }));
    }
 
    public void setDetail(String var1, String var2) {
@@ -76,15 +71,9 @@ public class SystemReport {
 
    private void putHardware(SystemInfo var1) {
       HardwareAbstractionLayer var2 = var1.getHardware();
-      this.ignoreErrors("processor", () -> {
-         this.putProcessor(var2.getProcessor());
-      });
-      this.ignoreErrors("graphics", () -> {
-         this.putGraphics(var2.getGraphicsCards());
-      });
-      this.ignoreErrors("memory", () -> {
-         this.putMemory(var2.getMemory());
-      });
+      this.ignoreErrors("processor", () -> this.putProcessor(var2.getProcessor()));
+      this.ignoreErrors("graphics", () -> this.putGraphics(var2.getGraphicsCards()));
+      this.ignoreErrors("memory", () -> this.putMemory(var2.getMemory()));
       this.ignoreErrors("storage", this::putStorage);
    }
 
@@ -103,17 +92,11 @@ public class SystemReport {
 
    private void putPhysicalMemory(List<PhysicalMemory> var1) {
       int var2 = 0;
-      Iterator var3 = var1.iterator();
 
-      while(var3.hasNext()) {
-         PhysicalMemory var4 = (PhysicalMemory)var3.next();
+      for(PhysicalMemory var4 : var1) {
          String var5 = String.format(Locale.ROOT, "Memory slot #%d ", var2++);
-         this.setDetail(var5 + "capacity (MiB)", () -> {
-            return String.format(Locale.ROOT, "%.2f", sizeInMiB(var4.getCapacity()));
-         });
-         this.setDetail(var5 + "clockSpeed (GHz)", () -> {
-            return String.format(Locale.ROOT, "%.2f", (float)var4.getClockSpeed() / 1.0E9F);
-         });
+         this.setDetail(var5 + "capacity (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(var4.getCapacity()))));
+         this.setDetail(var5 + "clockSpeed (GHz)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", (float)var4.getClockSpeed() / 1.0E9F)));
          String var10001 = var5 + "type";
          Objects.requireNonNull(var4);
          this.setDetail(var10001, var4::getMemoryType);
@@ -122,35 +105,21 @@ public class SystemReport {
    }
 
    private void putVirtualMemory(VirtualMemory var1) {
-      this.setDetail("Virtual memory max (MiB)", () -> {
-         return String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getVirtualMax()));
-      });
-      this.setDetail("Virtual memory used (MiB)", () -> {
-         return String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getVirtualInUse()));
-      });
-      this.setDetail("Swap memory total (MiB)", () -> {
-         return String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getSwapTotal()));
-      });
-      this.setDetail("Swap memory used (MiB)", () -> {
-         return String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getSwapUsed()));
-      });
+      this.setDetail("Virtual memory max (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getVirtualMax()))));
+      this.setDetail("Virtual memory used (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getVirtualInUse()))));
+      this.setDetail("Swap memory total (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getSwapTotal()))));
+      this.setDetail("Swap memory used (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(var1.getSwapUsed()))));
    }
 
    private void putMemory(GlobalMemory var1) {
-      this.ignoreErrors("physical memory", () -> {
-         this.putPhysicalMemory(var1.getPhysicalMemory());
-      });
-      this.ignoreErrors("virtual memory", () -> {
-         this.putVirtualMemory(var1.getVirtualMemory());
-      });
+      this.ignoreErrors("physical memory", () -> this.putPhysicalMemory(var1.getPhysicalMemory()));
+      this.ignoreErrors("virtual memory", () -> this.putVirtualMemory(var1.getVirtualMemory()));
    }
 
    private void putGraphics(List<GraphicsCard> var1) {
       int var2 = 0;
-      Iterator var3 = var1.iterator();
 
-      while(var3.hasNext()) {
-         GraphicsCard var4 = (GraphicsCard)var3.next();
+      for(GraphicsCard var4 : var1) {
          String var5 = String.format(Locale.ROOT, "Graphics card #%d ", var2++);
          String var10001 = var5 + "name";
          Objects.requireNonNull(var4);
@@ -158,9 +127,7 @@ public class SystemReport {
          var10001 = var5 + "vendor";
          Objects.requireNonNull(var4);
          this.setDetail(var10001, var4::getVendor);
-         this.setDetail(var5 + "VRAM (MiB)", () -> {
-            return String.format(Locale.ROOT, "%.2f", sizeInMiB(var4.getVRam()));
-         });
+         this.setDetail(var5 + "VRAM (MiB)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", sizeInMiB(var4.getVRam()))));
          var10001 = var5 + "deviceId";
          Objects.requireNonNull(var4);
          this.setDetail(var10001, var4::getDeviceId);
@@ -181,18 +148,10 @@ public class SystemReport {
       this.setDetail("Identifier", var2::getIdentifier);
       Objects.requireNonNull(var2);
       this.setDetail("Microarchitecture", var2::getMicroarchitecture);
-      this.setDetail("Frequency (GHz)", () -> {
-         return String.format(Locale.ROOT, "%.2f", (float)var2.getVendorFreq() / 1.0E9F);
-      });
-      this.setDetail("Number of physical packages", () -> {
-         return String.valueOf(var1.getPhysicalPackageCount());
-      });
-      this.setDetail("Number of physical CPUs", () -> {
-         return String.valueOf(var1.getPhysicalProcessorCount());
-      });
-      this.setDetail("Number of logical CPUs", () -> {
-         return String.valueOf(var1.getLogicalProcessorCount());
-      });
+      this.setDetail("Frequency (GHz)", (Supplier)(() -> String.format(Locale.ROOT, "%.2f", (float)var2.getVendorFreq() / 1.0E9F)));
+      this.setDetail("Number of physical packages", (Supplier)(() -> String.valueOf(var1.getPhysicalPackageCount())));
+      this.setDetail("Number of physical CPUs", (Supplier)(() -> String.valueOf(var1.getPhysicalProcessorCount())));
+      this.setDetail("Number of logical CPUs", (Supplier)(() -> String.valueOf(var1.getLogicalProcessorCount())));
    }
 
    private void putStorage() {
@@ -200,15 +159,11 @@ public class SystemReport {
       this.putSpaceForProperty("org.lwjgl.system.SharedLibraryExtractPath");
       this.putSpaceForProperty("io.netty.native.workdir");
       this.putSpaceForProperty("java.io.tmpdir");
-      this.putSpaceForPath("workdir", () -> {
-         return "";
-      });
+      this.putSpaceForPath("workdir", () -> "");
    }
 
    private void putSpaceForProperty(String var1) {
-      this.putSpaceForPath(var1, () -> {
-         return System.getProperty(var1);
-      });
+      this.putSpaceForPath(var1, () -> System.getProperty(var1));
    }
 
    private void putSpaceForPath(String var1, Supplier<String> var2) {

@@ -63,8 +63,8 @@ public class XoroshiroRandomSource implements RandomSource {
             }
          }
 
-         long var10 = var4 >> 32;
-         return (int)var10;
+         long var11 = var4 >> 32;
+         return (int)var11;
       }
    }
 
@@ -100,11 +100,7 @@ public class XoroshiroRandomSource implements RandomSource {
    }
 
    static {
-      CODEC = Xoroshiro128PlusPlus.CODEC.xmap((var0) -> {
-         return new XoroshiroRandomSource(var0);
-      }, (var0) -> {
-         return var0.randomNumberGenerator;
-      });
+      CODEC = Xoroshiro128PlusPlus.CODEC.xmap((var0) -> new XoroshiroRandomSource(var0), (var0) -> var0.randomNumberGenerator);
    }
 
    public static class XoroshiroPositionalRandomFactory implements PositionalRandomFactory {

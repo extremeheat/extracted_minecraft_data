@@ -17,7 +17,7 @@ public class LevelTargetBundle implements PostChain.TargetBundle {
    public static final Set<ResourceLocation> MAIN_TARGETS;
    public static final Set<ResourceLocation> OUTLINE_TARGETS;
    public static final Set<ResourceLocation> SORTING_TARGETS;
-   public ResourceHandle<RenderTarget> main = ResourceHandle.invalid();
+   public ResourceHandle<RenderTarget> main = ResourceHandle.<RenderTarget>invalid();
    @Nullable
    public ResourceHandle<RenderTarget> translucent;
    @Nullable
@@ -78,7 +78,7 @@ public class LevelTargetBundle implements PostChain.TargetBundle {
    }
 
    public void clear() {
-      this.main = ResourceHandle.invalid();
+      this.main = ResourceHandle.<RenderTarget>invalid();
       this.translucent = null;
       this.itemEntity = null;
       this.particles = null;

@@ -5,7 +5,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -17,7 +16,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Vec3i;
-import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -60,20 +58,15 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractBoat;
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.CrossbowItem;
-import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.SpawnEggItem;
-import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.enchantment.providers.VanillaEnchantmentProviders;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -137,9 +130,9 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    protected Mob(EntityType<? extends Mob> var1, Level var2) {
       super(var1, var2);
-      this.handItems = NonNullList.withSize(2, ItemStack.EMPTY);
+      this.handItems = NonNullList.<ItemStack>withSize(2, ItemStack.EMPTY);
       this.handDropChances = new float[2];
-      this.armorItems = NonNullList.withSize(4, ItemStack.EMPTY);
+      this.armorItems = NonNullList.<ItemStack>withSize(4, ItemStack.EMPTY);
       this.armorDropChances = new float[4];
       this.bodyArmorItem = ItemStack.EMPTY;
       this.pathfindingMalus = Maps.newEnumMap(PathType.class);
@@ -319,15 +312,14 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       if (this.xpReward > 0) {
          int var2 = this.xpReward;
 
-         int var3;
-         for(var3 = 0; var3 < this.armorItems.size(); ++var3) {
+         for(int var3 = 0; var3 < this.armorItems.size(); ++var3) {
             if (!((ItemStack)this.armorItems.get(var3)).isEmpty() && this.armorDropChances[var3] <= 1.0F) {
                var2 += 1 + this.random.nextInt(3);
             }
          }
 
-         for(var3 = 0; var3 < this.handItems.size(); ++var3) {
-            if (!((ItemStack)this.handItems.get(var3)).isEmpty() && this.handDropChances[var3] <= 1.0F) {
+         for(int var4 = 0; var4 < this.handItems.size(); ++var4) {
+            if (!((ItemStack)this.handItems.get(var4)).isEmpty() && this.handDropChances[var4] <= 1.0F) {
                var2 += 1 + this.random.nextInt(3);
             }
          }
@@ -391,10 +383,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       var1.putBoolean("CanPickUpLoot", this.canPickUpLoot());
       var1.putBoolean("PersistenceRequired", this.persistenceRequired);
       ListTag var2 = new ListTag();
-      Iterator var3 = this.armorItems.iterator();
 
-      while(var3.hasNext()) {
-         ItemStack var4 = (ItemStack)var3.next();
+      for(ItemStack var4 : this.armorItems) {
          if (!var4.isEmpty()) {
             var2.add(var4.save(this.registryAccess()));
          } else {
@@ -404,20 +394,15 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
       var1.put("ArmorItems", var2);
       ListTag var10 = new ListTag();
-      float[] var11 = this.armorDropChances;
-      int var5 = var11.length;
 
-      for(int var6 = 0; var6 < var5; ++var6) {
-         float var7 = var11[var6];
+      for(float var7 : this.armorDropChances) {
          var10.add(FloatTag.valueOf(var7));
       }
 
       var1.put("ArmorDropChances", var10);
       ListTag var12 = new ListTag();
-      Iterator var13 = this.handItems.iterator();
 
-      while(var13.hasNext()) {
-         ItemStack var15 = (ItemStack)var13.next();
+      for(ItemStack var15 : this.handItems) {
          if (!var15.isEmpty()) {
             var12.add(var15.save(this.registryAccess()));
          } else {
@@ -427,11 +412,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
       var1.put("HandItems", var12);
       ListTag var14 = new ListTag();
-      float[] var16 = this.handDropChances;
-      int var17 = var16.length;
 
-      for(int var8 = 0; var8 < var17; ++var8) {
-         float var9 = var16[var8];
+      for(float var9 : this.handDropChances) {
          var14.add(FloatTag.valueOf(var9));
       }
 
@@ -445,9 +427,10 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       var1.putBoolean("LeftHanded", this.isLeftHanded());
       if (this.lootTable.isPresent()) {
          var1.putString("DeathLootTable", ((ResourceKey)this.lootTable.get()).location().toString());
-         if (this.lootTableSeed != 0L) {
-            var1.putLong("DeathLootTableSeed", this.lootTableSeed);
-         }
+      }
+
+      if (this.lootTableSeed != 0L) {
+         var1.putLong("DeathLootTableSeed", this.lootTableSeed);
       }
 
       if (this.isNoAi()) {
@@ -458,46 +441,48 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("CanPickUpLoot", 99)) {
-         this.setCanPickUpLoot(var1.getBoolean("CanPickUpLoot"));
-      }
-
+      this.setCanPickUpLoot(var1.getBoolean("CanPickUpLoot"));
       this.persistenceRequired = var1.getBoolean("PersistenceRequired");
-      ListTag var2;
-      int var3;
-      CompoundTag var4;
       if (var1.contains("ArmorItems", 9)) {
-         var2 = var1.getList("ArmorItems", 10);
+         ListTag var2 = var1.getList("ArmorItems", 10);
 
-         for(var3 = 0; var3 < this.armorItems.size(); ++var3) {
-            var4 = var2.getCompound(var3);
+         for(int var3 = 0; var3 < this.armorItems.size(); ++var3) {
+            CompoundTag var4 = var2.getCompound(var3);
             this.armorItems.set(var3, ItemStack.parseOptional(this.registryAccess(), var4));
          }
+      } else {
+         this.armorItems.replaceAll((var0) -> ItemStack.EMPTY);
       }
 
       if (var1.contains("ArmorDropChances", 9)) {
-         var2 = var1.getList("ArmorDropChances", 5);
+         ListTag var5 = var1.getList("ArmorDropChances", 5);
 
-         for(var3 = 0; var3 < var2.size(); ++var3) {
-            this.armorDropChances[var3] = var2.getFloat(var3);
+         for(int var8 = 0; var8 < var5.size(); ++var8) {
+            this.armorDropChances[var8] = var5.getFloat(var8);
          }
+      } else {
+         Arrays.fill(this.armorDropChances, 0.0F);
       }
 
       if (var1.contains("HandItems", 9)) {
-         var2 = var1.getList("HandItems", 10);
+         ListTag var6 = var1.getList("HandItems", 10);
 
-         for(var3 = 0; var3 < this.handItems.size(); ++var3) {
-            var4 = var2.getCompound(var3);
-            this.handItems.set(var3, ItemStack.parseOptional(this.registryAccess(), var4));
+         for(int var9 = 0; var9 < this.handItems.size(); ++var9) {
+            CompoundTag var11 = var6.getCompound(var9);
+            this.handItems.set(var9, ItemStack.parseOptional(this.registryAccess(), var11));
          }
+      } else {
+         this.handItems.replaceAll((var0) -> ItemStack.EMPTY);
       }
 
       if (var1.contains("HandDropChances", 9)) {
-         var2 = var1.getList("HandDropChances", 5);
+         ListTag var7 = var1.getList("HandDropChances", 5);
 
-         for(var3 = 0; var3 < var2.size(); ++var3) {
-            this.handDropChances[var3] = var2.getFloat(var3);
+         for(int var10 = 0; var10 < var7.size(); ++var10) {
+            this.handDropChances[var10] = var7.getFloat(var10);
          }
+      } else {
+         Arrays.fill(this.handDropChances, 0.0F);
       }
 
       if (var1.contains("body_armor_item", 10)) {
@@ -507,13 +492,15 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
          this.bodyArmorItem = ItemStack.EMPTY;
       }
 
-      this.leashData = this.readLeashData(var1);
+      this.readLeashData(var1);
       this.setLeftHanded(var1.getBoolean("LeftHanded"));
       if (var1.contains("DeathLootTable", 8)) {
          this.lootTable = Optional.of(ResourceKey.create(Registries.LOOT_TABLE, ResourceLocation.parse(var1.getString("DeathLootTable"))));
-         this.lootTableSeed = var1.getLong("DeathLootTableSeed");
+      } else {
+         this.lootTable = Optional.empty();
       }
 
+      this.lootTableSeed = var1.getLong("DeathLootTableSeed");
       this.setNoAi(var1.getBoolean("NoAI"));
    }
 
@@ -562,11 +549,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       if (var3 instanceof ServerLevel var2) {
          if (this.canPickUpLoot() && this.isAlive() && !this.dead && var2.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
             Vec3i var7 = this.getPickupReach();
-            List var4 = this.level().getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate((double)var7.getX(), (double)var7.getY(), (double)var7.getZ()));
-            Iterator var5 = var4.iterator();
 
-            while(var5.hasNext()) {
-               ItemEntity var6 = (ItemEntity)var5.next();
+            for(ItemEntity var6 : this.level().getEntitiesOfClass(ItemEntity.class, this.getBoundingBox().inflate((double)var7.getX(), (double)var7.getY(), (double)var7.getZ()))) {
                if (!var6.isRemoved() && !var6.getItem().isEmpty() && !var6.hasPickUpDelay() && this.wantsToPickUp(var2, var6.getItem())) {
                   this.pickUpItem(var2, var6);
                }
@@ -637,62 +621,49 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    protected boolean canReplaceCurrentItem(ItemStack var1, ItemStack var2, EquipmentSlot var3) {
       if (var2.isEmpty()) {
          return true;
+      } else if (var3.isArmor()) {
+         return this.compareArmor(var1, var2, var3);
       } else {
-         double var4;
-         double var6;
-         if (var1.getItem() instanceof SwordItem) {
-            if (!(var2.getItem() instanceof SwordItem)) {
-               return true;
-            } else {
-               var4 = this.getApproximateAttributeWith(var1, Attributes.ATTACK_DAMAGE, var3);
-               var6 = this.getApproximateAttributeWith(var2, Attributes.ATTACK_DAMAGE, var3);
-               if (var4 != var6) {
-                  return var4 > var6;
-               } else {
-                  return this.canReplaceEqualItem(var1, var2);
-               }
-            }
-         } else if (var1.getItem() instanceof BowItem && var2.getItem() instanceof BowItem) {
-            return this.canReplaceEqualItem(var1, var2);
-         } else if (var1.getItem() instanceof CrossbowItem && var2.getItem() instanceof CrossbowItem) {
-            return this.canReplaceEqualItem(var1, var2);
-         } else if (var1.getItem() instanceof ArmorItem) {
-            if (EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE)) {
-               return false;
-            } else if (!(var2.getItem() instanceof ArmorItem)) {
-               return true;
-            } else {
-               var4 = this.getApproximateAttributeWith(var1, Attributes.ARMOR, var3);
-               var6 = this.getApproximateAttributeWith(var2, Attributes.ARMOR, var3);
-               double var8 = this.getApproximateAttributeWith(var1, Attributes.ARMOR_TOUGHNESS, var3);
-               double var10 = this.getApproximateAttributeWith(var2, Attributes.ARMOR_TOUGHNESS, var3);
-               if (var4 != var6) {
-                  return var4 > var6;
-               } else if (var8 != var10) {
-                  return var8 > var10;
-               } else {
-                  return this.canReplaceEqualItem(var1, var2);
-               }
-            }
+         return var3 == EquipmentSlot.MAINHAND ? this.compareWeapons(var1, var2, var3) : false;
+      }
+   }
+
+   private boolean compareArmor(ItemStack var1, ItemStack var2, EquipmentSlot var3) {
+      if (EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE)) {
+         return false;
+      } else {
+         double var4 = this.getApproximateAttributeWith(var1, Attributes.ARMOR, var3);
+         double var6 = this.getApproximateAttributeWith(var2, Attributes.ARMOR, var3);
+         double var8 = this.getApproximateAttributeWith(var1, Attributes.ARMOR_TOUGHNESS, var3);
+         double var10 = this.getApproximateAttributeWith(var2, Attributes.ARMOR_TOUGHNESS, var3);
+         if (var4 != var6) {
+            return var4 > var6;
+         } else if (var8 != var10) {
+            return var8 > var10;
          } else {
-            if (var1.getItem() instanceof DiggerItem) {
-               if (var2.getItem() instanceof BlockItem) {
-                  return true;
-               }
+            return this.canReplaceEqualItem(var1, var2);
+         }
+      }
+   }
 
-               if (var2.getItem() instanceof DiggerItem) {
-                  var4 = this.getApproximateAttributeWith(var1, Attributes.ATTACK_DAMAGE, var3);
-                  var6 = this.getApproximateAttributeWith(var2, Attributes.ATTACK_DAMAGE, var3);
-                  if (var4 != var6) {
-                     return var4 > var6;
-                  }
-
-                  return this.canReplaceEqualItem(var1, var2);
-               }
-            }
-
+   private boolean compareWeapons(ItemStack var1, ItemStack var2, EquipmentSlot var3) {
+      TagKey var4 = this.getPreferredWeaponType();
+      if (var4 != null) {
+         if (var2.is(var4) && !var1.is(var4)) {
             return false;
          }
+
+         if (!var2.is(var4) && var1.is(var4)) {
+            return true;
+         }
+      }
+
+      double var5 = this.getApproximateAttributeWith(var1, Attributes.ATTACK_DAMAGE, var3);
+      double var7 = this.getApproximateAttributeWith(var2, Attributes.ATTACK_DAMAGE, var3);
+      if (var5 != var7) {
+         return var5 > var7;
+      } else {
+         return this.canReplaceEqualItem(var1, var2);
       }
    }
 
@@ -703,17 +674,19 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    }
 
    public boolean canReplaceEqualItem(ItemStack var1, ItemStack var2) {
-      if (var1.getDamageValue() < var2.getDamageValue()) {
-         return true;
+      Set var3 = ((ItemEnchantments)var2.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY)).entrySet();
+      Set var4 = ((ItemEnchantments)var1.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY)).entrySet();
+      if (var4.size() != var3.size()) {
+         return var4.size() > var3.size();
       } else {
-         return hasAnyComponentExceptDamage(var1) && !hasAnyComponentExceptDamage(var2);
+         int var5 = var1.getDamageValue();
+         int var6 = var2.getDamageValue();
+         if (var5 != var6) {
+            return var5 < var6;
+         } else {
+            return var1.has(DataComponents.CUSTOM_NAME) && !var2.has(DataComponents.CUSTOM_NAME);
+         }
       }
-   }
-
-   private static boolean hasAnyComponentExceptDamage(ItemStack var0) {
-      DataComponentMap var1 = var0.getComponents();
-      int var2 = var1.size();
-      return var2 > 1 || var2 == 1 && !var1.has(DataComponents.DAMAGE);
    }
 
    public boolean canHoldItem(ItemStack var1) {
@@ -722,6 +695,11 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    public boolean wantsToPickUp(ServerLevel var1, ItemStack var2) {
       return this.canHoldItem(var2);
+   }
+
+   @Nullable
+   public TagKey<Item> getPreferredWeaponType() {
+      return null;
    }
 
    public boolean removeWhenFarAway(double var1) {
@@ -922,14 +900,14 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    }
 
    public Iterable<ItemStack> getArmorAndBodyArmorSlots() {
-      return (Iterable)(this.bodyArmorItem.isEmpty() ? this.armorItems : Iterables.concat(this.armorItems, List.of(this.bodyArmorItem)));
+      return (Iterable<ItemStack>)(this.bodyArmorItem.isEmpty() ? this.armorItems : Iterables.concat(this.armorItems, List.of(this.bodyArmorItem)));
    }
 
    public ItemStack getItemBySlot(EquipmentSlot var1) {
       ItemStack var10000;
       switch (var1.getType()) {
-         case HAND -> var10000 = (ItemStack)this.handItems.get(var1.getIndex());
-         case HUMANOID_ARMOR -> var10000 = (ItemStack)this.armorItems.get(var1.getIndex());
+         case HAND -> var10000 = this.handItems.get(var1.getIndex());
+         case HUMANOID_ARMOR -> var10000 = this.armorItems.get(var1.getIndex());
          case ANIMAL_ARMOR -> var10000 = this.bodyArmorItem;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
@@ -941,10 +919,10 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       this.verifyEquippedItem(var2);
       switch (var1.getType()) {
          case HAND:
-            this.onEquipItem(var1, (ItemStack)this.handItems.set(var1.getIndex(), var2), var2);
+            this.onEquipItem(var1, this.handItems.set(var1.getIndex(), var2), var2);
             break;
          case HUMANOID_ARMOR:
-            this.onEquipItem(var1, (ItemStack)this.armorItems.set(var1.getIndex(), var2), var2);
+            this.onEquipItem(var1, this.armorItems.set(var1.getIndex(), var2), var2);
             break;
          case ANIMAL_ARMOR:
             ItemStack var3 = this.bodyArmorItem;
@@ -956,47 +934,33 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    protected void dropCustomDeathLoot(ServerLevel var1, DamageSource var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
-      Iterator var4 = EquipmentSlot.VALUES.iterator();
 
-      while(true) {
-         EquipmentSlot var5;
-         ItemStack var6;
-         float var7;
-         boolean var8;
-         do {
-            do {
-               do {
-                  do {
-                     if (!var4.hasNext()) {
-                        return;
-                     }
-
-                     var5 = (EquipmentSlot)var4.next();
-                     var6 = this.getItemBySlot(var5);
-                     var7 = this.getEquipmentDropChance(var5);
-                  } while(var7 == 0.0F);
-
-                  var8 = var7 > 1.0F;
-                  Entity var11 = var2.getEntity();
-                  if (var11 instanceof LivingEntity var9) {
-                     Level var12 = this.level();
-                     if (var12 instanceof ServerLevel var10) {
-                        var7 = EnchantmentHelper.processEquipmentDropChance(var10, var9, var2, var7);
-                     }
-                  }
-               } while(var6.isEmpty());
-            } while(EnchantmentHelper.has(var6, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP));
-         } while(!var3 && !var8);
-
-         if (this.random.nextFloat() < var7) {
-            if (!var8 && var6.isDamageableItem()) {
-               var6.setDamageValue(var6.getMaxDamage() - this.random.nextInt(1 + this.random.nextInt(Math.max(var6.getMaxDamage() - 3, 1))));
+      for(EquipmentSlot var5 : EquipmentSlot.VALUES) {
+         ItemStack var6 = this.getItemBySlot(var5);
+         float var7 = this.getEquipmentDropChance(var5);
+         if (var7 != 0.0F) {
+            boolean var8 = var7 > 1.0F;
+            Entity var11 = var2.getEntity();
+            if (var11 instanceof LivingEntity) {
+               LivingEntity var9 = (LivingEntity)var11;
+               Level var12 = this.level();
+               if (var12 instanceof ServerLevel) {
+                  ServerLevel var10 = (ServerLevel)var12;
+                  var7 = EnchantmentHelper.processEquipmentDropChance(var10, var9, var2, var7);
+               }
             }
 
-            this.spawnAtLocation(var1, var6);
-            this.setItemSlot(var5, ItemStack.EMPTY);
+            if (!var6.isEmpty() && !EnchantmentHelper.has(var6, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP) && (var3 || var8) && this.random.nextFloat() < var7) {
+               if (!var8 && var6.isDamageableItem()) {
+                  var6.setDamageValue(var6.getMaxDamage() - this.random.nextInt(1 + this.random.nextInt(Math.max(var6.getMaxDamage() - 3, 1))));
+               }
+
+               this.spawnAtLocation(var1, var6);
+               this.setItemSlot(var5, ItemStack.EMPTY);
+            }
          }
       }
+
    }
 
    protected float getEquipmentDropChance(EquipmentSlot var1) {
@@ -1012,17 +976,13 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    }
 
    public void dropPreservedEquipment(ServerLevel var1) {
-      this.dropPreservedEquipment(var1, (var0) -> {
-         return true;
-      });
+      this.dropPreservedEquipment(var1, (var0) -> true);
    }
 
    public Set<EquipmentSlot> dropPreservedEquipment(ServerLevel var1, Predicate<ItemStack> var2) {
       HashSet var3 = new HashSet();
-      Iterator var4 = EquipmentSlot.VALUES.iterator();
 
-      while(var4.hasNext()) {
-         EquipmentSlot var5 = (EquipmentSlot)var4.next();
+      for(EquipmentSlot var5 : EquipmentSlot.VALUES) {
          ItemStack var6 = this.getItemBySlot(var5);
          if (!var6.isEmpty()) {
             if (!var2.test(var6)) {
@@ -1073,10 +1033,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
          }
 
          boolean var5 = true;
-         Iterator var6 = EQUIPMENT_POPULATION_ORDER.iterator();
 
-         while(var6.hasNext()) {
-            EquipmentSlot var7 = (EquipmentSlot)var6.next();
+         for(EquipmentSlot var7 : EQUIPMENT_POPULATION_ORDER) {
             ItemStack var8 = this.getItemBySlot(var7);
             if (!var5 && var1.nextFloat() < var4) {
                break;
@@ -1152,10 +1110,8 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    protected void populateDefaultEquipmentEnchantments(ServerLevelAccessor var1, RandomSource var2, DifficultyInstance var3) {
       this.enchantSpawnedWeapon(var1, var2, var3);
-      Iterator var4 = EquipmentSlot.VALUES.iterator();
 
-      while(var4.hasNext()) {
-         EquipmentSlot var5 = (EquipmentSlot)var4.next();
+      for(EquipmentSlot var5 : EquipmentSlot.VALUES) {
          if (var5.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
             this.enchantSpawnedArmor(var1, var2, var5, var3);
          }
@@ -1259,9 +1215,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
          if (this.level() instanceof ServerLevel) {
             SpawnEggItem var6 = (SpawnEggItem)var3.getItem();
             Optional var5 = var6.spawnOffspringFromSpawnEgg(var1, this, this.getType(), (ServerLevel)this.level(), this.position(), var3);
-            var5.ifPresent((var2x) -> {
-               this.onOffspringSpawnedFromEgg(var1, var2x);
-            });
+            var5.ifPresent((var2x) -> this.onOffspringSpawnedFromEgg(var1, var2x));
             if (var5.isEmpty()) {
                return InteractionResult.PASS;
             }
@@ -1334,14 +1288,14 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
                this.discard();
             }
 
-            return var5;
+            return (T)var5;
          }
       }
    }
 
    @Nullable
    public <T extends Mob> T convertTo(EntityType<T> var1, ConversionParams var2, ConversionParams.AfterConversion<T> var3) {
-      return this.convertTo(var1, var2, EntitySpawnReason.CONVERSION, var3);
+      return (T)this.convertTo(var1, var2, EntitySpawnReason.CONVERSION, var3);
    }
 
    @Nullable
@@ -1353,8 +1307,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       this.leashData = var1;
    }
 
-   public void dropLeash(boolean var1, boolean var2) {
-      Leashable.super.dropLeash(var1, var2);
+   public void onLeashRemoved() {
       if (this.getLeashData() == null) {
          this.clearRestriction();
       }
@@ -1373,7 +1326,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    public boolean startRiding(Entity var1, boolean var2) {
       boolean var3 = super.startRiding(var1, var2);
       if (var3 && this.isLeashed()) {
-         this.dropLeash(true, true);
+         this.dropLeash();
       }
 
       return var3;
@@ -1444,16 +1397,15 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       boolean var6 = var2.hurtServer(var1, var5, var3);
       if (var6) {
          float var7 = this.getKnockback(var2, var5);
-         LivingEntity var8;
          if (var7 > 0.0F && var2 instanceof LivingEntity) {
-            var8 = (LivingEntity)var2;
+            LivingEntity var8 = (LivingEntity)var2;
             var8.knockback((double)(var7 * 0.5F), (double)Mth.sin(this.getYRot() * 0.017453292F), (double)(-Mth.cos(this.getYRot() * 0.017453292F)));
             this.setDeltaMovement(this.getDeltaMovement().multiply(0.6, 1.0, 0.6));
          }
 
          if (var2 instanceof LivingEntity) {
-            var8 = (LivingEntity)var2;
-            var4.hurtEnemy(var8, this);
+            LivingEntity var11 = (LivingEntity)var2;
+            var4.hurtEnemy(var11, this);
          }
 
          EnchantmentHelper.doPostAttackEffects(var1, var2, var5);
@@ -1491,9 +1443,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    @VisibleForTesting
    public void removeFreeWill() {
-      this.removeAllGoals((var0) -> {
-         return true;
-      });
+      this.removeAllGoals((var0) -> true);
       this.getBrain().removeAllBehaviors();
    }
 
@@ -1536,7 +1486,7 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    }
 
    static {
-      DATA_MOB_FLAGS_ID = SynchedEntityData.defineId(Mob.class, EntityDataSerializers.BYTE);
+      DATA_MOB_FLAGS_ID = SynchedEntityData.<Byte>defineId(Mob.class, EntityDataSerializers.BYTE);
       ITEM_PICKUP_REACH = new Vec3i(1, 0, 1);
       EQUIPMENT_POPULATION_ORDER = List.of(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET);
       DEFAULT_ATTACK_REACH = Math.sqrt(2.0399999618530273) - 0.6000000238418579;

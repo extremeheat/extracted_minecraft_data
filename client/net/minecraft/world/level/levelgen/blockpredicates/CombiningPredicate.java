@@ -14,10 +14,6 @@ abstract class CombiningPredicate implements BlockPredicate {
    }
 
    public static <T extends CombiningPredicate> MapCodec<T> codec(Function<List<BlockPredicate>, T> var0) {
-      return RecordCodecBuilder.mapCodec((var1) -> {
-         return var1.group(BlockPredicate.CODEC.listOf().fieldOf("predicates").forGetter((var0x) -> {
-            return var0x.predicates;
-         })).apply(var1, var0);
-      });
+      return RecordCodecBuilder.mapCodec((var1) -> var1.group(BlockPredicate.CODEC.listOf().fieldOf("predicates").forGetter((var0x) -> var0x.predicates)).apply(var1, var0));
    }
 }

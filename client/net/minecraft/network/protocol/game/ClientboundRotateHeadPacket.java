@@ -9,7 +9,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
 public class ClientboundRotateHeadPacket implements Packet<ClientGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ClientboundRotateHeadPacket> STREAM_CODEC = Packet.codec(ClientboundRotateHeadPacket::write, ClientboundRotateHeadPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundRotateHeadPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ClientboundRotateHeadPacket>codec(ClientboundRotateHeadPacket::write, ClientboundRotateHeadPacket::new);
    private final int entityId;
    private final byte yHeadRot;
 

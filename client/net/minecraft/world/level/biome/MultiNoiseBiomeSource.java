@@ -36,11 +36,7 @@ public class MultiNoiseBiomeSource extends BiomeSource {
    }
 
    private Climate.ParameterList<Holder<Biome>> parameters() {
-      return (Climate.ParameterList)this.parameters.map((var0) -> {
-         return var0;
-      }, (var0) -> {
-         return ((MultiNoiseBiomeSourceParameterList)var0.value()).parameters();
-      });
+      return (Climate.ParameterList)this.parameters.map((var0) -> var0, (var0) -> ((MultiNoiseBiomeSourceParameterList)var0.value()).parameters());
    }
 
    protected Stream<Holder<Biome>> collectPossibleBiomes() {
@@ -85,8 +81,6 @@ public class MultiNoiseBiomeSource extends BiomeSource {
       ENTRY_CODEC = Biome.CODEC.fieldOf("biome");
       DIRECT_CODEC = Climate.ParameterList.codec(ENTRY_CODEC).fieldOf("biomes");
       PRESET_CODEC = MultiNoiseBiomeSourceParameterList.CODEC.fieldOf("preset").withLifecycle(Lifecycle.stable());
-      CODEC = Codec.mapEither(DIRECT_CODEC, PRESET_CODEC).xmap(MultiNoiseBiomeSource::new, (var0) -> {
-         return var0.parameters;
-      });
+      CODEC = Codec.mapEither(DIRECT_CODEC, PRESET_CODEC).xmap(MultiNoiseBiomeSource::new, (var0) -> var0.parameters);
    }
 }

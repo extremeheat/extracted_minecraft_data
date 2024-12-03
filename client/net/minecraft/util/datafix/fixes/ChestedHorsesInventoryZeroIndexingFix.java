@@ -26,22 +26,6 @@ public class ChestedHorsesInventoryZeroIndexingFix extends DataFix {
       Type var4 = this.getInputSchema().getChoiceType(References.ENTITY, var3);
       OpticFinder var5 = DSL.namedChoice(var3, var4);
       OpticFinder var6 = var4.findField("Items");
-      return this.fixTypeEverywhereTyped("Fix non-zero indexing in chest horse type " + var3, var2, (var3x) -> {
-         return var3x.updateTyped(var5, (var2) -> {
-            return var2.updateTyped(var6, (var1x) -> {
-               return var1x.update(var1, (var0) -> {
-                  return var0.mapSecond((var0x) -> {
-                     return var0x.mapSecond((var0) -> {
-                        return var0.mapSecond((var0x) -> {
-                           return var0x.update("Slot", (var0) -> {
-                              return var0.createByte((byte)(var0.asInt(2) - 2));
-                           });
-                        });
-                     });
-                  });
-               });
-            });
-         });
-      });
+      return this.fixTypeEverywhereTyped("Fix non-zero indexing in chest horse type " + var3, var2, (var3x) -> var3x.updateTyped(var5, (var2) -> var2.updateTyped(var6, (var1x) -> var1x.update(var1, (var0) -> var0.mapSecond((var0x) -> var0x.mapSecond((var0) -> var0.mapSecond((var0x) -> var0x.update("Slot", (var0) -> var0.createByte((byte)(var0.asInt(2) - 2))))))))));
    }
 }

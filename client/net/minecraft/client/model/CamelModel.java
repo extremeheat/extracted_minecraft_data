@@ -78,22 +78,13 @@ public class CamelModel extends EntityModel<CamelRenderState> {
    private void toggleInvisibleParts(CamelRenderState var1) {
       boolean var2 = var1.isSaddled;
       boolean var3 = var1.isRidden;
-      ModelPart[] var4 = this.saddleParts;
-      int var5 = var4.length;
 
-      int var6;
-      ModelPart var7;
-      for(var6 = 0; var6 < var5; ++var6) {
-         var7 = var4[var6];
+      for(ModelPart var7 : this.saddleParts) {
          var7.visible = var2;
       }
 
-      var4 = this.ridingParts;
-      var5 = var4.length;
-
-      for(var6 = 0; var6 < var5; ++var6) {
-         var7 = var4[var6];
-         var7.visible = var3 && var2;
+      for(ModelPart var11 : this.ridingParts) {
+         var11.visible = var3 && var2;
       }
 
    }

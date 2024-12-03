@@ -70,5 +70,9 @@ public class PackOutput {
       public Path json(ResourceLocation var1) {
          return this.root.resolve(var1.getNamespace()).resolve(this.kind).resolve(var1.getPath() + ".json");
       }
+
+      public Path json(ResourceKey<?> var1) {
+         return this.root.resolve(var1.location().getNamespace()).resolve(this.kind).resolve(var1.location().getPath() + ".json");
+      }
    }
 }

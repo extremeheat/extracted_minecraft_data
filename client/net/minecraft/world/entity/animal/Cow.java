@@ -42,9 +42,7 @@ public class Cow extends Animal {
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new PanicGoal(this, 2.0));
       this.goalSelector.addGoal(2, new BreedGoal(this, 1.0));
-      this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, (var0) -> {
-         return var0.is(ItemTags.COW_FOOD);
-      }, false));
+      this.goalSelector.addGoal(3, new TemptGoal(this, 1.25, (var0) -> var0.is(ItemTags.COW_FOOD), false));
       this.goalSelector.addGoal(4, new FollowParentGoal(this, 1.25));
       this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0));
       this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
@@ -93,7 +91,7 @@ public class Cow extends Animal {
 
    @Nullable
    public Cow getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (Cow)EntityType.COW.create(var1, EntitySpawnReason.BREEDING);
+      return EntityType.COW.create(var1, EntitySpawnReason.BREEDING);
    }
 
    public EntityDimensions getDefaultDimensions(Pose var1) {

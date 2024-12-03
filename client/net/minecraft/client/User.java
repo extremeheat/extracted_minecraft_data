@@ -62,9 +62,7 @@ public class User {
       MOJANG("mojang"),
       MSA("msa");
 
-      private static final Map<String, Type> BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> {
-         return var0.name;
-      }, Function.identity()));
+      private static final Map<String, Type> BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> var0.name, Function.identity()));
       private final String name;
 
       private Type(final String var3) {

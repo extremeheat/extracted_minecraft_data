@@ -7,11 +7,10 @@ import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.SharedConstants;
@@ -120,10 +119,7 @@ public class IntegratedServer extends MinecraftServer {
    }
 
    private void tickPaused() {
-      Iterator var1 = this.getPlayerList().getPlayers().iterator();
-
-      while(var1.hasNext()) {
-         ServerPlayer var2 = (ServerPlayer)var1.next();
+      for(ServerPlayer var2 : this.getPlayerList().getPlayers()) {
          var2.awardStat(Stats.TOTAL_WORLD_TIME);
       }
 
@@ -159,9 +155,7 @@ public class IntegratedServer extends MinecraftServer {
 
    public SystemReport fillServerSystemReport(SystemReport var1) {
       var1.setDetail("Type", "Integrated Server (map_client.txt)");
-      var1.setDetail("Is Modded", () -> {
-         return this.getModdedStatus().fullDescription();
-      });
+      var1.setDetail("Is Modded", (Supplier)(() -> this.getModdedStatus().fullDescription()));
       Minecraft var10002 = this.minecraft;
       Objects.requireNonNull(var10002);
       var1.setDetail("Launched Version", var10002::getLaunchedVersion);
@@ -185,10 +179,8 @@ public class IntegratedServer extends MinecraftServer {
          this.getPlayerList().setAllowCommandsForAllPlayers(var2);
          int var4 = this.getProfilePermissions(this.minecraft.player.getGameProfile());
          this.minecraft.player.setPermissionLevel(var4);
-         Iterator var5 = this.getPlayerList().getPlayers().iterator();
 
-         while(var5.hasNext()) {
-            ServerPlayer var6 = (ServerPlayer)var5.next();
+         for(ServerPlayer var6 : this.getPlayerList().getPlayers()) {
             this.getCommands().sendCommands(var6);
          }
 
@@ -209,11 +201,7 @@ public class IntegratedServer extends MinecraftServer {
 
    public void halt(boolean var1) {
       this.executeBlocking(() -> {
-         ArrayList var1 = Lists.newArrayList(this.getPlayerList().getPlayers());
-         Iterator var2 = var1.iterator();
-
-         while(var2.hasNext()) {
-            ServerPlayer var3 = (ServerPlayer)var2.next();
+         for(ServerPlayer var3 : Lists.newArrayList(this.getPlayerList().getPlayers())) {
             if (!var3.getUUID().equals(this.uuid)) {
                this.getPlayerList().remove(var3);
             }
@@ -282,9 +270,7 @@ public class IntegratedServer extends MinecraftServer {
 
    private void warnOnLowDiskSpace() {
       if (this.storageSource.checkForLowDiskSpace()) {
-         this.minecraft.execute(() -> {
-            SystemToast.onLowDiskSpace(this.minecraft);
-         });
+         this.minecraft.execute(() -> SystemToast.onLowDiskSpace(this.minecraft));
       }
 
    }
@@ -292,17 +278,13 @@ public class IntegratedServer extends MinecraftServer {
    public void reportChunkLoadFailure(Throwable var1, RegionStorageInfo var2, ChunkPos var3) {
       super.reportChunkLoadFailure(var1, var2, var3);
       this.warnOnLowDiskSpace();
-      this.minecraft.execute(() -> {
-         SystemToast.onChunkLoadFailure(this.minecraft, var3);
-      });
+      this.minecraft.execute(() -> SystemToast.onChunkLoadFailure(this.minecraft, var3));
    }
 
    public void reportChunkSaveFailure(Throwable var1, RegionStorageInfo var2, ChunkPos var3) {
       super.reportChunkSaveFailure(var1, var2, var3);
       this.warnOnLowDiskSpace();
-      this.minecraft.execute(() -> {
-         SystemToast.onChunkSaveFailure(this.minecraft, var3);
-      });
+      this.minecraft.execute(() -> SystemToast.onChunkSaveFailure(this.minecraft, var3));
    }
 
    // $FF: synthetic method

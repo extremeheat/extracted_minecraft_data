@@ -9,7 +9,7 @@ import net.minecraft.network.protocol.common.ClientboundStoreCookiePacket;
 import net.minecraft.resources.ResourceLocation;
 
 public record ServerboundCookieResponsePacket(ResourceLocation key, @Nullable byte[] payload) implements Packet<ServerCookiePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundCookieResponsePacket> STREAM_CODEC = Packet.codec(ServerboundCookieResponsePacket::write, ServerboundCookieResponsePacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundCookieResponsePacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundCookieResponsePacket>codec(ServerboundCookieResponsePacket::write, ServerboundCookieResponsePacket::new);
 
    private ServerboundCookieResponsePacket(FriendlyByteBuf var1) {
       this(var1.readResourceLocation(), (byte[])var1.readNullable(ClientboundStoreCookiePacket.PAYLOAD_STREAM_CODEC));
@@ -32,14 +32,5 @@ public record ServerboundCookieResponsePacket(ResourceLocation key, @Nullable by
 
    public void handle(ServerCookiePacketListener var1) {
       var1.handleCookieResponse(this);
-   }
-
-   public ResourceLocation key() {
-      return this.key;
-   }
-
-   @Nullable
-   public byte[] payload() {
-      return this.payload;
    }
 }

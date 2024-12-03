@@ -39,9 +39,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WallHangingSignBlock extends SignBlock {
-   public static final MapCodec<WallHangingSignBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(var0, WallHangingSignBlock::new);
-   });
+   public static final MapCodec<WallHangingSignBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(var0, WallHangingSignBlock::new));
    public static final EnumProperty<Direction> FACING;
    public static final VoxelShape PLANK_NORTHSOUTH;
    public static final VoxelShape PLANK_EASTWEST;
@@ -112,11 +110,8 @@ public class WallHangingSignBlock extends SignBlock {
       FluidState var3 = var1.getLevel().getFluidState(var1.getClickedPos());
       Level var4 = var1.getLevel();
       BlockPos var5 = var1.getClickedPos();
-      Direction[] var6 = var1.getNearestLookingDirections();
-      int var7 = var6.length;
 
-      for(int var8 = 0; var8 < var7; ++var8) {
-         Direction var9 = var6[var8];
+      for(Direction var9 : var1.getNearestLookingDirections()) {
          if (var9.getAxis().isHorizontal() && !var9.getAxis().test(var1.getClickedFace())) {
             Direction var10 = var9.getOpposite();
             var2 = (BlockState)var2.setValue(FACING, var10);

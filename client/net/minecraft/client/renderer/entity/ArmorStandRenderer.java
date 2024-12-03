@@ -17,7 +17,6 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 
 public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorStandRenderState, ArmorStandArmorModel> {
@@ -29,9 +28,9 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
       super(var1, new ArmorStandModel(var1.bakeLayer(ModelLayers.ARMOR_STAND)), 0.0F);
       this.smallModel = new ArmorStandModel(var1.bakeLayer(ModelLayers.ARMOR_STAND_SMALL));
       this.addLayer(new HumanoidArmorLayer(this, new ArmorStandArmorModel(var1.bakeLayer(ModelLayers.ARMOR_STAND_INNER_ARMOR)), new ArmorStandArmorModel(var1.bakeLayer(ModelLayers.ARMOR_STAND_OUTER_ARMOR)), new ArmorStandArmorModel(var1.bakeLayer(ModelLayers.ARMOR_STAND_SMALL_INNER_ARMOR)), new ArmorStandArmorModel(var1.bakeLayer(ModelLayers.ARMOR_STAND_SMALL_OUTER_ARMOR)), var1.getEquipmentRenderer()));
-      this.addLayer(new ItemInHandLayer(this, var1.getItemRenderer()));
+      this.addLayer(new ItemInHandLayer(this));
       this.addLayer(new WingsLayer(this, var1.getModelSet(), var1.getEquipmentRenderer()));
-      this.addLayer(new CustomHeadLayer(this, var1.getModelSet(), var1.getItemRenderer()));
+      this.addLayer(new CustomHeadLayer(this, var1.getModelSet()));
    }
 
    public ResourceLocation getTextureLocation(ArmorStandRenderState var1) {
@@ -43,8 +42,8 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
    }
 
    public void extractRenderState(ArmorStand var1, ArmorStandRenderState var2, float var3) {
-      super.extractRenderState((LivingEntity)var1, (LivingEntityRenderState)var2, var3);
-      HumanoidMobRenderer.extractHumanoidRenderState(var1, var2, var3);
+      super.extractRenderState(var1, var2, var3);
+      HumanoidMobRenderer.extractHumanoidRenderState(var1, var2, var3, this.itemModelResolver);
       var2.yRot = Mth.rotLerp(var3, var1.yRotO, var1.getYRot());
       var2.isMarker = var1.isMarker();
       var2.isSmall = var1.isSmall();
@@ -61,7 +60,7 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
 
    public void render(ArmorStandRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
       this.model = var1.isSmall ? this.smallModel : this.bigModel;
-      super.render((LivingEntityRenderState)var1, var2, var3, var4);
+      super.render(var1, var2, var3, var4);
    }
 
    protected void setupRotations(ArmorStandRenderState var1, PoseStack var2, float var3, float var4) {

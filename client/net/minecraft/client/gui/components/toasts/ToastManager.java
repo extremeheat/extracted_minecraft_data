@@ -4,7 +4,6 @@ import com.google.common.collect.Queues;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Deque;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -54,10 +53,8 @@ public class ToastManager {
    public void render(GuiGraphics var1) {
       if (!this.minecraft.options.hideGui) {
          int var2 = var1.guiWidth();
-         Iterator var3 = this.visibleToasts.iterator();
 
-         while(var3.hasNext()) {
-            ToastInstance var4 = (ToastInstance)var3.next();
+         for(ToastInstance var4 : this.visibleToasts) {
             var4.render(var1, var2);
          }
 
@@ -89,29 +86,19 @@ public class ToastManager {
 
    @Nullable
    public <T extends Toast> T getToast(Class<? extends T> var1, Object var2) {
-      Iterator var3 = this.visibleToasts.iterator();
-
-      ToastInstance var4;
-      do {
-         if (!var3.hasNext()) {
-            var3 = this.queued.iterator();
-
-            Toast var5;
-            do {
-               if (!var3.hasNext()) {
-                  return null;
-               }
-
-               var5 = (Toast)var3.next();
-            } while(!var1.isAssignableFrom(var5.getClass()) || !var5.getToken().equals(var2));
-
-            return var5;
+      for(ToastInstance var4 : this.visibleToasts) {
+         if (var4 != null && var1.isAssignableFrom(var4.getToast().getClass()) && var4.getToast().getToken().equals(var2)) {
+            return (T)var4.getToast();
          }
+      }
 
-         var4 = (ToastInstance)var3.next();
-      } while(var4 == null || !var1.isAssignableFrom(var4.getToast().getClass()) || !var4.getToast().getToken().equals(var2));
+      for(Toast var6 : this.queued) {
+         if (var1.isAssignableFrom(var6.getClass()) && var6.getToken().equals(var2)) {
+            return (T)var6;
+         }
+      }
 
-      return var4.getToast();
+      return null;
    }
 
    public void clear() {

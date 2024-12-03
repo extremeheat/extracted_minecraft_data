@@ -70,7 +70,7 @@ class LinkFSProvider extends FileSystemProvider {
       if (var3 == null) {
          throw new NotDirectoryException(var1.toString());
       } else {
-         return new DirectoryStream<Path>(this) {
+         return new DirectoryStream<Path>() {
             public Iterator<Path> iterator() {
                return var3.children().values().stream().filter((var1) -> {
                   try {
@@ -78,9 +78,7 @@ class LinkFSProvider extends FileSystemProvider {
                   } catch (IOException var3x) {
                      throw new DirectoryIteratorException(var3x);
                   }
-               }).map((var0) -> {
-                  return var0;
-               }).iterator();
+               }).map((var0) -> var0).iterator();
             }
 
             public void close() {
@@ -147,13 +145,13 @@ class LinkFSProvider extends FileSystemProvider {
    @Nullable
    public <V extends FileAttributeView> V getFileAttributeView(Path var1, Class<V> var2, LinkOption... var3) {
       LinkFSPath var4 = toLinkPath(var1);
-      return var2 == BasicFileAttributeView.class ? var4.getBasicAttributeView() : null;
+      return (V)(var2 == BasicFileAttributeView.class ? var4.getBasicAttributeView() : null);
    }
 
    public <A extends BasicFileAttributes> A readAttributes(Path var1, Class<A> var2, LinkOption... var3) throws IOException {
       LinkFSPath var4 = toLinkPath(var1).toAbsolutePath();
       if (var2 == BasicFileAttributes.class) {
-         return var4.getBasicAttributes();
+         return (A)var4.getBasicAttributes();
       } else {
          throw new UnsupportedOperationException("Attributes of type " + var2.getName() + " not supported");
       }

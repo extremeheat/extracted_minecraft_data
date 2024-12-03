@@ -15,13 +15,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
 public class WeightedPressurePlateBlock extends BasePressurePlateBlock {
-   public static final MapCodec<WeightedPressurePlateBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.intRange(1, 1024).fieldOf("max_weight").forGetter((var0x) -> {
-         return var0x.maxWeight;
-      }), BlockSetType.CODEC.fieldOf("block_set_type").forGetter((var0x) -> {
-         return var0x.type;
-      }), propertiesCodec()).apply(var0, WeightedPressurePlateBlock::new);
-   });
+   public static final MapCodec<WeightedPressurePlateBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.intRange(1, 1024).fieldOf("max_weight").forGetter((var0x) -> var0x.maxWeight), BlockSetType.CODEC.fieldOf("block_set_type").forGetter((var0x) -> var0x.type), propertiesCodec()).apply(var0, WeightedPressurePlateBlock::new));
    public static final IntegerProperty POWER;
    private final int maxWeight;
 

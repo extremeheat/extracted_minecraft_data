@@ -30,9 +30,7 @@ public class ServerReconfigScreen extends Screen {
    protected void init() {
       this.layout.defaultCellSetting().alignHorizontallyCenter().padding(10);
       this.layout.addChild(new StringWidget(this.title, this.font));
-      this.disconnectButton = (Button)this.layout.addChild(Button.builder(CommonComponents.GUI_DISCONNECT, (var1) -> {
-         this.connection.disconnect(ConnectScreen.ABORT_CONNECTION);
-      }).build());
+      this.disconnectButton = (Button)this.layout.addChild(Button.builder(CommonComponents.GUI_DISCONNECT, (var1) -> this.connection.disconnect(ConnectScreen.ABORT_CONNECTION)).build());
       this.disconnectButton.active = false;
       this.layout.arrangeElements();
       this.layout.visitWidgets((var1) -> {

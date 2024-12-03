@@ -33,9 +33,7 @@ public class SynchronizeRegistriesTask implements ConfigurationTask {
 
    private void sendRegistries(Consumer<Packet<?>> var1, Set<KnownPack> var2) {
       RegistryOps var3 = this.registries.compositeAccess().createSerializationContext(NbtOps.INSTANCE);
-      RegistrySynchronization.packRegistries(var3, this.registries.getAccessFrom(RegistryLayer.WORLDGEN), var2, (var1x, var2x) -> {
-         var1.accept(new ClientboundRegistryDataPacket(var1x, var2x));
-      });
+      RegistrySynchronization.packRegistries(var3, this.registries.getAccessFrom(RegistryLayer.WORLDGEN), var2, (var1x, var2x) -> var1.accept(new ClientboundRegistryDataPacket(var1x, var2x)));
       var1.accept(new ClientboundUpdateTagsPacket(TagNetworkSerialization.serializeTagsToNetwork(this.registries)));
    }
 

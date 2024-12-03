@@ -41,9 +41,7 @@ public class LookAtPlayerGoal extends Goal {
       this.setFlags(EnumSet.of(Goal.Flag.LOOK));
       if (var2 == Player.class) {
          Predicate var6 = EntitySelector.notRiding(var1);
-         this.lookAtContext = TargetingConditions.forNonCombat().range((double)var3).selector((var1x, var2x) -> {
-            return var6.test(var1x);
-         });
+         this.lookAtContext = TargetingConditions.forNonCombat().range((double)var3).selector((var1x, var2x) -> var6.test(var1x));
       } else {
          this.lookAtContext = TargetingConditions.forNonCombat().range((double)var3);
       }
@@ -62,9 +60,7 @@ public class LookAtPlayerGoal extends Goal {
          if (this.lookAtType == Player.class) {
             this.lookAt = var1.getNearestPlayer(this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
          } else {
-            this.lookAt = var1.getNearestEntity(this.mob.level().getEntitiesOfClass(this.lookAtType, this.mob.getBoundingBox().inflate((double)this.lookDistance, 3.0, (double)this.lookDistance), (var0) -> {
-               return true;
-            }), this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
+            this.lookAt = var1.getNearestEntity(this.mob.level().getEntitiesOfClass(this.lookAtType, this.mob.getBoundingBox().inflate((double)this.lookDistance, 3.0, (double)this.lookDistance), (var0) -> true), this.lookAtContext, this.mob, this.mob.getX(), this.mob.getEyeY(), this.mob.getZ());
          }
 
          return this.lookAt != null;

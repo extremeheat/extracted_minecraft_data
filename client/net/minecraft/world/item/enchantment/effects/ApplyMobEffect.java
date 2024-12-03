@@ -19,9 +19,7 @@ import net.minecraft.world.item.enchantment.LevelBasedValue;
 import net.minecraft.world.phys.Vec3;
 
 public record ApplyMobEffect(HolderSet<MobEffect> toApply, LevelBasedValue minDuration, LevelBasedValue maxDuration, LevelBasedValue minAmplifier, LevelBasedValue maxAmplifier) implements EnchantmentEntityEffect {
-   public static final MapCodec<ApplyMobEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(RegistryCodecs.homogeneousList(Registries.MOB_EFFECT).fieldOf("to_apply").forGetter(ApplyMobEffect::toApply), LevelBasedValue.CODEC.fieldOf("min_duration").forGetter(ApplyMobEffect::minDuration), LevelBasedValue.CODEC.fieldOf("max_duration").forGetter(ApplyMobEffect::maxDuration), LevelBasedValue.CODEC.fieldOf("min_amplifier").forGetter(ApplyMobEffect::minAmplifier), LevelBasedValue.CODEC.fieldOf("max_amplifier").forGetter(ApplyMobEffect::maxAmplifier)).apply(var0, ApplyMobEffect::new);
-   });
+   public static final MapCodec<ApplyMobEffect> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryCodecs.homogeneousList(Registries.MOB_EFFECT).fieldOf("to_apply").forGetter(ApplyMobEffect::toApply), LevelBasedValue.CODEC.fieldOf("min_duration").forGetter(ApplyMobEffect::minDuration), LevelBasedValue.CODEC.fieldOf("max_duration").forGetter(ApplyMobEffect::maxDuration), LevelBasedValue.CODEC.fieldOf("min_amplifier").forGetter(ApplyMobEffect::minAmplifier), LevelBasedValue.CODEC.fieldOf("max_amplifier").forGetter(ApplyMobEffect::maxAmplifier)).apply(var0, ApplyMobEffect::new));
 
    public ApplyMobEffect(HolderSet<MobEffect> var1, LevelBasedValue var2, LevelBasedValue var3, LevelBasedValue var4, LevelBasedValue var5) {
       super();
@@ -47,25 +45,5 @@ public record ApplyMobEffect(HolderSet<MobEffect> toApply, LevelBasedValue minDu
 
    public MapCodec<ApplyMobEffect> codec() {
       return CODEC;
-   }
-
-   public HolderSet<MobEffect> toApply() {
-      return this.toApply;
-   }
-
-   public LevelBasedValue minDuration() {
-      return this.minDuration;
-   }
-
-   public LevelBasedValue maxDuration() {
-      return this.maxDuration;
-   }
-
-   public LevelBasedValue minAmplifier() {
-      return this.minAmplifier;
-   }
-
-   public LevelBasedValue maxAmplifier() {
-      return this.maxAmplifier;
    }
 }

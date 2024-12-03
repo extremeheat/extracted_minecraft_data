@@ -1,6 +1,5 @@
 package net.minecraft.world.entity;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -98,16 +97,17 @@ public class ExperienceOrb extends Entity {
          }
       }
 
+      double var6 = this.getDeltaMovement().y;
       this.move(MoverType.SELF, this.getDeltaMovement());
       this.applyEffectsFromBlocks();
-      float var6 = 0.98F;
+      float var3 = 0.98F;
       if (this.onGround()) {
-         var6 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
+         var3 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
       }
 
-      this.setDeltaMovement(this.getDeltaMovement().multiply((double)var6, 0.98, (double)var6));
+      this.setDeltaMovement(this.getDeltaMovement().multiply((double)var3, 0.98, (double)var3));
       if (this.onGround()) {
-         this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, -0.9, 1.0));
+         this.setDeltaMovement(new Vec3(this.getDeltaMovement().x, -var6 * 0.4, this.getDeltaMovement().z));
       }
 
       ++this.age;
@@ -127,11 +127,7 @@ public class ExperienceOrb extends Entity {
       }
 
       if (this.level() instanceof ServerLevel) {
-         List var1 = this.level().getEntities(EntityTypeTest.forClass(ExperienceOrb.class), this.getBoundingBox().inflate(0.5), this::canMerge);
-         Iterator var2 = var1.iterator();
-
-         while(var2.hasNext()) {
-            ExperienceOrb var3 = (ExperienceOrb)var2.next();
+         for(ExperienceOrb var3 : this.level().getEntities(EntityTypeTest.forClass(ExperienceOrb.class), this.getBoundingBox().inflate(0.5), this::canMerge)) {
             this.merge(var3);
          }
       }
@@ -152,9 +148,7 @@ public class ExperienceOrb extends Entity {
    private static boolean tryMergeToExisting(ServerLevel var0, Vec3 var1, int var2) {
       AABB var3 = AABB.ofSize(var1, 1.0, 1.0, 1.0);
       int var4 = var0.getRandom().nextInt(40);
-      List var5 = var0.getEntities(EntityTypeTest.forClass(ExperienceOrb.class), var3, (var2x) -> {
-         return canMerge(var2x, var4, var2);
-      });
+      List var5 = var0.getEntities(EntityTypeTest.forClass(ExperienceOrb.class), var3, (var2x) -> canMerge(var2x, var4, var2));
       if (!var5.isEmpty()) {
          ExperienceOrb var6 = (ExperienceOrb)var5.get(0);
          ++var6.count;

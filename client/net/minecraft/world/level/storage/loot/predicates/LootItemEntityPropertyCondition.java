@@ -12,9 +12,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
 public record LootItemEntityPropertyCondition(Optional<EntityPredicate> predicate, LootContext.EntityTarget entityTarget) implements LootItemCondition {
-   public static final MapCodec<LootItemEntityPropertyCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(EntityPredicate.CODEC.optionalFieldOf("predicate").forGetter(LootItemEntityPropertyCondition::predicate), LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(LootItemEntityPropertyCondition::entityTarget)).apply(var0, LootItemEntityPropertyCondition::new);
-   });
+   public static final MapCodec<LootItemEntityPropertyCondition> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(EntityPredicate.CODEC.optionalFieldOf("predicate").forGetter(LootItemEntityPropertyCondition::predicate), LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(LootItemEntityPropertyCondition::entityTarget)).apply(var0, LootItemEntityPropertyCondition::new));
 
    public LootItemEntityPropertyCondition(Optional<EntityPredicate> var1, LootContext.EntityTarget var2) {
       super();
@@ -41,23 +39,11 @@ public record LootItemEntityPropertyCondition(Optional<EntityPredicate> predicat
    }
 
    public static LootItemCondition.Builder hasProperties(LootContext.EntityTarget var0, EntityPredicate.Builder var1) {
-      return () -> {
-         return new LootItemEntityPropertyCondition(Optional.of(var1.build()), var0);
-      };
+      return () -> new LootItemEntityPropertyCondition(Optional.of(var1.build()), var0);
    }
 
    public static LootItemCondition.Builder hasProperties(LootContext.EntityTarget var0, EntityPredicate var1) {
-      return () -> {
-         return new LootItemEntityPropertyCondition(Optional.of(var1), var0);
-      };
-   }
-
-   public Optional<EntityPredicate> predicate() {
-      return this.predicate;
-   }
-
-   public LootContext.EntityTarget entityTarget() {
-      return this.entityTarget;
+      return () -> new LootItemEntityPropertyCondition(Optional.of(var1), var0);
    }
 
    // $FF: synthetic method

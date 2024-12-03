@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.blockpredicates;
 
 import com.mojang.serialization.Codec;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.BiPredicate;
 import net.minecraft.core.BlockPos;
@@ -49,7 +48,7 @@ public interface BlockPredicate extends BiPredicate<WorldGenLevel, BlockPos> {
    }
 
    static BlockPredicate matchesBlocks(Vec3i var0, List<Block> var1) {
-      return new MatchingBlocksPredicate(var0, HolderSet.direct(Block::builtInRegistryHolder, (Collection)var1));
+      return new MatchingBlocksPredicate(var0, HolderSet.direct(Block::builtInRegistryHolder, var1));
    }
 
    static BlockPredicate matchesBlocks(List<Block> var0) {
@@ -73,7 +72,7 @@ public interface BlockPredicate extends BiPredicate<WorldGenLevel, BlockPos> {
    }
 
    static BlockPredicate matchesFluids(Vec3i var0, List<Fluid> var1) {
-      return new MatchingFluidsPredicate(var0, HolderSet.direct(Fluid::builtInRegistryHolder, (Collection)var1));
+      return new MatchingFluidsPredicate(var0, HolderSet.direct(Fluid::builtInRegistryHolder, var1));
    }
 
    static BlockPredicate matchesFluids(Vec3i var0, Fluid... var1) {

@@ -100,22 +100,16 @@ public class BoneMealItem extends Item {
                Holder var10 = var1.getBiome(var6);
                if (var10.is(BiomeTags.PRODUCES_CORALS_FROM_BONEMEAL)) {
                   if (var5 == 0 && var3 != null && var3.getAxis().isHorizontal()) {
-                     var7 = (BlockState)BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.WALL_CORALS, var1.random).map((var0x) -> {
-                        return ((Block)var0x.value()).defaultBlockState();
-                     }).orElse(var7);
+                     var7 = (BlockState)BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.WALL_CORALS, var1.random).map((var0x) -> ((Block)var0x.value()).defaultBlockState()).orElse(var7);
                      if (var7.hasProperty(BaseCoralWallFanBlock.FACING)) {
                         var7 = (BlockState)var7.setValue(BaseCoralWallFanBlock.FACING, var3);
                      }
                   } else if (var4.nextInt(4) == 0) {
-                     var7 = (BlockState)BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.UNDERWATER_BONEMEALS, var1.random).map((var0x) -> {
-                        return ((Block)var0x.value()).defaultBlockState();
-                     }).orElse(var7);
+                     var7 = (BlockState)BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.UNDERWATER_BONEMEALS, var1.random).map((var0x) -> ((Block)var0x.value()).defaultBlockState()).orElse(var7);
                   }
                }
 
-               if (var7.is(BlockTags.WALL_CORALS, (var0x) -> {
-                  return var0x.hasProperty(BaseCoralWallFanBlock.FACING);
-               })) {
+               if (var7.is(BlockTags.WALL_CORALS, (var0x) -> var0x.hasProperty(BaseCoralWallFanBlock.FACING))) {
                   for(int var9 = 0; !var7.canSurvive(var1, var6) && var9 < 4; ++var9) {
                      var7 = (BlockState)var7.setValue(BaseCoralWallFanBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(var4));
                   }

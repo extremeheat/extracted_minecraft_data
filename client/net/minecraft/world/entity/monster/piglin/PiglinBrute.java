@@ -60,7 +60,7 @@ public class PiglinBrute extends AbstractPiglin {
    }
 
    protected Brain.Provider<PiglinBrute> brainProvider() {
-      return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
+      return Brain.<PiglinBrute>provider(MEMORY_TYPES, SENSOR_TYPES);
    }
 
    protected Brain<?> makeBrain(Dynamic<?> var1) {

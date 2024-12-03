@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 
 public class Deadmau5EarsLayer extends RenderLayer<PlayerRenderState, PlayerModel> {
@@ -27,7 +26,7 @@ public class Deadmau5EarsLayer extends RenderLayer<PlayerRenderState, PlayerMode
          VertexConsumer var7 = var2.getBuffer(RenderType.entitySolid(var4.skin.texture()));
          int var8 = LivingEntityRenderer.getOverlayCoords(var4, 0.0F);
          ((PlayerModel)this.getParentModel()).copyPropertiesTo(this.model);
-         this.model.setupAnim((HumanoidRenderState)var4);
+         this.model.setupAnim(var4);
          this.model.renderToBuffer(var1, var7, var3, var8);
       }
    }

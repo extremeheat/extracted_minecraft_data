@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.animal;
 
 import java.util.Objects;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -28,7 +29,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
 
 public class Squid extends AgeableWaterCreature {
    public float xBodyRot;
@@ -52,7 +52,7 @@ public class Squid extends AgeableWaterCreature {
    }
 
    protected void registerGoals() {
-      this.goalSelector.addGoal(0, new SquidRandomMovementGoal(this, this));
+      this.goalSelector.addGoal(0, new SquidRandomMovementGoal(this));
       this.goalSelector.addGoal(1, new SquidFleeGoal());
    }
 
@@ -88,8 +88,9 @@ public class Squid extends AgeableWaterCreature {
       return Entity.MovementEmission.EVENTS;
    }
 
-   public @Nullable AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return (AgeableMob)EntityType.SQUID.create(var1, EntitySpawnReason.BREEDING);
+   @Nullable
+   public AgeableMob getBreedOffspring(ServerLevel var1, AgeableMob var2) {
+      return EntityType.SQUID.create(var1, EntitySpawnReason.BREEDING);
    }
 
    protected double getDefaultGravity() {
@@ -214,19 +215,18 @@ public class Squid extends AgeableWaterCreature {
       return this.movementVector.lengthSqr() > 9.999999747378752E-6;
    }
 
-   public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      SpawnGroupData var5 = (SpawnGroupData)Objects.requireNonNullElseGet(var4, () -> {
-         return new AgeableMob.AgeableMobGroupData(0.05F);
-      });
+   @Nullable
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+      SpawnGroupData var5 = (SpawnGroupData)Objects.requireNonNullElseGet(var4, () -> new AgeableMob.AgeableMobGroupData(0.05F));
       return super.finalizeSpawn(var1, var2, var3, var5);
    }
 
-   private class SquidRandomMovementGoal extends Goal {
+   static class SquidRandomMovementGoal extends Goal {
       private final Squid squid;
 
-      public SquidRandomMovementGoal(final Squid var1, final Squid var2) {
+      public SquidRandomMovementGoal(Squid var1) {
          super();
-         this.squid = var2;
+         this.squid = var1;
       }
 
       public boolean canUse() {
@@ -245,7 +245,7 @@ public class Squid extends AgeableWaterCreature {
       }
    }
 
-   private class SquidFleeGoal extends Goal {
+   class SquidFleeGoal extends Goal {
       private static final float SQUID_FLEE_SPEED = 3.0F;
       private static final float SQUID_FLEE_MIN_DISTANCE = 5.0F;
       private static final float SQUID_FLEE_MAX_DISTANCE = 10.0F;

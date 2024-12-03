@@ -11,13 +11,7 @@ import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class ModifyContainerContents extends LootItemConditionalFunction {
-   public static final MapCodec<ModifyContainerContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return commonFields(var0).and(var0.group(ContainerComponentManipulators.CODEC.fieldOf("component").forGetter((var0x) -> {
-         return var0x.component;
-      }), LootItemFunctions.ROOT_CODEC.fieldOf("modifier").forGetter((var0x) -> {
-         return var0x.modifier;
-      }))).apply(var0, ModifyContainerContents::new);
-   });
+   public static final MapCodec<ModifyContainerContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(ContainerComponentManipulators.CODEC.fieldOf("component").forGetter((var0x) -> var0x.component), LootItemFunctions.ROOT_CODEC.fieldOf("modifier").forGetter((var0x) -> var0x.modifier))).apply(var0, ModifyContainerContents::new));
    private final ContainerComponentManipulator<?> component;
    private final LootItemFunction modifier;
 
@@ -35,9 +29,7 @@ public class ModifyContainerContents extends LootItemConditionalFunction {
       if (var1.isEmpty()) {
          return var1;
       } else {
-         this.component.modifyItems(var1, (var2x) -> {
-            return (ItemStack)this.modifier.apply(var2x, var2);
-         });
+         this.component.modifyItems(var1, (var2x) -> (ItemStack)this.modifier.apply(var2x, var2));
          return var1;
       }
    }

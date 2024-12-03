@@ -19,24 +19,4 @@ public record ChunkGenStat(Duration duration, ChunkPos chunkPos, ColumnPos world
    public static ChunkGenStat from(RecordedEvent var0) {
       return new ChunkGenStat(var0.getDuration(), new ChunkPos(var0.getInt("chunkPosX"), var0.getInt("chunkPosX")), new ColumnPos(var0.getInt("worldPosX"), var0.getInt("worldPosZ")), ChunkStatus.byName(var0.getString("status")), var0.getString("level"));
    }
-
-   public Duration duration() {
-      return this.duration;
-   }
-
-   public ChunkPos chunkPos() {
-      return this.chunkPos;
-   }
-
-   public ColumnPos worldPos() {
-      return this.worldPos;
-   }
-
-   public ChunkStatus status() {
-      return this.status;
-   }
-
-   public String level() {
-      return this.level;
-   }
 }

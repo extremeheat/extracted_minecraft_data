@@ -32,21 +32,11 @@ import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");
-   private static final DynamicCommandExceptionType ERROR_INVALID_FEATURE = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("commands.place.feature.invalid", var0);
-   });
-   private static final DynamicCommandExceptionType ERROR_INVALID_STRUCTURE = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("commands.place.structure.invalid", var0);
-   });
-   private static final DynamicCommandExceptionType ERROR_INVALID_TEMPLATE_POOL = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("commands.place.jigsaw.invalid", var0);
-   });
-   private static final DynamicCommandExceptionType ERROR_INVALID_RECIPE = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("recipe.notFound", var0);
-   });
-   private static final DynamicCommandExceptionType ERROR_INVALID_ADVANCEMENT = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("advancement.advancementNotFound", var0);
-   });
+   private static final DynamicCommandExceptionType ERROR_INVALID_FEATURE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.place.feature.invalid", var0));
+   private static final DynamicCommandExceptionType ERROR_INVALID_STRUCTURE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.place.structure.invalid", var0));
+   private static final DynamicCommandExceptionType ERROR_INVALID_TEMPLATE_POOL = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.place.jigsaw.invalid", var0));
+   private static final DynamicCommandExceptionType ERROR_INVALID_RECIPE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("recipe.notFound", var0));
+   private static final DynamicCommandExceptionType ERROR_INVALID_ADVANCEMENT = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("advancement.advancementNotFound", var0));
    final ResourceKey<? extends Registry<T>> registryKey;
 
    public ResourceKeyArgument(ResourceKey<? extends Registry<T>> var1) {
@@ -55,15 +45,13 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
    }
 
    public static <T> ResourceKeyArgument<T> key(ResourceKey<? extends Registry<T>> var0) {
-      return new ResourceKeyArgument(var0);
+      return new ResourceKeyArgument<T>(var0);
    }
 
    private static <T> ResourceKey<T> getRegistryKey(CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2, DynamicCommandExceptionType var3) throws CommandSyntaxException {
       ResourceKey var4 = (ResourceKey)var0.getArgument(var1, ResourceKey.class);
       Optional var5 = var4.cast(var2);
-      return (ResourceKey)var5.orElseThrow(() -> {
-         return var3.create(var4.location());
-      });
+      return (ResourceKey)var5.orElseThrow(() -> var3.create(var4.location()));
    }
 
    private static <T> Registry<T> getRegistry(CommandContext<CommandSourceStack> var0, ResourceKey<? extends Registry<T>> var1) {
@@ -72,9 +60,7 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
 
    private static <T> Holder.Reference<T> resolveKey(CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2, DynamicCommandExceptionType var3) throws CommandSyntaxException {
       ResourceKey var4 = getRegistryKey(var0, var1, var2, var3);
-      return (Holder.Reference)getRegistry(var0, var2).get(var4).orElseThrow(() -> {
-         return var3.create(var4.location());
-      });
+      return (Holder.Reference)getRegistry(var0, var2).get(var4).orElseThrow(() -> var3.create(var4.location()));
    }
 
    public static Holder.Reference<ConfiguredFeature<?, ?>> getConfiguredFeature(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
@@ -92,9 +78,7 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
    public static RecipeHolder<?> getRecipe(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       RecipeManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getRecipeManager();
       ResourceKey var3 = getRegistryKey(var0, var1, Registries.RECIPE, ERROR_INVALID_RECIPE);
-      return (RecipeHolder)var2.byKey(var3).orElseThrow(() -> {
-         return ERROR_INVALID_RECIPE.create(var3.location());
-      });
+      return (RecipeHolder)var2.byKey(var3).orElseThrow(() -> ERROR_INVALID_RECIPE.create(var3.location()));
    }
 
    public static AdvancementHolder getAdvancement(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
@@ -165,7 +149,7 @@ public class ResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
          }
 
          public ResourceKeyArgument<T> instantiate(CommandBuildContext var1) {
-            return new ResourceKeyArgument(this.registryKey);
+            return new ResourceKeyArgument<T>(this.registryKey);
          }
 
          public ArgumentTypeInfo<ResourceKeyArgument<T>, ?> type() {

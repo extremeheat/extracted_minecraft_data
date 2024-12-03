@@ -8,7 +8,6 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PolarBearRenderState;
 
 public class PolarBearModel extends QuadrupedModel<PolarBearRenderState> {
@@ -35,7 +34,7 @@ public class PolarBearModel extends QuadrupedModel<PolarBearRenderState> {
    }
 
    public void setupAnim(PolarBearRenderState var1) {
-      super.setupAnim((LivingEntityRenderState)var1);
+      super.setupAnim(var1);
       float var2 = var1.standScale * var1.standScale;
       float var3 = var1.ageScale;
       float var4 = var1.isBaby ? 0.44444445F : 1.0F;

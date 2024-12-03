@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,9 +52,7 @@ public class Scoreboard {
          throw new IllegalArgumentException("An objective with the name '" + var1 + "' already exists!");
       } else {
          Objective var7 = new Objective(this, var1, var2, var3, var4, var5, var6);
-         ((List)this.objectivesByCriteria.computeIfAbsent(var2, (var0) -> {
-            return Lists.newArrayList();
-         })).add(var7);
+         ((List)this.objectivesByCriteria.computeIfAbsent(var2, (var0) -> Lists.newArrayList())).add(var7);
          this.objectivesByName.put(var1, var7);
          this.onObjectiveAdded(var7);
          return var7;
@@ -63,15 +60,11 @@ public class Scoreboard {
    }
 
    public final void forAllObjectives(ObjectiveCriteria var1, ScoreHolder var2, Consumer<ScoreAccess> var3) {
-      ((List)this.objectivesByCriteria.getOrDefault(var1, Collections.emptyList())).forEach((var3x) -> {
-         var3.accept(this.getOrCreatePlayerScore(var2, var3x, true));
-      });
+      ((List)this.objectivesByCriteria.getOrDefault(var1, Collections.emptyList())).forEach((var3x) -> var3.accept(this.getOrCreatePlayerScore(var2, var3x, true)));
    }
 
    private PlayerScores getOrCreatePlayerInfo(String var1) {
-      return (PlayerScores)this.playerScores.computeIfAbsent(var1, (var0) -> {
-         return new PlayerScores();
-      });
+      return (PlayerScores)this.playerScores.computeIfAbsent(var1, (var0) -> new PlayerScores());
    }
 
    public ScoreAccess getOrCreatePlayerScore(ScoreHolder var1, Objective var2) {
@@ -82,9 +75,7 @@ public class Scoreboard {
       final boolean var4 = var3 || !var2.getCriteria().isReadOnly();
       PlayerScores var5 = this.getOrCreatePlayerInfo(var1.getScoreboardName());
       final MutableBoolean var6 = new MutableBoolean();
-      final Score var7 = var5.getOrCreate(var2, (var1x) -> {
-         var6.setTrue();
-      });
+      final Score var7 = var5.getOrCreate(var2, (var1x) -> var6.setTrue());
       return new ScoreAccess() {
          public int get() {
             return var7.value();
@@ -222,11 +213,8 @@ public class Scoreboard {
 
    public void removeObjective(Objective var1) {
       this.objectivesByName.remove(var1.getName());
-      DisplaySlot[] var2 = DisplaySlot.values();
-      int var3 = var2.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         DisplaySlot var5 = var2[var4];
+      for(DisplaySlot var5 : DisplaySlot.values()) {
          if (this.getDisplayObjective(var5) == var1) {
             this.setDisplayObjective(var5, (Objective)null);
          }
@@ -237,10 +225,7 @@ public class Scoreboard {
          var6.remove(var1);
       }
 
-      Iterator var7 = this.playerScores.values().iterator();
-
-      while(var7.hasNext()) {
-         PlayerScores var8 = (PlayerScores)var7.next();
+      for(PlayerScores var8 : this.playerScores.values()) {
          var8.remove(var1);
       }
 
@@ -276,10 +261,8 @@ public class Scoreboard {
 
    public void removePlayerTeam(PlayerTeam var1) {
       this.teamsByName.remove(var1.getName());
-      Iterator var2 = var1.getPlayers().iterator();
 
-      while(var2.hasNext()) {
-         String var3 = (String)var2.next();
+      for(String var3 : var1.getPlayers()) {
          this.teamsByPlayer.remove(var3);
       }
 
@@ -366,14 +349,12 @@ public class Scoreboard {
 
    protected ListTag savePlayerScores(HolderLookup.Provider var1) {
       ListTag var2 = new ListTag();
-      this.playerScores.forEach((var2x, var3) -> {
-         var3.listRawScores().forEach((var3x, var4) -> {
+      this.playerScores.forEach((var2x, var3) -> var3.listRawScores().forEach((var3x, var4) -> {
             CompoundTag var5 = var4.write(var1);
             var5.putString("Name", var2x);
             var5.putString("Objective", var3x.getName());
             var2.add(var5);
-         });
-      });
+         }));
       return var2;
    }
 

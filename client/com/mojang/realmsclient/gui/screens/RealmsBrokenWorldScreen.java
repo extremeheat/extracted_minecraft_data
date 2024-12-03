@@ -14,7 +14,6 @@ import com.mojang.realmsclient.util.task.LongRunningTask;
 import com.mojang.realmsclient.util.task.OpenServerTask;
 import com.mojang.realmsclient.util.task.SwitchSlotTask;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -54,9 +53,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
 
    public void init() {
       this.leftX = this.width / 2 - 150;
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1) -> {
-         this.onClose();
-      }).bounds((this.width - 150) / 2, row(13) - 5, 150, 20).build());
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, (var1) -> this.onClose()).bounds((this.width - 150) / 2, row(13) - 5, 150, 20).build());
       if (this.serverData == null) {
          this.fetchServerData(this.serverId);
       } else {
@@ -70,28 +67,23 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
    }
 
    private void addButtons() {
-      Button var5;
-      for(Iterator var1 = this.serverData.slots.entrySet().iterator(); var1.hasNext(); this.addRenderableWidget(var5)) {
-         Map.Entry var2 = (Map.Entry)var1.next();
+      for(Map.Entry var2 : this.serverData.slots.entrySet()) {
          int var3 = (Integer)var2.getKey();
          boolean var4 = var3 != this.serverData.activeSlot || this.serverData.isMinigameActive();
+         Button var5;
          if (var4) {
-            var5 = Button.builder(Component.translatable("mco.brokenworld.play"), (var2x) -> {
-               this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, new LongRunningTask[]{new SwitchSlotTask(this.serverData.id, var3, this::doSwitchOrReset)}));
-            }).bounds(this.getFramePositionX(var3), row(8), 80, 20).build();
+            var5 = Button.builder(Component.translatable("mco.brokenworld.play"), (var2x) -> this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, new LongRunningTask[]{new SwitchSlotTask(this.serverData.id, var3, this::doSwitchOrReset)}))).bounds(this.getFramePositionX(var3), row(8), 80, 20).build();
             var5.active = !((RealmsWorldOptions)this.serverData.slots.get(var3)).empty;
          } else {
-            var5 = Button.builder(Component.translatable("mco.brokenworld.download"), (var2x) -> {
-               this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this, Component.translatable("mco.configure.world.restore.download.question.line1"), (var2) -> {
-                  this.downloadWorld(var3);
-               }));
-            }).bounds(this.getFramePositionX(var3), row(8), 80, 20).build();
+            var5 = Button.builder(Component.translatable("mco.brokenworld.download"), (var2x) -> this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this, Component.translatable("mco.configure.world.restore.download.question.line1"), (var2) -> this.downloadWorld(var3)))).bounds(this.getFramePositionX(var3), row(8), 80, 20).build();
          }
 
          if (this.slotsThatHasBeenDownloaded.contains(var3)) {
             var5.active = false;
             var5.setMessage(Component.translatable("mco.brokenworld.downloaded"));
          }
+
+         this.addRenderableWidget(var5);
       }
 
    }
@@ -109,20 +101,14 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       }
 
       if (this.serverData != null) {
-         Iterator var7 = this.serverData.slots.entrySet().iterator();
-
-         while(true) {
-            while(var7.hasNext()) {
-               Map.Entry var6 = (Map.Entry)var7.next();
-               if (((RealmsWorldOptions)var6.getValue()).templateImage != null && ((RealmsWorldOptions)var6.getValue()).templateId != -1L) {
-                  this.drawSlotFrame(var1, this.getFramePositionX((Integer)var6.getKey()), row(1) + 5, var2, var3, this.serverData.activeSlot == (Integer)var6.getKey() && !this.isMinigame(), ((RealmsWorldOptions)var6.getValue()).getSlotName((Integer)var6.getKey()), (Integer)var6.getKey(), ((RealmsWorldOptions)var6.getValue()).templateId, ((RealmsWorldOptions)var6.getValue()).templateImage, ((RealmsWorldOptions)var6.getValue()).empty);
-               } else {
-                  this.drawSlotFrame(var1, this.getFramePositionX((Integer)var6.getKey()), row(1) + 5, var2, var3, this.serverData.activeSlot == (Integer)var6.getKey() && !this.isMinigame(), ((RealmsWorldOptions)var6.getValue()).getSlotName((Integer)var6.getKey()), (Integer)var6.getKey(), -1L, (String)null, ((RealmsWorldOptions)var6.getValue()).empty);
-               }
+         for(Map.Entry var6 : this.serverData.slots.entrySet()) {
+            if (((RealmsWorldOptions)var6.getValue()).templateImage != null && ((RealmsWorldOptions)var6.getValue()).templateId != -1L) {
+               this.drawSlotFrame(var1, this.getFramePositionX((Integer)var6.getKey()), row(1) + 5, var2, var3, this.serverData.activeSlot == (Integer)var6.getKey() && !this.isMinigame(), ((RealmsWorldOptions)var6.getValue()).getSlotName((Integer)var6.getKey()), (Integer)var6.getKey(), ((RealmsWorldOptions)var6.getValue()).templateId, ((RealmsWorldOptions)var6.getValue()).templateImage, ((RealmsWorldOptions)var6.getValue()).empty);
+            } else {
+               this.drawSlotFrame(var1, this.getFramePositionX((Integer)var6.getKey()), row(1) + 5, var2, var3, this.serverData.activeSlot == (Integer)var6.getKey() && !this.isMinigame(), ((RealmsWorldOptions)var6.getValue()).getSlotName((Integer)var6.getKey()), (Integer)var6.getKey(), -1L, (String)null, ((RealmsWorldOptions)var6.getValue()).empty);
             }
-
-            return;
          }
+
       }
    }
 
@@ -149,20 +135,14 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
       (new Thread(() -> {
          RealmsClient var1 = RealmsClient.create();
          if (this.serverData.state == RealmsServer.State.CLOSED) {
-            this.minecraft.execute(() -> {
-               this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this, new LongRunningTask[]{new OpenServerTask(this.serverData, this, true, this.minecraft)}));
-            });
+            this.minecraft.execute(() -> this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this, new LongRunningTask[]{new OpenServerTask(this.serverData, this, true, this.minecraft)})));
          } else {
             try {
                RealmsServer var2 = var1.getOwnRealm(this.serverId);
-               this.minecraft.execute(() -> {
-                  RealmsMainScreen.play(var2, this);
-               });
+               this.minecraft.execute(() -> RealmsMainScreen.play(var2, this));
             } catch (RealmsServiceException var3) {
                LOGGER.error("Couldn't get own world", var3);
-               this.minecraft.execute(() -> {
-                  this.minecraft.setScreen(this.lastScreen);
-               });
+               this.minecraft.execute(() -> this.minecraft.setScreen(this.lastScreen));
             }
          }
 

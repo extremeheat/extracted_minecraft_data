@@ -6,12 +6,10 @@ import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PiglinRenderState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.item.CrossbowItem;
 
@@ -34,7 +32,7 @@ public class PiglinRenderer extends HumanoidMobRenderer<AbstractPiglin, PiglinRe
    }
 
    public void extractRenderState(AbstractPiglin var1, PiglinRenderState var2, float var3) {
-      super.extractRenderState((Mob)var1, (HumanoidRenderState)var2, var3);
+      super.extractRenderState(var1, var2, var3);
       var2.isBrute = var1.getType() == EntityType.PIGLIN_BRUTE;
       var2.armPose = var1.getArmPose();
       var2.maxCrossbowChageDuration = (float)CrossbowItem.getChargeDuration(var1.getUseItem(), var1);

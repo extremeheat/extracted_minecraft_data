@@ -1,7 +1,5 @@
 package net.minecraft.world.entity.decoration;
 
-import java.util.Iterator;
-import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -91,8 +89,8 @@ public class ArmorStand extends LivingEntity {
 
    public ArmorStand(EntityType<? extends ArmorStand> var1, Level var2) {
       super(var1, var2);
-      this.handItems = NonNullList.withSize(2, ItemStack.EMPTY);
-      this.armorItems = NonNullList.withSize(4, ItemStack.EMPTY);
+      this.handItems = NonNullList.<ItemStack>withSize(2, ItemStack.EMPTY);
+      this.armorItems = NonNullList.<ItemStack>withSize(4, ItemStack.EMPTY);
       this.headPose = DEFAULT_HEAD_POSE;
       this.bodyPose = DEFAULT_BODY_POSE;
       this.leftArmPose = DEFAULT_LEFT_ARM_POSE;
@@ -148,10 +146,10 @@ public class ArmorStand extends LivingEntity {
    public ItemStack getItemBySlot(EquipmentSlot var1) {
       switch (var1.getType()) {
          case HAND -> {
-            return (ItemStack)this.handItems.get(var1.getIndex());
+            return this.handItems.get(var1.getIndex());
          }
          case HUMANOID_ARMOR -> {
-            return (ItemStack)this.armorItems.get(var1.getIndex());
+            return this.armorItems.get(var1.getIndex());
          }
          default -> {
             return ItemStack.EMPTY;
@@ -166,8 +164,8 @@ public class ArmorStand extends LivingEntity {
    public void setItemSlot(EquipmentSlot var1, ItemStack var2) {
       this.verifyEquippedItem(var2);
       switch (var1.getType()) {
-         case HAND -> this.onEquipItem(var1, (ItemStack)this.handItems.set(var1.getIndex(), var2), var2);
-         case HUMANOID_ARMOR -> this.onEquipItem(var1, (ItemStack)this.armorItems.set(var1.getIndex(), var2), var2);
+         case HAND -> this.onEquipItem(var1, this.handItems.set(var1.getIndex(), var2), var2);
+         case HUMANOID_ARMOR -> this.onEquipItem(var1, this.armorItems.set(var1.getIndex(), var2), var2);
       }
 
    }
@@ -175,19 +173,15 @@ public class ArmorStand extends LivingEntity {
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       ListTag var2 = new ListTag();
-      Iterator var3 = this.armorItems.iterator();
 
-      while(var3.hasNext()) {
-         ItemStack var4 = (ItemStack)var3.next();
+      for(ItemStack var4 : this.armorItems) {
          var2.add(var4.saveOptional(this.registryAccess()));
       }
 
       var1.put("ArmorItems", var2);
       ListTag var6 = new ListTag();
-      Iterator var7 = this.handItems.iterator();
 
-      while(var7.hasNext()) {
-         ItemStack var5 = (ItemStack)var7.next();
+      for(ItemStack var5 : this.handItems) {
          var6.add(var5.saveOptional(this.registryAccess()));
       }
 
@@ -206,24 +200,21 @@ public class ArmorStand extends LivingEntity {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      ListTag var2;
-      int var3;
-      CompoundTag var4;
       if (var1.contains("ArmorItems", 9)) {
-         var2 = var1.getList("ArmorItems", 10);
+         ListTag var2 = var1.getList("ArmorItems", 10);
 
-         for(var3 = 0; var3 < this.armorItems.size(); ++var3) {
-            var4 = var2.getCompound(var3);
+         for(int var3 = 0; var3 < this.armorItems.size(); ++var3) {
+            CompoundTag var4 = var2.getCompound(var3);
             this.armorItems.set(var3, ItemStack.parseOptional(this.registryAccess(), var4));
          }
       }
 
       if (var1.contains("HandItems", 9)) {
-         var2 = var1.getList("HandItems", 10);
+         ListTag var5 = var1.getList("HandItems", 10);
 
-         for(var3 = 0; var3 < this.handItems.size(); ++var3) {
-            var4 = var2.getCompound(var3);
-            this.handItems.set(var3, ItemStack.parseOptional(this.registryAccess(), var4));
+         for(int var7 = 0; var7 < this.handItems.size(); ++var7) {
+            CompoundTag var8 = var5.getCompound(var7);
+            this.handItems.set(var7, ItemStack.parseOptional(this.registryAccess(), var8));
          }
       }
 
@@ -234,8 +225,8 @@ public class ArmorStand extends LivingEntity {
       this.setNoBasePlate(var1.getBoolean("NoBasePlate"));
       this.setMarker(var1.getBoolean("Marker"));
       this.noPhysics = !this.hasPhysics();
-      CompoundTag var5 = var1.getCompound("Pose");
-      this.readPose(var5);
+      CompoundTag var6 = var1.getCompound("Pose");
+      this.readPose(var6);
    }
 
    private void readPose(CompoundTag var1) {
@@ -290,11 +281,7 @@ public class ArmorStand extends LivingEntity {
    }
 
    protected void pushEntities() {
-      List var1 = this.level().getEntities((Entity)this, this.getBoundingBox(), RIDABLE_MINECARTS);
-      Iterator var2 = var1.iterator();
-
-      while(var2.hasNext()) {
-         Entity var3 = (Entity)var2.next();
+      for(Entity var3 : this.level().getEntities(this, this.getBoundingBox(), RIDABLE_MINECARTS)) {
          if (this.distanceToSqr(var3) <= 0.2) {
             var3.push((Entity)this);
          }
@@ -502,28 +489,26 @@ public class ArmorStand extends LivingEntity {
       this.playBrokenSound();
       this.dropAllDeathLoot(var1, var2);
 
-      int var3;
-      ItemStack var4;
-      for(var3 = 0; var3 < this.handItems.size(); ++var3) {
-         var4 = (ItemStack)this.handItems.get(var3);
+      for(int var3 = 0; var3 < this.handItems.size(); ++var3) {
+         ItemStack var4 = this.handItems.get(var3);
          if (!var4.isEmpty()) {
             Block.popResource(this.level(), this.blockPosition().above(), var4);
             this.handItems.set(var3, ItemStack.EMPTY);
          }
       }
 
-      for(var3 = 0; var3 < this.armorItems.size(); ++var3) {
-         var4 = (ItemStack)this.armorItems.get(var3);
-         if (!var4.isEmpty()) {
-            Block.popResource(this.level(), this.blockPosition().above(), var4);
-            this.armorItems.set(var3, ItemStack.EMPTY);
+      for(int var5 = 0; var5 < this.armorItems.size(); ++var5) {
+         ItemStack var6 = this.armorItems.get(var5);
+         if (!var6.isEmpty()) {
+            Block.popResource(this.level(), this.blockPosition().above(), var6);
+            this.armorItems.set(var5, ItemStack.EMPTY);
          }
       }
 
    }
 
    private void playBrokenSound() {
-      this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), (SoundEvent)SoundEvents.ARMOR_STAND_BREAK, this.getSoundSource(), 1.0F, 1.0F);
+      this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.ARMOR_STAND_BREAK, this.getSoundSource(), 1.0F, 1.0F);
    }
 
    protected float tickHeadTurn(float var1, float var2) {
@@ -771,10 +756,8 @@ public class ArmorStand extends LivingEntity {
          AABB var2 = this.getDimensionsMarker(false).makeBoundingBox(this.position());
          BlockPos var3 = this.blockPosition();
          int var4 = -2147483648;
-         Iterator var5 = BlockPos.betweenClosed(BlockPos.containing(var2.minX, var2.minY, var2.minZ), BlockPos.containing(var2.maxX, var2.maxY, var2.maxZ)).iterator();
 
-         while(var5.hasNext()) {
-            BlockPos var6 = (BlockPos)var5.next();
+         for(BlockPos var6 : BlockPos.betweenClosed(BlockPos.containing(var2.minX, var2.minY, var2.minZ), BlockPos.containing(var2.maxX, var2.maxY, var2.maxZ))) {
             int var7 = Math.max(this.level().getBrightness(LightLayer.BLOCK, var6), this.level().getBrightness(LightLayer.SKY, var6));
             if (var7 == 15) {
                return Vec3.atCenterOf(var6);
@@ -802,13 +785,13 @@ public class ArmorStand extends LivingEntity {
 
    static {
       BABY_DIMENSIONS = EntityType.ARMOR_STAND.getDimensions().scale(0.5F).withEyeHeight(0.9875F);
-      DATA_CLIENT_FLAGS = SynchedEntityData.defineId(ArmorStand.class, EntityDataSerializers.BYTE);
-      DATA_HEAD_POSE = SynchedEntityData.defineId(ArmorStand.class, EntityDataSerializers.ROTATIONS);
-      DATA_BODY_POSE = SynchedEntityData.defineId(ArmorStand.class, EntityDataSerializers.ROTATIONS);
-      DATA_LEFT_ARM_POSE = SynchedEntityData.defineId(ArmorStand.class, EntityDataSerializers.ROTATIONS);
-      DATA_RIGHT_ARM_POSE = SynchedEntityData.defineId(ArmorStand.class, EntityDataSerializers.ROTATIONS);
-      DATA_LEFT_LEG_POSE = SynchedEntityData.defineId(ArmorStand.class, EntityDataSerializers.ROTATIONS);
-      DATA_RIGHT_LEG_POSE = SynchedEntityData.defineId(ArmorStand.class, EntityDataSerializers.ROTATIONS);
+      DATA_CLIENT_FLAGS = SynchedEntityData.<Byte>defineId(ArmorStand.class, EntityDataSerializers.BYTE);
+      DATA_HEAD_POSE = SynchedEntityData.<Rotations>defineId(ArmorStand.class, EntityDataSerializers.ROTATIONS);
+      DATA_BODY_POSE = SynchedEntityData.<Rotations>defineId(ArmorStand.class, EntityDataSerializers.ROTATIONS);
+      DATA_LEFT_ARM_POSE = SynchedEntityData.<Rotations>defineId(ArmorStand.class, EntityDataSerializers.ROTATIONS);
+      DATA_RIGHT_ARM_POSE = SynchedEntityData.<Rotations>defineId(ArmorStand.class, EntityDataSerializers.ROTATIONS);
+      DATA_LEFT_LEG_POSE = SynchedEntityData.<Rotations>defineId(ArmorStand.class, EntityDataSerializers.ROTATIONS);
+      DATA_RIGHT_LEG_POSE = SynchedEntityData.<Rotations>defineId(ArmorStand.class, EntityDataSerializers.ROTATIONS);
       RIDABLE_MINECARTS = (var0) -> {
          boolean var10000;
          if (var0 instanceof AbstractMinecart var1) {

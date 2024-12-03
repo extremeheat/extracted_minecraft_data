@@ -1,6 +1,6 @@
 package net.minecraft.client.renderer.entity.state;
 
-public class DolphinRenderState extends LivingEntityRenderState {
+public class DolphinRenderState extends HoldingEntityRenderState {
    public boolean isMoving;
 
    public DolphinRenderState() {

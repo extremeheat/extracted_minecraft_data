@@ -21,8 +21,7 @@ import net.minecraft.world.entity.player.Player;
 
 public class EntityDataAccessor implements DataAccessor {
    private static final SimpleCommandExceptionType ERROR_NO_PLAYERS = new SimpleCommandExceptionType(Component.translatable("commands.data.entity.invalid"));
-   public static final Function<String, DataCommands.DataProvider> PROVIDER = (var0) -> {
-      return new DataCommands.DataProvider() {
+   public static final Function<String, DataCommands.DataProvider> PROVIDER = (var0) -> new DataCommands.DataProvider() {
          public DataAccessor access(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException {
             return new EntityDataAccessor(EntityArgument.getEntity(var1, var0));
          }
@@ -31,7 +30,6 @@ public class EntityDataAccessor implements DataAccessor {
             return var1.then(Commands.literal("entity").then((ArgumentBuilder)var2.apply(Commands.argument(var0, EntityArgument.entity()))));
          }
       };
-   };
    private final Entity entity;
 
    public EntityDataAccessor(Entity var1) {

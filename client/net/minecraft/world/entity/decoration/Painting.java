@@ -81,9 +81,7 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
             return Optional.empty();
          } else {
             int var5 = var4.stream().mapToInt(Painting::variantArea).max().orElse(0);
-            var4.removeIf((var1x) -> {
-               return variantArea(var1x) < var5;
-            });
+            var4.removeIf((var1x) -> variantArea(var1x) < var5);
             Optional var6 = Util.getRandomSafe(var4, var3.random);
             if (var6.isEmpty()) {
                return Optional.empty();
@@ -111,9 +109,7 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
-      VARIANT_CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.getVariant()).ifSuccess((var1x) -> {
-         var1.merge((CompoundTag)var1x);
-      });
+      VARIANT_CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.getVariant()).ifSuccess((var1x) -> var1.merge((CompoundTag)var1x));
       var1.putByte("facing", (byte)this.direction.get2DDataValue());
       super.addAdditionalSaveData(var1);
    }
@@ -198,7 +194,7 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
    }
 
    static {
-      DATA_PAINTING_VARIANT_ID = SynchedEntityData.defineId(Painting.class, EntityDataSerializers.PAINTING_VARIANT);
+      DATA_PAINTING_VARIANT_ID = SynchedEntityData.<Holder<PaintingVariant>>defineId(Painting.class, EntityDataSerializers.PAINTING_VARIANT);
       VARIANT_MAP_CODEC = PaintingVariant.CODEC.fieldOf("variant");
       VARIANT_CODEC = VARIANT_MAP_CODEC.codec();
    }

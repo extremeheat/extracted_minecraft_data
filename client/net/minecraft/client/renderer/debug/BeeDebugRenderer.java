@@ -7,7 +7,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -75,9 +74,7 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    public void removeBeeInfo(int var1) {
-      this.beeInfosPerEntity.values().removeIf((var1x) -> {
-         return var1x.id() == var1;
-      });
+      this.beeInfosPerEntity.values().removeIf((var1x) -> var1x.id() == var1);
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, double var3, double var5, double var7) {
@@ -91,16 +88,12 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    private void clearRemovedBees() {
-      this.beeInfosPerEntity.entrySet().removeIf((var1) -> {
-         return this.minecraft.level.getEntity(((BeeDebugPayload.BeeInfo)var1.getValue()).id()) == null;
-      });
+      this.beeInfosPerEntity.entrySet().removeIf((var1) -> this.minecraft.level.getEntity(((BeeDebugPayload.BeeInfo)var1.getValue()).id()) == null);
    }
 
    private void clearRemovedHives() {
       long var1 = this.minecraft.level.getGameTime() - 20L;
-      this.hives.entrySet().removeIf((var2) -> {
-         return ((HiveDebugInfo)var2.getValue()).lastSeen() < var1;
-      });
+      this.hives.entrySet().removeIf((var2) -> ((HiveDebugInfo)var2.getValue()).lastSeen() < var1);
    }
 
    private void doRender(PoseStack var1, MultiBufferSource var2) {
@@ -112,10 +105,8 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
       });
       this.renderFlowerInfos(var1, var2);
-      Iterator var4 = this.hives.keySet().iterator();
 
-      while(var4.hasNext()) {
-         BlockPos var5 = (BlockPos)var4.next();
+      for(BlockPos var5 : this.hives.keySet()) {
          if (var3.closerThan(var5, 30.0)) {
             highlightHive(var1, var2, var5);
          }
@@ -129,9 +120,9 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          }
 
       });
-      this.getGhostHives().forEach((var4x, var5x) -> {
-         if (var3.closerThan(var4x, 30.0)) {
-            this.renderGhostHive(var1, var2, var4x, var5x);
+      this.getGhostHives().forEach((var4, var5x) -> {
+         if (var3.closerThan(var4, 30.0)) {
+            this.renderGhostHive(var1, var2, var4, var5x);
          }
 
       });
@@ -139,13 +130,7 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
    private Map<BlockPos, Set<UUID>> createHiveBlacklistMap() {
       HashMap var1 = Maps.newHashMap();
-      this.beeInfosPerEntity.values().forEach((var1x) -> {
-         var1x.blacklistedHives().forEach((var2) -> {
-            ((Set)var1.computeIfAbsent(var2, (var0) -> {
-               return Sets.newHashSet();
-            })).add(var1x.uuid());
-         });
-      });
+      this.beeInfosPerEntity.values().forEach((var1x) -> var1x.blacklistedHives().forEach((var2) -> ((Set)var1.computeIfAbsent(var2, (var0) -> Sets.newHashSet())).add(var1x.uuid())));
       return var1;
    }
 
@@ -153,9 +138,7 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       HashMap var3 = Maps.newHashMap();
       this.beeInfosPerEntity.values().forEach((var1x) -> {
          if (var1x.flowerPos() != null) {
-            ((Set)var3.computeIfAbsent(var1x.flowerPos(), (var0) -> {
-               return new HashSet();
-            })).add(var1x.uuid());
+            ((Set)var3.computeIfAbsent(var1x.flowerPos(), (var0) -> new HashSet())).add(var1x.uuid());
          }
 
       });
@@ -204,8 +187,8 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          renderTextOverHive(var1, var2, "In: " + var3.occupantCount() + " bees", var3, var5++, -256);
       }
 
-      int var6 = var3.honeyLevel();
-      renderTextOverHive(var1, var2, "Honey: " + var6, var3, var5++, -23296);
+      int var12 = var3.honeyLevel();
+      renderTextOverHive(var1, var2, "Honey: " + var12, var3, var5++, -23296);
       renderTextOverHive(var1, var2, var3.hiveType() + (var3.sedated() ? " (sedated)" : ""), var3, var5++, -1);
    }
 
@@ -232,10 +215,7 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          renderTextOverMob(var1, var2, var3.pos(), var5++, "Flower: " + this.getPosDescription(var3, var3.flowerPos()), -256, 0.02F);
       }
 
-      Iterator var6 = var3.goals().iterator();
-
-      while(var6.hasNext()) {
-         String var7 = (String)var6.next();
+      for(String var7 : var3.goals()) {
          renderTextOverMob(var1, var2, var3.pos(), var5++, var7, -16711936, 0.02F);
       }
 
@@ -244,8 +224,8 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       }
 
       if (var3.travelTicks() > 0) {
-         int var8 = var3.travelTicks() < 2400 ? -3355444 : -23296;
-         renderTextOverMob(var1, var2, var3.pos(), var5++, "Travelling: " + var3.travelTicks() + " ticks", var8, 0.02F);
+         int var12 = var3.travelTicks() < 2400 ? -3355444 : -23296;
+         renderTextOverMob(var1, var2, var3.pos(), var5++, "Travelling: " + var3.travelTicks() + " ticks", var12, 0.02F);
       }
 
    }
@@ -301,21 +281,15 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    private Collection<UUID> getHiveMembers(BlockPos var1) {
-      return (Collection)this.beeInfosPerEntity.values().stream().filter((var1x) -> {
-         return var1x.hasHive(var1);
-      }).map(BeeDebugPayload.BeeInfo::uuid).collect(Collectors.toSet());
+      return (Collection)this.beeInfosPerEntity.values().stream().filter((var1x) -> var1x.hasHive(var1)).map(BeeDebugPayload.BeeInfo::uuid).collect(Collectors.toSet());
    }
 
    private Map<BlockPos, List<String>> getGhostHives() {
       HashMap var1 = Maps.newHashMap();
-      Iterator var2 = this.beeInfosPerEntity.values().iterator();
 
-      while(var2.hasNext()) {
-         BeeDebugPayload.BeeInfo var3 = (BeeDebugPayload.BeeInfo)var2.next();
+      for(BeeDebugPayload.BeeInfo var3 : this.beeInfosPerEntity.values()) {
          if (var3.hivePos() != null && !this.hives.containsKey(var3.hivePos())) {
-            ((List)var1.computeIfAbsent(var3.hivePos(), (var0) -> {
-               return Lists.newArrayList();
-            })).add(var3.generateName());
+            ((List)var1.computeIfAbsent(var3.hivePos(), (var0) -> Lists.newArrayList())).add(var3.generateName());
          }
       }
 
@@ -323,9 +297,7 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    private void updateLastLookedAtUuid() {
-      DebugRenderer.getTargetedEntity(this.minecraft.getCameraEntity(), 8).ifPresent((var1) -> {
-         this.lastLookedAtUuid = var1.getUUID();
-      });
+      DebugRenderer.getTargetedEntity(this.minecraft.getCameraEntity(), 8).ifPresent((var1) -> this.lastLookedAtUuid = var1.getUUID());
    }
 
    static record HiveDebugInfo(HiveDebugPayload.HiveInfo info, long lastSeen) {
@@ -335,14 +307,6 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          super();
          this.info = var1;
          this.lastSeen = var2;
-      }
-
-      public HiveDebugPayload.HiveInfo info() {
-         return this.info;
-      }
-
-      public long lastSeen() {
-         return this.lastSeen;
       }
    }
 }

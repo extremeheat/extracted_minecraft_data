@@ -27,6 +27,7 @@ import joptsimple.util.PathProperties;
 import net.minecraft.CrashReport;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.SharedConstants;
+import net.minecraft.SuppressForbidden;
 import net.minecraft.Util;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.Registry;
@@ -69,6 +70,9 @@ public class Main {
       super();
    }
 
+   @SuppressForbidden(
+      a = "System.out needed before bootstrap"
+   )
    @DontObfuscate
    public static void main(String[] var0) {
       SharedConstants.tryDetectVersion();
@@ -178,12 +182,11 @@ public class Main {
          WorldStem var33;
          try {
             WorldLoader.InitConfig var34 = loadOrCreateConfig(var21.getProperties(), var43, var31, var44);
-            var33 = (WorldStem)Util.blockUntilDone((var6x) -> {
-               return WorldLoader.load(var34, (var5x) -> {
+            var33 = (WorldStem)Util.blockUntilDone((var6x) -> WorldLoader.load(var34, (var5x) -> {
                   Registry var6 = var5x.datapackDimensions().lookupOrThrow(Registries.LEVEL_STEM);
                   if (var43 != null) {
-                     LevelDataAndDimensions var13 = LevelStorageSource.getLevelDataAndDimensions(var43, var5x.dataConfiguration(), var6, var5x.datapackWorldgen());
-                     return new WorldLoader.DataLoadOutput(var13.worldData(), var13.dimensions().dimensionsRegistryAccess());
+                     LevelDataAndDimensions var12 = LevelStorageSource.getLevelDataAndDimensions(var43, var5x.dataConfiguration(), var6, var5x.datapackWorldgen());
+                     return new WorldLoader.DataLoadOutput(var12.worldData(), var12.dimensions().dimensionsRegistryAccess());
                   } else {
                      LOGGER.info("No existing world data, creating new world");
                      LevelSettings var7;
@@ -200,12 +203,11 @@ public class Main {
                         var9 = var10.createDimensions(var5x.datapackWorldgen());
                      }
 
-                     WorldDimensions.Complete var12 = var9.bake(var6);
-                     Lifecycle var11 = var12.lifecycle().add(var5x.datapackWorldgen().allRegistriesLifecycle());
-                     return new WorldLoader.DataLoadOutput(new PrimaryLevelData(var7, var8, var12.specialWorldProperty(), var11), var12.dimensionsRegistryAccess());
+                     WorldDimensions.Complete var13 = var9.bake(var6);
+                     Lifecycle var11 = var13.lifecycle().add(var5x.datapackWorldgen().allRegistriesLifecycle());
+                     return new WorldLoader.DataLoadOutput(new PrimaryLevelData(var7, var8, var13.specialWorldProperty(), var11), var13.dimensionsRegistryAccess());
                   }
-               }, WorldStem::new, Util.backgroundExecutor(), var6x);
-            }).get();
+               }, WorldStem::new, Util.backgroundExecutor(), var6x)).get();
          } catch (Exception var39) {
             LOGGER.warn("Failed to load datapacks, can't proceed with server load. You can either fix your datapacks or reset to vanilla with --safeMode", var39);
             return;
@@ -214,9 +216,7 @@ public class Main {
          RegistryAccess.Frozen var45 = var33.registries().compositeAccess();
          boolean var35 = var18.has(var8);
          if (var18.has(var6) || var35) {
-            forceUpgrade(var28, DataFixers.getDataFixer(), var18.has(var7), () -> {
-               return true;
-            }, var45, var35);
+            forceUpgrade(var28, DataFixers.getDataFixer(), var18.has(var7), () -> true, var45, var35);
          }
 
          WorldData var36 = var33.worldData();
@@ -273,9 +273,8 @@ public class Main {
 
    private static void forceUpgrade(LevelStorageSource.LevelStorageAccess var0, DataFixer var1, boolean var2, BooleanSupplier var3, RegistryAccess var4, boolean var5) {
       LOGGER.info("Forcing world upgrade!");
-      WorldUpgrader var6 = new WorldUpgrader(var0, var1, var4, var2, var5);
 
-      try {
+      try (WorldUpgrader var6 = new WorldUpgrader(var0, var1, var4, var2, var5)) {
          Component var7 = null;
 
          while(!var6.isFinished()) {
@@ -300,16 +299,7 @@ public class Main {
                }
             }
          }
-      } catch (Throwable var13) {
-         try {
-            var6.close();
-         } catch (Throwable var11) {
-            var13.addSuppressed(var11);
-         }
-
-         throw var13;
       }
 
-      var6.close();
    }
 }

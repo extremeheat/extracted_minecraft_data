@@ -22,7 +22,7 @@ public class BlankFormat implements NumberFormat {
 
       static {
          CODEC = MapCodec.unit(BlankFormat.INSTANCE);
-         STREAM_CODEC = StreamCodec.unit(BlankFormat.INSTANCE);
+         STREAM_CODEC = StreamCodec.<RegistryFriendlyByteBuf, BlankFormat>unit(BlankFormat.INSTANCE);
       }
    };
 

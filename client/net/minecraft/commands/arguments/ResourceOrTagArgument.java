@@ -31,12 +31,8 @@ import net.minecraft.tags.TagKey;
 
 public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012", "#skeletons", "#minecraft:skeletons");
-   private static final Dynamic2CommandExceptionType ERROR_UNKNOWN_TAG = new Dynamic2CommandExceptionType((var0, var1) -> {
-      return Component.translatableEscape("argument.resource_tag.not_found", var0, var1);
-   });
-   private static final Dynamic3CommandExceptionType ERROR_INVALID_TAG_TYPE = new Dynamic3CommandExceptionType((var0, var1, var2) -> {
-      return Component.translatableEscape("argument.resource_tag.invalid_type", var0, var1, var2);
-   });
+   private static final Dynamic2CommandExceptionType ERROR_UNKNOWN_TAG = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("argument.resource_tag.not_found", var0, var1));
+   private static final Dynamic3CommandExceptionType ERROR_INVALID_TAG_TYPE = new Dynamic3CommandExceptionType((var0, var1, var2) -> Component.translatableEscape("argument.resource_tag.invalid_type", var0, var1, var2));
    private final HolderLookup<T> registryLookup;
    final ResourceKey<? extends Registry<T>> registryKey;
 
@@ -47,21 +43,19 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
    }
 
    public static <T> ResourceOrTagArgument<T> resourceOrTag(CommandBuildContext var0, ResourceKey<? extends Registry<T>> var1) {
-      return new ResourceOrTagArgument(var0, var1);
+      return new ResourceOrTagArgument<T>(var0, var1);
    }
 
    public static <T> Result<T> getResourceOrTag(CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2) throws CommandSyntaxException {
       Result var3 = (Result)var0.getArgument(var1, Result.class);
       Optional var4 = var3.cast(var2);
-      return (Result)var4.orElseThrow(() -> {
-         return (CommandSyntaxException)var3.unwrap().map((var1) -> {
+      return (Result)var4.orElseThrow(() -> (CommandSyntaxException)var3.unwrap().map((var1) -> {
             ResourceKey var2x = var1.key();
             return ResourceArgument.ERROR_INVALID_RESOURCE_TYPE.create(var2x.location(), var2x.registry(), var2.location());
          }, (var1) -> {
             TagKey var2x = var1.key();
             return ERROR_INVALID_TAG_TYPE.create(var2x.location(), var2x.registry(), var2.location());
-         });
-      });
+         }));
    }
 
    public Result<T> parse(StringReader var1) throws CommandSyntaxException {
@@ -72,10 +66,8 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
             var1.skip();
             ResourceLocation var8 = ResourceLocation.read(var1);
             TagKey var9 = TagKey.create(this.registryKey, var8);
-            HolderSet.Named var5 = (HolderSet.Named)this.registryLookup.get(var9).orElseThrow(() -> {
-               return ERROR_UNKNOWN_TAG.createWithContext(var1, var8, this.registryKey.location());
-            });
-            return new TagResult(var5);
+            HolderSet.Named var5 = (HolderSet.Named)this.registryLookup.get(var9).orElseThrow(() -> ERROR_UNKNOWN_TAG.createWithContext(var1, var8, this.registryKey.location()));
+            return new TagResult<T>(var5);
          } catch (CommandSyntaxException var6) {
             var1.setCursor(var7);
             throw var6;
@@ -83,10 +75,8 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
       } else {
          ResourceLocation var2 = ResourceLocation.read(var1);
          ResourceKey var3 = ResourceKey.create(this.registryKey, var2);
-         Holder.Reference var4 = (Holder.Reference)this.registryLookup.get(var3).orElseThrow(() -> {
-            return ResourceArgument.ERROR_UNKNOWN_RESOURCE.createWithContext(var1, var2, this.registryKey.location());
-         });
-         return new ResourceResult(var4);
+         Holder.Reference var4 = (Holder.Reference)this.registryLookup.get(var3).orElseThrow(() -> ResourceArgument.ERROR_UNKNOWN_RESOURCE.createWithContext(var1, var2, this.registryKey.location()));
+         return new ResourceResult<T>(var4);
       }
    }
 
@@ -102,46 +92,6 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
    // $FF: synthetic method
    public Object parse(final StringReader var1) throws CommandSyntaxException {
       return this.parse(var1);
-   }
-
-   public interface Result<T> extends Predicate<Holder<T>> {
-      Either<Holder.Reference<T>, HolderSet.Named<T>> unwrap();
-
-      <E> Optional<Result<E>> cast(ResourceKey<? extends Registry<E>> var1);
-
-      String asPrintable();
-   }
-
-   private static record TagResult<T>(HolderSet.Named<T> tag) implements Result<T> {
-      TagResult(HolderSet.Named<T> var1) {
-         super();
-         this.tag = var1;
-      }
-
-      public Either<Holder.Reference<T>, HolderSet.Named<T>> unwrap() {
-         return Either.right(this.tag);
-      }
-
-      public <E> Optional<Result<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-         return this.tag.key().isFor(var1) ? Optional.of(this) : Optional.empty();
-      }
-
-      public boolean test(Holder<T> var1) {
-         return this.tag.contains(var1);
-      }
-
-      public String asPrintable() {
-         return "#" + String.valueOf(this.tag.key().location());
-      }
-
-      public HolderSet.Named<T> tag() {
-         return this.tag;
-      }
-
-      // $FF: synthetic method
-      public boolean test(final Object var1) {
-         return this.test((Holder)var1);
-      }
    }
 
    static record ResourceResult<T>(Holder.Reference<T> value) implements Result<T> {
@@ -166,8 +116,32 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
          return this.value.key().location().toString();
       }
 
-      public Holder.Reference<T> value() {
-         return this.value;
+      // $FF: synthetic method
+      public boolean test(final Object var1) {
+         return this.test((Holder)var1);
+      }
+   }
+
+   static record TagResult<T>(HolderSet.Named<T> tag) implements Result<T> {
+      TagResult(HolderSet.Named<T> var1) {
+         super();
+         this.tag = var1;
+      }
+
+      public Either<Holder.Reference<T>, HolderSet.Named<T>> unwrap() {
+         return Either.right(this.tag);
+      }
+
+      public <E> Optional<Result<E>> cast(ResourceKey<? extends Registry<E>> var1) {
+         return this.tag.key().isFor(var1) ? Optional.of(this) : Optional.empty();
+      }
+
+      public boolean test(Holder<T> var1) {
+         return this.tag.contains(var1);
+      }
+
+      public String asPrintable() {
+         return "#" + String.valueOf(this.tag.key().location());
       }
 
       // $FF: synthetic method
@@ -211,7 +185,7 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
          }
 
          public ResourceOrTagArgument<T> instantiate(CommandBuildContext var1) {
-            return new ResourceOrTagArgument(var1, this.registryKey);
+            return new ResourceOrTagArgument<T>(var1, this.registryKey);
          }
 
          public ArgumentTypeInfo<ResourceOrTagArgument<T>, ?> type() {
@@ -223,5 +197,13 @@ public class ResourceOrTagArgument<T> implements ArgumentType<Result<T>> {
             return this.instantiate(var1);
          }
       }
+   }
+
+   public interface Result<T> extends Predicate<Holder<T>> {
+      Either<Holder.Reference<T>, HolderSet.Named<T>> unwrap();
+
+      <E> Optional<Result<E>> cast(ResourceKey<? extends Registry<E>> var1);
+
+      String asPrintable();
    }
 }

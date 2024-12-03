@@ -53,8 +53,6 @@ public class SimpleExplosionDamageCalculator extends ExplosionDamageCalculator {
       }
 
       boolean var2 = var10000;
-      return var2 ? 0.0F : (Float)this.knockbackMultiplier.orElseGet(() -> {
-         return super.getKnockbackMultiplier(var1);
-      });
+      return var2 ? 0.0F : (Float)this.knockbackMultiplier.orElseGet(() -> super.getKnockbackMultiplier(var1));
    }
 }

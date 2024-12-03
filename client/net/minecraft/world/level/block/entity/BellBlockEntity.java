@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import java.util.Iterator;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -109,12 +108,9 @@ public class BellBlockEntity extends BlockEntity {
       }
 
       if (!this.level.isClientSide) {
-         Iterator var4 = this.nearbyEntities.iterator();
-
-         while(var4.hasNext()) {
-            LivingEntity var3 = (LivingEntity)var4.next();
+         for(LivingEntity var3 : this.nearbyEntities) {
             if (var3.isAlive() && !var3.isRemoved() && var1.closerToCenterThan(var3.position(), 32.0)) {
-               var3.getBrain().setMemory(MemoryModuleType.HEARD_BELL_TIME, (Object)this.level.getGameTime());
+               var3.getBrain().setMemory(MemoryModuleType.HEARD_BELL_TIME, this.level.getGameTime());
             }
          }
       }
@@ -122,34 +118,23 @@ public class BellBlockEntity extends BlockEntity {
    }
 
    private static boolean areRaidersNearby(BlockPos var0, List<LivingEntity> var1) {
-      Iterator var2 = var1.iterator();
-
-      LivingEntity var3;
-      do {
-         if (!var2.hasNext()) {
-            return false;
+      for(LivingEntity var3 : var1) {
+         if (var3.isAlive() && !var3.isRemoved() && var0.closerToCenterThan(var3.position(), 32.0) && var3.getType().is(EntityTypeTags.RAIDERS)) {
+            return true;
          }
+      }
 
-         var3 = (LivingEntity)var2.next();
-      } while(!var3.isAlive() || var3.isRemoved() || !var0.closerToCenterThan(var3.position(), 32.0) || !var3.getType().is(EntityTypeTags.RAIDERS));
-
-      return true;
+      return false;
    }
 
    private static void makeRaidersGlow(Level var0, BlockPos var1, List<LivingEntity> var2) {
-      var2.stream().filter((var1x) -> {
-         return isRaiderWithinRange(var1, var1x);
-      }).forEach(BellBlockEntity::glow);
+      var2.stream().filter((var1x) -> isRaiderWithinRange(var1, var1x)).forEach(BellBlockEntity::glow);
    }
 
    private static void showBellParticles(Level var0, BlockPos var1, List<LivingEntity> var2) {
       MutableInt var3 = new MutableInt(16700985);
-      int var4 = (int)var2.stream().filter((var1x) -> {
-         return var1.closerToCenterThan(var1x.position(), 48.0);
-      }).count();
-      var2.stream().filter((var1x) -> {
-         return isRaiderWithinRange(var1, var1x);
-      }).forEach((var4x) -> {
+      int var4 = (int)var2.stream().filter((var1x) -> var1.closerToCenterThan(var1x.position(), 48.0)).count();
+      var2.stream().filter((var1x) -> isRaiderWithinRange(var1, var1x)).forEach((var4x) -> {
          float var5 = 1.0F;
          double var6 = Math.sqrt((var4x.getX() - (double)var1.getX()) * (var4x.getX() - (double)var1.getX()) + (var4x.getZ() - (double)var1.getZ()) * (var4x.getZ() - (double)var1.getZ()));
          double var8 = (double)((float)var1.getX() + 0.5F) + 1.0 / var6 * (var4x.getX() - (double)var1.getX());

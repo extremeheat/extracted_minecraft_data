@@ -3,14 +3,14 @@ package net.minecraft.client.model.geom;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 
-public class EntityModelSet implements ResourceManagerReloadListener {
-   private Map<ModelLayerLocation, LayerDefinition> roots = ImmutableMap.of();
+public class EntityModelSet {
+   public static final EntityModelSet EMPTY = new EntityModelSet(Map.of());
+   private final Map<ModelLayerLocation, LayerDefinition> roots;
 
-   public EntityModelSet() {
+   public EntityModelSet(Map<ModelLayerLocation, LayerDefinition> var1) {
       super();
+      this.roots = var1;
    }
 
    public ModelPart bakeLayer(ModelLayerLocation var1) {
@@ -22,7 +22,7 @@ public class EntityModelSet implements ResourceManagerReloadListener {
       }
    }
 
-   public void onResourceManagerReload(ResourceManager var1) {
-      this.roots = ImmutableMap.copyOf(LayerDefinitions.createRoots());
+   public static EntityModelSet vanilla() {
+      return new EntityModelSet(ImmutableMap.copyOf(LayerDefinitions.createRoots()));
    }
 }

@@ -17,15 +17,11 @@ public class SetWalkTargetFromAttackTargetIfTargetOutOfReach {
    }
 
    public static BehaviorControl<Mob> create(float var0) {
-      return create((var1) -> {
-         return var0;
-      });
+      return create((var1) -> var0);
    }
 
    public static BehaviorControl<Mob> create(Function<LivingEntity, Float> var0) {
-      return BehaviorBuilder.create((var1) -> {
-         return var1.group(var1.registered(MemoryModuleType.WALK_TARGET), var1.registered(MemoryModuleType.LOOK_TARGET), var1.present(MemoryModuleType.ATTACK_TARGET), var1.registered(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(var1, (var2, var3, var4, var5) -> {
-            return (var6, var7, var8) -> {
+      return BehaviorBuilder.create((Function)((var1) -> var1.group(var1.registered(MemoryModuleType.WALK_TARGET), var1.registered(MemoryModuleType.LOOK_TARGET), var1.present(MemoryModuleType.ATTACK_TARGET), var1.registered(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)).apply(var1, (var2, var3, var4, var5) -> (var6, var7, var8) -> {
                LivingEntity var10 = (LivingEntity)var1.get(var4);
                Optional var11 = var1.tryGet(var5);
                if (var11.isPresent() && ((NearestVisibleLivingEntities)var11.get()).contains(var10) && BehaviorUtils.isWithinAttackRange(var7, var10, 1)) {
@@ -36,8 +32,6 @@ public class SetWalkTargetFromAttackTargetIfTargetOutOfReach {
                }
 
                return true;
-            };
-         });
-      });
+            })));
    }
 }

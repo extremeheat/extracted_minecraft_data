@@ -70,7 +70,7 @@ public class EndGatewayBlock extends BaseEntityBlock implements Portal {
       }
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return ItemStack.EMPTY;
    }
 
@@ -105,5 +105,9 @@ public class EndGatewayBlock extends BaseEntityBlock implements Portal {
       } else {
          return null;
       }
+   }
+
+   protected RenderShape getRenderShape(BlockState var1) {
+      return RenderShape.INVISIBLE;
    }
 }

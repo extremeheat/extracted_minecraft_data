@@ -15,7 +15,7 @@ public enum ChatTrustLevel implements StringRepresentable {
    MODIFIED("modified"),
    NOT_SECURE("not_secure");
 
-   public static final Codec<ChatTrustLevel> CODEC = StringRepresentable.fromEnum(ChatTrustLevel::values);
+   public static final Codec<ChatTrustLevel> CODEC = StringRepresentable.<ChatTrustLevel>fromEnum(ChatTrustLevel::values);
    private final String serializedName;
 
    private ChatTrustLevel(final String var3) {
@@ -40,9 +40,7 @@ public enum ChatTrustLevel implements StringRepresentable {
    }
 
    private static boolean containsModifiedStyle(Component var0) {
-      return (Boolean)var0.visit((var0x, var1) -> {
-         return isModifiedStyle(var0x) ? Optional.of(true) : Optional.empty();
-      }, Style.EMPTY).orElse(false);
+      return (Boolean)var0.visit((var0x, var1) -> isModifiedStyle(var0x) ? Optional.of(true) : Optional.empty(), Style.EMPTY).orElse(false);
    }
 
    private static boolean isModifiedStyle(Style var0) {

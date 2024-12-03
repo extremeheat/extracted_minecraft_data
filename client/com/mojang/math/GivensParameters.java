@@ -90,12 +90,4 @@ public record GivensParameters(float sinHalf, float cosHalf) {
       var1.m22 = 1.0F;
       return var1;
    }
-
-   public float sinHalf() {
-      return this.sinHalf;
-   }
-
-   public float cosHalf() {
-      return this.cosHalf;
-   }
 }

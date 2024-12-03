@@ -4,7 +4,6 @@ import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -41,7 +40,7 @@ public class ArmorStandItem extends Item {
             if (var3 instanceof ServerLevel) {
                ServerLevel var9 = (ServerLevel)var3;
                Consumer var10 = EntityType.createDefaultStackConfig(var9, var6, var1.getPlayer());
-               ArmorStand var11 = (ArmorStand)EntityType.ARMOR_STAND.create(var9, var10, var5, EntitySpawnReason.SPAWN_ITEM_USE, true, true);
+               ArmorStand var11 = EntityType.ARMOR_STAND.create(var9, var10, var5, EntitySpawnReason.SPAWN_ITEM_USE, true, true);
                if (var11 == null) {
                   return InteractionResult.FAIL;
                }
@@ -49,7 +48,7 @@ public class ArmorStandItem extends Item {
                float var12 = (float)Mth.floor((Mth.wrapDegrees(var1.getRotation() - 180.0F) + 22.5F) / 45.0F) * 45.0F;
                var11.moveTo(var11.getX(), var11.getY(), var11.getZ(), var12, 0.0F);
                var9.addFreshEntityWithPassengers(var11);
-               var3.playSound((Player)null, var11.getX(), var11.getY(), var11.getZ(), (SoundEvent)SoundEvents.ARMOR_STAND_PLACE, SoundSource.BLOCKS, 0.75F, 0.8F);
+               var3.playSound((Player)null, var11.getX(), var11.getY(), var11.getZ(), SoundEvents.ARMOR_STAND_PLACE, SoundSource.BLOCKS, 0.75F, 0.8F);
                var11.gameEvent(GameEvent.ENTITY_PLACE, var1.getPlayer());
             }
 

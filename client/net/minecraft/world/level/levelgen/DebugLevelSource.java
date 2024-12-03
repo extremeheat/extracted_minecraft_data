@@ -29,9 +29,7 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.blending.Blender;
 
 public class DebugLevelSource extends ChunkGenerator {
-   public static final MapCodec<DebugLevelSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(RegistryOps.retrieveElement(Biomes.PLAINS)).apply(var0, var0.stable(DebugLevelSource::new));
-   });
+   public static final MapCodec<DebugLevelSource> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(RegistryOps.retrieveElement(Biomes.PLAINS)).apply(var0, var0.stable(DebugLevelSource::new)));
    private static final int BLOCK_MARGIN = 2;
    private static final List<BlockState> ALL_BLOCKS;
    private static final int GRID_WIDTH;
@@ -120,9 +118,7 @@ public class DebugLevelSource extends ChunkGenerator {
    }
 
    static {
-      ALL_BLOCKS = (List)StreamSupport.stream(BuiltInRegistries.BLOCK.spliterator(), false).flatMap((var0) -> {
-         return var0.getStateDefinition().getPossibleStates().stream();
-      }).collect(Collectors.toList());
+      ALL_BLOCKS = (List)StreamSupport.stream(BuiltInRegistries.BLOCK.spliterator(), false).flatMap((var0) -> var0.getStateDefinition().getPossibleStates().stream()).collect(Collectors.toList());
       GRID_WIDTH = Mth.ceil(Mth.sqrt((float)ALL_BLOCKS.size()));
       GRID_HEIGHT = Mth.ceil((float)ALL_BLOCKS.size() / (float)GRID_WIDTH);
       AIR = Blocks.AIR.defaultBlockState();

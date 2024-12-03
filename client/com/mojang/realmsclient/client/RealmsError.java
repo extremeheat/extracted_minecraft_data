@@ -44,6 +44,81 @@ public interface RealmsError {
       }
    }
 
+   public static record ErrorWithJsonPayload(int httpCode, int code, @Nullable String reason, @Nullable String message) implements RealmsError {
+      public ErrorWithJsonPayload(int var1, int var2, @Nullable String var3, @Nullable String var4) {
+         super();
+         this.httpCode = var1;
+         this.code = var2;
+         this.reason = var3;
+         this.message = var4;
+      }
+
+      public int errorCode() {
+         return this.code;
+      }
+
+      public Component errorMessage() {
+         String var1 = "mco.errorMessage." + this.code;
+         if (I18n.exists(var1)) {
+            return Component.translatable(var1);
+         } else {
+            if (this.reason != null) {
+               String var2 = "mco.errorReason." + this.reason;
+               if (I18n.exists(var2)) {
+                  return Component.translatable(var2);
+               }
+            }
+
+            return (Component)(this.message != null ? Component.literal(this.message) : NO_MESSAGE);
+         }
+      }
+
+      public String logMessage() {
+         return String.format(Locale.ROOT, "Realms service error (%d/%d/%s) with message '%s'", this.httpCode, this.code, this.reason, this.message);
+      }
+   }
+
+   public static record ErrorWithRawPayload(int httpCode, String payload) implements RealmsError {
+      public ErrorWithRawPayload(int var1, String var2) {
+         super();
+         this.httpCode = var1;
+         this.payload = var2;
+      }
+
+      public int errorCode() {
+         return this.httpCode;
+      }
+
+      public Component errorMessage() {
+         return Component.literal(this.payload);
+      }
+
+      public String logMessage() {
+         return String.format(Locale.ROOT, "Realms service error (%d) with raw payload '%s'", this.httpCode, this.payload);
+      }
+   }
+
+   public static record AuthenticationError(String message) implements RealmsError {
+      public static final int ERROR_CODE = 401;
+
+      public AuthenticationError(String var1) {
+         super();
+         this.message = var1;
+      }
+
+      public int errorCode() {
+         return 401;
+      }
+
+      public Component errorMessage() {
+         return Component.literal(this.message);
+      }
+
+      public String logMessage() {
+         return String.format(Locale.ROOT, "Realms authentication error with message '%s'", this.message);
+      }
+   }
+
    public static record CustomError(int httpCode, @Nullable Component payload) implements RealmsError {
       public static final CustomError SERVICE_BUSY = new CustomError(429, Component.translatable("mco.errorMessage.serviceBusy"));
       public static final Component RETRY_MESSAGE = Component.translatable("mco.errorMessage.retry");
@@ -80,120 +155,6 @@ public interface RealmsError {
 
       public String logMessage() {
          return this.payload != null ? String.format(Locale.ROOT, "Realms service error (%d) with message '%s'", this.httpCode, this.payload.getString()) : String.format(Locale.ROOT, "Realms service error (%d) with no payload", this.httpCode);
-      }
-
-      public int httpCode() {
-         return this.httpCode;
-      }
-
-      @Nullable
-      public Component payload() {
-         return this.payload;
-      }
-   }
-
-   public static record ErrorWithJsonPayload(int httpCode, int code, @Nullable String reason, @Nullable String message) implements RealmsError {
-      public ErrorWithJsonPayload(int var1, int var2, @Nullable String var3, @Nullable String var4) {
-         super();
-         this.httpCode = var1;
-         this.code = var2;
-         this.reason = var3;
-         this.message = var4;
-      }
-
-      public int errorCode() {
-         return this.code;
-      }
-
-      public Component errorMessage() {
-         String var1 = "mco.errorMessage." + this.code;
-         if (I18n.exists(var1)) {
-            return Component.translatable(var1);
-         } else {
-            if (this.reason != null) {
-               String var2 = "mco.errorReason." + this.reason;
-               if (I18n.exists(var2)) {
-                  return Component.translatable(var2);
-               }
-            }
-
-            return (Component)(this.message != null ? Component.literal(this.message) : NO_MESSAGE);
-         }
-      }
-
-      public String logMessage() {
-         return String.format(Locale.ROOT, "Realms service error (%d/%d/%s) with message '%s'", this.httpCode, this.code, this.reason, this.message);
-      }
-
-      public int httpCode() {
-         return this.httpCode;
-      }
-
-      public int code() {
-         return this.code;
-      }
-
-      @Nullable
-      public String reason() {
-         return this.reason;
-      }
-
-      @Nullable
-      public String message() {
-         return this.message;
-      }
-   }
-
-   public static record ErrorWithRawPayload(int httpCode, String payload) implements RealmsError {
-      public ErrorWithRawPayload(int var1, String var2) {
-         super();
-         this.httpCode = var1;
-         this.payload = var2;
-      }
-
-      public int errorCode() {
-         return this.httpCode;
-      }
-
-      public Component errorMessage() {
-         return Component.literal(this.payload);
-      }
-
-      public String logMessage() {
-         return String.format(Locale.ROOT, "Realms service error (%d) with raw payload '%s'", this.httpCode, this.payload);
-      }
-
-      public int httpCode() {
-         return this.httpCode;
-      }
-
-      public String payload() {
-         return this.payload;
-      }
-   }
-
-   public static record AuthenticationError(String message) implements RealmsError {
-      public static final int ERROR_CODE = 401;
-
-      public AuthenticationError(String var1) {
-         super();
-         this.message = var1;
-      }
-
-      public int errorCode() {
-         return 401;
-      }
-
-      public Component errorMessage() {
-         return Component.literal(this.message);
-      }
-
-      public String logMessage() {
-         return String.format(Locale.ROOT, "Realms authentication error with message '%s'", this.message);
-      }
-
-      public String message() {
-         return this.message;
       }
    }
 }

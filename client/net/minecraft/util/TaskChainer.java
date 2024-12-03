@@ -22,9 +22,7 @@ public interface TaskChainer {
    }
 
    default void append(Runnable var1) {
-      this.append(CompletableFuture.completedFuture((Object)null), (var1x) -> {
-         var1.run();
-      });
+      this.append(CompletableFuture.completedFuture((Object)null), (var1x) -> var1.run());
    }
 
    <T> void append(CompletableFuture<T> var1, Consumer<T> var2);

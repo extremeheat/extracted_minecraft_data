@@ -8,21 +8,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class ClampedNormalInt extends IntProvider {
-   public static final MapCodec<ClampedNormalInt> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.FLOAT.fieldOf("mean").forGetter((var0x) -> {
-         return var0x.mean;
-      }), Codec.FLOAT.fieldOf("deviation").forGetter((var0x) -> {
-         return var0x.deviation;
-      }), Codec.INT.fieldOf("min_inclusive").forGetter((var0x) -> {
-         return var0x.minInclusive;
-      }), Codec.INT.fieldOf("max_inclusive").forGetter((var0x) -> {
-         return var0x.maxInclusive;
-      })).apply(var0, ClampedNormalInt::new);
-   }).validate((var0) -> {
-      return var0.maxInclusive < var0.minInclusive ? DataResult.error(() -> {
-         return "Max must be larger than min: [" + var0.minInclusive + ", " + var0.maxInclusive + "]";
-      }) : DataResult.success(var0);
-   });
+   public static final MapCodec<ClampedNormalInt> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("mean").forGetter((var0x) -> var0x.mean), Codec.FLOAT.fieldOf("deviation").forGetter((var0x) -> var0x.deviation), Codec.INT.fieldOf("min_inclusive").forGetter((var0x) -> var0x.minInclusive), Codec.INT.fieldOf("max_inclusive").forGetter((var0x) -> var0x.maxInclusive)).apply(var0, ClampedNormalInt::new)).validate((var0) -> var0.maxInclusive < var0.minInclusive ? DataResult.error(() -> "Max must be larger than min: [" + var0.minInclusive + ", " + var0.maxInclusive + "]") : DataResult.success(var0));
    private final float mean;
    private final float deviation;
    private final int minInclusive;

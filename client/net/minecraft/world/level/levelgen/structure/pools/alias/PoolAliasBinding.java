@@ -30,9 +30,7 @@ public interface PoolAliasBinding {
 
    static Random random(String var0, SimpleWeightedRandomList<String> var1) {
       SimpleWeightedRandomList.Builder var2 = SimpleWeightedRandomList.builder();
-      var1.unwrap().forEach((var1x) -> {
-         var2.add(Pools.createKey((String)var1x.data()), var1x.getWeight().asInt());
-      });
+      var1.unwrap().forEach((var1x) -> var2.add(Pools.createKey((String)var1x.data()), var1x.getWeight().asInt()));
       return random(Pools.createKey(var0), var2.build());
    }
 

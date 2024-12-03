@@ -1,12 +1,7 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -16,6 +11,7 @@ import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.RenderShape;
@@ -29,22 +25,22 @@ public class ScreenEffectRenderer {
       super();
    }
 
-   public static void renderScreenEffect(Minecraft var0, PoseStack var1) {
-      LocalPlayer var2 = var0.player;
-      if (!var2.noPhysics) {
-         BlockState var3 = getViewBlockingState(var2);
-         if (var3 != null) {
-            renderTex(var0.getBlockRenderer().getBlockModelShaper().getParticleIcon(var3), var1);
+   public static void renderScreenEffect(Minecraft var0, PoseStack var1, MultiBufferSource var2) {
+      LocalPlayer var3 = var0.player;
+      if (!var3.noPhysics) {
+         BlockState var4 = getViewBlockingState(var3);
+         if (var4 != null) {
+            renderTex(var0.getBlockRenderer().getBlockModelShaper().getParticleIcon(var4), var1, var2);
          }
       }
 
       if (!var0.player.isSpectator()) {
          if (var0.player.isEyeInFluid(FluidTags.WATER)) {
-            renderWater(var0, var1);
+            renderWater(var0, var1, var2);
          }
 
          if (var0.player.isOnFire()) {
-            renderFire(var0, var1);
+            renderFire(var1, var2);
          }
       }
 
@@ -68,95 +64,78 @@ public class ScreenEffectRenderer {
       return null;
    }
 
-   private static void renderTex(TextureAtlasSprite var0, PoseStack var1) {
-      RenderSystem.setShaderTexture(0, var0.atlasLocation());
-      RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
-      float var2 = 0.1F;
-      float var3 = -1.0F;
-      float var4 = 1.0F;
-      float var5 = -1.0F;
-      float var6 = 1.0F;
-      float var7 = -0.5F;
-      float var8 = var0.getU0();
-      float var9 = var0.getU1();
-      float var10 = var0.getV0();
-      float var11 = var0.getV1();
-      Matrix4f var12 = var1.last().pose();
-      BufferBuilder var13 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-      var13.addVertex(var12, -1.0F, -1.0F, -0.5F).setUv(var9, var11).setColor(0.1F, 0.1F, 0.1F, 1.0F);
-      var13.addVertex(var12, 1.0F, -1.0F, -0.5F).setUv(var8, var11).setColor(0.1F, 0.1F, 0.1F, 1.0F);
-      var13.addVertex(var12, 1.0F, 1.0F, -0.5F).setUv(var8, var10).setColor(0.1F, 0.1F, 0.1F, 1.0F);
-      var13.addVertex(var12, -1.0F, 1.0F, -0.5F).setUv(var9, var10).setColor(0.1F, 0.1F, 0.1F, 1.0F);
-      BufferUploader.drawWithShader(var13.buildOrThrow());
-   }
-
-   private static void renderWater(Minecraft var0, PoseStack var1) {
-      RenderSystem.setShader(CoreShaders.POSITION_TEX);
-      RenderSystem.setShaderTexture(0, UNDERWATER_LOCATION);
-      BlockPos var2 = BlockPos.containing(var0.player.getX(), var0.player.getEyeY(), var0.player.getZ());
-      float var3 = LightTexture.getBrightness(var0.player.level().dimensionType(), var0.player.level().getMaxLocalRawBrightness(var2));
-      RenderSystem.enableBlend();
-      RenderSystem.setShaderColor(var3, var3, var3, 0.1F);
-      float var4 = 4.0F;
+   private static void renderTex(TextureAtlasSprite var0, PoseStack var1, MultiBufferSource var2) {
+      float var3 = 0.1F;
+      int var4 = ARGB.colorFromFloat(1.0F, 0.1F, 0.1F, 0.1F);
       float var5 = -1.0F;
       float var6 = 1.0F;
       float var7 = -1.0F;
       float var8 = 1.0F;
       float var9 = -0.5F;
-      float var10 = -var0.player.getYRot() / 64.0F;
-      float var11 = var0.player.getXRot() / 64.0F;
-      Matrix4f var12 = var1.last().pose();
-      BufferBuilder var13 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-      var13.addVertex(var12, -1.0F, -1.0F, -0.5F).setUv(4.0F + var10, 4.0F + var11);
-      var13.addVertex(var12, 1.0F, -1.0F, -0.5F).setUv(0.0F + var10, 4.0F + var11);
-      var13.addVertex(var12, 1.0F, 1.0F, -0.5F).setUv(0.0F + var10, 0.0F + var11);
-      var13.addVertex(var12, -1.0F, 1.0F, -0.5F).setUv(4.0F + var10, 0.0F + var11);
-      BufferUploader.drawWithShader(var13.buildOrThrow());
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-      RenderSystem.disableBlend();
+      float var10 = var0.getU0();
+      float var11 = var0.getU1();
+      float var12 = var0.getV0();
+      float var13 = var0.getV1();
+      Matrix4f var14 = var1.last().pose();
+      VertexConsumer var15 = var2.getBuffer(RenderType.blockScreenEffect(var0.atlasLocation()));
+      var15.addVertex(var14, -1.0F, -1.0F, -0.5F).setUv(var11, var13).setColor(var4);
+      var15.addVertex(var14, 1.0F, -1.0F, -0.5F).setUv(var10, var13).setColor(var4);
+      var15.addVertex(var14, 1.0F, 1.0F, -0.5F).setUv(var10, var12).setColor(var4);
+      var15.addVertex(var14, -1.0F, 1.0F, -0.5F).setUv(var11, var12).setColor(var4);
    }
 
-   private static void renderFire(Minecraft var0, PoseStack var1) {
-      RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
-      RenderSystem.depthFunc(519);
-      RenderSystem.depthMask(false);
-      RenderSystem.enableBlend();
-      TextureAtlasSprite var2 = ModelBakery.FIRE_1.sprite();
-      RenderSystem.setShaderTexture(0, var2.atlasLocation());
-      float var3 = var2.getU0();
-      float var4 = var2.getU1();
-      float var5 = (var3 + var4) / 2.0F;
-      float var6 = var2.getV0();
-      float var7 = var2.getV1();
-      float var8 = (var6 + var7) / 2.0F;
-      float var9 = var2.uvShrinkRatio();
-      float var10 = Mth.lerp(var9, var3, var5);
-      float var11 = Mth.lerp(var9, var4, var5);
-      float var12 = Mth.lerp(var9, var6, var8);
-      float var13 = Mth.lerp(var9, var7, var8);
-      float var14 = 1.0F;
+   private static void renderWater(Minecraft var0, PoseStack var1, MultiBufferSource var2) {
+      BlockPos var3 = BlockPos.containing(var0.player.getX(), var0.player.getEyeY(), var0.player.getZ());
+      float var4 = LightTexture.getBrightness(var0.player.level().dimensionType(), var0.player.level().getMaxLocalRawBrightness(var3));
+      int var5 = ARGB.colorFromFloat(0.1F, var4, var4, var4);
+      float var6 = 4.0F;
+      float var7 = -1.0F;
+      float var8 = 1.0F;
+      float var9 = -1.0F;
+      float var10 = 1.0F;
+      float var11 = -0.5F;
+      float var12 = -var0.player.getYRot() / 64.0F;
+      float var13 = var0.player.getXRot() / 64.0F;
+      Matrix4f var14 = var1.last().pose();
+      VertexConsumer var15 = var2.getBuffer(RenderType.blockScreenEffect(UNDERWATER_LOCATION));
+      var15.addVertex(var14, -1.0F, -1.0F, -0.5F).setUv(4.0F + var12, 4.0F + var13).setColor(var5);
+      var15.addVertex(var14, 1.0F, -1.0F, -0.5F).setUv(0.0F + var12, 4.0F + var13).setColor(var5);
+      var15.addVertex(var14, 1.0F, 1.0F, -0.5F).setUv(0.0F + var12, 0.0F + var13).setColor(var5);
+      var15.addVertex(var14, -1.0F, 1.0F, -0.5F).setUv(4.0F + var12, 0.0F + var13).setColor(var5);
+   }
 
-      for(int var15 = 0; var15 < 2; ++var15) {
-         var1.pushPose();
-         float var16 = -0.5F;
-         float var17 = 0.5F;
-         float var18 = -0.5F;
-         float var19 = 0.5F;
-         float var20 = -0.5F;
-         var1.translate((float)(-(var15 * 2 - 1)) * 0.24F, -0.3F, 0.0F);
-         var1.mulPose(Axis.YP.rotationDegrees((float)(var15 * 2 - 1) * 10.0F));
-         Matrix4f var21 = var1.last().pose();
-         BufferBuilder var22 = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-         var22.addVertex(var21, -0.5F, -0.5F, -0.5F).setUv(var11, var13).setColor(1.0F, 1.0F, 1.0F, 0.9F);
-         var22.addVertex(var21, 0.5F, -0.5F, -0.5F).setUv(var10, var13).setColor(1.0F, 1.0F, 1.0F, 0.9F);
-         var22.addVertex(var21, 0.5F, 0.5F, -0.5F).setUv(var10, var12).setColor(1.0F, 1.0F, 1.0F, 0.9F);
-         var22.addVertex(var21, -0.5F, 0.5F, -0.5F).setUv(var11, var12).setColor(1.0F, 1.0F, 1.0F, 0.9F);
-         BufferUploader.drawWithShader(var22.buildOrThrow());
-         var1.popPose();
+   private static void renderFire(PoseStack var0, MultiBufferSource var1) {
+      TextureAtlasSprite var2 = ModelBakery.FIRE_1.sprite();
+      VertexConsumer var3 = var1.getBuffer(RenderType.fireScreenEffect(var2.atlasLocation()));
+      float var4 = var2.getU0();
+      float var5 = var2.getU1();
+      float var6 = (var4 + var5) / 2.0F;
+      float var7 = var2.getV0();
+      float var8 = var2.getV1();
+      float var9 = (var7 + var8) / 2.0F;
+      float var10 = var2.uvShrinkRatio();
+      float var11 = Mth.lerp(var10, var4, var6);
+      float var12 = Mth.lerp(var10, var5, var6);
+      float var13 = Mth.lerp(var10, var7, var9);
+      float var14 = Mth.lerp(var10, var8, var9);
+      float var15 = 1.0F;
+
+      for(int var16 = 0; var16 < 2; ++var16) {
+         var0.pushPose();
+         float var17 = -0.5F;
+         float var18 = 0.5F;
+         float var19 = -0.5F;
+         float var20 = 0.5F;
+         float var21 = -0.5F;
+         var0.translate((float)(-(var16 * 2 - 1)) * 0.24F, -0.3F, 0.0F);
+         var0.mulPose(Axis.YP.rotationDegrees((float)(var16 * 2 - 1) * 10.0F));
+         Matrix4f var22 = var0.last().pose();
+         var3.addVertex(var22, -0.5F, -0.5F, -0.5F).setUv(var12, var14).setColor(1.0F, 1.0F, 1.0F, 0.9F);
+         var3.addVertex(var22, 0.5F, -0.5F, -0.5F).setUv(var11, var14).setColor(1.0F, 1.0F, 1.0F, 0.9F);
+         var3.addVertex(var22, 0.5F, 0.5F, -0.5F).setUv(var11, var13).setColor(1.0F, 1.0F, 1.0F, 0.9F);
+         var3.addVertex(var22, -0.5F, 0.5F, -0.5F).setUv(var12, var13).setColor(1.0F, 1.0F, 1.0F, 0.9F);
+         var0.popPose();
       }
 
-      RenderSystem.disableBlend();
-      RenderSystem.depthMask(true);
-      RenderSystem.depthFunc(515);
    }
 }

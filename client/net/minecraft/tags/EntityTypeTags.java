@@ -42,6 +42,6 @@ public interface EntityTypeTags {
    TagKey<EntityType<?>> BOAT = create("boat");
 
    private static TagKey<EntityType<?>> create(String var0) {
-      return TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.withDefaultNamespace(var0));
+      return TagKey.<EntityType<?>>create(Registries.ENTITY_TYPE, ResourceLocation.withDefaultNamespace(var0));
    }
 }

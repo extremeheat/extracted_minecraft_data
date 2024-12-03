@@ -48,11 +48,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
@@ -61,10 +61,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.CrashReportDetail;
 import net.minecraft.FileUtil;
 import net.minecraft.Optionull;
 import net.minecraft.ReportType;
@@ -73,7 +75,6 @@ import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
 import net.minecraft.Util;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiSpriteManager;
@@ -125,7 +126,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.profiling.ClientMetricsSamplersProvider;
 import net.minecraft.client.quickplay.QuickPlay;
 import net.minecraft.client.quickplay.QuickPlayLog;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
 import net.minecraft.client.renderer.FogParameters;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.GpuWarnlistManager;
@@ -141,6 +141,7 @@ import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -156,10 +157,11 @@ import net.minecraft.client.resources.SplashManager;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.language.LanguageManager;
 import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.EquipmentModelSet;
+import net.minecraft.client.resources.model.EquipmentAssetManager;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.client.sounds.MusicInfo;
 import net.minecraft.client.sounds.MusicManager;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.telemetry.ClientTelemetryManager;
@@ -169,9 +171,7 @@ import net.minecraft.client.tutorial.Tutorial;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -221,6 +221,7 @@ import net.minecraft.util.profiling.metrics.profiling.ActiveMetricsRecorder;
 import net.minecraft.util.profiling.metrics.profiling.InactiveMetricsRecorder;
 import net.minecraft.util.profiling.metrics.profiling.MetricsRecorder;
 import net.minecraft.util.profiling.metrics.storage.MetricsPersister;
+import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -228,15 +229,12 @@ import net.minecraft.world.TickRateManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.ChatVisiblity;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.LevelStorageSource;
@@ -272,6 +270,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final RenderBuffers renderBuffers;
    public final LevelRenderer levelRenderer;
    private final EntityRenderDispatcher entityRenderDispatcher;
+   private final ItemModelResolver itemModelResolver;
    private final ItemRenderer itemRenderer;
    private final MapRenderer mapRenderer;
    public final ParticleEngine particleEngine;
@@ -301,7 +300,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final PackRepository resourcePackRepository;
    private final LanguageManager languageManager;
    private final BlockColors blockColors;
-   private final ItemColors itemColors;
    private final RenderTarget mainRenderTarget;
    @Nullable
    private final TracyFrameCapture tracyFrameCapture;
@@ -318,7 +316,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final SkinManager skinManager;
    private final ModelManager modelManager;
    private final BlockRenderDispatcher blockRenderer;
-   private final EquipmentModelSet equipmentModels;
    private final PaintingTextureManager paintingTextures;
    private final MobEffectTextureManager mobEffectTextures;
    private final MapTextureManager mapTextureManager;
@@ -327,7 +324,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    private final ToastManager toastManager;
    private final Tutorial tutorial;
    private final PlayerSocialManager playerSocialManager;
-   private final EntityModelSet entityModels;
    private final BlockEntityRenderDispatcher blockEntityRenderDispatcher;
    private final ClientTelemetryManager telemetryManager;
    private final ProfileKeyPairManager profileKeyPairManager;
@@ -405,9 +401,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.fpsString = "";
       this.smartCull = true;
       this.progressTasks = Queues.newConcurrentLinkedQueue();
-      this.fpsPieProfiler = new ContinuousProfiler(Util.timeSource, () -> {
-         return this.fpsPieRenderTicks;
-      });
+      this.fpsPieProfiler = new ContinuousProfiler(Util.timeSource, () -> this.fpsPieRenderTicks);
       this.metricsRecorder = InactiveMetricsRecorder.INSTANCE;
       this.reloadStateTracker = new ResourceLoadStateTracker();
       instance = this;
@@ -428,9 +422,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.authenticationService = new YggdrasilAuthenticationService(this.proxy);
       this.minecraftSessionService = this.authenticationService.createMinecraftSessionService();
       this.user = var1.user.user;
-      this.profileFuture = CompletableFuture.supplyAsync(() -> {
-         return this.minecraftSessionService.fetchProfile(this.user.getProfileId(), true);
-      }, Util.nonCriticalIoPool());
+      this.profileFuture = CompletableFuture.supplyAsync(() -> this.minecraftSessionService.fetchProfile(this.user.getProfileId(), true), Util.nonCriticalIoPool());
       this.userApiService = this.createUserApiService(this.authenticationService, var1);
       this.userPropertiesFuture = CompletableFuture.supplyAsync(() -> {
          try {
@@ -508,7 +500,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.resourceManager.registerReloadListener(this.textureManager);
       this.shaderManager = new ShaderManager(this.textureManager, this::triggerResourcePackRecovery);
       this.resourceManager.registerReloadListener(this.shaderManager);
-      this.skinManager = new SkinManager(this.textureManager, var2.toPath().resolve("skins"), this.minecraftSessionService, this);
+      this.skinManager = new SkinManager(var2.toPath().resolve("skins"), this.minecraftSessionService, this);
       this.levelSource = new LevelStorageSource(var3.resolve("saves"), var3.resolve("backups"), this.directoryValidator, this.fixerUpper);
       this.commandHistory = new CommandHistory(var3);
       this.soundManager = new SoundManager(this.options);
@@ -527,19 +519,12 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       RenderSystem.setupDefaultState(0, 0, this.window.getWidth(), this.window.getHeight());
       this.window.setErrorSection("Post startup");
       this.blockColors = BlockColors.createDefault();
-      this.itemColors = ItemColors.createDefault(this.blockColors);
       this.modelManager = new ModelManager(this.textureManager, this.blockColors, (Integer)this.options.mipmapLevels().get());
       this.resourceManager.registerReloadListener(this.modelManager);
-      this.entityModels = new EntityModelSet();
-      this.resourceManager.registerReloadListener(this.entityModels);
-      this.equipmentModels = new EquipmentModelSet();
-      this.resourceManager.registerReloadListener(this.equipmentModels);
-      this.blockEntityRenderDispatcher = new BlockEntityRenderDispatcher(this.font, this.entityModels, this::getBlockRenderer, this::getItemRenderer, this::getEntityRenderDispatcher);
-      this.resourceManager.registerReloadListener(this.blockEntityRenderDispatcher);
-      BlockEntityWithoutLevelRenderer var7 = new BlockEntityWithoutLevelRenderer(this.blockEntityRenderDispatcher, this.entityModels);
+      EquipmentAssetManager var7 = new EquipmentAssetManager();
       this.resourceManager.registerReloadListener(var7);
-      this.itemRenderer = new ItemRenderer(this.modelManager, this.itemColors, var7);
-      this.resourceManager.registerReloadListener(this.itemRenderer);
+      this.itemModelResolver = new ItemModelResolver(this.modelManager);
+      this.itemRenderer = new ItemRenderer(this.itemModelResolver);
       this.mapTextureManager = new MapTextureManager(this.textureManager);
       this.mapDecorationTextures = new MapDecorationTextureManager(this.textureManager);
       this.resourceManager.registerReloadListener(this.mapDecorationTextures);
@@ -555,10 +540,12 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
 
       this.playerSocialManager = new PlayerSocialManager(this, this.userApiService);
-      this.blockRenderer = new BlockRenderDispatcher(this.modelManager.getBlockModelShaper(), var7, this.blockColors);
+      this.blockRenderer = new BlockRenderDispatcher(this.modelManager.getBlockModelShaper(), this.modelManager.specialBlockModelRenderer(), this.blockColors);
       this.resourceManager.registerReloadListener(this.blockRenderer);
-      this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, this.itemRenderer, this.mapRenderer, this.blockRenderer, this.font, this.options, this.entityModels, this.equipmentModels);
+      this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, this.itemModelResolver, this.itemRenderer, this.mapRenderer, this.blockRenderer, this.font, this.options, this.modelManager.entityModels(), var7);
       this.resourceManager.registerReloadListener(this.entityRenderDispatcher);
+      this.blockEntityRenderDispatcher = new BlockEntityRenderDispatcher(this.font, this.modelManager.entityModels(), this.blockRenderer, this.itemModelResolver, this.itemRenderer, this.entityRenderDispatcher);
+      this.resourceManager.registerReloadListener(this.blockEntityRenderDispatcher);
       this.particleEngine = new ParticleEngine(this.level, this.textureManager);
       this.resourceManager.registerReloadListener(this.particleEngine);
       this.paintingTextures = new PaintingTextureManager(this.textureManager);
@@ -607,25 +594,22 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.chatListener = new ChatListener(this);
       this.chatListener.setMessageDelay((Double)this.options.chatDelay().get());
       this.reportingContext = ReportingContext.create(ReportEnvironment.local(), this.userApiService);
-      LoadingOverlay.registerTextures(this);
+      TitleScreen.registerTextures(this.textureManager);
+      LoadingOverlay.registerTextures(this.textureManager);
       this.setScreen(new GenericMessageScreen(Component.translatable("gui.loadingMinecraft")));
       List var15 = this.resourcePackRepository.openAllSelected();
       this.reloadStateTracker.startReload(ResourceLoadStateTracker.ReloadReason.INITIAL, var15);
       ReloadInstance var10 = this.resourceManager.createReload(Util.backgroundExecutor().forName("resourceLoad"), this, RESOURCE_RELOAD_INITIAL_TASK, var15);
       GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_LOADING_OVERLAY_MS);
       GameLoadCookie var11 = new GameLoadCookie(var14, var1.quickPlay);
-      this.setOverlay(new LoadingOverlay(this, var10, (var2x) -> {
-         Util.ifElse(var2x, (var2) -> {
-            this.rollbackResourcePacks(var2, var11);
-         }, () -> {
+      this.setOverlay(new LoadingOverlay(this, var10, (var2x) -> Util.ifElse(var2x, (var2) -> this.rollbackResourcePacks(var2, var11), () -> {
             if (SharedConstants.IS_RUNNING_IN_IDE) {
                this.selfTest();
             }
 
             this.reloadStateTracker.finishReload();
             this.onResourceLoadFinished(var11);
-         });
-      }, false));
+         }), false));
       this.quickPlayLog = QuickPlayLog.of(var1.quickPlay.path());
       this.framerateLimitTracker = new FramerateLimitTracker(this.options, this);
       if (TracyClient.isAvailable() && var1.game.captureTracyImages) {
@@ -668,12 +652,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       };
 
-      Screen var6;
-      for(Iterator var4 = Lists.reverse(var2).iterator(); var4.hasNext(); var3 = () -> {
-         this.setScreen(var6);
-      }) {
-         Function var5 = (Function)var4.next();
-         var6 = (Screen)var5.apply(var3);
+      for(Function var5 : Lists.reverse(var2)) {
+         Screen var6 = (Screen)var5.apply(var3);
+         var3 = () -> this.setScreen(var6);
       }
 
       return var3;
@@ -681,22 +662,18 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    private void addInitialScreens(List<Function<Runnable, Screen>> var1) {
       if (this.options.onboardAccessibility) {
-         var1.add((var1x) -> {
-            return new AccessibilityOnboardingScreen(this.options, var1x);
-         });
+         var1.add((Function)(var1x) -> new AccessibilityOnboardingScreen(this.options, var1x));
       }
 
       BanDetails var2 = this.multiplayerBan();
       if (var2 != null) {
-         var1.add((var1x) -> {
-            return BanNoticeScreens.create((var1) -> {
+         var1.add((Function)(var1x) -> BanNoticeScreens.create((var1) -> {
                if (var1) {
                   Util.getPlatform().openUri(CommonLinks.SUSPENSION_HELP);
                }
 
                var1x.run();
-            }, var2);
-         });
+            }, var2));
       }
 
       ProfileResult var3 = (ProfileResult)this.profileFuture.join();
@@ -704,9 +681,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          GameProfile var4 = var3.profile();
          Set var5 = var3.actions();
          if (var5.contains(ProfileActionType.FORCED_NAME_CHANGE)) {
-            var1.add((var1x) -> {
-               return BanNoticeScreens.createNameBan(var4.getName(), var1x);
-            });
+            var1.add((Function)(var1x) -> BanNoticeScreens.createNameBan(var4.getName(), var1x));
          }
 
          if (var5.contains(ProfileActionType.USING_BANNED_SKIN)) {
@@ -779,9 +754,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.options.resourcePacks.clear();
       this.options.incompatibleResourcePacks.clear();
       this.options.save();
-      this.reloadResourcePacks(true, var3).thenRun(() -> {
-         this.addResourcePackLoadFailToast(var2);
-      });
+      this.reloadResourcePacks(true, var3).thenRunAsync(() -> this.addResourcePackLoadFailToast(var2), this);
    }
 
    private void abortResourcePackRecovery() {
@@ -831,28 +804,13 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             try {
                SingleTickProfiler var3 = SingleTickProfiler.createTickProfiler("Renderer");
                boolean var4 = this.getDebugOverlay().showProfilerChart();
-               Profiler.Scope var5 = Profiler.use(this.constructProfiler(var4, var3));
 
-               try {
+               try (Profiler.Scope var5 = Profiler.use(this.constructProfiler(var4, var3))) {
                   this.metricsRecorder.startTick();
                   var1.start();
                   this.runTick(!var2);
                   var1.end();
                   this.metricsRecorder.endTick();
-               } catch (Throwable var9) {
-                  if (var5 != null) {
-                     try {
-                        var5.close();
-                     } catch (Throwable var8) {
-                        var9.addSuppressed(var8);
-                     }
-                  }
-
-                  throw var9;
-               }
-
-               if (var5 != null) {
-                  var5.close();
                }
 
                this.finishProfilers(var4, var3);
@@ -900,15 +858,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public void delayCrash(CrashReport var1) {
-      this.delayedCrash = () -> {
-         return this.fillReport(var1);
-      };
+      this.delayedCrash = () -> this.fillReport(var1);
    }
 
    public void delayCrashRaw(CrashReport var1) {
-      this.delayedCrash = () -> {
-         return var1;
-      };
+      this.delayedCrash = () -> var1;
    }
 
    private void handleDelayedCrash() {
@@ -973,8 +927,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                this.reloadStateTracker.startReload(ResourceLoadStateTracker.ReloadReason.MANUAL, var4);
             }
 
-            this.setOverlay(new LoadingOverlay(this, this.resourceManager.createReload(Util.backgroundExecutor().forName("resourceLoad"), this, RESOURCE_RELOAD_INITIAL_TASK, var4), (var4x) -> {
-               Util.ifElse(var4x, (var3x) -> {
+            this.setOverlay(new LoadingOverlay(this, this.resourceManager.createReload(Util.backgroundExecutor().forName("resourceLoad"), this, RESOURCE_RELOAD_INITIAL_TASK, var4), (var4x) -> Util.ifElse(var4x, (var3x) -> {
                   if (var1) {
                      this.downloadedPackSource.onRecoveryFailure();
                      this.abortResourcePackRecovery();
@@ -988,8 +941,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                   this.downloadedPackSource.onReloadSuccess();
                   var3.complete((Object)null);
                   this.onResourceLoadFinished(var2);
-               });
-            }, !var1));
+               }), !var1));
             return var3;
          }
       }
@@ -999,10 +951,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       boolean var1 = false;
       BlockModelShaper var2 = this.getBlockRenderer().getBlockModelShaper();
       BakedModel var3 = var2.getModelManager().getMissingModel();
-      Iterator var4 = BuiltInRegistries.BLOCK.iterator();
 
-      while(var4.hasNext()) {
-         Block var5 = (Block)var4.next();
+      for(Block var5 : BuiltInRegistries.BLOCK) {
          UnmodifiableIterator var6 = var5.getStateDefinition().getPossibleStates().iterator();
 
          while(var6.hasNext()) {
@@ -1017,18 +967,16 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
       }
 
-      TextureAtlasSprite var10 = var3.getParticleIcon();
-      Iterator var11 = BuiltInRegistries.BLOCK.iterator();
+      TextureAtlasSprite var12 = var3.getParticleIcon();
 
-      while(var11.hasNext()) {
-         Block var12 = (Block)var11.next();
-         UnmodifiableIterator var13 = var12.getStateDefinition().getPossibleStates().iterator();
+      for(Block var14 : BuiltInRegistries.BLOCK) {
+         UnmodifiableIterator var15 = var14.getStateDefinition().getPossibleStates().iterator();
 
-         while(var13.hasNext()) {
-            BlockState var14 = (BlockState)var13.next();
-            TextureAtlasSprite var9 = var2.getParticleIcon(var14);
-            if (!var14.isAir() && var9 == var10) {
-               LOGGER.debug("Missing particle icon for: {}", var14);
+         while(var15.hasNext()) {
+            BlockState var16 = (BlockState)var15.next();
+            TextureAtlasSprite var9 = var2.getParticleIcon(var16);
+            if (!var16.isAir() && var9 == var12) {
+               LOGGER.debug("Missing particle icon for: {}", var16);
             }
          }
       }
@@ -1205,9 +1153,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       if (this.pendingReload != null && !(this.overlay instanceof LoadingOverlay)) {
          CompletableFuture var2 = this.pendingReload;
          this.pendingReload = null;
-         this.reloadResourcePacks().thenRun(() -> {
-            var2.complete((Object)null);
-         });
+         this.reloadResourcePacks().thenRun(() -> var2.complete((Object)null));
       }
 
       Runnable var14;
@@ -1265,12 +1211,13 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       var4.push("blit");
       this.mainRenderTarget.unbindWrite();
-      this.mainRenderTarget.blitToScreen(this.window.getWidth(), this.window.getHeight());
+      if (!this.window.isMinimized()) {
+         this.mainRenderTarget.blitToScreen(this.window.getWidth(), this.window.getHeight());
+      }
+
       this.frameTimeNs = Util.getNanos() - var15;
       if (var7) {
-         TimerQuery.getInstance().ifPresent((var1x) -> {
-            this.currentFrameProfile = var1x.endProfile();
-         });
+         TimerQuery.getInstance().ifPresent((var1x) -> this.currentFrameProfile = var1x.endProfile());
       }
 
       var4.popPush("updateDisplay");
@@ -1415,18 +1362,12 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             if (var2x != EmptyProfileResults.EMPTY) {
                int var3 = var2x.getTickDuration();
                double var4 = (double)var2x.getNanoDuration() / (double)TimeUtil.NANOSECONDS_PER_SECOND;
-               this.execute(() -> {
-                  var1.accept(Component.translatable("commands.debug.stopped", String.format(Locale.ROOT, "%.2f", var4), var3, String.format(Locale.ROOT, "%.2f", (double)var3 / var4)));
-               });
+               this.execute(() -> var1.accept(Component.translatable("commands.debug.stopped", String.format(Locale.ROOT, "%.2f", var4), var3, String.format(Locale.ROOT, "%.2f", (double)var3 / var4))));
             }
          };
          Consumer var3 = (var2x) -> {
-            MutableComponent var3 = Component.literal(var2x.toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((var1x) -> {
-               return var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var2x.toFile().getParent()));
-            });
-            this.execute(() -> {
-               var1.accept(Component.translatable("debug.profiling.stop", var3));
-            });
+            MutableComponent var3 = Component.literal(var2x.toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var2x.toFile().getParent()))));
+            this.execute(() -> var1.accept(Component.translatable("debug.profiling.stop", var3)));
          };
          SystemReport var4 = fillSystemReport(new SystemReport(), this, this.languageManager, this.launchedVersion, this.options);
          Consumer var5 = (var3x) -> {
@@ -1435,16 +1376,12 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          };
          Consumer var6;
          if (this.singleplayerServer == null) {
-            var6 = (var1x) -> {
-               var5.accept(ImmutableList.of(var1x));
-            };
+            var6 = (var1x) -> var5.accept(ImmutableList.of(var1x));
          } else {
             this.singleplayerServer.fillSystemReport(var4);
             CompletableFuture var7 = new CompletableFuture();
             CompletableFuture var8 = new CompletableFuture();
-            CompletableFuture.allOf(var7, var8).thenRunAsync(() -> {
-               var5.accept(ImmutableList.of((Path)var7.join(), (Path)var8.join()));
-            }, Util.ioPool());
+            CompletableFuture.allOf(var7, var8).thenRunAsync(() -> var5.accept(ImmutableList.of((Path)var7.join(), (Path)var8.join())), Util.ioPool());
             IntegratedServer var10000 = this.singleplayerServer;
             Consumer var10001 = (var0) -> {
             };
@@ -1489,63 +1426,41 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       Path var3;
       try {
-         String var25 = String.format(Locale.ROOT, "%s-%s-%s", Util.getFilenameFormattedDateTime(), var4, SharedConstants.getCurrentVersion().getId());
-         String var6 = FileUtil.findAvailableName(MetricsPersister.PROFILING_RESULTS_DIR, var25, ".zip");
+         String var23 = String.format(Locale.ROOT, "%s-%s-%s", Util.getFilenameFormattedDateTime(), var4, SharedConstants.getCurrentVersion().getId());
+         String var6 = FileUtil.findAvailableName(MetricsPersister.PROFILING_RESULTS_DIR, var23, ".zip");
          var3 = MetricsPersister.PROFILING_RESULTS_DIR.resolve(var6);
-      } catch (IOException var23) {
-         throw new UncheckedIOException(var23);
+      } catch (IOException var21) {
+         throw new UncheckedIOException(var21);
       }
-
-      boolean var18 = false;
 
       try {
-         var18 = true;
-         FileZipper var26 = new FileZipper(var3);
+         FileZipper var24 = new FileZipper(var3);
 
          try {
-            var26.add(Paths.get("system.txt"), var1.toLineSeparatedString());
-            var26.add(Paths.get("client").resolve(this.options.getFile().getName()), this.options.dumpOptionsForReport());
-            Objects.requireNonNull(var26);
-            var2.forEach(var26::add);
-         } catch (Throwable var22) {
+            var24.add(Paths.get("system.txt"), var1.toLineSeparatedString());
+            var24.add(Paths.get("client").resolve(this.options.getFile().getName()), this.options.dumpOptionsForReport());
+            Objects.requireNonNull(var24);
+            var2.forEach(var24::add);
+         } catch (Throwable var20) {
             try {
-               var26.close();
-            } catch (Throwable var20) {
-               var22.addSuppressed(var20);
+               var24.close();
+            } catch (Throwable var19) {
+               var20.addSuppressed(var19);
             }
 
-            throw var22;
+            throw var20;
          }
 
-         var26.close();
-         var18 = false;
+         var24.close();
       } finally {
-         if (var18) {
-            Iterator var9 = var2.iterator();
-
-            while(var9.hasNext()) {
-               Path var10 = (Path)var9.next();
-
-               try {
-                  FileUtils.forceDelete(var10.toFile());
-               } catch (IOException var19) {
-                  LOGGER.warn("Failed to delete temporary profiling result {}", var10, var19);
-               }
+         for(Path var10 : var2) {
+            try {
+               FileUtils.forceDelete(var10.toFile());
+            } catch (IOException var18) {
+               LOGGER.warn("Failed to delete temporary profiling result {}", var10, var18);
             }
-
          }
-      }
 
-      Iterator var27 = var2.iterator();
-
-      while(var27.hasNext()) {
-         Path var28 = (Path)var27.next();
-
-         try {
-            FileUtils.forceDelete(var28.toFile());
-         } catch (IOException var21) {
-            LOGGER.warn("Failed to delete temporary profiling result {}", var28, var21);
-         }
       }
 
       return var3;
@@ -1649,11 +1564,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                LOGGER.warn("Null returned as 'hitResult', this shouldn't happen!");
             }
 
-            InteractionHand[] var1 = InteractionHand.values();
-            int var2 = var1.length;
-
-            for(int var3 = 0; var3 < var2; ++var3) {
-               InteractionHand var4 = var1[var3];
+            for(InteractionHand var4 : InteractionHand.values()) {
                ItemStack var5 = this.player.getItemInHand(var4);
                if (!var5.isItemEnabled(this.level.enabledFeatures())) {
                   return;
@@ -1773,12 +1684,11 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.missTime = 10000;
       }
 
-      CrashReport var9;
       if (this.screen != null) {
          try {
             this.screen.tick();
          } catch (Throwable var5) {
-            var9 = CrashReport.forThrowable(var5, "Ticking screen");
+            CrashReport var9 = CrashReport.forThrowable(var5, "Ticking screen");
             this.screen.fillCrashDetails(var9);
             throw new ReportedException(var9);
          }
@@ -1825,7 +1735,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             if (!this.options.joinedFirstServer && this.isMultiplayerServer()) {
                MutableComponent var7 = Component.translatable("tutorial.socialInteractions.title");
                MutableComponent var10 = Component.translatable("tutorial.socialInteractions.description", Tutorial.key("socialInteractions"));
-               this.socialInteractionsToast = new TutorialToast(TutorialToast.Icons.SOCIAL_INTERACTIONS, var7, var10, true, 8000);
+               this.socialInteractionsToast = new TutorialToast(this.font, TutorialToast.Icons.SOCIAL_INTERACTIONS, var7, var10, true, 8000);
                this.toastManager.addToast(this.socialInteractionsToast);
                this.options.joinedFirstServer = true;
                this.options.save();
@@ -1834,19 +1744,17 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.tutorial.tick();
 
             try {
-               this.level.tick(() -> {
-                  return true;
-               });
+               this.level.tick(() -> true);
             } catch (Throwable var6) {
-               var9 = CrashReport.forThrowable(var6, "Exception in world tick");
+               CrashReport var11 = CrashReport.forThrowable(var6, "Exception in world tick");
                if (this.level == null) {
-                  CrashReportCategory var4 = var9.addCategory("Affected level");
-                  var4.setDetail("Problem", (Object)"Level is null!");
+                  CrashReportCategory var4 = var11.addCategory("Affected level");
+                  var4.setDetail("Problem", "Level is null!");
                } else {
-                  this.level.fillReportDetails(var9);
+                  this.level.fillReportDetails(var11);
                }
 
-               throw new ReportedException(var9);
+               throw new ReportedException(var11);
             }
          }
 
@@ -1962,19 +1870,13 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.gameMode.releaseUsingItem(this.player);
          }
 
-         label117:
-         while(true) {
-            if (!this.options.keyAttack.consumeClick()) {
-               while(this.options.keyUse.consumeClick()) {
-               }
+         while(this.options.keyAttack.consumeClick()) {
+         }
 
-               while(true) {
-                  if (this.options.keyPickItem.consumeClick()) {
-                     continue;
-                  }
-                  break label117;
-               }
-            }
+         while(this.options.keyUse.consumeClick()) {
+         }
+
+         while(this.options.keyPickItem.consumeClick()) {
          }
       } else {
          while(this.options.keyAttack.consumeClick()) {
@@ -2024,25 +1926,21 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          var6.profileCache().setExecutor(this);
          SkullBlockEntity.setup(var6, this);
          GameProfileCache.setUsesAuthentication(false);
-         this.singleplayerServer = (IntegratedServer)MinecraftServer.spin((var5x) -> {
-            return new IntegratedServer(var5x, this, var1, var2, var3, var6, (var1x) -> {
+         this.singleplayerServer = (IntegratedServer)MinecraftServer.spin((var5x) -> new IntegratedServer(var5x, this, var1, var2, var3, var6, (var1x) -> {
                StoringChunkProgressListener var2 = StoringChunkProgressListener.createFromGameruleRadius(var1x + 0);
                this.progressListener.set(var2);
                Queue var10001 = this.progressTasks;
                Objects.requireNonNull(var10001);
                return ProcessorChunkProgressListener.createStarted(var2, var10001::add);
-            });
-         });
+            }));
          this.isLocalServer = true;
          this.updateReportEnvironment(ReportEnvironment.local());
          this.quickPlayLog.setWorldData(QuickPlayLog.Type.SINGLEPLAYER, var1.getLevelId(), var3.worldData().getLevelName());
       } catch (Throwable var12) {
          CrashReport var7 = CrashReport.forThrowable(var12, "Starting integrated server");
          CrashReportCategory var8 = var7.addCategory("Starting integrated server");
-         var8.setDetail("Level ID", (Object)var1.getLevelId());
-         var8.setDetail("Level Name", () -> {
-            return var3.worldData().getLevelName();
-         });
+         var8.setDetail("Level ID", var1.getLevelId());
+         var8.setDetail("Level Name", (CrashReportDetail)(() -> var3.worldData().getLevelName()));
          throw new ReportedException(var7);
       }
 
@@ -2076,9 +1974,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public void setLevel(ClientLevel var1, ReceivingLevelScreen.Reason var2) {
-      this.updateScreenAndTick(new ReceivingLevelScreen(() -> {
-         return false;
-      }, var2));
+      this.updateScreenAndTick(new ReceivingLevelScreen(() -> false, var2));
       this.level = var1;
       this.updateLevelInEngines(var1);
       if (!this.isLocalServer) {
@@ -2193,25 +2089,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public void forceSetScreen(Screen var1) {
-      Zone var2 = Profiler.get().zone("forcedTick");
-
-      try {
+      try (Zone var2 = Profiler.get().zone("forcedTick")) {
          this.setScreen(var1);
          this.runTick(false);
-      } catch (Throwable var6) {
-         if (var2 != null) {
-            try {
-               var2.close();
-            } catch (Throwable var5) {
-               var6.addSuppressed(var5);
-            }
-         }
-
-         throw var6;
-      }
-
-      if (var2 != null) {
-         var2.close();
       }
 
    }
@@ -2302,74 +2182,25 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
    private void pickBlock() {
       if (this.hitResult != null && this.hitResult.getType() != HitResult.Type.MISS) {
-         boolean var1 = this.player.getAbilities().instabuild;
-         BlockEntity var2 = null;
-         HitResult.Type var4 = this.hitResult.getType();
-         ItemStack var3;
-         if (var4 == HitResult.Type.BLOCK) {
-            BlockPos var8 = ((BlockHitResult)this.hitResult).getBlockPos();
-            BlockState var6 = this.level.getBlockState(var8);
-            if (var6.isAir()) {
-               return;
-            }
-
-            Block var7 = var6.getBlock();
-            var3 = var7.getCloneItemStack(this.level, var8, var6);
-            if (var3.isEmpty()) {
-               return;
-            }
-
-            if (var1 && Screen.hasControlDown() && var6.hasBlockEntity()) {
-               var2 = this.level.getBlockEntity(var8);
-            }
-         } else {
-            if (var4 != HitResult.Type.ENTITY || !var1) {
-               return;
-            }
-
-            Entity var5 = ((EntityHitResult)this.hitResult).getEntity();
-            var3 = var5.getPickResult();
-            if (var3 == null) {
-               return;
-            }
+         boolean var1 = Screen.hasControlDown();
+         HitResult var10000 = this.hitResult;
+         Objects.requireNonNull(var10000);
+         HitResult var2 = var10000;
+         byte var3 = 0;
+         //$FF: var3->value
+         //0->net/minecraft/world/phys/BlockHitResult
+         //1->net/minecraft/world/phys/EntityHitResult
+         switch (var2.typeSwitch<invokedynamic>(var2, var3)) {
+            case 0:
+               BlockHitResult var4 = (BlockHitResult)var2;
+               this.gameMode.handlePickItemFromBlock(var4.getBlockPos(), var1);
+               break;
+            case 1:
+               EntityHitResult var5 = (EntityHitResult)var2;
+               this.gameMode.handlePickItemFromEntity(var5.getEntity(), var1);
          }
 
-         if (var3.isEmpty()) {
-            String var10 = "";
-            if (var4 == HitResult.Type.BLOCK) {
-               var10 = BuiltInRegistries.BLOCK.getKey(this.level.getBlockState(((BlockHitResult)this.hitResult).getBlockPos()).getBlock()).toString();
-            } else if (var4 == HitResult.Type.ENTITY) {
-               var10 = BuiltInRegistries.ENTITY_TYPE.getKey(((EntityHitResult)this.hitResult).getEntity().getType()).toString();
-            }
-
-            LOGGER.warn("Picking on: [{}] {} gave null item", var4, var10);
-         } else {
-            Inventory var9 = this.player.getInventory();
-            if (var2 != null) {
-               this.addCustomNbtData(var3, var2, this.level.registryAccess());
-            }
-
-            int var11 = var9.findSlotMatchingItem(var3);
-            if (var1) {
-               var9.setPickedItem(var3);
-               this.gameMode.handleCreativeModeItemAdd(this.player.getItemInHand(InteractionHand.MAIN_HAND), 36 + var9.selected);
-            } else if (var11 != -1) {
-               if (Inventory.isHotbarSlot(var11)) {
-                  var9.selected = var11;
-               } else {
-                  this.gameMode.handlePickItem(var11);
-               }
-            }
-
-         }
       }
-   }
-
-   private void addCustomNbtData(ItemStack var1, BlockEntity var2, RegistryAccess var3) {
-      CompoundTag var4 = var2.saveCustomAndMetadata(var3);
-      var2.removeComponentsFromTag(var4);
-      BlockItem.setBlockEntityData(var1, var2.getType(), var4);
-      var1.applyComponents(var2.collectComponents());
    }
 
    public CrashReport fillReport(CrashReport var1) {
@@ -2404,24 +2235,14 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    private void fillUptime(CrashReportCategory var1) {
-      var1.setDetail("JVM uptime", () -> {
-         return formatSeconds((double)ManagementFactory.getRuntimeMXBean().getUptime() / 1000.0);
-      });
-      var1.setDetail("Wall uptime", () -> {
-         return formatSeconds((double)(System.currentTimeMillis() - this.clientStartTimeMs) / 1000.0);
-      });
-      var1.setDetail("High-res time", () -> {
-         return formatSeconds((double)Util.getMillis() / 1000.0);
-      });
-      var1.setDetail("Client ticks", () -> {
-         return String.format(Locale.ROOT, "%d ticks / %.3fs", this.clientTickCount, (double)this.clientTickCount / 20.0);
-      });
+      var1.setDetail("JVM uptime", (CrashReportDetail)(() -> formatSeconds((double)ManagementFactory.getRuntimeMXBean().getUptime() / 1000.0)));
+      var1.setDetail("Wall uptime", (CrashReportDetail)(() -> formatSeconds((double)(System.currentTimeMillis() - this.clientStartTimeMs) / 1000.0)));
+      var1.setDetail("High-res time", (CrashReportDetail)(() -> formatSeconds((double)Util.getMillis() / 1000.0)));
+      var1.setDetail("Client ticks", (CrashReportDetail)(() -> String.format(Locale.ROOT, "%d ticks / %.3fs", this.clientTickCount, (double)this.clientTickCount / 20.0)));
    }
 
    private static SystemReport fillSystemReport(SystemReport var0, @Nullable Minecraft var1, @Nullable LanguageManager var2, String var3, @Nullable Options var4) {
-      var0.setDetail("Launched Version", () -> {
-         return var3;
-      });
+      var0.setDetail("Launched Version", (Supplier)(() -> var3));
       String var5 = getLauncherBrand();
       if (var5 != null) {
          var0.setDetail("Launcher name", var5);
@@ -2429,20 +2250,12 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       var0.setDetail("Backend library", RenderSystem::getBackendDescription);
       var0.setDetail("Backend API", RenderSystem::getApiDescription);
-      var0.setDetail("Window size", () -> {
-         return var1 != null ? var1.window.getWidth() + "x" + var1.window.getHeight() : "<not initialized>";
-      });
+      var0.setDetail("Window size", (Supplier)(() -> var1 != null ? var1.window.getWidth() + "x" + var1.window.getHeight() : "<not initialized>"));
       var0.setDetail("GFLW Platform", Window::getPlatform);
       var0.setDetail("GL Caps", RenderSystem::getCapsString);
-      var0.setDetail("GL debug messages", () -> {
-         return GlDebug.isDebugEnabled() ? String.join("\n", GlDebug.getLastOpenGlDebugMessages()) : "<disabled>";
-      });
-      var0.setDetail("Is Modded", () -> {
-         return checkModStatus().fullDescription();
-      });
-      var0.setDetail("Universe", () -> {
-         return var1 != null ? Long.toHexString(var1.canary) : "404";
-      });
+      var0.setDetail("GL debug messages", (Supplier)(() -> GlDebug.isDebugEnabled() ? String.join("\n", GlDebug.getLastOpenGlDebugMessages()) : "<disabled>"));
+      var0.setDetail("Is Modded", (Supplier)(() -> checkModStatus().fullDescription()));
+      var0.setDetail("Universe", (Supplier)(() -> var1 != null ? Long.toHexString(var1.canary) : "404"));
       var0.setDetail("Type", "Client (map_client.txt)");
       if (var4 != null) {
          if (var1 != null) {
@@ -2454,28 +2267,20 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
          var0.setDetail("Graphics mode", ((GraphicsStatus)var4.graphicsMode().get()).toString());
          int var10002 = var4.getEffectiveRenderDistance();
-         var0.setDetail("Render Distance", "" + var10002 + "/" + String.valueOf(var4.renderDistance().get()) + " chunks");
+         var0.setDetail("Render Distance", var10002 + "/" + String.valueOf(var4.renderDistance().get()) + " chunks");
       }
 
       if (var1 != null) {
-         var0.setDetail("Resource Packs", () -> {
-            return PackRepository.displayPackList(var1.getResourcePackRepository().getSelectedPacks());
-         });
+         var0.setDetail("Resource Packs", (Supplier)(() -> PackRepository.displayPackList(var1.getResourcePackRepository().getSelectedPacks())));
       }
 
       if (var2 != null) {
-         var0.setDetail("Current Language", () -> {
-            return var2.getSelected();
-         });
+         var0.setDetail("Current Language", (Supplier)(() -> var2.getSelected()));
       }
 
       var0.setDetail("Locale", String.valueOf(Locale.getDefault()));
-      var0.setDetail("System encoding", () -> {
-         return System.getProperty("sun.jnu.encoding", "<not set>");
-      });
-      var0.setDetail("File encoding", () -> {
-         return System.getProperty("file.encoding", "<not set>");
-      });
+      var0.setDetail("System encoding", (Supplier)(() -> System.getProperty("sun.jnu.encoding", "<not set>")));
+      var0.setDetail("File encoding", (Supplier)(() -> System.getProperty("file.encoding", "<not set>")));
       var0.setDetail("CPU", GlUtil::getCpuInfo);
       return var0;
    }
@@ -2485,9 +2290,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public CompletableFuture<Void> delayTextureReload() {
-      return this.submit(this::reloadResourcePacks).thenCompose((var0) -> {
-         return var0;
-      });
+      return this.submit(this::reloadResourcePacks).thenCompose((var0) -> var0);
    }
 
    public void updateReportEnvironment(ReportEnvironment var1) {
@@ -2587,23 +2390,35 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return this.soundManager;
    }
 
-   public Music getSituationalMusic() {
+   public MusicInfo getSituationalMusic() {
       Music var1 = (Music)Optionull.map(this.screen, Screen::getBackgroundMusic);
       if (var1 != null) {
-         return var1;
+         return new MusicInfo(var1);
       } else if (this.player != null) {
-         if (this.player.level().dimension() == Level.END) {
-            return this.gui.getBossOverlay().shouldPlayMusic() ? Musics.END_BOSS : Musics.END;
+         Level var2 = this.player.level();
+         if (var2.dimension() == Level.END) {
+            return this.gui.getBossOverlay().shouldPlayMusic() ? new MusicInfo(Musics.END_BOSS) : new MusicInfo(Musics.END);
          } else {
-            Holder var2 = this.player.level().getBiome(this.player.blockPosition());
-            if (this.musicManager.isPlayingMusic(Musics.UNDER_WATER) || this.player.isUnderWater() && var2.is(BiomeTags.PLAYS_UNDERWATER_MUSIC)) {
-               return Musics.UNDER_WATER;
+            Holder var3 = var2.getBiome(this.player.blockPosition());
+            float var4 = ((Biome)var3.value()).getBackgroundMusicVolume();
+            if (!this.musicManager.isPlayingMusic(Musics.UNDER_WATER) && (!this.player.isUnderWater() || !var3.is(BiomeTags.PLAYS_UNDERWATER_MUSIC))) {
+               if (var2.dimension() != Level.NETHER && this.player.getAbilities().instabuild && this.player.getAbilities().mayfly) {
+                  return new MusicInfo(Musics.CREATIVE, var4);
+               } else {
+                  Optional var5 = ((Biome)var3.value()).getBackgroundMusic();
+                  if (var5.isPresent()) {
+                     Optional var6 = ((SimpleWeightedRandomList)var5.get()).getRandomValue(var2.random);
+                     return new MusicInfo((Music)var6.orElse((Object)null), var4);
+                  } else {
+                     return new MusicInfo(Musics.GAME, var4);
+                  }
+               }
             } else {
-               return this.player.level().dimension() != Level.NETHER && this.player.getAbilities().instabuild && this.player.getAbilities().mayfly ? Musics.CREATIVE : (Music)((Biome)var2.value()).getBackgroundMusic().orElse(Musics.GAME);
+               return new MusicInfo(Musics.UNDER_WATER, var4);
             }
          }
       } else {
-         return Musics.MENU;
+         return new MusicInfo(Musics.MENU);
       }
    }
 
@@ -2780,9 +2595,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             });
          }
 
-         MutableComponent var20 = Component.literal(var1.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((var1x) -> {
-            return var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var1.getAbsolutePath()));
-         });
+         MutableComponent var20 = Component.literal(var1.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var1.getAbsolutePath()))));
          var12 = Component.translatable("screenshot.success", var20);
          return var12;
       } catch (Exception var18) {
@@ -2832,9 +2645,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
          File var16 = var7.close();
          GlUtil.freeMemory(var6);
-         MutableComponent var17 = Component.literal(var16.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((var1x) -> {
-            return var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var16.getAbsolutePath()));
-         });
+         MutableComponent var17 = Component.literal(var16.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var16.getAbsolutePath()))));
          return Component.translatable("screenshot.success", var17);
       } catch (Exception var15) {
          LOGGER.warn("Couldn't save screenshot", var15);
@@ -2881,11 +2692,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public EntityModelSet getEntityModels() {
-      return this.entityModels;
-   }
-
-   public EquipmentModelSet getEquipmentModels() {
-      return this.equipmentModels;
+      return (EntityModelSet)this.modelManager.entityModels().get();
    }
 
    public boolean isTextFilteringEnabled() {
@@ -2953,6 +2760,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return var1;
    }
 
+   public ItemModelResolver getItemModelResolver() {
+      return this.itemModelResolver;
+   }
+
    @Nullable
    public static String getLauncherBrand() {
       return System.getProperty("minecraft.launcher.brand");
@@ -2966,22 +2777,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       REGIONAL_COMPLIANCIES = ResourceLocation.withDefaultNamespace("regional_compliancies.json");
       RESOURCE_RELOAD_INITIAL_TASK = CompletableFuture.completedFuture(Unit.INSTANCE);
       SOCIAL_INTERACTIONS_NOT_AVAILABLE = Component.translatable("multiplayer.socialInteractions.not_available");
-   }
-
-   static record GameLoadCookie(RealmsClient realmsClient, GameConfig.QuickPlayData quickPlayData) {
-      GameLoadCookie(RealmsClient var1, GameConfig.QuickPlayData var2) {
-         super();
-         this.realmsClient = var1;
-         this.quickPlayData = var2;
-      }
-
-      public RealmsClient realmsClient() {
-         return this.realmsClient;
-      }
-
-      public GameConfig.QuickPlayData quickPlayData() {
-         return this.quickPlayData;
-      }
    }
 
    public static enum ChatStatus {
@@ -3022,6 +2817,14 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       // $FF: synthetic method
       private static ChatStatus[] $values() {
          return new ChatStatus[]{ENABLED, DISABLED_BY_OPTIONS, DISABLED_BY_LAUNCHER, DISABLED_BY_PROFILE};
+      }
+   }
+
+   static record GameLoadCookie(RealmsClient realmsClient, GameConfig.QuickPlayData quickPlayData) {
+      GameLoadCookie(RealmsClient var1, GameConfig.QuickPlayData var2) {
+         super();
+         this.realmsClient = var1;
+         this.quickPlayData = var2;
       }
    }
 }

@@ -44,7 +44,7 @@ class OozingMobEffect extends MobEffect {
    }
 
    private void spawnSlimeOffspring(Level var1, double var2, double var4, double var6) {
-      Slime var8 = (Slime)EntityType.SLIME.create(var1, EntitySpawnReason.TRIGGERED);
+      Slime var8 = EntityType.SLIME.create(var1, EntitySpawnReason.TRIGGERED);
       if (var8 != null) {
          var8.setSize(2, true);
          var8.moveTo(var2, var4, var6, var1.getRandom().nextFloat() * 360.0F, 0.0F);
@@ -59,9 +59,7 @@ class OozingMobEffect extends MobEffect {
       static NearbySlimes closeTo(LivingEntity var0) {
          return (var1) -> {
             ArrayList var2 = new ArrayList();
-            var0.level().getEntities(EntityType.SLIME, var0.getBoundingBox().inflate(2.0), (var1x) -> {
-               return var1x != var0;
-            }, var2, var1);
+            var0.level().getEntities(EntityType.SLIME, var0.getBoundingBox().inflate(2.0), (var1x) -> var1x != var0, var2, var1);
             return var2.size();
          };
       }

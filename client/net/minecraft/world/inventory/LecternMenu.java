@@ -35,19 +35,18 @@ public class LecternMenu extends AbstractContainerMenu {
    }
 
    public boolean clickMenuButton(Player var1, int var2) {
-      int var4;
       if (var2 >= 100) {
-         var4 = var2 - 100;
-         this.setData(0, var4);
+         int var6 = var2 - 100;
+         this.setData(0, var6);
          return true;
       } else {
          switch (var2) {
             case 1:
-               var4 = this.lecternData.get(0);
-               this.setData(0, var4 - 1);
+               int var5 = this.lecternData.get(0);
+               this.setData(0, var5 - 1);
                return true;
             case 2:
-               var4 = this.lecternData.get(0);
+               int var4 = this.lecternData.get(0);
                this.setData(0, var4 + 1);
                return true;
             case 3:

@@ -8,7 +8,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
@@ -55,10 +54,7 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
          var6 = getSpikesForLevel(var3);
       }
 
-      Iterator var7 = var6.iterator();
-
-      while(var7.hasNext()) {
-         EndSpike var8 = (EndSpike)var7.next();
+      for(EndSpike var8 : var6) {
          if (var8.isCenterWithinChunk(var5)) {
             this.placeSpike(var3, var4, var2, var8);
          }
@@ -69,55 +65,49 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
 
    private void placeSpike(ServerLevelAccessor var1, RandomSource var2, SpikeConfiguration var3, EndSpike var4) {
       int var5 = var4.getRadius();
-      Iterator var6 = BlockPos.betweenClosed(new BlockPos(var4.getCenterX() - var5, var1.getMinY(), var4.getCenterZ() - var5), new BlockPos(var4.getCenterX() + var5, var4.getHeight() + 10, var4.getCenterZ() + var5)).iterator();
 
-      while(true) {
-         BlockPos var7;
-         while(var6.hasNext()) {
-            var7 = (BlockPos)var6.next();
-            if (var7.distToLowCornerSqr((double)var4.getCenterX(), (double)var7.getY(), (double)var4.getCenterZ()) <= (double)(var5 * var5 + 1) && var7.getY() < var4.getHeight()) {
-               this.setBlock(var1, var7, Blocks.OBSIDIAN.defaultBlockState());
-            } else if (var7.getY() > 65) {
-               this.setBlock(var1, var7, Blocks.AIR.defaultBlockState());
-            }
+      for(BlockPos var7 : BlockPos.betweenClosed(new BlockPos(var4.getCenterX() - var5, var1.getMinY(), var4.getCenterZ() - var5), new BlockPos(var4.getCenterX() + var5, var4.getHeight() + 10, var4.getCenterZ() + var5))) {
+         if (var7.distToLowCornerSqr((double)var4.getCenterX(), (double)var7.getY(), (double)var4.getCenterZ()) <= (double)(var5 * var5 + 1) && var7.getY() < var4.getHeight()) {
+            this.setBlock(var1, var7, Blocks.OBSIDIAN.defaultBlockState());
+         } else if (var7.getY() > 65) {
+            this.setBlock(var1, var7, Blocks.AIR.defaultBlockState());
          }
+      }
 
-         if (var4.isGuarded()) {
-            boolean var19 = true;
-            boolean var21 = true;
-            boolean var8 = true;
-            BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos();
+      if (var4.isGuarded()) {
+         boolean var19 = true;
+         boolean var21 = true;
+         boolean var8 = true;
+         BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos();
 
-            for(int var10 = -2; var10 <= 2; ++var10) {
-               for(int var11 = -2; var11 <= 2; ++var11) {
-                  for(int var12 = 0; var12 <= 3; ++var12) {
-                     boolean var13 = Mth.abs(var10) == 2;
-                     boolean var14 = Mth.abs(var11) == 2;
-                     boolean var15 = var12 == 3;
-                     if (var13 || var14 || var15) {
-                        boolean var16 = var10 == -2 || var10 == 2 || var15;
-                        boolean var17 = var11 == -2 || var11 == 2 || var15;
-                        BlockState var18 = (BlockState)((BlockState)((BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.NORTH, var16 && var11 != -2)).setValue(IronBarsBlock.SOUTH, var16 && var11 != 2)).setValue(IronBarsBlock.WEST, var17 && var10 != -2)).setValue(IronBarsBlock.EAST, var17 && var10 != 2);
-                        this.setBlock(var1, var9.set(var4.getCenterX() + var10, var4.getHeight() + var12, var4.getCenterZ() + var11), var18);
-                     }
+         for(int var10 = -2; var10 <= 2; ++var10) {
+            for(int var11 = -2; var11 <= 2; ++var11) {
+               for(int var12 = 0; var12 <= 3; ++var12) {
+                  boolean var13 = Mth.abs(var10) == 2;
+                  boolean var14 = Mth.abs(var11) == 2;
+                  boolean var15 = var12 == 3;
+                  if (var13 || var14 || var15) {
+                     boolean var16 = var10 == -2 || var10 == 2 || var15;
+                     boolean var17 = var11 == -2 || var11 == 2 || var15;
+                     BlockState var18 = (BlockState)((BlockState)((BlockState)((BlockState)Blocks.IRON_BARS.defaultBlockState().setValue(IronBarsBlock.NORTH, var16 && var11 != -2)).setValue(IronBarsBlock.SOUTH, var16 && var11 != 2)).setValue(IronBarsBlock.WEST, var17 && var10 != -2)).setValue(IronBarsBlock.EAST, var17 && var10 != 2);
+                     this.setBlock(var1, var9.set(var4.getCenterX() + var10, var4.getHeight() + var12, var4.getCenterZ() + var11), var18);
                   }
                }
             }
          }
-
-         EndCrystal var20 = (EndCrystal)EntityType.END_CRYSTAL.create(var1.getLevel(), EntitySpawnReason.STRUCTURE);
-         if (var20 != null) {
-            var20.setBeamTarget(var3.getCrystalBeamTarget());
-            var20.setInvulnerable(var3.isCrystalInvulnerable());
-            var20.moveTo((double)var4.getCenterX() + 0.5, (double)(var4.getHeight() + 1), (double)var4.getCenterZ() + 0.5, var2.nextFloat() * 360.0F, 0.0F);
-            var1.addFreshEntity(var20);
-            var7 = var20.blockPosition();
-            this.setBlock(var1, var7.below(), Blocks.BEDROCK.defaultBlockState());
-            this.setBlock(var1, var7, FireBlock.getState(var1, var7));
-         }
-
-         return;
       }
+
+      EndCrystal var20 = EntityType.END_CRYSTAL.create(var1.getLevel(), EntitySpawnReason.STRUCTURE);
+      if (var20 != null) {
+         var20.setBeamTarget(var3.getCrystalBeamTarget());
+         var20.setInvulnerable(var3.isCrystalInvulnerable());
+         var20.moveTo((double)var4.getCenterX() + 0.5, (double)(var4.getHeight() + 1), (double)var4.getCenterZ() + 0.5, var2.nextFloat() * 360.0F, 0.0F);
+         var1.addFreshEntity(var20);
+         BlockPos var22 = var20.blockPosition();
+         this.setBlock(var1, var22.below(), Blocks.BEDROCK.defaultBlockState());
+         this.setBlock(var1, var22, FireBlock.getState(var1, var22));
+      }
+
    }
 
    static {
@@ -125,19 +115,7 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
    }
 
    public static class EndSpike {
-      public static final Codec<EndSpike> CODEC = RecordCodecBuilder.create((var0) -> {
-         return var0.group(Codec.INT.fieldOf("centerX").orElse(0).forGetter((var0x) -> {
-            return var0x.centerX;
-         }), Codec.INT.fieldOf("centerZ").orElse(0).forGetter((var0x) -> {
-            return var0x.centerZ;
-         }), Codec.INT.fieldOf("radius").orElse(0).forGetter((var0x) -> {
-            return var0x.radius;
-         }), Codec.INT.fieldOf("height").orElse(0).forGetter((var0x) -> {
-            return var0x.height;
-         }), Codec.BOOL.fieldOf("guarded").orElse(false).forGetter((var0x) -> {
-            return var0x.guarded;
-         })).apply(var0, EndSpike::new);
-      });
+      public static final Codec<EndSpike> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("centerX").orElse(0).forGetter((var0x) -> var0x.centerX), Codec.INT.fieldOf("centerZ").orElse(0).forGetter((var0x) -> var0x.centerZ), Codec.INT.fieldOf("radius").orElse(0).forGetter((var0x) -> var0x.radius), Codec.INT.fieldOf("height").orElse(0).forGetter((var0x) -> var0x.height), Codec.BOOL.fieldOf("guarded").orElse(false).forGetter((var0x) -> var0x.guarded)).apply(var0, EndSpike::new));
       private final int centerX;
       private final int centerZ;
       private final int radius;

@@ -71,9 +71,7 @@ public class InstrumentItem extends Item {
 
    public int getUseDuration(ItemStack var1, LivingEntity var2) {
       Optional var3 = this.getInstrument(var1, var2.registryAccess());
-      return (Integer)var3.map((var0) -> {
-         return Mth.floor(((Instrument)var0.value()).useDuration() * 20.0F);
-      }).orElse(0);
+      return (Integer)var3.map((var0) -> Mth.floor(((Instrument)var0.value()).useDuration() * 20.0F)).orElse(0);
    }
 
    private Optional<Holder<Instrument>> getInstrument(ItemStack var1, HolderLookup.Provider var2) {

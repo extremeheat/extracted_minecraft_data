@@ -92,18 +92,8 @@ public class PlayerSkinWidget extends AbstractWidget {
          var1.pose().translate(0.0F, -1.501F, 0.0F);
          PlayerModel var3 = var2.model() == PlayerSkin.Model.SLIM ? this.slimModel : this.wideModel;
          RenderType var4 = var3.renderType(var2.texture());
-         var1.drawSpecial((var3x) -> {
-            var3.renderToBuffer(var1.pose(), var3x.getBuffer(var4), 15728880, OverlayTexture.NO_OVERLAY);
-         });
+         var1.drawSpecial((var3x) -> var3.renderToBuffer(var1.pose(), var3x.getBuffer(var4), 15728880, OverlayTexture.NO_OVERLAY));
          var1.pose().popPose();
-      }
-
-      public PlayerModel wideModel() {
-         return this.wideModel;
-      }
-
-      public PlayerModel slimModel() {
-         return this.slimModel;
       }
    }
 }

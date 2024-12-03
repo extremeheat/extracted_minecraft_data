@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -39,25 +38,15 @@ public class NbtToSnbt implements DataProvider {
    public CompletableFuture<?> run(CachedOutput var1) {
       Path var2 = this.output.getOutputFolder();
       ArrayList var3 = new ArrayList();
-      Iterator var4 = this.inputFolders.iterator();
 
-      while(var4.hasNext()) {
-         Path var5 = (Path)var4.next();
+      for(Path var5 : this.inputFolders) {
          var3.add(CompletableFuture.supplyAsync(() -> {
             try {
                Stream var3 = Files.walk(var5);
 
                CompletableFuture var4;
                try {
-                  var4 = CompletableFuture.allOf((CompletableFuture[])var3.filter((var0) -> {
-                     return var0.toString().endsWith(".nbt");
-                  }).map((var3x) -> {
-                     return CompletableFuture.runAsync(() -> {
-                        convertStructure(var1, var3x, getName(var5, var3x), var2);
-                     }, Util.ioPool());
-                  }).toArray((var0) -> {
-                     return new CompletableFuture[var0];
-                  }));
+                  var4 = CompletableFuture.allOf((CompletableFuture[])var3.filter((var0) -> var0.toString().endsWith(".nbt")).map((var3x) -> CompletableFuture.runAsync(() -> convertStructure(var1, var3x, getName(var5, var3x), var2), Util.ioPool())).toArray((var0) -> new CompletableFuture[var0]));
                } catch (Throwable var7) {
                   if (var3 != null) {
                      try {
@@ -79,14 +68,10 @@ public class NbtToSnbt implements DataProvider {
                LOGGER.error("Failed to read structure input directory", var8);
                return CompletableFuture.completedFuture((Object)null);
             }
-         }, Util.backgroundExecutor().forName("NbtToSnbt")).thenCompose((var0) -> {
-            return var0;
-         }));
+         }, Util.backgroundExecutor().forName("NbtToSnbt")).thenCompose((var0) -> var0));
       }
 
-      return CompletableFuture.allOf((CompletableFuture[])var3.toArray((var0) -> {
-         return new CompletableFuture[var0];
-      }));
+      return CompletableFuture.allOf((CompletableFuture[])var3.toArray((var0) -> new CompletableFuture[var0]));
    }
 
    public final String getName() {

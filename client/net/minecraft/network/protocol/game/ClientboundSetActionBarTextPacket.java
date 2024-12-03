@@ -23,10 +23,6 @@ public record ClientboundSetActionBarTextPacket(Component text) implements Packe
       var1.setActionBarText(this);
    }
 
-   public Component text() {
-      return this.text;
-   }
-
    static {
       STREAM_CODEC = StreamCodec.composite(ComponentSerialization.TRUSTED_STREAM_CODEC, ClientboundSetActionBarTextPacket::text, ClientboundSetActionBarTextPacket::new);
    }

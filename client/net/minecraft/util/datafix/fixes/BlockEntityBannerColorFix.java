@@ -14,17 +14,9 @@ public class BlockEntityBannerColorFix extends NamedEntityFix {
    }
 
    public Dynamic<?> fixTag(Dynamic<?> var1) {
-      var1 = var1.update("Base", (var0) -> {
-         return var0.createInt(15 - var0.asInt(0));
-      });
+      var1 = var1.update("Base", (var0) -> var0.createInt(15 - var0.asInt(0)));
       var1 = var1.update("Patterns", (var0) -> {
-         DataResult var10000 = var0.asStreamOpt().map((var0x) -> {
-            return var0x.map((var0) -> {
-               return var0.update("Color", (var0x) -> {
-                  return var0x.createInt(15 - var0x.asInt(0));
-               });
-            });
-         });
+         DataResult var10000 = var0.asStreamOpt().map((var0x) -> var0x.map((var0) -> var0.update("Color", (var0x) -> var0x.createInt(15 - var0x.asInt(0)))));
          Objects.requireNonNull(var0);
          return (Dynamic)DataFixUtils.orElse(var10000.map(var0::createList).result(), var0);
       });

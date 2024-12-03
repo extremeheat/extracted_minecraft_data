@@ -1,11 +1,8 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.DoubleSupplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -197,7 +194,7 @@ public class EnderMan extends Monster implements NeutralMob {
    }
 
    boolean isBeingStaredBy(Player var1) {
-      return this.isLookingAtMe(var1, 0.025, true, false, LivingEntity.PLAYER_NOT_WEARING_DISGUISE_ITEM, new DoubleSupplier[]{this::getEyeY});
+      return !LivingEntity.PLAYER_NOT_WEARING_DISGUISE_ITEM.test(var1) ? false : this.isLookingAtMe(var1, 0.025, true, false, new double[]{this.getEyeY()});
    }
 
    public void aiStep() {
@@ -268,7 +265,7 @@ public class EnderMan extends Monster implements NeutralMob {
          if (var12) {
             this.level().gameEvent(GameEvent.TELEPORT, var11, GameEvent.Context.of((Entity)this));
             if (!this.isSilent()) {
-               this.level().playSound((Player)null, this.xo, this.yo, this.zo, (SoundEvent)SoundEvents.ENDERMAN_TELEPORT, this.getSoundSource(), 1.0F, 1.0F);
+               this.level().playSound((Player)null, this.xo, this.yo, this.zo, SoundEvents.ENDERMAN_TELEPORT, this.getSoundSource(), 1.0F, 1.0F);
                this.playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.0F);
             }
          }
@@ -298,11 +295,8 @@ public class EnderMan extends Monster implements NeutralMob {
          ItemStack var5 = new ItemStack(Items.DIAMOND_AXE);
          EnchantmentHelper.enchantItemFromProvider(var5, var1.registryAccess(), VanillaEnchantmentProviders.ENDERMAN_LOOT_DROP, var1.getCurrentDifficultyAt(this.blockPosition()), this.getRandom());
          LootParams.Builder var6 = (new LootParams.Builder((ServerLevel)this.level())).withParameter(LootContextParams.ORIGIN, this.position()).withParameter(LootContextParams.TOOL, var5).withOptionalParameter(LootContextParams.THIS_ENTITY, this);
-         List var7 = var4.getDrops(var6);
-         Iterator var8 = var7.iterator();
 
-         while(var8.hasNext()) {
-            ItemStack var9 = (ItemStack)var8.next();
+         for(ItemStack var9 : var4.getDrops(var6)) {
             this.spawnAtLocation(var1, var9);
          }
       }
@@ -323,16 +317,15 @@ public class EnderMan extends Monster implements NeutralMob {
          return false;
       } else {
          boolean var4 = var2.getDirectEntity() instanceof ThrownPotion;
-         boolean var5;
          if (!var2.is(DamageTypeTags.IS_PROJECTILE) && !var4) {
-            var5 = super.hurtServer(var1, var2, var3);
+            boolean var7 = super.hurtServer(var1, var2, var3);
             if (!(var2.getEntity() instanceof LivingEntity) && this.random.nextInt(10) != 0) {
                this.teleport();
             }
 
-            return var5;
+            return var7;
          } else {
-            var5 = var4 && this.hurtWithCleanWater(var1, var2, (ThrownPotion)var2.getDirectEntity(), var3);
+            boolean var5 = var4 && this.hurtWithCleanWater(var1, var2, (ThrownPotion)var2.getDirectEntity(), var3);
 
             for(int var6 = 0; var6 < 64; ++var6) {
                if (this.teleport()) {
@@ -369,13 +362,99 @@ public class EnderMan extends Monster implements NeutralMob {
 
    static {
       SPEED_MODIFIER_ATTACKING = new AttributeModifier(SPEED_MODIFIER_ATTACKING_ID, 0.15000000596046448, AttributeModifier.Operation.ADD_VALUE);
-      DATA_CARRY_STATE = SynchedEntityData.defineId(EnderMan.class, EntityDataSerializers.OPTIONAL_BLOCK_STATE);
-      DATA_CREEPY = SynchedEntityData.defineId(EnderMan.class, EntityDataSerializers.BOOLEAN);
-      DATA_STARED_AT = SynchedEntityData.defineId(EnderMan.class, EntityDataSerializers.BOOLEAN);
+      DATA_CARRY_STATE = SynchedEntityData.<Optional<BlockState>>defineId(EnderMan.class, EntityDataSerializers.OPTIONAL_BLOCK_STATE);
+      DATA_CREEPY = SynchedEntityData.<Boolean>defineId(EnderMan.class, EntityDataSerializers.BOOLEAN);
+      DATA_STARED_AT = SynchedEntityData.<Boolean>defineId(EnderMan.class, EntityDataSerializers.BOOLEAN);
       PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
    }
 
-   private static class EndermanFreezeWhenLookedAt extends Goal {
+   static class EndermanLookForPlayerGoal extends NearestAttackableTargetGoal<Player> {
+      private final EnderMan enderman;
+      @Nullable
+      private Player pendingTarget;
+      private int aggroTime;
+      private int teleportTime;
+      private final TargetingConditions startAggroTargetConditions;
+      private final TargetingConditions continueAggroTargetConditions = TargetingConditions.forCombat().ignoreLineOfSight();
+      private final TargetingConditions.Selector isAngerInducing;
+
+      public EndermanLookForPlayerGoal(EnderMan var1, @Nullable TargetingConditions.Selector var2) {
+         super(var1, Player.class, 10, false, false, var2);
+         this.enderman = var1;
+         this.isAngerInducing = (var1x, var2x) -> (var1.isBeingStaredBy((Player)var1x) || var1.isAngryAt(var1x, var2x)) && !var1.hasIndirectPassenger(var1x);
+         this.startAggroTargetConditions = TargetingConditions.forCombat().range(this.getFollowDistance()).selector(this.isAngerInducing);
+      }
+
+      public boolean canUse() {
+         this.pendingTarget = getServerLevel(this.enderman).getNearestPlayer(this.startAggroTargetConditions.range(this.getFollowDistance()), this.enderman);
+         return this.pendingTarget != null;
+      }
+
+      public void start() {
+         this.aggroTime = this.adjustedTickDelay(5);
+         this.teleportTime = 0;
+         this.enderman.setBeingStaredAt();
+      }
+
+      public void stop() {
+         this.pendingTarget = null;
+         super.stop();
+      }
+
+      public boolean canContinueToUse() {
+         if (this.pendingTarget != null) {
+            if (!this.isAngerInducing.test(this.pendingTarget, getServerLevel(this.enderman))) {
+               return false;
+            } else {
+               this.enderman.lookAt(this.pendingTarget, 10.0F, 10.0F);
+               return true;
+            }
+         } else {
+            if (this.target != null) {
+               if (this.enderman.hasIndirectPassenger(this.target)) {
+                  return false;
+               }
+
+               if (this.continueAggroTargetConditions.test(getServerLevel(this.enderman), this.enderman, this.target)) {
+                  return true;
+               }
+            }
+
+            return super.canContinueToUse();
+         }
+      }
+
+      public void tick() {
+         if (this.enderman.getTarget() == null) {
+            super.setTarget((LivingEntity)null);
+         }
+
+         if (this.pendingTarget != null) {
+            if (--this.aggroTime <= 0) {
+               this.target = this.pendingTarget;
+               this.pendingTarget = null;
+               super.start();
+            }
+         } else {
+            if (this.target != null && !this.enderman.isPassenger()) {
+               if (this.enderman.isBeingStaredBy((Player)this.target)) {
+                  if (this.target.distanceToSqr(this.enderman) < 16.0) {
+                     this.enderman.teleport();
+                  }
+
+                  this.teleportTime = 0;
+               } else if (this.target.distanceToSqr(this.enderman) > 256.0 && this.teleportTime++ >= this.adjustedTickDelay(30) && this.enderman.teleportTowards(this.target)) {
+                  this.teleportTime = 0;
+               }
+            }
+
+            super.tick();
+         }
+
+      }
+   }
+
+   static class EndermanFreezeWhenLookedAt extends Goal {
       private final EnderMan enderman;
       @Nullable
       private LivingEntity target;
@@ -405,7 +484,7 @@ public class EnderMan extends Monster implements NeutralMob {
       }
    }
 
-   private static class EndermanLeaveBlockGoal extends Goal {
+   static class EndermanLeaveBlockGoal extends Goal {
       private final EnderMan enderman;
 
       public EndermanLeaveBlockGoal(EnderMan var1) {
@@ -484,94 +563,6 @@ public class EnderMan extends Monster implements NeutralMob {
             var2.removeBlock(var6, false);
             var2.gameEvent(GameEvent.BLOCK_DESTROY, var6, GameEvent.Context.of(this.enderman, var7));
             this.enderman.setCarriedBlock(var7.getBlock().defaultBlockState());
-         }
-
-      }
-   }
-
-   private static class EndermanLookForPlayerGoal extends NearestAttackableTargetGoal<Player> {
-      private final EnderMan enderman;
-      @Nullable
-      private Player pendingTarget;
-      private int aggroTime;
-      private int teleportTime;
-      private final TargetingConditions startAggroTargetConditions;
-      private final TargetingConditions continueAggroTargetConditions = TargetingConditions.forCombat().ignoreLineOfSight();
-      private final TargetingConditions.Selector isAngerInducing;
-
-      public EndermanLookForPlayerGoal(EnderMan var1, @Nullable TargetingConditions.Selector var2) {
-         super(var1, Player.class, 10, false, false, var2);
-         this.enderman = var1;
-         this.isAngerInducing = (var1x, var2x) -> {
-            return (var1.isBeingStaredBy((Player)var1x) || var1.isAngryAt(var1x, var2x)) && !var1.hasIndirectPassenger(var1x);
-         };
-         this.startAggroTargetConditions = TargetingConditions.forCombat().range(this.getFollowDistance()).selector(this.isAngerInducing);
-      }
-
-      public boolean canUse() {
-         this.pendingTarget = getServerLevel(this.enderman).getNearestPlayer(this.startAggroTargetConditions.range(this.getFollowDistance()), this.enderman);
-         return this.pendingTarget != null;
-      }
-
-      public void start() {
-         this.aggroTime = this.adjustedTickDelay(5);
-         this.teleportTime = 0;
-         this.enderman.setBeingStaredAt();
-      }
-
-      public void stop() {
-         this.pendingTarget = null;
-         super.stop();
-      }
-
-      public boolean canContinueToUse() {
-         if (this.pendingTarget != null) {
-            if (!this.isAngerInducing.test(this.pendingTarget, getServerLevel(this.enderman))) {
-               return false;
-            } else {
-               this.enderman.lookAt(this.pendingTarget, 10.0F, 10.0F);
-               return true;
-            }
-         } else {
-            if (this.target != null) {
-               if (this.enderman.hasIndirectPassenger(this.target)) {
-                  return false;
-               }
-
-               if (this.continueAggroTargetConditions.test(getServerLevel(this.enderman), this.enderman, this.target)) {
-                  return true;
-               }
-            }
-
-            return super.canContinueToUse();
-         }
-      }
-
-      public void tick() {
-         if (this.enderman.getTarget() == null) {
-            super.setTarget((LivingEntity)null);
-         }
-
-         if (this.pendingTarget != null) {
-            if (--this.aggroTime <= 0) {
-               this.target = this.pendingTarget;
-               this.pendingTarget = null;
-               super.start();
-            }
-         } else {
-            if (this.target != null && !this.enderman.isPassenger()) {
-               if (this.enderman.isBeingStaredBy((Player)this.target)) {
-                  if (this.target.distanceToSqr(this.enderman) < 16.0) {
-                     this.enderman.teleport();
-                  }
-
-                  this.teleportTime = 0;
-               } else if (this.target.distanceToSqr(this.enderman) > 256.0 && this.teleportTime++ >= this.adjustedTickDelay(30) && this.enderman.teleportTowards(this.target)) {
-                  this.teleportTime = 0;
-               }
-            }
-
-            super.tick();
          }
 
       }

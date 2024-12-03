@@ -6,7 +6,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -35,7 +34,7 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
 
    public AbstractChestBoat(EntityType<? extends AbstractChestBoat> var1, Level var2, Supplier<Item> var3) {
       super(var1, var2, var3);
-      this.itemStacks = NonNullList.withSize(27, ItemStack.EMPTY);
+      this.itemStacks = NonNullList.<ItemStack>withSize(27, ItemStack.EMPTY);
    }
 
    protected float getSinglePassengerXOffset() {
@@ -63,16 +62,15 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
 
    public void remove(Entity.RemovalReason var1) {
       if (!this.level().isClientSide && var1.shouldDestroy()) {
-         Containers.dropContents(this.level(), (Entity)this, (Container)this);
+         Containers.dropContents(this.level(), (Entity)this, this);
       }
 
       super.remove(var1);
    }
 
    public InteractionResult interact(Player var1, InteractionHand var2) {
-      InteractionResult var3;
       if (!var1.isSecondaryUseActive()) {
-         var3 = super.interact(var1, var2);
+         InteractionResult var3 = super.interact(var1, var2);
          if (var3 != InteractionResult.PASS) {
             return var3;
          }
@@ -81,8 +79,8 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
       if (this.canAddPassenger(var1) && !var1.isSecondaryUseActive()) {
          return InteractionResult.PASS;
       } else {
-         var3 = this.interactWithContainerVehicle(var1);
-         if (var3.consumesAction()) {
+         InteractionResult var6 = this.interactWithContainerVehicle(var1);
+         if (var6.consumesAction()) {
             Level var5 = var1.level();
             if (var5 instanceof ServerLevel) {
                ServerLevel var4 = (ServerLevel)var5;
@@ -91,7 +89,7 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
             }
          }
 
-         return var3;
+         return var6;
       }
    }
 
@@ -176,7 +174,7 @@ public abstract class AbstractChestBoat extends AbstractBoat implements HasCusto
    }
 
    public void clearItemStacks() {
-      this.itemStacks = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+      this.itemStacks = NonNullList.<ItemStack>withSize(this.getContainerSize(), ItemStack.EMPTY);
    }
 
    public void stopOpen(Player var1) {

@@ -14,9 +14,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureUpdater;
 
 public record SignedMessageBody(String content, Instant timeStamp, long salt, LastSeenMessages lastSeen) {
-   public static final MapCodec<SignedMessageBody> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.STRING.fieldOf("content").forGetter(SignedMessageBody::content), ExtraCodecs.INSTANT_ISO8601.fieldOf("time_stamp").forGetter(SignedMessageBody::timeStamp), Codec.LONG.fieldOf("salt").forGetter(SignedMessageBody::salt), LastSeenMessages.CODEC.optionalFieldOf("last_seen", LastSeenMessages.EMPTY).forGetter(SignedMessageBody::lastSeen)).apply(var0, SignedMessageBody::new);
-   });
+   public static final MapCodec<SignedMessageBody> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("content").forGetter(SignedMessageBody::content), ExtraCodecs.INSTANT_ISO8601.fieldOf("time_stamp").forGetter(SignedMessageBody::timeStamp), Codec.LONG.fieldOf("salt").forGetter(SignedMessageBody::salt), LastSeenMessages.CODEC.optionalFieldOf("last_seen", LastSeenMessages.EMPTY).forGetter(SignedMessageBody::lastSeen)).apply(var0, SignedMessageBody::new));
 
    public SignedMessageBody(String var1, Instant var2, long var3, LastSeenMessages var5) {
       super();
@@ -43,22 +41,6 @@ public record SignedMessageBody(String content, Instant timeStamp, long salt, La
       return new Packed(this.content, this.timeStamp, this.salt, this.lastSeen.pack(var1));
    }
 
-   public String content() {
-      return this.content;
-   }
-
-   public Instant timeStamp() {
-      return this.timeStamp;
-   }
-
-   public long salt() {
-      return this.salt;
-   }
-
-   public LastSeenMessages lastSeen() {
-      return this.lastSeen;
-   }
-
    public static record Packed(String content, Instant timeStamp, long salt, LastSeenMessages.Packed lastSeen) {
       public Packed(FriendlyByteBuf var1) {
          this(var1.readUtf(256), var1.readInstant(), var1.readLong(), new LastSeenMessages.Packed(var1));
@@ -80,25 +62,7 @@ public record SignedMessageBody(String content, Instant timeStamp, long salt, La
       }
 
       public Optional<SignedMessageBody> unpack(MessageSignatureCache var1) {
-         return this.lastSeen.unpack(var1).map((var1x) -> {
-            return new SignedMessageBody(this.content, this.timeStamp, this.salt, var1x);
-         });
-      }
-
-      public String content() {
-         return this.content;
-      }
-
-      public Instant timeStamp() {
-         return this.timeStamp;
-      }
-
-      public long salt() {
-         return this.salt;
-      }
-
-      public LastSeenMessages.Packed lastSeen() {
-         return this.lastSeen;
+         return this.lastSeen.unpack(var1).map((var1x) -> new SignedMessageBody(this.content, this.timeStamp, this.salt, var1x));
       }
    }
 }

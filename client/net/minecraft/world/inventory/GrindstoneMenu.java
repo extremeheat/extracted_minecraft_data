@@ -1,7 +1,6 @@
 package net.minecraft.world.inventory;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import java.util.Iterator;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
@@ -47,12 +46,12 @@ public class GrindstoneMenu extends AbstractContainerMenu {
          }
       };
       this.access = var3;
-      this.addSlot(new Slot(this, this.repairSlots, 0, 49, 19) {
+      this.addSlot(new Slot(this.repairSlots, 0, 49, 19) {
          public boolean mayPlace(ItemStack var1) {
             return var1.isDamageableItem() || EnchantmentHelper.hasAnyEnchantments(var1);
          }
       });
-      this.addSlot(new Slot(this, this.repairSlots, 1, 49, 40) {
+      this.addSlot(new Slot(this.repairSlots, 1, 49, 40) {
          public boolean mayPlace(ItemStack var1) {
             return var1.isDamageableItem() || EnchantmentHelper.hasAnyEnchantments(var1);
          }
@@ -89,10 +88,8 @@ public class GrindstoneMenu extends AbstractContainerMenu {
          private int getExperienceFromItem(ItemStack var1) {
             int var2 = 0;
             ItemEnchantments var3x = EnchantmentHelper.getEnchantmentsForCrafting(var1);
-            Iterator var4 = var3x.entrySet().iterator();
 
-            while(var4.hasNext()) {
-               Object2IntMap.Entry var5 = (Object2IntMap.Entry)var4.next();
+            for(Object2IntMap.Entry var5 : var3x.entrySet()) {
                Holder var6 = (Holder)var5.getKey();
                int var7 = var5.getIntValue();
                if (!var6.is(EnchantmentTags.CURSE)) {
@@ -167,31 +164,19 @@ public class GrindstoneMenu extends AbstractContainerMenu {
    private void mergeEnchantsFrom(ItemStack var1, ItemStack var2) {
       EnchantmentHelper.updateEnchantments(var1, (var1x) -> {
          ItemEnchantments var2x = EnchantmentHelper.getEnchantmentsForCrafting(var2);
-         Iterator var3 = var2x.entrySet().iterator();
 
-         while(true) {
-            Object2IntMap.Entry var4;
-            Holder var5;
-            do {
-               if (!var3.hasNext()) {
-                  return;
-               }
-
-               var4 = (Object2IntMap.Entry)var3.next();
-               var5 = (Holder)var4.getKey();
-            } while(var5.is(EnchantmentTags.CURSE) && var1x.getLevel(var5) != 0);
-
-            var1x.upgrade(var5, var4.getIntValue());
+         for(Object2IntMap.Entry var4 : var2x.entrySet()) {
+            Holder var5 = (Holder)var4.getKey();
+            if (!var5.is(EnchantmentTags.CURSE) || var1x.getLevel(var5) == 0) {
+               var1x.upgrade(var5, var4.getIntValue());
+            }
          }
+
       });
    }
 
    private ItemStack removeNonCursesFrom(ItemStack var1) {
-      ItemEnchantments var2 = EnchantmentHelper.updateEnchantments(var1, (var0) -> {
-         var0.removeIf((var0x) -> {
-            return !var0x.is(EnchantmentTags.CURSE);
-         });
-      });
+      ItemEnchantments var2 = EnchantmentHelper.updateEnchantments(var1, (var0) -> var0.removeIf((var0x) -> !var0x.is(EnchantmentTags.CURSE)));
       if (var1.is(Items.ENCHANTED_BOOK) && var2.isEmpty()) {
          var1 = var1.transmuteCopy(Items.BOOK);
       }
@@ -208,9 +193,7 @@ public class GrindstoneMenu extends AbstractContainerMenu {
 
    public void removed(Player var1) {
       super.removed(var1);
-      this.access.execute((var2, var3) -> {
-         this.clearContainer(var1, this.repairSlots);
-      });
+      this.access.execute((var2, var3) -> this.clearContainer(var1, this.repairSlots));
    }
 
    public boolean stillValid(Player var1) {
@@ -219,7 +202,7 @@ public class GrindstoneMenu extends AbstractContainerMenu {
 
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = (Slot)this.slots.get(var2);
+      Slot var4 = this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();

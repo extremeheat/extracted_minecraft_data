@@ -7,8 +7,4 @@ public record LootPoolEntryType(MapCodec<? extends LootPoolEntryContainer> codec
       super();
       this.codec = var1;
    }
-
-   public MapCodec<? extends LootPoolEntryContainer> codec() {
-      return this.codec;
-   }
 }

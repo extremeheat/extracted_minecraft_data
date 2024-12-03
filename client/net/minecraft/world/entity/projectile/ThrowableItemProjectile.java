@@ -49,9 +49,7 @@ public abstract class ThrowableItemProjectile extends ThrowableProjectile implem
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       if (var1.contains("Item", 10)) {
-         this.setItem((ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("Item")).orElseGet(() -> {
-            return new ItemStack(this.getDefaultItem());
-         }));
+         this.setItem((ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("Item")).orElseGet(() -> new ItemStack(this.getDefaultItem())));
       } else {
          this.setItem(new ItemStack(this.getDefaultItem()));
       }
@@ -59,6 +57,6 @@ public abstract class ThrowableItemProjectile extends ThrowableProjectile implem
    }
 
    static {
-      DATA_ITEM_STACK = SynchedEntityData.defineId(ThrowableItemProjectile.class, EntityDataSerializers.ITEM_STACK);
+      DATA_ITEM_STACK = SynchedEntityData.<ItemStack>defineId(ThrowableItemProjectile.class, EntityDataSerializers.ITEM_STACK);
    }
 }

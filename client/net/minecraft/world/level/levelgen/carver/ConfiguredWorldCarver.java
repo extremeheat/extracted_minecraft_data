@@ -36,19 +36,9 @@ public record ConfiguredWorldCarver<WC extends CarverConfiguration>(WorldCarver<
       return SharedConstants.debugVoidTerrain(var2.getPos()) ? false : this.worldCarver.carve(var1, this.config, var2, var3, var4, var5, var6, var7);
    }
 
-   public WorldCarver<WC> worldCarver() {
-      return this.worldCarver;
-   }
-
-   public WC config() {
-      return this.config;
-   }
-
    static {
-      DIRECT_CODEC = BuiltInRegistries.CARVER.byNameCodec().dispatch((var0) -> {
-         return var0.worldCarver;
-      }, WorldCarver::configuredCodec);
-      CODEC = RegistryFileCodec.create(Registries.CONFIGURED_CARVER, DIRECT_CODEC);
+      DIRECT_CODEC = BuiltInRegistries.CARVER.byNameCodec().dispatch((var0) -> var0.worldCarver, WorldCarver::configuredCodec);
+      CODEC = RegistryFileCodec.<Holder<ConfiguredWorldCarver<?>>>create(Registries.CONFIGURED_CARVER, DIRECT_CODEC);
       LIST_CODEC = RegistryCodecs.homogeneousList(Registries.CONFIGURED_CARVER, DIRECT_CODEC);
    }
 }

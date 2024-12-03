@@ -19,8 +19,4 @@ public record SingleRecipeInput(ItemStack item) implements RecipeInput {
    public int size() {
       return 1;
    }
-
-   public ItemStack item() {
-      return this.item;
-   }
 }

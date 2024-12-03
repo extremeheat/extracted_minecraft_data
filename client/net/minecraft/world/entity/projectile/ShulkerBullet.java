@@ -195,7 +195,6 @@ public class ShulkerBullet extends Projectile {
    public void tick() {
       super.tick();
       HitResult var1 = null;
-      Vec3 var2;
       if (!this.level().isClientSide) {
          if (this.finalTarget == null && this.targetId != null) {
             this.finalTarget = ((ServerLevel)this.level()).getEntity(this.targetId);
@@ -210,15 +209,15 @@ public class ShulkerBullet extends Projectile {
             this.targetDeltaX = Mth.clamp(this.targetDeltaX * 1.025, -1.0, 1.0);
             this.targetDeltaY = Mth.clamp(this.targetDeltaY * 1.025, -1.0, 1.0);
             this.targetDeltaZ = Mth.clamp(this.targetDeltaZ * 1.025, -1.0, 1.0);
-            var2 = this.getDeltaMovement();
+            Vec3 var2 = this.getDeltaMovement();
             this.setDeltaMovement(var2.add((this.targetDeltaX - var2.x) * 0.2, (this.targetDeltaY - var2.y) * 0.2, (this.targetDeltaZ - var2.z) * 0.2));
          }
 
          var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
       }
 
-      var2 = this.getDeltaMovement();
-      this.setPos(this.position().add(var2));
+      Vec3 var6 = this.getDeltaMovement();
+      this.setPos(this.position().add(var6));
       this.applyEffectsFromBlocks();
       if (this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
          this.handlePortal();
@@ -230,7 +229,7 @@ public class ShulkerBullet extends Projectile {
 
       ProjectileUtil.rotateTowardsMovement(this, 0.5F);
       if (this.level().isClientSide) {
-         this.level().addParticle(ParticleTypes.END_ROD, this.getX() - var2.x, this.getY() - var2.y + 0.15, this.getZ() - var2.z, 0.0, 0.0, 0.0);
+         this.level().addParticle(ParticleTypes.END_ROD, this.getX() - var6.x, this.getY() - var6.y + 0.15, this.getZ() - var6.z, 0.0, 0.0, 0.0);
       } else if (this.finalTarget != null && !this.finalTarget.isRemoved()) {
          if (this.flightSteps > 0) {
             --this.flightSteps;

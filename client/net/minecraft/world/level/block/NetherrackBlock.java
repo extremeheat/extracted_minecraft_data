@@ -1,7 +1,6 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.Iterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
@@ -26,18 +25,13 @@ public class NetherrackBlock extends Block implements BonemealableBlock {
       if (!var1.getBlockState(var2.above()).propagatesSkylightDown()) {
          return false;
       } else {
-         Iterator var4 = BlockPos.betweenClosed(var2.offset(-1, -1, -1), var2.offset(1, 1, 1)).iterator();
-
-         BlockPos var5;
-         do {
-            if (!var4.hasNext()) {
-               return false;
+         for(BlockPos var5 : BlockPos.betweenClosed(var2.offset(-1, -1, -1), var2.offset(1, 1, 1))) {
+            if (var1.getBlockState(var5).is(BlockTags.NYLIUM)) {
+               return true;
             }
+         }
 
-            var5 = (BlockPos)var4.next();
-         } while(!var1.getBlockState(var5).is(BlockTags.NYLIUM));
-
-         return true;
+         return false;
       }
    }
 
@@ -48,10 +42,8 @@ public class NetherrackBlock extends Block implements BonemealableBlock {
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       boolean var5 = false;
       boolean var6 = false;
-      Iterator var7 = BlockPos.betweenClosed(var3.offset(-1, -1, -1), var3.offset(1, 1, 1)).iterator();
 
-      while(var7.hasNext()) {
-         BlockPos var8 = (BlockPos)var7.next();
+      for(BlockPos var8 : BlockPos.betweenClosed(var3.offset(-1, -1, -1), var3.offset(1, 1, 1))) {
          BlockState var9 = var1.getBlockState(var8);
          if (var9.is(Blocks.WARPED_NYLIUM)) {
             var6 = true;

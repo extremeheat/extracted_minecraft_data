@@ -42,13 +42,9 @@ public class GameTestRunner {
       this.newStructureSpawner = var6;
       this.batches = ImmutableList.copyOf(var2);
       this.haltOnError = var7;
-      this.allTestInfos = (List)this.batches.stream().flatMap((var0) -> {
-         return var0.gameTestInfos().stream();
-      }).collect(Util.toMutableList());
+      this.allTestInfos = (List)this.batches.stream().flatMap((var0) -> var0.gameTestInfos().stream()).collect(Util.toMutableList());
       var4.setRunner(this);
-      this.allTestInfos.forEach((var0) -> {
-         var0.addListener(new ReportGameListener());
-      });
+      this.allTestInfos.forEach((var0) -> var0.addListener(new ReportGameListener()));
    }
 
    public List<GameTestInfo> getTestInfos() {
@@ -70,9 +66,7 @@ public class GameTestRunner {
 
    public void rerunTest(GameTestInfo var1) {
       GameTestInfo var2 = var1.copyReset();
-      var1.getListeners().forEach((var3) -> {
-         var3.testAddedForRerun(var1, var2, this);
-      });
+      var1.getListeners().forEach((var3) -> var3.testAddedForRerun(var1, var2, this));
       this.allTestInfos.add(var2);
       this.scheduledForRerun.add(var2);
       if (this.stopped) {
@@ -92,9 +86,7 @@ public class GameTestRunner {
          String var3 = this.currentBatch.name();
          LOGGER.info("Running test batch '{}' ({} tests)...", var3, var2.size());
          this.currentBatch.beforeBatchFunction().accept(this.level);
-         this.batchListeners.forEach((var1x) -> {
-            var1x.testBatchStarting(this.currentBatch);
-         });
+         this.batchListeners.forEach((var1x) -> var1x.testBatchStarting(this.currentBatch));
          final MultipleTestTracker var4 = new MultipleTestTracker();
          Objects.requireNonNull(var4);
          var2.forEach(var4::addTestToTrack);
@@ -102,13 +94,9 @@ public class GameTestRunner {
             private void testCompleted() {
                if (var4.isDone()) {
                   GameTestRunner.this.currentBatch.afterBatchFunction().accept(GameTestRunner.this.level);
-                  GameTestRunner.this.batchListeners.forEach((var1xx) -> {
-                     var1xx.testBatchFinished(GameTestRunner.this.currentBatch);
-                  });
+                  GameTestRunner.this.batchListeners.forEach((var1xx) -> var1xx.testBatchFinished(GameTestRunner.this.currentBatch));
                   LongArraySet var1x = new LongArraySet(GameTestRunner.this.level.getForcedChunks());
-                  var1x.forEach((var1xx) -> {
-                     GameTestRunner.this.level.setChunkForced(ChunkPos.getX(var1xx), ChunkPos.getZ(var1xx), false);
-                  });
+                  var1x.forEach((var1xx) -> GameTestRunner.this.level.setChunkForced(ChunkPos.getX(var1xx), ChunkPos.getZ(var1xx), false));
                   GameTestRunner.this.runBatch(var1 + 1);
                }
 
@@ -125,9 +113,7 @@ public class GameTestRunner {
                if (GameTestRunner.this.haltOnError) {
                   GameTestRunner.this.currentBatch.afterBatchFunction().accept(GameTestRunner.this.level);
                   LongArraySet var3 = new LongArraySet(GameTestRunner.this.level.getForcedChunks());
-                  var3.forEach((var1xx) -> {
-                     GameTestRunner.this.level.setChunkForced(ChunkPos.getX(var1xx), ChunkPos.getZ(var1xx), false);
-                  });
+                  var3.forEach((var1xx) -> GameTestRunner.this.level.setChunkForced(ChunkPos.getX(var1xx), ChunkPos.getZ(var1xx), false));
                   GameTestTicker.SINGLETON.clear();
                } else {
                   this.testCompleted();
@@ -146,9 +132,7 @@ public class GameTestRunner {
 
    private void runScheduledRerunTests() {
       if (!this.scheduledForRerun.isEmpty()) {
-         LOGGER.info("Starting re-run of tests: {}", this.scheduledForRerun.stream().map((var0) -> {
-            return var0.getTestFunction().testName();
-         }).collect(Collectors.joining(", ")));
+         LOGGER.info("Starting re-run of tests: {}", this.scheduledForRerun.stream().map((var0) -> var0.getTestFunction().testName()).collect(Collectors.joining(", ")));
          this.batches = ImmutableList.copyOf(this.testBatcher.batch(this.scheduledForRerun));
          this.scheduledForRerun.clear();
          this.stopped = false;
@@ -176,17 +160,9 @@ public class GameTestRunner {
       DebugPackets.sendGameTestClearPacket(var0);
    }
 
-   public interface GameTestBatcher {
-      Collection<GameTestBatch> batch(Collection<GameTestInfo> var1);
-   }
-
    public interface StructureSpawner {
-      StructureSpawner IN_PLACE = (var0) -> {
-         return Optional.of(var0.prepareTestStructure().placeStructure().startExecution(1));
-      };
-      StructureSpawner NOT_SET = (var0) -> {
-         return Optional.empty();
-      };
+      StructureSpawner IN_PLACE = (var0) -> Optional.of(var0.prepareTestStructure().placeStructure().startExecution(1));
+      StructureSpawner NOT_SET = (var0) -> Optional.empty();
 
       Optional<GameTestInfo> spawnStructure(GameTestInfo var1);
 
@@ -245,5 +221,9 @@ public class GameTestRunner {
       public GameTestRunner build() {
          return new GameTestRunner(this.batcher, this.batches, this.level, this.testTicker, this.existingStructureSpawner, this.newStructureSpawner, this.haltOnError);
       }
+   }
+
+   public interface GameTestBatcher {
+      Collection<GameTestBatch> batch(Collection<GameTestInfo> var1);
    }
 }

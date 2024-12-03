@@ -9,11 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.dimension.DimensionType;
 
 public class FlatLayerInfo {
-   public static final Codec<FlatLayerInfo> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(Codec.intRange(0, DimensionType.Y_SIZE).fieldOf("height").forGetter(FlatLayerInfo::getHeight), BuiltInRegistries.BLOCK.byNameCodec().fieldOf("block").orElse(Blocks.AIR).forGetter((var0x) -> {
-         return var0x.getBlockState().getBlock();
-      })).apply(var0, FlatLayerInfo::new);
-   });
+   public static final Codec<FlatLayerInfo> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.intRange(0, DimensionType.Y_SIZE).fieldOf("height").forGetter(FlatLayerInfo::getHeight), BuiltInRegistries.BLOCK.byNameCodec().fieldOf("block").orElse(Blocks.AIR).forGetter((var0x) -> var0x.getBlockState().getBlock())).apply(var0, FlatLayerInfo::new));
    private final Block block;
    private final int height;
 

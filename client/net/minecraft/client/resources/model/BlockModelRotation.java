@@ -28,11 +28,7 @@ public enum BlockModelRotation implements ModelState {
    X270_Y270(270, 270);
 
    private static final int DEGREES = 360;
-   private static final Map<Integer, BlockModelRotation> BY_INDEX = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> {
-      return var0.index;
-   }, (var0) -> {
-      return var0;
-   }));
+   private static final Map<Integer, BlockModelRotation> BY_INDEX = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> var0.index, (var0) -> var0));
    private final Transformation transformation;
    private final OctahedralGroup actualRotation;
    private final int index;
@@ -46,12 +42,11 @@ public enum BlockModelRotation implements ModelState {
       Quaternionf var5 = (new Quaternionf()).rotateYXZ((float)(-var4) * 0.017453292F, (float)(-var3) * 0.017453292F, 0.0F);
       OctahedralGroup var6 = OctahedralGroup.IDENTITY;
 
-      int var7;
-      for(var7 = 0; var7 < var4; var7 += 90) {
+      for(int var7 = 0; var7 < var4; var7 += 90) {
          var6 = var6.compose(OctahedralGroup.ROT_90_Y_NEG);
       }
 
-      for(var7 = 0; var7 < var3; var7 += 90) {
+      for(int var8 = 0; var8 < var3; var8 += 90) {
          var6 = var6.compose(OctahedralGroup.ROT_90_X_NEG);
       }
 

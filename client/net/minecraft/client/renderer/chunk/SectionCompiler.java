@@ -9,7 +9,6 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -47,10 +46,8 @@ public class SectionCompiler {
       ModelBlockRenderer.enableCaching();
       Reference2ObjectArrayMap var10 = new Reference2ObjectArrayMap(RenderType.chunkBufferLayers().size());
       RandomSource var11 = RandomSource.create();
-      Iterator var12 = BlockPos.betweenClosed(var6, var7).iterator();
 
-      while(var12.hasNext()) {
-         BlockPos var13 = (BlockPos)var12.next();
+      for(BlockPos var13 : BlockPos.betweenClosed(var6, var7)) {
          BlockState var14 = var2.getBlockState(var13);
          if (var14.isSolidRender()) {
             var8.setOpaque(var13);
@@ -63,37 +60,32 @@ public class SectionCompiler {
             }
          }
 
-         FluidState var20 = var14.getFluidState();
-         RenderType var16;
-         BufferBuilder var17;
-         if (!var20.isEmpty()) {
-            var16 = ItemBlockRenderTypes.getRenderLayer(var20);
-            var17 = this.getOrBeginLayer(var10, var4, var16);
-            this.blockRenderer.renderLiquid(var13, var2, var17, var14, var20);
+         FluidState var21 = var14.getFluidState();
+         if (!var21.isEmpty()) {
+            RenderType var16 = ItemBlockRenderTypes.getRenderLayer(var21);
+            BufferBuilder var17 = this.getOrBeginLayer(var10, var4, var16);
+            this.blockRenderer.renderLiquid(var13, var2, var17, var14, var21);
          }
 
          if (var14.getRenderShape() == RenderShape.MODEL) {
-            var16 = ItemBlockRenderTypes.getChunkRenderType(var14);
-            var17 = this.getOrBeginLayer(var10, var4, var16);
+            RenderType var23 = ItemBlockRenderTypes.getChunkRenderType(var14);
+            BufferBuilder var24 = this.getOrBeginLayer(var10, var4, var23);
             var9.pushPose();
             var9.translate((float)SectionPos.sectionRelative(var13.getX()), (float)SectionPos.sectionRelative(var13.getY()), (float)SectionPos.sectionRelative(var13.getZ()));
-            this.blockRenderer.renderBatched(var14, var13, var2, var9, var17, true, var11);
+            this.blockRenderer.renderBatched(var14, var13, var2, var9, var24, true, var11);
             var9.popPose();
          }
       }
 
-      var12 = var10.entrySet().iterator();
-
-      while(var12.hasNext()) {
-         Map.Entry var18 = (Map.Entry)var12.next();
-         RenderType var19 = (RenderType)var18.getKey();
-         MeshData var21 = ((BufferBuilder)var18.getValue()).build();
-         if (var21 != null) {
-            if (var19 == RenderType.translucent()) {
-               var5.transparencyState = var21.sortQuads(var4.buffer(RenderType.translucent()), var3);
+      for(Map.Entry var19 : var10.entrySet()) {
+         RenderType var20 = (RenderType)var19.getKey();
+         MeshData var22 = ((BufferBuilder)var19.getValue()).build();
+         if (var22 != null) {
+            if (var20 == RenderType.translucent()) {
+               var5.transparencyState = var22.sortQuads(var4.buffer(RenderType.translucent()), var3);
             }
 
-            var5.renderedLayers.put(var19, var21);
+            var5.renderedLayers.put(var20, var22);
          }
       }
 

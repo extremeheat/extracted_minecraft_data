@@ -15,10 +15,8 @@ public class CreakingRenderer<T extends Creaking> extends MobRenderer<T, Creakin
    private static final ResourceLocation EYES_TEXTURE_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/creaking/creaking_eyes.png");
 
    public CreakingRenderer(EntityRendererProvider.Context var1) {
-      super(var1, new CreakingModel(var1.bakeLayer(ModelLayers.CREAKING)), 0.7F);
-      this.addLayer(new LivingEntityEmissiveLayer(this, EYES_TEXTURE_LOCATION, (var0, var1x) -> {
-         return 1.0F;
-      }, CreakingModel::getHeadModelParts, RenderType::eyes));
+      super(var1, new CreakingModel(var1.bakeLayer(ModelLayers.CREAKING)), 0.6F);
+      this.addLayer(new LivingEntityEmissiveLayer(this, EYES_TEXTURE_LOCATION, (var0, var1x) -> 1.0F, CreakingModel::getHeadModelParts, RenderType::eyes, true));
    }
 
    public ResourceLocation getTextureLocation(CreakingRenderState var1) {
@@ -33,7 +31,15 @@ public class CreakingRenderer<T extends Creaking> extends MobRenderer<T, Creakin
       super.extractRenderState(var1, var2, var3);
       var2.attackAnimationState.copyFrom(var1.attackAnimationState);
       var2.invulnerabilityAnimationState.copyFrom(var1.invulnerabilityAnimationState);
-      var2.isActive = var1.isActive();
+      var2.deathAnimationState.copyFrom(var1.deathAnimationState);
+      if (var1.isTearingDown()) {
+         var2.deathTime = 0.0F;
+         var2.hasRedOverlay = false;
+         var2.eyesGlowing = var1.hasGlowingEyes();
+      } else {
+         var2.eyesGlowing = var1.isActive();
+      }
+
       var2.canMove = var1.canMove();
    }
 

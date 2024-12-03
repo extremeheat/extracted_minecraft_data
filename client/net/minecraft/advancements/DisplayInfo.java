@@ -12,10 +12,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 public class DisplayInfo {
-   public static final Codec<DisplayInfo> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(ItemStack.STRICT_CODEC.fieldOf("icon").forGetter(DisplayInfo::getIcon), ComponentSerialization.CODEC.fieldOf("title").forGetter(DisplayInfo::getTitle), ComponentSerialization.CODEC.fieldOf("description").forGetter(DisplayInfo::getDescription), ResourceLocation.CODEC.optionalFieldOf("background").forGetter(DisplayInfo::getBackground), AdvancementType.CODEC.optionalFieldOf("frame", AdvancementType.TASK).forGetter(DisplayInfo::getType), Codec.BOOL.optionalFieldOf("show_toast", true).forGetter(DisplayInfo::shouldShowToast), Codec.BOOL.optionalFieldOf("announce_to_chat", true).forGetter(DisplayInfo::shouldAnnounceChat), Codec.BOOL.optionalFieldOf("hidden", false).forGetter(DisplayInfo::isHidden)).apply(var0, DisplayInfo::new);
-   });
-   public static final StreamCodec<RegistryFriendlyByteBuf, DisplayInfo> STREAM_CODEC = StreamCodec.ofMember(DisplayInfo::serializeToNetwork, DisplayInfo::fromNetwork);
+   public static final Codec<DisplayInfo> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ItemStack.STRICT_CODEC.fieldOf("icon").forGetter(DisplayInfo::getIcon), ComponentSerialization.CODEC.fieldOf("title").forGetter(DisplayInfo::getTitle), ComponentSerialization.CODEC.fieldOf("description").forGetter(DisplayInfo::getDescription), ResourceLocation.CODEC.optionalFieldOf("background").forGetter(DisplayInfo::getBackground), AdvancementType.CODEC.optionalFieldOf("frame", AdvancementType.TASK).forGetter(DisplayInfo::getType), Codec.BOOL.optionalFieldOf("show_toast", true).forGetter(DisplayInfo::shouldShowToast), Codec.BOOL.optionalFieldOf("announce_to_chat", true).forGetter(DisplayInfo::shouldAnnounceChat), Codec.BOOL.optionalFieldOf("hidden", false).forGetter(DisplayInfo::isHidden)).apply(var0, DisplayInfo::new));
+   public static final StreamCodec<RegistryFriendlyByteBuf, DisplayInfo> STREAM_CODEC = StreamCodec.<RegistryFriendlyByteBuf, DisplayInfo>ofMember(DisplayInfo::serializeToNetwork, DisplayInfo::fromNetwork);
    private final Component title;
    private final Component description;
    private final ItemStack icon;

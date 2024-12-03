@@ -8,9 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public record WeatherCheck(Optional<Boolean> isRaining, Optional<Boolean> isThundering) implements LootItemCondition {
-   public static final MapCodec<WeatherCheck> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.BOOL.optionalFieldOf("raining").forGetter(WeatherCheck::isRaining), Codec.BOOL.optionalFieldOf("thundering").forGetter(WeatherCheck::isThundering)).apply(var0, WeatherCheck::new);
-   });
+   public static final MapCodec<WeatherCheck> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.optionalFieldOf("raining").forGetter(WeatherCheck::isRaining), Codec.BOOL.optionalFieldOf("thundering").forGetter(WeatherCheck::isThundering)).apply(var0, WeatherCheck::new));
 
    public WeatherCheck(Optional<Boolean> var1, Optional<Boolean> var2) {
       super();
@@ -33,14 +31,6 @@ public record WeatherCheck(Optional<Boolean> isRaining, Optional<Boolean> isThun
 
    public static Builder weather() {
       return new Builder();
-   }
-
-   public Optional<Boolean> isRaining() {
-      return this.isRaining;
-   }
-
-   public Optional<Boolean> isThundering() {
-      return this.isThundering;
    }
 
    // $FF: synthetic method

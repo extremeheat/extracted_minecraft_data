@@ -30,18 +30,10 @@ public class ItemStackCustomNameToOverrideComponentFix extends DataFix {
       return this.fixTypeEverywhereTyped("ItemStack custom_name to item_name component fix", var1, (var2x) -> {
          Optional var3x = var2x.getOptional(var2);
          Optional var4 = var3x.map(Pair::getSecond);
-         if (var4.filter((var0) -> {
-            return var0.equals("minecraft:white_banner");
-         }).isPresent()) {
-            return var2x.updateTyped(var3, (var0) -> {
-               return var0.update(DSL.remainderFinder(), ItemStackCustomNameToOverrideComponentFix::fixBanner);
-            });
+         if (var4.filter((var0) -> var0.equals("minecraft:white_banner")).isPresent()) {
+            return var2x.updateTyped(var3, (var0) -> var0.update(DSL.remainderFinder(), ItemStackCustomNameToOverrideComponentFix::fixBanner));
          } else {
-            return var4.filter((var0) -> {
-               return var0.equals("minecraft:filled_map");
-            }).isPresent() ? var2x.updateTyped(var3, (var0) -> {
-               return var0.update(DSL.remainderFinder(), ItemStackCustomNameToOverrideComponentFix::fixMap);
-            }) : var2x;
+            return var4.filter((var0) -> var0.equals("minecraft:filled_map")).isPresent() ? var2x.updateTyped(var3, (var0) -> var0.update(DSL.remainderFinder(), ItemStackCustomNameToOverrideComponentFix::fixMap)) : var2x;
          }
       });
    }
@@ -53,9 +45,7 @@ public class ItemStackCustomNameToOverrideComponentFix extends DataFix {
    }
 
    private static <T> Dynamic<T> fixBanner(Dynamic<T> var0) {
-      return fixCustomName(var0, (var0x) -> {
-         return var0x.equals("block.minecraft.ominous_banner");
-      });
+      return fixCustomName(var0, (var0x) -> var0x.equals("block.minecraft.ominous_banner"));
    }
 
    private static <T> Dynamic<T> fixCustomName(Dynamic<T> var0, Predicate<String> var1) {

@@ -128,6 +128,6 @@ public class Skeleton extends AbstractSkeleton {
    }
 
    static {
-      DATA_STRAY_CONVERSION_ID = SynchedEntityData.defineId(Skeleton.class, EntityDataSerializers.BOOLEAN);
+      DATA_STRAY_CONVERSION_ID = SynchedEntityData.<Boolean>defineId(Skeleton.class, EntityDataSerializers.BOOLEAN);
    }
 }

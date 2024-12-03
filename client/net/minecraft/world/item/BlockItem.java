@@ -6,9 +6,9 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -144,16 +144,25 @@ public class BlockItem extends Item {
    }
 
    public static boolean updateCustomBlockEntityTag(Level var0, @Nullable Player var1, BlockPos var2, ItemStack var3) {
-      MinecraftServer var4 = var0.getServer();
-      if (var4 == null) {
+      if (var0.isClientSide) {
          return false;
       } else {
-         CustomData var5 = (CustomData)var3.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
-         if (!var5.isEmpty()) {
+         CustomData var4 = (CustomData)var3.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+         if (!var4.isEmpty()) {
+            BlockEntityType var5 = (BlockEntityType)var4.parseEntityType(var0.registryAccess(), Registries.BLOCK_ENTITY_TYPE);
+            if (var5 == null) {
+               return false;
+            }
+
             BlockEntity var6 = var0.getBlockEntity(var2);
             if (var6 != null) {
-               if (var0.isClientSide || !var6.onlyOpCanSetNbt() || var1 != null && var1.canUseGameMasterBlocks()) {
-                  return var5.loadInto(var6, var0.registryAccess());
+               BlockEntityType var7 = var6.getType();
+               if (var7 != var5) {
+                  return false;
+               }
+
+               if (!var7.onlyOpCanSetNbt() || var1 != null && var1.canUseGameMasterBlocks()) {
+                  return var4.loadInto(var6, var0.registryAccess());
                }
 
                return false;
@@ -167,6 +176,18 @@ public class BlockItem extends Item {
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
       this.getBlock().appendHoverText(var1, var2, var3, var4);
+   }
+
+   public boolean shouldPrintOpWarning(ItemStack var1, @Nullable Player var2) {
+      if (var2 != null && var2.getPermissionLevel() >= 2) {
+         CustomData var3 = (CustomData)var1.get(DataComponents.BLOCK_ENTITY_DATA);
+         if (var3 != null) {
+            BlockEntityType var4 = (BlockEntityType)var3.parseEntityType(var2.level().registryAccess(), Registries.BLOCK_ENTITY_TYPE);
+            return var4 != null && var4.onlyOpCanSetNbt();
+         }
+      }
+
+      return false;
    }
 
    public Block getBlock() {

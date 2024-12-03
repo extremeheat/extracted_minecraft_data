@@ -20,11 +20,8 @@ public class DropInvalidSignDataFix extends NamedEntityFix {
    private static <T> Dynamic<T> fix(Dynamic<T> var0) {
       var0 = var0.update("front_text", DropInvalidSignDataFix::fixText);
       var0 = var0.update("back_text", DropInvalidSignDataFix::fixText);
-      String[] var1 = FIELDS_TO_DROP;
-      int var2 = var1.length;
 
-      for(int var3 = 0; var3 < var2; ++var3) {
-         String var4 = var1[var3];
+      for(String var4 : FIELDS_TO_DROP) {
          var0 = var0.remove(var4);
       }
 
@@ -46,9 +43,7 @@ public class DropInvalidSignDataFix extends NamedEntityFix {
                Dynamic var5 = var3x < (long)var4.size() ? (Dynamic)var4.get((int)var3x) : var3;
                return var2x.equals(var3) ? var5 : var2x;
             }).toList();
-            return var5.stream().allMatch((var1x) -> {
-               return var1x.equals(var3);
-            }) ? var0.remove("filtered_messages") : var0.set("filtered_messages", var0.createList(var5.stream()));
+            return var5.stream().allMatch((var1x) -> var1x.equals(var3)) ? var0.remove("filtered_messages") : var0.set("filtered_messages", var0.createList(var5.stream()));
          }
       }
    }

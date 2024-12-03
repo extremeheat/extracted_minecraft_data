@@ -9,7 +9,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 
 public record ServerboundChatCommandSignedPacket(String command, Instant timeStamp, long salt, ArgumentSignatures argumentSignatures, LastSeenMessages.Update lastSeenMessages) implements Packet<ServerGamePacketListener> {
-   public static final StreamCodec<FriendlyByteBuf, ServerboundChatCommandSignedPacket> STREAM_CODEC = Packet.codec(ServerboundChatCommandSignedPacket::write, ServerboundChatCommandSignedPacket::new);
+   public static final StreamCodec<FriendlyByteBuf, ServerboundChatCommandSignedPacket> STREAM_CODEC = Packet.<FriendlyByteBuf, ServerboundChatCommandSignedPacket>codec(ServerboundChatCommandSignedPacket::write, ServerboundChatCommandSignedPacket::new);
 
    private ServerboundChatCommandSignedPacket(FriendlyByteBuf var1) {
       this(var1.readUtf(), var1.readInstant(), var1.readLong(), new ArgumentSignatures(var1), new LastSeenMessages.Update(var1));
@@ -38,25 +38,5 @@ public record ServerboundChatCommandSignedPacket(String command, Instant timeSta
 
    public void handle(ServerGamePacketListener var1) {
       var1.handleSignedChatCommand(this);
-   }
-
-   public String command() {
-      return this.command;
-   }
-
-   public Instant timeStamp() {
-      return this.timeStamp;
-   }
-
-   public long salt() {
-      return this.salt;
-   }
-
-   public ArgumentSignatures argumentSignatures() {
-      return this.argumentSignatures;
-   }
-
-   public LastSeenMessages.Update lastSeenMessages() {
-      return this.lastSeenMessages;
    }
 }

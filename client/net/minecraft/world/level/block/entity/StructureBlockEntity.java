@@ -289,18 +289,10 @@ public class StructureBlockEntity extends BlockEntity {
    }
 
    private Stream<BlockPos> getRelatedCorners(BlockPos var1, BlockPos var2) {
-      Stream var10000 = BlockPos.betweenClosedStream(var1, var2).filter((var1x) -> {
-         return this.level.getBlockState(var1x).is(Blocks.STRUCTURE_BLOCK);
-      });
+      Stream var10000 = BlockPos.betweenClosedStream(var1, var2).filter((var1x) -> this.level.getBlockState(var1x).is(Blocks.STRUCTURE_BLOCK));
       Level var10001 = this.level;
       Objects.requireNonNull(var10001);
-      return var10000.map(var10001::getBlockEntity).filter((var0) -> {
-         return var0 instanceof StructureBlockEntity;
-      }).map((var0) -> {
-         return (StructureBlockEntity)var0;
-      }).filter((var1x) -> {
-         return var1x.mode == StructureMode.CORNER && Objects.equals(this.structureName, var1x.structureName);
-      }).map(BlockEntity::getBlockPos);
+      return var10000.map(var10001::getBlockEntity).filter((var0) -> var0 instanceof StructureBlockEntity).map((var0) -> (StructureBlockEntity)var0).filter((var1x) -> var1x.mode == StructureMode.CORNER && Objects.equals(this.structureName, var1x.structureName)).map(BlockEntity::getBlockPos);
    }
 
    private static Optional<BoundingBox> calculateEnclosingBoundingBox(BlockPos var0, Stream<BlockPos> var1) {

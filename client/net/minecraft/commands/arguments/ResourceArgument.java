@@ -34,15 +34,9 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 
 public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");
-   private static final DynamicCommandExceptionType ERROR_NOT_SUMMONABLE_ENTITY = new DynamicCommandExceptionType((var0) -> {
-      return Component.translatableEscape("entity.not_summonable", var0);
-   });
-   public static final Dynamic2CommandExceptionType ERROR_UNKNOWN_RESOURCE = new Dynamic2CommandExceptionType((var0, var1) -> {
-      return Component.translatableEscape("argument.resource.not_found", var0, var1);
-   });
-   public static final Dynamic3CommandExceptionType ERROR_INVALID_RESOURCE_TYPE = new Dynamic3CommandExceptionType((var0, var1, var2) -> {
-      return Component.translatableEscape("argument.resource.invalid_type", var0, var1, var2);
-   });
+   private static final DynamicCommandExceptionType ERROR_NOT_SUMMONABLE_ENTITY = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("entity.not_summonable", var0));
+   public static final Dynamic2CommandExceptionType ERROR_UNKNOWN_RESOURCE = new Dynamic2CommandExceptionType((var0, var1) -> Component.translatableEscape("argument.resource.not_found", var0, var1));
+   public static final Dynamic3CommandExceptionType ERROR_INVALID_RESOURCE_TYPE = new Dynamic3CommandExceptionType((var0, var1, var2) -> Component.translatableEscape("argument.resource.invalid_type", var0, var1, var2));
    final ResourceKey<? extends Registry<T>> registryKey;
    private final HolderLookup<T> registryLookup;
 
@@ -53,7 +47,7 @@ public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
    }
 
    public static <T> ResourceArgument<T> resource(CommandBuildContext var0, ResourceKey<? extends Registry<T>> var1) {
-      return new ResourceArgument(var0, var1);
+      return new ResourceArgument<T>(var0, var1);
    }
 
    public static <T> Holder.Reference<T> getResource(CommandContext<CommandSourceStack> var0, String var1, ResourceKey<Registry<T>> var2) throws CommandSyntaxException {
@@ -102,9 +96,7 @@ public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
    public Holder.Reference<T> parse(StringReader var1) throws CommandSyntaxException {
       ResourceLocation var2 = ResourceLocation.read(var1);
       ResourceKey var3 = ResourceKey.create(this.registryKey, var2);
-      return (Holder.Reference)this.registryLookup.get(var3).orElseThrow(() -> {
-         return ERROR_UNKNOWN_RESOURCE.createWithContext(var1, var2, this.registryKey.location());
-      });
+      return (Holder.Reference)this.registryLookup.get(var3).orElseThrow(() -> ERROR_UNKNOWN_RESOURCE.createWithContext(var1, var2, this.registryKey.location()));
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
@@ -155,7 +147,7 @@ public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
          }
 
          public ResourceArgument<T> instantiate(CommandBuildContext var1) {
-            return new ResourceArgument(var1, this.registryKey);
+            return new ResourceArgument<T>(var1, this.registryKey);
          }
 
          public ArgumentTypeInfo<ResourceArgument<T>, ?> type() {

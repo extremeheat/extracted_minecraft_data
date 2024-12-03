@@ -46,9 +46,7 @@ public class Ghast extends FlyingMob implements Enemy {
       this.goalSelector.addGoal(5, new RandomFloatAroundGoal(this));
       this.goalSelector.addGoal(7, new GhastLookGoal(this));
       this.goalSelector.addGoal(7, new GhastShootFireballGoal(this));
-      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (var1, var2) -> {
-         return Math.abs(var1.getY() - this.getY()) <= 4.0;
-      }));
+      this.targetSelector.addGoal(1, new NearestAttackableTargetGoal(this, Player.class, 10, true, false, (var1, var2) -> Math.abs(var1.getY() - this.getY()) <= 4.0));
    }
 
    public boolean isCharging() {
@@ -135,7 +133,7 @@ public class Ghast extends FlyingMob implements Enemy {
    }
 
    static {
-      DATA_IS_CHARGING = SynchedEntityData.defineId(Ghast.class, EntityDataSerializers.BOOLEAN);
+      DATA_IS_CHARGING = SynchedEntityData.<Boolean>defineId(Ghast.class, EntityDataSerializers.BOOLEAN);
    }
 
    static class GhastMoveControl extends MoveControl {

@@ -48,9 +48,7 @@ public interface SlotAccess {
    }
 
    static SlotAccess forContainer(Container var0, int var1) {
-      return forContainer(var0, var1, (var0x) -> {
-         return true;
-      });
+      return forContainer(var0, var1, (var0x) -> true);
    }
 
    static SlotAccess forEquipmentSlot(final LivingEntity var0, final EquipmentSlot var1, final Predicate<ItemStack> var2) {
@@ -71,9 +69,7 @@ public interface SlotAccess {
    }
 
    static SlotAccess forEquipmentSlot(LivingEntity var0, EquipmentSlot var1) {
-      return forEquipmentSlot(var0, var1, (var0x) -> {
-         return true;
-      });
+      return forEquipmentSlot(var0, var1, (var0x) -> true);
    }
 
    ItemStack get();

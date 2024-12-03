@@ -4,7 +4,6 @@ import com.google.common.hash.Hashing;
 import com.mojang.blaze3d.platform.NativeImage;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
@@ -46,7 +45,7 @@ public class FaviconTexture implements AutoCloseable {
                this.texture.upload();
             }
 
-            this.textureManager.register((ResourceLocation)this.textureLocation, (AbstractTexture)this.texture);
+            this.textureManager.register(this.textureLocation, this.texture);
          } catch (Throwable var3) {
             var1.close();
             this.clear();

@@ -48,7 +48,7 @@ public class CraftingMenu extends AbstractCraftingMenu {
       CraftingInput var6 = var3.asCraftInput();
       ServerPlayer var7 = (ServerPlayer)var2;
       ItemStack var8 = ItemStack.EMPTY;
-      Optional var9 = var1.getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, var6, var1, (RecipeHolder)var5);
+      Optional var9 = var1.getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, var6, var1, var5);
       if (var9.isPresent()) {
          RecipeHolder var10 = (RecipeHolder)var9.get();
          CraftingRecipe var11 = (CraftingRecipe)var10.value();
@@ -88,9 +88,7 @@ public class CraftingMenu extends AbstractCraftingMenu {
 
    public void removed(Player var1) {
       super.removed(var1);
-      this.access.execute((var2, var3) -> {
-         this.clearContainer(var1, this.craftSlots);
-      });
+      this.access.execute((var2, var3) -> this.clearContainer(var1, this.craftSlots));
    }
 
    public boolean stillValid(Player var1) {
@@ -99,14 +97,12 @@ public class CraftingMenu extends AbstractCraftingMenu {
 
    public ItemStack quickMoveStack(Player var1, int var2) {
       ItemStack var3 = ItemStack.EMPTY;
-      Slot var4 = (Slot)this.slots.get(var2);
+      Slot var4 = this.slots.get(var2);
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
          if (var2 == 0) {
-            this.access.execute((var2x, var3x) -> {
-               var5.getItem().onCraftedBy(var5, var2x, var1);
-            });
+            this.access.execute((var2x, var3x) -> var5.getItem().onCraftedBy(var5, var2x, var1));
             if (!this.moveItemStackTo(var5, 10, 46, true)) {
                return ItemStack.EMPTY;
             }
@@ -150,7 +146,7 @@ public class CraftingMenu extends AbstractCraftingMenu {
    }
 
    public Slot getResultSlot() {
-      return (Slot)this.slots.get(0);
+      return this.slots.get(0);
    }
 
    public List<Slot> getInputGridSlots() {

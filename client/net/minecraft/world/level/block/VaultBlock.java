@@ -72,13 +72,9 @@ public class VaultBlock extends BaseEntityBlock {
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
       BlockEntityTicker var10000;
       if (var1 instanceof ServerLevel var4) {
-         var10000 = createTickerHelper(var3, BlockEntityType.VAULT, (var1x, var2x, var3x, var4x) -> {
-            VaultBlockEntity.Server.tick(var4, var2x, var3x, var4x.getConfig(), var4x.getServerData(), var4x.getSharedData());
-         });
+         var10000 = createTickerHelper(var3, BlockEntityType.VAULT, (var1x, var2x, var3x, var4x) -> VaultBlockEntity.Server.tick(var4, var2x, var3x, var4x.getConfig(), var4x.getServerData(), var4x.getSharedData()));
       } else {
-         var10000 = createTickerHelper(var3, BlockEntityType.VAULT, (var0, var1x, var2x, var3x) -> {
-            VaultBlockEntity.Client.tick(var0, var1x, var2x, var3x.getClientData(), var3x.getSharedData());
-         });
+         var10000 = createTickerHelper(var3, BlockEntityType.VAULT, (var0, var1x, var2x, var3x) -> VaultBlockEntity.Client.tick(var0, var1x, var2x, var3x.getClientData(), var3x.getSharedData()));
       }
 
       return var10000;
@@ -94,10 +90,6 @@ public class VaultBlock extends BaseEntityBlock {
 
    public BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation((Direction)var1.getValue(FACING)));
-   }
-
-   public RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
    }
 
    static {

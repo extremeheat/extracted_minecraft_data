@@ -41,7 +41,7 @@ public class BoatDispenseItemBehavior extends DefaultDispenseItemBehavior {
          var15 = 0.0;
       }
 
-      AbstractBoat var17 = (AbstractBoat)this.type.create(var4, EntitySpawnReason.DISPENSER);
+      AbstractBoat var17 = this.type.create(var4, EntitySpawnReason.DISPENSER);
       if (var17 != null) {
          var17.setInitialPos(var8, var10 + var15, var12);
          EntityType.createDefaultStackConfig(var4, var2, (Player)null).accept(var17);

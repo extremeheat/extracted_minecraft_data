@@ -36,14 +36,8 @@ public class VibrationParticleOption implements ParticleOptions {
    }
 
    static {
-      SAFE_POSITION_SOURCE_CODEC = PositionSource.CODEC.validate((var0) -> {
-         return var0 instanceof EntityPositionSource ? DataResult.error(() -> {
-            return "Entity position sources are not allowed";
-         }) : DataResult.success(var0);
-      });
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return var0.group(SAFE_POSITION_SOURCE_CODEC.fieldOf("destination").forGetter(VibrationParticleOption::getDestination), Codec.INT.fieldOf("arrival_in_ticks").forGetter(VibrationParticleOption::getArrivalInTicks)).apply(var0, VibrationParticleOption::new);
-      });
+      SAFE_POSITION_SOURCE_CODEC = PositionSource.CODEC.validate((var0) -> var0 instanceof EntityPositionSource ? DataResult.error(() -> "Entity position sources are not allowed") : DataResult.success(var0));
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SAFE_POSITION_SOURCE_CODEC.fieldOf("destination").forGetter(VibrationParticleOption::getDestination), Codec.INT.fieldOf("arrival_in_ticks").forGetter(VibrationParticleOption::getArrivalInTicks)).apply(var0, VibrationParticleOption::new));
       STREAM_CODEC = StreamCodec.composite(PositionSource.STREAM_CODEC, VibrationParticleOption::getDestination, ByteBufCodecs.VAR_INT, VibrationParticleOption::getArrivalInTicks, VibrationParticleOption::new);
    }
 }

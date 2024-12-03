@@ -206,10 +206,7 @@ public class SnbtPrinterTagVisitor implements TagVisitor {
       ArrayList var3 = Lists.newArrayList();
       List var4 = (List)KEY_ORDER.get(this.pathString());
       if (var4 != null) {
-         Iterator var5 = var4.iterator();
-
-         while(var5.hasNext()) {
-            String var6 = (String)var5.next();
+         for(String var6 : var4) {
             if (var2.remove(var6)) {
                var3.add(var6);
             }

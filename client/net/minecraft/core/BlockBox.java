@@ -89,12 +89,4 @@ public record BlockBox(BlockPos min, BlockPos max) implements Iterable<BlockPos>
    public BlockBox offset(Vec3i var1) {
       return new BlockBox(this.min.offset(var1), this.max.offset(var1));
    }
-
-   public BlockPos min() {
-      return this.min;
-   }
-
-   public BlockPos max() {
-      return this.max;
-   }
 }

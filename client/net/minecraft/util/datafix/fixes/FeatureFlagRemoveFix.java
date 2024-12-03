@@ -24,16 +24,13 @@ public class FeatureFlagRemoveFix extends DataFix {
    }
 
    protected TypeRewriteRule makeRule() {
-      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.LEVEL), (var1) -> {
-         return var1.update(DSL.remainderFinder(), this::fixTag);
-      });
+      return this.fixTypeEverywhereTyped(this.name, this.getInputSchema().getType(References.LEVEL), (var1) -> var1.update(DSL.remainderFinder(), this::fixTag));
    }
 
    private <T> Dynamic<T> fixTag(Dynamic<T> var1) {
       List var2 = (List)var1.get("removed_features").asStream().collect(Collectors.toCollection(ArrayList::new));
       Dynamic var3 = var1.update("enabled_features", (var3x) -> {
-         Optional var10000 = var3x.asStreamOpt().result().map((var3) -> {
-            return var3.filter((var3x) -> {
+         Optional var10000 = var3x.asStreamOpt().result().map((var3) -> var3.filter((var3x) -> {
                Optional var4 = var3x.asString().result();
                if (var4.isEmpty()) {
                   return true;
@@ -45,8 +42,7 @@ public class FeatureFlagRemoveFix extends DataFix {
 
                   return !var5;
                }
-            });
-         });
+            }));
          Objects.requireNonNull(var1);
          return (Dynamic)DataFixUtils.orElse(var10000.map(var1::createList), var3x);
       });

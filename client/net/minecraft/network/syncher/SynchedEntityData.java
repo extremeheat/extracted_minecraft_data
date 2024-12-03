@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.EncoderException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -52,7 +51,7 @@ public class SynchedEntityData {
    }
 
    public <T> T get(EntityDataAccessor<T> var1) {
-      return this.getItem(var1).getValue();
+      return (T)this.getItem(var1).getValue();
    }
 
    public <T> void set(EntityDataAccessor<T> var1, T var2) {
@@ -81,11 +80,8 @@ public class SynchedEntityData {
       } else {
          this.isDirty = false;
          ArrayList var1 = new ArrayList();
-         DataItem[] var2 = this.itemsById;
-         int var3 = var2.length;
 
-         for(int var4 = 0; var4 < var3; ++var4) {
-            DataItem var5 = var2[var4];
+         for(DataItem var5 : this.itemsById) {
             if (var5.isDirty()) {
                var5.setDirty(false);
                var1.add(var5.value());
@@ -99,11 +95,8 @@ public class SynchedEntityData {
    @Nullable
    public List<DataValue<?>> getNonDefaultValues() {
       ArrayList var1 = null;
-      DataItem[] var2 = this.itemsById;
-      int var3 = var2.length;
 
-      for(int var4 = 0; var4 < var3; ++var4) {
-         DataItem var5 = var2[var4];
+      for(DataItem var5 : this.itemsById) {
          if (!var5.isSetToDefault()) {
             if (var1 == null) {
                var1 = new ArrayList();
@@ -117,10 +110,7 @@ public class SynchedEntityData {
    }
 
    public void assignValues(List<DataValue<?>> var1) {
-      Iterator var2 = var1.iterator();
-
-      while(var2.hasNext()) {
-         DataValue var3 = (DataValue)var2.next();
+      for(DataValue var3 : var1) {
          DataItem var4 = this.itemsById[var3.id];
          this.assignValue(var4, var3);
          this.entity.onSyncedDataUpdated(var4.getAccessor());
@@ -134,6 +124,48 @@ public class SynchedEntityData {
          throw new IllegalStateException(String.format(Locale.ROOT, "Invalid entity data item type for field %d on entity %s: old=%s(%s), new=%s(%s)", var1.accessor.id(), this.entity, var1.value, var1.value.getClass(), var2.value, var2.value.getClass()));
       } else {
          var1.setValue(var2.value);
+      }
+   }
+
+   public static record DataValue<T>(int id, EntityDataSerializer<T> serializer, T value) {
+      final int id;
+      final T value;
+
+      public DataValue(int var1, EntityDataSerializer<T> var2, T var3) {
+         super();
+         this.id = var1;
+         this.serializer = var2;
+         this.value = var3;
+      }
+
+      public static <T> DataValue<T> create(EntityDataAccessor<T> var0, T var1) {
+         EntityDataSerializer var2 = var0.serializer();
+         return new DataValue<T>(var0.id(), var2, var2.copy(var1));
+      }
+
+      public void write(RegistryFriendlyByteBuf var1) {
+         int var2 = EntityDataSerializers.getSerializedId(this.serializer);
+         if (var2 < 0) {
+            throw new EncoderException("Unknown serializer type " + String.valueOf(this.serializer));
+         } else {
+            var1.writeByte(this.id);
+            var1.writeVarInt(var2);
+            this.serializer.codec().encode(var1, this.value);
+         }
+      }
+
+      public static DataValue<?> read(RegistryFriendlyByteBuf var0, int var1) {
+         int var2 = var0.readVarInt();
+         EntityDataSerializer var3 = EntityDataSerializers.getSerializer(var2);
+         if (var3 == null) {
+            throw new DecoderException("Unknown serializer type " + var2);
+         } else {
+            return read(var0, var1, var3);
+         }
+      }
+
+      private static <T> DataValue<T> read(RegistryFriendlyByteBuf var0, int var1, EntityDataSerializer<T> var2) {
+         return new DataValue<T>(var1, var2, var2.codec().decode(var0));
       }
    }
 
@@ -175,61 +207,7 @@ public class SynchedEntityData {
       }
 
       public DataValue<T> value() {
-         return SynchedEntityData.DataValue.create(this.accessor, this.value);
-      }
-   }
-
-   public static record DataValue<T>(int id, EntityDataSerializer<T> serializer, T value) {
-      final int id;
-      final T value;
-
-      public DataValue(int var1, EntityDataSerializer<T> var2, T var3) {
-         super();
-         this.id = var1;
-         this.serializer = var2;
-         this.value = var3;
-      }
-
-      public static <T> DataValue<T> create(EntityDataAccessor<T> var0, T var1) {
-         EntityDataSerializer var2 = var0.serializer();
-         return new DataValue(var0.id(), var2, var2.copy(var1));
-      }
-
-      public void write(RegistryFriendlyByteBuf var1) {
-         int var2 = EntityDataSerializers.getSerializedId(this.serializer);
-         if (var2 < 0) {
-            throw new EncoderException("Unknown serializer type " + String.valueOf(this.serializer));
-         } else {
-            var1.writeByte(this.id);
-            var1.writeVarInt(var2);
-            this.serializer.codec().encode(var1, this.value);
-         }
-      }
-
-      public static DataValue<?> read(RegistryFriendlyByteBuf var0, int var1) {
-         int var2 = var0.readVarInt();
-         EntityDataSerializer var3 = EntityDataSerializers.getSerializer(var2);
-         if (var3 == null) {
-            throw new DecoderException("Unknown serializer type " + var2);
-         } else {
-            return read(var0, var1, var3);
-         }
-      }
-
-      private static <T> DataValue<T> read(RegistryFriendlyByteBuf var0, int var1, EntityDataSerializer<T> var2) {
-         return new DataValue(var1, var2, var2.codec().decode(var0));
-      }
-
-      public int id() {
-         return this.id;
-      }
-
-      public EntityDataSerializer<T> serializer() {
-         return this.serializer;
-      }
-
-      public T value() {
-         return this.value;
+         return SynchedEntityData.DataValue.<T>create(this.accessor, this.value);
       }
    }
 

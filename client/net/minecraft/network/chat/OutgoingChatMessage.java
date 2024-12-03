@@ -11,21 +11,6 @@ public interface OutgoingChatMessage {
       return (OutgoingChatMessage)(var0.isSystem() ? new Disguised(var0.decoratedContent()) : new Player(var0));
    }
 
-   public static record Disguised(Component content) implements OutgoingChatMessage {
-      public Disguised(Component var1) {
-         super();
-         this.content = var1;
-      }
-
-      public Component content() {
-         return this.content;
-      }
-
-      public void sendToPlayer(ServerPlayer var1, boolean var2, ChatType.Bound var3) {
-         var1.connection.sendDisguisedChatMessage(this.content, var3);
-      }
-   }
-
    public static record Player(PlayerChatMessage message) implements OutgoingChatMessage {
       public Player(PlayerChatMessage var1) {
          super();
@@ -43,9 +28,16 @@ public interface OutgoingChatMessage {
          }
 
       }
+   }
 
-      public PlayerChatMessage message() {
-         return this.message;
+   public static record Disguised(Component content) implements OutgoingChatMessage {
+      public Disguised(Component var1) {
+         super();
+         this.content = var1;
+      }
+
+      public void sendToPlayer(ServerPlayer var1, boolean var2, ChatType.Bound var3) {
+         var1.connection.sendDisguisedChatMessage(this.content, var3);
       }
    }
 }

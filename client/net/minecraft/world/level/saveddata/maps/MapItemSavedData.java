@@ -70,7 +70,7 @@ public class MapItemSavedData extends SavedData {
    private int trackedDecorationCount;
 
    public static SavedData.Factory<MapItemSavedData> factory() {
-      return new SavedData.Factory(() -> {
+      return new SavedData.Factory<MapItemSavedData>(() -> {
          throw new IllegalStateException("Should never create an empty map saved data");
       }, MapItemSavedData::load, DataFixTypes.SAVED_DATA_MAP_DATA);
    }
@@ -103,9 +103,7 @@ public class MapItemSavedData extends SavedData {
       DataResult var10000 = DimensionType.parseLegacy(new Dynamic(NbtOps.INSTANCE, var0.get("dimension")));
       Logger var10001 = LOGGER;
       Objects.requireNonNull(var10001);
-      ResourceKey var2 = (ResourceKey)var10000.resultOrPartial(var10001::error).orElseThrow(() -> {
-         return new IllegalArgumentException("Invalid map dimension: " + String.valueOf(var0.get("dimension")));
-      });
+      ResourceKey var2 = (ResourceKey)var10000.resultOrPartial(var10001::error).orElseThrow(() -> new IllegalArgumentException("Invalid map dimension: " + String.valueOf(var0.get("dimension"))));
       int var3 = var0.getInt("xCenter");
       int var4 = var0.getInt("zCenter");
       byte var5 = (byte)Mth.clamp(var0.getByte("scale"), 0, 4);
@@ -119,13 +117,8 @@ public class MapItemSavedData extends SavedData {
       }
 
       RegistryOps var11 = var1.createSerializationContext(NbtOps.INSTANCE);
-      List var12 = (List)MapBanner.LIST_CODEC.parse(var11, var0.get("banners")).resultOrPartial((var0x) -> {
-         LOGGER.warn("Failed to parse map banner: '{}'", var0x);
-      }).orElse(List.of());
-      Iterator var13 = var12.iterator();
 
-      while(var13.hasNext()) {
-         MapBanner var14 = (MapBanner)var13.next();
+      for(MapBanner var14 : (List)MapBanner.LIST_CODEC.parse(var11, var0.get("banners")).resultOrPartial((var0x) -> LOGGER.warn("Failed to parse map banner: '{}'", var0x)).orElse(List.of())) {
          var9.bannerMarkers.put(var14.getId(), var14);
          var9.addDecoration(var14.getDecoration(), (LevelAccessor)null, var14.getId(), (double)var14.pos().getX(), (double)var14.pos().getZ(), 180.0, (Component)var14.name().orElse((Object)null));
       }
@@ -147,9 +140,7 @@ public class MapItemSavedData extends SavedData {
       DataResult var10000 = ResourceLocation.CODEC.encodeStart(NbtOps.INSTANCE, this.dimension.location());
       Logger var10001 = LOGGER;
       Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> {
-         var1.put("dimension", var1x);
-      });
+      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("dimension", var1x));
       var1.putInt("xCenter", this.centerX);
       var1.putInt("zCenter", this.centerZ);
       var1.putByte("scale", this.scale);
@@ -160,10 +151,8 @@ public class MapItemSavedData extends SavedData {
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       var1.put("banners", (Tag)MapBanner.LIST_CODEC.encodeStart(var3, List.copyOf(this.bannerMarkers.values())).getOrThrow());
       ListTag var4 = new ListTag();
-      Iterator var5 = this.frameMarkers.values().iterator();
 
-      while(var5.hasNext()) {
-         MapFrame var6 = (MapFrame)var5.next();
+      for(MapFrame var6 : this.frameMarkers.values()) {
          var4.add(var6.save());
       }
 
@@ -252,11 +241,7 @@ public class MapItemSavedData extends SavedData {
    }
 
    private static boolean hasMapInvisibilityItemEquipped(Player var0) {
-      EquipmentSlot[] var1 = EquipmentSlot.values();
-      int var2 = var1.length;
-
-      for(int var3 = 0; var3 < var2; ++var3) {
-         EquipmentSlot var4 = var1[var3];
+      for(EquipmentSlot var4 : EquipmentSlot.values()) {
          if (var4 != EquipmentSlot.MAINHAND && var4 != EquipmentSlot.OFFHAND && var0.getItemBySlot(var4).is(ItemTags.MAP_INVISIBILITY_EQUIPMENT)) {
             return true;
          }
@@ -276,9 +261,7 @@ public class MapItemSavedData extends SavedData {
 
    public static void addTargetDecoration(ItemStack var0, BlockPos var1, String var2, Holder<MapDecorationType> var3) {
       MapDecorations.Entry var4 = new MapDecorations.Entry(var3, (double)var1.getX(), (double)var1.getZ(), 180.0F);
-      var0.update(DataComponents.MAP_DECORATIONS, MapDecorations.EMPTY, (var2x) -> {
-         return var2x.withDecoration(var2, var4);
-      });
+      var0.update(DataComponents.MAP_DECORATIONS, MapDecorations.EMPTY, (var2x) -> var2x.withDecoration(var2, var4));
       if (((MapDecorationType)var3.value()).hasMapColor()) {
          var0.set(DataComponents.MAP_COLOR, new MapItemColor(((MapDecorationType)var3.value()).mapColor()));
       }
@@ -375,10 +358,8 @@ public class MapItemSavedData extends SavedData {
 
    private void setColorsDirty(int var1, int var2) {
       this.setDirty();
-      Iterator var3 = this.carriedBy.iterator();
 
-      while(var3.hasNext()) {
-         HoldingPlayer var4 = (HoldingPlayer)var3.next();
+      for(HoldingPlayer var4 : this.carriedBy) {
          var4.markColorsDirty(var1, var2);
       }
 
@@ -470,18 +451,13 @@ public class MapItemSavedData extends SavedData {
    }
 
    public boolean isExplorationMap() {
-      Iterator var1 = this.decorations.values().iterator();
-
-      MapDecoration var2;
-      do {
-         if (!var1.hasNext()) {
-            return false;
+      for(MapDecoration var2 : this.decorations.values()) {
+         if (((MapDecorationType)var2.type().value()).explorationMapElement()) {
+            return true;
          }
+      }
 
-         var2 = (MapDecoration)var1.next();
-      } while(!((MapDecorationType)var2.type().value()).explorationMapElement());
-
-      return true;
+      return false;
    }
 
    public void addClientSideDecorations(List<MapDecoration> var1) {
@@ -508,6 +484,55 @@ public class MapItemSavedData extends SavedData {
 
    private static String getFrameKey(int var0) {
       return "frame-" + var0;
+   }
+
+   public static record MapPatch(int startX, int startY, int width, int height, byte[] mapColors) {
+      public static final StreamCodec<ByteBuf, Optional<MapPatch>> STREAM_CODEC = StreamCodec.<ByteBuf, Optional<MapPatch>>of(MapPatch::write, MapPatch::read);
+
+      public MapPatch(int var1, int var2, int var3, int var4, byte[] var5) {
+         super();
+         this.startX = var1;
+         this.startY = var2;
+         this.width = var3;
+         this.height = var4;
+         this.mapColors = var5;
+      }
+
+      private static void write(ByteBuf var0, Optional<MapPatch> var1) {
+         if (var1.isPresent()) {
+            MapPatch var2 = (MapPatch)var1.get();
+            var0.writeByte(var2.width);
+            var0.writeByte(var2.height);
+            var0.writeByte(var2.startX);
+            var0.writeByte(var2.startY);
+            FriendlyByteBuf.writeByteArray(var0, var2.mapColors);
+         } else {
+            var0.writeByte(0);
+         }
+
+      }
+
+      private static Optional<MapPatch> read(ByteBuf var0) {
+         short var1 = var0.readUnsignedByte();
+         if (var1 > 0) {
+            short var2 = var0.readUnsignedByte();
+            short var3 = var0.readUnsignedByte();
+            short var4 = var0.readUnsignedByte();
+            byte[] var5 = FriendlyByteBuf.readByteArray(var0);
+            return Optional.of(new MapPatch(var3, var4, var1, var2, var5));
+         } else {
+            return Optional.empty();
+         }
+      }
+
+      public void applyToMap(MapItemSavedData var1) {
+         for(int var2 = 0; var2 < this.width; ++var2) {
+            for(int var3 = 0; var3 < this.height; ++var3) {
+               var1.setColor(this.startX + var2, this.startY + var3, this.mapColors[var2 + var3 * this.width]);
+            }
+         }
+
+      }
    }
 
    public class HoldingPlayer {
@@ -584,98 +609,13 @@ public class MapItemSavedData extends SavedData {
       }
    }
 
-   private static record MapDecorationLocation(Holder<MapDecorationType> type, byte x, byte y, byte rot) {
+   static record MapDecorationLocation(Holder<MapDecorationType> type, byte x, byte y, byte rot) {
       MapDecorationLocation(Holder<MapDecorationType> var1, byte var2, byte var3, byte var4) {
          super();
          this.type = var1;
          this.x = var2;
          this.y = var3;
          this.rot = var4;
-      }
-
-      public Holder<MapDecorationType> type() {
-         return this.type;
-      }
-
-      public byte x() {
-         return this.x;
-      }
-
-      public byte y() {
-         return this.y;
-      }
-
-      public byte rot() {
-         return this.rot;
-      }
-   }
-
-   public static record MapPatch(int startX, int startY, int width, int height, byte[] mapColors) {
-      public static final StreamCodec<ByteBuf, Optional<MapPatch>> STREAM_CODEC = StreamCodec.of(MapPatch::write, MapPatch::read);
-
-      public MapPatch(int var1, int var2, int var3, int var4, byte[] var5) {
-         super();
-         this.startX = var1;
-         this.startY = var2;
-         this.width = var3;
-         this.height = var4;
-         this.mapColors = var5;
-      }
-
-      private static void write(ByteBuf var0, Optional<MapPatch> var1) {
-         if (var1.isPresent()) {
-            MapPatch var2 = (MapPatch)var1.get();
-            var0.writeByte(var2.width);
-            var0.writeByte(var2.height);
-            var0.writeByte(var2.startX);
-            var0.writeByte(var2.startY);
-            FriendlyByteBuf.writeByteArray(var0, var2.mapColors);
-         } else {
-            var0.writeByte(0);
-         }
-
-      }
-
-      private static Optional<MapPatch> read(ByteBuf var0) {
-         short var1 = var0.readUnsignedByte();
-         if (var1 > 0) {
-            short var2 = var0.readUnsignedByte();
-            short var3 = var0.readUnsignedByte();
-            short var4 = var0.readUnsignedByte();
-            byte[] var5 = FriendlyByteBuf.readByteArray(var0);
-            return Optional.of(new MapPatch(var3, var4, var1, var2, var5));
-         } else {
-            return Optional.empty();
-         }
-      }
-
-      public void applyToMap(MapItemSavedData var1) {
-         for(int var2 = 0; var2 < this.width; ++var2) {
-            for(int var3 = 0; var3 < this.height; ++var3) {
-               var1.setColor(this.startX + var2, this.startY + var3, this.mapColors[var2 + var3 * this.width]);
-            }
-         }
-
-      }
-
-      public int startX() {
-         return this.startX;
-      }
-
-      public int startY() {
-         return this.startY;
-      }
-
-      public int width() {
-         return this.width;
-      }
-
-      public int height() {
-         return this.height;
-      }
-
-      public byte[] mapColors() {
-         return this.mapColors;
       }
    }
 }

@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -63,92 +62,49 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
 
    protected Preparations prepare(ResourceManager var1, ProfilerFiller var2) {
       Preparations var3 = new Preparations();
-      Zone var4 = var2.zone("list");
 
-      try {
+      try (Zone var4 = var2.zone("list")) {
          var3.listResources(var1);
-      } catch (Throwable var17) {
-         if (var4 != null) {
-            try {
-               var4.close();
-            } catch (Throwable var14) {
-               var17.addSuppressed(var14);
-            }
-         }
-
-         throw var17;
       }
 
-      if (var4 != null) {
-         var4.close();
-      }
+      for(String var5 : var1.getNamespaces()) {
+         try (Zone var6 = var2.zone(var5)) {
+            for(Resource var9 : var1.getResourceStack(ResourceLocation.fromNamespaceAndPath(var5, "sounds.json"))) {
+               var2.push(var9.sourcePackId());
 
-      Iterator var22 = var1.getNamespaces().iterator();
-
-      while(var22.hasNext()) {
-         String var5 = (String)var22.next();
-
-         try {
-            Zone var6 = var2.zone(var5);
-
-            try {
-               List var7 = var1.getResourceStack(ResourceLocation.fromNamespaceAndPath(var5, "sounds.json"));
-
-               for(Iterator var8 = var7.iterator(); var8.hasNext(); var2.pop()) {
-                  Resource var9 = (Resource)var8.next();
-                  var2.push(var9.sourcePackId());
+               try {
+                  BufferedReader var10 = var9.openAsReader();
 
                   try {
-                     BufferedReader var10 = var9.openAsReader();
+                     var2.push("parse");
+                     Map var11 = (Map)GsonHelper.fromJson(GSON, (Reader)var10, SOUND_EVENT_REGISTRATION_TYPE);
+                     var2.popPush("register");
 
-                     try {
-                        var2.push("parse");
-                        Map var11 = (Map)GsonHelper.fromJson(GSON, (Reader)var10, (TypeToken)SOUND_EVENT_REGISTRATION_TYPE);
-                        var2.popPush("register");
-                        Iterator var12 = var11.entrySet().iterator();
-
-                        while(true) {
-                           if (!var12.hasNext()) {
-                              var2.pop();
-                              break;
-                           }
-
-                           Map.Entry var13 = (Map.Entry)var12.next();
-                           var3.handleRegistration(ResourceLocation.fromNamespaceAndPath(var5, (String)var13.getKey()), (SoundEventRegistration)var13.getValue());
-                        }
-                     } catch (Throwable var18) {
-                        if (var10 != null) {
-                           try {
-                              ((Reader)var10).close();
-                           } catch (Throwable var16) {
-                              var18.addSuppressed(var16);
-                           }
-                        }
-
-                        throw var18;
+                     for(Map.Entry var13 : var11.entrySet()) {
+                        var3.handleRegistration(ResourceLocation.fromNamespaceAndPath(var5, (String)var13.getKey()), (SoundEventRegistration)var13.getValue());
                      }
 
+                     var2.pop();
+                  } catch (Throwable var18) {
                      if (var10 != null) {
-                        ((Reader)var10).close();
+                        try {
+                           ((Reader)var10).close();
+                        } catch (Throwable var16) {
+                           var18.addSuppressed(var16);
+                        }
                      }
-                  } catch (RuntimeException var19) {
-                     LOGGER.warn("Invalid {} in resourcepack: '{}'", new Object[]{"sounds.json", var9.sourcePackId(), var19});
+
+                     throw var18;
                   }
-               }
-            } catch (Throwable var20) {
-               if (var6 != null) {
-                  try {
-                     var6.close();
-                  } catch (Throwable var15) {
-                     var20.addSuppressed(var15);
+
+                  if (var10 != null) {
+                     ((Reader)var10).close();
                   }
+               } catch (RuntimeException var19) {
+                  LOGGER.warn("Invalid {} in resourcepack: '{}'", new Object[]{"sounds.json", var9.sourcePackId(), var19});
                }
 
-               throw var20;
-            }
-
-            if (var6 != null) {
-               var6.close();
+               var2.pop();
             }
          } catch (IOException var21) {
          }
@@ -159,13 +115,8 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
 
    protected void apply(Preparations var1, ResourceManager var2, ProfilerFiller var3) {
       var1.apply(this.registry, this.soundCache, this.soundEngine);
-      Iterator var4;
-      ResourceLocation var5;
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         var4 = this.registry.keySet().iterator();
-
-         while(var4.hasNext()) {
-            var5 = (ResourceLocation)var4.next();
+         for(ResourceLocation var5 : this.registry.keySet()) {
             WeighedSoundEvents var6 = (WeighedSoundEvents)this.registry.get(var5);
             if (!ComponentUtils.isTranslationResolvable(var6.getSubtitle()) && BuiltInRegistries.SOUND_EVENT.containsKey(var5)) {
                LOGGER.error("Missing subtitle {} for sound event: {}", var6.getSubtitle(), var5);
@@ -174,12 +125,9 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       }
 
       if (LOGGER.isDebugEnabled()) {
-         var4 = this.registry.keySet().iterator();
-
-         while(var4.hasNext()) {
-            var5 = (ResourceLocation)var4.next();
-            if (!BuiltInRegistries.SOUND_EVENT.containsKey(var5)) {
-               LOGGER.debug("Not having sound event for: {}", var5);
+         for(ResourceLocation var8 : this.registry.keySet()) {
+            if (!BuiltInRegistries.SOUND_EVENT.containsKey(var8)) {
+               LOGGER.debug("Not having sound event for: {}", var8);
             }
          }
       }
@@ -266,6 +214,10 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
       this.soundEngine.stop(var1);
    }
 
+   public void setVolume(SoundInstance var1, float var2) {
+      this.soundEngine.setVolume(var1, var2);
+   }
+
    public boolean isActive(SoundInstance var1) {
       return this.soundEngine.isActive(var1);
    }
@@ -331,10 +283,8 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
          }
 
          ResourceProvider var5 = ResourceProvider.fromMap(this.soundCache);
-         Iterator var6 = var2.getSounds().iterator();
 
-         while(var6.hasNext()) {
-            final Sound var7 = (Sound)var6.next();
+         for(final Sound var7 : var2.getSounds()) {
             final ResourceLocation var8 = var7.getLocation();
             Object var9;
             switch (var7.getType()) {
@@ -388,10 +338,8 @@ public class SoundManager extends SimplePreparableReloadListener<Preparations> {
          var1.clear();
          var2.clear();
          var2.putAll(this.soundCache);
-         Iterator var4 = this.registry.entrySet().iterator();
 
-         while(var4.hasNext()) {
-            Map.Entry var5 = (Map.Entry)var4.next();
+         for(Map.Entry var5 : this.registry.entrySet()) {
             var1.put((ResourceLocation)var5.getKey(), (WeighedSoundEvents)var5.getValue());
             ((WeighedSoundEvents)var5.getValue()).preloadIfRequired(var3);
          }

@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.vehicle;
 
-import java.util.Iterator;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -36,23 +35,17 @@ public class DismountHelper {
    }
 
    public static boolean canDismountTo(CollisionGetter var0, LivingEntity var1, AABB var2) {
-      Iterable var3 = var0.getBlockCollisions(var1, var2);
-      Iterator var4 = var3.iterator();
-
-      VoxelShape var5;
-      do {
-         if (!var4.hasNext()) {
-            if (!var0.getWorldBorder().isWithinBounds(var2)) {
-               return false;
-            }
-
-            return true;
+      for(VoxelShape var5 : var0.getBlockCollisions(var1, var2)) {
+         if (!var5.isEmpty()) {
+            return false;
          }
+      }
 
-         var5 = (VoxelShape)var4.next();
-      } while(var5.isEmpty());
-
-      return false;
+      if (!var0.getWorldBorder().isWithinBounds(var2)) {
+         return false;
+      } else {
+         return true;
+      }
    }
 
    public static boolean canDismountTo(CollisionGetter var0, Vec3 var1, LivingEntity var2, Pose var3) {
@@ -86,9 +79,7 @@ public class DismountHelper {
       if (var3 && var0.isBlockDangerous(var1.getBlockState(var2))) {
          return null;
       } else {
-         double var4 = var1.getBlockFloorHeight(nonClimbableShape(var1, var2), () -> {
-            return nonClimbableShape(var1, var2.below());
-         });
+         double var4 = var1.getBlockFloorHeight(nonClimbableShape(var1, var2), () -> nonClimbableShape(var1, var2.below()));
          if (!isBlockFloorValid(var4)) {
             return null;
          } else if (var3 && var4 <= 0.0 && var0.isBlockDangerous(var1.getBlockState(var2.below()))) {
@@ -96,11 +87,8 @@ public class DismountHelper {
          } else {
             Vec3 var6 = Vec3.upFromBottomCenterOf(var2, var4);
             AABB var7 = var0.getDimensions().makeBoundingBox(var6);
-            Iterable var8 = var1.getBlockCollisions((Entity)null, var7);
-            Iterator var9 = var8.iterator();
 
-            while(var9.hasNext()) {
-               VoxelShape var10 = (VoxelShape)var9.next();
+            for(VoxelShape var10 : var1.getBlockCollisions((Entity)null, var7)) {
                if (!var10.isEmpty()) {
                   return null;
                }

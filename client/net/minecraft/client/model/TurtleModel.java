@@ -8,7 +8,6 @@ import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.TurtleRenderState;
 import net.minecraft.util.Mth;
 
@@ -37,14 +36,12 @@ public class TurtleModel extends QuadrupedModel<TurtleRenderState> {
    }
 
    public void setupAnim(TurtleRenderState var1) {
-      super.setupAnim((LivingEntityRenderState)var1);
+      super.setupAnim(var1);
       float var2 = var1.walkAnimationPos;
       float var3 = var1.walkAnimationSpeed;
-      float var4;
-      float var5;
       if (var1.isOnLand) {
-         var4 = var1.isLayingEgg ? 4.0F : 1.0F;
-         var5 = var1.isLayingEgg ? 2.0F : 1.0F;
+         float var4 = var1.isLayingEgg ? 4.0F : 1.0F;
+         float var5 = var1.isLayingEgg ? 2.0F : 1.0F;
          float var6 = var2 * 5.0F;
          float var7 = Mth.cos(var4 * var6);
          float var8 = Mth.cos(var6);
@@ -53,12 +50,12 @@ public class TurtleModel extends QuadrupedModel<TurtleRenderState> {
          this.rightHindLeg.yRot = -var8 * 3.0F * var3;
          this.leftHindLeg.yRot = var8 * 3.0F * var3;
       } else {
-         var4 = 0.5F * var3;
-         var5 = Mth.cos(var2 * 0.6662F * 0.6F) * var4;
-         this.rightHindLeg.xRot = var5;
-         this.leftHindLeg.xRot = -var5;
-         this.rightFrontLeg.zRot = -var5;
-         this.leftFrontLeg.zRot = var5;
+         float var9 = 0.5F * var3;
+         float var10 = Mth.cos(var2 * 0.6662F * 0.6F) * var9;
+         this.rightHindLeg.xRot = var10;
+         this.leftHindLeg.xRot = -var10;
+         this.rightFrontLeg.zRot = -var10;
+         this.leftFrontLeg.zRot = var10;
       }
 
       this.eggBelly.visible = var1.hasEgg;

@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -146,6 +145,8 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.65F, Items.CORNFLOWER);
       add(0.65F, Items.LILY_OF_THE_VALLEY);
       add(0.65F, Items.WITHER_ROSE);
+      add(0.65F, Items.OPEN_EYEBLOSSOM);
+      add(0.65F, Items.CLOSED_EYEBLOSSOM);
       add(0.65F, Items.FERN);
       add(0.65F, Items.SUNFLOWER);
       add(0.65F, Items.LILAC);
@@ -270,7 +271,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
    static BlockState empty(@Nullable Entity var0, BlockState var1, LevelAccessor var2, BlockPos var3) {
       BlockState var4 = (BlockState)var1.setValue(LEVEL, 0);
       var2.setBlock(var3, var4, 3);
-      var2.gameEvent((Holder)GameEvent.BLOCK_CHANGE, (BlockPos)var3, (GameEvent.Context)GameEvent.Context.of(var0, var4));
+      var2.gameEvent(GameEvent.BLOCK_CHANGE, (BlockPos)var3, (GameEvent.Context)GameEvent.Context.of(var0, var4));
       return var4;
    }
 
@@ -283,7 +284,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
          int var7 = var5 + 1;
          BlockState var8 = (BlockState)var1.setValue(LEVEL, var7);
          var2.setBlock(var3, var8, 3);
-         var2.gameEvent((Holder)GameEvent.BLOCK_CHANGE, (BlockPos)var3, (GameEvent.Context)GameEvent.Context.of(var0, var8));
+         var2.gameEvent(GameEvent.BLOCK_CHANGE, (BlockPos)var3, (GameEvent.Context)GameEvent.Context.of(var0, var8));
          if (var7 == 7) {
             var2.scheduleTick(var3, var1.getBlock(), 20);
          }
@@ -338,7 +339,25 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       });
    }
 
-   private static class OutputContainer extends SimpleContainer implements WorldlyContainer {
+   static class EmptyContainer extends SimpleContainer implements WorldlyContainer {
+      public EmptyContainer() {
+         super(0);
+      }
+
+      public int[] getSlotsForFace(Direction var1) {
+         return new int[0];
+      }
+
+      public boolean canPlaceItemThroughFace(int var1, ItemStack var2, @Nullable Direction var3) {
+         return false;
+      }
+
+      public boolean canTakeItemThroughFace(int var1, ItemStack var2, Direction var3) {
+         return false;
+      }
+   }
+
+   static class OutputContainer extends SimpleContainer implements WorldlyContainer {
       private final BlockState state;
       private final LevelAccessor level;
       private final BlockPos pos;
@@ -411,24 +430,6 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
             this.removeItemNoUpdate(0);
          }
 
-      }
-   }
-
-   private static class EmptyContainer extends SimpleContainer implements WorldlyContainer {
-      public EmptyContainer() {
-         super(0);
-      }
-
-      public int[] getSlotsForFace(Direction var1) {
-         return new int[0];
-      }
-
-      public boolean canPlaceItemThroughFace(int var1, ItemStack var2, @Nullable Direction var3) {
-         return false;
-      }
-
-      public boolean canTakeItemThroughFace(int var1, ItemStack var2, Direction var3) {
-         return false;
       }
    }
 }

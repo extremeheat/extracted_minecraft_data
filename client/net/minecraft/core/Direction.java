@@ -36,9 +36,9 @@ public enum Direction implements StringRepresentable {
    WEST(4, 5, 1, "west", Direction.AxisDirection.NEGATIVE, Direction.Axis.X, new Vec3i(-1, 0, 0)),
    EAST(5, 4, 3, "east", Direction.AxisDirection.POSITIVE, Direction.Axis.X, new Vec3i(1, 0, 0));
 
-   public static final StringRepresentable.EnumCodec<Direction> CODEC = StringRepresentable.fromEnum(Direction::values);
+   public static final StringRepresentable.EnumCodec<Direction> CODEC = StringRepresentable.<Direction>fromEnum(Direction::values);
    public static final Codec<Direction> VERTICAL_CODEC = CODEC.validate(Direction::verifyVertical);
-   public static final IntFunction<Direction> BY_ID = ByIdMap.continuous(Direction::get3DDataValue, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   public static final IntFunction<Direction> BY_ID = ByIdMap.<Direction>continuous(Direction::get3DDataValue, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    public static final StreamCodec<ByteBuf, Direction> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Direction::get3DDataValue);
    private final int data3d;
    private final int oppositeIndex;
@@ -49,18 +49,8 @@ public enum Direction implements StringRepresentable {
    private final Vec3i normal;
    private final Vec3 normalVec3;
    private static final Direction[] VALUES = values();
-   private static final Direction[] BY_3D_DATA = (Direction[])Arrays.stream(VALUES).sorted(Comparator.comparingInt((var0) -> {
-      return var0.data3d;
-   })).toArray((var0) -> {
-      return new Direction[var0];
-   });
-   private static final Direction[] BY_2D_DATA = (Direction[])Arrays.stream(VALUES).filter((var0) -> {
-      return var0.getAxis().isHorizontal();
-   }).sorted(Comparator.comparingInt((var0) -> {
-      return var0.data2d;
-   })).toArray((var0) -> {
-      return new Direction[var0];
-   });
+   private static final Direction[] BY_3D_DATA = (Direction[])Arrays.stream(VALUES).sorted(Comparator.comparingInt((var0) -> var0.data3d)).toArray((var0) -> new Direction[var0]);
+   private static final Direction[] BY_2D_DATA = (Direction[])Arrays.stream(VALUES).filter((var0) -> var0.getAxis().isHorizontal()).sorted(Comparator.comparingInt((var0) -> var0.data2d)).toArray((var0) -> new Direction[var0]);
 
    private Direction(final int var3, final int var4, final int var5, final String var6, final AxisDirection var7, final Axis var8, final Vec3i var9) {
       this.data3d = var3;
@@ -115,7 +105,7 @@ public enum Direction implements StringRepresentable {
    }
 
    public static Collection<Direction> allShuffled(RandomSource var0) {
-      return Util.shuffledCopy((Object[])values(), var0);
+      return Util.shuffledCopy(values(), var0);
    }
 
    public static Stream<Direction> stream() {
@@ -326,7 +316,7 @@ public enum Direction implements StringRepresentable {
 
    @Nullable
    public static Direction byName(@Nullable String var0) {
-      return (Direction)CODEC.byName(var0);
+      return CODEC.byName(var0);
    }
 
    public static Direction from3DDataValue(int var0) {
@@ -358,7 +348,7 @@ public enum Direction implements StringRepresentable {
    }
 
    public static Direction getRandom(RandomSource var0) {
-      return (Direction)Util.getRandom((Object[])VALUES, var0);
+      return (Direction)Util.getRandom(VALUES, var0);
    }
 
    public static Direction getApproximateNearest(double var0, double var2, double var4) {
@@ -368,11 +358,8 @@ public enum Direction implements StringRepresentable {
    public static Direction getApproximateNearest(float var0, float var1, float var2) {
       Direction var3 = NORTH;
       float var4 = 1.4E-45F;
-      Direction[] var5 = VALUES;
-      int var6 = var5.length;
 
-      for(int var7 = 0; var7 < var6; ++var7) {
-         Direction var8 = var5[var7];
+      for(Direction var8 : VALUES) {
          float var9 = var0 * (float)var8.normal.getX() + var1 * (float)var8.normal.getY() + var2 * (float)var8.normal.getZ();
          if (var9 > var4) {
             var4 = var9;
@@ -419,17 +406,11 @@ public enum Direction implements StringRepresentable {
    }
 
    private static DataResult<Direction> verifyVertical(Direction var0) {
-      return var0.getAxis().isVertical() ? DataResult.success(var0) : DataResult.error(() -> {
-         return "Expected a vertical direction";
-      });
+      return var0.getAxis().isVertical() ? DataResult.success(var0) : DataResult.error(() -> "Expected a vertical direction");
    }
 
    public static Direction get(AxisDirection var0, Axis var1) {
-      Direction[] var2 = VALUES;
-      int var3 = var2.length;
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         Direction var5 = var2[var4];
+      for(Direction var5 : VALUES) {
          if (var5.getAxisDirection() == var0 && var5.getAxis() == var1) {
             return var5;
          }
@@ -528,7 +509,7 @@ public enum Direction implements StringRepresentable {
       };
 
       public static final Axis[] VALUES = values();
-      public static final StringRepresentable.EnumCodec<Axis> CODEC = StringRepresentable.fromEnum(Axis::values);
+      public static final StringRepresentable.EnumCodec<Axis> CODEC = StringRepresentable.<Axis>fromEnum(Axis::values);
       private final String name;
 
       Axis(final String var3) {
@@ -537,7 +518,7 @@ public enum Direction implements StringRepresentable {
 
       @Nullable
       public static Axis byName(String var0) {
-         return (Axis)CODEC.byName(var0);
+         return CODEC.byName(var0);
       }
 
       public String getName() {
@@ -565,7 +546,7 @@ public enum Direction implements StringRepresentable {
       }
 
       public static Axis getRandom(RandomSource var0) {
-         return (Axis)Util.getRandom((Object[])VALUES, var0);
+         return (Axis)Util.getRandom(VALUES, var0);
       }
 
       public boolean test(@Nullable Direction var1) {
@@ -655,11 +636,11 @@ public enum Direction implements StringRepresentable {
       }
 
       public Direction getRandomDirection(RandomSource var1) {
-         return (Direction)Util.getRandom((Object[])this.faces, var1);
+         return (Direction)Util.getRandom(this.faces, var1);
       }
 
       public Axis getRandomAxis(RandomSource var1) {
-         return (Axis)Util.getRandom((Object[])this.axis, var1);
+         return (Axis)Util.getRandom(this.axis, var1);
       }
 
       public boolean test(@Nullable Direction var1) {
@@ -675,7 +656,7 @@ public enum Direction implements StringRepresentable {
       }
 
       public List<Direction> shuffledCopy(RandomSource var1) {
-         return Util.shuffledCopy((Object[])this.faces, var1);
+         return Util.shuffledCopy(this.faces, var1);
       }
 
       public int length() {

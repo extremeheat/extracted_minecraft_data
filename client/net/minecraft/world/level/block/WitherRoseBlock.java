@@ -23,9 +23,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WitherRoseBlock extends FlowerBlock {
-   public static final MapCodec<WitherRoseBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(EFFECTS_FIELD.forGetter(FlowerBlock::getSuspiciousEffects), propertiesCodec()).apply(var0, WitherRoseBlock::new);
-   });
+   public static final MapCodec<WitherRoseBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(EFFECTS_FIELD.forGetter(FlowerBlock::getSuspiciousEffects), propertiesCodec()).apply(var0, WitherRoseBlock::new));
 
    public MapCodec<WitherRoseBlock> codec() {
       return CODEC;
@@ -61,10 +59,14 @@ public class WitherRoseBlock extends FlowerBlock {
       if (var2 instanceof ServerLevel var5) {
          if (var2.getDifficulty() != Difficulty.PEACEFUL && var4 instanceof LivingEntity var6) {
             if (!var6.isInvulnerableTo(var5, var2.damageSources().wither())) {
-               var6.addEffect(new MobEffectInstance(MobEffects.WITHER, 40));
+               var6.addEffect(this.getBeeInteractionEffect());
             }
          }
       }
 
+   }
+
+   public MobEffectInstance getBeeInteractionEffect() {
+      return new MobEffectInstance(MobEffects.WITHER, 40);
    }
 }

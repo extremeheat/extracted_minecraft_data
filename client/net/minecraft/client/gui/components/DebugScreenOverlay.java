@@ -11,7 +11,6 @@ import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -121,9 +120,7 @@ public class DebugScreenOverlay {
       this.allocationRateCalculator = new AllocationRateCalculator();
       this.font = var1.font;
       this.fpsChart = new FpsDebugChart(this.font, this.frameTimeLogger);
-      this.tpsChart = new TpsDebugChart(this.font, this.tickTimeLogger, () -> {
-         return var1.level.tickRateManager().millisecondsPerTick();
-      });
+      this.tpsChart = new TpsDebugChart(this.font, this.tickTimeLogger, () -> var1.level.tickRateManager().millisecondsPerTick());
       this.pingChart = new PingDebugChart(this.font, this.pingLogger);
       this.bandwidthChart = new BandwidthDebugChart(this.font, this.bandwidthLogger);
       this.profilerPieChart = new ProfilerPieChart(this.font);
@@ -143,15 +140,12 @@ public class DebugScreenOverlay {
       this.drawGameInformation(var1);
       this.drawSystemInformation(var1);
       this.profilerPieChart.setBottomOffset(10);
-      int var4;
-      int var5;
-      int var6;
       if (this.renderFpsCharts) {
-         var4 = var1.guiWidth();
-         var5 = var4 / 2;
+         int var4 = var1.guiWidth();
+         int var5 = var4 / 2;
          this.fpsChart.drawChart(var1, 0, this.fpsChart.getWidth(var5));
          if (this.tickTimeLogger.size() > 0) {
-            var6 = this.tpsChart.getWidth(var5);
+            int var6 = this.tpsChart.getWidth(var5);
             this.tpsChart.drawChart(var1, var4 - var6, var6);
          }
 
@@ -159,35 +153,19 @@ public class DebugScreenOverlay {
       }
 
       if (this.renderNetworkCharts) {
-         var4 = var1.guiWidth();
-         var5 = var4 / 2;
+         int var9 = var1.guiWidth();
+         int var11 = var9 / 2;
          if (!this.minecraft.isLocalServer()) {
-            this.bandwidthChart.drawChart(var1, 0, this.bandwidthChart.getWidth(var5));
+            this.bandwidthChart.drawChart(var1, 0, this.bandwidthChart.getWidth(var11));
          }
 
-         var6 = this.pingChart.getWidth(var5);
-         this.pingChart.drawChart(var1, var4 - var6, var6);
+         int var12 = this.pingChart.getWidth(var11);
+         this.pingChart.drawChart(var1, var9 - var12, var12);
          this.profilerPieChart.setBottomOffset(this.pingChart.getFullHeight());
       }
 
-      Zone var9 = var2.zone("profilerPie");
-
-      try {
+      try (Zone var10 = var2.zone("profilerPie")) {
          this.profilerPieChart.render(var1);
-      } catch (Throwable var8) {
-         if (var9 != null) {
-            try {
-               var9.close();
-            } catch (Throwable var7) {
-               var8.addSuppressed(var7);
-            }
-         }
-
-         throw var8;
-      }
-
-      if (var9 != null) {
-         var9.close();
       }
 
       var2.pop();
@@ -212,28 +190,23 @@ public class DebugScreenOverlay {
       Objects.requireNonNull(this.font);
       byte var4 = 9;
 
-      int var5;
-      String var6;
-      int var7;
-      int var8;
-      int var9;
-      for(var5 = 0; var5 < var2.size(); ++var5) {
-         var6 = (String)var2.get(var5);
+      for(int var5 = 0; var5 < var2.size(); ++var5) {
+         String var6 = (String)var2.get(var5);
          if (!Strings.isNullOrEmpty(var6)) {
-            var7 = this.font.width(var6);
-            var8 = var3 ? 2 : var1.guiWidth() - 2 - var7;
-            var9 = 2 + var4 * var5;
+            int var7 = this.font.width(var6);
+            int var8 = var3 ? 2 : var1.guiWidth() - 2 - var7;
+            int var9 = 2 + var4 * var5;
             var1.fill(var8 - 1, var9 - 1, var8 + var7 + 1, var9 + var4 - 1, -1873784752);
          }
       }
 
-      for(var5 = 0; var5 < var2.size(); ++var5) {
-         var6 = (String)var2.get(var5);
-         if (!Strings.isNullOrEmpty(var6)) {
-            var7 = this.font.width(var6);
-            var8 = var3 ? 2 : var1.guiWidth() - 2 - var7;
-            var9 = 2 + var4 * var5;
-            var1.drawString(this.font, var6, var8, var9, 14737632, false);
+      for(int var10 = 0; var10 < var2.size(); ++var10) {
+         String var11 = (String)var2.get(var10);
+         if (!Strings.isNullOrEmpty(var11)) {
+            int var12 = this.font.width(var11);
+            int var13 = var3 ? 2 : var1.guiWidth() - 2 - var12;
+            int var14 = 2 + var4 * var10;
+            var1.drawString(this.font, var11, var13, var14, 14737632, false);
          }
       }
 
@@ -270,22 +243,20 @@ public class DebugScreenOverlay {
       }
 
       BlockPos var28 = this.minecraft.getCameraEntity().blockPosition();
-      String[] var10000;
-      String var10003;
       if (this.minecraft.showOnlyReducedInfo()) {
-         var10000 = new String[9];
-         var10003 = SharedConstants.getCurrentVersion().getName();
-         var10000[0] = "Minecraft " + var10003 + " (" + this.minecraft.getLaunchedVersion() + "/" + ClientBrandRetriever.getClientModName() + ")";
-         var10000[1] = this.minecraft.fpsString;
-         var10000[2] = var1;
-         var10000[3] = this.minecraft.levelRenderer.getSectionStatistics();
-         var10000[4] = this.minecraft.levelRenderer.getEntityStatistics();
-         var10003 = this.minecraft.particleEngine.countParticles();
-         var10000[5] = "P: " + var10003 + ". T: " + this.minecraft.level.getEntityCount();
-         var10000[6] = this.minecraft.level.gatherChunkSourceStats();
-         var10000[7] = "";
-         var10000[8] = String.format(Locale.ROOT, "Chunk-relative: %d %d %d", var28.getX() & 15, var28.getY() & 15, var28.getZ() & 15);
-         return Lists.newArrayList(var10000);
+         String[] var48 = new String[9];
+         String var52 = SharedConstants.getCurrentVersion().getName();
+         var48[0] = "Minecraft " + var52 + " (" + this.minecraft.getLaunchedVersion() + "/" + ClientBrandRetriever.getClientModName() + ")";
+         var48[1] = this.minecraft.fpsString;
+         var48[2] = var1;
+         var48[3] = this.minecraft.levelRenderer.getSectionStatistics();
+         var48[4] = this.minecraft.levelRenderer.getEntityStatistics();
+         var52 = this.minecraft.particleEngine.countParticles();
+         var48[5] = "P: " + var52 + ". T: " + this.minecraft.level.getEntityCount();
+         var48[6] = this.minecraft.level.gatherChunkSourceStats();
+         var48[7] = "";
+         var48[8] = String.format(Locale.ROOT, "Chunk-relative: %d %d %d", var28.getX() & 15, var28.getY() & 15, var28.getZ() & 15);
+         return Lists.newArrayList(var48);
       } else {
          Entity var29 = this.minecraft.getCameraEntity();
          Direction var30 = var29.getDirection();
@@ -306,8 +277,8 @@ public class DebugScreenOverlay {
 
          Level var14 = this.getLevel();
          Object var15 = var14 instanceof ServerLevel ? ((ServerLevel)var14).getForcedChunks() : LongSets.EMPTY_SET;
-         var10000 = new String[7];
-         var10003 = SharedConstants.getCurrentVersion().getName();
+         String[] var10000 = new String[7];
+         String var10003 = SharedConstants.getCurrentVersion().getName();
          var10000[0] = "Minecraft " + var10003 + " (" + this.minecraft.getLaunchedVersion() + "/" + ClientBrandRetriever.getClientModName() + ("release".equalsIgnoreCase(this.minecraft.getVersionType()) ? "" : "/" + this.minecraft.getVersionType()) + ")";
          var10000[1] = this.minecraft.fpsString;
          var10000[2] = var1;
@@ -339,13 +310,8 @@ public class DebugScreenOverlay {
             var16.add("Client Light: " + var19 + " (" + var20 + " sky, " + var21 + " block)");
             LevelChunk var22 = this.getServerChunk();
             StringBuilder var23 = new StringBuilder("CH");
-            Heightmap.Types[] var24 = Heightmap.Types.values();
-            int var25 = var24.length;
 
-            int var26;
-            Heightmap.Types var27;
-            for(var26 = 0; var26 < var25; ++var26) {
-               var27 = var24[var26];
+            for(Heightmap.Types var27 : Heightmap.Types.values()) {
                if (var27.sendToClient()) {
                   var23.append(" ").append((String)HEIGHTMAP_NAMES.get(var27)).append(": ").append(var18.getHeight(var27, var28.getX(), var28.getZ()));
                }
@@ -354,15 +320,12 @@ public class DebugScreenOverlay {
             var16.add(var23.toString());
             var23.setLength(0);
             var23.append("SH");
-            var24 = Heightmap.Types.values();
-            var25 = var24.length;
 
-            for(var26 = 0; var26 < var25; ++var26) {
-               var27 = var24[var26];
-               if (var27.keepAfterWorldgen()) {
-                  var23.append(" ").append((String)HEIGHTMAP_NAMES.get(var27)).append(": ");
+            for(Heightmap.Types var45 : Heightmap.Types.values()) {
+               if (var45.keepAfterWorldgen()) {
+                  var23.append(" ").append((String)HEIGHTMAP_NAMES.get(var45)).append(": ");
                   if (var22 != null) {
-                     var23.append(var22.getHeight(var27, var28.getX(), var28.getZ()));
+                     var23.append(var22.getHeight(var45, var28.getX(), var28.getZ()));
                   } else {
                      var23.append("??");
                   }
@@ -371,13 +334,13 @@ public class DebugScreenOverlay {
 
             var16.add(var23.toString());
             if (this.minecraft.level.isInsideBuildHeight(var28.getY())) {
-               Holder var31 = this.minecraft.level.getBiome(var28);
-               var16.add("Biome: " + printBiome(var31));
+               Holder var49 = this.minecraft.level.getBiome(var28);
+               var16.add("Biome: " + printBiome(var49));
                if (var22 != null) {
                   float var38 = var14.getMoonBrightness();
-                  long var40 = var22.getInhabitedTime();
-                  DifficultyInstance var43 = new DifficultyInstance(var14.getDifficulty(), var14.getDayTime(), var40, var38);
-                  var16.add(String.format(Locale.ROOT, "Local Difficulty: %.2f // %.2f (Day %d)", var43.getEffectiveDifficulty(), var43.getSpecialMultiplier(), this.minecraft.level.getDayTime() / 24000L));
+                  long var41 = var22.getInhabitedTime();
+                  DifficultyInstance var46 = new DifficultyInstance(var14.getDifficulty(), var14.getDayTime(), var41, var38);
+                  var16.add(String.format(Locale.ROOT, "Local Difficulty: %.2f // %.2f (Day %d)", var46.getEffectiveDifficulty(), var46.getSpecialMultiplier(), this.minecraft.level.getDayTime() / 24000L));
                } else {
                   var16.add("Local Difficulty: ??");
                }
@@ -388,31 +351,31 @@ public class DebugScreenOverlay {
             }
          }
 
-         ServerLevel var32 = this.getServerLevel();
-         if (var32 != null) {
-            ServerChunkCache var33 = var32.getChunkSource();
-            ChunkGenerator var35 = var33.getGenerator();
-            RandomState var36 = var33.randomState();
-            var35.addDebugScreenInfo(var16, var36, var28);
-            Climate.Sampler var37 = var36.sampler();
-            BiomeSource var39 = var35.getBiomeSource();
-            var39.addDebugInfo(var16, var28, var37);
-            NaturalSpawner.SpawnState var41 = var33.getLastSpawnState();
-            if (var41 != null) {
-               Object2IntMap var42 = var41.getMobCategoryCounts();
-               int var44 = var41.getSpawnableChunkCount();
-               var16.add("SC: " + var44 + ", " + (String)Stream.of(MobCategory.values()).map((var1x) -> {
+         ServerLevel var31 = this.getServerLevel();
+         if (var31 != null) {
+            ServerChunkCache var32 = var31.getChunkSource();
+            ChunkGenerator var34 = var32.getGenerator();
+            RandomState var35 = var32.randomState();
+            var34.addDebugScreenInfo(var16, var35, var28);
+            Climate.Sampler var36 = var35.sampler();
+            BiomeSource var39 = var34.getBiomeSource();
+            var39.addDebugInfo(var16, var28, var36);
+            NaturalSpawner.SpawnState var42 = var32.getLastSpawnState();
+            if (var42 != null) {
+               Object2IntMap var44 = var42.getMobCategoryCounts();
+               int var47 = var42.getSpawnableChunkCount();
+               var16.add("SC: " + var47 + ", " + (String)Stream.of(MobCategory.values()).map((var1x) -> {
                   char var10000 = Character.toUpperCase(var1x.getName().charAt(0));
-                  return "" + var10000 + ": " + var42.getInt(var1x);
+                  return var10000 + ": " + var44.getInt(var1x);
                }).collect(Collectors.joining(", ")));
             } else {
                var16.add("SC: N/A");
             }
          }
 
-         ResourceLocation var34 = this.minecraft.gameRenderer.currentPostEffect();
-         if (var34 != null) {
-            var16.add("Post: " + String.valueOf(var34));
+         ResourceLocation var33 = this.minecraft.gameRenderer.currentPostEffect();
+         if (var33 != null) {
+            var16.add("Post: " + String.valueOf(var33));
          }
 
          var10001 = this.minecraft.getSoundManager().getDebugString();
@@ -422,11 +385,7 @@ public class DebugScreenOverlay {
    }
 
    private static String printBiome(Holder<Biome> var0) {
-      return (String)var0.unwrap().map((var0x) -> {
-         return var0x.location().toString();
-      }, (var0x) -> {
-         return "[unregistered " + String.valueOf(var0x) + "]";
-      });
+      return (String)var0.unwrap().map((var0x) -> var0x.location().toString(), (var0x) -> "[unregistered " + String.valueOf(var0x) + "]");
    }
 
    @Nullable
@@ -442,9 +401,7 @@ public class DebugScreenOverlay {
    }
 
    private Level getLevel() {
-      return (Level)DataFixUtils.orElse(Optional.ofNullable(this.minecraft.getSingleplayerServer()).flatMap((var1) -> {
-         return Optional.ofNullable(var1.getLevel(this.minecraft.level.dimension()));
-      }), this.minecraft.level);
+      return (Level)DataFixUtils.orElse(Optional.ofNullable(this.minecraft.getSingleplayerServer()).flatMap((var1) -> Optional.ofNullable(var1.getLevel(this.minecraft.level.dimension()))), this.minecraft.level);
    }
 
    @Nullable
@@ -455,9 +412,7 @@ public class DebugScreenOverlay {
             return null;
          }
 
-         this.serverChunk = var1.getChunkSource().getChunkFuture(this.lastPos.x, this.lastPos.z, ChunkStatus.FULL, false).thenApply((var0) -> {
-            return (LevelChunk)var0.orElse((Object)null);
-         });
+         this.serverChunk = var1.getChunkSource().getChunkFuture(this.lastPos.x, this.lastPos.z, ChunkStatus.FULL, false).thenApply((var0) -> (LevelChunk)var0.orElse((Object)null));
       }
 
       return (LevelChunk)this.serverChunk.getNow((Object)null);
@@ -480,58 +435,45 @@ public class DebugScreenOverlay {
       if (this.minecraft.showOnlyReducedInfo()) {
          return var9;
       } else {
-         BlockPos var10;
-         Iterator var12;
-         Map.Entry var13;
-         Stream var10000;
-         String var10001;
          if (this.block.getType() == HitResult.Type.BLOCK) {
-            var10 = ((BlockHitResult)this.block).getBlockPos();
+            BlockPos var10 = ((BlockHitResult)this.block).getBlockPos();
             BlockState var11 = this.minecraft.level.getBlockState(var10);
             var9.add("");
-            var10001 = String.valueOf(ChatFormatting.UNDERLINE);
+            String var10001 = String.valueOf(ChatFormatting.UNDERLINE);
             var9.add(var10001 + "Targeted Block: " + var10.getX() + ", " + var10.getY() + ", " + var10.getZ());
             var9.add(String.valueOf(BuiltInRegistries.BLOCK.getKey(var11.getBlock())));
-            var12 = var11.getValues().entrySet().iterator();
 
-            while(var12.hasNext()) {
-               var13 = (Map.Entry)var12.next();
+            for(Map.Entry var13 : var11.getValues().entrySet()) {
                var9.add(this.getPropertyValueString(var13));
             }
 
-            var10000 = var11.getTags().map((var0) -> {
-               return "#" + String.valueOf(var0.location());
-            });
+            Stream var10000 = var11.getTags().map((var0) -> "#" + String.valueOf(var0.location()));
             Objects.requireNonNull(var9);
             var10000.forEach(var9::add);
          }
 
          if (this.liquid.getType() == HitResult.Type.BLOCK) {
-            var10 = ((BlockHitResult)this.liquid).getBlockPos();
-            FluidState var15 = this.minecraft.level.getFluidState(var10);
+            BlockPos var14 = ((BlockHitResult)this.liquid).getBlockPos();
+            FluidState var16 = this.minecraft.level.getFluidState(var14);
             var9.add("");
-            var10001 = String.valueOf(ChatFormatting.UNDERLINE);
-            var9.add(var10001 + "Targeted Fluid: " + var10.getX() + ", " + var10.getY() + ", " + var10.getZ());
-            var9.add(String.valueOf(BuiltInRegistries.FLUID.getKey(var15.getType())));
-            var12 = var15.getValues().entrySet().iterator();
+            String var20 = String.valueOf(ChatFormatting.UNDERLINE);
+            var9.add(var20 + "Targeted Fluid: " + var14.getX() + ", " + var14.getY() + ", " + var14.getZ());
+            var9.add(String.valueOf(BuiltInRegistries.FLUID.getKey(var16.getType())));
 
-            while(var12.hasNext()) {
-               var13 = (Map.Entry)var12.next();
-               var9.add(this.getPropertyValueString(var13));
+            for(Map.Entry var18 : var16.getValues().entrySet()) {
+               var9.add(this.getPropertyValueString(var18));
             }
 
-            var10000 = var15.getTags().map((var0) -> {
-               return "#" + String.valueOf(var0.location());
-            });
+            Stream var19 = var16.getTags().map((var0) -> "#" + String.valueOf(var0.location()));
             Objects.requireNonNull(var9);
-            var10000.forEach(var9::add);
+            var19.forEach(var9::add);
          }
 
-         Entity var14 = this.minecraft.crosshairPickEntity;
-         if (var14 != null) {
+         Entity var15 = this.minecraft.crosshairPickEntity;
+         if (var15 != null) {
             var9.add("");
             var9.add(String.valueOf(ChatFormatting.UNDERLINE) + "Targeted Entity");
-            var9.add(String.valueOf(BuiltInRegistries.ENTITY_TYPE.getKey(var14.getType())));
+            var9.add(String.valueOf(BuiltInRegistries.ENTITY_TYPE.getKey(var15.getType())));
          }
 
          return var9;
@@ -542,17 +484,16 @@ public class DebugScreenOverlay {
       Property var2 = (Property)var1.getKey();
       Comparable var3 = (Comparable)var1.getValue();
       String var4 = Util.getPropertyName(var2, var3);
-      String var10000;
       if (Boolean.TRUE.equals(var3)) {
-         var10000 = String.valueOf(ChatFormatting.GREEN);
+         String var10000 = String.valueOf(ChatFormatting.GREEN);
          var4 = var10000 + var4;
       } else if (Boolean.FALSE.equals(var3)) {
-         var10000 = String.valueOf(ChatFormatting.RED);
-         var4 = var10000 + var4;
+         String var5 = String.valueOf(ChatFormatting.RED);
+         var4 = var5 + var4;
       }
 
-      var10000 = var2.getName();
-      return var10000 + ": " + var4;
+      String var6 = var2.getName();
+      return var6 + ": " + var4;
    }
 
    private static long bytesToMegabytes(long var0) {
@@ -640,7 +581,7 @@ public class DebugScreenOverlay {
       this.bandwidthLogger.reset();
    }
 
-   private static class AllocationRateCalculator {
+   static class AllocationRateCalculator {
       private static final int UPDATE_INTERVAL_MS = 500;
       private static final List<GarbageCollectorMXBean> GC_MBEANS = ManagementFactory.getGarbageCollectorMXBeans();
       private long lastTime = 0L;
@@ -674,9 +615,8 @@ public class DebugScreenOverlay {
       private static long gcCounts() {
          long var0 = 0L;
 
-         GarbageCollectorMXBean var3;
-         for(Iterator var2 = GC_MBEANS.iterator(); var2.hasNext(); var0 += var3.getCollectionCount()) {
-            var3 = (GarbageCollectorMXBean)var2.next();
+         for(GarbageCollectorMXBean var3 : GC_MBEANS) {
+            var0 += var3.getCollectionCount();
          }
 
          return var0;

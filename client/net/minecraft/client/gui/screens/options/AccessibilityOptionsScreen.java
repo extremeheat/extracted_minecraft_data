@@ -47,9 +47,7 @@ public class AccessibilityOptionsScreen extends OptionsSubScreen {
    protected void addFooter() {
       LinearLayout var1 = (LinearLayout)this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       var1.addChild(Button.builder(Component.translatable("options.accessibility.link"), ConfirmLinkScreen.confirmLink(this, (URI)CommonLinks.ACCESSIBILITY_HELP)).build());
-      var1.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> {
-         this.minecraft.setScreen(this.lastScreen);
-      }).build());
+      var1.addChild(Button.builder(CommonComponents.GUI_DONE, (var1x) -> this.minecraft.setScreen(this.lastScreen)).build());
    }
 
    private boolean isMinecartOptionEnabled() {

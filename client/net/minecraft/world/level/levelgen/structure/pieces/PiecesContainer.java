@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -33,26 +32,19 @@ public record PiecesContainer(List<StructurePiece> pieces) {
    }
 
    public boolean isInsidePiece(BlockPos var1) {
-      Iterator var2 = this.pieces.iterator();
-
-      StructurePiece var3;
-      do {
-         if (!var2.hasNext()) {
-            return false;
+      for(StructurePiece var3 : this.pieces) {
+         if (var3.getBoundingBox().isInside(var1)) {
+            return true;
          }
+      }
 
-         var3 = (StructurePiece)var2.next();
-      } while(!var3.getBoundingBox().isInside(var1));
-
-      return true;
+      return false;
    }
 
    public Tag save(StructurePieceSerializationContext var1) {
       ListTag var2 = new ListTag();
-      Iterator var3 = this.pieces.iterator();
 
-      while(var3.hasNext()) {
-         StructurePiece var4 = (StructurePiece)var3.next();
+      for(StructurePiece var4 : this.pieces) {
          var2.add(var4.createTag(var1));
       }
 
@@ -85,10 +77,6 @@ public record PiecesContainer(List<StructurePiece> pieces) {
 
    public BoundingBox calculateBoundingBox() {
       return StructurePiece.createBoundingBox(this.pieces.stream());
-   }
-
-   public List<StructurePiece> pieces() {
-      return this.pieces;
    }
 
    static {

@@ -43,17 +43,7 @@ public class SetWrittenBookPagesFunction extends LootItemConditionalFunction {
    }
 
    static {
-      PAGE_CODEC = ComponentSerialization.CODEC.validate((var0) -> {
-         return WrittenBookContent.CONTENT_CODEC.encodeStart(JavaOps.INSTANCE, var0).map((var1) -> {
-            return var0;
-         });
-      });
-      CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-         return commonFields(var0).and(var0.group(WrittenBookContent.pagesCodec(PAGE_CODEC).fieldOf("pages").forGetter((var0x) -> {
-            return var0x.pages;
-         }), ListOperation.UNLIMITED_CODEC.forGetter((var0x) -> {
-            return var0x.pageOperation;
-         }))).apply(var0, SetWrittenBookPagesFunction::new);
-      });
+      PAGE_CODEC = ComponentSerialization.CODEC.validate((var0) -> WrittenBookContent.CONTENT_CODEC.encodeStart(JavaOps.INSTANCE, var0).map((var1) -> var0));
+      CODEC = RecordCodecBuilder.mapCodec((var0) -> commonFields(var0).and(var0.group(WrittenBookContent.pagesCodec(PAGE_CODEC).fieldOf("pages").forGetter((var0x) -> var0x.pages), ListOperation.UNLIMITED_CODEC.forGetter((var0x) -> var0x.pageOperation))).apply(var0, SetWrittenBookPagesFunction::new));
    }
 }

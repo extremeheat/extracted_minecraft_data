@@ -28,8 +28,4 @@ public record VanillaArchaeologyLoot(HolderLookup.Provider registries) implement
       var1.accept(BuiltInLootTables.OCEAN_RUIN_WARM_ARCHAEOLOGY, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.ANGLER_POTTERY_SHERD)).add(LootItem.lootTableItem(Items.SHELTER_POTTERY_SHERD)).add(LootItem.lootTableItem(Items.SNORT_POTTERY_SHERD)).add(LootItem.lootTableItem(Items.SNIFFER_EGG)).add(LootItem.lootTableItem(Items.IRON_AXE)).add(LootItem.lootTableItem(Items.EMERALD).setWeight(2)).add(LootItem.lootTableItem(Items.WHEAT).setWeight(2)).add(LootItem.lootTableItem(Items.WOODEN_HOE).setWeight(2)).add(LootItem.lootTableItem(Items.COAL).setWeight(2)).add(LootItem.lootTableItem(Items.GOLD_NUGGET).setWeight(2))));
       var1.accept(BuiltInLootTables.OCEAN_RUIN_COLD_ARCHAEOLOGY, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.BLADE_POTTERY_SHERD)).add(LootItem.lootTableItem(Items.EXPLORER_POTTERY_SHERD)).add(LootItem.lootTableItem(Items.MOURNER_POTTERY_SHERD)).add(LootItem.lootTableItem(Items.PLENTY_POTTERY_SHERD)).add(LootItem.lootTableItem(Items.IRON_AXE)).add(LootItem.lootTableItem(Items.EMERALD).setWeight(2)).add(LootItem.lootTableItem(Items.WHEAT).setWeight(2)).add(LootItem.lootTableItem(Items.WOODEN_HOE).setWeight(2)).add(LootItem.lootTableItem(Items.COAL).setWeight(2)).add(LootItem.lootTableItem(Items.GOLD_NUGGET).setWeight(2))));
    }
-
-   public HolderLookup.Provider registries() {
-      return this.registries;
-   }
 }

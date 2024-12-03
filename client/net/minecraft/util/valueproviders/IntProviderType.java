@@ -15,8 +15,6 @@ public interface IntProviderType<P extends IntProvider> {
    MapCodec<P> codec();
 
    static <P extends IntProvider> IntProviderType<P> register(String var0, MapCodec<P> var1) {
-      return (IntProviderType)Registry.register(BuiltInRegistries.INT_PROVIDER_TYPE, (String)var0, () -> {
-         return var1;
-      });
+      return (IntProviderType)Registry.register(BuiltInRegistries.INT_PROVIDER_TYPE, (String)var0, (IntProviderType)() -> var1);
    }
 }

@@ -24,9 +24,7 @@ import org.slf4j.Logger;
 
 public class NbtContents implements ComponentContents {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<NbtContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(Codec.STRING.fieldOf("nbt").forGetter(NbtContents::getNbtPath), Codec.BOOL.lenientOptionalFieldOf("interpret", false).forGetter(NbtContents::isInterpreting), ComponentSerialization.CODEC.lenientOptionalFieldOf("separator").forGetter(NbtContents::getSeparator), DataSource.CODEC.forGetter(NbtContents::getDataSource)).apply(var0, NbtContents::new);
-   });
+   public static final MapCodec<NbtContents> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.fieldOf("nbt").forGetter(NbtContents::getNbtPath), Codec.BOOL.lenientOptionalFieldOf("interpret", false).forGetter(NbtContents::isInterpreting), ComponentSerialization.CODEC.lenientOptionalFieldOf("separator").forGetter(NbtContents::getSeparator), DataSource.CODEC.forGetter(NbtContents::getDataSource)).apply(var0, NbtContents::new));
    public static final ComponentContents.Type<NbtContents> TYPE;
    private final boolean interpreting;
    private final Optional<Component> separator;
@@ -118,22 +116,14 @@ public class NbtContents implements ComponentContents {
             return (MutableComponent)var4.flatMap((var3x) -> {
                try {
                   MutableComponent var4 = Component.Serializer.fromJson((String)var3x, var1.registryAccess());
-                  return Stream.of(ComponentUtils.updateForEntity(var1, (Component)var4, var2, var3));
+                  return Stream.of(ComponentUtils.updateForEntity(var1, var4, var2, var3));
                } catch (Exception var5) {
                   LOGGER.warn("Failed to parse component: {}", var3x, var5);
                   return Stream.of();
                }
-            }).reduce((var1x, var2x) -> {
-               return var1x.append(var5).append((Component)var2x);
-            }).orElseGet(Component::empty);
+            }).reduce((var1x, var2x) -> var1x.append(var5).append((Component)var2x)).orElseGet(Component::empty);
          } else {
-            return (MutableComponent)ComponentUtils.updateForEntity(var1, this.separator, var2, var3).map((var1x) -> {
-               return (MutableComponent)var4.map(Component::literal).reduce((var1, var2) -> {
-                  return var1.append((Component)var1x).append((Component)var2);
-               }).orElseGet(Component::empty);
-            }).orElseGet(() -> {
-               return Component.literal((String)var4.collect(Collectors.joining(", ")));
-            });
+            return (MutableComponent)ComponentUtils.updateForEntity(var1, this.separator, var2, var3).map((var1x) -> (MutableComponent)var4.map(Component::literal).reduce((var1, var2) -> var1.append((Component)var1x).append((Component)var2)).orElseGet(Component::empty)).orElseGet(() -> Component.literal((String)var4.collect(Collectors.joining(", "))));
          }
       } else {
          return Component.empty();
@@ -145,6 +135,6 @@ public class NbtContents implements ComponentContents {
    }
 
    static {
-      TYPE = new ComponentContents.Type(CODEC, "nbt");
+      TYPE = new ComponentContents.Type<NbtContents>(CODEC, "nbt");
    }
 }

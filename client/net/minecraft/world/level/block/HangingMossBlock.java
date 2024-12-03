@@ -6,6 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -42,7 +43,7 @@ public class HangingMossBlock extends Block implements BonemealableBlock {
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       if (var4.nextInt(500) == 0) {
          BlockState var5 = var2.getBlockState(var3.above());
-         if (var5.is(Blocks.PALE_OAK_LOG) || var5.is(Blocks.PALE_OAK_LEAVES)) {
+         if (var5.is(BlockTags.PALE_OAK_LOGS) || var5.is(Blocks.PALE_OAK_LEAVES)) {
             var2.playLocalSound((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), SoundEvents.PALE_HANGING_MOSS_IDLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
          }
       }

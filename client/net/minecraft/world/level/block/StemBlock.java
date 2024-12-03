@@ -28,15 +28,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class StemBlock extends BushBlock implements BonemealableBlock {
-   public static final MapCodec<StemBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> {
-      return var0.group(ResourceKey.codec(Registries.BLOCK).fieldOf("fruit").forGetter((var0x) -> {
-         return var0x.fruit;
-      }), ResourceKey.codec(Registries.BLOCK).fieldOf("attached_stem").forGetter((var0x) -> {
-         return var0x.attachedStem;
-      }), ResourceKey.codec(Registries.ITEM).fieldOf("seed").forGetter((var0x) -> {
-         return var0x.seed;
-      }), propertiesCodec()).apply(var0, StemBlock::new);
-   });
+   public static final MapCodec<StemBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.BLOCK).fieldOf("fruit").forGetter((var0x) -> var0x.fruit), ResourceKey.codec(Registries.BLOCK).fieldOf("attached_stem").forGetter((var0x) -> var0x.attachedStem), ResourceKey.codec(Registries.ITEM).fieldOf("seed").forGetter((var0x) -> var0x.seed), propertiesCodec()).apply(var0, StemBlock::new));
    public static final int MAX_AGE = 7;
    public static final IntegerProperty AGE;
    protected static final float AABB_OFFSET = 1.0F;
@@ -92,7 +84,7 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
       }
    }
 
-   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
       return new ItemStack((ItemLike)DataFixUtils.orElse(var1.registryAccess().lookupOrThrow(Registries.ITEM).getOptional(this.seed), this));
    }
 

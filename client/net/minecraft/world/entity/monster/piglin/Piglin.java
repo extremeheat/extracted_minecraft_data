@@ -13,6 +13,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.util.profiling.Profiler;
@@ -45,6 +47,7 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
@@ -117,9 +120,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
          }
       }
 
-      this.inventory.removeAllItems().forEach((var2x) -> {
-         this.spawnAtLocation(var1, var2x);
-      });
+      this.inventory.removeAllItems().forEach((var2x) -> this.spawnAtLocation(var1, var2x));
    }
 
    protected ItemStack addToInventory(ItemStack var1) {
@@ -196,7 +197,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    protected Brain.Provider<Piglin> brainProvider() {
-      return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
+      return Brain.<Piglin>provider(MEMORY_TYPES, SENSOR_TYPES);
    }
 
    protected Brain<?> makeBrain(Dynamic<?> var1) {
@@ -266,14 +267,16 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    protected void finishConversion(ServerLevel var1) {
       PiglinAi.cancelAdmiring(var1, this);
-      this.inventory.removeAllItems().forEach((var2) -> {
-         this.spawnAtLocation(var1, var2);
-      });
+      this.inventory.removeAllItems().forEach((var2) -> this.spawnAtLocation(var1, var2));
       super.finishConversion(var1);
    }
 
    private ItemStack createSpawnWeapon() {
       return (double)this.random.nextFloat() < 0.5 ? new ItemStack(Items.CROSSBOW) : new ItemStack(Items.GOLDEN_SWORD);
+   }
+
+   public TagKey<Item> getPreferredWeaponType() {
+      return this.isBaby() ? null : ItemTags.PIGLIN_PREFERRED_WEAPONS;
    }
 
    private boolean isChargingCrossbow() {
@@ -359,14 +362,13 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       if (EnchantmentHelper.has(var2, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE)) {
          return false;
       } else {
-         boolean var4 = PiglinAi.isLovedItem(var1) || var1.is(Items.CROSSBOW);
-         boolean var5 = PiglinAi.isLovedItem(var2) || var2.is(Items.CROSSBOW);
-         if (var4 && !var5) {
+         TagKey var4 = this.getPreferredWeaponType();
+         boolean var5 = PiglinAi.isLovedItem(var1) || var4 != null && var1.is(var4);
+         boolean var6 = PiglinAi.isLovedItem(var2) || var4 != null && var2.is(var4);
+         if (var5 && !var6) {
             return true;
-         } else if (!var4 && var5) {
-            return false;
          } else {
-            return this.isAdult() && !var1.is(Items.CROSSBOW) && var2.is(Items.CROSSBOW) ? false : super.canReplaceCurrentItem(var1, var2, var3);
+            return !var5 && var6 ? false : super.canReplaceCurrentItem(var1, var2, var3);
          }
       }
    }
@@ -410,9 +412,9 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    static {
-      DATA_BABY_ID = SynchedEntityData.defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
-      DATA_IS_CHARGING_CROSSBOW = SynchedEntityData.defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
-      DATA_IS_DANCING = SynchedEntityData.defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
+      DATA_BABY_ID = SynchedEntityData.<Boolean>defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
+      DATA_IS_CHARGING_CROSSBOW = SynchedEntityData.<Boolean>defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
+      DATA_IS_DANCING = SynchedEntityData.<Boolean>defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
       SPEED_MODIFIER_BABY_ID = ResourceLocation.withDefaultNamespace("baby");
       SPEED_MODIFIER_BABY = new AttributeModifier(SPEED_MODIFIER_BABY_ID, 0.20000000298023224, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
       BABY_DIMENSIONS = EntityType.PIGLIN.getDimensions().scale(0.5F).withEyeHeight(0.97F);

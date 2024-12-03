@@ -9,11 +9,7 @@ import net.minecraft.world.level.levelgen.RandomSupport;
 import net.minecraft.world.level.levelgen.XoroshiroRandomSource;
 
 public class RandomSequence {
-   public static final Codec<RandomSequence> CODEC = RecordCodecBuilder.create((var0) -> {
-      return var0.group(XoroshiroRandomSource.CODEC.fieldOf("source").forGetter((var0x) -> {
-         return var0x.source;
-      })).apply(var0, RandomSequence::new);
-   });
+   public static final Codec<RandomSequence> CODEC = RecordCodecBuilder.create((var0) -> var0.group(XoroshiroRandomSource.CODEC.fieldOf("source").forGetter((var0x) -> var0x.source)).apply(var0, RandomSequence::new));
    private final XoroshiroRandomSource source;
 
    public RandomSequence(XoroshiroRandomSource var1) {

@@ -57,8 +57,7 @@ public class VanillaRegistries {
       var1.listElements().forEach((var1x) -> {
          ResourceLocation var2 = var1x.key().location();
          List var3 = ((Biome)var1x.value()).getGenerationSettings().features();
-         var3.stream().flatMap(HolderSet::stream).forEach((var3x) -> {
-            var3x.unwrap().ifLeft((var2x) -> {
+         var3.stream().flatMap(HolderSet::stream).forEach((var3x) -> var3x.unwrap().ifLeft((var2x) -> {
                Holder.Reference var3 = var0.getOrThrow(var2x);
                if (!validatePlacedFeature((PlacedFeature)var3.value())) {
                   String var10000 = String.valueOf(var2x.location());
@@ -70,8 +69,7 @@ public class VanillaRegistries {
                   Util.logAndPauseIfInIde("Placed inline feature in biome " + String.valueOf(var1x) + " is missing BiomeFilter.biome()");
                }
 
-            });
-         });
+            }));
       });
    }
 

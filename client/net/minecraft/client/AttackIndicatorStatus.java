@@ -9,7 +9,7 @@ public enum AttackIndicatorStatus implements OptionEnum {
    CROSSHAIR(1, "options.attack.crosshair"),
    HOTBAR(2, "options.attack.hotbar");
 
-   private static final IntFunction<AttackIndicatorStatus> BY_ID = ByIdMap.continuous(AttackIndicatorStatus::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   private static final IntFunction<AttackIndicatorStatus> BY_ID = ByIdMap.<AttackIndicatorStatus>continuous(AttackIndicatorStatus::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    private final int id;
    private final String key;
 
