@@ -7,7 +7,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.item.context.UseOnContext;
@@ -57,7 +57,7 @@ public class FireChargeItem extends Item implements ProjectileItem {
 
    private void playSound(Level var1, BlockPos var2) {
       RandomSource var3 = var1.getRandom();
-      var1.playSound((Player)null, (BlockPos)var2, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 1.0F, (var3.nextFloat() - var3.nextFloat()) * 0.2F + 1.0F);
+      var1.playSound((Entity)null, (BlockPos)var2, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 1.0F, (var3.nextFloat() - var3.nextFloat()) * 0.2F + 1.0F);
    }
 
    public Projectile asProjectile(Level var1, Position var2, ItemStack var3, Direction var4) {

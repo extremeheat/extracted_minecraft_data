@@ -224,7 +224,7 @@ public class Dolphin extends AgeableWaterCreature {
       if (this.isNoAi()) {
          this.setAirSupply(this.getMaxAirSupply());
       } else {
-         if (this.isInWaterRainOrBubble()) {
+         if (this.isInWaterOrRain()) {
             this.setMoisntessLevel(2400);
          } else {
             this.setMoisntessLevel(this.getMoistnessLevel() - 1);
@@ -323,7 +323,7 @@ public class Dolphin extends AgeableWaterCreature {
    }
 
    public void travel(Vec3 var1) {
-      if (this.isControlledByLocalInstance() && this.isInWater()) {
+      if (this.isInWater()) {
          this.moveRelative(this.getSpeed(), var1);
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.setDeltaMovement(this.getDeltaMovement().scale(0.9));

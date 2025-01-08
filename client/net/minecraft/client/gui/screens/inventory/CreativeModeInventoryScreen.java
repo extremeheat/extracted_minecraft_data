@@ -148,12 +148,12 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    public void containerTick() {
       super.containerTick();
       if (this.minecraft != null) {
-         if (this.minecraft.player != null) {
-            this.tryRefreshInvalidatedTabs(this.minecraft.player.connection.enabledFeatures(), this.hasPermissions(this.minecraft.player), this.minecraft.player.level().registryAccess());
-         }
-
-         if (!this.minecraft.gameMode.hasInfiniteItems()) {
-            this.minecraft.setScreen(new InventoryScreen(this.minecraft.player));
+         LocalPlayer var1 = this.minecraft.player;
+         if (var1 != null) {
+            this.tryRefreshInvalidatedTabs(var1.connection.enabledFeatures(), this.hasPermissions(var1), var1.level().registryAccess());
+            if (!var1.hasInfiniteMaterials()) {
+               this.minecraft.setScreen(new InventoryScreen(var1));
+            }
          }
 
       }
@@ -292,7 +292,7 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
    }
 
    protected void init() {
-      if (this.minecraft.gameMode.hasInfiniteItems()) {
+      if (this.minecraft.player.hasInfiniteMaterials()) {
          super.init();
          Font var10003 = this.font;
          int var10004 = this.leftPos + 82;

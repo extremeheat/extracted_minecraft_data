@@ -163,11 +163,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (var1.hasBlockEntity() && !var1.is(var4.getBlock())) {
-         var2.removeBlockEntity(var3);
-      }
-
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
    }
 
    protected void onExplosionHit(BlockState var1, ServerLevel var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
@@ -1085,8 +1081,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.getBlock().onPlace(this.asState(), var1, var2, var3, var4);
       }
 
-      public void onRemove(Level var1, BlockPos var2, BlockState var3, boolean var4) {
-         this.getBlock().onRemove(this.asState(), var1, var2, var3, var4);
+      public void affectNeighborsAfterRemoval(ServerLevel var1, BlockPos var2, boolean var3) {
+         this.getBlock().affectNeighborsAfterRemoval(this.asState(), var1, var2, var3);
       }
 
       public void onExplosionHit(ServerLevel var1, BlockPos var2, Explosion var3, BiConsumer<ItemStack, BlockPos> var4) {

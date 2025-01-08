@@ -90,14 +90,11 @@ public class LightningRodBlock extends RodBlock implements SimpleWaterloggedBloc
       }
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         if ((Boolean)var1.getValue(POWERED)) {
-            this.updateNeighbours(var1, var2, var3);
-         }
-
-         super.onRemove(var1, var2, var3, var4, var5);
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      if ((Boolean)var1.getValue(POWERED)) {
+         this.updateNeighbours(var1, var2, var3);
       }
+
    }
 
    protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {

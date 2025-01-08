@@ -9,6 +9,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
@@ -19,11 +20,11 @@ import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
-public class ShovelItem extends DiggerItem {
+public class ShovelItem extends Item {
    protected static final Map<Block, BlockState> FLATTENABLES;
 
    public ShovelItem(ToolMaterial var1, float var2, float var3, Item.Properties var4) {
-      super(var1, BlockTags.MINEABLE_WITH_SHOVEL, var2, var3, var4);
+      super(var4.tool(var1, BlockTags.MINEABLE_WITH_SHOVEL, var2, var3, false));
    }
 
    public InteractionResult useOn(UseOnContext var1) {
@@ -37,11 +38,11 @@ public class ShovelItem extends DiggerItem {
          BlockState var6 = (BlockState)FLATTENABLES.get(var4.getBlock());
          BlockState var7 = null;
          if (var6 != null && var2.getBlockState(var3.above()).isAir()) {
-            var2.playSound(var5, var3, SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1.0F, 1.0F);
+            var2.playSound(var5, (BlockPos)var3, SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1.0F, 1.0F);
             var7 = var6;
          } else if (var4.getBlock() instanceof CampfireBlock && (Boolean)var4.getValue(CampfireBlock.LIT)) {
             if (!var2.isClientSide()) {
-               var2.levelEvent((Player)null, 1009, var3, 0);
+               var2.levelEvent((Entity)null, 1009, var3, 0);
             }
 
             CampfireBlock.dowse(var1.getPlayer(), var2, var3, var4);

@@ -11,7 +11,7 @@ public class References {
    public static final DSL.TypeReference STRUCTURE = reference("structure");
    public static final DSL.TypeReference STATS = reference("stats");
    public static final DSL.TypeReference SAVED_DATA_COMMAND_STORAGE = reference("saved_data/command_storage");
-   public static final DSL.TypeReference SAVED_DATA_FORCED_CHUNKS = reference("saved_data/chunks");
+   public static final DSL.TypeReference SAVED_DATA_TICKETS = reference("saved_data/tickets");
    public static final DSL.TypeReference SAVED_DATA_MAP_DATA = reference("saved_data/map_data");
    public static final DSL.TypeReference SAVED_DATA_MAP_INDEX = reference("saved_data/idcounts");
    public static final DSL.TypeReference SAVED_DATA_RAIDS = reference("saved_data/raids");
@@ -28,6 +28,7 @@ public class References {
    public static final DSL.TypeReference DATA_COMPONENTS = reference("data_components");
    public static final DSL.TypeReference VILLAGER_TRADE = reference("villager_trade");
    public static final DSL.TypeReference PARTICLE = reference("particle");
+   public static final DSL.TypeReference TEXT_COMPONENT = reference("text_component");
    public static final DSL.TypeReference ENTITY_NAME = reference("entity_name");
    public static final DSL.TypeReference ENTITY_TREE = reference("entity_tree");
    public static final DSL.TypeReference ENTITY = reference("entity");

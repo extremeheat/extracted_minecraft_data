@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -32,8 +32,8 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
    public static final MapCodec<SlabBlock> CODEC = simpleCodec(SlabBlock::new);
    public static final EnumProperty<SlabType> TYPE;
    public static final BooleanProperty WATERLOGGED;
-   protected static final VoxelShape BOTTOM_AABB;
-   protected static final VoxelShape TOP_AABB;
+   private static final VoxelShape SHAPE_BOTTOM;
+   private static final VoxelShape SHAPE_TOP;
 
    public MapCodec<? extends SlabBlock> codec() {
       return CODEC;
@@ -53,18 +53,15 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      SlabType var5 = (SlabType)var1.getValue(TYPE);
-      switch (var5) {
-         case DOUBLE -> {
-            return Shapes.block();
-         }
-         case TOP -> {
-            return TOP_AABB;
-         }
-         default -> {
-            return BOTTOM_AABB;
-         }
+      VoxelShape var10000;
+      switch ((SlabType)var1.getValue(TYPE)) {
+         case TOP -> var10000 = SHAPE_TOP;
+         case BOTTOM -> var10000 = SHAPE_BOTTOM;
+         case DOUBLE -> var10000 = Shapes.block();
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
+
+      return var10000;
    }
 
    @Nullable
@@ -109,7 +106,7 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
       return var3.getValue(TYPE) != SlabType.DOUBLE ? SimpleWaterloggedBlock.super.placeLiquid(var1, var2, var3, var4) : false;
    }
 
-   public boolean canPlaceLiquid(@Nullable Player var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
+   public boolean canPlaceLiquid(@Nullable LivingEntity var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
       return var4.getValue(TYPE) != SlabType.DOUBLE ? SimpleWaterloggedBlock.super.canPlaceLiquid(var1, var2, var3, var4, var5) : false;
    }
 
@@ -141,7 +138,7 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
    static {
       TYPE = BlockStateProperties.SLAB_TYPE;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      BOTTOM_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 8.0, 16.0);
-      TOP_AABB = Block.box(0.0, 8.0, 0.0, 16.0, 16.0, 16.0);
+      SHAPE_BOTTOM = Block.column(16.0, 0.0, 8.0);
+      SHAPE_TOP = Block.column(16.0, 8.0, 16.0);
    }
 }

@@ -257,9 +257,9 @@ public class WorldGenRegion implements WorldGenLevel {
          return false;
       } else {
          ChunkAccess var5 = this.getChunk(var1);
-         BlockState var6 = var5.setBlockState(var1, var2, false);
+         BlockState var6 = var5.setBlockState(var1, var2, var3);
          if (var6 != null) {
-            this.level.onBlockStateChange(var1, var6, var2);
+            this.level.updatePOIOnBlockStateChange(var1, var6, var2);
          }
 
          if (var2.hasBlockEntity()) {
@@ -282,7 +282,7 @@ public class WorldGenRegion implements WorldGenLevel {
             var5.removeBlockEntity(var1);
          }
 
-         if (var2.hasPostProcess(this, var1)) {
+         if (var2.hasPostProcess(this, var1) && (var3 & 16) == 0) {
             this.markPosForPostprocessing(var1);
          }
 
@@ -372,13 +372,13 @@ public class WorldGenRegion implements WorldGenLevel {
       return this.getChunk(SectionPos.blockToSectionCoord(var2), SectionPos.blockToSectionCoord(var3)).getHeight(var1, var2 & 15, var3 & 15) + 1;
    }
 
-   public void playSound(@Nullable Player var1, BlockPos var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
+   public void playSound(@Nullable Entity var1, BlockPos var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
    }
 
    public void addParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
    }
 
-   public void levelEvent(@Nullable Player var1, int var2, BlockPos var3, int var4) {
+   public void levelEvent(@Nullable Entity var1, int var2, BlockPos var3, int var4) {
    }
 
    public void gameEvent(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3) {

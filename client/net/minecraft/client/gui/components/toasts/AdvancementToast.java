@@ -2,15 +2,17 @@ package net.minecraft.client.gui.components.toasts;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
@@ -19,7 +21,6 @@ public class AdvancementToast implements Toast {
    private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("toast/advancement");
    public static final int DISPLAY_TIME = 5000;
    private final AdvancementHolder advancement;
-   private boolean playedSound;
    private Toast.Visibility wantedVisibility;
 
    public AdvancementToast(AdvancementHolder var1) {
@@ -37,15 +38,18 @@ public class AdvancementToast implements Toast {
       if (var4 == null) {
          this.wantedVisibility = Toast.Visibility.HIDE;
       } else {
-         if (!this.playedSound && var2 > 0L) {
-            this.playedSound = true;
-            if (var4.getType() == AdvancementType.CHALLENGE) {
-               var1.getMinecraft().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0F, 1.0F));
-            }
-         }
-
          this.wantedVisibility = (double)var2 >= 5000.0 * var1.getNotificationDisplayTimeMultiplier() ? Toast.Visibility.HIDE : Toast.Visibility.SHOW;
       }
+   }
+
+   @Nullable
+   public SoundEvent getSoundEvent() {
+      return this.isChallengeAdvancement() ? SoundEvents.UI_TOAST_CHALLENGE_COMPLETE : null;
+   }
+
+   private boolean isChallengeAdvancement() {
+      Optional var1 = this.advancement.value().display();
+      return var1.isPresent() && ((DisplayInfo)var1.get()).getType().equals(AdvancementType.CHALLENGE);
    }
 
    public void render(GuiGraphics var1, Font var2, long var3) {

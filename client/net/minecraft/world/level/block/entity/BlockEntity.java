@@ -16,10 +16,14 @@ import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
+import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -212,6 +216,15 @@ public abstract class BlockEntity {
       this.remove = false;
    }
 
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2, boolean var3) {
+      if (this instanceof Container var4) {
+         if (this.level != null) {
+            Containers.dropContents(this.level, var1, var4);
+         }
+      }
+
+   }
+
    public boolean triggerEvent(int var1, int var2) {
       return false;
    }
@@ -293,13 +306,8 @@ public abstract class BlockEntity {
    }
 
    @Nullable
-   public static Component parseCustomNameSafe(String var0, HolderLookup.Provider var1) {
-      try {
-         return Component.Serializer.fromJson(var0, var1);
-      } catch (Exception var3) {
-         LOGGER.warn("Failed to parse custom name from string '{}', discarding", var0, var3);
-         return null;
-      }
+   public static Component parseCustomNameSafe(@Nullable Tag var0, HolderLookup.Provider var1) {
+      return var0 == null ? null : (Component)ComponentSerialization.CODEC.parse(var1.createSerializationContext(NbtOps.INSTANCE), var0).resultOrPartial((var0x) -> LOGGER.warn("Failed to parse custom name, discarding: {}", var0x)).orElse((Object)null);
    }
 
    static class ComponentHelper {

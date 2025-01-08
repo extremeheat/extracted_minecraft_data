@@ -42,7 +42,7 @@ public class PotionItem extends Item {
       PotionContents var6 = (PotionContents)var5.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
       BlockState var7 = var2.getBlockState(var3);
       if (var1.getClickedFace() != Direction.DOWN && var7.is(BlockTags.CONVERTABLE_TO_MUD) && var6.is(Potions.WATER)) {
-         var2.playSound((Player)null, (BlockPos)var3, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 1.0F, 1.0F);
          var4.setItemInHand(var1.getHand(), ItemUtils.createFilledResult(var5, var4, new ItemStack(Items.GLASS_BOTTLE)));
          var4.awardStat(Stats.ITEM_USED.get(var5.getItem()));
          if (!var2.isClientSide) {
@@ -53,7 +53,7 @@ public class PotionItem extends Item {
             }
          }
 
-         var2.playSound((Player)null, (BlockPos)var3, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
          var2.gameEvent((Entity)null, GameEvent.FLUID_PLACE, var3);
          var2.setBlockAndUpdate(var3, Blocks.MUD.defaultBlockState());
          return InteractionResult.SUCCESS;
@@ -71,7 +71,7 @@ public class PotionItem extends Item {
       PotionContents var5 = (PotionContents)var1.get(DataComponents.POTION_CONTENTS);
       if (var5 != null) {
          Objects.requireNonNull(var3);
-         var5.addPotionTooltip(var3::add, 1.0F, var2.tickRate());
+         var5.addPotionTooltip(var3::add, (Float)var1.getOrDefault(DataComponents.POTION_DURATION_SCALE, 1.0F), var2.tickRate());
       }
    }
 }

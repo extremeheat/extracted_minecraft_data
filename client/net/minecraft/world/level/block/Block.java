@@ -7,15 +7,22 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ByteLinkedOpenHashMap;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.IdMapper;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -50,6 +57,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -83,9 +91,11 @@ public class Block extends BlockBehaviour implements ItemLike {
    public static final int UPDATE_SUPPRESS_DROPS = 32;
    public static final int UPDATE_MOVE_BY_PISTON = 64;
    public static final int UPDATE_SKIP_SHAPE_UPDATE_ON_WIRE = 128;
-   public static final int UPDATE_NONE = 4;
+   public static final int UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS = 256;
+   public static final int UPDATE_NONE = 260;
    public static final int UPDATE_ALL = 3;
    public static final int UPDATE_ALL_IMMEDIATE = 11;
+   public static final int UPDATE_SKIP_ALL_SIDEEFFECTS = 304;
    public static final float INDESTRUCTIBLE = -1.0F;
    public static final float INSTANT = 0.0F;
    public static final int UPDATE_LIMIT = 512;
@@ -126,7 +136,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public static BlockState pushEntitiesUp(BlockState var0, BlockState var1, LevelAccessor var2, BlockPos var3) {
-      VoxelShape var4 = Shapes.joinUnoptimized(var0.getCollisionShape(var2, var3), var1.getCollisionShape(var2, var3), BooleanOp.ONLY_SECOND).move((double)var3.getX(), (double)var3.getY(), (double)var3.getZ());
+      VoxelShape var4 = Shapes.joinUnoptimized(var0.getCollisionShape(var2, var3), var1.getCollisionShape(var2, var3), BooleanOp.ONLY_SECOND).move((Vec3i)var3);
       if (var4.isEmpty()) {
          return var1;
       } else {
@@ -141,6 +151,43 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    public static VoxelShape box(double var0, double var2, double var4, double var6, double var8, double var10) {
       return Shapes.box(var0 / 16.0, var2 / 16.0, var4 / 16.0, var6 / 16.0, var8 / 16.0, var10 / 16.0);
+   }
+
+   public static VoxelShape[] boxes(int var0, IntFunction<VoxelShape> var1) {
+      return (VoxelShape[])IntStream.rangeClosed(0, var0).mapToObj(var1).toArray((var0x) -> new VoxelShape[var0x]);
+   }
+
+   public static VoxelShape cube(double var0) {
+      return cube(var0, var0, var0);
+   }
+
+   public static VoxelShape cube(double var0, double var2, double var4) {
+      double var6 = var2 / 2.0;
+      return column(var0, var4, 8.0 - var6, 8.0 + var6);
+   }
+
+   public static VoxelShape column(double var0, double var2, double var4) {
+      return column(var0, var0, var2, var4);
+   }
+
+   public static VoxelShape column(double var0, double var2, double var4, double var6) {
+      double var8 = var0 / 2.0;
+      double var10 = var2 / 2.0;
+      return box(8.0 - var8, var4, 8.0 - var10, 8.0 + var8, var6, 8.0 + var10);
+   }
+
+   public static VoxelShape boxZ(double var0, double var2, double var4) {
+      return boxZ(var0, var0, var2, var4);
+   }
+
+   public static VoxelShape boxZ(double var0, double var2, double var4, double var6) {
+      double var8 = var2 / 2.0;
+      return boxZ(var0, 8.0 - var8, 8.0 + var8, var4, var6);
+   }
+
+   public static VoxelShape boxZ(double var0, double var2, double var4, double var6, double var8) {
+      double var10 = var0 / 2.0;
+      return box(8.0 - var10, var2, var6, 8.0 + var10, var4, var8);
    }
 
    public static BlockState updateFromNeighbourShapes(BlockState var0, LevelAccessor var1, BlockPos var2) {
@@ -450,8 +497,26 @@ public class Block extends BlockBehaviour implements ItemLike {
       return this;
    }
 
-   protected ImmutableMap<BlockState, VoxelShape> getShapeForEachState(Function<BlockState, VoxelShape> var1) {
-      return (ImmutableMap)this.stateDefinition.getPossibleStates().stream().collect(ImmutableMap.toImmutableMap(Function.identity(), var1));
+   protected Function<BlockState, VoxelShape> getShapeForEachState(Function<BlockState, VoxelShape> var1) {
+      ImmutableMap var10000 = (ImmutableMap)this.stateDefinition.getPossibleStates().stream().collect(ImmutableMap.toImmutableMap(Function.identity(), var1));
+      Objects.requireNonNull(var10000);
+      return var10000::get;
+   }
+
+   protected Function<BlockState, VoxelShape> getShapeForEachState(Function<BlockState, VoxelShape> var1, Property<?>... var2) {
+      Map var3 = (Map)Arrays.stream(var2).collect(Collectors.toMap((var0) -> var0, (var0) -> var0.getPossibleValues().getFirst()));
+      ImmutableMap var4 = (ImmutableMap)this.stateDefinition.getPossibleStates().stream().filter((var1x) -> var3.entrySet().stream().allMatch((var1) -> var1x.getValue((Property)var1.getKey()) == var1.getValue())).collect(ImmutableMap.toImmutableMap(Function.identity(), var1));
+      return (var2x) -> {
+         for(Map.Entry var4x : var3.entrySet()) {
+            var2x = (BlockState)setValueHelper(var2x, (Property)var4x.getKey(), var4x.getValue());
+         }
+
+         return (VoxelShape)var4.get(var2x);
+      };
+   }
+
+   private static <S extends StateHolder<?, S>, T extends Comparable<T>> S setValueHelper(S var0, Property<T> var1, Object var2) {
+      return (S)(var0.setValue(var1, (Comparable)var2));
    }
 
    /** @deprecated */

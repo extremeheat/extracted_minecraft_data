@@ -38,7 +38,7 @@ public record TrimMaterial(String assetName, Holder<Item> ingredient, Map<Resour
    }
 
    static {
-      DIRECT_STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8, TrimMaterial::assetName, ByteBufCodecs.holderRegistry(Registries.ITEM), TrimMaterial::ingredient, ByteBufCodecs.map(Object2ObjectOpenHashMap::new, ResourceKey.streamCodec(EquipmentAssets.ROOT_ID), ByteBufCodecs.STRING_UTF8), TrimMaterial::overrideArmorAssets, ComponentSerialization.STREAM_CODEC, TrimMaterial::description, TrimMaterial::new);
+      DIRECT_STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8, TrimMaterial::assetName, Item.STREAM_CODEC, TrimMaterial::ingredient, ByteBufCodecs.map(Object2ObjectOpenHashMap::new, ResourceKey.streamCodec(EquipmentAssets.ROOT_ID), ByteBufCodecs.STRING_UTF8), TrimMaterial::overrideArmorAssets, ComponentSerialization.STREAM_CODEC, TrimMaterial::description, TrimMaterial::new);
       CODEC = RegistryFileCodec.<Holder<TrimMaterial>>create(Registries.TRIM_MATERIAL, DIRECT_CODEC);
       STREAM_CODEC = ByteBufCodecs.holder(Registries.TRIM_MATERIAL, DIRECT_STREAM_CODEC);
    }

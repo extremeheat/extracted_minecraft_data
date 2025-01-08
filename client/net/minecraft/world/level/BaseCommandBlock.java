@@ -11,8 +11,12 @@ import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringUtil;
@@ -53,13 +57,14 @@ public abstract class BaseCommandBlock implements CommandSource {
    public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
       var1.putString("Command", this.command);
       var1.putInt("SuccessCount", this.successCount);
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       if (this.customName != null) {
-         var1.putString("CustomName", Component.Serializer.toJson(this.customName, var2));
+         var1.put("CustomName", (Tag)ComponentSerialization.CODEC.encodeStart(var3, this.customName).getOrThrow());
       }
 
       var1.putBoolean("TrackOutput", this.trackOutput);
       if (this.lastOutput != null && this.trackOutput) {
-         var1.putString("LastOutput", Component.Serializer.toJson(this.lastOutput, var2));
+         var1.put("LastOutput", (Tag)ComponentSerialization.CODEC.encodeStart(var3, this.lastOutput).getOrThrow());
       }
 
       var1.putBoolean("UpdateLastExecution", this.updateLastExecution);
@@ -73,22 +78,13 @@ public abstract class BaseCommandBlock implements CommandSource {
    public void load(CompoundTag var1, HolderLookup.Provider var2) {
       this.command = var1.getString("Command");
       this.successCount = var1.getInt("SuccessCount");
-      if (var1.contains("CustomName", 8)) {
-         this.setCustomName(BlockEntity.parseCustomNameSafe(var1.getString("CustomName"), var2));
-      } else {
-         this.setCustomName((Component)null);
-      }
-
+      this.setCustomName(BlockEntity.parseCustomNameSafe(var1.get("CustomName"), var2));
       if (var1.contains("TrackOutput", 1)) {
          this.trackOutput = var1.getBoolean("TrackOutput");
       }
 
-      if (var1.contains("LastOutput", 8) && this.trackOutput) {
-         try {
-            this.lastOutput = Component.Serializer.fromJson(var1.getString("LastOutput"), var2);
-         } catch (Throwable var4) {
-            this.lastOutput = Component.literal(var4.getMessage());
-         }
+      if (var1.contains("LastOutput") && this.trackOutput) {
+         this.lastOutput = BlockEntity.parseCustomNameSafe(var1.get("LastOutput"), var2);
       } else {
          this.lastOutput = null;
       }

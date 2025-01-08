@@ -17,8 +17,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -56,7 +56,7 @@ public class BrushableBlockEntity extends BlockEntity {
       this.item = ItemStack.EMPTY;
    }
 
-   public boolean brush(long var1, ServerLevel var3, Player var4, Direction var5, ItemStack var6) {
+   public boolean brush(long var1, ServerLevel var3, LivingEntity var4, Direction var5, ItemStack var6) {
       if (this.hitDirection == null) {
          this.hitDirection = var5;
       }
@@ -85,7 +85,7 @@ public class BrushableBlockEntity extends BlockEntity {
       }
    }
 
-   private void unpackLootTable(ServerLevel var1, Player var2, ItemStack var3) {
+   private void unpackLootTable(ServerLevel var1, LivingEntity var2, ItemStack var3) {
       if (this.lootTable != null) {
          LootTable var4 = var1.getServer().reloadableRegistries().getLootTable(this.lootTable);
          if (var2 instanceof ServerPlayer) {
@@ -114,7 +114,7 @@ public class BrushableBlockEntity extends BlockEntity {
       }
    }
 
-   private void brushingCompleted(ServerLevel var1, Player var2, ItemStack var3) {
+   private void brushingCompleted(ServerLevel var1, LivingEntity var2, ItemStack var3) {
       this.dropContent(var1, var2, var3);
       BlockState var4 = this.getBlockState();
       var1.levelEvent(3008, this.getBlockPos(), Block.getId(var4));
@@ -129,7 +129,7 @@ public class BrushableBlockEntity extends BlockEntity {
       var1.setBlock(this.worldPosition, var6.defaultBlockState(), 3);
    }
 
-   private void dropContent(ServerLevel var1, Player var2, ItemStack var3) {
+   private void dropContent(ServerLevel var1, LivingEntity var2, ItemStack var3) {
       this.unpackLootTable(var1, var2, var3);
       if (!this.item.isEmpty()) {
          double var4 = (double)EntityType.ITEM.getWidth();

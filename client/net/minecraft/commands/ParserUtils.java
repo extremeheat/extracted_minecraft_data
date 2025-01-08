@@ -1,64 +1,29 @@
 package net.minecraft.commands;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.internal.Streams;
-import com.google.gson.stream.JsonReader;
 import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.JsonOps;
-import java.lang.reflect.Field;
+import com.mojang.serialization.DataResult;
 import net.minecraft.CharPredicate;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.TagParser;
 
 public class ParserUtils {
-   private static final Field JSON_READER_POS = (Field)Util.make(() -> {
-      try {
-         Field var0 = JsonReader.class.getDeclaredField("pos");
-         var0.setAccessible(true);
-         return var0;
-      } catch (NoSuchFieldException var1) {
-         throw new IllegalStateException("Couldn't get field 'pos' for JsonReader", var1);
-      }
-   });
-   private static final Field JSON_READER_LINESTART = (Field)Util.make(() -> {
-      try {
-         Field var0 = JsonReader.class.getDeclaredField("lineStart");
-         var0.setAccessible(true);
-         return var0;
-      } catch (NoSuchFieldException var1) {
-         throw new IllegalStateException("Couldn't get field 'lineStart' for JsonReader", var1);
-      }
-   });
-
    public ParserUtils() {
       super();
    }
 
-   private static int getPos(JsonReader var0) {
-      try {
-         return JSON_READER_POS.getInt(var0) - JSON_READER_LINESTART.getInt(var0);
-      } catch (IllegalAccessException var2) {
-         throw new IllegalStateException("Couldn't read position of JsonReader", var2);
-      }
-   }
-
-   public static <T> T parseJson(HolderLookup.Provider var0, StringReader var1, Codec<T> var2) {
-      JsonReader var3 = new JsonReader(new java.io.StringReader(var1.getRemaining()));
-      var3.setLenient(false);
-
-      Object var5;
-      try {
-         JsonElement var4 = Streams.parse(var3);
-         var5 = var2.parse(var0.createSerializationContext(JsonOps.INSTANCE), var4).getOrThrow(JsonParseException::new);
-      } catch (StackOverflowError var9) {
-         throw new JsonParseException(var9);
-      } finally {
-         var1.setCursor(var1.getCursor() + getPos(var3));
-      }
-
-      return (T)var5;
+   public static <T> T parseSnbtWithCodec(Codec<T> var0, HolderLookup.Provider var1, DynamicCommandExceptionType var2, StringReader var3) throws CommandSyntaxException {
+      int var4 = var3.getCursor();
+      Tag var5 = (new TagParser(var3)).readValue();
+      DataResult var6 = var0.parse(var1.createSerializationContext(NbtOps.INSTANCE), var5);
+      return (T)var6.getOrThrow((var3x) -> {
+         var3.setCursor(var4);
+         return var2.createWithContext(var3, var3x);
+      });
    }
 
    public static String readWhile(StringReader var0, CharPredicate var1) {

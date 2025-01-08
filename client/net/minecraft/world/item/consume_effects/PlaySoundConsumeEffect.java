@@ -7,8 +7,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
@@ -26,7 +26,7 @@ public record PlaySoundConsumeEffect(Holder<SoundEvent> sound) implements Consum
    }
 
    public boolean apply(Level var1, ItemStack var2, LivingEntity var3) {
-      var1.playSound((Player)null, (BlockPos)var3.blockPosition(), this.sound.value(), var3.getSoundSource(), 1.0F, 1.0F);
+      var1.playSound((Entity)null, (BlockPos)var3.blockPosition(), this.sound.value(), var3.getSoundSource(), 1.0F, 1.0F);
       return true;
    }
 

@@ -80,6 +80,7 @@ import net.minecraft.network.protocol.game.ClientboundSetCameraPacket;
 import net.minecraft.network.protocol.game.ClientboundSetCursorItemPacket;
 import net.minecraft.network.protocol.game.ClientboundSetExperiencePacket;
 import net.minecraft.network.protocol.game.ClientboundSetHealthPacket;
+import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
@@ -152,7 +153,7 @@ import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.ServerItemCooldowns;
-import net.minecraft.world.item.WrittenBookItem;
+import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -696,7 +697,7 @@ public class ServerPlayer extends Player {
       this.trackStartFallingPosition();
       this.trackEnteredOrExitedLavaOnVehicle();
       this.updatePlayerAttributes();
-      this.advancements.flushDirty(this);
+      this.advancements.flushDirty(this, true);
    }
 
    private void updatePlayerAttributes() {
@@ -866,7 +867,7 @@ public class ServerPlayer extends Player {
             boolean var2 = true;
             String var3x = var3.getString(256);
             MutableComponent var4 = Component.translatable("death.attack.message_too_long", Component.literal(var3x).withStyle(ChatFormatting.YELLOW));
-            MutableComponent var5 = Component.translatable("death.attack.even_more_magic", this.getDisplayName()).withStyle((UnaryOperator)((var1) -> var1.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var4))));
+            MutableComponent var5 = Component.translatable("death.attack.even_more_magic", this.getDisplayName()).withStyle((UnaryOperator)((var1) -> var1.withHoverEvent(new HoverEvent.ShowText(var4))));
             return new ClientboundPlayerCombatKillPacket(this.getId(), var5);
          }));
          PlayerTeam var4 = this.getTeam();
@@ -1044,7 +1045,7 @@ public class ServerPlayer extends Player {
          ServerLevel var3 = this.serverLevel();
          ResourceKey var4 = var3.dimension();
          if (!var1.asPassenger()) {
-            this.stopRiding();
+            this.removeVehicle();
          }
 
          if (var2.dimension() == var4) {
@@ -1131,7 +1132,7 @@ public class ServerPlayer extends Player {
             return Either.left(Player.BedSleepingProblem.OBSTRUCTED);
          } else {
             this.setRespawnPosition(this.level().dimension(), var1, this.getYRot(), false, true);
-            if (this.level().isDay()) {
+            if (this.level().isBrightOutside()) {
                return Either.left(Player.BedSleepingProblem.NOT_POSSIBLE_NOW);
             } else {
                if (!this.isCreative()) {
@@ -1285,7 +1286,7 @@ public class ServerPlayer extends Player {
 
    public void openItemGui(ItemStack var1, InteractionHand var2) {
       if (var1.has(DataComponents.WRITTEN_BOOK_CONTENT)) {
-         if (WrittenBookItem.resolveBookComponents(var1, this.createCommandSourceStack(), this)) {
+         if (WrittenBookContent.resolveForItem(var1, this.createCommandSourceStack(), this)) {
             this.containerMenu.broadcastChanges();
          }
 
@@ -2039,19 +2040,24 @@ public class ServerPlayer extends Player {
             this.server.getPlayerList().sendActiveEffects(var3, this.connection);
          }
 
+         this.connection.send(new ClientboundSetPassengersPacket(var1));
          return true;
       } else {
          return false;
       }
    }
 
-   public void stopRiding() {
+   public void removeVehicle() {
       Entity var1 = this.getVehicle();
-      super.stopRiding();
+      super.removeVehicle();
       if (var1 instanceof LivingEntity var2) {
          for(MobEffectInstance var4 : var2.getActiveEffects()) {
             this.connection.send(new ClientboundRemoveMobEffectPacket(var1.getId(), var4.getEffect()));
          }
+      }
+
+      if (var1 != null) {
+         this.connection.send(new ClientboundSetPassengersPacket(var1));
       }
 
    }
@@ -2130,7 +2136,7 @@ public class ServerPlayer extends Player {
    }
 
    public static long placeEnderPearlTicket(ServerLevel var0, ChunkPos var1) {
-      var0.getChunkSource().addRegionTicket(TicketType.ENDER_PEARL, var1, 2, var1);
+      var0.getChunkSource().addTicketWithRadius(TicketType.ENDER_PEARL, var1, 2);
       return TicketType.ENDER_PEARL.timeout();
    }
 

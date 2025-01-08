@@ -7,7 +7,6 @@ import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerState;
 import net.minecraft.world.level.block.entity.vault.VaultState;
 
 public class BlockStateProperties {
-   public static final BooleanProperty ACTIVE = BooleanProperty.create("active");
    public static final BooleanProperty ATTACHED = BooleanProperty.create("attached");
    public static final BooleanProperty BERRIES = BooleanProperty.create("berries");
    public static final BooleanProperty BLOOM = BooleanProperty.create("bloom");
@@ -55,6 +54,7 @@ public class BlockStateProperties {
    public static final EnumProperty<Direction> FACING_HOPPER;
    public static final EnumProperty<Direction> HORIZONTAL_FACING;
    public static final IntegerProperty FLOWER_AMOUNT;
+   public static final IntegerProperty SEGMENT_AMOUNT;
    public static final EnumProperty<FrontAndTop> ORIENTATION;
    public static final EnumProperty<AttachFace> ATTACH_FACE;
    public static final EnumProperty<BellAttachType> BELL_ATTACHMENT;
@@ -140,6 +140,7 @@ public class BlockStateProperties {
    public static final BooleanProperty CRAFTING;
    public static final EnumProperty<TrialSpawnerState> TRIAL_SPAWNER_STATE;
    public static final EnumProperty<VaultState> VAULT_STATE;
+   public static final EnumProperty<CreakingHeartState> CREAKING_HEART_STATE;
    public static final BooleanProperty OMINOUS;
 
    public BlockStateProperties() {
@@ -159,6 +160,7 @@ public class BlockStateProperties {
       FACING_HOPPER = EnumProperty.create("facing", Direction.class, (Predicate)((var0) -> var0 != Direction.UP));
       HORIZONTAL_FACING = EnumProperty.create("facing", Direction.class, Direction.Plane.HORIZONTAL);
       FLOWER_AMOUNT = IntegerProperty.create("flower_amount", 1, 4);
+      SEGMENT_AMOUNT = IntegerProperty.create("segment_amount", 1, 4);
       ORIENTATION = EnumProperty.<FrontAndTop>create("orientation", FrontAndTop.class);
       ATTACH_FACE = EnumProperty.<AttachFace>create("face", AttachFace.class);
       BELL_ATTACHMENT = EnumProperty.<BellAttachType>create("attachment", BellAttachType.class);
@@ -227,6 +229,7 @@ public class BlockStateProperties {
       CRAFTING = BooleanProperty.create("crafting");
       TRIAL_SPAWNER_STATE = EnumProperty.<TrialSpawnerState>create("trial_spawner_state", TrialSpawnerState.class);
       VAULT_STATE = EnumProperty.<VaultState>create("vault_state", VaultState.class);
+      CREAKING_HEART_STATE = EnumProperty.<CreakingHeartState>create("creaking_heart_state", CreakingHeartState.class);
       OMINOUS = BooleanProperty.create("ominous");
    }
 }

@@ -60,7 +60,7 @@ public class ClientAdvancements {
                }
 
                Optional var6 = var4.advancement().display();
-               if (var6.isPresent() && ((DisplayInfo)var6.get()).shouldShowToast()) {
+               if (var1.shouldShowAdvancements() && var6.isPresent() && ((DisplayInfo)var6.get()).shouldShowToast()) {
                   this.minecraft.getToastManager().addToast(new AdvancementToast(var4.holder()));
                }
             }

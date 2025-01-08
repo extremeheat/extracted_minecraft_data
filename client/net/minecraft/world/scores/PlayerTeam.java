@@ -42,7 +42,7 @@ public class PlayerTeam extends Team {
       this.scoreboard = var1;
       this.name = var2;
       this.displayName = Component.literal(var2);
-      this.displayNameStyle = Style.EMPTY.withInsertion(var2).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(var2)));
+      this.displayNameStyle = Style.EMPTY.withInsertion(var2).withHoverEvent(new HoverEvent.ShowText(Component.literal(var2)));
    }
 
    public Scoreboard getScoreboard() {

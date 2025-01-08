@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.entity;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
-import net.minecraft.Util;
 import net.minecraft.client.model.HorseModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.layers.HorseArmorLayer;
@@ -15,15 +14,7 @@ import net.minecraft.world.entity.animal.horse.Horse;
 import net.minecraft.world.entity.animal.horse.Variant;
 
 public final class HorseRenderer extends AbstractHorseRenderer<Horse, HorseRenderState, HorseModel> {
-   private static final Map<Variant, ResourceLocation> LOCATION_BY_VARIANT = (Map)Util.make(Maps.newEnumMap(Variant.class), (var0) -> {
-      var0.put(Variant.WHITE, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_white.png"));
-      var0.put(Variant.CREAMY, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_creamy.png"));
-      var0.put(Variant.CHESTNUT, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_chestnut.png"));
-      var0.put(Variant.BROWN, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_brown.png"));
-      var0.put(Variant.BLACK, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_black.png"));
-      var0.put(Variant.GRAY, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_gray.png"));
-      var0.put(Variant.DARK_BROWN, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_darkbrown.png"));
-   });
+   private static final Map<Variant, ResourceLocation> LOCATION_BY_VARIANT;
 
    public HorseRenderer(EntityRendererProvider.Context var1) {
       super(var1, new HorseModel(var1.bakeLayer(ModelLayers.HORSE)), new HorseModel(var1.bakeLayer(ModelLayers.HORSE_BABY)));
@@ -54,5 +45,9 @@ public final class HorseRenderer extends AbstractHorseRenderer<Horse, HorseRende
    // $FF: synthetic method
    public EntityRenderState createRenderState() {
       return this.createRenderState();
+   }
+
+   static {
+      LOCATION_BY_VARIANT = Maps.newEnumMap(Map.of(Variant.WHITE, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_white.png"), Variant.CREAMY, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_creamy.png"), Variant.CHESTNUT, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_chestnut.png"), Variant.BROWN, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_brown.png"), Variant.BLACK, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_black.png"), Variant.GRAY, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_gray.png"), Variant.DARK_BROWN, ResourceLocation.withDefaultNamespace("textures/entity/horse/horse_darkbrown.png")));
    }
 }

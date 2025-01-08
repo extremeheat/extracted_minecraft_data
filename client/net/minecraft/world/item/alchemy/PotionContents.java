@@ -74,15 +74,15 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
       }
    }
 
-   public void forEachEffect(Consumer<MobEffectInstance> var1) {
+   public void forEachEffect(Consumer<MobEffectInstance> var1, float var2) {
       if (this.potion.isPresent()) {
-         for(MobEffectInstance var3 : ((Potion)((Holder)this.potion.get()).value()).getEffects()) {
-            var1.accept(new MobEffectInstance(var3));
+         for(MobEffectInstance var4 : ((Potion)((Holder)this.potion.get()).value()).getEffects()) {
+            var1.accept(var4.withScaledDuration(var2));
          }
       }
 
-      for(MobEffectInstance var5 : this.customEffects) {
-         var1.accept(new MobEffectInstance(var5));
+      for(MobEffectInstance var6 : this.customEffects) {
+         var1.accept(var6.withScaledDuration(var2));
       }
 
    }
@@ -148,25 +148,25 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
       addPotionTooltip(this.getAllEffects(), var1, var2, var3);
    }
 
-   public void applyToLivingEntity(LivingEntity var1) {
-      Level var3 = var1.level();
-      if (var3 instanceof ServerLevel var2) {
+   public void applyToLivingEntity(LivingEntity var1, float var2) {
+      Level var4 = var1.level();
+      if (var4 instanceof ServerLevel var3) {
          Player var10000;
-         if (var1 instanceof Player var4) {
-            var10000 = var4;
+         if (var1 instanceof Player var5) {
+            var10000 = var5;
          } else {
             var10000 = null;
          }
 
-         Player var5 = var10000;
+         Player var6 = var10000;
          this.forEachEffect((var3x) -> {
             if (((MobEffect)var3x.getEffect().value()).isInstantenous()) {
-               ((MobEffect)var3x.getEffect().value()).applyInstantenousEffect(var2, var5, var5, var1, var3x.getAmplifier(), 1.0);
+               ((MobEffect)var3x.getEffect().value()).applyInstantenousEffect(var3, var6, var6, var1, var3x.getAmplifier(), 1.0);
             } else {
                var1.addEffect(var3x);
             }
 
-         });
+         }, var2);
       }
    }
 
@@ -220,7 +220,7 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
    }
 
    public void onConsume(Level var1, LivingEntity var2, ItemStack var3, Consumable var4) {
-      this.applyToLivingEntity(var2);
+      this.applyToLivingEntity(var2, (Float)var3.getOrDefault(DataComponents.POTION_DURATION_SCALE, 1.0F));
    }
 
    static {

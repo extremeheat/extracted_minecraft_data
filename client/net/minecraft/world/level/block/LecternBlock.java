@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,7 +17,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
@@ -45,15 +45,8 @@ public class LecternBlock extends BaseEntityBlock {
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty POWERED;
    public static final BooleanProperty HAS_BOOK;
-   public static final VoxelShape SHAPE_BASE;
-   public static final VoxelShape SHAPE_POST;
-   public static final VoxelShape SHAPE_COMMON;
-   public static final VoxelShape SHAPE_TOP_PLATE;
-   public static final VoxelShape SHAPE_COLLISION;
-   public static final VoxelShape SHAPE_WEST;
-   public static final VoxelShape SHAPE_NORTH;
-   public static final VoxelShape SHAPE_EAST;
-   public static final VoxelShape SHAPE_SOUTH;
+   private static final VoxelShape SHAPE_COLLISION;
+   private static final Map<Direction, VoxelShape> SHAPES;
    private static final int PAGE_CHANGE_IMPULSE_TICKS = 2;
 
    public MapCodec<LecternBlock> codec() {
@@ -66,7 +59,7 @@ public class LecternBlock extends BaseEntityBlock {
    }
 
    protected VoxelShape getOcclusionShape(BlockState var1) {
-      return SHAPE_COMMON;
+      return SHAPE_COLLISION;
    }
 
    protected boolean useShapeForLightOcclusion(BlockState var1) {
@@ -93,23 +86,7 @@ public class LecternBlock extends BaseEntityBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch ((Direction)var1.getValue(FACING)) {
-         case NORTH -> {
-            return SHAPE_NORTH;
-         }
-         case SOUTH -> {
-            return SHAPE_SOUTH;
-         }
-         case EAST -> {
-            return SHAPE_EAST;
-         }
-         case WEST -> {
-            return SHAPE_WEST;
-         }
-         default -> {
-            return SHAPE_COMMON;
-         }
-      }
+      return (VoxelShape)SHAPES.get(var1.getValue(FACING));
    }
 
    protected BlockState rotate(BlockState var1, Rotation var2) {
@@ -145,7 +122,7 @@ public class LecternBlock extends BaseEntityBlock {
       if (var5 instanceof LecternBlockEntity var6) {
          var6.setBook(var4.consumeAndReturn(1, var0));
          resetBookState(var0, var1, var2, var3, true);
-         var1.playSound((Player)null, (BlockPos)var2, SoundEvents.BOOK_PUT, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var1.playSound((Entity)null, (BlockPos)var2, SoundEvents.BOOK_PUT, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
    }
@@ -177,31 +154,9 @@ public class LecternBlock extends BaseEntityBlock {
       changePowered(var2, var3, var1, false);
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         if ((Boolean)var1.getValue(HAS_BOOK)) {
-            this.popBook(var1, var2, var3);
-         }
-
-         super.onRemove(var1, var2, var3, var4, var5);
-         if ((Boolean)var1.getValue(POWERED)) {
-            updateBelow(var2, var3, var1);
-         }
-
-      }
-   }
-
-   private void popBook(BlockState var1, Level var2, BlockPos var3) {
-      BlockEntity var4 = var2.getBlockEntity(var3);
-      if (var4 instanceof LecternBlockEntity var5) {
-         Direction var6 = (Direction)var1.getValue(FACING);
-         ItemStack var7 = var5.getBook().copy();
-         float var8 = 0.25F * (float)var6.getStepX();
-         float var9 = 0.25F * (float)var6.getStepZ();
-         ItemEntity var10 = new ItemEntity(var2, (double)var3.getX() + 0.5 + (double)var8, (double)(var3.getY() + 1), (double)var3.getZ() + 0.5 + (double)var9, var7);
-         var10.setDefaultPickUpDelay();
-         var2.addFreshEntity(var10);
-         var5.clearContent();
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      if ((Boolean)var1.getValue(POWERED)) {
+         updateBelow(var2, var3, var1);
       }
 
    }
@@ -277,14 +232,7 @@ public class LecternBlock extends BaseEntityBlock {
       FACING = HorizontalDirectionalBlock.FACING;
       POWERED = BlockStateProperties.POWERED;
       HAS_BOOK = BlockStateProperties.HAS_BOOK;
-      SHAPE_BASE = Block.box(0.0, 0.0, 0.0, 16.0, 2.0, 16.0);
-      SHAPE_POST = Block.box(4.0, 2.0, 4.0, 12.0, 14.0, 12.0);
-      SHAPE_COMMON = Shapes.or(SHAPE_BASE, SHAPE_POST);
-      SHAPE_TOP_PLATE = Block.box(0.0, 15.0, 0.0, 16.0, 15.0, 16.0);
-      SHAPE_COLLISION = Shapes.or(SHAPE_COMMON, SHAPE_TOP_PLATE);
-      SHAPE_WEST = Shapes.or(Block.box(1.0, 10.0, 0.0, 5.333333, 14.0, 16.0), Block.box(5.333333, 12.0, 0.0, 9.666667, 16.0, 16.0), Block.box(9.666667, 14.0, 0.0, 14.0, 18.0, 16.0), SHAPE_COMMON);
-      SHAPE_NORTH = Shapes.or(Block.box(0.0, 10.0, 1.0, 16.0, 14.0, 5.333333), Block.box(0.0, 12.0, 5.333333, 16.0, 16.0, 9.666667), Block.box(0.0, 14.0, 9.666667, 16.0, 18.0, 14.0), SHAPE_COMMON);
-      SHAPE_EAST = Shapes.or(Block.box(10.666667, 10.0, 0.0, 15.0, 14.0, 16.0), Block.box(6.333333, 12.0, 0.0, 10.666667, 16.0, 16.0), Block.box(2.0, 14.0, 0.0, 6.333333, 18.0, 16.0), SHAPE_COMMON);
-      SHAPE_SOUTH = Shapes.or(Block.box(0.0, 10.0, 10.666667, 16.0, 14.0, 15.0), Block.box(0.0, 12.0, 6.333333, 16.0, 16.0, 10.666667), Block.box(0.0, 14.0, 2.0, 16.0, 18.0, 6.333333), SHAPE_COMMON);
+      SHAPE_COLLISION = Shapes.or(Block.column(16.0, 0.0, 2.0), Block.column(8.0, 2.0, 14.0));
+      SHAPES = Shapes.rotateHorizontal(Shapes.or(Block.boxZ(16.0, 10.0, 14.0, 1.0, 5.333333), Block.boxZ(16.0, 12.0, 16.0, 5.333333, 9.666667), Block.boxZ(16.0, 14.0, 18.0, 9.666667, 14.0), SHAPE_COLLISION));
    }
 }

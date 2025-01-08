@@ -117,12 +117,12 @@ public class Squid extends AgeableWaterCreature {
          }
       }
 
-      if (this.isInWaterOrBubble()) {
+      if (this.isInWater()) {
          if (this.tentacleMovement < 3.1415927F) {
             float var1 = this.tentacleMovement / 3.1415927F;
             this.tentacleAngle = Mth.sin(var1 * var1 * 3.1415927F) * 3.1415927F * 0.25F;
             if ((double)var1 > 0.75) {
-               if (this.isControlledByLocalInstance()) {
+               if (this.isLocalInstanceAuthoritative()) {
                   this.setDeltaMovement(this.movementVector);
                }
 
@@ -132,7 +132,7 @@ public class Squid extends AgeableWaterCreature {
             }
          } else {
             this.tentacleAngle = 0.0F;
-            if (this.isControlledByLocalInstance()) {
+            if (this.isLocalInstanceAuthoritative()) {
                this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
             }
 
@@ -196,10 +196,7 @@ public class Squid extends AgeableWaterCreature {
    }
 
    public void travel(Vec3 var1) {
-      if (this.isControlledByLocalInstance()) {
-         this.move(MoverType.SELF, this.getDeltaMovement());
-      }
-
+      this.move(MoverType.SELF, this.getDeltaMovement());
    }
 
    public void handleEntityEvent(byte var1) {

@@ -17,6 +17,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -25,7 +26,6 @@ import net.minecraft.world.entity.ai.behavior.LongJumpUtil;
 import net.minecraft.world.entity.ai.behavior.Swim;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -99,7 +99,7 @@ public class LongJump extends Behavior<Breeze> {
       }
 
       var2.setPose(Pose.INHALING);
-      var1.playSound((Player)null, var2, SoundEvents.BREEZE_CHARGE, SoundSource.HOSTILE, 1.0F, 1.0F);
+      var1.playSound((Entity)null, var2, SoundEvents.BREEZE_CHARGE, SoundSource.HOSTILE, 1.0F, 1.0F);
       var2.getBrain().getMemory(MemoryModuleType.BREEZE_JUMP_TARGET).ifPresent((var1x) -> var2.lookAt(EntityAnchorArgument.Anchor.EYES, var1x.getCenter()));
    }
 
@@ -199,7 +199,7 @@ public class LongJump extends Behavior<Breeze> {
          float var6 = 0.058333334F * (float)var0.getAttributeValue(Attributes.FOLLOW_RANGE);
          Optional var7 = LongJumpUtil.calculateJumpVectorForAngle(var0, var2, var6, var5, false);
          if (var7.isPresent()) {
-            if (var0.hasEffect(MobEffects.JUMP)) {
+            if (var0.hasEffect(MobEffects.JUMP_BOOST)) {
                double var8 = ((Vec3)var7.get()).normalize().y * (double)var0.getJumpBoostPower();
                return var7.map((var2x) -> var2x.add(0.0, var8, 0.0));
             }

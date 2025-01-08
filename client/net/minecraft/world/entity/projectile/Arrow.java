@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
 import javax.annotation.Nullable;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -14,7 +13,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
 
@@ -40,6 +38,10 @@ public class Arrow extends AbstractArrow {
 
    private PotionContents getPotionContents() {
       return (PotionContents)this.getPickupItemStackOrigin().getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+   }
+
+   private float getPotionDurationScale() {
+      return (Float)this.getPickupItemStackOrigin().getOrDefault(DataComponents.POTION_DURATION_SCALE, 1.0F);
    }
 
    private void setPotionContents(PotionContents var1) {
@@ -101,16 +103,8 @@ public class Arrow extends AbstractArrow {
       super.doPostHurtEffects(var1);
       Entity var2 = this.getEffectSource();
       PotionContents var3 = this.getPotionContents();
-      if (var3.potion().isPresent()) {
-         for(MobEffectInstance var5 : ((Potion)((Holder)var3.potion().get()).value()).getEffects()) {
-            var1.addEffect(new MobEffectInstance(var5.getEffect(), Math.max(var5.mapDuration((var0) -> var0 / 8), 1), var5.getAmplifier(), var5.isAmbient(), var5.isVisible()), var2);
-         }
-      }
-
-      for(MobEffectInstance var7 : var3.customEffects()) {
-         var1.addEffect(var7, var2);
-      }
-
+      float var4 = this.getPotionDurationScale();
+      var3.forEachEffect((var2x) -> var1.addEffect(var2x, var2), var4);
    }
 
    protected ItemStack getDefaultPickupItem() {

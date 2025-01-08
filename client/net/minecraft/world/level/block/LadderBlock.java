@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,17 +21,14 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class LadderBlock extends Block implements SimpleWaterloggedBlock {
    public static final MapCodec<LadderBlock> CODEC = simpleCodec(LadderBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty WATERLOGGED;
-   protected static final float AABB_OFFSET = 3.0F;
-   protected static final VoxelShape EAST_AABB;
-   protected static final VoxelShape WEST_AABB;
-   protected static final VoxelShape SOUTH_AABB;
-   protected static final VoxelShape NORTH_AABB;
+   public static final Map<Direction, VoxelShape> SHAPES;
 
    public MapCodec<LadderBlock> codec() {
       return CODEC;
@@ -42,17 +40,7 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch ((Direction)var1.getValue(FACING)) {
-         case NORTH:
-            return NORTH_AABB;
-         case SOUTH:
-            return SOUTH_AABB;
-         case WEST:
-            return WEST_AABB;
-         case EAST:
-         default:
-            return EAST_AABB;
-      }
+      return (VoxelShape)SHAPES.get(var1.getValue(FACING));
    }
 
    private boolean canAttachTo(BlockGetter var1, BlockPos var2, Direction var3) {
@@ -122,9 +110,6 @@ public class LadderBlock extends Block implements SimpleWaterloggedBlock {
    static {
       FACING = HorizontalDirectionalBlock.FACING;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      EAST_AABB = Block.box(0.0, 0.0, 0.0, 3.0, 16.0, 16.0);
-      WEST_AABB = Block.box(13.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-      SOUTH_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 3.0);
-      NORTH_AABB = Block.box(0.0, 0.0, 13.0, 16.0, 16.0, 16.0);
+      SHAPES = Shapes.rotateHorizontal(Block.boxZ(16.0, 13.0, 16.0));
    }
 }

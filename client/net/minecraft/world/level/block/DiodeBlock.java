@@ -25,8 +25,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.ticks.TickPriority;
 
 public abstract class DiodeBlock extends HorizontalDirectionalBlock {
-   protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 2.0, 16.0);
    public static final BooleanProperty POWERED;
+   private static final VoxelShape SHAPE;
 
    protected DiodeBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -155,11 +155,11 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
       this.updateNeighborsInFront(var2, var3, var1);
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var5 && !var1.is(var4.getBlock())) {
-         super.onRemove(var1, var2, var3, var4, var5);
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      if (!var4) {
          this.updateNeighborsInFront(var2, var3, var1);
       }
+
    }
 
    protected void updateNeighborsInFront(Level var1, BlockPos var2, BlockState var3) {
@@ -192,5 +192,6 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
 
    static {
       POWERED = BlockStateProperties.POWERED;
+      SHAPE = Block.column(16.0, 0.0, 2.0);
    }
 }

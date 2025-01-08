@@ -246,7 +246,7 @@ public class Zombie extends Monster {
    protected void doUnderWaterConversion() {
       this.convertToZombieType(EntityType.DROWNED);
       if (!this.isSilent()) {
-         this.level().levelEvent((Player)null, 1040, this.blockPosition(), 0);
+         this.level().levelEvent((Entity)null, 1040, this.blockPosition(), 0);
       }
 
    }
@@ -264,7 +264,7 @@ public class Zombie extends Monster {
          var3x.setTradeOffers(var2.getOffers().copy());
          var3x.setVillagerXp(var2.getVillagerXp());
          if (!this.isSilent()) {
-            var1.levelEvent((Player)null, 1026, this.blockPosition(), 0);
+            var1.levelEvent((Entity)null, 1026, this.blockPosition(), 0);
          }
 
       });
@@ -470,7 +470,7 @@ public class Zombie extends Monster {
          int var14 = var11.get(ChronoField.MONTH_OF_YEAR);
          if (var14 == 10 && var13 == 31 && var5.nextFloat() < 0.25F) {
             this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(var5.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
-            this.armorDropChances[EquipmentSlot.HEAD.getIndex()] = 0.0F;
+            this.setDropChance(EquipmentSlot.HEAD, 0.0F);
          }
       }
 
@@ -561,11 +561,11 @@ public class Zombie extends Monster {
       }
 
       public void playDestroyProgressSound(LevelAccessor var1, BlockPos var2) {
-         var1.playSound((Player)null, var2, SoundEvents.ZOMBIE_DESTROY_EGG, SoundSource.HOSTILE, 0.5F, 0.9F + Zombie.this.random.nextFloat() * 0.2F);
+         var1.playSound((Entity)null, var2, SoundEvents.ZOMBIE_DESTROY_EGG, SoundSource.HOSTILE, 0.5F, 0.9F + Zombie.this.random.nextFloat() * 0.2F);
       }
 
       public void playBreakSound(Level var1, BlockPos var2) {
-         var1.playSound((Player)null, (BlockPos)var2, SoundEvents.TURTLE_EGG_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + var1.random.nextFloat() * 0.2F);
+         var1.playSound((Entity)null, (BlockPos)var2, SoundEvents.TURTLE_EGG_BREAK, SoundSource.BLOCKS, 0.7F, 0.9F + var1.random.nextFloat() * 0.2F);
       }
 
       public double acceptedDistance() {

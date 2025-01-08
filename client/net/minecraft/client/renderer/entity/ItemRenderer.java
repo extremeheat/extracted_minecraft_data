@@ -91,7 +91,7 @@ public class ItemRenderer {
    }
 
    private static int getLayerColorSafe(int[] var0, int var1) {
-      return var1 >= var0.length ? -1 : var0[var1];
+      return var1 >= 0 && var1 < var0.length ? var0[var1] : -1;
    }
 
    private static void renderQuadList(PoseStack var0, VertexConsumer var1, List<BakedQuad> var2, int[] var3, int var4, int var5) {

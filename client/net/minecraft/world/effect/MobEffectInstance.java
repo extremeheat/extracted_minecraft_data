@@ -25,7 +25,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 
 public class MobEffectInstance implements Comparable<MobEffectInstance> {
@@ -165,6 +164,12 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       return !this.isInfiniteDuration() && this.duration <= var1;
    }
 
+   public MobEffectInstance withScaledDuration(float var1) {
+      MobEffectInstance var2 = new MobEffectInstance(this);
+      var2.duration = var2.mapDuration((var1x) -> Math.max(Mth.floor((float)var1x * var1), 1));
+      return var2;
+   }
+
    public int mapDuration(Int2IntFunction var1) {
       return !this.isInfiniteDuration() && this.duration != 0 ? var1.applyAsInt(this.duration) : this.duration;
    }
@@ -193,39 +198,53 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       return this.showIcon;
    }
 
-   public boolean tick(LivingEntity var1, Runnable var2) {
-      if (this.hasRemainingDuration()) {
-         int var3 = this.isInfiniteDuration() ? var1.tickCount : this.duration;
-         Level var5 = var1.level();
-         if (var5 instanceof ServerLevel) {
-            ServerLevel var4 = (ServerLevel)var5;
-            if (((MobEffect)this.effect.value()).shouldApplyEffectTickThisTick(var3, this.amplifier) && !((MobEffect)this.effect.value()).applyEffectTick(var4, var1, this.amplifier)) {
-               var1.removeEffect(this.effect);
+   public boolean tickServer(ServerLevel var1, LivingEntity var2, Runnable var3) {
+      if (!this.hasRemainingDuration()) {
+         return false;
+      } else {
+         int var4 = this.isInfiniteDuration() ? var2.tickCount : this.duration;
+         if (((MobEffect)this.effect.value()).shouldApplyEffectTickThisTick(var4, this.amplifier) && !((MobEffect)this.effect.value()).applyEffectTick(var1, var2, this.amplifier)) {
+            return false;
+         } else {
+            this.tickDownDuration();
+            if (this.downgradeToHiddenEffect()) {
+               var3.run();
             }
-         }
 
-         this.tickDownDuration();
-         if (this.duration == 0 && this.hiddenEffect != null) {
-            this.setDetailsFrom(this.hiddenEffect);
-            this.hiddenEffect = this.hiddenEffect.hiddenEffect;
-            var2.run();
+            return this.hasRemainingDuration();
          }
+      }
+   }
+
+   public void tickClient() {
+      if (this.hasRemainingDuration()) {
+         this.tickDownDuration();
+         this.downgradeToHiddenEffect();
       }
 
       this.blendState.tick(this);
-      return this.hasRemainingDuration();
    }
 
    private boolean hasRemainingDuration() {
       return this.isInfiniteDuration() || this.duration > 0;
    }
 
-   private int tickDownDuration() {
+   private void tickDownDuration() {
       if (this.hiddenEffect != null) {
          this.hiddenEffect.tickDownDuration();
       }
 
-      return this.duration = this.mapDuration((var0) -> var0 - 1);
+      this.duration = this.mapDuration((var0) -> var0 - 1);
+   }
+
+   private boolean downgradeToHiddenEffect() {
+      if (this.duration == 0 && this.hiddenEffect != null) {
+         this.setDetailsFrom(this.hiddenEffect);
+         this.hiddenEffect = this.hiddenEffect.hiddenEffect;
+         return true;
+      } else {
+         return false;
+      }
    }
 
    public void onEffectStarted(LivingEntity var1) {
@@ -360,7 +379,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       }
 
       public void setImmediate(MobEffectInstance var1) {
-         this.factor = computeTarget(var1);
+         this.factor = hasEffect(var1) ? 1.0F : 0.0F;
          this.factorPreviousFrame = this.factor;
       }
 
@@ -371,26 +390,23 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
 
       public void tick(MobEffectInstance var1) {
          this.factorPreviousFrame = this.factor;
-         int var2 = getBlendDuration(var1);
-         if (var2 == 0) {
-            this.factor = 1.0F;
-         } else {
-            float var3 = computeTarget(var1);
-            if (this.factor != var3) {
-               float var4 = 1.0F / (float)var2;
-               this.factor += Mth.clamp(var3 - this.factor, -var4, var4);
+         boolean var2 = hasEffect(var1);
+         float var3 = var2 ? 1.0F : 0.0F;
+         if (this.factor != var3) {
+            MobEffect var4 = (MobEffect)var1.getEffect().value();
+            int var5 = var2 ? var4.getBlendInDurationTicks() : var4.getBlendOutDurationTicks();
+            if (var5 == 0) {
+               this.factor = var3;
+            } else {
+               float var6 = 1.0F / (float)var5;
+               this.factor += Mth.clamp(var3 - this.factor, -var6, var6);
             }
 
          }
       }
 
-      private static float computeTarget(MobEffectInstance var0) {
-         boolean var1 = !var0.endsWithin(getBlendDuration(var0));
-         return var1 ? 1.0F : 0.0F;
-      }
-
-      private static int getBlendDuration(MobEffectInstance var0) {
-         return ((MobEffect)var0.getEffect().value()).getBlendDurationTicks();
+      private static boolean hasEffect(MobEffectInstance var0) {
+         return !var0.endsWithin(((MobEffect)var0.getEffect().value()).getBlendOutAdvanceTicks());
       }
 
       public float getFactor(LivingEntity var1, float var2) {

@@ -280,7 +280,7 @@ public class BundleItem extends Item {
    }
 
    private static void playDropContentsSound(Level var0, Entity var1) {
-      var0.playSound((Player)null, (BlockPos)var1.blockPosition(), SoundEvents.BUNDLE_DROP_CONTENTS, SoundSource.PLAYERS, 0.8F, 0.8F + var1.level().getRandom().nextFloat() * 0.4F);
+      var0.playSound((Entity)null, (BlockPos)var1.blockPosition(), SoundEvents.BUNDLE_DROP_CONTENTS, SoundSource.PLAYERS, 0.8F, 0.8F + var1.level().getRandom().nextFloat() * 0.4F);
    }
 
    private void broadcastChangesOnContainerMenu(Player var1) {

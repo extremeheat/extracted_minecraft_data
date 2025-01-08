@@ -32,7 +32,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import org.slf4j.Logger;
@@ -272,7 +272,7 @@ public class SculkSpreader {
                      var7 = getBlockBehaviour(var6);
                   }
 
-                  var1.playSound((Player)null, this.pos, SoundEvents.SCULK_BLOCK_SPREAD, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  var1.playSound((Entity)null, this.pos, SoundEvents.SCULK_BLOCK_SPREAD, SoundSource.BLOCKS, 1.0F, 1.0F);
                }
 
                this.charge = var7.attemptUseCharge(this, var1, var2, var3, var4, var5);

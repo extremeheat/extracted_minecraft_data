@@ -290,7 +290,6 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.LILY_PAD);
       this.dropSelf(Blocks.RESIN_BRICKS);
       this.dropSelf(Blocks.RESIN_BRICK_WALL);
-      this.dropSelf(Blocks.RESIN_BRICK_SLAB);
       this.dropSelf(Blocks.RESIN_BRICK_STAIRS);
       this.dropSelf(Blocks.CHISELED_RESIN_BRICKS);
       this.dropSelf(Blocks.NETHER_BRICKS);
@@ -598,7 +597,9 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.FLOWERING_AZALEA);
       this.dropSelf(Blocks.AZALEA);
       this.dropSelf(Blocks.MOSS_CARPET);
-      this.add(Blocks.PINK_PETALS, this.createPetalsDrops(Blocks.PINK_PETALS));
+      this.add(Blocks.PINK_PETALS, this.createSegmentedBlockDrops(Blocks.PINK_PETALS));
+      this.add(Blocks.WILDFLOWERS, this.createSegmentedBlockDrops(Blocks.WILDFLOWERS));
+      this.add(Blocks.LEAF_LITTER, this.createSegmentedBlockDrops(Blocks.LEAF_LITTER));
       this.dropSelf(Blocks.BIG_DRIPLEAF);
       this.dropSelf(Blocks.MOSS_BLOCK);
       this.add(Blocks.PALE_MOSS_CARPET, (var1x) -> this.createMossyCarpetBlockDrops(var1x));
@@ -790,6 +791,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.DEEPSLATE_TILE_SLAB, (var1x) -> this.createSlabItemTable(var1x));
       this.add(Blocks.DEEPSLATE_BRICK_SLAB, (var1x) -> this.createSlabItemTable(var1x));
       this.add(Blocks.MUD_BRICK_SLAB, (var1x) -> this.createSlabItemTable(var1x));
+      this.add(Blocks.RESIN_BRICK_SLAB, (var1x) -> this.createSlabItemTable(var1x));
       this.add(Blocks.OAK_DOOR, (var1x) -> this.createDoorTable(var1x));
       this.add(Blocks.SPRUCE_DOOR, (var1x) -> this.createDoorTable(var1x));
       this.add(Blocks.BIRCH_DOOR, (var1x) -> this.createDoorTable(var1x));

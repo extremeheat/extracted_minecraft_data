@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,20 +23,16 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class AmethystClusterBlock extends AmethystBlock implements SimpleWaterloggedBlock {
-   public static final MapCodec<AmethystClusterBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("height").forGetter((var0x) -> var0x.height), Codec.FLOAT.fieldOf("aabb_offset").forGetter((var0x) -> var0x.aabbOffset), propertiesCodec()).apply(var0, AmethystClusterBlock::new));
+   public static final MapCodec<AmethystClusterBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.FLOAT.fieldOf("height").forGetter((var0x) -> var0x.height), Codec.FLOAT.fieldOf("width").forGetter((var0x) -> var0x.width), propertiesCodec()).apply(var0, AmethystClusterBlock::new));
    public static final BooleanProperty WATERLOGGED;
    public static final EnumProperty<Direction> FACING;
    private final float height;
-   private final float aabbOffset;
-   protected final VoxelShape northAabb;
-   protected final VoxelShape southAabb;
-   protected final VoxelShape eastAabb;
-   protected final VoxelShape westAabb;
-   protected final VoxelShape upAabb;
-   protected final VoxelShape downAabb;
+   private final float width;
+   private final Map<Direction, VoxelShape> shapes;
 
    public MapCodec<AmethystClusterBlock> codec() {
       return CODEC;
@@ -44,33 +41,13 @@ public class AmethystClusterBlock extends AmethystBlock implements SimpleWaterlo
    public AmethystClusterBlock(float var1, float var2, BlockBehaviour.Properties var3) {
       super(var3);
       this.registerDefaultState((BlockState)((BlockState)this.defaultBlockState().setValue(WATERLOGGED, false)).setValue(FACING, Direction.UP));
-      this.upAabb = Block.box((double)var2, 0.0, (double)var2, (double)(16.0F - var2), (double)var1, (double)(16.0F - var2));
-      this.downAabb = Block.box((double)var2, (double)(16.0F - var1), (double)var2, (double)(16.0F - var2), 16.0, (double)(16.0F - var2));
-      this.northAabb = Block.box((double)var2, (double)var2, (double)(16.0F - var1), (double)(16.0F - var2), (double)(16.0F - var2), 16.0);
-      this.southAabb = Block.box((double)var2, (double)var2, 0.0, (double)(16.0F - var2), (double)(16.0F - var2), (double)var1);
-      this.eastAabb = Block.box(0.0, (double)var2, (double)var2, (double)var1, (double)(16.0F - var2), (double)(16.0F - var2));
-      this.westAabb = Block.box((double)(16.0F - var1), (double)var2, (double)var2, 16.0, (double)(16.0F - var2), (double)(16.0F - var2));
+      this.shapes = Shapes.rotateAll(Block.boxZ((double)var2, (double)(16.0F - var1), 16.0));
       this.height = var1;
-      this.aabbOffset = var2;
+      this.width = var2;
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      Direction var5 = (Direction)var1.getValue(FACING);
-      switch (var5) {
-         case NORTH:
-            return this.northAabb;
-         case SOUTH:
-            return this.southAabb;
-         case EAST:
-            return this.eastAabb;
-         case WEST:
-            return this.westAabb;
-         case DOWN:
-            return this.downAabb;
-         case UP:
-         default:
-            return this.upAabb;
-      }
+      return (VoxelShape)this.shapes.get(var1.getValue(FACING));
    }
 
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {

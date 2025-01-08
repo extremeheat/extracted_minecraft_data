@@ -8,8 +8,8 @@ import com.mojang.datafixers.types.Type;
 import java.util.Optional;
 
 public class ObjectiveRenderTypeFix extends DataFix {
-   public ObjectiveRenderTypeFix(Schema var1, boolean var2) {
-      super(var1, var2);
+   public ObjectiveRenderTypeFix(Schema var1) {
+      super(var1, false);
    }
 
    private static String getRenderType(String var0) {

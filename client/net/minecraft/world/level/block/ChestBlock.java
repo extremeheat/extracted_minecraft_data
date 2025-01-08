@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
@@ -52,6 +53,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements SimpleWaterloggedBlock {
@@ -60,13 +62,8 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    public static final EnumProperty<ChestType> TYPE;
    public static final BooleanProperty WATERLOGGED;
    public static final int EVENT_SET_OPEN_COUNT = 1;
-   protected static final int AABB_OFFSET = 1;
-   protected static final int AABB_HEIGHT = 14;
-   protected static final VoxelShape NORTH_AABB;
-   protected static final VoxelShape SOUTH_AABB;
-   protected static final VoxelShape WEST_AABB;
-   protected static final VoxelShape EAST_AABB;
-   protected static final VoxelShape AABB;
+   private static final VoxelShape SHAPE;
+   private static final Map<Direction, VoxelShape> HALF_SHAPES;
    private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<Container>> CHEST_COMBINER;
    private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>> MENU_PROVIDER_COMBINER;
 
@@ -106,21 +103,20 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if (var1.getValue(TYPE) == ChestType.SINGLE) {
-         return AABB;
-      } else {
-         switch (getConnectedDirection(var1)) {
-            case NORTH:
-            default:
-               return NORTH_AABB;
-            case SOUTH:
-               return SOUTH_AABB;
-            case WEST:
-               return WEST_AABB;
-            case EAST:
-               return EAST_AABB;
-         }
+      VoxelShape var10000;
+      switch ((ChestType)var1.getValue(TYPE)) {
+         case SINGLE:
+            var10000 = SHAPE;
+            break;
+         case LEFT:
+         case RIGHT:
+            var10000 = (VoxelShape)HALF_SHAPES.get(getConnectedDirection(var1));
+            break;
+         default:
+            throw new MatchException((String)null, (Throwable)null);
       }
+
+      return var10000;
    }
 
    public static Direction getConnectedDirection(BlockState var0) {
@@ -163,9 +159,8 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       return var3.is(this) && var3.getValue(TYPE) == ChestType.SINGLE ? (Direction)var3.getValue(FACING) : null;
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      Containers.dropContentsOnDestroy(var1, var4, var2, var3);
-      super.onRemove(var1, var2, var3, var4, var5);
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
@@ -301,11 +296,8 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
       FACING = HorizontalDirectionalBlock.FACING;
       TYPE = BlockStateProperties.CHEST_TYPE;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      NORTH_AABB = Block.box(1.0, 0.0, 0.0, 15.0, 14.0, 15.0);
-      SOUTH_AABB = Block.box(1.0, 0.0, 1.0, 15.0, 14.0, 16.0);
-      WEST_AABB = Block.box(0.0, 0.0, 1.0, 15.0, 14.0, 15.0);
-      EAST_AABB = Block.box(1.0, 0.0, 1.0, 16.0, 14.0, 15.0);
-      AABB = Block.box(1.0, 0.0, 1.0, 15.0, 14.0, 15.0);
+      SHAPE = Block.column(14.0, 0.0, 14.0);
+      HALF_SHAPES = Shapes.rotateHorizontal(Block.boxZ(14.0, 0.0, 14.0, 0.0, 15.0));
       CHEST_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<Container>>() {
          public Optional<Container> acceptDouble(ChestBlockEntity var1, ChestBlockEntity var2) {
             return Optional.of(new CompoundContainer(var1, var2));

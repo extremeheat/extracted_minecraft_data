@@ -15,7 +15,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -55,12 +54,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
    public static final MapCodec<CampfireBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.BOOL.fieldOf("spawn_particles").forGetter((var0x) -> var0x.spawnParticles), Codec.intRange(0, 1000).fieldOf("fire_damage").forGetter((var0x) -> var0x.fireDamage), propertiesCodec()).apply(var0, CampfireBlock::new));
-   protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 7.0, 16.0);
    public static final BooleanProperty LIT;
    public static final BooleanProperty SIGNAL_FIRE;
    public static final BooleanProperty WATERLOGGED;
    public static final EnumProperty<Direction> FACING;
-   private static final VoxelShape VIRTUAL_FENCE_POST;
+   private static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE_VIRTUAL_POST;
    private static final int SMOKE_DISTANCE = 5;
    private final boolean spawnParticles;
    private final int fireDamage;
@@ -102,17 +101,6 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       }
 
       super.entityInside(var1, var2, var3, var4);
-   }
-
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (var6 instanceof CampfireBlockEntity) {
-            Containers.dropContents(var2, var3, ((CampfireBlockEntity)var6).getItems());
-         }
-
-         super.onRemove(var1, var2, var3, var4, var5);
-      }
    }
 
    @Nullable
@@ -174,7 +162,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
          boolean var5 = (Boolean)var3.getValue(LIT);
          if (var5) {
             if (!var1.isClientSide()) {
-               var1.playSound((Player)null, var2, SoundEvents.GENERIC_EXTINGUISH_FIRE, SoundSource.BLOCKS, 1.0F, 1.0F);
+               var1.playSound((Entity)null, var2, SoundEvents.GENERIC_EXTINGUISH_FIRE, SoundSource.BLOCKS, 1.0F, 1.0F);
             }
 
             dowse((Entity)null, var1, var2, var3);
@@ -216,7 +204,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
             return true;
          }
 
-         boolean var5 = Shapes.joinIsNotEmpty(VIRTUAL_FENCE_POST, var4.getCollisionShape(var0, var1, CollisionContext.empty()), BooleanOp.AND);
+         boolean var5 = Shapes.joinIsNotEmpty(SHAPE_VIRTUAL_POST, var4.getCollisionShape(var0, var1, CollisionContext.empty()), BooleanOp.AND);
          if (var5) {
             BlockState var6 = var0.getBlockState(var3.below());
             return isLitCampfire(var6);
@@ -277,6 +265,7 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
       SIGNAL_FIRE = BlockStateProperties.SIGNAL_FIRE;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
       FACING = BlockStateProperties.HORIZONTAL_FACING;
-      VIRTUAL_FENCE_POST = Block.box(6.0, 0.0, 6.0, 10.0, 16.0, 10.0);
+      SHAPE = Block.column(16.0, 0.0, 7.0);
+      SHAPE_VIRTUAL_POST = Block.column(4.0, 0.0, 16.0);
    }
 }

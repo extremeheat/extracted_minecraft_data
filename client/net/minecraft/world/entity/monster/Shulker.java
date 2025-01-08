@@ -26,6 +26,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
@@ -368,10 +369,8 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       }
    }
 
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
-      this.lerpSteps = 0;
-      this.setPos(var1, var3, var5);
-      this.setRot(var7, var8);
+   public InterpolationHandler getInterpolation() {
+      return null;
    }
 
    public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {

@@ -6,6 +6,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -69,7 +70,7 @@ public class CartographyTableMenu extends AbstractContainerMenu {
             var3.execute((var1x, var2x) -> {
                long var3x = var1x.getGameTime();
                if (CartographyTableMenu.this.lastSoundTime != var3x) {
-                  var1x.playSound((Player)null, (BlockPos)var2x, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  var1x.playSound((Entity)null, (BlockPos)var2x, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
                   CartographyTableMenu.this.lastSoundTime = var3x;
                }
 

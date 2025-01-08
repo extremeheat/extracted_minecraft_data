@@ -88,15 +88,16 @@ public class ThrownPotion extends ThrowableItemProjectile {
          if (var4.is(Potions.WATER)) {
             this.applyWater(var2);
          } else if (var4.hasEffects()) {
+            float var5 = (Float)var6.getOrDefault(DataComponents.POTION_DURATION_SCALE, 1.0F);
             if (this.isLingering()) {
-               this.makeAreaOfEffectCloud(var4);
+               this.makeAreaOfEffectCloud(var4, var5);
             } else {
-               this.applySplash(var2, var4.getAllEffects(), var1.getType() == HitResult.Type.ENTITY ? ((EntityHitResult)var1).getEntity() : null);
+               this.applySplash(var2, var4.getAllEffects(), var5, var1.getType() == HitResult.Type.ENTITY ? ((EntityHitResult)var1).getEntity() : null);
             }
          }
 
-         int var5 = var4.potion().isPresent() && ((Potion)((Holder)var4.potion().get()).value()).hasInstantEffects() ? 2007 : 2002;
-         var2.levelEvent(var5, this.blockPosition(), var4.getColor());
+         int var7 = var4.potion().isPresent() && ((Potion)((Holder)var4.potion().get()).value()).hasInstantEffects() ? 2007 : 2002;
+         var2.levelEvent(var7, this.blockPosition(), var4.getColor());
          this.discard();
       }
    }
@@ -123,32 +124,32 @@ public class ThrownPotion extends ThrowableItemProjectile {
 
    }
 
-   private void applySplash(ServerLevel var1, Iterable<MobEffectInstance> var2, @Nullable Entity var3) {
-      AABB var4 = this.getBoundingBox().inflate(4.0, 2.0, 4.0);
-      List var5 = var1.getEntitiesOfClass(LivingEntity.class, var4);
-      if (!var5.isEmpty()) {
-         Entity var6 = this.getEffectSource();
+   private void applySplash(ServerLevel var1, Iterable<MobEffectInstance> var2, float var3, @Nullable Entity var4) {
+      AABB var5 = this.getBoundingBox().inflate(4.0, 2.0, 4.0);
+      List var6 = var1.getEntitiesOfClass(LivingEntity.class, var5);
+      if (!var6.isEmpty()) {
+         Entity var7 = this.getEffectSource();
 
-         for(LivingEntity var8 : var5) {
-            if (var8.isAffectedByPotions()) {
-               double var9 = this.distanceToSqr(var8);
-               if (var9 < 16.0) {
-                  double var11;
-                  if (var8 == var3) {
-                     var11 = 1.0;
+         for(LivingEntity var9 : var6) {
+            if (var9.isAffectedByPotions()) {
+               double var10 = this.distanceToSqr(var9);
+               if (var10 < 16.0) {
+                  double var12;
+                  if (var9 == var4) {
+                     var12 = 1.0;
                   } else {
-                     var11 = 1.0 - Math.sqrt(var9) / 4.0;
+                     var12 = 1.0 - Math.sqrt(var10) / 4.0;
                   }
 
-                  for(MobEffectInstance var14 : var2) {
-                     Holder var15 = var14.getEffect();
-                     if (((MobEffect)var15.value()).isInstantenous()) {
-                        ((MobEffect)var15.value()).applyInstantenousEffect(var1, this, this.getOwner(), var8, var14.getAmplifier(), var11);
+                  for(MobEffectInstance var15 : var2) {
+                     Holder var16 = var15.getEffect();
+                     if (((MobEffect)var16.value()).isInstantenous()) {
+                        ((MobEffect)var16.value()).applyInstantenousEffect(var1, this, this.getOwner(), var9, var15.getAmplifier(), var12);
                      } else {
-                        int var16 = var14.mapDuration((var2x) -> (int)(var11 * (double)var2x + 0.5));
-                        MobEffectInstance var17 = new MobEffectInstance(var15, var16, var14.getAmplifier(), var14.isAmbient(), var14.isVisible());
-                        if (!var17.endsWithin(20)) {
-                           var8.addEffect(var17, var6);
+                        int var17 = var15.mapDuration((var3x) -> (int)((double)var3 * var12 * (double)var3x + 0.5));
+                        MobEffectInstance var18 = new MobEffectInstance(var16, var17, var15.getAmplifier(), var15.isAmbient(), var15.isVisible());
+                        if (!var18.endsWithin(20)) {
+                           var9.addEffect(var18, var7);
                         }
                      }
                   }
@@ -159,19 +160,20 @@ public class ThrownPotion extends ThrowableItemProjectile {
 
    }
 
-   private void makeAreaOfEffectCloud(PotionContents var1) {
-      AreaEffectCloud var2 = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
-      Entity var4 = this.getOwner();
-      if (var4 instanceof LivingEntity var3) {
-         var2.setOwner(var3);
+   private void makeAreaOfEffectCloud(PotionContents var1, float var2) {
+      AreaEffectCloud var3 = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
+      Entity var5 = this.getOwner();
+      if (var5 instanceof LivingEntity var4) {
+         var3.setOwner(var4);
       }
 
-      var2.setRadius(3.0F);
-      var2.setRadiusOnUse(-0.5F);
-      var2.setWaitTime(10);
-      var2.setRadiusPerTick(-var2.getRadius() / (float)var2.getDuration());
-      var2.setPotionContents(var1);
-      this.level().addFreshEntity(var2);
+      var3.setRadius(3.0F);
+      var3.setRadiusOnUse(-0.5F);
+      var3.setWaitTime(10);
+      var3.setRadiusPerTick(-var3.getRadius() / (float)var3.getDuration());
+      var3.setPotionContents(var1);
+      var3.setPotionDurationScale(var2);
+      this.level().addFreshEntity(var3);
    }
 
    private boolean isLingering() {
@@ -185,7 +187,7 @@ public class ThrownPotion extends ThrowableItemProjectile {
       } else if (AbstractCandleBlock.isLit(var2)) {
          AbstractCandleBlock.extinguish((Player)null, var2, this.level(), var1);
       } else if (CampfireBlock.isLitCampfire(var2)) {
-         this.level().levelEvent((Player)null, 1009, var1, 0);
+         this.level().levelEvent((Entity)null, 1009, var1, 0);
          CampfireBlock.dowse(this.getOwner(), this.level(), var1, var2);
          this.level().setBlockAndUpdate(var1, (BlockState)var2.setValue(CampfireBlock.LIT, false));
       }

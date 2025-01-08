@@ -5,6 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -35,14 +36,14 @@ public class SolidBucketItem extends BlockItem implements DispensibleContainerIt
       return this.placeSound;
    }
 
-   public boolean emptyContents(@Nullable Player var1, Level var2, BlockPos var3, @Nullable BlockHitResult var4) {
+   public boolean emptyContents(@Nullable LivingEntity var1, Level var2, BlockPos var3, @Nullable BlockHitResult var4) {
       if (var2.isInWorldBounds(var3) && var2.isEmptyBlock(var3)) {
          if (!var2.isClientSide) {
             var2.setBlock(var3, this.getBlock().defaultBlockState(), 3);
          }
 
          var2.gameEvent(var1, GameEvent.FLUID_PLACE, var3);
-         var2.playSound(var1, var3, this.placeSound, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var2.playSound(var1, (BlockPos)var3, this.placeSound, SoundSource.BLOCKS, 1.0F, 1.0F);
          return true;
       } else {
          return false;

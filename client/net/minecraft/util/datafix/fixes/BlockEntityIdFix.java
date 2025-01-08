@@ -10,7 +10,7 @@ import com.mojang.datafixers.types.templates.TaggedChoice;
 import java.util.Map;
 
 public class BlockEntityIdFix extends DataFix {
-   private static final Map<String, String> ID_MAP = (Map)DataFixUtils.make(Maps.newHashMap(), (var0) -> {
+   public static final Map<String, String> ID_MAP = (Map)DataFixUtils.make(Maps.newHashMap(), (var0) -> {
       var0.put("Airportal", "minecraft:end_portal");
       var0.put("Banner", "minecraft:banner");
       var0.put("Beacon", "minecraft:beacon");

@@ -149,7 +149,7 @@ public class Camel extends AbstractHorse {
       if (this.dashCooldown > 0) {
          --this.dashCooldown;
          if (this.dashCooldown == 0) {
-            this.level().playSound((Player)null, (BlockPos)this.blockPosition(), SoundEvents.CAMEL_DASH_READY, SoundSource.NEUTRAL, 1.0F, 1.0F);
+            this.level().playSound((Entity)null, (BlockPos)this.blockPosition(), SoundEvents.CAMEL_DASH_READY, SoundSource.NEUTRAL, 1.0F, 1.0F);
          }
       }
 
@@ -368,7 +368,7 @@ public class Camel extends AbstractHorse {
             if (!this.isSilent()) {
                SoundEvent var6 = this.getEatingSound();
                if (var6 != null) {
-                  this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), var6, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+                  this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), var6, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
                }
             }
 

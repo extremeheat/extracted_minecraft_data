@@ -508,13 +508,12 @@ public class ArmorStand extends LivingEntity {
    }
 
    private void playBrokenSound() {
-      this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.ARMOR_STAND_BREAK, this.getSoundSource(), 1.0F, 1.0F);
+      this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.ARMOR_STAND_BREAK, this.getSoundSource(), 1.0F, 1.0F);
    }
 
-   protected float tickHeadTurn(float var1, float var2) {
+   protected void tickHeadTurn(float var1) {
       this.yBodyRotO = this.yRotO;
       this.yBodyRot = this.getYRot();
-      return 0.0F;
    }
 
    public void travel(Vec3 var1) {
@@ -698,7 +697,16 @@ public class ArmorStand extends LivingEntity {
    }
 
    public boolean skipAttackInteraction(Entity var1) {
-      return var1 instanceof Player && !this.level().mayInteract((Player)var1, this.blockPosition());
+      boolean var10000;
+      if (var1 instanceof Player var2) {
+         if (!this.level().mayInteract(var2, this.blockPosition())) {
+            var10000 = true;
+            return var10000;
+         }
+      }
+
+      var10000 = false;
+      return var10000;
    }
 
    public HumanoidArm getMainArm() {

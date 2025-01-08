@@ -40,18 +40,8 @@ public enum BlockModelRotation implements ModelState {
    private BlockModelRotation(final int var3, final int var4) {
       this.index = getIndex(var3, var4);
       Quaternionf var5 = (new Quaternionf()).rotateYXZ((float)(-var4) * 0.017453292F, (float)(-var3) * 0.017453292F, 0.0F);
-      OctahedralGroup var6 = OctahedralGroup.IDENTITY;
-
-      for(int var7 = 0; var7 < var4; var7 += 90) {
-         var6 = var6.compose(OctahedralGroup.ROT_90_Y_NEG);
-      }
-
-      for(int var8 = 0; var8 < var3; var8 += 90) {
-         var6 = var6.compose(OctahedralGroup.ROT_90_X_NEG);
-      }
-
       this.transformation = new Transformation((Vector3f)null, var5, (Vector3f)null, (Quaternionf)null);
-      this.actualRotation = var6;
+      this.actualRotation = OctahedralGroup.fromAngles(var3, var4);
    }
 
    public Transformation getRotation() {

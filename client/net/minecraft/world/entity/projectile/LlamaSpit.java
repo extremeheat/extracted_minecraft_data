@@ -45,7 +45,7 @@ public class LlamaSpit extends Projectile {
       float var9 = 0.99F;
       if (this.level().getBlockStates(this.getBoundingBox()).noneMatch(BlockBehaviour.BlockStateBase::isAir)) {
          this.discard();
-      } else if (this.isInWaterOrBubble()) {
+      } else if (this.isInWater()) {
          this.discard();
       } else {
          this.setDeltaMovement(var1.scale(0.9900000095367432));

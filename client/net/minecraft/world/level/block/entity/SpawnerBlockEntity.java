@@ -26,7 +26,7 @@ public class SpawnerBlockEntity extends BlockEntity implements Spawner {
          super.setNextSpawnData(var1, var2, var3);
          if (var1 != null) {
             BlockState var4 = var1.getBlockState(var2);
-            var1.sendBlockUpdated(var2, var4, var4, 4);
+            var1.sendBlockUpdated(var2, var4, var4, 260);
          }
 
       }

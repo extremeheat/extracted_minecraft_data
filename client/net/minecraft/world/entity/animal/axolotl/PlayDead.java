@@ -16,11 +16,11 @@ public class PlayDead extends Behavior<Axolotl> {
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Axolotl var2) {
-      return var2.isInWaterOrBubble();
+      return var2.isInWater();
    }
 
    protected boolean canStillUse(ServerLevel var1, Axolotl var2, long var3) {
-      return var2.isInWaterOrBubble() && var2.getBrain().hasMemoryValue(MemoryModuleType.PLAY_DEAD_TICKS);
+      return var2.isInWater() && var2.getBrain().hasMemoryValue(MemoryModuleType.PLAY_DEAD_TICKS);
    }
 
    protected void start(ServerLevel var1, Axolotl var2, long var3) {

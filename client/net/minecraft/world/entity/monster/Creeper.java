@@ -239,6 +239,7 @@ public class Creeper extends Monster {
          var2.setRadiusOnUse(-0.5F);
          var2.setWaitTime(10);
          var2.setDuration(var2.getDuration() / 2);
+         var2.setPotionDurationScale(0.25F);
          var2.setRadiusPerTick(-var2.getRadius() / (float)var2.getDuration());
 
          for(MobEffectInstance var4 : var1) {

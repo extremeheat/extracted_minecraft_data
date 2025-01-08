@@ -22,9 +22,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class HangingMossBlock extends Block implements BonemealableBlock {
    public static final MapCodec<HangingMossBlock> CODEC = simpleCodec(HangingMossBlock::new);
-   private static final int SIDE_PADDING = 1;
-   private static final VoxelShape TIP_SHAPE = Block.box(1.0, 2.0, 1.0, 15.0, 16.0, 15.0);
-   private static final VoxelShape BASE_SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
+   private static final VoxelShape SHAPE_BASE = Block.column(14.0, 0.0, 16.0);
+   private static final VoxelShape SHAPE_TIP = Block.column(14.0, 2.0, 16.0);
    public static final BooleanProperty TIP;
 
    public MapCodec<HangingMossBlock> codec() {
@@ -37,7 +36,7 @@ public class HangingMossBlock extends Block implements BonemealableBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (Boolean)var1.getValue(TIP) ? TIP_SHAPE : BASE_SHAPE;
+      return (Boolean)var1.getValue(TIP) ? SHAPE_TIP : SHAPE_BASE;
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {

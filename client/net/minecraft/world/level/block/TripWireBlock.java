@@ -37,8 +37,8 @@ public class TripWireBlock extends Block {
    public static final BooleanProperty SOUTH;
    public static final BooleanProperty WEST;
    private static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION;
-   protected static final VoxelShape AABB;
-   protected static final VoxelShape NOT_ATTACHED_AABB;
+   private static final VoxelShape SHAPE_ATTACHED;
+   private static final VoxelShape SHAPE_NOT_ATTACHED;
    private static final int RECHECK_PERIOD = 10;
    private final Block hook;
 
@@ -53,7 +53,7 @@ public class TripWireBlock extends Block {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (Boolean)var1.getValue(ATTACHED) ? AABB : NOT_ATTACHED_AABB;
+      return (Boolean)var1.getValue(ATTACHED) ? SHAPE_ATTACHED : SHAPE_NOT_ATTACHED;
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -72,15 +72,16 @@ public class TripWireBlock extends Block {
       }
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var5 && !var1.is(var4.getBlock())) {
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      if (!var4) {
          this.updateSource(var2, var3, (BlockState)var1.setValue(POWERED, true));
       }
+
    }
 
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       if (!var1.isClientSide && !var4.getMainHandItem().isEmpty() && var4.getMainHandItem().is(Items.SHEARS)) {
-         var1.setBlock(var2, (BlockState)var3.setValue(DISARMED, true), 4);
+         var1.setBlock(var2, (BlockState)var3.setValue(DISARMED, true), 260);
          var1.gameEvent(var4, GameEvent.SHEAR, var2);
       }
 
@@ -208,7 +209,7 @@ public class TripWireBlock extends Block {
       SOUTH = PipeBlock.SOUTH;
       WEST = PipeBlock.WEST;
       PROPERTY_BY_DIRECTION = CrossCollisionBlock.PROPERTY_BY_DIRECTION;
-      AABB = Block.box(0.0, 1.0, 0.0, 16.0, 2.5, 16.0);
-      NOT_ATTACHED_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 8.0, 16.0);
+      SHAPE_ATTACHED = Block.column(16.0, 1.0, 2.5);
+      SHAPE_NOT_ATTACHED = Block.column(16.0, 0.0, 8.0);
    }
 }

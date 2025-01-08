@@ -33,12 +33,12 @@ public abstract class WaterAnimal extends PathfinderMob {
       return 1 + this.random.nextInt(3);
    }
 
-   protected void handleAirSupply(int var1) {
-      if (this.isAlive() && !this.isInWaterOrBubble()) {
-         this.setAirSupply(var1 - 1);
+   protected void handleAirSupply(ServerLevel var1, int var2) {
+      if (this.isAlive() && !this.isInWater()) {
+         this.setAirSupply(var2 - 1);
          if (this.getAirSupply() == -20) {
             this.setAirSupply(0);
-            this.hurt(this.damageSources().drown(), 2.0F);
+            this.hurtServer(var1, this.damageSources().drown(), 2.0F);
          }
       } else {
          this.setAirSupply(300);
@@ -49,7 +49,11 @@ public abstract class WaterAnimal extends PathfinderMob {
    public void baseTick() {
       int var1 = this.getAirSupply();
       super.baseTick();
-      this.handleAirSupply(var1);
+      Level var3 = this.level();
+      if (var3 instanceof ServerLevel var2) {
+         this.handleAirSupply(var2, var1);
+      }
+
    }
 
    public boolean isPushedByFluid() {

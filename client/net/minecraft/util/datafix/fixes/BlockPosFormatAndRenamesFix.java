@@ -17,7 +17,7 @@ public class BlockPosFormatAndRenamesFix extends DataFix {
    private static final List<String> PATROLLING_MOBS = List.of("minecraft:witch", "minecraft:ravager", "minecraft:pillager", "minecraft:illusioner", "minecraft:evoker", "minecraft:vindicator");
 
    public BlockPosFormatAndRenamesFix(Schema var1) {
-      super(var1, false);
+      super(var1, true);
    }
 
    private Typed<?> fixFields(Typed<?> var1, Map<String, String> var2) {
@@ -48,9 +48,9 @@ public class BlockPosFormatAndRenamesFix extends DataFix {
       ArrayList var1 = new ArrayList();
       this.addEntityRules(var1);
       this.addBlockEntityRules(var1);
-      var1.add(this.fixTypeEverywhereTyped("BlockPos format for map frames", this.getInputSchema().getType(References.SAVED_DATA_MAP_DATA), (var1x) -> var1x.update(DSL.remainderFinder(), (var1) -> var1.update("data", this::fixMapSavedData))));
+      var1.add(this.writeFixAndRead("BlockPos format for map frames", this.getInputSchema().getType(References.SAVED_DATA_MAP_DATA), this.getOutputSchema().getType(References.SAVED_DATA_MAP_DATA), (var1x) -> var1x.update("data", this::fixMapSavedData)));
       Type var2 = this.getInputSchema().getType(References.ITEM_STACK);
-      var1.add(this.fixTypeEverywhereTyped("BlockPos format for compass target", var2, ItemStackTagFix.createFixer(var2, "minecraft:compass"::equals, (var0) -> var0.update("LodestonePos", ExtraDataFixUtils::fixBlockPos))));
+      var1.add(this.fixTypeEverywhereTyped("BlockPos format for compass target", var2, ItemStackTagFix.createFixer(var2, "minecraft:compass"::equals, (var0) -> var0.update(DSL.remainderFinder(), (var0x) -> var0x.update("LodestonePos", ExtraDataFixUtils::fixBlockPos)))));
       return TypeRewriteRule.seq(var1);
    }
 

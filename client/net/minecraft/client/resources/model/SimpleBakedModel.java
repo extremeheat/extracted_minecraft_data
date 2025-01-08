@@ -1,11 +1,11 @@
 package net.minecraft.client.resources.model;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockElementFace;
@@ -92,7 +92,7 @@ public class SimpleBakedModel implements BakedModel {
 
    public static class Builder {
       private final ImmutableList.Builder<BakedQuad> unculledFaces = ImmutableList.builder();
-      private final EnumMap<Direction, ImmutableList.Builder<BakedQuad>> culledFaces = Maps.newEnumMap(Direction.class);
+      private final Map<Direction, ImmutableList.Builder<BakedQuad>> culledFaces = Util.<Direction, ImmutableList.Builder<BakedQuad>>makeEnumMap(Direction.class, (var0) -> ImmutableList.builder());
       private final boolean hasAmbientOcclusion;
       @Nullable
       private TextureAtlasSprite particleIcon;
@@ -106,11 +106,6 @@ public class SimpleBakedModel implements BakedModel {
          this.usesBlockLight = var2;
          this.isGui3d = var3;
          this.transforms = var4;
-
-         for(Direction var8 : Direction.values()) {
-            this.culledFaces.put(var8, ImmutableList.builder());
-         }
-
       }
 
       public Builder addCulledFace(Direction var1, BakedQuad var2) {
@@ -136,7 +131,7 @@ public class SimpleBakedModel implements BakedModel {
          if (this.particleIcon == null) {
             throw new RuntimeException("Missing particle!");
          } else {
-            Map var1 = Maps.transformValues(this.culledFaces, ImmutableList.Builder::build);
+            Map var1 = Util.mapValues(this.culledFaces, ImmutableList.Builder::build);
             return new SimpleBakedModel(this.unculledFaces.build(), new EnumMap(var1), this.hasAmbientOcclusion, this.usesBlockLight, this.isGui3d, this.particleIcon, this.transforms);
          }
       }

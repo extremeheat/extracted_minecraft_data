@@ -9,6 +9,7 @@ import com.mojang.datafixers.functions.PointFreeRule;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import java.util.BitSet;
 import java.util.Map;
 import java.util.Objects;
@@ -34,6 +35,10 @@ public class ExtraDataFixUtils {
 
    public static <T, R> Typed<R> cast(Type<R> var0, Typed<T> var1) {
       return new Typed(var0, var1.getOps(), var1.getValue());
+   }
+
+   public static <T> Typed<T> cast(Type<T> var0, Object var1, DynamicOps<?> var2) {
+      return new Typed(var0, var2, var1);
    }
 
    public static Type<?> patchSubType(Type<?> var0, Type<?> var1, Type<?> var2) {

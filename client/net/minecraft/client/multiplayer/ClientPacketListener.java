@@ -113,7 +113,6 @@ import net.minecraft.network.protocol.common.custom.WorldGenAttemptDebugPayload;
 import net.minecraft.network.protocol.configuration.ConfigurationProtocols;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
-import net.minecraft.network.protocol.game.ClientboundAddExperienceOrbPacket;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundAwardStatsPacket;
 import net.minecraft.network.protocol.game.ClientboundBlockChangedAckPacket;
@@ -528,19 +527,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    }
 
-   public void handleAddExperienceOrb(ClientboundAddExperienceOrbPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
-      double var2 = var1.getX();
-      double var4 = var1.getY();
-      double var6 = var1.getZ();
-      ExperienceOrb var8 = new ExperienceOrb(this.level, var2, var4, var6, var1.getValue());
-      ((Entity)var8).syncPacketPositionCodec(var2, var4, var6);
-      ((Entity)var8).setYRot(0.0F);
-      ((Entity)var8).setXRot(0.0F);
-      ((Entity)var8).setId(var1.getId());
-      this.level.addEntity(var8);
-   }
-
    public void handleSetEntityMotion(ClientboundSetEntityMotionPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       Entity var2 = this.level.getEntity(var1.getId());
@@ -564,18 +550,19 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       if (var2 != null) {
          Vec3 var3 = var1.values().position();
          var2.getPositionCodec().setBase(var3);
-         if (!var2.isControlledByLocalInstance()) {
+         if (!var2.isLocalInstanceAuthoritative()) {
             float var4 = var1.values().yRot();
             float var5 = var1.values().xRot();
             boolean var6 = var2.position().distanceToSqr(var3) > 4096.0;
             if (this.level.isTickingEntity(var2) && !var6) {
-               var2.lerpTo(var3.x, var3.y, var3.z, var4, var5, 3);
+               var2.moveOrInterpolateTo(var3, var4, var5);
             } else {
-               var2.moveTo(var3.x, var3.y, var3.z, var4, var5);
-               if (var2.hasIndirectPassenger(this.minecraft.player)) {
-                  var2.positionRider(this.minecraft.player);
-                  this.minecraft.player.setOldPosAndRot();
-               }
+               var2.moveTo(var3, var4, var5);
+            }
+
+            if (var2.isInterpolating() && var2.hasIndirectPassenger(this.minecraft.player)) {
+               var2.positionRider(this.minecraft.player);
+               this.minecraft.player.setOldPosAndRot();
             }
 
             var2.setOnGround(var1.onGround());
@@ -595,13 +582,13 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
       } else {
          boolean var3 = var1.relatives().contains(Relative.X) || var1.relatives().contains(Relative.Y) || var1.relatives().contains(Relative.Z);
-         boolean var4 = this.level.isTickingEntity(var2) || !var2.isControlledByLocalInstance() || var3;
+         boolean var4 = this.level.isTickingEntity(var2) || !var2.isLocalInstanceAuthoritative() || var3;
          boolean var5 = setValuesFromPositionPacket(var1.change(), var1.relatives(), var2, var4);
          var2.setOnGround(var1.onGround());
          if (!var5 && var2.hasIndirectPassenger(this.minecraft.player)) {
             var2.positionRider(this.minecraft.player);
             this.minecraft.player.setOldPosAndRot();
-            if (var2.isControlledByOrIsLocalPlayer()) {
+            if (var2.isLocalInstanceAuthoritative()) {
                this.connection.send(ServerboundMoveVehiclePacket.fromEntity(var2));
             }
          }
@@ -638,20 +625,22 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       Entity var2 = var1.getEntity(this.level);
       if (var2 != null) {
-         if (var2.isControlledByLocalInstance()) {
-            VecDeltaCodec var7 = var2.getPositionCodec();
-            Vec3 var8 = var7.decode((long)var1.getXa(), (long)var1.getYa(), (long)var1.getZa());
-            var7.setBase(var8);
+         if (var2.isLocalInstanceAuthoritative()) {
+            VecDeltaCodec var5 = var2.getPositionCodec();
+            Vec3 var6 = var5.decode((long)var1.getXa(), (long)var1.getYa(), (long)var1.getZa());
+            var5.setBase(var6);
          } else {
             if (var1.hasPosition()) {
                VecDeltaCodec var3 = var2.getPositionCodec();
                Vec3 var4 = var3.decode((long)var1.getXa(), (long)var1.getYa(), (long)var1.getZa());
                var3.setBase(var4);
-               float var5 = var1.hasRotation() ? var1.getyRot() : var2.lerpTargetYRot();
-               float var6 = var1.hasRotation() ? var1.getxRot() : var2.lerpTargetXRot();
-               var2.lerpTo(var4.x(), var4.y(), var4.z(), var5, var6, 3);
+               if (var1.hasRotation()) {
+                  var2.moveOrInterpolateTo(var4, var1.getYRot(), var1.getXRot());
+               } else {
+                  var2.moveOrInterpolateTo(var4, var2.getYRot(), var2.getXRot());
+               }
             } else if (var1.hasRotation()) {
-               var2.lerpTo(var2.lerpTargetX(), var2.lerpTargetY(), var2.lerpTargetZ(), var1.getyRot(), var1.getxRot(), 3);
+               var2.moveOrInterpolateTo(var2.position(), var1.getYRot(), var1.getXRot());
             }
 
             var2.setOnGround(var1.isOnGround());
@@ -663,12 +652,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       Entity var2 = var1.getEntity(this.level);
       if (var2 instanceof AbstractMinecart var3) {
-         if (!var2.isControlledByLocalInstance()) {
-            MinecartBehavior var5 = var3.getBehavior();
-            if (var5 instanceof NewMinecartBehavior) {
-               NewMinecartBehavior var4 = (NewMinecartBehavior)var5;
-               var4.lerpSteps.addAll(var1.lerpSteps());
-            }
+         MinecartBehavior var5 = var3.getBehavior();
+         if (var5 instanceof NewMinecartBehavior var4) {
+            var4.lerpSteps.addAll(var1.lerpSteps());
          }
 
       }
@@ -709,11 +695,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    private static boolean setValuesFromPositionPacket(PositionMoveRotation var0, Set<Relative> var1, Entity var2, boolean var3) {
-      PositionMoveRotation var4 = PositionMoveRotation.ofEntityUsingLerpTarget(var2);
+      PositionMoveRotation var4 = PositionMoveRotation.of(var2);
       PositionMoveRotation var5 = PositionMoveRotation.calculateAbsolute(var4, var0, var1);
       boolean var6 = var4.position().distanceToSqr(var5.position()) > 4096.0;
       if (var3 && !var6) {
-         var2.lerpTo(var5.position().x(), var5.position().y(), var5.position().z(), var5.yRot(), var5.xRot(), 3);
+         var2.moveOrInterpolateTo(var5.position(), var5.yRot(), var5.xRot());
          var2.setDeltaMovement(var5.deltaMovement());
          return true;
       } else {
@@ -1139,8 +1125,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       var14.setShowDeathScreen(var5.shouldShowDeathScreen());
       var14.setLastDeathLocation(var2.lastDeathLocation());
       var14.setPortalCooldown(var2.portalCooldown());
-      var14.spinningEffectIntensity = var5.spinningEffectIntensity;
-      var14.oSpinningEffectIntensity = var5.oSpinningEffectIntensity;
+      var14.portalEffectIntensity = var5.portalEffectIntensity;
+      var14.oPortalEffectIntensity = var5.oPortalEffectIntensity;
       if (this.minecraft.screen instanceof DeathScreen || this.minecraft.screen instanceof DeathScreen.TitleConfirmScreen) {
          this.minecraft.setScreen((Screen)null);
       }
@@ -1833,11 +1819,20 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleMoveVehicle(ClientboundMoveVehiclePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       Entity var2 = this.minecraft.player.getRootVehicle();
-      if (var2 != this.minecraft.player && var2.isControlledByLocalInstance()) {
+      if (var2 != this.minecraft.player && var2.isLocalInstanceAuthoritative()) {
          Vec3 var3 = var1.position();
-         Vec3 var4 = new Vec3(var2.lerpTargetX(), var2.lerpTargetY(), var2.lerpTargetZ());
+         Vec3 var4;
+         if (var2.isInterpolating()) {
+            var4 = var2.getInterpolation().position();
+         } else {
+            var4 = var2.position();
+         }
+
          if (var3.distanceTo(var4) > 9.999999747378752E-6) {
-            var2.cancelLerp();
+            if (var2.isInterpolating()) {
+               var2.getInterpolation().cancel();
+            }
+
             var2.absMoveTo(var3.x(), var3.y(), var3.z(), var1.yRot(), var1.xRot());
          }
 

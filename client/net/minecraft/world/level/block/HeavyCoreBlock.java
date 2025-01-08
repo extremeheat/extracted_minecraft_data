@@ -22,8 +22,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class HeavyCoreBlock extends Block implements SimpleWaterloggedBlock {
    public static final MapCodec<HeavyCoreBlock> CODEC = simpleCodec(HeavyCoreBlock::new);
-   private static final VoxelShape SHAPE = Block.box(4.0, 0.0, 4.0, 12.0, 8.0, 12.0);
    public static final BooleanProperty WATERLOGGED;
+   private static final VoxelShape SHAPE;
 
    public HeavyCoreBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -65,5 +65,6 @@ public class HeavyCoreBlock extends Block implements SimpleWaterloggedBlock {
 
    static {
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
+      SHAPE = Block.column(8.0, 0.0, 8.0);
    }
 }

@@ -1,7 +1,6 @@
 package net.minecraft.util.debugchart;
 
 import com.google.common.collect.Maps;
-import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
@@ -14,18 +13,13 @@ public class DebugSampleSubscriptionTracker {
    public static final int STOP_SENDING_AFTER_TICKS = 200;
    public static final int STOP_SENDING_AFTER_MS = 10000;
    private final PlayerList playerList;
-   private final EnumMap<RemoteDebugSampleType, Map<ServerPlayer, SubscriptionStartedAt>> subscriptions;
+   private final Map<RemoteDebugSampleType, Map<ServerPlayer, SubscriptionStartedAt>> subscriptions;
    private final Queue<SubscriptionRequest> subscriptionRequestQueue = new LinkedList();
 
    public DebugSampleSubscriptionTracker(PlayerList var1) {
       super();
       this.playerList = var1;
-      this.subscriptions = new EnumMap(RemoteDebugSampleType.class);
-
-      for(RemoteDebugSampleType var5 : RemoteDebugSampleType.values()) {
-         this.subscriptions.put(var5, Maps.newHashMap());
-      }
-
+      this.subscriptions = Util.<RemoteDebugSampleType, Map<ServerPlayer, SubscriptionStartedAt>>makeEnumMap(RemoteDebugSampleType.class, (var0) -> Maps.newHashMap());
    }
 
    public boolean shouldLogSamples(RemoteDebugSampleType var1) {

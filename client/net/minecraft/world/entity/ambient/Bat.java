@@ -23,7 +23,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
@@ -133,13 +132,13 @@ public class Bat extends AmbientCreature {
             if (var1.getNearestPlayer(BAT_RESTING_TARGETING, this) != null) {
                this.setResting(false);
                if (!var4) {
-                  var1.levelEvent((Player)null, 1025, var2, 0);
+                  var1.levelEvent((Entity)null, 1025, var2, 0);
                }
             }
          } else {
             this.setResting(false);
             if (!var4) {
-               var1.levelEvent((Player)null, 1025, var2, 0);
+               var1.levelEvent((Entity)null, 1025, var2, 0);
             }
          }
       } else {

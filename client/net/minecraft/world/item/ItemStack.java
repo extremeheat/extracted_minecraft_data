@@ -33,7 +33,6 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.component.PatchedDataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -81,6 +80,7 @@ import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.item.component.UseCooldown;
 import net.minecraft.world.item.component.UseRemainder;
+import net.minecraft.world.item.component.Weapon;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -97,6 +97,7 @@ import org.slf4j.Logger;
 
 public final class ItemStack implements DataComponentHolder {
    private static final List<Component> OP_NBT_WARNING;
+   public static final MapCodec<ItemStack> MAP_CODEC;
    public static final Codec<ItemStack> CODEC;
    public static final Codec<ItemStack> SINGLE_ITEM_CODEC;
    public static final Codec<ItemStack> STRICT_CODEC;
@@ -119,7 +120,7 @@ public final class ItemStack implements DataComponentHolder {
    @Nullable
    private Entity entityRepresentation;
 
-   private static DataResult<ItemStack> validateStrict(ItemStack var0) {
+   public static DataResult<ItemStack> validateStrict(ItemStack var0) {
       DataResult var1 = validateComponents(var0.getComponents());
       if (var1.isError()) {
          return var1.map((var1x) -> var0);
@@ -511,7 +512,8 @@ public final class ItemStack implements DataComponentHolder {
 
    public boolean hurtEnemy(LivingEntity var1, LivingEntity var2) {
       Item var3 = this.getItem();
-      if (var3.hurtEnemy(this, var1, var2)) {
+      var3.hurtEnemy(this, var1, var2);
+      if (this.has(DataComponents.WEAPON)) {
          if (var2 instanceof Player) {
             Player var4 = (Player)var2;
             var4.awardStat(Stats.ITEM_USED.get(var3));
@@ -525,6 +527,11 @@ public final class ItemStack implements DataComponentHolder {
 
    public void postHurtEnemy(LivingEntity var1, LivingEntity var2) {
       this.getItem().postHurtEnemy(this, var1, var2);
+      Weapon var3 = (Weapon)this.get(DataComponents.WEAPON);
+      if (var3 != null) {
+         this.hurtAndBreak(var3.damagePerAttack(), var2, EquipmentSlot.MAINHAND);
+      }
+
    }
 
    public void mineBlock(Level var1, BlockState var2, BlockPos var3, Player var4) {
@@ -685,7 +692,7 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    @Nullable
-   public <T> T set(DataComponentType<? super T> var1, @Nullable T var2) {
+   public <T> T set(DataComponentType<T> var1, @Nullable T var2) {
       return (T)this.components.set(var1, var2);
    }
 
@@ -791,6 +798,7 @@ public final class ItemStack implements DataComponentHolder {
             this.getItem().appendHoverText(this, var1, var5, var3);
          }
 
+         this.addToTooltip(DataComponents.WRITTEN_BOOK_CONTENT, var1, var10, var3);
          this.addToTooltip(DataComponents.JUKEBOX_PLAYABLE, var1, var10, var3);
          this.addToTooltip(DataComponents.TRIM, var1, var10, var3);
          this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var10, var3);
@@ -981,7 +989,7 @@ public final class ItemStack implements DataComponentHolder {
 
       MutableComponent var2 = ComponentUtils.wrapInSquareBrackets(var1);
       if (!this.isEmpty()) {
-         var2.withStyle(this.getRarity().color()).withStyle((UnaryOperator)((var1x) -> var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackInfo(this)))));
+         var2.withStyle(this.getRarity().color()).withStyle((UnaryOperator)((var1x) -> var1x.withHoverEvent(new HoverEvent.ShowItem(this))));
       }
 
       return var2;
@@ -1068,23 +1076,28 @@ public final class ItemStack implements DataComponentHolder {
       return var2 != null && var2.isValidRepairItem(var1);
    }
 
+   public boolean canDestroyBlock(BlockState var1, Level var2, BlockPos var3, Player var4) {
+      return this.getItem().canDestroyBlock(this, var1, var2, var3, var4);
+   }
+
    static {
       OP_NBT_WARNING = List.of(Component.translatable("item.op_warning.line1").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), Component.translatable("item.op_warning.line2").withStyle(ChatFormatting.RED), Component.translatable("item.op_warning.line3").withStyle(ChatFormatting.RED));
-      CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.create((var0) -> var0.group(Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder), ExtraCodecs.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((var0x) -> var0x.components.asPatch())).apply(var0, ItemStack::new)));
+      MAP_CODEC = MapCodec.recursive("ItemStack", (var0) -> RecordCodecBuilder.mapCodec((var0x) -> var0x.group(Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder), ExtraCodecs.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((var0) -> var0.components.asPatch())).apply(var0x, ItemStack::new)));
+      MapCodec var10000 = MAP_CODEC;
+      Objects.requireNonNull(var10000);
+      CODEC = Codec.lazyInitialized(var10000::codec);
       SINGLE_ITEM_CODEC = Codec.lazyInitialized(() -> RecordCodecBuilder.create((var0) -> var0.group(Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((var0x) -> var0x.components.asPatch())).apply(var0, (var0x, var1) -> new ItemStack(var0x, 1, var1))));
       STRICT_CODEC = CODEC.validate(ItemStack::validateStrict);
       STRICT_SINGLE_ITEM_CODEC = SINGLE_ITEM_CODEC.validate(ItemStack::validateStrict);
       OPTIONAL_CODEC = ExtraCodecs.optionalEmptyMap(CODEC).xmap((var0) -> (ItemStack)var0.orElse(EMPTY), (var0) -> var0.isEmpty() ? Optional.empty() : Optional.of(var0));
       SIMPLE_ITEM_CODEC = Item.CODEC.xmap(ItemStack::new, ItemStack::getItemHolder);
       OPTIONAL_STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, ItemStack>() {
-         private static final StreamCodec<RegistryFriendlyByteBuf, Holder<Item>> ITEM_STREAM_CODEC;
-
          public ItemStack decode(RegistryFriendlyByteBuf var1) {
             int var2 = var1.readVarInt();
             if (var2 <= 0) {
                return ItemStack.EMPTY;
             } else {
-               Holder var3 = (Holder)ITEM_STREAM_CODEC.decode(var1);
+               Holder var3 = (Holder)Item.STREAM_CODEC.decode(var1);
                DataComponentPatch var4 = (DataComponentPatch)DataComponentPatch.STREAM_CODEC.decode(var1);
                return new ItemStack(var3, var2, var4);
             }
@@ -1095,7 +1108,7 @@ public final class ItemStack implements DataComponentHolder {
                var1.writeVarInt(0);
             } else {
                var1.writeVarInt(var2.getCount());
-               ITEM_STREAM_CODEC.encode(var1, var2.getItemHolder());
+               Item.STREAM_CODEC.encode(var1, var2.getItemHolder());
                DataComponentPatch.STREAM_CODEC.encode(var1, var2.components.asPatch());
             }
          }
@@ -1108,10 +1121,6 @@ public final class ItemStack implements DataComponentHolder {
          // $FF: synthetic method
          public Object decode(final Object var1) {
             return this.decode((RegistryFriendlyByteBuf)var1);
-         }
-
-         static {
-            ITEM_STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.ITEM);
          }
       };
       STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, ItemStack>() {

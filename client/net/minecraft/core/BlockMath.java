@@ -12,20 +12,8 @@ import org.slf4j.Logger;
 
 public class BlockMath {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final Map<Direction, Transformation> VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL = (Map)Util.make(Maps.newEnumMap(Direction.class), (var0) -> {
-      var0.put(Direction.SOUTH, Transformation.identity());
-      var0.put(Direction.EAST, new Transformation((Vector3f)null, (new Quaternionf()).rotateY(1.5707964F), (Vector3f)null, (Quaternionf)null));
-      var0.put(Direction.WEST, new Transformation((Vector3f)null, (new Quaternionf()).rotateY(-1.5707964F), (Vector3f)null, (Quaternionf)null));
-      var0.put(Direction.NORTH, new Transformation((Vector3f)null, (new Quaternionf()).rotateY(3.1415927F), (Vector3f)null, (Quaternionf)null));
-      var0.put(Direction.UP, new Transformation((Vector3f)null, (new Quaternionf()).rotateX(-1.5707964F), (Vector3f)null, (Quaternionf)null));
-      var0.put(Direction.DOWN, new Transformation((Vector3f)null, (new Quaternionf()).rotateX(1.5707964F), (Vector3f)null, (Quaternionf)null));
-   });
-   public static final Map<Direction, Transformation> VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL = (Map)Util.make(Maps.newEnumMap(Direction.class), (var0) -> {
-      for(Direction var4 : Direction.values()) {
-         var0.put(var4, ((Transformation)VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL.get(var4)).inverse());
-      }
-
-   });
+   private static final Map<Direction, Transformation> VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL;
+   private static final Map<Direction, Transformation> VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL;
 
    public BlockMath() {
       super();
@@ -55,5 +43,10 @@ public class BlockMath {
          Transformation var4 = ((Transformation)VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL.get(var1)).compose(var3).compose((Transformation)VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL.get(var2));
          return blockCenterToCorner(var4);
       }
+   }
+
+   static {
+      VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL = Maps.newEnumMap(Map.of(Direction.SOUTH, Transformation.identity(), Direction.EAST, new Transformation((Vector3f)null, (new Quaternionf()).rotateY(1.5707964F), (Vector3f)null, (Quaternionf)null), Direction.WEST, new Transformation((Vector3f)null, (new Quaternionf()).rotateY(-1.5707964F), (Vector3f)null, (Quaternionf)null), Direction.NORTH, new Transformation((Vector3f)null, (new Quaternionf()).rotateY(3.1415927F), (Vector3f)null, (Quaternionf)null), Direction.UP, new Transformation((Vector3f)null, (new Quaternionf()).rotateX(-1.5707964F), (Vector3f)null, (Quaternionf)null), Direction.DOWN, new Transformation((Vector3f)null, (new Quaternionf()).rotateX(1.5707964F), (Vector3f)null, (Quaternionf)null)));
+      VANILLA_UV_TRANSFORM_GLOBAL_TO_LOCAL = Maps.newEnumMap(Util.mapValues(VANILLA_UV_TRANSFORM_LOCAL_TO_GLOBAL, Transformation::inverse));
    }
 }

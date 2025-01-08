@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -67,12 +68,24 @@ public class BarrierBlock extends Block implements SimpleWaterloggedBlock {
       var1.add(WATERLOGGED);
    }
 
-   public ItemStack pickupBlock(@Nullable Player var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
-      return var1 != null && var1.isCreative() ? SimpleWaterloggedBlock.super.pickupBlock(var1, var2, var3, var4) : ItemStack.EMPTY;
+   public ItemStack pickupBlock(@Nullable LivingEntity var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
+      if (var1 instanceof Player var5) {
+         if (var5.isCreative()) {
+            return SimpleWaterloggedBlock.super.pickupBlock(var1, var2, var3, var4);
+         }
+      }
+
+      return ItemStack.EMPTY;
    }
 
-   public boolean canPlaceLiquid(@Nullable Player var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
-      return var1 != null && var1.isCreative() ? SimpleWaterloggedBlock.super.canPlaceLiquid(var1, var2, var3, var4, var5) : false;
+   public boolean canPlaceLiquid(@Nullable LivingEntity var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
+      if (var1 instanceof Player var6) {
+         if (var6.isCreative()) {
+            return SimpleWaterloggedBlock.super.canPlaceLiquid(var1, var2, var3, var4, var5);
+         }
+      }
+
+      return false;
    }
 
    static {

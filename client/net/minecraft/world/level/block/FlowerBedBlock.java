@@ -1,8 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import java.util.function.BiFunction;
-import net.minecraft.Util;
+import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -19,24 +18,26 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class PinkPetalsBlock extends BushBlock implements BonemealableBlock {
-   public static final MapCodec<PinkPetalsBlock> CODEC = simpleCodec(PinkPetalsBlock::new);
-   public static final int MIN_FLOWERS = 1;
-   public static final int MAX_FLOWERS = 4;
+public class FlowerBedBlock extends BushBlock implements BonemealableBlock, SegmentableBlock {
+   public static final MapCodec<FlowerBedBlock> CODEC = simpleCodec(FlowerBedBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final IntegerProperty AMOUNT;
-   private static final BiFunction<Direction, Integer, VoxelShape> SHAPE_BY_PROPERTIES;
+   private final Function<BlockState, VoxelShape> shapes;
 
-   public MapCodec<PinkPetalsBlock> codec() {
+   public MapCodec<FlowerBedBlock> codec() {
       return CODEC;
    }
 
-   protected PinkPetalsBlock(BlockBehaviour.Properties var1) {
+   protected FlowerBedBlock(BlockBehaviour.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(AMOUNT, 1));
+      this.shapes = this.makeShapes();
+   }
+
+   private Function<BlockState, VoxelShape> makeShapes() {
+      return this.getShapeForEachState(this.getShapeCalculator(FACING, AMOUNT));
    }
 
    public BlockState rotate(BlockState var1, Rotation var2) {
@@ -48,16 +49,23 @@ public class PinkPetalsBlock extends BushBlock implements BonemealableBlock {
    }
 
    public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
-      return !var2.isSecondaryUseActive() && var2.getItemInHand().is(this.asItem()) && (Integer)var1.getValue(AMOUNT) < 4 ? true : super.canBeReplaced(var1, var2);
+      return this.canBeReplaced(var1, var2, AMOUNT) ? true : super.canBeReplaced(var1, var2);
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)SHAPE_BY_PROPERTIES.apply((Direction)var1.getValue(FACING), (Integer)var1.getValue(AMOUNT));
+      return (VoxelShape)this.shapes.apply(var1);
+   }
+
+   public double getShapeHeight() {
+      return 3.0;
+   }
+
+   public IntegerProperty getSegmentAmountProperty() {
+      return AMOUNT;
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      BlockState var2 = var1.getLevel().getBlockState(var1.getClickedPos());
-      return var2.is(this) ? (BlockState)var2.setValue(AMOUNT, Math.min(4, (Integer)var2.getValue(AMOUNT) + 1)) : (BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite());
+      return this.getStateForPlacement(var1, this, AMOUNT, FACING);
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
@@ -74,7 +82,7 @@ public class PinkPetalsBlock extends BushBlock implements BonemealableBlock {
 
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       int var5 = (Integer)var4.getValue(AMOUNT);
-      if (var5 < 4) {
+      if (var5 < 1) {
          var1.setBlock(var3, (BlockState)var4.setValue(AMOUNT, var5 + 1), 2);
       } else {
          popResource(var1, var3, new ItemStack(this));
@@ -85,16 +93,5 @@ public class PinkPetalsBlock extends BushBlock implements BonemealableBlock {
    static {
       FACING = BlockStateProperties.HORIZONTAL_FACING;
       AMOUNT = BlockStateProperties.FLOWER_AMOUNT;
-      SHAPE_BY_PROPERTIES = Util.memoize((BiFunction)((var0, var1) -> {
-         VoxelShape[] var2 = new VoxelShape[]{Block.box(8.0, 0.0, 8.0, 16.0, 3.0, 16.0), Block.box(8.0, 0.0, 0.0, 16.0, 3.0, 8.0), Block.box(0.0, 0.0, 0.0, 8.0, 3.0, 8.0), Block.box(0.0, 0.0, 8.0, 8.0, 3.0, 16.0)};
-         VoxelShape var3 = Shapes.empty();
-
-         for(int var4 = 0; var4 < var1; ++var4) {
-            int var5 = Math.floorMod(var4 - var0.get2DDataValue(), 4);
-            var3 = Shapes.or(var3, var2[var5]);
-         }
-
-         return var3.singleEncompassing();
-      }));
    }
 }

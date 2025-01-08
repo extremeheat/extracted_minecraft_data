@@ -87,7 +87,7 @@ public interface DispenseItemBehavior {
             EntityType var4 = ((SpawnEggItem)var2.getItem()).getType(var1.level().registryAccess(), var2);
 
             try {
-               var4.spawn(var1.level(), var2, (Player)null, var1.pos().relative(var3), EntitySpawnReason.DISPENSER, var3 != Direction.UP, false);
+               var4.spawn(var1.level(), var2, (LivingEntity)null, var1.pos().relative(var3), EntitySpawnReason.DISPENSER, var3 != Direction.UP, false);
             } catch (Exception var6) {
                LOGGER.error("Error while dispensing spawn egg from dispenser at {}", var1.pos(), var6);
                return ItemStack.EMPTY;
@@ -108,7 +108,7 @@ public interface DispenseItemBehavior {
             Direction var3 = (Direction)var1.state().getValue(DispenserBlock.FACING);
             BlockPos var4 = var1.pos().relative(var3);
             ServerLevel var5 = var1.level();
-            Consumer var6 = EntityType.appendDefaultStackConfig((var1x) -> var1x.setYRot(var3.toYRot()), var5, var2, (Player)null);
+            Consumer var6 = EntityType.appendDefaultStackConfig((var1x) -> var1x.setYRot(var3.toYRot()), var5, var2, (LivingEntity)null);
             ArmorStand var7 = EntityType.ARMOR_STAND.spawn(var5, var6, var4, EntitySpawnReason.DISPENSER, false, false);
             if (var7 != null) {
                var2.shrink(1);
@@ -178,8 +178,8 @@ public interface DispenseItemBehavior {
             DispensibleContainerItem var3 = (DispensibleContainerItem)var2.getItem();
             BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
             ServerLevel var5 = var1.level();
-            if (var3.emptyContents((Player)null, var5, var4, (BlockHitResult)null)) {
-               var3.checkExtraContent((Player)null, var5, var2, var4);
+            if (var3.emptyContents((LivingEntity)null, var5, var4, (BlockHitResult)null)) {
+               var3.checkExtraContent((LivingEntity)null, var5, var2, var4);
                return this.consumeWithRemainder(var1, var2, new ItemStack(Items.BUCKET));
             } else {
                return this.defaultDispenseItemBehavior.dispense(var1, var2);
@@ -202,7 +202,7 @@ public interface DispenseItemBehavior {
             BlockState var5 = var3.getBlockState(var4);
             Block var6 = var5.getBlock();
             if (var6 instanceof BucketPickup var8) {
-               ItemStack var9 = var8.pickupBlock((Player)null, var3, var4, var5);
+               ItemStack var9 = var8.pickupBlock((LivingEntity)null, var3, var4, var5);
                if (var9.isEmpty()) {
                   return super.execute(var1, var2);
                } else {
@@ -227,7 +227,7 @@ public interface DispenseItemBehavior {
                var3.gameEvent((Entity)null, GameEvent.BLOCK_PLACE, var5);
             } else if (!CampfireBlock.canLight(var6) && !CandleBlock.canLight(var6) && !CandleCakeBlock.canLight(var6)) {
                if (var6.getBlock() instanceof TntBlock) {
-                  TntBlock.explode(var3, var5);
+                  TntBlock.prime(var3, var5);
                   var3.removeBlock(var5, false);
                } else {
                   this.setSuccess(false);
@@ -265,7 +265,7 @@ public interface DispenseItemBehavior {
             BlockPos var4 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
             PrimedTnt var5 = new PrimedTnt(var3, (double)var4.getX() + 0.5, (double)var4.getY(), (double)var4.getZ() + 0.5, (LivingEntity)null);
             ((Level)var3).addFreshEntity(var5);
-            ((Level)var3).playSound((Player)null, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+            ((Level)var3).playSound((Entity)null, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
             ((Level)var3).gameEvent((Entity)null, GameEvent.ENTITY_PLACE, var4);
             var2.shrink(1);
             return var2;
@@ -423,7 +423,7 @@ public interface DispenseItemBehavior {
                      }
                   }
 
-                  var4.playSound((Player)null, var5, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+                  var4.playSound((Entity)null, var5, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
                   var4.gameEvent((Entity)null, GameEvent.FLUID_PLACE, var5);
                   var4.setBlockAndUpdate(var6, Blocks.MUD.defaultBlockState());
                   return this.consumeWithRemainder(var1, var2, new ItemStack(Items.GLASS_BOTTLE));

@@ -1,6 +1,5 @@
 package net.minecraft.client.resources.model;
 
-import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
@@ -185,7 +184,7 @@ public class BlockStateModelLoader {
       }
 
       public Map<ModelResourceLocation, UnbakedBlockStateModel> plainModels() {
-         return Maps.transformValues(this.models, LoadedModel::model);
+         return Util.mapValuesLazy(this.models, LoadedModel::model);
       }
    }
 }

@@ -13,15 +13,13 @@ import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FlowerBlock extends BushBlock implements SuspiciousEffectHolder {
    protected static final MapCodec<SuspiciousStewEffects> EFFECTS_FIELD;
    public static final MapCodec<FlowerBlock> CODEC;
-   protected static final float AABB_OFFSET = 3.0F;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
    private final SuspiciousStewEffects suspiciousStewEffects;
 
    public MapCodec<? extends FlowerBlock> codec() {
@@ -42,8 +40,7 @@ public class FlowerBlock extends BushBlock implements SuspiciousEffectHolder {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      Vec3 var5 = var1.getOffset(var3);
-      return SHAPE.move(var5.x, var5.y, var5.z);
+      return SHAPE.move(var1.getOffset(var3));
    }
 
    public SuspiciousStewEffects getSuspiciousEffects() {
@@ -58,6 +55,6 @@ public class FlowerBlock extends BushBlock implements SuspiciousEffectHolder {
    static {
       EFFECTS_FIELD = SuspiciousStewEffects.CODEC.fieldOf("suspicious_stew_effects");
       CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(EFFECTS_FIELD.forGetter(FlowerBlock::getSuspiciousEffects), propertiesCodec()).apply(var0, FlowerBlock::new));
-      SHAPE = Block.box(5.0, 0.0, 5.0, 11.0, 10.0, 11.0);
+      SHAPE = Block.column(6.0, 0.0, 10.0);
    }
 }

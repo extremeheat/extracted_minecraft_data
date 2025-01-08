@@ -76,7 +76,7 @@ public class AxolotlAi {
    }
 
    private static void initIdleActivity(Brain<Axolotl> var0) {
-      var0.addActivity(Activity.IDLE, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(1, new AnimalMakeLove(EntityType.AXOLOTL, 0.2F, 2)), Pair.of(2, new RunOne(ImmutableList.of(Pair.of(new FollowTemptation(AxolotlAi::getSpeedModifier), 1), Pair.of(BabyFollowAdult.create(ADULT_FOLLOW_RANGE, AxolotlAi::getSpeedModifierFollowingAdult), 1)))), Pair.of(3, StartAttacking.create(AxolotlAi::findNearestValidAttackTarget)), Pair.of(3, TryFindWater.create(6, 0.15F)), Pair.of(4, new GateBehavior(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), ImmutableSet.of(), GateBehavior.OrderPolicy.ORDERED, GateBehavior.RunningPolicy.TRY_ALL, ImmutableList.of(Pair.of(RandomStroll.swim(0.5F), 2), Pair.of(RandomStroll.stroll(0.15F, false), 2), Pair.of(SetWalkTargetFromLookTarget.create(AxolotlAi::canSetWalkTargetFromLookTarget, AxolotlAi::getSpeedModifier, 3), 3), Pair.of(BehaviorBuilder.triggerIf(Entity::isInWaterOrBubble), 5), Pair.of(BehaviorBuilder.triggerIf(Entity::onGround), 5))))));
+      var0.addActivity(Activity.IDLE, ImmutableList.of(Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))), Pair.of(1, new AnimalMakeLove(EntityType.AXOLOTL, 0.2F, 2)), Pair.of(2, new RunOne(ImmutableList.of(Pair.of(new FollowTemptation(AxolotlAi::getSpeedModifier), 1), Pair.of(BabyFollowAdult.create(ADULT_FOLLOW_RANGE, AxolotlAi::getSpeedModifierFollowingAdult), 1)))), Pair.of(3, StartAttacking.create(AxolotlAi::findNearestValidAttackTarget)), Pair.of(3, TryFindWater.create(6, 0.15F)), Pair.of(4, new GateBehavior(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), ImmutableSet.of(), GateBehavior.OrderPolicy.ORDERED, GateBehavior.RunningPolicy.TRY_ALL, ImmutableList.of(Pair.of(RandomStroll.swim(0.5F), 2), Pair.of(RandomStroll.stroll(0.15F, false), 2), Pair.of(SetWalkTargetFromLookTarget.create(AxolotlAi::canSetWalkTargetFromLookTarget, AxolotlAi::getSpeedModifier, 3), 3), Pair.of(BehaviorBuilder.triggerIf(Entity::isInWater), 5), Pair.of(BehaviorBuilder.triggerIf(Entity::onGround), 5))))));
    }
 
    private static boolean canSetWalkTargetFromLookTarget(LivingEntity var0) {
@@ -84,7 +84,7 @@ public class AxolotlAi {
       Optional var2 = var0.getBrain().getMemory(MemoryModuleType.LOOK_TARGET);
       if (var2.isPresent()) {
          BlockPos var3 = ((PositionTracker)var2.get()).currentBlockPosition();
-         return var1.isWaterAt(var3) == var0.isInWaterOrBubble();
+         return var1.isWaterAt(var3) == var0.isInWater();
       } else {
          return false;
       }
@@ -103,15 +103,15 @@ public class AxolotlAi {
    }
 
    private static float getSpeedModifierChasing(LivingEntity var0) {
-      return var0.isInWaterOrBubble() ? 0.6F : 0.15F;
+      return var0.isInWater() ? 0.6F : 0.15F;
    }
 
    private static float getSpeedModifierFollowingAdult(LivingEntity var0) {
-      return var0.isInWaterOrBubble() ? 0.6F : 0.15F;
+      return var0.isInWater() ? 0.6F : 0.15F;
    }
 
    private static float getSpeedModifier(LivingEntity var0) {
-      return var0.isInWaterOrBubble() ? 0.5F : 0.15F;
+      return var0.isInWater() ? 0.5F : 0.15F;
    }
 
    private static Optional<? extends LivingEntity> findNearestValidAttackTarget(ServerLevel var0, Axolotl var1) {

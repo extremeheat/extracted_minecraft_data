@@ -378,4 +378,13 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       }
 
    }
+
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2, boolean var3) {
+      super.preRemoveSideEffects(var1, var2, var3);
+      Level var5 = this.level;
+      if (var5 instanceof ServerLevel var4) {
+         this.getRecipesToAwardAndPopExperience(var4, Vec3.atCenterOf(var1));
+      }
+
+   }
 }

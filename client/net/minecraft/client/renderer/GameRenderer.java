@@ -27,6 +27,7 @@ import net.minecraft.client.Options;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
@@ -75,13 +76,16 @@ public class GameRenderer implements AutoCloseable {
    private static final boolean DEPTH_BUFFER_DEBUG = false;
    public static final float PROJECTION_Z_NEAR = 0.05F;
    private static final float GUI_Z_NEAR = 1000.0F;
+   private static final float PORTAL_SPINNING_SPEED = 20.0F;
+   private static final float NAUSEA_SPINNING_SPEED = 7.0F;
    private final Minecraft minecraft;
    private final ResourceManager resourceManager;
    private final RandomSource random = RandomSource.create();
    private float renderDistance;
    public final ItemInHandRenderer itemInHandRenderer;
    private final RenderBuffers renderBuffers;
-   private int confusionAnimationTick;
+   private float spinningEffectTime;
+   private float spinningEffectSpeed;
    private float fovModifier;
    private float oldFovModifier;
    private float darkenWorldAmount;
@@ -188,13 +192,22 @@ public class GameRenderer implements AutoCloseable {
    public void tick() {
       this.tickFov();
       this.lightTexture.tick();
+      LocalPlayer var1 = this.minecraft.player;
       if (this.minecraft.getCameraEntity() == null) {
-         this.minecraft.setCameraEntity(this.minecraft.player);
+         this.minecraft.setCameraEntity(var1);
       }
 
       this.mainCamera.tick();
       this.itemInHandRenderer.tick();
-      ++this.confusionAnimationTick;
+      float var2 = var1.portalEffectIntensity;
+      float var3 = var1.getEffectBlendFactor(MobEffects.NAUSEA, 1.0F);
+      if (!(var2 > 0.0F) && !(var3 > 0.0F)) {
+         this.spinningEffectSpeed = 0.0F;
+      } else {
+         this.spinningEffectSpeed = (var2 * 20.0F + var3 * 7.0F) / (var2 + var3);
+         this.spinningEffectTime += this.spinningEffectSpeed;
+      }
+
       if (this.minecraft.level.tickRateManager().runsNormally()) {
          this.minecraft.levelRenderer.tickParticles(this.mainCamera);
          this.darkenWorldAmountO = this.darkenWorldAmount;
@@ -619,58 +632,60 @@ public class GameRenderer implements AutoCloseable {
 
    public void renderLevel(DeltaTracker var1) {
       float var2 = var1.getGameTimeDeltaPartialTick(true);
+      LocalPlayer var3 = this.minecraft.player;
       this.lightTexture.updateLightTexture(var2);
       if (this.minecraft.getCameraEntity() == null) {
-         this.minecraft.setCameraEntity(this.minecraft.player);
+         this.minecraft.setCameraEntity(var3);
       }
 
       this.pick(var2);
-      ProfilerFiller var3 = Profiler.get();
-      var3.push("center");
-      boolean var4 = this.shouldRenderBlockOutline();
-      var3.popPush("camera");
-      Camera var5 = this.mainCamera;
-      Object var6 = this.minecraft.getCameraEntity() == null ? this.minecraft.player : this.minecraft.getCameraEntity();
-      float var7 = this.minecraft.level.tickRateManager().isEntityFrozen((Entity)var6) ? 1.0F : var2;
-      var5.setup(this.minecraft.level, (Entity)var6, !this.minecraft.options.getCameraType().isFirstPerson(), this.minecraft.options.getCameraType().isMirrored(), var7);
+      ProfilerFiller var4 = Profiler.get();
+      var4.push("center");
+      boolean var5 = this.shouldRenderBlockOutline();
+      var4.popPush("camera");
+      Camera var6 = this.mainCamera;
+      Object var7 = this.minecraft.getCameraEntity() == null ? var3 : this.minecraft.getCameraEntity();
+      float var8 = this.minecraft.level.tickRateManager().isEntityFrozen((Entity)var7) ? 1.0F : var2;
+      var6.setup(this.minecraft.level, (Entity)var7, !this.minecraft.options.getCameraType().isFirstPerson(), this.minecraft.options.getCameraType().isMirrored(), var8);
       this.renderDistance = (float)(this.minecraft.options.getEffectiveRenderDistance() * 16);
-      float var8 = this.getFov(var5, var2, true);
-      Matrix4f var9 = this.getProjectionMatrix(var8);
-      PoseStack var10 = new PoseStack();
-      this.bobHurt(var10, var5.getPartialTickTime());
+      float var9 = this.getFov(var6, var2, true);
+      Matrix4f var10 = this.getProjectionMatrix(var9);
+      PoseStack var11 = new PoseStack();
+      this.bobHurt(var11, var6.getPartialTickTime());
       if ((Boolean)this.minecraft.options.bobView().get()) {
-         this.bobView(var10, var5.getPartialTickTime());
+         this.bobView(var11, var6.getPartialTickTime());
       }
 
-      var9.mul(var10.last().pose());
-      float var11 = ((Double)this.minecraft.options.screenEffectScale().get()).floatValue();
-      float var12 = Mth.lerp(var2, this.minecraft.player.oSpinningEffectIntensity, this.minecraft.player.spinningEffectIntensity) * var11 * var11;
-      if (var12 > 0.0F) {
-         int var13 = this.minecraft.player.hasEffect(MobEffects.CONFUSION) ? 7 : 20;
-         float var14 = 5.0F / (var12 * var12 + 5.0F) - var12 * 0.04F;
-         var14 *= var14;
-         Vector3f var15 = new Vector3f(0.0F, Mth.SQRT_OF_TWO / 2.0F, Mth.SQRT_OF_TWO / 2.0F);
-         float var16 = ((float)this.confusionAnimationTick + var2) * (float)var13 * 0.017453292F;
-         var9.rotate(var16, var15);
-         var9.scale(1.0F / var14, 1.0F, 1.0F);
-         var9.rotate(-var16, var15);
+      var10.mul(var11.last().pose());
+      float var12 = ((Double)this.minecraft.options.screenEffectScale().get()).floatValue();
+      float var13 = Mth.lerp(var2, var3.oPortalEffectIntensity, var3.portalEffectIntensity);
+      float var14 = var3.getEffectBlendFactor(MobEffects.NAUSEA, var2);
+      float var15 = Math.max(var13, var14) * var12 * var12;
+      if (var15 > 0.0F) {
+         float var16 = 5.0F / (var15 * var15 + 5.0F) - var15 * 0.04F;
+         var16 *= var16;
+         Vector3f var17 = new Vector3f(0.0F, Mth.SQRT_OF_TWO / 2.0F, Mth.SQRT_OF_TWO / 2.0F);
+         float var18 = (this.spinningEffectTime + var2 * this.spinningEffectSpeed) * 0.017453292F;
+         var10.rotate(var18, var17);
+         var10.scale(1.0F / var16, 1.0F, 1.0F);
+         var10.rotate(-var18, var17);
       }
 
-      float var17 = Math.max(var8, (float)(Integer)this.minecraft.options.fov().get());
-      Matrix4f var19 = this.getProjectionMatrix(var17);
-      RenderSystem.setProjectionMatrix(var9, ProjectionType.PERSPECTIVE);
-      Quaternionf var20 = var5.rotation().conjugate(new Quaternionf());
-      Matrix4f var21 = (new Matrix4f()).rotation(var20);
-      this.minecraft.levelRenderer.prepareCullFrustum(var5.getPosition(), var21, var19);
+      float var21 = Math.max(var9, (float)(Integer)this.minecraft.options.fov().get());
+      Matrix4f var22 = this.getProjectionMatrix(var21);
+      RenderSystem.setProjectionMatrix(var10, ProjectionType.PERSPECTIVE);
+      Quaternionf var23 = var6.rotation().conjugate(new Quaternionf());
+      Matrix4f var19 = (new Matrix4f()).rotation(var23);
+      this.minecraft.levelRenderer.prepareCullFrustum(var6.getPosition(), var19, var22);
       this.minecraft.getMainRenderTarget().bindWrite(true);
-      this.minecraft.levelRenderer.renderLevel(this.resourcePool, var1, var4, var5, this, var21, var9);
-      var3.popPush("hand");
+      this.minecraft.levelRenderer.renderLevel(this.resourcePool, var1, var5, var6, this, var19, var10);
+      var4.popPush("hand");
       if (this.renderHand) {
          RenderSystem.clear(256);
-         this.renderItemInHand(var5, var2, var21);
+         this.renderItemInHand(var6, var2, var19);
       }
 
-      var3.pop();
+      var4.pop();
    }
 
    public void resetData() {

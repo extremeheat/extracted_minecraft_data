@@ -6,7 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.vehicle.AbstractBoat;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -44,7 +44,7 @@ public class BoatDispenseItemBehavior extends DefaultDispenseItemBehavior {
       AbstractBoat var17 = this.type.create(var4, EntitySpawnReason.DISPENSER);
       if (var17 != null) {
          var17.setInitialPos(var8, var10 + var15, var12);
-         EntityType.createDefaultStackConfig(var4, var2, (Player)null).accept(var17);
+         EntityType.createDefaultStackConfig(var4, var2, (LivingEntity)null).accept(var17);
          var17.setYRot(var3.toYRot());
          var4.addFreshEntity(var17);
          var2.shrink(1);

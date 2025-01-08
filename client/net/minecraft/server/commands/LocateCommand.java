@@ -125,7 +125,7 @@ public class LocateCommand {
       BlockPos var7 = (BlockPos)var2.getFirst();
       int var8 = var4 ? Mth.floor(Mth.sqrt((float)var1.distSqr(var7))) : Mth.floor(dist(var1.getX(), var1.getZ(), var7.getX(), var7.getZ()));
       String var9 = var4 ? String.valueOf(var7.getY()) : "~";
-      MutableComponent var10 = ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", var7.getX(), var9, var7.getZ())).withStyle((UnaryOperator)((var2x) -> var2x.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/tp @s " + var7.getX() + " " + var9 + " " + var7.getZ())).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.coordinates.tooltip")))));
+      MutableComponent var10 = ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", var7.getX(), var9, var7.getZ())).withStyle((UnaryOperator)((var2x) -> var2x.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent.SuggestCommand("/tp @s " + var7.getX() + " " + var9 + " " + var7.getZ())).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
       var0.sendSuccess(() -> Component.translatable(var3, var5, var10, var8), false);
       LOGGER.info("Locating element " + var5 + " took " + var6.toMillis() + " ms");
       return var8;

@@ -174,14 +174,7 @@ public class VanillaPackResourcesBuilder {
    }
 
    public VanillaPackResources build(PackLocationInfo var1) {
-      EnumMap var2 = new EnumMap(PackType.class);
-
-      for(PackType var6 : PackType.values()) {
-         List var7 = copyAndReverse((Collection)this.pathsForType.getOrDefault(var6, Set.of()));
-         var2.put(var6, var7);
-      }
-
-      return new VanillaPackResources(var1, this.metadata, Set.copyOf(this.namespaces), copyAndReverse(this.rootPaths), var2);
+      return new VanillaPackResources(var1, this.metadata, Set.copyOf(this.namespaces), copyAndReverse(this.rootPaths), Util.makeEnumMap(PackType.class, (var1x) -> copyAndReverse((Collection)this.pathsForType.getOrDefault(var1x, Set.of()))));
    }
 
    private static List<Path> copyAndReverse(Collection<Path> var0) {

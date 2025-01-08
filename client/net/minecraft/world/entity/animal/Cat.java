@@ -310,7 +310,7 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
          }
 
          if (this.isTame()) {
-            var3.setOwnerUUID(this.getOwnerUUID());
+            var3.setOwnerReference(this.getOwnerReference());
             var3.setTame(true, true);
             DyeColor var5 = this.getCollarColor();
             DyeColor var6 = var4.getCollarColor();
@@ -535,7 +535,8 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
          } else {
             LivingEntity var1 = this.cat.getOwner();
             if (var1 instanceof Player) {
-               this.ownerPlayer = (Player)var1;
+               Player var2 = (Player)var1;
+               this.ownerPlayer = var2;
                if (!var1.isSleeping()) {
                   return false;
                }
@@ -544,10 +545,10 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
                   return false;
                }
 
-               BlockPos var2 = this.ownerPlayer.blockPosition();
-               BlockState var3 = this.cat.level().getBlockState(var2);
-               if (var3.is(BlockTags.BEDS)) {
-                  this.goalPos = (BlockPos)var3.getOptionalValue(BedBlock.FACING).map((var1x) -> var2.relative(var1x.getOpposite())).orElseGet(() -> new BlockPos(var2));
+               BlockPos var3 = this.ownerPlayer.blockPosition();
+               BlockState var4 = this.cat.level().getBlockState(var3);
+               if (var4.is(BlockTags.BEDS)) {
+                  this.goalPos = (BlockPos)var4.getOptionalValue(BedBlock.FACING).map((var1x) -> var3.relative(var1x.getOpposite())).orElseGet(() -> new BlockPos(var3));
                   return !this.spaceIsOccupied();
                }
             }

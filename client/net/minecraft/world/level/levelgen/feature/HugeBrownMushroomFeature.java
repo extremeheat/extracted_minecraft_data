@@ -26,18 +26,16 @@ public class HugeBrownMushroomFeature extends AbstractHugeMushroomFeature {
             boolean var15 = var12 || var13;
             if (!var14 || !var15) {
                var5.setWithOffset(var3, var8, var4, var9);
-               if (!var1.getBlockState(var5).isSolidRender()) {
-                  boolean var16 = var10 || var15 && var8 == 1 - var7;
-                  boolean var17 = var11 || var15 && var8 == var7 - 1;
-                  boolean var18 = var12 || var14 && var9 == 1 - var7;
-                  boolean var19 = var13 || var14 && var9 == var7 - 1;
-                  BlockState var20 = var6.capProvider.getState(var2, var3);
-                  if (var20.hasProperty(HugeMushroomBlock.WEST) && var20.hasProperty(HugeMushroomBlock.EAST) && var20.hasProperty(HugeMushroomBlock.NORTH) && var20.hasProperty(HugeMushroomBlock.SOUTH)) {
-                     var20 = (BlockState)((BlockState)((BlockState)((BlockState)var20.setValue(HugeMushroomBlock.WEST, var16)).setValue(HugeMushroomBlock.EAST, var17)).setValue(HugeMushroomBlock.NORTH, var18)).setValue(HugeMushroomBlock.SOUTH, var19);
-                  }
-
-                  this.setBlock(var1, var5, var20);
+               boolean var16 = var10 || var15 && var8 == 1 - var7;
+               boolean var17 = var11 || var15 && var8 == var7 - 1;
+               boolean var18 = var12 || var14 && var9 == 1 - var7;
+               boolean var19 = var13 || var14 && var9 == var7 - 1;
+               BlockState var20 = var6.capProvider.getState(var2, var3);
+               if (var20.hasProperty(HugeMushroomBlock.WEST) && var20.hasProperty(HugeMushroomBlock.EAST) && var20.hasProperty(HugeMushroomBlock.NORTH) && var20.hasProperty(HugeMushroomBlock.SOUTH)) {
+                  var20 = (BlockState)((BlockState)((BlockState)((BlockState)var20.setValue(HugeMushroomBlock.WEST, var16)).setValue(HugeMushroomBlock.EAST, var17)).setValue(HugeMushroomBlock.NORTH, var18)).setValue(HugeMushroomBlock.SOUTH, var19);
                }
+
+               this.placeMushroomBlock(var1, var5, var20);
             }
          }
       }

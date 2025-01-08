@@ -59,6 +59,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
@@ -95,6 +96,7 @@ import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.WritableLevelData;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.scores.Scoreboard;
@@ -340,6 +342,11 @@ public class ClientLevel extends Level {
 
    }
 
+   public List<Entity> getPushableEntities(Entity var1, AABB var2) {
+      LocalPlayer var3 = this.minecraft.player;
+      return var3 != null && var3 != var1 && var3.getBoundingBox().intersects(var2) && EntitySelector.pushableBy(var1).test(var3) ? List.of(var3) : List.of();
+   }
+
    @Nullable
    public Entity getEntity(int var1) {
       return (Entity)this.getEntities().get(var1);
@@ -451,14 +458,14 @@ public class ClientLevel extends Level {
       return var2;
    }
 
-   public void playSeededSound(@Nullable Player var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11, long var12) {
+   public void playSeededSound(@Nullable Entity var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11, long var12) {
       if (var1 == this.minecraft.player) {
          this.playSound(var2, var4, var6, (SoundEvent)var8.value(), var9, var10, var11, false, var12);
       }
 
    }
 
-   public void playSeededSound(@Nullable Player var1, Entity var2, Holder<SoundEvent> var3, SoundSource var4, float var5, float var6, long var7) {
+   public void playSeededSound(@Nullable Entity var1, Entity var2, Holder<SoundEvent> var3, SoundSource var4, float var5, float var6, long var7) {
       if (var1 == this.minecraft.player) {
          this.minecraft.getSoundManager().play(new EntityBoundSoundInstance((SoundEvent)var3.value(), var4, var5, var6, var2, var7));
       }
@@ -564,7 +571,7 @@ public class ClientLevel extends Level {
       this.levelEventHandler.globalLevelEvent(var1, var2, var3);
    }
 
-   public void levelEvent(@Nullable Player var1, int var2, BlockPos var3, int var4) {
+   public void levelEvent(@Nullable Entity var1, int var2, BlockPos var3, int var4) {
       try {
          this.levelEventHandler.levelEvent(var2, var3, var4);
       } catch (Throwable var8) {

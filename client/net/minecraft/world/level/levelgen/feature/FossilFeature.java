@@ -57,12 +57,12 @@ public class FossilFeature extends Feature<FossilFeatureConfiguration> {
          List var10000 = (var6.fossilProcessors.value()).list();
          Objects.requireNonNull(var13);
          var10000.forEach(var13::addProcessor);
-         var9.placeInWorld(var3, var20, var20, var13, var2, 4);
+         var9.placeInWorld(var3, var20, var20, var13, var2, 260);
          var13.clearProcessors();
          var10000 = (var6.overlayProcessors.value()).list();
          Objects.requireNonNull(var13);
          var10000.forEach(var13::addProcessor);
-         var10.placeInWorld(var3, var20, var20, var13, var2, 4);
+         var10.placeInWorld(var3, var20, var20, var13, var2, 260);
          return true;
       }
    }

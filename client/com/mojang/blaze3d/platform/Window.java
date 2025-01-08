@@ -69,16 +69,16 @@ public final class Window implements AutoCloseable {
       Optional var6 = VideoMode.read(var4);
       if (var6.isPresent()) {
          this.preferredFullscreenVideoMode = var6;
-      } else if (var3.fullscreenWidth.isPresent() && var3.fullscreenHeight.isPresent()) {
-         this.preferredFullscreenVideoMode = Optional.of(new VideoMode(var3.fullscreenWidth.getAsInt(), var3.fullscreenHeight.getAsInt(), 8, 8, 8, 60));
+      } else if (var3.fullscreenWidth().isPresent() && var3.fullscreenHeight().isPresent()) {
+         this.preferredFullscreenVideoMode = Optional.of(new VideoMode(var3.fullscreenWidth().getAsInt(), var3.fullscreenHeight().getAsInt(), 8, 8, 8, 60));
       } else {
          this.preferredFullscreenVideoMode = Optional.empty();
       }
 
-      this.actuallyFullscreen = this.fullscreen = var3.isFullscreen;
+      this.actuallyFullscreen = this.fullscreen = var3.isFullscreen();
       Monitor var7 = var2.getMonitor(GLFW.glfwGetPrimaryMonitor());
-      this.windowedWidth = this.width = var3.width > 0 ? var3.width : 1;
-      this.windowedHeight = this.height = var3.height > 0 ? var3.height : 1;
+      this.windowedWidth = this.width = Math.max(var3.width(), 1);
+      this.windowedHeight = this.height = Math.max(var3.height(), 1);
       GLFW.glfwDefaultWindowHints();
       GLFW.glfwWindowHint(139265, 196609);
       GLFW.glfwWindowHint(139275, 221185);

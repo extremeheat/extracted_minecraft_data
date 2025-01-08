@@ -24,6 +24,7 @@ import net.minecraft.client.gui.components.PlayerTabOverlay;
 import net.minecraft.client.gui.components.SubtitleOverlay;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -207,38 +208,39 @@ public class Gui {
          this.renderVignette(var1, this.minecraft.getCameraEntity());
       }
 
-      float var3 = var2.getGameTimeDeltaTicks();
-      this.scopeScale = Mth.lerp(0.5F * var3, this.scopeScale, 1.125F);
+      LocalPlayer var3 = this.minecraft.player;
+      float var4 = var2.getGameTimeDeltaTicks();
+      this.scopeScale = Mth.lerp(0.5F * var4, this.scopeScale, 1.125F);
       if (this.minecraft.options.getCameraType().isFirstPerson()) {
-         if (this.minecraft.player.isScoping()) {
+         if (var3.isScoping()) {
             this.renderSpyglassOverlay(var1, this.scopeScale);
          } else {
             this.scopeScale = 0.5F;
 
-            for(EquipmentSlot var7 : EquipmentSlot.values()) {
-               ItemStack var8 = this.minecraft.player.getItemBySlot(var7);
-               Equippable var9 = (Equippable)var8.get(DataComponents.EQUIPPABLE);
-               if (var9 != null && var9.slot() == var7 && var9.cameraOverlay().isPresent()) {
-                  this.renderTextureOverlay(var1, ((ResourceLocation)var9.cameraOverlay().get()).withPath((UnaryOperator)((var0) -> "textures/" + var0 + ".png")), 1.0F);
+            for(EquipmentSlot var8 : EquipmentSlot.values()) {
+               ItemStack var9 = var3.getItemBySlot(var8);
+               Equippable var10 = (Equippable)var9.get(DataComponents.EQUIPPABLE);
+               if (var10 != null && var10.slot() == var8 && var10.cameraOverlay().isPresent()) {
+                  this.renderTextureOverlay(var1, ((ResourceLocation)var10.cameraOverlay().get()).withPath((UnaryOperator)((var0) -> "textures/" + var0 + ".png")), 1.0F);
                }
             }
          }
       }
 
-      if (this.minecraft.player.getTicksFrozen() > 0) {
-         this.renderTextureOverlay(var1, POWDER_SNOW_OUTLINE_LOCATION, this.minecraft.player.getPercentFrozen());
+      if (var3.getTicksFrozen() > 0) {
+         this.renderTextureOverlay(var1, POWDER_SNOW_OUTLINE_LOCATION, var3.getPercentFrozen());
       }
 
-      float var10 = Mth.lerp(var2.getGameTimeDeltaPartialTick(false), this.minecraft.player.oSpinningEffectIntensity, this.minecraft.player.spinningEffectIntensity);
-      if (var10 > 0.0F) {
-         if (!this.minecraft.player.hasEffect(MobEffects.CONFUSION)) {
-            this.renderPortalOverlay(var1, var10);
-         } else {
-            float var11 = ((Double)this.minecraft.options.screenEffectScale().get()).floatValue();
-            if (var11 < 1.0F) {
-               float var12 = var10 * (1.0F - var11);
-               this.renderConfusionOverlay(var1, var12);
-            }
+      float var11 = var2.getGameTimeDeltaPartialTick(false);
+      float var12 = Mth.lerp(var11, var3.oPortalEffectIntensity, var3.portalEffectIntensity);
+      float var13 = var3.getEffectBlendFactor(MobEffects.NAUSEA, var11);
+      if (var12 > 0.0F) {
+         this.renderPortalOverlay(var1, var12);
+      } else if (var13 > 0.0F) {
+         float var14 = ((Double)this.minecraft.options.screenEffectScale().get()).floatValue();
+         if (var14 < 1.0F) {
+            float var15 = var13 * (1.0F - var14);
+            this.renderConfusionOverlay(var1, var15);
          }
       }
 

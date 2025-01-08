@@ -23,7 +23,7 @@ public class ChorusPlantBlock extends PipeBlock {
    }
 
    protected ChorusPlantBlock(BlockBehaviour.Properties var1) {
-      super(0.3125F, var1);
+      super(10.0F, var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false)).setValue(UP, false)).setValue(DOWN, false));
    }
 

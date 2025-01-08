@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -43,9 +44,9 @@ import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.component.FireworkExplosion;
@@ -67,6 +68,8 @@ import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.entity.LevelEntityGetter;
+import net.minecraft.world.level.entity.UUIDLookup;
+import net.minecraft.world.level.entity.UniquelyIdentifyable;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
@@ -83,7 +86,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 
-public abstract class Level implements LevelAccessor, AutoCloseable {
+public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCloseable {
    public static final Codec<ResourceKey<Level>> RESOURCE_KEY_CODEC;
    public static final ResourceKey<Level> OVERWORLD;
    public static final ResourceKey<Level> NETHER;
@@ -206,7 +209,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       } else {
          LevelChunk var5 = this.getChunkAt(var1);
          Block var6 = var2.getBlock();
-         BlockState var7 = var5.setBlockState(var1, var2, (var3 & 64) != 0);
+         BlockState var7 = var5.setBlockState(var1, var2, var3);
          if (var7 == null) {
             return false;
          } else {
@@ -221,7 +224,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
                }
 
                if ((var3 & 1) != 0) {
-                  this.blockUpdated(var1, var7.getBlock());
+                  this.updateNeighborsAt(var1, var7.getBlock());
                   if (!this.isClientSide && var2.hasAnalogOutputSignal()) {
                      this.updateNeighbourForOutputSignal(var1, var6);
                   }
@@ -234,7 +237,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
                   var2.updateIndirectNeighbourShapes(this, var1, var9, var4 - 1);
                }
 
-               this.onBlockStateChange(var1, var7, var8);
+               this.updatePOIOnBlockStateChange(var1, var7, var8);
             }
 
             return true;
@@ -242,7 +245,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       }
    }
 
-   public void onBlockStateChange(BlockPos var1, BlockState var2, BlockState var3) {
+   public void updatePOIOnBlockStateChange(BlockPos var1, BlockState var2, BlockState var3) {
    }
 
    public boolean removeBlock(BlockPos var1, boolean var2) {
@@ -284,9 +287,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public abstract void sendBlockUpdated(BlockPos var1, BlockState var2, BlockState var3, int var4);
 
    public void setBlocksDirty(BlockPos var1, BlockState var2, BlockState var3) {
-   }
-
-   public void updateNeighborsAt(BlockPos var1, Block var2) {
    }
 
    public void updateNeighborsAt(BlockPos var1, Block var2, @Nullable Orientation var3) {
@@ -342,50 +342,48 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       }
    }
 
-   public boolean isDay() {
+   public boolean isBrightOutside() {
       return !this.dimensionType().hasFixedTime() && this.skyDarken < 4;
    }
 
-   public boolean isNight() {
-      return !this.dimensionType().hasFixedTime() && !this.isDay();
+   public boolean isDarkOutside() {
+      return !this.dimensionType().hasFixedTime() && !this.isBrightOutside();
+   }
+
+   public boolean isMoonVisible() {
+      if (!this.dimensionType().natural()) {
+         return false;
+      } else {
+         int var1 = (int)(this.getDayTime() % 24000L);
+         return var1 >= 12600 && var1 <= 23400;
+      }
    }
 
    public void playSound(@Nullable Entity var1, BlockPos var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
-      Player var10001;
-      if (var1 instanceof Player var7) {
-         var10001 = var7;
-      } else {
-         var10001 = null;
-      }
-
-      this.playSound(var10001, var2, var3, var4, var5, var6);
-   }
-
-   public void playSound(@Nullable Player var1, BlockPos var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
       this.playSound(var1, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, var3, var4, var5, var6);
    }
 
-   public abstract void playSeededSound(@Nullable Player var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11, long var12);
+   public abstract void playSeededSound(@Nullable Entity var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11, long var12);
 
-   public void playSeededSound(@Nullable Player var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9, float var10, float var11, long var12) {
+   public void playSeededSound(@Nullable Entity var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9, float var10, float var11, long var12) {
       this.playSeededSound(var1, var2, var4, var6, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(var8), var9, var10, var11, var12);
    }
 
-   public abstract void playSeededSound(@Nullable Player var1, Entity var2, Holder<SoundEvent> var3, SoundSource var4, float var5, float var6, long var7);
+   public abstract void playSeededSound(@Nullable Entity var1, Entity var2, Holder<SoundEvent> var3, SoundSource var4, float var5, float var6, long var7);
 
-   public void playSound(@Nullable Player var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9) {
+   public void playSound(@Nullable Entity var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9) {
       this.playSound(var1, var2, var4, var6, var8, var9, 1.0F, 1.0F);
    }
 
-   public void playSound(@Nullable Player var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9, float var10, float var11) {
+   public void playSound(@Nullable Entity var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9, float var10, float var11) {
       this.playSeededSound(var1, var2, var4, var6, var8, var9, var10, var11, this.threadSafeRandom.nextLong());
    }
 
-   public void playSound(@Nullable Player var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11) {
+   public void playSound(@Nullable Entity var1, double var2, double var4, double var6, Holder<SoundEvent> var8, SoundSource var9, float var10, float var11) {
       this.playSeededSound(var1, var2, var4, var6, var8, var9, var10, var11, this.threadSafeRandom.nextLong());
    }
 
-   public void playSound(@Nullable Player var1, Entity var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
+   public void playSound(@Nullable Entity var1, Entity var2, SoundEvent var3, SoundSource var4, float var5, float var6) {
       this.playSeededSound(var1, var2, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(var3), var4, var5, var6, this.threadSafeRandom.nextLong());
    }
 
@@ -625,8 +623,17 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       });
    }
 
+   public List<Entity> getPushableEntities(Entity var1, AABB var2) {
+      return this.getEntities(var1, var2, EntitySelector.pushableBy(var1));
+   }
+
    @Nullable
    public abstract Entity getEntity(int var1);
+
+   @Nullable
+   public Entity getEntity(UUID var1) {
+      return (Entity)this.getEntities().get(var1);
+   }
 
    public abstract Collection<EnderDragonPart> dragonParts();
 
@@ -648,7 +655,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       return this.levelData.getDayTime();
    }
 
-   public boolean mayInteract(Player var1, BlockPos var2) {
+   public boolean mayInteract(Entity var1, BlockPos var2) {
       return true;
    }
 
@@ -860,6 +867,12 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    // $FF: synthetic method
    public ChunkAccess getChunk(final int var1, final int var2) {
       return this.getChunk(var1, var2);
+   }
+
+   // $FF: synthetic method
+   @Nullable
+   public UniquelyIdentifyable getEntity(final UUID var1) {
+      return this.getEntity(var1);
    }
 
    static {

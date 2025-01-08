@@ -25,11 +25,11 @@ import net.minecraft.world.level.block.WeatheringCopper;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
-public class AxeItem extends DiggerItem {
+public class AxeItem extends Item {
    protected static final Map<Block, Block> STRIPPABLES;
 
    public AxeItem(ToolMaterial var1, float var2, float var3, Item.Properties var4) {
-      super(var1, BlockTags.MINEABLE_WITH_AXE, var2, var3, var4);
+      super(var4.tool(var1, BlockTags.MINEABLE_WITH_AXE, var2, var3, true));
    }
 
    public InteractionResult useOn(UseOnContext var1) {
@@ -67,18 +67,18 @@ public class AxeItem extends DiggerItem {
    private Optional<BlockState> evaluateNewBlockState(Level var1, BlockPos var2, @Nullable Player var3, BlockState var4) {
       Optional var5 = this.getStripped(var4);
       if (var5.isPresent()) {
-         var1.playSound(var3, var2, SoundEvents.AXE_STRIP, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var1.playSound(var3, (BlockPos)var2, SoundEvents.AXE_STRIP, SoundSource.BLOCKS, 1.0F, 1.0F);
          return var5;
       } else {
          Optional var6 = WeatheringCopper.getPrevious(var4);
          if (var6.isPresent()) {
-            var1.playSound(var3, var2, SoundEvents.AXE_SCRAPE, SoundSource.BLOCKS, 1.0F, 1.0F);
+            var1.playSound(var3, (BlockPos)var2, SoundEvents.AXE_SCRAPE, SoundSource.BLOCKS, 1.0F, 1.0F);
             var1.levelEvent(var3, 3005, var2, 0);
             return var6;
          } else {
             Optional var7 = Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(var4.getBlock())).map((var1x) -> var1x.withPropertiesOf(var4));
             if (var7.isPresent()) {
-               var1.playSound(var3, var2, SoundEvents.AXE_WAX_OFF, SoundSource.BLOCKS, 1.0F, 1.0F);
+               var1.playSound(var3, (BlockPos)var2, SoundEvents.AXE_WAX_OFF, SoundSource.BLOCKS, 1.0F, 1.0F);
                var1.levelEvent(var3, 3004, var2, 0);
                return var7;
             } else {

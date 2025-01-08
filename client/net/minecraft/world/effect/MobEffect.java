@@ -30,7 +30,6 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeMap;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureElement;
 import net.minecraft.world.flag.FeatureFlag;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -46,7 +45,9 @@ public class MobEffect implements FeatureElement {
    private final Function<MobEffectInstance, ParticleOptions> particleFactory;
    @Nullable
    private String descriptionId;
-   private int blendDurationTicks;
+   private int blendInDurationTicks;
+   private int blendOutDurationTicks;
+   private int blendOutAdvanceTicks;
    private Optional<SoundEvent> soundOnAdded = Optional.empty();
    private FeatureFlagSet requiredFeatures;
 
@@ -69,8 +70,16 @@ public class MobEffect implements FeatureElement {
       this.particleFactory = (var1x) -> var3;
    }
 
-   public int getBlendDurationTicks() {
-      return this.blendDurationTicks;
+   public int getBlendInDurationTicks() {
+      return this.blendInDurationTicks;
+   }
+
+   public int getBlendOutDurationTicks() {
+      return this.blendOutDurationTicks;
+   }
+
+   public int getBlendOutAdvanceTicks() {
+      return this.blendOutAdvanceTicks;
    }
 
    public boolean applyEffectTick(ServerLevel var1, LivingEntity var2, int var3) {
@@ -89,7 +98,7 @@ public class MobEffect implements FeatureElement {
    }
 
    public void onEffectAdded(LivingEntity var1, int var2) {
-      this.soundOnAdded.ifPresent((var1x) -> var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), var1x, var1.getSoundSource(), 1.0F, 1.0F));
+      this.soundOnAdded.ifPresent((var1x) -> var1.level().playSound((Entity)null, var1.getX(), var1.getY(), var1.getZ(), var1x, var1.getSoundSource(), 1.0F, 1.0F));
    }
 
    public void onMobRemoved(ServerLevel var1, LivingEntity var2, int var3, Entity.RemovalReason var4) {
@@ -132,7 +141,13 @@ public class MobEffect implements FeatureElement {
    }
 
    public MobEffect setBlendDuration(int var1) {
-      this.blendDurationTicks = var1;
+      return this.setBlendDuration(var1, var1, var1);
+   }
+
+   public MobEffect setBlendDuration(int var1, int var2, int var3) {
+      this.blendInDurationTicks = var1;
+      this.blendOutDurationTicks = var2;
+      this.blendOutAdvanceTicks = var3;
       return this;
    }
 

@@ -26,8 +26,8 @@ public class LanternBlock extends Block implements SimpleWaterloggedBlock {
    public static final MapCodec<LanternBlock> CODEC = simpleCodec(LanternBlock::new);
    public static final BooleanProperty HANGING;
    public static final BooleanProperty WATERLOGGED;
-   protected static final VoxelShape AABB;
-   protected static final VoxelShape HANGING_AABB;
+   private static final VoxelShape SHAPE_STANDING;
+   private static final VoxelShape SHAPE_HANGING;
 
    public MapCodec<LanternBlock> codec() {
       return CODEC;
@@ -55,7 +55,7 @@ public class LanternBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (Boolean)var1.getValue(HANGING) ? HANGING_AABB : AABB;
+      return (Boolean)var1.getValue(HANGING) ? SHAPE_HANGING : SHAPE_STANDING;
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
@@ -90,7 +90,7 @@ public class LanternBlock extends Block implements SimpleWaterloggedBlock {
    static {
       HANGING = BlockStateProperties.HANGING;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      AABB = Shapes.or(Block.box(5.0, 0.0, 5.0, 11.0, 7.0, 11.0), Block.box(6.0, 7.0, 6.0, 10.0, 9.0, 10.0));
-      HANGING_AABB = Shapes.or(Block.box(5.0, 1.0, 5.0, 11.0, 8.0, 11.0), Block.box(6.0, 8.0, 6.0, 10.0, 10.0, 10.0));
+      SHAPE_STANDING = Shapes.or(Block.column(4.0, 7.0, 9.0), Block.column(6.0, 0.0, 7.0));
+      SHAPE_HANGING = SHAPE_STANDING.move(0.0, 0.0625, 0.0).optimize();
    }
 }

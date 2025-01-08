@@ -3,6 +3,7 @@ package net.minecraft.server.level;
 import com.google.common.annotations.VisibleForTesting;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -37,6 +38,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.LocalMobCapCalculator;
 import net.minecraft.world.level.NaturalSpawner;
+import net.minecraft.world.level.TicketStorage;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
@@ -62,6 +64,7 @@ public class ServerChunkCache extends ChunkSource {
    private final MainThreadExecutor mainThreadProcessor;
    public final ChunkMap chunkMap;
    private final DimensionDataStorage dataStorage;
+   private final TicketStorage ticketStorage;
    private long lastInhabitedUpdate;
    private boolean spawnEnemies = true;
    private boolean spawnFriendlies = true;
@@ -89,7 +92,8 @@ public class ServerChunkCache extends ChunkSource {
       }
 
       this.dataStorage = new DimensionDataStorage(var13, var3, var1.registryAccess());
-      this.chunkMap = new ChunkMap(var1, var2, var3, var4, var5, this.mainThreadProcessor, this, var6, var10, var11, var12, var7, var9);
+      this.ticketStorage = (TicketStorage)this.dataStorage.computeIfAbsent(TicketStorage.factory(), "chunks");
+      this.chunkMap = new ChunkMap(var1, var2, var3, var4, var5, this.mainThreadProcessor, this, var6, var10, var11, var12, this.ticketStorage, var7, var9);
       this.lightEngine = this.chunkMap.getLightEngine();
       this.distanceManager = this.chunkMap.getDistanceManager();
       this.distanceManager.updateSimulationDistance(var8);
@@ -214,7 +218,7 @@ public class ServerChunkCache extends ChunkSource {
       int var8 = ChunkLevel.byStatus(var3);
       ChunkHolder var9 = this.getVisibleChunkIfPresent(var6);
       if (var4) {
-         this.distanceManager.addTicket(TicketType.UNKNOWN, var5, var8, var5);
+         this.addTicket(new Ticket(TicketType.UNKNOWN, var8), var5);
          if (this.chunkAbsent(var9, var8)) {
             ProfilerFiller var10 = Profiler.get();
             var10.push("chunkLoad");
@@ -292,7 +296,7 @@ public class ServerChunkCache extends ChunkSource {
       ProfilerFiller var3 = Profiler.get();
       var3.push("purge");
       if (this.level.tickRateManager().runsNormally() || !var2) {
-         this.distanceManager.purgeStaleTickets();
+         this.ticketStorage.purgeStaleTickets();
       }
 
       this.runDistanceManagerUpdates();
@@ -447,16 +451,24 @@ public class ServerChunkCache extends ChunkSource {
       });
    }
 
-   public <T> void addRegionTicket(TicketType<T> var1, ChunkPos var2, int var3, T var4) {
-      this.distanceManager.addRegionTicket(var1, var2, var3, var4);
+   public void addTicket(Ticket var1, ChunkPos var2) {
+      this.ticketStorage.addTicket(var1, var2);
    }
 
-   public <T> void removeRegionTicket(TicketType<T> var1, ChunkPos var2, int var3, T var4) {
-      this.distanceManager.removeRegionTicket(var1, var2, var3, var4);
+   public void addTicketWithRadius(TicketType var1, ChunkPos var2, int var3) {
+      this.ticketStorage.addTicketWithRadius(var1, var2, var3);
    }
 
-   public void updateChunkForced(ChunkPos var1, boolean var2) {
-      this.distanceManager.updateChunkForced(var1, var2);
+   public void removeTicketWithRadius(TicketType var1, ChunkPos var2, int var3) {
+      this.ticketStorage.removeTicketWithRadius(var1, var2, var3);
+   }
+
+   public boolean updateChunkForced(ChunkPos var1, boolean var2) {
+      return this.ticketStorage.updateChunkForced(var1, var2);
+   }
+
+   public LongSet getForceLoadedChunks() {
+      return this.ticketStorage.getForceLoadedChunks();
    }
 
    public void move(ServerPlayer var1) {
@@ -517,8 +529,8 @@ public class ServerChunkCache extends ChunkSource {
       return this.lastSpawnState;
    }
 
-   public void removeTicketsOnClosing() {
-      this.distanceManager.removeTicketsOnClosing();
+   public void deactivateTicketsOnClosing() {
+      this.ticketStorage.deactivateTicketsOnClosing();
    }
 
    public void onChunkReadyToSend(ChunkHolder var1) {
@@ -575,14 +587,6 @@ public class ServerChunkCache extends ChunkSource {
             ServerChunkCache.this.lightEngine.tryScheduleUpdate();
             return super.pollTask();
          }
-      }
-   }
-
-   static record ChunkAndHolder(LevelChunk chunk, ChunkHolder holder) {
-      private ChunkAndHolder(LevelChunk var1, ChunkHolder var2) {
-         super();
-         this.chunk = var1;
-         this.holder = var2;
       }
    }
 }

@@ -2,7 +2,6 @@ package net.minecraft.core;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Maps;
 import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
@@ -216,7 +215,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    }
 
    public Set<Map.Entry<ResourceKey<T>, T>> entrySet() {
-      return Collections.unmodifiableSet(Maps.transformValues(this.byKey, Holder::value).entrySet());
+      return Collections.unmodifiableSet(Util.mapValuesLazy(this.byKey, Holder::value).entrySet());
    }
 
    public Stream<Holder.Reference<T>> listElements() {

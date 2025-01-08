@@ -18,6 +18,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
+import net.minecraft.Util;
 
 public class CompoundTag implements Tag {
    public static final Codec<CompoundTag> CODEC;
@@ -216,14 +217,18 @@ public class CompoundTag implements Tag {
    }
 
    public float getFloat(String var1) {
+      return this.getFloatOrDefault(var1, 0.0F);
+   }
+
+   public float getFloatOrDefault(String var1, float var2) {
       try {
          if (this.contains(var1, 99)) {
             return ((NumericTag)this.tags.get(var1)).getAsFloat();
          }
-      } catch (ClassCastException var3) {
+      } catch (ClassCastException var4) {
       }
 
-      return 0.0F;
+      return var2;
    }
 
    public double getDouble(String var1) {
@@ -344,8 +349,7 @@ public class CompoundTag implements Tag {
    }
 
    public CompoundTag copy() {
-      HashMap var1 = Maps.newHashMap(Maps.transformValues(this.tags, Tag::copy));
-      return new CompoundTag(var1);
+      return new CompoundTag(Util.mapValues(this.tags, Tag::copy));
    }
 
    public boolean equals(Object var1) {

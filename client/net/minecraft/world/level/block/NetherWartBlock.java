@@ -20,7 +20,7 @@ public class NetherWartBlock extends BushBlock {
    public static final MapCodec<NetherWartBlock> CODEC = simpleCodec(NetherWartBlock::new);
    public static final int MAX_AGE = 3;
    public static final IntegerProperty AGE;
-   private static final VoxelShape[] SHAPE_BY_AGE;
+   private static final VoxelShape[] SHAPES;
 
    public MapCodec<NetherWartBlock> codec() {
       return CODEC;
@@ -32,7 +32,7 @@ public class NetherWartBlock extends BushBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPE_BY_AGE[(Integer)var1.getValue(AGE)];
+      return SHAPES[(Integer)var1.getValue(AGE)];
    }
 
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
@@ -62,6 +62,6 @@ public class NetherWartBlock extends BushBlock {
 
    static {
       AGE = BlockStateProperties.AGE_3;
-      SHAPE_BY_AGE = new VoxelShape[]{Block.box(0.0, 0.0, 0.0, 16.0, 5.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 8.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 11.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 14.0, 16.0)};
+      SHAPES = Block.boxes(3, (var0) -> Block.column(16.0, 0.0, (double)(5 + var0 * 3)));
    }
 }

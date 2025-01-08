@@ -22,6 +22,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -92,7 +93,7 @@ public class BeehiveBlock extends BaseEntityBlock {
       if (!var1.isClientSide && var5 instanceof BeehiveBlockEntity var7) {
          if (!EnchantmentHelper.hasTag(var6, EnchantmentTags.PREVENTS_BEE_SPAWNS_WHEN_MINING)) {
             var7.emptyAllLivingFromHive(var2, var4, BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
-            var1.updateNeighbourForOutputSignal(var3, this);
+            Containers.updateNeighboursAfterDestroy(var4, var1, var3);
             this.angerNearbyBees(var1, var3);
          }
 
@@ -256,7 +257,7 @@ public class BeehiveBlock extends BaseEntityBlock {
 
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       if (var1 instanceof ServerLevel var5) {
-         if (var4.isCreative() && var5.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
+         if (var4.preventsBlockDrops() && var5.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
             BlockEntity var6 = var1.getBlockEntity(var2);
             if (var6 instanceof BeehiveBlockEntity) {
                BeehiveBlockEntity var7 = (BeehiveBlockEntity)var6;

@@ -5,6 +5,7 @@ public class FoliageColor {
    public static final int FOLIAGE_BIRCH = -8345771;
    public static final int FOLIAGE_DEFAULT = -12012264;
    public static final int FOLIAGE_MANGROVE = -7158200;
+   public static final int FOLIAGE_AZALEA = -9399763;
    private static int[] pixels = new int[65536];
 
    public FoliageColor() {

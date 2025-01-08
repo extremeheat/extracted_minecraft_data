@@ -12,7 +12,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityDimensions;
@@ -103,11 +103,11 @@ public class Salmon extends AbstractSchoolingFish implements VariantHolder<Varia
 
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      SimpleWeightedRandomList.Builder var5 = SimpleWeightedRandomList.builder();
+      WeightedList.Builder var5 = WeightedList.builder();
       var5.add(Salmon.Variant.SMALL, 30);
       var5.add(Salmon.Variant.MEDIUM, 50);
       var5.add(Salmon.Variant.LARGE, 15);
-      var5.build().getRandomValue(this.random).ifPresent(this::setVariant);
+      var5.build().getRandom(this.random).ifPresent(this::setVariant);
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 

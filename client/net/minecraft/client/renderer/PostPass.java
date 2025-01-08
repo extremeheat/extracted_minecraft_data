@@ -66,8 +66,6 @@ public class PostPass {
                }
             }
 
-            var4.setClearColor(0.0F, 0.0F, 0.0F, 0.0F);
-            var4.clear();
             var4.bindWrite(false);
             RenderSystem.depthFunc(519);
             RenderSystem.setShader(this.shader);

@@ -12,6 +12,10 @@ public record TestFunction(String batchName, String testName, String structureNa
       this(var1, var2, var3, var4, var5, var6, var8, false, 1, 1, false, var9);
    }
 
+   public TestFunction(String var1, String var2, String var3, Rotation var4, int var5, long var6, boolean var8, boolean var9, Consumer<GameTestHelper> var10) {
+      this(var1, var2, var3, var4, var5, var6, var8, false, 1, 1, var9, var10);
+   }
+
    public TestFunction(String var1, String var2, String var3, Rotation var4, int var5, long var6, boolean var8, boolean var9, int var10, int var11, boolean var12, Consumer<GameTestHelper> var13) {
       super();
       this.batchName = var1;

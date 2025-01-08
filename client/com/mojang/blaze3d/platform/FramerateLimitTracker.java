@@ -25,23 +25,42 @@ public class FramerateLimitTracker {
    }
 
    public int getFramerateLimit() {
+      int var10000;
+      switch (this.getThrottleReason().ordinal()) {
+         case 0 -> var10000 = this.framerateLimit;
+         case 1 -> var10000 = 10;
+         case 2 -> var10000 = 10;
+         case 3 -> var10000 = Math.min(this.framerateLimit, 30);
+         case 4 -> var10000 = 60;
+         default -> throw new MatchException((String)null, (Throwable)null);
+      }
+
+      return var10000;
+   }
+
+   public FramerateThrottleReason getThrottleReason() {
       InactivityFpsLimit var1 = (InactivityFpsLimit)this.options.inactivityFpsLimit().get();
       if (this.minecraft.getWindow().isIconified()) {
-         return 10;
+         return FramerateLimitTracker.FramerateThrottleReason.WINDOW_ICONIFIED;
       } else {
          if (var1 == InactivityFpsLimit.AFK) {
             long var2 = Util.getMillis() - this.latestInputTime;
             if (var2 > 600000L) {
-               return 10;
+               return FramerateLimitTracker.FramerateThrottleReason.LONG_AFK;
             }
 
             if (var2 > 60000L) {
-               return Math.min(this.framerateLimit, 30);
+               return FramerateLimitTracker.FramerateThrottleReason.SHORT_AFK;
             }
          }
 
-         return this.minecraft.level != null || this.minecraft.screen == null && this.minecraft.getOverlay() == null ? this.framerateLimit : 60;
+         return this.minecraft.level != null || this.minecraft.screen == null && this.minecraft.getOverlay() == null ? FramerateLimitTracker.FramerateThrottleReason.NONE : FramerateLimitTracker.FramerateThrottleReason.OUT_OF_LEVEL_MENU;
       }
+   }
+
+   public boolean isHeavilyThrottled() {
+      FramerateThrottleReason var1 = this.getThrottleReason();
+      return var1 == FramerateLimitTracker.FramerateThrottleReason.WINDOW_ICONIFIED || var1 == FramerateLimitTracker.FramerateThrottleReason.LONG_AFK;
    }
 
    public void setFramerateLimit(int var1) {
@@ -50,5 +69,21 @@ public class FramerateLimitTracker {
 
    public void onInputReceived() {
       this.latestInputTime = Util.getMillis();
+   }
+
+   public static enum FramerateThrottleReason {
+      NONE,
+      WINDOW_ICONIFIED,
+      LONG_AFK,
+      SHORT_AFK,
+      OUT_OF_LEVEL_MENU;
+
+      private FramerateThrottleReason() {
+      }
+
+      // $FF: synthetic method
+      private static FramerateThrottleReason[] $values() {
+         return new FramerateThrottleReason[]{NONE, WINDOW_ICONIFIED, LONG_AFK, SHORT_AFK, OUT_OF_LEVEL_MENU};
+      }
    }
 }

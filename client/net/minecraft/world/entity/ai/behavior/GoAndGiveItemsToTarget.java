@@ -17,7 +17,6 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.animal.allay.AllayAi;
 import net.minecraft.world.entity.npc.InventoryCarrier;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -91,7 +90,7 @@ public class GoAndGiveItemsToTarget<E extends LivingEntity & InventoryCarrier> e
       Level var4 = var0.level();
       if (var4.getGameTime() % 7L == 0L && var4.random.nextDouble() < 0.9) {
          float var5 = (Float)Util.getRandom(Allay.THROW_SOUND_PITCHES, var4.getRandom());
-         var4.playSound((Player)null, (Entity)var0, SoundEvents.ALLAY_THROW, SoundSource.NEUTRAL, 1.0F, var5);
+         var4.playSound((Entity)null, (Entity)var0, SoundEvents.ALLAY_THROW, SoundSource.NEUTRAL, 1.0F, var5);
       }
 
    }

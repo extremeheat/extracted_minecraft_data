@@ -13,7 +13,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ResolvableModel;
 import net.minecraft.client.resources.model.WeightedBakedModel;
-import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.block.state.BlockState;
 
 public record MultiVariant(List<Variant> variants) implements UnbakedBlockStateModel {
@@ -39,7 +39,7 @@ public record MultiVariant(List<Variant> variants) implements UnbakedBlockStateM
          Variant var6 = (Variant)this.variants.getFirst();
          return var1.bake(var6.modelLocation(), var6);
       } else {
-         SimpleWeightedRandomList.Builder var2 = SimpleWeightedRandomList.builder();
+         WeightedList.Builder var2 = WeightedList.builder();
 
          for(Variant var4 : this.variants) {
             BakedModel var5 = var1.bake(var4.modelLocation(), var4);

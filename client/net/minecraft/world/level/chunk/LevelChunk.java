@@ -234,7 +234,7 @@ public class LevelChunk extends ChunkAccess {
    }
 
    @Nullable
-   public BlockState setBlockState(BlockPos var1, BlockState var2, boolean var3) {
+   public BlockState setBlockState(BlockPos var1, BlockState var2, int var3) {
       int var4 = var1.getY();
       LevelChunkSection var5 = this.getSection(this.getSectionIndex(var4));
       boolean var6 = var5.hasOnlyAir();
@@ -268,36 +268,56 @@ public class LevelChunk extends ChunkAccess {
                var13.pop();
             }
 
-            boolean var15 = var10.hasBlockEntity();
-            if (!this.level.isClientSide) {
-               var10.onRemove(this.level, var1, var2, var3);
-            } else if (!var10.is(var11) && var15) {
-               this.removeBlockEntity(var1);
+            boolean var19 = var10.hasBlockEntity();
+            boolean var14 = !var10.is(var11);
+            boolean var15 = (var3 & 64) != 0;
+            boolean var16 = (var3 & 256) == 0;
+            if (var14) {
+               Level var18 = this.level;
+               if (var18 instanceof ServerLevel) {
+                  ServerLevel var17 = (ServerLevel)var18;
+                  if (var19 && var16) {
+                     BlockEntity var22 = this.level.getBlockEntity(var1);
+                     if (var22 != null) {
+                        var22.preRemoveSideEffects(var1, var10, var15);
+                     }
+                  }
+
+                  if (var19) {
+                     this.removeBlockEntity(var1);
+                  }
+
+                  if ((var3 & 1) != 0) {
+                     var10.affectNeighborsAfterRemoval(var17, var1, var15);
+                  }
+               } else if (var19) {
+                  this.removeBlockEntity(var1);
+               }
             }
 
             if (!var5.getBlockState(var7, var8, var9).is(var11)) {
                return null;
             } else {
-               if (!this.level.isClientSide) {
-                  var2.onPlace(this.level, var1, var10, var3);
+               if (!this.level.isClientSide && var16) {
+                  var2.onPlace(this.level, var1, var10, var15);
                }
 
                if (var2.hasBlockEntity()) {
-                  BlockEntity var14 = this.getBlockEntity(var1, LevelChunk.EntityCreationType.CHECK);
-                  if (var14 != null && !var14.isValidBlockState(var2)) {
-                     LOGGER.warn("Found mismatched block entity @ {}: type = {}, state = {}", new Object[]{var1, var14.getType().builtInRegistryHolder().key().location(), var2});
+                  BlockEntity var20 = this.getBlockEntity(var1, LevelChunk.EntityCreationType.CHECK);
+                  if (var20 != null && !var20.isValidBlockState(var2)) {
+                     LOGGER.warn("Found mismatched block entity @ {}: type = {}, state = {}", new Object[]{var1, var20.getType().builtInRegistryHolder().key().location(), var2});
                      this.removeBlockEntity(var1);
-                     var14 = null;
+                     var20 = null;
                   }
 
-                  if (var14 == null) {
-                     var14 = ((EntityBlock)var11).newBlockEntity(var1, var2);
-                     if (var14 != null) {
-                        this.addAndRegisterBlockEntity(var14);
+                  if (var20 == null) {
+                     var20 = ((EntityBlock)var11).newBlockEntity(var1, var2);
+                     if (var20 != null) {
+                        this.addAndRegisterBlockEntity(var20);
                      }
                   } else {
-                     var14.setBlockState(var2);
-                     this.updateBlockEntityTicker(var14);
+                     var20.setBlockState(var2);
+                     this.updateBlockEntityTicker(var20);
                   }
                }
 
@@ -548,7 +568,7 @@ public class LevelChunk extends ChunkAccess {
                if (!(var7.getBlock() instanceof LiquidBlock)) {
                   BlockState var9 = Block.updateFromNeighbourShapes(var7, var1, var6);
                   if (var9 != var7) {
-                     var1.setBlock(var6, var9, 20);
+                     var1.setBlock(var6, var9, 276);
                   }
                }
             }

@@ -45,7 +45,7 @@ public class JfrCommand {
       try {
          Path var1 = Paths.get(".").relativize(JvmProfiler.INSTANCE.stop().normalize());
          Path var2 = var0.getServer().isPublished() && !SharedConstants.IS_RUNNING_IN_IDE ? var1 : var1.toAbsolutePath();
-         MutableComponent var3 = Component.literal(var1.toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, var2.toString())).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.copy.click")))));
+         MutableComponent var3 = Component.literal(var1.toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent.CopyToClipboard(var2.toString())).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.copy.click")))));
          var0.sendSuccess(() -> Component.translatable("commands.jfr.stopped", var3), false);
          return 1;
       } catch (Throwable var4) {

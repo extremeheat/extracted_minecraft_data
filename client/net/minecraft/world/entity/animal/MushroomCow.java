@@ -22,6 +22,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.ConversionParams;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
@@ -141,7 +142,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Variant
    }
 
    public void shear(ServerLevel var1, SoundSource var2, ItemStack var3) {
-      var1.playSound((Player)null, this, SoundEvents.MOOSHROOM_SHEAR, var2, 1.0F, 1.0F);
+      var1.playSound((Entity)null, this, SoundEvents.MOOSHROOM_SHEAR, var2, 1.0F, 1.0F);
       this.convertTo(EntityType.COW, ConversionParams.single(this, false, false), (var3x) -> {
          var1.sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(0.5), this.getZ(), 1, 0.0, 0.0, 0.0, 0.0);
          this.dropFromShearingLootTable(var1, BuiltInLootTables.SHEAR_MOOSHROOM, var3, (var1x, var2) -> {

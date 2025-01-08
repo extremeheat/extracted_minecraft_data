@@ -9,10 +9,10 @@ import net.minecraft.core.Holder;
 import net.minecraft.sounds.Music;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 
 public class BiomeSpecialEffects {
-   public static final Codec<BiomeSpecialEffects> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("fog_color").forGetter((var0x) -> var0x.fogColor), Codec.INT.fieldOf("water_color").forGetter((var0x) -> var0x.waterColor), Codec.INT.fieldOf("water_fog_color").forGetter((var0x) -> var0x.waterFogColor), Codec.INT.fieldOf("sky_color").forGetter((var0x) -> var0x.skyColor), Codec.INT.optionalFieldOf("foliage_color").forGetter((var0x) -> var0x.foliageColorOverride), Codec.INT.optionalFieldOf("grass_color").forGetter((var0x) -> var0x.grassColorOverride), BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier", BiomeSpecialEffects.GrassColorModifier.NONE).forGetter((var0x) -> var0x.grassColorModifier), AmbientParticleSettings.CODEC.optionalFieldOf("particle").forGetter((var0x) -> var0x.ambientParticleSettings), SoundEvent.CODEC.optionalFieldOf("ambient_sound").forGetter((var0x) -> var0x.ambientLoopSoundEvent), AmbientMoodSettings.CODEC.optionalFieldOf("mood_sound").forGetter((var0x) -> var0x.ambientMoodSettings), AmbientAdditionsSettings.CODEC.optionalFieldOf("additions_sound").forGetter((var0x) -> var0x.ambientAdditionsSettings), SimpleWeightedRandomList.wrappedCodecAllowingEmpty(Music.CODEC).optionalFieldOf("music").forGetter((var0x) -> var0x.backgroundMusic), Codec.FLOAT.fieldOf("music_volume").orElse(1.0F).forGetter((var0x) -> var0x.backgroundMusicVolume)).apply(var0, BiomeSpecialEffects::new));
+   public static final Codec<BiomeSpecialEffects> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.INT.fieldOf("fog_color").forGetter((var0x) -> var0x.fogColor), Codec.INT.fieldOf("water_color").forGetter((var0x) -> var0x.waterColor), Codec.INT.fieldOf("water_fog_color").forGetter((var0x) -> var0x.waterFogColor), Codec.INT.fieldOf("sky_color").forGetter((var0x) -> var0x.skyColor), Codec.INT.optionalFieldOf("foliage_color").forGetter((var0x) -> var0x.foliageColorOverride), Codec.INT.optionalFieldOf("grass_color").forGetter((var0x) -> var0x.grassColorOverride), BiomeSpecialEffects.GrassColorModifier.CODEC.optionalFieldOf("grass_color_modifier", BiomeSpecialEffects.GrassColorModifier.NONE).forGetter((var0x) -> var0x.grassColorModifier), AmbientParticleSettings.CODEC.optionalFieldOf("particle").forGetter((var0x) -> var0x.ambientParticleSettings), SoundEvent.CODEC.optionalFieldOf("ambient_sound").forGetter((var0x) -> var0x.ambientLoopSoundEvent), AmbientMoodSettings.CODEC.optionalFieldOf("mood_sound").forGetter((var0x) -> var0x.ambientMoodSettings), AmbientAdditionsSettings.CODEC.optionalFieldOf("additions_sound").forGetter((var0x) -> var0x.ambientAdditionsSettings), WeightedList.codec(Music.CODEC).optionalFieldOf("music").forGetter((var0x) -> var0x.backgroundMusic), Codec.FLOAT.fieldOf("music_volume").orElse(1.0F).forGetter((var0x) -> var0x.backgroundMusicVolume)).apply(var0, BiomeSpecialEffects::new));
    private final int fogColor;
    private final int waterColor;
    private final int waterFogColor;
@@ -24,10 +24,10 @@ public class BiomeSpecialEffects {
    private final Optional<Holder<SoundEvent>> ambientLoopSoundEvent;
    private final Optional<AmbientMoodSettings> ambientMoodSettings;
    private final Optional<AmbientAdditionsSettings> ambientAdditionsSettings;
-   private final Optional<SimpleWeightedRandomList<Music>> backgroundMusic;
+   private final Optional<WeightedList<Music>> backgroundMusic;
    private final float backgroundMusicVolume;
 
-   BiomeSpecialEffects(int var1, int var2, int var3, int var4, Optional<Integer> var5, Optional<Integer> var6, GrassColorModifier var7, Optional<AmbientParticleSettings> var8, Optional<Holder<SoundEvent>> var9, Optional<AmbientMoodSettings> var10, Optional<AmbientAdditionsSettings> var11, Optional<SimpleWeightedRandomList<Music>> var12, float var13) {
+   BiomeSpecialEffects(int var1, int var2, int var3, int var4, Optional<Integer> var5, Optional<Integer> var6, GrassColorModifier var7, Optional<AmbientParticleSettings> var8, Optional<Holder<SoundEvent>> var9, Optional<AmbientMoodSettings> var10, Optional<AmbientAdditionsSettings> var11, Optional<WeightedList<Music>> var12, float var13) {
       super();
       this.fogColor = var1;
       this.waterColor = var2;
@@ -88,7 +88,7 @@ public class BiomeSpecialEffects {
       return this.ambientAdditionsSettings;
    }
 
-   public Optional<SimpleWeightedRandomList<Music>> getBackgroundMusic() {
+   public Optional<WeightedList<Music>> getBackgroundMusic() {
       return this.backgroundMusic;
    }
 
@@ -108,7 +108,7 @@ public class BiomeSpecialEffects {
       private Optional<Holder<SoundEvent>> ambientLoopSoundEvent;
       private Optional<AmbientMoodSettings> ambientMoodSettings;
       private Optional<AmbientAdditionsSettings> ambientAdditionsSettings;
-      private Optional<SimpleWeightedRandomList<Music>> backgroundMusic;
+      private Optional<WeightedList<Music>> backgroundMusic;
       private float backgroundMusicVolume;
 
       public Builder() {
@@ -182,16 +182,16 @@ public class BiomeSpecialEffects {
             this.backgroundMusic = Optional.empty();
             return this;
          } else {
-            this.backgroundMusic = Optional.of(SimpleWeightedRandomList.single(var1));
+            this.backgroundMusic = Optional.of(WeightedList.of(var1));
             return this;
          }
       }
 
       public Builder silenceAllBackgroundMusic() {
-         return this.backgroundMusic(SimpleWeightedRandomList.empty()).backgroundMusicVolume(0.0F);
+         return this.backgroundMusic(WeightedList.of()).backgroundMusicVolume(0.0F);
       }
 
-      public Builder backgroundMusic(SimpleWeightedRandomList<Music> var1) {
+      public Builder backgroundMusic(WeightedList<Music> var1) {
          this.backgroundMusic = Optional.of(var1);
          return this;
       }

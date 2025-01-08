@@ -11,6 +11,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
@@ -76,7 +77,7 @@ public abstract class AbstractCandleBlock extends Block {
          ((AbstractCandleBlock)var1.getBlock()).getParticleOffsets(var1).forEach((var2x) -> var2.addParticle(ParticleTypes.SMOKE, (double)var3.getX() + var2x.x(), (double)var3.getY() + var2x.y(), (double)var3.getZ() + var2x.z(), 0.0, 0.10000000149011612, 0.0));
       }
 
-      var2.playSound((Player)null, var3, SoundEvents.CANDLE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, 1.0F);
+      var2.playSound((Entity)null, var3, SoundEvents.CANDLE_EXTINGUISH, SoundSource.BLOCKS, 1.0F, 1.0F);
       var2.gameEvent(var0, (Holder)GameEvent.BLOCK_CHANGE, (BlockPos)var3);
    }
 

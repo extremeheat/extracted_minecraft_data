@@ -140,7 +140,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    public void equipSaddle(ItemStack var1, @Nullable SoundSource var2) {
       this.steering.setSaddle(true);
       if (var2 != null) {
-         this.level().playSound((Player)null, (Entity)this, SoundEvents.STRIDER_SADDLE, var2, 0.5F, 1.0F);
+         this.level().playSound((Entity)null, (Entity)this, SoundEvents.STRIDER_SADDLE, var2, 0.5F, 1.0F);
       }
 
    }
@@ -180,10 +180,14 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    }
 
    protected Vec3 getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      float var4 = Math.min(0.25F, this.walkAnimation.speed());
-      float var5 = this.walkAnimation.position();
-      float var6 = 0.12F * Mth.cos(var5 * 1.5F) * 2.0F * var4;
-      return super.getPassengerAttachmentPoint(var1, var2, var3).add(0.0, (double)(var6 * var3), 0.0);
+      if (!this.level().isClientSide()) {
+         return super.getPassengerAttachmentPoint(var1, var2, var3);
+      } else {
+         float var4 = Math.min(0.25F, this.walkAnimation.speed());
+         float var5 = this.walkAnimation.position();
+         float var6 = 0.12F * Mth.cos(var5 * 1.5F) * 2.0F * var4;
+         return super.getPassengerAttachmentPoint(var1, var2, var3).add(0.0, (double)(var6 * var3), 0.0);
+      }
    }
 
    public boolean checkSpawnObstruction(LevelReader var1) {
@@ -323,7 +327,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    private void floatStrider() {
       if (this.isInLava()) {
          CollisionContext var1 = CollisionContext.of(this);
-         if (var1.isAbove(LiquidBlock.STABLE_SHAPE, this.blockPosition(), true) && !this.level().getFluidState(this.blockPosition().above()).is(FluidTags.LAVA)) {
+         if (var1.isAbove(LiquidBlock.SHAPE_STABLE, this.blockPosition(), true) && !this.level().getFluidState(this.blockPosition().above()).is(FluidTags.LAVA)) {
             this.setOnGround(true);
          } else {
             this.setDeltaMovement(this.getDeltaMovement().scale(0.5).add(0.0, 0.05, 0.0));
@@ -404,7 +408,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
             return (InteractionResult)(var5.is(Items.SADDLE) ? var5.interactLivingEntity(var1, this, var2) : InteractionResult.PASS);
          } else {
             if (var3 && !this.isSilent()) {
-               this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.STRIDER_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+               this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.STRIDER_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
             }
 
             return var4;

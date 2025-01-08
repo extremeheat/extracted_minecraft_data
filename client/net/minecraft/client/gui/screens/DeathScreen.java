@@ -128,7 +128,7 @@ public class DeathScreen extends Screen {
          Objects.requireNonNull(this.font);
          if (var3 < (double)(85 + 9)) {
             Style var6 = this.getClickedComponentStyleAt((int)var1);
-            if (var6 != null && var6.getClickEvent() != null && var6.getClickEvent().getAction() == ClickEvent.Action.OPEN_URL) {
+            if (var6 != null && var6.getClickEvent() != null && var6.getClickEvent().action() == ClickEvent.Action.OPEN_URL) {
                this.handleComponentClicked(var6);
                return false;
             }

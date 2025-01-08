@@ -30,9 +30,11 @@ public class FollowBoatGoal extends Goal {
 
       for(AbstractBoat var4 : var1) {
          LivingEntity var5 = var4.getControllingPassenger();
-         if (var5 instanceof Player && (Mth.abs(((Player)var5).xxa) > 0.0F || Mth.abs(((Player)var5).zza) > 0.0F)) {
-            var2 = true;
-            break;
+         if (var5 instanceof Player var6) {
+            if (Mth.abs(var6.xxa) > 0.0F || Mth.abs(var6.zza) > 0.0F) {
+               var2 = true;
+               break;
+            }
          }
       }
 

@@ -16,6 +16,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ExtraCodecs;
@@ -187,7 +188,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
    static {
       OBTAINED_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z", Locale.ROOT);
       OBTAINED_TIME_CODEC = ExtraCodecs.temporalCodec(OBTAINED_TIME_FORMAT).xmap(Instant::from, (var0) -> var0.atZone(ZoneId.systemDefault()));
-      CRITERIA_CODEC = Codec.unboundedMap(Codec.STRING, OBTAINED_TIME_CODEC).xmap((var0) -> (Map)var0.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (var0x) -> new CriterionProgress((Instant)var0x.getValue()))), (var0) -> (Map)var0.entrySet().stream().filter((var0x) -> ((CriterionProgress)var0x.getValue()).isDone()).collect(Collectors.toMap(Map.Entry::getKey, (var0x) -> (Instant)Objects.requireNonNull(((CriterionProgress)var0x.getValue()).getObtained()))));
+      CRITERIA_CODEC = Codec.unboundedMap(Codec.STRING, OBTAINED_TIME_CODEC).xmap((var0) -> Util.mapValues(var0, CriterionProgress::new), (var0) -> (Map)var0.entrySet().stream().filter((var0x) -> ((CriterionProgress)var0x.getValue()).isDone()).collect(Collectors.toMap(Map.Entry::getKey, (var0x) -> (Instant)Objects.requireNonNull(((CriterionProgress)var0x.getValue()).getObtained()))));
       CODEC = RecordCodecBuilder.create((var0) -> var0.group(CRITERIA_CODEC.optionalFieldOf("criteria", Map.of()).forGetter((var0x) -> var0x.criteria), Codec.BOOL.fieldOf("done").orElse(true).forGetter(AdvancementProgress::isDone)).apply(var0, (var0x, var1) -> new AdvancementProgress(new HashMap(var0x))));
    }
 }

@@ -59,12 +59,12 @@ public class RealmsWorldOptions extends ValueObject {
       return new RealmsWorldOptions(true, true, 0, false, 2, 0, false, false, "", "", DEFAULT_COMPATIBILITY);
    }
 
-   public static RealmsWorldOptions createDefaultsWith(GameType var0, Difficulty var1, boolean var2, String var3, String var4) {
-      return new RealmsWorldOptions(true, true, 0, false, var1.getId(), var0.getId(), var2, false, var4, var3, DEFAULT_COMPATIBILITY);
+   public static RealmsWorldOptions createDefaultsWith(GameType var0, boolean var1, Difficulty var2, boolean var3, String var4, String var5) {
+      return new RealmsWorldOptions(true, true, 0, var1, var2.getId(), var0.getId(), var3, false, var5, var4, DEFAULT_COMPATIBILITY);
    }
 
-   public static RealmsWorldOptions createFromSettings(LevelSettings var0, String var1) {
-      return createDefaultsWith(var0.gameType(), var0.difficulty(), var0.hardcore(), var1, var0.levelName());
+   public static RealmsWorldOptions createFromSettings(LevelSettings var0, boolean var1, String var2) {
+      return createDefaultsWith(var0.gameType(), var1, var0.difficulty(), var0.hardcore(), var2, var0.levelName());
    }
 
    public static RealmsWorldOptions createEmptyDefaults() {

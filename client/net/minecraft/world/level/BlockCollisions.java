@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Cursor3D;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Blocks;
@@ -94,10 +95,10 @@ public class BlockCollisions<T> extends AbstractIterator<T> {
                   continue;
                }
 
-               return (T)this.resultProvider.apply(this.pos, var7.move((double)var1, (double)var2, (double)var3));
+               return (T)this.resultProvider.apply(this.pos, var7.move((Vec3i)this.pos));
             }
 
-            VoxelShape var8 = var7.move((double)var1, (double)var2, (double)var3);
+            VoxelShape var8 = var7.move((Vec3i)this.pos);
             if (var8.isEmpty() || !Shapes.joinIsNotEmpty(var8, this.entityShape, BooleanOp.AND)) {
                continue;
             }

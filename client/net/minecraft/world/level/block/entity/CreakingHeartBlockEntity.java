@@ -31,6 +31,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CreakingHeartBlock;
 import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.CreakingHeartState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -88,7 +89,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
                Vec3 var8 = var6.subtract(var3.emitterTarget).scale((double)var7).add(var3.emitterTarget);
                BlockPos var9 = BlockPos.containing(var8);
                float var10 = (float)var3.emitter / 2.0F / 100.0F + 0.5F;
-               var4.playSound((Player)null, var9, SoundEvents.CREAKING_HEART_HURT, SoundSource.BLOCKS, var10, 1.0F);
+               var4.playSound((Entity)null, var9, SoundEvents.CREAKING_HEART_HURT, SoundSource.BLOCKS, var10, 1.0F);
             }
 
             --var3.emitter;
@@ -96,43 +97,51 @@ public class CreakingHeartBlockEntity extends BlockEntity {
 
          if (var3.ticker-- < 0) {
             var3.ticker = var3.level == null ? 20 : var3.level.random.nextInt(5) + 20;
-            if (var3.creakingInfo == null) {
-               if (!CreakingHeartBlock.hasRequiredLogs(var2, var0, var1)) {
-                  var0.setBlock(var1, (BlockState)var2.setValue(CreakingHeartBlock.ACTIVE, false), 3);
-               } else if ((Boolean)var2.getValue(CreakingHeartBlock.ACTIVE)) {
-                  if (CreakingHeartBlock.isNaturalNight(var0)) {
-                     if (var0.getDifficulty() != Difficulty.PEACEFUL) {
-                        if (var4.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
-                           Player var12 = var0.getNearestPlayer((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), 32.0, false);
-                           if (var12 != null) {
-                              Creaking var14 = spawnProtector(var4, var3);
-                              if (var14 != null) {
-                                 var3.setCreakingInfo(var14);
-                                 var14.makeSound(SoundEvents.CREAKING_SPAWN);
-                                 var0.playSound((Player)null, (BlockPos)var3.getBlockPos(), SoundEvents.CREAKING_HEART_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
-                              }
-                           }
+            BlockState var11 = updateCreakingState(var0, var2, var1, var3);
+            if (var11 != var2) {
+               var0.setBlock(var1, var11, 3);
+               if (var11.getValue(CreakingHeartBlock.STATE) == CreakingHeartState.UPROOTED) {
+                  return;
+               }
+            }
 
+            if (var3.creakingInfo == null) {
+               if (var11.getValue(CreakingHeartBlock.STATE) == CreakingHeartState.AWAKE) {
+                  if (var0.getDifficulty() != Difficulty.PEACEFUL) {
+                     if (var4.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
+                        Player var13 = var0.getNearestPlayer((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), 32.0, false);
+                        if (var13 != null) {
+                           Creaking var15 = spawnProtector(var4, var3);
+                           if (var15 != null) {
+                              var3.setCreakingInfo(var15);
+                              var15.makeSound(SoundEvents.CREAKING_SPAWN);
+                              var0.playSound((Entity)null, (BlockPos)var3.getBlockPos(), SoundEvents.CREAKING_HEART_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
+                           }
                         }
+
                      }
                   }
                }
             } else {
-               Optional var11 = var3.getCreakingProtector();
-               if (var11.isPresent()) {
-                  Creaking var13 = (Creaking)var11.get();
-                  if (!CreakingHeartBlock.isNaturalNight(var0) || var3.distanceToCreaking() > 34.0 || var13.playerIsStuckInYou()) {
+               Optional var12 = var3.getCreakingProtector();
+               if (var12.isPresent()) {
+                  Creaking var14 = (Creaking)var12.get();
+                  if (!CreakingHeartBlock.isNaturalNight(var0) && !var14.isPersistenceRequired() || var3.distanceToCreaking() > 34.0 || var14.playerIsStuckInYou()) {
                      var3.removeProtector((DamageSource)null);
-                     return;
-                  }
-
-                  if (!CreakingHeartBlock.hasRequiredLogs(var2, var0, var1) && var3.creakingInfo == null) {
-                     var0.setBlock(var1, (BlockState)var2.setValue(CreakingHeartBlock.ACTIVE, false), 3);
                   }
                }
 
             }
          }
+      }
+   }
+
+   private static BlockState updateCreakingState(Level var0, BlockState var1, BlockPos var2, CreakingHeartBlockEntity var3) {
+      if (!CreakingHeartBlock.hasRequiredLogs(var1, var0, var2) && var3.creakingInfo == null) {
+         return (BlockState)var1.setValue(CreakingHeartBlock.STATE, CreakingHeartState.UPROOTED);
+      } else {
+         boolean var4 = CreakingHeartBlock.isNaturalNight(var0);
+         return (BlockState)var1.setValue(CreakingHeartBlock.STATE, var4 ? CreakingHeartState.AWAKE : CreakingHeartState.DORMANT);
       }
    }
 
@@ -223,13 +232,15 @@ public class CreakingHeartBlockEntity extends BlockEntity {
          if (var3 instanceof ServerLevel var5) {
             if (this.emitter <= 0) {
                this.emitParticles(var5, 20, false);
-               int var6 = this.level.getRandom().nextIntBetweenInclusive(2, 3);
+               if (this.getBlockState().getValue(CreakingHeartBlock.STATE) == CreakingHeartState.AWAKE) {
+                  int var6 = this.level.getRandom().nextIntBetweenInclusive(2, 3);
 
-               for(int var4 = 0; var4 < var6; ++var4) {
-                  this.spreadResin().ifPresent((var1x) -> {
-                     this.level.playSound((Player)null, (BlockPos)var1x, SoundEvents.RESIN_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
-                     this.level.gameEvent(GameEvent.BLOCK_PLACE, var1x, GameEvent.Context.of(this.level.getBlockState(var1x)));
-                  });
+                  for(int var4 = 0; var4 < var6; ++var4) {
+                     this.spreadResin().ifPresent((var1x) -> {
+                        this.level.playSound((Entity)null, (BlockPos)var1x, SoundEvents.RESIN_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                        this.level.gameEvent(GameEvent.BLOCK_PLACE, var1x, GameEvent.Context.of(this.getBlockState()));
+                     });
+                  }
                }
 
                this.emitter = 100;
@@ -297,6 +308,10 @@ public class CreakingHeartBlockEntity extends BlockEntity {
          }
 
       }
+   }
+
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2, boolean var3) {
+      this.removeProtector((DamageSource)null);
    }
 
    public void removeProtector(@Nullable DamageSource var1) {

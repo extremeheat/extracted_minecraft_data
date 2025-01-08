@@ -5,10 +5,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -32,7 +32,7 @@ public class TryLaySpawnOnWaterNearLand {
                            BlockState var11 = var0.defaultBlockState();
                            var2x.setBlock(var10, var11, 3);
                            var2x.gameEvent(GameEvent.BLOCK_PLACE, var10, GameEvent.Context.of(var3x, var11));
-                           var2x.playSound((Player)null, var3x, SoundEvents.FROG_LAY_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
+                           var2x.playSound((Entity)null, var3x, SoundEvents.FROG_LAY_SPAWN, SoundSource.BLOCKS, 1.0F, 1.0F);
                            var3.erase();
                            return true;
                         }

@@ -63,16 +63,6 @@ public class MovingPistonBlock extends BaseEntityBlock {
       return createTickerHelper(var3, BlockEntityType.PISTON, PistonMovingBlockEntity::tick);
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (var6 instanceof PistonMovingBlockEntity) {
-            ((PistonMovingBlockEntity)var6).finalTick();
-         }
-
-      }
-   }
-
    public void destroy(LevelAccessor var1, BlockPos var2, BlockState var3) {
       BlockPos var4 = var2.relative(((Direction)var3.getValue(FACING)).getOpposite());
       BlockState var5 = var1.getBlockState(var4);

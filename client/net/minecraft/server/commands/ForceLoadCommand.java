@@ -38,7 +38,7 @@ public class ForceLoadCommand {
       ChunkPos var2 = var1.toChunkPos();
       ServerLevel var3 = var0.getLevel();
       ResourceKey var4 = var3.dimension();
-      boolean var5 = var3.getForcedChunks().contains(var2.toLong());
+      boolean var5 = var3.getForceLoadedChunks().contains(var2.toLong());
       if (var5) {
          var0.sendSuccess(() -> Component.translatable("commands.forceload.query.success", Component.translationArg(var2), Component.translationArg(var4.location())), false);
          return 1;
@@ -50,7 +50,7 @@ public class ForceLoadCommand {
    private static int listForceLoad(CommandSourceStack var0) {
       ServerLevel var1 = var0.getLevel();
       ResourceKey var2 = var1.dimension();
-      LongSet var3 = var1.getForcedChunks();
+      LongSet var3 = var1.getForceLoadedChunks();
       int var4 = var3.size();
       if (var4 > 0) {
          String var5 = Joiner.on(", ").join(var3.stream().sorted().map(ChunkPos::new).map(ChunkPos::toString).iterator());
@@ -69,7 +69,7 @@ public class ForceLoadCommand {
    private static int removeAll(CommandSourceStack var0) {
       ServerLevel var1 = var0.getLevel();
       ResourceKey var2 = var1.dimension();
-      LongSet var3 = var1.getForcedChunks();
+      LongSet var3 = var1.getForceLoadedChunks();
       var3.forEach((var1x) -> var1.setChunkForced(ChunkPos.getX(var1x), ChunkPos.getZ(var1x), false));
       var0.sendSuccess(() -> Component.translatable("commands.forceload.removed.all", Component.translationArg(var2.location())), true);
       return 0;

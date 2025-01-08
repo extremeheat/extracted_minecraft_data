@@ -22,6 +22,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -59,10 +60,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
    public static final MapCodec<DecoratedPotBlock> CODEC = simpleCodec(DecoratedPotBlock::new);
    public static final ResourceLocation SHERDS_DYNAMIC_DROP_ID = ResourceLocation.withDefaultNamespace("sherds");
-   private static final VoxelShape BOUNDING_BOX = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
-   private static final EnumProperty<Direction> HORIZONTAL_FACING;
+   public static final EnumProperty<Direction> HORIZONTAL_FACING;
    public static final BooleanProperty CRACKED;
-   private static final BooleanProperty WATERLOGGED;
+   public static final BooleanProperty WATERLOGGED;
+   private static final VoxelShape SHAPE;
 
    public MapCodec<DecoratedPotBlock> codec() {
       return CODEC;
@@ -106,7 +107,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
                   var11 = (float)var13.getCount() / (float)var13.getMaxStackSize();
                }
 
-               var3.playSound((Player)null, (BlockPos)var4, SoundEvents.DECORATED_POT_INSERT, SoundSource.BLOCKS, 1.0F, 0.7F + 0.5F * var11);
+               var3.playSound((Entity)null, (BlockPos)var4, SoundEvents.DECORATED_POT_INSERT, SoundSource.BLOCKS, 1.0F, 0.7F + 0.5F * var11);
                if (var3 instanceof ServerLevel) {
                   ServerLevel var12 = (ServerLevel)var3;
                   var12.sendParticles(ParticleTypes.DUST_PLUME, (double)var4.getX() + 0.5, (double)var4.getY() + 1.2, (double)var4.getZ() + 0.5, 7, 0.0, 0.0, 0.0, 0.0);
@@ -127,7 +128,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       BlockEntity var7 = var2.getBlockEntity(var3);
       if (var7 instanceof DecoratedPotBlockEntity var6) {
-         var2.playSound((Player)null, (BlockPos)var3, SoundEvents.DECORATED_POT_INSERT_FAIL, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.DECORATED_POT_INSERT_FAIL, SoundSource.BLOCKS, 1.0F, 1.0F);
          var6.wobble(DecoratedPotBlockEntity.WobbleStyle.NEGATIVE);
          var2.gameEvent(var4, GameEvent.BLOCK_CHANGE, var3);
          return InteractionResult.SUCCESS;
@@ -141,7 +142,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return BOUNDING_BOX;
+      return SHAPE;
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
@@ -153,9 +154,8 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
       return new DecoratedPotBlockEntity(var1, var2);
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      Containers.dropContentsOnDestroy(var1, var4, var2, var3);
-      super.onRemove(var1, var2, var3, var4, var5);
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
    }
 
    protected List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
@@ -177,7 +177,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
       BlockState var6 = var3;
       if (var5.is(ItemTags.BREAKS_DECORATED_POTS) && !EnchantmentHelper.hasTag(var5, EnchantmentTags.PREVENTS_DECORATED_POT_SHATTERING)) {
          var6 = (BlockState)var3.setValue(CRACKED, true);
-         var1.setBlock(var2, var6, 4);
+         var1.setBlock(var2, var6, 260);
       }
 
       return super.playerWillDestroy(var1, var2, var6, var4);
@@ -204,7 +204,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
       BlockPos var5 = var3.getBlockPos();
       if (var1 instanceof ServerLevel var6) {
          if (var4.mayInteract(var6, var5) && var4.mayBreak(var6)) {
-            var1.setBlock(var5, (BlockState)var2.setValue(CRACKED, true), 4);
+            var1.setBlock(var5, (BlockState)var2.setValue(CRACKED, true), 260);
             var1.destroyBlock(var5, true, var4);
          }
       }
@@ -241,5 +241,6 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
       HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
       CRACKED = BlockStateProperties.CRACKED;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
+      SHAPE = Block.column(14.0, 0.0, 16.0);
    }
 }

@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
-import net.minecraft.util.datafix.ComponentDataFixUtils;
+import net.minecraft.util.datafix.LegacyComponentDataFixUtils;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
 public class ItemStackComponentizationFix extends DataFix {
@@ -189,7 +189,7 @@ public class ItemStackComponentizationFix extends DataFix {
 
       Optional var6 = var1.get("LocName").asString().result();
       if (var6.isPresent()) {
-         var0.setComponent("minecraft:item_name", ComponentDataFixUtils.createTranslatableComponent(var1.getOps(), (String)var6.get()));
+         var0.setComponent("minecraft:item_name", LegacyComponentDataFixUtils.createTranslatableComponent(var1.getOps(), (String)var6.get()));
       }
 
       if (var0.is("minecraft:filled_map")) {

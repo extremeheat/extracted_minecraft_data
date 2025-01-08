@@ -62,6 +62,8 @@ public class ModelLayers {
    public static final ModelLayerLocation CHICKEN = register("chicken");
    public static final ModelLayerLocation CHICKEN_BABY = register("chicken_baby");
    public static final ModelLayerLocation COD = register("cod");
+   public static final ModelLayerLocation COLD_PIG = register("cold_pig");
+   public static final ModelLayerLocation COLD_PIG_BABY = register("cold_pig_baby");
    public static final ModelLayerLocation COMMAND_BLOCK_MINECART = register("command_block_minecart");
    public static final ModelLayerLocation CONDUIT_CAGE = register("conduit", "cage");
    public static final ModelLayerLocation CONDUIT_EYE = register("conduit", "eye");

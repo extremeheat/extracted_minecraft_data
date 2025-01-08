@@ -159,7 +159,7 @@ public class Warden extends Monster implements VibrationSystem {
       return false;
    }
 
-   public boolean canDisableShield() {
+   public boolean canDisableBlocking() {
       return true;
    }
 

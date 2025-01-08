@@ -16,7 +16,10 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -32,6 +35,7 @@ import net.minecraft.world.Nameable;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -253,7 +257,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    }
 
    public static void playSound(Level var0, BlockPos var1, SoundEvent var2) {
-      var0.playSound((Player)null, (BlockPos)var1, var2, SoundSource.BLOCKS, 1.0F, 1.0F);
+      var0.playSound((Entity)null, (BlockPos)var1, var2, SoundSource.BLOCKS, 1.0F, 1.0F);
    }
 
    public List<BeaconBeamSection> getBeamSections() {
@@ -289,8 +293,8 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
       super.loadAdditional(var1, var2);
       this.primaryPower = loadEffect(var1, "primary_effect");
       this.secondaryPower = loadEffect(var1, "secondary_effect");
-      if (var1.contains("CustomName", 8)) {
-         this.name = parseCustomNameSafe(var1.getString("CustomName"), var2);
+      if (var1.contains("CustomName")) {
+         this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
       }
 
       this.lockKey = LockCode.fromTag(var1, var2);
@@ -302,7 +306,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
       storeEffect(var1, "secondary_effect", this.secondaryPower);
       var1.putInt("Levels", this.levels);
       if (this.name != null) {
-         var1.putString("CustomName", Component.Serializer.toJson(this.name, var2));
+         var1.put("CustomName", (Tag)ComponentSerialization.CODEC.encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), this.name).getOrThrow());
       }
 
       this.lockKey.addToTag(var1, var2);
@@ -361,7 +365,7 @@ public class BeaconBlockEntity extends BlockEntity implements MenuProvider, Name
    }
 
    static {
-      BEACON_EFFECTS = List.of(List.of(MobEffects.MOVEMENT_SPEED, MobEffects.DIG_SPEED), List.of(MobEffects.DAMAGE_RESISTANCE, MobEffects.JUMP), List.of(MobEffects.DAMAGE_BOOST), List.of(MobEffects.REGENERATION));
+      BEACON_EFFECTS = List.of(List.of(MobEffects.SPEED, MobEffects.HASTE), List.of(MobEffects.RESISTANCE, MobEffects.JUMP_BOOST), List.of(MobEffects.STRENGTH), List.of(MobEffects.REGENERATION));
       VALID_EFFECTS = (Set)BEACON_EFFECTS.stream().flatMap(Collection::stream).collect(Collectors.toSet());
       DEFAULT_NAME = Component.translatable("container.beacon");
    }

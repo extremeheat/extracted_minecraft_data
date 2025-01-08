@@ -87,6 +87,10 @@ public class ModelTemplates {
    public static final ModelTemplate FLOWERBED_2;
    public static final ModelTemplate FLOWERBED_3;
    public static final ModelTemplate FLOWERBED_4;
+   public static final ModelTemplate LEAF_LITTER_1;
+   public static final ModelTemplate LEAF_LITTER_2;
+   public static final ModelTemplate LEAF_LITTER_3;
+   public static final ModelTemplate LEAF_LITTER_4;
    public static final ModelTemplate CORAL_FAN;
    public static final ModelTemplate CORAL_WALL_FAN;
    public static final ModelTemplate GLAZED_TERRACOTTA;
@@ -268,6 +272,10 @@ public class ModelTemplates {
       FLOWERBED_2 = create("flowerbed_2", "_2", TextureSlot.FLOWERBED, TextureSlot.STEM);
       FLOWERBED_3 = create("flowerbed_3", "_3", TextureSlot.FLOWERBED, TextureSlot.STEM);
       FLOWERBED_4 = create("flowerbed_4", "_4", TextureSlot.FLOWERBED, TextureSlot.STEM);
+      LEAF_LITTER_1 = create("template_leaf_litter_1", "_1", TextureSlot.TEXTURE);
+      LEAF_LITTER_2 = create("template_leaf_litter_2", "_2", TextureSlot.TEXTURE);
+      LEAF_LITTER_3 = create("template_leaf_litter_3", "_3", TextureSlot.TEXTURE);
+      LEAF_LITTER_4 = create("template_leaf_litter_4", "_4", TextureSlot.TEXTURE);
       CORAL_FAN = create("coral_fan", TextureSlot.FAN);
       CORAL_WALL_FAN = create("coral_wall_fan", TextureSlot.FAN);
       GLAZED_TERRACOTTA = create("template_glazed_terracotta", TextureSlot.PATTERN);

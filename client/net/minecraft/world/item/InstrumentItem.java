@@ -98,7 +98,7 @@ public class InstrumentItem extends Item {
    private static void play(Level var0, Player var1, Instrument var2) {
       SoundEvent var3 = (SoundEvent)var2.soundEvent().value();
       float var4 = var2.range() / 16.0F;
-      var0.playSound((Player)var1, (Entity)var1, var3, SoundSource.RECORDS, var4, 1.0F);
+      var0.playSound(var1, (Entity)var1, var3, SoundSource.RECORDS, var4, 1.0F);
       var0.gameEvent(GameEvent.INSTRUMENT_PLAY, var1.position(), GameEvent.Context.of((Entity)var1));
    }
 }

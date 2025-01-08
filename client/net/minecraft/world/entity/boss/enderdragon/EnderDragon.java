@@ -236,11 +236,7 @@ public class EnderDragon extends Mob implements Enemy {
                   this.setDeltaMovement(this.getDeltaMovement().multiply(var23, 0.9100000262260437, var23));
                }
             } else {
-               if (this.lerpSteps > 0) {
-                  this.lerpPositionAndRotationStep(this.lerpSteps, this.lerpX, this.lerpY, this.lerpZ, this.lerpYRot, this.lerpXRot);
-                  --this.lerpSteps;
-               }
-
+               this.interpolation.interpolate();
                this.phaseManager.getCurrentPhase().doClientTick();
             }
 
@@ -791,9 +787,10 @@ public class EnderDragon extends Mob implements Enemy {
    }
 
    public void onCrystalDestroyed(ServerLevel var1, EndCrystal var2, BlockPos var3, DamageSource var4) {
+      Entity var7 = var4.getEntity();
       Player var5;
-      if (var4.getEntity() instanceof Player) {
-         var5 = (Player)var4.getEntity();
+      if (var7 instanceof Player var6) {
+         var5 = var6;
       } else {
          var5 = var1.getNearestPlayer(CRYSTAL_DESTROY_TARGETING, (double)var3.getX(), (double)var3.getY(), (double)var3.getZ());
       }

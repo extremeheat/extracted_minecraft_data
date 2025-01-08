@@ -220,7 +220,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    private void finishConversion() {
-      this.convertTo(EntityType.ZOGLIN, ConversionParams.single(this, true, false), (var0) -> var0.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0)));
+      this.convertTo(EntityType.ZOGLIN, ConversionParams.single(this, true, false), (var0) -> var0.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 200, 0)));
    }
 
    public boolean isFood(ItemStack var1) {

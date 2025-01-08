@@ -69,7 +69,7 @@ public class FlatLevelSource extends ChunkGenerator {
 
             for(int var12 = 0; var12 < 16; ++var12) {
                for(int var13 = 0; var13 < 16; ++var13) {
-                  var4.setBlockState(var6.set(var12, var11, var13), var10, false);
+                  var4.setBlockState(var6.set(var12, var11, var13), var10);
                   var7.update(var12, var11, var13, var10);
                   var8.update(var12, var11, var13, var10);
                }

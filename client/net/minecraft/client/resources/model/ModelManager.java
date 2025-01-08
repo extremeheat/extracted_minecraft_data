@@ -101,7 +101,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       CompletableFuture var12 = var9.thenApplyAsync((var1x) -> buildModelGroups(this.blockColors, var1x), var3);
       Map var13 = this.atlases.scheduleLoad(var2, this.maxMipmapLevels, var3);
       CompletableFuture var10000 = CompletableFuture.allOf((CompletableFuture[])Stream.concat(var13.values().stream(), Stream.of(var11, var12, var9, var10, var6, var7)).toArray((var0) -> new CompletableFuture[var0])).thenApplyAsync((var8x) -> {
-         Map var9x = (Map)var13.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (var0) -> (AtlasSet.StitchResult)((CompletableFuture)var0.getValue()).join()));
+         Map var9x = Util.mapValues(var13, CompletableFuture::join);
          ModelDiscovery var10x = (ModelDiscovery)var11.join();
          Object2IntMap var11x = (Object2IntMap)var12.join();
          Set var12x = var10x.getUnreferencedModels();

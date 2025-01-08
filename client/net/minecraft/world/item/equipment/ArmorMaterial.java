@@ -29,10 +29,6 @@ public record ArmorMaterial(int durability, Map<ArmorType, Integer> defense, int
       this.assetId = var8;
    }
 
-   public Item.Properties humanoidProperties(Item.Properties var1, ArmorType var2) {
-      return var1.durability(var2.getDurability(this.durability)).attributes(this.createAttributes(var2)).enchantable(this.enchantmentValue).component(DataComponents.EQUIPPABLE, Equippable.builder(var2.getSlot()).setEquipSound(this.equipSound).setAsset(this.assetId).build()).repairable(this.repairIngredient);
-   }
-
    public Item.Properties animalProperties(Item.Properties var1, HolderSet<EntityType<?>> var2) {
       return var1.durability(ArmorType.BODY.getDurability(this.durability)).attributes(this.createAttributes(ArmorType.BODY)).repairable(this.repairIngredient).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(this.equipSound).setAsset(this.assetId).setAllowedEntities(var2).build());
    }
@@ -45,7 +41,7 @@ public record ArmorMaterial(int durability, Map<ArmorType, Integer> defense, int
       return var1.attributes(this.createAttributes(ArmorType.BODY)).component(DataComponents.EQUIPPABLE, Equippable.builder(EquipmentSlot.BODY).setEquipSound(var2).setAsset(this.assetId).setAllowedEntities(var4).setDamageOnHurt(var3).build());
    }
 
-   private ItemAttributeModifiers createAttributes(ArmorType var1) {
+   public ItemAttributeModifiers createAttributes(ArmorType var1) {
       int var2 = (Integer)this.defense.getOrDefault(var1, 0);
       ItemAttributeModifiers.Builder var3 = ItemAttributeModifiers.builder();
       EquipmentSlotGroup var4 = EquipmentSlotGroup.bySlot(var1.getSlot());

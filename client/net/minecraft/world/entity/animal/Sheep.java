@@ -1,10 +1,8 @@
 package net.minecraft.world.entity.animal;
 
-import com.google.common.collect.Maps;
-import java.util.Arrays;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -23,6 +21,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Shearable;
@@ -137,7 +136,7 @@ public class Sheep extends Animal implements Shearable {
          float var2 = ((float)(this.eatAnimationTick - 4) - var1) / 32.0F;
          return 0.62831855F + 0.21991149F * Mth.sin(var2 * 28.7F);
       } else {
-         return this.eatAnimationTick > 0 ? 0.62831855F : this.getXRot() * 0.017453292F;
+         return this.eatAnimationTick > 0 ? 0.62831855F : this.getXRot(var1) * 0.017453292F;
       }
    }
 
@@ -162,7 +161,7 @@ public class Sheep extends Animal implements Shearable {
    }
 
    public void shear(ServerLevel var1, SoundSource var2, ItemStack var3) {
-      var1.playSound((Player)null, this, SoundEvents.SHEEP_SHEAR, var2, 1.0F, 1.0F);
+      var1.playSound((Entity)null, this, SoundEvents.SHEEP_SHEAR, var2, 1.0F, 1.0F);
       this.dropFromShearingLootTable(var1, BuiltInLootTables.SHEAR_SHEEP, var3, (var1x, var2x) -> {
          for(int var3 = 0; var3 < var2x.getCount(); ++var3) {
             ItemEntity var4 = this.spawnAtLocation(var1x, var2x.copyWithCount(1), 1.0F);
@@ -280,6 +279,6 @@ public class Sheep extends Animal implements Shearable {
 
    static {
       DATA_WOOL_ID = SynchedEntityData.<Byte>defineId(Sheep.class, EntityDataSerializers.BYTE);
-      COLOR_BY_DYE = Maps.newEnumMap((Map)Arrays.stream(DyeColor.values()).collect(Collectors.toMap((var0) -> var0, Sheep::createSheepColor)));
+      COLOR_BY_DYE = Util.<DyeColor, Integer>makeEnumMap(DyeColor.class, Sheep::createSheepColor);
    }
 }

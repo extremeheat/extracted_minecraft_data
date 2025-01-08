@@ -17,12 +17,15 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Brightness;
@@ -86,11 +89,11 @@ public abstract class Display extends Entity {
    private boolean updateInterpolationDuration;
    @Nullable
    private RenderState renderState;
-   @Nullable
-   private PosRotInterpolationTarget posRotInterpolationTarget;
+   private final InterpolationHandler interpolation;
 
    public Display(EntityType<?> var1, Level var2) {
       super(var1, var2);
+      this.interpolation = new InterpolationHandler(this, this.interpolationDuration);
       this.noPhysics = true;
       this.cullingBoundingBox = this.getBoundingBox();
    }
@@ -143,6 +146,7 @@ public abstract class Display extends Entity {
          if (this.updateInterpolationDuration) {
             this.updateInterpolationDuration = false;
             this.interpolationDuration = this.getTransformationInterpolationDuration();
+            this.interpolation.setInterpolationLength(this.interpolationDuration);
          }
 
          if (this.updateRenderState) {
@@ -157,21 +161,13 @@ public abstract class Display extends Entity {
             this.updateRenderSubState(var3, this.lastProgress);
          }
 
-         if (this.posRotInterpolationTarget != null) {
-            if (this.posRotInterpolationTarget.steps == 0) {
-               this.posRotInterpolationTarget.applyTargetPosAndRot(this);
-               this.setOldPosAndRot();
-               this.posRotInterpolationTarget = null;
-            } else {
-               this.posRotInterpolationTarget.applyLerpStep(this);
-               --this.posRotInterpolationTarget.steps;
-               if (this.posRotInterpolationTarget.steps == 0) {
-                  this.posRotInterpolationTarget = null;
-               }
-            }
-         }
+         this.interpolation.interpolate();
       }
 
+   }
+
+   public InterpolationHandler getInterpolation() {
+      return this.interpolation;
    }
 
    protected abstract void updateRenderSubState(boolean var1, float var2);
@@ -282,35 +278,6 @@ public abstract class Display extends Entity {
          Brightness.CODEC.encodeStart(NbtOps.INSTANCE, var2).ifSuccess((var1x) -> var1.put("brightness", var1x));
       }
 
-   }
-
-   public void cancelLerp() {
-      this.posRotInterpolationTarget = null;
-   }
-
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
-      int var10 = this.getPosRotInterpolationDuration();
-      this.posRotInterpolationTarget = new PosRotInterpolationTarget(var10, var1, var3, var5, (double)var7, (double)var8);
-   }
-
-   public double lerpTargetX() {
-      return this.posRotInterpolationTarget != null ? this.posRotInterpolationTarget.targetX : this.getX();
-   }
-
-   public double lerpTargetY() {
-      return this.posRotInterpolationTarget != null ? this.posRotInterpolationTarget.targetY : this.getY();
-   }
-
-   public double lerpTargetZ() {
-      return this.posRotInterpolationTarget != null ? this.posRotInterpolationTarget.targetZ : this.getZ();
-   }
-
-   public float lerpTargetXRot() {
-      return this.posRotInterpolationTarget != null ? (float)this.posRotInterpolationTarget.targetXRot : this.getXRot();
-   }
-
-   public float lerpTargetYRot() {
-      return this.posRotInterpolationTarget != null ? (float)this.posRotInterpolationTarget.targetYRot : this.getYRot();
    }
 
    public AABB getBoundingBoxForCulling() {
@@ -816,37 +783,38 @@ public abstract class Display extends Entity {
          Objects.requireNonNull(var10002);
          Optional var3 = var10000.resultOrPartial(Util.prefix("Display entity", var10002::error)).map(Pair::getFirst);
          if (var3.isPresent()) {
-            byte var13;
+            byte var14;
             switch (((Align)var3.get()).ordinal()) {
-               case 0 -> var13 = var2;
-               case 1 -> var13 = (byte)(var2 | 8);
-               case 2 -> var13 = (byte)(var2 | 16);
+               case 0 -> var14 = var2;
+               case 1 -> var14 = (byte)(var2 | 8);
+               case 2 -> var14 = (byte)(var2 | 16);
                default -> throw new MatchException((String)null, (Throwable)null);
             }
 
-            var2 = var13;
+            var2 = var14;
          }
 
          this.setFlags(var2);
-         if (var1.contains("text", 8)) {
-            String var4 = var1.getString("text");
+         Tag var4 = var1.get("text");
+         if (var4 != null) {
+            RegistryOps var5 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
 
             try {
-               MutableComponent var5 = Component.Serializer.fromJson((String)var4, this.registryAccess());
-               if (var5 != null) {
-                  Level var7 = this.level();
-                  if (var7 instanceof ServerLevel) {
-                     ServerLevel var6 = (ServerLevel)var7;
-                     CommandSourceStack var12 = this.createCommandSourceStackForNameResolution(var6).withPermission(2);
-                     MutableComponent var8 = ComponentUtils.updateForEntity(var12, var5, this, 0);
-                     this.setText(var8);
+               Component var6 = (Component)ComponentSerialization.CODEC.parse(var5, var4).getOrThrow();
+               if (var6 != null) {
+                  Level var8 = this.level();
+                  if (var8 instanceof ServerLevel) {
+                     ServerLevel var7 = (ServerLevel)var8;
+                     CommandSourceStack var13 = this.createCommandSourceStackForNameResolution(var7).withPermission(2);
+                     MutableComponent var9 = ComponentUtils.updateForEntity(var13, var6, this, 0);
+                     this.setText(var9);
                      return;
                   }
                }
 
                this.setText(Component.empty());
-            } catch (Exception var9) {
-               Display.LOGGER.warn("Failed to parse display entity text {}", var4, var9);
+            } catch (Exception var10) {
+               Display.LOGGER.warn("Failed to parse display entity text {}", var4, var10);
             }
          }
 
@@ -858,15 +826,16 @@ public abstract class Display extends Entity {
 
       protected void addAdditionalSaveData(CompoundTag var1) {
          super.addAdditionalSaveData(var1);
-         var1.putString("text", Component.Serializer.toJson(this.getText(), this.registryAccess()));
+         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+         var1.put("text", (Tag)ComponentSerialization.CODEC.encodeStart(var2, this.getText()).getOrThrow());
          var1.putInt("line_width", this.getLineWidth());
          var1.putInt("background", this.getBackgroundColor());
          var1.putByte("text_opacity", this.getTextOpacity());
-         byte var2 = this.getFlags();
-         storeFlag(var2, var1, "shadow", (byte)1);
-         storeFlag(var2, var1, "see_through", (byte)2);
-         storeFlag(var2, var1, "default_background", (byte)4);
-         Display.TextDisplay.Align.CODEC.encodeStart(NbtOps.INSTANCE, getAlign(var2)).ifSuccess((var1x) -> var1.put("alignment", var1x));
+         byte var3 = this.getFlags();
+         storeFlag(var3, var1, "shadow", (byte)1);
+         storeFlag(var3, var1, "see_through", (byte)2);
+         storeFlag(var3, var1, "default_background", (byte)4);
+         Display.TextDisplay.Align.CODEC.encodeStart(NbtOps.INSTANCE, getAlign(var3)).ifSuccess((var1x) -> var1.put("alignment", var1x));
       }
 
       protected void updateRenderSubState(boolean var1, float var2) {
@@ -1058,34 +1027,6 @@ public abstract class Display extends Entity {
 
       public float get(float var1) {
          return Mth.lerp(var1, this.previous, this.current);
-      }
-   }
-
-   static class PosRotInterpolationTarget {
-      int steps;
-      final double targetX;
-      final double targetY;
-      final double targetZ;
-      final double targetYRot;
-      final double targetXRot;
-
-      PosRotInterpolationTarget(int var1, double var2, double var4, double var6, double var8, double var10) {
-         super();
-         this.steps = var1;
-         this.targetX = var2;
-         this.targetY = var4;
-         this.targetZ = var6;
-         this.targetYRot = var8;
-         this.targetXRot = var10;
-      }
-
-      void applyTargetPosAndRot(Entity var1) {
-         var1.setPos(this.targetX, this.targetY, this.targetZ);
-         var1.setRot((float)this.targetYRot, (float)this.targetXRot);
-      }
-
-      void applyLerpStep(Entity var1) {
-         var1.lerpPositionAndRotationStep(this.steps, this.targetX, this.targetY, this.targetZ, this.targetYRot, this.targetXRot);
       }
    }
 }

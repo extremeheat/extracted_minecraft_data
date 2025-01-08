@@ -276,8 +276,8 @@ public class GameTestHelper {
             return var1.isCreative();
          }
 
-         public boolean isLocalPlayer() {
-            return true;
+         public boolean isClientAuthoritative() {
+            return false;
          }
       };
    }
@@ -807,6 +807,12 @@ public class GameTestHelper {
       BlockPos var2 = this.absolutePos(var1);
       ServerLevel var3 = this.getLevel();
       var3.getBlockState(var2).randomTick(var3, var2, var3.random);
+   }
+
+   public void tickBlock(BlockPos var1) {
+      BlockPos var2 = this.absolutePos(var1);
+      ServerLevel var3 = this.getLevel();
+      var3.getBlockState(var2).tick(var3, var2, var3.random);
    }
 
    public void tickPrecipitation(BlockPos var1) {

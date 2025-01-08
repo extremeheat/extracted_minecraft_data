@@ -115,7 +115,7 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       }
    }
 
-   public ItemStack pickupBlock(@Nullable Player var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
+   public ItemStack pickupBlock(@Nullable LivingEntity var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
       var2.setBlock(var3, Blocks.AIR.defaultBlockState(), 11);
       if (!var2.isClientSide()) {
          var2.levelEvent(2001, var3, Block.getId(var4));

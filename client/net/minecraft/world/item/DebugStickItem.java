@@ -8,8 +8,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.DebugStickState;
 import net.minecraft.world.item.context.UseOnContext;
@@ -25,9 +25,9 @@ public class DebugStickItem extends Item {
       super(var1);
    }
 
-   public boolean canAttackBlock(BlockState var1, Level var2, BlockPos var3, Player var4) {
-      if (!var2.isClientSide) {
-         this.handleInteraction(var4, var1, var2, var3, false, var4.getItemInHand(InteractionHand.MAIN_HAND));
+   public boolean canDestroyBlock(ItemStack var1, BlockState var2, Level var3, BlockPos var4, LivingEntity var5) {
+      if (!var3.isClientSide && var5 instanceof Player var6) {
+         this.handleInteraction(var6, var2, var3, var4, false, var1);
       }
 
       return false;

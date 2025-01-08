@@ -3,6 +3,7 @@ package net.minecraft.world.entity.vehicle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.Vec3;
@@ -15,33 +16,8 @@ public abstract class MinecartBehavior {
       this.minecart = var1;
    }
 
-   public void cancelLerp() {
-   }
-
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
-      this.setPos(var1, var3, var5);
-      this.setYRot(var7 % 360.0F);
-      this.setXRot(var8 % 360.0F);
-   }
-
-   public double lerpTargetX() {
-      return this.getX();
-   }
-
-   public double lerpTargetY() {
-      return this.getY();
-   }
-
-   public double lerpTargetZ() {
-      return this.getZ();
-   }
-
-   public float lerpTargetXRot() {
-      return this.getXRot();
-   }
-
-   public float lerpTargetYRot() {
-      return this.getYRot();
+   public InterpolationHandler getInterpolation() {
+      return null;
    }
 
    public void lerpMotion(double var1, double var3, double var5) {

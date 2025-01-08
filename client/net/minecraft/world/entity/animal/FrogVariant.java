@@ -36,8 +36,8 @@ public record FrogVariant(ResourceLocation texture) {
 
    static {
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.FROG_VARIANT);
-      TEMPERATE = createKey("temperate");
-      WARM = createKey("warm");
-      COLD = createKey("cold");
+      TEMPERATE = createKey(TemperatureVariant.TEMPERATE.getId());
+      WARM = createKey(TemperatureVariant.WARM.getId());
+      COLD = createKey(TemperatureVariant.COLD.getId());
    }
 }

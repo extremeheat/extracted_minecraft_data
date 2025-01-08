@@ -65,14 +65,14 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
    private static final float GROWTH_PROBABILITY_PER_RANDOM_TICK = 0.011377778F;
    private static final int MAX_GROWTH_LENGTH = 7;
    private static final int MAX_STALAGMITE_SEARCH_RANGE_WHEN_GROWING = 10;
-   private static final float STALACTITE_DRIP_START_PIXEL = 0.6875F;
-   private static final VoxelShape TIP_MERGE_SHAPE;
-   private static final VoxelShape TIP_SHAPE_UP;
-   private static final VoxelShape TIP_SHAPE_DOWN;
-   private static final VoxelShape FRUSTUM_SHAPE;
-   private static final VoxelShape MIDDLE_SHAPE;
-   private static final VoxelShape BASE_SHAPE;
-   private static final float MAX_HORIZONTAL_OFFSET = 0.125F;
+   private static final VoxelShape SHAPE_TIP_MERGE;
+   private static final VoxelShape SHAPE_TIP_UP;
+   private static final VoxelShape SHAPE_TIP_DOWN;
+   private static final VoxelShape SHAPE_FRUSTUM;
+   private static final VoxelShape SHAPE_MIDDLE;
+   private static final VoxelShape SHAPE_BASE;
+   private static final double STALACTITE_DRIP_START_PIXEL;
+   private static final float MAX_HORIZONTAL_OFFSET;
    private static final VoxelShape REQUIRED_SPACE_TO_DRIP_THROUGH_NON_SOLID_BLOCK;
 
    public MapCodec<PointedDripstoneBlock> codec() {
@@ -235,26 +235,18 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      DripstoneThickness var6 = (DripstoneThickness)var1.getValue(THICKNESS);
-      VoxelShape var5;
-      if (var6 == DripstoneThickness.TIP_MERGE) {
-         var5 = TIP_MERGE_SHAPE;
-      } else if (var6 == DripstoneThickness.TIP) {
-         if (var1.getValue(TIP_DIRECTION) == Direction.DOWN) {
-            var5 = TIP_SHAPE_DOWN;
-         } else {
-            var5 = TIP_SHAPE_UP;
-         }
-      } else if (var6 == DripstoneThickness.FRUSTUM) {
-         var5 = FRUSTUM_SHAPE;
-      } else if (var6 == DripstoneThickness.MIDDLE) {
-         var5 = MIDDLE_SHAPE;
-      } else {
-         var5 = BASE_SHAPE;
+      VoxelShape var10000;
+      switch ((DripstoneThickness)var1.getValue(THICKNESS)) {
+         case TIP_MERGE -> var10000 = SHAPE_TIP_MERGE;
+         case TIP -> var10000 = var1.getValue(TIP_DIRECTION) == Direction.DOWN ? SHAPE_TIP_DOWN : SHAPE_TIP_UP;
+         case FRUSTUM -> var10000 = SHAPE_FRUSTUM;
+         case MIDDLE -> var10000 = SHAPE_MIDDLE;
+         case BASE -> var10000 = SHAPE_BASE;
+         default -> throw new MatchException((String)null, (Throwable)null);
       }
 
-      Vec3 var7 = var1.getOffset(var3);
-      return var5.move(var7.x, 0.0, var7.z);
+      VoxelShape var5 = var10000;
+      return var5.move(var1.getOffset(var3));
    }
 
    protected boolean isCollisionShapeFullBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
@@ -262,7 +254,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
    }
 
    protected float getMaxHorizontalOffset() {
-      return 0.125F;
+      return MAX_HORIZONTAL_OFFSET;
    }
 
    public void onBrokenAfterFall(Level var1, BlockPos var2, FallingBlockEntity var3) {
@@ -379,7 +371,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       Vec3 var4 = var2.getOffset(var1);
       double var5 = 0.0625;
       double var7 = (double)var1.getX() + 0.5 + var4.x;
-      double var9 = (double)((float)(var1.getY() + 1) - 0.6875F) - 0.0625;
+      double var9 = (double)var1.getY() + STALACTITE_DRIP_START_PIXEL - 0.0625;
       double var11 = (double)var1.getZ() + 0.5 + var4.z;
       Fluid var13 = getDripFluid(var0, var3);
       SimpleParticleType var14 = var13.is(FluidTags.LAVA) ? ParticleTypes.DRIPPING_DRIPSTONE_LAVA : ParticleTypes.DRIPPING_DRIPSTONE_WATER;
@@ -575,13 +567,15 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       TIP_DIRECTION = BlockStateProperties.VERTICAL_DIRECTION;
       THICKNESS = BlockStateProperties.DRIPSTONE_THICKNESS;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      TIP_MERGE_SHAPE = Block.box(5.0, 0.0, 5.0, 11.0, 16.0, 11.0);
-      TIP_SHAPE_UP = Block.box(5.0, 0.0, 5.0, 11.0, 11.0, 11.0);
-      TIP_SHAPE_DOWN = Block.box(5.0, 5.0, 5.0, 11.0, 16.0, 11.0);
-      FRUSTUM_SHAPE = Block.box(4.0, 0.0, 4.0, 12.0, 16.0, 12.0);
-      MIDDLE_SHAPE = Block.box(3.0, 0.0, 3.0, 13.0, 16.0, 13.0);
-      BASE_SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 16.0, 14.0);
-      REQUIRED_SPACE_TO_DRIP_THROUGH_NON_SOLID_BLOCK = Block.box(6.0, 0.0, 6.0, 10.0, 16.0, 10.0);
+      SHAPE_TIP_MERGE = Block.column(6.0, 0.0, 16.0);
+      SHAPE_TIP_UP = Block.column(6.0, 0.0, 11.0);
+      SHAPE_TIP_DOWN = Block.column(6.0, 5.0, 16.0);
+      SHAPE_FRUSTUM = Block.column(8.0, 0.0, 16.0);
+      SHAPE_MIDDLE = Block.column(10.0, 0.0, 16.0);
+      SHAPE_BASE = Block.column(12.0, 0.0, 16.0);
+      STALACTITE_DRIP_START_PIXEL = SHAPE_TIP_DOWN.min(Direction.Axis.Y);
+      MAX_HORIZONTAL_OFFSET = (float)SHAPE_BASE.min(Direction.Axis.X);
+      REQUIRED_SPACE_TO_DRIP_THROUGH_NON_SOLID_BLOCK = Block.column(4.0, 0.0, 16.0);
    }
 
    static record FluidInfo(BlockPos pos, Fluid fluid, BlockState sourceState) {

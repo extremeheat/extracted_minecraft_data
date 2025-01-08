@@ -52,7 +52,9 @@ public class EnderEyeItem extends Item {
 
                for(int var8 = 0; var8 < 3; ++var8) {
                   for(int var9 = 0; var9 < 3; ++var9) {
-                     var2.setBlock(var7.offset(var8, 0, var9), Blocks.END_PORTAL.defaultBlockState(), 2);
+                     BlockPos var10 = var7.offset(var8, 0, var9);
+                     var2.destroyBlock(var10, true, (Entity)null);
+                     var2.setBlock(var10, Blocks.END_PORTAL.defaultBlockState(), 2);
                   }
                }
 
@@ -95,7 +97,7 @@ public class EnderEyeItem extends Item {
             }
 
             float var10 = Mth.lerp(var1.random.nextFloat(), 0.33F, 0.5F);
-            var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.ENDER_EYE_LAUNCH, SoundSource.NEUTRAL, 1.0F, var10);
+            var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), SoundEvents.ENDER_EYE_LAUNCH, SoundSource.NEUTRAL, 1.0F, var10);
             var4.consume(1, var2);
             var2.awardStat(Stats.ITEM_USED.get(this));
          }

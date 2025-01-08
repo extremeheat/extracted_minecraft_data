@@ -132,9 +132,6 @@ public class FishingHook extends Projectile {
       return var1 < 4096.0;
    }
 
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
-   }
-
    public void tick() {
       this.syncronizedRandom.setSeed(this.getUUID().getLeastSignificantBits() ^ this.level().getGameTime());
       super.tick();
@@ -450,8 +447,14 @@ public class FishingHook extends Projectile {
    }
 
    public void handleEntityEvent(byte var1) {
-      if (var1 == 31 && this.level().isClientSide && this.hookedIn instanceof Player && ((Player)this.hookedIn).isLocalPlayer()) {
-         this.pullEntity(this.hookedIn);
+      if (var1 == 31 && this.level().isClientSide) {
+         Entity var3 = this.hookedIn;
+         if (var3 instanceof Player) {
+            Player var2 = (Player)var3;
+            if (var2.isLocalPlayer()) {
+               this.pullEntity(this.hookedIn);
+            }
+         }
       }
 
       super.handleEntityEvent(var1);
@@ -494,7 +497,14 @@ public class FishingHook extends Projectile {
    @Nullable
    public Player getPlayerOwner() {
       Entity var1 = this.getOwner();
-      return var1 instanceof Player ? (Player)var1 : null;
+      Player var10000;
+      if (var1 instanceof Player var2) {
+         var10000 = var2;
+      } else {
+         var10000 = null;
+      }
+
+      return var10000;
    }
 
    @Nullable

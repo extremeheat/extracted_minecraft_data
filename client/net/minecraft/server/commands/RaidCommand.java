@@ -18,11 +18,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.entity.raid.Raids;
@@ -86,7 +86,7 @@ public class RaidCommand {
       if (var1 != null && var1.getString().equals("local")) {
          ServerLevel var2 = var0.getLevel();
          Vec3 var3 = var0.getPosition().add(5.0, 0.0, 0.0);
-         var2.playSeededSound((Player)null, var3.x, var3.y, var3.z, SoundEvents.RAID_HORN, SoundSource.NEUTRAL, 2.0F, 1.0F, var2.random.nextLong());
+         var2.playSeededSound((Entity)null, var3.x, var3.y, var3.z, SoundEvents.RAID_HORN, SoundSource.NEUTRAL, 2.0F, 1.0F, var2.random.nextLong());
       }
 
       return 1;

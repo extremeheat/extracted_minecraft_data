@@ -1,7 +1,9 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
+import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -23,27 +25,19 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
    public static final MapCodec<LeverBlock> CODEC = simpleCodec(LeverBlock::new);
    public static final BooleanProperty POWERED;
-   protected static final int DEPTH = 6;
-   protected static final int WIDTH = 6;
-   protected static final int HEIGHT = 8;
-   protected static final VoxelShape NORTH_AABB;
-   protected static final VoxelShape SOUTH_AABB;
-   protected static final VoxelShape WEST_AABB;
-   protected static final VoxelShape EAST_AABB;
-   protected static final VoxelShape UP_AABB_Z;
-   protected static final VoxelShape UP_AABB_X;
-   protected static final VoxelShape DOWN_AABB_Z;
-   protected static final VoxelShape DOWN_AABB_X;
+   private final Function<BlockState, VoxelShape> shapes;
 
    public MapCodec<LeverBlock> codec() {
       return CODEC;
@@ -52,40 +46,16 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
    protected LeverBlock(BlockBehaviour.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(POWERED, false)).setValue(FACE, AttachFace.WALL));
+      this.shapes = this.makeShapes();
+   }
+
+   private Function<BlockState, VoxelShape> makeShapes() {
+      Map var1 = Shapes.rotateAttachFace(Block.boxZ(6.0, 8.0, 10.0, 16.0));
+      return this.getShapeForEachState((var1x) -> (VoxelShape)((Map)var1.get(var1x.getValue(FACE))).get(var1x.getValue(FACING)), new Property[]{POWERED});
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch ((AttachFace)var1.getValue(FACE)) {
-         case FLOOR:
-            switch (((Direction)var1.getValue(FACING)).getAxis()) {
-               case X:
-                  return UP_AABB_X;
-               case Z:
-               default:
-                  return UP_AABB_Z;
-            }
-         case WALL:
-            switch ((Direction)var1.getValue(FACING)) {
-               case EAST:
-                  return EAST_AABB;
-               case WEST:
-                  return WEST_AABB;
-               case SOUTH:
-                  return SOUTH_AABB;
-               case NORTH:
-               default:
-                  return NORTH_AABB;
-            }
-         case CEILING:
-         default:
-            switch (((Direction)var1.getValue(FACING)).getAxis()) {
-               case X:
-                  return DOWN_AABB_X;
-               case Z:
-               default:
-                  return DOWN_AABB_Z;
-            }
-      }
+      return (VoxelShape)this.shapes.apply(var1);
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
@@ -138,14 +108,11 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
 
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var5 && !var1.is(var4.getBlock())) {
-         if ((Boolean)var1.getValue(POWERED)) {
-            this.updateNeighbours(var1, var2, var3);
-         }
-
-         super.onRemove(var1, var2, var3, var4, var5);
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      if (!var4 && (Boolean)var1.getValue(POWERED)) {
+         this.updateNeighbours(var1, var2, var3);
       }
+
    }
 
    protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
@@ -173,13 +140,5 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
 
    static {
       POWERED = BlockStateProperties.POWERED;
-      NORTH_AABB = Block.box(5.0, 4.0, 10.0, 11.0, 12.0, 16.0);
-      SOUTH_AABB = Block.box(5.0, 4.0, 0.0, 11.0, 12.0, 6.0);
-      WEST_AABB = Block.box(10.0, 4.0, 5.0, 16.0, 12.0, 11.0);
-      EAST_AABB = Block.box(0.0, 4.0, 5.0, 6.0, 12.0, 11.0);
-      UP_AABB_Z = Block.box(5.0, 0.0, 4.0, 11.0, 6.0, 12.0);
-      UP_AABB_X = Block.box(4.0, 0.0, 5.0, 12.0, 6.0, 11.0);
-      DOWN_AABB_Z = Block.box(5.0, 10.0, 4.0, 11.0, 16.0, 12.0);
-      DOWN_AABB_X = Block.box(4.0, 10.0, 5.0, 12.0, 16.0, 11.0);
    }
 }

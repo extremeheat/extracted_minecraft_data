@@ -7,7 +7,7 @@ import net.minecraft.util.StringRepresentable;
 
 public enum DamageEffects implements StringRepresentable {
    HURT("hurt", SoundEvents.PLAYER_HURT),
-   THORNS("thorns", SoundEvents.THORNS_HIT),
+   THORNS("thorns", SoundEvents.PLAYER_HURT),
    DROWNING("drowning", SoundEvents.PLAYER_HURT_DROWN),
    BURNING("burning", SoundEvents.PLAYER_HURT_ON_FIRE),
    POKING("poking", SoundEvents.PLAYER_HURT_SWEET_BERRY_BUSH),

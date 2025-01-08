@@ -8,6 +8,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -38,7 +39,7 @@ public class PumpkinBlock extends Block {
       } else {
          Direction var8 = var7.getDirection();
          Direction var9 = var8.getAxis() == Direction.Axis.Y ? var5.getDirection().getOpposite() : var8;
-         var3.playSound((Player)null, (BlockPos)var4, SoundEvents.PUMPKIN_CARVE, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var3.playSound((Entity)null, (BlockPos)var4, SoundEvents.PUMPKIN_CARVE, SoundSource.BLOCKS, 1.0F, 1.0F);
          var3.setBlock(var4, (BlockState)Blocks.CARVED_PUMPKIN.defaultBlockState().setValue(CarvedPumpkinBlock.FACING, var9), 11);
          ItemEntity var10 = new ItemEntity(var3, (double)var4.getX() + 0.5 + (double)var9.getStepX() * 0.65, (double)var4.getY() + 0.1, (double)var4.getZ() + 0.5 + (double)var9.getStepZ() * 0.65, new ItemStack(Items.PUMPKIN_SEEDS, 4));
          var10.setDeltaMovement(0.05 * (double)var9.getStepX() + var3.random.nextDouble() * 0.02, 0.05, 0.05 * (double)var9.getStepZ() + var3.random.nextDouble() * 0.02);

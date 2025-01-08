@@ -35,7 +35,7 @@ public class PostChain {
    }
 
    public static PostChain load(PostChainConfig var0, TextureManager var1, ShaderManager var2, Set<ResourceLocation> var3) throws ShaderManager.CompilationException {
-      Stream var4 = var0.passes().stream().flatMap((var0x) -> var0x.inputs().stream()).flatMap((var0x) -> var0x.referencedTargets().stream());
+      Stream var4 = var0.passes().stream().flatMap(PostChainConfig.Pass::referencedTargets);
       Set var5 = (Set)var4.filter((var1x) -> !var0.internalTargets().containsKey(var1x)).collect(Collectors.toSet());
       Sets.SetView var6 = Sets.difference(var5, var3);
       if (!var6.isEmpty()) {
@@ -218,11 +218,11 @@ public class PostChain {
                }
 
                var25 = var31;
-               var27 = new RenderTargetDescriptor(var14, var25, true);
+               var27 = new RenderTargetDescriptor(var14, var25, true, 0);
                break;
             case 1:
                PostChainConfig.FullScreenTarget var16 = (PostChainConfig.FullScreenTarget)var11;
-               var27 = new RenderTargetDescriptor(var2, var3, true);
+               var27 = new RenderTargetDescriptor(var2, var3, true, 0);
                break;
             default:
                throw new MatchException((String)null, (Throwable)null);

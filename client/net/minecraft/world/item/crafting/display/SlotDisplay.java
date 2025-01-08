@@ -222,7 +222,7 @@ public interface SlotDisplay {
       }
 
       static {
-         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.holderRegistry(Registries.ITEM), ItemSlotDisplay::item, ItemSlotDisplay::new);
+         STREAM_CODEC = StreamCodec.composite(Item.STREAM_CODEC, ItemSlotDisplay::item, ItemSlotDisplay::new);
          TYPE = new Type<ItemSlotDisplay>(MAP_CODEC, STREAM_CODEC);
       }
    }

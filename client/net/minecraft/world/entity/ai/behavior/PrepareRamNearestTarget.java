@@ -15,6 +15,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
@@ -24,7 +25,6 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.Vec3;
@@ -89,7 +89,7 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
 
                if (var3 - (Long)this.reachedRamPositionTimestamp.get() >= (long)this.ramPrepareTime) {
                   var2.getBrain().setMemory(MemoryModuleType.RAM_TARGET, this.getEdgeOfBlock(var6, ((RamCandidate)this.ramCandidate.get()).getTargetPosition()));
-                  var1.playSound((Player)null, var2, (SoundEvent)this.getPrepareRamSound.apply(var2), SoundSource.NEUTRAL, 1.0F, var2.getVoicePitch());
+                  var1.playSound((Entity)null, var2, (SoundEvent)this.getPrepareRamSound.apply(var2), SoundSource.NEUTRAL, 1.0F, var2.getVoicePitch());
                   this.ramCandidate = Optional.empty();
                }
             }

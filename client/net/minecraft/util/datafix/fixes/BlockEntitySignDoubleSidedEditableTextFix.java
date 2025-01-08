@@ -1,31 +1,36 @@
 package net.minecraft.util.datafix.fixes;
 
 import com.google.common.collect.Streams;
-import com.mojang.datafixers.DSL;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import net.minecraft.util.datafix.ComponentDataFixUtils;
+import net.minecraft.util.datafix.LegacyComponentDataFixUtils;
 
-public class BlockEntitySignDoubleSidedEditableTextFix extends NamedEntityFix {
+public class BlockEntitySignDoubleSidedEditableTextFix extends NamedEntityWriteReadFix {
+   public static final List<String> FIELDS_TO_DROP = List.of("Text1", "Text2", "Text3", "Text4", "FilteredText1", "FilteredText2", "FilteredText3", "FilteredText4", "Color", "GlowingText");
    public static final String FILTERED_CORRECT = "_filtered_correct";
    private static final String DEFAULT_COLOR = "black";
 
    public BlockEntitySignDoubleSidedEditableTextFix(Schema var1, String var2, String var3) {
-      super(var1, false, var2, References.BLOCK_ENTITY, var3);
+      super(var1, true, var2, References.BLOCK_ENTITY, var3);
    }
 
-   private static <T> Dynamic<T> fixTag(Dynamic<T> var0) {
-      return var0.set("front_text", fixFrontTextTag(var0)).set("back_text", createDefaultText(var0)).set("is_waxed", var0.createBoolean(false));
+   protected <T> Dynamic<T> fix(Dynamic<T> var1) {
+      var1 = var1.set("front_text", fixFrontTextTag(var1)).set("back_text", createDefaultText(var1)).set("is_waxed", var1.createBoolean(false)).set("_filtered_correct", var1.createBoolean(true));
+
+      for(String var3 : FIELDS_TO_DROP) {
+         var1 = var1.remove(var3);
+      }
+
+      return var1;
    }
 
    private static <T> Dynamic<T> fixFrontTextTag(Dynamic<T> var0) {
-      Dynamic var1 = ComponentDataFixUtils.createEmptyComponent(var0.getOps());
+      Dynamic var1 = LegacyComponentDataFixUtils.createEmptyComponent(var0.getOps());
       List var2 = getLines(var0, "Text").map((var1x) -> (Dynamic)var1x.orElse(var1)).toList();
-      Dynamic var3 = var0.emptyMap().set("messages", var0.createList(var2.stream())).set("color", (Dynamic)var0.get("Color").result().orElse(var0.createString("black"))).set("has_glowing_text", (Dynamic)var0.get("GlowingText").result().orElse(var0.createBoolean(false))).set("_filtered_correct", var0.createBoolean(true));
+      Dynamic var3 = var0.emptyMap().set("messages", var0.createList(var2.stream())).set("color", (Dynamic)var0.get("Color").result().orElse(var0.createString("black"))).set("has_glowing_text", (Dynamic)var0.get("GlowingText").result().orElse(var0.createBoolean(false)));
       List var4 = getLines(var0, "FilteredText").toList();
       if (var4.stream().anyMatch(Optional::isPresent)) {
          var3 = var3.set("filtered_messages", var0.createList(Streams.mapWithIndex(var4.stream(), (var1x, var2x) -> {
@@ -46,11 +51,7 @@ public class BlockEntitySignDoubleSidedEditableTextFix extends NamedEntityFix {
    }
 
    private static <T> Dynamic<T> createEmptyLines(Dynamic<T> var0) {
-      Dynamic var1 = ComponentDataFixUtils.createEmptyComponent(var0.getOps());
+      Dynamic var1 = LegacyComponentDataFixUtils.createEmptyComponent(var0.getOps());
       return var0.createList(Stream.of(var1, var1, var1, var1));
-   }
-
-   protected Typed<?> fix(Typed<?> var1) {
-      return var1.update(DSL.remainderFinder(), BlockEntitySignDoubleSidedEditableTextFix::fixTag);
    }
 }

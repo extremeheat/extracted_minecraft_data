@@ -6,33 +6,20 @@ import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.serialization.Dynamic;
-import java.util.Optional;
-import net.minecraft.util.datafix.ComponentDataFixUtils;
+import net.minecraft.util.datafix.LegacyComponentDataFixUtils;
 
 public class ItemCustomNameToComponentFix extends DataFix {
-   public ItemCustomNameToComponentFix(Schema var1, boolean var2) {
-      super(var1, var2);
-   }
-
-   private Dynamic<?> fixTag(Dynamic<?> var1) {
-      Optional var2 = var1.get("display").result();
-      if (var2.isPresent()) {
-         Dynamic var3 = (Dynamic)var2.get();
-         Optional var4 = var3.get("Name").asString().result();
-         if (var4.isPresent()) {
-            var3 = var3.set("Name", ComponentDataFixUtils.createPlainTextComponent(var3.getOps(), (String)var4.get()));
-         }
-
-         return var1.set("display", var3);
-      } else {
-         return var1;
-      }
+   public ItemCustomNameToComponentFix(Schema var1) {
+      super(var1, false);
    }
 
    public TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.ITEM_STACK);
-      OpticFinder var2 = var1.findField("tag");
-      return this.fixTypeEverywhereTyped("ItemCustomNameToComponentFix", var1, (var2x) -> var2x.updateTyped(var2, (var1) -> var1.update(DSL.remainderFinder(), this::fixTag)));
+      Type var2 = this.getInputSchema().getType(References.TEXT_COMPONENT);
+      OpticFinder var3 = var1.findField("tag");
+      OpticFinder var4 = var3.type().findField("display");
+      OpticFinder var5 = var4.type().findField("Name");
+      OpticFinder var6 = DSL.typeFinder(var2);
+      return this.fixTypeEverywhereTyped("ItemCustomNameToComponentFix", var1, (var4x) -> var4x.updateTyped(var3, (var3x) -> var3x.updateTyped(var4, (var2) -> var2.updateTyped(var5, (var1) -> var1.update(var6, (var0) -> var0.mapSecond(LegacyComponentDataFixUtils::createTextComponentJson))))));
    }
 }

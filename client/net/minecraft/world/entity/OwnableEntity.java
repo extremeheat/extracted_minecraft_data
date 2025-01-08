@@ -1,18 +1,16 @@
 package net.minecraft.world.entity;
 
-import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.world.level.EntityGetter;
+import net.minecraft.world.level.Level;
 
 public interface OwnableEntity {
    @Nullable
-   UUID getOwnerUUID();
+   EntityReference<LivingEntity> getOwnerReference();
 
-   EntityGetter level();
+   Level level();
 
    @Nullable
    default LivingEntity getOwner() {
-      UUID var1 = this.getOwnerUUID();
-      return var1 == null ? null : this.level().getPlayerByUUID(var1);
+      return (LivingEntity)EntityReference.get(this.getOwnerReference(), this.level(), LivingEntity.class);
    }
 }

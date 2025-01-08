@@ -34,27 +34,18 @@ public interface NeutralMob {
 
    default void readPersistentAngerSaveData(Level var1, CompoundTag var2) {
       this.setRemainingPersistentAngerTime(var2.getInt("AngerTime"));
-      if (var1 instanceof ServerLevel) {
+      if (var1 instanceof ServerLevel var3) {
          if (!var2.hasUUID("AngryAt")) {
             this.setPersistentAngerTarget((UUID)null);
          } else {
-            UUID var3 = var2.getUUID("AngryAt");
-            this.setPersistentAngerTarget(var3);
-            Entity var4 = ((ServerLevel)var1).getEntity(var3);
-            if (var4 != null) {
-               if (var4 instanceof Mob) {
-                  Mob var5 = (Mob)var4;
-                  this.setTarget(var5);
-                  this.setLastHurtByMob(var5);
-               }
-
-               if (var4 instanceof Player) {
-                  Player var6 = (Player)var4;
-                  this.setTarget(var6);
-                  this.setLastHurtByPlayer(var6);
-               }
-
+            UUID var4 = var2.getUUID("AngryAt");
+            this.setPersistentAngerTarget(var4);
+            Entity var5 = var3.getEntity(var4);
+            if (var5 instanceof LivingEntity) {
+               LivingEntity var6 = (LivingEntity)var5;
+               this.setTarget(var6);
             }
+
          }
       }
    }
@@ -120,8 +111,6 @@ public interface NeutralMob {
    LivingEntity getLastHurtByMob();
 
    void setLastHurtByMob(@Nullable LivingEntity var1);
-
-   void setLastHurtByPlayer(@Nullable Player var1);
 
    void setTarget(@Nullable LivingEntity var1);
 

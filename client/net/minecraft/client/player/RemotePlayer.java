@@ -38,9 +38,8 @@ public class RemotePlayer extends AbstractClientPlayer {
    }
 
    public void aiStep() {
-      if (this.lerpSteps > 0) {
-         this.lerpPositionAndRotationStep(this.lerpSteps, this.lerpX, this.lerpY, this.lerpZ, this.lerpYRot, this.lerpXRot);
-         --this.lerpSteps;
+      if (this.isInterpolating()) {
+         this.getInterpolation().interpolate();
       }
 
       if (this.lerpHeadSteps > 0) {

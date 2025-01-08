@@ -139,6 +139,10 @@ public class JukeboxBlockEntity extends BlockEntity implements ContainerSingleIt
       return var1.hasAnyMatching(ItemStack::isEmpty);
    }
 
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2, boolean var3) {
+      this.popOutTheItem();
+   }
+
    @VisibleForTesting
    public void setSongItemWithoutPlaying(ItemStack var1) {
       this.item = var1;

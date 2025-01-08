@@ -171,22 +171,19 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
          this.level().addParticle(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), 0.0, 0.0, 0.0);
          if (!this.level().isClientSide) {
             this.ageUp(var3);
+            var6 = true;
          }
-
-         var6 = true;
       }
 
-      if (var4 > 0 && (var6 || !this.isTamed()) && this.getTemper() < this.getMaxTemper()) {
+      if (var4 > 0 && (var6 || !this.isTamed()) && this.getTemper() < this.getMaxTemper() && !this.level().isClientSide) {
+         this.modifyTemper(var4);
          var6 = true;
-         if (!this.level().isClientSide) {
-            this.modifyTemper(var4);
-         }
       }
 
       if (var6 && !this.isSilent()) {
          SoundEvent var7 = this.getEatingSound();
          if (var7 != null) {
-            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), this.getEatingSound(), this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+            this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), this.getEatingSound(), this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
          }
       }
 
@@ -301,7 +298,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Variant
       }
 
       if (!this.isSilent()) {
-         this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.LLAMA_SPIT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+         this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.LLAMA_SPIT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
       }
 
       this.didSpit = true;

@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 
@@ -80,6 +81,11 @@ public record PostChainConfig(Map<ResourceLocation, InternalTarget> internalTarg
 
       public ShaderProgram program() {
          return new ShaderProgram(this.programId, DefaultVertexFormat.POSITION, ShaderDefines.EMPTY);
+      }
+
+      public Stream<ResourceLocation> referencedTargets() {
+         Stream var1 = this.inputs.stream().flatMap((var0) -> var0.referencedTargets().stream());
+         return Stream.concat(var1, Stream.of(this.outputTarget));
       }
 
       static {

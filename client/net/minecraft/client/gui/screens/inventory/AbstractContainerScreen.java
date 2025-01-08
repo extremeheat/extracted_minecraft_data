@@ -320,7 +320,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       if (super.mouseClicked(var1, var3, var5)) {
          return true;
       } else {
-         boolean var6 = this.minecraft.options.keyPickItem.matchesMouse(var5) && this.minecraft.gameMode.hasInfiniteItems();
+         boolean var6 = this.minecraft.options.keyPickItem.matchesMouse(var5) && this.minecraft.player.hasInfiniteMaterials();
          Slot var7 = this.getHoveredSlot(var1, var3);
          long var8 = Util.getMillis();
          this.doubleclick = this.lastClickSlot == var7 && var8 - this.lastClickTime < 250L && this.lastClickButton == var5;

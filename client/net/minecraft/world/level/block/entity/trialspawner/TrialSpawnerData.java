@@ -29,8 +29,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.random.SimpleWeightedRandomList;
-import net.minecraft.util.random.WeightedEntry;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -62,7 +61,7 @@ public class TrialSpawnerData {
    @Nullable
    protected Entity displayEntity;
    @Nullable
-   private SimpleWeightedRandomList<ItemStack> dispensing;
+   private WeightedList<ItemStack> dispensing;
    protected double spin;
    protected double oSpin;
 
@@ -232,8 +231,8 @@ public class TrialSpawnerData {
       if (this.nextSpawnData.isPresent()) {
          return (SpawnData)this.nextSpawnData.get();
       } else {
-         SimpleWeightedRandomList var3 = var1.getConfig().spawnPotentialsDefinition();
-         Optional var4 = var3.isEmpty() ? this.nextSpawnData : var3.getRandom(var2).map(WeightedEntry.Wrapper::data);
+         WeightedList var3 = var1.getConfig().spawnPotentialsDefinition();
+         Optional var4 = var3.isEmpty() ? this.nextSpawnData : var3.getRandom(var2);
          this.nextSpawnData = Optional.of((SpawnData)var4.orElseGet(SpawnData::new));
          var1.markUpdated();
          return (SpawnData)this.nextSpawnData.get();
@@ -274,7 +273,7 @@ public class TrialSpawnerData {
       return this.oSpin;
    }
 
-   SimpleWeightedRandomList<ItemStack> getDispensingItems(ServerLevel var1, TrialSpawnerConfig var2, BlockPos var3) {
+   WeightedList<ItemStack> getDispensingItems(ServerLevel var1, TrialSpawnerConfig var2, BlockPos var3) {
       if (this.dispensing != null) {
          return this.dispensing;
       } else {
@@ -283,9 +282,9 @@ public class TrialSpawnerData {
          long var6 = lowResolutionPosition(var1, var3);
          ObjectArrayList var8 = var4.getRandomItems(var5, var6);
          if (var8.isEmpty()) {
-            return SimpleWeightedRandomList.<ItemStack>empty();
+            return WeightedList.<ItemStack>of();
          } else {
-            SimpleWeightedRandomList.Builder var9 = new SimpleWeightedRandomList.Builder();
+            WeightedList.Builder var9 = WeightedList.builder();
             ObjectListIterator var10 = var8.iterator();
 
             while(var10.hasNext()) {

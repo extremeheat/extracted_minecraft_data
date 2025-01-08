@@ -18,18 +18,19 @@ public class SitWhenOrderedToGoal extends Goal {
    }
 
    public boolean canUse() {
-      if (!this.mob.isTame()) {
+      boolean var1 = this.mob.isOrderedToSit();
+      if (!var1 && !this.mob.isTame()) {
          return false;
-      } else if (this.mob.isInWaterOrBubble()) {
+      } else if (this.mob.isInWater()) {
          return false;
       } else if (!this.mob.onGround()) {
          return false;
       } else {
-         LivingEntity var1 = this.mob.getOwner();
-         if (var1 == null) {
+         LivingEntity var2 = this.mob.getOwner();
+         if (var2 == null) {
             return true;
          } else {
-            return this.mob.distanceToSqr(var1) < 144.0 && var1.getLastHurtByMob() != null ? false : this.mob.isOrderedToSit();
+            return this.mob.distanceToSqr(var2) < 144.0 && var2.getLastHurtByMob() != null ? false : var1;
          }
       }
    }

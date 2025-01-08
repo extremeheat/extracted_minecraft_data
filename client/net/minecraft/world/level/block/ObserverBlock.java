@@ -100,13 +100,11 @@ public class ObserverBlock extends DirectionalBlock {
       }
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         if (!var2.isClientSide && (Boolean)var1.getValue(POWERED) && var2.getBlockTicks().hasScheduledTick(var3, this)) {
-            this.updateNeighborsInFront(var2, var3, (BlockState)var1.setValue(POWERED, false));
-         }
-
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      if ((Boolean)var1.getValue(POWERED) && var2.getBlockTicks().hasScheduledTick(var3, this)) {
+         this.updateNeighborsInFront(var2, var3, (BlockState)var1.setValue(POWERED, false));
       }
+
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {

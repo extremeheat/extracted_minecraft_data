@@ -22,6 +22,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -124,7 +125,7 @@ public class SkullBlockEntity extends BlockEntity {
       }
 
       if (this.customName != null) {
-         var1.putString("custom_name", Component.Serializer.toJson(this.customName, var2));
+         var1.put("custom_name", (Tag)ComponentSerialization.CODEC.encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), this.customName).getOrThrow());
       }
 
    }
@@ -139,8 +140,8 @@ public class SkullBlockEntity extends BlockEntity {
          this.noteBlockSound = ResourceLocation.tryParse(var1.getString("note_block_sound"));
       }
 
-      if (var1.contains("custom_name", 8)) {
-         this.customName = parseCustomNameSafe(var1.getString("custom_name"), var2);
+      if (var1.contains("custom_name")) {
+         this.customName = parseCustomNameSafe(var1.get("custom_name"), var2);
       } else {
          this.customName = null;
       }

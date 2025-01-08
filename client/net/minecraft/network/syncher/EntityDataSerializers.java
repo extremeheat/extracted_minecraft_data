@@ -4,14 +4,12 @@ import io.netty.buffer.ByteBuf;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Rotations;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -22,9 +20,12 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.CrudeIncrementalIntIdentityHashBiMap;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.animal.CatVariant;
 import net.minecraft.world.entity.animal.FrogVariant;
+import net.minecraft.world.entity.animal.PigVariant;
 import net.minecraft.world.entity.animal.WolfVariant;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
@@ -56,7 +57,7 @@ public class EntityDataSerializers {
    public static final EntityDataSerializer<BlockPos> BLOCK_POS;
    public static final EntityDataSerializer<Optional<BlockPos>> OPTIONAL_BLOCK_POS;
    public static final EntityDataSerializer<Direction> DIRECTION;
-   public static final EntityDataSerializer<Optional<UUID>> OPTIONAL_UUID;
+   public static final EntityDataSerializer<Optional<EntityReference<LivingEntity>>> OPTIONAL_LIVING_ENTITY_REFERENCE;
    public static final EntityDataSerializer<Optional<GlobalPos>> OPTIONAL_GLOBAL_POS;
    public static final EntityDataSerializer<CompoundTag> COMPOUND_TAG;
    public static final EntityDataSerializer<VillagerData> VILLAGER_DATA;
@@ -66,6 +67,7 @@ public class EntityDataSerializers {
    public static final EntityDataSerializer<Holder<CatVariant>> CAT_VARIANT;
    public static final EntityDataSerializer<Holder<WolfVariant>> WOLF_VARIANT;
    public static final EntityDataSerializer<Holder<FrogVariant>> FROG_VARIANT;
+   public static final EntityDataSerializer<Holder<PigVariant>> PIG_VARIANT;
    public static final EntityDataSerializer<Holder<PaintingVariant>> PAINTING_VARIANT;
    public static final EntityDataSerializer<Armadillo.ArmadilloState> ARMADILLO_STATE;
    public static final EntityDataSerializer<Sniffer.State> SNIFFER_STATE;
@@ -145,7 +147,7 @@ public class EntityDataSerializers {
       BLOCK_POS = EntityDataSerializer.<BlockPos>forValueType(BlockPos.STREAM_CODEC);
       OPTIONAL_BLOCK_POS = EntityDataSerializer.<Optional<BlockPos>>forValueType(BlockPos.STREAM_CODEC.apply(ByteBufCodecs::optional));
       DIRECTION = EntityDataSerializer.<Direction>forValueType(Direction.STREAM_CODEC);
-      OPTIONAL_UUID = EntityDataSerializer.<Optional<UUID>>forValueType(UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs::optional));
+      OPTIONAL_LIVING_ENTITY_REFERENCE = EntityDataSerializer.<Optional<EntityReference<LivingEntity>>>forValueType(EntityReference.streamCodec().apply(ByteBufCodecs::optional));
       OPTIONAL_GLOBAL_POS = EntityDataSerializer.<Optional<GlobalPos>>forValueType(GlobalPos.STREAM_CODEC.apply(ByteBufCodecs::optional));
       COMPOUND_TAG = new EntityDataSerializer<CompoundTag>() {
          public StreamCodec<? super RegistryFriendlyByteBuf, CompoundTag> codec() {
@@ -187,6 +189,7 @@ public class EntityDataSerializers {
       CAT_VARIANT = EntityDataSerializer.<Holder<CatVariant>>forValueType(CatVariant.STREAM_CODEC);
       WOLF_VARIANT = EntityDataSerializer.<Holder<WolfVariant>>forValueType(WolfVariant.STREAM_CODEC);
       FROG_VARIANT = EntityDataSerializer.<Holder<FrogVariant>>forValueType(FrogVariant.STREAM_CODEC);
+      PIG_VARIANT = EntityDataSerializer.<Holder<PigVariant>>forValueType(PigVariant.STREAM_CODEC);
       PAINTING_VARIANT = EntityDataSerializer.<Holder<PaintingVariant>>forValueType(PaintingVariant.STREAM_CODEC);
       ARMADILLO_STATE = EntityDataSerializer.<Armadillo.ArmadilloState>forValueType(Armadillo.ArmadilloState.STREAM_CODEC);
       SNIFFER_STATE = EntityDataSerializer.<Sniffer.State>forValueType(Sniffer.State.STREAM_CODEC);
@@ -205,7 +208,7 @@ public class EntityDataSerializers {
       registerSerializer(BLOCK_POS);
       registerSerializer(OPTIONAL_BLOCK_POS);
       registerSerializer(DIRECTION);
-      registerSerializer(OPTIONAL_UUID);
+      registerSerializer(OPTIONAL_LIVING_ENTITY_REFERENCE);
       registerSerializer(BLOCK_STATE);
       registerSerializer(OPTIONAL_BLOCK_STATE);
       registerSerializer(COMPOUND_TAG);
@@ -217,6 +220,7 @@ public class EntityDataSerializers {
       registerSerializer(CAT_VARIANT);
       registerSerializer(WOLF_VARIANT);
       registerSerializer(FROG_VARIANT);
+      registerSerializer(PIG_VARIANT);
       registerSerializer(OPTIONAL_GLOBAL_POS);
       registerSerializer(PAINTING_VARIANT);
       registerSerializer(SNIFFER_STATE);

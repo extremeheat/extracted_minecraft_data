@@ -28,6 +28,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ConversionParams;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -178,7 +179,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       this.villagerConversionTime = var2;
       this.getEntityData().set(DATA_CONVERTING_ID, true);
       this.removeEffect(MobEffects.WEAKNESS);
-      this.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, var2, Math.min(this.level().getDifficulty().getId() - 1, 0)));
+      this.addEffect(new MobEffectInstance(MobEffects.STRENGTH, var2, Math.min(this.level().getDifficulty().getId() - 1, 0)));
       this.level().broadcastEntityEvent(this, (byte)16);
    }
 
@@ -220,9 +221,9 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
             }
          }
 
-         var2.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 200, 0));
+         var2.addEffect(new MobEffectInstance(MobEffects.NAUSEA, 200, 0));
          if (!this.isSilent()) {
-            var1.levelEvent((Player)null, 1027, this.blockPosition(), 0);
+            var1.levelEvent((Entity)null, 1027, this.blockPosition(), 0);
          }
 
       });

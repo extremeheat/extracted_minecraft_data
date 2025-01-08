@@ -10,6 +10,9 @@ public record ServerboundSelectBundleItemPacket(int slotId, int selectedItemInde
 
    private ServerboundSelectBundleItemPacket(FriendlyByteBuf var1) {
       this(var1.readVarInt(), var1.readVarInt());
+      if (this.selectedItemIndex < 0 && this.selectedItemIndex != -1) {
+         throw new IllegalArgumentException("Invalid selectedItemIndex: " + this.selectedItemIndex);
+      }
    }
 
    public ServerboundSelectBundleItemPacket(int var1, int var2) {

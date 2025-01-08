@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -14,13 +15,13 @@ import net.minecraft.world.Clearable;
 import net.minecraft.world.Container;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.inventory.LecternMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.WrittenBookItem;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.Level;
@@ -165,7 +166,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    private ItemStack resolveBook(ItemStack var1, @Nullable Player var2) {
       Level var4 = this.level;
       if (var4 instanceof ServerLevel var3) {
-         WrittenBookItem.resolveBookComponents(var1, this.createCommandSourceStack(var2, var3), var2);
+         WrittenBookContent.resolveForItem(var1, this.createCommandSourceStack(var2, var3), var2);
       }
 
       return var1;
@@ -209,6 +210,19 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
 
    public void clearContent() {
       this.setBook(ItemStack.EMPTY);
+   }
+
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2, boolean var3) {
+      if ((Boolean)var2.getValue(LecternBlock.HAS_BOOK) && this.level != null) {
+         Direction var4 = (Direction)var2.getValue(LecternBlock.FACING);
+         ItemStack var5 = this.getBook().copy();
+         float var6 = 0.25F * (float)var4.getStepX();
+         float var7 = 0.25F * (float)var4.getStepZ();
+         ItemEntity var8 = new ItemEntity(this.level, (double)var1.getX() + 0.5 + (double)var6, (double)(var1.getY() + 1), (double)var1.getZ() + 0.5 + (double)var7, var5);
+         var8.setDefaultPickUpDelay();
+         this.level.addFreshEntity(var8);
+      }
+
    }
 
    public AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {

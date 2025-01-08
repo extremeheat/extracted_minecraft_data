@@ -31,8 +31,7 @@ public class SmallDripleafBlock extends DoublePlantBlock implements Bonemealable
    public static final MapCodec<SmallDripleafBlock> CODEC = simpleCodec(SmallDripleafBlock::new);
    private static final BooleanProperty WATERLOGGED;
    public static final EnumProperty<Direction> FACING;
-   protected static final float AABB_OFFSET = 6.0F;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
 
    public MapCodec<SmallDripleafBlock> codec() {
       return CODEC;
@@ -127,6 +126,6 @@ public class SmallDripleafBlock extends DoublePlantBlock implements Bonemealable
    static {
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
       FACING = BlockStateProperties.HORIZONTAL_FACING;
-      SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 13.0, 14.0);
+      SHAPE = Block.column(12.0, 0.0, 13.0);
    }
 }

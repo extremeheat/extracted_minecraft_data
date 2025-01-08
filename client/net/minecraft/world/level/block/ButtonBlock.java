@@ -3,7 +3,9 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -31,34 +33,17 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.redstone.ExperimentalRedstoneUtils;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
    public static final MapCodec<ButtonBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter((var0x) -> var0x.type), Codec.intRange(1, 1024).fieldOf("ticks_to_stay_pressed").forGetter((var0x) -> var0x.ticksToStayPressed), propertiesCodec()).apply(var0, ButtonBlock::new));
    public static final BooleanProperty POWERED;
-   private static final int PRESSED_DEPTH = 1;
-   private static final int UNPRESSED_DEPTH = 2;
-   protected static final int HALF_AABB_HEIGHT = 2;
-   protected static final int HALF_AABB_WIDTH = 3;
-   protected static final VoxelShape CEILING_AABB_X;
-   protected static final VoxelShape CEILING_AABB_Z;
-   protected static final VoxelShape FLOOR_AABB_X;
-   protected static final VoxelShape FLOOR_AABB_Z;
-   protected static final VoxelShape NORTH_AABB;
-   protected static final VoxelShape SOUTH_AABB;
-   protected static final VoxelShape WEST_AABB;
-   protected static final VoxelShape EAST_AABB;
-   protected static final VoxelShape PRESSED_CEILING_AABB_X;
-   protected static final VoxelShape PRESSED_CEILING_AABB_Z;
-   protected static final VoxelShape PRESSED_FLOOR_AABB_X;
-   protected static final VoxelShape PRESSED_FLOOR_AABB_Z;
-   protected static final VoxelShape PRESSED_NORTH_AABB;
-   protected static final VoxelShape PRESSED_SOUTH_AABB;
-   protected static final VoxelShape PRESSED_WEST_AABB;
-   protected static final VoxelShape PRESSED_EAST_AABB;
    private final BlockSetType type;
    private final int ticksToStayPressed;
+   private final Function<BlockState, VoxelShape> shapes;
 
    public MapCodec<ButtonBlock> codec() {
       return CODEC;
@@ -69,48 +54,18 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
       this.type = var1;
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(FACING, Direction.NORTH)).setValue(POWERED, false)).setValue(FACE, AttachFace.WALL));
       this.ticksToStayPressed = var2;
+      this.shapes = this.makeShapes();
+   }
+
+   private Function<BlockState, VoxelShape> makeShapes() {
+      VoxelShape var1 = Block.cube(14.0);
+      VoxelShape var2 = Block.cube(12.0);
+      Map var3 = Shapes.rotateAttachFace(Block.boxZ(6.0, 4.0, 8.0, 16.0));
+      return this.getShapeForEachState((var3x) -> Shapes.join((VoxelShape)((Map)var3.get(var3x.getValue(FACE))).get(var3x.getValue(FACING)), (Boolean)var3x.getValue(POWERED) ? var1 : var2, BooleanOp.ONLY_FIRST));
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      Direction var5 = (Direction)var1.getValue(FACING);
-      boolean var6 = (Boolean)var1.getValue(POWERED);
-      switch ((AttachFace)var1.getValue(FACE)) {
-         case FLOOR:
-            if (var5.getAxis() == Direction.Axis.X) {
-               return var6 ? PRESSED_FLOOR_AABB_X : FLOOR_AABB_X;
-            }
-
-            return var6 ? PRESSED_FLOOR_AABB_Z : FLOOR_AABB_Z;
-         case WALL:
-            VoxelShape var10000;
-            switch (var5) {
-               case EAST:
-                  var10000 = var6 ? PRESSED_EAST_AABB : EAST_AABB;
-                  break;
-               case WEST:
-                  var10000 = var6 ? PRESSED_WEST_AABB : WEST_AABB;
-                  break;
-               case SOUTH:
-                  var10000 = var6 ? PRESSED_SOUTH_AABB : SOUTH_AABB;
-                  break;
-               case NORTH:
-               case UP:
-               case DOWN:
-                  var10000 = var6 ? PRESSED_NORTH_AABB : NORTH_AABB;
-                  break;
-               default:
-                  throw new MatchException((String)null, (Throwable)null);
-            }
-
-            return var10000;
-         case CEILING:
-         default:
-            if (var5.getAxis() == Direction.Axis.X) {
-               return var6 ? PRESSED_CEILING_AABB_X : CEILING_AABB_X;
-            } else {
-               return var6 ? PRESSED_CEILING_AABB_Z : CEILING_AABB_Z;
-            }
-      }
+      return (VoxelShape)this.shapes.apply(var1);
    }
 
    protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
@@ -146,14 +101,11 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
       return var1 ? this.type.buttonClickOn() : this.type.buttonClickOff();
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var5 && !var1.is(var4.getBlock())) {
-         if ((Boolean)var1.getValue(POWERED)) {
-            this.updateNeighbours(var1, var2, var3);
-         }
-
-         super.onRemove(var1, var2, var3, var4, var5);
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      if (!var4 && (Boolean)var1.getValue(POWERED)) {
+         this.updateNeighbours(var1, var2, var3);
       }
+
    }
 
    protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
@@ -210,21 +162,5 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
 
    static {
       POWERED = BlockStateProperties.POWERED;
-      CEILING_AABB_X = Block.box(6.0, 14.0, 5.0, 10.0, 16.0, 11.0);
-      CEILING_AABB_Z = Block.box(5.0, 14.0, 6.0, 11.0, 16.0, 10.0);
-      FLOOR_AABB_X = Block.box(6.0, 0.0, 5.0, 10.0, 2.0, 11.0);
-      FLOOR_AABB_Z = Block.box(5.0, 0.0, 6.0, 11.0, 2.0, 10.0);
-      NORTH_AABB = Block.box(5.0, 6.0, 14.0, 11.0, 10.0, 16.0);
-      SOUTH_AABB = Block.box(5.0, 6.0, 0.0, 11.0, 10.0, 2.0);
-      WEST_AABB = Block.box(14.0, 6.0, 5.0, 16.0, 10.0, 11.0);
-      EAST_AABB = Block.box(0.0, 6.0, 5.0, 2.0, 10.0, 11.0);
-      PRESSED_CEILING_AABB_X = Block.box(6.0, 15.0, 5.0, 10.0, 16.0, 11.0);
-      PRESSED_CEILING_AABB_Z = Block.box(5.0, 15.0, 6.0, 11.0, 16.0, 10.0);
-      PRESSED_FLOOR_AABB_X = Block.box(6.0, 0.0, 5.0, 10.0, 1.0, 11.0);
-      PRESSED_FLOOR_AABB_Z = Block.box(5.0, 0.0, 6.0, 11.0, 1.0, 10.0);
-      PRESSED_NORTH_AABB = Block.box(5.0, 6.0, 15.0, 11.0, 10.0, 16.0);
-      PRESSED_SOUTH_AABB = Block.box(5.0, 6.0, 0.0, 11.0, 10.0, 1.0);
-      PRESSED_WEST_AABB = Block.box(15.0, 6.0, 5.0, 16.0, 10.0, 11.0);
-      PRESSED_EAST_AABB = Block.box(0.0, 6.0, 5.0, 1.0, 10.0, 11.0);
    }
 }

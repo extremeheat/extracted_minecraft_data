@@ -32,7 +32,7 @@ public record TrimPattern(ResourceLocation assetId, Holder<Item> templateItem, C
    }
 
    static {
-      DIRECT_STREAM_CODEC = StreamCodec.composite(ResourceLocation.STREAM_CODEC, TrimPattern::assetId, ByteBufCodecs.holderRegistry(Registries.ITEM), TrimPattern::templateItem, ComponentSerialization.STREAM_CODEC, TrimPattern::description, ByteBufCodecs.BOOL, TrimPattern::decal, TrimPattern::new);
+      DIRECT_STREAM_CODEC = StreamCodec.composite(ResourceLocation.STREAM_CODEC, TrimPattern::assetId, Item.STREAM_CODEC, TrimPattern::templateItem, ComponentSerialization.STREAM_CODEC, TrimPattern::description, ByteBufCodecs.BOOL, TrimPattern::decal, TrimPattern::new);
       CODEC = RegistryFileCodec.<Holder<TrimPattern>>create(Registries.TRIM_PATTERN, DIRECT_CODEC);
       STREAM_CODEC = ByteBufCodecs.holder(Registries.TRIM_PATTERN, DIRECT_STREAM_CODEC);
    }

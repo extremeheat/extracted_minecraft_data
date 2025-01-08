@@ -4,9 +4,12 @@ import javax.annotation.Nullable;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.NumberFormatTypes;
+import net.minecraft.resources.RegistryOps;
 
 public class Score implements ReadOnlyScoreInfo {
    private static final String TAG_SCORE = "Score";
@@ -62,12 +65,13 @@ public class Score implements ReadOnlyScoreInfo {
       CompoundTag var2 = new CompoundTag();
       var2.putInt("Score", this.value);
       var2.putBoolean("Locked", this.locked);
+      RegistryOps var3 = var1.createSerializationContext(NbtOps.INSTANCE);
       if (this.display != null) {
-         var2.putString("display", Component.Serializer.toJson(this.display, var1));
+         var2.put("display", (Tag)ComponentSerialization.CODEC.encodeStart(var3, this.display).getOrThrow());
       }
 
       if (this.numberFormat != null) {
-         NumberFormatTypes.CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this.numberFormat).ifSuccess((var1x) -> var2.put("format", var1x));
+         NumberFormatTypes.CODEC.encodeStart(var3, this.numberFormat).ifSuccess((var1x) -> var2.put("format", var1x));
       }
 
       return var2;
@@ -77,12 +81,13 @@ public class Score implements ReadOnlyScoreInfo {
       Score var2 = new Score();
       var2.value = var0.getInt("Score");
       var2.locked = var0.getBoolean("Locked");
-      if (var0.contains("display", 8)) {
-         var2.display = Component.Serializer.fromJson(var0.getString("display"), var1);
+      RegistryOps var3 = var1.createSerializationContext(NbtOps.INSTANCE);
+      if (var0.contains("display")) {
+         ComponentSerialization.CODEC.parse(var3, var0.get("display")).ifSuccess((var1x) -> var2.display = var1x);
       }
 
       if (var0.contains("format", 10)) {
-         NumberFormatTypes.CODEC.parse(var1.createSerializationContext(NbtOps.INSTANCE), var0.get("format")).ifSuccess((var1x) -> var2.numberFormat = var1x);
+         NumberFormatTypes.CODEC.parse(var3, var0.get("format")).ifSuccess((var1x) -> var2.numberFormat = var1x);
       }
 
       return var2;

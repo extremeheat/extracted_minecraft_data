@@ -106,6 +106,7 @@ public class StructureUtils {
       var4.setBlockAndUpdate(var1, Blocks.STRUCTURE_BLOCK.defaultBlockState());
       StructureBlockEntity var6 = (StructureBlockEntity)var4.getBlockEntity(var1);
       var6.setIgnoreEntities(false);
+      var6.setStrict(false);
       var6.setStructureName(ResourceLocation.parse(var0));
       var6.setMetaData(var0);
       var6.setStructureSize(var2);
@@ -220,6 +221,7 @@ public class StructureUtils {
       var4.setMode(StructureMode.LOAD);
       var4.setRotation(var2);
       var4.setIgnoreEntities(false);
+      var4.setStrict(false);
       var4.setStructureName(ResourceLocation.parse(var0.getStructureName()));
       var4.setMetaData(var0.getTestName());
       if (!var4.loadStructureInfo(var3)) {
@@ -253,8 +255,8 @@ public class StructureUtils {
       }
 
       BlockInput var4 = new BlockInput(var3, Collections.emptySet(), (CompoundTag)null);
-      var4.place(var2, var1, 2);
-      var2.blockUpdated(var1, var3.getBlock());
+      var4.place(var2, var1, 306);
+      var2.updateNeighborsAt(var1, var3.getBlock());
    }
 
    private static boolean doesStructureContain(BlockPos var0, BlockPos var1, ServerLevel var2) {

@@ -31,6 +31,7 @@ import net.minecraft.network.chat.numbers.NumberFormatTypes;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.StatType;
@@ -215,6 +216,7 @@ public class BuiltInRegistries {
    public static final Registry<RecipeDisplay.Type<?>> RECIPE_DISPLAY;
    public static final Registry<SlotDisplay.Type<?>> SLOT_DISPLAY;
    public static final Registry<RecipeBookCategory> RECIPE_BOOK_CATEGORY;
+   public static final Registry<TicketType> TICKET_TYPE;
    public static final Registry<? extends Registry<?>> REGISTRY;
 
    public BuiltInRegistries() {
@@ -375,6 +377,7 @@ public class BuiltInRegistries {
       RECIPE_DISPLAY = registerSimple(Registries.RECIPE_DISPLAY, RecipeDisplays::bootstrap);
       SLOT_DISPLAY = registerSimple(Registries.SLOT_DISPLAY, SlotDisplays::bootstrap);
       RECIPE_BOOK_CATEGORY = registerSimple(Registries.RECIPE_BOOK_CATEGORY, RecipeBookCategories::bootstrap);
+      TICKET_TYPE = registerSimple(Registries.TICKET_TYPE, (var0) -> TicketType.UNKNOWN);
       REGISTRY = WRITABLE_REGISTRY;
    }
 

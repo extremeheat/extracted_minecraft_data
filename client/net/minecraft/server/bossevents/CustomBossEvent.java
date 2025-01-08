@@ -9,11 +9,14 @@ import java.util.function.UnaryOperator;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerPlayer;
@@ -74,7 +77,7 @@ public class CustomBossEvent extends ServerBossEvent {
    }
 
    public final Component getDisplayName() {
-      return ComponentUtils.wrapInSquareBrackets(this.getName()).withStyle((UnaryOperator)((var1) -> var1.withColor(this.getColor().getFormatting()).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(this.getTextId().toString()))).withInsertion(this.getTextId().toString())));
+      return ComponentUtils.wrapInSquareBrackets(this.getName()).withStyle((UnaryOperator)((var1) -> var1.withColor(this.getColor().getFormatting()).withHoverEvent(new HoverEvent.ShowText(Component.literal(this.getTextId().toString()))).withInsertion(this.getTextId().toString())));
    }
 
    public boolean setPlayers(Collection<ServerPlayer> var1) {
@@ -131,7 +134,7 @@ public class CustomBossEvent extends ServerBossEvent {
 
    public CompoundTag save(HolderLookup.Provider var1) {
       CompoundTag var2 = new CompoundTag();
-      var2.putString("Name", Component.Serializer.toJson(this.name, var1));
+      var2.put("Name", (Tag)ComponentSerialization.CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this.name).getOrThrow());
       var2.putBoolean("Visible", this.isVisible());
       var2.putInt("Value", this.value);
       var2.putInt("Max", this.max);
@@ -151,21 +154,23 @@ public class CustomBossEvent extends ServerBossEvent {
    }
 
    public static CustomBossEvent load(CompoundTag var0, ResourceLocation var1, HolderLookup.Provider var2) {
-      CustomBossEvent var3 = new CustomBossEvent(var1, Component.Serializer.fromJson(var0.getString("Name"), var2));
-      var3.setVisible(var0.getBoolean("Visible"));
-      var3.setValue(var0.getInt("Value"));
-      var3.setMax(var0.getInt("Max"));
-      var3.setColor(BossEvent.BossBarColor.byName(var0.getString("Color")));
-      var3.setOverlay(BossEvent.BossBarOverlay.byName(var0.getString("Overlay")));
-      var3.setDarkenScreen(var0.getBoolean("DarkenScreen"));
-      var3.setPlayBossMusic(var0.getBoolean("PlayBossMusic"));
-      var3.setCreateWorldFog(var0.getBoolean("CreateWorldFog"));
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+      Component var4 = (Component)ComponentSerialization.CODEC.parse(var3, var0.get("Name")).getOrThrow();
+      CustomBossEvent var5 = new CustomBossEvent(var1, var4);
+      var5.setVisible(var0.getBoolean("Visible"));
+      var5.setValue(var0.getInt("Value"));
+      var5.setMax(var0.getInt("Max"));
+      var5.setColor(BossEvent.BossBarColor.byName(var0.getString("Color")));
+      var5.setOverlay(BossEvent.BossBarOverlay.byName(var0.getString("Overlay")));
+      var5.setDarkenScreen(var0.getBoolean("DarkenScreen"));
+      var5.setPlayBossMusic(var0.getBoolean("PlayBossMusic"));
+      var5.setCreateWorldFog(var0.getBoolean("CreateWorldFog"));
 
-      for(Tag var6 : var0.getList("Players", 11)) {
-         var3.addOfflinePlayer(NbtUtils.loadUUID(var6));
+      for(Tag var8 : var0.getList("Players", 11)) {
+         var5.addOfflinePlayer(NbtUtils.loadUUID(var8));
       }
 
-      return var3;
+      return var5;
    }
 
    public void onPlayerConnect(ServerPlayer var1) {

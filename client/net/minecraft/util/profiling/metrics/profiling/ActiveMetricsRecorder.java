@@ -49,13 +49,13 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
       super();
       this.metricsSamplerProvider = var1;
       this.wallTimeSource = var2;
-      this.taskProfiler = new ContinuousProfiler(var2, () -> this.currentTick);
+      this.taskProfiler = new ContinuousProfiler(var2, () -> this.currentTick, () -> false);
       this.ioExecutor = var3;
       this.metricsPersister = var4;
       this.onProfilingEnd = var5;
       this.onReportFinished = globalOnReportFinished == null ? var6 : var6.andThen(globalOnReportFinished);
       this.deadlineNano = var2.getAsLong() + TimeUnit.NANOSECONDS.convert(10L, TimeUnit.SECONDS);
-      this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> this.currentTick, false);
+      this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> this.currentTick, () -> true);
       this.taskProfiler.enable();
    }
 
@@ -100,7 +100,7 @@ public class ActiveMetricsRecorder implements MetricsRecorder {
          }
 
          if (!this.killSwitch && this.wallTimeSource.getAsLong() <= this.deadlineNano) {
-            this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> this.currentTick, false);
+            this.singleTickProfiler = new ActiveProfiler(this.wallTimeSource, () -> this.currentTick, () -> true);
          } else {
             this.killSwitch = false;
             ProfileResults var4 = this.taskProfiler.getResults();

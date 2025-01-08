@@ -2,6 +2,7 @@ package net.minecraft.world.level.block;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.MapCodec;
+import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.BlockUtil;
@@ -36,16 +37,15 @@ import net.minecraft.world.level.portal.PortalShape;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.slf4j.Logger;
 
 public class NetherPortalBlock extends Block implements Portal {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final MapCodec<NetherPortalBlock> CODEC = simpleCodec(NetherPortalBlock::new);
    public static final EnumProperty<Direction.Axis> AXIS;
-   private static final Logger LOGGER;
-   protected static final int AABB_OFFSET = 2;
-   protected static final VoxelShape X_AXIS_AABB;
-   protected static final VoxelShape Z_AXIS_AABB;
+   private static final Map<Direction.Axis, VoxelShape> SHAPES;
 
    public MapCodec<NetherPortalBlock> codec() {
       return CODEC;
@@ -57,13 +57,7 @@ public class NetherPortalBlock extends Block implements Portal {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch ((Direction.Axis)var1.getValue(AXIS)) {
-         case Z:
-            return Z_AXIS_AABB;
-         case X:
-         default:
-            return X_AXIS_AABB;
-      }
+      return (VoxelShape)SHAPES.get(var1.getValue(AXIS));
    }
 
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
@@ -220,11 +214,11 @@ public class NetherPortalBlock extends Block implements Portal {
          case COUNTERCLOCKWISE_90:
          case CLOCKWISE_90:
             switch ((Direction.Axis)var1.getValue(AXIS)) {
-               case Z -> {
-                  return (BlockState)var1.setValue(AXIS, Direction.Axis.X);
-               }
                case X -> {
                   return (BlockState)var1.setValue(AXIS, Direction.Axis.Z);
+               }
+               case Z -> {
+                  return (BlockState)var1.setValue(AXIS, Direction.Axis.X);
                }
                default -> {
                   return var1;
@@ -241,8 +235,6 @@ public class NetherPortalBlock extends Block implements Portal {
 
    static {
       AXIS = BlockStateProperties.HORIZONTAL_AXIS;
-      LOGGER = LogUtils.getLogger();
-      X_AXIS_AABB = Block.box(0.0, 0.0, 6.0, 16.0, 16.0, 10.0);
-      Z_AXIS_AABB = Block.box(6.0, 0.0, 0.0, 10.0, 16.0, 16.0);
+      SHAPES = Shapes.rotateHorizontalAxis(Block.column(4.0, 16.0, 0.0, 16.0));
    }
 }

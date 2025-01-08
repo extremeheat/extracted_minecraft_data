@@ -32,6 +32,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -150,7 +151,7 @@ public class VaultBlockEntity extends BlockEntity {
          BlockState var7 = var2;
          if (var0.getGameTime() >= var4.stateUpdatingResumesAt()) {
             var7 = (BlockState)var2.setValue(VaultBlock.STATE, var6.tickAndGetNext(var0, var1, var3, var4, var5));
-            if (!var2.equals(var7)) {
+            if (var2 != var7) {
                setVaultState(var0, var1, var2, var7, var3, var5);
             }
          }
@@ -237,7 +238,7 @@ public class VaultBlockEntity extends BlockEntity {
 
       private static void playInsertFailSound(ServerLevel var0, VaultServerData var1, BlockPos var2, SoundEvent var3) {
          if (var0.getGameTime() >= var1.getLastInsertFailTimestamp() + 15L) {
-            var0.playSound((Player)null, var2, var3, SoundSource.BLOCKS);
+            var0.playSound((Entity)null, var2, var3, SoundSource.BLOCKS);
             var1.setLastInsertFailTimestamp(var0.getGameTime());
          }
 

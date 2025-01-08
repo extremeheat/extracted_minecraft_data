@@ -51,7 +51,7 @@ public final class BelowZeroRetrogen {
       boolean var1 = true;
       BlockPos.betweenClosed(0, 0, 0, 15, 4, 15).forEach((var1x) -> {
          if (var0.getBlockState(var1x).is(Blocks.BEDROCK)) {
-            var0.setBlockState(var1x, Blocks.DEEPSLATE.defaultBlockState(), false);
+            var0.setBlockState(var1x, Blocks.DEEPSLATE.defaultBlockState());
          }
 
       });
@@ -65,7 +65,7 @@ public final class BelowZeroRetrogen {
       for(int var5 = 0; var5 < 16; ++var5) {
          for(int var6 = 0; var6 < 16; ++var6) {
             if (this.hasBedrockHole(var5, var6)) {
-               BlockPos.betweenClosed(var5, var3, var6, var5, var4, var6).forEach((var1x) -> var1.setBlockState(var1x, Blocks.AIR.defaultBlockState(), false));
+               BlockPos.betweenClosed(var5, var3, var6, var5, var4, var6).forEach((var1x) -> var1.setBlockState(var1x, Blocks.AIR.defaultBlockState()));
             }
          }
       }

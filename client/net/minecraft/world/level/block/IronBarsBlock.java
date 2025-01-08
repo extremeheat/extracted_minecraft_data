@@ -29,7 +29,7 @@ public class IronBarsBlock extends CrossCollisionBlock {
    }
 
    protected IronBarsBlock(BlockBehaviour.Properties var1) {
-      super(1.0F, 1.0F, 16.0F, 16.0F, 16.0F, var1);
+      super(2.0F, 16.0F, 2.0F, 16.0F, 16.0F, var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(NORTH, false)).setValue(EAST, false)).setValue(SOUTH, false)).setValue(WEST, false)).setValue(WATERLOGGED, false));
    }
 

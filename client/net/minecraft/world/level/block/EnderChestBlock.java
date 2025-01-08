@@ -43,7 +43,7 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
    public static final MapCodec<EnderChestBlock> CODEC = simpleCodec(EnderChestBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty WATERLOGGED;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
    private static final Component CONTAINER_TITLE;
 
    public MapCodec<EnderChestBlock> codec() {
@@ -154,7 +154,7 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
    static {
       FACING = HorizontalDirectionalBlock.FACING;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 14.0, 15.0);
+      SHAPE = Block.column(14.0, 0.0, 14.0);
       CONTAINER_TITLE = Component.translatable("container.enderchest");
    }
 }

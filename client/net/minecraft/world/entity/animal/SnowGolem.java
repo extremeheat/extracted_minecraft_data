@@ -15,6 +15,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -143,7 +144,7 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
    }
 
    public void shear(ServerLevel var1, SoundSource var2, ItemStack var3) {
-      var1.playSound((Player)null, this, SoundEvents.SNOW_GOLEM_SHEAR, var2, 1.0F, 1.0F);
+      var1.playSound((Entity)null, this, SoundEvents.SNOW_GOLEM_SHEAR, var2, 1.0F, 1.0F);
       this.setPumpkin(false);
       this.dropFromShearingLootTable(var1, BuiltInLootTables.SHEAR_SNOW_GOLEM, var3, (var1x, var2x) -> this.spawnAtLocation(var1x, var2x, this.getEyeHeight()));
    }

@@ -26,7 +26,7 @@ public class HoneyBlock extends HalfTransparentBlock {
    private static final double MIN_FALL_SPEED_TO_BE_CONSIDERED_SLIDING = 0.08;
    private static final double THROTTLE_SLIDE_SPEED_TO = 0.05;
    private static final int SLIDE_ADVANCEMENT_CHECK_INTERVAL = 20;
-   protected static final VoxelShape SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 15.0, 15.0);
+   private static final VoxelShape SHAPE = Block.column(14.0, 0.0, 15.0);
 
    public MapCodec<HoneyBlock> codec() {
       return CODEC;

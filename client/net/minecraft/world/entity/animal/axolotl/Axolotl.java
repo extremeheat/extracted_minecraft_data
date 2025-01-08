@@ -149,7 +149,11 @@ public class Axolotl extends Animal implements VariantHolder<Variant>, Bucketabl
       int var1 = this.getAirSupply();
       super.baseTick();
       if (!this.isNoAi()) {
-         this.handleAirSupply(var1);
+         Level var3 = this.level();
+         if (var3 instanceof ServerLevel) {
+            ServerLevel var2 = (ServerLevel)var3;
+            this.handleAirSupply(var2, var1);
+         }
       }
 
       if (this.level().isClientSide()) {
@@ -162,7 +166,7 @@ public class Axolotl extends Animal implements VariantHolder<Variant>, Bucketabl
       AnimationState var1;
       if (this.isPlayingDead()) {
          var1 = Axolotl.AnimationState.PLAYING_DEAD;
-      } else if (this.isInWaterOrBubble()) {
+      } else if (this.isInWater()) {
          var1 = Axolotl.AnimationState.IN_WATER;
       } else if (this.onGround()) {
          var1 = Axolotl.AnimationState.ON_GROUND;
@@ -177,12 +181,12 @@ public class Axolotl extends Animal implements VariantHolder<Variant>, Bucketabl
       this.movingAnimator.tick(var2);
    }
 
-   protected void handleAirSupply(int var1) {
-      if (this.isAlive() && !this.isInWaterRainOrBubble()) {
-         this.setAirSupply(var1 - 1);
+   protected void handleAirSupply(ServerLevel var1, int var2) {
+      if (this.isAlive() && !this.isInWaterOrRain()) {
+         this.setAirSupply(var2 - 1);
          if (this.getAirSupply() == -20) {
             this.setAirSupply(0);
-            this.hurt(this.damageSources().dryOut(), 2.0F);
+            this.hurtServer(var1, this.damageSources().dryOut(), 2.0F);
          }
       } else {
          this.setAirSupply(this.getMaxAirSupply());
@@ -372,7 +376,7 @@ public class Axolotl extends Animal implements VariantHolder<Variant>, Bucketabl
          var1.addEffect(new MobEffectInstance(MobEffects.REGENERATION, var4, 0), this);
       }
 
-      var1.removeEffect(MobEffects.DIG_SLOWDOWN);
+      var1.removeEffect(MobEffects.MINING_FATIGUE);
    }
 
    public boolean requiresCustomPersistence() {
@@ -419,7 +423,7 @@ public class Axolotl extends Animal implements VariantHolder<Variant>, Bucketabl
    }
 
    public void travel(Vec3 var1) {
-      if (this.isControlledByLocalInstance() && this.isInWater()) {
+      if (this.isInWater()) {
          this.moveRelative(this.getSpeed(), var1);
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.setDeltaMovement(this.getDeltaMovement().scale(0.9));

@@ -26,8 +26,8 @@ public class SkullBlock extends AbstractSkullBlock {
    public static final int MAX = RotationSegment.getMaxSegmentIndex();
    private static final int ROTATIONS;
    public static final IntegerProperty ROTATION;
-   protected static final VoxelShape SHAPE;
-   protected static final VoxelShape PIGLIN_SHAPE;
+   private static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE_PIGLIN;
 
    public MapCodec<? extends SkullBlock> codec() {
       return CODEC;
@@ -39,7 +39,7 @@ public class SkullBlock extends AbstractSkullBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return this.getType() == SkullBlock.Types.PIGLIN ? PIGLIN_SHAPE : SHAPE;
+      return this.getType() == SkullBlock.Types.PIGLIN ? SHAPE_PIGLIN : SHAPE;
    }
 
    protected VoxelShape getOcclusionShape(BlockState var1) {
@@ -66,8 +66,8 @@ public class SkullBlock extends AbstractSkullBlock {
    static {
       ROTATIONS = MAX + 1;
       ROTATION = BlockStateProperties.ROTATION_16;
-      SHAPE = Block.box(4.0, 0.0, 4.0, 12.0, 8.0, 12.0);
-      PIGLIN_SHAPE = Block.box(3.0, 0.0, 3.0, 13.0, 8.0, 13.0);
+      SHAPE = Block.column(8.0, 0.0, 8.0);
+      SHAPE_PIGLIN = Block.column(10.0, 0.0, 8.0);
    }
 
    public interface Type extends StringRepresentable {

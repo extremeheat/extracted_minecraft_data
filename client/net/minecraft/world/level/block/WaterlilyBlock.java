@@ -16,7 +16,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WaterlilyBlock extends BushBlock {
    public static final MapCodec<WaterlilyBlock> CODEC = simpleCodec(WaterlilyBlock::new);
-   protected static final VoxelShape AABB = Block.box(1.0, 0.0, 1.0, 15.0, 1.5, 15.0);
+   private static final VoxelShape SHAPE = Block.column(14.0, 0.0, 1.5);
 
    public MapCodec<WaterlilyBlock> codec() {
       return CODEC;
@@ -35,7 +35,7 @@ public class WaterlilyBlock extends BushBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return AABB;
+      return SHAPE;
    }
 
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {

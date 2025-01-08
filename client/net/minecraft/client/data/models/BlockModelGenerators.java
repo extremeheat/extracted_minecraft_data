@@ -77,11 +77,13 @@ import net.minecraft.world.level.block.state.properties.BellAttachType;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.ComparatorMode;
+import net.minecraft.world.level.block.state.properties.CreakingHeartState;
 import net.minecraft.world.level.block.state.properties.DoorHingeSide;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.block.state.properties.DripstoneThickness;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.PistonType;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.RailShape;
@@ -330,12 +332,17 @@ public class BlockModelGenerators {
    }
 
    private void createCreakingHeart(Block var1) {
-      Function var2 = (var2x) -> var2x.updateTexture((var1x) -> var1x.put(TextureSlot.SIDE, TextureMapping.getBlockTexture(var1, "_active"))).updateTexture((var1x) -> var1x.put(TextureSlot.END, TextureMapping.getBlockTexture(var1, "_top_active"))).createWithSuffix(var1, "_active", this.modelOutput);
-      ResourceLocation var3 = TexturedModel.COLUMN_ALT.create(var1, this.modelOutput);
-      ResourceLocation var4 = TexturedModel.COLUMN_HORIZONTAL_ALT.create(var1, this.modelOutput);
-      ResourceLocation var5 = (ResourceLocation)var2.apply(TexturedModel.COLUMN_ALT);
-      ResourceLocation var6 = (ResourceLocation)var2.apply(TexturedModel.COLUMN_HORIZONTAL_ALT);
-      this.blockStateOutput.accept(MultiVariantGenerator.multiVariant(var1).with(PropertyDispatch.properties(BlockStateProperties.AXIS, CreakingHeartBlock.ACTIVE).select(Direction.Axis.Y, false, Variant.variant().with(VariantProperties.MODEL, var3)).select(Direction.Axis.Z, false, Variant.variant().with(VariantProperties.MODEL, var4).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.X, false, Variant.variant().with(VariantProperties.MODEL, var4).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.Y, true, Variant.variant().with(VariantProperties.MODEL, var5)).select(Direction.Axis.Z, true, Variant.variant().with(VariantProperties.MODEL, var6).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.X, true, Variant.variant().with(VariantProperties.MODEL, var6).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90))));
+      ResourceLocation var2 = TexturedModel.COLUMN_ALT.create(var1, this.modelOutput);
+      ResourceLocation var3 = TexturedModel.COLUMN_HORIZONTAL_ALT.create(var1, this.modelOutput);
+      ResourceLocation var4 = this.createCreakingHeartModel(TexturedModel.COLUMN_ALT, var1, "_awake");
+      ResourceLocation var5 = this.createCreakingHeartModel(TexturedModel.COLUMN_HORIZONTAL_ALT, var1, "_awake");
+      ResourceLocation var6 = this.createCreakingHeartModel(TexturedModel.COLUMN_ALT, var1, "_dormant");
+      ResourceLocation var7 = this.createCreakingHeartModel(TexturedModel.COLUMN_HORIZONTAL_ALT, var1, "_dormant");
+      this.blockStateOutput.accept(MultiVariantGenerator.multiVariant(var1).with(PropertyDispatch.properties(BlockStateProperties.AXIS, CreakingHeartBlock.STATE).select(Direction.Axis.Y, CreakingHeartState.UPROOTED, Variant.variant().with(VariantProperties.MODEL, var2)).select(Direction.Axis.Z, CreakingHeartState.UPROOTED, Variant.variant().with(VariantProperties.MODEL, var3).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.X, CreakingHeartState.UPROOTED, Variant.variant().with(VariantProperties.MODEL, var3).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.Y, CreakingHeartState.DORMANT, Variant.variant().with(VariantProperties.MODEL, var6)).select(Direction.Axis.Z, CreakingHeartState.DORMANT, Variant.variant().with(VariantProperties.MODEL, var7).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.X, CreakingHeartState.DORMANT, Variant.variant().with(VariantProperties.MODEL, var7).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.Y, CreakingHeartState.AWAKE, Variant.variant().with(VariantProperties.MODEL, var4)).select(Direction.Axis.Z, CreakingHeartState.AWAKE, Variant.variant().with(VariantProperties.MODEL, var5).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90)).select(Direction.Axis.X, CreakingHeartState.AWAKE, Variant.variant().with(VariantProperties.MODEL, var5).with(VariantProperties.X_ROT, VariantProperties.Rotation.R90).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90))));
+   }
+
+   private ResourceLocation createCreakingHeartModel(TexturedModel.Provider var1, Block var2, String var3) {
+      return var1.updateTexture((var2x) -> var2x.put(TextureSlot.SIDE, TextureMapping.getBlockTexture(var2, var3)).put(TextureSlot.END, TextureMapping.getBlockTexture(var2, "_top" + var3))).createWithSuffix(var2, var3, this.modelOutput);
    }
 
    private ResourceLocation createSuffixedVariant(Block var1, String var2, ModelTemplate var3, Function<ResourceLocation, TextureMapping> var4) {
@@ -671,13 +678,26 @@ public class BlockModelGenerators {
       this.blockStateOutput.accept(createSimpleBlock(var2, var3));
    }
 
+   private void createLeafLitter(Block var1) {
+      ResourceLocation var2 = TexturedModel.LEAF_LITTER_1.create(var1, this.modelOutput);
+      ResourceLocation var3 = TexturedModel.LEAF_LITTER_2.create(var1, this.modelOutput);
+      ResourceLocation var4 = TexturedModel.LEAF_LITTER_3.create(var1, this.modelOutput);
+      ResourceLocation var5 = TexturedModel.LEAF_LITTER_4.create(var1, this.modelOutput);
+      this.registerSimpleFlatItemModel(var1);
+      this.createSegmentedBlock(var1, BlockStateProperties.SEGMENT_AMOUNT, var2, var3, var4, var5);
+   }
+
    private void createFlowerBed(Block var1) {
-      this.registerSimpleFlatItemModel(var1.asItem());
       ResourceLocation var2 = TexturedModel.FLOWERBED_1.create(var1, this.modelOutput);
       ResourceLocation var3 = TexturedModel.FLOWERBED_2.create(var1, this.modelOutput);
       ResourceLocation var4 = TexturedModel.FLOWERBED_3.create(var1, this.modelOutput);
       ResourceLocation var5 = TexturedModel.FLOWERBED_4.create(var1, this.modelOutput);
-      this.blockStateOutput.accept(MultiPartGenerator.multiPart(var1).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 1, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH), Variant.variant().with(VariantProperties.MODEL, var2)).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 1, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), Variant.variant().with(VariantProperties.MODEL, var2).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 1, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH), Variant.variant().with(VariantProperties.MODEL, var2).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180)).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 1, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Variant.variant().with(VariantProperties.MODEL, var2).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270)).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH), Variant.variant().with(VariantProperties.MODEL, var3)).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), Variant.variant().with(VariantProperties.MODEL, var3).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH), Variant.variant().with(VariantProperties.MODEL, var3).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180)).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Variant.variant().with(VariantProperties.MODEL, var3).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270)).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH), Variant.variant().with(VariantProperties.MODEL, var4)).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), Variant.variant().with(VariantProperties.MODEL, var4).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH), Variant.variant().with(VariantProperties.MODEL, var4).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180)).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Variant.variant().with(VariantProperties.MODEL, var4).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270)).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH), Variant.variant().with(VariantProperties.MODEL, var5)).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), Variant.variant().with(VariantProperties.MODEL, var5).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH), Variant.variant().with(VariantProperties.MODEL, var5).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180)).with(Condition.condition().term(BlockStateProperties.FLOWER_AMOUNT, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Variant.variant().with(VariantProperties.MODEL, var5).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270)));
+      this.registerSimpleFlatItemModel(var1.asItem());
+      this.createSegmentedBlock(var1, BlockStateProperties.FLOWER_AMOUNT, var2, var3, var4, var5);
+   }
+
+   private void createSegmentedBlock(Block var1, IntegerProperty var2, ResourceLocation var3, ResourceLocation var4, ResourceLocation var5, ResourceLocation var6) {
+      this.blockStateOutput.accept(MultiPartGenerator.multiPart(var1).with(Condition.condition().term(var2, 1, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH), Variant.variant().with(VariantProperties.MODEL, var3)).with(Condition.condition().term(var2, 1, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), Variant.variant().with(VariantProperties.MODEL, var3).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)).with(Condition.condition().term(var2, 1, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH), Variant.variant().with(VariantProperties.MODEL, var3).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180)).with(Condition.condition().term(var2, 1, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Variant.variant().with(VariantProperties.MODEL, var3).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270)).with(Condition.condition().term(var2, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH), Variant.variant().with(VariantProperties.MODEL, var4)).with(Condition.condition().term(var2, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), Variant.variant().with(VariantProperties.MODEL, var4).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)).with(Condition.condition().term(var2, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH), Variant.variant().with(VariantProperties.MODEL, var4).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180)).with(Condition.condition().term(var2, 2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Variant.variant().with(VariantProperties.MODEL, var4).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270)).with(Condition.condition().term(var2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH), Variant.variant().with(VariantProperties.MODEL, var5)).with(Condition.condition().term(var2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), Variant.variant().with(VariantProperties.MODEL, var5).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)).with(Condition.condition().term(var2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH), Variant.variant().with(VariantProperties.MODEL, var5).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180)).with(Condition.condition().term(var2, 3, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Variant.variant().with(VariantProperties.MODEL, var5).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270)).with(Condition.condition().term(var2, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH), Variant.variant().with(VariantProperties.MODEL, var6)).with(Condition.condition().term(var2, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.EAST), Variant.variant().with(VariantProperties.MODEL, var6).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R90)).with(Condition.condition().term(var2, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.SOUTH), Variant.variant().with(VariantProperties.MODEL, var6).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R180)).with(Condition.condition().term(var2, 4).term(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST), Variant.variant().with(VariantProperties.MODEL, var6).with(VariantProperties.Y_ROT, VariantProperties.Rotation.R270)));
    }
 
    private void createColoredBlockWithRandomRotations(TexturedModel.Provider var1, Block... var2) {
@@ -1874,6 +1894,8 @@ public class BlockModelGenerators {
       this.createHangingMoss(Blocks.PALE_HANGING_MOSS);
       this.createTrivialCube(Blocks.PALE_MOSS_BLOCK);
       this.createFlowerBed(Blocks.PINK_PETALS);
+      this.createFlowerBed(Blocks.WILDFLOWERS);
+      this.createLeafLitter(Blocks.LEAF_LITTER);
       this.createAirLikeBlock(Blocks.BARRIER, Items.BARRIER);
       this.registerSimpleFlatItemModel(Items.BARRIER);
       this.createLightBlock();

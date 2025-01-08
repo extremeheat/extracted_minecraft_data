@@ -9,6 +9,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -52,7 +53,7 @@ public class HoneycombItem extends Item implements SignApplicator {
 
    public boolean tryApplyToSign(Level var1, SignBlockEntity var2, boolean var3, Player var4) {
       if (var2.setWaxed(true)) {
-         var1.levelEvent((Player)null, 3003, var2.getBlockPos(), 0);
+         var1.levelEvent((Entity)null, 3003, var2.getBlockPos(), 0);
          return true;
       } else {
          return false;

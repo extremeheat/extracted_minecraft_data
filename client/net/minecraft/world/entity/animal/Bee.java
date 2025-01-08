@@ -335,7 +335,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    }
 
    public static boolean isNightOrRaining(Level var0) {
-      return var0.dimensionType().hasSkyLight() && (var0.isNight() || var0.isRaining());
+      return var0.dimensionType().hasSkyLight() && (var0.isDarkOutside() || var0.isRaining());
    }
 
    public void setStayOutOfHiveCountdown(int var1) {
@@ -358,7 +358,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    protected void customServerAiStep(ServerLevel var1) {
       boolean var2 = this.hasStung();
-      if (this.isInWaterOrBubble()) {
+      if (this.isInWater()) {
          ++this.underWaterTicks;
       } else {
          this.underWaterTicks = 0;

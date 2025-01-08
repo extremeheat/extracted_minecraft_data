@@ -187,7 +187,7 @@ public class Goat extends Animal {
    }
 
    protected void playEatingSound() {
-      this.level().playSound((Player)null, (Entity)this, this.isScreamingGoat() ? SoundEvents.GOAT_SCREAMING_EAT : SoundEvents.GOAT_EAT, SoundSource.NEUTRAL, 1.0F, Mth.randomBetween(this.level().random, 0.8F, 1.2F));
+      this.level().playSound((Entity)null, (Entity)this, this.isScreamingGoat() ? SoundEvents.GOAT_SCREAMING_EAT : SoundEvents.GOAT_EAT, SoundSource.NEUTRAL, 1.0F, Mth.randomBetween(this.level().random, 0.8F, 1.2F));
    }
 
    public boolean isFood(ItemStack var1) {

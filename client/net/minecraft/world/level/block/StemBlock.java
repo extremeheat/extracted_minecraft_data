@@ -31,8 +31,7 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
    public static final MapCodec<StemBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.BLOCK).fieldOf("fruit").forGetter((var0x) -> var0x.fruit), ResourceKey.codec(Registries.BLOCK).fieldOf("attached_stem").forGetter((var0x) -> var0x.attachedStem), ResourceKey.codec(Registries.ITEM).fieldOf("seed").forGetter((var0x) -> var0x.seed), propertiesCodec()).apply(var0, StemBlock::new));
    public static final int MAX_AGE = 7;
    public static final IntegerProperty AGE;
-   protected static final float AABB_OFFSET = 1.0F;
-   protected static final VoxelShape[] SHAPE_BY_AGE;
+   private static final VoxelShape[] SHAPES;
    private final ResourceKey<Block> fruit;
    private final ResourceKey<Block> attachedStem;
    private final ResourceKey<Item> seed;
@@ -50,7 +49,7 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPE_BY_AGE[(Integer)var1.getValue(AGE)];
+      return SHAPES[(Integer)var1.getValue(AGE)];
    }
 
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
@@ -112,6 +111,6 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
 
    static {
       AGE = BlockStateProperties.AGE_7;
-      SHAPE_BY_AGE = new VoxelShape[]{Block.box(7.0, 0.0, 7.0, 9.0, 2.0, 9.0), Block.box(7.0, 0.0, 7.0, 9.0, 4.0, 9.0), Block.box(7.0, 0.0, 7.0, 9.0, 6.0, 9.0), Block.box(7.0, 0.0, 7.0, 9.0, 8.0, 9.0), Block.box(7.0, 0.0, 7.0, 9.0, 10.0, 9.0), Block.box(7.0, 0.0, 7.0, 9.0, 12.0, 9.0), Block.box(7.0, 0.0, 7.0, 9.0, 14.0, 9.0), Block.box(7.0, 0.0, 7.0, 9.0, 16.0, 9.0)};
+      SHAPES = Block.boxes(7, (var0) -> Block.column(2.0, 0.0, (double)(2 + var0 * 2)));
    }
 }

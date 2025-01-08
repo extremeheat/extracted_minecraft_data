@@ -13,8 +13,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class BaseTorchBlock extends Block {
-   protected static final int AABB_STANDING_OFFSET = 2;
-   protected static final VoxelShape AABB = Block.box(6.0, 0.0, 6.0, 10.0, 10.0, 10.0);
+   private static final VoxelShape SHAPE = Block.column(4.0, 0.0, 10.0);
 
    protected BaseTorchBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -23,7 +22,7 @@ public abstract class BaseTorchBlock extends Block {
    protected abstract MapCodec<? extends BaseTorchBlock> codec();
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return AABB;
+      return SHAPE;
    }
 
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {

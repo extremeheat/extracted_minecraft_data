@@ -7,7 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
@@ -29,16 +29,16 @@ public enum VaultState implements StringRepresentable {
    },
    UNLOCKING("unlocking", VaultState.LightLevel.LIT) {
       protected void onEnter(ServerLevel var1, BlockPos var2, VaultConfig var3, VaultSharedData var4, boolean var5) {
-         var1.playSound((Player)null, var2, SoundEvents.VAULT_INSERT_ITEM, SoundSource.BLOCKS);
+         var1.playSound((Entity)null, var2, SoundEvents.VAULT_INSERT_ITEM, SoundSource.BLOCKS);
       }
    },
    EJECTING("ejecting", VaultState.LightLevel.LIT) {
       protected void onEnter(ServerLevel var1, BlockPos var2, VaultConfig var3, VaultSharedData var4, boolean var5) {
-         var1.playSound((Player)null, var2, SoundEvents.VAULT_OPEN_SHUTTER, SoundSource.BLOCKS);
+         var1.playSound((Entity)null, var2, SoundEvents.VAULT_OPEN_SHUTTER, SoundSource.BLOCKS);
       }
 
       protected void onExit(ServerLevel var1, BlockPos var2, VaultConfig var3, VaultSharedData var4) {
-         var1.playSound((Player)null, var2, SoundEvents.VAULT_CLOSE_SHUTTER, SoundSource.BLOCKS);
+         var1.playSound((Entity)null, var2, SoundEvents.VAULT_CLOSE_SHUTTER, SoundSource.BLOCKS);
       }
    };
 
@@ -116,7 +116,7 @@ public enum VaultState implements StringRepresentable {
    private void ejectResultItem(ServerLevel var1, BlockPos var2, ItemStack var3, float var4) {
       DefaultDispenseItemBehavior.spawnItem(var1, var3, 2, Direction.UP, Vec3.atBottomCenterOf(var2).relative(Direction.UP, 1.2));
       var1.levelEvent(3017, var2, 0);
-      var1.playSound((Player)null, var2, SoundEvents.VAULT_EJECT_ITEM, SoundSource.BLOCKS, 1.0F, 0.8F + 0.4F * var4);
+      var1.playSound((Entity)null, var2, SoundEvents.VAULT_EJECT_ITEM, SoundSource.BLOCKS, 1.0F, 0.8F + 0.4F * var4);
    }
 
    // $FF: synthetic method

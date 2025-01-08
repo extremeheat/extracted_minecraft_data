@@ -107,7 +107,7 @@ public class MoveControl implements Control {
          }
       } else if (this.operation == MoveControl.Operation.JUMPING) {
          this.mob.setSpeed((float)(this.speedModifier * this.mob.getAttributeValue(Attributes.MOVEMENT_SPEED)));
-         if (this.mob.onGround()) {
+         if (this.mob.onGround() || this.mob.isInLiquid() && this.mob.isAffectedByFluids()) {
             this.operation = MoveControl.Operation.WAIT;
          }
       } else {

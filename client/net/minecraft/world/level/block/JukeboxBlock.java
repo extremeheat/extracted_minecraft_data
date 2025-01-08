@@ -5,6 +5,8 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -70,16 +72,8 @@ public class JukeboxBlock extends BaseEntityBlock {
       }
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof JukeboxBlockEntity) {
-            JukeboxBlockEntity var6 = (JukeboxBlockEntity)var7;
-            var6.popOutTheItem();
-         }
-
-         super.onRemove(var1, var2, var3, var4, var5);
-      }
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
    }
 
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {

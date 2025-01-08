@@ -22,6 +22,8 @@ import net.minecraft.world.entity.animal.Fox;
 import net.minecraft.world.entity.animal.FrogVariant;
 import net.minecraft.world.entity.animal.MushroomCow;
 import net.minecraft.world.entity.animal.Parrot;
+import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.animal.PigVariant;
 import net.minecraft.world.entity.animal.Rabbit;
 import net.minecraft.world.entity.animal.Salmon;
 import net.minecraft.world.entity.animal.TropicalFish;
@@ -59,6 +61,7 @@ public class EntitySubPredicates {
    public static final EntityHolderVariantPredicateType<CatVariant> CAT;
    public static final EntityHolderVariantPredicateType<FrogVariant> FROG;
    public static final EntityHolderVariantPredicateType<WolfVariant> WOLF;
+   public static final EntityHolderVariantPredicateType<PigVariant> PIG;
 
    public EntitySubPredicates() {
       super();
@@ -234,6 +237,16 @@ public class EntitySubPredicates {
       WOLF = register("wolf", EntitySubPredicates.EntityHolderVariantPredicateType.create(Registries.WOLF_VARIANT, (var0) -> {
          Optional var10000;
          if (var0 instanceof Wolf var1) {
+            var10000 = Optional.of(var1.getVariant());
+         } else {
+            var10000 = Optional.empty();
+         }
+
+         return var10000;
+      }));
+      PIG = register("pig", EntitySubPredicates.EntityHolderVariantPredicateType.create(Registries.PIG_VARIANT, (var0) -> {
+         Optional var10000;
+         if (var0 instanceof Pig var1) {
             var10000 = Optional.of(var1.getVariant());
          } else {
             var10000 = Optional.empty();

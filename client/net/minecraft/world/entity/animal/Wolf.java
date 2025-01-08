@@ -252,7 +252,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
             this.interestedAngle += (0.0F - this.interestedAngle) * 0.4F;
          }
 
-         if (this.isInWaterRainOrBubble()) {
+         if (this.isInWaterOrRain()) {
             this.isWet = true;
             if (this.isShaking && !this.level().isClientSide) {
                this.level().broadcastEntityEvent(this, (byte)56);
@@ -524,7 +524,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
          }
 
          if (this.isTame()) {
-            var3.setOwnerUUID(this.getOwnerUUID());
+            var3.setOwnerReference(this.getOwnerReference());
             var3.setTame(true, true);
             DyeColor var5 = this.getCollarColor();
             DyeColor var6 = var4.getCollarColor();

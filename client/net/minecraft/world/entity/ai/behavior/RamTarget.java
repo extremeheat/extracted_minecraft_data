@@ -15,6 +15,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -23,7 +24,6 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.goat.Goat;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.Vec3;
 
@@ -75,19 +75,19 @@ public class RamTarget extends Behavior<Goat> {
             EnchantmentHelper.doPostAttackEffects(var1, var7, var8);
          }
 
-         int var9 = var2.hasEffect(MobEffects.MOVEMENT_SPEED) ? var2.getEffect(MobEffects.MOVEMENT_SPEED).getAmplifier() + 1 : 0;
-         int var10 = var2.hasEffect(MobEffects.MOVEMENT_SLOWDOWN) ? var2.getEffect(MobEffects.MOVEMENT_SLOWDOWN).getAmplifier() + 1 : 0;
+         int var9 = var2.hasEffect(MobEffects.SPEED) ? var2.getEffect(MobEffects.SPEED).getAmplifier() + 1 : 0;
+         int var10 = var2.hasEffect(MobEffects.SLOWNESS) ? var2.getEffect(MobEffects.SLOWNESS).getAmplifier() + 1 : 0;
          float var11 = 0.25F * (float)(var9 - var10);
          float var12 = Mth.clamp(var2.getSpeed() * 1.65F, 0.2F, 3.0F) + var11;
          float var13 = var7.isDamageSourceBlocked(var1.damageSources().mobAttack(var2)) ? 0.5F : 1.0F;
          var7.knockback((double)(var13 * var12) * this.getKnockbackForce.applyAsDouble(var2), this.ramDirection.x(), this.ramDirection.z());
          this.finishRam(var1, var2);
-         var1.playSound((Player)null, var2, (SoundEvent)this.getImpactSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
+         var1.playSound((Entity)null, var2, (SoundEvent)this.getImpactSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
       } else if (this.hasRammedHornBreakingBlock(var1, var2)) {
-         var1.playSound((Player)null, var2, (SoundEvent)this.getImpactSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
+         var1.playSound((Entity)null, var2, (SoundEvent)this.getImpactSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
          boolean var14 = var2.dropHorn();
          if (var14) {
-            var1.playSound((Player)null, var2, (SoundEvent)this.getHornBreakSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
+            var1.playSound((Entity)null, var2, (SoundEvent)this.getHornBreakSound.apply(var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
          }
 
          this.finishRam(var1, var2);

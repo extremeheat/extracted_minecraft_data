@@ -48,6 +48,7 @@ public class StructureBlockEntity extends BlockEntity {
    private Rotation rotation;
    private StructureMode mode;
    private boolean ignoreEntities;
+   private boolean strict;
    private boolean powered;
    private boolean showAir;
    private boolean showBoundingBox;
@@ -60,6 +61,7 @@ public class StructureBlockEntity extends BlockEntity {
       this.mirror = Mirror.NONE;
       this.rotation = Rotation.NONE;
       this.ignoreEntities = true;
+      this.strict = false;
       this.showBoundingBox = true;
       this.integrity = 1.0F;
       this.mode = (StructureMode)var2.getValue(StructureBlock.MODE);
@@ -80,6 +82,7 @@ public class StructureBlockEntity extends BlockEntity {
       var1.putString("mirror", this.mirror.toString());
       var1.putString("mode", this.mode.toString());
       var1.putBoolean("ignoreEntities", this.ignoreEntities);
+      var1.putBoolean("strict", this.strict);
       var1.putBoolean("powered", this.powered);
       var1.putBoolean("showair", this.showAir);
       var1.putBoolean("showboundingbox", this.showBoundingBox);
@@ -120,6 +123,7 @@ public class StructureBlockEntity extends BlockEntity {
       }
 
       this.ignoreEntities = var1.getBoolean("ignoreEntities");
+      this.strict = var1.getBoolean("strict");
       this.powered = var1.getBoolean("powered");
       this.showAir = var1.getBoolean("showair");
       this.showBoundingBox = var1.getBoolean("showboundingbox");
@@ -241,8 +245,16 @@ public class StructureBlockEntity extends BlockEntity {
       return this.ignoreEntities;
    }
 
+   public boolean isStrict() {
+      return this.strict;
+   }
+
    public void setIgnoreEntities(boolean var1) {
       this.ignoreEntities = var1;
+   }
+
+   public void setStrict(boolean var1) {
+      this.strict = var1;
    }
 
    public float getIntegrity() {
@@ -398,13 +410,13 @@ public class StructureBlockEntity extends BlockEntity {
 
    private void placeStructure(ServerLevel var1, StructureTemplate var2) {
       this.loadStructureInfo(var2);
-      StructurePlaceSettings var3 = (new StructurePlaceSettings()).setMirror(this.mirror).setRotation(this.rotation).setIgnoreEntities(this.ignoreEntities);
+      StructurePlaceSettings var3 = (new StructurePlaceSettings()).setMirror(this.mirror).setRotation(this.rotation).setIgnoreEntities(this.ignoreEntities).setKnownShape(this.strict);
       if (this.integrity < 1.0F) {
          var3.clearProcessors().addProcessor(new BlockRotProcessor(Mth.clamp(this.integrity, 0.0F, 1.0F))).setRandom(createRandom(this.seed));
       }
 
       BlockPos var4 = this.getBlockPos().offset(this.structurePos);
-      var2.placeInWorld(var1, var4, var4, var3, createRandom(this.seed), 2);
+      var2.placeInWorld(var1, var4, var4, var3, createRandom(this.seed), 2 | (this.strict ? 304 : 0));
    }
 
    public void unloadStructure() {

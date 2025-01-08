@@ -6,11 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 
-public class MapFrame {
-   private final BlockPos pos;
-   private final int rotation;
-   private final int entityId;
-
+public record MapFrame(BlockPos pos, int rotation, int entityId) {
    public MapFrame(BlockPos var1, int var2, int var3) {
       super();
       this.pos = var1;
@@ -36,18 +32,6 @@ public class MapFrame {
       var1.putInt("rotation", this.rotation);
       var1.putInt("entity_id", this.entityId);
       return var1;
-   }
-
-   public BlockPos getPos() {
-      return this.pos;
-   }
-
-   public int getRotation() {
-      return this.rotation;
-   }
-
-   public int getEntityId() {
-      return this.entityId;
    }
 
    public String getId() {

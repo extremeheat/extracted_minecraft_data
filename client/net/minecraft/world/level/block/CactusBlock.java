@@ -26,9 +26,8 @@ public class CactusBlock extends Block {
    public static final MapCodec<CactusBlock> CODEC = simpleCodec(CactusBlock::new);
    public static final IntegerProperty AGE;
    public static final int MAX_AGE = 15;
-   protected static final int AABB_OFFSET = 1;
-   protected static final VoxelShape COLLISION_SHAPE;
-   protected static final VoxelShape OUTLINE_SHAPE;
+   private static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE_COLLISION;
 
    public MapCodec<CactusBlock> codec() {
       return CODEC;
@@ -58,10 +57,10 @@ public class CactusBlock extends Block {
             if (var7 == 15) {
                var2.setBlockAndUpdate(var5, this.defaultBlockState());
                BlockState var8 = (BlockState)var1.setValue(AGE, 0);
-               var2.setBlock(var3, var8, 4);
+               var2.setBlock(var3, var8, 260);
                var2.neighborChanged(var8, var5, this, (Orientation)null, false);
             } else {
-               var2.setBlock(var3, (BlockState)var1.setValue(AGE, var7 + 1), 4);
+               var2.setBlock(var3, (BlockState)var1.setValue(AGE, var7 + 1), 260);
             }
 
          }
@@ -69,11 +68,11 @@ public class CactusBlock extends Block {
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return COLLISION_SHAPE;
+      return SHAPE_COLLISION;
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return OUTLINE_SHAPE;
+      return SHAPE;
    }
 
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
@@ -110,7 +109,7 @@ public class CactusBlock extends Block {
 
    static {
       AGE = BlockStateProperties.AGE_15;
-      COLLISION_SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 15.0, 15.0);
-      OUTLINE_SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
+      SHAPE = Block.column(14.0, 0.0, 16.0);
+      SHAPE_COLLISION = Block.column(14.0, 0.0, 15.0);
    }
 }

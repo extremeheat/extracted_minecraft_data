@@ -179,9 +179,9 @@ public class Spider extends Monster {
       public void setRandomEffect(RandomSource var1) {
          int var2 = var1.nextInt(5);
          if (var2 <= 1) {
-            this.effect = MobEffects.MOVEMENT_SPEED;
+            this.effect = MobEffects.SPEED;
          } else if (var2 <= 2) {
-            this.effect = MobEffects.DAMAGE_BOOST;
+            this.effect = MobEffects.STRENGTH;
          } else if (var2 <= 3) {
             this.effect = MobEffects.REGENERATION;
          } else if (var2 <= 4) {

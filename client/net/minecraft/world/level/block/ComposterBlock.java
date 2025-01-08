@@ -48,8 +48,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
    public static final int MAX_LEVEL = 7;
    public static final IntegerProperty LEVEL;
    public static final Object2FloatMap<ItemLike> COMPOSTABLES;
-   private static final int AABB_SIDE_THICKNESS = 2;
-   private static final VoxelShape OUTER_SHAPE;
+   private static final int HOLE_WIDTH = 12;
    private static final VoxelShape[] SHAPES;
 
    public MapCodec<ComposterBlock> codec() {
@@ -96,6 +95,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.3F, Items.PALE_MOSS_CARPET);
       add(0.3F, Items.PALE_HANGING_MOSS);
       add(0.3F, Items.PINK_PETALS);
+      add(0.3F, Items.WILDFLOWERS);
       add(0.3F, Items.SMALL_DRIPLEAF);
       add(0.3F, Items.HANGING_ROOTS);
       add(0.3F, Items.MANGROVE_ROOTS);
@@ -186,15 +186,16 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       BlockState var3 = var0.getBlockState(var1);
       var0.playLocalSound(var1, var2 ? SoundEvents.COMPOSTER_FILL_SUCCESS : SoundEvents.COMPOSTER_FILL, SoundSource.BLOCKS, 1.0F, 1.0F, false);
       double var4 = var3.getShape(var0, var1).max(Direction.Axis.Y, 0.5, 0.5) + 0.03125;
-      double var6 = 0.13124999403953552;
-      double var8 = 0.737500011920929;
-      RandomSource var10 = var0.getRandom();
+      double var6 = 2.0;
+      double var8 = 0.1875;
+      double var10 = 0.625;
+      RandomSource var12 = var0.getRandom();
 
-      for(int var11 = 0; var11 < 10; ++var11) {
-         double var12 = var10.nextGaussian() * 0.02;
-         double var14 = var10.nextGaussian() * 0.02;
-         double var16 = var10.nextGaussian() * 0.02;
-         var0.addParticle(ParticleTypes.COMPOSTER, (double)var1.getX() + 0.13124999403953552 + 0.737500011920929 * (double)var10.nextFloat(), (double)var1.getY() + var4 + (double)var10.nextFloat() * (1.0 - var4), (double)var1.getZ() + 0.13124999403953552 + 0.737500011920929 * (double)var10.nextFloat(), var12, var14, var16);
+      for(int var13 = 0; var13 < 10; ++var13) {
+         double var14 = var12.nextGaussian() * 0.02;
+         double var16 = var12.nextGaussian() * 0.02;
+         double var18 = var12.nextGaussian() * 0.02;
+         var0.addParticle(ParticleTypes.COMPOSTER, (double)var1.getX() + 0.1875 + 0.625 * (double)var12.nextFloat(), (double)var1.getY() + var4 + (double)var12.nextFloat() * (1.0 - var4), (double)var1.getZ() + 0.1875 + 0.625 * (double)var12.nextFloat(), var14, var16, var18);
       }
 
    }
@@ -204,7 +205,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
    }
 
    protected VoxelShape getInteractionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return OUTER_SHAPE;
+      return Shapes.block();
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
@@ -264,7 +265,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       }
 
       BlockState var6 = empty(var0, var1, var2, var3);
-      var2.playSound((Player)null, (BlockPos)var3, SoundEvents.COMPOSTER_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+      var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.COMPOSTER_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
       return var6;
    }
 
@@ -296,7 +297,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if ((Integer)var1.getValue(LEVEL) == 7) {
          var2.setBlock(var3, (BlockState)var1.cycle(LEVEL), 3);
-         var2.playSound((Player)null, var3, SoundEvents.COMPOSTER_READY, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var2.playSound((Entity)null, var3, SoundEvents.COMPOSTER_READY, SoundSource.BLOCKS, 1.0F, 1.0F);
       }
 
    }
@@ -329,13 +330,10 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
    static {
       LEVEL = BlockStateProperties.LEVEL_COMPOSTER;
       COMPOSTABLES = new Object2FloatOpenHashMap();
-      OUTER_SHAPE = Shapes.block();
-      SHAPES = (VoxelShape[])Util.make(new VoxelShape[9], (var0) -> {
-         for(int var1 = 0; var1 < 8; ++var1) {
-            var0[var1] = Shapes.join(OUTER_SHAPE, Block.box(2.0, (double)Math.max(2, 1 + var1 * 2), 2.0, 14.0, 16.0, 14.0), BooleanOp.ONLY_FIRST);
-         }
-
+      SHAPES = (VoxelShape[])Util.make(() -> {
+         VoxelShape[] var0 = Block.boxes(8, (var0x) -> Shapes.join(Shapes.block(), Block.column(12.0, (double)Math.clamp((long)(1 + var0x * 2), 2, 16), 16.0), BooleanOp.ONLY_FIRST));
          var0[8] = var0[7];
+         return var0;
       });
    }
 

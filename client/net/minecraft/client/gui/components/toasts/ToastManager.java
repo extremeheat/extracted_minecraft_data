@@ -4,12 +4,17 @@ import com.google.common.collect.Queues;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 
 public class ToastManager {
    private static final int SLOT_COUNT = 5;
@@ -18,6 +23,7 @@ public class ToastManager {
    private final List<ToastInstance<?>> visibleToasts = new ArrayList();
    private final BitSet occupiedSlots = new BitSet(5);
    private final Deque<Toast> queued = Queues.newArrayDeque();
+   private final Set<SoundEvent> playedToastSounds = new HashSet();
 
    public ToastManager(Minecraft var1) {
       super();
@@ -25,29 +31,42 @@ public class ToastManager {
    }
 
    public void update() {
-      this.visibleToasts.removeIf((var1) -> {
-         var1.update();
-         if (var1.hasFinishedRendering()) {
-            this.occupiedSlots.clear(var1.firstSlotIndex, var1.firstSlotIndex + var1.occupiedSlotCount);
+      MutableBoolean var1 = new MutableBoolean(false);
+      this.visibleToasts.removeIf((var2) -> {
+         Toast.Visibility var3 = var2.visibility;
+         var2.update();
+         if (var2.visibility != var3 && var1.isFalse()) {
+            var1.setTrue();
+            var2.visibility.playSound(this.minecraft.getSoundManager());
+         }
+
+         if (var2.hasFinishedRendering()) {
+            this.occupiedSlots.clear(var2.firstSlotIndex, var2.firstSlotIndex + var2.occupiedSlotCount);
             return true;
          } else {
             return false;
          }
       });
       if (!this.queued.isEmpty() && this.freeSlotCount() > 0) {
-         this.queued.removeIf((var1) -> {
-            int var2 = var1.occcupiedSlotCount();
+         this.queued.removeIf((var1x) -> {
+            int var2 = var1x.occcupiedSlotCount();
             int var3 = this.findFreeSlotsIndex(var2);
             if (var3 == -1) {
                return false;
             } else {
-               this.visibleToasts.add(new ToastInstance(var1, var3, var2));
+               this.visibleToasts.add(new ToastInstance(var1x, var3, var2));
                this.occupiedSlots.set(var3, var3 + var2);
+               SoundEvent var4 = var1x.getSoundEvent();
+               if (var4 != null && this.playedToastSounds.add(var4)) {
+                  this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(var4, 1.0F, 1.0F));
+               }
+
                return true;
             }
          });
       }
 
+      this.playedToastSounds.clear();
    }
 
    public void render(GuiGraphics var1) {
@@ -126,14 +145,14 @@ public class ToastManager {
       final int occupiedSlotCount;
       private long animationStartTime = -1L;
       private long becameFullyVisibleAt = -1L;
-      private Toast.Visibility visibility;
+      Toast.Visibility visibility;
       private long fullyVisibleFor;
       private float visiblePortion;
       private boolean hasFinishedRendering;
 
       ToastInstance(final T var2, final int var3, final int var4) {
          super();
-         this.visibility = Toast.Visibility.SHOW;
+         this.visibility = Toast.Visibility.HIDE;
          this.toast = var2;
          this.firstSlotIndex = var3;
          this.occupiedSlotCount = var4;
@@ -162,7 +181,7 @@ public class ToastManager {
          long var1 = Util.getMillis();
          if (this.animationStartTime == -1L) {
             this.animationStartTime = var1;
-            this.visibility.playSound(ToastManager.this.minecraft.getSoundManager());
+            this.visibility = Toast.Visibility.SHOW;
          }
 
          if (this.visibility == Toast.Visibility.SHOW && var1 - this.animationStartTime <= 600L) {
@@ -176,7 +195,6 @@ public class ToastManager {
          if (var3 != this.visibility) {
             this.animationStartTime = var1 - (long)((int)((1.0F - this.visiblePortion) * 600.0F));
             this.visibility = var3;
-            this.visibility.playSound(ToastManager.this.minecraft.getSoundManager());
          }
 
          this.hasFinishedRendering = this.visibility == Toast.Visibility.HIDE && var1 - this.animationStartTime > 600L;

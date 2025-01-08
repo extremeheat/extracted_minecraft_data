@@ -146,7 +146,7 @@ public class ServerPlayerGameMode {
                return;
             }
 
-            if (this.isCreative()) {
+            if (this.player.getAbilities().instabuild) {
                this.destroyAndAck(var1, var5, "creative destroy");
                return;
             }
@@ -231,7 +231,7 @@ public class ServerPlayerGameMode {
 
    public boolean destroyBlock(BlockPos var1) {
       BlockState var5 = this.level.getBlockState(var1);
-      if (!this.player.getMainHandItem().getItem().canAttackBlock(var5, this.level, var1, this.player)) {
+      if (!this.player.getMainHandItem().canDestroyBlock(var5, this.level, var1, this.player)) {
          return false;
       } else {
          BlockEntity var2 = this.level.getBlockEntity(var1);
@@ -248,7 +248,7 @@ public class ServerPlayerGameMode {
                var3.destroy(this.level, var1, var4);
             }
 
-            if (this.isCreative()) {
+            if (this.player.preventsBlockDrops()) {
                return true;
             } else {
                ItemStack var6 = this.player.getMainHandItem();
@@ -340,7 +340,7 @@ public class ServerPlayerGameMode {
          if (!var3.isEmpty() && !var1.getCooldowns().isOnCooldown(var3)) {
             UseOnContext var15 = new UseOnContext(var1, var4, var5);
             InteractionResult var16;
-            if (this.isCreative()) {
+            if (var1.hasInfiniteMaterials()) {
                int var13 = var3.getCount();
                var16 = var3.useOn(var15);
                var3.setCount(var13);

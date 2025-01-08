@@ -276,7 +276,18 @@ public class MapItem extends Item {
                var6.tickCarriedBy(var7, var1);
             }
 
-            if (!var6.locked && (var5 || var3 instanceof Player && ((Player)var3).getOffhandItem() == var1)) {
+            if (!var6.locked) {
+               if (!var5) {
+                  if (!(var3 instanceof Player)) {
+                     return;
+                  }
+
+                  Player var8 = (Player)var3;
+                  if (var8.getOffhandItem() != var1) {
+                     return;
+                  }
+               }
+
                this.update(var2, var3, var6);
             }
 

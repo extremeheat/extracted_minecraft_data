@@ -152,15 +152,15 @@ public class Guardian extends Monster {
    }
 
    protected SoundEvent getAmbientSound() {
-      return this.isInWaterOrBubble() ? SoundEvents.GUARDIAN_AMBIENT : SoundEvents.GUARDIAN_AMBIENT_LAND;
+      return this.isInWater() ? SoundEvents.GUARDIAN_AMBIENT : SoundEvents.GUARDIAN_AMBIENT_LAND;
    }
 
    protected SoundEvent getHurtSound(DamageSource var1) {
-      return this.isInWaterOrBubble() ? SoundEvents.GUARDIAN_HURT : SoundEvents.GUARDIAN_HURT_LAND;
+      return this.isInWater() ? SoundEvents.GUARDIAN_HURT : SoundEvents.GUARDIAN_HURT_LAND;
    }
 
    protected SoundEvent getDeathSound() {
-      return this.isInWaterOrBubble() ? SoundEvents.GUARDIAN_DEATH : SoundEvents.GUARDIAN_DEATH_LAND;
+      return this.isInWater() ? SoundEvents.GUARDIAN_DEATH : SoundEvents.GUARDIAN_DEATH_LAND;
    }
 
    protected Entity.MovementEmission getMovementEmission() {
@@ -195,7 +195,7 @@ public class Guardian extends Monster {
 
             this.clientSideTailAnimation += this.clientSideTailAnimationSpeed;
             this.clientSideSpikesAnimationO = this.clientSideSpikesAnimation;
-            if (!this.isInWaterOrBubble()) {
+            if (!this.isInWater()) {
                this.clientSideSpikesAnimation = this.random.nextFloat();
             } else if (this.isMoving()) {
                this.clientSideSpikesAnimation += (0.0F - this.clientSideSpikesAnimation) * 0.25F;
@@ -238,7 +238,7 @@ public class Guardian extends Monster {
             }
          }
 
-         if (this.isInWaterOrBubble()) {
+         if (this.isInWater()) {
             this.setAirSupply(300);
          } else if (this.onGround()) {
             this.setDeltaMovement(this.getDeltaMovement().add((double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F), 0.5, (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.4F)));
@@ -304,7 +304,7 @@ public class Guardian extends Monster {
    }
 
    public void travel(Vec3 var1) {
-      if (this.isControlledByLocalInstance() && this.isInWater()) {
+      if (this.isInWater()) {
          this.moveRelative(0.1F, var1);
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.setDeltaMovement(this.getDeltaMovement().scale(0.9));

@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
@@ -41,11 +39,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class WallHangingSignBlock extends SignBlock {
    public static final MapCodec<WallHangingSignBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(SignBlock::type), propertiesCodec()).apply(var0, WallHangingSignBlock::new));
    public static final EnumProperty<Direction> FACING;
-   public static final VoxelShape PLANK_NORTHSOUTH;
-   public static final VoxelShape PLANK_EASTWEST;
-   public static final VoxelShape SHAPE_NORTHSOUTH;
-   public static final VoxelShape SHAPE_EASTWEST;
-   private static final Map<Direction, VoxelShape> AABBS;
+   private static final Map<Direction.Axis, VoxelShape> SHAPES_PLANK;
+   private static final Map<Direction.Axis, VoxelShape> SHAPES;
 
    public MapCodec<WallHangingSignBlock> codec() {
       return CODEC;
@@ -76,7 +71,7 @@ public class WallHangingSignBlock extends SignBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)AABBS.get(var1.getValue(FACING));
+      return (VoxelShape)SHAPES.get(((Direction)var1.getValue(FACING)).getAxis());
    }
 
    protected VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
@@ -84,13 +79,7 @@ public class WallHangingSignBlock extends SignBlock {
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      switch ((Direction)var1.getValue(FACING)) {
-         case EAST:
-         case WEST:
-            return PLANK_EASTWEST;
-         default:
-            return PLANK_NORTHSOUTH;
-      }
+      return (VoxelShape)SHAPES_PLANK.get(((Direction)var1.getValue(FACING)).getAxis());
    }
 
    public boolean canPlace(BlockState var1, LevelReader var2, BlockPos var3) {
@@ -159,10 +148,7 @@ public class WallHangingSignBlock extends SignBlock {
 
    static {
       FACING = HorizontalDirectionalBlock.FACING;
-      PLANK_NORTHSOUTH = Block.box(0.0, 14.0, 6.0, 16.0, 16.0, 10.0);
-      PLANK_EASTWEST = Block.box(6.0, 14.0, 0.0, 10.0, 16.0, 16.0);
-      SHAPE_NORTHSOUTH = Shapes.or(PLANK_NORTHSOUTH, Block.box(1.0, 0.0, 7.0, 15.0, 10.0, 9.0));
-      SHAPE_EASTWEST = Shapes.or(PLANK_EASTWEST, Block.box(7.0, 0.0, 1.0, 9.0, 10.0, 15.0));
-      AABBS = Maps.newEnumMap(ImmutableMap.of(Direction.NORTH, SHAPE_NORTHSOUTH, Direction.SOUTH, SHAPE_NORTHSOUTH, Direction.EAST, SHAPE_EASTWEST, Direction.WEST, SHAPE_EASTWEST));
+      SHAPES_PLANK = Shapes.rotateHorizontalAxis(Block.column(16.0, 4.0, 14.0, 16.0));
+      SHAPES = Shapes.rotateHorizontalAxis(Shapes.or((VoxelShape)SHAPES_PLANK.get(Direction.Axis.Z), Block.column(14.0, 2.0, 0.0, 10.0)));
    }
 }

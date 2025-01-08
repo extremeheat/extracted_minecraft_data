@@ -50,7 +50,7 @@ public class MoveThroughVillageGoal extends Goal {
          return false;
       } else {
          this.updateVisited();
-         if (this.onlyAtNight && this.mob.level().isDay()) {
+         if (this.onlyAtNight && this.mob.level().isBrightOutside()) {
             return false;
          } else {
             ServerLevel var1 = (ServerLevel)this.mob.level();

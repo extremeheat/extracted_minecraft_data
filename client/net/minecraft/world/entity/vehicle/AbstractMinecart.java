@@ -25,6 +25,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
@@ -277,32 +278,8 @@ public abstract class AbstractMinecart extends VehicleEntity {
       return this.behavior.getKnownMovement(super.getKnownMovement());
    }
 
-   public void cancelLerp() {
-      this.behavior.cancelLerp();
-   }
-
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
-      this.behavior.lerpTo(var1, var3, var5, var7, var8, var9);
-   }
-
-   public double lerpTargetX() {
-      return this.behavior.lerpTargetX();
-   }
-
-   public double lerpTargetY() {
-      return this.behavior.lerpTargetY();
-   }
-
-   public double lerpTargetZ() {
-      return this.behavior.lerpTargetZ();
-   }
-
-   public float lerpTargetXRot() {
-      return this.behavior.lerpTargetXRot();
-   }
-
-   public float lerpTargetYRot() {
-      return this.behavior.lerpTargetYRot();
+   public InterpolationHandler getInterpolation() {
+      return this.behavior.getInterpolation();
    }
 
    public void lerpMotion(double var1, double var3, double var5) {
@@ -565,25 +542,16 @@ public abstract class AbstractMinecart extends VehicleEntity {
       DATA_ID_DISPLAY_OFFSET = SynchedEntityData.<Integer>defineId(AbstractMinecart.class, EntityDataSerializers.INT);
       DATA_ID_CUSTOM_DISPLAY = SynchedEntityData.<Boolean>defineId(AbstractMinecart.class, EntityDataSerializers.BOOLEAN);
       POSE_DISMOUNT_HEIGHTS = ImmutableMap.of(Pose.STANDING, ImmutableList.of(0, 1, -1), Pose.CROUCHING, ImmutableList.of(0, 1, -1), Pose.SWIMMING, ImmutableList.of(0, 1));
-      EXITS = (Map)Util.make(Maps.newEnumMap(RailShape.class), (var0) -> {
-         Vec3i var1 = Direction.WEST.getUnitVec3i();
-         Vec3i var2 = Direction.EAST.getUnitVec3i();
-         Vec3i var3 = Direction.NORTH.getUnitVec3i();
-         Vec3i var4 = Direction.SOUTH.getUnitVec3i();
+      EXITS = Maps.newEnumMap((Map)Util.make(() -> {
+         Vec3i var0 = Direction.WEST.getUnitVec3i();
+         Vec3i var1 = Direction.EAST.getUnitVec3i();
+         Vec3i var2 = Direction.NORTH.getUnitVec3i();
+         Vec3i var3 = Direction.SOUTH.getUnitVec3i();
+         Vec3i var4 = var0.below();
          Vec3i var5 = var1.below();
          Vec3i var6 = var2.below();
          Vec3i var7 = var3.below();
-         Vec3i var8 = var4.below();
-         var0.put(RailShape.NORTH_SOUTH, Pair.of(var3, var4));
-         var0.put(RailShape.EAST_WEST, Pair.of(var1, var2));
-         var0.put(RailShape.ASCENDING_EAST, Pair.of(var5, var2));
-         var0.put(RailShape.ASCENDING_WEST, Pair.of(var1, var6));
-         var0.put(RailShape.ASCENDING_NORTH, Pair.of(var3, var8));
-         var0.put(RailShape.ASCENDING_SOUTH, Pair.of(var7, var4));
-         var0.put(RailShape.SOUTH_EAST, Pair.of(var4, var2));
-         var0.put(RailShape.SOUTH_WEST, Pair.of(var4, var1));
-         var0.put(RailShape.NORTH_WEST, Pair.of(var3, var1));
-         var0.put(RailShape.NORTH_EAST, Pair.of(var3, var2));
-      });
+         return ImmutableMap.of(RailShape.NORTH_SOUTH, Pair.of(var2, var3), RailShape.EAST_WEST, Pair.of(var0, var1), RailShape.ASCENDING_EAST, Pair.of(var4, var1), RailShape.ASCENDING_WEST, Pair.of(var0, var5), RailShape.ASCENDING_NORTH, Pair.of(var2, var7), RailShape.ASCENDING_SOUTH, Pair.of(var6, var3), RailShape.SOUTH_EAST, Pair.of(var3, var1), RailShape.SOUTH_WEST, Pair.of(var3, var0), RailShape.NORTH_WEST, Pair.of(var2, var0), RailShape.NORTH_EAST, Pair.of(var2, var1));
+      }));
    }
 }

@@ -18,7 +18,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -45,7 +45,7 @@ public class LiquidBlock extends Block implements BucketPickup {
    public static final IntegerProperty LEVEL;
    protected final FlowingFluid fluid;
    private final List<FluidState> stateCache;
-   public static final VoxelShape STABLE_SHAPE;
+   public static final VoxelShape SHAPE_STABLE;
    public static final ImmutableList<Direction> POSSIBLE_FLOW_DIRECTIONS;
 
    public MapCodec<LiquidBlock> codec() {
@@ -67,7 +67,7 @@ public class LiquidBlock extends Block implements BucketPickup {
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return var4.isAbove(STABLE_SHAPE, var3, true) && (Integer)var1.getValue(LEVEL) == 0 && var4.canStandOnFluid(var2.getFluidState(var3.above()), var1.getFluidState()) ? STABLE_SHAPE : Shapes.empty();
+      return var4.isAbove(SHAPE_STABLE, var3, true) && (Integer)var1.getValue(LEVEL) == 0 && var4.canStandOnFluid(var2.getFluidState(var3.above()), var1.getFluidState()) ? SHAPE_STABLE : Shapes.empty();
    }
 
    protected boolean isRandomlyTicking(BlockState var1) {
@@ -163,7 +163,7 @@ public class LiquidBlock extends Block implements BucketPickup {
       var1.add(LEVEL);
    }
 
-   public ItemStack pickupBlock(@Nullable Player var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
+   public ItemStack pickupBlock(@Nullable LivingEntity var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
       if ((Integer)var4.getValue(LEVEL) == 0) {
          var2.setBlock(var3, Blocks.AIR.defaultBlockState(), 11);
          return new ItemStack(this.fluid.getBucket());
@@ -189,7 +189,7 @@ public class LiquidBlock extends Block implements BucketPickup {
       }, (var0) -> var0);
       CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(FLOWING_FLUID.fieldOf("fluid").forGetter((var0x) -> var0x.fluid), propertiesCodec()).apply(var0, LiquidBlock::new));
       LEVEL = BlockStateProperties.LEVEL;
-      STABLE_SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 8.0, 16.0);
+      SHAPE_STABLE = Block.column(16.0, 0.0, 8.0);
       POSSIBLE_FLOW_DIRECTIONS = ImmutableList.of(Direction.DOWN, Direction.SOUTH, Direction.NORTH, Direction.EAST, Direction.WEST);
    }
 }

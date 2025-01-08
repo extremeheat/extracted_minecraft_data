@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal.horse;
 
 import com.google.common.collect.UnmodifiableIterator;
-import java.util.UUID;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntUnaryOperator;
 import javax.annotation.Nullable;
@@ -17,7 +16,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.OldUsersConverter;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -34,6 +32,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -67,7 +66,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.EntityGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
@@ -134,7 +132,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    protected boolean canGallop = true;
    protected int gallopSoundCounter;
    @Nullable
-   private UUID owner;
+   private EntityReference<LivingEntity> owner;
    private final Container bodyArmorAccess = new ContainerSingleItem() {
       public ItemStack getTheItem() {
          return AbstractHorse.this.getBodyArmorItem();
@@ -201,12 +199,12 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    @Nullable
-   public UUID getOwnerUUID() {
+   public EntityReference<LivingEntity> getOwnerReference() {
       return this.owner;
    }
 
-   public void setOwnerUUID(@Nullable UUID var1) {
-      this.owner = var1;
+   public void setOwner(@Nullable LivingEntity var1) {
+      this.owner = var1 != null ? new EntityReference(var1) : null;
    }
 
    public boolean isJumping() {
@@ -291,7 +289,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       if (!this.isSilent()) {
          SoundEvent var1 = this.getEatingSound();
          if (var1 != null) {
-            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+            this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
          }
       }
 
@@ -732,7 +730,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
    }
 
    public boolean tameWithName(Player var1) {
-      this.setOwnerUUID(var1.getUUID());
+      this.setOwner(var1);
       this.setTamed(true);
       if (var1 instanceof ServerPlayer) {
          CriteriaTriggers.TAME_ANIMAL.trigger((ServerPlayer)var1, this);
@@ -747,7 +745,7 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       Vec2 var3 = this.getRiddenRotation(var1);
       this.setRot(var3.y, var3.x);
       this.yRotO = this.yBodyRot = this.yHeadRot = this.getYRot();
-      if (this.isControlledByLocalInstance()) {
+      if (this.isLocalInstanceAuthoritative()) {
          if (var2.z <= 0.0) {
             this.gallopSoundCounter = 0;
          }
@@ -810,8 +808,8 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       var1.putBoolean("Bred", this.isBred());
       var1.putInt("Temper", this.getTemper());
       var1.putBoolean("Tame", this.isTamed());
-      if (this.getOwnerUUID() != null) {
-         var1.putUUID("Owner", this.getOwnerUUID());
+      if (this.owner != null) {
+         this.owner.store(var1, "Owner");
       }
 
       if (!this.inventory.getItem(0).isEmpty()) {
@@ -826,22 +824,11 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
       this.setBred(var1.getBoolean("Bred"));
       this.setTemper(var1.getInt("Temper"));
       this.setTamed(var1.getBoolean("Tame"));
-      UUID var2;
-      if (var1.hasUUID("Owner")) {
-         var2 = var1.getUUID("Owner");
-      } else {
-         String var3 = var1.getString("Owner");
-         var2 = OldUsersConverter.convertMobOwnerIfNecessary(this.getServer(), var3);
-      }
-
-      if (var2 != null) {
-         this.setOwnerUUID(var2);
-      }
-
+      this.owner = EntityReference.<LivingEntity>readWithOldOwnerConversion(var1, "Owner", this.level());
       if (var1.contains("SaddleItem", 10)) {
-         ItemStack var4 = (ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("SaddleItem")).orElse(ItemStack.EMPTY);
-         if (var4.is(Items.SADDLE)) {
-            this.inventory.setItem(0, var4);
+         ItemStack var2 = (ItemStack)ItemStack.parse(this.registryAccess(), var1.getCompound("SaddleItem")).orElse(ItemStack.EMPTY);
+         if (var2.is(Items.SADDLE)) {
+            this.inventory.setItem(0, var2);
          }
       }
 
@@ -1103,11 +1090,6 @@ public abstract class AbstractHorse extends Animal implements ContainerListener,
 
    public int getInventoryColumns() {
       return 0;
-   }
-
-   // $FF: synthetic method
-   public EntityGetter level() {
-      return super.level();
    }
 
    static {

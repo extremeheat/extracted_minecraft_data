@@ -41,7 +41,7 @@ public class NetherWorldCarver extends CaveWorldCarver {
             var10 = CAVE_AIR;
          }
 
-         var3.setBlockState(var6, var10, false);
+         var3.setBlockState(var6, var10);
          return true;
       } else {
          return false;

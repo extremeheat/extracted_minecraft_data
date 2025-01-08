@@ -15,6 +15,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.FlyingMob;
@@ -280,7 +281,7 @@ public class Ghast extends FlyingMob implements Enemy {
                Level var4 = this.ghast.level();
                ++this.chargeTime;
                if (this.chargeTime == 10 && !this.ghast.isSilent()) {
-                  var4.levelEvent((Player)null, 1015, this.ghast.blockPosition(), 0);
+                  var4.levelEvent((Entity)null, 1015, this.ghast.blockPosition(), 0);
                }
 
                if (this.chargeTime == 20) {
@@ -291,7 +292,7 @@ public class Ghast extends FlyingMob implements Enemy {
                   double var12 = var1.getZ() - (this.ghast.getZ() + var7.z * 4.0);
                   Vec3 var14 = new Vec3(var8, var10, var12);
                   if (!this.ghast.isSilent()) {
-                     var4.levelEvent((Player)null, 1016, this.ghast.blockPosition(), 0);
+                     var4.levelEvent((Entity)null, 1016, this.ghast.blockPosition(), 0);
                   }
 
                   LargeFireball var15 = new LargeFireball(var4, this.ghast, var14.normalize(), this.ghast.getExplosionPower());

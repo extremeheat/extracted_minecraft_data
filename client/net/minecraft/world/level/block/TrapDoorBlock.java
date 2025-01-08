@@ -2,6 +2,7 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -34,6 +35,7 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock {
@@ -42,13 +44,7 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
    public static final EnumProperty<Half> HALF;
    public static final BooleanProperty POWERED;
    public static final BooleanProperty WATERLOGGED;
-   protected static final int AABB_THICKNESS = 3;
-   protected static final VoxelShape EAST_OPEN_AABB;
-   protected static final VoxelShape WEST_OPEN_AABB;
-   protected static final VoxelShape SOUTH_OPEN_AABB;
-   protected static final VoxelShape NORTH_OPEN_AABB;
-   protected static final VoxelShape BOTTOM_AABB;
-   protected static final VoxelShape TOP_AABB;
+   private static final Map<Direction, VoxelShape> SHAPES;
    private final BlockSetType type;
 
    public MapCodec<? extends TrapDoorBlock> codec() {
@@ -62,21 +58,7 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if (!(Boolean)var1.getValue(OPEN)) {
-         return var1.getValue(HALF) == Half.TOP ? TOP_AABB : BOTTOM_AABB;
-      } else {
-         switch ((Direction)var1.getValue(FACING)) {
-            case NORTH:
-            default:
-               return NORTH_OPEN_AABB;
-            case SOUTH:
-               return SOUTH_OPEN_AABB;
-            case WEST:
-               return WEST_OPEN_AABB;
-            case EAST:
-               return EAST_OPEN_AABB;
-         }
-      }
+      return (VoxelShape)SHAPES.get((Boolean)var1.getValue(OPEN) ? var1.getValue(FACING) : (var1.getValue(HALF) == Half.TOP ? Direction.DOWN : Direction.UP));
    }
 
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
@@ -124,7 +106,7 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
    }
 
    protected void playSound(@Nullable Player var1, Level var2, BlockPos var3, boolean var4) {
-      var2.playSound(var1, var3, var4 ? this.type.trapdoorOpen() : this.type.trapdoorClose(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
+      var2.playSound(var1, (BlockPos)var3, var4 ? this.type.trapdoorOpen() : this.type.trapdoorClose(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F);
       var2.gameEvent(var1, var4 ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, var3);
    }
 
@@ -188,11 +170,6 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
       HALF = BlockStateProperties.HALF;
       POWERED = BlockStateProperties.POWERED;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      EAST_OPEN_AABB = Block.box(0.0, 0.0, 0.0, 3.0, 16.0, 16.0);
-      WEST_OPEN_AABB = Block.box(13.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-      SOUTH_OPEN_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 3.0);
-      NORTH_OPEN_AABB = Block.box(0.0, 0.0, 13.0, 16.0, 16.0, 16.0);
-      BOTTOM_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 3.0, 16.0);
-      TOP_AABB = Block.box(0.0, 13.0, 0.0, 16.0, 16.0, 16.0);
+      SHAPES = Shapes.rotateAll(Block.boxZ(16.0, 13.0, 16.0));
    }
 }

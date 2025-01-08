@@ -26,8 +26,6 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
    public static final Component TITLE = Component.translatable("mco.upload.select.world.title");
    private static final Component UNABLE_TO_LOAD_WORLD = Component.translatable("selectWorld.unable_to_load");
    static final Component WORLD_TEXT = Component.translatable("selectWorld.world");
-   private static final Component HARDCORE_TEXT = Component.translatable("mco.upload.hardcore").withColor(-65536);
-   private static final Component COMMANDS_TEXT = Component.translatable("selectWorld.commands");
    private static final DateFormat DATE_FORMAT = new SimpleDateFormat();
    @Nullable
    private final RealmCreationTask realmCreationTask;
@@ -83,7 +81,7 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
    }
 
    private void upload() {
-      if (this.selectedWorld != -1 && !((LevelSummary)this.levelList.get(this.selectedWorld)).isHardcore()) {
+      if (this.selectedWorld != -1) {
          LevelSummary var1 = (LevelSummary)this.levelList.get(this.selectedWorld);
          this.minecraft.setScreen(new RealmsUploadScreen(this.realmCreationTask, this.realmId, this.slotId, this.lastScreen, var1));
       }
@@ -124,7 +122,7 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
       public void setSelected(@Nullable Entry var1) {
          super.setSelected(var1);
          RealmsSelectFileToUploadScreen.this.selectedWorld = this.children().indexOf(var1);
-         RealmsSelectFileToUploadScreen.this.uploadButton.active = RealmsSelectFileToUploadScreen.this.selectedWorld >= 0 && RealmsSelectFileToUploadScreen.this.selectedWorld < this.getItemCount() && !((LevelSummary)RealmsSelectFileToUploadScreen.this.levelList.get(RealmsSelectFileToUploadScreen.this.selectedWorld)).isHardcore();
+         RealmsSelectFileToUploadScreen.this.uploadButton.active = RealmsSelectFileToUploadScreen.this.selectedWorld >= 0 && RealmsSelectFileToUploadScreen.this.selectedWorld < this.getItemCount();
       }
 
       public int getRowWidth() {

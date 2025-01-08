@@ -614,22 +614,55 @@ public class GuiGraphics {
 
    public void renderComponentHoverEffect(Font var1, @Nullable Style var2, int var3, int var4) {
       if (var2 != null && var2.getHoverEvent() != null) {
-         HoverEvent var5 = var2.getHoverEvent();
-         HoverEvent.ItemStackInfo var6 = (HoverEvent.ItemStackInfo)var5.getValue(HoverEvent.Action.SHOW_ITEM);
-         if (var6 != null) {
-            this.renderTooltip(var1, var6.getItemStack(), var3, var4);
-         } else {
-            HoverEvent.EntityTooltipInfo var7 = (HoverEvent.EntityTooltipInfo)var5.getValue(HoverEvent.Action.SHOW_ENTITY);
-            if (var7 != null) {
+         HoverEvent.ShowText var10000 = var2.getHoverEvent();
+         Objects.requireNonNull(var10000);
+         HoverEvent var5 = var10000;
+         byte var6 = 0;
+         //$FF: var6->value
+         //0->net/minecraft/network/chat/HoverEvent$ShowItem
+         //1->net/minecraft/network/chat/HoverEvent$ShowEntity
+         //2->net/minecraft/network/chat/HoverEvent$ShowText
+         switch (var5.typeSwitch<invokedynamic>(var5, var6)) {
+            case 0:
+               HoverEvent.ShowItem var7 = (HoverEvent.ShowItem)var5;
+               HoverEvent.ShowItem var23 = var7;
+
+               try {
+                  var24 = var23.item();
+               } catch (Throwable var16) {
+                  throw new MatchException(var16.toString(), var16);
+               }
+
+               ItemStack var17 = var24;
+               this.renderTooltip(var1, var17, var3, var4);
+               break;
+            case 1:
+               HoverEvent.ShowEntity var9 = (HoverEvent.ShowEntity)var5;
+               HoverEvent.ShowEntity var21 = var9;
+
+               try {
+                  var22 = var21.entity();
+               } catch (Throwable var15) {
+                  throw new MatchException(var15.toString(), var15);
+               }
+
+               HoverEvent.EntityTooltipInfo var18 = var22;
                if (this.minecraft.options.advancedItemTooltips) {
-                  this.renderComponentTooltip(var1, var7.getTooltipLines(), var3, var4);
+                  this.renderComponentTooltip(var1, var18.getTooltipLines(), var3, var4);
                }
-            } else {
-               Component var8 = (Component)var5.getValue(HoverEvent.Action.SHOW_TEXT);
-               if (var8 != null) {
-                  this.renderTooltip(var1, var1.split(var8, Math.max(this.guiWidth() / 2, 200)), var3, var4);
+               break;
+            case 2:
+               HoverEvent.ShowText var11 = (HoverEvent.ShowText)var5;
+               var10000 = var11;
+
+               try {
+                  var20 = var10000.text();
+               } catch (Throwable var14) {
+                  throw new MatchException(var14.toString(), var14);
                }
-            }
+
+               Component var13 = var20;
+               this.renderTooltip(var1, var1.split(var13, Math.max(this.guiWidth() / 2, 200)), var3, var4);
          }
 
       }

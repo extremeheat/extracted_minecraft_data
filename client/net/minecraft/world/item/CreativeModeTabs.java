@@ -836,6 +836,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.OPEN_EYEBLOSSOM);
          var1.accept((ItemLike)Items.WITHER_ROSE);
          var1.accept((ItemLike)Items.PINK_PETALS);
+         var1.accept((ItemLike)Items.WILDFLOWERS);
+         var1.accept((ItemLike)Items.LEAF_LITTER);
          var1.accept((ItemLike)Items.SPORE_BLOSSOM);
          var1.accept((ItemLike)Items.BAMBOO);
          var1.accept((ItemLike)Items.SUGAR_CANE);

@@ -139,11 +139,6 @@ public abstract class AbstractArrow extends Projectile {
       this.life = 0;
    }
 
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
-      this.setPos(var1, var3, var5);
-      this.setRot(var7, var8);
-   }
-
    public void lerpMotion(double var1, double var3, double var5) {
       super.lerpMotion(var1, var3, var5);
       this.life = 0;
@@ -200,6 +195,10 @@ public abstract class AbstractArrow extends Projectile {
          ++this.inGroundTime;
          if (this.isAlive()) {
             this.applyEffectsFromBlocks();
+         }
+
+         if (!this.level().isClientSide) {
+            this.setSharedFlagOnFire(this.getRemainingFireTicks() > 0);
          }
 
       } else {
@@ -349,9 +348,19 @@ public abstract class AbstractArrow extends Projectile {
       this.firedFromWeapon = null;
    }
 
+   public void onAboveBubbleCol(boolean var1, BlockPos var2) {
+      if (!this.isInGround()) {
+         double var3 = var1 ? -0.03 : 0.1;
+         this.setDeltaMovement(this.getDeltaMovement().add(0.0, var3, 0.0));
+         this.sendBubbleColumnParticles(var2);
+      }
+   }
+
    public void onInsideBubbleColumn(boolean var1) {
       if (!this.isInGround()) {
-         super.onInsideBubbleColumn(var1);
+         double var2 = var1 ? -0.03 : 0.06;
+         this.setDeltaMovement(this.getDeltaMovement().add(0.0, var2, 0.0));
+         this.resetFallDistance();
       }
    }
 
@@ -428,8 +437,11 @@ public abstract class AbstractArrow extends Projectile {
             }
 
             this.doPostHurtEffects(var11);
-            if (var11 != var6 && var11 instanceof Player && var6 instanceof ServerPlayer && !this.isSilent()) {
-               ((ServerPlayer)var6).connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.ARROW_HIT_PLAYER, 0.0F));
+            if (var11 instanceof Player && var6 instanceof ServerPlayer) {
+               ServerPlayer var19 = (ServerPlayer)var6;
+               if (!this.isSilent()) {
+                  var19.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.ARROW_HIT_PLAYER, 0.0F));
+               }
             }
 
             if (!var2.isAlive() && this.piercedAndKilledEntities != null) {
@@ -437,11 +449,11 @@ public abstract class AbstractArrow extends Projectile {
             }
 
             if (!this.level().isClientSide && var6 instanceof ServerPlayer) {
-               ServerPlayer var19 = (ServerPlayer)var6;
+               ServerPlayer var20 = (ServerPlayer)var6;
                if (this.piercedAndKilledEntities != null) {
-                  CriteriaTriggers.KILLED_BY_ARROW.trigger(var19, this.piercedAndKilledEntities, this.firedFromWeapon);
+                  CriteriaTriggers.KILLED_BY_ARROW.trigger(var20, this.piercedAndKilledEntities, this.firedFromWeapon);
                } else if (!var2.isAlive()) {
-                  CriteriaTriggers.KILLED_BY_ARROW.trigger(var19, List.of(var2), this.firedFromWeapon);
+                  CriteriaTriggers.KILLED_BY_ARROW.trigger(var20, List.of(var2), this.firedFromWeapon);
                }
             }
          }
@@ -454,9 +466,9 @@ public abstract class AbstractArrow extends Projectile {
          var2.setRemainingFireTicks(var10);
          this.deflect(ProjectileDeflection.REVERSE, var2, this.getOwner(), false);
          this.setDeltaMovement(this.getDeltaMovement().scale(0.2));
-         Level var20 = this.level();
-         if (var20 instanceof ServerLevel) {
-            ServerLevel var18 = (ServerLevel)var20;
+         Level var21 = this.level();
+         if (var21 instanceof ServerLevel) {
+            ServerLevel var18 = (ServerLevel)var21;
             if (this.getDeltaMovement().lengthSqr() < 1.0E-7) {
                if (this.pickup == AbstractArrow.Pickup.ALLOWED) {
                   this.spawnAtLocation(var18, this.getPickupItem(), 0.1F);
@@ -695,10 +707,6 @@ public abstract class AbstractArrow extends Projectile {
 
    public void setBaseDamage(double var1) {
       this.baseDamage = var1;
-   }
-
-   public double getBaseDamage() {
-      return this.baseDamage;
    }
 
    public boolean isAttackable() {

@@ -13,6 +13,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -32,8 +33,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class FlowerPotBlock extends Block {
    public static final MapCodec<FlowerPotBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("potted").forGetter((var0x) -> var0x.potted), propertiesCodec()).apply(var0, FlowerPotBlock::new));
    private static final Map<Block, Block> POTTED_BY_CONTENT = Maps.newHashMap();
-   public static final float AABB_SIZE = 3.0F;
-   protected static final VoxelShape SHAPE = Block.box(5.0, 0.0, 5.0, 11.0, 6.0, 11.0);
+   private static final VoxelShape SHAPE = Block.column(6.0, 0.0, 6.0);
    private final Block potted;
 
    public MapCodec<FlowerPotBlock> codec() {
@@ -120,7 +120,7 @@ public class FlowerPotBlock extends Block {
             var2.setBlock(var3, this.opposite(var1), 3);
             EyeblossomBlock.Type var7 = EyeblossomBlock.Type.fromBoolean(var5).transform();
             var7.spawnTransformParticle(var2, var3, var4);
-            var2.playSound((Player)null, var3, var7.longSwitchSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
+            var2.playSound((Entity)null, var3, var7.longSwitchSound(), SoundSource.BLOCKS, 1.0F, 1.0F);
          }
       }
 

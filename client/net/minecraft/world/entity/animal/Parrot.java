@@ -172,7 +172,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
             Mob var3 = (Mob)var2.get(var0.random.nextInt(var2.size()));
             if (!var3.isSilent()) {
                SoundEvent var4 = getImitatedSound(var3.getType());
-               var0.playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), var4, var1.getSoundSource(), 0.7F, getPitch(var0.random));
+               var0.playSound((Entity)null, var1.getX(), var1.getY(), var1.getZ(), var4, var1.getSoundSource(), 0.7F, getPitch(var0.random));
                return true;
             }
          }
@@ -188,7 +188,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Varian
       if (!this.isTame() && var3.is(ItemTags.PARROT_FOOD)) {
          this.usePlayerItem(var1, var2, var3);
          if (!this.isSilent()) {
-            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PARROT_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+            this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.PARROT_EAT, this.getSoundSource(), 1.0F, 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
          }
 
          if (!this.level().isClientSide) {

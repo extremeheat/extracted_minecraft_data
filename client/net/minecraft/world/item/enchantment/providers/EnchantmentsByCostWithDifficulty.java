@@ -31,7 +31,7 @@ public record EnchantmentsByCostWithDifficulty(HolderSet<Enchantment> enchantmen
       int var6 = Mth.randomBetweenInclusive(var3, this.minCost, this.minCost + (int)(var5 * (float)this.maxCostSpan));
 
       for(EnchantmentInstance var9 : EnchantmentHelper.selectEnchantment(var3, var1, var6, this.enchantments.stream())) {
-         var2.upgrade(var9.enchantment, var9.level);
+         var2.upgrade(var9.enchantment(), var9.level());
       }
 
    }

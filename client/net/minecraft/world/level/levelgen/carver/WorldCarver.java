@@ -120,7 +120,7 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
          if (var11 == null) {
             return false;
          } else {
-            var3.setBlockState(var6, var11, false);
+            var3.setBlockState(var6, var11);
             if (var8.shouldScheduleFluidUpdate() && !var11.getFluidState().isEmpty()) {
                var3.markPosForPostprocessing(var6);
             }
@@ -129,7 +129,7 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
                var7.setWithOffset(var6, (Direction)Direction.DOWN);
                if (var3.getBlockState(var7).is(Blocks.DIRT)) {
                   var1.topMaterial(var4, var3, var7, !var11.getFluidState().isEmpty()).ifPresent((var2x) -> {
-                     var3.setBlockState(var7, var2x, false);
+                     var3.setBlockState(var7, var2x);
                      if (!var2x.getFluidState().isEmpty()) {
                         var3.markPosForPostprocessing(var7);
                      }

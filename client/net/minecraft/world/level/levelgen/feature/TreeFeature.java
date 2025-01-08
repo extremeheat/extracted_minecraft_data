@@ -4,6 +4,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,7 +40,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       super(var1);
    }
 
-   private static boolean isVine(LevelSimulatedReader var0, BlockPos var1) {
+   public static boolean isVine(LevelSimulatedReader var0, BlockPos var1) {
       return var0.isStateAtPosition(var1, (var0x) -> var0x.is(Blocks.VINE));
    }
 
@@ -213,5 +214,21 @@ public class TreeFeature extends Feature<TreeConfiguration> {
 
          ++var24;
       }
+   }
+
+   public static List<BlockPos> getLowestTrunkOrRootOfTree(TreeDecorator.Context var0) {
+      ArrayList var1 = Lists.newArrayList();
+      ObjectArrayList var2 = var0.roots();
+      ObjectArrayList var3 = var0.logs();
+      if (var2.isEmpty()) {
+         var1.addAll(var3);
+      } else if (!var3.isEmpty() && ((BlockPos)var2.get(0)).getY() == ((BlockPos)var3.get(0)).getY()) {
+         var1.addAll(var3);
+         var1.addAll(var2);
+      } else {
+         var1.addAll(var2);
+      }
+
+      return var1;
    }
 }

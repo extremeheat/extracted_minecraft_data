@@ -72,6 +72,6 @@ public class BannerBlock extends AbstractBannerBlock {
    static {
       ROTATION = BlockStateProperties.ROTATION_16;
       BY_COLOR = Maps.newHashMap();
-      SHAPE = Block.box(4.0, 0.0, 4.0, 12.0, 16.0, 12.0);
+      SHAPE = Block.column(8.0, 0.0, 16.0);
    }
 }

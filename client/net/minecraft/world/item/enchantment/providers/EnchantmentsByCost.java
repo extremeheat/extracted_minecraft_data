@@ -25,7 +25,7 @@ public record EnchantmentsByCost(HolderSet<Enchantment> enchantments, IntProvide
 
    public void enchant(ItemStack var1, ItemEnchantments.Mutable var2, RandomSource var3, DifficultyInstance var4) {
       for(EnchantmentInstance var7 : EnchantmentHelper.selectEnchantment(var3, var1, this.cost.sample(var3), this.enchantments.stream())) {
-         var2.upgrade(var7.enchantment, var7.level);
+         var2.upgrade(var7.enchantment(), var7.level());
       }
 
    }

@@ -44,7 +44,7 @@ import net.minecraft.world.phys.Vec3;
 public class Ravager extends Raider {
    private static final Predicate<Entity> ROAR_TARGET_WITH_GRIEFING = (var0) -> !(var0 instanceof Ravager) && var0.isAlive();
    private static final Predicate<Entity> ROAR_TARGET_WITHOUT_GRIEFING = (var0) -> ROAR_TARGET_WITH_GRIEFING.test(var0) && !var0.getType().equals(EntityType.ARMOR_STAND);
-   private static final Predicate<LivingEntity> ROAR_TARGET_ON_CLIENT = (var0) -> !(var0 instanceof Ravager) && var0.isAlive() && var0.isControlledByLocalInstance();
+   private static final Predicate<LivingEntity> ROAR_TARGET_ON_CLIENT = (var0) -> !(var0 instanceof Ravager) && var0.isAlive() && var0.isLocalInstanceAuthoritative();
    private static final double BASE_MOVEMENT_SPEED = 0.3;
    private static final double ATTACK_MOVEMENT_SPEED = 0.35;
    private static final int STUNNED_COLOR = 8356754;

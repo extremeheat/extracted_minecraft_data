@@ -207,7 +207,7 @@ public abstract class Raider extends PatrollingMonster {
       if (this.hasActiveRaid() && !var4 && ItemStack.matches(var3, Raid.getOminousBannerInstance(this.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)))) {
          EquipmentSlot var5 = EquipmentSlot.HEAD;
          ItemStack var6 = this.getItemBySlot(var5);
-         double var7 = (double)this.getEquipmentDropChance(var5);
+         double var7 = (double)this.getDropChances().byEquipment(var5);
          if (!var6.isEmpty() && (double)Math.max(this.random.nextFloat() - 0.1F, 0.0F) < var7) {
             this.spawnAtLocation(var1, var6);
          }

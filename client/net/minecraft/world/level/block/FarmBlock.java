@@ -31,7 +31,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class FarmBlock extends Block {
    public static final MapCodec<FarmBlock> CODEC = simpleCodec(FarmBlock::new);
    public static final IntegerProperty MOISTURE;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
    public static final int MAX_MOISTURE = 7;
 
    public MapCodec<FarmBlock> codec() {
@@ -129,6 +129,6 @@ public class FarmBlock extends Block {
 
    static {
       MOISTURE = BlockStateProperties.MOISTURE;
-      SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 15.0, 16.0);
+      SHAPE = Block.column(16.0, 0.0, 15.0);
    }
 }

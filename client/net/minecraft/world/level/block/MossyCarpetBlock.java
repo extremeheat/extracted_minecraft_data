@@ -7,9 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -28,6 +26,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.block.state.properties.WallSide;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -36,23 +35,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class MossyCarpetBlock extends Block implements BonemealableBlock {
    public static final MapCodec<MossyCarpetBlock> CODEC = simpleCodec(MossyCarpetBlock::new);
    public static final BooleanProperty BASE;
-   private static final EnumProperty<WallSide> NORTH;
-   private static final EnumProperty<WallSide> EAST;
-   private static final EnumProperty<WallSide> SOUTH;
-   private static final EnumProperty<WallSide> WEST;
-   private static final Map<Direction, EnumProperty<WallSide>> PROPERTY_BY_DIRECTION;
-   private static final float AABB_OFFSET = 1.0F;
-   private static final VoxelShape DOWN_AABB;
-   private static final VoxelShape WEST_AABB;
-   private static final VoxelShape EAST_AABB;
-   private static final VoxelShape NORTH_AABB;
-   private static final VoxelShape SOUTH_AABB;
-   private static final int SHORT_HEIGHT = 10;
-   private static final VoxelShape WEST_SHORT_AABB;
-   private static final VoxelShape EAST_SHORT_AABB;
-   private static final VoxelShape NORTH_SHORT_AABB;
-   private static final VoxelShape SOUTH_SHORT_AABB;
-   private final Map<BlockState, VoxelShape> shapesCache;
+   public static final EnumProperty<WallSide> NORTH;
+   public static final EnumProperty<WallSide> EAST;
+   public static final EnumProperty<WallSide> SOUTH;
+   public static final EnumProperty<WallSide> WEST;
+   public static final Map<Direction, EnumProperty<WallSide>> PROPERTY_BY_DIRECTION;
+   private final Function<BlockState, VoxelShape> shapes;
 
    public MapCodec<MossyCarpetBlock> codec() {
       return CODEC;
@@ -61,61 +49,42 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
    public MossyCarpetBlock(BlockBehaviour.Properties var1) {
       super(var1);
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(BASE, true)).setValue(NORTH, WallSide.NONE)).setValue(EAST, WallSide.NONE)).setValue(SOUTH, WallSide.NONE)).setValue(WEST, WallSide.NONE));
-      this.shapesCache = ImmutableMap.copyOf((Map)this.stateDefinition.getPossibleStates().stream().collect(Collectors.toMap(Function.identity(), MossyCarpetBlock::calculateShape)));
+      this.shapes = this.makeShapes();
    }
 
    protected VoxelShape getOcclusionShape(BlockState var1) {
       return Shapes.empty();
    }
 
-   private static VoxelShape calculateShape(BlockState var0) {
-      VoxelShape var1 = Shapes.empty();
-      if ((Boolean)var0.getValue(BASE)) {
-         var1 = DOWN_AABB;
-      }
+   public Function<BlockState, VoxelShape> makeShapes() {
+      Map var1 = Shapes.rotateHorizontal(Block.boxZ(16.0, 0.0, 10.0, 0.0, 1.0));
+      Map var2 = Shapes.rotateAll(Block.boxZ(16.0, 0.0, 1.0));
+      return this.getShapeForEachState((var2x) -> {
+         VoxelShape var3 = (Boolean)var2x.getValue(BASE) ? (VoxelShape)var2.get(Direction.DOWN) : Shapes.empty();
 
-      VoxelShape var10000;
-      switch ((WallSide)var0.getValue(NORTH)) {
-         case NONE -> var10000 = var1;
-         case LOW -> var10000 = Shapes.or(var1, NORTH_SHORT_AABB);
-         case TALL -> var10000 = Shapes.or(var1, NORTH_AABB);
-         default -> throw new MatchException((String)null, (Throwable)null);
-      }
+         for(Map.Entry var5 : PROPERTY_BY_DIRECTION.entrySet()) {
+            switch ((WallSide)var2x.getValue((Property)var5.getValue())) {
+               case NONE:
+               default:
+                  break;
+               case LOW:
+                  var3 = Shapes.or(var3, (VoxelShape)var1.get(var5.getKey()));
+                  break;
+               case TALL:
+                  var3 = Shapes.or(var3, (VoxelShape)var2.get(var5.getKey()));
+            }
+         }
 
-      var1 = var10000;
-      switch ((WallSide)var0.getValue(SOUTH)) {
-         case NONE -> var10000 = var1;
-         case LOW -> var10000 = Shapes.or(var1, SOUTH_SHORT_AABB);
-         case TALL -> var10000 = Shapes.or(var1, SOUTH_AABB);
-         default -> throw new MatchException((String)null, (Throwable)null);
-      }
-
-      var1 = var10000;
-      switch ((WallSide)var0.getValue(EAST)) {
-         case NONE -> var10000 = var1;
-         case LOW -> var10000 = Shapes.or(var1, EAST_SHORT_AABB);
-         case TALL -> var10000 = Shapes.or(var1, EAST_AABB);
-         default -> throw new MatchException((String)null, (Throwable)null);
-      }
-
-      var1 = var10000;
-      switch ((WallSide)var0.getValue(WEST)) {
-         case NONE -> var10000 = var1;
-         case LOW -> var10000 = Shapes.or(var1, WEST_SHORT_AABB);
-         case TALL -> var10000 = Shapes.or(var1, WEST_AABB);
-         default -> throw new MatchException((String)null, (Throwable)null);
-      }
-
-      var1 = var10000;
-      return var1.isEmpty() ? Shapes.block() : var1;
+         return var3.isEmpty() ? Shapes.block() : var3;
+      });
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)this.shapesCache.get(var1);
+      return (VoxelShape)this.shapes.apply(var1);
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (Boolean)var1.getValue(BASE) ? DOWN_AABB : Shapes.empty();
+      return (Boolean)var1.getValue(BASE) ? (VoxelShape)this.shapes.apply(this.defaultBlockState()) : Shapes.empty();
    }
 
    protected boolean propagatesSkylightDown(BlockState var1) {
@@ -191,11 +160,13 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
    public static void placeAt(LevelAccessor var0, BlockPos var1, RandomSource var2, int var3) {
       BlockState var4 = Blocks.PALE_MOSS_CARPET.defaultBlockState();
       BlockState var5 = getUpdatedState(var4, var0, var1, true);
-      var0.setBlock(var1, var5, 3);
+      var0.setBlock(var1, var5, var3);
       Objects.requireNonNull(var2);
       BlockState var6 = createTopperWithSideChance(var0, var1, var2::nextBoolean);
       if (!var6.isAir()) {
          var0.setBlock(var1.above(), var6, var3);
+         BlockState var7 = getUpdatedState(var5, var0, var1, true);
+         var0.setBlock(var1, var7, var3);
       }
 
    }
@@ -300,20 +271,6 @@ public class MossyCarpetBlock extends Block implements BonemealableBlock {
       EAST = BlockStateProperties.EAST_WALL;
       SOUTH = BlockStateProperties.SOUTH_WALL;
       WEST = BlockStateProperties.WEST_WALL;
-      PROPERTY_BY_DIRECTION = ImmutableMap.copyOf((Map)Util.make(Maps.newEnumMap(Direction.class), (var0) -> {
-         var0.put(Direction.NORTH, NORTH);
-         var0.put(Direction.EAST, EAST);
-         var0.put(Direction.SOUTH, SOUTH);
-         var0.put(Direction.WEST, WEST);
-      }));
-      DOWN_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 1.0, 16.0);
-      WEST_AABB = Block.box(0.0, 0.0, 0.0, 1.0, 16.0, 16.0);
-      EAST_AABB = Block.box(15.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-      NORTH_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 1.0);
-      SOUTH_AABB = Block.box(0.0, 0.0, 15.0, 16.0, 16.0, 16.0);
-      WEST_SHORT_AABB = Block.box(0.0, 0.0, 0.0, 1.0, 10.0, 16.0);
-      EAST_SHORT_AABB = Block.box(15.0, 0.0, 0.0, 16.0, 10.0, 16.0);
-      NORTH_SHORT_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 10.0, 1.0);
-      SOUTH_SHORT_AABB = Block.box(0.0, 0.0, 15.0, 16.0, 10.0, 16.0);
+      PROPERTY_BY_DIRECTION = ImmutableMap.copyOf(Maps.newEnumMap(Map.of(Direction.NORTH, NORTH, Direction.EAST, EAST, Direction.SOUTH, SOUTH, Direction.WEST, WEST)));
    }
 }

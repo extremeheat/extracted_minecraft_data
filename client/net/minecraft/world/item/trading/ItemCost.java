@@ -7,7 +7,6 @@ import java.util.function.UnaryOperator;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentHolder;
 import net.minecraft.core.component.DataComponentPredicate;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -54,7 +53,7 @@ public record ItemCost(Holder<Item> item, int count, DataComponentPredicate comp
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.holderRegistry(Registries.ITEM), ItemCost::item, ByteBufCodecs.VAR_INT, ItemCost::count, DataComponentPredicate.STREAM_CODEC, ItemCost::components, ItemCost::new);
+      STREAM_CODEC = StreamCodec.composite(Item.STREAM_CODEC, ItemCost::item, ByteBufCodecs.VAR_INT, ItemCost::count, DataComponentPredicate.STREAM_CODEC, ItemCost::components, ItemCost::new);
       OPTIONAL_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs::optional);
    }
 }

@@ -40,7 +40,7 @@ import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.FlowerPotBlock;
 import net.minecraft.world.level.block.MossyCarpetBlock;
 import net.minecraft.world.level.block.MultifaceBlock;
-import net.minecraft.world.level.block.PinkPetalsBlock;
+import net.minecraft.world.level.block.SegmentableBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -285,8 +285,12 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
       return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(List.of(2, 3, 4), (var1x) -> SetItemCountFunction.setCount(ConstantValue.exactly((float)var1x)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(CandleBlock.CANDLES, var1x)))))));
    }
 
-   protected LootTable.Builder createPetalsDrops(Block var1) {
-      return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(IntStream.rangeClosed(1, 4).boxed().toList(), (var1x) -> SetItemCountFunction.setCount(ConstantValue.exactly((float)var1x)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(PinkPetalsBlock.AMOUNT, var1x)))))));
+   public LootTable.Builder createSegmentedBlockDrops(Block var1) {
+      if (var1 instanceof SegmentableBlock var2) {
+         return LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add((LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1, LootItem.lootTableItem(var1).apply(IntStream.rangeClosed(1, 4).boxed().toList(), (var2x) -> SetItemCountFunction.setCount(ConstantValue.exactly((float)var2x)).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(var2.getSegmentAmountProperty(), var2x)))))));
+      } else {
+         return noDrop();
+      }
    }
 
    protected static LootTable.Builder createCandleCakeDrops(Block var0) {

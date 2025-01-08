@@ -78,7 +78,7 @@ public class BlockItem extends Item {
                }
 
                SoundType var9 = var8.getSoundType();
-               var5.playSound(var6, var4, this.getPlaceSound(var8), SoundSource.BLOCKS, (var9.getVolume() + 1.0F) / 2.0F, var9.getPitch() * 0.8F);
+               var5.playSound(var6, (BlockPos)var4, this.getPlaceSound(var8), SoundSource.BLOCKS, (var9.getVolume() + 1.0F) / 2.0F, var9.getPitch() * 0.8F);
                var5.gameEvent(GameEvent.BLOCK_PLACE, var4, GameEvent.Context.of(var6, var8));
                var7.consume(1, var6);
                return InteractionResult.SUCCESS;
@@ -130,9 +130,7 @@ public class BlockItem extends Item {
    }
 
    protected boolean canPlace(BlockPlaceContext var1, BlockState var2) {
-      Player var3 = var1.getPlayer();
-      CollisionContext var4 = var3 == null ? CollisionContext.empty() : CollisionContext.of(var3);
-      return (!this.mustSurvive() || var2.canSurvive(var1.getLevel(), var1.getClickedPos())) && var1.getLevel().isUnobstructed(var2, var1.getClickedPos(), var4);
+      return (!this.mustSurvive() || var2.canSurvive(var1.getLevel(), var1.getClickedPos())) && var1.getLevel().isUnobstructed(var2, var1.getClickedPos(), CollisionContext.empty());
    }
 
    protected boolean mustSurvive() {

@@ -16,8 +16,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -50,13 +50,8 @@ public class PistonBaseBlock extends DirectionalBlock {
    public static final int TRIGGER_EXTEND = 0;
    public static final int TRIGGER_CONTRACT = 1;
    public static final int TRIGGER_DROP = 2;
-   public static final float PLATFORM_THICKNESS = 4.0F;
-   protected static final VoxelShape EAST_AABB;
-   protected static final VoxelShape WEST_AABB;
-   protected static final VoxelShape SOUTH_AABB;
-   protected static final VoxelShape NORTH_AABB;
-   protected static final VoxelShape UP_AABB;
-   protected static final VoxelShape DOWN_AABB;
+   public static final int PLATFORM_THICKNESS = 4;
+   private static final Map<Direction, VoxelShape> SHAPES;
    private final boolean isSticky;
 
    public MapCodec<PistonBaseBlock> codec() {
@@ -70,25 +65,7 @@ public class PistonBaseBlock extends DirectionalBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if ((Boolean)var1.getValue(EXTENDED)) {
-         switch ((Direction)var1.getValue(FACING)) {
-            case DOWN:
-               return DOWN_AABB;
-            case UP:
-            default:
-               return UP_AABB;
-            case NORTH:
-               return NORTH_AABB;
-            case SOUTH:
-               return SOUTH_AABB;
-            case WEST:
-               return WEST_AABB;
-            case EAST:
-               return EAST_AABB;
-         }
-      } else {
-         return Shapes.block();
-      }
+      return (Boolean)var1.getValue(EXTENDED) ? (VoxelShape)SHAPES.get(var1.getValue(FACING)) : Shapes.block();
    }
 
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
@@ -187,7 +164,7 @@ public class PistonBaseBlock extends DirectionalBlock {
          }
 
          var2.setBlock(var3, var7, 67);
-         var2.playSound((Player)null, (BlockPos)var3, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 0.5F, var2.random.nextFloat() * 0.25F + 0.6F);
+         var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 0.5F, var2.random.nextFloat() * 0.25F + 0.6F);
          var2.gameEvent(GameEvent.BLOCK_ACTIVATE, var3, GameEvent.Context.of(var7));
       } else if (var4 == 1 || var4 == 2) {
          BlockEntity var15 = var2.getBlockEntity(var3.relative(var6));
@@ -196,9 +173,9 @@ public class PistonBaseBlock extends DirectionalBlock {
          }
 
          BlockState var9 = (BlockState)((BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, var6)).setValue(MovingPistonBlock.TYPE, this.isSticky ? PistonType.STICKY : PistonType.DEFAULT);
-         var2.setBlock(var3, var9, 20);
+         var2.setBlock(var3, var9, 276);
          var2.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var3, var9, (BlockState)this.defaultBlockState().setValue(FACING, Direction.from3DDataValue(var5 & 7)), var6, false, true));
-         var2.blockUpdated(var3, var9.getBlock());
+         var2.updateNeighborsAt(var3, var9.getBlock());
          var9.updateNeighbourShapes(var2, var3, 2);
          if (this.isSticky) {
             BlockPos var10 = var3.offset(var6.getStepX() * 2, var6.getStepY() * 2, var6.getStepZ() * 2);
@@ -226,7 +203,7 @@ public class PistonBaseBlock extends DirectionalBlock {
             var2.removeBlock(var3.relative(var6), false);
          }
 
-         var2.playSound((Player)null, (BlockPos)var3, SoundEvents.PISTON_CONTRACT, SoundSource.BLOCKS, 0.5F, var2.random.nextFloat() * 0.15F + 0.6F);
+         var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.PISTON_CONTRACT, SoundSource.BLOCKS, 0.5F, var2.random.nextFloat() * 0.15F + 0.6F);
          var2.gameEvent(GameEvent.BLOCK_DEACTIVATE, var3, GameEvent.Context.of(var9));
       }
 
@@ -276,7 +253,7 @@ public class PistonBaseBlock extends DirectionalBlock {
    private boolean moveBlocks(Level var1, BlockPos var2, Direction var3, boolean var4) {
       BlockPos var5 = var2.relative(var3);
       if (!var4 && var1.getBlockState(var5).is(Blocks.PISTON_HEAD)) {
-         var1.setBlock(var5, Blocks.AIR.defaultBlockState(), 20);
+         var1.setBlock(var5, Blocks.AIR.defaultBlockState(), 276);
       }
 
       PistonStructureResolver var6 = new PistonStructureResolver(var1, var2, var3, var4);
@@ -318,7 +295,7 @@ public class PistonBaseBlock extends DirectionalBlock {
             var26 = var26.relative(var21);
             var7.remove(var26);
             BlockState var38 = (BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(FACING, var3);
-            var1.setBlock(var26, var38, 68);
+            var1.setBlock(var26, var38, 324);
             var1.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var26, var38, (BlockState)var9.get(var23), var3, var4, false));
             var20[var13++] = var32;
          }
@@ -328,7 +305,7 @@ public class PistonBaseBlock extends DirectionalBlock {
             BlockState var28 = (BlockState)((BlockState)Blocks.PISTON_HEAD.defaultBlockState().setValue(PistonHeadBlock.FACING, var3)).setValue(PistonHeadBlock.TYPE, var24);
             BlockState var33 = (BlockState)((BlockState)Blocks.MOVING_PISTON.defaultBlockState().setValue(MovingPistonBlock.FACING, var3)).setValue(MovingPistonBlock.TYPE, this.isSticky ? PistonType.STICKY : PistonType.DEFAULT);
             var7.remove(var5);
-            var1.setBlock(var5, var33, 68);
+            var1.setBlock(var5, var33, 324);
             var1.setBlockEntity(MovingPistonBlock.newMovingBlockEntity(var5, var33, var28, var3, true, true));
          }
 
@@ -390,11 +367,6 @@ public class PistonBaseBlock extends DirectionalBlock {
 
    static {
       EXTENDED = BlockStateProperties.EXTENDED;
-      EAST_AABB = Block.box(0.0, 0.0, 0.0, 12.0, 16.0, 16.0);
-      WEST_AABB = Block.box(4.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-      SOUTH_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 12.0);
-      NORTH_AABB = Block.box(0.0, 0.0, 4.0, 16.0, 16.0, 16.0);
-      UP_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
-      DOWN_AABB = Block.box(0.0, 4.0, 0.0, 16.0, 16.0, 16.0);
+      SHAPES = Shapes.rotateAll(Block.boxZ(16.0, 4.0, 16.0));
    }
 }

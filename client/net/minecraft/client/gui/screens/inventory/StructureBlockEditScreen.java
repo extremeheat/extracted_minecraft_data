@@ -29,6 +29,7 @@ public class StructureBlockEditScreen extends Screen {
    private static final Component INTEGRITY_LABEL = Component.translatable("structure_block.integrity");
    private static final Component CUSTOM_DATA_LABEL = Component.translatable("structure_block.custom_data");
    private static final Component INCLUDE_ENTITIES_LABEL = Component.translatable("structure_block.include_entities");
+   private static final Component STRICT_LABEL = Component.translatable("structure_block.strict");
    private static final Component DETECT_SIZE_LABEL = Component.translatable("structure_block.detect_size");
    private static final Component SHOW_AIR_LABEL = Component.translatable("structure_block.show_air");
    private static final Component SHOW_BOUNDING_BOX_LABEL = Component.translatable("structure_block.show_boundingbox");
@@ -39,6 +40,7 @@ public class StructureBlockEditScreen extends Screen {
    private Rotation initialRotation;
    private StructureMode initialMode;
    private boolean initialEntityIgnoring;
+   private boolean initialStrict;
    private boolean initialShowAir;
    private boolean initialShowBoundingBox;
    private EditBox nameEdit;
@@ -59,6 +61,7 @@ public class StructureBlockEditScreen extends Screen {
    private Button rot270Button;
    private Button detectButton;
    private CycleButton<Boolean> includeEntitiesButton;
+   private CycleButton<Boolean> strictButton;
    private CycleButton<Mirror> mirrorButton;
    private CycleButton<Boolean> toggleAirButton;
    private CycleButton<Boolean> toggleBoundingBox;
@@ -86,6 +89,7 @@ public class StructureBlockEditScreen extends Screen {
       this.structure.setRotation(this.initialRotation);
       this.structure.setMode(this.initialMode);
       this.structure.setIgnoreEntities(this.initialEntityIgnoring);
+      this.structure.setStrict(this.initialStrict);
       this.structure.setShowAir(this.initialShowAir);
       this.structure.setShowBoundingBox(this.initialShowBoundingBox);
       this.minecraft.setScreen((Screen)null);
@@ -98,6 +102,7 @@ public class StructureBlockEditScreen extends Screen {
       this.initialRotation = this.structure.getRotation();
       this.initialMode = this.structure.getMode();
       this.initialEntityIgnoring = this.structure.isIgnoreEntities();
+      this.initialStrict = this.structure.isStrict();
       this.initialShowAir = this.structure.getShowAir();
       this.initialShowBoundingBox = this.structure.getShowBoundingBox();
       this.saveButton = (Button)this.addRenderableWidget(Button.builder(Component.translatable("structure_block.button.save"), (var1x) -> {
@@ -126,6 +131,7 @@ public class StructureBlockEditScreen extends Screen {
 
       }).bounds(this.width / 2 + 4 + 100, 120, 50, 20).build());
       this.includeEntitiesButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(!this.structure.isIgnoreEntities()).displayOnlyValue().create(this.width / 2 + 4 + 100, 160, 50, 20, INCLUDE_ENTITIES_LABEL, (var1x, var2x) -> this.structure.setIgnoreEntities(!var2x)));
+      this.strictButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.isStrict()).displayOnlyValue().create(this.width / 2 + 4 + 100, 120, 50, 20, STRICT_LABEL, (var1x, var2x) -> this.structure.setStrict(var2x)));
       this.mirrorButton = (CycleButton)this.addRenderableWidget(CycleButton.builder(Mirror::symbol).withValues(Mirror.values()).displayOnlyValue().withInitialValue(this.initialMirror).create(this.width / 2 - 20, 185, 40, 20, Component.literal("MIRROR"), (var1x, var2x) -> this.structure.setMirror(var2x)));
       this.toggleAirButton = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.getShowAir()).displayOnlyValue().create(this.width / 2 + 4 + 100, 80, 50, 20, SHOW_AIR_LABEL, (var1x, var2x) -> this.structure.setShowAir(var2x)));
       this.toggleBoundingBox = (CycleButton)this.addRenderableWidget(CycleButton.onOffBuilder(this.structure.getShowBoundingBox()).displayOnlyValue().create(this.width / 2 + 4 + 100, 80, 50, 20, SHOW_BOUNDING_BOX_LABEL, (var1x, var2x) -> this.structure.setShowBoundingBox(var2x)));
@@ -256,6 +262,7 @@ public class StructureBlockEditScreen extends Screen {
       this.loadButton.visible = false;
       this.detectButton.visible = false;
       this.includeEntitiesButton.visible = false;
+      this.strictButton.visible = false;
       this.mirrorButton.visible = false;
       this.rot0Button.visible = false;
       this.rot90Button.visible = false;
@@ -275,6 +282,7 @@ public class StructureBlockEditScreen extends Screen {
             this.saveButton.visible = true;
             this.detectButton.visible = true;
             this.includeEntitiesButton.visible = true;
+            this.strictButton.visible = false;
             this.toggleAirButton.visible = true;
             break;
          case LOAD:
@@ -286,6 +294,7 @@ public class StructureBlockEditScreen extends Screen {
             this.seedEdit.setVisible(true);
             this.loadButton.visible = true;
             this.includeEntitiesButton.visible = true;
+            this.strictButton.visible = true;
             this.mirrorButton.visible = true;
             this.rot0Button.visible = true;
             this.rot90Button.visible = true;
@@ -308,7 +317,7 @@ public class StructureBlockEditScreen extends Screen {
       Vec3i var3 = new Vec3i(this.parseCoordinate(this.sizeXEdit.getValue()), this.parseCoordinate(this.sizeYEdit.getValue()), this.parseCoordinate(this.sizeZEdit.getValue()));
       float var4 = this.parseIntegrity(this.integrityEdit.getValue());
       long var5 = this.parseSeed(this.seedEdit.getValue());
-      this.minecraft.getConnection().send(new ServerboundSetStructureBlockPacket(this.structure.getBlockPos(), var1, this.structure.getMode(), this.nameEdit.getValue(), var2, var3, this.structure.getMirror(), this.structure.getRotation(), this.dataEdit.getValue(), this.structure.isIgnoreEntities(), this.structure.getShowAir(), this.structure.getShowBoundingBox(), var4, var5));
+      this.minecraft.getConnection().send(new ServerboundSetStructureBlockPacket(this.structure.getBlockPos(), var1, this.structure.getMode(), this.nameEdit.getValue(), var2, var3, this.structure.getMirror(), this.structure.getRotation(), this.dataEdit.getValue(), this.structure.isIgnoreEntities(), this.structure.isStrict(), this.structure.getShowAir(), this.structure.getShowBoundingBox(), var4, var5));
       return true;
    }
 
@@ -381,6 +390,7 @@ public class StructureBlockEditScreen extends Screen {
          var1.drawString(this.font, (Component)INTEGRITY_LABEL, this.width / 2 - 153, 110, 10526880);
          this.integrityEdit.render(var1, var2, var3, var4);
          this.seedEdit.render(var1, var2, var3, var4);
+         var1.drawString(this.font, (Component)STRICT_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)STRICT_LABEL), 110, 10526880);
          var1.drawString(this.font, (Component)SHOW_BOUNDING_BOX_LABEL, this.width / 2 + 154 - this.font.width((FormattedText)SHOW_BOUNDING_BOX_LABEL), 70, 10526880);
       }
 

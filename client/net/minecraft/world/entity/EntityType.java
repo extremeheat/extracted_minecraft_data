@@ -389,7 +389,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    @Nullable
-   public T spawn(ServerLevel var1, @Nullable ItemStack var2, @Nullable Player var3, BlockPos var4, EntitySpawnReason var5, boolean var6, boolean var7) {
+   public T spawn(ServerLevel var1, @Nullable ItemStack var2, @Nullable LivingEntity var3, BlockPos var4, EntitySpawnReason var5, boolean var6, boolean var7) {
       Consumer var8;
       if (var2 != null) {
          var8 = createDefaultStackConfig(var1, var2, var3);
@@ -401,12 +401,12 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return (T)this.spawn(var1, var8, var4, var5, var6, var7);
    }
 
-   public static <T extends Entity> Consumer<T> createDefaultStackConfig(Level var0, ItemStack var1, @Nullable Player var2) {
+   public static <T extends Entity> Consumer<T> createDefaultStackConfig(Level var0, ItemStack var1, @Nullable LivingEntity var2) {
       return appendDefaultStackConfig((var0x) -> {
       }, var0, var1, var2);
    }
 
-   public static <T extends Entity> Consumer<T> appendDefaultStackConfig(Consumer<T> var0, Level var1, ItemStack var2, @Nullable Player var3) {
+   public static <T extends Entity> Consumer<T> appendDefaultStackConfig(Consumer<T> var0, Level var1, ItemStack var2, @Nullable LivingEntity var3) {
       return appendCustomEntityStackConfig(appendCustomNameConfig(var0, var2), var1, var2, var3);
    }
 
@@ -415,7 +415,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return var2 != null ? var0.andThen((var1x) -> var1x.setCustomName(var2)) : var0;
    }
 
-   public static <T extends Entity> Consumer<T> appendCustomEntityStackConfig(Consumer<T> var0, Level var1, ItemStack var2, @Nullable Player var3) {
+   public static <T extends Entity> Consumer<T> appendCustomEntityStackConfig(Consumer<T> var0, Level var1, ItemStack var2, @Nullable LivingEntity var3) {
       CustomData var4 = (CustomData)var2.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
       return !var4.isEmpty() ? var0.andThen((var3x) -> updateCustomEntityTag(var1, var3, var3x, var4)) : var0;
    }
@@ -479,14 +479,23 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       return 1.0 + Shapes.collide(Direction.Axis.Y, var3, var5, var2 ? -2.0 : -1.0);
    }
 
-   public static void updateCustomEntityTag(Level var0, @Nullable Player var1, @Nullable Entity var2, CustomData var3) {
+   public static void updateCustomEntityTag(Level var0, @Nullable LivingEntity var1, @Nullable Entity var2, CustomData var3) {
       MinecraftServer var4 = var0.getServer();
       if (var4 != null && var2 != null) {
          EntityType var5 = (EntityType)var3.parseEntityType(var4.registryAccess(), Registries.ENTITY_TYPE);
          if (var2.getType() == var5) {
-            if (var0.isClientSide || !var2.getType().onlyOpCanSetNbt() || var1 != null && var4.getPlayerList().isOp(var1.getGameProfile())) {
-               var3.loadInto(var2);
+            if (!var0.isClientSide && var2.getType().onlyOpCanSetNbt()) {
+               if (!(var1 instanceof Player)) {
+                  return;
+               }
+
+               Player var6 = (Player)var1;
+               if (!var4.getPlayerList().isOp(var6.getGameProfile())) {
+                  return;
+               }
             }
+
+            var3.loadInto(var2);
          }
       }
    }
@@ -609,6 +618,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
                }));
          }
 
+         @Nullable
          public Spliterator<Entity> trySplit() {
             return null;
          }
@@ -855,7 +865,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       private EntityAttachments.Builder attachments = EntityAttachments.builder();
       private FeatureFlagSet requiredFeatures;
       private DependantName<EntityType<?>, Optional<ResourceKey<LootTable>>> lootTable;
-      private DependantName<EntityType<?>, String> descriptionId;
+      private final DependantName<EntityType<?>, String> descriptionId;
 
       private Builder(EntityFactory<T> var1, MobCategory var2) {
          super();
@@ -984,6 +994,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
 
    @FunctionalInterface
    public interface EntityFactory<T extends Entity> {
+      @Nullable
       T create(EntityType<T> var1, Level var2);
    }
 }

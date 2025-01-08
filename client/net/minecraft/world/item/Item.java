@@ -21,13 +21,18 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.DependantName;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -58,6 +63,8 @@ import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantable;
 import net.minecraft.world.item.enchantment.Repairable;
+import net.minecraft.world.item.equipment.ArmorMaterial;
+import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ItemLike;
@@ -72,6 +79,7 @@ import org.slf4j.Logger;
 
 public class Item implements FeatureElement, ItemLike {
    public static final Codec<Holder<Item>> CODEC;
+   public static final StreamCodec<RegistryFriendlyByteBuf, Holder<Item>> STREAM_CODEC;
    private static final Logger LOGGER;
    public static final Map<Block, Item> BY_BLOCK;
    public static final ResourceLocation BASE_ATTACK_DAMAGE_ID;
@@ -139,8 +147,23 @@ public class Item implements FeatureElement, ItemLike {
    public void verifyComponentsAfterLoad(ItemStack var1) {
    }
 
-   public boolean canAttackBlock(BlockState var1, Level var2, BlockPos var3, Player var4) {
-      return true;
+   public boolean canDestroyBlock(ItemStack var1, BlockState var2, Level var3, BlockPos var4, LivingEntity var5) {
+      Tool var6 = (Tool)var1.get(DataComponents.TOOL);
+      if (var6 != null && !var6.canDestroyBlocksInCreative()) {
+         boolean var10000;
+         if (var5 instanceof Player) {
+            Player var7 = (Player)var5;
+            if (var7.getAbilities().instabuild) {
+               var10000 = false;
+               return var10000;
+            }
+         }
+
+         var10000 = true;
+         return var10000;
+      } else {
+         return true;
+      }
    }
 
    public Item asItem() {
@@ -203,8 +226,7 @@ public class Item implements FeatureElement, ItemLike {
       return null;
    }
 
-   public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
-      return false;
+   public void hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
    }
 
    public void postHurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
@@ -320,6 +342,7 @@ public class Item implements FeatureElement, ItemLike {
 
    static {
       CODEC = BuiltInRegistries.ITEM.holderByNameCodec().validate((var0) -> var0.is((Holder)Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air") : DataResult.success(var0));
+      STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.ITEM);
       LOGGER = LogUtils.getLogger();
       BY_BLOCK = Maps.newHashMap();
       BASE_ATTACK_DAMAGE_ID = ResourceLocation.withDefaultNamespace("base_attack_damage");
@@ -409,6 +432,22 @@ public class Item implements FeatureElement, ItemLike {
 
       public Properties equippableUnswappable(EquipmentSlot var1) {
          return this.component(DataComponents.EQUIPPABLE, Equippable.builder(var1).setSwappable(false).build());
+      }
+
+      public Properties tool(ToolMaterial var1, TagKey<Block> var2, float var3, float var4, boolean var5) {
+         return var1.applyToolProperties(this, var2, var3, var4, var5);
+      }
+
+      public Properties pickaxe(ToolMaterial var1, float var2, float var3) {
+         return this.tool(var1, BlockTags.MINEABLE_WITH_PICKAXE, var2, var3, false);
+      }
+
+      public Properties sword(ToolMaterial var1, float var2, float var3) {
+         return var1.applySwordProperties(this, var2, var3);
+      }
+
+      public Properties humanoidArmor(ArmorMaterial var1, ArmorType var2) {
+         return this.durability(var2.getDurability(var1.durability())).attributes(var1.createAttributes(var2)).enchantable(var1.enchantmentValue()).component(DataComponents.EQUIPPABLE, Equippable.builder(var2.getSlot()).setEquipSound(var1.equipSound()).setAsset(var1.assetId()).build()).repairable(var1.repairIngredient());
       }
 
       public Properties requiredFeatures(FeatureFlag... var1) {

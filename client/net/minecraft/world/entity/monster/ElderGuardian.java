@@ -40,15 +40,15 @@ public class ElderGuardian extends Guardian {
    }
 
    protected SoundEvent getAmbientSound() {
-      return this.isInWaterOrBubble() ? SoundEvents.ELDER_GUARDIAN_AMBIENT : SoundEvents.ELDER_GUARDIAN_AMBIENT_LAND;
+      return this.isInWater() ? SoundEvents.ELDER_GUARDIAN_AMBIENT : SoundEvents.ELDER_GUARDIAN_AMBIENT_LAND;
    }
 
    protected SoundEvent getHurtSound(DamageSource var1) {
-      return this.isInWaterOrBubble() ? SoundEvents.ELDER_GUARDIAN_HURT : SoundEvents.ELDER_GUARDIAN_HURT_LAND;
+      return this.isInWater() ? SoundEvents.ELDER_GUARDIAN_HURT : SoundEvents.ELDER_GUARDIAN_HURT_LAND;
    }
 
    protected SoundEvent getDeathSound() {
-      return this.isInWaterOrBubble() ? SoundEvents.ELDER_GUARDIAN_DEATH : SoundEvents.ELDER_GUARDIAN_DEATH_LAND;
+      return this.isInWater() ? SoundEvents.ELDER_GUARDIAN_DEATH : SoundEvents.ELDER_GUARDIAN_DEATH_LAND;
    }
 
    protected SoundEvent getFlopSound() {
@@ -58,7 +58,7 @@ public class ElderGuardian extends Guardian {
    protected void customServerAiStep(ServerLevel var1) {
       super.customServerAiStep(var1);
       if ((this.tickCount + this.getId()) % 1200 == 0) {
-         MobEffectInstance var2 = new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 6000, 2);
+         MobEffectInstance var2 = new MobEffectInstance(MobEffects.MINING_FATIGUE, 6000, 2);
          List var3 = MobEffectUtil.addEffectToPlayersAround(var1, this, this.position(), 50.0, var2, 1200);
          var3.forEach((var1x) -> var1x.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.GUARDIAN_ELDER_EFFECT, this.isSilent() ? 0.0F : 1.0F)));
       }

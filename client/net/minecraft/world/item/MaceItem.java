@@ -3,7 +3,6 @@ package net.minecraft.world.item;
 import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -12,19 +11,16 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public class MaceItem extends Item {
@@ -44,14 +40,10 @@ public class MaceItem extends Item {
    }
 
    public static Tool createToolProperties() {
-      return new Tool(List.of(), 1.0F, 2);
+      return new Tool(List.of(), 1.0F, 2, false);
    }
 
-   public boolean canAttackBlock(BlockState var1, Level var2, BlockPos var3, Player var4) {
-      return !var4.isCreative();
-   }
-
-   public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
+   public void hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
       if (canSmashAttack(var3)) {
          ServerLevel var4 = (ServerLevel)var3.level();
          var3.setDeltaMovement(var3.getDeltaMovement().with(Direction.Axis.Y, 0.009999999776482582));
@@ -69,15 +61,14 @@ public class MaceItem extends Item {
             }
 
             SoundEvent var7 = var3.fallDistance > 5.0F ? SoundEvents.MACE_SMASH_GROUND_HEAVY : SoundEvents.MACE_SMASH_GROUND;
-            var4.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), var7, var3.getSoundSource(), 1.0F, 1.0F);
+            var4.playSound((Entity)null, var3.getX(), var3.getY(), var3.getZ(), var7, var3.getSoundSource(), 1.0F, 1.0F);
          } else {
-            var4.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), SoundEvents.MACE_SMASH_AIR, var3.getSoundSource(), 1.0F, 1.0F);
+            var4.playSound((Entity)null, var3.getX(), var3.getY(), var3.getZ(), SoundEvents.MACE_SMASH_AIR, var3.getSoundSource(), 1.0F, 1.0F);
          }
 
          knockback(var4, var3, var2);
       }
 
-      return true;
    }
 
    private Vec3 calculateImpactPosition(ServerPlayer var1) {
@@ -85,7 +76,6 @@ public class MaceItem extends Item {
    }
 
    public void postHurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
-      var1.hurtAndBreak(1, var3, EquipmentSlot.MAINHAND);
       if (canSmashAttack(var3)) {
          var3.resetFallDistance();
       }
@@ -146,14 +136,16 @@ public class MaceItem extends Item {
          boolean var4;
          boolean var5;
          boolean var10000;
-         label62: {
+         label64: {
             var3 = !var2.isSpectator();
             var4 = var2 != var0 && var2 != var1;
             var5 = !var0.isAlliedTo((Entity)var2);
-            if (var2 instanceof TamableAnimal var7) {
-               if (var7.isTame() && var0.getUUID().equals(var7.getOwnerUUID())) {
-                  var10000 = true;
-                  break label62;
+            if (var2 instanceof TamableAnimal var8) {
+               if (var1 instanceof LivingEntity var7) {
+                  if (var8.isTame() && var8.isOwnedBy(var7)) {
+                     var10000 = true;
+                     break label64;
+                  }
                }
             }
 
@@ -161,12 +153,12 @@ public class MaceItem extends Item {
          }
 
          boolean var6;
-         label55: {
+         label56: {
             var6 = !var10000;
-            if (var2 instanceof ArmorStand var8) {
-               if (var8.isMarker()) {
+            if (var2 instanceof ArmorStand var10) {
+               if (var10.isMarker()) {
                   var10000 = false;
-                  break label55;
+                  break label56;
                }
             }
 
@@ -174,8 +166,8 @@ public class MaceItem extends Item {
          }
 
          boolean var9 = var10000;
-         boolean var10 = var1.distanceToSqr((Entity)var2) <= Math.pow(3.5, 2.0);
-         return var3 && var4 && var5 && var6 && var9 && var10;
+         boolean var11 = var1.distanceToSqr((Entity)var2) <= Math.pow(3.5, 2.0);
+         return var3 && var4 && var5 && var6 && var9 && var11;
       };
    }
 

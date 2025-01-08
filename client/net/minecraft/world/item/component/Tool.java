@@ -14,15 +14,16 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-public record Tool(List<Rule> rules, float defaultMiningSpeed, int damagePerBlock) {
-   public static final Codec<Tool> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Tool.Rule.CODEC.listOf().fieldOf("rules").forGetter(Tool::rules), Codec.FLOAT.optionalFieldOf("default_mining_speed", 1.0F).forGetter(Tool::defaultMiningSpeed), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("damage_per_block", 1).forGetter(Tool::damagePerBlock)).apply(var0, Tool::new));
+public record Tool(List<Rule> rules, float defaultMiningSpeed, int damagePerBlock, boolean canDestroyBlocksInCreative) {
+   public static final Codec<Tool> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Tool.Rule.CODEC.listOf().fieldOf("rules").forGetter(Tool::rules), Codec.FLOAT.optionalFieldOf("default_mining_speed", 1.0F).forGetter(Tool::defaultMiningSpeed), ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("damage_per_block", 1).forGetter(Tool::damagePerBlock), Codec.BOOL.optionalFieldOf("can_destroy_blocks_in_creative", true).forGetter(Tool::canDestroyBlocksInCreative)).apply(var0, Tool::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, Tool> STREAM_CODEC;
 
-   public Tool(List<Rule> var1, float var2, int var3) {
+   public Tool(List<Rule> var1, float var2, int var3, boolean var4) {
       super();
       this.rules = var1;
       this.defaultMiningSpeed = var2;
       this.damagePerBlock = var3;
+      this.canDestroyBlocksInCreative = var4;
    }
 
    public float getMiningSpeed(BlockState var1) {
@@ -46,7 +47,7 @@ public record Tool(List<Rule> rules, float defaultMiningSpeed, int damagePerBloc
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(Tool.Rule.STREAM_CODEC.apply(ByteBufCodecs.list()), Tool::rules, ByteBufCodecs.FLOAT, Tool::defaultMiningSpeed, ByteBufCodecs.VAR_INT, Tool::damagePerBlock, Tool::new);
+      STREAM_CODEC = StreamCodec.composite(Tool.Rule.STREAM_CODEC.apply(ByteBufCodecs.list()), Tool::rules, ByteBufCodecs.FLOAT, Tool::defaultMiningSpeed, ByteBufCodecs.VAR_INT, Tool::damagePerBlock, ByteBufCodecs.BOOL, Tool::canDestroyBlocksInCreative, Tool::new);
    }
 
    public static record Rule(HolderSet<Block> blocks, Optional<Float> speed, Optional<Boolean> correctForDrops) {

@@ -174,7 +174,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
          this.level.blockEvent(this.worldPosition, this.getBlockState().getBlock(), 1, this.openCount);
          if (this.openCount == 1) {
             this.level.gameEvent(var1, GameEvent.CONTAINER_OPEN, this.worldPosition);
-            this.level.playSound((Player)null, (BlockPos)this.worldPosition, SoundEvents.SHULKER_BOX_OPEN, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
+            this.level.playSound((Entity)null, (BlockPos)this.worldPosition, SoundEvents.SHULKER_BOX_OPEN, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
          }
       }
 
@@ -186,7 +186,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
          this.level.blockEvent(this.worldPosition, this.getBlockState().getBlock(), 1, this.openCount);
          if (this.openCount <= 0) {
             this.level.gameEvent(var1, GameEvent.CONTAINER_CLOSE, this.worldPosition);
-            this.level.playSound((Player)null, (BlockPos)this.worldPosition, SoundEvents.SHULKER_BOX_CLOSE, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
+            this.level.playSound((Entity)null, (BlockPos)this.worldPosition, SoundEvents.SHULKER_BOX_CLOSE, SoundSource.BLOCKS, 0.5F, this.level.random.nextFloat() * 0.1F + 0.9F);
          }
       }
 

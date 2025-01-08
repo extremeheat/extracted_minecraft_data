@@ -1,6 +1,5 @@
 package com.mojang.math;
 
-import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import it.unimi.dsi.fastutil.booleans.BooleanList;
@@ -11,6 +10,7 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;
+import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import org.joml.Matrix3f;
 
@@ -64,6 +64,7 @@ public enum OctahedralGroup implements StringRepresentable {
    ROT_90_REF_Z_NEG("rot_90_ref_z_neg", SymmetricGroup3.P213, false, true, true),
    ROT_90_REF_Z_POS("rot_90_ref_z_pos", SymmetricGroup3.P213, true, false, true);
 
+   private static final Direction.Axis[] AXES = Direction.Axis.values();
    private final Matrix3f transformation;
    private final String name;
    @Nullable
@@ -129,17 +130,13 @@ public enum OctahedralGroup implements StringRepresentable {
 
    public Direction rotate(Direction var1) {
       if (this.rotatedDirections == null) {
-         this.rotatedDirections = Maps.newEnumMap(Direction.class);
-         Direction.Axis[] var2 = Direction.Axis.values();
-
-         for(Direction var6 : Direction.values()) {
-            Direction.Axis var7 = var6.getAxis();
-            Direction.AxisDirection var8 = var6.getAxisDirection();
-            Direction.Axis var9 = var2[this.permutation.permutation(var7.ordinal())];
-            Direction.AxisDirection var10 = this.inverts(var9) ? var8.opposite() : var8;
-            Direction var11 = Direction.fromAxisAndDirection(var9, var10);
-            this.rotatedDirections.put(var6, var11);
-         }
+         this.rotatedDirections = Util.<Direction, Direction>makeEnumMap(Direction.class, (var1x) -> {
+            Direction.Axis var2 = var1x.getAxis();
+            Direction.AxisDirection var3 = var1x.getAxisDirection();
+            Direction.Axis var4 = this.permute(var2);
+            Direction.AxisDirection var5 = this.inverts(var4) ? var3.opposite() : var3;
+            return Direction.fromAxisAndDirection(var4, var5);
+         });
       }
 
       return (Direction)this.rotatedDirections.get(var1);
@@ -157,8 +154,32 @@ public enum OctahedralGroup implements StringRepresentable {
       }
    }
 
+   public Direction.Axis permute(Direction.Axis var1) {
+      return AXES[this.permutation.permutation(var1.ordinal())];
+   }
+
    public FrontAndTop rotate(FrontAndTop var1) {
       return FrontAndTop.fromFrontAndTop(this.rotate(var1.front()), this.rotate(var1.top()));
+   }
+
+   public static OctahedralGroup fromAngles(int var0, int var1) {
+      var0 = Mth.positiveModulo(var0, 360);
+      var1 = Mth.positiveModulo(var1, 360);
+      if (var0 % 90 == 0 && var1 % 90 == 0) {
+         OctahedralGroup var2 = IDENTITY;
+
+         for(int var3 = 0; var3 < var1; var3 += 90) {
+            var2 = var2.compose(ROT_90_Y_NEG);
+         }
+
+         for(int var6 = 0; var6 < var0; var6 += 90) {
+            var2 = var2.compose(ROT_90_X_NEG);
+         }
+
+         return var2;
+      } else {
+         throw new IllegalArgumentException("Angles must be divisible by 90");
+      }
    }
 
    // $FF: synthetic method

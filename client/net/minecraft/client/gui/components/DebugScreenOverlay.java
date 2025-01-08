@@ -2,6 +2,7 @@ package net.minecraft.client.gui.components;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.mojang.blaze3d.platform.GlUtil;
 import com.mojang.datafixers.DataFixUtils;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -10,7 +11,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -79,14 +79,7 @@ public class DebugScreenOverlay {
    private static final int MARGIN_RIGHT = 2;
    private static final int MARGIN_LEFT = 2;
    private static final int MARGIN_TOP = 2;
-   private static final Map<Heightmap.Types, String> HEIGHTMAP_NAMES = (Map)Util.make(new EnumMap(Heightmap.Types.class), (var0) -> {
-      var0.put(Heightmap.Types.WORLD_SURFACE_WG, "SW");
-      var0.put(Heightmap.Types.WORLD_SURFACE, "S");
-      var0.put(Heightmap.Types.OCEAN_FLOOR_WG, "OW");
-      var0.put(Heightmap.Types.OCEAN_FLOOR, "O");
-      var0.put(Heightmap.Types.MOTION_BLOCKING, "M");
-      var0.put(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, "ML");
-   });
+   private static final Map<Heightmap.Types, String> HEIGHTMAP_NAMES;
    private final Minecraft minecraft;
    private final AllocationRateCalculator allocationRateCalculator;
    private final Font font;
@@ -276,7 +269,7 @@ public class DebugScreenOverlay {
          }
 
          Level var14 = this.getLevel();
-         Object var15 = var14 instanceof ServerLevel ? ((ServerLevel)var14).getForcedChunks() : LongSets.EMPTY_SET;
+         Object var15 = var14 instanceof ServerLevel ? ((ServerLevel)var14).getForceLoadedChunks() : LongSets.EMPTY_SET;
          String[] var10000 = new String[7];
          String var10003 = SharedConstants.getCurrentVersion().getName();
          var10000[0] = "Minecraft " + var10003 + " (" + this.minecraft.getLaunchedVersion() + "/" + ClientBrandRetriever.getClientModName() + ("release".equalsIgnoreCase(this.minecraft.getVersionType()) ? "" : "/" + this.minecraft.getVersionType()) + ")";
@@ -579,6 +572,10 @@ public class DebugScreenOverlay {
       this.tickTimeLogger.reset();
       this.pingLogger.reset();
       this.bandwidthLogger.reset();
+   }
+
+   static {
+      HEIGHTMAP_NAMES = Maps.newEnumMap(Map.of(Heightmap.Types.WORLD_SURFACE_WG, "SW", Heightmap.Types.WORLD_SURFACE, "S", Heightmap.Types.OCEAN_FLOOR_WG, "OW", Heightmap.Types.OCEAN_FLOOR, "O", Heightmap.Types.MOTION_BLOCKING, "M", Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, "ML"));
    }
 
    static class AllocationRateCalculator {

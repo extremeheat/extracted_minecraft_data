@@ -35,7 +35,7 @@ public class ChunkCullingDebugRenderer implements DebugRenderer.SimpleDebugRende
             SectionRenderDispatcher.RenderSection var12 = (SectionRenderDispatcher.RenderSection)var11.next();
             SectionOcclusionGraph.Node var13 = var10.getNode(var12);
             if (var13 != null) {
-               BlockPos var14 = var12.getOrigin();
+               BlockPos var14 = var12.getRenderOrigin();
                var1.pushPose();
                var1.translate((double)var14.getX() - var3, (double)var14.getY() - var5, (double)var14.getZ() - var7);
                Matrix4f var15 = var1.last().pose();

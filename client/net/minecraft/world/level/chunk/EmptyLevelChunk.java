@@ -26,7 +26,7 @@ public class EmptyLevelChunk extends LevelChunk {
    }
 
    @Nullable
-   public BlockState setBlockState(BlockPos var1, BlockState var2, boolean var3) {
+   public BlockState setBlockState(BlockPos var1, BlockState var2, int var3) {
       return null;
    }
 

@@ -14,7 +14,7 @@ public class RestrictSunGoal extends Goal {
    }
 
    public boolean canUse() {
-      return this.mob.level().isDay() && this.mob.getItemBySlot(EquipmentSlot.HEAD).isEmpty() && GoalUtils.hasGroundPathNavigation(this.mob);
+      return this.mob.level().isBrightOutside() && this.mob.getItemBySlot(EquipmentSlot.HEAD).isEmpty() && GoalUtils.hasGroundPathNavigation(this.mob);
    }
 
    public void start() {

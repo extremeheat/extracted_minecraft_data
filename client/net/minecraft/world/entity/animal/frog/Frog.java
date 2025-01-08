@@ -58,7 +58,6 @@ import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.FrogVariant;
 import net.minecraft.world.entity.monster.Slime;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -167,7 +166,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
 
    public void tick() {
       if (this.level().isClientSide()) {
-         this.swimIdleAnimationState.animateWhen(this.isInWaterOrBubble() && !this.walkAnimation.isMoving(), this.tickCount);
+         this.swimIdleAnimationState.animateWhen(this.isInWater() && !this.walkAnimation.isMoving(), this.tickCount);
       }
 
       super.tick();
@@ -210,7 +209,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
    }
 
    public void playEatingSound() {
-      this.level().playSound((Player)null, (Entity)this, SoundEvents.FROG_EAT, SoundSource.NEUTRAL, 2.0F, 1.0F);
+      this.level().playSound((Entity)null, (Entity)this, SoundEvents.FROG_EAT, SoundSource.NEUTRAL, 2.0F, 1.0F);
    }
 
    @Nullable
@@ -286,7 +285,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
    }
 
    public void travel(Vec3 var1) {
-      if (this.isControlledByLocalInstance() && this.isInWater()) {
+      if (this.isInWater()) {
          this.moveRelative(this.getSpeed(), var1);
          this.move(MoverType.SELF, this.getDeltaMovement());
          this.setDeltaMovement(this.getDeltaMovement().scale(0.9));

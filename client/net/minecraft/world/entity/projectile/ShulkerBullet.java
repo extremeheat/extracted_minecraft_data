@@ -254,6 +254,10 @@ public class ShulkerBullet extends Projectile {
 
    }
 
+   protected boolean isAffectedByBlocks() {
+      return !this.isRemoved();
+   }
+
    protected boolean canHitEntity(Entity var1) {
       return super.canHitEntity(var1) && !var1.noPhysics;
    }

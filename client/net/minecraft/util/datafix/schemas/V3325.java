@@ -16,7 +16,7 @@ public class V3325 extends NamespacedSchema {
       Map var2 = super.registerEntities(var1);
       var1.register(var2, "minecraft:item_display", (var1x) -> DSL.optionalFields("item", References.ITEM_STACK.in(var1)));
       var1.register(var2, "minecraft:block_display", (var1x) -> DSL.optionalFields("block_state", References.BLOCK_STATE.in(var1)));
-      var1.registerSimple(var2, "minecraft:text_display");
+      var1.register(var2, "minecraft:text_display", () -> DSL.optionalFields("text", References.TEXT_COMPONENT.in(var1)));
       return var2;
    }
 }

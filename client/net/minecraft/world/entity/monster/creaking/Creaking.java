@@ -45,6 +45,7 @@ import net.minecraft.world.level.block.CreakingHeartBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.CreakingHeartBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.CreakingHeartState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathFinder;
 import net.minecraft.world.level.pathfinder.PathType;
@@ -152,6 +153,7 @@ public class Creaking extends Monster {
             } else {
                this.invulnerabilityAnimationRemainingTicks = 8;
                this.level().broadcastEntityEvent(this, (byte)66);
+               this.gameEvent(GameEvent.ENTITY_ACTION);
                BlockEntity var8 = this.level().getBlockEntity(var4);
                if (var8 instanceof CreakingHeartBlockEntity) {
                   CreakingHeartBlockEntity var7 = (CreakingHeartBlockEntity)var8;
@@ -294,7 +296,7 @@ public class Creaking extends Monster {
          double var6 = var10.getYsize() * 0.3;
          double var8 = var10.getZsize() * 0.3;
          var1.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK_CRUMBLE, Blocks.PALE_OAK_WOOD.defaultBlockState()), var3.x, var3.y, var3.z, 100, var4, var6, var8, 0.0);
-         var1.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK_CRUMBLE, (BlockState)Blocks.CREAKING_HEART.defaultBlockState().setValue(CreakingHeartBlock.ACTIVE, true)), var3.x, var3.y, var3.z, 10, var4, var6, var8, 0.0);
+         var1.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK_CRUMBLE, (BlockState)Blocks.CREAKING_HEART.defaultBlockState().setValue(CreakingHeartBlock.STATE, CreakingHeartState.AWAKE)), var3.x, var3.y, var3.z, 10, var4, var6, var8, 0.0);
       }
 
       this.makeSound(this.getDeathSound());
@@ -322,10 +324,6 @@ public class Creaking extends Monster {
 
    public boolean fireImmune() {
       return this.isHeartBound() || super.fireImmune();
-   }
-
-   public boolean canBeNameTagged() {
-      return !this.isHeartBound() && super.canBeNameTagged();
    }
 
    protected boolean canAddPassenger(Entity var1) {

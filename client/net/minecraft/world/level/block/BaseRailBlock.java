@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -25,9 +26,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBlock {
-   protected static final VoxelShape FLAT_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 2.0, 16.0);
-   protected static final VoxelShape HALF_BLOCK_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 8.0, 16.0);
    public static final BooleanProperty WATERLOGGED;
+   private static final VoxelShape SHAPE_FLAT;
+   private static final VoxelShape SHAPE_SLOPE;
    private final boolean isStraight;
 
    public static boolean isRail(Level var0, BlockPos var1) {
@@ -50,8 +51,7 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      RailShape var5 = var1.is(this) ? (RailShape)var1.getValue(this.getShapeProperty()) : null;
-      return var5 != null && var5.isSlope() ? HALF_BLOCK_AABB : FLAT_AABB;
+      return ((RailShape)var1.getValue(this.getShapeProperty())).isSlope() ? SHAPE_SLOPE : SHAPE_FLAT;
    }
 
    protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
@@ -122,9 +122,8 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
       }
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var5) {
-         super.onRemove(var1, var2, var3, var4, var5);
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      if (!var4) {
          if (((RailShape)var1.getValue(this.getShapeProperty())).isSlope()) {
             var2.updateNeighborsAt(var3.above(), this);
          }
@@ -162,5 +161,7 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
 
    static {
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
+      SHAPE_FLAT = Block.column(16.0, 0.0, 2.0);
+      SHAPE_SLOPE = Block.column(16.0, 0.0, 8.0);
    }
 }

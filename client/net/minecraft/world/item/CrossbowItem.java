@@ -25,6 +25,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -87,7 +88,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
       float var6 = getPowerForTime(var5, var1, var3);
       if (var6 >= 1.0F && !isCharged(var1) && tryLoadProjectiles(var3, var1)) {
          ChargingSounds var7 = this.getChargingSounds(var1);
-         var7.end().ifPresent((var2x) -> var2.playSound((Player)null, var3.getX(), var3.getY(), var3.getZ(), (SoundEvent)var2x.value(), var3.getSoundSource(), 1.0F, 1.0F / (var2.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F));
+         var7.end().ifPresent((var2x) -> var2.playSound((Entity)null, var3.getX(), var3.getY(), var3.getZ(), (SoundEvent)var2x.value(), var3.getSoundSource(), 1.0F, 1.0F / (var2.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F));
          return true;
       } else {
          return false;
@@ -126,7 +127,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
 
       var2.shoot((double)var8.x(), (double)var8.y(), (double)var8.z(), var4, var5);
       float var18 = getShotPitch(var1.getRandom(), var3);
-      var1.level().playSound((Player)null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.CROSSBOW_SHOOT, var1.getSoundSource(), 1.0F, var18);
+      var1.level().playSound((Entity)null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.CROSSBOW_SHOOT, var1.getSoundSource(), 1.0F, var18);
    }
 
    private static Vector3f getProjectileShotVector(LivingEntity var0, Vec3 var1, float var2) {
@@ -194,12 +195,12 @@ public class CrossbowItem extends ProjectileWeaponItem {
 
          if (var6 >= 0.2F && !this.startSoundPlayed) {
             this.startSoundPlayed = true;
-            var5.start().ifPresent((var2x) -> var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)var2x.value(), SoundSource.PLAYERS, 0.5F, 1.0F));
+            var5.start().ifPresent((var2x) -> var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)var2x.value(), SoundSource.PLAYERS, 0.5F, 1.0F));
          }
 
          if (var6 >= 0.5F && !this.midLoadSoundPlayed) {
             this.midLoadSoundPlayed = true;
-            var5.mid().ifPresent((var2x) -> var1.playSound((Player)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)var2x.value(), SoundSource.PLAYERS, 0.5F, 1.0F));
+            var5.mid().ifPresent((var2x) -> var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)var2x.value(), SoundSource.PLAYERS, 0.5F, 1.0F));
          }
       }
 

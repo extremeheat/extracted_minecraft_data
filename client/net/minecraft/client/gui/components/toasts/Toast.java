@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.components.toasts;
 
+import javax.annotation.Nullable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -16,6 +17,11 @@ public interface Toast {
    Visibility getWantedVisibility();
 
    void update(ToastManager var1, long var2);
+
+   @Nullable
+   default SoundEvent getSoundEvent() {
+      return null;
+   }
 
    void render(GuiGraphics var1, Font var2, long var3);
 

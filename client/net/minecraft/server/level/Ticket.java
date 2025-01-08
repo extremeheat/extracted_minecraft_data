@@ -1,51 +1,68 @@
 package net.minecraft.server.level;
 
-import java.util.Objects;
+import javax.annotation.Nullable;
+import net.minecraft.Util;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 
-public final class Ticket<T> implements Comparable<Ticket<?>> {
-   private final TicketType<T> type;
+public class Ticket {
+   private final TicketType type;
    private final int ticketLevel;
-   private final T key;
-   private long createdTick;
+   private long ticksLeft;
 
-   protected Ticket(TicketType<T> var1, int var2, T var3) {
+   @Nullable
+   public static Ticket load(CompoundTag var0) {
+      TicketType var1 = (TicketType)BuiltInRegistries.TICKET_TYPE.getValue(ResourceLocation.tryParse(var0.getString("type")));
+      if (var1 == null) {
+         return null;
+      } else {
+         int var2 = var0.getInt("level");
+         if (var1.hasTimeout()) {
+            long var3 = var0.getLong("ticks_left");
+            return new Ticket(var1, var2, var3);
+         } else {
+            return new Ticket(var1, var2, 0L);
+         }
+      }
+   }
+
+   public void save(CompoundTag var1) {
+      ResourceLocation var2 = BuiltInRegistries.TICKET_TYPE.getKey(this.type);
+      if (var2 == null) {
+         throw new IllegalStateException("Unrecognised ticket type: " + String.valueOf(this.type));
+      } else {
+         var1.putString("type", var2.toString());
+         var1.putInt("level", this.ticketLevel);
+         if (this.type.hasTimeout()) {
+            var1.putLong("ticks_left", this.ticksLeft);
+         }
+
+      }
+   }
+
+   public Ticket(TicketType var1, int var2) {
+      this(var1, var2, var1.timeout());
+   }
+
+   private Ticket(TicketType var1, int var2, long var3) {
       super();
       this.type = var1;
       this.ticketLevel = var2;
-      this.key = var3;
-   }
-
-   public int compareTo(Ticket<?> var1) {
-      int var2 = Integer.compare(this.ticketLevel, var1.ticketLevel);
-      if (var2 != 0) {
-         return var2;
-      } else {
-         int var3 = Integer.compare(System.identityHashCode(this.type), System.identityHashCode(var1.type));
-         return var3 != 0 ? var3 : this.type.getComparator().compare(this.key, var1.key);
-      }
-   }
-
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else if (!(var1 instanceof Ticket)) {
-         return false;
-      } else {
-         Ticket var2 = (Ticket)var1;
-         return this.ticketLevel == var2.ticketLevel && Objects.equals(this.type, var2.type) && Objects.equals(this.key, var2.key);
-      }
-   }
-
-   public int hashCode() {
-      return Objects.hash(new Object[]{this.type, this.ticketLevel, this.key});
+      this.ticksLeft = var3;
    }
 
    public String toString() {
-      String var10000 = String.valueOf(this.type);
-      return "Ticket[" + var10000 + " " + this.ticketLevel + " (" + String.valueOf(this.key) + ")] at " + this.createdTick;
+      if (this.type.hasTimeout()) {
+         String var1 = Util.getRegisteredName(BuiltInRegistries.TICKET_TYPE, this.type);
+         return "Ticket[" + var1 + " " + this.ticketLevel + "] with " + this.ticksLeft + " ticks left ( out of" + this.type.timeout() + ")";
+      } else {
+         String var10000 = Util.getRegisteredName(BuiltInRegistries.TICKET_TYPE, this.type);
+         return "Ticket[" + var10000 + " " + this.ticketLevel + "] with no timeout";
+      }
    }
 
-   public TicketType<T> getType() {
+   public TicketType getType() {
       return this.type;
    }
 
@@ -53,17 +70,18 @@ public final class Ticket<T> implements Comparable<Ticket<?>> {
       return this.ticketLevel;
    }
 
-   protected void setCreatedTick(long var1) {
-      this.createdTick = var1;
+   public void resetTicksLeft() {
+      this.ticksLeft = this.type.timeout();
    }
 
-   protected boolean timedOut(long var1) {
-      long var3 = this.type.timeout();
-      return var3 != 0L && var1 - this.createdTick > var3;
+   public void decreaseTicksLeft() {
+      if (this.type.hasTimeout()) {
+         --this.ticksLeft;
+      }
+
    }
 
-   // $FF: synthetic method
-   public int compareTo(final Object var1) {
-      return this.compareTo((Ticket)var1);
+   public boolean isTimedOut() {
+      return this.type.hasTimeout() && this.ticksLeft <= 0L;
    }
 }

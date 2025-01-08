@@ -4,7 +4,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
@@ -16,7 +16,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 
 public interface SimpleWaterloggedBlock extends BucketPickup, LiquidBlockContainer {
-   default boolean canPlaceLiquid(@Nullable Player var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
+   default boolean canPlaceLiquid(@Nullable LivingEntity var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
       return var5 == Fluids.WATER;
    }
 
@@ -33,7 +33,7 @@ public interface SimpleWaterloggedBlock extends BucketPickup, LiquidBlockContain
       }
    }
 
-   default ItemStack pickupBlock(@Nullable Player var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
+   default ItemStack pickupBlock(@Nullable LivingEntity var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
       if ((Boolean)var4.getValue(BlockStateProperties.WATERLOGGED)) {
          var2.setBlock(var3, (BlockState)var4.setValue(BlockStateProperties.WATERLOGGED, false), 3);
          if (!var4.canSurvive(var2, var3)) {

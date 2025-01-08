@@ -1,6 +1,5 @@
 package net.minecraft.world.entity;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
@@ -10,7 +9,6 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -27,7 +25,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
@@ -45,6 +42,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    public static final float DEFAULT_WIDTH = 6.0F;
    public static final float HEIGHT = 0.5F;
    private PotionContents potionContents;
+   private float potionDurationScale;
    private final Map<Entity, Integer> victims;
    private int duration;
    private int waitTime;
@@ -60,6 +58,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    public AreaEffectCloud(EntityType<? extends AreaEffectCloud> var1, Level var2) {
       super(var1, var2);
       this.potionContents = PotionContents.EMPTY;
+      this.potionDurationScale = 1.0F;
       this.victims = Maps.newHashMap();
       this.duration = 600;
       this.waitTime = 20;
@@ -100,6 +99,10 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    public void setPotionContents(PotionContents var1) {
       this.potionContents = var1;
       this.updateColor();
+   }
+
+   public void setPotionDurationScale(float var1) {
+      this.potionDurationScale = var1;
    }
 
    private void updateColor() {
@@ -214,21 +217,17 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
                if (!this.potionContents.hasEffects()) {
                   this.victims.clear();
                } else {
-                  ArrayList var5 = Lists.newArrayList();
-                  if (this.potionContents.potion().isPresent()) {
-                     for(MobEffectInstance var7 : ((Potion)((Holder)this.potionContents.potion().get()).value()).getEffects()) {
-                        var5.add(new MobEffectInstance(var7.getEffect(), var7.mapDuration((var0) -> var0 / 4), var7.getAmplifier(), var7.isAmbient(), var7.isVisible()));
-                     }
-                  }
-
-                  var5.addAll(this.potionContents.customEffects());
-                  List var17 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox());
-                  if (!var17.isEmpty()) {
-                     for(LivingEntity var8 : var17) {
+                  ArrayList var5 = new ArrayList();
+                  PotionContents var10000 = this.potionContents;
+                  Objects.requireNonNull(var5);
+                  var10000.forEachEffect(var5::add, this.potionDurationScale);
+                  List var6 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox());
+                  if (!var6.isEmpty()) {
+                     for(LivingEntity var8 : var6) {
                         if (!this.victims.containsKey(var8) && var8.isAffectedByPotions()) {
-                           Stream var10000 = var5.stream();
+                           Stream var17 = var5.stream();
                            Objects.requireNonNull(var8);
-                           if (!var10000.noneMatch(var8::canBeAffected)) {
+                           if (!var17.noneMatch(var8::canBeAffected)) {
                               double var9 = var8.getX() - this.getX();
                               double var11 = var8.getZ() - this.getZ();
                               double var13 = var9 * var9 + var11 * var11;
@@ -357,6 +356,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
          PotionContents.CODEC.parse(var2, var1.get("potion_contents")).resultOrPartial((var0) -> LOGGER.warn("Failed to parse area effect cloud potions: '{}'", var0)).ifPresent(this::setPotionContents);
       }
 
+      this.potionDurationScale = var1.getFloatOrDefault("potion_duration_scale", 1.0F);
    }
 
    protected void addAdditionalSaveData(CompoundTag var1) {
@@ -377,6 +377,10 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       if (!this.potionContents.equals(PotionContents.EMPTY)) {
          Tag var3 = (Tag)PotionContents.CODEC.encodeStart(var2, this.potionContents).getOrThrow();
          var1.put("potion_contents", var3);
+      }
+
+      if (this.potionDurationScale != 1.0F) {
+         var1.putFloat("potion_duration_scale", this.potionDurationScale);
       }
 
    }

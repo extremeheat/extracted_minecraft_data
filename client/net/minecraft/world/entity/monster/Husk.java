@@ -12,7 +12,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -63,7 +62,7 @@ public class Husk extends Zombie {
    protected void doUnderWaterConversion() {
       this.convertToZombieType(EntityType.ZOMBIE);
       if (!this.isSilent()) {
-         this.level().levelEvent((Player)null, 1041, this.blockPosition(), 0);
+         this.level().levelEvent((Entity)null, 1041, this.blockPosition(), 0);
       }
 
    }

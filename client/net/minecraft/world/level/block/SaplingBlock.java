@@ -20,8 +20,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class SaplingBlock extends BushBlock implements BonemealableBlock {
    public static final MapCodec<SaplingBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(TreeGrower.CODEC.fieldOf("tree").forGetter((var0x) -> var0x.treeGrower), propertiesCodec()).apply(var0, SaplingBlock::new));
    public static final IntegerProperty STAGE;
-   protected static final float AABB_OFFSET = 6.0F;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
    protected final TreeGrower treeGrower;
 
    public MapCodec<? extends SaplingBlock> codec() {
@@ -47,7 +46,7 @@ public class SaplingBlock extends BushBlock implements BonemealableBlock {
 
    public void advanceTree(ServerLevel var1, BlockPos var2, BlockState var3, RandomSource var4) {
       if ((Integer)var3.getValue(STAGE) == 0) {
-         var1.setBlock(var2, (BlockState)var3.cycle(STAGE), 4);
+         var1.setBlock(var2, (BlockState)var3.cycle(STAGE), 260);
       } else {
          this.treeGrower.growTree(var1, var1.getChunkSource().getGenerator(), var2, var3, var4);
       }
@@ -72,6 +71,6 @@ public class SaplingBlock extends BushBlock implements BonemealableBlock {
 
    static {
       STAGE = BlockStateProperties.STAGE;
-      SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 12.0, 14.0);
+      SHAPE = Block.column(12.0, 0.0, 12.0);
    }
 }

@@ -1,7 +1,8 @@
 package net.minecraft.client.resources.model;
 
-import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
+import net.minecraft.Util;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockElementFace;
 import net.minecraft.client.renderer.block.model.BlockFaceUV;
@@ -26,14 +27,9 @@ public class MissingBlockModel {
 
    public static UnbakedModel missingModel() {
       BlockFaceUV var0 = new BlockFaceUV(new float[]{0.0F, 0.0F, 16.0F, 16.0F}, 0);
-      EnumMap var1 = new EnumMap(Direction.class);
-
-      for(Direction var5 : Direction.values()) {
-         var1.put(var5, new BlockElementFace(var5, -1, "missingno", var0));
-      }
-
-      BlockElement var6 = new BlockElement(new Vector3f(0.0F, 0.0F, 0.0F), new Vector3f(16.0F, 16.0F, 16.0F), var1);
-      return new BlockModel((ResourceLocation)null, List.of(var6), (new TextureSlots.Data.Builder()).addReference("particle", "missingno").addTexture("missingno", new Material(TextureAtlas.LOCATION_BLOCKS, MissingTextureAtlasSprite.getLocation())).build(), (Boolean)null, (UnbakedModel.GuiLight)null, ItemTransforms.NO_TRANSFORMS);
+      Map var1 = Util.makeEnumMap(Direction.class, (var1x) -> new BlockElementFace(var1x, -1, "missingno", var0));
+      BlockElement var2 = new BlockElement(new Vector3f(0.0F, 0.0F, 0.0F), new Vector3f(16.0F, 16.0F, 16.0F), var1);
+      return new BlockModel((ResourceLocation)null, List.of(var2), (new TextureSlots.Data.Builder()).addReference("particle", "missingno").addTexture("missingno", new Material(TextureAtlas.LOCATION_BLOCKS, MissingTextureAtlasSprite.getLocation())).build(), (Boolean)null, (UnbakedModel.GuiLight)null, ItemTransforms.NO_TRANSFORMS);
    }
 
    static {

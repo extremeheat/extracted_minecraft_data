@@ -53,7 +53,7 @@ public class LiquidBlockRenderer {
          return var0 != Direction.UP || var5;
       } else {
          VoxelShape var4 = Shapes.box(0.0, 0.0, 0.0, 1.0, (double)var1, 1.0);
-         return Shapes.blockOccudes(var4, var3, var0);
+         return Shapes.blockOccludes(var4, var3, var0);
       }
    }
 

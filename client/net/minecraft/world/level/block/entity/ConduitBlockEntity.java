@@ -102,7 +102,7 @@ public class ConduitBlockEntity extends BlockEntity {
          boolean var7 = updateShape(var0, var1, var6);
          if (var7 != var3.isActive) {
             SoundEvent var8 = var7 ? SoundEvents.CONDUIT_ACTIVATE : SoundEvents.CONDUIT_DEACTIVATE;
-            var0.playSound((Player)null, (BlockPos)var1, var8, SoundSource.BLOCKS, 1.0F, 1.0F);
+            var0.playSound((Entity)null, (BlockPos)var1, var8, SoundSource.BLOCKS, 1.0F, 1.0F);
          }
 
          var3.isActive = var7;
@@ -115,12 +115,12 @@ public class ConduitBlockEntity extends BlockEntity {
 
       if (var3.isActive()) {
          if (var4 % 80L == 0L) {
-            var0.playSound((Player)null, (BlockPos)var1, SoundEvents.CONDUIT_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F);
+            var0.playSound((Entity)null, (BlockPos)var1, SoundEvents.CONDUIT_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F);
          }
 
          if (var4 > var3.nextAmbientSoundActivation) {
             var3.nextAmbientSoundActivation = var4 + 60L + (long)var0.getRandom().nextInt(40);
-            var0.playSound((Player)null, (BlockPos)var1, SoundEvents.CONDUIT_AMBIENT_SHORT, SoundSource.BLOCKS, 1.0F, 1.0F);
+            var0.playSound((Entity)null, (BlockPos)var1, SoundEvents.CONDUIT_AMBIENT_SHORT, SoundSource.BLOCKS, 1.0F, 1.0F);
          }
       }
 
@@ -203,7 +203,7 @@ public class ConduitBlockEntity extends BlockEntity {
       }
 
       if (var4.destroyTarget != null) {
-         var0.playSound((Player)null, var4.destroyTarget.getX(), var4.destroyTarget.getY(), var4.destroyTarget.getZ(), SoundEvents.CONDUIT_ATTACK_TARGET, SoundSource.BLOCKS, 1.0F, 1.0F);
+         var0.playSound((Entity)null, var4.destroyTarget.getX(), var4.destroyTarget.getY(), var4.destroyTarget.getZ(), SoundEvents.CONDUIT_ATTACK_TARGET, SoundSource.BLOCKS, 1.0F, 1.0F);
          var4.destroyTarget.hurt(var0.damageSources().magic(), 4.0F);
       }
 

@@ -1,7 +1,6 @@
 package net.minecraft.world.item;
 
 import java.util.List;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Position;
@@ -14,7 +13,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
@@ -29,7 +27,6 @@ import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public class TridentItem extends Item implements ProjectileItem {
@@ -46,11 +43,7 @@ public class TridentItem extends Item implements ProjectileItem {
    }
 
    public static Tool createToolProperties() {
-      return new Tool(List.of(), 1.0F, 2);
-   }
-
-   public boolean canAttackBlock(BlockState var1, Level var2, BlockPos var3, Player var4) {
-      return !var4.isCreative();
+      return new Tool(List.of(), 1.0F, 2, false);
    }
 
    public ItemUseAnimation getUseAnimation(ItemStack var1) {
@@ -86,7 +79,7 @@ public class TridentItem extends Item implements ProjectileItem {
                         var5.getInventory().removeItem(var1);
                      }
 
-                     var2.playSound((Player)null, (Entity)var17, (SoundEvent)var8.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
+                     var2.playSound((Entity)null, (Entity)var17, (SoundEvent)var8.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
                      return true;
                   }
                }
@@ -108,7 +101,7 @@ public class TridentItem extends Item implements ProjectileItem {
                      var5.move(MoverType.SELF, new Vec3(0.0, 1.1999999284744263, 0.0));
                   }
 
-                  var2.playSound((Player)null, (Entity)var5, (SoundEvent)var8.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
+                  var2.playSound((Entity)null, (Entity)var5, (SoundEvent)var8.value(), SoundSource.PLAYERS, 1.0F, 1.0F);
                   return true;
                } else {
                   return false;
@@ -130,14 +123,6 @@ public class TridentItem extends Item implements ProjectileItem {
          var2.startUsingItem(var3);
          return InteractionResult.CONSUME;
       }
-   }
-
-   public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
-      return true;
-   }
-
-   public void postHurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
-      var1.hurtAndBreak(1, var3, EquipmentSlot.MAINHAND);
    }
 
    public Projectile asProjectile(Level var1, Position var2, ItemStack var3, Direction var4) {

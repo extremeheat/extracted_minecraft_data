@@ -14,6 +14,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -95,10 +96,10 @@ public class BucketItem extends Item implements DispensibleContainerItem {
       return !var1.hasInfiniteMaterials() ? new ItemStack(Items.BUCKET) : var0;
    }
 
-   public void checkExtraContent(@Nullable Player var1, Level var2, ItemStack var3, BlockPos var4) {
+   public void checkExtraContent(@Nullable LivingEntity var1, Level var2, ItemStack var3, BlockPos var4) {
    }
 
-   public boolean emptyContents(@Nullable Player var1, Level var2, BlockPos var3, @Nullable BlockHitResult var4) {
+   public boolean emptyContents(@Nullable LivingEntity var1, Level var2, BlockPos var3, @Nullable BlockHitResult var4) {
       Fluid var6 = this.content;
       if (!(var6 instanceof FlowingFluid var5)) {
          return false;
@@ -134,7 +135,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
             int var16 = var3.getX();
             int var11 = var3.getY();
             int var12 = var3.getZ();
-            var2.playSound(var1, var3, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (var2.random.nextFloat() - var2.random.nextFloat()) * 0.8F);
+            var2.playSound(var1, (BlockPos)var3, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (var2.random.nextFloat() - var2.random.nextFloat()) * 0.8F);
 
             for(int var13 = 0; var13 < 8; ++var13) {
                var2.addParticle(ParticleTypes.LARGE_SMOKE, (double)var16 + Math.random(), (double)var11 + Math.random(), (double)var12 + Math.random(), 0.0, 0.0, 0.0);
@@ -165,7 +166,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
       }
    }
 
-   protected void playEmptySound(@Nullable Player var1, LevelAccessor var2, BlockPos var3) {
+   protected void playEmptySound(@Nullable LivingEntity var1, LevelAccessor var2, BlockPos var3) {
       SoundEvent var4 = this.content.is(FluidTags.LAVA) ? SoundEvents.BUCKET_EMPTY_LAVA : SoundEvents.BUCKET_EMPTY;
       var2.playSound(var1, var3, var4, SoundSource.BLOCKS, 1.0F, 1.0F);
       var2.gameEvent(var1, (Holder)GameEvent.FLUID_PLACE, (BlockPos)var3);

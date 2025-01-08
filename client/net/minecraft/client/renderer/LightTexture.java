@@ -12,7 +12,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -57,11 +56,6 @@ public class LightTexture implements AutoCloseable {
       RenderSystem.setShaderTexture(2, this.target.getColorTextureId());
    }
 
-   private float getDarknessGamma(float var1) {
-      MobEffectInstance var2 = this.minecraft.player.getEffect(MobEffects.DARKNESS);
-      return var2 != null ? var2.getBlendFactor(this.minecraft.player, var1) : 0.0F;
-   }
-
    private float calculateDarknessScale(LivingEntity var1, float var2, float var3) {
       float var4 = 0.45F * var2;
       return Math.max(0.0F, Mth.cos(((float)var1.tickCount - var3) * 3.1415927F * 0.025F) * var4);
@@ -83,7 +77,7 @@ public class LightTexture implements AutoCloseable {
             }
 
             float var6 = ((Double)this.minecraft.options.darknessEffectScale().get()).floatValue();
-            float var7 = this.getDarknessGamma(var1) * var6;
+            float var7 = this.minecraft.player.getEffectBlendFactor(MobEffects.DARKNESS, var1) * var6;
             float var8 = this.calculateDarknessScale(this.minecraft.player, var7, var1) * var6;
             float var10 = this.minecraft.player.getWaterVision();
             float var9;

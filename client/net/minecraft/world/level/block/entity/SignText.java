@@ -116,7 +116,7 @@ public class SignText {
       for(Component var5 : this.getMessages(var1.isTextFilteringEnabled())) {
          Style var6 = var5.getStyle();
          ClickEvent var7 = var6.getClickEvent();
-         if (var7 != null && var7.getAction() == ClickEvent.Action.RUN_COMMAND) {
+         if (var7 != null && var7.action() == ClickEvent.Action.RUN_COMMAND) {
             return true;
          }
       }
@@ -125,7 +125,7 @@ public class SignText {
    }
 
    static {
-      LINES_CODEC = ComponentSerialization.FLAT_CODEC.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 4).map((var0x) -> new Component[]{(Component)var0x.get(0), (Component)var0x.get(1), (Component)var0x.get(2), (Component)var0x.get(3)}), (var0) -> List.of(var0[0], var0[1], var0[2], var0[3]));
+      LINES_CODEC = ComponentSerialization.CODEC.listOf().comapFlatMap((var0) -> Util.fixedSize((List)var0, 4).map((var0x) -> new Component[]{(Component)var0x.get(0), (Component)var0x.get(1), (Component)var0x.get(2), (Component)var0x.get(3)}), (var0) -> List.of(var0[0], var0[1], var0[2], var0[3]));
       DIRECT_CODEC = RecordCodecBuilder.create((var0) -> var0.group(LINES_CODEC.fieldOf("messages").forGetter((var0x) -> var0x.messages), LINES_CODEC.lenientOptionalFieldOf("filtered_messages").forGetter(SignText::filteredMessages), DyeColor.CODEC.fieldOf("color").orElse(DyeColor.BLACK).forGetter((var0x) -> var0x.color), Codec.BOOL.fieldOf("has_glowing_text").orElse(false).forGetter((var0x) -> var0x.hasGlowingText)).apply(var0, SignText::load));
    }
 }

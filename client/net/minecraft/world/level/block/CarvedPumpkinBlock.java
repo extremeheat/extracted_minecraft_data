@@ -103,7 +103,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
       for(int var2 = 0; var2 < var1.getWidth(); ++var2) {
          for(int var3 = 0; var3 < var1.getHeight(); ++var3) {
             BlockInWorld var4 = var1.getBlock(var2, var3, 0);
-            var0.blockUpdated(var4.getPos(), Blocks.AIR);
+            var0.updateNeighborsAt(var4.getPos(), Blocks.AIR);
          }
       }
 

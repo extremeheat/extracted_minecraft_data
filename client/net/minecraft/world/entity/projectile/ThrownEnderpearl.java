@@ -15,7 +15,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.monster.Endermite;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -112,10 +111,6 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
          if (!this.isRemoved()) {
             Entity var8 = this.getOwner();
             if (var8 != null && isAllowedToTeleportOwner(var8, var7)) {
-               if (var8.isPassenger()) {
-                  var8.unRide();
-               }
-
                Vec3 var4 = this.oldPosition();
                if (var8 instanceof ServerPlayer) {
                   ServerPlayer var5 = (ServerPlayer)var8;
@@ -203,7 +198,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
    }
 
    private void playSound(Level var1, Vec3 var2) {
-      var1.playSound((Player)null, var2.x, var2.y, var2.z, SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS);
+      var1.playSound((Entity)null, var2.x, var2.y, var2.z, SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS);
    }
 
    @Nullable

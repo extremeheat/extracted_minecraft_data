@@ -113,7 +113,7 @@ public class AccessibilityOnboardingScreen extends Screen {
          if (this.timer < 40.0F) {
             ++this.timer;
          } else if (this.minecraft.isWindowActive()) {
-            Narrator.getNarrator().say(ONBOARDING_NARRATOR_MESSAGE.getString(), true);
+            Narrator.getNarrator().say(ONBOARDING_NARRATOR_MESSAGE.getString(), true, 1.0F);
             this.hasNarrated = true;
          }
       }

@@ -141,20 +141,18 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    public void travel(Vec3 var1) {
-      if (this.isControlledByLocalInstance()) {
-         if (this.isInWater()) {
-            this.moveRelative(0.02F, var1);
-            this.move(MoverType.SELF, this.getDeltaMovement());
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.800000011920929));
-         } else if (this.isInLava()) {
-            this.moveRelative(0.02F, var1);
-            this.move(MoverType.SELF, this.getDeltaMovement());
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.5));
-         } else {
-            this.moveRelative(this.getSpeed(), var1);
-            this.move(MoverType.SELF, this.getDeltaMovement());
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.9100000262260437));
-         }
+      if (this.isInWater()) {
+         this.moveRelative(0.02F, var1);
+         this.move(MoverType.SELF, this.getDeltaMovement());
+         this.setDeltaMovement(this.getDeltaMovement().scale(0.800000011920929));
+      } else if (this.isInLava()) {
+         this.moveRelative(0.02F, var1);
+         this.move(MoverType.SELF, this.getDeltaMovement());
+         this.setDeltaMovement(this.getDeltaMovement().scale(0.5));
+      } else {
+         this.moveRelative(this.getSpeed(), var1);
+         this.move(MoverType.SELF, this.getDeltaMovement());
+         this.setDeltaMovement(this.getDeltaMovement().scale(0.9100000262260437));
       }
 
    }
@@ -279,19 +277,19 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       if (this.isDancing() && var3.is(ItemTags.DUPLICATES_ALLAYS) && this.canDuplicate()) {
          this.duplicateAllay();
          this.level().broadcastEntityEvent(this, (byte)18);
-         this.level().playSound((Player)var1, (Entity)this, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.NEUTRAL, 2.0F, 1.0F);
+         this.level().playSound(var1, (Entity)this, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.NEUTRAL, 2.0F, 1.0F);
          this.removeInteractionItem(var1, var3);
          return InteractionResult.SUCCESS;
       } else if (var4.isEmpty() && !var3.isEmpty()) {
          ItemStack var7 = var3.copyWithCount(1);
          this.setItemInHand(InteractionHand.MAIN_HAND, var7);
          this.removeInteractionItem(var1, var3);
-         this.level().playSound((Player)var1, (Entity)this, SoundEvents.ALLAY_ITEM_GIVEN, SoundSource.NEUTRAL, 2.0F, 1.0F);
+         this.level().playSound(var1, (Entity)this, SoundEvents.ALLAY_ITEM_GIVEN, SoundSource.NEUTRAL, 2.0F, 1.0F);
          this.getBrain().setMemory(MemoryModuleType.LIKED_PLAYER, var1.getUUID());
          return InteractionResult.SUCCESS;
       } else if (!var4.isEmpty() && var2 == InteractionHand.MAIN_HAND && var3.isEmpty()) {
          this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-         this.level().playSound((Player)var1, (Entity)this, SoundEvents.ALLAY_ITEM_TAKEN, SoundSource.NEUTRAL, 2.0F, 1.0F);
+         this.level().playSound(var1, (Entity)this, SoundEvents.ALLAY_ITEM_TAKEN, SoundSource.NEUTRAL, 2.0F, 1.0F);
          this.swing(InteractionHand.MAIN_HAND);
 
          for(ItemStack var6 : this.getInventory().removeAllItems()) {

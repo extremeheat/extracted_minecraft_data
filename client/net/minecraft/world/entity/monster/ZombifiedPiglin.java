@@ -101,10 +101,6 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
          this.maybeAlertOthers();
       }
 
-      if (this.isAngry()) {
-         this.lastHurtByPlayerTime = this.tickCount;
-      }
-
       super.customServerAiStep(var1);
    }
 
@@ -144,10 +140,6 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
       if (this.getTarget() == null && var1 != null) {
          this.playFirstAngerSoundIn = FIRST_ANGER_SOUND_DELAY.sample(this.random);
          this.ticksUntilNextAlert = ALERT_INTERVAL.sample(this.random);
-      }
-
-      if (var1 instanceof Player) {
-         this.setLastHurtByPlayer((Player)var1);
       }
 
       super.setTarget(var1);

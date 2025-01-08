@@ -446,6 +446,10 @@ public enum Direction implements StringRepresentable {
             return var1;
          }
 
+         public boolean choose(boolean var1, boolean var2, boolean var3) {
+            return var1;
+         }
+
          public double choose(double var1, double var3, double var5) {
             return var1;
          }
@@ -472,6 +476,10 @@ public enum Direction implements StringRepresentable {
             return var3;
          }
 
+         public boolean choose(boolean var1, boolean var2, boolean var3) {
+            return var2;
+         }
+
          public Direction getPositive() {
             return Direction.UP;
          }
@@ -492,6 +500,10 @@ public enum Direction implements StringRepresentable {
 
          public double choose(double var1, double var3, double var5) {
             return var5;
+         }
+
+         public boolean choose(boolean var1, boolean var2, boolean var3) {
+            return var3;
          }
 
          public Direction getPositive() {
@@ -577,6 +589,8 @@ public enum Direction implements StringRepresentable {
       public abstract int choose(int var1, int var2, int var3);
 
       public abstract double choose(double var1, double var3, double var5);
+
+      public abstract boolean choose(boolean var1, boolean var2, boolean var3);
 
       // $FF: synthetic method
       public boolean test(@Nullable final Object var1) {

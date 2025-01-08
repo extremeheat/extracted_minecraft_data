@@ -236,7 +236,7 @@ public class KeyboardHandler {
                Path var5 = this.minecraft.gameDirectory.toPath().toAbsolutePath();
                Path var6 = TextureUtil.getDebugTexturePath(var5);
                this.minecraft.getTextureManager().dumpAllSheets(var6);
-               MutableComponent var7 = Component.literal(var5.relativize(var6).toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var6.toFile().toString()))));
+               MutableComponent var7 = Component.literal(var5.relativize(var6).toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent.OpenFile(var6))));
                this.debugFeedbackTranslated("debug.dump_dynamic_textures", var7);
                return true;
             case 84:

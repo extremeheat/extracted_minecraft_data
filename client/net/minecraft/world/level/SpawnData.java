@@ -10,13 +10,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.InclusiveRange;
-import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.entity.EquipmentTable;
 
 public record SpawnData(CompoundTag entityToSpawn, Optional<CustomSpawnRules> customSpawnRules, Optional<EquipmentTable> equipment) {
    public static final String ENTITY_TAG = "entity";
    public static final Codec<SpawnData> CODEC = RecordCodecBuilder.create((var0) -> var0.group(CompoundTag.CODEC.fieldOf("entity").forGetter((var0x) -> var0x.entityToSpawn), SpawnData.CustomSpawnRules.CODEC.optionalFieldOf("custom_spawn_rules").forGetter((var0x) -> var0x.customSpawnRules), EquipmentTable.CODEC.optionalFieldOf("equipment").forGetter((var0x) -> var0x.equipment)).apply(var0, SpawnData::new));
-   public static final Codec<SimpleWeightedRandomList<SpawnData>> LIST_CODEC;
+   public static final Codec<WeightedList<SpawnData>> LIST_CODEC;
 
    public SpawnData() {
       this(new CompoundTag(), Optional.empty(), Optional.empty());
@@ -51,7 +51,7 @@ public record SpawnData(CompoundTag entityToSpawn, Optional<CustomSpawnRules> cu
    }
 
    static {
-      LIST_CODEC = SimpleWeightedRandomList.wrappedCodecAllowingEmpty(CODEC);
+      LIST_CODEC = WeightedList.codec(CODEC);
    }
 
    public static record CustomSpawnRules(InclusiveRange<Integer> blockLightLimit, InclusiveRange<Integer> skyLightLimit) {

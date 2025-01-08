@@ -12,7 +12,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class MudBlock extends Block {
    public static final MapCodec<MudBlock> CODEC = simpleCodec(MudBlock::new);
-   protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 14.0, 16.0);
+   private static final VoxelShape SHAPE = Block.column(16.0, 0.0, 14.0);
 
    public MapCodec<MudBlock> codec() {
       return CODEC;

@@ -251,7 +251,17 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, S extends Liv
       if (var0 instanceof Player || var0.hasCustomName()) {
          String var1 = ChatFormatting.stripFormatting(var0.getName().getString());
          if ("Dinnerbone".equals(var1) || "Grumm".equals(var1)) {
-            return !(var0 instanceof Player) || ((Player)var0).isModelPartShown(PlayerModelPart.CAPE);
+            boolean var10000;
+            if (var0 instanceof Player) {
+               Player var2 = (Player)var0;
+               if (!var2.isModelPartShown(PlayerModelPart.CAPE)) {
+                  var10000 = false;
+                  return var10000;
+               }
+            }
+
+            var10000 = true;
+            return var10000;
          }
       }
 

@@ -1,15 +1,12 @@
 package net.minecraft.world.level.entity;
 
-import java.util.UUID;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 
-public interface EntityAccess {
+public interface EntityAccess extends UniquelyIdentifyable {
    int getId();
-
-   UUID getUUID();
 
    BlockPos blockPosition();
 

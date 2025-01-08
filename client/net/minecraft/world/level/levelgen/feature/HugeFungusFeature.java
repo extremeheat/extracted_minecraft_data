@@ -49,7 +49,7 @@ public class HugeFungusFeature extends Feature<HugeFungusConfiguration> {
          }
 
          boolean var12 = !var6.planted && var4.nextFloat() < 0.06F;
-         var2.setBlock(var3, Blocks.AIR.defaultBlockState(), 4);
+         var2.setBlock(var3, Blocks.AIR.defaultBlockState(), 260);
          this.placeStem(var2, var4, var6, var8, var10, var12);
          this.placeHat(var2, var4, var6, var8, var10, var12);
          return true;

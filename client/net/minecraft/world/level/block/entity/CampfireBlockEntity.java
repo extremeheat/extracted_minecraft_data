@@ -181,6 +181,13 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
       this.items.clear();
    }
 
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2, boolean var3) {
+      if (this.level != null) {
+         Containers.dropContents(this.level, var1, this.getItems());
+      }
+
+   }
+
    public void dowse() {
       if (this.level != null) {
          this.markUpdated();

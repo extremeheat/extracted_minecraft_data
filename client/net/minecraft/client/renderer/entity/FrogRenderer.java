@@ -24,7 +24,7 @@ public class FrogRenderer extends MobRenderer<Frog, FrogRenderState, FrogModel> 
 
    public void extractRenderState(Frog var1, FrogRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
-      var2.isSwimming = var1.isInWaterOrBubble();
+      var2.isSwimming = var1.isInWater();
       var2.jumpAnimationState.copyFrom(var1.jumpAnimationState);
       var2.croakAnimationState.copyFrom(var1.croakAnimationState);
       var2.tongueAnimationState.copyFrom(var1.tongueAnimationState);

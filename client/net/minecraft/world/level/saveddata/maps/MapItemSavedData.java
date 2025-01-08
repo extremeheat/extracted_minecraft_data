@@ -129,7 +129,7 @@ public class MapItemSavedData extends SavedData {
          MapFrame var15 = MapFrame.load(var16.getCompound(var17));
          if (var15 != null) {
             var9.frameMarkers.put(var15.getId(), var15);
-            var9.addDecoration(MapDecorationTypes.FRAME, (LevelAccessor)null, getFrameKey(var15.getEntityId()), (double)var15.getPos().getX(), (double)var15.getPos().getZ(), (double)var15.getRotation(), (Component)null);
+            var9.addDecoration(MapDecorationTypes.FRAME, (LevelAccessor)null, getFrameKey(var15.entityId()), (double)var15.pos().getX(), (double)var15.pos().getZ(), (double)var15.rotation(), (Component)null);
          }
       }
 
@@ -191,8 +191,8 @@ public class MapItemSavedData extends SavedData {
          this.carriedBy.add(var3);
       }
 
-      Predicate var8 = mapMatcher(var2);
-      if (!var1.getInventory().contains(var8)) {
+      Predicate var9 = mapMatcher(var2);
+      if (!var1.getInventory().contains(var9)) {
          this.removeDecoration(var1.getName().getString());
       }
 
@@ -200,7 +200,7 @@ public class MapItemSavedData extends SavedData {
          HoldingPlayer var5 = (HoldingPlayer)this.carriedBy.get(var4);
          Player var6 = var5.player;
          String var7 = var6.getName().getString();
-         if (!var6.isRemoved() && (var6.getInventory().contains(var8) || var2.isFramed())) {
+         if (!var6.isRemoved() && (var6.getInventory().contains(var9) || var2.isFramed())) {
             if (!var2.isFramed() && var6.level().dimension() == this.dimension && this.trackingPosition) {
                this.addDecoration(MapDecorationTypes.PLAYER, var6.level(), var7, var6.getX(), var6.getZ(), (double)var6.getYRot(), (Component)null);
             }
@@ -216,21 +216,24 @@ public class MapItemSavedData extends SavedData {
       }
 
       if (var2.isFramed() && this.trackingPosition) {
-         ItemFrame var9 = var2.getFrame();
-         BlockPos var11 = var9.getPos();
-         MapFrame var12 = (MapFrame)this.frameMarkers.get(MapFrame.frameId(var11));
-         if (var12 != null && var9.getId() != var12.getEntityId() && this.frameMarkers.containsKey(var12.getId())) {
-            this.removeDecoration(getFrameKey(var12.getEntityId()));
+         ItemFrame var10 = var2.getFrame();
+         BlockPos var12 = var10.getPos();
+         MapFrame var13 = (MapFrame)this.frameMarkers.get(MapFrame.frameId(var12));
+         if (var13 != null && var10.getId() != var13.entityId() && this.frameMarkers.containsKey(var13.getId())) {
+            this.removeDecoration(getFrameKey(var13.entityId()));
          }
 
-         MapFrame var13 = new MapFrame(var11, var9.getDirection().get2DDataValue() * 90, var9.getId());
-         this.addDecoration(MapDecorationTypes.FRAME, var1.level(), getFrameKey(var9.getId()), (double)var11.getX(), (double)var11.getZ(), (double)(var9.getDirection().get2DDataValue() * 90), (Component)null);
-         this.frameMarkers.put(var13.getId(), var13);
+         MapFrame var14 = new MapFrame(var12, var10.getDirection().get2DDataValue() * 90, var10.getId());
+         this.addDecoration(MapDecorationTypes.FRAME, var1.level(), getFrameKey(var10.getId()), (double)var12.getX(), (double)var12.getZ(), (double)(var10.getDirection().get2DDataValue() * 90), (Component)null);
+         MapFrame var8 = (MapFrame)this.frameMarkers.put(var14.getId(), var14);
+         if (!var14.equals(var8)) {
+            this.setDirty();
+         }
       }
 
-      MapDecorations var10 = (MapDecorations)var2.getOrDefault(DataComponents.MAP_DECORATIONS, MapDecorations.EMPTY);
-      if (!this.decorations.keySet().containsAll(var10.decorations().keySet())) {
-         var10.decorations().forEach((var2x, var3x) -> {
+      MapDecorations var11 = (MapDecorations)var2.getOrDefault(DataComponents.MAP_DECORATIONS, MapDecorations.EMPTY);
+      if (!this.decorations.keySet().containsAll(var11.decorations().keySet())) {
+         var11.decorations().forEach((var2x, var3x) -> {
             if (!this.decorations.containsKey(var2x)) {
                this.addDecoration(var3x.type(), var1.level(), var2x, var3x.x(), var3x.z(), (double)var3x.rotation(), (Component)null);
             }
@@ -366,7 +369,6 @@ public class MapItemSavedData extends SavedData {
    }
 
    private void setDecorationsDirty() {
-      this.setDirty();
       this.carriedBy.forEach(HoldingPlayer::markDecorationsDirty);
    }
 
@@ -396,12 +398,14 @@ public class MapItemSavedData extends SavedData {
 
          if (this.bannerMarkers.remove(var13.getId(), var13)) {
             this.removeDecoration(var13.getId());
+            this.setDirty();
             return true;
          }
 
          if (!this.isTrackedCountOverLimit(256)) {
             this.bannerMarkers.put(var13.getId(), var13);
             this.addDecoration(var13.getDecoration(), var1, var13.getId(), var3, var5, 180.0, (Component)var13.name().orElse((Object)null));
+            this.setDirty();
             return true;
          }
       }
@@ -419,6 +423,7 @@ public class MapItemSavedData extends SavedData {
             if (!var5.equals(var6)) {
                var4.remove();
                this.removeDecoration(var5.getId());
+               this.setDirty();
             }
          }
       }

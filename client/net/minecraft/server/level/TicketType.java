@@ -1,47 +1,64 @@
 package net.minecraft.server.level;
 
-import java.util.Comparator;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
-import net.minecraft.util.Unit;
-import net.minecraft.world.level.ChunkPos;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 
-public class TicketType<T> {
-   private final String name;
-   private final Comparator<T> comparator;
-   private final long timeout;
-   public static final TicketType<Unit> START = create("start", (var0, var1) -> 0);
-   public static final TicketType<Unit> DRAGON = create("dragon", (var0, var1) -> 0);
-   public static final TicketType<ChunkPos> PLAYER = create("player", Comparator.comparingLong(ChunkPos::toLong));
-   public static final TicketType<ChunkPos> FORCED = create("forced", Comparator.comparingLong(ChunkPos::toLong));
-   public static final TicketType<BlockPos> PORTAL = create("portal", Vec3i::compareTo, 300);
-   public static final TicketType<ChunkPos> ENDER_PEARL = create("ender_pearl", Comparator.comparingLong(ChunkPos::toLong), 40);
-   public static final TicketType<ChunkPos> UNKNOWN = create("unknown", Comparator.comparingLong(ChunkPos::toLong), 1);
+public record TicketType(long timeout, boolean persist, TicketUse use) {
+   public static final int NO_TIMEOUT = 0;
+   public static final TicketType START;
+   public static final TicketType DRAGON;
+   public static final TicketType PLAYER_LOADING;
+   public static final TicketType PLAYER_SIMULATION;
+   public static final TicketType FORCED;
+   public static final TicketType PORTAL;
+   public static final TicketType ENDER_PEARL;
+   public static final TicketType UNKNOWN;
 
-   public static <T> TicketType<T> create(String var0, Comparator<T> var1) {
-      return new TicketType<T>(var0, var1, 0L);
-   }
-
-   public static <T> TicketType<T> create(String var0, Comparator<T> var1, int var2) {
-      return new TicketType<T>(var0, var1, (long)var2);
-   }
-
-   protected TicketType(String var1, Comparator<T> var2, long var3) {
+   public TicketType(long var1, boolean var3, TicketUse var4) {
       super();
-      this.name = var1;
-      this.comparator = var2;
-      this.timeout = var3;
+      this.timeout = var1;
+      this.persist = var3;
+      this.use = var4;
    }
 
-   public String toString() {
-      return this.name;
+   private static TicketType register(String var0, long var1, boolean var3, TicketUse var4) {
+      return (TicketType)Registry.register(BuiltInRegistries.TICKET_TYPE, (String)var0, new TicketType(var1, var3, var4));
    }
 
-   public Comparator<T> getComparator() {
-      return this.comparator;
+   public boolean doesLoad() {
+      return this.use == TicketType.TicketUse.LOADING || this.use == TicketType.TicketUse.LOADING_AND_SIMULATION;
    }
 
-   public long timeout() {
-      return this.timeout;
+   public boolean doesSimulate() {
+      return this.use == TicketType.TicketUse.SIMULATION || this.use == TicketType.TicketUse.LOADING_AND_SIMULATION;
+   }
+
+   public boolean hasTimeout() {
+      return this.timeout != 0L;
+   }
+
+   static {
+      START = register("start", 0L, false, TicketType.TicketUse.LOADING_AND_SIMULATION);
+      DRAGON = register("dragon", 0L, false, TicketType.TicketUse.LOADING_AND_SIMULATION);
+      PLAYER_LOADING = register("player_loading", 0L, false, TicketType.TicketUse.LOADING);
+      PLAYER_SIMULATION = register("player_simulation", 0L, false, TicketType.TicketUse.SIMULATION);
+      FORCED = register("forced", 0L, true, TicketType.TicketUse.LOADING_AND_SIMULATION);
+      PORTAL = register("portal", 300L, true, TicketType.TicketUse.LOADING_AND_SIMULATION);
+      ENDER_PEARL = register("ender_pearl", 40L, false, TicketType.TicketUse.LOADING_AND_SIMULATION);
+      UNKNOWN = register("unknown", 1L, false, TicketType.TicketUse.LOADING);
+   }
+
+   public static enum TicketUse {
+      LOADING,
+      SIMULATION,
+      LOADING_AND_SIMULATION;
+
+      private TicketUse() {
+      }
+
+      // $FF: synthetic method
+      private static TicketUse[] $values() {
+         return new TicketUse[]{LOADING, SIMULATION, LOADING_AND_SIMULATION};
+      }
    }
 }

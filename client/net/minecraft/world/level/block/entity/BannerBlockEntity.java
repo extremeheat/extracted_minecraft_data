@@ -10,8 +10,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -50,20 +52,21 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       if (!this.patterns.equals(BannerPatternLayers.EMPTY)) {
-         var1.put("patterns", (Tag)BannerPatternLayers.CODEC.encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), this.patterns).getOrThrow());
+         var1.put("patterns", (Tag)BannerPatternLayers.CODEC.encodeStart(var3, this.patterns).getOrThrow());
       }
 
       if (this.name != null) {
-         var1.putString("CustomName", Component.Serializer.toJson(this.name, var2));
+         var1.put("CustomName", (Tag)ComponentSerialization.CODEC.encodeStart(var3, this.name).getOrThrow());
       }
 
    }
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      if (var1.contains("CustomName", 8)) {
-         this.name = parseCustomNameSafe(var1.getString("CustomName"), var2);
+      if (var1.contains("CustomName")) {
+         this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
       }
 
       if (var1.contains("patterns")) {

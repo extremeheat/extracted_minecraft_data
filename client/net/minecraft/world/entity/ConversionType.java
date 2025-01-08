@@ -40,14 +40,14 @@ public enum ConversionType {
                ItemStack var8 = var1.getItemBySlot(var7);
                if (!var8.isEmpty()) {
                   var2.setItemSlot(var7, var8.copyAndClear());
-                  var2.setDropChance(var7, var1.getEquipmentDropChance(var7));
+                  var2.setDropChance(var7, var1.getDropChances().byEquipment(var7));
                }
             }
          }
 
          var2.fallDistance = var1.fallDistance;
          var2.setSharedFlag(7, var1.isFallFlying());
-         var2.lastHurtByPlayerTime = var1.lastHurtByPlayerTime;
+         var2.lastHurtByPlayerMemoryTime = var1.lastHurtByPlayerMemoryTime;
          var2.hurtTime = var1.hurtTime;
          var2.yBodyRot = var1.yBodyRot;
          var2.setOnGround(var1.onGround());

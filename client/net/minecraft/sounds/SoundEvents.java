@@ -772,6 +772,11 @@ public class SoundEvents {
    public static final SoundEvent ILLUSIONER_PREPARE_BLINDNESS = register("entity.illusioner.prepare_blindness");
    public static final SoundEvent ILLUSIONER_PREPARE_MIRROR = register("entity.illusioner.prepare_mirror");
    public static final SoundEvent INK_SAC_USE = register("item.ink_sac.use");
+   public static final SoundEvent IRON_BREAK = register("block.iron.break");
+   public static final SoundEvent IRON_STEP = register("block.iron.step");
+   public static final SoundEvent IRON_PLACE = register("block.iron.place");
+   public static final SoundEvent IRON_HIT = register("block.iron.hit");
+   public static final SoundEvent IRON_FALL = register("block.iron.fall");
    public static final SoundEvent IRON_DOOR_CLOSE = register("block.iron_door.close");
    public static final SoundEvent IRON_DOOR_OPEN = register("block.iron_door.open");
    public static final SoundEvent IRON_GOLEM_ATTACK = register("entity.iron_golem.attack");
@@ -804,6 +809,11 @@ public class SoundEvents {
    public static final SoundEvent LAVA_AMBIENT = register("block.lava.ambient");
    public static final SoundEvent LAVA_EXTINGUISH = register("block.lava.extinguish");
    public static final SoundEvent LAVA_POP = register("block.lava.pop");
+   public static final SoundEvent LEAF_LITTER_BREAK = register("block.leaf_litter.break");
+   public static final SoundEvent LEAF_LITTER_STEP = register("block.leaf_litter.step");
+   public static final SoundEvent LEAF_LITTER_PLACE = register("block.leaf_litter.place");
+   public static final SoundEvent LEAF_LITTER_HIT = register("block.leaf_litter.hit");
+   public static final SoundEvent LEAF_LITTER_FALL = register("block.leaf_litter.fall");
    public static final SoundEvent LEASH_KNOT_BREAK = register("entity.leash_knot.break");
    public static final SoundEvent LEASH_KNOT_PLACE = register("entity.leash_knot.place");
    public static final SoundEvent LEVER_CLICK = register("block.lever.click");

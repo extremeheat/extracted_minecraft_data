@@ -2,37 +2,35 @@ package net.minecraft.util.valueproviders;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.List;
 import net.minecraft.util.RandomSource;
-import net.minecraft.util.random.SimpleWeightedRandomList;
-import net.minecraft.util.random.WeightedEntry;
+import net.minecraft.util.random.Weighted;
+import net.minecraft.util.random.WeightedList;
 
 public class WeightedListInt extends IntProvider {
-   public static final MapCodec<WeightedListInt> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SimpleWeightedRandomList.wrappedCodec(IntProvider.CODEC).fieldOf("distribution").forGetter((var0x) -> var0x.distribution)).apply(var0, WeightedListInt::new));
-   private final SimpleWeightedRandomList<IntProvider> distribution;
+   public static final MapCodec<WeightedListInt> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(WeightedList.nonEmptyCodec(IntProvider.CODEC).fieldOf("distribution").forGetter((var0x) -> var0x.distribution)).apply(var0, WeightedListInt::new));
+   private final WeightedList<IntProvider> distribution;
    private final int minValue;
    private final int maxValue;
 
-   public WeightedListInt(SimpleWeightedRandomList<IntProvider> var1) {
+   public WeightedListInt(WeightedList<IntProvider> var1) {
       super();
       this.distribution = var1;
-      List var2 = var1.unwrap();
-      int var3 = 2147483647;
-      int var4 = -2147483648;
+      int var2 = 2147483647;
+      int var3 = -2147483648;
 
-      for(WeightedEntry.Wrapper var6 : var2) {
-         int var7 = ((IntProvider)var6.data()).getMinValue();
-         int var8 = ((IntProvider)var6.data()).getMaxValue();
-         var3 = Math.min(var3, var7);
-         var4 = Math.max(var4, var8);
+      for(Weighted var5 : var1.unwrap()) {
+         int var6 = ((IntProvider)var5.value()).getMinValue();
+         int var7 = ((IntProvider)var5.value()).getMaxValue();
+         var2 = Math.min(var2, var6);
+         var3 = Math.max(var3, var7);
       }
 
-      this.minValue = var3;
-      this.maxValue = var4;
+      this.minValue = var2;
+      this.maxValue = var3;
    }
 
    public int sample(RandomSource var1) {
-      return ((IntProvider)this.distribution.getRandomValue(var1).orElseThrow(IllegalStateException::new)).sample(var1);
+      return ((IntProvider)this.distribution.getRandomOrThrow(var1)).sample(var1);
    }
 
    public int getMinValue() {

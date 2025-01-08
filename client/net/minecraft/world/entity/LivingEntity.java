@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -64,6 +65,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
@@ -99,13 +101,13 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.component.DeathProtection;
+import net.minecraft.world.item.component.Weapon;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.effects.EnchantmentLocationBasedEffect;
@@ -121,7 +123,6 @@ import net.minecraft.world.level.block.PowderSnowBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
@@ -195,39 +196,27 @@ public abstract class LivingEntity extends Entity implements Attackable {
    protected int attackStrengthTicker;
    public final WalkAnimationState walkAnimation;
    public final int invulnerableDuration;
-   public final float timeOffs;
-   public final float rotA;
    public float yBodyRot;
    public float yBodyRotO;
    public float yHeadRot;
    public float yHeadRotO;
    public final ElytraAnimationState elytraAnimationState;
    @Nullable
-   protected Player lastHurtByPlayer;
-   protected int lastHurtByPlayerTime;
+   protected EntityReference<Player> lastHurtByPlayer;
+   protected int lastHurtByPlayerMemoryTime;
    protected boolean dead;
    protected int noActionTime;
-   protected float oRun;
-   protected float run;
-   protected float animStep;
-   protected float animStepO;
-   protected float rotOffs;
    protected float lastHurt;
    protected boolean jumping;
    public float xxa;
    public float yya;
    public float zza;
-   protected int lerpSteps;
-   protected double lerpX;
-   protected double lerpY;
-   protected double lerpZ;
-   protected double lerpYRot;
-   protected double lerpXRot;
+   protected InterpolationHandler interpolation;
    protected double lerpYHeadRot;
    protected int lerpHeadSteps;
    private boolean effectsDirty;
    @Nullable
-   private LivingEntity lastHurtByMob;
+   private EntityReference<LivingEntity> lastHurtByMob;
    private int lastHurtByMobTimestamp;
    @Nullable
    private LivingEntity lastHurtMob;
@@ -252,7 +241,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
    protected Brain<?> brain;
    private boolean skipDropExperience;
    private final EnumMap<EquipmentSlot, Reference2ObjectMap<Enchantment, Set<EnchantmentLocationBasedEffect>>> activeLocationDependentEnchantments;
-   protected float appliedScale;
 
    protected LivingEntity(EntityType<? extends LivingEntity> var1, Level var2) {
       super(var1, var2);
@@ -263,17 +251,15 @@ public abstract class LivingEntity extends Entity implements Attackable {
       this.walkAnimation = new WalkAnimationState();
       this.invulnerableDuration = 20;
       this.elytraAnimationState = new ElytraAnimationState(this);
+      this.interpolation = new InterpolationHandler(this);
       this.effectsDirty = true;
       this.useItem = ItemStack.EMPTY;
       this.lastClimbablePos = Optional.empty();
       this.activeLocationDependentEnchantments = new EnumMap(EquipmentSlot.class);
-      this.appliedScale = 1.0F;
       this.attributes = new AttributeMap(DefaultAttributes.getSupplier(var1));
       this.setHealth(this.getMaxHealth());
       this.blocksBuilding = true;
-      this.rotA = (float)((Math.random() + 1.0) * 0.009999999776482582);
       this.reapplyPosition();
-      this.timeOffs = (float)Math.random() * 12398.0F;
       this.setYRot((float)(Math.random() * 6.2831854820251465));
       this.yHeadRot = this.getYRot();
       NbtOps var3 = NbtOps.INSTANCE;
@@ -370,76 +356,64 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.getSleepingPos().ifPresent(this::setPosToBed);
       }
 
-      Level var2 = this.level();
+      ServerLevel var2 = this.level();
       if (var2 instanceof ServerLevel var1) {
          EnchantmentHelper.tickEffects(var1, this);
       }
 
       super.baseTick();
-      ProfilerFiller var12 = Profiler.get();
-      var12.push("livingEntityBaseTick");
+      ProfilerFiller var8 = Profiler.get();
+      var8.push("livingEntityBaseTick");
       if (this.fireImmune() || this.level().isClientSide) {
          this.clearFire();
       }
 
       if (this.isAlive()) {
-         boolean var13 = this instanceof Player;
-         Level var4 = this.level();
-         if (var4 instanceof ServerLevel) {
-            ServerLevel var3 = (ServerLevel)var4;
+         Level var3 = this.level();
+         if (var3 instanceof ServerLevel) {
+            var2 = (ServerLevel)var3;
+            boolean var11 = this instanceof Player;
             if (this.isInWall()) {
-               this.hurtServer(var3, this.damageSources().inWall(), 1.0F);
-            } else if (var13 && !this.level().getWorldBorder().isWithinBounds(this.getBoundingBox())) {
-               double var16 = this.level().getWorldBorder().getDistanceToBorder(this) + this.level().getWorldBorder().getDamageSafeZone();
-               if (var16 < 0.0) {
-                  double var6 = this.level().getWorldBorder().getDamagePerBlock();
+               this.hurtServer(var2, this.damageSources().inWall(), 1.0F);
+            } else if (var11 && !var2.getWorldBorder().isWithinBounds(this.getBoundingBox())) {
+               double var4 = var2.getWorldBorder().getDistanceToBorder(this) + var2.getWorldBorder().getDamageSafeZone();
+               if (var4 < 0.0) {
+                  double var6 = var2.getWorldBorder().getDamagePerBlock();
                   if (var6 > 0.0) {
-                     this.hurtServer(var3, this.damageSources().outOfBorder(), (float)Math.max(1, Mth.floor(-var16 * var6)));
+                     this.hurtServer(var2, this.damageSources().outOfBorder(), (float)Math.max(1, Mth.floor(-var4 * var6)));
                   }
                }
             }
-         }
 
-         if (this.isEyeInFluid(FluidTags.WATER) && !this.level().getBlockState(BlockPos.containing(this.getX(), this.getEyeY(), this.getZ())).is(Blocks.BUBBLE_COLUMN)) {
-            boolean var14 = !this.canBreatheUnderwater() && !MobEffectUtil.hasWaterBreathing(this) && (!var13 || !((Player)this).getAbilities().invulnerable);
-            if (var14) {
-               this.setAirSupply(this.decreaseAirSupply(this.getAirSupply()));
-               if (this.getAirSupply() == -20) {
-                  this.setAirSupply(0);
-                  Vec3 var17 = this.getDeltaMovement();
-
-                  for(int var5 = 0; var5 < 8; ++var5) {
-                     double var20 = this.random.nextDouble() - this.random.nextDouble();
-                     double var8 = this.random.nextDouble() - this.random.nextDouble();
-                     double var10 = this.random.nextDouble() - this.random.nextDouble();
-                     this.level().addParticle(ParticleTypes.BUBBLE, this.getX() + var20, this.getY() + var8, this.getZ() + var10, var17.x, var17.y, var17.z);
+            if (this.isEyeInFluid(FluidTags.WATER) && !var2.getBlockState(BlockPos.containing(this.getX(), this.getEyeY(), this.getZ())).is(Blocks.BUBBLE_COLUMN)) {
+               boolean var12 = !this.canBreatheUnderwater() && !MobEffectUtil.hasWaterBreathing(this) && (!var11 || !((Player)this).getAbilities().invulnerable);
+               if (var12) {
+                  this.setAirSupply(this.decreaseAirSupply(this.getAirSupply()));
+                  if (this.getAirSupply() == -20) {
+                     this.setAirSupply(0);
+                     var2.broadcastEntityEvent(this, (byte)67);
+                     this.hurtServer(var2, this.damageSources().drown(), 2.0F);
                   }
+               } else if (this.getAirSupply() < this.getMaxAirSupply()) {
+                  this.setAirSupply(this.increaseAirSupply(this.getAirSupply()));
+               }
 
-                  this.hurt(this.damageSources().drown(), 2.0F);
+               if (this.isPassenger() && this.getVehicle() != null && this.getVehicle().dismountsUnderwater()) {
+                  this.stopRiding();
                }
             } else if (this.getAirSupply() < this.getMaxAirSupply()) {
                this.setAirSupply(this.increaseAirSupply(this.getAirSupply()));
             }
 
-            if (!this.level().isClientSide && this.isPassenger() && this.getVehicle() != null && this.getVehicle().dismountsUnderwater()) {
-               this.stopRiding();
-            }
-         } else if (this.getAirSupply() < this.getMaxAirSupply()) {
-            this.setAirSupply(this.increaseAirSupply(this.getAirSupply()));
-         }
-
-         var4 = this.level();
-         if (var4 instanceof ServerLevel) {
-            ServerLevel var15 = (ServerLevel)var4;
-            BlockPos var19 = this.blockPosition();
-            if (!Objects.equal(this.lastPos, var19)) {
-               this.lastPos = var19;
-               this.onChangedBlock(var15, var19);
+            BlockPos var13 = this.blockPosition();
+            if (!Objects.equal(this.lastPos, var13)) {
+               this.lastPos = var13;
+               this.onChangedBlock(var2, var13);
             }
          }
       }
 
-      if (this.isAlive() && (this.isInWaterRainOrBubble() || this.isInPowderSnow)) {
+      if (this.isAlive() && (this.isInWaterOrRain() || this.isInPowderSnow)) {
          this.extinguishFire();
       }
 
@@ -455,8 +429,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.tickDeath();
       }
 
-      if (this.lastHurtByPlayerTime > 0) {
-         --this.lastHurtByPlayerTime;
+      if (this.lastHurtByPlayerMemoryTime > 0) {
+         --this.lastHurtByPlayerMemoryTime;
       } else {
          this.lastHurtByPlayer = null;
       }
@@ -465,8 +439,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.lastHurtMob = null;
       }
 
-      if (this.lastHurtByMob != null) {
-         if (!this.lastHurtByMob.isAlive()) {
+      LivingEntity var10 = this.getLastHurtByMob();
+      if (var10 != null) {
+         if (!var10.isAlive()) {
             this.setLastHurtByMob((LivingEntity)null);
          } else if (this.tickCount - this.lastHurtByMobTimestamp > 100) {
             this.setLastHurtByMob((LivingEntity)null);
@@ -474,16 +449,19 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
 
       this.tickEffects();
-      this.animStepO = this.animStep;
-      this.yBodyRotO = this.yBodyRot;
       this.yHeadRotO = this.yHeadRot;
+      this.yBodyRotO = this.yBodyRot;
       this.yRotO = this.getYRot();
       this.xRotO = this.getXRot();
-      var12.pop();
+      var8.pop();
    }
 
    protected float getBlockSpeedFactor() {
       return Mth.lerp((float)this.getAttributeValue(Attributes.MOVEMENT_EFFICIENCY), super.getBlockSpeedFactor(), 1.0F);
+   }
+
+   public float getLuck() {
+      return 0.0F;
    }
 
    protected void removeFrost() {
@@ -533,7 +511,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
       return var1;
    }
 
-   protected boolean isAffectedByFluids() {
+   public boolean isAffectedByFluids() {
       return true;
    }
 
@@ -584,7 +562,12 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
    @Nullable
    public LivingEntity getLastHurtByMob() {
-      return this.lastHurtByMob;
+      return (LivingEntity)EntityReference.get(this.lastHurtByMob, this.level(), LivingEntity.class);
+   }
+
+   @Nullable
+   public Player getLastHurtByPlayer() {
+      return (Player)EntityReference.get(this.lastHurtByPlayer, this.level(), Player.class);
    }
 
    public LivingEntity getLastAttacker() {
@@ -595,13 +578,21 @@ public abstract class LivingEntity extends Entity implements Attackable {
       return this.lastHurtByMobTimestamp;
    }
 
-   public void setLastHurtByPlayer(@Nullable Player var1) {
+   public void setLastHurtByPlayer(Player var1, int var2) {
+      this.setLastHurtByPlayer(new EntityReference(var1), var2);
+   }
+
+   public void setLastHurtByPlayer(UUID var1, int var2) {
+      this.setLastHurtByPlayer(new EntityReference(var1), var2);
+   }
+
+   private void setLastHurtByPlayer(EntityReference<Player> var1, int var2) {
       this.lastHurtByPlayer = var1;
-      this.lastHurtByPlayerTime = this.tickCount;
+      this.lastHurtByPlayerMemoryTime = var2;
    }
 
    public void setLastHurtByMob(@Nullable LivingEntity var1) {
-      this.lastHurtByMob = var1;
+      this.lastHurtByMob = var1 != null ? new EntityReference(var1) : null;
       this.lastHurtByMobTimestamp = this.tickCount;
    }
 
@@ -650,7 +641,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
          if (!var4 && !ItemStack.isSameItemSameComponents(var2, var3) && !this.firstTick) {
             Equippable var5 = (Equippable)var3.get(DataComponents.EQUIPPABLE);
             if (!this.isSilent() && var5 != null && var1 == var5.slot()) {
-               this.level().playSeededSound((Player)null, this.getX(), this.getY(), this.getZ(), var5.equipSound(), this.getSoundSource(), 1.0F, 1.0F, this.random.nextLong());
+               this.level().playSeededSound((Entity)null, this.getX(), this.getY(), this.getZ(), var5.equipSound(), this.getSoundSource(), 1.0F, 1.0F, this.random.nextLong());
             }
 
             if (this.doesEmitEquipEvent(var1)) {
@@ -709,6 +700,10 @@ public abstract class LivingEntity extends Entity implements Attackable {
       Logger var10001 = LOGGER;
       java.util.Objects.requireNonNull(var10001);
       var5.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("Brain", var1x));
+      this.lastHurtByPlayer = EntityReference.<Player>read(var1, "last_hurt_by_player");
+      this.lastHurtByPlayerMemoryTime = var1.getInt("last_hurt_by_player_memory_time");
+      this.lastHurtByMob = EntityReference.<LivingEntity>read(var1, "last_hurt_by_mob");
+      this.lastHurtByMobTimestamp = var1.getInt("ticks_since_last_hurt_by_mob") + this.tickCount;
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
@@ -763,43 +758,55 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.brain = this.makeBrain(new Dynamic(NbtOps.INSTANCE, var1.get("Brain")));
       }
 
+      if (this.lastHurtByPlayer != null) {
+         this.lastHurtByPlayer.store(var1, "last_hurt_by_player");
+         var1.putInt("last_hurt_by_player_memory_time", this.lastHurtByPlayerMemoryTime);
+      }
+
+      if (this.lastHurtByMob != null) {
+         this.lastHurtByMob.store(var1, "last_hurt_by_mob");
+         var1.putInt("ticks_since_last_hurt_by_mob", this.tickCount - this.lastHurtByMobTimestamp);
+      }
+
    }
 
    protected void tickEffects() {
-      Iterator var1 = this.activeEffects.keySet().iterator();
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel var1) {
+         Iterator var7 = this.activeEffects.keySet().iterator();
 
-      try {
-         while(var1.hasNext()) {
-            Holder var2 = (Holder)var1.next();
-            MobEffectInstance var3 = (MobEffectInstance)this.activeEffects.get(var2);
-            if (!var3.tick(this, () -> this.onEffectUpdated(var3, true, (Entity)null))) {
-               if (!this.level().isClientSide) {
-                  var1.remove();
-                  this.onEffectsRemoved(List.of(var3));
+         try {
+            while(var7.hasNext()) {
+               Holder var3 = (Holder)var7.next();
+               MobEffectInstance var4 = (MobEffectInstance)this.activeEffects.get(var3);
+               if (!var4.tickServer(var1, this, () -> this.onEffectUpdated(var4, true, (Entity)null))) {
+                  var7.remove();
+                  this.onEffectsRemoved(List.of(var4));
+               } else if (var4.getDuration() % 600 == 0) {
+                  this.onEffectUpdated(var4, false, (Entity)null);
                }
-            } else if (var3.getDuration() % 600 == 0) {
-               this.onEffectUpdated(var3, false, (Entity)null);
             }
+         } catch (ConcurrentModificationException var6) {
          }
-      } catch (ConcurrentModificationException var6) {
-      }
 
-      if (this.effectsDirty) {
-         if (!this.level().isClientSide) {
+         if (this.effectsDirty) {
             this.updateInvisibilityStatus();
             this.updateGlowingStatus();
+            this.effectsDirty = false;
+         }
+      } else {
+         for(MobEffectInstance var10 : this.activeEffects.values()) {
+            var10.tickClient();
          }
 
-         this.effectsDirty = false;
-      }
-
-      List var7 = (List)this.entityData.get(DATA_EFFECT_PARTICLES);
-      if (!var7.isEmpty()) {
-         boolean var8 = (Boolean)this.entityData.get(DATA_EFFECT_AMBIENCE_ID);
-         int var4 = this.isInvisible() ? 15 : 4;
-         int var5 = var8 ? 5 : 1;
-         if (this.random.nextInt(var4 * var5) == 0) {
-            this.level().addParticle((ParticleOptions)Util.getRandom(var7, this.random), this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), 1.0, 1.0, 1.0);
+         List var9 = (List)this.entityData.get(DATA_EFFECT_PARTICLES);
+         if (!var9.isEmpty()) {
+            boolean var11 = (Boolean)this.entityData.get(DATA_EFFECT_AMBIENCE_ID);
+            int var12 = this.isInvisible() ? 15 : 4;
+            int var5 = var11 ? 5 : 1;
+            if (this.random.nextInt(var12 * var5) == 0) {
+               this.level().addParticle((ParticleOptions)Util.getRandom(var9, this.random), this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), 1.0, 1.0, 1.0);
+            }
          }
       }
 
@@ -911,6 +918,11 @@ public abstract class LivingEntity extends Entity implements Attackable {
       return (MobEffectInstance)this.activeEffects.get(var1);
    }
 
+   public float getEffectBlendFactor(Holder<MobEffect> var1, float var2) {
+      MobEffectInstance var3 = this.getEffect(var1);
+      return var3 != null ? var3.getBlendFactor(this, var2) : 0.0F;
+   }
+
    public final boolean addEffect(MobEffectInstance var1) {
       return this.addEffect(var1, (Entity)null);
    }
@@ -966,7 +978,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    @Nullable
-   public MobEffectInstance removeEffectNoUpdate(Holder<MobEffect> var1) {
+   public final MobEffectInstance removeEffectNoUpdate(Holder<MobEffect> var1) {
       return (MobEffectInstance)this.activeEffects.remove(var1);
    }
 
@@ -981,8 +993,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    protected void onEffectAdded(MobEffectInstance var1, @Nullable Entity var2) {
-      this.effectsDirty = true;
       if (!this.level().isClientSide) {
+         this.effectsDirty = true;
          ((MobEffect)var1.getEffect().value()).addAttributeModifiers(this.getAttributes(), var1.getAmplifier());
          this.sendEffectToPassengers(var1);
       }
@@ -999,23 +1011,23 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    protected void onEffectUpdated(MobEffectInstance var1, boolean var2, @Nullable Entity var3) {
-      this.effectsDirty = true;
-      if (var2 && !this.level().isClientSide) {
-         MobEffect var4 = (MobEffect)var1.getEffect().value();
-         var4.removeAttributeModifiers(this.getAttributes());
-         var4.addAttributeModifiers(this.getAttributes(), var1.getAmplifier());
-         this.refreshDirtyAttributes();
-      }
-
       if (!this.level().isClientSide) {
+         this.effectsDirty = true;
+         if (var2) {
+            MobEffect var4 = (MobEffect)var1.getEffect().value();
+            var4.removeAttributeModifiers(this.getAttributes());
+            var4.addAttributeModifiers(this.getAttributes(), var1.getAmplifier());
+            this.refreshDirtyAttributes();
+         }
+
          this.sendEffectToPassengers(var1);
       }
-
    }
 
    protected void onEffectsRemoved(Collection<MobEffectInstance> var1) {
-      this.effectsDirty = true;
       if (!this.level().isClientSide) {
+         this.effectsDirty = true;
+
          for(MobEffectInstance var3 : var1) {
             ((MobEffect)var3.getEffect().value()).removeAttributeModifiers(this.getAttributes());
 
@@ -1029,7 +1041,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
          this.refreshDirtyAttributes();
       }
-
    }
 
    private void refreshDirtyAttributes() {
@@ -1053,6 +1064,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
          if (this.getAbsorptionAmount() > var3) {
             this.setAbsorptionAmount(var3);
          }
+      } else if (var1.is(Attributes.SCALE)) {
+         this.refreshDimensions();
       }
 
    }
@@ -1121,7 +1134,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
             var3 *= 0.75F;
          }
 
-         this.walkAnimation.setSpeed(1.5F);
          if (Float.isNaN(var3) || Float.isInfinite(var3)) {
             var3 = 3.4028235E38F;
          }
@@ -1187,6 +1199,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
             }
          } else if (var14) {
             this.playHurtSound(var2);
+            this.playSecondaryHurtSound(var2);
          }
 
          boolean var16 = !var5 || var3 > 0.0F;
@@ -1217,6 +1230,14 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
    }
 
+   private void playSecondaryHurtSound(DamageSource var1) {
+      if (var1.is(DamageTypes.THORNS)) {
+         SoundSource var2 = this instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
+         this.level().playSound((Entity)null, this.position().x, this.position().y, this.position().z, SoundEvents.THORNS_HIT, var2);
+      }
+
+   }
+
    protected void resolveMobResponsibleForDamage(DamageSource var1) {
       Entity var3 = var1.getEntity();
       if (var3 instanceof LivingEntity var2) {
@@ -1231,27 +1252,19 @@ public abstract class LivingEntity extends Entity implements Attackable {
    protected Player resolvePlayerResponsibleForDamage(DamageSource var1) {
       Entity var2 = var1.getEntity();
       if (var2 instanceof Player var3) {
-         this.lastHurtByPlayerTime = 100;
-         this.lastHurtByPlayer = var3;
-         return var3;
-      } else {
-         if (var2 instanceof Wolf var4) {
-            if (var4.isTame()) {
-               this.lastHurtByPlayerTime = 100;
-               LivingEntity var6 = var4.getOwner();
-               if (var6 instanceof Player) {
-                  Player var5 = (Player)var6;
-                  this.lastHurtByPlayer = var5;
-               } else {
-                  this.lastHurtByPlayer = null;
-               }
-
-               return this.lastHurtByPlayer;
+         this.setLastHurtByPlayer((Player)var3, 100);
+      } else if (var2 instanceof Wolf var4) {
+         if (var4.isTame()) {
+            if (var4.getOwnerReference() != null) {
+               this.setLastHurtByPlayer((UUID)var4.getOwnerReference().getUUID(), 100);
+            } else {
+               this.lastHurtByPlayer = null;
+               this.lastHurtByPlayerMemoryTime = 0;
             }
          }
-
-         return null;
       }
+
+      return (Player)EntityReference.get(this.lastHurtByPlayer, this.level(), Player.class);
    }
 
    protected void blockUsingShield(LivingEntity var1) {
@@ -1408,7 +1421,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    protected void dropAllDeathLoot(ServerLevel var1, DamageSource var2) {
-      boolean var3 = this.lastHurtByPlayerTime > 0;
+      boolean var3 = this.lastHurtByPlayerMemoryTime > 0;
       if (this.shouldDropLoot() && var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
          this.dropFromLootTable(var1, var2, var3);
          this.dropCustomDeathLoot(var1, var2, var3);
@@ -1422,7 +1435,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    protected void dropExperience(ServerLevel var1, @Nullable Entity var2) {
-      if (!this.wasExperienceConsumed() && (this.isAlwaysExperienceDropper() || this.lastHurtByPlayerTime > 0 && this.shouldDropExperience() && var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT))) {
+      if (!this.wasExperienceConsumed() && (this.isAlwaysExperienceDropper() || this.lastHurtByPlayerMemoryTime > 0 && this.shouldDropExperience() && var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT))) {
          ExperienceOrb.award(var1, this.position(), this.getExperienceReward(var1, var2));
       }
 
@@ -1450,12 +1463,13 @@ public abstract class LivingEntity extends Entity implements Attackable {
       if (!var4.isEmpty()) {
          LootTable var5 = var1.getServer().reloadableRegistries().getLootTable((ResourceKey)var4.get());
          LootParams.Builder var6 = (new LootParams.Builder(var1)).withParameter(LootContextParams.THIS_ENTITY, this).withParameter(LootContextParams.ORIGIN, this.position()).withParameter(LootContextParams.DAMAGE_SOURCE, var2).withOptionalParameter(LootContextParams.ATTACKING_ENTITY, var2.getEntity()).withOptionalParameter(LootContextParams.DIRECT_ATTACKING_ENTITY, var2.getDirectEntity());
-         if (var3 && this.lastHurtByPlayer != null) {
-            var6 = var6.withParameter(LootContextParams.LAST_DAMAGE_PLAYER, this.lastHurtByPlayer).withLuck(this.lastHurtByPlayer.getLuck());
+         Player var7 = this.getLastHurtByPlayer();
+         if (var3 && var7 != null) {
+            var6 = var6.withParameter(LootContextParams.LAST_DAMAGE_PLAYER, var7).withLuck(var7.getLuck());
          }
 
-         LootParams var7 = var6.create(LootContextParamSets.ENTITY);
-         var5.getRandomItems(var7, this.getLootTableSeed(), (var2x) -> this.spawnAtLocation(var1, var2x));
+         LootParams var8 = var6.create(LootContextParamSets.ENTITY);
+         var5.getRandomItems(var8, this.getLootTableSeed(), (var2x) -> this.spawnAtLocation(var1, var2x));
       }
    }
 
@@ -1536,10 +1550,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
    public Map<Enchantment, Set<EnchantmentLocationBasedEffect>> activeLocationDependentEnchantments(EquipmentSlot var1) {
       return (Map)this.activeLocationDependentEnchantments.computeIfAbsent(var1, (var0) -> new Reference2ObjectArrayMap());
-   }
-
-   public boolean canBeNameTagged() {
-      return true;
    }
 
    public Fallsounds getFallSounds() {
@@ -1688,8 +1698,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
       if (var1.is(DamageTypeTags.BYPASSES_EFFECTS)) {
          return var2;
       } else {
-         if (this.hasEffect(MobEffects.DAMAGE_RESISTANCE) && !var1.is(DamageTypeTags.BYPASSES_RESISTANCE)) {
-            int var3 = (this.getEffect(MobEffects.DAMAGE_RESISTANCE).getAmplifier() + 1) * 5;
+         if (this.hasEffect(MobEffects.RESISTANCE) && !var1.is(DamageTypeTags.BYPASSES_RESISTANCE)) {
+            int var3 = (this.getEffect(MobEffects.RESISTANCE).getAmplifier() + 1) * 5;
             int var4 = 25 - var3;
             float var5 = var2 * (float)var4;
             float var6 = var2;
@@ -1759,9 +1769,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
    @Nullable
    public LivingEntity getKillCredit() {
       if (this.lastHurtByPlayer != null) {
-         return this.lastHurtByPlayer;
+         return this.lastHurtByPlayer.getEntity(this.level(), Player.class);
       } else {
-         return this.lastHurtByMob != null ? this.lastHurtByMob : null;
+         return this.lastHurtByMob != null ? (LivingEntity)this.lastHurtByMob.getEntity(this.level(), LivingEntity.class) : null;
       }
    }
 
@@ -1793,7 +1803,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
       if (MobEffectUtil.hasDigSpeed(this)) {
          return 6 - (1 + MobEffectUtil.getDigSpeedAmplification(this));
       } else {
-         return this.hasEffect(MobEffects.DIG_SLOWDOWN) ? 6 + (1 + this.getEffect(MobEffects.DIG_SLOWDOWN).getAmplifier()) * 2 : 6;
+         return this.hasEffect(MobEffects.MINING_FATIGUE) ? 6 + (1 + this.getEffect(MobEffects.MINING_FATIGUE).getAmplifier()) * 2 : 6;
       }
    }
 
@@ -1846,6 +1856,59 @@ public abstract class LivingEntity extends Entity implements Attackable {
                this.die(this.damageSources().generic());
             }
             break;
+         case 4:
+         case 5:
+         case 6:
+         case 7:
+         case 8:
+         case 9:
+         case 10:
+         case 11:
+         case 12:
+         case 13:
+         case 14:
+         case 15:
+         case 16:
+         case 17:
+         case 18:
+         case 19:
+         case 20:
+         case 21:
+         case 22:
+         case 23:
+         case 24:
+         case 25:
+         case 26:
+         case 27:
+         case 28:
+         case 31:
+         case 32:
+         case 33:
+         case 34:
+         case 35:
+         case 36:
+         case 37:
+         case 38:
+         case 39:
+         case 40:
+         case 41:
+         case 42:
+         case 43:
+         case 44:
+         case 45:
+         case 53:
+         case 56:
+         case 57:
+         case 58:
+         case 59:
+         case 61:
+         case 62:
+         case 63:
+         case 64:
+         case 66:
+         default:
+            super.handleEntityEvent(var1);
+            break;
          case 29:
             this.playSound(SoundEvents.SHIELD_BLOCK, 1.0F, 0.8F + this.level().random.nextFloat() * 0.4F);
             break;
@@ -1896,8 +1959,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
          case 65:
             this.breakItem(this.getItemBySlot(EquipmentSlot.BODY));
             break;
-         default:
-            super.handleEntityEvent(var1);
+         case 67:
+            this.makeDrownParticles();
       }
 
    }
@@ -1909,6 +1972,18 @@ public abstract class LivingEntity extends Entity implements Attackable {
          double var6 = this.random.nextGaussian() * 0.02;
          double var8 = 10.0;
          this.level().addParticle(ParticleTypes.POOF, this.getRandomX(1.0) - var2 * 10.0, this.getRandomY() - var4 * 10.0, this.getRandomZ(1.0) - var6 * 10.0, var2, var4, var6);
+      }
+
+   }
+
+   private void makeDrownParticles() {
+      Vec3 var1 = this.getDeltaMovement();
+
+      for(int var2 = 0; var2 < 8; ++var2) {
+         double var3 = this.random.triangle(0.0, 1.0);
+         double var5 = this.random.triangle(0.0, 1.0);
+         double var7 = this.random.triangle(0.0, 1.0);
+         this.level().addParticle(ParticleTypes.BUBBLE, this.getX() + var3, this.getY() + var5, this.getZ() + var7, var1.x, var1.y, var1.z);
       }
 
    }
@@ -2112,7 +2187,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    public float getJumpBoostPower() {
-      return this.hasEffect(MobEffects.JUMP) ? 0.1F * ((float)this.getEffect(MobEffects.JUMP).getAmplifier() + 1.0F) : 0.0F;
+      return this.hasEffect(MobEffects.JUMP_BOOST) ? 0.1F * ((float)this.getEffect(MobEffects.JUMP_BOOST).getAmplifier() + 1.0F) : 0.0F;
    }
 
    @VisibleForTesting
@@ -2156,17 +2231,15 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    public void travel(Vec3 var1) {
-      if (this.isControlledByLocalInstance()) {
-         FluidState var2 = this.level().getFluidState(this.blockPosition());
-         if ((this.isInWater() || this.isInLava()) && this.isAffectedByFluids() && !this.canStandOnFluid(var2)) {
-            this.travelInFluid(var1);
-         } else if (this.isFallFlying()) {
-            this.travelFallFlying();
-         } else {
-            this.travelInAir(var1);
-         }
-
+      FluidState var2 = this.level().getFluidState(this.blockPosition());
+      if ((this.isInWater() || this.isInLava()) && this.isAffectedByFluids() && !this.canStandOnFluid(var2)) {
+         this.travelInFluid(var1);
+      } else if (this.isFallFlying()) {
+         this.travelFallFlying(var1);
+      } else {
+         this.travelInAir(var1);
       }
+
    }
 
    private void travelInAir(Vec3 var1) {
@@ -2250,16 +2323,26 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
    }
 
-   private void travelFallFlying() {
-      Vec3 var1 = this.getDeltaMovement();
-      double var2 = var1.horizontalDistance();
-      this.setDeltaMovement(this.updateFallFlyingMovement(var1));
-      this.move(MoverType.SELF, this.getDeltaMovement());
-      if (!this.level().isClientSide) {
-         double var4 = this.getDeltaMovement().horizontalDistance();
-         this.handleFallFlyingCollisions(var2, var4);
-      }
+   private void travelFallFlying(Vec3 var1) {
+      if (this.onClimbable()) {
+         this.travelInAir(var1);
+         this.stopFallFlying();
+      } else {
+         Vec3 var2 = this.getDeltaMovement();
+         double var3 = var2.horizontalDistance();
+         this.setDeltaMovement(this.updateFallFlyingMovement(var2));
+         this.move(MoverType.SELF, this.getDeltaMovement());
+         if (!this.level().isClientSide) {
+            double var5 = this.getDeltaMovement().horizontalDistance();
+            this.handleFallFlyingCollisions(var3, var5);
+         }
 
+      }
+   }
+
+   public void stopFallFlying() {
+      this.setSharedFlag(7, true);
+      this.setSharedFlag(7, false);
    }
 
    private Vec3 updateFallFlyingMovement(Vec3 var1) {
@@ -2302,7 +2385,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
    private void travelRidden(Player var1, Vec3 var2) {
       Vec3 var3 = this.getRiddenInput(var1, var2);
       this.tickRidden(var1, var3);
-      if (this.isControlledByLocalInstance()) {
+      if (this.canSimulateMovement()) {
          this.setSpeed(this.getRiddenSpeed(var1));
          this.travel(var3);
       } else {
@@ -2445,22 +2528,17 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.aiStep();
       }
 
-      double var11 = this.getX() - this.xo;
+      double var9 = this.getX() - this.xo;
       double var3 = this.getZ() - this.zo;
-      float var5 = (float)(var11 * var11 + var3 * var3);
+      float var5 = (float)(var9 * var9 + var3 * var3);
       float var6 = this.yBodyRot;
-      float var7 = 0.0F;
-      this.oRun = this.run;
-      float var8 = 0.0F;
       if (var5 > 0.0025000002F) {
-         var8 = 1.0F;
-         var7 = (float)Math.sqrt((double)var5) * 3.0F;
-         float var9 = (float)Mth.atan2(var3, var11) * 57.295776F - 90.0F;
-         float var10 = Mth.abs(Mth.wrapDegrees(this.getYRot()) - var9);
-         if (95.0F < var10 && var10 < 265.0F) {
-            var6 = var9 - 180.0F;
+         float var7 = (float)Mth.atan2(var3, var9) * 57.295776F - 90.0F;
+         float var8 = Mth.abs(Mth.wrapDegrees(this.getYRot()) - var7);
+         if (95.0F < var8 && var8 < 265.0F) {
+            var6 = var7 - 180.0F;
          } else {
-            var6 = var9;
+            var6 = var7;
          }
       }
 
@@ -2468,16 +2546,11 @@ public abstract class LivingEntity extends Entity implements Attackable {
          var6 = this.getYRot();
       }
 
-      if (!this.onGround()) {
-         var8 = 0.0F;
-      }
-
-      this.run += (var8 - this.run) * 0.3F;
-      ProfilerFiller var13 = Profiler.get();
-      var13.push("headTurn");
-      var7 = this.tickHeadTurn(var6, var7);
-      var13.pop();
-      var13.push("rangeChecks");
+      ProfilerFiller var10 = Profiler.get();
+      var10.push("headTurn");
+      this.tickHeadTurn(var6);
+      var10.pop();
+      var10.push("rangeChecks");
 
       while(this.getYRot() - this.yRotO < -180.0F) {
          this.yRotO -= 360.0F;
@@ -2511,8 +2584,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.yHeadRotO += 360.0F;
       }
 
-      var13.pop();
-      this.animStep += var7;
+      var10.pop();
       if (this.isFallFlying()) {
          ++this.fallFlyTicks;
       } else {
@@ -2524,12 +2596,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
 
       this.refreshDirtyAttributes();
-      float var14 = this.getScale();
-      if (var14 != this.appliedScale) {
-         this.appliedScale = var14;
-         this.refreshDimensions();
-      }
-
       this.elytraAnimationState.tick();
    }
 
@@ -2645,21 +2711,15 @@ public abstract class LivingEntity extends Entity implements Attackable {
       this.lastHandItemStacks.set(var1.getIndex(), var2);
    }
 
-   protected float tickHeadTurn(float var1, float var2) {
-      float var3 = Mth.wrapDegrees(var1 - this.yBodyRot);
-      this.yBodyRot += var3 * 0.3F;
-      float var4 = Mth.wrapDegrees(this.getYRot() - this.yBodyRot);
-      float var5 = this.getMaxHeadRotationRelativeToBody();
-      if (Math.abs(var4) > var5) {
-         this.yBodyRot += var4 - (float)Mth.sign((double)var4) * var5;
+   protected void tickHeadTurn(float var1) {
+      float var2 = Mth.wrapDegrees(var1 - this.yBodyRot);
+      this.yBodyRot += var2 * 0.3F;
+      float var3 = Mth.wrapDegrees(this.getYRot() - this.yBodyRot);
+      float var4 = this.getMaxHeadRotationRelativeToBody();
+      if (Math.abs(var3) > var4) {
+         this.yBodyRot += var3 - (float)Mth.sign((double)var3) * var4;
       }
 
-      boolean var6 = var4 < -90.0F || var4 >= 90.0F;
-      if (var6) {
-         var2 *= -1.0F;
-      }
-
-      return var2;
    }
 
    protected float getMaxHeadRotationRelativeToBody() {
@@ -2671,10 +2731,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
          --this.noJumpDelay;
       }
 
-      if (this.lerpSteps > 0) {
-         this.lerpPositionAndRotationStep(this.lerpSteps, this.lerpX, this.lerpY, this.lerpZ, this.lerpYRot, this.lerpXRot);
-         --this.lerpSteps;
-      } else if (!this.isEffectiveAi()) {
+      if (this.isInterpolating()) {
+         this.getInterpolation().interpolate();
+      } else if (!this.canSimulateMovement()) {
          this.setDeltaMovement(this.getDeltaMovement().scale(0.98));
       }
 
@@ -2687,16 +2746,23 @@ public abstract class LivingEntity extends Entity implements Attackable {
       double var2 = var1.x;
       double var4 = var1.y;
       double var6 = var1.z;
-      if (Math.abs(var1.x) < 0.003) {
-         var2 = 0.0;
+      if (this.getType().equals(EntityType.PLAYER)) {
+         if (var1.horizontalDistanceSqr() < 9.0E-6) {
+            var2 = 0.0;
+            var6 = 0.0;
+         }
+      } else {
+         if (Math.abs(var1.x) < 0.003) {
+            var2 = 0.0;
+         }
+
+         if (Math.abs(var1.z) < 0.003) {
+            var6 = 0.0;
+         }
       }
 
       if (Math.abs(var1.y) < 0.003) {
          var4 = 0.0;
-      }
-
-      if (Math.abs(var1.z) < 0.003) {
-         var6 = 0.0;
       }
 
       this.setDeltaMovement(var2, var4, var6);
@@ -2707,9 +2773,12 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.xxa = 0.0F;
          this.zza = 0.0F;
       } else if (this.isEffectiveAi()) {
-         var8.push("newAi");
-         this.serverAiStep();
-         var8.pop();
+         this.applyInput();
+         if (!this.level().isClientSide) {
+            var8.push("newAi");
+            this.serverAiStep();
+            var8.pop();
+         }
       }
 
       var8.pop();
@@ -2754,44 +2823,50 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.resetFallDistance();
       }
 
-      label112: {
-         LivingEntity var19 = this.getControllingPassenger();
-         if (var19 instanceof Player var15) {
+      label126: {
+         LivingEntity var18 = this.getControllingPassenger();
+         if (var18 instanceof Player var15) {
             if (this.isAlive()) {
                this.travelRidden(var15, var10);
-               break label112;
+               break label126;
             }
          }
 
-         this.travel(var10);
+         if (this.canSimulateMovement()) {
+            this.travel(var10);
+         }
       }
 
-      if (!this.level().isClientSide() || this.isControlledByLocalInstance()) {
+      if (!this.level().isClientSide() || this.isLocalInstanceAuthoritative()) {
          this.applyEffectsFromBlocks();
       }
 
-      this.calculateEntityAnimation(this instanceof FlyingAnimal);
-      var8.pop();
-      var8.push("freezing");
-      if (!this.level().isClientSide && !this.isDeadOrDying()) {
-         int var16 = this.getTicksFrozen();
-         if (this.isInPowderSnow && this.canFreeze()) {
-            this.setTicksFrozen(Math.min(this.getTicksRequiredToFreeze(), var16 + 1));
-         } else {
-            this.setTicksFrozen(Math.max(0, var16 - 2));
-         }
+      if (this.level().isClientSide()) {
+         this.calculateEntityAnimation(this instanceof FlyingAnimal);
       }
 
-      this.removeFrost();
-      this.tryAddFrost();
-      Level var20 = this.level();
-      if (var20 instanceof ServerLevel var17) {
+      var8.pop();
+      Level var19 = this.level();
+      if (var19 instanceof ServerLevel var16) {
+         var8.push("freezing");
+         if (!this.isDeadOrDying()) {
+            int var20 = this.getTicksFrozen();
+            if (this.isInPowderSnow && this.canFreeze()) {
+               this.setTicksFrozen(Math.min(this.getTicksRequiredToFreeze(), var20 + 1));
+            } else {
+               this.setTicksFrozen(Math.max(0, var20 - 2));
+            }
+         }
+
+         this.removeFrost();
+         this.tryAddFrost();
          if (this.tickCount % 40 == 0 && this.isFullyFrozen() && this.canFreeze()) {
-            this.hurtServer(var17, this.damageSources().freeze(), 1.0F);
+            this.hurtServer(var16, this.damageSources().freeze(), 1.0F);
          }
+
+         var8.pop();
       }
 
-      var8.pop();
       var8.push("push");
       if (this.autoSpinAttackTicks > 0) {
          --this.autoSpinAttackTicks;
@@ -2800,13 +2875,16 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
       this.pushEntities();
       var8.pop();
-      var20 = this.level();
-      if (var20 instanceof ServerLevel var18) {
-         if (this.isSensitiveToWater() && this.isInWaterRainOrBubble()) {
-            this.hurtServer(var18, this.damageSources().drown(), 1.0F);
+      var19 = this.level();
+      if (var19 instanceof ServerLevel var17) {
+         if (this.isSensitiveToWater() && this.isInWaterOrRain()) {
+            this.hurtServer(var17, this.damageSources().drown(), 1.0F);
          }
       }
 
+   }
+
+   protected void applyInput() {
    }
 
    public boolean isSensitiveToWater() {
@@ -2854,30 +2932,29 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    protected void pushEntities() {
-      Level var2 = this.level();
-      if (!(var2 instanceof ServerLevel var1)) {
-         this.level().getEntities(EntityTypeTest.forClass(Player.class), this.getBoundingBox(), EntitySelector.pushableBy(this)).forEach(this::doPush);
-      } else {
-         List var7 = this.level().getEntities(this, this.getBoundingBox(), EntitySelector.pushableBy(this));
-         if (!var7.isEmpty()) {
-            int var3 = var1.getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
-            if (var3 > 0 && var7.size() > var3 - 1 && this.random.nextInt(4) == 0) {
+      List var1 = this.level().getPushableEntities(this, this.getBoundingBox());
+      if (!var1.isEmpty()) {
+         Level var3 = this.level();
+         if (var3 instanceof ServerLevel) {
+            ServerLevel var2 = (ServerLevel)var3;
+            int var8 = var2.getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
+            if (var8 > 0 && var1.size() > var8 - 1 && this.random.nextInt(4) == 0) {
                int var4 = 0;
 
-               for(Entity var6 : var7) {
+               for(Entity var6 : var1) {
                   if (!var6.isPassenger()) {
                      ++var4;
                   }
                }
 
-               if (var4 > var3 - 1) {
-                  this.hurtServer(var1, this.damageSources().cramming(), 6.0F);
+               if (var4 > var8 - 1) {
+                  this.hurtServer(var2, this.damageSources().cramming(), 6.0F);
                }
             }
+         }
 
-            for(Entity var9 : var7) {
-               this.doPush(var9);
-            }
+         for(Entity var9 : var1) {
+            this.doPush(var9);
          }
 
       }
@@ -2929,42 +3006,11 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
    public void rideTick() {
       super.rideTick();
-      this.oRun = this.run;
-      this.run = 0.0F;
       this.resetFallDistance();
    }
 
-   public void cancelLerp() {
-      this.lerpSteps = 0;
-   }
-
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
-      this.lerpX = var1;
-      this.lerpY = var3;
-      this.lerpZ = var5;
-      this.lerpYRot = (double)var7;
-      this.lerpXRot = (double)var8;
-      this.lerpSteps = var9;
-   }
-
-   public double lerpTargetX() {
-      return this.lerpSteps > 0 ? this.lerpX : this.getX();
-   }
-
-   public double lerpTargetY() {
-      return this.lerpSteps > 0 ? this.lerpY : this.getY();
-   }
-
-   public double lerpTargetZ() {
-      return this.lerpSteps > 0 ? this.lerpZ : this.getZ();
-   }
-
-   public float lerpTargetXRot() {
-      return this.lerpSteps > 0 ? (float)this.lerpXRot : this.getXRot();
-   }
-
-   public float lerpTargetYRot() {
-      return this.lerpSteps > 0 ? (float)this.lerpYRot : this.getYRot();
+   public InterpolationHandler getInterpolation() {
+      return this.interpolation;
    }
 
    public void lerpHeadTo(float var1, int var2) {
@@ -3579,8 +3625,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
       this.setDeltaMovement(var1.getXa(), var1.getYa(), var1.getZa());
    }
 
-   public boolean canDisableShield() {
-      return this.getWeaponItem().getItem() instanceof AxeItem;
+   public boolean canDisableBlocking() {
+      Weapon var1 = (Weapon)this.getWeaponItem().get(DataComponents.WEAPON);
+      return var1 != null && var1.canDisableBlocking();
    }
 
    public float maxUpStep() {
@@ -3618,8 +3665,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    @VisibleForTesting
-   public int getLastHurtByPlayerTime() {
-      return this.lastHurtByPlayerTime;
+   public int getLastHurtByPlayerMemoryTime() {
+      return this.lastHurtByPlayerMemoryTime;
    }
 
    static {

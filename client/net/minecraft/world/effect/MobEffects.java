@@ -12,17 +12,17 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 
 public class MobEffects {
    private static final int DARKNESS_EFFECT_FACTOR_PADDING_DURATION_TICKS = 22;
-   public static final Holder<MobEffect> MOVEMENT_SPEED;
-   public static final Holder<MobEffect> MOVEMENT_SLOWDOWN;
-   public static final Holder<MobEffect> DIG_SPEED;
-   public static final Holder<MobEffect> DIG_SLOWDOWN;
-   public static final Holder<MobEffect> DAMAGE_BOOST;
-   public static final Holder<MobEffect> HEAL;
-   public static final Holder<MobEffect> HARM;
-   public static final Holder<MobEffect> JUMP;
-   public static final Holder<MobEffect> CONFUSION;
+   public static final Holder<MobEffect> SPEED;
+   public static final Holder<MobEffect> SLOWNESS;
+   public static final Holder<MobEffect> HASTE;
+   public static final Holder<MobEffect> MINING_FATIGUE;
+   public static final Holder<MobEffect> STRENGTH;
+   public static final Holder<MobEffect> INSTANT_HEALTH;
+   public static final Holder<MobEffect> INSTANT_DAMAGE;
+   public static final Holder<MobEffect> JUMP_BOOST;
+   public static final Holder<MobEffect> NAUSEA;
    public static final Holder<MobEffect> REGENERATION;
-   public static final Holder<MobEffect> DAMAGE_RESISTANCE;
+   public static final Holder<MobEffect> RESISTANCE;
    public static final Holder<MobEffect> FIRE_RESISTANCE;
    public static final Holder<MobEffect> WATER_BREATHING;
    public static final Holder<MobEffect> INVISIBILITY;
@@ -61,21 +61,21 @@ public class MobEffects {
    }
 
    public static Holder<MobEffect> bootstrap(Registry<MobEffect> var0) {
-      return MOVEMENT_SPEED;
+      return SPEED;
    }
 
    static {
-      MOVEMENT_SPEED = register("speed", (new MobEffect(MobEffectCategory.BENEFICIAL, 3402751)).addAttributeModifier(Attributes.MOVEMENT_SPEED, ResourceLocation.withDefaultNamespace("effect.speed"), 0.20000000298023224, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
-      MOVEMENT_SLOWDOWN = register("slowness", (new MobEffect(MobEffectCategory.HARMFUL, 9154528)).addAttributeModifier(Attributes.MOVEMENT_SPEED, ResourceLocation.withDefaultNamespace("effect.slowness"), -0.15000000596046448, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
-      DIG_SPEED = register("haste", (new MobEffect(MobEffectCategory.BENEFICIAL, 14270531)).addAttributeModifier(Attributes.ATTACK_SPEED, ResourceLocation.withDefaultNamespace("effect.haste"), 0.10000000149011612, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
-      DIG_SLOWDOWN = register("mining_fatigue", (new MobEffect(MobEffectCategory.HARMFUL, 4866583)).addAttributeModifier(Attributes.ATTACK_SPEED, ResourceLocation.withDefaultNamespace("effect.mining_fatigue"), -0.10000000149011612, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
-      DAMAGE_BOOST = register("strength", (new MobEffect(MobEffectCategory.BENEFICIAL, 16762624)).addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 3.0, AttributeModifier.Operation.ADD_VALUE));
-      HEAL = register("instant_health", new HealOrHarmMobEffect(MobEffectCategory.BENEFICIAL, 16262179, false));
-      HARM = register("instant_damage", new HealOrHarmMobEffect(MobEffectCategory.HARMFUL, 11101546, true));
-      JUMP = register("jump_boost", (new MobEffect(MobEffectCategory.BENEFICIAL, 16646020)).addAttributeModifier(Attributes.SAFE_FALL_DISTANCE, ResourceLocation.withDefaultNamespace("effect.jump_boost"), 1.0, AttributeModifier.Operation.ADD_VALUE));
-      CONFUSION = register("nausea", new MobEffect(MobEffectCategory.HARMFUL, 5578058));
+      SPEED = register("speed", (new MobEffect(MobEffectCategory.BENEFICIAL, 3402751)).addAttributeModifier(Attributes.MOVEMENT_SPEED, ResourceLocation.withDefaultNamespace("effect.speed"), 0.20000000298023224, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+      SLOWNESS = register("slowness", (new MobEffect(MobEffectCategory.HARMFUL, 9154528)).addAttributeModifier(Attributes.MOVEMENT_SPEED, ResourceLocation.withDefaultNamespace("effect.slowness"), -0.15000000596046448, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+      HASTE = register("haste", (new MobEffect(MobEffectCategory.BENEFICIAL, 14270531)).addAttributeModifier(Attributes.ATTACK_SPEED, ResourceLocation.withDefaultNamespace("effect.haste"), 0.10000000149011612, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+      MINING_FATIGUE = register("mining_fatigue", (new MobEffect(MobEffectCategory.HARMFUL, 4866583)).addAttributeModifier(Attributes.ATTACK_SPEED, ResourceLocation.withDefaultNamespace("effect.mining_fatigue"), -0.10000000149011612, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+      STRENGTH = register("strength", (new MobEffect(MobEffectCategory.BENEFICIAL, 16762624)).addAttributeModifier(Attributes.ATTACK_DAMAGE, ResourceLocation.withDefaultNamespace("effect.strength"), 3.0, AttributeModifier.Operation.ADD_VALUE));
+      INSTANT_HEALTH = register("instant_health", new HealOrHarmMobEffect(MobEffectCategory.BENEFICIAL, 16262179, false));
+      INSTANT_DAMAGE = register("instant_damage", new HealOrHarmMobEffect(MobEffectCategory.HARMFUL, 11101546, true));
+      JUMP_BOOST = register("jump_boost", (new MobEffect(MobEffectCategory.BENEFICIAL, 16646020)).addAttributeModifier(Attributes.SAFE_FALL_DISTANCE, ResourceLocation.withDefaultNamespace("effect.jump_boost"), 1.0, AttributeModifier.Operation.ADD_VALUE));
+      NAUSEA = register("nausea", (new MobEffect(MobEffectCategory.HARMFUL, 5578058)).setBlendDuration(150, 20, 60));
       REGENERATION = register("regeneration", new RegenerationMobEffect(MobEffectCategory.BENEFICIAL, 13458603));
-      DAMAGE_RESISTANCE = register("resistance", new MobEffect(MobEffectCategory.BENEFICIAL, 9520880));
+      RESISTANCE = register("resistance", new MobEffect(MobEffectCategory.BENEFICIAL, 9520880));
       FIRE_RESISTANCE = register("fire_resistance", new MobEffect(MobEffectCategory.BENEFICIAL, 16750848));
       WATER_BREATHING = register("water_breathing", new MobEffect(MobEffectCategory.BENEFICIAL, 10017472));
       INVISIBILITY = register("invisibility", new MobEffect(MobEffectCategory.BENEFICIAL, 16185078));

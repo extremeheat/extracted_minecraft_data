@@ -26,9 +26,8 @@ public class EndPortalFrameBlock extends Block {
    public static final MapCodec<EndPortalFrameBlock> CODEC = simpleCodec(EndPortalFrameBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final BooleanProperty HAS_EYE;
-   protected static final VoxelShape BASE_SHAPE;
-   protected static final VoxelShape EYE_SHAPE;
-   protected static final VoxelShape FULL_SHAPE;
+   private static final VoxelShape SHAPE_EMPTY;
+   private static final VoxelShape SHAPE_FULL;
    private static BlockPattern portalShape;
 
    public MapCodec<EndPortalFrameBlock> codec() {
@@ -45,7 +44,7 @@ public class EndPortalFrameBlock extends Block {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (Boolean)var1.getValue(HAS_EYE) ? FULL_SHAPE : BASE_SHAPE;
+      return (Boolean)var1.getValue(HAS_EYE) ? SHAPE_FULL : SHAPE_EMPTY;
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -87,8 +86,7 @@ public class EndPortalFrameBlock extends Block {
    static {
       FACING = HorizontalDirectionalBlock.FACING;
       HAS_EYE = BlockStateProperties.EYE;
-      BASE_SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 13.0, 16.0);
-      EYE_SHAPE = Block.box(4.0, 13.0, 4.0, 12.0, 16.0, 12.0);
-      FULL_SHAPE = Shapes.or(BASE_SHAPE, EYE_SHAPE);
+      SHAPE_EMPTY = Block.column(16.0, 0.0, 13.0);
+      SHAPE_FULL = Shapes.or(SHAPE_EMPTY, Block.column(8.0, 13.0, 16.0));
    }
 }

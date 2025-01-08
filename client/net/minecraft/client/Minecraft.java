@@ -60,6 +60,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
@@ -206,6 +207,7 @@ import net.minecraft.util.FileZipper;
 import net.minecraft.util.MemoryReserve;
 import net.minecraft.util.ModCheck;
 import net.minecraft.util.SignatureValidator;
+import net.minecraft.util.TimeSource;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.Unit;
 import net.minecraft.util.datafix.DataFixers;
@@ -221,7 +223,7 @@ import net.minecraft.util.profiling.metrics.profiling.ActiveMetricsRecorder;
 import net.minecraft.util.profiling.metrics.profiling.InactiveMetricsRecorder;
 import net.minecraft.util.profiling.metrics.profiling.MetricsRecorder;
 import net.minecraft.util.profiling.metrics.storage.MetricsPersister;
-import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -401,7 +403,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.fpsString = "";
       this.smartCull = true;
       this.progressTasks = Queues.newConcurrentLinkedQueue();
-      this.fpsPieProfiler = new ContinuousProfiler(Util.timeSource, () -> this.fpsPieRenderTicks);
       this.metricsRecorder = InactiveMetricsRecorder.INSTANCE;
       this.reloadStateTracker = new ResourceLoadStateTracker();
       instance = this;
@@ -443,21 +444,28 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.toastManager = new ToastManager(this);
       this.gameThread = Thread.currentThread();
       this.options = new Options(this, this.gameDirectory);
+      boolean var6 = this.options.startedCleanly;
+      this.options.startedCleanly = false;
+      this.options.save();
       RenderSystem.setShaderGlintAlpha((Double)this.options.glintStrength().get());
       this.running = true;
       this.tutorial = new Tutorial(this, this.options);
       this.hotbarManager = new HotbarManager(var3, this.fixerUpper);
       LOGGER.info("Backend library: {}", RenderSystem.getBackendDescription());
-      DisplayData var6;
+      DisplayData var7 = var1.display;
       if (this.options.overrideHeight > 0 && this.options.overrideWidth > 0) {
-         var6 = new DisplayData(this.options.overrideWidth, this.options.overrideHeight, var1.display.fullscreenWidth, var1.display.fullscreenHeight, var1.display.isFullscreen);
-      } else {
-         var6 = var1.display;
+         var7 = var1.display.withSize(this.options.overrideWidth, this.options.overrideHeight);
+      }
+
+      if (!var6) {
+         var7 = var7.withFullscreen(false);
+         this.options.fullscreenVideoModeString = null;
+         LOGGER.warn("Detected unexpected shutdown during last game startup: resetting fullscreen mode");
       }
 
       Util.timeSource = RenderSystem.initBackendSystem();
       this.virtualScreen = new VirtualScreen(this);
-      this.window = this.virtualScreen.newWindow(var6, this.options.fullscreenVideoModeString, this.createTitle());
+      this.window = this.virtualScreen.newWindow(var7, this.options.fullscreenVideoModeString, this.createTitle());
       this.setWindowActive(true);
       this.window.setWindowCloseCallback(new Runnable() {
          private boolean threadStarted;
@@ -474,8 +482,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       try {
          this.window.setIcon(this.vanillaPackResources, SharedConstants.getCurrentVersion().isStable() ? IconSet.RELEASE : IconSet.SNAPSHOT);
-      } catch (IOException var13) {
-         LOGGER.error("Couldn't set icon", var13);
+      } catch (IOException var14) {
+         LOGGER.error("Couldn't set icon", var14);
       }
 
       this.mouseHandler = new MouseHandler(this);
@@ -521,8 +529,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.blockColors = BlockColors.createDefault();
       this.modelManager = new ModelManager(this.textureManager, this.blockColors, (Integer)this.options.mipmapLevels().get());
       this.resourceManager.registerReloadListener(this.modelManager);
-      EquipmentAssetManager var7 = new EquipmentAssetManager();
-      this.resourceManager.registerReloadListener(var7);
+      EquipmentAssetManager var8 = new EquipmentAssetManager();
+      this.resourceManager.registerReloadListener(var8);
       this.itemModelResolver = new ItemModelResolver(this.modelManager);
       this.itemRenderer = new ItemRenderer(this.itemModelResolver);
       this.mapTextureManager = new MapTextureManager(this.textureManager);
@@ -531,18 +539,18 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.mapRenderer = new MapRenderer(this.mapDecorationTextures, this.mapTextureManager);
 
       try {
-         int var8 = Runtime.getRuntime().availableProcessors();
+         int var9 = Runtime.getRuntime().availableProcessors();
          Tesselator.init();
-         this.renderBuffers = new RenderBuffers(var8);
-      } catch (OutOfMemoryError var12) {
+         this.renderBuffers = new RenderBuffers(var9);
+      } catch (OutOfMemoryError var13) {
          TinyFileDialogs.tinyfd_messageBox("Minecraft", "Oh no! The game was unable to allocate memory off-heap while trying to start. You may try to free some memory by closing other applications on your computer, check that your system meets the minimum requirements, and try again. If the problem persists, please visit: " + String.valueOf(CommonLinks.GENERAL_HELP), "ok", "error", true);
-         throw new SilentInitException("Unable to allocate render buffers", var12);
+         throw new SilentInitException("Unable to allocate render buffers", var13);
       }
 
       this.playerSocialManager = new PlayerSocialManager(this, this.userApiService);
       this.blockRenderer = new BlockRenderDispatcher(this.modelManager.getBlockModelShaper(), this.modelManager.specialBlockModelRenderer(), this.blockColors);
       this.resourceManager.registerReloadListener(this.blockRenderer);
-      this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, this.itemModelResolver, this.itemRenderer, this.mapRenderer, this.blockRenderer, this.font, this.options, this.modelManager.entityModels(), var7);
+      this.entityRenderDispatcher = new EntityRenderDispatcher(this, this.textureManager, this.itemModelResolver, this.itemRenderer, this.mapRenderer, this.blockRenderer, this.font, this.options, this.modelManager.entityModels(), var8);
       this.resourceManager.registerReloadListener(this.entityRenderDispatcher);
       this.blockEntityRenderDispatcher = new BlockEntityRenderDispatcher(this.font, this.modelManager.entityModels(), this.blockRenderer, this.itemModelResolver, this.itemRenderer, this.entityRenderDispatcher);
       this.resourceManager.registerReloadListener(this.blockEntityRenderDispatcher);
@@ -563,23 +571,27 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.resourceManager.registerReloadListener(this.regionalCompliancies);
       this.gui = new Gui(this);
       this.debugRenderer = new DebugRenderer(this);
-      RealmsClient var14 = RealmsClient.create(this);
-      this.realmsDataFetcher = new RealmsDataFetcher(var14);
+      RealmsClient var15 = RealmsClient.create(this);
+      this.realmsDataFetcher = new RealmsDataFetcher(var15);
       RenderSystem.setErrorCallback(this::onFullscreenError);
       if (this.mainRenderTarget.width == this.window.getWidth() && this.mainRenderTarget.height == this.window.getHeight()) {
          if ((Boolean)this.options.fullscreen().get() && !this.window.isFullscreen()) {
-            this.window.toggleFullScreen();
-            this.options.fullscreen().set(this.window.isFullscreen());
+            if (var6) {
+               this.window.toggleFullScreen();
+               this.options.fullscreen().set(this.window.isFullscreen());
+            } else {
+               this.options.fullscreen().set(false);
+            }
          }
       } else {
          int var10002 = this.window.getWidth();
-         StringBuilder var9 = new StringBuilder("Recovering from unsupported resolution (" + var10002 + "x" + this.window.getHeight() + ").\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).");
+         StringBuilder var10 = new StringBuilder("Recovering from unsupported resolution (" + var10002 + "x" + this.window.getHeight() + ").\nPlease make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).");
          if (GlDebug.isDebugEnabled()) {
-            var9.append("\n\nReported GL debug messages:\n").append(String.join("\n", GlDebug.getLastOpenGlDebugMessages()));
+            var10.append("\n\nReported GL debug messages:\n").append(String.join("\n", GlDebug.getLastOpenGlDebugMessages()));
          }
 
          this.window.setWindowed(this.mainRenderTarget.width, this.mainRenderTarget.height);
-         TinyFileDialogs.tinyfd_messageBox("Minecraft", var9.toString(), "ok", "error", false);
+         TinyFileDialogs.tinyfd_messageBox("Minecraft", var10.toString(), "ok", "error", false);
       }
 
       this.window.updateVsync((Boolean)this.options.enableVsync().get());
@@ -597,21 +609,26 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       TitleScreen.registerTextures(this.textureManager);
       LoadingOverlay.registerTextures(this.textureManager);
       this.setScreen(new GenericMessageScreen(Component.translatable("gui.loadingMinecraft")));
-      List var15 = this.resourcePackRepository.openAllSelected();
-      this.reloadStateTracker.startReload(ResourceLoadStateTracker.ReloadReason.INITIAL, var15);
-      ReloadInstance var10 = this.resourceManager.createReload(Util.backgroundExecutor().forName("resourceLoad"), this, RESOURCE_RELOAD_INITIAL_TASK, var15);
+      List var16 = this.resourcePackRepository.openAllSelected();
+      this.reloadStateTracker.startReload(ResourceLoadStateTracker.ReloadReason.INITIAL, var16);
+      ReloadInstance var11 = this.resourceManager.createReload(Util.backgroundExecutor().forName("resourceLoad"), this, RESOURCE_RELOAD_INITIAL_TASK, var16);
       GameLoadTimesEvent.INSTANCE.beginStep(TelemetryProperty.LOAD_TIME_LOADING_OVERLAY_MS);
-      GameLoadCookie var11 = new GameLoadCookie(var14, var1.quickPlay);
-      this.setOverlay(new LoadingOverlay(this, var10, (var2x) -> Util.ifElse(var2x, (var2) -> this.rollbackResourcePacks(var2, var11), () -> {
+      GameLoadCookie var12 = new GameLoadCookie(var15, var1.quickPlay);
+      this.setOverlay(new LoadingOverlay(this, var11, (var2x) -> Util.ifElse(var2x, (var2) -> this.rollbackResourcePacks(var2, var12), () -> {
             if (SharedConstants.IS_RUNNING_IN_IDE) {
                this.selfTest();
             }
 
             this.reloadStateTracker.finishReload();
-            this.onResourceLoadFinished(var11);
+            this.onResourceLoadFinished(var12);
          }), false));
       this.quickPlayLog = QuickPlayLog.of(var1.quickPlay.path());
       this.framerateLimitTracker = new FramerateLimitTracker(this.options, this);
+      TimeSource.NanoTimeSource var10003 = Util.timeSource;
+      IntSupplier var10004 = () -> this.fpsPieRenderTicks;
+      FramerateLimitTracker var10005 = this.framerateLimitTracker;
+      Objects.requireNonNull(var10005);
+      this.fpsPieProfiler = new ContinuousProfiler(var10003, var10004, var10005::isHeavilyThrottled);
       if (TracyClient.isAvailable() && var1.game.captureTracyImages) {
          this.tracyFrameCapture = new TracyFrameCapture();
       } else {
@@ -634,6 +651,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       GameLoadTimesEvent.INSTANCE.endStep(TelemetryProperty.LOAD_TIME_TOTAL_TIME_MS);
       GameLoadTimesEvent.INSTANCE.send(this.telemetryManager.getOutsideSessionSender());
       var2.run();
+      this.options.startedCleanly = true;
+      this.options.save();
    }
 
    public boolean isGameLoadFinished() {
@@ -1366,7 +1385,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             }
          };
          Consumer var3 = (var2x) -> {
-            MutableComponent var3 = Component.literal(var2x.toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var2x.toFile().getParent()))));
+            MutableComponent var3 = Component.literal(var2x.toString()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent.OpenFile(var2x.getParent()))));
             this.execute(() -> var1.accept(Component.translatable("debug.profiling.stop", var3)));
          };
          SystemReport var4 = fillSystemReport(new SystemReport(), this, this.languageManager, this.launchedVersion, this.options);
@@ -1601,7 +1620,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                            InteractionResult.Success var12 = (InteractionResult.Success)var11;
                            if (var12.swingSource() == InteractionResult.SwingSource.CLIENT) {
                               this.player.swing(var4);
-                              if (!var5.isEmpty() && (var5.getCount() != var10 || this.gameMode.hasInfiniteItems())) {
+                              if (!var5.isEmpty() && (var5.getCount() != var10 || this.player.hasInfiniteMaterials())) {
                                  this.gameRenderer.itemInHandRenderer.itemUsed(var4);
                               }
                            }
@@ -1809,7 +1828,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          if (this.options.keyHotbarSlots[var4].consumeClick()) {
             if (this.player.isSpectator()) {
                this.gui.getSpectatorGui().onHotbarSelected(var4);
-            } else if (!this.player.isCreative() || this.screen != null || !var3 && !var2) {
+            } else if (!this.player.hasInfiniteMaterials() || this.screen != null || !var3 && !var2) {
                this.player.getInventory().selected = var4;
             } else {
                CreativeModeInventoryScreen.handleHotbarLoadOrSave(this, var4, var3, var2);
@@ -2407,7 +2426,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                } else {
                   Optional var5 = ((Biome)var3.value()).getBackgroundMusic();
                   if (var5.isPresent()) {
-                     Optional var6 = ((SimpleWeightedRandomList)var5.get()).getRandomValue(var2.random);
+                     Optional var6 = ((WeightedList)var5.get()).getRandom(var2.random);
                      return new MusicInfo((Music)var6.orElse((Object)null), var4);
                   } else {
                      return new MusicInfo(Musics.GAME, var4);
@@ -2595,7 +2614,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             });
          }
 
-         MutableComponent var20 = Component.literal(var1.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var1.getAbsolutePath()))));
+         MutableComponent var20 = Component.literal(var1.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent.OpenFile(var1.getAbsoluteFile()))));
          var12 = Component.translatable("screenshot.success", var20);
          return var12;
       } catch (Exception var18) {
@@ -2645,7 +2664,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
          File var16 = var7.close();
          GlUtil.freeMemory(var6);
-         MutableComponent var17 = Component.literal(var16.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var16.getAbsolutePath()))));
+         MutableComponent var17 = Component.literal(var16.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1x) -> var1x.withClickEvent(new ClickEvent.OpenFile(var16.getAbsoluteFile()))));
          return Component.translatable("screenshot.success", var17);
       } catch (Exception var15) {
          LOGGER.warn("Couldn't save screenshot", var15);

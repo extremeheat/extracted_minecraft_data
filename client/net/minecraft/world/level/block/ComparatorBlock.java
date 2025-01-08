@@ -114,7 +114,7 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
       } else {
          var1 = (BlockState)var1.cycle(MODE);
          float var6 = var1.getValue(MODE) == ComparatorMode.SUBTRACT ? 0.55F : 0.5F;
-         var2.playSound(var4, var3, SoundEvents.COMPARATOR_CLICK, SoundSource.BLOCKS, 0.3F, var6);
+         var2.playSound(var4, (BlockPos)var3, SoundEvents.COMPARATOR_CLICK, SoundSource.BLOCKS, 0.3F, var6);
          var2.setBlock(var3, var1, 2);
          this.refreshOutputState(var2, var3, var1);
          return InteractionResult.SUCCESS;

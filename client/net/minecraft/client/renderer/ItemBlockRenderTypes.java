@@ -283,6 +283,8 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.FLOWERING_AZALEA, var3);
       var0.put(Blocks.AZALEA, var3);
       var0.put(Blocks.PINK_PETALS, var3);
+      var0.put(Blocks.WILDFLOWERS, var3);
+      var0.put(Blocks.LEAF_LITTER, var3);
       var0.put(Blocks.BIG_DRIPLEAF, var3);
       var0.put(Blocks.BIG_DRIPLEAF_STEM, var3);
       var0.put(Blocks.SMALL_DRIPLEAF, var3);

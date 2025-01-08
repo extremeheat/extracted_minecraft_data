@@ -28,7 +28,7 @@ public class RandomStroll {
    }
 
    public static OneShot<PathfinderMob> stroll(float var0, boolean var1) {
-      return strollFlyOrSwim(var0, (var0x) -> LandRandomPos.getPos(var0x, 10, 7), var1 ? (var0x) -> true : (var0x) -> !var0x.isInWaterOrBubble());
+      return strollFlyOrSwim(var0, (var0x) -> LandRandomPos.getPos(var0x, 10, 7), var1 ? (var0x) -> true : (var0x) -> !var0x.isInWater());
    }
 
    public static BehaviorControl<PathfinderMob> stroll(float var0, int var1, int var2) {
@@ -40,7 +40,7 @@ public class RandomStroll {
    }
 
    public static BehaviorControl<PathfinderMob> swim(float var0) {
-      return strollFlyOrSwim(var0, RandomStroll::getTargetSwimPos, Entity::isInWaterOrBubble);
+      return strollFlyOrSwim(var0, RandomStroll::getTargetSwimPos, Entity::isInWater);
    }
 
    private static OneShot<PathfinderMob> strollFlyOrSwim(float var0, Function<PathfinderMob, Vec3> var1, Predicate<PathfinderMob> var2) {

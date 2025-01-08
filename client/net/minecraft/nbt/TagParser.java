@@ -86,46 +86,52 @@ public class TagParser {
    }
 
    private Tag type(String var1) {
-      try {
-         if (FLOAT_PATTERN.matcher(var1).matches()) {
-            return FloatTag.valueOf(Float.parseFloat(var1.substring(0, var1.length() - 1)));
+      if ("true".equalsIgnoreCase(var1)) {
+         return ByteTag.ONE;
+      } else if ("false".equalsIgnoreCase(var1)) {
+         return ByteTag.ZERO;
+      } else {
+         try {
+            char var2 = Character.toLowerCase(var1.charAt(var1.length() - 1));
+            switch (var2) {
+               case 'b':
+                  if (BYTE_PATTERN.matcher(var1).matches()) {
+                     return ByteTag.valueOf(Byte.parseByte(var1.substring(0, var1.length() - 1)));
+                  }
+                  break;
+               case 'd':
+                  if (DOUBLE_PATTERN.matcher(var1).matches()) {
+                     return DoubleTag.valueOf(Double.parseDouble(var1.substring(0, var1.length() - 1)));
+                  }
+                  break;
+               case 'f':
+                  if (FLOAT_PATTERN.matcher(var1).matches()) {
+                     return FloatTag.valueOf(Float.parseFloat(var1.substring(0, var1.length() - 1)));
+                  }
+                  break;
+               case 'l':
+                  if (LONG_PATTERN.matcher(var1).matches()) {
+                     return LongTag.valueOf(Long.parseLong(var1.substring(0, var1.length() - 1)));
+                  }
+                  break;
+               case 's':
+                  if (SHORT_PATTERN.matcher(var1).matches()) {
+                     return ShortTag.valueOf(Short.parseShort(var1.substring(0, var1.length() - 1)));
+                  }
+            }
+
+            if (INT_PATTERN.matcher(var1).matches()) {
+               return IntTag.valueOf(Integer.parseInt(var1));
+            }
+
+            if (DOUBLE_PATTERN_NOSUFFIX.matcher(var1).matches()) {
+               return DoubleTag.valueOf(Double.parseDouble(var1));
+            }
+         } catch (NumberFormatException var3) {
          }
 
-         if (BYTE_PATTERN.matcher(var1).matches()) {
-            return ByteTag.valueOf(Byte.parseByte(var1.substring(0, var1.length() - 1)));
-         }
-
-         if (LONG_PATTERN.matcher(var1).matches()) {
-            return LongTag.valueOf(Long.parseLong(var1.substring(0, var1.length() - 1)));
-         }
-
-         if (SHORT_PATTERN.matcher(var1).matches()) {
-            return ShortTag.valueOf(Short.parseShort(var1.substring(0, var1.length() - 1)));
-         }
-
-         if (INT_PATTERN.matcher(var1).matches()) {
-            return IntTag.valueOf(Integer.parseInt(var1));
-         }
-
-         if (DOUBLE_PATTERN.matcher(var1).matches()) {
-            return DoubleTag.valueOf(Double.parseDouble(var1.substring(0, var1.length() - 1)));
-         }
-
-         if (DOUBLE_PATTERN_NOSUFFIX.matcher(var1).matches()) {
-            return DoubleTag.valueOf(Double.parseDouble(var1));
-         }
-
-         if ("true".equalsIgnoreCase(var1)) {
-            return ByteTag.ONE;
-         }
-
-         if ("false".equalsIgnoreCase(var1)) {
-            return ByteTag.ZERO;
-         }
-      } catch (NumberFormatException var3) {
+         return StringTag.valueOf(var1);
       }
-
-      return StringTag.valueOf(var1);
    }
 
    public Tag readValue() throws CommandSyntaxException {

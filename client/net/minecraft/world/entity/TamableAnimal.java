@@ -1,7 +1,6 @@
 package net.minecraft.world.entity;
 
 import java.util.Optional;
-import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
@@ -13,14 +12,12 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.OldUsersConverter;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.ai.goal.PanicGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.EntityGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LeavesBlock;
@@ -35,7 +32,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
    private static final int MAX_HORIZONTAL_DISTANCE_FROM_TARGET_AFTER_TELEPORTING = 3;
    private static final int MAX_VERTICAL_DISTANCE_FROM_TARGET_AFTER_TELEPORTING = 1;
    protected static final EntityDataAccessor<Byte> DATA_FLAGS_ID;
-   protected static final EntityDataAccessor<Optional<UUID>> DATA_OWNERUUID_ID;
+   protected static final EntityDataAccessor<Optional<EntityReference<LivingEntity>>> DATA_OWNERUUID_ID;
    private boolean orderedToSit;
 
    protected TamableAnimal(EntityType<? extends TamableAnimal> var1, Level var2) {
@@ -50,8 +47,9 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      if (this.getOwnerUUID() != null) {
-         var1.putUUID("Owner", this.getOwnerUUID());
+      EntityReference var2 = this.getOwnerReference();
+      if (var2 != null) {
+         var2.store(var1, "Owner");
       }
 
       var1.putBoolean("Sitting", this.orderedToSit);
@@ -59,23 +57,16 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      UUID var2;
-      if (var1.hasUUID("Owner")) {
-         var2 = var1.getUUID("Owner");
-      } else {
-         String var3 = var1.getString("Owner");
-         var2 = OldUsersConverter.convertMobOwnerIfNecessary(this.getServer(), var3);
-      }
-
+      EntityReference var2 = EntityReference.readWithOldOwnerConversion(var1, "Owner", this.level());
       if (var2 != null) {
          try {
-            this.setOwnerUUID(var2);
+            this.entityData.set(DATA_OWNERUUID_ID, Optional.of(var2));
             this.setTame(true, false);
          } catch (Throwable var4) {
             this.setTame(false, true);
          }
       } else {
-         this.setOwnerUUID((UUID)null);
+         this.entityData.set(DATA_OWNERUUID_ID, Optional.empty());
          this.setTame(false, true);
       }
 
@@ -161,17 +152,21 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
    }
 
    @Nullable
-   public UUID getOwnerUUID() {
-      return (UUID)((Optional)this.entityData.get(DATA_OWNERUUID_ID)).orElse((Object)null);
+   public EntityReference<LivingEntity> getOwnerReference() {
+      return (EntityReference)((Optional)this.entityData.get(DATA_OWNERUUID_ID)).orElse((Object)null);
    }
 
-   public void setOwnerUUID(@Nullable UUID var1) {
+   public void setOwner(@Nullable LivingEntity var1) {
+      this.entityData.set(DATA_OWNERUUID_ID, Optional.ofNullable(var1).map(EntityReference::new));
+   }
+
+   public void setOwnerReference(@Nullable EntityReference<LivingEntity> var1) {
       this.entityData.set(DATA_OWNERUUID_ID, Optional.ofNullable(var1));
    }
 
    public void tame(Player var1) {
       this.setTame(true, true);
-      this.setOwnerUUID(var1.getUUID());
+      this.setOwner(var1);
       if (var1 instanceof ServerPlayer var2) {
          CriteriaTriggers.TAME_ANIMAL.trigger(var2, this);
       }
@@ -299,14 +294,9 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       return false;
    }
 
-   // $FF: synthetic method
-   public EntityGetter level() {
-      return super.level();
-   }
-
    static {
       DATA_FLAGS_ID = SynchedEntityData.<Byte>defineId(TamableAnimal.class, EntityDataSerializers.BYTE);
-      DATA_OWNERUUID_ID = SynchedEntityData.<Optional<UUID>>defineId(TamableAnimal.class, EntityDataSerializers.OPTIONAL_UUID);
+      DATA_OWNERUUID_ID = SynchedEntityData.<Optional<EntityReference<LivingEntity>>>defineId(TamableAnimal.class, EntityDataSerializers.OPTIONAL_LIVING_ENTITY_REFERENCE);
    }
 
    public class TamableAnimalPanicGoal extends PanicGoal {

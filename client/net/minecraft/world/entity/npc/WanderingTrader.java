@@ -59,8 +59,8 @@ public class WanderingTrader extends AbstractVillager implements Consumable.Over
 
    protected void registerGoals() {
       this.goalSelector.addGoal(0, new FloatGoal(this));
-      this.goalSelector.addGoal(0, new UseItemGoal(this, PotionContents.createItemStack(Items.POTION, Potions.INVISIBILITY), SoundEvents.WANDERING_TRADER_DISAPPEARED, (var1) -> this.level().isNight() && !var1.isInvisible()));
-      this.goalSelector.addGoal(0, new UseItemGoal(this, new ItemStack(Items.MILK_BUCKET), SoundEvents.WANDERING_TRADER_REAPPEARED, (var1) -> this.level().isDay() && var1.isInvisible()));
+      this.goalSelector.addGoal(0, new UseItemGoal(this, PotionContents.createItemStack(Items.POTION, Potions.INVISIBILITY), SoundEvents.WANDERING_TRADER_DISAPPEARED, (var1) -> this.level().isDarkOutside() && !var1.isInvisible()));
+      this.goalSelector.addGoal(0, new UseItemGoal(this, new ItemStack(Items.MILK_BUCKET), SoundEvents.WANDERING_TRADER_REAPPEARED, (var1) -> this.level().isBrightOutside() && var1.isInvisible()));
       this.goalSelector.addGoal(1, new TradeWithPlayerGoal(this));
       this.goalSelector.addGoal(1, new AvoidEntityGoal(this, Zombie.class, 8.0F, 0.5, 0.5));
       this.goalSelector.addGoal(1, new AvoidEntityGoal(this, Evoker.class, 12.0F, 0.5, 0.5));

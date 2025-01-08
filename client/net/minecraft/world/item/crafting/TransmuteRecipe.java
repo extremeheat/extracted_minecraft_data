@@ -5,13 +5,10 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
@@ -24,11 +21,11 @@ public class TransmuteRecipe implements CraftingRecipe {
    final CraftingBookCategory category;
    final Ingredient input;
    final Ingredient material;
-   final Holder<Item> result;
+   final TransmuteResult result;
    @Nullable
    private PlacementInfo placementInfo;
 
-   public TransmuteRecipe(String var1, CraftingBookCategory var2, Ingredient var3, Ingredient var4, Holder<Item> var5) {
+   public TransmuteRecipe(String var1, CraftingBookCategory var2, Ingredient var3, Ingredient var4, TransmuteResult var5) {
       super();
       this.group = var1;
       this.category = var2;
@@ -47,7 +44,7 @@ public class TransmuteRecipe implements CraftingRecipe {
          for(int var5 = 0; var5 < var1.size(); ++var5) {
             ItemStack var6 = var1.getItem(var5);
             if (!var6.isEmpty()) {
-               if (!var3 && this.input.test(var6) && var6.getItem() != this.result.value()) {
+               if (!var3 && this.input.test(var6) && var6.getItem() != this.result.item().value()) {
                   var3 = true;
                } else {
                   if (var4 || !this.material.test(var6)) {
@@ -68,16 +65,16 @@ public class TransmuteRecipe implements CraftingRecipe {
 
       for(int var4 = 0; var4 < var1.size(); ++var4) {
          ItemStack var5 = var1.getItem(var4);
-         if (!var5.isEmpty() && this.input.test(var5) && var5.getItem() != this.result.value()) {
+         if (!var5.isEmpty() && this.input.test(var5) && var5.getItem() != this.result.item().value()) {
             var3 = var5;
          }
       }
 
-      return var3.transmuteCopy(this.result.value(), 1);
+      return this.result.apply(var3);
    }
 
    public List<RecipeDisplay> display() {
-      return List.of(new ShapelessCraftingRecipeDisplay(List.of(this.input.display(), this.material.display()), new SlotDisplay.ItemSlotDisplay(this.result), new SlotDisplay.ItemSlotDisplay(Items.CRAFTING_TABLE)));
+      return List.of(new ShapelessCraftingRecipeDisplay(List.of(this.input.display(), this.material.display()), this.result.display(), new SlotDisplay.ItemSlotDisplay(Items.CRAFTING_TABLE)));
    }
 
    public RecipeSerializer<TransmuteRecipe> getSerializer() {
@@ -101,7 +98,7 @@ public class TransmuteRecipe implements CraftingRecipe {
    }
 
    public static class Serializer implements RecipeSerializer<TransmuteRecipe> {
-      private static final MapCodec<TransmuteRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.optionalFieldOf("group", "").forGetter((var0x) -> var0x.group), CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter((var0x) -> var0x.category), Ingredient.CODEC.fieldOf("input").forGetter((var0x) -> var0x.input), Ingredient.CODEC.fieldOf("material").forGetter((var0x) -> var0x.material), Item.CODEC.fieldOf("result").forGetter((var0x) -> var0x.result)).apply(var0, TransmuteRecipe::new));
+      private static final MapCodec<TransmuteRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.STRING.optionalFieldOf("group", "").forGetter((var0x) -> var0x.group), CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter((var0x) -> var0x.category), Ingredient.CODEC.fieldOf("input").forGetter((var0x) -> var0x.input), Ingredient.CODEC.fieldOf("material").forGetter((var0x) -> var0x.material), TransmuteResult.CODEC.fieldOf("result").forGetter((var0x) -> var0x.result)).apply(var0, TransmuteRecipe::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, TransmuteRecipe> STREAM_CODEC;
 
       public Serializer() {
@@ -117,7 +114,7 @@ public class TransmuteRecipe implements CraftingRecipe {
       }
 
       static {
-         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8, (var0) -> var0.group, CraftingBookCategory.STREAM_CODEC, (var0) -> var0.category, Ingredient.CONTENTS_STREAM_CODEC, (var0) -> var0.input, Ingredient.CONTENTS_STREAM_CODEC, (var0) -> var0.material, ByteBufCodecs.holderRegistry(Registries.ITEM), (var0) -> var0.result, TransmuteRecipe::new);
+         STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8, (var0) -> var0.group, CraftingBookCategory.STREAM_CODEC, (var0) -> var0.category, Ingredient.CONTENTS_STREAM_CODEC, (var0) -> var0.input, Ingredient.CONTENTS_STREAM_CODEC, (var0) -> var0.material, TransmuteResult.STREAM_CODEC, (var0) -> var0.result, TransmuteRecipe::new);
       }
    }
 }

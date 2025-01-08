@@ -36,7 +36,7 @@ public class ThrownExperienceBottle extends ThrowableItemProjectile {
       if (this.level() instanceof ServerLevel) {
          this.level().levelEvent(2002, this.blockPosition(), -13083194);
          int var2 = 3 + this.level().random.nextInt(5) + this.level().random.nextInt(5);
-         ExperienceOrb.award((ServerLevel)this.level(), this.position(), var2);
+         ExperienceOrb.award((ServerLevel)this.level(), var1.getLocation(), var2);
          this.discard();
       }
 

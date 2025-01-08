@@ -295,7 +295,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
                }
 
                if (var11) {
-                  var1.levelEvent((Player)null, 1022, this.blockPosition(), 0);
+                  var1.levelEvent((Entity)null, 1022, this.blockPosition(), 0);
                }
             }
          }
@@ -375,7 +375,7 @@ public class WitherBoss extends Monster implements RangedAttackMob {
 
    private void performRangedAttack(int var1, double var2, double var4, double var6, boolean var8) {
       if (!this.isSilent()) {
-         this.level().levelEvent((Player)null, 1024, this.blockPosition(), 0);
+         this.level().levelEvent((Entity)null, 1024, this.blockPosition(), 0);
       }
 
       double var9 = this.getHeadX(var1);

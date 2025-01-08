@@ -189,7 +189,7 @@ public class TestCommand {
             int var10000 = var7.getX();
             String var8 = var10000 + ", " + var7.getY() + ", " + var7.getZ();
             String var9 = var6.getMetaData();
-            MutableComponent var10 = Component.literal(var8).setStyle(Style.EMPTY.withBold(true).withColor(ChatFormatting.GREEN).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy to clipboard"))).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, "final BlockPos " + var1 + " = new BlockPos(" + var8 + ");")));
+            MutableComponent var10 = Component.literal(var8).setStyle(Style.EMPTY.withBold(true).withColor(ChatFormatting.GREEN).withHoverEvent(new HoverEvent.ShowText(Component.literal("Click to copy to clipboard"))).withClickEvent(new ClickEvent.CopyToClipboard("final BlockPos " + var1 + " = new BlockPos(" + var8 + ");")));
             var0.sendSuccess(() -> Component.literal("Position relative to " + var9 + ": ").append(var10), false);
             DebugPackets.sendGameTestAddMarker(var4, new BlockPos(var3), var8, -2147418368, 10000);
             return 1;
@@ -446,7 +446,7 @@ public class TestCommand {
                int var9 = var2.getX() - var3x.getX();
                int var10 = var2.getZ() - var3x.getZ();
                int var11 = Mth.floor(Mth.sqrt((float)(var9 * var9 + var10 * var10)));
-               MutableComponent var12 = ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", var3x.getX(), var3x.getY(), var3x.getZ())).withStyle((UnaryOperator)((var1x) -> var1x.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, var8)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.coordinates.tooltip")))));
+               MutableComponent var12 = ComponentUtils.wrapInSquareBrackets(Component.translatable("chat.coordinates", var3x.getX(), var3x.getY(), var3x.getZ())).withStyle((UnaryOperator)((var1x) -> var1x.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent.SuggestCommand(var8)).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))));
                MutableComponent var13 = Component.literal("Found structure at: ").append((Component)var12).append(" (distance: " + var11 + ")");
                this.finder.source().sendSuccess(() -> var13, false);
                var1.increment();

@@ -56,7 +56,7 @@ public class Screenshot {
       Util.ioPool().execute(() -> {
          try {
             var4.writeToFile(var6);
-            MutableComponent var3x = Component.literal(var6.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1) -> var1.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var6.getAbsolutePath()))));
+            MutableComponent var3x = Component.literal(var6.getName()).withStyle(ChatFormatting.UNDERLINE).withStyle((UnaryOperator)((var1) -> var1.withClickEvent(new ClickEvent.OpenFile(var6.getAbsoluteFile()))));
             var3.accept(Component.translatable("screenshot.success", var3x));
          } catch (Exception var7) {
             LOGGER.warn("Couldn't save screenshot", var7);

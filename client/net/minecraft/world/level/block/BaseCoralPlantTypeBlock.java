@@ -23,7 +23,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class BaseCoralPlantTypeBlock extends Block implements SimpleWaterloggedBlock {
    public static final BooleanProperty WATERLOGGED;
-   private static final VoxelShape AABB;
+   private static final VoxelShape SHAPE;
 
    protected BaseCoralPlantTypeBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -60,7 +60,7 @@ public abstract class BaseCoralPlantTypeBlock extends Block implements SimpleWat
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return AABB;
+      return SHAPE;
    }
 
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
@@ -86,6 +86,6 @@ public abstract class BaseCoralPlantTypeBlock extends Block implements SimpleWat
 
    static {
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      AABB = Block.box(2.0, 0.0, 2.0, 14.0, 4.0, 14.0);
+      SHAPE = Block.column(12.0, 0.0, 4.0);
    }
 }

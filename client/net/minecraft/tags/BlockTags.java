@@ -142,6 +142,7 @@ public final class BlockTags {
    public static final TagKey<Block> MINEABLE_WITH_PICKAXE = create("mineable/pickaxe");
    public static final TagKey<Block> MINEABLE_WITH_SHOVEL = create("mineable/shovel");
    public static final TagKey<Block> SWORD_EFFICIENT = create("sword_efficient");
+   public static final TagKey<Block> SWORD_INSTANTLY_MINES = create("sword_instantly_mines");
    public static final TagKey<Block> NEEDS_DIAMOND_TOOL = create("needs_diamond_tool");
    public static final TagKey<Block> NEEDS_IRON_TOOL = create("needs_iron_tool");
    public static final TagKey<Block> NEEDS_STONE_TOOL = create("needs_stone_tool");
@@ -178,6 +179,7 @@ public final class BlockTags {
    public static final TagKey<Block> DEAD_BUSH_MAY_PLACE_ON = create("dead_bush_may_place_on");
    public static final TagKey<Block> SNAPS_GOAT_HORN = create("snaps_goat_horn");
    public static final TagKey<Block> REPLACEABLE_BY_TREES = create("replaceable_by_trees");
+   public static final TagKey<Block> REPLACEABLE_BY_MUSHROOMS = create("replaceable_by_mushrooms");
    public static final TagKey<Block> SNOW_LAYER_CANNOT_SURVIVE_ON = create("snow_layer_cannot_survive_on");
    public static final TagKey<Block> SNOW_LAYER_CAN_SURVIVE_ON = create("snow_layer_can_survive_on");
    public static final TagKey<Block> INVALID_SPAWN_INSIDE = create("invalid_spawn_inside");

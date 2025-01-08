@@ -152,6 +152,7 @@ public final class ItemTags {
    public static final TagKey<Item> DYEABLE = bind("dyeable");
    public static final TagKey<Item> FURNACE_MINECART_FUEL = bind("furnace_minecart_fuel");
    public static final TagKey<Item> BUNDLES = bind("bundles");
+   public static final TagKey<Item> BOOK_CLONING_TARGET = bind("book_cloning_target");
    public static final TagKey<Item> SKELETON_PREFERRED_WEAPONS = bind("skeleton_preferred_weapons");
    public static final TagKey<Item> DROWNED_PREFERRED_WEAPONS = bind("drowned_preferred_weapons");
    public static final TagKey<Item> PIGLIN_PREFERRED_WEAPONS = bind("piglin_preferred_weapons");

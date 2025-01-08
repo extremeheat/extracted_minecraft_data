@@ -22,8 +22,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FungusBlock extends BushBlock implements BonemealableBlock {
    public static final MapCodec<FungusBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceKey.codec(Registries.CONFIGURED_FEATURE).fieldOf("feature").forGetter((var0x) -> var0x.feature), BuiltInRegistries.BLOCK.byNameCodec().fieldOf("grows_on").forGetter((var0x) -> var0x.requiredBlock), propertiesCodec()).apply(var0, FungusBlock::new));
-   protected static final VoxelShape SHAPE = Block.box(4.0, 0.0, 4.0, 12.0, 9.0, 12.0);
    private static final double BONEMEAL_SUCCESS_PROBABILITY = 0.4;
+   private static final VoxelShape SHAPE = Block.column(8.0, 0.0, 9.0);
    private final Block requiredBlock;
    private final ResourceKey<ConfiguredFeature<?, ?>> feature;
 

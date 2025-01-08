@@ -12,6 +12,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.player.Player;
@@ -29,51 +30,21 @@ public class OldMinecartBehavior extends MinecartBehavior {
    private static final double MAX_SPEED_IN_WATER = 0.2;
    private static final double MAX_SPEED_ON_LAND = 0.4;
    private static final double ABSOLUTE_MAX_SPEED = 0.4;
-   private int lerpSteps;
-   private double lerpX;
-   private double lerpY;
-   private double lerpZ;
-   private double lerpYRot;
-   private double lerpXRot;
+   private final InterpolationHandler interpolation;
    private Vec3 targetDeltaMovement;
 
    public OldMinecartBehavior(AbstractMinecart var1) {
       super(var1);
       this.targetDeltaMovement = Vec3.ZERO;
+      this.interpolation = new InterpolationHandler(var1, this::onInterpolation);
    }
 
-   public void cancelLerp() {
-      this.lerpSteps = 0;
+   public InterpolationHandler getInterpolation() {
+      return this.interpolation;
    }
 
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
-      this.lerpX = var1;
-      this.lerpY = var3;
-      this.lerpZ = var5;
-      this.lerpYRot = (double)var7;
-      this.lerpXRot = (double)var8;
-      this.lerpSteps = var9 + 2;
+   public void onInterpolation(InterpolationHandler var1) {
       this.setDeltaMovement(this.targetDeltaMovement);
-   }
-
-   public double lerpTargetX() {
-      return this.lerpSteps > 0 ? this.lerpX : this.minecart.getX();
-   }
-
-   public double lerpTargetY() {
-      return this.lerpSteps > 0 ? this.lerpY : this.minecart.getY();
-   }
-
-   public double lerpTargetZ() {
-      return this.lerpSteps > 0 ? this.lerpZ : this.minecart.getZ();
-   }
-
-   public float lerpTargetXRot() {
-      return this.lerpSteps > 0 ? (float)this.lerpXRot : this.getXRot();
-   }
-
-   public float lerpTargetYRot() {
-      return this.lerpSteps > 0 ? (float)this.lerpYRot : this.getYRot();
    }
 
    public void lerpMotion(double var1, double var3, double var5) {
@@ -119,9 +90,8 @@ public class OldMinecartBehavior extends MinecartBehavior {
          this.setYRot(this.getYRot() % 360.0F);
          this.pushAndPickupEntities();
       } else {
-         if (this.lerpSteps > 0) {
-            this.minecart.lerpPositionAndRotationStep(this.lerpSteps, this.lerpX, this.lerpY, this.lerpZ, this.lerpYRot, this.lerpXRot);
-            --this.lerpSteps;
+         if (this.interpolation.hasActiveInterpolation()) {
+            this.interpolation.interpolate();
          } else {
             this.minecart.reapplyPosition();
             this.setXRot(this.getXRot() % 360.0F);

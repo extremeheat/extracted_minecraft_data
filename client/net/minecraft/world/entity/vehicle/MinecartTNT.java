@@ -13,7 +13,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -65,7 +65,7 @@ public class MinecartTNT extends AbstractMinecart {
 
    public boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
       Entity var4 = var2.getDirectEntity();
-      if (var4 instanceof Projectile var5) {
+      if (var4 instanceof AbstractArrow var5) {
          if (var5.isOnFire()) {
             DamageSource var6 = this.damageSources().explosion(this, var2.getEntity());
             this.explode(var6, var5.getDeltaMovement().lengthSqr());
@@ -140,7 +140,7 @@ public class MinecartTNT extends AbstractMinecart {
       if (!this.level().isClientSide) {
          this.level().broadcastEntityEvent(this, (byte)10);
          if (!this.isSilent()) {
-            this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
+            this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
          }
       }
 
@@ -196,6 +196,11 @@ public class MinecartTNT extends AbstractMinecart {
    }
 
    private static boolean damageSourceIgnitesTnt(DamageSource var0) {
-      return var0.is(DamageTypeTags.IS_FIRE) || var0.is(DamageTypeTags.IS_EXPLOSION);
+      Entity var2 = var0.getDirectEntity();
+      if (var2 instanceof Projectile var1) {
+         return var1.isOnFire();
+      } else {
+         return var0.is(DamageTypeTags.IS_FIRE) || var0.is(DamageTypeTags.IS_EXPLOSION);
+      }
    }
 }

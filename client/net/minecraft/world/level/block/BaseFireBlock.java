@@ -25,8 +25,7 @@ public abstract class BaseFireBlock extends Block {
    private static final int MIN_FIRE_TICKS_TO_ADD = 1;
    private static final int MAX_FIRE_TICKS_TO_ADD = 3;
    private final float fireDamage;
-   protected static final float AABB_OFFSET = 1.0F;
-   protected static final VoxelShape DOWN_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 1.0, 16.0);
+   protected static final VoxelShape SHAPE = Block.column(16.0, 0.0, 1.0);
 
    public BaseFireBlock(BlockBehaviour.Properties var1, float var2) {
       super(var1);
@@ -46,7 +45,7 @@ public abstract class BaseFireBlock extends Block {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return DOWN_AABB;
+      return SHAPE;
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
@@ -158,7 +157,7 @@ public abstract class BaseFireBlock extends Block {
 
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       if (!var1.isClientSide()) {
-         var1.levelEvent((Player)null, 1009, var2, 0);
+         var1.levelEvent((Entity)null, 1009, var2, 0);
       }
 
       return super.playerWillDestroy(var1, var2, var3, var4);

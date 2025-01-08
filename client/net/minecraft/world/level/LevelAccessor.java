@@ -14,7 +14,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkSource;
@@ -59,25 +58,25 @@ public interface LevelAccessor extends CommonLevelAccessor, LevelTimeAccess, Sch
 
    RandomSource getRandom();
 
-   default void blockUpdated(BlockPos var1, Block var2) {
+   default void updateNeighborsAt(BlockPos var1, Block var2) {
    }
 
    default void neighborShapeChanged(Direction var1, BlockPos var2, BlockPos var3, BlockState var4, int var5, int var6) {
       NeighborUpdater.executeShapeUpdate(this, var1, var2, var3, var4, var5, var6 - 1);
    }
 
-   default void playSound(@Nullable Player var1, BlockPos var2, SoundEvent var3, SoundSource var4) {
+   default void playSound(@Nullable Entity var1, BlockPos var2, SoundEvent var3, SoundSource var4) {
       this.playSound(var1, var2, var3, var4, 1.0F, 1.0F);
    }
 
-   void playSound(@Nullable Player var1, BlockPos var2, SoundEvent var3, SoundSource var4, float var5, float var6);
+   void playSound(@Nullable Entity var1, BlockPos var2, SoundEvent var3, SoundSource var4, float var5, float var6);
 
    void addParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12);
 
-   void levelEvent(@Nullable Player var1, int var2, BlockPos var3, int var4);
+   void levelEvent(@Nullable Entity var1, int var2, BlockPos var3, int var4);
 
    default void levelEvent(int var1, BlockPos var2, int var3) {
-      this.levelEvent((Player)null, var1, var2, var3);
+      this.levelEvent((Entity)null, var1, var2, var3);
    }
 
    void gameEvent(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3);

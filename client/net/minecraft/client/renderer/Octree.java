@@ -71,25 +71,26 @@ public class Octree {
       }
 
       public boolean add(SectionRenderDispatcher.RenderSection var1) {
-         boolean var2 = var1.getOrigin().getX() - this.bbCenterX < 0;
-         boolean var3 = var1.getOrigin().getY() - this.bbCenterY < 0;
-         boolean var4 = var1.getOrigin().getZ() - this.bbCenterZ < 0;
-         boolean var5 = var2 != this.cameraXDiffNegative;
-         boolean var6 = var3 != this.cameraYDiffNegative;
-         boolean var7 = var4 != this.cameraZDiffNegative;
-         int var8 = getNodeIndex(this.sorting, var5, var6, var7);
+         long var2 = var1.getSectionNode();
+         boolean var4 = SectionPos.sectionToBlockCoord(SectionPos.x(var2)) - this.bbCenterX < 0;
+         boolean var5 = SectionPos.sectionToBlockCoord(SectionPos.y(var2)) - this.bbCenterY < 0;
+         boolean var6 = SectionPos.sectionToBlockCoord(SectionPos.z(var2)) - this.bbCenterZ < 0;
+         boolean var7 = var4 != this.cameraXDiffNegative;
+         boolean var8 = var5 != this.cameraYDiffNegative;
+         boolean var9 = var6 != this.cameraZDiffNegative;
+         int var10 = getNodeIndex(this.sorting, var7, var8, var9);
          if (this.areChildrenLeaves()) {
-            boolean var12 = this.nodes[var8] != null;
-            this.nodes[var8] = Octree.this.new Leaf(var1);
-            return !var12;
-         } else if (this.nodes[var8] != null) {
-            Branch var11 = (Branch)this.nodes[var8];
-            return var11.add(var1);
+            boolean var14 = this.nodes[var10] != null;
+            this.nodes[var10] = Octree.this.new Leaf(var1);
+            return !var14;
+         } else if (this.nodes[var10] != null) {
+            Branch var13 = (Branch)this.nodes[var10];
+            return var13.add(var1);
          } else {
-            BoundingBox var9 = this.createChildBoundingBox(var2, var3, var4);
-            Branch var10 = Octree.this.new Branch(var9);
-            this.nodes[var8] = var10;
-            return var10.add(var1);
+            BoundingBox var11 = this.createChildBoundingBox(var4, var5, var6);
+            Branch var12 = Octree.this.new Branch(var11);
+            this.nodes[var10] = var12;
+            return var12.add(var1);
          }
       }
 

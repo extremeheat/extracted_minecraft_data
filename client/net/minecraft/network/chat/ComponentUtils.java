@@ -58,15 +58,21 @@ public class ComponentUtils {
 
    private static Style resolveStyle(@Nullable CommandSourceStack var0, Style var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
       HoverEvent var4 = var1.getHoverEvent();
-      if (var4 != null) {
-         Component var5 = (Component)var4.getValue(HoverEvent.Action.SHOW_TEXT);
-         if (var5 != null) {
-            HoverEvent var6 = new HoverEvent(HoverEvent.Action.SHOW_TEXT, updateForEntity(var0, var5, var2, var3 + 1));
-            return var1.withHoverEvent(var6);
-         }
-      }
+      if (var4 instanceof HoverEvent.ShowText var5) {
+         HoverEvent.ShowText var10000 = var5;
 
-      return var1;
+         try {
+            var10 = var10000.text();
+         } catch (Throwable var8) {
+            throw new MatchException(var8.toString(), var8);
+         }
+
+         Component var7 = var10;
+         HoverEvent.ShowText var9 = new HoverEvent.ShowText(updateForEntity(var0, var7, var2, var3 + 1));
+         return var1.withHoverEvent(var9);
+      } else {
+         return var1;
+      }
    }
 
    public static Component formatList(Collection<String> var0) {
@@ -146,7 +152,7 @@ public class ComponentUtils {
    }
 
    public static MutableComponent copyOnClickText(String var0) {
-      return wrapInSquareBrackets(Component.literal(var0).withStyle((UnaryOperator)((var1) -> var1.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, var0)).withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.copy.click"))).withInsertion(var0))));
+      return wrapInSquareBrackets(Component.literal(var0).withStyle((UnaryOperator)((var1) -> var1.withColor(ChatFormatting.GREEN).withClickEvent(new ClickEvent.CopyToClipboard(var0)).withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.copy.click"))).withInsertion(var0))));
    }
 
    static {

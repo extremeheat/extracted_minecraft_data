@@ -95,7 +95,7 @@ public class GameTestRunner {
                if (var4.isDone()) {
                   GameTestRunner.this.currentBatch.afterBatchFunction().accept(GameTestRunner.this.level);
                   GameTestRunner.this.batchListeners.forEach((var1xx) -> var1xx.testBatchFinished(GameTestRunner.this.currentBatch));
-                  LongArraySet var1x = new LongArraySet(GameTestRunner.this.level.getForcedChunks());
+                  LongArraySet var1x = new LongArraySet(GameTestRunner.this.level.getForceLoadedChunks());
                   var1x.forEach((var1xx) -> GameTestRunner.this.level.setChunkForced(ChunkPos.getX(var1xx), ChunkPos.getZ(var1xx), false));
                   GameTestRunner.this.runBatch(var1 + 1);
                }
@@ -112,7 +112,7 @@ public class GameTestRunner {
             public void testFailed(GameTestInfo var1x, GameTestRunner var2) {
                if (GameTestRunner.this.haltOnError) {
                   GameTestRunner.this.currentBatch.afterBatchFunction().accept(GameTestRunner.this.level);
-                  LongArraySet var3 = new LongArraySet(GameTestRunner.this.level.getForcedChunks());
+                  LongArraySet var3 = new LongArraySet(GameTestRunner.this.level.getForceLoadedChunks());
                   var3.forEach((var1xx) -> GameTestRunner.this.level.setChunkForced(ChunkPos.getX(var1xx), ChunkPos.getZ(var1xx), false));
                   GameTestTicker.SINGLETON.clear();
                } else {

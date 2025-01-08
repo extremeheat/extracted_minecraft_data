@@ -6,7 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -49,7 +49,7 @@ public class CopperBulbBlock extends Block {
          BlockState var5 = var1;
          if (!(Boolean)var1.getValue(POWERED)) {
             var5 = (BlockState)var1.cycle(LIT);
-            var2.playSound((Player)null, var3, (Boolean)var5.getValue(LIT) ? SoundEvents.COPPER_BULB_TURN_ON : SoundEvents.COPPER_BULB_TURN_OFF, SoundSource.BLOCKS);
+            var2.playSound((Entity)null, var3, (Boolean)var5.getValue(LIT) ? SoundEvents.COPPER_BULB_TURN_ON : SoundEvents.COPPER_BULB_TURN_OFF, SoundSource.BLOCKS);
          }
 
          var2.setBlock(var3, (BlockState)var5.setValue(POWERED, var4), 3);

@@ -15,7 +15,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -50,7 +49,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    public static final EnumProperty<SculkSensorPhase> PHASE;
    public static final IntegerProperty POWER;
    public static final BooleanProperty WATERLOGGED;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
    private static final float[] RESONANCE_PITCH_BEND;
 
    public MapCodec<? extends SculkSensorBlock> codec() {
@@ -78,7 +77,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
          if (getPhase(var1) == SculkSensorPhase.COOLDOWN) {
             var2.setBlock(var3, (BlockState)var1.setValue(PHASE, SculkSensorPhase.INACTIVE), 3);
             if (!(Boolean)var1.getValue(WATERLOGGED)) {
-               var2.playSound((Player)null, var3, SoundEvents.SCULK_CLICKING_STOP, SoundSource.BLOCKS, 1.0F, var2.random.nextFloat() * 0.2F + 0.8F);
+               var2.playSound((Entity)null, var3, SoundEvents.SCULK_CLICKING_STOP, SoundSource.BLOCKS, 1.0F, var2.random.nextFloat() * 0.2F + 0.8F);
             }
          }
 
@@ -113,14 +112,11 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
       }
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         super.onRemove(var1, var2, var3, var4, var5);
-         if (getPhase(var1) == SculkSensorPhase.ACTIVE) {
-            updateNeighbours(var2, var3, var1);
-         }
-
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      if (getPhase(var1) == SculkSensorPhase.ACTIVE) {
+         updateNeighbours(var2, var3, var1);
       }
+
    }
 
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
@@ -189,7 +185,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
       tryResonateVibration(var1, var2, var3, var6);
       var2.gameEvent(var1, GameEvent.SCULK_SENSOR_TENDRILS_CLICKING, var3);
       if (!(Boolean)var4.getValue(WATERLOGGED)) {
-         var2.playSound((Player)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, SoundEvents.SCULK_CLICKING, SoundSource.BLOCKS, 1.0F, var2.random.nextFloat() * 0.2F + 0.8F);
+         var2.playSound((Entity)null, (double)var3.getX() + 0.5, (double)var3.getY() + 0.5, (double)var3.getZ() + 0.5, SoundEvents.SCULK_CLICKING, SoundSource.BLOCKS, 1.0F, var2.random.nextFloat() * 0.2F + 0.8F);
       }
 
    }
@@ -201,7 +197,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
          if (var9.is(BlockTags.VIBRATION_RESONATORS)) {
             var1.gameEvent(VibrationSystem.getResonanceEventByFrequency(var3), var8, GameEvent.Context.of(var0, var9));
             float var10 = RESONANCE_PITCH_BEND[var3];
-            var1.playSound((Player)null, (BlockPos)var8, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 1.0F, var10);
+            var1.playSound((Entity)null, (BlockPos)var8, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 1.0F, var10);
          }
       }
 
@@ -257,7 +253,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
       PHASE = BlockStateProperties.SCULK_SENSOR_PHASE;
       POWER = BlockStateProperties.POWER;
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 8.0, 16.0);
+      SHAPE = Block.column(16.0, 0.0, 8.0);
       RESONANCE_PITCH_BEND = (float[])Util.make(new float[16], (var0) -> {
          int[] var1 = new int[]{0, 0, 2, 4, 6, 7, 9, 10, 12, 14, 15, 18, 19, 21, 22, 24};
 

@@ -1,8 +1,12 @@
 package net.minecraft.client.particle;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.ARGB;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class FallingLeavesParticle extends TextureSheetParticle {
    private static final float ACCELERATION_SCALE = 0.0025F;
@@ -113,6 +117,29 @@ public class FallingLeavesParticle extends TextureSheetParticle {
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new FallingLeavesParticle(var2, var3, var5, var7, this.sprites, 0.07F, 10.0F, true, false, 2.0F, 0.021F);
+      }
+
+      // $FF: synthetic method
+      public Particle createParticle(final ParticleOptions var1, final ClientLevel var2, final double var3, final double var5, final double var7, final double var9, final double var11, final double var13) {
+         return this.createParticle((SimpleParticleType)var1, var2, var3, var5, var7, var9, var11, var13);
+      }
+   }
+
+   public static class TintedLeavesProvider implements ParticleProvider<SimpleParticleType> {
+      private final SpriteSet sprites;
+
+      public TintedLeavesProvider(SpriteSet var1) {
+         super();
+         this.sprites = var1;
+      }
+
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         FallingLeavesParticle var15 = new FallingLeavesParticle(var2, var3, var5, var7, this.sprites, 0.07F, 10.0F, true, false, 2.0F, 0.021F);
+         BlockPos var16 = BlockPos.containing(var3, var5, var7).above();
+         BlockState var17 = var2.getBlockState(var16);
+         int var18 = Minecraft.getInstance().getBlockColors().getColor(var17, var2, var16, 0);
+         ((Particle)var15).setColor(ARGB.redFloat(var18), ARGB.greenFloat(var18), ARGB.blueFloat(var18));
+         return var15;
       }
 
       // $FF: synthetic method

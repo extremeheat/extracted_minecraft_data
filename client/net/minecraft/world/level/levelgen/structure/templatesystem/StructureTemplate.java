@@ -28,7 +28,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.Clearable;
 import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -244,9 +243,7 @@ public class StructureTemplate {
                   FluidState var22 = var4.shouldApplyWaterlogging() ? var1.getFluidState(var21) : null;
                   BlockState var23 = var20.state.mirror(var4.getMirror()).rotate(var4.getRotation());
                   if (var20.nbt != null) {
-                     BlockEntity var24 = var1.getBlockEntity(var21);
-                     Clearable.tryClear(var24);
-                     var1.setBlock(var21, Blocks.BARRIER.defaultBlockState(), 20);
+                     var1.setBlock(var21, Blocks.BARRIER.defaultBlockState(), 308);
                   }
 
                   if (var1.setBlock(var21, var23, var6)) {
@@ -258,13 +255,13 @@ public class StructureTemplate {
                      var17 = Math.max(var17, var21.getZ());
                      var11.add(Pair.of(var21, var20.nbt));
                      if (var20.nbt != null) {
-                        BlockEntity var39 = var1.getBlockEntity(var21);
-                        if (var39 != null) {
-                           if (var39 instanceof RandomizableContainer) {
+                        BlockEntity var24 = var1.getBlockEntity(var21);
+                        if (var24 != null) {
+                           if (var24 instanceof RandomizableContainer) {
                               var20.nbt.putLong("LootTableSeed", var5.nextLong());
                            }
 
-                           var39.loadWithComponents(var20.nbt, var1.registryAccess());
+                           var24.loadWithComponents(var20.nbt, var1.registryAccess());
                         }
                      }
 
@@ -293,8 +290,8 @@ public class StructureTemplate {
                   BlockPos var33 = (BlockPos)var30.next();
                   FluidState var36 = var1.getFluidState(var33);
 
-                  for(int var40 = 0; var40 < var29.length && !var36.isSource(); ++var40) {
-                     BlockPos var25 = var33.relative(var29[var40]);
+                  for(int var39 = 0; var39 < var29.length && !var36.isSource(); ++var39) {
+                     BlockPos var25 = var33.relative(var29[var39]);
                      FluidState var26 = var1.getFluidState(var25);
                      if (var26.isSource() && !var10.contains(var25)) {
                         var36 = var26;
@@ -302,10 +299,10 @@ public class StructureTemplate {
                   }
 
                   if (var36.isSource()) {
-                     BlockState var41 = var1.getBlockState(var33);
-                     Block var45 = var41.getBlock();
-                     if (var45 instanceof LiquidBlockContainer) {
-                        ((LiquidBlockContainer)var45).placeLiquid(var1, var33, var41, var36);
+                     BlockState var40 = var1.getBlockState(var33);
+                     Block var44 = var40.getBlock();
+                     if (var44 instanceof LiquidBlockContainer) {
+                        ((LiquidBlockContainer)var44).placeLiquid(var1, var33, var40, var36);
                         var28 = true;
                         var30.remove();
                      }
@@ -318,32 +315,32 @@ public class StructureTemplate {
                   BitSetDiscreteVoxelShape var31 = new BitSetDiscreteVoxelShape(var15 - var12 + 1, var16 - var13 + 1, var17 - var14 + 1);
                   int var34 = var12;
                   int var37 = var13;
-                  int var42 = var14;
+                  int var41 = var14;
 
-                  for(Pair var48 : var11) {
-                     BlockPos var27 = (BlockPos)var48.getFirst();
-                     ((DiscreteVoxelShape)var31).fill(var27.getX() - var34, var27.getY() - var37, var27.getZ() - var42);
+                  for(Pair var47 : var11) {
+                     BlockPos var27 = (BlockPos)var47.getFirst();
+                     ((DiscreteVoxelShape)var31).fill(var27.getX() - var34, var27.getY() - var37, var27.getZ() - var41);
                   }
 
-                  updateShapeAtEdge(var1, var6, var31, var34, var37, var42);
+                  updateShapeAtEdge(var1, var6, var31, var34, var37, var41);
                }
 
                for(Pair var35 : var11) {
                   BlockPos var38 = (BlockPos)var35.getFirst();
                   if (!var4.getKnownShape()) {
-                     BlockState var43 = var1.getBlockState(var38);
-                     BlockState var47 = Block.updateFromNeighbourShapes(var43, var1, var38);
-                     if (var43 != var47) {
-                        var1.setBlock(var38, var47, var6 & -2 | 16);
+                     BlockState var42 = var1.getBlockState(var38);
+                     BlockState var46 = Block.updateFromNeighbourShapes(var42, var1, var38);
+                     if (var42 != var46) {
+                        var1.setBlock(var38, var46, var6 & -2 | 16);
                      }
 
-                     var1.blockUpdated(var38, var47.getBlock());
+                     var1.updateNeighborsAt(var38, var46.getBlock());
                   }
 
                   if (var35.getSecond() != null) {
-                     BlockEntity var44 = var1.getBlockEntity(var38);
-                     if (var44 != null) {
-                        var44.setChanged();
+                     BlockEntity var43 = var1.getBlockEntity(var38);
+                     if (var43 != null) {
+                        var43.setChanged();
                      }
                   }
                }

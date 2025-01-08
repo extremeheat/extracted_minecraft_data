@@ -33,7 +33,7 @@ public class CompileTaskDynamicQueue {
          if (var10.isCancelled.get()) {
             var8.remove();
          } else {
-            double var11 = var10.getOrigin().distToCenterSqr(var1);
+            double var11 = var10.getRenderOrigin().distToCenterSqr(var1);
             if (!var10.isRecompile() && var11 < var4) {
                var4 = var11;
                var2 = var9;

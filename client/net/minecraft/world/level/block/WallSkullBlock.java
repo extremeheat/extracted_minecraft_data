@@ -1,7 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
@@ -15,12 +13,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WallSkullBlock extends AbstractSkullBlock {
    public static final MapCodec<WallSkullBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(SkullBlock.Type.CODEC.fieldOf("kind").forGetter(AbstractSkullBlock::getType), propertiesCodec()).apply(var0, WallSkullBlock::new));
    public static final EnumProperty<Direction> FACING;
-   private static final Map<Direction, VoxelShape> AABBS;
+   private static final Map<Direction, VoxelShape> SHAPES;
 
    public MapCodec<? extends WallSkullBlock> codec() {
       return CODEC;
@@ -32,7 +31,7 @@ public class WallSkullBlock extends AbstractSkullBlock {
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return (VoxelShape)AABBS.get(var1.getValue(FACING));
+      return (VoxelShape)SHAPES.get(var1.getValue(FACING));
    }
 
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -69,6 +68,6 @@ public class WallSkullBlock extends AbstractSkullBlock {
 
    static {
       FACING = HorizontalDirectionalBlock.FACING;
-      AABBS = Maps.newEnumMap(ImmutableMap.of(Direction.NORTH, Block.box(4.0, 4.0, 8.0, 12.0, 12.0, 16.0), Direction.SOUTH, Block.box(4.0, 4.0, 0.0, 12.0, 12.0, 8.0), Direction.EAST, Block.box(0.0, 4.0, 4.0, 8.0, 12.0, 12.0), Direction.WEST, Block.box(8.0, 4.0, 4.0, 16.0, 12.0, 12.0)));
+      SHAPES = Shapes.rotateHorizontal(Block.boxZ(8.0, 8.0, 16.0));
    }
 }

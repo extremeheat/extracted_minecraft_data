@@ -19,14 +19,13 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SnowLayerBlock extends Block {
    public static final MapCodec<SnowLayerBlock> CODEC = simpleCodec(SnowLayerBlock::new);
    public static final int MAX_HEIGHT = 8;
    public static final IntegerProperty LAYERS;
-   protected static final VoxelShape[] SHAPE_BY_LAYER;
+   private static final VoxelShape[] SHAPES;
    public static final int HEIGHT_IMPASSABLE = 5;
 
    public MapCodec<SnowLayerBlock> codec() {
@@ -39,36 +38,27 @@ public class SnowLayerBlock extends Block {
    }
 
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
-      switch (var2) {
-         case LAND -> {
-            return (Integer)var1.getValue(LAYERS) < 5;
-         }
-         case WATER -> {
-            return false;
-         }
-         case AIR -> {
-            return false;
-         }
-         default -> {
-            return false;
-         }
+      if (var2 == PathComputationType.LAND) {
+         return (Integer)var1.getValue(LAYERS) < 5;
+      } else {
+         return false;
       }
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPE_BY_LAYER[(Integer)var1.getValue(LAYERS)];
+      return SHAPES[(Integer)var1.getValue(LAYERS)];
    }
 
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPE_BY_LAYER[(Integer)var1.getValue(LAYERS) - 1];
+      return SHAPES[(Integer)var1.getValue(LAYERS) - 1];
    }
 
    protected VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return SHAPE_BY_LAYER[(Integer)var1.getValue(LAYERS)];
+      return SHAPES[(Integer)var1.getValue(LAYERS)];
    }
 
    protected VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPE_BY_LAYER[(Integer)var1.getValue(LAYERS)];
+      return SHAPES[(Integer)var1.getValue(LAYERS)];
    }
 
    protected boolean useShapeForLightOcclusion(BlockState var1) {
@@ -132,6 +122,6 @@ public class SnowLayerBlock extends Block {
 
    static {
       LAYERS = BlockStateProperties.LAYERS;
-      SHAPE_BY_LAYER = new VoxelShape[]{Shapes.empty(), Block.box(0.0, 0.0, 0.0, 16.0, 2.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 4.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 6.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 8.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 10.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 12.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 14.0, 16.0), Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 16.0)};
+      SHAPES = Block.boxes(8, (var0) -> Block.column(16.0, 0.0, (double)(var0 * 2)));
    }
 }

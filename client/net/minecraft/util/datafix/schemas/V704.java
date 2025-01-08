@@ -9,13 +9,13 @@ import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.Hook;
 import com.mojang.datafixers.types.templates.TypeTemplate;
 import com.mojang.datafixers.types.templates.Hook.HookFunction;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
+import net.minecraft.util.datafix.fixes.BlockEntityIdFix;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V704 extends Schema {
@@ -150,45 +150,19 @@ public class V704 extends Schema {
       super(var1, var2);
    }
 
-   protected static void registerInventory(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      var0.register(var1, var2, () -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var0))));
-   }
-
    public Type<?> getChoiceType(DSL.TypeReference var1, String var2) {
       return Objects.equals(var1.typeName(), References.BLOCK_ENTITY.typeName()) ? super.getChoiceType(var1, NamespacedSchema.ensureNamespaced(var2)) : super.getChoiceType(var1, var2);
    }
 
    public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {
-      HashMap var2 = Maps.newHashMap();
-      registerInventory(var1, var2, "minecraft:furnace");
-      registerInventory(var1, var2, "minecraft:chest");
-      var1.registerSimple(var2, "minecraft:ender_chest");
-      var1.register(var2, "minecraft:jukebox", (var1x) -> DSL.optionalFields("RecordItem", References.ITEM_STACK.in(var1)));
-      registerInventory(var1, var2, "minecraft:dispenser");
-      registerInventory(var1, var2, "minecraft:dropper");
-      var1.registerSimple(var2, "minecraft:sign");
-      var1.register(var2, "minecraft:mob_spawner", (var1x) -> References.UNTAGGED_SPAWNER.in(var1));
-      var1.registerSimple(var2, "minecraft:noteblock");
-      var1.registerSimple(var2, "minecraft:piston");
-      registerInventory(var1, var2, "minecraft:brewing_stand");
-      var1.registerSimple(var2, "minecraft:enchanting_table");
-      var1.registerSimple(var2, "minecraft:end_portal");
-      var1.registerSimple(var2, "minecraft:beacon");
-      var1.registerSimple(var2, "minecraft:skull");
-      var1.registerSimple(var2, "minecraft:daylight_detector");
-      registerInventory(var1, var2, "minecraft:hopper");
-      var1.registerSimple(var2, "minecraft:comparator");
-      var1.register(var2, "minecraft:flower_pot", (var1x) -> DSL.optionalFields("Item", DSL.or(DSL.constType(DSL.intType()), References.ITEM_NAME.in(var1))));
-      var1.registerSimple(var2, "minecraft:banner");
-      var1.registerSimple(var2, "minecraft:structure_block");
-      var1.registerSimple(var2, "minecraft:end_gateway");
-      var1.registerSimple(var2, "minecraft:command_block");
+      Map var2 = super.registerBlockEntities(var1);
+      BlockEntityIdFix.ID_MAP.forEach((var1x, var2x) -> var2.put(var2x, (Supplier)Objects.requireNonNull((Supplier)var2.remove(var1x), () -> "Didn't find " + var1x + " in schema")));
       return var2;
    }
 
    public void registerTypes(Schema var1, Map<String, Supplier<TypeTemplate>> var2, Map<String, Supplier<TypeTemplate>> var3) {
       super.registerTypes(var1, var2, var3);
       var1.registerType(true, References.BLOCK_ENTITY, () -> DSL.optionalFields("components", References.DATA_COMPONENTS.in(var1), DSL.taggedChoiceLazy("id", NamespacedSchema.namespacedString(), var3)));
-      var1.registerType(true, References.ITEM_STACK, () -> DSL.hook(DSL.optionalFields("id", References.ITEM_NAME.in(var1), "tag", DSL.optionalFields(new Pair[]{Pair.of("EntityTag", References.ENTITY_TREE.in(var1)), Pair.of("BlockEntityTag", References.BLOCK_ENTITY.in(var1)), Pair.of("CanDestroy", DSL.list(References.BLOCK_NAME.in(var1))), Pair.of("CanPlaceOn", DSL.list(References.BLOCK_NAME.in(var1))), Pair.of("Items", DSL.list(References.ITEM_STACK.in(var1))), Pair.of("ChargedProjectiles", DSL.list(References.ITEM_STACK.in(var1)))})), ADD_NAMES, HookFunction.IDENTITY));
+      var1.registerType(true, References.ITEM_STACK, () -> DSL.hook(DSL.optionalFields("id", References.ITEM_NAME.in(var1), "tag", V99.itemStackTag(var1)), ADD_NAMES, HookFunction.IDENTITY));
    }
 }

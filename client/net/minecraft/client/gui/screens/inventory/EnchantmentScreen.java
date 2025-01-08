@@ -94,7 +94,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
             int var13 = 86 - this.font.width(var12);
             FormattedText var14 = EnchantmentNames.getInstance().getRandomName(this.font, var13);
             int var15 = 6839882;
-            if ((var7 < var8 + 1 || this.minecraft.player.experienceLevel < var11) && !this.minecraft.player.getAbilities().instabuild) {
+            if ((var7 < var8 + 1 || this.minecraft.player.experienceLevel < var11) && !this.minecraft.player.hasInfiniteMaterials()) {
                var1.blitSprite(RenderType::guiTextured, (ResourceLocation)ENCHANTMENT_SLOT_DISABLED_SPRITE, var9, var6 + 14 + 19 * var8, 108, 19);
                var1.blitSprite(RenderType::guiTextured, (ResourceLocation)DISABLED_LEVEL_SPRITES[var8], var9 + 1, var6 + 15 + 19 * var8, 16, 16);
                var1.drawWordWrap(this.font, var14, var10, var6 + 16 + 19 * var8, var13, (var15 & 16711422) >> 1, false);
@@ -150,7 +150,7 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
       float var5 = this.minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
       super.render(var1, var2, var3, var5);
       this.renderTooltip(var1, var2, var3);
-      boolean var6 = this.minecraft.player.getAbilities().instabuild;
+      boolean var6 = this.minecraft.player.hasInfiniteMaterials();
       int var7 = ((EnchantmentMenu)this.menu).getGoldCount();
 
       for(int var8 = 0; var8 < 3; ++var8) {

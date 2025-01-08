@@ -5,6 +5,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
@@ -25,23 +26,15 @@ public class EntityAttachments {
    }
 
    public EntityAttachments scale(float var1, float var2, float var3) {
-      EnumMap var4 = new EnumMap(EntityAttachment.class);
+      return new EntityAttachments(Util.makeEnumMap(EntityAttachment.class, (var4) -> {
+         ArrayList var5 = new ArrayList();
 
-      for(Map.Entry var6 : this.attachments.entrySet()) {
-         var4.put((EntityAttachment)var6.getKey(), scalePoints((List)var6.getValue(), var1, var2, var3));
-      }
+         for(Vec3 var7 : (List)this.attachments.get(var4)) {
+            var5.add(var7.multiply((double)var1, (double)var2, (double)var3));
+         }
 
-      return new EntityAttachments(var4);
-   }
-
-   private static List<Vec3> scalePoints(List<Vec3> var0, float var1, float var2, float var3) {
-      ArrayList var4 = new ArrayList(var0.size());
-
-      for(Vec3 var6 : var0) {
-         var4.add(var6.multiply((double)var1, (double)var2, (double)var3));
-      }
-
-      return var4;
+         return var5;
+      }));
    }
 
    @Nullable
@@ -91,13 +84,10 @@ public class EntityAttachments {
       }
 
       public EntityAttachments build(float var1, float var2) {
-         EnumMap var3 = new EnumMap(EntityAttachment.class);
-
-         for(EntityAttachment var7 : EntityAttachment.values()) {
-            List var8 = (List)this.attachments.get(var7);
-            var3.put(var7, var8 != null ? List.copyOf(var8) : var7.createFallbackPoints(var1, var2));
-         }
-
+         Map var3 = Util.makeEnumMap(EntityAttachment.class, (var3x) -> {
+            List var4 = (List)this.attachments.get(var3x);
+            return var4 == null ? var3x.createFallbackPoints(var1, var2) : List.copyOf(var4);
+         });
          return new EntityAttachments(var3);
       }
    }

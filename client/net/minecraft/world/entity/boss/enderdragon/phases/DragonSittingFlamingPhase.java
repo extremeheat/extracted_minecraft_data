@@ -81,7 +81,8 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
          this.flame.setRadius(5.0F);
          this.flame.setDuration(200);
          this.flame.setParticle(ParticleTypes.DRAGON_BREATH);
-         this.flame.addEffect(new MobEffectInstance(MobEffects.HARM));
+         this.flame.setPotionDurationScale(0.25F);
+         this.flame.addEffect(new MobEffectInstance(MobEffects.INSTANT_DAMAGE));
          var1.addFreshEntity(this.flame);
       }
 

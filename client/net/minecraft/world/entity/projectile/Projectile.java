@@ -320,11 +320,9 @@ public abstract class Projectile extends Entity implements TraceableEntity {
 
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {
       super.recreateFromPacket(var1);
-      Vec3 var2 = new Vec3(var1.getXa(), var1.getYa(), var1.getZa());
-      this.setDeltaMovement(var2);
-      Entity var3 = this.level().getEntity(var1.getData());
-      if (var3 != null) {
-         this.setOwner(var3);
+      Entity var2 = this.level().getEntity(var1.getData());
+      if (var2 != null) {
+         this.setOwner(var2);
       }
 
    }

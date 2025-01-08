@@ -26,6 +26,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SweetBerryBushBlock extends BushBlock implements BonemealableBlock {
@@ -33,8 +34,8 @@ public class SweetBerryBushBlock extends BushBlock implements BonemealableBlock 
    private static final float HURT_SPEED_THRESHOLD = 0.003F;
    public static final int MAX_AGE = 3;
    public static final IntegerProperty AGE;
-   private static final VoxelShape SAPLING_SHAPE;
-   private static final VoxelShape MID_GROWTH_SHAPE;
+   private static final VoxelShape SHAPE_SAPLING;
+   private static final VoxelShape SHAPE_GROWING;
 
    public MapCodec<SweetBerryBushBlock> codec() {
       return CODEC;
@@ -50,11 +51,14 @@ public class SweetBerryBushBlock extends BushBlock implements BonemealableBlock 
    }
 
    protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      if ((Integer)var1.getValue(AGE) == 0) {
-         return SAPLING_SHAPE;
-      } else {
-         return (Integer)var1.getValue(AGE) < 3 ? MID_GROWTH_SHAPE : super.getShape(var1, var2, var3, var4);
+      VoxelShape var10000;
+      switch ((Integer)var1.getValue(AGE)) {
+         case 0 -> var10000 = SHAPE_SAPLING;
+         case 3 -> var10000 = Shapes.block();
+         default -> var10000 = SHAPE_GROWING;
       }
+
+      return var10000;
    }
 
    protected boolean isRandomlyTicking(BlockState var1) {
@@ -77,7 +81,7 @@ public class SweetBerryBushBlock extends BushBlock implements BonemealableBlock 
          if (var2 instanceof ServerLevel) {
             ServerLevel var5 = (ServerLevel)var2;
             if ((Integer)var1.getValue(AGE) != 0) {
-               Vec3 var6 = var4.isControlledByClient() ? var4.getKnownMovement() : var4.oldPosition().subtract(var4.position());
+               Vec3 var6 = var4.isClientAuthoritative() ? var4.getKnownMovement() : var4.oldPosition().subtract(var4.position());
                if (var6.horizontalDistanceSqr() > 0.0) {
                   double var7 = Math.abs(var6.x());
                   double var9 = Math.abs(var6.z());
@@ -105,7 +109,7 @@ public class SweetBerryBushBlock extends BushBlock implements BonemealableBlock 
       if (var6 > 1) {
          int var8 = 1 + var2.random.nextInt(2);
          popResource(var2, var3, new ItemStack(Items.SWEET_BERRIES, var8 + (var7 ? 1 : 0)));
-         var2.playSound((Player)null, (BlockPos)var3, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, 0.8F + var2.random.nextFloat() * 0.4F);
+         var2.playSound((Entity)null, (BlockPos)var3, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, 0.8F + var2.random.nextFloat() * 0.4F);
          BlockState var9 = (BlockState)var1.setValue(AGE, 1);
          var2.setBlock(var3, var9, 2);
          var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, var9));
@@ -134,7 +138,7 @@ public class SweetBerryBushBlock extends BushBlock implements BonemealableBlock 
 
    static {
       AGE = BlockStateProperties.AGE_3;
-      SAPLING_SHAPE = Block.box(3.0, 0.0, 3.0, 13.0, 8.0, 13.0);
-      MID_GROWTH_SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
+      SHAPE_SAPLING = Block.column(10.0, 0.0, 8.0);
+      SHAPE_GROWING = Block.column(14.0, 0.0, 16.0);
    }
 }

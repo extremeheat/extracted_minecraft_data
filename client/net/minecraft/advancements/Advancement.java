@@ -54,7 +54,7 @@ public record Advancement(Optional<ResourceLocation> parent, Optional<DisplayInf
       Component var1 = var0.getTitle();
       ChatFormatting var2 = var0.getType().getChatColor();
       MutableComponent var3 = ComponentUtils.mergeStyles(var1.copy(), Style.EMPTY.withColor(var2)).append("\n").append(var0.getDescription());
-      MutableComponent var4 = var1.copy().withStyle((UnaryOperator)((var1x) -> var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var3))));
+      MutableComponent var4 = var1.copy().withStyle((UnaryOperator)((var1x) -> var1x.withHoverEvent(new HoverEvent.ShowText(var3))));
       return ComponentUtils.wrapInSquareBrackets(var4).withStyle(var2);
    }
 

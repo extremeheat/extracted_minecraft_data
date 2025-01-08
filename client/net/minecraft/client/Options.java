@@ -31,7 +31,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -251,6 +250,7 @@ public class Options {
    private final OptionInstance<String> soundDevice;
    public boolean onboardAccessibility;
    public boolean syncWrites;
+   public boolean startedCleanly;
 
    public OptionInstance<Boolean> darkMojangStudiosBackground() {
       return this.darkMojangStudiosBackground;
@@ -759,12 +759,7 @@ public class Options {
       this.allowServerListing = OptionInstance.createBoolean("options.allowServerListing", OptionInstance.cachedConstantTooltip(ALLOW_SERVER_LISTING_TOOLTIP), true, (var0) -> {
       });
       this.reducedDebugInfo = OptionInstance.createBoolean("options.reducedDebugInfo", false);
-      this.soundSourceVolumes = (Map)Util.make(new EnumMap(SoundSource.class), (var1x) -> {
-         for(SoundSource var5 : SoundSource.values()) {
-            var1x.put(var5, this.createSoundSliderOptionInstance("soundCategory." + var5.getName(), var5));
-         }
-
-      });
+      this.soundSourceVolumes = Util.<SoundSource, OptionInstance<Double>>makeEnumMap(SoundSource.class, (var1x) -> this.createSoundSliderOptionInstance("soundCategory." + var1x.getName(), var1x));
       this.showSubtitles = OptionInstance.createBoolean("options.showSubtitles", false);
       this.directionalAudio = OptionInstance.createBoolean("options.directionalAudio", (var0) -> var0 ? Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_ON) : Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_OFF), false, (var0) -> {
          SoundManager var1 = Minecraft.getInstance().getSoundManager();
@@ -884,6 +879,7 @@ public class Options {
          var1.play(SimpleSoundInstance.forUI((Holder)SoundEvents.UI_BUTTON_CLICK, 1.0F));
       });
       this.onboardAccessibility = true;
+      this.startedCleanly = true;
       this.minecraft = var1;
       this.optionsFile = new File(var2, "options.txt");
       boolean var3 = Runtime.getRuntime().maxMemory() >= 1000000000L;
@@ -1009,6 +1005,7 @@ public class Options {
       var1.process("telemetryOptInExtra", this.telemetryOptInExtra);
       this.onboardAccessibility = var1.process("onboardAccessibility", this.onboardAccessibility);
       var1.process("menuBackgroundBlurriness", this.menuBackgroundBlurriness);
+      this.startedCleanly = var1.process("startedCleanly", this.startedCleanly);
 
       for(KeyMapping var5 : this.keyMappings) {
          String var6 = var5.saveString();
@@ -1225,8 +1222,9 @@ public class Options {
                   return var2;
                }
             });
-            if (this.minecraft.getWindow().getPreferredFullscreenVideoMode().isPresent()) {
-               var1.println("fullscreenResolution:" + ((VideoMode)this.minecraft.getWindow().getPreferredFullscreenVideoMode().get()).write());
+            String var2 = this.getFullscreenVideoModeString();
+            if (var2 != null) {
+               var1.println("fullscreenResolution:" + var2);
             }
          } catch (Throwable var5) {
             try {
@@ -1244,6 +1242,16 @@ public class Options {
       }
 
       this.broadcastOptions();
+   }
+
+   @Nullable
+   private String getFullscreenVideoModeString() {
+      Window var1 = this.minecraft.getWindow();
+      if (var1 == null) {
+         return this.fullscreenVideoModeString;
+      } else {
+         return var1.getPreferredFullscreenVideoMode().isPresent() ? ((VideoMode)var1.getPreferredFullscreenVideoMode().get()).write() : null;
+      }
    }
 
    public ClientInformation buildPlayerInformation() {

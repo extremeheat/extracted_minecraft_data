@@ -29,7 +29,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -156,6 +155,17 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
       return (Boolean)this.getBlockState().getValue(SculkShriekerBlock.CAN_SUMMON) && var1.getDifficulty() != Difficulty.PEACEFUL && var1.getGameRules().getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING);
    }
 
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2, boolean var3) {
+      if ((Boolean)var2.getValue(SculkShriekerBlock.SHRIEKING)) {
+         Level var5 = this.level;
+         if (var5 instanceof ServerLevel) {
+            ServerLevel var4 = (ServerLevel)var5;
+            this.tryRespond(var4);
+         }
+      }
+
+   }
+
    public void tryRespond(ServerLevel var1) {
       if (this.canRespond(var1) && this.warningLevel > 0) {
          if (!this.trySummonWarden(var1)) {
@@ -174,7 +184,7 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
          int var4 = var3.getX() + Mth.randomBetweenInclusive(var1.random, -10, 10);
          int var5 = var3.getY() + Mth.randomBetweenInclusive(var1.random, -10, 10);
          int var6 = var3.getZ() + Mth.randomBetweenInclusive(var1.random, -10, 10);
-         var1.playSound((Player)null, (double)var4, (double)var5, (double)var6, var2, SoundSource.HOSTILE, 5.0F, 1.0F);
+         var1.playSound((Entity)null, (double)var4, (double)var5, (double)var6, var2, SoundSource.HOSTILE, 5.0F, 1.0F);
       }
 
    }

@@ -32,7 +32,7 @@ public abstract class AgeableWaterCreature extends AgeableMob {
    }
 
    protected void handleAirSupply(int var1) {
-      if (this.isAlive() && !this.isInWaterOrBubble()) {
+      if (this.isAlive() && !this.isInWater()) {
          this.setAirSupply(var1 - 1);
          if (this.getAirSupply() == -20) {
             this.setAirSupply(0);

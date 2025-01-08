@@ -10,7 +10,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.Containers;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -30,12 +30,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.CreakingHeartState;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 
 public class CreakingHeartBlock extends BaseEntityBlock {
    public static final MapCodec<CreakingHeartBlock> CODEC = simpleCodec(CreakingHeartBlock::new);
    public static final EnumProperty<Direction.Axis> AXIS;
-   public static final BooleanProperty ACTIVE;
+   public static final EnumProperty<CreakingHeartState> STATE;
    public static final BooleanProperty NATURAL;
 
    public MapCodec<CreakingHeartBlock> codec() {
@@ -44,7 +45,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
 
    protected CreakingHeartBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(AXIS, Direction.Axis.Y)).setValue(ACTIVE, false)).setValue(NATURAL, false));
+      this.registerDefaultState((BlockState)((BlockState)((BlockState)this.defaultBlockState().setValue(AXIS, Direction.Axis.Y)).setValue(STATE, CreakingHeartState.UPROOTED)).setValue(NATURAL, false));
    }
 
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
@@ -56,17 +57,17 @@ public class CreakingHeartBlock extends BaseEntityBlock {
       if (var1.isClientSide) {
          return null;
       } else {
-         return (Boolean)var2.getValue(ACTIVE) ? createTickerHelper(var3, BlockEntityType.CREAKING_HEART, CreakingHeartBlockEntity::serverTick) : null;
+         return var2.getValue(STATE) != CreakingHeartState.UPROOTED ? createTickerHelper(var3, BlockEntityType.CREAKING_HEART, CreakingHeartBlockEntity::serverTick) : null;
       }
    }
 
    public static boolean isNaturalNight(Level var0) {
-      return var0.dimensionType().natural() && var0.isNight();
+      return var0.isMoonVisible();
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       if (isNaturalNight(var2)) {
-         if ((Boolean)var1.getValue(ACTIVE)) {
+         if (var1.getValue(STATE) != CreakingHeartState.UPROOTED) {
             if (var4.nextInt(16) == 0 && isSurroundedByLogs(var2, var3)) {
                var2.playLocalSound((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), SoundEvents.CREAKING_HEART_IDLE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
             }
@@ -76,14 +77,22 @@ public class CreakingHeartBlock extends BaseEntityBlock {
    }
 
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      BlockState var9 = super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
-      return updateState(var9, var2, var4);
+      var3.scheduleTick(var4, (Block)this, 1);
+      return super.updateShape(var1, var2, var3, var4, var5, var6, var7, var8);
    }
 
-   private static BlockState updateState(BlockState var0, LevelReader var1, BlockPos var2) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+      BlockState var5 = updateState(var1, var2, var3);
+      if (var5 != var1) {
+         var2.setBlock(var3, var5, 3);
+      }
+
+   }
+
+   private static BlockState updateState(BlockState var0, Level var1, BlockPos var2) {
       boolean var3 = hasRequiredLogs(var0, var1, var2);
-      boolean var4 = !(Boolean)var0.getValue(ACTIVE);
-      return var3 && var4 ? (BlockState)var0.setValue(ACTIVE, true) : var0;
+      boolean var4 = var0.getValue(STATE) == CreakingHeartState.UPROOTED;
+      return var3 && var4 ? (BlockState)var0.setValue(STATE, isNaturalNight(var1) ? CreakingHeartState.AWAKE : CreakingHeartState.DORMANT) : var0;
    }
 
    public static boolean hasRequiredLogs(BlockState var0, LevelReader var1, BlockPos var2) {
@@ -121,16 +130,11 @@ public class CreakingHeartBlock extends BaseEntityBlock {
    }
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(AXIS, ACTIVE, NATURAL);
+      var1.add(AXIS, STATE, NATURAL);
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      BlockEntity var7 = var2.getBlockEntity(var3);
-      if (var7 instanceof CreakingHeartBlockEntity var6) {
-         var6.removeProtector((DamageSource)null);
-      }
-
-      super.onRemove(var1, var2, var3, var4, var5);
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
    }
 
    protected void onExplosionHit(BlockState var1, ServerLevel var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
@@ -164,7 +168,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
    }
 
    private void tryAwardExperience(Player var1, BlockState var2, Level var3, BlockPos var4) {
-      if (!var1.isCreative() && !var1.isSpectator() && (Boolean)var2.getValue(NATURAL) && var3 instanceof ServerLevel var5) {
+      if (!var1.preventsBlockDrops() && !var1.isSpectator() && (Boolean)var2.getValue(NATURAL) && var3 instanceof ServerLevel var5) {
          this.popExperience(var5, var4, var3.random.nextIntBetweenInclusive(20, 24));
       }
 
@@ -175,7 +179,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
    }
 
    protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
-      if (!(Boolean)var1.getValue(ACTIVE)) {
+      if (var1.getValue(STATE) == CreakingHeartState.UPROOTED) {
          return 0;
       } else {
          BlockEntity var5 = var2.getBlockEntity(var3);
@@ -190,7 +194,7 @@ public class CreakingHeartBlock extends BaseEntityBlock {
 
    static {
       AXIS = BlockStateProperties.AXIS;
-      ACTIVE = BlockStateProperties.ACTIVE;
+      STATE = BlockStateProperties.CREAKING_HEART_STATE;
       NATURAL = BlockStateProperties.NATURAL;
    }
 }

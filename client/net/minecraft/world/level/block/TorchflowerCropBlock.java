@@ -18,10 +18,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TorchflowerCropBlock extends CropBlock {
    public static final MapCodec<TorchflowerCropBlock> CODEC = simpleCodec(TorchflowerCropBlock::new);
-   public static final int MAX_AGE = 2;
+   public static final int MAX_AGE = 1;
    public static final IntegerProperty AGE;
-   private static final float AABB_OFFSET = 3.0F;
-   private static final VoxelShape[] SHAPE_BY_AGE;
+   private static final VoxelShape[] SHAPES;
    private static final int BONEMEAL_INCREASE = 1;
 
    public MapCodec<TorchflowerCropBlock> codec() {
@@ -37,7 +36,7 @@ public class TorchflowerCropBlock extends CropBlock {
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPE_BY_AGE[this.getAge(var1)];
+      return SHAPES[this.getAge(var1)];
    }
 
    protected IntegerProperty getAgeProperty() {
@@ -69,6 +68,6 @@ public class TorchflowerCropBlock extends CropBlock {
 
    static {
       AGE = BlockStateProperties.AGE_1;
-      SHAPE_BY_AGE = new VoxelShape[]{Block.box(5.0, 0.0, 5.0, 11.0, 6.0, 11.0), Block.box(5.0, 0.0, 5.0, 11.0, 10.0, 11.0)};
+      SHAPES = Block.boxes(1, (var0) -> Block.column(6.0, 0.0, (double)(6 + var0 * 4)));
    }
 }

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
@@ -8,7 +7,6 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -16,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
+import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Shulker;
@@ -49,21 +48,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class ShulkerBoxBlock extends BaseEntityBlock {
    public static final MapCodec<ShulkerBoxBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DyeColor.CODEC.optionalFieldOf("color").forGetter((var0x) -> Optional.ofNullable(var0x.color)), propertiesCodec()).apply(var0, (var0x, var1) -> new ShulkerBoxBlock((DyeColor)var0x.orElse((Object)null), var1)));
    private static final Component UNKNOWN_CONTENTS = Component.translatable("container.shulkerBox.unknownContents");
-   private static final float OPEN_AABB_SIZE = 1.0F;
-   private static final VoxelShape UP_OPEN_AABB = Block.box(0.0, 15.0, 0.0, 16.0, 16.0, 16.0);
-   private static final VoxelShape DOWN_OPEN_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 1.0, 16.0);
-   private static final VoxelShape WES_OPEN_AABB = Block.box(0.0, 0.0, 0.0, 1.0, 16.0, 16.0);
-   private static final VoxelShape EAST_OPEN_AABB = Block.box(15.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-   private static final VoxelShape NORTH_OPEN_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 1.0);
-   private static final VoxelShape SOUTH_OPEN_AABB = Block.box(0.0, 0.0, 15.0, 16.0, 16.0, 16.0);
-   private static final Map<Direction, VoxelShape> OPEN_SHAPE_BY_DIRECTION = (Map)Util.make(Maps.newEnumMap(Direction.class), (var0) -> {
-      var0.put(Direction.NORTH, NORTH_OPEN_AABB);
-      var0.put(Direction.EAST, EAST_OPEN_AABB);
-      var0.put(Direction.SOUTH, SOUTH_OPEN_AABB);
-      var0.put(Direction.WEST, WES_OPEN_AABB);
-      var0.put(Direction.UP, UP_OPEN_AABB);
-      var0.put(Direction.DOWN, DOWN_OPEN_AABB);
-   });
+   public static final Map<Direction, VoxelShape> SHAPES_OPEN_SUPPORT = Shapes.rotateAll(Block.boxZ(16.0, 0.0, 1.0));
    public static final EnumProperty<Direction> FACING;
    public static final ResourceLocation CONTENTS;
    @Nullable
@@ -123,7 +108,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       BlockEntity var5 = var1.getBlockEntity(var2);
       if (var5 instanceof ShulkerBoxBlockEntity var6) {
-         if (!var1.isClientSide && var4.isCreative() && !var6.isEmpty()) {
+         if (!var1.isClientSide && var4.preventsBlockDrops() && !var6.isEmpty()) {
             ItemStack var7 = getColoredItemStack(this.getColor());
             var7.applyComponents(var5.collectComponents());
             ItemEntity var8 = new ItemEntity(var1, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, var7);
@@ -151,15 +136,8 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       return super.getDrops(var1, var2);
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         super.onRemove(var1, var2, var3, var4, var5);
-         if (var6 instanceof ShulkerBoxBlockEntity) {
-            var2.updateNeighbourForOutputSignal(var3, var1.getBlock());
-         }
-
-      }
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
    }
 
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
@@ -189,7 +167,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       BlockEntity var4 = var2.getBlockEntity(var3);
       if (var4 instanceof ShulkerBoxBlockEntity var5) {
          if (!var5.isClosed()) {
-            return (VoxelShape)OPEN_SHAPE_BY_DIRECTION.get(((Direction)var1.getValue(FACING)).getOpposite());
+            return (VoxelShape)SHAPES_OPEN_SUPPORT.get(((Direction)var1.getValue(FACING)).getOpposite());
          }
       }
 

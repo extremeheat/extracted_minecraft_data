@@ -35,7 +35,7 @@ public class PatrolSpawner implements CustomSpawner {
          } else {
             this.nextTick += 12000 + var4.nextInt(1200);
             long var5 = var1.getDayTime() / 24000L;
-            if (var5 >= 5L && var1.isDay()) {
+            if (var5 >= 5L && var1.isBrightOutside()) {
                if (var4.nextInt(5) != 0) {
                   return 0;
                } else {

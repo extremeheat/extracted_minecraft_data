@@ -10,7 +10,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -104,7 +104,7 @@ public class SculkVeinBlock extends MultifaceSpreadeableBlock implements SculkBe
                BlockState var11 = Blocks.SCULK.defaultBlockState();
                var2.setBlock(var9, var11, 3);
                Block.pushEntitiesUp(var10, var11, var2, var9);
-               var2.playSound((Player)null, var9, SoundEvents.SCULK_BLOCK_SPREAD, SoundSource.BLOCKS, 1.0F, 1.0F);
+               var2.playSound((Entity)null, var9, SoundEvents.SCULK_BLOCK_SPREAD, SoundSource.BLOCKS, 1.0F, 1.0F);
                this.veinSpreader.spreadAll(var11, var2, var9, var1.isWorldGeneration());
                Direction var12 = var8.getOpposite();
 

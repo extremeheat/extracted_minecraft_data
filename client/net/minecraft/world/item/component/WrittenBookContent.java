@@ -2,13 +2,19 @@ package net.minecraft.world.item.component;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.gson.JsonElement;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -18,16 +24,21 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.network.Filterable;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 
-public record WrittenBookContent(Filterable<String> title, String author, int generation, List<Filterable<Component>> pages, boolean resolved) implements BookContent<Component, WrittenBookContent> {
+public record WrittenBookContent(Filterable<String> title, String author, int generation, List<Filterable<Component>> pages, boolean resolved) implements BookContent<Component, WrittenBookContent>, TooltipProvider {
    public static final WrittenBookContent EMPTY = new WrittenBookContent(Filterable.passThrough(""), "", 0, List.of(), true);
    public static final int PAGE_LENGTH = 32767;
    public static final int TITLE_LENGTH = 16;
    public static final int TITLE_MAX_LENGTH = 32;
    public static final int MAX_GENERATION = 3;
    public static final int MAX_CRAFTABLE_GENERATION = 2;
-   public static final Codec<Component> CONTENT_CODEC = ComponentSerialization.flatCodec(32767);
+   public static final Codec<Component> CONTENT_CODEC = ComponentSerialization.flatRestrictedCodec(32767);
    public static final Codec<List<Filterable<Component>>> PAGES_CODEC;
    public static final Codec<WrittenBookContent> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, WrittenBookContent> STREAM_CODEC;
@@ -56,6 +67,21 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
    @Nullable
    public WrittenBookContent tryCraftCopy() {
       return this.generation >= 2 ? null : new WrittenBookContent(this.title, this.author, this.generation + 1, this.pages, this.resolved);
+   }
+
+   public static boolean resolveForItem(ItemStack var0, CommandSourceStack var1, @Nullable Player var2) {
+      WrittenBookContent var3 = (WrittenBookContent)var0.get(DataComponents.WRITTEN_BOOK_CONTENT);
+      if (var3 != null && !var3.resolved()) {
+         WrittenBookContent var4 = var3.resolve(var1, var2);
+         if (var4 != null) {
+            var0.set(DataComponents.WRITTEN_BOOK_CONTENT, var4);
+            return true;
+         }
+
+         var0.set(DataComponents.WRITTEN_BOOK_CONTENT, var3.markResolved());
+      }
+
+      return false;
    }
 
    @Nullable
@@ -94,7 +120,8 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
    }
 
    private static boolean isPageTooLarge(Component var0, HolderLookup.Provider var1) {
-      return Component.Serializer.toJson(var0, var1).length() > 32767;
+      DataResult var2 = ComponentSerialization.CODEC.encodeStart(var1.createSerializationContext(JsonOps.INSTANCE), var0);
+      return var2.isSuccess() && GsonHelper.encodesLongerThan((JsonElement)var2.getOrThrow(), 32767);
    }
 
    public List<Component> getPages(boolean var1) {
@@ -103,6 +130,14 @@ public record WrittenBookContent(Filterable<String> title, String author, int ge
 
    public WrittenBookContent withReplacedPages(List<Filterable<Component>> var1) {
       return new WrittenBookContent(this.title, this.author, this.generation, var1, false);
+   }
+
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
+      if (!StringUtil.isBlank(this.author)) {
+         var2.accept(Component.translatable("book.byAuthor", this.author).withStyle(ChatFormatting.GRAY));
+      }
+
+      var2.accept(Component.translatable("book.generation." + this.generation).withStyle(ChatFormatting.GRAY));
    }
 
    // $FF: synthetic method

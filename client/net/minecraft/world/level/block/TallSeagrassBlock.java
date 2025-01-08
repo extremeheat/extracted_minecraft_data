@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -24,8 +24,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class TallSeagrassBlock extends DoublePlantBlock implements LiquidBlockContainer {
    public static final MapCodec<TallSeagrassBlock> CODEC = simpleCodec(TallSeagrassBlock::new);
    public static final EnumProperty<DoubleBlockHalf> HALF;
-   protected static final float AABB_OFFSET = 6.0F;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
 
    public MapCodec<TallSeagrassBlock> codec() {
       return CODEC;
@@ -74,7 +73,7 @@ public class TallSeagrassBlock extends DoublePlantBlock implements LiquidBlockCo
       return Fluids.WATER.getSource(false);
    }
 
-   public boolean canPlaceLiquid(@Nullable Player var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
+   public boolean canPlaceLiquid(@Nullable LivingEntity var1, BlockGetter var2, BlockPos var3, BlockState var4, Fluid var5) {
       return false;
    }
 
@@ -84,6 +83,6 @@ public class TallSeagrassBlock extends DoublePlantBlock implements LiquidBlockCo
 
    static {
       HALF = DoublePlantBlock.HALF;
-      SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 16.0, 14.0);
+      SHAPE = Block.column(12.0, 0.0, 16.0);
    }
 }

@@ -133,6 +133,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"lantern", LanternBlock.CODEC);
       Registry.register(var0, (String)"lava_cauldron", LavaCauldronBlock.CODEC);
       Registry.register(var0, (String)"layered_cauldron", LayeredCauldronBlock.CODEC);
+      Registry.register(var0, (String)"leaf_litter", LeafLitterBlock.CODEC);
       Registry.register(var0, (String)"leaves", LeavesBlock.CODEC);
       Registry.register(var0, (String)"lectern", LecternBlock.CODEC);
       Registry.register(var0, (String)"lever", LeverBlock.CODEC);
@@ -158,8 +159,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"nylium", NyliumBlock.CODEC);
       Registry.register(var0, (String)"observer", ObserverBlock.CODEC);
       Registry.register(var0, (String)"piglinwallskull", PiglinWallSkullBlock.CODEC);
-      Registry.register(var0, (String)"particle_leaves", ParticleLeavesBlock.CODEC);
-      Registry.register(var0, (String)"pink_petals", PinkPetalsBlock.CODEC);
+      Registry.register(var0, (String)"flower_bed", FlowerBedBlock.CODEC);
       Registry.register(var0, (String)"piston_base", PistonBaseBlock.CODEC);
       Registry.register(var0, (String)"piston_head", PistonHeadBlock.CODEC);
       Registry.register(var0, (String)"pitcher_crop", PitcherCropBlock.CODEC);

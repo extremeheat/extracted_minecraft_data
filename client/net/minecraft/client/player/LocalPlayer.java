@@ -34,7 +34,6 @@ import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundHandler;
 import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundInstances;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -57,11 +56,8 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.TickThrottler;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
@@ -128,8 +124,8 @@ public class LocalPlayer extends AbstractClientPlayer {
    public float xBobO;
    private int jumpRidingTicks;
    private float jumpRidingScale;
-   public float spinningEffectIntensity;
-   public float oSpinningEffectIntensity;
+   public float portalEffectIntensity;
+   public float oPortalEffectIntensity;
    private boolean startedUsingItem;
    @Nullable
    private InteractionHand usingItemHand;
@@ -201,7 +197,7 @@ public class LocalPlayer extends AbstractClientPlayer {
          if (this.isPassenger()) {
             this.connection.send(new ServerboundMovePlayerPacket.Rot(this.getYRot(), this.getXRot(), this.onGround(), this.horizontalCollision));
             Entity var1 = this.getRootVehicle();
-            if (var1 != this && var1.isControlledByLocalInstance()) {
+            if (var1 != this && var1.isLocalInstanceAuthoritative()) {
                this.connection.send(ServerboundMoveVehiclePacket.fromEntity(var1));
                this.sendIsSprintingIfNeeded();
             }
@@ -462,10 +458,6 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), var1, var2, var3, var4, false);
    }
 
-   public boolean isEffectiveAi() {
-      return true;
-   }
-
    public void startUsingItem(InteractionHand var1) {
       ItemStack var2 = this.getItemInHand(var1);
       if (!var2.isEmpty() && !this.isUsingItem()) {
@@ -582,11 +574,10 @@ public class LocalPlayer extends AbstractClientPlayer {
       return this.isCrouching() || this.isVisuallyCrawling();
    }
 
-   public void serverAiStep() {
-      super.serverAiStep();
+   public void applyInput() {
       if (this.isControlledCamera()) {
-         this.xxa = this.input.leftImpulse;
-         this.zza = this.input.forwardImpulse;
+         this.xxa = this.input.getMoveVector().x;
+         this.zza = this.input.getMoveVector().y;
          this.jumping = this.input.keyPresses.jump();
          this.yBobO = this.yBob;
          this.xBobO = this.xBob;
@@ -624,7 +615,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
 
       if (!(this.minecraft.screen instanceof ReceivingLevelScreen)) {
-         this.handleConfusionTransitionEffect(this.getActivePortalLocalTransition() == Portal.Transition.CONFUSION);
+         this.handlePortalTransitionEffect(this.getActivePortalLocalTransition() == Portal.Transition.CONFUSION);
          this.processPortalCooldown();
       }
 
@@ -640,19 +631,13 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
 
       if (this.isUsingItem() && !this.isPassenger()) {
-         ClientInput var10000 = this.input;
-         var10000.leftImpulse *= 0.2F;
-         var10000 = this.input;
-         var10000.forwardImpulse *= 0.2F;
+         this.input.scaleMoveDirection(0.2F);
          this.sprintTriggerTime = 0;
       }
 
       if (this.isMovingSlowly()) {
          float var5 = (float)this.getAttributeValue(Attributes.SNEAKING_SPEED);
-         ClientInput var17 = this.input;
-         var17.leftImpulse *= var5;
-         var17 = this.input;
-         var17.forwardImpulse *= var5;
+         this.input.scaleMoveDirection(var5);
       }
 
       boolean var11 = false;
@@ -793,11 +778,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    private boolean shouldStopSprinting() {
-      return this.isFallFlying() || this.hasBlindness() || this.isMovingSlowly() || this.isPassenger() && !this.isRidingCamel() || this.isUsingItem() && !this.isPassenger() && !this.isUnderWater();
-   }
-
-   private boolean isRidingCamel() {
-      return this.getVehicle() != null && this.getVehicle().getType() == EntityType.CAMEL;
+      return this.hasBlindness() || this.isMovingSlowly() || this.isFallFlying() && !this.isUnderWater() || this.isPassenger() && !this.vehicleCanSprint(this.getVehicle()) || this.isUsingItem() && !this.isPassenger() && !this.isUnderWater();
    }
 
    private boolean hasBlindness() {
@@ -816,8 +797,8 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    }
 
-   private void handleConfusionTransitionEffect(boolean var1) {
-      this.oSpinningEffectIntensity = this.spinningEffectIntensity;
+   private void handlePortalTransitionEffect(boolean var1) {
+      this.oPortalEffectIntensity = this.portalEffectIntensity;
       float var2 = 0.0F;
       if (var1 && this.portalProcess != null && this.portalProcess.isInsidePortalThisTick()) {
          if (this.minecraft.screen != null && !this.minecraft.screen.isPauseScreen() && !(this.minecraft.screen instanceof DeathScreen) && !(this.minecraft.screen instanceof WinScreen)) {
@@ -828,19 +809,17 @@ public class LocalPlayer extends AbstractClientPlayer {
             this.minecraft.setScreen((Screen)null);
          }
 
-         if (this.spinningEffectIntensity == 0.0F) {
+         if (this.portalEffectIntensity == 0.0F) {
             this.minecraft.getSoundManager().play(SimpleSoundInstance.forLocalAmbience(SoundEvents.PORTAL_TRIGGER, this.random.nextFloat() * 0.4F + 0.8F, 0.25F));
          }
 
          var2 = 0.0125F;
          this.portalProcess.setAsInsidePortalThisTick(false);
-      } else if (this.hasEffect(MobEffects.CONFUSION) && !this.getEffect(MobEffects.CONFUSION).endsWithin(60)) {
-         var2 = 0.006666667F;
-      } else if (this.spinningEffectIntensity > 0.0F) {
+      } else if (this.portalEffectIntensity > 0.0F) {
          var2 = -0.05F;
       }
 
-      this.spinningEffectIntensity = Mth.clamp(this.spinningEffectIntensity + var2, 0.0F, 1.0F);
+      this.portalEffectIntensity = Mth.clamp(this.portalEffectIntensity + var2, 0.0F, 1.0F);
    }
 
    public void rideTick() {
@@ -856,16 +835,6 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public boolean isHandsBusy() {
       return this.handsBusy;
-   }
-
-   @Nullable
-   public MobEffectInstance removeEffectNoUpdate(Holder<MobEffect> var1) {
-      if (var1.is(MobEffects.CONFUSION)) {
-         this.oSpinningEffectIntensity = 0.0F;
-         this.spinningEffectIntensity = 0.0F;
-      }
-
-      return super.removeEffectNoUpdate(var1);
    }
 
    public void move(MoverType var1, Vec3 var2) {
@@ -920,8 +889,8 @@ public class LocalPlayer extends AbstractClientPlayer {
                if (var15.getCollisionShape(this.level(), var13, var45).isEmpty()) {
                   float var16 = 7.0F;
                   float var17 = 1.2F;
-                  if (this.hasEffect(MobEffects.JUMP)) {
-                     var17 += (float)(this.getEffect(MobEffects.JUMP).getAmplifier() + 1) * 0.75F;
+                  if (this.hasEffect(MobEffects.JUMP_BOOST)) {
+                     var17 += (float)(this.getEffect(MobEffects.JUMP_BOOST).getAmplifier() + 1) * 0.75F;
                   }
 
                   float var18 = Math.max(var6 * 7.0F, 1.0F / var41);
@@ -1005,21 +974,20 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    private boolean isMoving() {
-      Vec2 var1 = this.input.getMoveVector();
-      return var1.x != 0.0F || var1.y != 0.0F;
+      return this.input.getMoveVector().lengthSquared() > 0.0F;
    }
 
    private boolean canStartSprinting() {
-      return !this.isSprinting() && this.hasEnoughImpulseToStartSprinting() && this.hasEnoughFoodToStartSprinting() && !this.isUsingItem() && !this.hasBlindness() && (!this.isPassenger() || this.vehicleCanSprint(this.getVehicle())) && !this.isFallFlying() && (!this.isMovingSlowly() || this.isUnderWater());
+      return !this.isSprinting() && this.hasEnoughImpulseToStartSprinting() && this.hasEnoughFoodToStartSprinting() && !this.isUsingItem() && !this.hasBlindness() && (!this.isPassenger() || this.vehicleCanSprint(this.getVehicle())) && (!this.isFallFlying() || this.isUnderWater()) && (!this.isMovingSlowly() || this.isUnderWater());
    }
 
    private boolean vehicleCanSprint(Entity var1) {
-      return var1.canSprint() && var1.isControlledByLocalInstance();
+      return var1.canSprint() && var1.isLocalInstanceAuthoritative();
    }
 
    private boolean hasEnoughImpulseToStartSprinting() {
       double var1 = 0.8;
-      return this.isUnderWater() ? this.input.hasForwardImpulse() : (double)this.input.forwardImpulse >= 0.8;
+      return this.isUnderWater() ? this.input.hasForwardImpulse() : (double)this.input.getMoveVector().y >= 0.8;
    }
 
    private boolean hasEnoughFoodToStartSprinting() {

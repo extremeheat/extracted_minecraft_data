@@ -266,6 +266,10 @@ public class PistonMovingBlockEntity extends BlockEntity {
 
    }
 
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2, boolean var3) {
+      this.finalTick();
+   }
+
    public Direction getPushDirection() {
       return this.extending ? this.direction : this.direction.getOpposite();
    }
@@ -282,7 +286,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
             if (var0.getBlockState(var1).is(Blocks.MOVING_PISTON)) {
                BlockState var5 = Block.updateFromNeighbourShapes(var3.movedState, var0, var1);
                if (var5.isAir()) {
-                  var0.setBlock(var1, var3.movedState, 84);
+                  var0.setBlock(var1, var3.movedState, 340);
                   Block.updateOrDestroy(var3.movedState, var5, var0, var1, 3);
                } else {
                   if (var5.hasProperty(BlockStateProperties.WATERLOGGED) && (Boolean)var5.getValue(BlockStateProperties.WATERLOGGED)) {

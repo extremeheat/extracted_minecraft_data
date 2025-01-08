@@ -19,11 +19,7 @@ public record PositionMoveRotation(Vec3 position, Vec3 deltaMovement, float yRot
    }
 
    public static PositionMoveRotation of(Entity var0) {
-      return new PositionMoveRotation(var0.position(), var0.getKnownMovement(), var0.getYRot(), var0.getXRot());
-   }
-
-   public static PositionMoveRotation ofEntityUsingLerpTarget(Entity var0) {
-      return new PositionMoveRotation(new Vec3(var0.lerpTargetX(), var0.lerpTargetY(), var0.lerpTargetZ()), var0.getKnownMovement(), var0.getYRot(), var0.getXRot());
+      return var0.isInterpolating() ? new PositionMoveRotation(var0.getInterpolation().position(), var0.getKnownMovement(), var0.getInterpolation().yRot(), var0.getInterpolation().xRot()) : new PositionMoveRotation(var0.position(), var0.getKnownMovement(), var0.getYRot(), var0.getXRot());
    }
 
    public static PositionMoveRotation of(TeleportTransition var0) {

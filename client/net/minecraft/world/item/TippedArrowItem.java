@@ -22,7 +22,7 @@ public class TippedArrowItem extends ArrowItem {
       PotionContents var5 = (PotionContents)var1.get(DataComponents.POTION_CONTENTS);
       if (var5 != null) {
          Objects.requireNonNull(var3);
-         var5.addPotionTooltip(var3::add, 0.125F, var2.tickRate());
+         var5.addPotionTooltip(var3::add, (Float)var1.getOrDefault(DataComponents.POTION_DURATION_SCALE, 1.0F), var2.tickRate());
       }
    }
 

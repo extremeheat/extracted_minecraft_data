@@ -213,8 +213,17 @@ public class SignBlockEntity extends BlockEntity {
       for(Component var9 : this.getText(var4).getMessages(var1.isTextFilteringEnabled())) {
          Style var10 = var9.getStyle();
          ClickEvent var11 = var10.getClickEvent();
-         if (var11 != null && var11.getAction() == ClickEvent.Action.RUN_COMMAND) {
-            var1.getServer().getCommands().performPrefixedCommand(createCommandSourceStack(var1, var2, var3), var11.getValue());
+         if (var11 instanceof ClickEvent.RunCommand var12) {
+            ClickEvent.RunCommand var10000 = var12;
+
+            try {
+               var16 = var10000.command();
+            } catch (Throwable var15) {
+               throw new MatchException(var15.toString(), var15);
+            }
+
+            String var14 = var16;
+            var1.getServer().getCommands().performPrefixedCommand(createCommandSourceStack(var1, var2, var3), var14);
             var5 = true;
          }
       }

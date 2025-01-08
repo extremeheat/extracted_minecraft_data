@@ -7,7 +7,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.random.SimpleWeightedRandomList;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding;
@@ -16,7 +16,7 @@ import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding
 public class TrialChambersStructurePools {
    public static final ResourceKey<StructureTemplatePool> START = Pools.createKey("trial_chambers/chamber/end");
    public static final ResourceKey<StructureTemplatePool> HALLWAY_FALLBACK = Pools.createKey("trial_chambers/hallway/fallback");
-   public static final List<PoolAliasBinding> ALIAS_BINDINGS = ImmutableList.builder().add(PoolAliasBinding.randomGroup(SimpleWeightedRandomList.builder().add(List.of(PoolAliasBinding.direct(spawner("contents/ranged"), spawner("ranged/skeleton")), PoolAliasBinding.direct(spawner("contents/slow_ranged"), spawner("slow_ranged/skeleton")))).add(List.of(PoolAliasBinding.direct(spawner("contents/ranged"), spawner("ranged/stray")), PoolAliasBinding.direct(spawner("contents/slow_ranged"), spawner("slow_ranged/stray")))).add(List.of(PoolAliasBinding.direct(spawner("contents/ranged"), spawner("ranged/poison_skeleton")), PoolAliasBinding.direct(spawner("contents/slow_ranged"), spawner("slow_ranged/poison_skeleton")))).build())).add(PoolAliasBinding.random(spawner("contents/melee"), SimpleWeightedRandomList.builder().add(spawner("melee/zombie")).add(spawner("melee/husk")).add(spawner("melee/spider")).build())).add(PoolAliasBinding.random(spawner("contents/small_melee"), SimpleWeightedRandomList.builder().add(spawner("small_melee/slime")).add(spawner("small_melee/cave_spider")).add(spawner("small_melee/silverfish")).add(spawner("small_melee/baby_zombie")).build())).build();
+   public static final List<PoolAliasBinding> ALIAS_BINDINGS = ImmutableList.builder().add(PoolAliasBinding.randomGroup(WeightedList.builder().add(List.of(PoolAliasBinding.direct(spawner("contents/ranged"), spawner("ranged/skeleton")), PoolAliasBinding.direct(spawner("contents/slow_ranged"), spawner("slow_ranged/skeleton")))).add(List.of(PoolAliasBinding.direct(spawner("contents/ranged"), spawner("ranged/stray")), PoolAliasBinding.direct(spawner("contents/slow_ranged"), spawner("slow_ranged/stray")))).add(List.of(PoolAliasBinding.direct(spawner("contents/ranged"), spawner("ranged/poison_skeleton")), PoolAliasBinding.direct(spawner("contents/slow_ranged"), spawner("slow_ranged/poison_skeleton")))).build())).add(PoolAliasBinding.random(spawner("contents/melee"), WeightedList.builder().add(spawner("melee/zombie")).add(spawner("melee/husk")).add(spawner("melee/spider")).build())).add(PoolAliasBinding.random(spawner("contents/small_melee"), WeightedList.builder().add(spawner("small_melee/slime")).add(spawner("small_melee/cave_spider")).add(spawner("small_melee/silverfish")).add(spawner("small_melee/baby_zombie")).build())).build();
 
    public TrialChambersStructurePools() {
       super();

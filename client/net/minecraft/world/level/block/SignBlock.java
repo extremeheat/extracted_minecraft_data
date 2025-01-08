@@ -14,6 +14,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -43,8 +44,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
    public static final BooleanProperty WATERLOGGED;
-   protected static final float AABB_OFFSET = 4.0F;
-   protected static final VoxelShape SHAPE;
+   private static final VoxelShape SHAPE;
    private final WoodType type;
 
    protected SignBlock(WoodType var1, BlockBehaviour.Properties var2) {
@@ -120,7 +120,7 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
          boolean var9 = var6.isFacingFrontText(var4);
          boolean var8 = var6.executeClickCommandsIfPresent(var4, var2, var3, var9);
          if (var6.isWaxed()) {
-            var2.playSound((Player)null, var6.getBlockPos(), var6.getSignInteractionFailedSoundEvent(), SoundSource.BLOCKS);
+            var2.playSound((Entity)null, var6.getBlockPos(), var6.getSignInteractionFailedSoundEvent(), SoundSource.BLOCKS);
             return InteractionResult.SUCCESS_SERVER;
          } else if (var8) {
             return InteractionResult.SUCCESS_SERVER;
@@ -182,6 +182,6 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
 
    static {
       WATERLOGGED = BlockStateProperties.WATERLOGGED;
-      SHAPE = Block.box(4.0, 0.0, 4.0, 12.0, 16.0, 12.0);
+      SHAPE = Block.column(8.0, 0.0, 16.0);
    }
 }

@@ -217,7 +217,7 @@ public class EnderMan extends Monster implements NeutralMob {
    }
 
    protected void customServerAiStep(ServerLevel var1) {
-      if (var1.isDay() && this.tickCount >= this.targetChangeTime + 600) {
+      if (var1.isBrightOutside() && this.tickCount >= this.targetChangeTime + 600) {
          float var2 = this.getLightLevelDependentMagicValue();
          if (var2 > 0.5F && var1.canSeeSky(this.blockPosition()) && this.random.nextFloat() * 30.0F < (var2 - 0.4F) * 2.0F) {
             this.setTarget((LivingEntity)null);
@@ -265,7 +265,7 @@ public class EnderMan extends Monster implements NeutralMob {
          if (var12) {
             this.level().gameEvent(GameEvent.TELEPORT, var11, GameEvent.Context.of((Entity)this));
             if (!this.isSilent()) {
-               this.level().playSound((Player)null, this.xo, this.yo, this.zo, SoundEvents.ENDERMAN_TELEPORT, this.getSoundSource(), 1.0F, 1.0F);
+               this.level().playSound((Entity)null, this.xo, this.yo, this.zo, SoundEvents.ENDERMAN_TELEPORT, this.getSoundSource(), 1.0F, 1.0F);
                this.playSound(SoundEvents.ENDERMAN_TELEPORT, 1.0F, 1.0F);
             }
          }
@@ -467,11 +467,12 @@ public class EnderMan extends Monster implements NeutralMob {
 
       public boolean canUse() {
          this.target = this.enderman.getTarget();
-         if (!(this.target instanceof Player)) {
-            return false;
+         LivingEntity var2 = this.target;
+         if (var2 instanceof Player var1) {
+            double var4 = this.target.distanceToSqr(this.enderman);
+            return var4 > 256.0 ? false : this.enderman.isBeingStaredBy(var1);
          } else {
-            double var1 = this.target.distanceToSqr(this.enderman);
-            return var1 > 256.0 ? false : this.enderman.isBeingStaredBy((Player)this.target);
+            return false;
          }
       }
 

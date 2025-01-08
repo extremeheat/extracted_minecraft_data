@@ -1,7 +1,6 @@
 package net.minecraft.world.level.storage.loot;
 
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -126,11 +125,8 @@ public class BuiltInLootTables {
       super();
    }
 
-   private static void makeDyeKeyMap(EnumMap<DyeColor, ResourceKey<LootTable>> var0, String var1) {
-      for(DyeColor var5 : DyeColor.values()) {
-         var0.put(var5, register(var1 + "/" + var5.getName()));
-      }
-
+   private static Map<DyeColor, ResourceKey<LootTable>> makeDyeKeyMap(String var0) {
+      return Util.<DyeColor, ResourceKey<LootTable>>makeEnumMap(DyeColor.class, (var1) -> register(var0 + "/" + var1.getName()));
    }
 
    private static ResourceKey<LootTable> register(String var0) {
@@ -214,7 +210,7 @@ public class BuiltInLootTables {
       EQUIPMENT_TRIAL_CHAMBER = register("equipment/trial_chamber");
       EQUIPMENT_TRIAL_CHAMBER_RANGED = register("equipment/trial_chamber_ranged");
       EQUIPMENT_TRIAL_CHAMBER_MELEE = register("equipment/trial_chamber_melee");
-      SHEEP_BY_DYE = (Map)Util.make(new EnumMap(DyeColor.class), (var0) -> makeDyeKeyMap(var0, "entities/sheep"));
+      SHEEP_BY_DYE = makeDyeKeyMap("entities/sheep");
       FISHING = register("gameplay/fishing");
       FISHING_JUNK = register("gameplay/fishing/junk");
       FISHING_TREASURE = register("gameplay/fishing/treasure");
@@ -251,7 +247,7 @@ public class BuiltInLootTables {
       SHEAR_BROWN_MOOSHROOM = register("shearing/mooshroom/brown");
       SHEAR_SNOW_GOLEM = register("shearing/snow_golem");
       SHEAR_SHEEP = register("shearing/sheep");
-      SHEAR_SHEEP_BY_DYE = (Map)Util.make(new EnumMap(DyeColor.class), (var0) -> makeDyeKeyMap(var0, "shearing/sheep"));
+      SHEAR_SHEEP_BY_DYE = makeDyeKeyMap("shearing/sheep");
       DESERT_WELL_ARCHAEOLOGY = register("archaeology/desert_well");
       DESERT_PYRAMID_ARCHAEOLOGY = register("archaeology/desert_pyramid");
       TRAIL_RUINS_ARCHAEOLOGY_COMMON = register("archaeology/trail_ruins_common");

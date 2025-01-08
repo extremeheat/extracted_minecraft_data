@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractFurnaceBlock extends BaseEntityBlock {
    public static final EnumProperty<Direction> FACING;
@@ -49,22 +48,8 @@ public abstract class AbstractFurnaceBlock extends BaseEntityBlock {
       return (BlockState)this.defaultBlockState().setValue(FACING, var1.getHorizontalDirection().getOpposite());
    }
 
-   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (var6 instanceof AbstractFurnaceBlockEntity) {
-            if (var2 instanceof ServerLevel) {
-               Containers.dropContents(var2, (BlockPos)var3, (AbstractFurnaceBlockEntity)var6);
-               ((AbstractFurnaceBlockEntity)var6).getRecipesToAwardAndPopExperience((ServerLevel)var2, Vec3.atCenterOf(var3));
-            }
-
-            super.onRemove(var1, var2, var3, var4, var5);
-            var2.updateNeighbourForOutputSignal(var3, this);
-         } else {
-            super.onRemove(var1, var2, var3, var4, var5);
-         }
-
-      }
+   protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
+      Containers.updateNeighboursAfterDestroy(var1, var2, var3);
    }
 
    protected boolean hasAnalogOutputSignal(BlockState var1) {
