@@ -44,6 +44,7 @@ import net.minecraft.client.gui.screens.inventory.BookViewScreen;
 import net.minecraft.client.gui.screens.inventory.CommandBlockEditScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.TestInstanceBlockEditScreen;
 import net.minecraft.client.gui.screens.multiplayer.ServerReconfigScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
 import net.minecraft.client.particle.ItemPickupParticle;
@@ -223,6 +224,7 @@ import net.minecraft.network.protocol.game.ClientboundTabListPacket;
 import net.minecraft.network.protocol.game.ClientboundTagQueryPacket;
 import net.minecraft.network.protocol.game.ClientboundTakeItemEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundTestInstanceBlockStatus;
 import net.minecraft.network.protocol.game.ClientboundTickingStatePacket;
 import net.minecraft.network.protocol.game.ClientboundTickingStepPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAdvancementsPacket;
@@ -557,7 +559,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             if (this.level.isTickingEntity(var2) && !var6) {
                var2.moveOrInterpolateTo(var3, var4, var5);
             } else {
-               var2.moveTo(var3, var4, var5);
+               var2.snapTo(var3, var4, var5);
             }
 
             if (var2.isInterpolating() && var2.hasIndirectPassenger(this.minecraft.player)) {
@@ -1833,7 +1835,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                var2.getInterpolation().cancel();
             }
 
-            var2.absMoveTo(var3.x(), var3.y(), var3.z(), var1.yRot(), var1.xRot());
+            var2.absSnapTo(var3.x(), var3.y(), var3.z(), var1.yRot(), var1.xRot());
          }
 
          this.connection.send(ServerboundMoveVehiclePacket.fromEntity(var2));
@@ -2182,6 +2184,15 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void handlePongResponse(ClientboundPongResponsePacket var1) {
       this.pingDebugMonitor.onPongReceived(var1);
+   }
+
+   public void handleTestInstanceBlockStatus(ClientboundTestInstanceBlockStatus var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
+      Screen var3 = this.minecraft.screen;
+      if (var3 instanceof TestInstanceBlockEditScreen var2) {
+         var2.setStatus(var1.status(), var1.size());
+      }
+
    }
 
    private void readSectionList(int var1, int var2, LevelLightEngine var3, LightLayer var4, BitSet var5, BitSet var6, Iterator<byte[]> var7, boolean var8) {

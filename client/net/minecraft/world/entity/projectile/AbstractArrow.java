@@ -13,7 +13,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -88,7 +87,7 @@ public abstract class AbstractArrow extends Projectile {
    protected AbstractArrow(EntityType<? extends AbstractArrow> var1, double var2, double var4, double var6, Level var8, ItemStack var9, @Nullable ItemStack var10) {
       this(var1, var8);
       this.pickupItemStack = var9.copy();
-      this.setCustomName((Component)var9.get(DataComponents.CUSTOM_NAME));
+      this.applyComponentsFromItemStack(var9);
       Unit var11 = (Unit)var9.remove(DataComponents.INTANGIBLE_PROJECTILE);
       if (var11 != null) {
          this.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;

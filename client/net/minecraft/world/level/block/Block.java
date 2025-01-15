@@ -402,7 +402,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       return Component.translatable(this.getDescriptionId());
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
+   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
       var4.causeFallDamage(var5, 1.0F, var4.damageSources().fall());
    }
 

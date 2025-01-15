@@ -310,7 +310,7 @@ public class CreakingHeartBlockEntity extends BlockEntity {
       }
    }
 
-   public void preRemoveSideEffects(BlockPos var1, BlockState var2, boolean var3) {
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2) {
       this.removeProtector((DamageSource)null);
    }
 

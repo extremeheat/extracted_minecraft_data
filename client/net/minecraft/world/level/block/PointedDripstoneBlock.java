@@ -59,7 +59,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
    private static final float STALACTITE_DAMAGE_PER_FALL_DISTANCE_AND_SIZE = 1.0F;
    private static final int STALACTITE_MAX_DAMAGE = 40;
    private static final int MAX_STALACTITE_HEIGHT_FOR_DAMAGE_CALCULATION = 6;
-   private static final float STALAGMITE_FALL_DISTANCE_OFFSET = 2.0F;
+   private static final float STALAGMITE_FALL_DISTANCE_OFFSET = 2.5F;
    private static final int STALAGMITE_FALL_DAMAGE_MODIFIER = 2;
    private static final float AVERAGE_DAYS_PER_GROWTH = 5.0F;
    private static final float GROWTH_PROBABILITY_PER_RANDOM_TICK = 0.011377778F;
@@ -132,9 +132,9 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       }
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
+   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
       if (var2.getValue(TIP_DIRECTION) == Direction.UP && var2.getValue(THICKNESS) == DripstoneThickness.TIP) {
-         var4.causeFallDamage(var5 + 2.0F, 2.0F, var1.damageSources().stalagmite());
+         var4.causeFallDamage(var5 + 2.5, 2.0F, var1.damageSources().stalagmite());
       } else {
          super.fallOn(var1, var2, var3, var4, var5);
       }

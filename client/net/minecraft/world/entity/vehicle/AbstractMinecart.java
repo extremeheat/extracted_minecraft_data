@@ -225,7 +225,7 @@ public abstract class AbstractMinecart extends VehicleEntity {
       this.updateInWaterStateAndDoFluidPushing();
       if (this.isInLava()) {
          this.lavaHurt();
-         this.fallDistance *= 0.5F;
+         this.fallDistance *= 0.5;
       }
 
       this.firstTick = false;

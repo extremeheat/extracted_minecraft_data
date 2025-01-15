@@ -9,7 +9,7 @@ import java.util.function.Predicate;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
-import net.minecraft.core.component.DataComponentHolder;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
@@ -33,7 +33,7 @@ public record ItemPredicate(Optional<HolderSet<Item>> items, MinMaxBounds.Ints c
          return false;
       } else if (!this.count.matches(var1.getCount())) {
          return false;
-      } else if (!this.components.test((DataComponentHolder)var1)) {
+      } else if (!this.components.test((DataComponentGetter)var1)) {
          return false;
       } else {
          for(ItemSubPredicate var3 : this.subPredicates.values()) {

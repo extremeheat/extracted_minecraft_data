@@ -60,7 +60,7 @@ public class MaceItem extends Item {
                var6.setSpawnExtraParticlesOnFall(true);
             }
 
-            SoundEvent var7 = var3.fallDistance > 5.0F ? SoundEvents.MACE_SMASH_GROUND_HEAVY : SoundEvents.MACE_SMASH_GROUND;
+            SoundEvent var7 = var3.fallDistance > 5.0 ? SoundEvents.MACE_SMASH_GROUND_HEAVY : SoundEvents.MACE_SMASH_GROUND;
             var4.playSound((Entity)null, var3.getX(), var3.getY(), var3.getZ(), var7, var3.getSoundSource(), 1.0F, 1.0F);
          } else {
             var4.playSound((Entity)null, var3.getX(), var3.getY(), var3.getZ(), SoundEvents.MACE_SMASH_AIR, var3.getSoundSource(), 1.0F, 1.0F);
@@ -88,24 +88,24 @@ public class MaceItem extends Item {
          if (!canSmashAttack(var4)) {
             return 0.0F;
          } else {
-            float var11 = 3.0F;
-            float var6 = 8.0F;
-            float var7 = var4.fallDistance;
-            float var8;
-            if (var7 <= 3.0F) {
-               var8 = 4.0F * var7;
-            } else if (var7 <= 8.0F) {
-               var8 = 12.0F + 2.0F * (var7 - 3.0F);
+            double var15 = 3.0;
+            double var7 = 8.0;
+            double var9 = var4.fallDistance;
+            double var11;
+            if (var9 <= 3.0) {
+               var11 = 4.0 * var9;
+            } else if (var9 <= 8.0) {
+               var11 = 12.0 + 2.0 * (var9 - 3.0);
             } else {
-               var8 = 22.0F + var7 - 8.0F;
+               var11 = 22.0 + var9 - 8.0;
             }
 
-            Level var10 = var4.level();
-            if (var10 instanceof ServerLevel) {
-               ServerLevel var9 = (ServerLevel)var10;
-               return var8 + EnchantmentHelper.modifyFallBasedDamage(var9, var4.getWeaponItem(), var1, var3, 0.0F) * var7;
+            Level var14 = var4.level();
+            if (var14 instanceof ServerLevel) {
+               ServerLevel var13 = (ServerLevel)var14;
+               return (float)(var11 + (double)EnchantmentHelper.modifyFallBasedDamage(var13, var4.getWeaponItem(), var1, var3, 0.0F) * var9);
             } else {
-               return var8;
+               return (float)var11;
             }
          }
       } else {
@@ -172,11 +172,11 @@ public class MaceItem extends Item {
    }
 
    private static double getKnockbackPower(Entity var0, LivingEntity var1, Vec3 var2) {
-      return (3.5 - var2.length()) * 0.699999988079071 * (double)(var0.fallDistance > 5.0F ? 2 : 1) * (1.0 - var1.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
+      return (3.5 - var2.length()) * 0.699999988079071 * (double)(var0.fallDistance > 5.0 ? 2 : 1) * (1.0 - var1.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
    }
 
    public static boolean canSmashAttack(LivingEntity var0) {
-      return var0.fallDistance > 1.5F && !var0.isFallFlying();
+      return var0.fallDistance > 1.5 && !var0.isFallFlying();
    }
 
    @Nullable

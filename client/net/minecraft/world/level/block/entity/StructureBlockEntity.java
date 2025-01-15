@@ -33,7 +33,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlac
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
-public class StructureBlockEntity extends BlockEntity {
+public class StructureBlockEntity extends BlockEntity implements BoundingBoxRenderable {
    private static final int SCAN_CORNER_BLOCKS_RANGE = 5;
    public static final int MAX_OFFSET_PER_AXIS = 48;
    public static final int MAX_SIZE_PER_AXIS = 48;
@@ -330,31 +330,38 @@ public class StructureBlockEntity extends BlockEntity {
    }
 
    public boolean saveStructure(boolean var1) {
-      if (this.structureName == null) {
-         return false;
-      } else {
-         BlockPos var2 = this.getBlockPos().offset(this.structurePos);
-         ServerLevel var3 = (ServerLevel)this.level;
-         StructureTemplateManager var4 = var3.getStructureManager();
+      if (this.structureName != null) {
+         Level var3 = this.level;
+         if (var3 instanceof ServerLevel) {
+            ServerLevel var2 = (ServerLevel)var3;
+            BlockPos var4 = this.getBlockPos().offset(this.structurePos);
+            return saveStructure(var2, this.structureName, var4, this.structureSize, this.ignoreEntities, this.author, var1);
+         }
+      }
 
-         StructureTemplate var5;
+      return false;
+   }
+
+   public static boolean saveStructure(ServerLevel var0, ResourceLocation var1, BlockPos var2, Vec3i var3, boolean var4, String var5, boolean var6) {
+      StructureTemplateManager var7 = var0.getStructureManager();
+
+      StructureTemplate var8;
+      try {
+         var8 = var7.getOrCreate(var1);
+      } catch (ResourceLocationException var11) {
+         return false;
+      }
+
+      var8.fillFromWorld(var0, var2, var3, !var4, Blocks.STRUCTURE_VOID);
+      var8.setAuthor(var5);
+      if (var6) {
          try {
-            var5 = var4.getOrCreate(this.structureName);
-         } catch (ResourceLocationException var8) {
+            return var7.save(var1);
+         } catch (ResourceLocationException var10) {
             return false;
          }
-
-         var5.fillFromWorld(this.level, var2, this.structureSize, !this.ignoreEntities, Blocks.STRUCTURE_VOID);
-         var5.setAuthor(this.author);
-         if (var1) {
-            try {
-               return var4.save(this.structureName);
-            } catch (ResourceLocationException var7) {
-               return false;
-            }
-         } else {
-            return true;
-         }
+      } else {
+         return true;
       }
    }
 
@@ -464,6 +471,72 @@ public class StructureBlockEntity extends BlockEntity {
 
    public void setShowBoundingBox(boolean var1) {
       this.showBoundingBox = var1;
+   }
+
+   public BoundingBoxRenderable.Mode renderMode() {
+      if (this.mode != StructureMode.SAVE && this.mode != StructureMode.LOAD) {
+         return BoundingBoxRenderable.Mode.NONE;
+      } else if (this.mode == StructureMode.SAVE && this.showAir) {
+         return BoundingBoxRenderable.Mode.BOX_AND_INVISIBLE_BLOCKS;
+      } else {
+         return this.mode != StructureMode.SAVE && !this.showBoundingBox ? BoundingBoxRenderable.Mode.NONE : BoundingBoxRenderable.Mode.BOX;
+      }
+   }
+
+   public BoundingBoxRenderable.RenderableBox getRenderableBox() {
+      BlockPos var1 = this.getStructurePos();
+      Vec3i var2 = this.getStructureSize();
+      int var3 = var1.getX();
+      int var4 = var1.getZ();
+      int var8 = var1.getY();
+      int var11 = var8 + var2.getY();
+      int var5;
+      int var6;
+      switch (this.mirror) {
+         case LEFT_RIGHT:
+            var5 = var2.getX();
+            var6 = -var2.getZ();
+            break;
+         case FRONT_BACK:
+            var5 = -var2.getX();
+            var6 = var2.getZ();
+            break;
+         default:
+            var5 = var2.getX();
+            var6 = var2.getZ();
+      }
+
+      int var7;
+      int var9;
+      int var10;
+      int var12;
+      switch (this.rotation) {
+         case CLOCKWISE_90:
+            var7 = var6 < 0 ? var3 : var3 + 1;
+            var9 = var5 < 0 ? var4 + 1 : var4;
+            var10 = var7 - var6;
+            var12 = var9 + var5;
+            break;
+         case CLOCKWISE_180:
+            var7 = var5 < 0 ? var3 : var3 + 1;
+            var9 = var6 < 0 ? var4 : var4 + 1;
+            var10 = var7 - var5;
+            var12 = var9 - var6;
+            break;
+         case COUNTERCLOCKWISE_90:
+            var7 = var6 < 0 ? var3 + 1 : var3;
+            var9 = var5 < 0 ? var4 : var4 + 1;
+            var10 = var7 + var6;
+            var12 = var9 - var5;
+            break;
+         default:
+            var7 = var5 < 0 ? var3 + 1 : var3;
+            var9 = var6 < 0 ? var4 + 1 : var4;
+            var10 = var7 + var5;
+            var12 = var9 + var6;
+      }
+
+      return BoundingBoxRenderable.RenderableBox.fromCorners(var7, var8, var9, var10, var11, var12);
    }
 
    // $FF: synthetic method

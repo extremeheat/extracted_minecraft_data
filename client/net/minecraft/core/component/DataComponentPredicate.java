@@ -12,7 +12,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
-public final class DataComponentPredicate implements Predicate<DataComponentMap> {
+public final class DataComponentPredicate implements Predicate<DataComponentGetter> {
    public static final Codec<DataComponentPredicate> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, DataComponentPredicate> STREAM_CODEC;
    public static final DataComponentPredicate EMPTY;
@@ -25,6 +25,10 @@ public final class DataComponentPredicate implements Predicate<DataComponentMap>
 
    public static Builder builder() {
       return new Builder();
+   }
+
+   public static <T> DataComponentPredicate expect(DataComponentType<T> var0, T var1) {
+      return new DataComponentPredicate(List.of(new TypedDataComponent(var0, var1)));
    }
 
    public static DataComponentPredicate allOf(DataComponentMap var0) {
@@ -65,7 +69,7 @@ public final class DataComponentPredicate implements Predicate<DataComponentMap>
       return this.expectedComponents.toString();
    }
 
-   public boolean test(DataComponentMap var1) {
+   public boolean test(DataComponentGetter var1) {
       for(TypedDataComponent var3 : this.expectedComponents) {
          Object var4 = var1.get(var3.type());
          if (!Objects.equals(var3.value(), var4)) {
@@ -74,10 +78,6 @@ public final class DataComponentPredicate implements Predicate<DataComponentMap>
       }
 
       return true;
-   }
-
-   public boolean test(DataComponentHolder var1) {
-      return this.test(var1.getComponents());
    }
 
    public boolean alwaysMatches() {
@@ -96,7 +96,7 @@ public final class DataComponentPredicate implements Predicate<DataComponentMap>
 
    // $FF: synthetic method
    public boolean test(final Object var1) {
-      return this.test((DataComponentMap)var1);
+      return this.test((DataComponentGetter)var1);
    }
 
    static {

@@ -918,6 +918,8 @@ public class Blocks {
    public static final Block WARPED_WALL_SIGN;
    public static final Block STRUCTURE_BLOCK;
    public static final Block JIGSAW;
+   public static final Block TEST_BLOCK;
+   public static final Block TEST_INSTANCE_BLOCK;
    public static final Block COMPOSTER;
    public static final Block TARGET;
    public static final Block BEE_NEST;
@@ -2129,6 +2131,8 @@ public class Blocks {
       WARPED_WALL_SIGN = register("warped_wall_sign", (var0) -> new WallSignBlock(WoodType.WARPED, var0), wallVariant(WARPED_SIGN, true).mapColor(WARPED_PLANKS.defaultMapColor()).instrument(NoteBlockInstrument.BASS).forceSolidOn().noCollission().strength(1.0F));
       STRUCTURE_BLOCK = register("structure_block", StructureBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).requiresCorrectToolForDrops().strength(-1.0F, 3600000.0F).noLootTable());
       JIGSAW = register("jigsaw", JigsawBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).requiresCorrectToolForDrops().strength(-1.0F, 3600000.0F).noLootTable());
+      TEST_BLOCK = register("test_block", TestBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_GRAY).strength(-1.0F, 3600000.0F).noLootTable());
+      TEST_INSTANCE_BLOCK = register("test_instance_block", TestInstanceBlock::new, BlockBehaviour.Properties.of().noOcclusion().strength(-1.0F, 3600000.0F).noLootTable().isViewBlocking(Blocks::never));
       COMPOSTER = register("composter", ComposterBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(0.6F).sound(SoundType.WOOD).ignitedByLava());
       TARGET = register("target", TargetBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.QUARTZ).strength(0.5F).sound(SoundType.GRASS));
       BEE_NEST = register("bee_nest", BeehiveBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).instrument(NoteBlockInstrument.BASS).strength(0.3F).sound(SoundType.WOOD).ignitedByLava());

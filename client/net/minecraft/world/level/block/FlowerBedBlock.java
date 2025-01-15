@@ -82,7 +82,7 @@ public class FlowerBedBlock extends BushBlock implements BonemealableBlock, Segm
 
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       int var5 = (Integer)var4.getValue(AMOUNT);
-      if (var5 < 1) {
+      if (var5 < 4) {
          var1.setBlock(var3, (BlockState)var4.setValue(AMOUNT, var5 + 1), 2);
       } else {
          popResource(var1, var3, new ItemStack(this));

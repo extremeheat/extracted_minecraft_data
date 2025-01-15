@@ -43,7 +43,7 @@ public class HarvestFarmland extends Behavior<Villager> {
    protected boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
       if (!var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
          return false;
-      } else if (var2.getVillagerData().getProfession() != VillagerProfession.FARMER) {
+      } else if (!var2.getVillagerData().profession().is(VillagerProfession.FARMER)) {
          return false;
       } else {
          BlockPos.MutableBlockPos var3 = var2.blockPosition().mutable();

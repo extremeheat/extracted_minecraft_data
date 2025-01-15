@@ -58,7 +58,7 @@ public class TurtleEggBlock extends Block {
       super.stepOn(var1, var2, var3, var4);
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
+   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
       if (!(var4 instanceof Zombie)) {
          this.destroyEgg(var1, var2, var3, var4, 3);
       }
@@ -106,7 +106,7 @@ public class TurtleEggBlock extends Block {
                if (var7 != null) {
                   var7.setAge(-24000);
                   var7.setHomePos(var3);
-                  var7.moveTo((double)var3.getX() + 0.3 + (double)var6 * 0.2, (double)var3.getY(), (double)var3.getZ() + 0.3, 0.0F, 0.0F);
+                  var7.snapTo((double)var3.getX() + 0.3 + (double)var6 * 0.2, (double)var3.getY(), (double)var3.getZ() + 0.3, 0.0F, 0.0F);
                   var2.addFreshEntity(var7);
                }
             }

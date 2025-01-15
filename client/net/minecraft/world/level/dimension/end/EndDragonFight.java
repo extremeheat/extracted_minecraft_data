@@ -416,7 +416,7 @@ public class EndDragonFight {
          var1.setDragonFight(this);
          var1.setFightOrigin(this.origin);
          var1.getPhaseManager().setPhase(EnderDragonPhase.HOLDING_PATTERN);
-         var1.moveTo((double)this.origin.getX(), (double)(128 + this.origin.getY()), (double)this.origin.getZ(), this.level.random.nextFloat() * 360.0F, 0.0F);
+         var1.snapTo((double)this.origin.getX(), (double)(128 + this.origin.getY()), (double)this.origin.getZ(), this.level.random.nextFloat() * 360.0F, 0.0F);
          this.level.addFreshEntity(var1);
          this.dragonUUID = var1.getUUID();
       }

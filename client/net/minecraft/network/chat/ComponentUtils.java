@@ -62,7 +62,7 @@ public class ComponentUtils {
          HoverEvent.ShowText var10000 = var5;
 
          try {
-            var10 = var10000.text();
+            var10 = var10000.value();
          } catch (Throwable var8) {
             throw new MatchException(var8.toString(), var8);
          }

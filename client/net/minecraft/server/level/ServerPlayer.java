@@ -338,7 +338,7 @@ public class ServerPlayer extends Player {
       this.server = var1;
       this.stats = var1.getPlayerList().getPlayerStats(this);
       this.advancements = var1.getPlayerList().getPlayerAdvancements(this);
-      this.moveTo(this.adjustSpawnLocation(var2, var2.getSharedSpawnPos()).getBottomCenter(), 0.0F, 0.0F);
+      this.snapTo(this.adjustSpawnLocation(var2, var2.getSharedSpawnPos()).getBottomCenter(), 0.0F, 0.0F);
       this.updateOptions(var4);
       this.object = null;
    }
@@ -679,7 +679,7 @@ public class ServerPlayer extends Player {
       Entity var1 = this.getCamera();
       if (var1 != this) {
          if (var1.isAlive()) {
-            this.absMoveTo(var1.getX(), var1.getY(), var1.getZ(), var1.getYRot(), var1.getXRot());
+            this.absSnapTo(var1.getX(), var1.getY(), var1.getZ(), var1.getYRot(), var1.getXRot());
             this.serverLevel().getChunkSource().move(this);
             if (this.wantsToStopRiding()) {
                this.setCamera(this);
@@ -830,7 +830,7 @@ public class ServerPlayer extends Player {
    }
 
    public void trackStartFallingPosition() {
-      if (this.fallDistance > 0.0F && this.startingToFallPosition == null) {
+      if (this.fallDistance > 0.0 && this.startingToFallPosition == null) {
          this.startingToFallPosition = this.position();
          if (this.currentImpulseImpactPos != null && this.currentImpulseImpactPos.y <= this.startingToFallPosition.y) {
             CriteriaTriggers.FALL_AFTER_EXPLOSION.trigger(this, this.currentImpulseImpactPos, this.currentExplosionCause);
@@ -1210,9 +1210,9 @@ public class ServerPlayer extends Player {
    }
 
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
-      if (this.spawnExtraParticlesOnFall && var3 && this.fallDistance > 0.0F) {
+      if (this.spawnExtraParticlesOnFall && var3 && this.fallDistance > 0.0) {
          Vec3 var6 = var5.getCenter().add(0.0, 0.5, 0.0);
-         int var7 = (int)Mth.clamp(50.0F * this.fallDistance, 0.0F, 200.0F);
+         int var7 = (int)Mth.clamp(50.0 * this.fallDistance, 0.0, 200.0);
          this.serverLevel().sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, var4), var6.x, var6.y, var6.z, var7, 0.30000001192092896, 0.30000001192092896, 0.30000001192092896, 0.15000000596046448);
          this.spawnExtraParticlesOnFall = false;
       }
@@ -1578,8 +1578,8 @@ public class ServerPlayer extends Player {
       return var12;
    }
 
-   public void moveTo(double var1, double var3, double var5) {
-      super.moveTo(var1, var3, var5);
+   public void snapTo(double var1, double var3, double var5) {
+      super.snapTo(var1, var3, var5);
       this.connection.resetPosition();
    }
 

@@ -161,7 +161,7 @@ public enum TrialSpawnerState implements StringRepresentable {
          if (this.timeToSpawnItemSpawner(var1, var4)) {
             calculatePositionToSpawnSpawner(var1, var2, var3, var4).ifPresent((var4x) -> {
                OminousItemSpawner var5 = OminousItemSpawner.create(var1, var6);
-               var5.moveTo(var4x);
+               var5.snapTo(var4x);
                var1.addFreshEntity(var5);
                float var6x = (var1.getRandom().nextFloat() - var1.getRandom().nextFloat()) * 0.2F + 1.0F;
                var1.playSound((Entity)null, BlockPos.containing(var4x), SoundEvents.TRIAL_SPAWNER_SPAWN_ITEM_BEGIN, SoundSource.BLOCKS, 1.0F, var6x);

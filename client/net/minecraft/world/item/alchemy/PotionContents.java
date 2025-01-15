@@ -176,18 +176,15 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
 
       for(MobEffectInstance var7 : var0) {
          var5 = false;
-         MutableComponent var8 = Component.translatable(var7.getDescriptionId());
-         Holder var9 = var7.getEffect();
-         ((MobEffect)var9.value()).createModifiers(var7.getAmplifier(), (var1x, var2x) -> var4.add(new Pair(var1x, var2x)));
-         if (var7.getAmplifier() > 0) {
-            var8 = Component.translatable("potion.withAmplifier", var8, Component.translatable("potion.potency." + var7.getAmplifier()));
-         }
-
+         Holder var8 = var7.getEffect();
+         int var9 = var7.getAmplifier();
+         ((MobEffect)var8.value()).createModifiers(var9, (var1x, var2x) -> var4.add(new Pair(var1x, var2x)));
+         MutableComponent var10 = getPotionDescription(var8, var9);
          if (!var7.endsWithin(20)) {
-            var8 = Component.translatable("potion.withDuration", var8, MobEffectUtil.formatDuration(var7, var2, var3));
+            var10 = Component.translatable("potion.withDuration", var10, MobEffectUtil.formatDuration(var7, var2, var3));
          }
 
-         var1.accept(var8.withStyle(((MobEffect)var9.value()).getCategory().getTooltipFormatting()));
+         var1.accept(var10.withStyle(((MobEffect)var8.value()).getCategory().getTooltipFormatting()));
       }
 
       if (var5) {
@@ -217,6 +214,11 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
          }
       }
 
+   }
+
+   public static MutableComponent getPotionDescription(Holder<MobEffect> var0, int var1) {
+      MutableComponent var2 = Component.translatable(((MobEffect)var0.value()).getDescriptionId());
+      return var1 > 0 ? Component.translatable("potion.withAmplifier", var2, Component.translatable("potion.potency." + var1)) : var2;
    }
 
    public void onConsume(Level var1, LivingEntity var2, ItemStack var3, Consumable var4) {

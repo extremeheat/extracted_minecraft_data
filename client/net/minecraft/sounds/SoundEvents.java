@@ -247,7 +247,7 @@ public class SoundEvents {
    public static final SoundEvent CAMEL_DEATH = register("entity.camel.death");
    public static final SoundEvent CAMEL_EAT = register("entity.camel.eat");
    public static final SoundEvent CAMEL_HURT = register("entity.camel.hurt");
-   public static final SoundEvent CAMEL_SADDLE = register("entity.camel.saddle");
+   public static final Holder.Reference<SoundEvent> CAMEL_SADDLE = registerForHolder("entity.camel.saddle");
    public static final SoundEvent CAMEL_SIT = register("entity.camel.sit");
    public static final SoundEvent CAMEL_STAND = register("entity.camel.stand");
    public static final SoundEvent CAMEL_STEP = register("entity.camel.step");
@@ -750,7 +750,7 @@ public class SoundEvents {
    public static final SoundEvent HORSE_HURT = register("entity.horse.hurt");
    public static final SoundEvent HORSE_JUMP = register("entity.horse.jump");
    public static final SoundEvent HORSE_LAND = register("entity.horse.land");
-   public static final SoundEvent HORSE_SADDLE = register("entity.horse.saddle");
+   public static final Holder.Reference<SoundEvent> HORSE_SADDLE = registerForHolder("entity.horse.saddle");
    public static final SoundEvent HORSE_STEP = register("entity.horse.step");
    public static final SoundEvent HORSE_STEP_WOOD = register("entity.horse.step_wood");
    public static final SoundEvent HOSTILE_BIG_FALL = register("entity.hostile.big_fall");
@@ -828,7 +828,7 @@ public class SoundEvents {
    public static final SoundEvent LLAMA_HURT = register("entity.llama.hurt");
    public static final SoundEvent LLAMA_SPIT = register("entity.llama.spit");
    public static final SoundEvent LLAMA_STEP = register("entity.llama.step");
-   public static final Holder<SoundEvent> LLAMA_SWAG = registerForHolder("entity.llama.swag");
+   public static final Holder.Reference<SoundEvent> LLAMA_SWAG = registerForHolder("entity.llama.swag");
    public static final SoundEvent MAGMA_CUBE_DEATH_SMALL = register("entity.magma_cube.death_small");
    public static final SoundEvent LODESTONE_BREAK = register("block.lodestone.break");
    public static final SoundEvent LODESTONE_STEP = register("block.lodestone.step");
@@ -1113,7 +1113,7 @@ public class SoundEvents {
    public static final SoundEvent PIG_AMBIENT = register("entity.pig.ambient");
    public static final SoundEvent PIG_DEATH = register("entity.pig.death");
    public static final SoundEvent PIG_HURT = register("entity.pig.hurt");
-   public static final SoundEvent PIG_SADDLE = register("entity.pig.saddle");
+   public static final Holder.Reference<SoundEvent> PIG_SADDLE = registerForHolder("entity.pig.saddle");
    public static final SoundEvent PIG_STEP = register("entity.pig.step");
    public static final SoundEvent PIGLIN_ADMIRING_ITEM = register("entity.piglin.admiring_item");
    public static final SoundEvent PIGLIN_AMBIENT = register("entity.piglin.ambient");
@@ -1362,7 +1362,7 @@ public class SoundEvents {
    public static final SoundEvent STRIDER_STEP = register("entity.strider.step");
    public static final SoundEvent STRIDER_STEP_LAVA = register("entity.strider.step_lava");
    public static final SoundEvent STRIDER_EAT = register("entity.strider.eat");
-   public static final SoundEvent STRIDER_SADDLE = register("entity.strider.saddle");
+   public static final Holder.Reference<SoundEvent> STRIDER_SADDLE = registerForHolder("entity.strider.saddle");
    public static final SoundEvent SLIME_DEATH_SMALL = register("entity.slime.death_small");
    public static final SoundEvent SLIME_HURT_SMALL = register("entity.slime.hurt_small");
    public static final SoundEvent SLIME_JUMP_SMALL = register("entity.slime.jump_small");

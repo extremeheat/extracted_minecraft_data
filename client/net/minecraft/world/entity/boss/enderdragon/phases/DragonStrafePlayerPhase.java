@@ -75,7 +75,7 @@ public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
                   }
 
                   DragonFireball var26 = new DragonFireball(var1, this.dragon, var25.normalize());
-                  var26.moveTo(var13, var15, var17, 0.0F, 0.0F);
+                  var26.snapTo(var13, var15, var17, 0.0F, 0.0F);
                   var1.addFreshEntity(var26);
                   this.fireballCharge = 0;
                   if (this.currentPath != null) {

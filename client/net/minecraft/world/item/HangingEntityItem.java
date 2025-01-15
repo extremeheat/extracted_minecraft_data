@@ -6,9 +6,8 @@ import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -19,7 +18,6 @@ import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -61,11 +59,7 @@ public class HangingEntityItem extends Item {
             var8 = new GlowItemFrame(var7, var4, var3);
          }
 
-         CustomData var10 = (CustomData)var6.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
-         if (!var10.isEmpty()) {
-            EntityType.updateCustomEntityTag(var7, var5, (Entity)var8, var10);
-         }
-
+         EntityType.createDefaultStackConfig(var7, var6, var5).accept(var8);
          if (((HangingEntity)var8).survives()) {
             if (!var7.isClientSide) {
                ((HangingEntity)var8).playPlacementSound();
@@ -87,19 +81,16 @@ public class HangingEntityItem extends Item {
 
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
-      HolderLookup.Provider var5 = var2.registries();
-      if (var5 != null && this.type == EntityType.PAINTING) {
-         CustomData var6 = (CustomData)var1.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
-         if (!var6.isEmpty()) {
-            var6.read(var5.createSerializationContext(NbtOps.INSTANCE), Painting.VARIANT_MAP_CODEC).result().ifPresentOrElse((var1x) -> {
-               Optional var10000 = ((PaintingVariant)var1x.value()).title();
-               Objects.requireNonNull(var3);
-               var10000.ifPresent(var3::add);
-               var10000 = ((PaintingVariant)var1x.value()).author();
-               Objects.requireNonNull(var3);
-               var10000.ifPresent(var3::add);
-               var3.add(Component.translatable("painting.dimensions", ((PaintingVariant)var1x.value()).width(), ((PaintingVariant)var1x.value()).height()));
-            }, () -> var3.add(TOOLTIP_RANDOM_VARIANT));
+      if (this.type == EntityType.PAINTING) {
+         Holder var5 = (Holder)var1.get(DataComponents.PAINTING_VARIANT);
+         if (var5 != null) {
+            Optional var10000 = ((PaintingVariant)var5.value()).title();
+            Objects.requireNonNull(var3);
+            var10000.ifPresent(var3::add);
+            var10000 = ((PaintingVariant)var5.value()).author();
+            Objects.requireNonNull(var3);
+            var10000.ifPresent(var3::add);
+            var3.add(Component.translatable("painting.dimensions", ((PaintingVariant)var5.value()).width(), ((PaintingVariant)var5.value()).height()));
          } else if (var4.isCreative()) {
             var3.add(TOOLTIP_RANDOM_VARIANT);
          }

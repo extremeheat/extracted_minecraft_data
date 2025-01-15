@@ -78,11 +78,11 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
       if (this.hasChest()) {
          ListTag var2 = new ListTag();
 
-         for(int var3 = 1; var3 < this.inventory.getContainerSize(); ++var3) {
+         for(int var3 = 0; var3 < this.inventory.getContainerSize(); ++var3) {
             ItemStack var4 = this.inventory.getItem(var3);
             if (!var4.isEmpty()) {
                CompoundTag var5 = new CompoundTag();
-               var5.putByte("Slot", (byte)(var3 - 1));
+               var5.putByte("Slot", (byte)var3);
                var2.add(var4.save(this.registryAccess(), var5));
             }
          }
@@ -102,13 +102,12 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
          for(int var3 = 0; var3 < var2.size(); ++var3) {
             CompoundTag var4 = var2.getCompound(var3);
             int var5 = var4.getByte("Slot") & 255;
-            if (var5 < this.inventory.getContainerSize() - 1) {
-               this.inventory.setItem(var5 + 1, (ItemStack)ItemStack.parse(this.registryAccess(), var4).orElse(ItemStack.EMPTY));
+            if (var5 < this.inventory.getContainerSize()) {
+               this.inventory.setItem(var5, (ItemStack)ItemStack.parse(this.registryAccess(), var4).orElse(ItemStack.EMPTY));
             }
          }
       }
 
-      this.syncSaddleToClients();
    }
 
    public SlotAccess getSlot(int var1) {

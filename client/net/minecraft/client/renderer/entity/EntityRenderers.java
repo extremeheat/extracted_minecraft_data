@@ -111,7 +111,7 @@ public class EntityRenderers {
       register(EntityType.CREAKING, CreakingRenderer::new);
       register(EntityType.CREEPER, CreeperRenderer::new);
       register(EntityType.DOLPHIN, DolphinRenderer::new);
-      register(EntityType.DONKEY, (var0) -> new DonkeyRenderer(var0, ModelLayers.DONKEY, ModelLayers.DONKEY_BABY, false));
+      register(EntityType.DONKEY, (var0) -> new DonkeyRenderer(var0, DonkeyRenderer.Type.DONKEY));
       register(EntityType.DRAGON_FIREBALL, DragonFireballRenderer::new);
       register(EntityType.DROWNED, DrownedRenderer::new);
       register(EntityType.EGG, ThrownItemRenderer::new);
@@ -158,7 +158,7 @@ public class EntityRenderers {
       register(EntityType.MARKER, NoopRenderer::new);
       register(EntityType.MINECART, (var0) -> new MinecartRenderer(var0, ModelLayers.MINECART));
       register(EntityType.MOOSHROOM, MushroomCowRenderer::new);
-      register(EntityType.MULE, (var0) -> new DonkeyRenderer(var0, ModelLayers.MULE, ModelLayers.MULE_BABY, true));
+      register(EntityType.MULE, (var0) -> new DonkeyRenderer(var0, DonkeyRenderer.Type.MULE));
       register(EntityType.OCELOT, OcelotRenderer::new);
       register(EntityType.PAINTING, PaintingRenderer::new);
       register(EntityType.PANDA, PandaRenderer::new);
@@ -179,7 +179,7 @@ public class EntityRenderers {
       register(EntityType.SHULKER_BULLET, ShulkerBulletRenderer::new);
       register(EntityType.SILVERFISH, SilverfishRenderer::new);
       register(EntityType.SKELETON, SkeletonRenderer::new);
-      register(EntityType.SKELETON_HORSE, (var0) -> new UndeadHorseRenderer(var0, ModelLayers.SKELETON_HORSE, ModelLayers.SKELETON_HORSE_BABY, true));
+      register(EntityType.SKELETON_HORSE, (var0) -> new UndeadHorseRenderer(var0, UndeadHorseRenderer.Type.SKELETON));
       register(EntityType.SLIME, SlimeRenderer::new);
       register(EntityType.SMALL_FIREBALL, (var0) -> new ThrownItemRenderer(var0, 0.75F, true));
       register(EntityType.SNIFFER, SnifferRenderer::new);
@@ -212,7 +212,7 @@ public class EntityRenderers {
       register(EntityType.WOLF, WolfRenderer::new);
       register(EntityType.ZOGLIN, ZoglinRenderer::new);
       register(EntityType.ZOMBIE, ZombieRenderer::new);
-      register(EntityType.ZOMBIE_HORSE, (var0) -> new UndeadHorseRenderer(var0, ModelLayers.ZOMBIE_HORSE, ModelLayers.ZOMBIE_HORSE_BABY, false));
+      register(EntityType.ZOMBIE_HORSE, (var0) -> new UndeadHorseRenderer(var0, UndeadHorseRenderer.Type.ZOMBIE));
       register(EntityType.ZOMBIE_VILLAGER, ZombieVillagerRenderer::new);
       register(EntityType.ZOMBIFIED_PIGLIN, (var0) -> new ZombifiedPiglinRenderer(var0, ModelLayers.ZOMBIFIED_PIGLIN, ModelLayers.ZOMBIFIED_PIGLIN_BABY, ModelLayers.ZOMBIFIED_PIGLIN_INNER_ARMOR, ModelLayers.ZOMBIFIED_PIGLIN_OUTER_ARMOR, ModelLayers.ZOMBIFIED_PIGLIN_BABY_INNER_ARMOR, ModelLayers.ZOMBIFIED_PIGLIN_BABY_OUTER_ARMOR));
    }

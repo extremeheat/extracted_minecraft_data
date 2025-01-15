@@ -88,7 +88,7 @@ public class CatSpawner implements CustomSpawner {
          return 0;
       } else {
          var3.finalizeSpawn(var2, var2.getCurrentDifficultyAt(var1), EntitySpawnReason.NATURAL, (SpawnGroupData)null);
-         var3.moveTo(var1, 0.0F, 0.0F);
+         var3.snapTo(var1, 0.0F, 0.0F);
          var2.addFreshEntityWithPassengers(var3);
          return 1;
       }

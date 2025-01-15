@@ -78,6 +78,8 @@ public class BlockInput implements Predicate<BlockInWorld> {
             CompoundTag var8 = var6.saveWithoutMetadata(var1.registryAccess());
             if (!var8.equals(var7)) {
                var5 = true;
+               var6.setChanged();
+               var1.getChunkSource().blockChanged(var2);
             }
          }
       }

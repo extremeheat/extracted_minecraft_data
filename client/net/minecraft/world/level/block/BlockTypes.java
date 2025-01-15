@@ -222,6 +222,8 @@ public class BlockTypes {
       Registry.register(var0, (String)"tall_grass", TallGrassBlock.CODEC);
       Registry.register(var0, (String)"tall_seagrass", TallSeagrassBlock.CODEC);
       Registry.register(var0, (String)"target", TargetBlock.CODEC);
+      Registry.register(var0, (String)"test", TestBlock.CODEC);
+      Registry.register(var0, (String)"test_instance", TestInstanceBlock.CODEC);
       Registry.register(var0, (String)"tinted_glass", TintedGlassBlock.CODEC);
       Registry.register(var0, (String)"tnt", TntBlock.CODEC);
       Registry.register(var0, (String)"torchflower_crop", TorchflowerCropBlock.CODEC);

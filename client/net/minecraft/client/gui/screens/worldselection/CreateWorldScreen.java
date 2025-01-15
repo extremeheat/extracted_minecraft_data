@@ -135,14 +135,15 @@ public class CreateWorldScreen extends Screen {
    private static void openCreateWorldScreen(Minecraft var0, @Nullable Screen var1, Function<WorldLoader.DataLoadContext, WorldGenSettings> var2, WorldCreationContextMapper var3, ResourceKey<WorldPreset> var4, CreateWorldCallback var5) {
       queueLoadScreen(var0, PREPARING_WORLD_DATA);
       PackRepository var6 = new PackRepository(new RepositorySource[]{new ServerPacksSource(var0.directoryValidator())});
-      WorldLoader.InitConfig var7 = createDefaultLoadConfig(var6, WorldDataConfiguration.DEFAULT);
-      CompletableFuture var8 = WorldLoader.load(var7, (var1x) -> new WorldLoader.DataLoadOutput(new DataPackReloadCookie((WorldGenSettings)var2.apply(var1x), var1x.dataConfiguration()), var1x.datapackDimensions()), (var1x, var2x, var3x, var4x) -> {
+      WorldDataConfiguration var7 = SharedConstants.IS_RUNNING_IN_IDE ? new WorldDataConfiguration(new DataPackConfig(List.of("vanilla", "tests"), List.of()), FeatureFlags.DEFAULT_FLAGS) : WorldDataConfiguration.DEFAULT;
+      WorldLoader.InitConfig var8 = createDefaultLoadConfig(var6, var7);
+      CompletableFuture var9 = WorldLoader.load(var8, (var1x) -> new WorldLoader.DataLoadOutput(new DataPackReloadCookie((WorldGenSettings)var2.apply(var1x), var1x.dataConfiguration()), var1x.datapackDimensions()), (var1x, var2x, var3x, var4x) -> {
          var1x.close();
          return var3.apply(var2x, var3x, var4x);
       }, Util.backgroundExecutor(), var0);
-      Objects.requireNonNull(var8);
-      var0.managedBlock(var8::isDone);
-      var0.setScreen(new CreateWorldScreen(var0, var1, (WorldCreationContext)var8.join(), Optional.of(var4), OptionalLong.empty(), var5));
+      Objects.requireNonNull(var9);
+      var0.managedBlock(var9::isDone);
+      var0.setScreen(new CreateWorldScreen(var0, var1, (WorldCreationContext)var9.join(), Optional.of(var4), OptionalLong.empty(), var5));
    }
 
    public static CreateWorldScreen createFromExisting(Minecraft var0, @Nullable Screen var1, LevelSettings var2, WorldCreationContext var3, @Nullable Path var4) {

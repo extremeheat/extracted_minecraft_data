@@ -92,7 +92,7 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
                Witch var15 = EntityType.WITCH.create(var1.getLevel(), EntitySpawnReason.STRUCTURE);
                if (var15 != null) {
                   var15.setPersistenceRequired();
-                  var15.moveTo((double)((BlockPos)var14).getX() + 0.5, (double)((BlockPos)var14).getY(), (double)((BlockPos)var14).getZ() + 0.5, 0.0F, 0.0F);
+                  var15.snapTo((double)((BlockPos)var14).getX() + 0.5, (double)((BlockPos)var14).getY(), (double)((BlockPos)var14).getZ() + 0.5, 0.0F, 0.0F);
                   var15.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var14), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
                   var1.addFreshEntityWithPassengers(var15);
                }
@@ -111,7 +111,7 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
             Cat var4 = EntityType.CAT.create(var1.getLevel(), EntitySpawnReason.STRUCTURE);
             if (var4 != null) {
                var4.setPersistenceRequired();
-               var4.moveTo((double)((BlockPos)var3).getX() + 0.5, (double)((BlockPos)var3).getY(), (double)((BlockPos)var3).getZ() + 0.5, 0.0F, 0.0F);
+               var4.snapTo((double)((BlockPos)var3).getX() + 0.5, (double)((BlockPos)var3).getY(), (double)((BlockPos)var3).getZ() + 0.5, 0.0F, 0.0F);
                var4.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
                var1.addFreshEntityWithPassengers(var4);
             }

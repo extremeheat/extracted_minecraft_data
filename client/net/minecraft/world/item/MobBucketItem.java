@@ -1,8 +1,6 @@
 package net.minecraft.world.item;
 
-import com.mojang.serialization.MapCodec;
 import java.util.List;
-import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -25,7 +23,6 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 
 public class MobBucketItem extends BucketItem {
-   private static final MapCodec<TropicalFish.Variant> VARIANT_FIELD_CODEC;
    private final EntityType<? extends Mob> type;
    private final SoundEvent emptySound;
 
@@ -64,37 +61,29 @@ public class MobBucketItem extends BucketItem {
 
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       if (this.type == EntityType.TROPICAL_FISH) {
-         CustomData var5 = (CustomData)var1.getOrDefault(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY);
-         if (var5.isEmpty()) {
+         TropicalFish.Pattern var5 = (TropicalFish.Pattern)var1.get(DataComponents.TROPICAL_FISH_PATTERN);
+         if (var5 == null) {
             return;
          }
 
-         Optional var6 = var5.read(VARIANT_FIELD_CODEC).result();
-         if (var6.isPresent()) {
-            TropicalFish.Variant var7 = (TropicalFish.Variant)var6.get();
-            ChatFormatting[] var8 = new ChatFormatting[]{ChatFormatting.ITALIC, ChatFormatting.GRAY};
-            String var9 = "color.minecraft." + String.valueOf(var7.baseColor());
-            String var10 = "color.minecraft." + String.valueOf(var7.patternColor());
-            int var11 = TropicalFish.COMMON_VARIANTS.indexOf(var7);
-            if (var11 != -1) {
-               var3.add(Component.translatable(TropicalFish.getPredefinedName(var11)).withStyle(var8));
-               return;
-            }
-
-            var3.add(var7.pattern().displayName().plainCopy().withStyle(var8));
-            MutableComponent var12 = Component.translatable(var9);
-            if (!var9.equals(var10)) {
-               var12.append(", ").append((Component)Component.translatable(var10));
-            }
-
-            var12.withStyle(var8);
-            var3.add(var12);
+         DyeColor var6 = (DyeColor)var1.getOrDefault(DataComponents.TROPICAL_FISH_BASE_COLOR, TropicalFish.DEFAULT_VARIANT.baseColor());
+         DyeColor var7 = (DyeColor)var1.getOrDefault(DataComponents.TROPICAL_FISH_PATTERN_COLOR, TropicalFish.DEFAULT_VARIANT.patternColor());
+         ChatFormatting[] var8 = new ChatFormatting[]{ChatFormatting.ITALIC, ChatFormatting.GRAY};
+         int var9 = TropicalFish.COMMON_VARIANTS.indexOf(new TropicalFish.Variant(var5, var6, var7));
+         if (var9 != -1) {
+            var3.add(Component.translatable(TropicalFish.getPredefinedName(var9)).withStyle(var8));
+            return;
          }
+
+         var3.add(var5.displayName().plainCopy().withStyle(var8));
+         MutableComponent var10 = Component.translatable("color.minecraft." + var6.getName());
+         if (var6 != var7) {
+            var10.append(", ").append((Component)Component.translatable("color.minecraft." + var7.getName()));
+         }
+
+         var10.withStyle(var8);
+         var3.add(var10);
       }
 
-   }
-
-   static {
-      VARIANT_FIELD_CODEC = TropicalFish.Variant.CODEC.fieldOf("BucketVariantTag");
    }
 }

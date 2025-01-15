@@ -39,6 +39,7 @@ public class MemoryModuleType<U> {
    public static final MemoryModuleType<List<Player>> NEAREST_PLAYERS;
    public static final MemoryModuleType<Player> NEAREST_VISIBLE_PLAYER;
    public static final MemoryModuleType<Player> NEAREST_VISIBLE_ATTACKABLE_PLAYER;
+   public static final MemoryModuleType<List<Player>> NEAREST_VISIBLE_ATTACKABLE_PLAYERS;
    public static final MemoryModuleType<WalkTarget> WALK_TARGET;
    public static final MemoryModuleType<PositionTracker> LOOK_TARGET;
    public static final MemoryModuleType<LivingEntity> ATTACK_TARGET;
@@ -169,6 +170,7 @@ public class MemoryModuleType<U> {
       NEAREST_PLAYERS = register("nearest_players");
       NEAREST_VISIBLE_PLAYER = register("nearest_visible_player");
       NEAREST_VISIBLE_ATTACKABLE_PLAYER = register("nearest_visible_targetable_player");
+      NEAREST_VISIBLE_ATTACKABLE_PLAYERS = register("nearest_visible_targetable_players");
       WALK_TARGET = register("walk_target");
       LOOK_TARGET = register("look_target");
       ATTACK_TARGET = register("attack_target");

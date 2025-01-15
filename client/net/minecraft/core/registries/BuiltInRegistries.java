@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -26,6 +27,10 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.gametest.framework.BuiltinTestFunctions;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.GameTestInstance;
+import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.network.chat.numbers.NumberFormatType;
 import net.minecraft.network.chat.numbers.NumberFormatTypes;
 import net.minecraft.resources.ResourceKey;
@@ -217,6 +222,9 @@ public class BuiltInRegistries {
    public static final Registry<SlotDisplay.Type<?>> SLOT_DISPLAY;
    public static final Registry<RecipeBookCategory> RECIPE_BOOK_CATEGORY;
    public static final Registry<TicketType> TICKET_TYPE;
+   public static final Registry<MapCodec<? extends TestEnvironmentDefinition>> TEST_ENVIRONMENT_DEFINITION_TYPE;
+   public static final Registry<MapCodec<? extends GameTestInstance>> TEST_INSTANCE_TYPE;
+   public static final Registry<Consumer<GameTestHelper>> TEST_FUNCTION;
    public static final Registry<? extends Registry<?>> REGISTRY;
 
    public BuiltInRegistries() {
@@ -319,8 +327,8 @@ public class BuiltInRegistries {
       POSITION_SOURCE_TYPE = registerSimple(Registries.POSITION_SOURCE_TYPE, (var0) -> PositionSourceType.BLOCK);
       COMMAND_ARGUMENT_TYPE = registerSimple(Registries.COMMAND_ARGUMENT_TYPE, ArgumentTypeInfos::bootstrap);
       STAT_TYPE = registerSimple(Registries.STAT_TYPE, (var0) -> Stats.ITEM_USED);
-      VILLAGER_TYPE = registerDefaulted(Registries.VILLAGER_TYPE, "plains", (var0) -> VillagerType.PLAINS);
-      VILLAGER_PROFESSION = registerDefaulted(Registries.VILLAGER_PROFESSION, "none", (var0) -> VillagerProfession.NONE);
+      VILLAGER_TYPE = registerDefaulted(Registries.VILLAGER_TYPE, "plains", VillagerType::bootstrap);
+      VILLAGER_PROFESSION = registerDefaulted(Registries.VILLAGER_PROFESSION, "none", VillagerProfession::bootstrap);
       POINT_OF_INTEREST_TYPE = registerSimple(Registries.POINT_OF_INTEREST_TYPE, PoiTypes::bootstrap);
       MEMORY_MODULE_TYPE = registerDefaulted(Registries.MEMORY_MODULE_TYPE, "dummy", (var0) -> MemoryModuleType.DUMMY);
       SENSOR_TYPE = registerDefaulted(Registries.SENSOR_TYPE, "dummy", (var0) -> SensorType.DUMMY);
@@ -378,6 +386,9 @@ public class BuiltInRegistries {
       SLOT_DISPLAY = registerSimple(Registries.SLOT_DISPLAY, SlotDisplays::bootstrap);
       RECIPE_BOOK_CATEGORY = registerSimple(Registries.RECIPE_BOOK_CATEGORY, RecipeBookCategories::bootstrap);
       TICKET_TYPE = registerSimple(Registries.TICKET_TYPE, (var0) -> TicketType.UNKNOWN);
+      TEST_ENVIRONMENT_DEFINITION_TYPE = registerSimple(Registries.TEST_ENVIRONMENT_DEFINITION_TYPE, TestEnvironmentDefinition::bootstrap);
+      TEST_INSTANCE_TYPE = registerSimple(Registries.TEST_INSTANCE_TYPE, GameTestInstance::bootstrap);
+      TEST_FUNCTION = registerSimple(Registries.TEST_FUNCTION, BuiltinTestFunctions::bootstrap);
       REGISTRY = WRITABLE_REGISTRY;
    }
 

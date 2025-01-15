@@ -95,6 +95,16 @@ public final class WeightedList<E> {
       return ExtraCodecs.nonEmptyList(Weighted.codec(var0).listOf()).xmap(WeightedList::of, WeightedList::unwrap);
    }
 
+   public boolean contains(E var1) {
+      for(Weighted var3 : this.items) {
+         if (var3.value().equals(var1)) {
+            return true;
+         }
+      }
+
+      return false;
+   }
+
    public boolean equals(@Nullable Object var1) {
       if (this == var1) {
          return true;

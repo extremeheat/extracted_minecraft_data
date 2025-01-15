@@ -18,6 +18,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -104,6 +105,16 @@ public abstract class Fluid {
    }
 
    public abstract VoxelShape getShape(FluidState var1, BlockGetter var2, BlockPos var3);
+
+   @Nullable
+   public AABB getAABB(FluidState var1, BlockGetter var2, BlockPos var3) {
+      if (this.isEmpty()) {
+         return null;
+      } else {
+         float var4 = var1.getHeight(var2, var3);
+         return new AABB((double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), (double)var3.getX() + 1.0, (double)((float)var3.getY() + var4), (double)var3.getZ() + 1.0);
+      }
+   }
 
    public Optional<SoundEvent> getPickupSound() {
       return Optional.empty();

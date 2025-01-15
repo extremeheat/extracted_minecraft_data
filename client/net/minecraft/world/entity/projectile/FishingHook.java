@@ -91,7 +91,7 @@ public class FishingHook extends Projectile {
       double var11 = var1.getX() - (double)var8 * 0.3;
       double var13 = var1.getEyeY();
       double var15 = var1.getZ() - (double)var7 * 0.3;
-      this.moveTo(var11, var13, var15, var6, var5);
+      this.snapTo(var11, var13, var15, var6, var5);
       Vec3 var17 = new Vec3((double)(-var8), (double)Mth.clamp(-(var10 / var9), -5.0F, 5.0F), (double)(-var7));
       double var18 = var17.length();
       var17 = var17.multiply(0.6 / var18 + this.random.triangle(0.5, 0.0103365), 0.6 / var18 + this.random.triangle(0.5, 0.0103365), 0.6 / var18 + this.random.triangle(0.5, 0.0103365));

@@ -1,6 +1,7 @@
 package net.minecraft.gametest.framework;
 
-import com.mojang.logging.LogUtils;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -10,7 +11,9 @@ import java.util.stream.Stream;
 import net.minecraft.commands.arguments.blocks.BlockInput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -20,22 +23,18 @@ import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.entity.CommandBlockEntity;
-import net.minecraft.world.level.block.entity.StructureBlockEntity;
+import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.StructureMode;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.Logger;
 
 public class StructureUtils {
-   private static final Logger LOGGER = LogUtils.getLogger();
    public static final int DEFAULT_Y_SEARCH_RADIUS = 10;
-   public static final String DEFAULT_TEST_STRUCTURES_DIR = "gameteststructures";
-   public static String testStructuresDir = "gameteststructures";
+   public static final String DEFAULT_TEST_STRUCTURES_DIR = "Minecraft.Server/src/test/convertables/data";
+   public static Path testStructuresDir = Paths.get("Minecraft.Server/src/test/convertables/data");
 
    public StructureUtils() {
       super();
@@ -77,100 +76,14 @@ public class StructureUtils {
       }
    }
 
-   public static AABB getStructureBounds(StructureBlockEntity var0) {
-      return AABB.of(getStructureBoundingBox(var0));
-   }
-
-   public static BoundingBox getStructureBoundingBox(StructureBlockEntity var0) {
-      BlockPos var1 = getStructureOrigin(var0);
-      BlockPos var2 = getTransformedFarCorner(var1, var0.getStructureSize(), var0.getRotation());
-      return BoundingBox.fromCorners(var1, var2);
-   }
-
-   public static BlockPos getStructureOrigin(StructureBlockEntity var0) {
-      return var0.getBlockPos().offset(var0.getStructurePos());
-   }
-
-   public static void addCommandBlockAndButtonToStartTest(BlockPos var0, BlockPos var1, Rotation var2, ServerLevel var3) {
-      BlockPos var4 = StructureTemplate.transform(var0.offset(var1), Mirror.NONE, var2, var0);
-      var3.setBlockAndUpdate(var4, Blocks.COMMAND_BLOCK.defaultBlockState());
-      CommandBlockEntity var5 = (CommandBlockEntity)var3.getBlockEntity(var4);
-      var5.getCommandBlock().setCommand("test runclosest");
-      BlockPos var6 = StructureTemplate.transform(var4.offset(0, 0, -1), Mirror.NONE, var2, var4);
-      var3.setBlockAndUpdate(var6, Blocks.STONE_BUTTON.defaultBlockState().rotate(var2));
-   }
-
-   public static void createNewEmptyStructureBlock(String var0, BlockPos var1, Vec3i var2, Rotation var3, ServerLevel var4) {
-      BoundingBox var5 = getStructureBoundingBox(var1.above(), var2, var3);
+   public static TestInstanceBlockEntity createNewEmptyTest(ResourceLocation var0, BlockPos var1, Vec3i var2, Rotation var3, ServerLevel var4) {
+      BoundingBox var5 = getStructureBoundingBox(TestInstanceBlockEntity.getStructurePos(var1), var2, var3);
       clearSpaceForStructure(var5, var4);
-      var4.setBlockAndUpdate(var1, Blocks.STRUCTURE_BLOCK.defaultBlockState());
-      StructureBlockEntity var6 = (StructureBlockEntity)var4.getBlockEntity(var1);
-      var6.setIgnoreEntities(false);
-      var6.setStrict(false);
-      var6.setStructureName(ResourceLocation.parse(var0));
-      var6.setMetaData(var0);
-      var6.setStructureSize(var2);
-      var6.setMode(StructureMode.SAVE);
-      var6.setShowBoundingBox(true);
-   }
-
-   public static BlockPos getStartCorner(GameTestInfo var0, BlockPos var1, Rotation var2, ServerLevel var3) {
-      Vec3i var4 = ((StructureTemplate)var3.getStructureManager().get(ResourceLocation.parse(var0.getStructureName())).orElseThrow(() -> new IllegalStateException("Missing test structure: " + var0.getStructureName()))).getSize();
-      BlockPos var5;
-      if (var2 == Rotation.NONE) {
-         var5 = var1;
-      } else if (var2 == Rotation.CLOCKWISE_90) {
-         var5 = var1.offset(var4.getZ() - 1, 0, 0);
-      } else if (var2 == Rotation.CLOCKWISE_180) {
-         var5 = var1.offset(var4.getX() - 1, 0, var4.getZ() - 1);
-      } else {
-         if (var2 != Rotation.COUNTERCLOCKWISE_90) {
-            throw new IllegalArgumentException("Invalid rotation: " + String.valueOf(var2));
-         }
-
-         var5 = var1.offset(0, 0, var4.getX() - 1);
-      }
-
-      return var5;
-   }
-
-   public static StructureBlockEntity prepareTestStructure(GameTestInfo var0, BlockPos var1, Rotation var2, ServerLevel var3) {
-      Vec3i var4 = ((StructureTemplate)var3.getStructureManager().get(ResourceLocation.parse(var0.getStructureName())).orElseThrow(() -> new IllegalStateException("Missing test structure: " + var0.getStructureName()))).getSize();
-      BoundingBox var5 = getStructureBoundingBox(var1, var4, var2);
-      BlockPos var6 = getStartCorner(var0, var1, var2, var3);
-      forceLoadChunks(var5, var3);
-      clearSpaceForStructure(var5, var3);
-      return createStructureBlock(var0, var6.below(), var2, var3);
-   }
-
-   public static void encaseStructure(AABB var0, ServerLevel var1, boolean var2) {
-      BlockPos var3 = BlockPos.containing(var0.minX, var0.minY, var0.minZ).offset(-1, 0, -1);
-      BlockPos var4 = BlockPos.containing(var0.maxX, var0.maxY, var0.maxZ);
-      BlockPos.betweenClosedStream(var3, var4).forEach((var4x) -> {
-         boolean var5 = var4x.getX() == var3.getX() || var4x.getX() == var4.getX() || var4x.getZ() == var3.getZ() || var4x.getZ() == var4.getZ();
-         boolean var6 = var4x.getY() == var4.getY();
-         if (var5 || var6 && var2) {
-            var1.setBlockAndUpdate(var4x, Blocks.BARRIER.defaultBlockState());
-         }
-
-      });
-   }
-
-   public static void removeBarriers(AABB var0, ServerLevel var1) {
-      BlockPos var2 = BlockPos.containing(var0.minX, var0.minY, var0.minZ).offset(-1, 0, -1);
-      BlockPos var3 = BlockPos.containing(var0.maxX, var0.maxY, var0.maxZ);
-      BlockPos.betweenClosedStream(var2, var3).forEach((var3x) -> {
-         boolean var4 = var3x.getX() == var2.getX() || var3x.getX() == var3.getX() || var3x.getZ() == var2.getZ() || var3x.getZ() == var3.getZ();
-         boolean var5 = var3x.getY() == var3.getY();
-         if (var1.getBlockState(var3x).is(Blocks.BARRIER) && (var4 || var5)) {
-            var1.setBlockAndUpdate(var3x, Blocks.AIR.defaultBlockState());
-         }
-
-      });
-   }
-
-   private static void forceLoadChunks(BoundingBox var0, ServerLevel var1) {
-      var0.intersectingChunks().forEach((var1x) -> var1.setChunkForced(var1x.x, var1x.z, true));
+      var4.setBlockAndUpdate(var1, Blocks.TEST_INSTANCE_BLOCK.defaultBlockState());
+      TestInstanceBlockEntity var6 = (TestInstanceBlockEntity)var4.getBlockEntity(var1);
+      ResourceKey var7 = ResourceKey.create(Registries.TEST_INSTANCE, var0);
+      var6.set(new TestInstanceBlockEntity.Data(Optional.of(var7), var2, var3, false, TestInstanceBlockEntity.Status.CLEARED, Optional.empty()));
+      return var6;
    }
 
    public static void clearSpaceForStructure(BoundingBox var0, ServerLevel var1) {
@@ -197,39 +110,18 @@ public class StructureUtils {
       return var4.move(var0.getX() - var5, 0, var0.getZ() - var6);
    }
 
-   public static Optional<BlockPos> findStructureBlockContainingPos(BlockPos var0, int var1, ServerLevel var2) {
-      return findStructureBlocks(var0, var1, var2).filter((var2x) -> doesStructureContain(var2x, var0, var2)).findFirst();
+   public static Optional<BlockPos> findTestContainingPos(BlockPos var0, int var1, ServerLevel var2) {
+      return findTestBlocks(var0, var1, var2).filter((var2x) -> doesStructureContain(var2x, var0, var2)).findFirst();
    }
 
-   public static Optional<BlockPos> findNearestStructureBlock(BlockPos var0, int var1, ServerLevel var2) {
+   public static Optional<BlockPos> findNearestTest(BlockPos var0, int var1, ServerLevel var2) {
       Comparator var3 = Comparator.comparingInt((var1x) -> var1x.distManhattan(var0));
-      return findStructureBlocks(var0, var1, var2).min(var3);
+      return findTestBlocks(var0, var1, var2).min(var3);
    }
 
-   public static Stream<BlockPos> findStructureByTestFunction(BlockPos var0, int var1, ServerLevel var2, String var3) {
-      return findStructureBlocks(var0, var1, var2).map((var1x) -> (StructureBlockEntity)var2.getBlockEntity(var1x)).filter(Objects::nonNull).filter((var1x) -> Objects.equals(var1x.getStructureName(), var3)).map(BlockEntity::getBlockPos).map(BlockPos::immutable);
-   }
-
-   public static Stream<BlockPos> findStructureBlocks(BlockPos var0, int var1, ServerLevel var2) {
+   public static Stream<BlockPos> findTestBlocks(BlockPos var0, int var1, ServerLevel var2) {
       BoundingBox var3 = getBoundingBoxAtGround(var0, var1, var2);
-      return BlockPos.betweenClosedStream(var3).filter((var1x) -> var2.getBlockState(var1x).is(Blocks.STRUCTURE_BLOCK)).map(BlockPos::immutable);
-   }
-
-   private static StructureBlockEntity createStructureBlock(GameTestInfo var0, BlockPos var1, Rotation var2, ServerLevel var3) {
-      var3.setBlockAndUpdate(var1, Blocks.STRUCTURE_BLOCK.defaultBlockState());
-      StructureBlockEntity var4 = (StructureBlockEntity)var3.getBlockEntity(var1);
-      var4.setMode(StructureMode.LOAD);
-      var4.setRotation(var2);
-      var4.setIgnoreEntities(false);
-      var4.setStrict(false);
-      var4.setStructureName(ResourceLocation.parse(var0.getStructureName()));
-      var4.setMetaData(var0.getTestName());
-      if (!var4.loadStructureInfo(var3)) {
-         String var10002 = var0.getTestName();
-         throw new RuntimeException("Failed to load structure info for test: " + var10002 + ". Structure name: " + var0.getStructureName());
-      } else {
-         return var4;
-      }
+      return BlockPos.betweenClosedStream(var3).filter((var1x) -> var2.getBlockState(var1x).is(Blocks.TEST_INSTANCE_BLOCK)).map(BlockPos::immutable);
    }
 
    private static BoundingBox getBoundingBoxAtGround(BlockPos var0, int var1, ServerLevel var2) {
@@ -237,11 +129,11 @@ public class StructureUtils {
       return (new BoundingBox(var3)).inflatedBy(var1, 10, var1);
    }
 
-   public static Stream<BlockPos> lookedAtStructureBlockPos(BlockPos var0, Entity var1, ServerLevel var2) {
+   public static Stream<BlockPos> lookedAtTestPos(BlockPos var0, Entity var1, ServerLevel var2) {
       boolean var3 = true;
       Vec3 var4 = var1.getEyePosition();
       Vec3 var5 = var4.add(var1.getLookAngle().scale(200.0));
-      Stream var10000 = findStructureBlocks(var0, 200, var2).map((var1x) -> var2.getBlockEntity(var1x, BlockEntityType.STRUCTURE_BLOCK)).flatMap(Optional::stream).filter((var2x) -> getStructureBounds(var2x).clip(var4, var5).isPresent()).map(BlockEntity::getBlockPos);
+      Stream var10000 = findTestBlocks(var0, 200, var2).map((var1x) -> var2.getBlockEntity(var1x, BlockEntityType.TEST_INSTANCE_BLOCK)).flatMap(Optional::stream).filter((var2x) -> var2x.getStructureBounds().clip(var4, var5).isPresent()).map(BlockEntity::getBlockPos);
       Objects.requireNonNull(var0);
       return var10000.sorted(Comparator.comparing(var0::distSqr)).limit(1L);
    }
@@ -260,7 +152,11 @@ public class StructureUtils {
    }
 
    private static boolean doesStructureContain(BlockPos var0, BlockPos var1, ServerLevel var2) {
-      StructureBlockEntity var3 = (StructureBlockEntity)var2.getBlockEntity(var0);
-      return getStructureBoundingBox(var3).isInside(var1);
+      BlockEntity var4 = var2.getBlockEntity(var0);
+      if (var4 instanceof TestInstanceBlockEntity var3) {
+         return var3.getStructureBoundingBox().isInside(var1);
+      } else {
+         return false;
+      }
    }
 }

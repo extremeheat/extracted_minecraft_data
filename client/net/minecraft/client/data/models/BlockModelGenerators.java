@@ -70,6 +70,7 @@ import net.minecraft.world.level.block.MultifaceBlock;
 import net.minecraft.world.level.block.PitcherCropBlock;
 import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.SnifferEggBlock;
+import net.minecraft.world.level.block.TestBlock;
 import net.minecraft.world.level.block.VaultBlock;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BambooLeaves;
@@ -91,6 +92,7 @@ import net.minecraft.world.level.block.state.properties.RedstoneSide;
 import net.minecraft.world.level.block.state.properties.SculkSensorPhase;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.block.state.properties.StairsShape;
+import net.minecraft.world.level.block.state.properties.TestBlockMode;
 import net.minecraft.world.level.block.state.properties.Tilt;
 import net.minecraft.world.level.block.state.properties.WallSide;
 
@@ -1427,6 +1429,17 @@ public class BlockModelGenerators {
       this.blockStateOutput.accept(MultiVariantGenerator.multiVariant(Blocks.STRUCTURE_BLOCK).with(PropertyDispatch.property(BlockStateProperties.STRUCTUREBLOCK_MODE).generate((var1x) -> Variant.variant().with(VariantProperties.MODEL, this.createSuffixedVariant(Blocks.STRUCTURE_BLOCK, "_" + var1x.getSerializedName(), ModelTemplates.CUBE_ALL, TextureMapping::cube)))));
    }
 
+   private void createTestBlock() {
+      HashMap var1 = new HashMap();
+
+      for(TestBlockMode var5 : TestBlockMode.values()) {
+         var1.put(var5, this.createSuffixedVariant(Blocks.TEST_BLOCK, "_" + var5.getSerializedName(), ModelTemplates.CUBE_ALL, TextureMapping::cube));
+      }
+
+      this.blockStateOutput.accept(MultiVariantGenerator.multiVariant(Blocks.TEST_BLOCK).with(PropertyDispatch.property(BlockStateProperties.TEST_BLOCK_MODE).generate((var1x) -> Variant.variant().with(VariantProperties.MODEL, (ResourceLocation)var1.get(var1x)))));
+      this.itemModelOutput.accept(Items.TEST_BLOCK, ItemModelUtils.selectBlockItemProperty(TestBlock.MODE, ItemModelUtils.plainModel((ResourceLocation)var1.get(TestBlockMode.START)), Map.of(TestBlockMode.FAIL, ItemModelUtils.plainModel((ResourceLocation)var1.get(TestBlockMode.FAIL)), TestBlockMode.LOG, ItemModelUtils.plainModel((ResourceLocation)var1.get(TestBlockMode.LOG)), TestBlockMode.ACCEPT, ItemModelUtils.plainModel((ResourceLocation)var1.get(TestBlockMode.ACCEPT)))));
+   }
+
    private void createSweetBerryBush() {
       this.registerSimpleFlatItemModel(Items.SWEET_BERRIES);
       this.blockStateOutput.accept(MultiVariantGenerator.multiVariant(Blocks.SWEET_BERRY_BUSH).with(PropertyDispatch.property(BlockStateProperties.AGE_3).generate((var1) -> Variant.variant().with(VariantProperties.MODEL, this.createSuffixedVariant(Blocks.SWEET_BERRY_BUSH, "_stage" + var1, ModelTemplates.CROSS, TextureMapping::cross)))));
@@ -2049,6 +2062,8 @@ public class BlockModelGenerators {
       this.createStonecutter();
       this.createStructureBlock();
       this.createSweetBerryBush();
+      this.createTestBlock();
+      this.createTrivialCube(Blocks.TEST_INSTANCE_BLOCK);
       this.createTripwire();
       this.createTripwireHook();
       this.createTurtleEgg();

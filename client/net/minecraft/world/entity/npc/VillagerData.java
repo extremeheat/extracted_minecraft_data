@@ -2,50 +2,47 @@ package net.minecraft.world.entity.npc;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
 
-public class VillagerData {
+public record VillagerData(Holder<VillagerType> type, Holder<VillagerProfession> profession, int level) {
    public static final int MIN_VILLAGER_LEVEL = 1;
    public static final int MAX_VILLAGER_LEVEL = 5;
    private static final int[] NEXT_LEVEL_XP_THRESHOLDS = new int[]{0, 10, 70, 150, 250};
-   public static final Codec<VillagerData> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BuiltInRegistries.VILLAGER_TYPE.byNameCodec().fieldOf("type").orElseGet(() -> VillagerType.PLAINS).forGetter((var0x) -> var0x.type), BuiltInRegistries.VILLAGER_PROFESSION.byNameCodec().fieldOf("profession").orElseGet(() -> VillagerProfession.NONE).forGetter((var0x) -> var0x.profession), Codec.INT.fieldOf("level").orElse(1).forGetter((var0x) -> var0x.level)).apply(var0, VillagerData::new));
+   public static final Codec<VillagerData> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BuiltInRegistries.VILLAGER_TYPE.holderByNameCodec().fieldOf("type").orElseGet(() -> BuiltInRegistries.VILLAGER_TYPE.getOrThrow(VillagerType.PLAINS)).forGetter((var0x) -> var0x.type), BuiltInRegistries.VILLAGER_PROFESSION.holderByNameCodec().fieldOf("profession").orElseGet(() -> BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NONE)).forGetter((var0x) -> var0x.profession), Codec.INT.fieldOf("level").orElse(1).forGetter((var0x) -> var0x.level)).apply(var0, VillagerData::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, VillagerData> STREAM_CODEC;
-   private final VillagerType type;
-   private final VillagerProfession profession;
-   private final int level;
 
-   public VillagerData(VillagerType var1, VillagerProfession var2, int var3) {
+   public VillagerData(Holder<VillagerType> var1, Holder<VillagerProfession> var2, int var3) {
       super();
+      var3 = Math.max(1, var3);
       this.type = var1;
       this.profession = var2;
-      this.level = Math.max(1, var3);
+      this.level = var3;
    }
 
-   public VillagerType getType() {
-      return this.type;
-   }
-
-   public VillagerProfession getProfession() {
-      return this.profession;
-   }
-
-   public int getLevel() {
-      return this.level;
-   }
-
-   public VillagerData setType(VillagerType var1) {
+   public VillagerData withType(Holder<VillagerType> var1) {
       return new VillagerData(var1, this.profession, this.level);
    }
 
-   public VillagerData setProfession(VillagerProfession var1) {
+   public VillagerData withType(HolderGetter.Provider var1, ResourceKey<VillagerType> var2) {
+      return this.withType(var1.getOrThrow(var2));
+   }
+
+   public VillagerData withProfession(Holder<VillagerProfession> var1) {
       return new VillagerData(this.type, var1, this.level);
    }
 
-   public VillagerData setLevel(int var1) {
+   public VillagerData withProfession(HolderGetter.Provider var1, ResourceKey<VillagerProfession> var2) {
+      return this.withProfession(var1.getOrThrow(var2));
+   }
+
+   public VillagerData withLevel(int var1) {
       return new VillagerData(this.type, this.profession, var1);
    }
 
@@ -62,6 +59,6 @@ public class VillagerData {
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.registry(Registries.VILLAGER_TYPE), (var0) -> var0.type, ByteBufCodecs.registry(Registries.VILLAGER_PROFESSION), (var0) -> var0.profession, ByteBufCodecs.VAR_INT, (var0) -> var0.level, VillagerData::new);
+      STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.holderRegistry(Registries.VILLAGER_TYPE), VillagerData::type, ByteBufCodecs.holderRegistry(Registries.VILLAGER_PROFESSION), VillagerData::profession, ByteBufCodecs.VAR_INT, VillagerData::level, VillagerData::new);
    }
 }

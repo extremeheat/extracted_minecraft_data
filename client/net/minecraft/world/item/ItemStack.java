@@ -26,6 +26,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentHolder;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentPatch;
@@ -87,6 +88,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.enchantment.Repairable;
+import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -529,7 +531,7 @@ public final class ItemStack implements DataComponentHolder {
       this.getItem().postHurtEnemy(this, var1, var2);
       Weapon var3 = (Weapon)this.get(DataComponents.WEAPON);
       if (var3 != null) {
-         this.hurtAndBreak(var3.damagePerAttack(), var2, EquipmentSlot.MAINHAND);
+         this.hurtAndBreak(var3.itemDamagePerAttack(), var2, EquipmentSlot.MAINHAND);
       }
 
    }
@@ -547,6 +549,14 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public InteractionResult interactLivingEntity(Player var1, LivingEntity var2, InteractionHand var3) {
+      Equippable var4 = (Equippable)this.get(DataComponents.EQUIPPABLE);
+      if (var4 != null && var4.equipOnInteract()) {
+         InteractionResult var5 = var4.equipOnTarget(var1, var2, this);
+         if (var5 != InteractionResult.PASS) {
+            return var5;
+         }
+      }
+
       return this.getItem().interactLivingEntity(this, var1, var2, var3);
    }
 
@@ -694,6 +704,10 @@ public final class ItemStack implements DataComponentHolder {
    @Nullable
    public <T> T set(DataComponentType<T> var1, @Nullable T var2) {
       return (T)this.components.set(var1, var2);
+   }
+
+   public <T> void copyFrom(DataComponentType<T> var1, DataComponentGetter var2) {
+      this.set(var1, var2.get(var1));
    }
 
    @Nullable

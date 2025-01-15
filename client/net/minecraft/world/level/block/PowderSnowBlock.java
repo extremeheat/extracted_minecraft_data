@@ -71,17 +71,15 @@ public class PowderSnowBlock extends Block implements BucketPickup {
          if (var4.isOnFire() && (var7.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) || var4 instanceof Player) && var4.mayInteract(var7, var3)) {
             var2.destroyBlock(var3, false);
          }
-
-         var4.setSharedFlagOnFire(false);
       }
 
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
-      if (!((double)var5 < 4.0) && var4 instanceof LivingEntity var6) {
-         LivingEntity.Fallsounds var7 = var6.getFallSounds();
-         SoundEvent var8 = (double)var5 < 7.0 ? var7.small() : var7.big();
-         var4.playSound(var8, 1.0F, 1.0F);
+   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
+      if (!(var5 < 4.0) && var4 instanceof LivingEntity var7) {
+         LivingEntity.Fallsounds var8 = var7.getFallSounds();
+         SoundEvent var9 = var5 < 7.0 ? var8.small() : var8.big();
+         var4.playSound(var9, 1.0F, 1.0F);
       }
    }
 
@@ -89,7 +87,7 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       if (var4 instanceof EntityCollisionContext var5) {
          Entity var6 = var5.getEntity();
          if (var6 != null) {
-            if (var6.fallDistance > 2.5F) {
+            if (var6.fallDistance > 2.5) {
                return FALLING_COLLISION_SHAPE;
             }
 

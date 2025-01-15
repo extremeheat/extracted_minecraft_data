@@ -3,6 +3,9 @@ package net.minecraft.world.entity.animal.horse;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -24,7 +27,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
@@ -34,7 +36,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.SoundType;
 
-public class Horse extends AbstractHorse implements VariantHolder<Variant> {
+public class Horse extends AbstractHorse {
    private static final EntityDataAccessor<Integer> DATA_ID_TYPE_VARIANT;
    private static final EntityDimensions BABY_DIMENSIONS;
 
@@ -85,8 +87,27 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
       return Variant.byId(this.getTypeVariant() & 255);
    }
 
-   public void setVariant(Variant var1) {
+   private void setVariant(Variant var1) {
       this.setTypeVariant(var1.getId() & 255 | this.getTypeVariant() & -256);
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      return (T)(var1 == DataComponents.HORSE_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.HORSE_VARIANT);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.HORSE_VARIANT) {
+         this.setVariant((Variant)castComponentValue(DataComponents.HORSE_VARIANT, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    public Markings getMarkings() {
@@ -219,11 +240,6 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
 
    public EntityDimensions getDefaultDimensions(Pose var1) {
       return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
-   }
-
-   // $FF: synthetic method
-   public Object getVariant() {
-      return this.getVariant();
    }
 
    static {

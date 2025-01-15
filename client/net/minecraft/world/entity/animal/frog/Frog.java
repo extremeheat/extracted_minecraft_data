@@ -10,6 +10,9 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -44,7 +47,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -70,7 +72,7 @@ import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.PathfindingContext;
 import net.minecraft.world.phys.Vec3;
 
-public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
+public class Frog extends Animal {
    protected static final ImmutableList<SensorType<? extends Sensor<? super Frog>>> SENSOR_TYPES;
    protected static final ImmutableList<MemoryModuleType<?>> MEMORY_TYPES;
    private static final EntityDataAccessor<Holder<FrogVariant>> DATA_VARIANT_ID;
@@ -136,8 +138,27 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
       return (Holder)this.entityData.get(DATA_VARIANT_ID);
    }
 
-   public void setVariant(Holder<FrogVariant> var1) {
+   private void setVariant(Holder<FrogVariant> var1) {
       this.entityData.set(DATA_VARIANT_ID, var1);
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      return (T)(var1 == DataComponents.FROG_VARIANT ? castComponentValue(var1, this.getVariant()) : super.get(var1));
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.FROG_VARIANT);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.FROG_VARIANT) {
+         this.setVariant((Holder)castComponentValue(DataComponents.FROG_VARIANT, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
@@ -280,8 +301,8 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
       DebugPackets.sendEntityBrain(this);
    }
 
-   protected int calculateFallDamage(float var1, float var2) {
-      return super.calculateFallDamage(var1, var2) - 5;
+   protected int calculateFallDamage(double var1, float var3) {
+      return super.calculateFallDamage(var1, var3) - 5;
    }
 
    public void travel(Vec3 var1) {
@@ -320,16 +341,6 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
 
    public static boolean checkFrogSpawnRules(EntityType<? extends Animal> var0, LevelAccessor var1, EntitySpawnReason var2, BlockPos var3, RandomSource var4) {
       return var1.getBlockState(var3.below()).is(BlockTags.FROGS_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
-   }
-
-   // $FF: synthetic method
-   public Object getVariant() {
-      return this.getVariant();
-   }
-
-   // $FF: synthetic method
-   public void setVariant(final Object var1) {
-      this.setVariant((Holder)var1);
    }
 
    static {

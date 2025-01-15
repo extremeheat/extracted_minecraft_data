@@ -85,6 +85,10 @@ public interface ServerGamePacketListener extends ServerPingPacketListener, Serv
 
    void handleSetStructureBlock(ServerboundSetStructureBlockPacket var1);
 
+   void handleSetTestBlock(ServerboundSetTestBlockPacket var1);
+
+   void handleTestInstanceBlockAction(ServerboundTestInstanceBlockActionPacket var1);
+
    void handleSelectTrade(ServerboundSelectTradePacket var1);
 
    void handleEditBook(ServerboundEditBookPacket var1);

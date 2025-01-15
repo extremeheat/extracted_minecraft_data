@@ -19,6 +19,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateHolder;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -124,6 +125,11 @@ public final class FluidState extends StateHolder<Fluid, FluidState> {
 
    public VoxelShape getShape(BlockGetter var1, BlockPos var2) {
       return this.getType().getShape(this, var1, var2);
+   }
+
+   @Nullable
+   public AABB getAABB(BlockGetter var1, BlockPos var2) {
+      return this.getType().getAABB(this, var1, var2);
    }
 
    public Holder<Fluid> holder() {

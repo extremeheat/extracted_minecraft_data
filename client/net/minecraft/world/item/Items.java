@@ -45,8 +45,10 @@ import net.minecraft.world.item.equipment.Equippable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LightBlock;
+import net.minecraft.world.level.block.TestBlock;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.entity.PotDecorations;
+import net.minecraft.world.level.block.state.properties.TestBlockMode;
 import net.minecraft.world.level.material.Fluids;
 
 public class Items {
@@ -877,6 +879,8 @@ public class Items {
    public static final Item BAMBOO_CHEST_RAFT;
    public static final Item STRUCTURE_BLOCK;
    public static final Item JIGSAW;
+   public static final Item TEST_BLOCK;
+   public static final Item TEST_INSTANCE_BLOCK;
    public static final Item TURTLE_HELMET;
    public static final Item TURTLE_SCUTE;
    public static final Item ARMADILLO_SCUTE;
@@ -2309,7 +2313,7 @@ public class Items {
       DETECTOR_RAIL = registerBlock(Blocks.DETECTOR_RAIL);
       RAIL = registerBlock(Blocks.RAIL);
       ACTIVATOR_RAIL = registerBlock(Blocks.ACTIVATOR_RAIL);
-      SADDLE = registerItem("saddle", SaddleItem::new, (new Item.Properties()).stacksTo(1));
+      SADDLE = registerItem("saddle", (new Item.Properties()).stacksTo(1).component(DataComponents.EQUIPPABLE, Equippable.saddle()));
       MINECART = registerItem("minecart", (var0) -> new MinecartItem(EntityType.MINECART, var0), (new Item.Properties()).stacksTo(1));
       CHEST_MINECART = registerItem("chest_minecart", (var0) -> new MinecartItem(EntityType.CHEST_MINECART, var0), (new Item.Properties()).stacksTo(1));
       FURNACE_MINECART = registerItem("furnace_minecart", (var0) -> new MinecartItem(EntityType.FURNACE_MINECART, var0), (new Item.Properties()).stacksTo(1));
@@ -2341,6 +2345,8 @@ public class Items {
       BAMBOO_CHEST_RAFT = registerItem("bamboo_chest_raft", (var0) -> new BoatItem(EntityType.BAMBOO_CHEST_RAFT, var0), (new Item.Properties()).stacksTo(1));
       STRUCTURE_BLOCK = registerBlock(Blocks.STRUCTURE_BLOCK, GameMasterBlockItem::new, (new Item.Properties()).rarity(Rarity.EPIC));
       JIGSAW = registerBlock(Blocks.JIGSAW, GameMasterBlockItem::new, (new Item.Properties()).rarity(Rarity.EPIC));
+      TEST_BLOCK = registerBlock(Blocks.TEST_BLOCK, GameMasterBlockItem::new, (new Item.Properties()).rarity(Rarity.EPIC).component(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(TestBlock.MODE, TestBlockMode.START)));
+      TEST_INSTANCE_BLOCK = registerBlock(Blocks.TEST_INSTANCE_BLOCK, GameMasterBlockItem::new, (new Item.Properties()).rarity(Rarity.EPIC));
       TURTLE_HELMET = registerItem("turtle_helmet", (new Item.Properties()).humanoidArmor(ArmorMaterials.TURTLE_SCUTE, ArmorType.HELMET));
       TURTLE_SCUTE = registerItem("turtle_scute");
       ARMADILLO_SCUTE = registerItem("armadillo_scute");

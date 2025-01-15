@@ -18,13 +18,6 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
    private static final float DEG_30 = 0.5235988F;
    private static final float DEG_15 = 0.2617994F;
    protected static final String HEAD_PARTS = "head_parts";
-   private static final String SADDLE = "saddle";
-   private static final String LEFT_SADDLE_MOUTH = "left_saddle_mouth";
-   private static final String LEFT_SADDLE_LINE = "left_saddle_line";
-   private static final String RIGHT_SADDLE_MOUTH = "right_saddle_mouth";
-   private static final String RIGHT_SADDLE_LINE = "right_saddle_line";
-   private static final String HEAD_SADDLE = "head_saddle";
-   private static final String MOUTH_SADDLE_WRAP = "mouth_saddle_wrap";
    protected static final MeshTransformer BABY_TRANSFORMER = new BabyModelTransform(true, 16.2F, 1.36F, 2.7272F, 2.0F, 20.0F, Set.of("head_parts"));
    protected final ModelPart body;
    protected final ModelPart headParts;
@@ -33,8 +26,6 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
    private final ModelPart rightFrontLeg;
    private final ModelPart leftFrontLeg;
    private final ModelPart tail;
-   private final ModelPart[] saddleParts;
-   private final ModelPart[] ridingParts;
 
    public AbstractEquineModel(ModelPart var1) {
       super(var1);
@@ -45,15 +36,6 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
       this.rightFrontLeg = var1.getChild("right_front_leg");
       this.leftFrontLeg = var1.getChild("left_front_leg");
       this.tail = this.body.getChild("tail");
-      ModelPart var2 = this.body.getChild("saddle");
-      ModelPart var3 = this.headParts.getChild("left_saddle_mouth");
-      ModelPart var4 = this.headParts.getChild("right_saddle_mouth");
-      ModelPart var5 = this.headParts.getChild("left_saddle_line");
-      ModelPart var6 = this.headParts.getChild("right_saddle_line");
-      ModelPart var7 = this.headParts.getChild("head_saddle");
-      ModelPart var8 = this.headParts.getChild("mouth_saddle_wrap");
-      this.saddleParts = new ModelPart[]{var2, var3, var4, var7, var8};
-      this.ridingParts = new ModelPart[]{var5, var6};
    }
 
    public static MeshDefinition createBodyMesh(CubeDeformation var0) {
@@ -69,13 +51,6 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
       var2.addOrReplaceChild("left_front_leg", CubeListBuilder.create().texOffs(48, 21).mirror().addBox(-3.0F, -1.01F, -1.9F, 4.0F, 11.0F, 4.0F, var0), PartPose.offset(4.0F, 14.0F, -10.0F));
       var2.addOrReplaceChild("right_front_leg", CubeListBuilder.create().texOffs(48, 21).addBox(-1.0F, -1.01F, -1.9F, 4.0F, 11.0F, 4.0F, var0), PartPose.offset(-4.0F, 14.0F, -10.0F));
       var3.addOrReplaceChild("tail", CubeListBuilder.create().texOffs(42, 36).addBox(-1.5F, 0.0F, 0.0F, 3.0F, 14.0F, 4.0F, var0), PartPose.offsetAndRotation(0.0F, -5.0F, 2.0F, 0.5235988F, 0.0F, 0.0F));
-      var3.addOrReplaceChild("saddle", CubeListBuilder.create().texOffs(26, 0).addBox(-5.0F, -8.0F, -9.0F, 10.0F, 9.0F, 9.0F, new CubeDeformation(0.5F)), PartPose.ZERO);
-      var4.addOrReplaceChild("left_saddle_mouth", CubeListBuilder.create().texOffs(29, 5).addBox(2.0F, -9.0F, -6.0F, 1.0F, 2.0F, 2.0F, var0), PartPose.ZERO);
-      var4.addOrReplaceChild("right_saddle_mouth", CubeListBuilder.create().texOffs(29, 5).addBox(-3.0F, -9.0F, -6.0F, 1.0F, 2.0F, 2.0F, var0), PartPose.ZERO);
-      var4.addOrReplaceChild("left_saddle_line", CubeListBuilder.create().texOffs(32, 2).addBox(3.1F, -6.0F, -8.0F, 0.0F, 3.0F, 16.0F), PartPose.rotation(-0.5235988F, 0.0F, 0.0F));
-      var4.addOrReplaceChild("right_saddle_line", CubeListBuilder.create().texOffs(32, 2).addBox(-3.1F, -6.0F, -8.0F, 0.0F, 3.0F, 16.0F), PartPose.rotation(-0.5235988F, 0.0F, 0.0F));
-      var4.addOrReplaceChild("head_saddle", CubeListBuilder.create().texOffs(1, 1).addBox(-3.0F, -11.0F, -1.9F, 6.0F, 5.0F, 6.0F, new CubeDeformation(0.22F)), PartPose.ZERO);
-      var4.addOrReplaceChild("mouth_saddle_wrap", CubeListBuilder.create().texOffs(19, 0).addBox(-2.0F, -11.0F, -4.0F, 4.0F, 5.0F, 2.0F, new CubeDeformation(0.2F)), PartPose.ZERO);
       var5.addOrReplaceChild("left_ear", CubeListBuilder.create().texOffs(19, 16).addBox(0.55F, -13.0F, 4.0F, 2.0F, 3.0F, 1.0F, new CubeDeformation(-0.001F)), PartPose.ZERO);
       var5.addOrReplaceChild("right_ear", CubeListBuilder.create().texOffs(19, 16).addBox(-2.55F, -13.0F, 4.0F, 2.0F, 3.0F, 1.0F, new CubeDeformation(-0.001F)), PartPose.ZERO);
       return var1;
@@ -98,21 +73,12 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
 
    public void setupAnim(T var1) {
       super.setupAnim(var1);
-
-      for(ModelPart var5 : this.saddleParts) {
-         var5.visible = var1.isSaddled;
-      }
-
-      for(ModelPart var26 : this.ridingParts) {
-         var26.visible = var1.isRidden && var1.isSaddled;
-      }
-
-      float var21 = Mth.clamp(var1.yRot, -20.0F, 20.0F);
-      float var23 = var1.xRot * 0.017453292F;
-      float var25 = var1.walkAnimationSpeed;
-      float var27 = var1.walkAnimationPos;
-      if (var25 > 0.2F) {
-         var23 += Mth.cos(var27 * 0.8F) * 0.15F * var25;
+      float var2 = Mth.clamp(var1.yRot, -20.0F, 20.0F);
+      float var3 = var1.xRot * 0.017453292F;
+      float var4 = var1.walkAnimationSpeed;
+      float var5 = var1.walkAnimationPos;
+      if (var4 > 0.2F) {
+         var3 += Mth.cos(var5 * 0.8F) * 0.15F * var4;
       }
 
       float var6 = var1.eatAnimation;
@@ -120,14 +86,14 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
       float var8 = 1.0F - var7;
       float var9 = var1.feedingAnimation;
       boolean var10 = var1.animateTail;
-      this.headParts.xRot = 0.5235988F + var23;
-      this.headParts.yRot = var21 * 0.017453292F;
+      this.headParts.xRot = 0.5235988F + var3;
+      this.headParts.yRot = var2 * 0.017453292F;
       float var11 = var1.isInWater ? 0.2F : 1.0F;
-      float var12 = Mth.cos(var11 * var27 * 0.6662F + 3.1415927F);
-      float var13 = var12 * 0.8F * var25;
-      float var14 = (1.0F - Math.max(var7, var6)) * (0.5235988F + var23 + var9 * Mth.sin(var1.ageInTicks) * 0.05F);
-      this.headParts.xRot = var7 * (0.2617994F + var23) + var6 * (2.1816616F + Mth.sin(var1.ageInTicks) * 0.05F) + var14;
-      this.headParts.yRot = var7 * var21 * 0.017453292F + (1.0F - Math.max(var7, var6)) * this.headParts.yRot;
+      float var12 = Mth.cos(var11 * var5 * 0.6662F + 3.1415927F);
+      float var13 = var12 * 0.8F * var4;
+      float var14 = (1.0F - Math.max(var7, var6)) * (0.5235988F + var3 + var9 * Mth.sin(var1.ageInTicks) * 0.05F);
+      this.headParts.xRot = var7 * (0.2617994F + var3) + var6 * (2.1816616F + Mth.sin(var1.ageInTicks) * 0.05F) + var14;
+      this.headParts.yRot = var7 * var2 * 0.017453292F + (1.0F - Math.max(var7, var6)) * this.headParts.yRot;
       float var15 = var1.ageScale;
       ModelPart var10000 = this.headParts;
       var10000.y += Mth.lerp(var6, Mth.lerp(var7, 0.0F, -8.0F * var15), 7.0F * var15);
@@ -143,15 +109,15 @@ public abstract class AbstractEquineModel<T extends EquineRenderState> extends E
       this.rightFrontLeg.z = this.leftFrontLeg.z;
       float var18 = (-1.0471976F + var17) * var7 + var13 * var8;
       float var19 = (-1.0471976F - var17) * var7 - var13 * var8;
-      this.leftHindLeg.xRot = var16 - var12 * 0.5F * var25 * var8;
-      this.rightHindLeg.xRot = var16 + var12 * 0.5F * var25 * var8;
+      this.leftHindLeg.xRot = var16 - var12 * 0.5F * var4 * var8;
+      this.rightHindLeg.xRot = var16 + var12 * 0.5F * var4 * var8;
       this.leftFrontLeg.xRot = var18;
       this.rightFrontLeg.xRot = var19;
-      this.tail.xRot = 0.5235988F + var25 * 0.75F;
+      this.tail.xRot = 0.5235988F + var4 * 0.75F;
       var10000 = this.tail;
-      var10000.y += var25 * var15;
+      var10000.y += var4 * var15;
       var10000 = this.tail;
-      var10000.z += var25 * 2.0F * var15;
+      var10000.z += var4 * 2.0F * var15;
       if (var10) {
          this.tail.yRot = Mth.cos(var1.ageInTicks * 0.7F);
       } else {

@@ -46,7 +46,7 @@ public class CloneCommands {
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("clone").requires((var0x) -> var0x.hasPermission(2))).then(beginEndDestinationAndModeSuffix(var1, (var0x) -> ((CommandSourceStack)var0x.getSource()).getLevel()))).then(Commands.literal("from").then(Commands.argument("sourceDimension", DimensionArgument.dimension()).then(beginEndDestinationAndModeSuffix(var1, (var0x) -> DimensionArgument.getDimension(var0x, "sourceDimension"))))));
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> beginEndDestinationAndModeSuffix(CommandBuildContext var0, CommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var1) {
+   private static ArgumentBuilder<CommandSourceStack, ?> beginEndDestinationAndModeSuffix(CommandBuildContext var0, InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var1) {
       return Commands.argument("begin", BlockPosArgument.blockPos()).then(((RequiredArgumentBuilder)Commands.argument("end", BlockPosArgument.blockPos()).then(destinationAndStrictSuffix(var0, var1, (var0x) -> ((CommandSourceStack)var0x.getSource()).getLevel()))).then(Commands.literal("to").then(Commands.argument("targetDimension", DimensionArgument.dimension()).then(destinationAndStrictSuffix(var0, var1, (var0x) -> DimensionArgument.getDimension(var0x, "targetDimension"))))));
    }
 
@@ -55,18 +55,18 @@ public class CloneCommands {
       return new DimensionAndPosition(var1, var3);
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> destinationAndStrictSuffix(CommandBuildContext var0, CommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var1, CommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var2) {
-      CommandFunction var3 = (var1x) -> getLoadedDimensionAndPosition(var1x, (ServerLevel)var1.apply(var1x), "begin");
-      CommandFunction var4 = (var1x) -> getLoadedDimensionAndPosition(var1x, (ServerLevel)var1.apply(var1x), "end");
-      CommandFunction var5 = (var1x) -> getLoadedDimensionAndPosition(var1x, (ServerLevel)var2.apply(var1x), "destination");
+   private static ArgumentBuilder<CommandSourceStack, ?> destinationAndStrictSuffix(CommandBuildContext var0, InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var1, InCommandFunction<CommandContext<CommandSourceStack>, ServerLevel> var2) {
+      InCommandFunction var3 = (var1x) -> getLoadedDimensionAndPosition(var1x, (ServerLevel)var1.apply(var1x), "begin");
+      InCommandFunction var4 = (var1x) -> getLoadedDimensionAndPosition(var1x, (ServerLevel)var1.apply(var1x), "end");
+      InCommandFunction var5 = (var1x) -> getLoadedDimensionAndPosition(var1x, (ServerLevel)var2.apply(var1x), "destination");
       return modeSuffix(var0, var3, var4, var5, false, Commands.argument("destination", BlockPosArgument.blockPos())).then(modeSuffix(var0, var3, var4, var5, true, Commands.literal("strict")));
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> modeSuffix(CommandBuildContext var0, CommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var1, CommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var2, CommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var3, boolean var4, ArgumentBuilder<CommandSourceStack, ?> var5) {
+   private static ArgumentBuilder<CommandSourceStack, ?> modeSuffix(CommandBuildContext var0, InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var1, InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var2, InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var3, boolean var4, ArgumentBuilder<CommandSourceStack, ?> var5) {
       return var5.executes((var4x) -> clone((CommandSourceStack)var4x.getSource(), (DimensionAndPosition)var1.apply(var4x), (DimensionAndPosition)var2.apply(var4x), (DimensionAndPosition)var3.apply(var4x), (var0) -> true, CloneCommands.Mode.NORMAL, var4)).then(wrapWithCloneMode(var1, var2, var3, (var0x) -> (var0) -> true, var4, Commands.literal("replace"))).then(wrapWithCloneMode(var1, var2, var3, (var0x) -> FILTER_AIR, var4, Commands.literal("masked"))).then(Commands.literal("filtered").then(wrapWithCloneMode(var1, var2, var3, (var0x) -> BlockPredicateArgument.getBlockPredicate(var0x, "filter"), var4, Commands.argument("filter", BlockPredicateArgument.blockPredicate(var0)))));
    }
 
-   private static ArgumentBuilder<CommandSourceStack, ?> wrapWithCloneMode(CommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var0, CommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var1, CommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var2, CommandFunction<CommandContext<CommandSourceStack>, Predicate<BlockInWorld>> var3, boolean var4, ArgumentBuilder<CommandSourceStack, ?> var5) {
+   private static ArgumentBuilder<CommandSourceStack, ?> wrapWithCloneMode(InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var0, InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var1, InCommandFunction<CommandContext<CommandSourceStack>, DimensionAndPosition> var2, InCommandFunction<CommandContext<CommandSourceStack>, Predicate<BlockInWorld>> var3, boolean var4, ArgumentBuilder<CommandSourceStack, ?> var5) {
       return var5.executes((var5x) -> clone((CommandSourceStack)var5x.getSource(), (DimensionAndPosition)var0.apply(var5x), (DimensionAndPosition)var1.apply(var5x), (DimensionAndPosition)var2.apply(var5x), (Predicate)var3.apply(var5x), CloneCommands.Mode.NORMAL, var4)).then(Commands.literal("force").executes((var5x) -> clone((CommandSourceStack)var5x.getSource(), (DimensionAndPosition)var0.apply(var5x), (DimensionAndPosition)var1.apply(var5x), (DimensionAndPosition)var2.apply(var5x), (Predicate)var3.apply(var5x), CloneCommands.Mode.FORCE, var4))).then(Commands.literal("move").executes((var5x) -> clone((CommandSourceStack)var5x.getSource(), (DimensionAndPosition)var0.apply(var5x), (DimensionAndPosition)var1.apply(var5x), (DimensionAndPosition)var2.apply(var5x), (Predicate)var3.apply(var5x), CloneCommands.Mode.MOVE, var4))).then(Commands.literal("normal").executes((var5x) -> clone((CommandSourceStack)var5x.getSource(), (DimensionAndPosition)var0.apply(var5x), (DimensionAndPosition)var1.apply(var5x), (DimensionAndPosition)var2.apply(var5x), (Predicate)var3.apply(var5x), CloneCommands.Mode.NORMAL, var4)));
    }
 
@@ -235,10 +235,5 @@ public class CloneCommands {
          this.state = var2;
          this.blockEntityInfo = var3;
       }
-   }
-
-   @FunctionalInterface
-   interface CommandFunction<T, R> {
-      R apply(T var1) throws CommandSyntaxException;
    }
 }

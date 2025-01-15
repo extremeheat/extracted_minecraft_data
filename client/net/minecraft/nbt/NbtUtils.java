@@ -26,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -143,6 +144,10 @@ public final class NbtUtils {
    }
 
    public static Tag writeBlockPos(BlockPos var0) {
+      return writeVec3i(var0);
+   }
+
+   public static Tag writeVec3i(Vec3i var0) {
       return new IntArrayTag(new int[]{var0.getX(), var0.getY(), var0.getZ()});
    }
 

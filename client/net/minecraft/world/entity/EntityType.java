@@ -407,12 +407,11 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    }
 
    public static <T extends Entity> Consumer<T> appendDefaultStackConfig(Consumer<T> var0, Level var1, ItemStack var2, @Nullable LivingEntity var3) {
-      return appendCustomEntityStackConfig(appendCustomNameConfig(var0, var2), var1, var2, var3);
+      return appendCustomEntityStackConfig(appendComponentsConfig(var0, var2), var1, var2, var3);
    }
 
-   public static <T extends Entity> Consumer<T> appendCustomNameConfig(Consumer<T> var0, ItemStack var1) {
-      Component var2 = (Component)var1.get(DataComponents.CUSTOM_NAME);
-      return var2 != null ? var0.andThen((var1x) -> var1x.setCustomName(var2)) : var0;
+   public static <T extends Entity> Consumer<T> appendComponentsConfig(Consumer<T> var0, ItemStack var1) {
+      return var0.andThen((var1x) -> var1x.applyComponentsFromItemStack(var1));
    }
 
    public static <T extends Entity> Consumer<T> appendCustomEntityStackConfig(Consumer<T> var0, Level var1, ItemStack var2, @Nullable LivingEntity var3) {
@@ -453,7 +452,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
             var8 = 0.0;
          }
 
-         var7.moveTo((double)var3.getX() + 0.5, (double)var3.getY() + var8, (double)var3.getZ() + 0.5, Mth.wrapDegrees(var1.random.nextFloat() * 360.0F), 0.0F);
+         var7.snapTo((double)var3.getX() + 0.5, (double)var3.getY() + var8, (double)var3.getZ() + 0.5, Mth.wrapDegrees(var1.random.nextFloat() * 360.0F), 0.0F);
          if (var7 instanceof Mob) {
             Mob var10 = (Mob)var7;
             var10.yHeadRot = var10.getYRot();

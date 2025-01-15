@@ -70,7 +70,7 @@ public class SnifferEggBlock extends Block {
          if (var5 != null) {
             Vec3 var6 = var3.getCenter();
             var5.setBaby(true);
-            var5.moveTo(var6.x(), var6.y(), var6.z(), Mth.wrapDegrees(var2.random.nextFloat() * 360.0F), 0.0F);
+            var5.snapTo(var6.x(), var6.y(), var6.z(), Mth.wrapDegrees(var2.random.nextFloat() * 360.0F), 0.0F);
             var2.addFreshEntity(var5);
          }
 

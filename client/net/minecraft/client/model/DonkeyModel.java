@@ -5,7 +5,6 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
-import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.MeshTransformer;
 import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.client.renderer.entity.state.DonkeyRenderState;
@@ -13,6 +12,10 @@ import net.minecraft.client.renderer.entity.state.DonkeyRenderState;
 public class DonkeyModel extends AbstractEquineModel<DonkeyRenderState> {
    public static final float DONKEY_SCALE = 0.87F;
    public static final float MULE_SCALE = 0.92F;
+   private static final MeshTransformer DONKEY_TRANSFORMER = (var0) -> {
+      modifyMesh(var0.getRoot());
+      return var0;
+   };
    private final ModelPart leftChest;
    private final ModelPart rightChest;
 
@@ -23,15 +26,15 @@ public class DonkeyModel extends AbstractEquineModel<DonkeyRenderState> {
    }
 
    public static LayerDefinition createBodyLayer(float var0) {
-      MeshDefinition var1 = AbstractEquineModel.createBodyMesh(CubeDeformation.NONE);
-      modifyMesh(var1.getRoot());
-      return LayerDefinition.create(var1, 64, 64).apply(MeshTransformer.scaling(var0));
+      return LayerDefinition.create(AbstractEquineModel.createBodyMesh(CubeDeformation.NONE), 64, 64).apply(DONKEY_TRANSFORMER).apply(MeshTransformer.scaling(var0));
    }
 
    public static LayerDefinition createBabyLayer(float var0) {
-      MeshDefinition var1 = AbstractEquineModel.createFullScaleBabyMesh(CubeDeformation.NONE);
-      modifyMesh(var1.getRoot());
-      return LayerDefinition.create(AbstractEquineModel.BABY_TRANSFORMER.apply(var1), 64, 64).apply(MeshTransformer.scaling(var0));
+      return LayerDefinition.create(AbstractEquineModel.createFullScaleBabyMesh(CubeDeformation.NONE), 64, 64).apply(DONKEY_TRANSFORMER).apply(BABY_TRANSFORMER).apply(MeshTransformer.scaling(var0));
+   }
+
+   public static LayerDefinition createSaddleLayer(float var0, boolean var1) {
+      return EquineSaddleModel.createFullScaleSaddleLayer(var1).apply(DONKEY_TRANSFORMER).apply(var1 ? AbstractEquineModel.BABY_TRANSFORMER : MeshTransformer.IDENTITY).apply(MeshTransformer.scaling(var0));
    }
 
    private static void modifyMesh(PartDefinition var0) {

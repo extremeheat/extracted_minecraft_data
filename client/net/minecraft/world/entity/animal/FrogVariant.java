@@ -1,15 +1,18 @@
 package net.minecraft.world.entity.animal;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
 public record FrogVariant(ResourceLocation texture) {
+   public static final Codec<Holder<FrogVariant>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<FrogVariant>> STREAM_CODEC;
    public static final ResourceKey<FrogVariant> TEMPERATE;
    public static final ResourceKey<FrogVariant> WARM;
@@ -35,6 +38,7 @@ public record FrogVariant(ResourceLocation texture) {
    }
 
    static {
+      CODEC = RegistryFixedCodec.<Holder<FrogVariant>>create(Registries.FROG_VARIANT);
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.FROG_VARIANT);
       TEMPERATE = createKey(TemperatureVariant.TEMPERATE.getId());
       WARM = createKey(TemperatureVariant.WARM.getId());

@@ -1,27 +1,15 @@
 package net.minecraft.gametest.framework;
 
 import com.google.common.base.MoreObjects;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.network.Filterable;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.WritableBookContent;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LecternBlock;
-import net.minecraft.world.level.block.Mirror;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 class ReportGameListener implements GameTestListener {
@@ -33,7 +21,6 @@ class ReportGameListener implements GameTestListener {
    }
 
    public void testStructureLoaded(GameTestInfo var1) {
-      spawnBeacon(var1, Blocks.LIGHT_GRAY_STAINED_GLASS);
       ++this.attempts;
    }
 
@@ -45,7 +32,7 @@ class ReportGameListener implements GameTestListener {
       }
 
       var5 = var5 + "]";
-      String var10000 = var1.getTestName();
+      String var10000 = String.valueOf(var1.id());
       String var6 = var10000 + " " + (var3 ? "passed" : "failed") + "! " + var1.getRunTime() + "ms";
       String var7 = String.format("%-53s%s", var5, var6);
       if (var3) {
@@ -65,7 +52,7 @@ class ReportGameListener implements GameTestListener {
       if (var1.retryOptions().hasRetries()) {
          this.handleRetry(var1, var2, true);
       } else if (!var1.isFlaky()) {
-         String var4 = var1.getTestName();
+         String var4 = String.valueOf(var1.id());
          reportPassed(var1, var4 + " passed! (" + var1.getRunTime() + "ms)");
       } else {
          if (this.successes >= var1.requiredSuccesses()) {
@@ -90,7 +77,7 @@ class ReportGameListener implements GameTestListener {
          }
 
       } else {
-         TestFunction var3 = var1.getTestFunction();
+         GameTestInstance var3 = var1.getTest();
          String var10000 = String.valueOf(var1);
          String var4 = "Flaky test " + var10000 + " failed, attempt: " + this.attempts + "/" + var3.maxAttempts();
          if (var3.requiredSuccesses() > 1) {
@@ -112,7 +99,7 @@ class ReportGameListener implements GameTestListener {
    }
 
    public static void reportPassed(GameTestInfo var0, String var1) {
-      updateBeaconGlass(var0, Blocks.LIME_STAINED_GLASS);
+      getTestInstanceBlockEntity(var0).ifPresent((var0x) -> var0x.setSuccess());
       visualizePassedTest(var0, var1);
    }
 
@@ -122,8 +109,14 @@ class ReportGameListener implements GameTestListener {
    }
 
    protected static void reportFailure(GameTestInfo var0, Throwable var1) {
-      updateBeaconGlass(var0, var0.isRequired() ? Blocks.RED_STAINED_GLASS : Blocks.ORANGE_STAINED_GLASS);
-      spawnLectern(var0, Util.describeError(var1));
+      Object var2;
+      if (var1 instanceof GameTestAssertException var3) {
+         var2 = var3.getDescription();
+      } else {
+         var2 = Component.literal(Util.describeError(var1));
+      }
+
+      getTestInstanceBlockEntity(var0).ifPresent((var1x) -> var1x.setErrorMessage(var2));
       visualizeFailedTest(var0, var1);
    }
 
@@ -131,7 +124,7 @@ class ReportGameListener implements GameTestListener {
       String var10000 = var1.getMessage();
       String var2 = var10000 + (var1.getCause() == null ? "" : " cause: " + Util.describeError(var1.getCause()));
       var10000 = var0.isRequired() ? "" : "(optional) ";
-      String var3 = var10000 + var0.getTestName() + " failed! " + var2;
+      String var3 = var10000 + String.valueOf(var0.id()) + " failed! " + var2;
       say(var0.getLevel(), var0.isRequired() ? ChatFormatting.RED : ChatFormatting.YELLOW, var3);
       Throwable var4 = (Throwable)MoreObjects.firstNonNull(ExceptionUtils.getRootCause(var1), var1);
       if (var4 instanceof GameTestAssertPosException var5) {
@@ -141,61 +134,11 @@ class ReportGameListener implements GameTestListener {
       GlobalTestReporter.onTestFailed(var0);
    }
 
-   protected static void spawnBeacon(GameTestInfo var0, Block var1) {
-      ServerLevel var2 = var0.getLevel();
-      BlockPos var3 = getBeaconPos(var0);
-      var2.setBlockAndUpdate(var3, Blocks.BEACON.defaultBlockState().rotate(var0.getRotation()));
-      updateBeaconGlass(var0, var1);
-
-      for(int var4 = -1; var4 <= 1; ++var4) {
-         for(int var5 = -1; var5 <= 1; ++var5) {
-            BlockPos var6 = var3.offset(var4, -1, var5);
-            var2.setBlockAndUpdate(var6, Blocks.IRON_BLOCK.defaultBlockState());
-         }
-      }
-
-   }
-
-   private static BlockPos getBeaconPos(GameTestInfo var0) {
-      BlockPos var1 = var0.getStructureBlockPos();
-      BlockPos var2 = new BlockPos(-1, -2, -1);
-      return StructureTemplate.transform(var1.offset(var2), Mirror.NONE, var0.getRotation(), var1);
-   }
-
-   private static void updateBeaconGlass(GameTestInfo var0, Block var1) {
-      ServerLevel var2 = var0.getLevel();
-      BlockPos var3 = getBeaconPos(var0);
-      if (var2.getBlockState(var3).is(Blocks.BEACON)) {
-         BlockPos var4 = var3.offset(0, 1, 0);
-         var2.setBlockAndUpdate(var4, var1.defaultBlockState());
-      }
-
-   }
-
-   private static void spawnLectern(GameTestInfo var0, String var1) {
-      ServerLevel var2 = var0.getLevel();
-      BlockPos var3 = var0.getStructureBlockPos();
-      BlockPos var4 = new BlockPos(-1, 0, -1);
-      BlockPos var5 = StructureTemplate.transform(var3.offset(var4), Mirror.NONE, var0.getRotation(), var3);
-      var2.setBlockAndUpdate(var5, Blocks.LECTERN.defaultBlockState().rotate(var0.getRotation()));
-      BlockState var6 = var2.getBlockState(var5);
-      ItemStack var7 = createBook(var0.getTestName(), var0.isRequired(), var1);
-      LecternBlock.tryPlaceBook((LivingEntity)null, var2, var5, var6, var7);
-   }
-
-   private static ItemStack createBook(String var0, boolean var1, String var2) {
-      StringBuffer var3 = new StringBuffer();
-      Arrays.stream(var0.split("\\.")).forEach((var1x) -> var3.append(var1x).append('\n'));
-      if (!var1) {
-         var3.append("(optional)\n");
-      }
-
-      var3.append("-------------------\n");
-      ItemStack var4 = new ItemStack(Items.WRITABLE_BOOK);
-      DataComponentType var10001 = DataComponents.WRITABLE_BOOK_CONTENT;
-      String var10004 = String.valueOf(var3);
-      var4.set(var10001, new WritableBookContent(List.of(Filterable.passThrough(var10004 + var2))));
-      return var4;
+   private static Optional<TestInstanceBlockEntity> getTestInstanceBlockEntity(GameTestInfo var0) {
+      ServerLevel var1 = var0.getLevel();
+      Optional var2 = Optional.ofNullable(var0.getTestBlockPos());
+      Optional var3 = var2.flatMap((var1x) -> var1.getBlockEntity(var1x, BlockEntityType.TEST_INSTANCE_BLOCK));
+      return var3;
    }
 
    protected static void say(ServerLevel var0, ChatFormatting var1, String var2) {

@@ -137,7 +137,7 @@ public class Spider extends Monster {
       if (var5.nextInt(100) == 0) {
          Skeleton var6 = EntityType.SKELETON.create(this.level(), EntitySpawnReason.JOCKEY);
          if (var6 != null) {
-            var6.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+            var6.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
             var6.finalizeSpawn(var1, var2, var3, (SpawnGroupData)null);
             var6.startRiding(this);
          }

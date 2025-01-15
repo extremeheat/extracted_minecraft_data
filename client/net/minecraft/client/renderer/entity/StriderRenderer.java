@@ -2,11 +2,13 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.client.model.StriderModel;
 import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.renderer.entity.layers.SaddleLayer;
+import net.minecraft.client.renderer.entity.layers.SimpleEquipmentLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.StriderRenderState;
+import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.monster.Strider;
 
 public class StriderRenderer extends AgeableMobRenderer<Strider, StriderRenderState, StriderModel> {
@@ -16,7 +18,7 @@ public class StriderRenderer extends AgeableMobRenderer<Strider, StriderRenderSt
 
    public StriderRenderer(EntityRendererProvider.Context var1) {
       super(var1, new StriderModel(var1.bakeLayer(ModelLayers.STRIDER)), new StriderModel(var1.bakeLayer(ModelLayers.STRIDER_BABY)), 0.5F);
-      this.addLayer(new SaddleLayer(this, new StriderModel(var1.bakeLayer(ModelLayers.STRIDER_SADDLE)), new StriderModel(var1.bakeLayer(ModelLayers.STRIDER_BABY_SADDLE)), ResourceLocation.withDefaultNamespace("textures/entity/strider/strider_saddle.png")));
+      this.addLayer(new SimpleEquipmentLayer(this, var1.getEquipmentRenderer(), EquipmentClientInfo.LayerType.STRIDER_SADDLE, (var0) -> var0.saddle, new StriderModel(var1.bakeLayer(ModelLayers.STRIDER_SADDLE)), new StriderModel(var1.bakeLayer(ModelLayers.STRIDER_BABY_SADDLE))));
    }
 
    public ResourceLocation getTextureLocation(StriderRenderState var1) {
@@ -34,7 +36,7 @@ public class StriderRenderer extends AgeableMobRenderer<Strider, StriderRenderSt
 
    public void extractRenderState(Strider var1, StriderRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
-      var2.isSaddled = var1.isSaddled();
+      var2.saddle = var1.getItemBySlot(EquipmentSlot.SADDLE).copy();
       var2.isSuffocating = var1.isSuffocating();
       var2.isRidden = var1.isVehicle();
    }

@@ -3,7 +3,7 @@ package net.minecraft.core.component;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
-public interface DataComponentHolder {
+public interface DataComponentHolder extends DataComponentGetter {
    DataComponentMap getComponents();
 
    @Nullable

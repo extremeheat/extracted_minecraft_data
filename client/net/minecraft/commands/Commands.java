@@ -209,6 +209,7 @@ public class Commands {
       TeamMsgCommand.register(this.dispatcher);
       TeleportCommand.register(this.dispatcher);
       TellRawCommand.register(this.dispatcher, var2);
+      TestCommand.register(this.dispatcher, var2);
       TickCommand.register(this.dispatcher);
       TimeCommand.register(this.dispatcher);
       TitleCommand.register(this.dispatcher, var2);
@@ -220,7 +221,6 @@ public class Commands {
       }
 
       if (SharedConstants.IS_RUNNING_IN_IDE) {
-         TestCommand.register(this.dispatcher);
          RaidCommand.register(this.dispatcher, var2);
          DebugPathCommand.register(this.dispatcher);
          DebugMobSpawningCommand.register(this.dispatcher);

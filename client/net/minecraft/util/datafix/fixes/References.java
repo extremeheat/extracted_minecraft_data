@@ -29,6 +29,7 @@ public class References {
    public static final DSL.TypeReference VILLAGER_TRADE = reference("villager_trade");
    public static final DSL.TypeReference PARTICLE = reference("particle");
    public static final DSL.TypeReference TEXT_COMPONENT = reference("text_component");
+   public static final DSL.TypeReference ENTITY_EQUIPMENT = reference("entity_equipment");
    public static final DSL.TypeReference ENTITY_NAME = reference("entity_name");
    public static final DSL.TypeReference ENTITY_TREE = reference("entity_tree");
    public static final DSL.TypeReference ENTITY = reference("entity");

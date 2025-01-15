@@ -27,20 +27,20 @@ public abstract class NamedEntityWriteReadFix extends DataFix {
       Type var1 = this.getInputSchema().getType(this.type);
       Type var2 = this.getInputSchema().getChoiceType(this.type, this.entityName);
       Type var3 = this.getOutputSchema().getType(this.type);
-      Type var4 = this.getOutputSchema().getChoiceType(this.type, this.entityName);
-      OpticFinder var5 = DSL.namedChoice(this.entityName, var2);
-      Type var6 = ExtraDataFixUtils.patchSubType(var2, var1, var3);
-      return this.fix(var1, var3, var5, var4, var6);
+      OpticFinder var4 = DSL.namedChoice(this.entityName, var2);
+      Type var5 = ExtraDataFixUtils.patchSubType(var1, var1, var3);
+      return this.fix(var1, var3, var5, var4);
    }
 
-   private <S, T, A, B> TypeRewriteRule fix(Type<S> var1, Type<T> var2, OpticFinder<A> var3, Type<B> var4, Type<?> var5) {
-      return this.fixTypeEverywhere(this.name, var1, var2, (var5x) -> (var6) -> {
-            Typed var7 = new Typed(var1, var5x, var6);
-            return var7.update(var3, var4, (var4x) -> {
-               Typed var5xx = new Typed(var5, var5x, var4x);
-               return Util.writeAndReadTypedOrThrow(var5xx, var4, this::fix).getValue();
-            }).getValue();
-         });
+   private <S, T, A> TypeRewriteRule fix(Type<S> var1, Type<T> var2, Type<?> var3, OpticFinder<A> var4) {
+      return this.fixTypeEverywhereTyped(this.name, var1, var2, (var4x) -> {
+         if (var4x.getOptional(var4).isEmpty()) {
+            return ExtraDataFixUtils.cast(var2, var4x);
+         } else {
+            Typed var5 = ExtraDataFixUtils.cast(var3, var4x);
+            return Util.writeAndReadTypedOrThrow(var5, var2, this::fix);
+         }
+      });
    }
 
    protected abstract <T> Dynamic<T> fix(Dynamic<T> var1);

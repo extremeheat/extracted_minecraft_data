@@ -102,7 +102,7 @@ public class FrogspawnBlock extends Block {
             double var7 = (double)var2.getX() + this.getRandomTadpolePositionOffset(var3);
             double var9 = (double)var2.getZ() + this.getRandomTadpolePositionOffset(var3);
             int var11 = var3.nextInt(1, 361);
-            var6.moveTo(var7, (double)var2.getY() - 0.5, var9, (float)var11, 0.0F);
+            var6.snapTo(var7, (double)var2.getY() - 0.5, var9, (float)var11, 0.0F);
             var6.setPersistenceRequired();
             var1.addFreshEntity(var6);
          }

@@ -8,6 +8,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
@@ -41,7 +43,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
@@ -85,7 +86,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 
-public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Holder<WolfVariant>> {
+public class Wolf extends TamableAnimal implements NeutralMob {
    private static final EntityDataAccessor<Boolean> DATA_INTERESTED_ID;
    private static final EntityDataAccessor<Integer> DATA_COLLAR_COLOR;
    private static final EntityDataAccessor<Integer> DATA_REMAINING_ANGER_TIME;
@@ -144,12 +145,39 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
       }
    }
 
-   public Holder<WolfVariant> getVariant() {
+   private Holder<WolfVariant> getVariant() {
       return (Holder)this.entityData.get(DATA_VARIANT_ID);
    }
 
-   public void setVariant(Holder<WolfVariant> var1) {
+   private void setVariant(Holder<WolfVariant> var1) {
       this.entityData.set(DATA_VARIANT_ID, var1);
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      if (var1 == DataComponents.WOLF_VARIANT) {
+         return (T)castComponentValue(var1, this.getVariant());
+      } else {
+         return (T)(var1 == DataComponents.WOLF_COLLAR ? castComponentValue(var1, this.getCollarColor()) : super.get(var1));
+      }
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.WOLF_VARIANT);
+      this.applyImplicitComponentIfPresent(var1, DataComponents.WOLF_COLLAR);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.WOLF_VARIANT) {
+         this.setVariant((Holder)castComponentValue(DataComponents.WOLF_VARIANT, var2));
+         return true;
+      } else if (var1 == DataComponents.WOLF_COLLAR) {
+         this.setCollarColor((DyeColor)castComponentValue(DataComponents.WOLF_COLLAR, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -326,10 +354,6 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
          this.setOrderedToSit(false);
          return super.hurtServer(var1, var2, var3);
       }
-   }
-
-   public boolean canUseSlot(EquipmentSlot var1) {
-      return true;
    }
 
    protected void actuallyHurt(ServerLevel var1, DamageSource var2, float var3) {
@@ -618,16 +642,6 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    @Nullable
    public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
-   }
-
-   // $FF: synthetic method
-   public Object getVariant() {
-      return this.getVariant();
-   }
-
-   // $FF: synthetic method
-   public void setVariant(final Object var1) {
-      this.setVariant((Holder)var1);
    }
 
    static {

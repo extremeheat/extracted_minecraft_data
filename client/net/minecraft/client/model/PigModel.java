@@ -18,10 +18,6 @@ public class PigModel extends QuadrupedModel<LivingEntityRenderState> {
       super(var1);
    }
 
-   public static LayerDefinition createSaddleLayer(CubeDeformation var0) {
-      return LayerDefinition.create(createBasePigModel(var0), 64, 32);
-   }
-
    public static LayerDefinition createBodyLayer(CubeDeformation var0) {
       return LayerDefinition.create(createBasePigModel(var0), 64, 64);
    }

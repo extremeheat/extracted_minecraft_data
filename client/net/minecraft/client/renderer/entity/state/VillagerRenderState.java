@@ -1,18 +1,18 @@
 package net.minecraft.client.renderer.entity.state;
 
+import javax.annotation.Nullable;
 import net.minecraft.world.entity.npc.VillagerData;
-import net.minecraft.world.entity.npc.VillagerProfession;
-import net.minecraft.world.entity.npc.VillagerType;
 
 public class VillagerRenderState extends HoldingEntityRenderState implements VillagerDataHolderRenderState {
    public boolean isUnhappy;
+   @Nullable
    public VillagerData villagerData;
 
    public VillagerRenderState() {
       super();
-      this.villagerData = new VillagerData(VillagerType.PLAINS, VillagerProfession.NONE, 1);
    }
 
+   @Nullable
    public VillagerData getVillagerData() {
       return this.villagerData;
    }

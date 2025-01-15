@@ -109,7 +109,7 @@ public class VillageSiege implements CustomSpawner {
             return;
          }
 
-         var3.moveTo(var2.x, var2.y, var2.z, var1.random.nextFloat() * 360.0F, 0.0F);
+         var3.snapTo(var2.x, var2.y, var2.z, var1.random.nextFloat() * 360.0F, 0.0F);
          var1.addFreshEntityWithPassengers(var3);
       }
    }

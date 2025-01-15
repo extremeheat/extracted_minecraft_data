@@ -40,8 +40,11 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ArgumentSignatures;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.gametest.framework.GameTestInstance;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
@@ -76,6 +79,7 @@ import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
 import net.minecraft.network.protocol.game.ClientboundStartConfigurationPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.network.protocol.game.ClientboundTagQueryPacket;
+import net.minecraft.network.protocol.game.ClientboundTestInstanceBlockStatus;
 import net.minecraft.network.protocol.game.ServerGamePacketListener;
 import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
 import net.minecraft.network.protocol.game.ServerboundBlockEntityTagQueryPacket;
@@ -124,9 +128,11 @@ import net.minecraft.network.protocol.game.ServerboundSetCommandMinecartPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.network.protocol.game.ServerboundSetJigsawBlockPacket;
 import net.minecraft.network.protocol.game.ServerboundSetStructureBlockPacket;
+import net.minecraft.network.protocol.game.ServerboundSetTestBlockPacket;
 import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
 import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.network.protocol.game.ServerboundTeleportToEntityPacket;
+import net.minecraft.network.protocol.game.ServerboundTestInstanceBlockActionPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
 import net.minecraft.network.protocol.ping.ClientboundPongResponsePacket;
@@ -189,6 +195,8 @@ import net.minecraft.world.level.block.entity.CrafterBlockEntity;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
+import net.minecraft.world.level.block.entity.TestBlockEntity;
+import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -269,7 +277,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       this.player.yo = this.player.getY();
       this.player.zo = this.player.getZ();
       this.player.doTick();
-      this.player.absMoveTo(this.firstGoodX, this.firstGoodY, this.firstGoodZ, this.player.getYRot(), this.player.getXRot());
+      this.player.absSnapTo(this.firstGoodX, this.firstGoodY, this.firstGoodZ, this.player.getYRot(), this.player.getXRot());
       ++this.tickCount;
       this.knownMovePacketCount = this.receivedMovePacketCount;
       if (this.clientIsFloating && !this.player.isSleeping() && !this.player.isPassenger() && !this.player.isDeadOrDying()) {
@@ -442,10 +450,10 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                LOGGER.warn("{} (vehicle of {}) moved wrongly! {}", new Object[]{var2.getName().getString(), this.player.getName().getString(), Math.sqrt(var26)});
             }
 
-            var2.absMoveTo(var10, var12, var14, var16, var17);
+            var2.absSnapTo(var10, var12, var14, var16, var17);
             boolean var33 = var3.noCollision(var2, var2.getBoundingBox().deflate(0.0625));
             if (var28 && (var32 || !var33)) {
-               var2.absMoveTo(var4, var6, var8, var16, var17);
+               var2.absSnapTo(var4, var6, var8, var16, var17);
                this.send(ClientboundMoveVehiclePacket.fromEntity(var2));
                return;
             }
@@ -478,7 +486,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             return;
          }
 
-         this.player.absMoveTo(this.awaitingPositionFromClient.x, this.awaitingPositionFromClient.y, this.awaitingPositionFromClient.z, this.player.getYRot(), this.player.getXRot());
+         this.player.absSnapTo(this.awaitingPositionFromClient.x, this.awaitingPositionFromClient.y, this.awaitingPositionFromClient.z, this.player.getYRot(), this.player.getXRot());
          this.lastGoodX = this.awaitingPositionFromClient.x;
          this.lastGoodY = this.awaitingPositionFromClient.y;
          this.lastGoodZ = this.awaitingPositionFromClient.z;
@@ -763,6 +771,80 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
       }
    }
 
+   public void handleSetTestBlock(ServerboundSetTestBlockPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      if (this.player.canUseGameMasterBlocks()) {
+         BlockPos var2 = var1.position();
+         BlockState var3 = this.player.level().getBlockState(var2);
+         BlockEntity var4 = this.player.level().getBlockEntity(var2);
+         if (var4 instanceof TestBlockEntity) {
+            TestBlockEntity var5 = (TestBlockEntity)var4;
+            var5.setMode(var1.mode());
+            var5.setMessage(var1.message());
+            var5.setChanged();
+            this.player.level().sendBlockUpdated(var2, var3, var5.getBlockState(), 3);
+         }
+
+      }
+   }
+
+   public void handleTestInstanceBlockAction(ServerboundTestInstanceBlockActionPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      BlockPos var2 = var1.pos();
+      if (this.player.canUseGameMasterBlocks()) {
+         BlockEntity var4 = this.player.level().getBlockEntity(var2);
+         if (var4 instanceof TestInstanceBlockEntity) {
+            TestInstanceBlockEntity var3 = (TestInstanceBlockEntity)var4;
+            if (var1.action() != ServerboundTestInstanceBlockActionPacket.Action.QUERY && var1.action() != ServerboundTestInstanceBlockActionPacket.Action.INIT) {
+               var3.set(var1.data());
+               if (var1.action() == ServerboundTestInstanceBlockActionPacket.Action.RESET) {
+                  ServerPlayer var10001 = this.player;
+                  Objects.requireNonNull(var10001);
+                  var3.resetTest(var10001::sendSystemMessage);
+               } else if (var1.action() == ServerboundTestInstanceBlockActionPacket.Action.SAVE) {
+                  ServerPlayer var10 = this.player;
+                  Objects.requireNonNull(var10);
+                  var3.saveTest(var10::sendSystemMessage);
+               } else if (var1.action() == ServerboundTestInstanceBlockActionPacket.Action.EXPORT) {
+                  ServerPlayer var11 = this.player;
+                  Objects.requireNonNull(var11);
+                  var3.exportTest(var11::sendSystemMessage);
+               } else if (var1.action() == ServerboundTestInstanceBlockActionPacket.Action.RUN) {
+                  ServerPlayer var12 = this.player;
+                  Objects.requireNonNull(var12);
+                  var3.runTest(var12::sendSystemMessage);
+               }
+
+               BlockState var9 = this.player.level().getBlockState(var2);
+               this.player.level().sendBlockUpdated(var2, Blocks.AIR.defaultBlockState(), var9, 3);
+            } else {
+               Registry var8 = this.player.registryAccess().lookupOrThrow(Registries.TEST_INSTANCE);
+               Optional var10000 = var1.data().test();
+               Objects.requireNonNull(var8);
+               Optional var5 = var10000.flatMap(var8::get);
+               Object var6;
+               if (var5.isPresent()) {
+                  var6 = ((GameTestInstance)((Holder.Reference)var5.get()).value()).describe();
+               } else {
+                  var6 = Component.translatable("test_instance.description.no_test").withStyle(ChatFormatting.RED);
+               }
+
+               Optional var7;
+               if (var1.action() == ServerboundTestInstanceBlockActionPacket.Action.QUERY) {
+                  var7 = var1.data().test().flatMap((var1x) -> TestInstanceBlockEntity.getStructureSize(this.player.serverLevel(), var1x));
+               } else {
+                  var7 = Optional.empty();
+               }
+
+               this.connection.send(new ClientboundTestInstanceBlockStatus((Component)var6, var7));
+            }
+
+            return;
+         }
+      }
+
+   }
+
    public void handleSetJigsawBlock(ServerboundSetJigsawBlockPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (this.player.canUseGameMasterBlocks()) {
@@ -902,13 +984,13 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                float var3 = Mth.wrapDegrees(var1.getYRot(this.player.getYRot()));
                float var4 = Mth.wrapDegrees(var1.getXRot(this.player.getXRot()));
                if (this.updateAwaitingTeleport()) {
-                  this.player.absRotateTo(var3, var4);
+                  this.player.absSnapRotationTo(var3, var4);
                } else {
                   double var5 = clampHorizontal(var1.getX(this.player.getX()));
                   double var7 = clampVertical(var1.getY(this.player.getY()));
                   double var9 = clampHorizontal(var1.getZ(this.player.getZ()));
                   if (this.player.isPassenger()) {
-                     this.player.absMoveTo(this.player.getX(), this.player.getY(), this.player.getZ(), var3, var4);
+                     this.player.absSnapTo(this.player.getX(), this.player.getY(), this.player.getZ(), var3, var4);
                      this.player.serverLevel().getChunkSource().move(this.player);
                   } else {
                      double var11 = this.player.getX();
@@ -971,7 +1053,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
                         }
 
                         if (this.player.noPhysics || this.player.isSleeping() || (!var33 || !var2.noCollision(this.player, var43)) && !this.isPlayerCollidingWithAnythingNew(var2, var43, var5, var7, var9)) {
-                           this.player.absMoveTo(var5, var7, var9, var3, var4);
+                           this.player.absSnapTo(var5, var7, var9, var3, var4);
                            boolean var34 = this.player.isAutoSpinAttack();
                            this.clientIsFloating = var31 >= -0.03125 && !var30 && this.player.gameMode.getGameModeForPlayer() != GameType.SPECTATOR && !this.server.isFlightAllowed() && !this.player.getAbilities().mayfly && !this.player.hasEffect(MobEffects.LEVITATION) && !var27 && !var34 && this.noBlocksAround(this.player);
                            this.player.serverLevel().getChunkSource().move(this.player);
@@ -1176,7 +1258,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             float var5 = Mth.wrapDegrees(var1.getYRot());
             float var6 = Mth.wrapDegrees(var1.getXRot());
             if (var6 != this.player.getXRot() || var5 != this.player.getYRot()) {
-               this.player.absRotateTo(var5, var6);
+               this.player.absSnapRotationTo(var5, var6);
             }
 
             InteractionResult var7 = this.player.gameMode.useItem(this.player, var2, var4, var3);

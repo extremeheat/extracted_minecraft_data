@@ -198,7 +198,7 @@ public class Slime extends Mob implements Enemy {
             float var10 = ((float)(var8 / 2) - 0.5F) * var4;
             this.convertTo(this.getType(), new ConversionParams(ConversionType.SPLIT_ON_DEATH, false, false, var7), EntitySpawnReason.TRIGGERED, (var4x) -> {
                var4x.setSize(var5, true);
-               var4x.moveTo(this.getX() + (double)var9, this.getY() + 0.5, this.getZ() + (double)var10, this.random.nextFloat() * 360.0F, 0.0F);
+               var4x.snapTo(this.getX() + (double)var9, this.getY() + 0.5, this.getZ() + (double)var10, this.random.nextFloat() * 360.0F, 0.0F);
             });
          }
       }

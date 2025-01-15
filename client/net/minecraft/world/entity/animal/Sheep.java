@@ -4,6 +4,9 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -213,6 +216,25 @@ public class Sheep extends Animal implements Shearable {
    public void setColor(DyeColor var1) {
       byte var2 = (Byte)this.entityData.get(DATA_WOOL_ID);
       this.entityData.set(DATA_WOOL_ID, (byte)(var2 & 240 | var1.getId() & 15));
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      return (T)(var1 == DataComponents.SHEEP_COLOR ? castComponentValue(var1, this.getColor()) : super.get(var1));
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.SHEEP_COLOR);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.SHEEP_COLOR) {
+         this.setColor((DyeColor)castComponentValue(DataComponents.SHEEP_COLOR, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    public boolean isSheared() {

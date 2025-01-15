@@ -66,14 +66,6 @@ public class V99 extends Schema {
       super(var1, var2);
    }
 
-   protected static TypeTemplate equipment(Schema var0) {
-      return DSL.optionalFields("Equipment", DSL.list(References.ITEM_STACK.in(var0)));
-   }
-
-   protected static void registerMob(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      var0.register(var1, var2, () -> equipment(var0));
-   }
-
    protected static void registerThrowableProjectile(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
       var0.register(var1, var2, () -> DSL.optionalFields("inTile", References.BLOCK_NAME.in(var0)));
    }
@@ -117,44 +109,44 @@ public class V99 extends Schema {
       var1.register(var2, "MinecartSpawner", () -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(var1), References.UNTAGGED_SPAWNER.in(var1)));
       var1.register(var2, "MinecartHopper", (var1x) -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(var1), "Items", DSL.list(References.ITEM_STACK.in(var1))));
       var1.register(var2, "MinecartCommandBlock", () -> DSL.optionalFields("DisplayTile", References.BLOCK_NAME.in(var1), "LastOutput", References.TEXT_COMPONENT.in(var1)));
-      registerMob(var1, var2, "ArmorStand");
-      registerMob(var1, var2, "Creeper");
-      registerMob(var1, var2, "Skeleton");
-      registerMob(var1, var2, "Spider");
-      registerMob(var1, var2, "Giant");
-      registerMob(var1, var2, "Zombie");
-      registerMob(var1, var2, "Slime");
-      registerMob(var1, var2, "Ghast");
-      registerMob(var1, var2, "PigZombie");
-      var1.register(var2, "Enderman", (var1x) -> DSL.optionalFields("carried", References.BLOCK_NAME.in(var1), equipment(var1)));
-      registerMob(var1, var2, "CaveSpider");
-      registerMob(var1, var2, "Silverfish");
-      registerMob(var1, var2, "Blaze");
-      registerMob(var1, var2, "LavaSlime");
-      registerMob(var1, var2, "EnderDragon");
-      registerMob(var1, var2, "WitherBoss");
-      registerMob(var1, var2, "Bat");
-      registerMob(var1, var2, "Witch");
-      registerMob(var1, var2, "Endermite");
-      registerMob(var1, var2, "Guardian");
-      registerMob(var1, var2, "Pig");
-      registerMob(var1, var2, "Sheep");
-      registerMob(var1, var2, "Cow");
-      registerMob(var1, var2, "Chicken");
-      registerMob(var1, var2, "Squid");
-      registerMob(var1, var2, "Wolf");
-      registerMob(var1, var2, "MushroomCow");
-      registerMob(var1, var2, "SnowMan");
-      registerMob(var1, var2, "Ozelot");
-      registerMob(var1, var2, "VillagerGolem");
-      var1.register(var2, "EntityHorse", (var1x) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var1)), "ArmorItem", References.ITEM_STACK.in(var1), "SaddleItem", References.ITEM_STACK.in(var1), equipment(var1)));
-      registerMob(var1, var2, "Rabbit");
-      var1.register(var2, "Villager", (var1x) -> DSL.optionalFields("Inventory", DSL.list(References.ITEM_STACK.in(var1)), "Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1))), equipment(var1)));
+      var1.registerSimple(var2, "ArmorStand");
+      var1.registerSimple(var2, "Creeper");
+      var1.registerSimple(var2, "Skeleton");
+      var1.registerSimple(var2, "Spider");
+      var1.registerSimple(var2, "Giant");
+      var1.registerSimple(var2, "Zombie");
+      var1.registerSimple(var2, "Slime");
+      var1.registerSimple(var2, "Ghast");
+      var1.registerSimple(var2, "PigZombie");
+      var1.register(var2, "Enderman", (var1x) -> DSL.optionalFields("carried", References.BLOCK_NAME.in(var1)));
+      var1.registerSimple(var2, "CaveSpider");
+      var1.registerSimple(var2, "Silverfish");
+      var1.registerSimple(var2, "Blaze");
+      var1.registerSimple(var2, "LavaSlime");
+      var1.registerSimple(var2, "EnderDragon");
+      var1.registerSimple(var2, "WitherBoss");
+      var1.registerSimple(var2, "Bat");
+      var1.registerSimple(var2, "Witch");
+      var1.registerSimple(var2, "Endermite");
+      var1.registerSimple(var2, "Guardian");
+      var1.registerSimple(var2, "Pig");
+      var1.registerSimple(var2, "Sheep");
+      var1.registerSimple(var2, "Cow");
+      var1.registerSimple(var2, "Chicken");
+      var1.registerSimple(var2, "Squid");
+      var1.registerSimple(var2, "Wolf");
+      var1.registerSimple(var2, "MushroomCow");
+      var1.registerSimple(var2, "SnowMan");
+      var1.registerSimple(var2, "Ozelot");
+      var1.registerSimple(var2, "VillagerGolem");
+      var1.register(var2, "EntityHorse", (var1x) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var1)), "ArmorItem", References.ITEM_STACK.in(var1), "SaddleItem", References.ITEM_STACK.in(var1)));
+      var1.registerSimple(var2, "Rabbit");
+      var1.register(var2, "Villager", (var1x) -> DSL.optionalFields("Inventory", DSL.list(References.ITEM_STACK.in(var1)), "Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1)))));
       var1.registerSimple(var2, "EnderCrystal");
       var1.register(var2, "AreaEffectCloud", (var1x) -> DSL.optionalFields("Particle", References.PARTICLE.in(var1)));
       var1.registerSimple(var2, "ShulkerBullet");
       var1.registerSimple(var2, "DragonFireball");
-      registerMob(var1, var2, "Shulker");
+      var1.registerSimple(var2, "Shulker");
       return var2;
    }
 
@@ -197,7 +189,7 @@ public class V99 extends Schema {
       var1.registerType(true, References.BLOCK_ENTITY, () -> DSL.optionalFields("components", References.DATA_COMPONENTS.in(var1), DSL.taggedChoiceLazy("id", DSL.string(), var3)));
       var1.registerType(true, References.ENTITY_TREE, () -> DSL.optionalFields("Riding", References.ENTITY_TREE.in(var1), References.ENTITY.in(var1)));
       var1.registerType(false, References.ENTITY_NAME, () -> DSL.constType(NamespacedSchema.namespacedString()));
-      var1.registerType(true, References.ENTITY, () -> DSL.optionalFields("CustomName", DSL.constType(DSL.string()), DSL.taggedChoiceLazy("id", DSL.string(), var2)));
+      var1.registerType(true, References.ENTITY, () -> DSL.and(References.ENTITY_EQUIPMENT.in(var1), DSL.optionalFields("CustomName", DSL.constType(DSL.string()), DSL.taggedChoiceLazy("id", DSL.string(), var2))));
       var1.registerType(true, References.ITEM_STACK, () -> DSL.hook(DSL.optionalFields("id", DSL.or(DSL.constType(DSL.intType()), References.ITEM_NAME.in(var1)), "tag", itemStackTag(var1)), ADD_NAMES, HookFunction.IDENTITY));
       var1.registerType(false, References.OPTIONS, DSL::remainder);
       var1.registerType(false, References.BLOCK_NAME, () -> DSL.or(DSL.constType(DSL.intType()), DSL.constType(NamespacedSchema.namespacedString())));
@@ -222,6 +214,10 @@ public class V99 extends Schema {
       var1.registerType(true, References.VILLAGER_TRADE, () -> DSL.optionalFields("buy", References.ITEM_STACK.in(var1), "buyB", References.ITEM_STACK.in(var1), "sell", References.ITEM_STACK.in(var1)));
       var1.registerType(true, References.PARTICLE, () -> DSL.constType(DSL.string()));
       var1.registerType(true, References.TEXT_COMPONENT, () -> DSL.constType(DSL.string()));
+      var1.registerType(false, References.STRUCTURE, () -> DSL.optionalFields("entities", DSL.list(DSL.optionalFields("nbt", References.ENTITY_TREE.in(var1))), "blocks", DSL.list(DSL.optionalFields("nbt", References.BLOCK_ENTITY.in(var1))), "palette", DSL.list(References.BLOCK_STATE.in(var1))));
+      var1.registerType(false, References.BLOCK_STATE, DSL::remainder);
+      var1.registerType(false, References.FLAT_BLOCK_STATE, DSL::remainder);
+      var1.registerType(true, References.ENTITY_EQUIPMENT, () -> DSL.optional(DSL.field("Equipment", DSL.list(References.ITEM_STACK.in(var1)))));
    }
 
    public static TypeTemplate itemStackTag(Schema var0) {

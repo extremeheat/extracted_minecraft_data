@@ -104,8 +104,8 @@ public class Goat extends Animal {
 
    }
 
-   protected int calculateFallDamage(float var1, float var2) {
-      return super.calculateFallDamage(var1, var2) - 10;
+   protected int calculateFallDamage(double var1, float var3) {
+      return super.calculateFallDamage(var1, var3) - 10;
    }
 
    protected SoundEvent getAmbientSound() {

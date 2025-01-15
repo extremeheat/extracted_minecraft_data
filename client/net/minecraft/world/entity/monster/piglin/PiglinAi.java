@@ -20,6 +20,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
@@ -542,8 +544,8 @@ public class PiglinAi {
    }
 
    public static boolean isWearingSafeArmor(LivingEntity var0) {
-      for(ItemStack var2 : var0.getArmorAndBodyArmorSlots()) {
-         if (var2.is(ItemTags.PIGLIN_SAFE_ARMOR)) {
+      for(EquipmentSlot var2 : EquipmentSlotGroup.ARMOR) {
+         if (var0.getItemBySlot(var2).is(ItemTags.PIGLIN_SAFE_ARMOR)) {
             return true;
          }
       }

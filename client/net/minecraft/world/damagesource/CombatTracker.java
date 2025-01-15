@@ -37,7 +37,7 @@ public class CombatTracker {
    public void recordDamage(DamageSource var1, float var2) {
       this.recheckStatus();
       FallLocation var3 = FallLocation.getCurrentFallLocation(this.mob);
-      CombatEntry var4 = new CombatEntry(var1, var2, var3, this.mob.fallDistance);
+      CombatEntry var4 = new CombatEntry(var1, var2, var3, (float)this.mob.fallDistance);
       this.entries.add(var4);
       this.lastDamageTime = this.mob.tickCount;
       this.takingDamage = true;

@@ -153,7 +153,7 @@ public class ClientLevel extends Level {
          this.setBlock(var1, var2, 19);
          LocalPlayer var5 = this.minecraft.player;
          if (this == ((Player)var5).level() && ((Player)var5).isColliding(var1, var2)) {
-            ((Player)var5).absMoveTo(var3.x, var3.y, var3.z);
+            ((Player)var5).absSnapTo(var3.x, var3.y, var3.z);
          }
       }
 

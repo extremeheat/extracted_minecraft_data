@@ -27,5 +27,9 @@ public interface HolderGetter<T> {
       default <T> Optional<Holder.Reference<T>> get(ResourceKey<T> var1) {
          return this.lookup(var1.registryKey()).flatMap((var1x) -> var1x.get(var1));
       }
+
+      default <T> Holder.Reference<T> getOrThrow(ResourceKey<T> var1) {
+         return (Holder.Reference)this.lookup(var1.registryKey()).flatMap((var1x) -> var1x.get(var1)).orElseThrow(() -> new IllegalStateException("Missing element " + String.valueOf(var1)));
+      }
    }
 }

@@ -33,6 +33,8 @@ public class MinecartTNT extends AbstractMinecart {
    private static final String TAG_FUSE = "fuse";
    private static final float DEFAULT_EXPLOSION_POWER_BASE = 4.0F;
    private static final float DEFAULT_EXPLOSION_SPEED_FACTOR = 1.0F;
+   @Nullable
+   private DamageSource ignitionSource;
    private int fuse = -1;
    private float explosionPowerBase = 4.0F;
    private float explosionSpeedFactor = 1.0F;
@@ -51,7 +53,7 @@ public class MinecartTNT extends AbstractMinecart {
          --this.fuse;
          this.level().addParticle(ParticleTypes.SMOKE, this.getX(), this.getY() + 0.5, this.getZ(), 0.0, 0.0, 0.0);
       } else if (this.fuse == 0) {
-         this.explode(this.getDeltaMovement().horizontalDistanceSqr());
+         this.explode(this.ignitionSource, this.getDeltaMovement().horizontalDistanceSqr());
       }
 
       if (this.horizontalCollision) {
@@ -81,7 +83,7 @@ public class MinecartTNT extends AbstractMinecart {
          this.destroy(var1, this.getDropItem());
       } else {
          if (this.fuse < 0) {
-            this.primeFuse();
+            this.primeFuse(var2);
             this.fuse = this.random.nextInt(20) + this.random.nextInt(20);
          }
 
@@ -110,34 +112,38 @@ public class MinecartTNT extends AbstractMinecart {
 
    }
 
-   public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
-      if (var1 >= 3.0F) {
-         float var4 = var1 / 10.0F;
-         this.explode((double)(var4 * var4));
+   public boolean causeFallDamage(double var1, float var3, DamageSource var4) {
+      if (var1 >= 3.0) {
+         double var5 = var1 / 10.0;
+         this.explode(var5 * var5);
       }
 
-      return super.causeFallDamage(var1, var2, var3);
+      return super.causeFallDamage(var1, var3, var4);
    }
 
    public void activateMinecart(int var1, int var2, int var3, boolean var4) {
       if (var4 && this.fuse < 0) {
-         this.primeFuse();
+         this.primeFuse((DamageSource)null);
       }
 
    }
 
    public void handleEntityEvent(byte var1) {
       if (var1 == 10) {
-         this.primeFuse();
+         this.primeFuse((DamageSource)null);
       } else {
          super.handleEntityEvent(var1);
       }
 
    }
 
-   public void primeFuse() {
+   public void primeFuse(@Nullable DamageSource var1) {
       this.fuse = 80;
       if (!this.level().isClientSide) {
+         if (var1 != null && this.ignitionSource == null) {
+            this.ignitionSource = this.damageSources().explosion(this, var1.getEntity());
+         }
+
          this.level().broadcastEntityEvent(this, (byte)10);
          if (!this.isSilent()) {
             this.level().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);

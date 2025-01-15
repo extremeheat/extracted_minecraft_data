@@ -11,7 +11,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
@@ -159,9 +158,9 @@ public class SpawnEggItem extends Item {
             if (!((Mob)var7).isBaby()) {
                return Optional.empty();
             } else {
-               ((Mob)var7).moveTo(var5.x(), var5.y(), var5.z(), 0.0F, 0.0F);
+               ((Mob)var7).snapTo(var5.x(), var5.y(), var5.z(), 0.0F, 0.0F);
                var4.addFreshEntityWithPassengers((Entity)var7);
-               ((Mob)var7).setCustomName((Component)var6.get(DataComponents.CUSTOM_NAME));
+               ((Mob)var7).applyComponentsFromItemStack(var6);
                var6.consume(1, var1);
                return Optional.of(var7);
             }

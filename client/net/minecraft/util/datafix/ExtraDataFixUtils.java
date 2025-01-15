@@ -84,4 +84,28 @@ public class ExtraDataFixUtils {
          return (Dynamic)DataFixUtils.orElse(var10000.map(var0::createString).result(), var2x);
       });
    }
+
+   public static String dyeColorIdToName(int var0) {
+      String var10000;
+      switch (var0) {
+         case 1 -> var10000 = "orange";
+         case 2 -> var10000 = "magenta";
+         case 3 -> var10000 = "light_blue";
+         case 4 -> var10000 = "yellow";
+         case 5 -> var10000 = "lime";
+         case 6 -> var10000 = "pink";
+         case 7 -> var10000 = "gray";
+         case 8 -> var10000 = "light_gray";
+         case 9 -> var10000 = "cyan";
+         case 10 -> var10000 = "purple";
+         case 11 -> var10000 = "blue";
+         case 12 -> var10000 = "brown";
+         case 13 -> var10000 = "green";
+         case 14 -> var10000 = "red";
+         case 15 -> var10000 = "black";
+         default -> var10000 = "white";
+      }
+
+      return var10000;
+   }
 }

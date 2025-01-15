@@ -124,8 +124,8 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
       }
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
-      super.fallOn(var1, var2, var3, var4, var5 * 0.5F);
+   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
+      super.fallOn(var1, var2, var3, var4, var5 * 0.5);
    }
 
    public void updateEntityMovementAfterFallOn(BlockGetter var1, Entity var2) {

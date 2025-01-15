@@ -5,6 +5,8 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,6 +24,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class ExperienceOrb extends Entity {
+   protected static final EntityDataAccessor<Integer> DATA_VALUE;
    private static final int LIFETIME = 6000;
    private static final int ENTITY_SCAN_PERIOD = 20;
    private static final int MAX_FOLLOW_DIST = 8;
@@ -29,7 +32,6 @@ public class ExperienceOrb extends Entity {
    private static final double ORB_MERGE_DISTANCE = 0.5;
    private int age;
    private int health;
-   private int value;
    private int count;
    @Nullable
    private Player followingPlayer;
@@ -43,7 +45,7 @@ public class ExperienceOrb extends Entity {
          this.setDeltaMovement((this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0, this.random.nextDouble() * 0.2 * 2.0, (this.random.nextDouble() * 0.20000000298023224 - 0.10000000149011612) * 2.0);
       }
 
-      this.value = var8;
+      this.setValue(var8);
    }
 
    public ExperienceOrb(EntityType<? extends ExperienceOrb> var1, Level var2) {
@@ -58,6 +60,7 @@ public class ExperienceOrb extends Entity {
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      var1.define(DATA_VALUE, 0);
    }
 
    protected double getDefaultGravity() {
@@ -102,7 +105,6 @@ public class ExperienceOrb extends Entity {
          this.setDeltaMovement(this.getDeltaMovement().scale((double)var4));
          if (this.verticalCollisionBelow && var2 < -this.getGravity()) {
             this.setDeltaMovement(new Vec3(this.getDeltaMovement().x, -var2 * 0.4, this.getDeltaMovement().z));
-            this.hasImpulse = true;
          }
 
          ++this.age;
@@ -171,11 +173,11 @@ public class ExperienceOrb extends Entity {
    }
 
    private boolean canMerge(ExperienceOrb var1) {
-      return var1 != this && canMerge(var1, this.getId(), this.value);
+      return var1 != this && canMerge(var1, this.getId(), this.getValue());
    }
 
    private static boolean canMerge(ExperienceOrb var0, int var1, int var2) {
-      return !var0.isRemoved() && (var0.getId() - var1) % 40 == 0 && var0.value == var2;
+      return !var0.isRemoved() && (var0.getId() - var1) % 40 == 0 && var0.getValue() == var2;
    }
 
    private void merge(ExperienceOrb var1) {
@@ -213,14 +215,14 @@ public class ExperienceOrb extends Entity {
    public void addAdditionalSaveData(CompoundTag var1) {
       var1.putShort("Health", (short)this.health);
       var1.putShort("Age", (short)this.age);
-      var1.putShort("Value", (short)this.value);
+      var1.putShort("Value", (short)this.getValue());
       var1.putInt("Count", this.count);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       this.health = var1.getShort("Health");
       this.age = var1.getShort("Age");
-      this.value = var1.getShort("Value");
+      this.setValue(var1.getShort("Value"));
       this.count = Math.max(var1.getInt("Count"), 1);
    }
 
@@ -229,7 +231,7 @@ public class ExperienceOrb extends Entity {
          if (var1.takeXpDelay == 0) {
             var1.takeXpDelay = 2;
             var1.take(this, 1);
-            int var3 = this.repairPlayerItems(var2, this.value);
+            int var3 = this.repairPlayerItems(var2, this.getValue());
             if (var3 > 0) {
                var1.giveExperiencePoints(var3);
             }
@@ -264,30 +266,35 @@ public class ExperienceOrb extends Entity {
    }
 
    public int getValue() {
-      return this.value;
+      return (Integer)this.entityData.get(DATA_VALUE);
+   }
+
+   private void setValue(int var1) {
+      this.entityData.set(DATA_VALUE, var1);
    }
 
    public int getIcon() {
-      if (this.value >= 2477) {
+      int var1 = this.getValue();
+      if (var1 >= 2477) {
          return 10;
-      } else if (this.value >= 1237) {
+      } else if (var1 >= 1237) {
          return 9;
-      } else if (this.value >= 617) {
+      } else if (var1 >= 617) {
          return 8;
-      } else if (this.value >= 307) {
+      } else if (var1 >= 307) {
          return 7;
-      } else if (this.value >= 149) {
+      } else if (var1 >= 149) {
          return 6;
-      } else if (this.value >= 73) {
+      } else if (var1 >= 73) {
          return 5;
-      } else if (this.value >= 37) {
+      } else if (var1 >= 37) {
          return 4;
-      } else if (this.value >= 17) {
+      } else if (var1 >= 17) {
          return 3;
-      } else if (this.value >= 7) {
+      } else if (var1 >= 7) {
          return 2;
       } else {
-         return this.value >= 3 ? 1 : 0;
+         return var1 >= 3 ? 1 : 0;
       }
    }
 
@@ -325,5 +332,9 @@ public class ExperienceOrb extends Entity {
 
    public InterpolationHandler getInterpolation() {
       return this.interpolation;
+   }
+
+   static {
+      DATA_VALUE = SynchedEntityData.<Integer>defineId(ExperienceOrb.class, EntityDataSerializers.INT);
    }
 }

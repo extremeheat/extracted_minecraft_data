@@ -1,10 +1,8 @@
-package net.minecraft.util.datafix;
+package net.minecraft.util.datafix.fixes;
 
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
-import net.minecraft.util.datafix.fixes.NamedEntityFix;
-import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 

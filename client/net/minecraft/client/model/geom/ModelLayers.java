@@ -50,6 +50,8 @@ public class ModelLayers {
    public static final ModelLayerLocation BREEZE_WIND = register("breeze_wind");
    public static final ModelLayerLocation CAMEL = register("camel");
    public static final ModelLayerLocation CAMEL_BABY = register("camel_baby");
+   public static final ModelLayerLocation CAMEL_SADDLE = register("camel", "saddle");
+   public static final ModelLayerLocation CAMEL_BABY_SADDLE = register("camel_baby", "saddle");
    public static final ModelLayerLocation CAT = register("cat");
    public static final ModelLayerLocation CAT_BABY = register("cat_baby");
    public static final ModelLayerLocation CAT_BABY_COLLAR = register("cat_baby", "collar");
@@ -83,6 +85,8 @@ public class ModelLayers {
    public static final ModelLayerLocation DOLPHIN_BABY = register("dolphin_baby");
    public static final ModelLayerLocation DONKEY = register("donkey");
    public static final ModelLayerLocation DONKEY_BABY = register("donkey_baby");
+   public static final ModelLayerLocation DONKEY_SADDLE = register("donkey", "saddle");
+   public static final ModelLayerLocation DONKEY_BABY_SADDLE = register("donkey_baby", "saddle");
    public static final ModelLayerLocation DOUBLE_CHEST_LEFT = register("double_chest_left");
    public static final ModelLayerLocation DOUBLE_CHEST_RIGHT = register("double_chest_right");
    public static final ModelLayerLocation DRAGON_SKULL = register("dragon_skull");
@@ -121,8 +125,10 @@ public class ModelLayers {
    public static final ModelLayerLocation HOPPER_MINECART = register("hopper_minecart");
    public static final ModelLayerLocation HORSE = register("horse");
    public static final ModelLayerLocation HORSE_ARMOR = register("horse_armor");
+   public static final ModelLayerLocation HORSE_SADDLE = register("horse", "saddle");
    public static final ModelLayerLocation HORSE_BABY = register("horse_baby");
    public static final ModelLayerLocation HORSE_BABY_ARMOR = register("horse_armor_baby");
+   public static final ModelLayerLocation HORSE_BABY_SADDLE = register("horse_baby", "saddle");
    public static final ModelLayerLocation HUSK = register("husk");
    public static final ModelLayerLocation HUSK_BABY = register("husk_baby");
    public static final ModelLayerLocation HUSK_BABY_INNER_ARMOR = registerInnerArmor("husk_baby");
@@ -147,6 +153,8 @@ public class ModelLayers {
    public static final ModelLayerLocation MOOSHROOM_BABY = register("mooshroom_baby");
    public static final ModelLayerLocation MULE = register("mule");
    public static final ModelLayerLocation MULE_BABY = register("mule_baby");
+   public static final ModelLayerLocation MULE_SADDLE = register("mule", "saddle");
+   public static final ModelLayerLocation MULE_BABY_SADDLE = register("mule_baby", "saddle");
    public static final ModelLayerLocation OAK_BOAT = register("boat/oak");
    public static final ModelLayerLocation OAK_CHEST_BOAT = register("chest_boat/oak");
    public static final ModelLayerLocation OCELOT = register("ocelot");
@@ -205,6 +213,8 @@ public class ModelLayers {
    public static final ModelLayerLocation SKELETON = register("skeleton");
    public static final ModelLayerLocation SKELETON_HORSE = register("skeleton_horse");
    public static final ModelLayerLocation SKELETON_HORSE_BABY = register("skeleton_horse_baby");
+   public static final ModelLayerLocation SKELETON_HORSE_SADDLE = register("skeleton_horse", "saddle");
+   public static final ModelLayerLocation SKELETON_HORSE_BABY_SADDLE = register("skeleton_horse_baby", "saddle");
    public static final ModelLayerLocation SKELETON_INNER_ARMOR = registerInnerArmor("skeleton");
    public static final ModelLayerLocation SKELETON_OUTER_ARMOR = registerOuterArmor("skeleton");
    public static final ModelLayerLocation SKELETON_SKULL = register("skeleton_skull");
@@ -266,6 +276,8 @@ public class ModelLayers {
    public static final ModelLayerLocation ZOMBIE_HEAD = register("zombie_head");
    public static final ModelLayerLocation ZOMBIE_HORSE = register("zombie_horse");
    public static final ModelLayerLocation ZOMBIE_HORSE_BABY = register("zombie_horse_baby");
+   public static final ModelLayerLocation ZOMBIE_HORSE_SADDLE = register("zombie_horse", "saddle");
+   public static final ModelLayerLocation ZOMBIE_HORSE_BABY_SADDLE = register("zombie_horse_baby", "saddle");
    public static final ModelLayerLocation ZOMBIE_INNER_ARMOR = registerInnerArmor("zombie");
    public static final ModelLayerLocation ZOMBIE_OUTER_ARMOR = registerOuterArmor("zombie");
    public static final ModelLayerLocation ZOMBIE_VILLAGER = register("zombie_villager");

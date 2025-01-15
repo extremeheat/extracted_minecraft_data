@@ -29,7 +29,7 @@ public class TropicalFishRenderer extends MobRenderer<TropicalFish, TropicalFish
 
    public ResourceLocation getTextureLocation(TropicalFishRenderState var1) {
       ResourceLocation var10000;
-      switch (var1.variant.base()) {
+      switch (var1.pattern.base()) {
          case SMALL -> var10000 = MODEL_A_TEXTURE;
          case LARGE -> var10000 = MODEL_B_TEXTURE;
          default -> throw new MatchException((String)null, (Throwable)null);
@@ -44,14 +44,14 @@ public class TropicalFishRenderer extends MobRenderer<TropicalFish, TropicalFish
 
    public void extractRenderState(TropicalFish var1, TropicalFishRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
-      var2.variant = var1.getVariant();
+      var2.pattern = var1.getPattern();
       var2.baseColor = var1.getBaseColor().getTextureDiffuseColor();
       var2.patternColor = var1.getPatternColor().getTextureDiffuseColor();
    }
 
    public void render(TropicalFishRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
       EntityModel var10001;
-      switch (var1.variant.base()) {
+      switch (var1.pattern.base()) {
          case SMALL -> var10001 = this.modelA;
          case LARGE -> var10001 = this.modelB;
          default -> throw new MatchException((String)null, (Throwable)null);

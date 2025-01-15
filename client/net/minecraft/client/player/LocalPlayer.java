@@ -22,6 +22,8 @@ import net.minecraft.client.gui.screens.inventory.JigsawBlockEditScreen;
 import net.minecraft.client.gui.screens.inventory.MinecartCommandBlockEditScreen;
 import net.minecraft.client.gui.screens.inventory.SignEditScreen;
 import net.minecraft.client.gui.screens.inventory.StructureBlockEditScreen;
+import net.minecraft.client.gui.screens.inventory.TestBlockEditScreen;
+import net.minecraft.client.gui.screens.inventory.TestInstanceBlockEditScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.resources.sounds.AmbientSoundHandler;
@@ -79,6 +81,8 @@ import net.minecraft.world.level.block.entity.HangingSignBlockEntity;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
+import net.minecraft.world.level.block.entity.TestBlockEntity;
+import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec2;
@@ -542,6 +546,14 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.minecraft.setScreen(new StructureBlockEditScreen(var1));
    }
 
+   public void openTestBlock(TestBlockEntity var1) {
+      this.minecraft.setScreen(new TestBlockEditScreen(var1));
+   }
+
+   public void openTestInstanceBlock(TestInstanceBlockEntity var1) {
+      this.minecraft.setScreen(new TestInstanceBlockEditScreen(var1));
+   }
+
    public void openJigsawBlock(JigsawBlockEntity var1) {
       this.minecraft.setScreen(new JigsawBlockEditScreen(var1));
    }
@@ -987,7 +999,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    private boolean hasEnoughImpulseToStartSprinting() {
       double var1 = 0.8;
-      return this.isUnderWater() ? this.input.hasForwardImpulse() : (double)this.input.getMoveVector().y >= 0.8;
+      return this.input.hasForwardImpulse() && (this.isUnderWater() || (double)this.input.getMoveVector().length() >= 0.8);
    }
 
    private boolean hasEnoughFoodToStartSprinting() {

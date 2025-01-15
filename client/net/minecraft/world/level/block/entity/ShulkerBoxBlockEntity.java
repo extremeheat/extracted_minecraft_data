@@ -164,6 +164,9 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
       var0.updateNeighborsAt(var1, var2.getBlock());
    }
 
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2) {
+   }
+
    public void startOpen(Player var1) {
       if (!this.remove && !var1.isSpectator()) {
          if (this.openCount < 0) {

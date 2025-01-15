@@ -113,7 +113,7 @@ public class Creaking extends Monster {
    }
 
    protected Brain<?> makeBrain(Dynamic<?> var1) {
-      return CreakingAi.makeBrain(this.brainProvider().makeBrain(var1));
+      return CreakingAi.makeBrain(this, this.brainProvider().makeBrain(var1));
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {

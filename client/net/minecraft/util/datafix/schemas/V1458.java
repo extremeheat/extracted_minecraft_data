@@ -14,7 +14,7 @@ public class V1458 extends NamespacedSchema {
 
    public void registerTypes(Schema var1, Map<String, Supplier<TypeTemplate>> var2, Map<String, Supplier<TypeTemplate>> var3) {
       super.registerTypes(var1, var2, var3);
-      var1.registerType(true, References.ENTITY, () -> DSL.optionalFields("CustomName", References.TEXT_COMPONENT.in(var1), DSL.taggedChoiceLazy("id", namespacedString(), var2)));
+      var1.registerType(true, References.ENTITY, () -> DSL.and(References.ENTITY_EQUIPMENT.in(var1), DSL.optionalFields("CustomName", References.TEXT_COMPONENT.in(var1), DSL.taggedChoiceLazy("id", namespacedString(), var2))));
    }
 
    public Map<String, Supplier<TypeTemplate>> registerBlockEntities(Schema var1) {

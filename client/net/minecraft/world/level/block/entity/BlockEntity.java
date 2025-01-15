@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
@@ -216,10 +217,10 @@ public abstract class BlockEntity {
       this.remove = false;
    }
 
-   public void preRemoveSideEffects(BlockPos var1, BlockState var2, boolean var3) {
-      if (this instanceof Container var4) {
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2) {
+      if (this instanceof Container var3) {
          if (this.level != null) {
-            Containers.dropContents(this.level, var1, var4);
+            Containers.dropContents(this.level, var1, var3);
          }
       }
 
@@ -253,7 +254,7 @@ public abstract class BlockEntity {
       this.blockState = var1;
    }
 
-   protected void applyImplicitComponents(DataComponentInput var1) {
+   protected void applyImplicitComponents(DataComponentGetter var1) {
    }
 
    public final void applyComponentsFromItemStack(ItemStack var1) {
@@ -265,9 +266,9 @@ public abstract class BlockEntity {
       var3.add(DataComponents.BLOCK_ENTITY_DATA);
       var3.add(DataComponents.BLOCK_STATE);
       final PatchedDataComponentMap var4 = PatchedDataComponentMap.fromPatch(var1, var2);
-      this.applyImplicitComponents(new DataComponentInput() {
+      this.applyImplicitComponents(new DataComponentGetter() {
          @Nullable
-         public <T> T get(DataComponentType<T> var1) {
+         public <T> T get(DataComponentType<? extends T> var1) {
             var3.add(var1);
             return (T)var4.get(var1);
          }
@@ -320,12 +321,5 @@ public abstract class BlockEntity {
       static {
          COMPONENTS_CODEC = DataComponentMap.CODEC.optionalFieldOf("components", DataComponentMap.EMPTY).codec();
       }
-   }
-
-   protected interface DataComponentInput {
-      @Nullable
-      <T> T get(DataComponentType<T> var1);
-
-      <T> T getOrDefault(DataComponentType<? extends T> var1, T var2);
    }
 }

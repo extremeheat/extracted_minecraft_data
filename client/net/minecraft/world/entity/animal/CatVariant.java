@@ -1,15 +1,18 @@
 package net.minecraft.world.entity.animal;
 
+import com.mojang.serialization.Codec;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.RegistryFixedCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
 public record CatVariant(ResourceLocation texture) {
+   public static final Codec<Holder<CatVariant>> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Holder<CatVariant>> STREAM_CODEC;
    public static final ResourceKey<CatVariant> TABBY;
    public static final ResourceKey<CatVariant> BLACK;
@@ -51,6 +54,7 @@ public record CatVariant(ResourceLocation texture) {
    }
 
    static {
+      CODEC = RegistryFixedCodec.<Holder<CatVariant>>create(Registries.CAT_VARIANT);
       STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.CAT_VARIANT);
       TABBY = createKey("tabby");
       BLACK = createKey("black");

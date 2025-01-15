@@ -52,7 +52,7 @@ public class InterpolationHandler {
 
    public void interpolateTo(Vec3 var1, float var2, float var3) {
       if (this.interpolationSteps == 0) {
-         this.entity.moveTo(var1, var2, var3);
+         this.entity.snapTo(var1, var2, var3);
          this.cancel();
       } else {
          this.interpolationData.steps = this.interpolationSteps;

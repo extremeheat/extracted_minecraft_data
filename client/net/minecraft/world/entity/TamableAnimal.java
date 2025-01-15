@@ -265,7 +265,7 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       if (!this.canTeleportTo(new BlockPos(var1, var2, var3))) {
          return false;
       } else {
-         this.moveTo((double)var1 + 0.5, (double)var2, (double)var3 + 0.5, this.getYRot(), this.getXRot());
+         this.snapTo((double)var1 + 0.5, (double)var2, (double)var3 + 0.5, this.getYRot(), this.getXRot());
          this.navigation.stop();
          return true;
       }

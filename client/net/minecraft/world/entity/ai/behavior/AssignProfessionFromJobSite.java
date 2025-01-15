@@ -24,12 +24,12 @@ public class AssignProfessionFromJobSite {
                   var1.erase();
                   var2.set(var7);
                   var3.broadcastEntityEvent(var4, (byte)14);
-                  if (var4.getVillagerData().getProfession() != VillagerProfession.NONE) {
+                  if (!var4.getVillagerData().profession().is(VillagerProfession.NONE)) {
                      return true;
                   } else {
                      MinecraftServer var8 = var3.getServer();
-                     Optional.ofNullable(var8.getLevel(var7.dimension())).flatMap((var1x) -> var1x.getPoiManager().getType(var7.pos())).flatMap((var0x) -> BuiltInRegistries.VILLAGER_PROFESSION.stream().filter((var1) -> var1.heldJobSite().test(var0x)).findFirst()).ifPresent((var2x) -> {
-                        var4.setVillagerData(var4.getVillagerData().setProfession(var2x));
+                     Optional.ofNullable(var8.getLevel(var7.dimension())).flatMap((var1x) -> var1x.getPoiManager().getType(var7.pos())).flatMap((var0x) -> BuiltInRegistries.VILLAGER_PROFESSION.listElements().filter((var1) -> ((VillagerProfession)var1.value()).heldJobSite().test(var0x)).findFirst()).ifPresent((var2x) -> {
+                        var4.setVillagerData(var4.getVillagerData().withProfession(var2x));
                         var4.refreshBrain(var3);
                      });
                      return true;

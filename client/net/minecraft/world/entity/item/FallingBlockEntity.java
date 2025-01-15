@@ -229,34 +229,34 @@ public class FallingBlockEntity extends Entity {
 
    }
 
-   public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
+   public boolean causeFallDamage(double var1, float var3, DamageSource var4) {
       if (!this.hurtEntities) {
          return false;
       } else {
-         int var4 = Mth.ceil(var1 - 1.0F);
-         if (var4 < 0) {
+         int var5 = Mth.ceil(var1 - 1.0);
+         if (var5 < 0) {
             return false;
          } else {
-            Predicate var5 = EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(EntitySelector.LIVING_ENTITY_STILL_ALIVE);
-            Block var8 = this.blockState.getBlock();
+            Predicate var6 = EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(EntitySelector.LIVING_ENTITY_STILL_ALIVE);
+            Block var9 = this.blockState.getBlock();
             DamageSource var10000;
-            if (var8 instanceof Fallable) {
-               Fallable var7 = (Fallable)var8;
-               var10000 = var7.getFallDamageSource(this);
+            if (var9 instanceof Fallable) {
+               Fallable var8 = (Fallable)var9;
+               var10000 = var8.getFallDamageSource(this);
             } else {
                var10000 = this.damageSources().fallingBlock(this);
             }
 
-            DamageSource var6 = var10000;
-            float var10 = (float)Math.min(Mth.floor((float)var4 * this.fallDamagePerDistance), this.fallDamageMax);
-            this.level().getEntities(this, this.getBoundingBox(), var5).forEach((var2x) -> var2x.hurt(var6, var10));
-            boolean var11 = this.blockState.is(BlockTags.ANVIL);
-            if (var11 && var10 > 0.0F && this.random.nextFloat() < 0.05F + (float)var4 * 0.05F) {
-               BlockState var9 = AnvilBlock.damage(this.blockState);
-               if (var9 == null) {
+            DamageSource var7 = var10000;
+            float var11 = (float)Math.min(Mth.floor((float)var5 * this.fallDamagePerDistance), this.fallDamageMax);
+            this.level().getEntities(this, this.getBoundingBox(), var6).forEach((var2) -> var2.hurt(var7, var11));
+            boolean var12 = this.blockState.is(BlockTags.ANVIL);
+            if (var12 && var11 > 0.0F && this.random.nextFloat() < 0.05F + (float)var5 * 0.05F) {
+               BlockState var10 = AnvilBlock.damage(this.blockState);
+               if (var10 == null) {
                   this.cancelDrop = true;
                } else {
-                  this.blockState = var9;
+                  this.blockState = var10;
                }
             }
 

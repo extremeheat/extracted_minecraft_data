@@ -16,7 +16,8 @@ public enum EquipmentSlot implements StringRepresentable {
    LEGS(EquipmentSlot.Type.HUMANOID_ARMOR, 1, 1, 2, "legs"),
    CHEST(EquipmentSlot.Type.HUMANOID_ARMOR, 2, 1, 3, "chest"),
    HEAD(EquipmentSlot.Type.HUMANOID_ARMOR, 3, 1, 4, "head"),
-   BODY(EquipmentSlot.Type.ANIMAL_ARMOR, 0, 1, 6, "body");
+   BODY(EquipmentSlot.Type.ANIMAL_ARMOR, 0, 1, 6, "body"),
+   SADDLE(EquipmentSlot.Type.SADDLE, 0, 1, 7, "saddle");
 
    public static final int NO_COUNT_LIMIT = 0;
    public static final List<EquipmentSlot> VALUES = List.of(values());
@@ -77,6 +78,10 @@ public enum EquipmentSlot implements StringRepresentable {
       return this.name;
    }
 
+   public boolean canIncreaseExperience() {
+      return this.type != EquipmentSlot.Type.SADDLE;
+   }
+
    public static EquipmentSlot byName(String var0) {
       EquipmentSlot var1 = CODEC.byName(var0);
       if (var1 != null) {
@@ -88,20 +93,21 @@ public enum EquipmentSlot implements StringRepresentable {
 
    // $FF: synthetic method
    private static EquipmentSlot[] $values() {
-      return new EquipmentSlot[]{MAINHAND, OFFHAND, FEET, LEGS, CHEST, HEAD, BODY};
+      return new EquipmentSlot[]{MAINHAND, OFFHAND, FEET, LEGS, CHEST, HEAD, BODY, SADDLE};
    }
 
    public static enum Type {
       HAND,
       HUMANOID_ARMOR,
-      ANIMAL_ARMOR;
+      ANIMAL_ARMOR,
+      SADDLE;
 
       private Type() {
       }
 
       // $FF: synthetic method
       private static Type[] $values() {
-         return new Type[]{HAND, HUMANOID_ARMOR, ANIMAL_ARMOR};
+         return new Type[]{HAND, HUMANOID_ARMOR, ANIMAL_ARMOR, SADDLE};
       }
    }
 }

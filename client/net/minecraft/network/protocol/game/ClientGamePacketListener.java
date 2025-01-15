@@ -238,4 +238,6 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
    void handleSetCursorItem(ClientboundSetCursorItemPacket var1);
 
    void handleSetPlayerInventory(ClientboundSetPlayerInventoryPacket var1);
+
+   void handleTestInstanceBlockStatus(ClientboundTestInstanceBlockStatus var1);
 }

@@ -110,6 +110,8 @@ import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
+import net.minecraft.world.level.block.entity.TestBlockEntity;
+import net.minecraft.world.level.block.entity.TestInstanceBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -198,7 +200,7 @@ public abstract class Player extends LivingEntity {
       this.gameProfile = var4;
       this.inventoryMenu = new InventoryMenu(this.inventory, !var1.isClientSide, this);
       this.containerMenu = this.inventoryMenu;
-      this.moveTo((double)var2.getX() + 0.5, (double)(var2.getY() + 1), (double)var2.getZ() + 0.5, var3, 0.0F);
+      this.snapTo((double)var2.getX() + 0.5, (double)(var2.getY() + 1), (double)var2.getZ() + 0.5, var3, 0.0F);
    }
 
    public boolean blockActionRestricted(Level var1, BlockPos var2, GameType var3) {
@@ -554,7 +556,7 @@ public abstract class Player extends LivingEntity {
 
       this.playShoulderEntityAmbientSound(this.getShoulderEntityLeft());
       this.playShoulderEntityAmbientSound(this.getShoulderEntityRight());
-      if (!this.level().isClientSide && (this.fallDistance > 0.5F || this.isInWater()) || this.abilities.flying || this.isSleeping() || this.isInPowderSnow) {
+      if (!this.level().isClientSide && (this.fallDistance > 0.5 || this.isInWater()) || this.abilities.flying || this.isSleeping() || this.isInPowderSnow) {
          this.removeEntitiesOnShoulder();
       }
 
@@ -945,6 +947,12 @@ public abstract class Player extends LivingEntity {
    public void openStructureBlock(StructureBlockEntity var1) {
    }
 
+   public void openTestBlock(TestBlockEntity var1) {
+   }
+
+   public void openTestInstanceBlock(TestInstanceBlockEntity var1) {
+   }
+
    public void openJigsawBlock(JigsawBlockEntity var1) {
    }
 
@@ -1022,14 +1030,14 @@ public abstract class Player extends LivingEntity {
          double var10 = Math.signum(var4) * 0.05;
 
          double var12;
-         for(var12 = Math.signum(var6) * 0.05; var4 != 0.0 && this.canFallAtLeast(var4, 0.0, var3); var4 -= var10) {
+         for(var12 = Math.signum(var6) * 0.05; var4 != 0.0 && this.canFallAtLeast(var4, 0.0, (double)var3); var4 -= var10) {
             if (Math.abs(var4) <= 0.05) {
                var4 = 0.0;
                break;
             }
          }
 
-         while(var6 != 0.0 && this.canFallAtLeast(0.0, var6, var3)) {
+         while(var6 != 0.0 && this.canFallAtLeast(0.0, var6, (double)var3)) {
             if (Math.abs(var6) <= 0.05) {
                var6 = 0.0;
                break;
@@ -1038,7 +1046,7 @@ public abstract class Player extends LivingEntity {
             var6 -= var12;
          }
 
-         while(var4 != 0.0 && var6 != 0.0 && this.canFallAtLeast(var4, var6, var3)) {
+         while(var4 != 0.0 && var6 != 0.0 && this.canFallAtLeast(var4, var6, (double)var3)) {
             if (Math.abs(var4) <= 0.05) {
                var4 = 0.0;
             } else {
@@ -1059,12 +1067,12 @@ public abstract class Player extends LivingEntity {
    }
 
    private boolean isAboveGround(float var1) {
-      return this.onGround() || this.fallDistance < var1 && !this.canFallAtLeast(0.0, 0.0, var1 - this.fallDistance);
+      return this.onGround() || this.fallDistance < (double)var1 && !this.canFallAtLeast(0.0, 0.0, (double)var1 - this.fallDistance);
    }
 
-   private boolean canFallAtLeast(double var1, double var3, float var5) {
-      AABB var6 = this.getBoundingBox();
-      return this.level().noCollision(this, new AABB(var6.minX + var1, var6.minY - (double)var5 - 9.999999747378752E-6, var6.minZ + var3, var6.maxX + var1, var6.minY, var6.maxZ + var3));
+   private boolean canFallAtLeast(double var1, double var3, double var5) {
+      AABB var7 = this.getBoundingBox();
+      return this.level().noCollision(this, new AABB(var7.minX + 1.0E-7 + var1, var7.minY - var5 - 1.0E-7, var7.minZ + 1.0E-7 + var3, var7.maxX - 1.0E-7 + var1, var7.minY, var7.maxZ - 1.0E-7 + var3));
    }
 
    public void attack(Entity var1) {
@@ -1097,7 +1105,7 @@ public abstract class Player extends LivingEntity {
                }
 
                var2 += var3.getItem().getAttackDamageBonus(var1, var2, var4);
-               boolean var9 = var26 && this.fallDistance > 0.0F && !this.onGround() && !this.onClimbable() && !this.isInWater() && !this.hasEffect(MobEffects.BLINDNESS) && !this.isPassenger() && var1 instanceof LivingEntity && !this.isSprinting();
+               boolean var9 = var26 && this.fallDistance > 0.0 && !this.onGround() && !this.onClimbable() && !this.isInWater() && !this.hasEffect(MobEffects.BLINDNESS) && !this.isPassenger() && var1 instanceof LivingEntity && !this.isSprinting();
                if (var9) {
                   var2 *= 1.5F;
                }
@@ -1437,29 +1445,29 @@ public abstract class Player extends LivingEntity {
       return (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED);
    }
 
-   public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
+   public boolean causeFallDamage(double var1, float var3, DamageSource var4) {
       if (this.abilities.mayfly) {
          return false;
       } else {
-         if (var1 >= 2.0F) {
-            this.awardStat(Stats.FALL_ONE_CM, (int)Math.round((double)var1 * 100.0));
+         if (var1 >= 2.0) {
+            this.awardStat(Stats.FALL_ONE_CM, (int)Math.round(var1 * 100.0));
          }
 
-         boolean var5 = this.currentImpulseImpactPos != null && this.ignoreFallDamageFromCurrentImpulse;
-         float var4;
-         if (var5) {
-            var4 = Math.min(var1, (float)(this.currentImpulseImpactPos.y - this.getY()));
-            boolean var6 = var4 <= 0.0F;
-            if (var6) {
+         boolean var7 = this.currentImpulseImpactPos != null && this.ignoreFallDamageFromCurrentImpulse;
+         double var5;
+         if (var7) {
+            var5 = Math.min(var1, this.currentImpulseImpactPos.y - this.getY());
+            boolean var8 = var5 <= 0.0;
+            if (var8) {
                this.resetCurrentImpulseContext();
             } else {
                this.tryResetCurrentImpulseContext();
             }
          } else {
-            var4 = var1;
+            var5 = var1;
          }
 
-         if (var4 > 0.0F && super.causeFallDamage(var4, var2, var3)) {
+         if (var5 > 0.0 && super.causeFallDamage(var5, var3, var4)) {
             this.resetCurrentImpulseContext();
             return true;
          } else {
@@ -1682,18 +1690,6 @@ public abstract class Player extends LivingEntity {
 
    public boolean addItem(ItemStack var1) {
       return this.inventory.add(var1);
-   }
-
-   public Iterable<ItemStack> getHandSlots() {
-      return Lists.newArrayList(new ItemStack[]{this.getMainHandItem(), this.getOffhandItem()});
-   }
-
-   public Iterable<ItemStack> getArmorSlots() {
-      return this.inventory.armor;
-   }
-
-   public boolean canUseSlot(EquipmentSlot var1) {
-      return var1 != EquipmentSlot.BODY;
    }
 
    public boolean setEntityOnShoulder(CompoundTag var1) {

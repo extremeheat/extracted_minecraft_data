@@ -422,7 +422,7 @@ public class StructureTemplate {
             createEntityIgnoreException(var1, var11).ifPresent((var5x) -> {
                float var6 = var5x.rotate(var4);
                var6 += var5x.mirror(var3) - var5x.getYRot();
-               var5x.moveTo(var13.x, var13.y, var13.z, var6, var5x.getXRot());
+               var5x.snapTo(var13.x, var13.y, var13.z, var6, var5x.getXRot());
                if (var7 && var5x instanceof Mob) {
                   ((Mob)var5x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var13)), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
                }

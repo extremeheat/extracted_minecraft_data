@@ -2,6 +2,8 @@ package net.minecraft.world.entity;
 
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
+import java.util.Iterator;
+import java.util.List;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -9,7 +11,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 
-public enum EquipmentSlotGroup implements StringRepresentable {
+public enum EquipmentSlotGroup implements StringRepresentable, Iterable<EquipmentSlot> {
    ANY(0, "any", (var0) -> true),
    MAINHAND(1, "mainhand", EquipmentSlot.MAINHAND),
    OFFHAND(2, "offhand", EquipmentSlot.OFFHAND),
@@ -19,7 +21,8 @@ public enum EquipmentSlotGroup implements StringRepresentable {
    CHEST(6, "chest", EquipmentSlot.CHEST),
    HEAD(7, "head", EquipmentSlot.HEAD),
    ARMOR(8, "armor", EquipmentSlot::isArmor),
-   BODY(9, "body", EquipmentSlot.BODY);
+   BODY(9, "body", EquipmentSlot.BODY),
+   SADDLE(10, "saddle", EquipmentSlot.SADDLE);
 
    public static final IntFunction<EquipmentSlotGroup> BY_ID = ByIdMap.<EquipmentSlotGroup>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    public static final Codec<EquipmentSlotGroup> CODEC = StringRepresentable.<EquipmentSlotGroup>fromEnum(EquipmentSlotGroup::values);
@@ -27,11 +30,13 @@ public enum EquipmentSlotGroup implements StringRepresentable {
    private final int id;
    private final String key;
    private final Predicate<EquipmentSlot> predicate;
+   private final List<EquipmentSlot> slots;
 
    private EquipmentSlotGroup(final int var3, final String var4, final Predicate<EquipmentSlot> var5) {
       this.id = var3;
       this.key = var4;
       this.predicate = var5;
+      this.slots = EquipmentSlot.VALUES.stream().filter(var5).toList();
    }
 
    private EquipmentSlotGroup(final int var3, final String var4, final EquipmentSlot var5) {
@@ -48,6 +53,7 @@ public enum EquipmentSlotGroup implements StringRepresentable {
          case CHEST -> var10000 = CHEST;
          case HEAD -> var10000 = HEAD;
          case BODY -> var10000 = BODY;
+         case SADDLE -> var10000 = SADDLE;
          default -> throw new MatchException((String)null, (Throwable)null);
       }
 
@@ -62,8 +68,16 @@ public enum EquipmentSlotGroup implements StringRepresentable {
       return this.predicate.test(var1);
    }
 
+   public List<EquipmentSlot> slots() {
+      return this.slots;
+   }
+
+   public Iterator<EquipmentSlot> iterator() {
+      return this.slots.iterator();
+   }
+
    // $FF: synthetic method
    private static EquipmentSlotGroup[] $values() {
-      return new EquipmentSlotGroup[]{ANY, MAINHAND, OFFHAND, HAND, FEET, LEGS, CHEST, HEAD, ARMOR, BODY};
+      return new EquipmentSlotGroup[]{ANY, MAINHAND, OFFHAND, HAND, FEET, LEGS, CHEST, HEAD, ARMOR, BODY, SADDLE};
    }
 }

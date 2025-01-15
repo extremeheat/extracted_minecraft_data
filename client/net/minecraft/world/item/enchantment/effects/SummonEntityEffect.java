@@ -49,7 +49,7 @@ public record SummonEntityEffect(HolderSet<EntityType<?>> entityTypes, boolean j
                   var1.getScoreboard().addPlayerToTeam(var8.getScoreboardName(), var4.getTeam());
                }
 
-               var8.moveTo(var5.x, var5.y, var5.z, var8.getYRot(), var8.getXRot());
+               var8.snapTo(var5.x, var5.y, var5.z, var8.getYRot(), var8.getXRot());
             }
          }
       }

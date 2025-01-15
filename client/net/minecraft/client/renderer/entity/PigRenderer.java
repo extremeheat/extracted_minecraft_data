@@ -9,12 +9,14 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.PigModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.layers.SaddleLayer;
+import net.minecraft.client.renderer.entity.layers.SimpleEquipmentLayer;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.entity.state.PigRenderState;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import net.minecraft.client.resources.model.EquipmentClientInfo;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.animal.PigVariant;
 
@@ -24,7 +26,7 @@ public class PigRenderer extends MobRenderer<Pig, PigRenderState, PigModel> {
    public PigRenderer(EntityRendererProvider.Context var1) {
       super(var1, new PigModel(var1.bakeLayer(ModelLayers.PIG)), 0.7F);
       this.models = bakeModels(var1);
-      this.addLayer(new SaddleLayer(this, new PigModel(var1.bakeLayer(ModelLayers.PIG_SADDLE)), new PigModel(var1.bakeLayer(ModelLayers.PIG_BABY_SADDLE)), ResourceLocation.withDefaultNamespace("textures/entity/pig/pig_saddle.png")));
+      this.addLayer(new SimpleEquipmentLayer(this, var1.getEquipmentRenderer(), EquipmentClientInfo.LayerType.PIG_SADDLE, (var0) -> var0.saddle, new PigModel(var1.bakeLayer(ModelLayers.PIG_SADDLE)), new PigModel(var1.bakeLayer(ModelLayers.PIG_BABY_SADDLE))));
    }
 
    private static Map<PigVariant.ModelType, AdultAndBabyModelPair<PigModel>> bakeModels(EntityRendererProvider.Context var0) {
@@ -48,7 +50,7 @@ public class PigRenderer extends MobRenderer<Pig, PigRenderState, PigModel> {
 
    public void extractRenderState(Pig var1, PigRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
-      var2.isSaddled = var1.isSaddled();
+      var2.saddle = var1.getItemBySlot(EquipmentSlot.SADDLE).copy();
       var2.variant = (PigVariant)var1.getVariant().value();
    }
 

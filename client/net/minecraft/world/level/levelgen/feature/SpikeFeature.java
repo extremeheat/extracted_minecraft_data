@@ -101,7 +101,7 @@ public class SpikeFeature extends Feature<SpikeConfiguration> {
       if (var20 != null) {
          var20.setBeamTarget(var3.getCrystalBeamTarget());
          var20.setInvulnerable(var3.isCrystalInvulnerable());
-         var20.moveTo((double)var4.getCenterX() + 0.5, (double)(var4.getHeight() + 1), (double)var4.getCenterZ() + 0.5, var2.nextFloat() * 360.0F, 0.0F);
+         var20.snapTo((double)var4.getCenterX() + 0.5, (double)(var4.getHeight() + 1), (double)var4.getCenterZ() + 0.5, var2.nextFloat() * 360.0F, 0.0F);
          var1.addFreshEntity(var20);
          BlockPos var22 = var20.blockPosition();
          this.setBlock(var1, var22.below(), Blocks.BEDROCK.defaultBlockState());

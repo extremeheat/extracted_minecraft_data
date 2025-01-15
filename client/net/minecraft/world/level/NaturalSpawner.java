@@ -182,7 +182,7 @@ public final class NaturalSpawner {
                            return;
                         }
 
-                        var29.moveTo(var21, (double)var8, var23, var1.random.nextFloat() * 360.0F, 0.0F);
+                        var29.snapTo(var21, (double)var8, var23, var1.random.nextFloat() * 360.0F, 0.0F);
                         if (isValidPositionForMob(var1, var29, var26)) {
                            var17 = var29.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var29.blockPosition()), EntitySpawnReason.NATURAL, var17);
                            ++var11;
@@ -265,7 +265,7 @@ public final class NaturalSpawner {
    }
 
    private static boolean canSpawnMobAt(ServerLevel var0, StructureManager var1, ChunkGenerator var2, MobCategory var3, MobSpawnSettings.SpawnerData var4, BlockPos var5) {
-      return mobsAt(var0, var1, var2, var3, var5, (Holder)null).unwrap().contains(var4);
+      return mobsAt(var0, var1, var2, var3, var5, (Holder)null).contains(var4);
    }
 
    private static WeightedList<MobSpawnSettings.SpawnerData> mobsAt(ServerLevel var0, StructureManager var1, ChunkGenerator var2, MobCategory var3, BlockPos var4, @Nullable Holder<Biome> var5) {
@@ -347,7 +347,7 @@ public final class NaturalSpawner {
                            continue;
                         }
 
-                        var25.moveTo(var21, (double)var19.getY(), var23, var3.nextFloat() * 360.0F, 0.0F);
+                        var25.snapTo(var21, (double)var19.getY(), var23, var3.nextFloat() * 360.0F, 0.0F);
                         if (var25 instanceof Mob) {
                            Mob var26 = (Mob)var25;
                            if (var26.checkSpawnRules(var0, EntitySpawnReason.CHUNK_GENERATION) && var26.checkSpawnObstruction(var0)) {

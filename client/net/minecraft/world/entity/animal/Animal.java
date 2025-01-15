@@ -219,7 +219,7 @@ public abstract class Animal extends AgeableMob {
       AgeableMob var3 = this.getBreedOffspring(var1, var2);
       if (var3 != null) {
          var3.setBaby(true);
-         var3.moveTo(this.getX(), this.getY(), this.getZ(), 0.0F, 0.0F);
+         var3.snapTo(this.getX(), this.getY(), this.getZ(), 0.0F, 0.0F);
          this.finalizeSpawnChildFromBreeding(var1, var2, var3);
          var1.addFreshEntityWithPassengers(var3);
       }

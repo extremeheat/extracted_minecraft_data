@@ -14,7 +14,6 @@ import net.minecraft.advancements.critereon.EnchantmentPredicate;
 import net.minecraft.advancements.critereon.EntityEquipmentPredicate;
 import net.minecraft.advancements.critereon.EntityFlagsPredicate;
 import net.minecraft.advancements.critereon.EntityPredicate;
-import net.minecraft.advancements.critereon.EntitySubPredicates;
 import net.minecraft.advancements.critereon.ItemEnchantmentsPredicate;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.ItemSubPredicates;
@@ -22,6 +21,8 @@ import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.SheepPredicate;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentPredicate;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -67,7 +68,7 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
       AlternativesEntry.Builder var1 = AlternativesEntry.alternatives();
 
       for(Map.Entry var3 : var0.entrySet()) {
-         var1 = var1.otherwise(NestedLootTable.lootTableReference((ResourceKey)var3.getValue()).when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().subPredicate(SheepPredicate.hasWool((DyeColor)var3.getKey())))));
+         var1 = var1.otherwise(NestedLootTable.lootTableReference((ResourceKey)var3.getValue()).when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().components(DataComponentPredicate.expect(DataComponents.SHEEP_COLOR, (DyeColor)var3.getKey())).subPredicate(SheepPredicate.hasWool()))));
       }
 
       return LootPool.lootPool().add(var1);
@@ -116,7 +117,7 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
    }
 
    protected LootItemCondition.Builder killedByFrogVariant(HolderGetter<EntityType<?>> var1, ResourceKey<FrogVariant> var2) {
-      return DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().source(EntityPredicate.Builder.entity().of(var1, EntityType.FROG).subPredicate(EntitySubPredicates.frogVariant(BuiltInRegistries.FROG_VARIANT.getOrThrow(var2)))));
+      return DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().source(EntityPredicate.Builder.entity().of(var1, EntityType.FROG).components(DataComponentPredicate.expect(DataComponents.FROG_VARIANT, BuiltInRegistries.FROG_VARIANT.getOrThrow(var2)))));
    }
 
    protected void add(EntityType<?> var1, LootTable.Builder var2) {

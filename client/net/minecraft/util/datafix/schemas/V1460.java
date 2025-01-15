@@ -17,7 +17,7 @@ public class V1460 extends NamespacedSchema {
    }
 
    protected static void registerMob(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
-      var0.register(var1, var2, () -> V100.equipment(var0));
+      var0.registerSimple(var1, var2);
    }
 
    protected static void registerInventory(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
@@ -38,13 +38,13 @@ public class V1460 extends NamespacedSchema {
       var1.register(var2, "minecraft:commandblock_minecart", (var1x) -> DSL.optionalFields("DisplayState", References.BLOCK_STATE.in(var1), "LastOutput", References.TEXT_COMPONENT.in(var1)));
       registerMob(var1, var2, "minecraft:cow");
       registerMob(var1, var2, "minecraft:creeper");
-      var1.register(var2, "minecraft:donkey", (var1x) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var1)), "SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1)));
+      var1.register(var2, "minecraft:donkey", (var1x) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var1)), "SaddleItem", References.ITEM_STACK.in(var1)));
       var1.registerSimple(var2, "minecraft:dragon_fireball");
       var1.registerSimple(var2, "minecraft:egg");
       registerMob(var1, var2, "minecraft:elder_guardian");
       var1.registerSimple(var2, "minecraft:ender_crystal");
       registerMob(var1, var2, "minecraft:ender_dragon");
-      var1.register(var2, "minecraft:enderman", (var1x) -> DSL.optionalFields("carriedBlockState", References.BLOCK_STATE.in(var1), V100.equipment(var1)));
+      var1.register(var2, "minecraft:enderman", (var1x) -> DSL.optionalFields("carriedBlockState", References.BLOCK_STATE.in(var1)));
       registerMob(var1, var2, "minecraft:endermite");
       var1.registerSimple(var2, "minecraft:ender_pearl");
       var1.registerSimple(var2, "minecraft:evocation_fangs");
@@ -58,21 +58,21 @@ public class V1460 extends NamespacedSchema {
       registerMob(var1, var2, "minecraft:giant");
       registerMob(var1, var2, "minecraft:guardian");
       var1.register(var2, "minecraft:hopper_minecart", (var1x) -> DSL.optionalFields("DisplayState", References.BLOCK_STATE.in(var1), "Items", DSL.list(References.ITEM_STACK.in(var1))));
-      var1.register(var2, "minecraft:horse", (var1x) -> DSL.optionalFields("ArmorItem", References.ITEM_STACK.in(var1), "SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1)));
+      var1.register(var2, "minecraft:horse", (var1x) -> DSL.optionalFields("ArmorItem", References.ITEM_STACK.in(var1), "SaddleItem", References.ITEM_STACK.in(var1)));
       registerMob(var1, var2, "minecraft:husk");
-      var1.registerSimple(var2, "minecraft:illusion_illager");
+      registerMob(var1, var2, "minecraft:illusion_illager");
       var1.register(var2, "minecraft:item", (var1x) -> DSL.optionalFields("Item", References.ITEM_STACK.in(var1)));
       var1.register(var2, "minecraft:item_frame", (var1x) -> DSL.optionalFields("Item", References.ITEM_STACK.in(var1)));
       var1.registerSimple(var2, "minecraft:leash_knot");
-      var1.register(var2, "minecraft:llama", (var1x) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var1)), "SaddleItem", References.ITEM_STACK.in(var1), "DecorItem", References.ITEM_STACK.in(var1), V100.equipment(var1)));
+      var1.register(var2, "minecraft:llama", (var1x) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var1)), "SaddleItem", References.ITEM_STACK.in(var1), "DecorItem", References.ITEM_STACK.in(var1)));
       var1.registerSimple(var2, "minecraft:llama_spit");
       registerMob(var1, var2, "minecraft:magma_cube");
       var1.register(var2, "minecraft:minecart", (var1x) -> DSL.optionalFields("DisplayState", References.BLOCK_STATE.in(var1)));
       registerMob(var1, var2, "minecraft:mooshroom");
-      var1.register(var2, "minecraft:mule", (var1x) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var1)), "SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1)));
+      var1.register(var2, "minecraft:mule", (var1x) -> DSL.optionalFields("Items", DSL.list(References.ITEM_STACK.in(var1)), "SaddleItem", References.ITEM_STACK.in(var1)));
       registerMob(var1, var2, "minecraft:ocelot");
       var1.registerSimple(var2, "minecraft:painting");
-      var1.registerSimple(var2, "minecraft:parrot");
+      registerMob(var1, var2, "minecraft:parrot");
       registerMob(var1, var2, "minecraft:pig");
       registerMob(var1, var2, "minecraft:polar_bear");
       var1.register(var2, "minecraft:potion", (var1x) -> DSL.optionalFields("Potion", References.ITEM_STACK.in(var1)));
@@ -82,7 +82,7 @@ public class V1460 extends NamespacedSchema {
       var1.registerSimple(var2, "minecraft:shulker_bullet");
       registerMob(var1, var2, "minecraft:silverfish");
       registerMob(var1, var2, "minecraft:skeleton");
-      var1.register(var2, "minecraft:skeleton_horse", (var1x) -> DSL.optionalFields("SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1)));
+      var1.register(var2, "minecraft:skeleton_horse", (var1x) -> DSL.optionalFields("SaddleItem", References.ITEM_STACK.in(var1)));
       registerMob(var1, var2, "minecraft:slime");
       var1.registerSimple(var2, "minecraft:small_fireball");
       var1.registerSimple(var2, "minecraft:snowball");
@@ -95,7 +95,7 @@ public class V1460 extends NamespacedSchema {
       var1.registerSimple(var2, "minecraft:tnt");
       var1.register(var2, "minecraft:tnt_minecart", (var1x) -> DSL.optionalFields("DisplayState", References.BLOCK_STATE.in(var1)));
       registerMob(var1, var2, "minecraft:vex");
-      var1.register(var2, "minecraft:villager", (var1x) -> DSL.optionalFields("Inventory", DSL.list(References.ITEM_STACK.in(var1)), "Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1))), V100.equipment(var1)));
+      var1.register(var2, "minecraft:villager", (var1x) -> DSL.optionalFields("Inventory", DSL.list(References.ITEM_STACK.in(var1)), "Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1)))));
       registerMob(var1, var2, "minecraft:villager_golem");
       registerMob(var1, var2, "minecraft:vindication_illager");
       registerMob(var1, var2, "minecraft:witch");
@@ -106,9 +106,9 @@ public class V1460 extends NamespacedSchema {
       var1.registerSimple(var2, "minecraft:xp_bottle");
       var1.registerSimple(var2, "minecraft:xp_orb");
       registerMob(var1, var2, "minecraft:zombie");
-      var1.register(var2, "minecraft:zombie_horse", (var1x) -> DSL.optionalFields("SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1)));
+      var1.register(var2, "minecraft:zombie_horse", (var1x) -> DSL.optionalFields("SaddleItem", References.ITEM_STACK.in(var1)));
       registerMob(var1, var2, "minecraft:zombie_pigman");
-      var1.register(var2, "minecraft:zombie_villager", (var1x) -> DSL.optionalFields("Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1))), V100.equipment(var1)));
+      var1.register(var2, "minecraft:zombie_villager", (var1x) -> DSL.optionalFields("Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1)))));
       return var2;
    }
 
@@ -148,7 +148,7 @@ public class V1460 extends NamespacedSchema {
       var1.registerType(false, References.CHUNK, () -> DSL.fields("Level", DSL.optionalFields("Entities", DSL.list(References.ENTITY_TREE.in(var1)), "TileEntities", DSL.list(DSL.or(References.BLOCK_ENTITY.in(var1), DSL.remainder())), "TileTicks", DSL.list(DSL.fields("i", References.BLOCK_NAME.in(var1))), "Sections", DSL.list(DSL.optionalFields("Palette", DSL.list(References.BLOCK_STATE.in(var1)))))));
       var1.registerType(true, References.BLOCK_ENTITY, () -> DSL.optionalFields("components", References.DATA_COMPONENTS.in(var1), DSL.taggedChoiceLazy("id", namespacedString(), var3)));
       var1.registerType(true, References.ENTITY_TREE, () -> DSL.optionalFields("Passengers", DSL.list(References.ENTITY_TREE.in(var1)), References.ENTITY.in(var1)));
-      var1.registerType(true, References.ENTITY, () -> DSL.optionalFields("CustomName", References.TEXT_COMPONENT.in(var1), DSL.taggedChoiceLazy("id", namespacedString(), var2)));
+      var1.registerType(true, References.ENTITY, () -> DSL.and(References.ENTITY_EQUIPMENT.in(var1), DSL.optionalFields("CustomName", References.TEXT_COMPONENT.in(var1), DSL.taggedChoiceLazy("id", namespacedString(), var2))));
       var1.registerType(true, References.ITEM_STACK, () -> DSL.hook(DSL.optionalFields("id", References.ITEM_NAME.in(var1), "tag", V99.itemStackTag(var1)), V705.ADD_NAMES, HookFunction.IDENTITY));
       var1.registerType(false, References.HOTBAR, () -> DSL.compoundList(DSL.list(References.ITEM_STACK.in(var1))));
       var1.registerType(false, References.OPTIONS, DSL::remainder);
@@ -182,5 +182,6 @@ public class V1460 extends NamespacedSchema {
       var1.registerType(true, References.VILLAGER_TRADE, () -> DSL.optionalFields("buy", References.ITEM_STACK.in(var1), "buyB", References.ITEM_STACK.in(var1), "sell", References.ITEM_STACK.in(var1)));
       var1.registerType(true, References.PARTICLE, () -> DSL.constType(DSL.string()));
       var1.registerType(true, References.TEXT_COMPONENT, () -> DSL.constType(DSL.string()));
+      var1.registerType(true, References.ENTITY_EQUIPMENT, () -> DSL.and(DSL.optional(DSL.field("ArmorItems", DSL.list(References.ITEM_STACK.in(var1)))), new TypeTemplate[]{DSL.optional(DSL.field("HandItems", DSL.list(References.ITEM_STACK.in(var1)))), DSL.optional(DSL.field("body_armor_item", References.ITEM_STACK.in(var1))), DSL.optional(DSL.field("saddle", References.ITEM_STACK.in(var1)))}));
    }
 }

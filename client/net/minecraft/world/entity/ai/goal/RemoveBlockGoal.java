@@ -50,7 +50,7 @@ public class RemoveBlockGoal extends MoveToBlockGoal {
 
    public void stop() {
       super.stop();
-      this.removerMob.fallDistance = 1.0F;
+      this.removerMob.fallDistance = 1.0;
    }
 
    public void start() {

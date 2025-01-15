@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.util.Mth;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.LegacyComponentDataFixUtils;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
 
@@ -234,7 +235,7 @@ public class ItemStackComponentizationFix extends DataFix {
             var0.setComponent("minecraft:banner_patterns", var1.get("patterns"));
             Optional var9 = var1.get("Base").asNumber().result();
             if (var9.isPresent()) {
-               var0.setComponent("minecraft:base_color", var1.createString(BannerPatternFormatFix.fixColor(((Number)var9.get()).intValue())));
+               var0.setComponent("minecraft:base_color", var1.createString(ExtraDataFixUtils.dyeColorIdToName(((Number)var9.get()).intValue())));
             }
 
             var10000 = var1.remove("patterns").remove("Base");

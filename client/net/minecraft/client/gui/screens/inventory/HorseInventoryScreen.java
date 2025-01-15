@@ -31,7 +31,7 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
          var1.blitSprite(RenderType::guiTextured, CHEST_SLOTS_SPRITE, 90, 54, 0, 0, var5 + 79, var6 + 17, this.inventoryColumns * 18, 54);
       }
 
-      if (this.horse.isSaddleable()) {
+      if (this.horse.canUseSlot(EquipmentSlot.SADDLE)) {
          this.drawSlot(var1, var5 + 7, var6 + 35 - 18);
       }
 

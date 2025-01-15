@@ -4,6 +4,7 @@ import java.util.Set;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 
@@ -34,7 +35,7 @@ public record PositionMoveRotation(Vec3 position, Vec3 deltaMovement, float yRot
       float var10 = var2.contains(Relative.X_ROT) ? var0.xRot : 0.0F;
       Vec3 var11 = new Vec3(var3 + var1.position.x, var5 + var1.position.y, var7 + var1.position.z);
       float var12 = var9 + var1.yRot;
-      float var13 = var10 + var1.xRot;
+      float var13 = Mth.clamp(var10 + var1.xRot, -90.0F, 90.0F);
       Vec3 var14 = var0.deltaMovement;
       if (var2.contains(Relative.ROTATE_DELTA)) {
          float var15 = var0.yRot - var12;

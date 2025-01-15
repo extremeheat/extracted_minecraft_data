@@ -435,7 +435,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
             LightningBolt var21 = EntityType.LIGHTNING_BOLT.create(this, EntitySpawnReason.EVENT);
             if (var21 != null) {
-               var21.moveTo(Vec3.atBottomCenterOf(var8));
+               var21.snapTo(Vec3.atBottomCenterOf(var8));
                var21.setVisualOnly(var10);
                this.addFreshEntity(var21);
             }
@@ -1579,12 +1579,16 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return this.entityManager.areEntitiesLoaded(var1);
    }
 
-   private boolean isPositionTickingWithEntitiesLoaded(long var1) {
+   public boolean isPositionTickingWithEntitiesLoaded(long var1) {
       return this.areEntitiesLoaded(var1) && this.chunkSource.isPositionTicking(var1);
    }
 
    public boolean isPositionEntityTicking(BlockPos var1) {
       return this.entityManager.canPositionTick(var1) && this.chunkSource.chunkMap.getDistanceManager().inEntityTickingRange(ChunkPos.asLong(var1));
+   }
+
+   public boolean areEntitiesActuallyTicking(ChunkPos var1) {
+      return this.entityManager.isTicking(var1);
    }
 
    public boolean isNaturalSpawningAllowed(BlockPos var1) {

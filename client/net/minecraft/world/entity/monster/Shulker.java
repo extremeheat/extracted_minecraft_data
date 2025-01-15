@@ -7,6 +7,9 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -31,7 +34,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SpawnGroupData;
-import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -57,7 +59,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
-public class Shulker extends AbstractGolem implements VariantHolder<Optional<DyeColor>>, Enemy {
+public class Shulker extends AbstractGolem implements Enemy {
    private static final ResourceLocation COVERED_ARMOR_MODIFIER_ID = ResourceLocation.withDefaultNamespace("covered");
    private static final AttributeModifier COVERED_ARMOR_MODIFIER;
    protected static final EntityDataAccessor<Direction> DATA_ATTACH_FACE_ID;
@@ -411,7 +413,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
             Shulker var5 = EntityType.SHULKER.create(this.level(), EntitySpawnReason.BREEDING);
             if (var5 != null) {
                var5.setVariant(this.getVariant());
-               var5.moveTo(var1);
+               var5.snapTo(var1);
                this.level().addFreshEntity(var5);
             }
 
@@ -500,7 +502,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       return Math.min(var1, 3.0F);
    }
 
-   public void setVariant(Optional<DyeColor> var1) {
+   private void setVariant(Optional<DyeColor> var1) {
       this.entityData.set(DATA_COLOR_ID, (Byte)var1.map((var0) -> (byte)var0.getId()).orElse((byte)16));
    }
 
@@ -514,9 +516,23 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       return var1 != 16 && var1 <= 15 ? DyeColor.byId(var1) : null;
    }
 
-   // $FF: synthetic method
-   public Object getVariant() {
-      return this.getVariant();
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      return (T)(var1 == DataComponents.SHULKER_COLOR ? castComponentValue(var1, this.getColor()) : super.get(var1));
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.SHULKER_COLOR);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.SHULKER_COLOR) {
+         this.setVariant(Optional.of((DyeColor)castComponentValue(DataComponents.SHULKER_COLOR, var2)));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    static {

@@ -78,7 +78,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
 
    private static void spawnGolemInWorld(Level var0, BlockPattern.BlockPatternMatch var1, Entity var2, BlockPos var3) {
       clearPatternBlocks(var0, var1);
-      var2.moveTo((double)var3.getX() + 0.5, (double)var3.getY() + 0.05, (double)var3.getZ() + 0.5, 0.0F, 0.0F);
+      var2.snapTo((double)var3.getX() + 0.5, (double)var3.getY() + 0.05, (double)var3.getZ() + 0.5, 0.0F, 0.0F);
       var0.addFreshEntity(var2);
 
       for(ServerPlayer var5 : var0.getEntitiesOfClass(ServerPlayer.class, var2.getBoundingBox().inflate(5.0))) {

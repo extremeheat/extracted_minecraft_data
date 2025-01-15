@@ -45,7 +45,7 @@ public class ArmorStandItem extends Item {
                }
 
                float var12 = (float)Mth.floor((Mth.wrapDegrees(var1.getRotation() - 180.0F) + 22.5F) / 45.0F) * 45.0F;
-               var11.moveTo(var11.getX(), var11.getY(), var11.getZ(), var12, 0.0F);
+               var11.snapTo(var11.getX(), var11.getY(), var11.getZ(), var12, 0.0F);
                var9.addFreshEntityWithPassengers(var11);
                var3.playSound((Entity)null, var11.getX(), var11.getY(), var11.getZ(), SoundEvents.ARMOR_STAND_PLACE, SoundSource.BLOCKS, 0.75F, 0.8F);
                var11.gameEvent(GameEvent.ENTITY_PLACE, var1.getPlayer());

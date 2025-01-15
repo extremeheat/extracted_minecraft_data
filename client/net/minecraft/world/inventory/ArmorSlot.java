@@ -33,7 +33,11 @@ class ArmorSlot extends Slot {
    }
 
    public boolean mayPlace(ItemStack var1) {
-      return this.slot == this.owner.getEquipmentSlotForItem(var1);
+      return this.owner.isEquippableInSlot(var1, this.slot);
+   }
+
+   public boolean isActive() {
+      return this.owner.canUseSlot(this.slot);
    }
 
    public boolean mayPickup(Player var1) {

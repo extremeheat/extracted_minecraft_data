@@ -30,6 +30,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
@@ -268,38 +269,35 @@ public class LevelChunk extends ChunkAccess {
                var13.pop();
             }
 
-            boolean var19 = var10.hasBlockEntity();
-            boolean var14 = !var10.is(var11);
-            boolean var15 = (var3 & 64) != 0;
-            boolean var16 = (var3 & 256) == 0;
-            if (var14) {
-               Level var18 = this.level;
-               if (var18 instanceof ServerLevel) {
-                  ServerLevel var17 = (ServerLevel)var18;
-                  if (var19 && var16) {
-                     BlockEntity var22 = this.level.getBlockEntity(var1);
-                     if (var22 != null) {
-                        var22.preRemoveSideEffects(var1, var10, var15);
-                     }
+            boolean var18 = !var10.is(var11);
+            boolean var14 = (var3 & 64) != 0;
+            boolean var15 = (var3 & 256) == 0;
+            if (var18 && var10.hasBlockEntity()) {
+               if (!this.level.isClientSide && var15) {
+                  BlockEntity var16 = this.level.getBlockEntity(var1);
+                  if (var16 != null) {
+                     var16.preRemoveSideEffects(var1, var10);
                   }
+               }
 
-                  if (var19) {
-                     this.removeBlockEntity(var1);
-                  }
+               this.removeBlockEntity(var1);
+            }
 
-                  if ((var3 & 1) != 0) {
-                     var10.affectNeighborsAfterRemoval(var17, var1, var15);
+            if (var18 || var11 instanceof BaseRailBlock) {
+               Level var17 = this.level;
+               if (var17 instanceof ServerLevel) {
+                  ServerLevel var19 = (ServerLevel)var17;
+                  if ((var3 & 1) != 0 || var14) {
+                     var10.affectNeighborsAfterRemoval(var19, var1, var14);
                   }
-               } else if (var19) {
-                  this.removeBlockEntity(var1);
                }
             }
 
             if (!var5.getBlockState(var7, var8, var9).is(var11)) {
                return null;
             } else {
-               if (!this.level.isClientSide && var16) {
-                  var2.onPlace(this.level, var1, var10, var15);
+               if (!this.level.isClientSide && var15) {
+                  var2.onPlace(this.level, var1, var10, var14);
                }
 
                if (var2.hasBlockEntity()) {

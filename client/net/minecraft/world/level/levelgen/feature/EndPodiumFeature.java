@@ -2,7 +2,9 @@ package net.minecraft.world.level.levelgen.feature;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,14 +38,22 @@ public class EndPodiumFeature extends Feature<NoneFeatureConfiguration> {
                if (var6) {
                   this.setBlock(var3, var5, Blocks.BEDROCK.defaultBlockState());
                } else if (var5.getY() < var2.getY()) {
-                  this.setBlock(var3, var5, Blocks.END_STONE.defaultBlockState());
+                  if (this.active) {
+                     this.dropPreviousAndSetBlock(var3, var5, Blocks.END_STONE);
+                  } else {
+                     this.setBlock(var3, var5, Blocks.END_STONE.defaultBlockState());
+                  }
                }
             } else if (var5.getY() > var2.getY()) {
-               this.setBlock(var3, var5, Blocks.AIR.defaultBlockState());
+               if (this.active) {
+                  this.dropPreviousAndSetBlock(var3, var5, Blocks.AIR);
+               } else {
+                  this.setBlock(var3, var5, Blocks.AIR.defaultBlockState());
+               }
             } else if (!var6) {
                this.setBlock(var3, var5, Blocks.BEDROCK.defaultBlockState());
             } else if (this.active) {
-               this.setBlock(var3, new BlockPos(var5), Blocks.END_PORTAL.defaultBlockState());
+               this.dropPreviousAndSetBlock(var3, new BlockPos(var5), Blocks.END_PORTAL);
             } else {
                this.setBlock(var3, new BlockPos(var5), Blocks.AIR.defaultBlockState());
             }
@@ -61,6 +71,14 @@ public class EndPodiumFeature extends Feature<NoneFeatureConfiguration> {
       }
 
       return true;
+   }
+
+   private void dropPreviousAndSetBlock(WorldGenLevel var1, BlockPos var2, Block var3) {
+      if (!var1.getBlockState(var2).is(var3)) {
+         var1.destroyBlock(var2, true, (Entity)null);
+         this.setBlock(var1, var2, var3.defaultBlockState());
+      }
+
    }
 
    static {

@@ -248,12 +248,12 @@ public class Breeze extends Monster {
       return (double)this.getEyeHeight();
    }
 
-   public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
-      if (var1 > 3.0F) {
+   public boolean causeFallDamage(double var1, float var3, DamageSource var4) {
+      if (var1 > 3.0) {
          this.playSound(SoundEvents.BREEZE_LAND, 1.0F, 1.0F);
       }
 
-      return super.causeFallDamage(var1, var2, var3);
+      return super.causeFallDamage(var1, var3, var4);
    }
 
    protected Entity.MovementEmission getMovementEmission() {

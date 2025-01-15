@@ -36,24 +36,24 @@ public class JUnitLikeTestReporter implements TestReporter {
    private Element createTestCase(GameTestInfo var1, String var2) {
       Element var3 = this.document.createElement("testcase");
       var3.setAttribute("name", var2);
-      var3.setAttribute("classname", var1.getStructureName());
+      var3.setAttribute("classname", var1.getStructure().toString());
       var3.setAttribute("time", String.valueOf((double)var1.getRunTime() / 1000.0));
       this.testSuite.appendChild(var3);
       return var3;
    }
 
    public void onTestFailed(GameTestInfo var1) {
-      String var2 = var1.getTestName();
+      String var2 = var1.id().toString();
       String var3 = var1.getError().getMessage();
       Element var4 = this.document.createElement(var1.isRequired() ? "failure" : "skipped");
-      String var10002 = var1.getTestOrigin().toShortString();
+      String var10002 = var1.getTestBlockPos().toShortString();
       var4.setAttribute("message", "(" + var10002 + ") " + var3);
       Element var5 = this.createTestCase(var1, var2);
       var5.appendChild(var4);
    }
 
    public void onTestSuccess(GameTestInfo var1) {
-      String var2 = var1.getTestName();
+      String var2 = var1.id().toString();
       this.createTestCase(var1, var2);
    }
 

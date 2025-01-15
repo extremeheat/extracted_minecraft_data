@@ -20,7 +20,6 @@ import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Saddleable;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -115,25 +114,6 @@ public interface DispenseItemBehavior {
             }
 
             return var2;
-         }
-      });
-      DispenserBlock.registerBehavior(Items.SADDLE, new OptionalDispenseItemBehavior() {
-         public ItemStack execute(BlockSource var1, ItemStack var2) {
-            BlockPos var3 = var1.pos().relative((Direction)var1.state().getValue(DispenserBlock.FACING));
-            List var4 = var1.level().getEntitiesOfClass(LivingEntity.class, new AABB(var3), (var0) -> {
-               if (!(var0 instanceof Saddleable var1)) {
-                  return false;
-               } else {
-                  return !var1.isSaddled() && var1.isSaddleable();
-               }
-            });
-            if (!var4.isEmpty()) {
-               ((Saddleable)var4.get(0)).equipSaddle(var2.split(1), SoundSource.BLOCKS);
-               this.setSuccess(true);
-               return var2;
-            } else {
-               return super.execute(var1, var2);
-            }
          }
       });
       DispenserBlock.registerBehavior(Items.CHEST, new OptionalDispenseItemBehavior() {

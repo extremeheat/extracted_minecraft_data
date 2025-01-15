@@ -113,7 +113,7 @@ public class WoodlandMansionPieces {
             for(Mob var13 : var6) {
                if (var13 != null) {
                   var13.setPersistenceRequired();
-                  var13.moveTo(var2, 0.0F, 0.0F);
+                  var13.snapTo(var2, 0.0F, 0.0F);
                   var13.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var13.blockPosition()), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
                   var3.addFreshEntityWithPassengers(var13);
                   var3.setBlock(var2, Blocks.AIR.defaultBlockState(), 2);

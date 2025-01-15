@@ -53,7 +53,7 @@ public class ShulkerBullet extends Projectile {
       this(EntityType.SHULKER_BULLET, var1);
       this.setOwner(var2);
       Vec3 var5 = var2.getBoundingBox().getCenter();
-      this.moveTo(var5.x, var5.y, var5.z, this.getYRot(), this.getXRot());
+      this.snapTo(var5.x, var5.y, var5.z, this.getYRot(), this.getXRot());
       this.finalTarget = var3;
       this.currentMoveDirection = Direction.UP;
       this.selectNextMoveDirection(var4);

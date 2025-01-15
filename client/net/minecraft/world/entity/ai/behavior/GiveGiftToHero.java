@@ -22,7 +22,7 @@ public class GiveGiftToHero extends Behavior<Villager> {
    private static final int MIN_TIME_BETWEEN_GIFTS = 600;
    private static final int MAX_TIME_BETWEEN_GIFTS = 6600;
    private static final int TIME_TO_DELAY_FOR_HEAD_TO_FINISH_TURNING = 20;
-   private static final Map<VillagerProfession, ResourceKey<LootTable>> GIFTS;
+   private static final Map<ResourceKey<VillagerProfession>, ResourceKey<LootTable>> GIFTS;
    private static final float SPEED_MODIFIER = 0.5F;
    private int timeUntilNextGift = 600;
    private boolean giftGivenDuringThisRun;
@@ -84,8 +84,8 @@ public class GiveGiftToHero extends Behavior<Villager> {
       if (var0.isBaby()) {
          return BuiltInLootTables.BABY_VILLAGER_GIFT;
       } else {
-         VillagerProfession var1 = var0.getVillagerData().getProfession();
-         return (ResourceKey)GIFTS.getOrDefault(var1, BuiltInLootTables.UNEMPLOYED_GIFT);
+         Optional var1 = var0.getVillagerData().profession().unwrapKey();
+         return var1.isEmpty() ? BuiltInLootTables.UNEMPLOYED_GIFT : (ResourceKey)GIFTS.getOrDefault(var1.get(), BuiltInLootTables.UNEMPLOYED_GIFT);
       }
    }
 

@@ -7,6 +7,8 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -38,7 +40,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
@@ -70,7 +71,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.phys.AABB;
 
-public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVariant>> {
+public class Cat extends TamableAnimal {
    public static final double TEMPT_SPEED_MOD = 0.6;
    public static final double WALK_SPEED_MOD = 0.8;
    public static final double SPRINT_SPEED_MOD = 1.33;
@@ -119,8 +120,35 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
       return (Holder)this.entityData.get(DATA_VARIANT_ID);
    }
 
-   public void setVariant(Holder<CatVariant> var1) {
+   private void setVariant(Holder<CatVariant> var1) {
       this.entityData.set(DATA_VARIANT_ID, var1);
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      if (var1 == DataComponents.CAT_VARIANT) {
+         return (T)castComponentValue(var1, this.getVariant());
+      } else {
+         return (T)(var1 == DataComponents.CAT_COLLAR ? castComponentValue(var1, this.getCollarColor()) : super.get(var1));
+      }
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.CAT_VARIANT);
+      this.applyImplicitComponentIfPresent(var1, DataComponents.CAT_COLLAR);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.CAT_VARIANT) {
+         this.setVariant((Holder)castComponentValue(DataComponents.CAT_VARIANT, var2));
+         return true;
+      } else if (var1 == DataComponents.CAT_COLLAR) {
+         this.setCollarColor((DyeColor)castComponentValue(DataComponents.CAT_COLLAR, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    public void setLying(boolean var1) {
@@ -446,16 +474,6 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
    @Nullable
    public AgeableMob getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
       return this.getBreedOffspring(var1, var2);
-   }
-
-   // $FF: synthetic method
-   public Object getVariant() {
-      return this.getVariant();
-   }
-
-   // $FF: synthetic method
-   public void setVariant(final Object var1) {
-      this.setVariant((Holder)var1);
    }
 
    static {

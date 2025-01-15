@@ -37,7 +37,7 @@ public class SkeletonTrapGoal extends Goal {
       this.horse.setAge(0);
       LightningBolt var3 = EntityType.LIGHTNING_BOLT.create(var1, EntitySpawnReason.TRIGGERED);
       if (var3 != null) {
-         var3.moveTo(this.horse.getX(), this.horse.getY(), this.horse.getZ());
+         var3.snapTo(this.horse.getX(), this.horse.getY(), this.horse.getZ());
          var3.setVisualOnly(true);
          var1.addFreshEntity(var3);
          Skeleton var4 = this.createSkeleton(var2, this.horse);

@@ -447,7 +447,7 @@ public class Zombie extends Monster {
                } else if ((double)var5.nextFloat() < 0.05) {
                   Chicken var12 = EntityType.CHICKEN.create(this.level(), EntitySpawnReason.JOCKEY);
                   if (var12 != null) {
-                     var12.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+                     var12.snapTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
                      var12.finalizeSpawn(var1, var2, EntitySpawnReason.JOCKEY, (SpawnGroupData)null);
                      var12.setChickenJockey(true);
                      this.startRiding(var12);

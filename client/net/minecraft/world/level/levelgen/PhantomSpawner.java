@@ -62,7 +62,7 @@ public class PhantomSpawner implements CustomSpawner {
                                  for(int var18 = 0; var18 < var17; ++var18) {
                                     Phantom var19 = EntityType.PHANTOM.create(var1, EntitySpawnReason.NATURAL);
                                     if (var19 != null) {
-                                       var19.moveTo(var13, 0.0F, 0.0F);
+                                       var19.snapTo(var13, 0.0F, 0.0F);
                                        var16 = var19.finalizeSpawn(var1, var9, EntitySpawnReason.NATURAL, var16);
                                        var1.addFreshEntityWithPassengers(var19);
                                        ++var5;

@@ -392,7 +392,7 @@ public class OldMinecartBehavior extends MinecartBehavior {
    }
 
    public Vec3 getKnownMovement(Vec3 var1) {
-      return new Vec3(Mth.clamp(var1.x, -0.4, 0.4), var1.y, Mth.clamp(var1.z, -0.4, 0.4));
+      return !Double.isNaN(var1.x) && !Double.isNaN(var1.y) && !Double.isNaN(var1.z) ? new Vec3(Mth.clamp(var1.x, -0.4, 0.4), var1.y, Mth.clamp(var1.z, -0.4, 0.4)) : Vec3.ZERO;
    }
 
    public double getMaxSpeed(ServerLevel var1) {

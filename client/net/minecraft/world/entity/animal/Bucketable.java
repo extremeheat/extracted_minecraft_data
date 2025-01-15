@@ -34,7 +34,7 @@ public interface Bucketable {
    /** @deprecated */
    @Deprecated
    static void saveDefaultDataToBucketTag(Mob var0, ItemStack var1) {
-      var1.set(DataComponents.CUSTOM_NAME, var0.getCustomName());
+      var1.copyFrom(DataComponents.CUSTOM_NAME, var0);
       CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (Consumer)((var1x) -> {
          if (var0.isNoAi()) {
             var1x.putBoolean("NoAI", var0.isNoAi());

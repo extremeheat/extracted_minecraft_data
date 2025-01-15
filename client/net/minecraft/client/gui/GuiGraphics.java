@@ -656,7 +656,7 @@ public class GuiGraphics {
                var10000 = var11;
 
                try {
-                  var20 = var10000.text();
+                  var20 = var10000.value();
                } catch (Throwable var14) {
                   throw new MatchException(var14.toString(), var14);
                }

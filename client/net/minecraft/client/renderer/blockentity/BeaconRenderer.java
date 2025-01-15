@@ -10,10 +10,11 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.block.entity.BeaconBlockEntity;
+import net.minecraft.world.level.block.entity.BeaconBeamOwner;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
-public class BeaconRenderer implements BlockEntityRenderer<BeaconBlockEntity> {
+public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements BlockEntityRenderer<T> {
    public static final ResourceLocation BEAM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/beacon_beam.png");
    public static final int MAX_RENDER_Y = 1024;
 
@@ -21,13 +22,13 @@ public class BeaconRenderer implements BlockEntityRenderer<BeaconBlockEntity> {
       super();
    }
 
-   public void render(BeaconBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
+   public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
       long var7 = var1.getLevel().getGameTime();
-      List var9 = var1.getBeamSections();
+      List var9 = ((BeaconBeamOwner)var1).getBeamSections();
       int var10 = 0;
 
       for(int var11 = 0; var11 < var9.size(); ++var11) {
-         BeaconBlockEntity.BeaconBeamSection var12 = (BeaconBlockEntity.BeaconBeamSection)var9.get(var11);
+         BeaconBeamOwner.Section var12 = (BeaconBeamOwner.Section)var9.get(var11);
          renderBeaconBeam(var3, var4, var2, var7, var10, var11 == var9.size() - 1 ? 1024 : var12.getHeight(), var12.getColor());
          var10 += var12.getHeight();
       }
@@ -90,7 +91,7 @@ public class BeaconRenderer implements BlockEntityRenderer<BeaconBlockEntity> {
       var1.addVertex(var0, var4, (float)var3, var5).setColor(var2).setUv(var6, var7).setOverlay(OverlayTexture.NO_OVERLAY).setLight(15728880).setNormal(var0, 0.0F, 1.0F, 0.0F);
    }
 
-   public boolean shouldRenderOffScreen(BeaconBlockEntity var1) {
+   public boolean shouldRenderOffScreen(T var1) {
       return true;
    }
 
@@ -98,7 +99,7 @@ public class BeaconRenderer implements BlockEntityRenderer<BeaconBlockEntity> {
       return 256;
    }
 
-   public boolean shouldRender(BeaconBlockEntity var1, Vec3 var2) {
+   public boolean shouldRender(T var1, Vec3 var2) {
       return Vec3.atCenterOf(var1.getBlockPos()).multiply(1.0, 0.0, 1.0).closerThan(var2.multiply(1.0, 0.0, 1.0), (double)this.getViewDistance());
    }
 }

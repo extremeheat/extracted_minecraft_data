@@ -22,12 +22,12 @@ public interface HoverEvent {
 
    Action action();
 
-   public static record ShowText(Component text) implements HoverEvent {
-      public static final MapCodec<ShowText> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ComponentSerialization.CODEC.fieldOf("text").forGetter(ShowText::text)).apply(var0, ShowText::new));
+   public static record ShowText(Component value) implements HoverEvent {
+      public static final MapCodec<ShowText> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ComponentSerialization.CODEC.fieldOf("value").forGetter(ShowText::value)).apply(var0, ShowText::new));
 
       public ShowText(Component var1) {
          super();
-         this.text = var1;
+         this.value = var1;
       }
 
       public Action action() {

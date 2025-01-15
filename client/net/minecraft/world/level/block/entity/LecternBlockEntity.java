@@ -212,15 +212,15 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
       this.setBook(ItemStack.EMPTY);
    }
 
-   public void preRemoveSideEffects(BlockPos var1, BlockState var2, boolean var3) {
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2) {
       if ((Boolean)var2.getValue(LecternBlock.HAS_BOOK) && this.level != null) {
-         Direction var4 = (Direction)var2.getValue(LecternBlock.FACING);
-         ItemStack var5 = this.getBook().copy();
-         float var6 = 0.25F * (float)var4.getStepX();
-         float var7 = 0.25F * (float)var4.getStepZ();
-         ItemEntity var8 = new ItemEntity(this.level, (double)var1.getX() + 0.5 + (double)var6, (double)(var1.getY() + 1), (double)var1.getZ() + 0.5 + (double)var7, var5);
-         var8.setDefaultPickUpDelay();
-         this.level.addFreshEntity(var8);
+         Direction var3 = (Direction)var2.getValue(LecternBlock.FACING);
+         ItemStack var4 = this.getBook().copy();
+         float var5 = 0.25F * (float)var3.getStepX();
+         float var6 = 0.25F * (float)var3.getStepZ();
+         ItemEntity var7 = new ItemEntity(this.level, (double)var1.getX() + 0.5 + (double)var5, (double)(var1.getY() + 1), (double)var1.getZ() + 0.5 + (double)var6, var4);
+         var7.setDefaultPickUpDelay();
+         this.level.addFreshEntity(var7);
       }
 
    }

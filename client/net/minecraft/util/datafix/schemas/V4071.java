@@ -12,8 +12,8 @@ public class V4071 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       Map var2 = super.registerEntities(var1);
-      var1.register(var2, "minecraft:creaking", () -> V100.equipment(var1));
-      var1.register(var2, "minecraft:creaking_transient", () -> V100.equipment(var1));
+      var1.registerSimple(var2, "minecraft:creaking");
+      var1.registerSimple(var2, "minecraft:creaking_transient");
       return var2;
    }
 

@@ -9,51 +9,31 @@ import net.minecraft.world.entity.animal.horse.Llama;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 public class HorseInventoryMenu extends AbstractContainerMenu {
-   static final ResourceLocation SADDLE_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/saddle");
+   private static final ResourceLocation SADDLE_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/saddle");
    private static final ResourceLocation LLAMA_ARMOR_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/llama_armor");
    private static final ResourceLocation ARMOR_SLOT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot/horse_armor");
    private final Container horseContainer;
-   private final Container armorContainer;
    private final AbstractHorse horse;
+   private static final int SLOT_SADDLE = 0;
    private static final int SLOT_BODY_ARMOR = 1;
    private static final int SLOT_HORSE_INVENTORY_START = 2;
 
-   public HorseInventoryMenu(int var1, Inventory var2, Container var3, final AbstractHorse var4, int var5) {
+   public HorseInventoryMenu(int var1, Inventory var2, Container var3, AbstractHorse var4, int var5) {
       super((MenuType)null, var1);
       this.horseContainer = var3;
-      this.armorContainer = var4.getBodyArmorAccess();
       this.horse = var4;
       var3.startOpen(var2.player);
-      this.addSlot(new Slot(var3, 0, 8, 18) {
-         public boolean mayPlace(ItemStack var1) {
-            return var1.is(Items.SADDLE) && !this.hasItem() && var4.isSaddleable();
-         }
-
-         public boolean isActive() {
-            return var4.isSaddleable();
-         }
-
-         public ResourceLocation getNoItemIcon() {
-            return HorseInventoryMenu.SADDLE_SLOT_SPRITE;
-         }
-      });
-      ResourceLocation var6 = var4 instanceof Llama ? LLAMA_ARMOR_SLOT_SPRITE : ARMOR_SLOT_SPRITE;
-      this.addSlot(new ArmorSlot(this.armorContainer, var4, EquipmentSlot.BODY, 0, 8, 36, var6) {
-         public boolean mayPlace(ItemStack var1) {
-            return var4.isEquippableInSlot(var1, EquipmentSlot.BODY);
-         }
-
-         public boolean isActive() {
-            return var4.canUseSlot(EquipmentSlot.BODY);
-         }
-      });
+      Container var6 = var4.createEquipmentSlotContainer(EquipmentSlot.BODY);
+      Container var7 = var4.createEquipmentSlotContainer(EquipmentSlot.SADDLE);
+      this.addSlot(new ArmorSlot(var7, var4, EquipmentSlot.SADDLE, 0, 8, 18, SADDLE_SLOT_SPRITE));
+      ResourceLocation var8 = var4 instanceof Llama ? LLAMA_ARMOR_SLOT_SPRITE : ARMOR_SLOT_SPRITE;
+      this.addSlot(new ArmorSlot(var6, var4, EquipmentSlot.BODY, 0, 8, 36, var8));
       if (var5 > 0) {
-         for(int var7 = 0; var7 < 3; ++var7) {
-            for(int var8 = 0; var8 < var5; ++var8) {
-               this.addSlot(new Slot(var3, 1 + var8 + var7 * var5, 80 + var8 * 18, 18 + var7 * 18));
+         for(int var9 = 0; var9 < 3; ++var9) {
+            for(int var10 = 0; var10 < var5; ++var10) {
+               this.addSlot(new Slot(var3, var10 + var9 * var5, 80 + var10 * 18, 18 + var9 * 18));
             }
          }
       }
@@ -62,7 +42,7 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
    }
 
    public boolean stillValid(Player var1) {
-      return !this.horse.hasInventoryChanged(this.horseContainer) && this.horseContainer.stillValid(var1) && this.armorContainer.stillValid(var1) && this.horse.isAlive() && var1.canInteractWithEntity((Entity)this.horse, 4.0);
+      return !this.horse.hasInventoryChanged(this.horseContainer) && this.horseContainer.stillValid(var1) && this.horse.isAlive() && var1.canInteractWithEntity((Entity)this.horse, 4.0);
    }
 
    public ItemStack quickMoveStack(Player var1, int var2) {
@@ -71,7 +51,7 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
       if (var4 != null && var4.hasItem()) {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
-         int var6 = this.horseContainer.getContainerSize() + 1;
+         int var6 = 2 + this.horseContainer.getContainerSize();
          if (var2 < var6) {
             if (!this.moveItemStackTo(var5, var6, this.slots.size(), true)) {
                return ItemStack.EMPTY;
@@ -80,22 +60,22 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
             if (!this.moveItemStackTo(var5, 1, 2, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (this.getSlot(0).mayPlace(var5)) {
+         } else if (this.getSlot(0).mayPlace(var5) && !this.getSlot(0).hasItem()) {
             if (!this.moveItemStackTo(var5, 0, 1, false)) {
                return ItemStack.EMPTY;
             }
-         } else if (var6 <= 1 || !this.moveItemStackTo(var5, 2, var6, false)) {
-            int var8 = var6 + 27;
-            int var10 = var8 + 9;
-            if (var2 >= var8 && var2 < var10) {
-               if (!this.moveItemStackTo(var5, var6, var8, false)) {
+         } else if (this.horseContainer.getContainerSize() == 0 || !this.moveItemStackTo(var5, 2, var6, false)) {
+            int var7 = var6 + 27;
+            int var9 = var7 + 9;
+            if (var2 >= var7 && var2 < var9) {
+               if (!this.moveItemStackTo(var5, var6, var7, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (var2 >= var6 && var2 < var8) {
-               if (!this.moveItemStackTo(var5, var8, var10, false)) {
+            } else if (var2 >= var6 && var2 < var7) {
+               if (!this.moveItemStackTo(var5, var7, var9, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (!this.moveItemStackTo(var5, var8, var8, false)) {
+            } else if (!this.moveItemStackTo(var5, var7, var7, false)) {
                return ItemStack.EMPTY;
             }
 

@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
@@ -181,7 +182,7 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
       this.items.clear();
    }
 
-   public void preRemoveSideEffects(BlockPos var1, BlockState var2, boolean var3) {
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2) {
       if (this.level != null) {
          Containers.dropContents(this.level, var1, this.getItems());
       }
@@ -195,7 +196,7 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
 
    }
 
-   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+   protected void applyImplicitComponents(DataComponentGetter var1) {
       super.applyImplicitComponents(var1);
       ((ItemContainerContents)var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)).copyInto(this.getItems());
    }

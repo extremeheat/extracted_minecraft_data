@@ -61,7 +61,7 @@ public class TextComponentHoverAndClickEventFix extends DataFix {
       Dynamic var10000;
       switch (var0.get("action").asString("")) {
          case "show_text":
-            var10000 = var0.renameField("contents", "text");
+            var10000 = var0.renameField("contents", "value");
             break;
          case "show_item":
             Dynamic var6 = var0.get("contents").orElseEmptyMap();

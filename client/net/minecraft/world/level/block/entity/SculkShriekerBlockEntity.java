@@ -155,12 +155,12 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
       return (Boolean)this.getBlockState().getValue(SculkShriekerBlock.CAN_SUMMON) && var1.getDifficulty() != Difficulty.PEACEFUL && var1.getGameRules().getBoolean(GameRules.RULE_DO_WARDEN_SPAWNING);
    }
 
-   public void preRemoveSideEffects(BlockPos var1, BlockState var2, boolean var3) {
+   public void preRemoveSideEffects(BlockPos var1, BlockState var2) {
       if ((Boolean)var2.getValue(SculkShriekerBlock.SHRIEKING)) {
-         Level var5 = this.level;
-         if (var5 instanceof ServerLevel) {
-            ServerLevel var4 = (ServerLevel)var5;
-            this.tryRespond(var4);
+         Level var4 = this.level;
+         if (var4 instanceof ServerLevel) {
+            ServerLevel var3 = (ServerLevel)var4;
+            this.tryRespond(var3);
          }
       }
 

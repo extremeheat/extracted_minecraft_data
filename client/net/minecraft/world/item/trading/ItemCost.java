@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponentHolder;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -49,7 +49,7 @@ public record ItemCost(Holder<Item> item, int count, DataComponentPredicate comp
    }
 
    public boolean test(ItemStack var1) {
-      return var1.is(this.item) && this.components.test((DataComponentHolder)var1);
+      return var1.is(this.item) && this.components.test((DataComponentGetter)var1);
    }
 
    static {

@@ -189,7 +189,7 @@ public final class TrialSpawner {
                   }
 
                   Entity var20 = EntityType.loadEntityRecursive(var5, var1, EntitySpawnReason.TRIAL_SPAWNER, (var7x) -> {
-                     var7x.moveTo(var9, var11, var13, var3.nextFloat() * 360.0F, 0.0F);
+                     var7x.snapTo(var9, var11, var13, var3.nextFloat() * 360.0F, 0.0F);
                      return var7x;
                   });
                   if (var20 == null) {

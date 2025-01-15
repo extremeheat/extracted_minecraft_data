@@ -5,11 +5,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
+import net.minecraft.network.chat.Component;
 
 public class GameTestSequence {
    final GameTestInfo parent;
    private final List<GameTestEvent> events = Lists.newArrayList();
-   private long lastTick;
+   private int lastTick;
 
    GameTestSequence(GameTestInfo var1) {
       super();
@@ -39,8 +40,8 @@ public class GameTestSequence {
 
    public GameTestSequence thenExecuteAfter(int var1, Runnable var2) {
       this.events.add(GameTestEvent.create(() -> {
-         if (this.parent.getTick() < this.lastTick + (long)var1) {
-            throw new GameTestAssertException("Test timed out before sequence completed");
+         if (this.parent.getTick() < this.lastTick + var1) {
+            throw new GameTestAssertException(Component.translatable("test.error.sequence.not_completed"), this.parent.getTick());
          } else {
             this.executeWithoutFail(var2);
          }
@@ -50,9 +51,9 @@ public class GameTestSequence {
 
    public GameTestSequence thenExecuteFor(int var1, Runnable var2) {
       this.events.add(GameTestEvent.create(() -> {
-         if (this.parent.getTick() < this.lastTick + (long)var1) {
+         if (this.parent.getTick() < this.lastTick + var1) {
             this.executeWithoutFail(var2);
-            throw new GameTestAssertException("Test timed out before sequence completed");
+            throw new GameTestAssertException(Component.translatable("test.error.sequence.not_completed"), this.parent.getTick());
          }
       }));
       return this;
@@ -75,19 +76,19 @@ public class GameTestSequence {
       return var1;
    }
 
-   public void tickAndContinue(long var1) {
+   public void tickAndContinue(int var1) {
       try {
          this.tick(var1);
-      } catch (GameTestAssertException var4) {
+      } catch (GameTestAssertException var3) {
       }
 
    }
 
-   public void tickAndFailIfNotComplete(long var1) {
+   public void tickAndFailIfNotComplete(int var1) {
       try {
          this.tick(var1);
-      } catch (GameTestAssertException var4) {
-         this.parent.fail(var4);
+      } catch (GameTestAssertException var3) {
+         this.parent.fail(var3);
       }
 
    }
@@ -101,20 +102,18 @@ public class GameTestSequence {
 
    }
 
-   private void tick(long var1) {
-      Iterator var3 = this.events.iterator();
+   private void tick(int var1) {
+      Iterator var2 = this.events.iterator();
 
-      while(var3.hasNext()) {
-         GameTestEvent var4 = (GameTestEvent)var3.next();
-         var4.assertion.run();
-         var3.remove();
-         long var5 = var1 - this.lastTick;
-         long var7 = this.lastTick;
+      while(var2.hasNext()) {
+         GameTestEvent var3 = (GameTestEvent)var2.next();
+         var3.assertion.run();
+         var2.remove();
+         int var4 = var1 - this.lastTick;
+         int var5 = this.lastTick;
          this.lastTick = var1;
-         if (var4.expectedDelay != null && var4.expectedDelay != var5) {
-            GameTestInfo var10000 = this.parent;
-            long var10003 = var7 + var4.expectedDelay;
-            var10000.fail(new GameTestAssertException("Succeeded in invalid tick: expected " + var10003 + ", but current tick is " + var1));
+         if (var3.expectedDelay != null && var3.expectedDelay != (long)var4) {
+            this.parent.fail(new GameTestAssertException(Component.translatable("test.error.sequence.invalid_tick", (long)var5 + var3.expectedDelay), var1));
             break;
          }
       }
@@ -122,15 +121,15 @@ public class GameTestSequence {
    }
 
    public class Condition {
-      private static final long NOT_TRIGGERED = -1L;
-      private long triggerTime = -1L;
+      private static final int NOT_TRIGGERED = -1;
+      private int triggerTime = -1;
 
       public Condition() {
          super();
       }
 
-      void trigger(long var1) {
-         if (this.triggerTime != -1L) {
+      void trigger(int var1) {
+         if (this.triggerTime != -1) {
             throw new IllegalStateException("Condition already triggered at " + this.triggerTime);
          } else {
             this.triggerTime = var1;
@@ -138,12 +137,12 @@ public class GameTestSequence {
       }
 
       public void assertTriggeredThisTick() {
-         long var1 = GameTestSequence.this.parent.getTick();
+         int var1 = GameTestSequence.this.parent.getTick();
          if (this.triggerTime != var1) {
-            if (this.triggerTime == -1L) {
-               throw new GameTestAssertException("Condition not triggered (t=" + var1 + ")");
+            if (this.triggerTime == -1) {
+               throw new GameTestAssertException(Component.translatable("test.error.sequence.condition_not_triggered"), var1);
             } else {
-               throw new GameTestAssertException("Condition triggered at " + this.triggerTime + ", (t=" + var1 + ")");
+               throw new GameTestAssertException(Component.translatable("test.error.sequence.condition_already_triggered", this.triggerTime), var1);
             }
          }
       }

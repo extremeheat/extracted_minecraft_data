@@ -71,13 +71,13 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    public ZombieVillager(EntityType<? extends ZombieVillager> var1, Level var2) {
       super(var1, var2);
-      BuiltInRegistries.VILLAGER_PROFESSION.getRandom(this.random).ifPresent((var1x) -> this.setVillagerData(this.getVillagerData().setProfession((VillagerProfession)var1x.value())));
+      BuiltInRegistries.VILLAGER_PROFESSION.getRandom(this.random).ifPresent((var1x) -> this.setVillagerData(this.getVillagerData().withProfession(var1x)));
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_CONVERTING_ID, false);
-      var1.define(DATA_VILLAGER_DATA, new VillagerData(VillagerType.PLAINS, VillagerProfession.NONE, 1));
+      var1.define(DATA_VILLAGER_DATA, new VillagerData(BuiltInRegistries.VILLAGER_TYPE.getOrThrow(VillagerType.PLAINS), BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NONE), 1));
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
@@ -293,13 +293,13 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      this.setVillagerData(this.getVillagerData().setType(VillagerType.byBiome(var1.getBiome(this.blockPosition()))));
+      this.setVillagerData(this.getVillagerData().withType(var1.registryAccess(), VillagerType.byBiome(var1.getBiome(this.blockPosition()))));
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    public void setVillagerData(VillagerData var1) {
       VillagerData var2 = this.getVillagerData();
-      if (var2.getProfession() != var1.getProfession()) {
+      if (!var2.profession().equals(var1.profession())) {
          this.tradeOffers = null;
       }
 

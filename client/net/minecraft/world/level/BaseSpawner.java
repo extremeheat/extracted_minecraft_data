@@ -121,7 +121,7 @@ public abstract class BaseSpawner {
                   }
 
                   Entity var22 = EntityType.loadEntityRecursive(var7, var1, EntitySpawnReason.SPAWNER, (var6x) -> {
-                     var6x.moveTo(var11, var13, var15, var6x.getYRot(), var6x.getXRot());
+                     var6x.snapTo(var11, var13, var15, var6x.getYRot(), var6x.getXRot());
                      return var6x;
                   });
                   if (var22 == null) {
@@ -135,7 +135,7 @@ public abstract class BaseSpawner {
                      return;
                   }
 
-                  var22.moveTo(var22.getX(), var22.getY(), var22.getZ(), var4.nextFloat() * 360.0F, 0.0F);
+                  var22.snapTo(var22.getX(), var22.getY(), var22.getZ(), var4.nextFloat() * 360.0F, 0.0F);
                   if (var22 instanceof Mob) {
                      Mob var20 = (Mob)var22;
                      if (var5.getCustomSpawnRules().isEmpty() && !var20.checkSpawnRules(var1, EntitySpawnReason.SPAWNER) || !var20.checkSpawnObstruction(var1)) {

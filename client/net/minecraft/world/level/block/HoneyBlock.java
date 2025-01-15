@@ -44,7 +44,7 @@ public class HoneyBlock extends HalfTransparentBlock {
       return SHAPE;
    }
 
-   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
+   public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, double var5) {
       var4.playSound(SoundEvents.HONEY_BLOCK_SLIDE, 1.0F, 1.0F);
       if (!var1.isClientSide) {
          var1.broadcastEntityEvent(var4, (byte)54);

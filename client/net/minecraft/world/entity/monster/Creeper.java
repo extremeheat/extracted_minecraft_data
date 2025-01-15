@@ -75,14 +75,14 @@ public class Creeper extends Monster {
       return this.getTarget() == null ? this.getComfortableFallDistance(0.0F) : this.getComfortableFallDistance(this.getHealth() - 1.0F);
    }
 
-   public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
-      boolean var4 = super.causeFallDamage(var1, var2, var3);
-      this.swell += (int)(var1 * 1.5F);
+   public boolean causeFallDamage(double var1, float var3, DamageSource var4) {
+      boolean var5 = super.causeFallDamage(var1, var3, var4);
+      this.swell += (int)(var1 * 1.5);
       if (this.swell > this.maxSwell - 5) {
          this.swell = this.maxSwell - 5;
       }
 
-      return var4;
+      return var5;
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {

@@ -211,7 +211,7 @@ public class OceanRuinPieces {
             Drowned var7 = EntityType.DROWNED.create(var3.getLevel(), EntitySpawnReason.STRUCTURE);
             if (var7 != null) {
                var7.setPersistenceRequired();
-               var7.moveTo(var2, 0.0F, 0.0F);
+               var7.snapTo(var2, 0.0F, 0.0F);
                var7.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var2), EntitySpawnReason.STRUCTURE, (SpawnGroupData)null);
                var3.addFreshEntityWithPassengers(var7);
                if (var2.getY() > var3.getSeaLevel()) {
