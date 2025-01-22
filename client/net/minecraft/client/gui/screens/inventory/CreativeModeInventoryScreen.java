@@ -655,7 +655,9 @@ public class CreativeModeInventoryScreen extends AbstractContainerScreen<ItemPic
       TooltipFlag.Default var5 = this.minecraft.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL;
       TooltipFlag.Default var6 = var2 ? var5.asCreative() : var5;
       List var7 = var1.getTooltipLines(Item.TooltipContext.of((Level)this.minecraft.level), this.minecraft.player, var6);
-      if (var3 && var2) {
+      if (var7.isEmpty()) {
+         return var7;
+      } else if (var3 && var2) {
          return var7;
       } else {
          ArrayList var8 = Lists.newArrayList(var7);

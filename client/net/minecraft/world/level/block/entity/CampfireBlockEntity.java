@@ -189,13 +189,6 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
 
    }
 
-   public void dowse() {
-      if (this.level != null) {
-         this.markUpdated();
-      }
-
-   }
-
    protected void applyImplicitComponents(DataComponentGetter var1) {
       super.applyImplicitComponents(var1);
       ((ItemContainerContents)var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)).copyInto(this.getItems());

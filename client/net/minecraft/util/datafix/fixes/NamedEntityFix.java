@@ -9,8 +9,8 @@ import com.mojang.datafixers.schemas.Schema;
 
 public abstract class NamedEntityFix extends DataFix {
    private final String name;
-   private final String entityName;
-   private final DSL.TypeReference type;
+   protected final String entityName;
+   protected final DSL.TypeReference type;
 
    public NamedEntityFix(Schema var1, boolean var2, String var3, DSL.TypeReference var4, String var5) {
       super(var1, var2);

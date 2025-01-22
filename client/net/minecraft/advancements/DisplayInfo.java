@@ -4,20 +4,20 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import java.util.Optional;
+import net.minecraft.core.ClientAsset;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 public class DisplayInfo {
-   public static final Codec<DisplayInfo> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ItemStack.STRICT_CODEC.fieldOf("icon").forGetter(DisplayInfo::getIcon), ComponentSerialization.CODEC.fieldOf("title").forGetter(DisplayInfo::getTitle), ComponentSerialization.CODEC.fieldOf("description").forGetter(DisplayInfo::getDescription), ResourceLocation.CODEC.optionalFieldOf("background").forGetter(DisplayInfo::getBackground), AdvancementType.CODEC.optionalFieldOf("frame", AdvancementType.TASK).forGetter(DisplayInfo::getType), Codec.BOOL.optionalFieldOf("show_toast", true).forGetter(DisplayInfo::shouldShowToast), Codec.BOOL.optionalFieldOf("announce_to_chat", true).forGetter(DisplayInfo::shouldAnnounceChat), Codec.BOOL.optionalFieldOf("hidden", false).forGetter(DisplayInfo::isHidden)).apply(var0, DisplayInfo::new));
+   public static final Codec<DisplayInfo> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ItemStack.STRICT_CODEC.fieldOf("icon").forGetter(DisplayInfo::getIcon), ComponentSerialization.CODEC.fieldOf("title").forGetter(DisplayInfo::getTitle), ComponentSerialization.CODEC.fieldOf("description").forGetter(DisplayInfo::getDescription), ClientAsset.CODEC.optionalFieldOf("background").forGetter(DisplayInfo::getBackground), AdvancementType.CODEC.optionalFieldOf("frame", AdvancementType.TASK).forGetter(DisplayInfo::getType), Codec.BOOL.optionalFieldOf("show_toast", true).forGetter(DisplayInfo::shouldShowToast), Codec.BOOL.optionalFieldOf("announce_to_chat", true).forGetter(DisplayInfo::shouldAnnounceChat), Codec.BOOL.optionalFieldOf("hidden", false).forGetter(DisplayInfo::isHidden)).apply(var0, DisplayInfo::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, DisplayInfo> STREAM_CODEC = StreamCodec.<RegistryFriendlyByteBuf, DisplayInfo>ofMember(DisplayInfo::serializeToNetwork, DisplayInfo::fromNetwork);
    private final Component title;
    private final Component description;
    private final ItemStack icon;
-   private final Optional<ResourceLocation> background;
+   private final Optional<ClientAsset> background;
    private final AdvancementType type;
    private final boolean showToast;
    private final boolean announceChat;
@@ -25,7 +25,7 @@ public class DisplayInfo {
    private float x;
    private float y;
 
-   public DisplayInfo(ItemStack var1, Component var2, Component var3, Optional<ResourceLocation> var4, AdvancementType var5, boolean var6, boolean var7, boolean var8) {
+   public DisplayInfo(ItemStack var1, Component var2, Component var3, Optional<ClientAsset> var4, AdvancementType var5, boolean var6, boolean var7, boolean var8) {
       super();
       this.title = var2;
       this.description = var3;
@@ -54,7 +54,7 @@ public class DisplayInfo {
       return this.icon;
    }
 
-   public Optional<ResourceLocation> getBackground() {
+   public Optional<ClientAsset> getBackground() {
       return this.background;
    }
 
@@ -101,7 +101,7 @@ public class DisplayInfo {
       }
 
       var1.writeInt(var2);
-      Optional var10000 = this.background;
+      Optional var10000 = this.background.map(ClientAsset::id);
       Objects.requireNonNull(var1);
       var10000.ifPresent(var1::writeResourceLocation);
       var1.writeFloat(this.x);
@@ -114,7 +114,7 @@ public class DisplayInfo {
       ItemStack var3 = (ItemStack)ItemStack.STREAM_CODEC.decode(var0);
       AdvancementType var4 = (AdvancementType)var0.readEnum(AdvancementType.class);
       int var5 = var0.readInt();
-      Optional var6 = (var5 & 1) != 0 ? Optional.of(var0.readResourceLocation()) : Optional.empty();
+      Optional var6 = (var5 & 1) != 0 ? Optional.of(new ClientAsset(var0.readResourceLocation())) : Optional.empty();
       boolean var7 = (var5 & 2) != 0;
       boolean var8 = (var5 & 4) != 0;
       DisplayInfo var9 = new DisplayInfo(var3, var1, var2, var6, var4, var7, false, var8);

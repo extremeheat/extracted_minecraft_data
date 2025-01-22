@@ -232,6 +232,6 @@ public class BlockStateProperties {
       VAULT_STATE = EnumProperty.<VaultState>create("vault_state", VaultState.class);
       CREAKING_HEART_STATE = EnumProperty.<CreakingHeartState>create("creaking_heart_state", CreakingHeartState.class);
       OMINOUS = BooleanProperty.create("ominous");
-      TEST_BLOCK_MODE = EnumProperty.<TestBlockMode>create("test_block_mode", TestBlockMode.class);
+      TEST_BLOCK_MODE = EnumProperty.<TestBlockMode>create("mode", TestBlockMode.class);
    }
 }

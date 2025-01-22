@@ -13,6 +13,7 @@ import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GpuWarnlistManager;
@@ -153,6 +154,17 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       } else {
          return super.mouseScrolled(var1, var3, var5, var7);
       }
+   }
+
+   public void updateFullscreenButton(boolean var1) {
+      if (this.list != null) {
+         AbstractWidget var2 = this.list.findOption(this.options.fullscreen());
+         if (var2 != null) {
+            CycleButton var3 = (CycleButton)var2;
+            var3.setValue(var1);
+         }
+      }
+
    }
 
    static {

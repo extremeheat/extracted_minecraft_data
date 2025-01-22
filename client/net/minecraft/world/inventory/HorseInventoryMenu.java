@@ -1,6 +1,7 @@
 package net.minecraft.world.inventory;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -20,16 +21,20 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
    private static final int SLOT_BODY_ARMOR = 1;
    private static final int SLOT_HORSE_INVENTORY_START = 2;
 
-   public HorseInventoryMenu(int var1, Inventory var2, Container var3, AbstractHorse var4, int var5) {
+   public HorseInventoryMenu(int var1, Inventory var2, Container var3, final AbstractHorse var4, int var5) {
       super((MenuType)null, var1);
       this.horseContainer = var3;
       this.horse = var4;
       var3.startOpen(var2.player);
-      Container var6 = var4.createEquipmentSlotContainer(EquipmentSlot.BODY);
-      Container var7 = var4.createEquipmentSlotContainer(EquipmentSlot.SADDLE);
-      this.addSlot(new ArmorSlot(var7, var4, EquipmentSlot.SADDLE, 0, 8, 18, SADDLE_SLOT_SPRITE));
-      ResourceLocation var8 = var4 instanceof Llama ? LLAMA_ARMOR_SLOT_SPRITE : ARMOR_SLOT_SPRITE;
-      this.addSlot(new ArmorSlot(var6, var4, EquipmentSlot.BODY, 0, 8, 36, var8));
+      Container var6 = var4.createEquipmentSlotContainer(EquipmentSlot.SADDLE);
+      this.addSlot(new ArmorSlot(var6, var4, EquipmentSlot.SADDLE, 0, 8, 18, SADDLE_SLOT_SPRITE));
+      ResourceLocation var7 = var4 instanceof Llama ? LLAMA_ARMOR_SLOT_SPRITE : ARMOR_SLOT_SPRITE;
+      Container var8 = var4.createEquipmentSlotContainer(EquipmentSlot.BODY);
+      this.addSlot(new ArmorSlot(var8, var4, EquipmentSlot.BODY, 0, 8, 36, var7) {
+         public boolean isActive() {
+            return var4.canUseSlot(EquipmentSlot.BODY) && var4.getType().is(EntityTypeTags.CAN_WEAR_HORSE_ARMOR);
+         }
+      });
       if (var5 > 0) {
          for(int var9 = 0; var9 < 3; ++var9) {
             for(int var10 = 0; var10 < var5; ++var10) {

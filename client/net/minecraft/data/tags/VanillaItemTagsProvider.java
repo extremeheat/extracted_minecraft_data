@@ -2,14 +2,16 @@ package net.minecraft.data.tags;
 
 import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.level.block.Block;
 
 public class VanillaItemTagsProvider extends ItemTagsProvider {
@@ -137,7 +139,7 @@ public class VanillaItemTagsProvider extends ItemTagsProvider {
       this.tag(ItemTags.HEAD_ARMOR).add(Items.LEATHER_HELMET, Items.CHAINMAIL_HELMET, Items.GOLDEN_HELMET, Items.IRON_HELMET, Items.DIAMOND_HELMET, Items.NETHERITE_HELMET, Items.TURTLE_HELMET);
       this.tag(ItemTags.SKULLS).add(Items.PLAYER_HEAD, Items.CREEPER_HEAD, Items.ZOMBIE_HEAD, Items.SKELETON_SKULL, Items.WITHER_SKELETON_SKULL, Items.DRAGON_HEAD, Items.PIGLIN_HEAD);
       this.tag(ItemTags.TRIMMABLE_ARMOR).addTag(ItemTags.FOOT_ARMOR).addTag(ItemTags.LEG_ARMOR).addTag(ItemTags.CHEST_ARMOR).addTag(ItemTags.HEAD_ARMOR);
-      var1.lookupOrThrow(Registries.TRIM_MATERIAL).listElements().sorted(Comparator.comparing((var0) -> var0.key().location())).forEach((var1x) -> this.tag(ItemTags.TRIM_MATERIALS).add((Item)((TrimMaterial)var1x.value()).ingredient().value()));
+      this.tag(ItemTags.TRIM_MATERIALS).addAll(var1.lookupOrThrow(Registries.ITEM).listElements().filter((var0) -> ((Item)var0.value()).components().has(DataComponents.PROVIDES_TRIM_MATERIAL)).map(Holder.Reference::key).sorted(Comparator.comparing(ResourceKey::location)).toList());
       this.tag(ItemTags.BOOKSHELF_BOOKS).add(Items.BOOK, Items.WRITTEN_BOOK, Items.ENCHANTED_BOOK, Items.WRITABLE_BOOK, Items.KNOWLEDGE_BOOK);
       this.tag(ItemTags.NOTE_BLOCK_TOP_INSTRUMENTS).add(Items.ZOMBIE_HEAD, Items.SKELETON_SKULL, Items.CREEPER_HEAD, Items.DRAGON_HEAD, Items.WITHER_SKELETON_SKULL, Items.PIGLIN_HEAD, Items.PLAYER_HEAD);
       this.tag(ItemTags.SNIFFER_FOOD).add(Items.TORCHFLOWER_SEEDS);

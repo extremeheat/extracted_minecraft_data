@@ -167,6 +167,7 @@ public abstract class AbstractArrow extends Projectile {
 
             for(AABB var8 : var5.toAabbs()) {
                if (var8.move(var3).contains(var6)) {
+                  this.setDeltaMovement(Vec3.ZERO);
                   this.setInGround(true);
                   break;
                }
@@ -316,6 +317,10 @@ public abstract class AbstractArrow extends Projectile {
       this.entityData.set(IN_GROUND, var1);
    }
 
+   public boolean isPushedByFluid() {
+      return !this.isInGround();
+   }
+
    public void move(MoverType var1, Vec3 var2) {
       super.move(var1, var2);
       if (var1 != MoverType.SELF && this.shouldFall()) {
@@ -347,19 +352,15 @@ public abstract class AbstractArrow extends Projectile {
       this.firedFromWeapon = null;
    }
 
-   public void onAboveBubbleCol(boolean var1, BlockPos var2) {
+   public void onAboveBubbleColumn(boolean var1, BlockPos var2) {
       if (!this.isInGround()) {
-         double var3 = var1 ? -0.03 : 0.1;
-         this.setDeltaMovement(this.getDeltaMovement().add(0.0, var3, 0.0));
-         this.sendBubbleColumnParticles(var2);
+         super.onAboveBubbleColumn(var1, var2);
       }
    }
 
    public void onInsideBubbleColumn(boolean var1) {
       if (!this.isInGround()) {
-         double var2 = var1 ? -0.03 : 0.06;
-         this.setDeltaMovement(this.getDeltaMovement().add(0.0, var2, 0.0));
-         this.resetFallDistance();
+         super.onInsideBubbleColumn(var1);
       }
    }
 
@@ -438,8 +439,8 @@ public abstract class AbstractArrow extends Projectile {
             this.doPostHurtEffects(var11);
             if (var11 instanceof Player && var6 instanceof ServerPlayer) {
                ServerPlayer var19 = (ServerPlayer)var6;
-               if (!this.isSilent()) {
-                  var19.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.ARROW_HIT_PLAYER, 0.0F));
+               if (!this.isSilent() && var11 != var19) {
+                  var19.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.PLAY_ARROW_HIT_SOUND, 0.0F));
                }
             }
 

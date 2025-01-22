@@ -24,7 +24,7 @@ public class Optionull {
    }
 
    public static <T, R> R mapOrDefault(@Nullable T var0, Function<T, R> var1, R var2) {
-      // $FF: Couldn't be decompiled
+      return var0 == null ? var2 : var1.apply(var0);
    }
 
    public static <T, R> R mapOrElse(@Nullable T var0, Function<T, R> var1, Supplier<R> var2) {
@@ -38,7 +38,8 @@ public class Optionull {
    }
 
    public static <T> T firstOrDefault(Collection<T> var0, T var1) {
-      // $FF: Couldn't be decompiled
+      Iterator var2 = var0.iterator();
+      return var2.hasNext() ? var2.next() : var1;
    }
 
    public static <T> T firstOrElse(Collection<T> var0, Supplier<T> var1) {

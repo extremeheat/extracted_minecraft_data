@@ -792,7 +792,7 @@ public class SoundEvents {
    public static final SoundEvent ITEM_FRAME_PLACE = register("entity.item_frame.place");
    public static final SoundEvent ITEM_FRAME_REMOVE_ITEM = register("entity.item_frame.remove_item");
    public static final SoundEvent ITEM_FRAME_ROTATE_ITEM = register("entity.item_frame.rotate_item");
-   public static final SoundEvent ITEM_BREAK = register("entity.item.break");
+   public static final Holder.Reference<SoundEvent> ITEM_BREAK = registerForHolder("entity.item.break");
    public static final SoundEvent ITEM_PICKUP = register("entity.item.pickup");
    public static final SoundEvent LADDER_BREAK = register("block.ladder.break");
    public static final SoundEvent LADDER_FALL = register("block.ladder.fall");
@@ -1269,8 +1269,8 @@ public class SoundEvents {
    public static final SoundEvent SHEEP_HURT = register("entity.sheep.hurt");
    public static final SoundEvent SHEEP_SHEAR = register("entity.sheep.shear");
    public static final SoundEvent SHEEP_STEP = register("entity.sheep.step");
-   public static final SoundEvent SHIELD_BLOCK = register("item.shield.block");
-   public static final SoundEvent SHIELD_BREAK = register("item.shield.break");
+   public static final Holder.Reference<SoundEvent> SHIELD_BLOCK = registerForHolder("item.shield.block");
+   public static final Holder.Reference<SoundEvent> SHIELD_BREAK = registerForHolder("item.shield.break");
    public static final SoundEvent SHROOMLIGHT_BREAK = register("block.shroomlight.break");
    public static final SoundEvent SHROOMLIGHT_STEP = register("block.shroomlight.step");
    public static final SoundEvent SHROOMLIGHT_PLACE = register("block.shroomlight.place");
@@ -1600,7 +1600,7 @@ public class SoundEvents {
    public static final SoundEvent WITHER_SKELETON_HURT = register("entity.wither_skeleton.hurt");
    public static final SoundEvent WITHER_SKELETON_STEP = register("entity.wither_skeleton.step");
    public static final SoundEvent WITHER_SPAWN = register("entity.wither.spawn");
-   public static final SoundEvent WOLF_ARMOR_BREAK = register("item.wolf_armor.break");
+   public static final Holder.Reference<SoundEvent> WOLF_ARMOR_BREAK = registerForHolder("item.wolf_armor.break");
    public static final SoundEvent WOLF_ARMOR_CRACK = register("item.wolf_armor.crack");
    public static final SoundEvent WOLF_ARMOR_DAMAGE = register("item.wolf_armor.damage");
    public static final SoundEvent WOLF_ARMOR_REPAIR = register("item.wolf_armor.repair");

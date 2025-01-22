@@ -306,6 +306,10 @@ public abstract class BlockBehaviour implements FeatureElement {
       return this.hasCollision ? var1.getShape(var2, var3) : Shapes.empty();
    }
 
+   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, Entity var4) {
+      return Shapes.block();
+   }
+
    protected boolean isCollisionShapeFullBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
       return Block.isShapeFullBlock(var1.getCollisionShape(var2, var3));
    }
@@ -341,10 +345,6 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-   }
-
-   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, Level var2, BlockPos var3) {
-      return Shapes.block();
    }
 
    protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
@@ -1017,6 +1017,10 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.getBlock().getCollisionShape(this.asState(), var1, var2, var3);
       }
 
+      public VoxelShape getEntityInsideCollisionShape(BlockGetter var1, BlockPos var2, Entity var3) {
+         return this.getBlock().getEntityInsideCollisionShape(this.asState(), var1, var2, var3);
+      }
+
       public VoxelShape getBlockSupportShape(BlockGetter var1, BlockPos var2) {
          return this.getBlock().getBlockSupportShape(this.asState(), var1, var2);
       }
@@ -1099,10 +1103,6 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       public void entityInside(Level var1, BlockPos var2, Entity var3) {
          this.getBlock().entityInside(this.asState(), var1, var2, var3);
-      }
-
-      public VoxelShape getEntityInsideCollisionShape(Level var1, BlockPos var2) {
-         return this.getBlock().getEntityInsideCollisionShape(this.asState(), var1, var2);
       }
 
       public void spawnAfterBreak(ServerLevel var1, BlockPos var2, ItemStack var3, boolean var4) {

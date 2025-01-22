@@ -242,4 +242,12 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
 
       super.onRemoval(var1);
    }
+
+   public void onAboveBubbleColumn(boolean var1, BlockPos var2) {
+      Entity.handleOnAboveBubbleColumn(this, var1, var2);
+   }
+
+   public void onInsideBubbleColumn(boolean var1) {
+      Entity.handleOnInsideBubbleColumn(this, var1);
+   }
 }

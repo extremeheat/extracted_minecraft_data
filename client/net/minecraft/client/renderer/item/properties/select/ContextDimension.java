@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.item.properties.select;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -11,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public record ContextDimension() implements SelectItemModelProperty<ResourceKey<Level>> {
+   public static final Codec<ResourceKey<Level>> VALUE_CODEC;
    public static final SelectItemModelProperty.Type<ContextDimension, ResourceKey<Level>> TYPE;
 
    public ContextDimension() {
@@ -26,6 +28,10 @@ public record ContextDimension() implements SelectItemModelProperty<ResourceKey<
       return TYPE;
    }
 
+   public Codec<ResourceKey<Level>> valueCodec() {
+      return VALUE_CODEC;
+   }
+
    // $FF: synthetic method
    @Nullable
    public Object get(final ItemStack var1, @Nullable final ClientLevel var2, @Nullable final LivingEntity var3, final int var4, final ItemDisplayContext var5) {
@@ -33,6 +39,7 @@ public record ContextDimension() implements SelectItemModelProperty<ResourceKey<
    }
 
    static {
-      TYPE = SelectItemModelProperty.Type.<ContextDimension, ResourceKey<Level>>create(MapCodec.unit(new ContextDimension()), ResourceKey.codec(Registries.DIMENSION));
+      VALUE_CODEC = ResourceKey.codec(Registries.DIMENSION);
+      TYPE = SelectItemModelProperty.Type.<ContextDimension, ResourceKey<Level>>create(MapCodec.unit(new ContextDimension()), VALUE_CODEC);
    }
 }

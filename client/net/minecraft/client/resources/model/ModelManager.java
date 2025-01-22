@@ -284,7 +284,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
    }
 
    static {
-      VANILLA_ATLASES = Map.of(Sheets.BANNER_SHEET, ResourceLocation.withDefaultNamespace("banner_patterns"), Sheets.BED_SHEET, ResourceLocation.withDefaultNamespace("beds"), Sheets.CHEST_SHEET, ResourceLocation.withDefaultNamespace("chests"), Sheets.SHIELD_SHEET, ResourceLocation.withDefaultNamespace("shield_patterns"), Sheets.SIGN_SHEET, ResourceLocation.withDefaultNamespace("signs"), Sheets.SHULKER_SHEET, ResourceLocation.withDefaultNamespace("shulker_boxes"), Sheets.ARMOR_TRIMS_SHEET, ResourceLocation.withDefaultNamespace("armor_trims"), Sheets.DECORATED_POT_SHEET, ResourceLocation.withDefaultNamespace("decorated_pot"), TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("blocks"));
+      VANILLA_ATLASES = Map.of(Sheets.BANNER_SHEET, AtlasIds.BANNER_PATTERNS, Sheets.BED_SHEET, AtlasIds.BEDS, Sheets.CHEST_SHEET, AtlasIds.CHESTS, Sheets.SHIELD_SHEET, AtlasIds.SHIELD_PATTERNS, Sheets.SIGN_SHEET, AtlasIds.SIGNS, Sheets.SHULKER_SHEET, AtlasIds.SHULKER_BOXES, Sheets.ARMOR_TRIMS_SHEET, AtlasIds.ARMOR_TRIMS, Sheets.DECORATED_POT_SHEET, AtlasIds.DECORATED_POT, TextureAtlas.LOCATION_BLOCKS, AtlasIds.BLOCKS);
    }
 
    static record ReloadState(ModelBakery.BakingResult bakedModels, Object2IntMap<BlockState> modelGroups, Map<BlockState, BakedModel> modelCache, Map<ResourceLocation, AtlasSet.StitchResult> atlasPreparations, EntityModelSet entityModelSet, SpecialBlockModelRenderer specialBlockModelRenderer, CompletableFuture<Void> readyForUpload) {

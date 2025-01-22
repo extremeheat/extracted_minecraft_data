@@ -37,7 +37,6 @@ import net.minecraft.data.structures.SnbtToNbt;
 import net.minecraft.data.structures.StructureUpdater;
 import net.minecraft.data.tags.BannerPatternTagsProvider;
 import net.minecraft.data.tags.BiomeTagsProvider;
-import net.minecraft.data.tags.CatVariantTagsProvider;
 import net.minecraft.data.tags.DamageTypeTagsProvider;
 import net.minecraft.data.tags.EntityTypeTagsProvider;
 import net.minecraft.data.tags.FlatLevelGeneratorPresetTagsProvider;
@@ -113,7 +112,6 @@ public class Main {
       TagsProvider var8 = (TagsProvider)var11.addProvider(bindRegistries(BiomeTagsProvider::new, var14));
       TagsProvider var9 = (TagsProvider)var11.addProvider(bindRegistries(BannerPatternTagsProvider::new, var14));
       TagsProvider var10 = (TagsProvider)var11.addProvider(bindRegistries(StructureTagsProvider::new, var14));
-      var11.addProvider(bindRegistries(CatVariantTagsProvider::new, var14));
       var11.addProvider(bindRegistries(DamageTypeTagsProvider::new, var14));
       var11.addProvider(bindRegistries(EntityTypeTagsProvider::new, var14));
       var11.addProvider(bindRegistries(FlatLevelGeneratorPresetTagsProvider::new, var14));

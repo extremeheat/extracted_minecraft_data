@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
@@ -31,12 +32,14 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.ConsumableListener;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.level.Level;
 
-public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> customColor, List<MobEffectInstance> customEffects, Optional<String> customName) implements ConsumableListener {
+public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> customColor, List<MobEffectInstance> customEffects, Optional<String> customName) implements ConsumableListener, TooltipProvider {
    public static final PotionContents EMPTY = new PotionContents(Optional.empty(), Optional.empty(), List.of(), Optional.empty());
    private static final Component NO_EFFECT;
    public static final int BASE_POTION_COLOR = -13083194;
@@ -144,10 +147,6 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
       return Lists.transform(this.customEffects, MobEffectInstance::new);
    }
 
-   public void addPotionTooltip(Consumer<Component> var1, float var2, float var3) {
-      addPotionTooltip(this.getAllEffects(), var1, var2, var3);
-   }
-
    public void applyToLivingEntity(LivingEntity var1, float var2) {
       Level var4 = var1.level();
       if (var4 instanceof ServerLevel var3) {
@@ -223,6 +222,10 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
 
    public void onConsume(Level var1, LivingEntity var2, ItemStack var3, Consumable var4) {
       this.applyToLivingEntity(var2, (Float)var3.getOrDefault(DataComponents.POTION_DURATION_SCALE, 1.0F));
+   }
+
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+      addPotionTooltip(this.getAllEffects(), var2, (Float)var4.getOrDefault(DataComponents.POTION_DURATION_SCALE, 1.0F), var1.tickRate());
    }
 
    static {

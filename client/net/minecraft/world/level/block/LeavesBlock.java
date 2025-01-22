@@ -1,15 +1,12 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.OptionalInt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.ParticleUtils;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -30,24 +27,19 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
-   public static final MapCodec<LeavesBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("leaf_particle_chance").forGetter((var0x) -> var0x.leafParticleChance), ParticleTypes.CODEC.fieldOf("leaf_particle").forGetter((var0x) -> var0x.leafParticle), propertiesCodec()).apply(var0, LeavesBlock::new));
+public abstract class LeavesBlock extends Block implements SimpleWaterloggedBlock {
    public static final int DECAY_DISTANCE = 7;
    public static final IntegerProperty DISTANCE;
    public static final BooleanProperty PERSISTENT;
    public static final BooleanProperty WATERLOGGED;
-   protected final ParticleOptions leafParticle;
-   protected final int leafParticleChance;
+   protected final float leafParticleChance;
    private static final int TICK_DELAY = 1;
 
-   public MapCodec<? extends LeavesBlock> codec() {
-      return CODEC;
-   }
+   public abstract MapCodec<? extends LeavesBlock> codec();
 
-   public LeavesBlock(int var1, ParticleOptions var2, BlockBehaviour.Properties var3) {
-      super(var3);
+   public LeavesBlock(float var1, BlockBehaviour.Properties var2) {
+      super(var2);
       this.leafParticleChance = var1;
-      this.leafParticle = var2;
       this.registerDefaultState((BlockState)((BlockState)((BlockState)((BlockState)this.stateDefinition.any()).setValue(DISTANCE, 7)).setValue(PERSISTENT, false)).setValue(WATERLOGGED, false));
    }
 
@@ -142,12 +134,14 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    private void makeFallingLeavesParticles(Level var1, BlockPos var2, RandomSource var3, BlockState var4, BlockPos var5) {
-      if (var3.nextInt(this.leafParticleChance) == 0) {
+      if (!(var3.nextFloat() >= this.leafParticleChance)) {
          if (!isFaceFull(var4.getCollisionShape(var1, var5), Direction.UP)) {
-            ParticleUtils.spawnParticleBelow(var1, var2, var3, this.leafParticle);
+            this.spawnFallingLeavesParticle(var1, var2, var3);
          }
       }
    }
+
+   protected abstract void spawnFallingLeavesParticle(Level var1, BlockPos var2, RandomSource var3);
 
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(DISTANCE, PERSISTENT, WATERLOGGED);

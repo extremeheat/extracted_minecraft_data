@@ -3,12 +3,13 @@ package net.minecraft.commands.arguments.item;
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.ImmutableStringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.JavaOps;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.Util;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.util.parsing.packrat.Atom;
@@ -73,11 +74,11 @@ public class ComponentPredicateParser {
 
          try {
             if (var6 != null) {
-               Tag var10 = (Tag)var5x.getOrThrow(var14);
+               Dynamic var10 = (Dynamic)var5x.getOrThrow(var14);
                return Optional.of(var0.createPredicateTest((ImmutableStringReader)var4x.input(), var6, var10));
             } else {
                Object var7 = var5x.getOrThrow(var11);
-               Tag var8 = (Tag)var5x.get(var14);
+               Dynamic var8 = (Dynamic)var5x.get(var14);
                return Optional.of(var8 != null ? var0.createComponentTest((ImmutableStringReader)var4x.input(), var7, var8) : var0.createComponentTest((ImmutableStringReader)var4x.input(), var7));
             }
          } catch (CommandSyntaxException var9) {
@@ -87,7 +88,7 @@ public class ComponentPredicateParser {
       }));
       var15.put(var11, new ComponentLookupRule(var13, var0));
       var15.put(var12, new PredicateLookupRule(var13, var0));
-      var15.put(var14, TagParseRule.INSTANCE);
+      var15.put(var14, new TagParseRule(JavaOps.INSTANCE));
       var15.put(var13, ResourceLocationParseRule.INSTANCE);
       return new Grammar<List<T>>(var15, var1);
    }
@@ -161,7 +162,7 @@ public class ComponentPredicateParser {
 
       Stream<ResourceLocation> listComponentTypes();
 
-      T createComponentTest(ImmutableStringReader var1, C var2, Tag var3) throws CommandSyntaxException;
+      T createComponentTest(ImmutableStringReader var1, C var2, Dynamic<?> var3) throws CommandSyntaxException;
 
       T createComponentTest(ImmutableStringReader var1, C var2);
 
@@ -169,7 +170,7 @@ public class ComponentPredicateParser {
 
       Stream<ResourceLocation> listPredicateTypes();
 
-      T createPredicateTest(ImmutableStringReader var1, P var2, Tag var3) throws CommandSyntaxException;
+      T createPredicateTest(ImmutableStringReader var1, P var2, Dynamic<?> var3) throws CommandSyntaxException;
 
       T negate(T var1);
 

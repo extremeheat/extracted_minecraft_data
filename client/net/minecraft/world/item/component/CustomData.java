@@ -15,22 +15,28 @@ import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Spawner;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.slf4j.Logger;
 
-public final class CustomData {
+public final class CustomData implements TooltipProvider {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final CustomData EMPTY = new CustomData(new CompoundTag());
    private static final String TYPE_TAG = "id";
@@ -39,6 +45,8 @@ public final class CustomData {
    /** @deprecated */
    @Deprecated
    public static final StreamCodec<ByteBuf, CustomData> STREAM_CODEC;
+   private static final ResourceLocation MOB_SPAWNER_ID;
+   private static final ResourceLocation TRIAL_SPAWNER_ID;
    private final CompoundTag tag;
 
    private CustomData(CompoundTag var1) {
@@ -182,9 +190,19 @@ public final class CustomData {
       return this.tag;
    }
 
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+      ResourceLocation var5 = ResourceLocation.tryParse(this.tag.getString("id"));
+      if (MOB_SPAWNER_ID.equals(var5) || TRIAL_SPAWNER_ID.equals(var5)) {
+         Spawner.appendHoverText(this, var2, "SpawnData");
+      }
+
+   }
+
    static {
-      CODEC = Codec.withAlternative(CompoundTag.CODEC, TagParser.AS_CODEC).xmap(CustomData::new, (var0) -> var0.tag);
+      CODEC = Codec.withAlternative(CompoundTag.CODEC, TagParser.FLATTENED_CODEC).xmap(CustomData::new, (var0) -> var0.tag);
       CODEC_WITH_ID = CODEC.validate((var0) -> var0.getUnsafe().contains("id", 8) ? DataResult.success(var0) : DataResult.error(() -> "Missing id for entity in: " + String.valueOf(var0)));
       STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(CustomData::new, (var0) -> var0.tag);
+      MOB_SPAWNER_ID = BlockEntityType.MOB_SPAWNER.builtInRegistryHolder().key().location();
+      TRIAL_SPAWNER_ID = BlockEntityType.TRIAL_SPAWNER.builtInRegistryHolder().key().location();
    }
 }

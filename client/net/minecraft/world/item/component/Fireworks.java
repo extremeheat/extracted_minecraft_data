@@ -6,6 +6,7 @@ import io.netty.buffer.ByteBuf;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -29,14 +30,14 @@ public record Fireworks(int flightDuration, List<FireworkExplosion> explosions) 
       }
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
       if (this.flightDuration > 0) {
          var2.accept(Component.translatable("item.minecraft.firework_rocket.flight").append(CommonComponents.SPACE).append(String.valueOf(this.flightDuration)).withStyle(ChatFormatting.GRAY));
       }
 
-      for(FireworkExplosion var5 : this.explosions) {
-         var5.addShapeNameTooltip(var2);
-         var5.addAdditionalTooltip((var1x) -> var2.accept(Component.literal("  ").append(var1x)));
+      for(FireworkExplosion var6 : this.explosions) {
+         var6.addShapeNameTooltip(var2);
+         var6.addAdditionalTooltip((var1x) -> var2.accept(Component.literal("  ").append(var1x)));
       }
 
    }

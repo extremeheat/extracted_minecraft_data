@@ -385,7 +385,7 @@ public class ItemInHandRenderer {
             boolean var13 = CrossbowItem.isCharged(var6);
             boolean var14 = var12 == HumanoidArm.RIGHT;
             int var15 = var14 ? 1 : -1;
-            if (var1.isUsingItem() && var1.getUseItemRemainingTicks() > 0 && var1.getUsedItemHand() == var4) {
+            if (var1.isUsingItem() && var1.getUseItemRemainingTicks() > 0 && var1.getUsedItemHand() == var4 && !var13) {
                this.applyItemArmTransform(var8, var12, var7);
                var8.translate((float)var15 * -0.4785682F, -0.094387F, 0.05731531F);
                var8.mulPose(Axis.XP.rotationDegrees(-11.935F));

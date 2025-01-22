@@ -134,7 +134,6 @@ public class BlockTypes {
       Registry.register(var0, (String)"lava_cauldron", LavaCauldronBlock.CODEC);
       Registry.register(var0, (String)"layered_cauldron", LayeredCauldronBlock.CODEC);
       Registry.register(var0, (String)"leaf_litter", LeafLitterBlock.CODEC);
-      Registry.register(var0, (String)"leaves", LeavesBlock.CODEC);
       Registry.register(var0, (String)"lectern", LecternBlock.CODEC);
       Registry.register(var0, (String)"lever", LeverBlock.CODEC);
       Registry.register(var0, (String)"light", LightBlock.CODEC);
@@ -225,6 +224,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"test", TestBlock.CODEC);
       Registry.register(var0, (String)"test_instance", TestInstanceBlock.CODEC);
       Registry.register(var0, (String)"tinted_glass", TintedGlassBlock.CODEC);
+      Registry.register(var0, (String)"tinted_particle_leaves", TintedParticleLeavesBlock.CODEC);
       Registry.register(var0, (String)"tnt", TntBlock.CODEC);
       Registry.register(var0, (String)"torchflower_crop", TorchflowerCropBlock.CODEC);
       Registry.register(var0, (String)"torch", TorchBlock.CODEC);
@@ -237,6 +237,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"turtle_egg", TurtleEggBlock.CODEC);
       Registry.register(var0, (String)"twisting_vines_plant", TwistingVinesPlantBlock.CODEC);
       Registry.register(var0, (String)"twisting_vines", TwistingVinesBlock.CODEC);
+      Registry.register(var0, (String)"untinted_particle_leaves", UntintedParticleLeavesBlock.CODEC);
       Registry.register(var0, (String)"vault", VaultBlock.CODEC);
       Registry.register(var0, (String)"vine", VineBlock.CODEC);
       Registry.register(var0, (String)"wall_banner", WallBannerBlock.CODEC);

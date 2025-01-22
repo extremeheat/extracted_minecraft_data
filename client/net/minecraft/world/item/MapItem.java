@@ -3,15 +3,12 @@ package net.minecraft.world.item;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multisets;
-import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BiomeTags;
@@ -325,35 +322,6 @@ public class MapItem extends Item {
          var1.set(DataComponents.MAP_ID, var3);
       }
 
-   }
-
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
-      MapId var5 = (MapId)var1.get(DataComponents.MAP_ID);
-      MapItemSavedData var6 = var5 != null ? var2.mapData(var5) : null;
-      MapPostProcessing var7 = (MapPostProcessing)var1.get(DataComponents.MAP_POST_PROCESSING);
-      if (var6 != null && (var6.locked || var7 == MapPostProcessing.LOCK)) {
-         var3.add(Component.translatable("filled_map.locked", var5.id()).withStyle(ChatFormatting.GRAY));
-      }
-
-      if (var4.isAdvanced()) {
-         if (var6 != null) {
-            if (var7 == null) {
-               var3.add(getTooltipForId(var5));
-            }
-
-            int var8 = var7 == MapPostProcessing.SCALE ? 1 : 0;
-            int var9 = Math.min(var6.scale + var8, 4);
-            var3.add(Component.translatable("filled_map.scale", 1 << var9).withStyle(ChatFormatting.GRAY));
-            var3.add(Component.translatable("filled_map.level", var9, 4).withStyle(ChatFormatting.GRAY));
-         } else {
-            var3.add(Component.translatable("filled_map.unknown").withStyle(ChatFormatting.GRAY));
-         }
-      }
-
-   }
-
-   public static Component getTooltipForId(MapId var0) {
-      return Component.translatable("filled_map.id", var0.id()).withStyle(ChatFormatting.GRAY);
    }
 
    public InteractionResult useOn(UseOnContext var1) {

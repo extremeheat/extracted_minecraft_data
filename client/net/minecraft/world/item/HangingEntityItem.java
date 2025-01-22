@@ -1,8 +1,7 @@
 package net.minecraft.world.item;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -18,6 +17,7 @@ import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.decoration.Painting;
 import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -79,20 +79,15 @@ public class HangingEntityItem extends Item {
       return !var2.getAxis().isVertical() && var1.mayUseItemAt(var4, var2, var3);
    }
 
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
-      super.appendHoverText(var1, var2, var3, var4);
-      if (this.type == EntityType.PAINTING) {
-         Holder var5 = (Holder)var1.get(DataComponents.PAINTING_VARIANT);
-         if (var5 != null) {
-            Optional var10000 = ((PaintingVariant)var5.value()).title();
-            Objects.requireNonNull(var3);
-            var10000.ifPresent(var3::add);
-            var10000 = ((PaintingVariant)var5.value()).author();
-            Objects.requireNonNull(var3);
-            var10000.ifPresent(var3::add);
-            var3.add(Component.translatable("painting.dimensions", ((PaintingVariant)var5.value()).width(), ((PaintingVariant)var5.value()).height()));
-         } else if (var4.isCreative()) {
-            var3.add(TOOLTIP_RANDOM_VARIANT);
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, TooltipDisplay var3, Consumer<Component> var4, TooltipFlag var5) {
+      if (this.type == EntityType.PAINTING && var3.shows(DataComponents.PAINTING_VARIANT)) {
+         Holder var6 = (Holder)var1.get(DataComponents.PAINTING_VARIANT);
+         if (var6 != null) {
+            ((PaintingVariant)var6.value()).title().ifPresent(var4);
+            ((PaintingVariant)var6.value()).author().ifPresent(var4);
+            var4.accept(Component.translatable("painting.dimensions", ((PaintingVariant)var6.value()).width(), ((PaintingVariant)var6.value()).height()));
+         } else if (var5.isCreative()) {
+            var4.accept(TOOLTIP_RANDOM_VARIANT);
          }
       }
 

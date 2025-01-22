@@ -1,6 +1,7 @@
 package net.minecraft.data.recipes.packs;
 
 import com.google.common.collect.ImmutableList;
+import com.mojang.datafixers.util.Pair;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -47,6 +48,8 @@ import net.minecraft.world.item.crafting.RepairItemRecipe;
 import net.minecraft.world.item.crafting.ShieldDecorationRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
 import net.minecraft.world.item.crafting.TippedArrowRecipe;
+import net.minecraft.world.item.equipment.trim.TrimPattern;
+import net.minecraft.world.item.equipment.trim.TrimPatterns;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
@@ -867,7 +870,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.DEEPSLATE_TILE_SLAB, Blocks.DEEPSLATE_TILES, 2);
       this.stonecutterResultFromBase(RecipeCategory.BUILDING_BLOCKS, Blocks.DEEPSLATE_TILE_STAIRS, Blocks.DEEPSLATE_TILES);
       this.stonecutterResultFromBase(RecipeCategory.DECORATIONS, Blocks.DEEPSLATE_TILE_WALL, Blocks.DEEPSLATE_TILES);
-      smithingTrims().forEach((var1x) -> this.trimSmithing(var1x.template(), var1x.id()));
+      smithingTrims().forEach((var1x) -> this.trimSmithing(var1x.template(), var1x.patternId(), var1x.recipeId()));
       this.netheriteSmithing(Items.DIAMOND_CHESTPLATE, RecipeCategory.COMBAT, Items.NETHERITE_CHESTPLATE);
       this.netheriteSmithing(Items.DIAMOND_LEGGINGS, RecipeCategory.COMBAT, Items.NETHERITE_LEGGINGS);
       this.netheriteSmithing(Items.DIAMOND_HELMET, RecipeCategory.COMBAT, Items.NETHERITE_HELMET);
@@ -1000,7 +1003,12 @@ public class VanillaRecipeProvider extends RecipeProvider {
    }
 
    public static Stream<TrimTemplate> smithingTrims() {
-      return Stream.of(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE, Items.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE, Items.EYE_ARMOR_TRIM_SMITHING_TEMPLATE, Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE, Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE, Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE, Items.RIB_ARMOR_TRIM_SMITHING_TEMPLATE, Items.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE, Items.SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE, Items.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE, Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE, Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE, Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE, Items.VEX_ARMOR_TRIM_SMITHING_TEMPLATE, Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE, Items.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE, Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE).map((var0) -> new TrimTemplate(var0, ResourceKey.create(Registries.RECIPE, ResourceLocation.withDefaultNamespace(getItemName(var0) + "_smithing_trim"))));
+      return Stream.of(Pair.of(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.BOLT), Pair.of(Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.COAST), Pair.of(Items.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.DUNE), Pair.of(Items.EYE_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.EYE), Pair.of(Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.FLOW), Pair.of(Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.HOST), Pair.of(Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.RAISER), Pair.of(Items.RIB_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.RIB), Pair.of(Items.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.SENTRY), Pair.of(Items.SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.SHAPER), Pair.of(Items.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.SILENCE), Pair.of(Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.SNOUT), Pair.of(Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.SPIRE), Pair.of(Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.TIDE), Pair.of(Items.VEX_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.VEX), Pair.of(Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.WARD), Pair.of(Items.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.WAYFINDER), Pair.of(Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE, TrimPatterns.WILD)).map((var0) -> {
+         Item var1 = (Item)var0.getFirst();
+         ResourceKey var2 = (ResourceKey)var0.getSecond();
+         ResourceKey var3 = ResourceKey.create(Registries.RECIPE, ResourceLocation.withDefaultNamespace(getItemName(var1) + "_smithing_trim"));
+         return new TrimTemplate(var1, var2, var3);
+      });
    }
 
    private void shulkerBoxRecipes() {
@@ -1047,11 +1055,12 @@ public class VanillaRecipeProvider extends RecipeProvider {
       }
    }
 
-   public static record TrimTemplate(Item template, ResourceKey<Recipe<?>> id) {
-      public TrimTemplate(Item var1, ResourceKey<Recipe<?>> var2) {
+   public static record TrimTemplate(Item template, ResourceKey<TrimPattern> patternId, ResourceKey<Recipe<?>> recipeId) {
+      public TrimTemplate(Item var1, ResourceKey<TrimPattern> var2, ResourceKey<Recipe<?>> var3) {
          super();
          this.template = var1;
-         this.id = var2;
+         this.patternId = var2;
+         this.recipeId = var3;
       }
    }
 }

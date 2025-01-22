@@ -6,11 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
@@ -22,10 +19,7 @@ import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -47,7 +41,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ShulkerBoxBlock extends BaseEntityBlock {
    public static final MapCodec<ShulkerBoxBlock> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(DyeColor.CODEC.optionalFieldOf("color").forGetter((var0x) -> Optional.ofNullable(var0x.color)), propertiesCodec()).apply(var0, (var0x, var1) -> new ShulkerBoxBlock((DyeColor)var0x.orElse((Object)null), var1)));
-   private static final Component UNKNOWN_CONTENTS = Component.translatable("container.shulkerBox.unknownContents");
    public static final Map<Direction, VoxelShape> SHAPES_OPEN_SUPPORT = Shapes.rotateAll(Block.boxZ(16.0, 0.0, 1.0));
    public static final EnumProperty<Direction> FACING;
    public static final ResourceLocation CONTENTS;
@@ -138,29 +131,6 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
 
    protected void affectNeighborsAfterRemoval(BlockState var1, ServerLevel var2, BlockPos var3, boolean var4) {
       Containers.updateNeighboursAfterDestroy(var1, var2, var3);
-   }
-
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
-      super.appendHoverText(var1, var2, var3, var4);
-      if (var1.has(DataComponents.CONTAINER_LOOT)) {
-         var3.add(UNKNOWN_CONTENTS);
-      }
-
-      int var5 = 0;
-      int var6 = 0;
-
-      for(ItemStack var8 : ((ItemContainerContents)var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)).nonEmptyItems()) {
-         ++var6;
-         if (var5 <= 4) {
-            ++var5;
-            var3.add(Component.translatable("container.shulkerBox.itemCount", var8.getHoverName(), var8.getCount()));
-         }
-      }
-
-      if (var6 - var5 > 0) {
-         var3.add(Component.translatable("container.shulkerBox.more", var6 - var5).withStyle(ChatFormatting.ITALIC));
-      }
-
    }
 
    protected VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {

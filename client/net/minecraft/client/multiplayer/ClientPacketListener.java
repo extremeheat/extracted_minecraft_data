@@ -10,6 +10,7 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import java.lang.ref.WeakReference;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -71,7 +72,6 @@ import net.minecraft.core.RegistrySynchronization;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.TickablePacketListener;
 import net.minecraft.network.chat.Component;
@@ -376,6 +376,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private volatile boolean closed;
    private final Scoreboard scoreboard;
    private final SessionSearchTrees searchTrees;
+   private final List<WeakReference<CacheSlot<?, ?>>> cacheSlots;
 
    public ClientPacketListener(Minecraft var1, Connection var2, CommonListenerCookie var3) {
       super(var1, var2, var3);
@@ -386,6 +387,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.seenInsecureChatWarning = false;
       this.scoreboard = new Scoreboard();
       this.searchTrees = new SessionSearchTrees();
+      this.cacheSlots = new ArrayList();
       this.localGameProfile = var3.localGameProfile();
       this.registryAccess = var3.receivedRegistries();
       this.enabledFeatures = var3.enabledFeatures();
@@ -412,8 +414,20 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    public void clearLevel() {
+      this.clearCacheSlots();
       this.level = null;
       this.levelLoadStatusManager = null;
+   }
+
+   private void clearCacheSlots() {
+      for(WeakReference var2 : this.cacheSlots) {
+         CacheSlot var3 = (CacheSlot)var2.get();
+         if (var3 != null) {
+            var3.clear();
+         }
+      }
+
+      this.cacheSlots.clear();
    }
 
    public RecipeAccess recipes() {
@@ -1257,11 +1271,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       BlockPos var2 = var1.getPos();
       this.minecraft.level.getBlockEntity(var2, var1.getType()).ifPresent((var2x) -> {
-         CompoundTag var3 = var1.getTag();
-         if (!var3.isEmpty()) {
-            var2x.loadWithComponents(var3, this.registryAccess);
-         }
-
+         var2x.loadWithComponents(var1.getTag(), this.registryAccess);
          if (var2x instanceof CommandBlockEntity && this.minecraft.screen instanceof CommandBlockEditScreen) {
             ((CommandBlockEditScreen)this.minecraft.screen).updateGui();
          }
@@ -1336,7 +1346,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          } else if (var4 == 104.0F) {
             this.minecraft.gui.getChat().addMessage(Component.translatable("demo.day.6", var6.keyScreenshot.getTranslatedKeyMessage()));
          }
-      } else if (var3 == ClientboundGameEventPacket.ARROW_HIT_PLAYER) {
+      } else if (var3 == ClientboundGameEventPacket.PLAY_ARROW_HIT_SOUND) {
          this.level.playSound(var2, ((Player)var2).getX(), ((Player)var2).getEyeY(), ((Player)var2).getZ(), SoundEvents.ARROW_HIT_PLAYER, SoundSource.PLAYERS, 0.18F, 0.45F);
       } else if (var3 == ClientboundGameEventPacket.RAIN_LEVEL_CHANGE) {
          this.level.setRainLevel(var4);
@@ -2415,5 +2425,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public ServerLinks serverLinks() {
       return this.serverLinks;
+   }
+
+   public void registerForCleaning(CacheSlot<?, ?> var1) {
+      this.cacheSlots.add(new WeakReference(var1));
    }
 }

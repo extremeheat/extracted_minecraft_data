@@ -3,8 +3,10 @@ package net.minecraft.world.entity.animal;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
@@ -12,6 +14,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -30,8 +33,11 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -260,7 +266,7 @@ public class TropicalFish extends AbstractSchoolingFish {
       }
    }
 
-   public static enum Pattern implements StringRepresentable {
+   public static enum Pattern implements StringRepresentable, TooltipProvider {
       KOB("kob", TropicalFish.Base.SMALL, 0),
       SUNSTREAK("sunstreak", TropicalFish.Base.SMALL, 1),
       SNOOPER("snooper", TropicalFish.Base.SMALL, 2),
@@ -307,6 +313,25 @@ public class TropicalFish extends AbstractSchoolingFish {
 
       public Component displayName() {
          return this.displayName;
+      }
+
+      public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+         DyeColor var5 = (DyeColor)var4.getOrDefault(DataComponents.TROPICAL_FISH_BASE_COLOR, TropicalFish.DEFAULT_VARIANT.baseColor());
+         DyeColor var6 = (DyeColor)var4.getOrDefault(DataComponents.TROPICAL_FISH_PATTERN_COLOR, TropicalFish.DEFAULT_VARIANT.patternColor());
+         ChatFormatting[] var7 = new ChatFormatting[]{ChatFormatting.ITALIC, ChatFormatting.GRAY};
+         int var8 = TropicalFish.COMMON_VARIANTS.indexOf(new Variant(this, var5, var6));
+         if (var8 != -1) {
+            var2.accept(Component.translatable(TropicalFish.getPredefinedName(var8)).withStyle(var7));
+         } else {
+            var2.accept(this.displayName.plainCopy().withStyle(var7));
+            MutableComponent var9 = Component.translatable("color.minecraft." + var5.getName());
+            if (var5 != var6) {
+               var9.append(", ").append((Component)Component.translatable("color.minecraft." + var6.getName()));
+            }
+
+            var9.withStyle(var7);
+            var2.accept(var9);
+         }
       }
 
       // $FF: synthetic method

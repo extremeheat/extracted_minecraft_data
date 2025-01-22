@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
@@ -67,8 +68,8 @@ public class GameTestMainUtil {
             copyPacks(var3, var4);
          }
 
-         LevelStorageSource.LevelStorageAccess var6 = LevelStorageSource.createDefault(Paths.get("gametestserver")).createAccess("gametestworld");
-         PackRepository var5 = ServerPacksSource.createVanillaTrustedRepository();
+         LevelStorageSource.LevelStorageAccess var6 = LevelStorageSource.createDefault(Paths.get(var3)).createAccess("gametestworld");
+         PackRepository var5 = ServerPacksSource.createPackRepository(var6);
          MinecraftServer.spin((var3x) -> GameTestServer.create(var3x, var6, var5, optionalFromOption(var2, tests), var2.has(verify)));
       }
    }
@@ -94,17 +95,35 @@ public class GameTestMainUtil {
 
       Path var3 = Paths.get(var1);
       if (Files.exists(var3, new LinkOption[0])) {
-         for(Path var5 : Files.list(var3).toList()) {
-            Path var6 = var2.resolve(var5.getFileName());
-            if (Files.isDirectory(var5, new LinkOption[0])) {
-               if (Files.isRegularFile(var5.resolve("pack.mcmeta"), new LinkOption[0])) {
-                  FileUtils.copyDirectory(var5.toFile(), var6.toFile());
-                  LOGGER.info("Included folder pack " + String.valueOf(var5.getFileName()));
+         Stream var4 = Files.list(var3);
+
+         try {
+            for(Path var6 : var4.toList()) {
+               Path var7 = var2.resolve(var6.getFileName());
+               if (Files.isDirectory(var6, new LinkOption[0])) {
+                  if (Files.isRegularFile(var6.resolve("pack.mcmeta"), new LinkOption[0])) {
+                     FileUtils.copyDirectory(var6.toFile(), var7.toFile());
+                     LOGGER.info("Included folder pack {}", var6.getFileName());
+                  }
+               } else if (var6.toString().endsWith(".zip")) {
+                  Files.copy(var6, var7);
+                  LOGGER.info("Included zip pack {}", var6.getFileName());
                }
-            } else if (var5.endsWith(".zip")) {
-               Files.copy(var5, var6);
-               LOGGER.info("Included zip pack  " + String.valueOf(var5.getFileName()));
             }
+         } catch (Throwable var9) {
+            if (var4 != null) {
+               try {
+                  var4.close();
+               } catch (Throwable var8) {
+                  var9.addSuppressed(var8);
+               }
+            }
+
+            throw var9;
+         }
+
+         if (var4 != null) {
+            var4.close();
          }
       }
 

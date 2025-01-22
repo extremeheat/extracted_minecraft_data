@@ -76,7 +76,7 @@ public class TrialSpawnerConfigInRegistryFix extends NamedEntityFix {
 
       private static CompoundTag parse(String var0) {
          try {
-            return TagParser.parseTag(var0);
+            return TagParser.parseCompoundFully(var0);
          } catch (CommandSyntaxException var2) {
             throw new IllegalArgumentException("Failed to parse Trial Spawner NBT config: " + var0, var2);
          }

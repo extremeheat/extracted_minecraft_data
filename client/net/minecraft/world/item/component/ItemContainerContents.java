@@ -6,14 +6,20 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 
-public final class ItemContainerContents {
+public final class ItemContainerContents implements TooltipProvider {
    private static final int NO_SLOT = -1;
    private static final int MAX_SIZE = 256;
    public static final ItemContainerContents EMPTY = new ItemContainerContents(NonNullList.create());
@@ -146,6 +152,24 @@ public final class ItemContainerContents {
 
    public int hashCode() {
       return this.hashCode;
+   }
+
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+      int var5 = 0;
+      int var6 = 0;
+
+      for(ItemStack var8 : this.nonEmptyItems()) {
+         ++var6;
+         if (var5 <= 4) {
+            ++var5;
+            var2.accept(Component.translatable("item.container.item_count", var8.getHoverName(), var8.getCount()));
+         }
+      }
+
+      if (var6 - var5 > 0) {
+         var2.accept(Component.translatable("item.container.more_items", var6 - var5).withStyle(ChatFormatting.ITALIC));
+      }
+
    }
 
    static {

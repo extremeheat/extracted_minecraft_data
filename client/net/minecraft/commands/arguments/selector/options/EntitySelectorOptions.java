@@ -307,7 +307,7 @@ public class EntitySelectorOptions {
          }, (var0) -> true, Component.translatable("argument.entity.options.tag.description"));
          register("nbt", (var0) -> {
             boolean var1 = var0.shouldInvertValue();
-            CompoundTag var2 = (new TagParser(var0.getReader())).readStruct();
+            CompoundTag var2 = TagParser.parseCompoundAsArgument(var0.getReader());
             var0.addPredicate((var2x) -> {
                CompoundTag var3 = var2x.saveWithoutId(new CompoundTag());
                if (var2x instanceof ServerPlayer var4) {

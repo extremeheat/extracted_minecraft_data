@@ -29,7 +29,7 @@ public class CatRenderer extends AgeableMobRenderer<Cat, CatRenderState, CatMode
 
    public void extractRenderState(Cat var1, CatRenderState var2, float var3) {
       super.extractRenderState(var1, var2, var3);
-      var2.texture = ((CatVariant)var1.getVariant().value()).texture();
+      var2.texture = ((CatVariant)var1.getVariant().value()).assetInfo().texturePath();
       var2.isCrouching = var1.isCrouching();
       var2.isSprinting = var1.isSprinting();
       var2.isSitting = var1.isInSittingPose();

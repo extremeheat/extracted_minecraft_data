@@ -16,7 +16,7 @@ public class DamageTypeTagsProvider extends TagsProvider<DamageType> {
    protected void addTags(HolderLookup.Provider var1) {
       this.tag(DamageTypeTags.DAMAGES_HELMET).add(DamageTypes.FALLING_ANVIL, DamageTypes.FALLING_BLOCK, DamageTypes.FALLING_STALACTITE);
       this.tag(DamageTypeTags.BYPASSES_ARMOR).add(DamageTypes.ON_FIRE, DamageTypes.IN_WALL, DamageTypes.CRAMMING, DamageTypes.DROWN, DamageTypes.FLY_INTO_WALL, DamageTypes.GENERIC, DamageTypes.WITHER, DamageTypes.DRAGON_BREATH, DamageTypes.STARVE, DamageTypes.FALL, DamageTypes.ENDER_PEARL, DamageTypes.FREEZE, DamageTypes.STALAGMITE, DamageTypes.MAGIC, DamageTypes.INDIRECT_MAGIC, DamageTypes.FELL_OUT_OF_WORLD, DamageTypes.GENERIC_KILL, DamageTypes.SONIC_BOOM, DamageTypes.OUTSIDE_BORDER);
-      this.tag(DamageTypeTags.BYPASSES_SHIELD).addTag(DamageTypeTags.BYPASSES_ARMOR).add(DamageTypes.FALLING_ANVIL, DamageTypes.FALLING_STALACTITE);
+      this.tag(DamageTypeTags.BYPASSES_BLOCKING).addTag(DamageTypeTags.BYPASSES_ARMOR).add(DamageTypes.FALLING_ANVIL, DamageTypes.FALLING_STALACTITE);
       this.tag(DamageTypeTags.BYPASSES_INVULNERABILITY).add(DamageTypes.FELL_OUT_OF_WORLD, DamageTypes.GENERIC_KILL);
       this.tag(DamageTypeTags.BYPASSES_EFFECTS).add(DamageTypes.STARVE);
       this.tag(DamageTypeTags.BYPASSES_RESISTANCE).add(DamageTypes.FELL_OUT_OF_WORLD, DamageTypes.GENERIC_KILL);

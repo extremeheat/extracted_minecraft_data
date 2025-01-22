@@ -206,7 +206,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
    public double yOld;
    public double zOld;
    public boolean noPhysics;
-   private boolean wasOnFire;
    protected final RandomSource random;
    public int tickCount;
    private int remainingFireTicks;
@@ -674,7 +673,6 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       if (this.noPhysics) {
          this.setPos(this.getX() + var2.x, this.getY() + var2.y, this.getZ() + var2.z);
       } else {
-         this.wasOnFire = this.isOnFire();
          if (var1 == MoverType.PISTON) {
             var2 = this.limitPistonMovement(var2);
             if (var2.equals(Vec3.ZERO)) {
@@ -1119,7 +1117,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
 
                BlockState var11 = this.level().getBlockState(var10);
                if (!var11.isAir() && var3.add(var10.asLong())) {
-                  VoxelShape var12 = var11.getEntityInsideCollisionShape(this.level(), var10);
+                  VoxelShape var12 = var11.getEntityInsideCollisionShape(this.level(), var10, this);
                   boolean var13 = var12 == Shapes.block() || this.collidedWithShapeMovingFrom(var6, var7, var12.move(new Vec3(var10)).toAabbs());
                   if (var13) {
                      try {
@@ -2542,8 +2540,12 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       this.hurtServer(var1, this.damageSources().lightningBolt(), 5.0F);
    }
 
-   public void onAboveBubbleCol(boolean var1, BlockPos var2) {
-      Vec3 var3 = this.getDeltaMovement();
+   public void onAboveBubbleColumn(boolean var1, BlockPos var2) {
+      handleOnAboveBubbleColumn(this, var1, var2);
+   }
+
+   protected static void handleOnAboveBubbleColumn(Entity var0, boolean var1, BlockPos var2) {
+      Vec3 var3 = var0.getDeltaMovement();
       double var4;
       if (var1) {
          var4 = Math.max(-0.9, var3.y - 0.03);
@@ -2551,23 +2553,26 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          var4 = Math.min(1.8, var3.y + 0.1);
       }
 
-      this.setDeltaMovement(var3.x, var4, var3.z);
-      this.sendBubbleColumnParticles(var2);
+      var0.setDeltaMovement(var3.x, var4, var3.z);
+      sendBubbleColumnParticles(var0.level, var2);
    }
 
-   protected void sendBubbleColumnParticles(BlockPos var1) {
-      Level var3 = this.level;
-      if (var3 instanceof ServerLevel var2) {
-         for(int var4 = 0; var4 < 2; ++var4) {
-            var2.sendParticles(ParticleTypes.SPLASH, (double)var1.getX() + this.level.random.nextDouble(), (double)(var1.getY() + 1), (double)var1.getZ() + this.level.random.nextDouble(), 1, 0.0, 0.0, 0.0, 1.0);
-            var2.sendParticles(ParticleTypes.BUBBLE, (double)var1.getX() + this.level.random.nextDouble(), (double)(var1.getY() + 1), (double)var1.getZ() + this.level.random.nextDouble(), 1, 0.0, 0.01, 0.0, 0.2);
+   protected static void sendBubbleColumnParticles(Level var0, BlockPos var1) {
+      if (var0 instanceof ServerLevel var2) {
+         for(int var3 = 0; var3 < 2; ++var3) {
+            var2.sendParticles(ParticleTypes.SPLASH, (double)var1.getX() + var0.random.nextDouble(), (double)(var1.getY() + 1), (double)var1.getZ() + var0.random.nextDouble(), 1, 0.0, 0.0, 0.0, 1.0);
+            var2.sendParticles(ParticleTypes.BUBBLE, (double)var1.getX() + var0.random.nextDouble(), (double)(var1.getY() + 1), (double)var1.getZ() + var0.random.nextDouble(), 1, 0.0, 0.01, 0.0, 0.2);
          }
       }
 
    }
 
    public void onInsideBubbleColumn(boolean var1) {
-      Vec3 var2 = this.getDeltaMovement();
+      handleOnInsideBubbleColumn(this, var1);
+   }
+
+   protected static void handleOnInsideBubbleColumn(Entity var0, boolean var1) {
+      Vec3 var2 = var0.getDeltaMovement();
       double var3;
       if (var1) {
          var3 = Math.max(-0.3, var2.y - 0.03);
@@ -2575,8 +2580,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          var3 = Math.min(0.7, var2.y + 0.06);
       }
 
-      this.setDeltaMovement(var2.x, var3, var2.z);
-      this.resetFallDistance();
+      var0.setDeltaMovement(var2.x, var3, var2.z);
+      var0.resetFallDistance();
    }
 
    public boolean killedEntity(ServerLevel var1, LivingEntity var2) {

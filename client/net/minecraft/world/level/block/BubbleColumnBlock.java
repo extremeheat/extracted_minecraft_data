@@ -50,7 +50,7 @@ public class BubbleColumnBlock extends Block implements BucketPickup {
       BlockState var5 = var2.getBlockState(var3.above());
       boolean var6 = var5.getCollisionShape(var2, var3).isEmpty() && var5.getFluidState().isEmpty();
       if (var6) {
-         var4.onAboveBubbleCol((Boolean)var1.getValue(DRAG_DOWN), var3);
+         var4.onAboveBubbleColumn((Boolean)var1.getValue(DRAG_DOWN), var3);
       } else {
          var4.onInsideBubbleColumn((Boolean)var1.getValue(DRAG_DOWN));
       }

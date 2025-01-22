@@ -60,6 +60,10 @@ public class NetherPortalBlock extends Block implements Portal {
       return (VoxelShape)SHAPES.get(var1.getValue(AXIS));
    }
 
+   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, Entity var4) {
+      return var1.getShape(var2, var3);
+   }
+
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var2.dimensionType().natural() && var2.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && var4.nextInt(2000) < var2.getDifficulty().getId()) {
          while(var2.getBlockState(var3).is(this)) {

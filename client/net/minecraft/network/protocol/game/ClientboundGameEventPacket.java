@@ -15,7 +15,7 @@ public class ClientboundGameEventPacket implements Packet<ClientGamePacketListen
    public static final Type CHANGE_GAME_MODE = new Type(3);
    public static final Type WIN_GAME = new Type(4);
    public static final Type DEMO_EVENT = new Type(5);
-   public static final Type ARROW_HIT_PLAYER = new Type(6);
+   public static final Type PLAY_ARROW_HIT_SOUND = new Type(6);
    public static final Type RAIN_LEVEL_CHANGE = new Type(7);
    public static final Type THUNDER_LEVEL_CHANGE = new Type(8);
    public static final Type PUFFER_FISH_STING = new Type(9);

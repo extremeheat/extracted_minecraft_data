@@ -1,6 +1,5 @@
 package net.minecraft.world.item;
 
-import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -8,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -169,11 +167,6 @@ public class BlockItem extends Item {
 
          return false;
       }
-   }
-
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
-      super.appendHoverText(var1, var2, var3, var4);
-      this.getBlock().appendHoverText(var1, var2, var3, var4);
    }
 
    public boolean shouldPrintOpWarning(ItemStack var1, @Nullable Player var2) {

@@ -96,6 +96,7 @@ import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
@@ -331,9 +332,9 @@ public abstract class Player extends LivingEntity {
       return this.wasUnderwater;
    }
 
-   public void onAboveBubbleCol(boolean var1, BlockPos var2) {
+   public void onAboveBubbleColumn(boolean var1, BlockPos var2) {
       if (!this.getAbilities().flying) {
-         super.onAboveBubbleCol(var1, var2);
+         super.onAboveBubbleColumn(var1, var2);
       }
 
    }
@@ -850,11 +851,13 @@ public abstract class Player extends LivingEntity {
       }
    }
 
-   protected void blockUsingShield(LivingEntity var1) {
-      super.blockUsingShield(var1);
-      ItemStack var2 = this.getItemBlockingWith();
-      if (var1.canDisableBlocking() && var2 != null) {
-         this.disableShield(var2);
+   protected void blockUsingItem(ServerLevel var1, LivingEntity var2) {
+      super.blockUsingItem(var1, var2);
+      ItemStack var3 = this.getItemBlockingWith();
+      BlocksAttacks var4 = var3 != null ? (BlocksAttacks)var3.get(DataComponents.BLOCKS_ATTACKS) : null;
+      float var5 = var2.getSecondsToDisableBlocking();
+      if (var5 > 0.0F && var4 != null) {
+         var4.disable(var1, this, var5, var3);
       }
 
    }
@@ -879,31 +882,6 @@ public abstract class Player extends LivingEntity {
 
    protected void hurtHelmet(DamageSource var1, float var2) {
       this.doHurtEquipment(var1, var2, new EquipmentSlot[]{EquipmentSlot.HEAD});
-   }
-
-   protected void hurtCurrentlyUsedShield(float var1) {
-      if (this.useItem.is(Items.SHIELD)) {
-         if (!this.level().isClientSide) {
-            this.awardStat(Stats.ITEM_USED.get(this.useItem.getItem()));
-         }
-
-         if (var1 >= 3.0F) {
-            int var2 = 1 + Mth.floor(var1);
-            InteractionHand var3 = this.getUsedItemHand();
-            this.useItem.hurtAndBreak(var2, this, getSlotForHand(var3));
-            if (this.useItem.isEmpty()) {
-               if (var3 == InteractionHand.MAIN_HAND) {
-                  this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-               } else {
-                  this.setItemSlot(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
-               }
-
-               this.useItem = ItemStack.EMPTY;
-               this.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + this.level().random.nextFloat() * 0.4F);
-            }
-         }
-
-      }
    }
 
    protected void actuallyHurt(ServerLevel var1, DamageSource var2, float var3) {
@@ -1252,12 +1230,6 @@ public abstract class Player extends LivingEntity {
 
    protected void doAutoAttackOnTouch(LivingEntity var1) {
       this.attack(var1);
-   }
-
-   public void disableShield(ItemStack var1) {
-      this.getCooldowns().addCooldown((ItemStack)var1, 100);
-      this.stopUsingItem();
-      this.level().broadcastEntityEvent(this, (byte)30);
    }
 
    public void crit(Entity var1) {

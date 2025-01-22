@@ -476,7 +476,7 @@ public class BlockStateParser {
    }
 
    private void readNbt() throws CommandSyntaxException {
-      this.nbt = (new TagParser(this.reader)).readStruct();
+      this.nbt = TagParser.parseCompoundAsArgument(this.reader);
    }
 
    private <T extends Comparable<T>> void setValue(Property<T> var1, String var2, int var3) throws CommandSyntaxException {

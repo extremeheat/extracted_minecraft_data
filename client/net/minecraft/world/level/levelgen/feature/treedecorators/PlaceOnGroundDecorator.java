@@ -6,11 +6,10 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.feature.TreeFeature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.material.Fluids;
 
 public class PlaceOnGroundDecorator extends TreeDecorator {
    public static final MapCodec<PlaceOnGroundDecorator> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ExtraCodecs.POSITIVE_INT.fieldOf("tries").orElse(128).forGetter((var0x) -> var0x.tries), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("radius").orElse(2).forGetter((var0x) -> var0x.radius), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("height").orElse(1).forGetter((var0x) -> var0x.height), BlockStateProvider.CODEC.fieldOf("block_state_provider").forGetter((var0x) -> var0x.blockStateProvider)).apply(var0, PlaceOnGroundDecorator::new));
@@ -56,16 +55,16 @@ public class PlaceOnGroundDecorator extends TreeDecorator {
 
          for(int var12 = 0; var12 < this.tries; ++var12) {
             var11.set(var13.nextIntBetweenInclusive(var14.minX(), var14.maxX()), var13.nextIntBetweenInclusive(var14.minY(), var14.maxY()), var13.nextIntBetweenInclusive(var14.minZ(), var14.maxZ()));
-            this.placeBlockAt(var1, var11);
+            this.attemptToPlaceBlockAbove(var1, var11);
          }
 
       }
    }
 
-   private void placeBlockAt(TreeDecorator.Context var1, BlockPos var2) {
+   private void attemptToPlaceBlockAbove(TreeDecorator.Context var1, BlockPos var2) {
       BlockPos var3 = var2.above();
-      if ((var1.level().isStateAtPosition(var2, BlockBehaviour.BlockStateBase::isAir) || TreeFeature.isVine(var1.level(), var3)) && TreeFeature.isGrassOrDirt(var1.level(), var3.below()) && !var1.level().isFluidAtPosition(var3, (var0) -> var0.is(Fluids.WATER))) {
-         var1.setBlock(var3, this.blockStateProvider.getState(var1.random(), var2));
+      if (var1.level().isStateAtPosition(var3, (var0) -> var0.isAir() || var0.is(Blocks.VINE)) && TreeFeature.isGrassOrDirt(var1.level(), var2)) {
+         var1.setBlock(var3, this.blockStateProvider.getState(var1.random(), var3));
       }
 
    }

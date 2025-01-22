@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.item.properties.select;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -11,6 +12,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 public record ContextEntityType() implements SelectItemModelProperty<ResourceKey<EntityType<?>>> {
+   public static final Codec<ResourceKey<EntityType<?>>> VALUE_CODEC;
    public static final SelectItemModelProperty.Type<ContextEntityType, ResourceKey<EntityType<?>>> TYPE;
 
    public ContextEntityType() {
@@ -26,6 +28,10 @@ public record ContextEntityType() implements SelectItemModelProperty<ResourceKey
       return TYPE;
    }
 
+   public Codec<ResourceKey<EntityType<?>>> valueCodec() {
+      return VALUE_CODEC;
+   }
+
    // $FF: synthetic method
    @Nullable
    public Object get(final ItemStack var1, @Nullable final ClientLevel var2, @Nullable final LivingEntity var3, final int var4, final ItemDisplayContext var5) {
@@ -33,6 +39,7 @@ public record ContextEntityType() implements SelectItemModelProperty<ResourceKey
    }
 
    static {
-      TYPE = SelectItemModelProperty.Type.<ContextEntityType, ResourceKey<EntityType<?>>>create(MapCodec.unit(new ContextEntityType()), ResourceKey.codec(Registries.ENTITY_TYPE));
+      VALUE_CODEC = ResourceKey.codec(Registries.ENTITY_TYPE);
+      TYPE = SelectItemModelProperty.Type.<ContextEntityType, ResourceKey<EntityType<?>>>create(MapCodec.unit(new ContextEntityType()), VALUE_CODEC);
    }
 }

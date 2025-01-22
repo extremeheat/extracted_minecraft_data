@@ -39,6 +39,7 @@ import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.resources.model.AtlasIds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleGroup;
@@ -66,13 +67,11 @@ import org.slf4j.Logger;
 public class ParticleEngine implements PreparableReloadListener {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final FileToIdConverter PARTICLE_LISTER = FileToIdConverter.json("particles");
-   private static final ResourceLocation PARTICLES_ATLAS_INFO = ResourceLocation.withDefaultNamespace("particles");
    private static final int MAX_PARTICLES_PER_LAYER = 16384;
    private static final List<ParticleRenderType> RENDER_ORDER;
    protected ClientLevel level;
    private final Map<ParticleRenderType, Queue<Particle>> particles = Maps.newIdentityHashMap();
    private final Queue<TrackingEmitter> trackingEmitters = Queues.newArrayDeque();
-   private final TextureManager textureManager;
    private final RandomSource random = RandomSource.create();
    private final Int2ObjectMap<ParticleProvider<?>> providers = new Int2ObjectOpenHashMap();
    private final Queue<Particle> particlesToAdd = Queues.newArrayDeque();
@@ -85,7 +84,6 @@ public class ParticleEngine implements PreparableReloadListener {
       this.textureAtlas = new TextureAtlas(TextureAtlas.LOCATION_PARTICLES);
       var2.register(this.textureAtlas.location(), this.textureAtlas);
       this.level = var1;
-      this.textureManager = var2;
       this.registerProviders();
    }
 
@@ -245,7 +243,7 @@ public class ParticleEngine implements PreparableReloadListener {
          });
          return Util.sequence(var3x);
       });
-      CompletableFuture var6 = SpriteLoader.create(this.textureAtlas).loadAndStitch(var2, PARTICLES_ATLAS_INFO, 0, var3).thenCompose(SpriteLoader.Preparations::waitForUpload);
+      CompletableFuture var6 = SpriteLoader.create(this.textureAtlas).loadAndStitch(var2, AtlasIds.PARTICLES, 0, var3).thenCompose(SpriteLoader.Preparations::waitForUpload);
       CompletableFuture var10000 = CompletableFuture.allOf(var6, var5);
       Objects.requireNonNull(var1);
       return var10000.thenCompose(var1::wait).thenAcceptAsync((var3x) -> {

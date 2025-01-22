@@ -10,16 +10,15 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BannerPatternTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BannerItem;
-import net.minecraft.world.item.BannerPatternItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BannerPattern;
@@ -80,7 +79,7 @@ public class LoomMenu extends AbstractContainerMenu {
       });
       this.patternSlot = this.addSlot(new Slot(this.inputContainer, 2, 23, 45) {
          public boolean mayPlace(ItemStack var1) {
-            return var1.getItem() instanceof BannerPatternItem;
+            return var1.has(DataComponents.PROVIDES_BANNER_PATTERNS);
          }
       });
       this.resultSlot = this.addSlot(new Slot(this.outputContainer, 0, 143, 57) {
@@ -129,13 +128,8 @@ public class LoomMenu extends AbstractContainerMenu {
       if (var1.isEmpty()) {
          return (List)this.patternGetter.get(BannerPatternTags.NO_ITEM_REQUIRED).map(ImmutableList::copyOf).orElse(ImmutableList.of());
       } else {
-         Item var3 = var1.getItem();
-         if (var3 instanceof BannerPatternItem) {
-            BannerPatternItem var2 = (BannerPatternItem)var3;
-            return (List)this.patternGetter.get(var2.getBannerPattern()).map(ImmutableList::copyOf).orElse(ImmutableList.of());
-         } else {
-            return List.of();
-         }
+         TagKey var2 = (TagKey)var1.get(DataComponents.PROVIDES_BANNER_PATTERNS);
+         return var2 != null ? (List)this.patternGetter.get(var2).map(ImmutableList::copyOf).orElse(ImmutableList.of()) : List.of();
       }
    }
 
@@ -225,7 +219,7 @@ public class LoomMenu extends AbstractContainerMenu {
                if (!this.moveItemStackTo(var5, this.dyeSlot.index, this.dyeSlot.index + 1, false)) {
                   return ItemStack.EMPTY;
                }
-            } else if (var5.getItem() instanceof BannerPatternItem) {
+            } else if (var5.has(DataComponents.PROVIDES_BANNER_PATTERNS)) {
                if (!this.moveItemStackTo(var5, this.patternSlot.index, this.patternSlot.index + 1, false)) {
                   return ItemStack.EMPTY;
                }

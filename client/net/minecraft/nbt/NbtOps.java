@@ -27,7 +27,7 @@ public class NbtOps implements DynamicOps<Tag> {
    public static final NbtOps INSTANCE = new NbtOps();
    private static final String WRAPPER_MARKER = "";
 
-   protected NbtOps() {
+   private NbtOps() {
       super();
    }
 
@@ -366,41 +366,52 @@ public class NbtOps implements DynamicOps<Tag> {
    private static Optional<ListCollector> createCollector(Tag var0) {
       if (var0 instanceof EndTag) {
          return Optional.of(NbtOps.InitialListCollector.INSTANCE);
-      } else {
-         if (var0 instanceof CollectionTag) {
-            CollectionTag var1 = (CollectionTag)var0;
-            if (var1.isEmpty()) {
-               return Optional.of(NbtOps.InitialListCollector.INSTANCE);
+      } else if (var0 instanceof CollectionTag) {
+         CollectionTag var1 = (CollectionTag)var0;
+         if (var1.isEmpty()) {
+            return Optional.of(NbtOps.InitialListCollector.INSTANCE);
+         } else {
+            Objects.requireNonNull(var1);
+            byte var3 = 0;
+            Optional var10000;
+            //$FF: var3->value
+            //0->net/minecraft/nbt/ListTag
+            //1->net/minecraft/nbt/ByteArrayTag
+            //2->net/minecraft/nbt/IntArrayTag
+            //3->net/minecraft/nbt/LongArrayTag
+            switch (var1.typeSwitch<invokedynamic>(var1, var3)) {
+               case 0:
+                  ListTag var4 = (ListTag)var1;
+                  switch (var4.getElementType()) {
+                     case 0:
+                        var10000 = Optional.of(NbtOps.InitialListCollector.INSTANCE);
+                        return var10000;
+                     case 10:
+                        var10000 = Optional.of(new HeterogenousListCollector(var4));
+                        return var10000;
+                     default:
+                        var10000 = Optional.of(new HomogenousListCollector(var4));
+                        return var10000;
+                  }
+               case 1:
+                  ByteArrayTag var5 = (ByteArrayTag)var1;
+                  var10000 = Optional.of(new ByteListCollector(var5.getAsByteArray()));
+                  break;
+               case 2:
+                  IntArrayTag var6 = (IntArrayTag)var1;
+                  var10000 = Optional.of(new IntListCollector(var6.getAsIntArray()));
+                  break;
+               case 3:
+                  LongArrayTag var7 = (LongArrayTag)var1;
+                  var10000 = Optional.of(new LongListCollector(var7.getAsLongArray()));
+                  break;
+               default:
+                  var10000 = Optional.empty();
             }
 
-            if (var1 instanceof ListTag) {
-               ListTag var5 = (ListTag)var1;
-               Optional var10000;
-               switch (var5.getElementType()) {
-                  case 0 -> var10000 = Optional.of(NbtOps.InitialListCollector.INSTANCE);
-                  case 10 -> var10000 = Optional.of(new HeterogenousListCollector(var5));
-                  default -> var10000 = Optional.of(new HomogenousListCollector(var5));
-               }
-
-               return var10000;
-            }
-
-            if (var1 instanceof ByteArrayTag) {
-               ByteArrayTag var4 = (ByteArrayTag)var1;
-               return Optional.of(new ByteListCollector(var4.getAsByteArray()));
-            }
-
-            if (var1 instanceof IntArrayTag) {
-               IntArrayTag var3 = (IntArrayTag)var1;
-               return Optional.of(new IntListCollector(var3.getAsIntArray()));
-            }
-
-            if (var1 instanceof LongArrayTag) {
-               LongArrayTag var2 = (LongArrayTag)var1;
-               return Optional.of(new LongListCollector(var2.getAsLongArray()));
-            }
+            return var10000;
          }
-
+      } else {
          return Optional.empty();
       }
    }
@@ -636,21 +647,15 @@ public class NbtOps implements DynamicOps<Tag> {
    }
 
    static class InitialListCollector implements ListCollector {
-      public static final InitialListCollector INSTANCE = new InitialListCollector();
+      public static final ListCollector INSTANCE = new InitialListCollector();
 
       private InitialListCollector() {
          super();
       }
 
       public ListCollector accept(Tag var1) {
-         if (var1 instanceof CompoundTag var5) {
-            return (new HeterogenousListCollector()).accept(var5);
-         } else if (var1 instanceof ByteTag var4) {
-            return new ByteListCollector(var4.getAsByte());
-         } else if (var1 instanceof IntTag var3) {
-            return new IntListCollector(var3.getAsInt());
-         } else if (var1 instanceof LongTag var2) {
-            return new LongListCollector(var2.getAsLong());
+         if (var1 instanceof CompoundTag var2) {
+            return (new HeterogenousListCollector()).accept(var2);
          } else {
             return new HomogenousListCollector(var1);
          }

@@ -5,8 +5,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentExactPredicate;
 import net.minecraft.core.component.DataComponentGetter;
-import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -15,8 +15,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
-public record ItemCost(Holder<Item> item, int count, DataComponentPredicate components, ItemStack itemStack) {
-   public static final Codec<ItemCost> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Item.CODEC.fieldOf("id").forGetter(ItemCost::item), ExtraCodecs.POSITIVE_INT.fieldOf("count").orElse(1).forGetter(ItemCost::count), DataComponentPredicate.CODEC.optionalFieldOf("components", DataComponentPredicate.EMPTY).forGetter(ItemCost::components)).apply(var0, ItemCost::new));
+public record ItemCost(Holder<Item> item, int count, DataComponentExactPredicate components, ItemStack itemStack) {
+   public static final Codec<ItemCost> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Item.CODEC.fieldOf("id").forGetter(ItemCost::item), ExtraCodecs.POSITIVE_INT.fieldOf("count").orElse(1).forGetter(ItemCost::count), DataComponentExactPredicate.CODEC.optionalFieldOf("components", DataComponentExactPredicate.EMPTY).forGetter(ItemCost::components)).apply(var0, ItemCost::new));
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemCost> STREAM_CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, Optional<ItemCost>> OPTIONAL_STREAM_CODEC;
 
@@ -25,14 +25,14 @@ public record ItemCost(Holder<Item> item, int count, DataComponentPredicate comp
    }
 
    public ItemCost(ItemLike var1, int var2) {
-      this(var1.asItem().builtInRegistryHolder(), var2, DataComponentPredicate.EMPTY);
+      this(var1.asItem().builtInRegistryHolder(), var2, DataComponentExactPredicate.EMPTY);
    }
 
-   public ItemCost(Holder<Item> var1, int var2, DataComponentPredicate var3) {
+   public ItemCost(Holder<Item> var1, int var2, DataComponentExactPredicate var3) {
       this(var1, var2, var3, createStack(var1, var2, var3));
    }
 
-   public ItemCost(Holder<Item> var1, int var2, DataComponentPredicate var3, ItemStack var4) {
+   public ItemCost(Holder<Item> var1, int var2, DataComponentExactPredicate var3, ItemStack var4) {
       super();
       this.item = var1;
       this.count = var2;
@@ -40,11 +40,11 @@ public record ItemCost(Holder<Item> item, int count, DataComponentPredicate comp
       this.itemStack = var4;
    }
 
-   public ItemCost withComponents(UnaryOperator<DataComponentPredicate.Builder> var1) {
-      return new ItemCost(this.item, this.count, ((DataComponentPredicate.Builder)var1.apply(DataComponentPredicate.builder())).build());
+   public ItemCost withComponents(UnaryOperator<DataComponentExactPredicate.Builder> var1) {
+      return new ItemCost(this.item, this.count, ((DataComponentExactPredicate.Builder)var1.apply(DataComponentExactPredicate.builder())).build());
    }
 
-   private static ItemStack createStack(Holder<Item> var0, int var1, DataComponentPredicate var2) {
+   private static ItemStack createStack(Holder<Item> var0, int var1, DataComponentExactPredicate var2) {
       return new ItemStack(var0, var1, var2.asPatch());
    }
 
@@ -53,7 +53,7 @@ public record ItemCost(Holder<Item> item, int count, DataComponentPredicate comp
    }
 
    static {
-      STREAM_CODEC = StreamCodec.composite(Item.STREAM_CODEC, ItemCost::item, ByteBufCodecs.VAR_INT, ItemCost::count, DataComponentPredicate.STREAM_CODEC, ItemCost::components, ItemCost::new);
+      STREAM_CODEC = StreamCodec.composite(Item.STREAM_CODEC, ItemCost::item, ByteBufCodecs.VAR_INT, ItemCost::count, DataComponentExactPredicate.STREAM_CODEC, ItemCost::components, ItemCost::new);
       OPTIONAL_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs::optional);
    }
 }

@@ -46,7 +46,7 @@ public class ParticleTypes {
    public static final SimpleParticleType INFESTED = register("infested", false);
    public static final SimpleParticleType CHERRY_LEAVES = register("cherry_leaves", false);
    public static final SimpleParticleType PALE_OAK_LEAVES = register("pale_oak_leaves", false);
-   public static final SimpleParticleType TINTED_LEAVES = register("tinted_leaves", false);
+   public static final ParticleType<ColorParticleOption> TINTED_LEAVES = register("tinted_leaves", false, ColorParticleOption::codec, ColorParticleOption::streamCodec);
    public static final SimpleParticleType SCULK_SOUL = register("sculk_soul", false);
    public static final ParticleType<SculkChargeParticleOptions> SCULK_CHARGE = register("sculk_charge", true, (var0) -> SculkChargeParticleOptions.CODEC, (var0) -> SculkChargeParticleOptions.STREAM_CODEC);
    public static final SimpleParticleType SCULK_CHARGE_POP = register("sculk_charge_pop", true);

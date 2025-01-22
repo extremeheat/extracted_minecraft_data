@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.component.DataComponentPredicate;
+import net.minecraft.core.component.DataComponentExactPredicate;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -30,7 +30,7 @@ public record EntityEquipmentPredicate(Optional<ItemPredicate> head, Optional<It
    }
 
    public static EntityEquipmentPredicate captainPredicate(HolderGetter<Item> var0, HolderGetter<BannerPattern> var1) {
-      return EntityEquipmentPredicate.Builder.equipment().head(ItemPredicate.Builder.item().of(var0, Items.WHITE_BANNER).hasComponents(DataComponentPredicate.someOf(Raid.getOminousBannerInstance(var1).getComponents(), DataComponents.BANNER_PATTERNS, DataComponents.ITEM_NAME))).build();
+      return EntityEquipmentPredicate.Builder.equipment().head(ItemPredicate.Builder.item().of(var0, Items.WHITE_BANNER).hasComponents(DataComponentExactPredicate.someOf(Raid.getOminousBannerInstance(var1).getComponents(), DataComponents.BANNER_PATTERNS, DataComponents.ITEM_NAME))).build();
    }
 
    public boolean matches(@Nullable Entity var1) {

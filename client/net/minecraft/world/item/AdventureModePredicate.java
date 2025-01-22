@@ -1,8 +1,6 @@
 package net.minecraft.world.item;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -20,15 +18,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 
 public class AdventureModePredicate {
-   private static final Codec<AdventureModePredicate> SIMPLE_CODEC;
-   private static final Codec<AdventureModePredicate> FULL_CODEC;
    public static final Codec<AdventureModePredicate> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, AdventureModePredicate> STREAM_CODEC;
    public static final Component CAN_BREAK_HEADER;
    public static final Component CAN_PLACE_HEADER;
    private static final Component UNKNOWN_USE;
    private final List<BlockPredicate> predicates;
-   private final boolean showInTooltip;
    @Nullable
    private List<Component> cachedTooltip;
    @Nullable
@@ -36,10 +31,9 @@ public class AdventureModePredicate {
    private boolean lastResult;
    private boolean checksBlockEntity;
 
-   public AdventureModePredicate(List<BlockPredicate> var1, boolean var2) {
+   public AdventureModePredicate(List<BlockPredicate> var1) {
       super();
       this.predicates = var1;
-      this.showInTooltip = var2;
    }
 
    private static boolean areSameBlocks(BlockInWorld var0, @Nullable BlockInWorld var1, boolean var2) {
@@ -91,10 +85,6 @@ public class AdventureModePredicate {
       this.tooltip().forEach(var1);
    }
 
-   public AdventureModePredicate withTooltip(boolean var1) {
-      return new AdventureModePredicate(this.predicates, var1);
-   }
-
    private static List<Component> computeTooltip(List<BlockPredicate> var0) {
       for(BlockPredicate var2 : var0) {
          if (var2.blocks().isEmpty()) {
@@ -105,35 +95,28 @@ public class AdventureModePredicate {
       return var0.stream().flatMap((var0x) -> ((HolderSet)var0x.blocks().orElseThrow()).stream()).distinct().map((var0x) -> ((Block)var0x.value()).getName().withStyle(ChatFormatting.DARK_GRAY)).toList();
    }
 
-   public boolean showInTooltip() {
-      return this.showInTooltip;
-   }
-
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
-      } else if (!(var1 instanceof AdventureModePredicate)) {
-         return false;
-      } else {
+      } else if (var1 instanceof AdventureModePredicate) {
          AdventureModePredicate var2 = (AdventureModePredicate)var1;
-         return this.predicates.equals(var2.predicates) && this.showInTooltip == var2.showInTooltip;
+         return this.predicates.equals(var2.predicates);
+      } else {
+         return false;
       }
    }
 
    public int hashCode() {
-      return this.predicates.hashCode() * 31 + (this.showInTooltip ? 1 : 0);
+      return this.predicates.hashCode();
    }
 
    public String toString() {
-      String var10000 = String.valueOf(this.predicates);
-      return "AdventureModePredicate{predicates=" + var10000 + ", showInTooltip=" + this.showInTooltip + "}";
+      return "AdventureModePredicate{predicates=" + String.valueOf(this.predicates) + "}";
    }
 
    static {
-      SIMPLE_CODEC = BlockPredicate.CODEC.flatComapMap((var0) -> new AdventureModePredicate(List.of(var0), true), (var0) -> DataResult.error(() -> "Cannot encode"));
-      FULL_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ExtraCodecs.nonEmptyList(BlockPredicate.CODEC.listOf()).fieldOf("predicates").forGetter((var0x) -> var0x.predicates), Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(AdventureModePredicate::showInTooltip)).apply(var0, AdventureModePredicate::new));
-      CODEC = Codec.withAlternative(FULL_CODEC, SIMPLE_CODEC);
-      STREAM_CODEC = StreamCodec.composite(BlockPredicate.STREAM_CODEC.apply(ByteBufCodecs.list()), (var0) -> var0.predicates, ByteBufCodecs.BOOL, AdventureModePredicate::showInTooltip, AdventureModePredicate::new);
+      CODEC = ExtraCodecs.compactListCodec(BlockPredicate.CODEC, ExtraCodecs.nonEmptyList(BlockPredicate.CODEC.listOf())).xmap(AdventureModePredicate::new, (var0) -> var0.predicates);
+      STREAM_CODEC = StreamCodec.composite(BlockPredicate.STREAM_CODEC.apply(ByteBufCodecs.list()), (var0) -> var0.predicates, AdventureModePredicate::new);
       CAN_BREAK_HEADER = Component.translatable("item.canBreak").withStyle(ChatFormatting.GRAY);
       CAN_PLACE_HEADER = Component.translatable("item.canPlace").withStyle(ChatFormatting.GRAY);
       UNKNOWN_USE = Component.translatable("item.canUse.unknown").withStyle(ChatFormatting.GRAY);

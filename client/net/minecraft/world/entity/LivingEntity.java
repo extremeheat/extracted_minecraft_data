@@ -101,9 +101,8 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.component.DeathProtection;
 import net.minecraft.world.item.component.Weapon;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -153,6 +152,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
    public static final double MIN_MOVEMENT_DISTANCE = 0.003;
    public static final double DEFAULT_BASE_GRAVITY = 0.08;
    public static final int DEATH_DURATION = 20;
+   protected static final float INPUT_FRICTION = 0.98F;
    private static final int TICKS_PER_ELYTRA_FREE_FALL_EVENT = 10;
    private static final int FREE_FALL_EVENTS_PER_ELYTRA_BREAK = 2;
    public static final float BASE_JUMP_POWER = 0.42F;
@@ -1098,15 +1098,21 @@ public abstract class LivingEntity extends Entity implements Attackable {
          float var4 = var3;
          boolean var5 = false;
          float var6 = 0.0F;
+         BlocksAttacks var7 = (BlocksAttacks)this.getUseItem().get(DataComponents.BLOCKS_ATTACKS);
          if (var3 > 0.0F && this.isDamageSourceBlocked(var2)) {
-            this.hurtCurrentlyUsedShield(var3);
-            var6 = var3;
-            var3 = 0.0F;
+            if (var7 != null) {
+               var7.hurtBlockingItem(this.level(), this.getUseItem(), this, this.getUsedItemHand(), var6);
+               var6 = var7.resolveBlockedDamage(var2, var3);
+            } else {
+               var6 = var3;
+            }
+
+            var3 -= var6;
             if (!var2.is(DamageTypeTags.IS_PROJECTILE)) {
-               Entity var7 = var2.getDirectEntity();
-               if (var7 instanceof LivingEntity) {
-                  LivingEntity var8 = (LivingEntity)var7;
-                  this.blockUsingShield(var8);
+               Entity var8 = var2.getDirectEntity();
+               if (var8 instanceof LivingEntity) {
+                  LivingEntity var9 = (LivingEntity)var8;
+                  this.blockUsingItem(var1, var9);
                }
             }
 
@@ -1126,7 +1132,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
             var3 = 3.4028235E38F;
          }
 
-         boolean var14 = true;
+         boolean var15 = true;
          if ((float)this.invulnerableTime > 10.0F && !var2.is(DamageTypeTags.BYPASSES_COOLDOWN)) {
             if (var3 <= this.lastHurt) {
                return false;
@@ -1134,7 +1140,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
             this.actuallyHurt(var1, var2, var3 - this.lastHurt);
             this.lastHurt = var3;
-            var14 = false;
+            var15 = false;
          } else {
             this.lastHurt = var3;
             this.invulnerableTime = 20;
@@ -1145,9 +1151,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
          this.resolveMobResponsibleForDamage(var2);
          this.resolvePlayerResponsibleForDamage(var2);
-         if (var14) {
-            if (var5) {
-               var1.broadcastEntityEvent(this, (byte)29);
+         if (var15) {
+            if (var5 && var7 != null) {
+               var7.onBlocked(var1, this);
             } else {
                var1.broadcastDamageEvent(this, var2);
             }
@@ -1157,64 +1163,65 @@ public abstract class LivingEntity extends Entity implements Attackable {
             }
 
             if (!var2.is(DamageTypeTags.NO_KNOCKBACK)) {
-               double var15 = 0.0;
-               double var10 = 0.0;
-               Entity var13 = var2.getDirectEntity();
-               if (var13 instanceof Projectile) {
-                  Projectile var12 = (Projectile)var13;
-                  DoubleDoubleImmutablePair var21 = var12.calculateHorizontalHurtKnockbackDirection(this, var2);
-                  var15 = -var21.leftDouble();
-                  var10 = -var21.rightDouble();
+               double var16 = 0.0;
+               double var11 = 0.0;
+               Entity var14 = var2.getDirectEntity();
+               if (var14 instanceof Projectile) {
+                  Projectile var13 = (Projectile)var14;
+                  DoubleDoubleImmutablePair var22 = var13.calculateHorizontalHurtKnockbackDirection(this, var2);
+                  var16 = -var22.leftDouble();
+                  var11 = -var22.rightDouble();
                } else if (var2.getSourcePosition() != null) {
-                  var15 = var2.getSourcePosition().x() - this.getX();
-                  var10 = var2.getSourcePosition().z() - this.getZ();
+                  var16 = var2.getSourcePosition().x() - this.getX();
+                  var11 = var2.getSourcePosition().z() - this.getZ();
                }
 
-               this.knockback(0.4000000059604645, var15, var10);
+               this.knockback(0.4000000059604645, var16, var11);
                if (!var5) {
-                  this.indicateDamage(var15, var10);
+                  this.indicateDamage(var16, var11);
                }
             }
          }
 
          if (this.isDeadOrDying()) {
             if (!this.checkTotemDeathProtection(var2)) {
-               if (var14) {
+               if (var15) {
                   this.makeSound(this.getDeathSound());
+                  this.playSecondaryHurtSound(var2);
                }
 
                this.die(var2);
             }
-         } else if (var14) {
+         } else if (var15) {
             this.playHurtSound(var2);
             this.playSecondaryHurtSound(var2);
          }
 
-         boolean var16 = !var5 || var3 > 0.0F;
-         if (var16) {
+         boolean var17 = !var5 || var3 > 0.0F;
+         if (var17) {
             this.lastDamageSource = var2;
             this.lastDamageStamp = this.level().getGameTime();
 
-            for(MobEffectInstance var19 : this.getActiveEffects()) {
-               var19.onMobHurt(var1, this, var2, var3);
+            for(MobEffectInstance var20 : this.getActiveEffects()) {
+               var20.onMobHurt(var1, this, var2, var3);
             }
          }
 
          if (this instanceof ServerPlayer) {
-            ServerPlayer var17 = (ServerPlayer)this;
-            CriteriaTriggers.ENTITY_HURT_PLAYER.trigger(var17, var2, var4, var3, var5);
+            ServerPlayer var18 = (ServerPlayer)this;
+            CriteriaTriggers.ENTITY_HURT_PLAYER.trigger(var18, var2, var4, var3, var5);
             if (var6 > 0.0F && var6 < 3.4028235E37F) {
-               var17.awardStat(Stats.DAMAGE_BLOCKED_BY_SHIELD, Math.round(var6 * 10.0F));
+               var18.awardStat(Stats.DAMAGE_BLOCKED_BY_SHIELD, Math.round(var6 * 10.0F));
             }
          }
 
-         Entity var20 = var2.getEntity();
-         if (var20 instanceof ServerPlayer) {
-            ServerPlayer var18 = (ServerPlayer)var20;
-            CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(var18, this, var2, var4, var3, var5);
+         Entity var21 = var2.getEntity();
+         if (var21 instanceof ServerPlayer) {
+            ServerPlayer var19 = (ServerPlayer)var21;
+            CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(var19, this, var2, var4, var3, var5);
          }
 
-         return var16;
+         return var17;
       }
    }
 
@@ -1255,11 +1262,11 @@ public abstract class LivingEntity extends Entity implements Attackable {
       return (Player)EntityReference.get(this.lastHurtByPlayer, this.level(), Player.class);
    }
 
-   protected void blockUsingShield(LivingEntity var1) {
-      var1.blockedByShield(this);
+   protected void blockUsingItem(ServerLevel var1, LivingEntity var2) {
+      var2.blockedByItem(this);
    }
 
-   protected void blockedByShield(LivingEntity var1) {
+   protected void blockedByItem(LivingEntity var1) {
       var1.knockback(0.5, var1.getX() - this.getX(), var1.getZ() - this.getZ());
    }
 
@@ -1326,14 +1333,13 @@ public abstract class LivingEntity extends Entity implements Attackable {
          }
       }
 
-      ItemStack var8 = this.getItemBlockingWith();
-      if (!var1.is(DamageTypeTags.BYPASSES_SHIELD) && var8 != null && var8.getItem() instanceof ShieldItem && !var3) {
-         Vec3 var5 = var1.getSourcePosition();
-         if (var5 != null) {
-            Vec3 var6 = this.calculateViewVector(0.0F, this.getYHeadRot());
-            Vec3 var7 = var5.vectorTo(this.position());
-            var7 = (new Vec3(var7.x, 0.0, var7.z)).normalize();
-            return var7.dot(var6) < 0.0;
+      if (!var1.is(DamageTypeTags.BYPASSES_BLOCKING) && this.isBlocking() && !var3) {
+         Vec3 var7 = var1.getSourcePosition();
+         if (var7 != null) {
+            Vec3 var5 = this.calculateViewVector(0.0F, this.getYHeadRot());
+            Vec3 var6 = var7.vectorTo(this.position());
+            var6 = (new Vec3(var6.x, 0.0, var6.z)).normalize();
+            return var6.dot(var5) < 0.0;
          }
       }
 
@@ -1342,8 +1348,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
    private void breakItem(ItemStack var1) {
       if (!var1.isEmpty()) {
-         if (!this.isSilent()) {
-            this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), var1.getBreakingSound(), this.getSoundSource(), 0.8F, 0.8F + this.level().random.nextFloat() * 0.4F, false);
+         Holder var2 = (Holder)var1.get(DataComponents.BREAK_SOUND);
+         if (var2 != null && !this.isSilent()) {
+            this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), (SoundEvent)var2.value(), this.getSoundSource(), 0.8F, 0.8F + this.level().random.nextFloat() * 0.4F, false);
          }
 
          this.spawnItemParticles(var1, 5);
@@ -1658,9 +1665,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
    protected void hurtHelmet(DamageSource var1, float var2) {
    }
 
-   protected void hurtCurrentlyUsedShield(float var1) {
-   }
-
    protected void doHurtEquipment(DamageSource var1, float var2, EquipmentSlot... var3) {
       if (!(var2 <= 0.0F)) {
          int var4 = (int)Math.max(1.0F, var2 / 4.0F);
@@ -1847,65 +1851,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
                this.die(this.damageSources().generic());
             }
             break;
-         case 4:
-         case 5:
-         case 6:
-         case 7:
-         case 8:
-         case 9:
-         case 10:
-         case 11:
-         case 12:
-         case 13:
-         case 14:
-         case 15:
-         case 16:
-         case 17:
-         case 18:
-         case 19:
-         case 20:
-         case 21:
-         case 22:
-         case 23:
-         case 24:
-         case 25:
-         case 26:
-         case 27:
-         case 28:
-         case 31:
-         case 32:
-         case 33:
-         case 34:
-         case 35:
-         case 36:
-         case 37:
-         case 38:
-         case 39:
-         case 40:
-         case 41:
-         case 42:
-         case 43:
-         case 44:
-         case 45:
-         case 53:
-         case 56:
-         case 57:
-         case 58:
-         case 59:
-         case 61:
-         case 62:
-         case 63:
-         case 64:
-         case 66:
-         default:
-            super.handleEntityEvent(var1);
-            break;
-         case 29:
-            this.playSound(SoundEvents.SHIELD_BLOCK, 1.0F, 0.8F + this.level().random.nextFloat() * 0.4F);
-            break;
-         case 30:
-            this.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + this.level().random.nextFloat() * 0.4F);
-            break;
          case 46:
             boolean var2 = true;
 
@@ -1955,6 +1900,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
             break;
          case 68:
             this.breakItem(this.getItemBySlot(EquipmentSlot.SADDLE));
+            break;
+         default:
+            super.handleEntityEvent(var1);
       }
 
    }
@@ -2721,17 +2669,15 @@ public abstract class LivingEntity extends Entity implements Attackable {
       this.setDeltaMovement(var2, var4, var6);
       ProfilerFiller var8 = Profiler.get();
       var8.push("ai");
+      this.applyInput();
       if (this.isImmobile()) {
          this.jumping = false;
          this.xxa = 0.0F;
          this.zza = 0.0F;
-      } else if (this.isEffectiveAi()) {
-         this.applyInput();
-         if (!this.level().isClientSide) {
-            var8.push("newAi");
-            this.serverAiStep();
-            var8.pop();
-         }
+      } else if (this.isEffectiveAi() && !this.level().isClientSide) {
+         var8.push("newAi");
+         this.serverAiStep();
+         var8.pop();
       }
 
       var8.pop();
@@ -2764,8 +2710,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
       var8.pop();
       var8.push("travel");
-      this.xxa *= 0.98F;
-      this.zza *= 0.98F;
       if (this.isFallFlying()) {
          this.updateFallFlying();
       }
@@ -2838,6 +2782,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    protected void applyInput() {
+      this.xxa *= 0.98F;
+      this.zza *= 0.98F;
    }
 
    public boolean isSensitiveToWater() {
@@ -3246,14 +3192,17 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
    @Nullable
    public ItemStack getItemBlockingWith() {
-      if (this.isUsingItem() && !this.useItem.isEmpty()) {
-         Item var1 = this.useItem.getItem();
-         if (var1.getUseAnimation(this.useItem) != ItemUseAnimation.BLOCK) {
-            return null;
-         } else {
-            return var1.getUseDuration(this.useItem, this) - this.useItemRemaining < 5 ? null : this.useItem;
-         }
+      if (!this.isUsingItem()) {
+         return null;
       } else {
+         BlocksAttacks var1 = (BlocksAttacks)this.useItem.get(DataComponents.BLOCKS_ATTACKS);
+         if (var1 != null) {
+            int var2 = this.useItem.getItem().getUseDuration(this.useItem, this) - this.useItemRemaining;
+            if (var2 >= var1.blockDelayTicks()) {
+               return this.useItem;
+            }
+         }
+
          return null;
       }
    }
@@ -3586,9 +3535,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
       this.setDeltaMovement(var1.getXa(), var1.getYa(), var1.getZa());
    }
 
-   public boolean canDisableBlocking() {
+   public float getSecondsToDisableBlocking() {
       Weapon var1 = (Weapon)this.getWeaponItem().get(DataComponents.WEAPON);
-      return var1 != null && var1.canDisableBlocking();
+      return var1 != null ? var1.disableBlockingForSeconds() : 0.0F;
    }
 
    public float maxUpStep() {

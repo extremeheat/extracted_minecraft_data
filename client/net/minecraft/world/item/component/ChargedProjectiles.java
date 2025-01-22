@@ -3,13 +3,21 @@ package net.minecraft.world.item.component;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import java.util.List;
+import java.util.function.Consumer;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 
-public final class ChargedProjectiles {
+public final class ChargedProjectiles implements TooltipProvider {
    public static final ChargedProjectiles EMPTY = new ChargedProjectiles(List.of());
    public static final Codec<ChargedProjectiles> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ChargedProjectiles> STREAM_CODEC;
@@ -70,6 +78,15 @@ public final class ChargedProjectiles {
 
    public String toString() {
       return "ChargedProjectiles[items=" + String.valueOf(this.items) + "]";
+   }
+
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+      for(ItemStack var6 : this.items) {
+         var2.accept(Component.translatable("item.minecraft.crossbow.projectile").append(CommonComponents.SPACE).append(var6.getDisplayName()));
+         TooltipDisplay var7 = (TooltipDisplay)var6.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT);
+         var6.addDetailsToTooltip(var1, var7, (Player)null, TooltipFlag.NORMAL, (var1x) -> var2.accept(Component.literal("  ").append(var1x).withStyle(ChatFormatting.GRAY)));
+      }
+
    }
 
    static {

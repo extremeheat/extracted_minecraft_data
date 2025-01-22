@@ -49,5 +49,6 @@ public class EntityTypeTagsProvider extends IntrinsicHolderTagsProvider<EntityTy
       this.tag(EntityTypeTags.IMMUNE_TO_OOZING).add(EntityType.SLIME);
       this.tag(EntityTypeTags.BOAT).add(EntityType.OAK_BOAT, EntityType.SPRUCE_BOAT, EntityType.BIRCH_BOAT, EntityType.JUNGLE_BOAT, EntityType.ACACIA_BOAT, EntityType.CHERRY_BOAT, EntityType.DARK_OAK_BOAT, EntityType.PALE_OAK_BOAT, EntityType.MANGROVE_BOAT, EntityType.BAMBOO_RAFT);
       this.tag(EntityTypeTags.CAN_EQUIP_SADDLE).add(EntityType.HORSE, EntityType.SKELETON_HORSE, EntityType.ZOMBIE_HORSE, EntityType.DONKEY, EntityType.MULE, EntityType.PIG, EntityType.STRIDER, EntityType.CAMEL);
+      this.tag(EntityTypeTags.CAN_WEAR_HORSE_ARMOR).add(EntityType.HORSE);
    }
 }

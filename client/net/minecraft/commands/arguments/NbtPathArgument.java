@@ -91,7 +91,7 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
             var0.skip();
             char var4 = var0.peek();
             if (var4 == '{') {
-               CompoundTag var3 = (new TagParser(var0)).readStruct();
+               CompoundTag var3 = TagParser.parseCompoundAsArgument(var0);
                var0.expect(']');
                var10000 = new MatchElementNode(var3);
             } else if (var4 == ']') {
@@ -108,7 +108,7 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
                throw ERROR_INVALID_NODE.createWithContext(var0);
             }
 
-            CompoundTag var2 = (new TagParser(var0)).readStruct();
+            CompoundTag var2 = TagParser.parseCompoundAsArgument(var0);
             var10000 = new MatchRootObjectNode(var2);
             break;
          default:
@@ -120,7 +120,7 @@ public class NbtPathArgument implements ArgumentType<NbtPath> {
 
    private static Node readObjectNode(StringReader var0, String var1) throws CommandSyntaxException {
       if (var0.canRead() && var0.peek() == '{') {
-         CompoundTag var2 = (new TagParser(var0)).readStruct();
+         CompoundTag var2 = TagParser.parseCompoundAsArgument(var0);
          return new MatchObjectNode(var1, var2);
       } else {
          return new CompoundChildNode(var1);

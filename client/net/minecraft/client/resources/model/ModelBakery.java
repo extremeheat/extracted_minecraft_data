@@ -70,7 +70,7 @@ public class ModelBakery {
       this.clientInfos.forEach((var5x, var6x) -> {
          ModelDebugName var7 = () -> String.valueOf(var5x) + "#inventory";
          ModelBakerImpl var8 = new ModelBakerImpl(var1, var7);
-         ItemModel.BakingContext var9 = new ItemModel.BakingContext(var8, this.entityModelSet, var4);
+         ItemModel.BakingContext var9 = new ItemModel.BakingContext(var8, this.entityModelSet, var4, var6x.registrySwapper());
 
          try {
             ItemModel var10 = var6x.model().bake(var9);

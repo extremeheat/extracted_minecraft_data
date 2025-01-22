@@ -1,10 +1,9 @@
 package net.minecraft.world.entity.animal;
 
-import java.util.Objects;
 import java.util.Optional;
+import net.minecraft.core.ClientAsset;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
@@ -12,6 +11,11 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.variant.BiomeCheck;
+import net.minecraft.world.entity.variant.PriorityProvider;
+import net.minecraft.world.entity.variant.SpawnContext;
+import net.minecraft.world.entity.variant.SpawnPrioritySelectors;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 
@@ -35,30 +39,31 @@ public class WolfVariants {
       return ResourceKey.create(Registries.WOLF_VARIANT, ResourceLocation.withDefaultNamespace(var0));
    }
 
-   static void register(BootstrapContext<WolfVariant> var0, ResourceKey<WolfVariant> var1, String var2, ResourceKey<Biome> var3) {
-      register(var0, var1, var2, HolderSet.direct(var0.lookup(Registries.BIOME).getOrThrow(var3)));
+   private static void register(BootstrapContext<WolfVariant> var0, ResourceKey<WolfVariant> var1, String var2, ResourceKey<Biome> var3) {
+      register(var0, var1, var2, highPrioBiome(HolderSet.direct(var0.lookup(Registries.BIOME).getOrThrow(var3))));
    }
 
-   static void register(BootstrapContext<WolfVariant> var0, ResourceKey<WolfVariant> var1, String var2, TagKey<Biome> var3) {
-      register(var0, var1, var2, var0.lookup(Registries.BIOME).getOrThrow(var3));
+   private static void register(BootstrapContext<WolfVariant> var0, ResourceKey<WolfVariant> var1, String var2, TagKey<Biome> var3) {
+      register(var0, var1, var2, highPrioBiome(var0.lookup(Registries.BIOME).getOrThrow(var3)));
    }
 
-   static void register(BootstrapContext<WolfVariant> var0, ResourceKey<WolfVariant> var1, String var2, HolderSet<Biome> var3) {
+   private static SpawnPrioritySelectors highPrioBiome(HolderSet<Biome> var0) {
+      return SpawnPrioritySelectors.single(new BiomeCheck(var0), 1);
+   }
+
+   private static void register(BootstrapContext<WolfVariant> var0, ResourceKey<WolfVariant> var1, String var2, SpawnPrioritySelectors var3) {
       ResourceLocation var4 = ResourceLocation.withDefaultNamespace("entity/wolf/" + var2);
       ResourceLocation var5 = ResourceLocation.withDefaultNamespace("entity/wolf/" + var2 + "_tame");
       ResourceLocation var6 = ResourceLocation.withDefaultNamespace("entity/wolf/" + var2 + "_angry");
-      var0.register(var1, new WolfVariant(var4, var5, var6, var3));
+      var0.register(var1, new WolfVariant(new WolfVariant.AssetInfo(new ClientAsset(var4), new ClientAsset(var5), new ClientAsset(var6)), var3));
    }
 
-   public static Holder<WolfVariant> getSpawnVariant(RegistryAccess var0, Holder<Biome> var1) {
-      Registry var2 = var0.lookupOrThrow(Registries.WOLF_VARIANT);
-      Optional var10000 = var2.listElements().filter((var1x) -> ((WolfVariant)var1x.value()).biomes().contains(var1)).findFirst().or(() -> var2.get(DEFAULT));
-      Objects.requireNonNull(var2);
-      return (Holder)var10000.or(var2::getAny).orElseThrow();
+   public static Optional<? extends Holder<WolfVariant>> selectVariantToSpawn(RandomSource var0, RegistryAccess var1, SpawnContext var2) {
+      return PriorityProvider.pick(var1.lookupOrThrow(Registries.WOLF_VARIANT).listElements(), Holder::value, var0, var2);
    }
 
    public static void bootstrap(BootstrapContext<WolfVariant> var0) {
-      register(var0, PALE, "wolf", Biomes.TAIGA);
+      register(var0, PALE, "wolf", SpawnPrioritySelectors.fallback(0));
       register(var0, SPOTTED, "wolf_spotted", BiomeTags.IS_SAVANNA);
       register(var0, SNOWY, "wolf_snowy", Biomes.GROVE);
       register(var0, BLACK, "wolf_black", Biomes.OLD_GROWTH_PINE_TAIGA);

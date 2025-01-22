@@ -25,6 +25,7 @@ public class ConditionalItemModelProperties {
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("extended_view"), ExtendedView.MAP_CODEC);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("keybind_down"), IsKeybindDown.MAP_CODEC);
       ID_MAPPER.put(ResourceLocation.withDefaultNamespace("view_entity"), IsViewEntity.MAP_CODEC);
+      ID_MAPPER.put(ResourceLocation.withDefaultNamespace("component"), ComponentMatches.MAP_CODEC);
    }
 
    static {

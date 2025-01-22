@@ -7,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -24,7 +23,7 @@ public class ShovelItem extends Item {
    protected static final Map<Block, BlockState> FLATTENABLES;
 
    public ShovelItem(ToolMaterial var1, float var2, float var3, Item.Properties var4) {
-      super(var4.tool(var1, BlockTags.MINEABLE_WITH_SHOVEL, var2, var3, false));
+      super(var4.shovel(var1, var2, var3));
    }
 
    public InteractionResult useOn(UseOnContext var1) {

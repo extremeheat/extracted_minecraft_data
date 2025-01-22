@@ -7,7 +7,8 @@ public interface DataComponentGetter {
    <T> T get(DataComponentType<? extends T> var1);
 
    default <T> T getOrDefault(DataComponentType<? extends T> var1, T var2) {
-      // $FF: Couldn't be decompiled
+      Object var3 = this.get(var1);
+      return var3 != null ? var3 : var2;
    }
 
    @Nullable

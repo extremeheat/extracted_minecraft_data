@@ -1,5 +1,6 @@
 package net.minecraft.client.renderer.item.properties.select;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -9,6 +10,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 public record MainHand() implements SelectItemModelProperty<HumanoidArm> {
+   public static final Codec<HumanoidArm> VALUE_CODEC;
    public static final SelectItemModelProperty.Type<MainHand, HumanoidArm> TYPE;
 
    public MainHand() {
@@ -24,6 +26,10 @@ public record MainHand() implements SelectItemModelProperty<HumanoidArm> {
       return TYPE;
    }
 
+   public Codec<HumanoidArm> valueCodec() {
+      return VALUE_CODEC;
+   }
+
    // $FF: synthetic method
    @Nullable
    public Object get(final ItemStack var1, @Nullable final ClientLevel var2, @Nullable final LivingEntity var3, final int var4, final ItemDisplayContext var5) {
@@ -31,6 +37,7 @@ public record MainHand() implements SelectItemModelProperty<HumanoidArm> {
    }
 
    static {
-      TYPE = SelectItemModelProperty.Type.<MainHand, HumanoidArm>create(MapCodec.unit(new MainHand()), HumanoidArm.CODEC);
+      VALUE_CODEC = HumanoidArm.CODEC;
+      TYPE = SelectItemModelProperty.Type.<MainHand, HumanoidArm>create(MapCodec.unit(new MainHand()), VALUE_CODEC);
    }
 }

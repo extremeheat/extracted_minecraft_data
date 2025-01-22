@@ -11,17 +11,18 @@ import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
 import net.minecraft.client.model.geom.builders.PartDefinition;
+import net.minecraft.client.renderer.MaterialMapper;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.ConduitBlockEntity;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> {
+   public static final MaterialMapper MAPPER;
    public static final Material SHELL_TEXTURE;
    public static final Material ACTIVE_SHELL_TEXTURE;
    public static final Material WIND_TEXTURE;
@@ -123,11 +124,12 @@ public class ConduitRenderer implements BlockEntityRenderer<ConduitBlockEntity> 
    }
 
    static {
-      SHELL_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("entity/conduit/base"));
-      ACTIVE_SHELL_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("entity/conduit/cage"));
-      WIND_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("entity/conduit/wind"));
-      VERTICAL_WIND_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("entity/conduit/wind_vertical"));
-      OPEN_EYE_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("entity/conduit/open_eye"));
-      CLOSED_EYE_TEXTURE = new Material(TextureAtlas.LOCATION_BLOCKS, ResourceLocation.withDefaultNamespace("entity/conduit/closed_eye"));
+      MAPPER = new MaterialMapper(TextureAtlas.LOCATION_BLOCKS, "entity/conduit");
+      SHELL_TEXTURE = MAPPER.defaultNamespaceApply("base");
+      ACTIVE_SHELL_TEXTURE = MAPPER.defaultNamespaceApply("cage");
+      WIND_TEXTURE = MAPPER.defaultNamespaceApply("wind");
+      VERTICAL_WIND_TEXTURE = MAPPER.defaultNamespaceApply("wind_vertical");
+      OPEN_EYE_TEXTURE = MAPPER.defaultNamespaceApply("open_eye");
+      CLOSED_EYE_TEXTURE = MAPPER.defaultNamespaceApply("closed_eye");
    }
 }

@@ -8,6 +8,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JavaOps;
 import java.util.Collection;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -17,9 +20,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryOps;
@@ -75,29 +75,25 @@ public class ResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
 
    @Nullable
    public Holder<T> parse(StringReader var1) throws CommandSyntaxException {
-      Tag var2 = parseInlineOrId(var1);
-      if (!this.hasRegistry) {
-         return null;
-      } else {
-         RegistryOps var3 = this.registryLookup.createSerializationContext(NbtOps.INSTANCE);
-         return (Holder)this.codec.parse(var3, var2).getOrThrow((var1x) -> ERROR_FAILED_TO_PARSE.createWithContext(var1, var1x));
-      }
+      RegistryOps var2 = this.registryLookup.createSerializationContext(JavaOps.INSTANCE);
+      Dynamic var3 = parseInlineOrId(var2, var1);
+      return !this.hasRegistry ? null : (Holder)this.codec.parse(var3).getOrThrow((var1x) -> ERROR_FAILED_TO_PARSE.createWithContext(var1, var1x));
    }
 
    @VisibleForTesting
-   static Tag parseInlineOrId(StringReader var0) throws CommandSyntaxException {
-      int var1 = var0.getCursor();
-      Tag var2 = (new TagParser(var0)).readValue();
-      if (hasConsumedWholeArg(var0)) {
-         return var2;
+   static <T> Dynamic<T> parseInlineOrId(DynamicOps<T> var0, StringReader var1) throws CommandSyntaxException {
+      int var2 = var1.getCursor();
+      Object var3 = TagParser.parseAsArgument(var0, var1);
+      if (hasConsumedWholeArg(var1)) {
+         return new Dynamic(var0, var3);
       } else {
-         var0.setCursor(var1);
-         ResourceLocation var3 = ResourceLocation.read(var0);
-         if (hasConsumedWholeArg(var0)) {
-            return StringTag.valueOf(var3.toString());
+         var1.setCursor(var2);
+         ResourceLocation var4 = ResourceLocation.read(var1);
+         if (hasConsumedWholeArg(var1)) {
+            return new Dynamic(var0, var0.createString(var4.toString()));
          } else {
-            var0.setCursor(var1);
-            throw ERROR_INVALID.createWithContext(var0);
+            var1.setCursor(var2);
+            throw ERROR_INVALID.createWithContext(var1);
          }
       }
    }

@@ -54,7 +54,7 @@ public class SmithingTransformRecipeBuilder {
       Map var10000 = this.criteria;
       Objects.requireNonNull(var3);
       var10000.forEach(var3::addCriterion);
-      SmithingTransformRecipe var4 = new SmithingTransformRecipe(Optional.of(this.template), Optional.of(this.base), Optional.of(this.addition), new TransmuteResult(this.result));
+      SmithingTransformRecipe var4 = new SmithingTransformRecipe(Optional.of(this.template), this.base, Optional.of(this.addition), new TransmuteResult(this.result));
       var1.accept(var2, var4, var3.build(var2.location().withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 

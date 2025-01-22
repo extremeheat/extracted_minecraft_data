@@ -1,19 +1,14 @@
 package net.minecraft.world.item;
 
-import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -85,14 +80,7 @@ public class CrossbowItem extends ProjectileWeaponItem {
 
    public boolean releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
       int var5 = this.getUseDuration(var1, var3) - var4;
-      float var6 = getPowerForTime(var5, var1, var3);
-      if (var6 >= 1.0F && !isCharged(var1) && tryLoadProjectiles(var3, var1)) {
-         ChargingSounds var7 = this.getChargingSounds(var1);
-         var7.end().ifPresent((var2x) -> var2.playSound((Entity)null, var3.getX(), var3.getY(), var3.getZ(), (SoundEvent)var2x.value(), var3.getSoundSource(), 1.0F, 1.0F / (var2.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F));
-         return true;
-      } else {
-         return false;
-      }
+      return getPowerForTime(var5, var1, var3) >= 1.0F && isCharged(var1);
    }
 
    private static boolean tryLoadProjectiles(LivingEntity var0, ItemStack var1) {
@@ -202,12 +190,16 @@ public class CrossbowItem extends ProjectileWeaponItem {
             this.midLoadSoundPlayed = true;
             var5.mid().ifPresent((var2x) -> var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)var2x.value(), SoundSource.PLAYERS, 0.5F, 1.0F));
          }
+
+         if (var6 >= 1.0F && !isCharged(var3) && tryLoadProjectiles(var2, var3)) {
+            var5.end().ifPresent((var2x) -> var1.playSound((Entity)null, var2.getX(), var2.getY(), var2.getZ(), (SoundEvent)var2x.value(), var2.getSoundSource(), 1.0F, 1.0F / (var1.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F));
+         }
       }
 
    }
 
    public int getUseDuration(ItemStack var1, LivingEntity var2) {
-      return getChargeDuration(var1, var2) + 3;
+      return 72000;
    }
 
    public static int getChargeDuration(ItemStack var0, LivingEntity var1) {
@@ -230,26 +222,6 @@ public class CrossbowItem extends ProjectileWeaponItem {
       }
 
       return var3;
-   }
-
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
-      ChargedProjectiles var5 = (ChargedProjectiles)var1.get(DataComponents.CHARGED_PROJECTILES);
-      if (var5 != null && !var5.isEmpty()) {
-         ItemStack var6 = (ItemStack)var5.getItems().get(0);
-         var3.add(Component.translatable("item.minecraft.crossbow.projectile").append(CommonComponents.SPACE).append(var6.getDisplayName()));
-         if (var4.isAdvanced() && var6.is(Items.FIREWORK_ROCKET)) {
-            ArrayList var7 = Lists.newArrayList();
-            Items.FIREWORK_ROCKET.appendHoverText(var6, var2, var7, var4);
-            if (!var7.isEmpty()) {
-               for(int var8 = 0; var8 < var7.size(); ++var8) {
-                  var7.set(var8, Component.literal("  ").append((Component)var7.get(var8)).withStyle(ChatFormatting.GRAY));
-               }
-
-               var3.addAll(var7);
-            }
-         }
-
-      }
    }
 
    public boolean useOnRelease(ItemStack var1) {

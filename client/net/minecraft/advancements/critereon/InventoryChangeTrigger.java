@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.component.DataComponentPredicate;
+import net.minecraft.core.component.DataComponentExactPredicate;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -71,7 +71,7 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<TriggerInstan
          ItemPredicate[] var1 = new ItemPredicate[var0.length];
 
          for(int var2 = 0; var2 < var0.length; ++var2) {
-            var1[var2] = new ItemPredicate(Optional.of(HolderSet.direct(var0[var2].asItem().builtInRegistryHolder())), MinMaxBounds.Ints.ANY, DataComponentPredicate.EMPTY, Map.of());
+            var1[var2] = new ItemPredicate(Optional.of(HolderSet.direct(var0[var2].asItem().builtInRegistryHolder())), MinMaxBounds.Ints.ANY, DataComponentExactPredicate.EMPTY, Map.of());
          }
 
          return hasItems(var1);

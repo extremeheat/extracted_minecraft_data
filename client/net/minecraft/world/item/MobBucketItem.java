@@ -1,12 +1,8 @@
 package net.minecraft.world.item;
 
-import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -15,7 +11,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Bucketable;
-import net.minecraft.world.entity.animal.TropicalFish;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -55,34 +50,6 @@ public class MobBucketItem extends BucketItem {
       if (var4 != null) {
          var1.addFreshEntityWithPassengers(var4);
          var4.playAmbientSound();
-      }
-
-   }
-
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
-      if (this.type == EntityType.TROPICAL_FISH) {
-         TropicalFish.Pattern var5 = (TropicalFish.Pattern)var1.get(DataComponents.TROPICAL_FISH_PATTERN);
-         if (var5 == null) {
-            return;
-         }
-
-         DyeColor var6 = (DyeColor)var1.getOrDefault(DataComponents.TROPICAL_FISH_BASE_COLOR, TropicalFish.DEFAULT_VARIANT.baseColor());
-         DyeColor var7 = (DyeColor)var1.getOrDefault(DataComponents.TROPICAL_FISH_PATTERN_COLOR, TropicalFish.DEFAULT_VARIANT.patternColor());
-         ChatFormatting[] var8 = new ChatFormatting[]{ChatFormatting.ITALIC, ChatFormatting.GRAY};
-         int var9 = TropicalFish.COMMON_VARIANTS.indexOf(new TropicalFish.Variant(var5, var6, var7));
-         if (var9 != -1) {
-            var3.add(Component.translatable(TropicalFish.getPredefinedName(var9)).withStyle(var8));
-            return;
-         }
-
-         var3.add(var5.displayName().plainCopy().withStyle(var8));
-         MutableComponent var10 = Component.translatable("color.minecraft." + var6.getName());
-         if (var6 != var7) {
-            var10.append(", ").append((Component)Component.translatable("color.minecraft." + var7.getName()));
-         }
-
-         var10.withStyle(var8);
-         var3.add(var10);
       }
 
    }

@@ -11,8 +11,6 @@ import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
-import net.minecraft.client.renderer.texture.atlas.SpriteSourceType;
-import net.minecraft.client.renderer.texture.atlas.SpriteSources;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -22,13 +20,9 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import org.slf4j.Logger;
 
-public class Unstitcher implements SpriteSource {
+public record Unstitcher(ResourceLocation resource, List<Region> regions, double xDivisor, double yDivisor) implements SpriteSource {
    static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<Unstitcher> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("resource").forGetter((var0x) -> var0x.resource), ExtraCodecs.nonEmptyList(Unstitcher.Region.CODEC.listOf()).fieldOf("regions").forGetter((var0x) -> var0x.regions), Codec.DOUBLE.optionalFieldOf("divisor_x", 1.0).forGetter((var0x) -> var0x.xDivisor), Codec.DOUBLE.optionalFieldOf("divisor_y", 1.0).forGetter((var0x) -> var0x.yDivisor)).apply(var0, Unstitcher::new));
-   private final ResourceLocation resource;
-   private final List<Region> regions;
-   private final double xDivisor;
-   private final double yDivisor;
+   public static final MapCodec<Unstitcher> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("resource").forGetter(Unstitcher::resource), ExtraCodecs.nonEmptyList(Unstitcher.Region.CODEC.listOf()).fieldOf("regions").forGetter(Unstitcher::regions), Codec.DOUBLE.optionalFieldOf("divisor_x", 1.0).forGetter(Unstitcher::xDivisor), Codec.DOUBLE.optionalFieldOf("divisor_y", 1.0).forGetter(Unstitcher::yDivisor)).apply(var0, Unstitcher::new));
 
    public Unstitcher(ResourceLocation var1, List<Region> var2, double var3, double var5) {
       super();
@@ -53,11 +47,11 @@ public class Unstitcher implements SpriteSource {
 
    }
 
-   public SpriteSourceType type() {
-      return SpriteSources.UNSTITCHER;
+   public MapCodec<Unstitcher> codec() {
+      return MAP_CODEC;
    }
 
-   static record Region(ResourceLocation sprite, double x, double y, double width, double height) {
+   public static record Region(ResourceLocation sprite, double x, double y, double width, double height) {
       final ResourceLocation sprite;
       final double x;
       final double y;
@@ -65,7 +59,7 @@ public class Unstitcher implements SpriteSource {
       final double height;
       public static final Codec<Region> CODEC = RecordCodecBuilder.create((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("sprite").forGetter(Region::sprite), Codec.DOUBLE.fieldOf("x").forGetter(Region::x), Codec.DOUBLE.fieldOf("y").forGetter(Region::y), Codec.DOUBLE.fieldOf("width").forGetter(Region::width), Codec.DOUBLE.fieldOf("height").forGetter(Region::height)).apply(var0, Region::new));
 
-      private Region(ResourceLocation var1, double var2, double var4, double var6, double var8) {
+      public Region(ResourceLocation var1, double var2, double var4, double var6, double var8) {
          super();
          this.sprite = var1;
          this.x = var2;

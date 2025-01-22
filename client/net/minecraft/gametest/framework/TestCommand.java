@@ -10,6 +10,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic3CommandExceptionType;
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
@@ -71,18 +72,26 @@ public class TestCommand {
    private static final int DEFAULT_Y_SIZE = 5;
    private static final int DEFAULT_Z_SIZE = 5;
    private static final SimpleCommandExceptionType CLEAR_NO_TESTS = new SimpleCommandExceptionType(Component.translatable("commands.test.clear.error.no_tests"));
+   private static final SimpleCommandExceptionType RESET_NO_TESTS = new SimpleCommandExceptionType(Component.translatable("commands.test.reset.error.no_tests"));
    private static final SimpleCommandExceptionType TEST_INSTANCE_COULD_NOT_BE_FOUND = new SimpleCommandExceptionType(Component.translatable("commands.test.error.test_instance_not_found"));
    private static final SimpleCommandExceptionType NO_STRUCTURES_TO_EXPORT = new SimpleCommandExceptionType(Component.literal("Could not find any structures to export"));
    private static final SimpleCommandExceptionType NO_TEST_INSTANCES = new SimpleCommandExceptionType(Component.translatable("commands.test.error.no_test_instances"));
    private static final Dynamic3CommandExceptionType NO_TEST_CONTAINING = new Dynamic3CommandExceptionType((var0, var1, var2) -> Component.translatableEscape("commands.test.error.no_test_containing_pos", var0, var1, var2));
+   private static final DynamicCommandExceptionType TOO_LARGE = new DynamicCommandExceptionType((var0) -> Component.translatableEscape("commands.test.error.too_large", var0));
 
    public TestCommand() {
       super();
    }
 
-   private static int reset(TestFinder var0) {
+   private static int reset(TestFinder var0) throws CommandSyntaxException {
       stopTests();
-      return toGameTestInfos(var0.source(), RetryOptions.noRetries(), var0).map((var1) -> resetGameTestInfo(var0.source(), var1)).toList().isEmpty() ? 0 : 1;
+      int var1 = toGameTestInfos(var0.source(), RetryOptions.noRetries(), var0).map((var1x) -> resetGameTestInfo(var0.source(), var1x)).toList().size();
+      if (var1 == 0) {
+         throw CLEAR_NO_TESTS.create();
+      } else {
+         var0.source().sendSuccess(() -> Component.translatable("commands.test.reset.success", var1), true);
+         return var1;
+      }
    }
 
    private static int clear(TestFinder var0) throws CommandSyntaxException {
@@ -105,7 +114,7 @@ public class TestCommand {
          throw CLEAR_NO_TESTS.create();
       } else {
          var1.sendSuccess(() -> Component.translatable("commands.test.clear.success", var4), true);
-         return 1;
+         return var4;
       }
    }
 
@@ -244,7 +253,7 @@ public class TestCommand {
       ArgumentBuilder var9 = Commands.literal("runfailed").then(var2);
       var10002 = TestFinder.builder();
       Objects.requireNonNull(var10002);
-      LiteralArgumentBuilder var3 = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var10000.then(runWithRetryOptionsAndBuildInfo(var9, var10002::failedTests))).then(Commands.literal("verify").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(var1, Registries.TEST_INSTANCE)).executes((var0x) -> verify(TestFinder.builder().byResourceSelection(var0x, ResourceSelectorArgument.getSelectedResources(var0x, "tests", Registries.TEST_INSTANCE))))))).then(Commands.literal("locate").then(Commands.argument("tests", ResourceArgument.resource(var1, Registries.TEST_INSTANCE)).executes((var0x) -> locate(TestFinder.builder().byResourceSelection(var0x, ResourceSelectorArgument.getSelectedResources(var0x, "tests", Registries.TEST_INSTANCE))))))).then(Commands.literal("resetclosest").executes((var0x) -> reset(TestFinder.builder().nearest(var0x))))).then(Commands.literal("resetthese").executes((var0x) -> reset(TestFinder.builder().allNearby(var0x))))).then(Commands.literal("resetthat").executes((var0x) -> reset(TestFinder.builder().lookedAt(var0x))))).then(Commands.literal("clearthat").executes((var0x) -> clear(TestFinder.builder().lookedAt(var0x))))).then(Commands.literal("clearthese").executes((var0x) -> clear(TestFinder.builder().allNearby(var0x))))).then(((LiteralArgumentBuilder)Commands.literal("clearall").executes((var0x) -> clear(TestFinder.builder().radius(var0x, 200)))).then(Commands.argument("radius", IntegerArgumentType.integer()).executes((var0x) -> clear(TestFinder.builder().radius(var0x, Mth.clamp(IntegerArgumentType.getInteger(var0x, "radius"), 0, 1024))))))).then(Commands.literal("stop").executes((var0x) -> stopTests()))).then(((LiteralArgumentBuilder)Commands.literal("pos").executes((var0x) -> showPos((CommandSourceStack)var0x.getSource(), "pos"))).then(Commands.argument("var", StringArgumentType.word()).executes((var0x) -> showPos((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "var")))))).then(Commands.literal("create").then(((RequiredArgumentBuilder)Commands.argument("id", ResourceLocationArgument.id()).suggests(TestCommand::suggestTestFunction).executes((var0x) -> createNewStructure((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), 5, 5, 5))).then(((RequiredArgumentBuilder)Commands.argument("width", IntegerArgumentType.integer()).executes((var0x) -> createNewStructure((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), IntegerArgumentType.getInteger(var0x, "width"), IntegerArgumentType.getInteger(var0x, "width"), IntegerArgumentType.getInteger(var0x, "width")))).then(Commands.argument("height", IntegerArgumentType.integer()).then(Commands.argument("depth", IntegerArgumentType.integer()).executes((var0x) -> createNewStructure((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), IntegerArgumentType.getInteger(var0x, "width"), IntegerArgumentType.getInteger(var0x, "height"), IntegerArgumentType.getInteger(var0x, "depth"))))))));
+      LiteralArgumentBuilder var3 = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var10000.then(runWithRetryOptionsAndBuildInfo(var9, var10002::failedTests))).then(Commands.literal("verify").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(var1, Registries.TEST_INSTANCE)).executes((var0x) -> verify(TestFinder.builder().byResourceSelection(var0x, ResourceSelectorArgument.getSelectedResources(var0x, "tests", Registries.TEST_INSTANCE))))))).then(Commands.literal("locate").then(Commands.argument("tests", ResourceSelectorArgument.resourceSelector(var1, Registries.TEST_INSTANCE)).executes((var0x) -> locate(TestFinder.builder().byResourceSelection(var0x, ResourceSelectorArgument.getSelectedResources(var0x, "tests", Registries.TEST_INSTANCE))))))).then(Commands.literal("resetclosest").executes((var0x) -> reset(TestFinder.builder().nearest(var0x))))).then(Commands.literal("resetthese").executes((var0x) -> reset(TestFinder.builder().allNearby(var0x))))).then(Commands.literal("resetthat").executes((var0x) -> reset(TestFinder.builder().lookedAt(var0x))))).then(Commands.literal("clearthat").executes((var0x) -> clear(TestFinder.builder().lookedAt(var0x))))).then(Commands.literal("clearthese").executes((var0x) -> clear(TestFinder.builder().allNearby(var0x))))).then(((LiteralArgumentBuilder)Commands.literal("clearall").executes((var0x) -> clear(TestFinder.builder().radius(var0x, 200)))).then(Commands.argument("radius", IntegerArgumentType.integer()).executes((var0x) -> clear(TestFinder.builder().radius(var0x, Mth.clamp(IntegerArgumentType.getInteger(var0x, "radius"), 0, 1024))))))).then(Commands.literal("stop").executes((var0x) -> stopTests()))).then(((LiteralArgumentBuilder)Commands.literal("pos").executes((var0x) -> showPos((CommandSourceStack)var0x.getSource(), "pos"))).then(Commands.argument("var", StringArgumentType.word()).executes((var0x) -> showPos((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "var")))))).then(Commands.literal("create").then(((RequiredArgumentBuilder)Commands.argument("id", ResourceLocationArgument.id()).suggests(TestCommand::suggestTestFunction).executes((var0x) -> createNewStructure((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), 5, 5, 5))).then(((RequiredArgumentBuilder)Commands.argument("width", IntegerArgumentType.integer()).executes((var0x) -> createNewStructure((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), IntegerArgumentType.getInteger(var0x, "width"), IntegerArgumentType.getInteger(var0x, "width"), IntegerArgumentType.getInteger(var0x, "width")))).then(Commands.argument("height", IntegerArgumentType.integer()).then(Commands.argument("depth", IntegerArgumentType.integer()).executes((var0x) -> createNewStructure((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getId(var0x, "id"), IntegerArgumentType.getInteger(var0x, "width"), IntegerArgumentType.getInteger(var0x, "height"), IntegerArgumentType.getInteger(var0x, "depth"))))))));
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          var3 = (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var3.then(Commands.literal("export").then(Commands.argument("test", ResourceArgument.resource(var1, Registries.TEST_INSTANCE)).executes((var0x) -> exportTestStructure((CommandSourceStack)var0x.getSource(), ResourceArgument.getResource(var0x, "test", Registries.TEST_INSTANCE)))))).then(Commands.literal("exportclosest").executes((var0x) -> export(TestFinder.builder().nearest(var0x))))).then(Commands.literal("exportthese").executes((var0x) -> export(TestFinder.builder().allNearby(var0x))))).then(Commands.literal("exportthat").executes((var0x) -> export(TestFinder.builder().lookedAt(var0x))));
       }
@@ -295,7 +304,7 @@ public class TestCommand {
       }
    }
 
-   private static int createNewStructure(CommandSourceStack var0, ResourceLocation var1, int var2, int var3, int var4) {
+   private static int createNewStructure(CommandSourceStack var0, ResourceLocation var1, int var2, int var3, int var4) throws CommandSyntaxException {
       if (var2 <= 48 && var3 <= 48 && var4 <= 48) {
          ServerLevel var5 = var0.getLevel();
          BlockPos var6 = createTestPositionAround(var0);
@@ -303,9 +312,10 @@ public class TestCommand {
          BlockPos var8 = var7.getStructurePos();
          BlockPos var9 = var8.offset(var2 - 1, 0, var4 - 1);
          BlockPos.betweenClosedStream(var8, var9).forEach((var1x) -> var5.setBlockAndUpdate(var1x, Blocks.BEDROCK.defaultBlockState()));
-         return 0;
+         var0.sendSuccess(() -> Component.translatable("commands.test.success", var7.getTestName()), true);
+         return 1;
       } else {
-         throw new IllegalArgumentException("The structure must be less than 48 blocks big in each axis");
+         throw TOO_LARGE.create(48);
       }
    }
 
@@ -324,13 +334,14 @@ public class TestCommand {
          BlockEntity var7 = var4.getBlockEntity((BlockPos)var5.get());
          if (var7 instanceof TestInstanceBlockEntity) {
             TestInstanceBlockEntity var6 = (TestInstanceBlockEntity)var7;
-            BlockPos var11 = var3.subtract((Vec3i)var5.get());
-            int var10000 = var11.getX();
-            String var8 = var10000 + ", " + var11.getY() + ", " + var11.getZ();
-            String var9 = var6.getTestName().getString();
-            MutableComponent var10 = Component.translatable("commands.test.coordinates", var11.getX(), var11.getY(), var11.getZ()).setStyle(Style.EMPTY.withBold(true).withColor(ChatFormatting.GREEN).withHoverEvent(new HoverEvent.ShowText(Component.translatable("commands.test.coordinates.copy"))).withClickEvent(new ClickEvent.CopyToClipboard("final BlockPos " + var1 + " = new BlockPos(" + var8 + ");")));
-            var0.sendSuccess(() -> Component.translatable("commands.test.relative_position", var9, var10), false);
-            DebugPackets.sendGameTestAddMarker(var4, new BlockPos(var3), var8, -2147418368, 10000);
+            BlockPos var12 = var6.getStructurePos();
+            BlockPos var8 = var3.subtract(var12);
+            int var10000 = var8.getX();
+            String var9 = var10000 + ", " + var8.getY() + ", " + var8.getZ();
+            String var10 = var6.getTestName().getString();
+            MutableComponent var11 = Component.translatable("commands.test.coordinates", var8.getX(), var8.getY(), var8.getZ()).setStyle(Style.EMPTY.withBold(true).withColor(ChatFormatting.GREEN).withHoverEvent(new HoverEvent.ShowText(Component.translatable("commands.test.coordinates.copy"))).withClickEvent(new ClickEvent.CopyToClipboard("final BlockPos " + var1 + " = new BlockPos(" + var9 + ");")));
+            var0.sendSuccess(() -> Component.translatable("commands.test.relative_position", var10, var11), false);
+            DebugPackets.sendGameTestAddMarker(var4, new BlockPos(var3), var9, -2147418368, 10000);
             return 1;
          } else {
             throw TEST_INSTANCE_COULD_NOT_BE_FOUND.create();

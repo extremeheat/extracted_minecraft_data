@@ -35,13 +35,13 @@ public class PigRenderer extends MobRenderer<Pig, PigRenderState, PigModel> {
 
    public void render(PigRenderState var1, PoseStack var2, MultiBufferSource var3, int var4) {
       if (var1.variant != null) {
-         this.model = (EntityModel)((AdultAndBabyModelPair)this.models.get(var1.variant.model())).getModel(var1.isBaby);
+         this.model = (EntityModel)((AdultAndBabyModelPair)this.models.get(var1.variant.modelAndTexture().model())).getModel(var1.isBaby);
          super.render(var1, var2, var3, var4);
       }
    }
 
    public ResourceLocation getTextureLocation(PigRenderState var1) {
-      return var1.variant == null ? MissingTextureAtlasSprite.getLocation() : var1.variant.fullTexture();
+      return var1.variant == null ? MissingTextureAtlasSprite.getLocation() : var1.variant.modelAndTexture().asset().texturePath();
    }
 
    public PigRenderState createRenderState() {

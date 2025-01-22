@@ -31,7 +31,7 @@ public interface TestEnvironmentDefinition {
       Registry.register(var0, (String)"all_of", TestEnvironmentDefinition.AllOf.CODEC);
       Registry.register(var0, (String)"game_rules", TestEnvironmentDefinition.SetGameRules.CODEC);
       Registry.register(var0, (String)"time_of_day", TestEnvironmentDefinition.TimeOfDay.CODEC);
-      Registry.register(var0, (String)"raining", TestEnvironmentDefinition.Weather.CODEC);
+      Registry.register(var0, (String)"weather", TestEnvironmentDefinition.Weather.CODEC);
       return (MapCodec)Registry.register(var0, (String)"function", TestEnvironmentDefinition.Functions.CODEC);
    }
 

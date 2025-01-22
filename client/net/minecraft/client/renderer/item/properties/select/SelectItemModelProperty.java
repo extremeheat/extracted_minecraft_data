@@ -19,6 +19,8 @@ public interface SelectItemModelProperty<T> {
    @Nullable
    T get(ItemStack var1, @Nullable ClientLevel var2, @Nullable LivingEntity var3, int var4, ItemDisplayContext var5);
 
+   Codec<T> valueCodec();
+
    Type<? extends SelectItemModelProperty<T>, T> type();
 
    public static record Type<P extends SelectItemModelProperty<T>, T>(MapCodec<SelectItemModel.UnbakedSwitch<P, T>> switchCodec) {

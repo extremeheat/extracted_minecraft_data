@@ -32,19 +32,17 @@ public class VillageSiege implements CustomSpawner {
       this.siegeState = VillageSiege.State.SIEGE_DONE;
    }
 
-   public int tick(ServerLevel var1, boolean var2, boolean var3) {
+   public void tick(ServerLevel var1, boolean var2, boolean var3) {
       if (!var1.isBrightOutside() && var2) {
          float var4 = var1.getTimeOfDay(0.0F);
          if ((double)var4 == 0.5) {
             this.siegeState = var1.random.nextInt(10) == 0 ? VillageSiege.State.SIEGE_TONIGHT : VillageSiege.State.SIEGE_DONE;
          }
 
-         if (this.siegeState == VillageSiege.State.SIEGE_DONE) {
-            return 0;
-         } else {
+         if (this.siegeState != VillageSiege.State.SIEGE_DONE) {
             if (!this.hasSetupSiege) {
                if (!this.tryToSetupSiege(var1)) {
-                  return 0;
+                  return;
                }
 
                this.hasSetupSiege = true;
@@ -52,7 +50,6 @@ public class VillageSiege implements CustomSpawner {
 
             if (this.nextSpawnTime > 0) {
                --this.nextSpawnTime;
-               return 0;
             } else {
                this.nextSpawnTime = 2;
                if (this.zombiesToSpawn > 0) {
@@ -62,13 +59,11 @@ public class VillageSiege implements CustomSpawner {
                   this.siegeState = VillageSiege.State.SIEGE_DONE;
                }
 
-               return 1;
             }
          }
       } else {
          this.siegeState = VillageSiege.State.SIEGE_DONE;
          this.hasSetupSiege = false;
-         return 0;
       }
    }
 

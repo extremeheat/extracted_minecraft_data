@@ -8,6 +8,7 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -15,8 +16,6 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.schemas.NamespacedSchema;
@@ -85,9 +84,9 @@ public class ParticleUnflatteningFix extends DataFix {
          var4 = var4.set("id", var1.createString(var2));
       } else {
          var4 = var4.set("id", var1.createString(var2.substring(0, var3)));
-         CompoundTag var5 = parseTag(var2.substring(var3));
+         Dynamic var5 = parseTag(var1.getOps(), var2.substring(var3));
          if (var5 != null) {
-            var4 = var4.set("tag", (new Dynamic(NbtOps.INSTANCE, var5)).convert(var1.getOps()));
+            var4 = var4.set("tag", var5);
          }
       }
 
@@ -95,11 +94,11 @@ public class ParticleUnflatteningFix extends DataFix {
    }
 
    @Nullable
-   private static CompoundTag parseTag(String var0) {
+   private static <T> Dynamic<T> parseTag(DynamicOps<T> var0, String var1) {
       try {
-         return TagParser.parseTag(var0);
-      } catch (Exception var2) {
-         LOGGER.warn("Failed to parse tag: {}", var0, var2);
+         return new Dynamic(var0, TagParser.parseFully(var0, var1));
+      } catch (Exception var3) {
+         LOGGER.warn("Failed to parse tag: {}", var1, var3);
          return null;
       }
    }

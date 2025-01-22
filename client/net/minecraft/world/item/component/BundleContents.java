@@ -63,7 +63,7 @@ public final class BundleContents implements TooltipComponent {
       if (var1 != null) {
          return BUNDLE_IN_BUNDLE_WEIGHT.add(var1.weight());
       } else {
-         List var2 = (List)var0.getOrDefault(DataComponents.BEES, List.of());
+         List var2 = ((Bees)var0.getOrDefault(DataComponents.BEES, Bees.EMPTY)).bees();
          return !var2.isEmpty() ? Fraction.ONE : Fraction.getFraction(1, var0.getMaxStackSize());
       }
    }

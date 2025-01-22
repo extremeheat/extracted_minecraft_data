@@ -1,13 +1,10 @@
 package net.minecraft.world.entity.animal;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -18,7 +15,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -70,6 +66,8 @@ import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.variant.SpawnContext;
+import net.minecraft.world.entity.variant.VariantUtils;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -139,9 +137,9 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    public ResourceLocation getTexture() {
       WolfVariant var1 = (WolfVariant)this.getVariant().value();
       if (this.isTame()) {
-         return var1.tameTexture();
+         return var1.assetInfo().tame().texturePath();
       } else {
-         return this.isAngry() ? var1.angryTexture() : var1.wildTexture();
+         return this.isAngry() ? var1.assetInfo().angry().texturePath() : var1.assetInfo().wild().texturePath();
       }
    }
 
@@ -186,12 +184,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      RegistryAccess var2 = this.registryAccess();
-      Registry var3 = var2.lookupOrThrow(Registries.WOLF_VARIANT);
-      EntityDataAccessor var10001 = DATA_VARIANT_ID;
-      Optional var10002 = var3.get(WolfVariants.DEFAULT);
-      Objects.requireNonNull(var3);
-      var1.define(var10001, (Holder)var10002.or(var3::getAny).orElseThrow());
+      var1.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), WolfVariants.DEFAULT));
       var1.define(DATA_INTERESTED_ID, false);
       var1.define(DATA_COLLAR_COLOR, DyeColor.RED.getId());
       var1.define(DATA_REMAINING_ANGER_TIME, 0);
@@ -204,13 +197,13 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putByte("CollarColor", (byte)this.getCollarColor().getId());
-      this.getVariant().unwrapKey().ifPresent((var1x) -> var1.putString("variant", var1x.location().toString()));
+      VariantUtils.writeVariant(var1, this.getVariant());
       this.addPersistentAngerSaveData(var1);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant"))).map((var0) -> ResourceKey.create(Registries.WOLF_VARIANT, var0)).flatMap((var1x) -> this.registryAccess().lookupOrThrow(Registries.WOLF_VARIANT).get(var1x)).ifPresent(this::setVariant);
+      VariantUtils.readVariant(var1, this.registryAccess(), Registries.WOLF_VARIANT).ifPresent(this::setVariant);
       if (var1.contains("CollarColor", 99)) {
          this.setCollarColor(DyeColor.byId(var1.getInt("CollarColor")));
       }
@@ -220,16 +213,16 @@ public class Wolf extends TamableAnimal implements NeutralMob {
 
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      Holder var5 = var1.getBiome(this.blockPosition());
-      Holder var6;
-      if (var4 instanceof WolfPackData var7) {
-         var6 = var7.type;
+      if (var4 instanceof WolfPackData var5) {
+         this.setVariant(var5.type);
       } else {
-         var6 = WolfVariants.getSpawnVariant(this.registryAccess(), var5);
-         var4 = new WolfPackData(var6);
+         Optional var6 = WolfVariants.selectVariantToSpawn(this.random, this.registryAccess(), SpawnContext.create(var1, this.blockPosition()));
+         if (var6.isPresent()) {
+            this.setVariant((Holder)var6.get());
+            var4 = new WolfPackData((Holder)var6.get());
+         }
       }
 
-      this.setVariant(var6);
       return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 

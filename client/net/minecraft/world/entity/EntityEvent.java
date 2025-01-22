@@ -28,8 +28,6 @@ public class EntityEvent {
    public static final byte PERMISSION_LEVEL_GAMEMASTERS = 26;
    public static final byte PERMISSION_LEVEL_ADMINS = 27;
    public static final byte PERMISSION_LEVEL_OWNERS = 28;
-   public static final byte ATTACK_BLOCKED = 29;
-   public static final byte SHIELD_DISABLED = 30;
    public static final byte FISHING_ROD_REEL_IN = 31;
    public static final byte ARMORSTAND_WOBBLE = 32;
    public static final byte STOP_OFFER_FLOWER = 34;

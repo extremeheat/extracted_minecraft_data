@@ -1,31 +1,24 @@
 package net.minecraft.world.entity.animal;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.CatVariantTags;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.StructureTags;
-import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
@@ -59,6 +52,8 @@ import net.minecraft.world.entity.ai.goal.target.NonTameRandomTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.variant.SpawnContext;
+import net.minecraft.world.entity.variant.VariantUtils;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -177,7 +172,7 @@ public class Cat extends TamableAnimal {
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_VARIANT_ID, BuiltInRegistries.CAT_VARIANT.getOrThrow(DEFAULT_VARIANT));
+      var1.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), DEFAULT_VARIANT));
       var1.define(IS_LYING, false);
       var1.define(RELAX_STATE_ONE, false);
       var1.define(DATA_COLLAR_COLOR, DyeColor.RED.getId());
@@ -185,16 +180,13 @@ public class Cat extends TamableAnimal {
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putString("variant", ((ResourceKey)this.getVariant().unwrapKey().orElse(DEFAULT_VARIANT)).location().toString());
+      VariantUtils.writeVariant(var1, this.getVariant());
       var1.putByte("CollarColor", (byte)this.getCollarColor().getId());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      Optional var10000 = Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant"))).map((var0) -> ResourceKey.create(Registries.CAT_VARIANT, var0));
-      Registry var10001 = BuiltInRegistries.CAT_VARIANT;
-      Objects.requireNonNull(var10001);
-      var10000.flatMap(var10001::get).ifPresent(this::setVariant);
+      VariantUtils.readVariant(var1, this.registryAccess(), Registries.CAT_VARIANT).ifPresent(this::setVariant);
       if (var1.contains("CollarColor", 99)) {
          this.setCollarColor(DyeColor.byId(var1.getInt("CollarColor")));
       }
@@ -363,15 +355,7 @@ public class Cat extends TamableAnimal {
    @Nullable
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
       var4 = super.finalizeSpawn(var1, var2, var3, var4);
-      boolean var5 = var1.getMoonBrightness() > 0.9F;
-      TagKey var6 = var5 ? CatVariantTags.FULL_MOON_SPAWNS : CatVariantTags.DEFAULT_SPAWNS;
-      BuiltInRegistries.CAT_VARIANT.getRandomElementOf(var6, var1.getRandom()).ifPresent(this::setVariant);
-      ServerLevel var7 = var1.getLevel();
-      if (var7.structureManager().getStructureWithPieceAt(this.blockPosition(), StructureTags.CATS_SPAWN_AS_BLACK).isValid()) {
-         this.setVariant(BuiltInRegistries.CAT_VARIANT.getOrThrow(CatVariant.ALL_BLACK));
-         this.setPersistenceRequired();
-      }
-
+      CatVariants.selectVariantToSpawn(this.random, this.registryAccess(), SpawnContext.create(var1, this.blockPosition())).ifPresent(this::setVariant);
       return var4;
    }
 
@@ -481,7 +465,7 @@ public class Cat extends TamableAnimal {
       IS_LYING = SynchedEntityData.<Boolean>defineId(Cat.class, EntityDataSerializers.BOOLEAN);
       RELAX_STATE_ONE = SynchedEntityData.<Boolean>defineId(Cat.class, EntityDataSerializers.BOOLEAN);
       DATA_COLLAR_COLOR = SynchedEntityData.<Integer>defineId(Cat.class, EntityDataSerializers.INT);
-      DEFAULT_VARIANT = CatVariant.BLACK;
+      DEFAULT_VARIANT = CatVariants.BLACK;
    }
 
    static class CatAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {

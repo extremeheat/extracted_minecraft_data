@@ -147,7 +147,7 @@ public abstract class AbstractBoat extends VehicleEntity implements Leashable {
       return (new Vec3(0.0, this.rideHeight(var2), (double)var4)).yRot(-this.getYRot() * 0.017453292F);
    }
 
-   public void onAboveBubbleCol(boolean var1, BlockPos var2) {
+   public void onAboveBubbleColumn(boolean var1, BlockPos var2) {
       if (this.level() instanceof ServerLevel) {
          this.isAboveBubbleColumn = true;
          this.bubbleColumnDirectionIsDown = var1;

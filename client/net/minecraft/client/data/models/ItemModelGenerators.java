@@ -3,7 +3,6 @@ package net.minecraft.client.data.models;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.function.BiConsumer;
 import net.minecraft.client.color.item.Dye;
 import net.minecraft.client.color.item.Firework;
@@ -44,18 +43,23 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.equipment.EquipmentAsset;
 import net.minecraft.world.item.equipment.EquipmentAssets;
+import net.minecraft.world.item.equipment.trim.MaterialAssetGroup;
 import net.minecraft.world.item.equipment.trim.TrimMaterial;
 import net.minecraft.world.item.equipment.trim.TrimMaterials;
 
 public class ItemModelGenerators {
    private static final ItemTintSource BLANK_LAYER = ItemModelUtils.constantTint(-1);
-   private static final String SLOT_HELMET = "helmet";
-   private static final String SLOT_CHESTPLATE = "chestplate";
-   private static final String SLOT_LEGGINS = "leggings";
-   private static final String SLOT_BOOTS = "boots";
-   private static final List<TrimMaterialData> TRIM_MATERIAL_MODELS;
+   public static final ResourceLocation TRIM_PREFIX_HELMET = prefixForSlotTrim("helmet");
+   public static final ResourceLocation TRIM_PREFIX_CHESTPLATE = prefixForSlotTrim("chestplate");
+   public static final ResourceLocation TRIM_PREFIX_LEGGINGS = prefixForSlotTrim("leggings");
+   public static final ResourceLocation TRIM_PREFIX_BOOTS = prefixForSlotTrim("boots");
+   public static final List<TrimMaterialData> TRIM_MATERIAL_MODELS;
    private final ItemModelOutput itemModelOutput;
    private final BiConsumer<ResourceLocation, ModelInstance> modelOutput;
+
+   public static ResourceLocation prefixForSlotTrim(String var0) {
+      return ResourceLocation.withDefaultNamespace("trims/items/" + var0 + "_trim");
+   }
 
    public ItemModelGenerators(ItemModelOutput var1, BiConsumer<ResourceLocation, ModelInstance> var2) {
       super();
@@ -146,15 +150,16 @@ public class ItemModelGenerators {
       ModelTemplates.THREE_LAYERED_ITEM.create(var1, TextureMapping.layered(var2, var3, var4), this.modelOutput);
    }
 
-   private void generateTrimmableItem(Item var1, ResourceKey<EquipmentAsset> var2, String var3, boolean var4) {
+   private void generateTrimmableItem(Item var1, ResourceKey<EquipmentAsset> var2, ResourceLocation var3, boolean var4) {
       ResourceLocation var5 = ModelLocationUtils.getModelLocation(var1);
       ResourceLocation var6 = TextureMapping.getItemTexture(var1);
       ResourceLocation var7 = TextureMapping.getItemTexture(var1, "_overlay");
       ArrayList var8 = new ArrayList(TRIM_MATERIAL_MODELS.size());
 
       for(TrimMaterialData var10 : TRIM_MATERIAL_MODELS) {
-         ResourceLocation var11 = var5.withSuffix("_" + var10.name() + "_trim");
-         ResourceLocation var12 = ResourceLocation.withDefaultNamespace("trims/items/" + var3 + "_trim_" + var10.textureName(var2));
+         ResourceLocation var11 = var5.withSuffix("_" + var10.assets().base().suffix() + "_trim");
+         String var10001 = var10.assets().assetId(var2).suffix();
+         ResourceLocation var12 = var3.withSuffix("_" + var10001);
          ItemModel.Unbaked var13;
          if (var4) {
             this.generateLayeredItem(var11, var6, var7, var12);
@@ -208,7 +213,7 @@ public class ItemModelGenerators {
       ItemModel.Unbaked var5 = ItemModelUtils.plainModel(this.createFlatItemModel(var1, "_pulling_2", ModelTemplates.CROSSBOW));
       ItemModel.Unbaked var6 = ItemModelUtils.plainModel(this.createFlatItemModel(var1, "_arrow", ModelTemplates.CROSSBOW));
       ItemModel.Unbaked var7 = ItemModelUtils.plainModel(this.createFlatItemModel(var1, "_firework", ModelTemplates.CROSSBOW));
-      this.itemModelOutput.accept(var1, ItemModelUtils.conditional(ItemModelUtils.isUsingItem(), ItemModelUtils.rangeSelect(new CrossbowPull(), var3, ItemModelUtils.override(var4, 0.58F), ItemModelUtils.override(var5, 1.0F)), ItemModelUtils.select(new Charge(), var2, ItemModelUtils.when(CrossbowItem.ChargeType.ARROW, var6), ItemModelUtils.when(CrossbowItem.ChargeType.ROCKET, var7))));
+      this.itemModelOutput.accept(var1, ItemModelUtils.select(new Charge(), ItemModelUtils.conditional(ItemModelUtils.isUsingItem(), ItemModelUtils.rangeSelect(new CrossbowPull(), var3, ItemModelUtils.override(var4, 0.58F), ItemModelUtils.override(var5, 1.0F)), var2), ItemModelUtils.when(CrossbowItem.ChargeType.ARROW, var6), ItemModelUtils.when(CrossbowItem.ChargeType.ROCKET, var7)));
    }
 
    private void generateBooleanDispatch(Item var1, ConditionalItemModelProperty var2, ItemModel.Unbaked var3, ItemModel.Unbaked var4) {
@@ -561,31 +566,31 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.DEBUG_STICK, Items.STICK, ModelTemplates.FLAT_HANDHELD_ITEM);
       this.generateFlatItem(Items.ENCHANTED_GOLDEN_APPLE, Items.GOLDEN_APPLE, ModelTemplates.FLAT_ITEM);
-      this.generateTrimmableItem(Items.TURTLE_HELMET, EquipmentAssets.TURTLE_SCUTE, "helmet", false);
-      this.generateTrimmableItem(Items.LEATHER_HELMET, EquipmentAssets.LEATHER, "helmet", true);
-      this.generateTrimmableItem(Items.LEATHER_CHESTPLATE, EquipmentAssets.LEATHER, "chestplate", true);
-      this.generateTrimmableItem(Items.LEATHER_LEGGINGS, EquipmentAssets.LEATHER, "leggings", true);
-      this.generateTrimmableItem(Items.LEATHER_BOOTS, EquipmentAssets.LEATHER, "boots", true);
-      this.generateTrimmableItem(Items.CHAINMAIL_HELMET, EquipmentAssets.CHAINMAIL, "helmet", false);
-      this.generateTrimmableItem(Items.CHAINMAIL_CHESTPLATE, EquipmentAssets.CHAINMAIL, "chestplate", false);
-      this.generateTrimmableItem(Items.CHAINMAIL_LEGGINGS, EquipmentAssets.CHAINMAIL, "leggings", false);
-      this.generateTrimmableItem(Items.CHAINMAIL_BOOTS, EquipmentAssets.CHAINMAIL, "boots", false);
-      this.generateTrimmableItem(Items.IRON_HELMET, EquipmentAssets.IRON, "helmet", false);
-      this.generateTrimmableItem(Items.IRON_CHESTPLATE, EquipmentAssets.IRON, "chestplate", false);
-      this.generateTrimmableItem(Items.IRON_LEGGINGS, EquipmentAssets.IRON, "leggings", false);
-      this.generateTrimmableItem(Items.IRON_BOOTS, EquipmentAssets.IRON, "boots", false);
-      this.generateTrimmableItem(Items.DIAMOND_HELMET, EquipmentAssets.DIAMOND, "helmet", false);
-      this.generateTrimmableItem(Items.DIAMOND_CHESTPLATE, EquipmentAssets.DIAMOND, "chestplate", false);
-      this.generateTrimmableItem(Items.DIAMOND_LEGGINGS, EquipmentAssets.DIAMOND, "leggings", false);
-      this.generateTrimmableItem(Items.DIAMOND_BOOTS, EquipmentAssets.DIAMOND, "boots", false);
-      this.generateTrimmableItem(Items.GOLDEN_HELMET, EquipmentAssets.GOLD, "helmet", false);
-      this.generateTrimmableItem(Items.GOLDEN_CHESTPLATE, EquipmentAssets.GOLD, "chestplate", false);
-      this.generateTrimmableItem(Items.GOLDEN_LEGGINGS, EquipmentAssets.GOLD, "leggings", false);
-      this.generateTrimmableItem(Items.GOLDEN_BOOTS, EquipmentAssets.GOLD, "boots", false);
-      this.generateTrimmableItem(Items.NETHERITE_HELMET, EquipmentAssets.NETHERITE, "helmet", false);
-      this.generateTrimmableItem(Items.NETHERITE_CHESTPLATE, EquipmentAssets.NETHERITE, "chestplate", false);
-      this.generateTrimmableItem(Items.NETHERITE_LEGGINGS, EquipmentAssets.NETHERITE, "leggings", false);
-      this.generateTrimmableItem(Items.NETHERITE_BOOTS, EquipmentAssets.NETHERITE, "boots", false);
+      this.generateTrimmableItem(Items.TURTLE_HELMET, EquipmentAssets.TURTLE_SCUTE, TRIM_PREFIX_HELMET, false);
+      this.generateTrimmableItem(Items.LEATHER_HELMET, EquipmentAssets.LEATHER, TRIM_PREFIX_HELMET, true);
+      this.generateTrimmableItem(Items.LEATHER_CHESTPLATE, EquipmentAssets.LEATHER, TRIM_PREFIX_CHESTPLATE, true);
+      this.generateTrimmableItem(Items.LEATHER_LEGGINGS, EquipmentAssets.LEATHER, TRIM_PREFIX_LEGGINGS, true);
+      this.generateTrimmableItem(Items.LEATHER_BOOTS, EquipmentAssets.LEATHER, TRIM_PREFIX_BOOTS, true);
+      this.generateTrimmableItem(Items.CHAINMAIL_HELMET, EquipmentAssets.CHAINMAIL, TRIM_PREFIX_HELMET, false);
+      this.generateTrimmableItem(Items.CHAINMAIL_CHESTPLATE, EquipmentAssets.CHAINMAIL, TRIM_PREFIX_CHESTPLATE, false);
+      this.generateTrimmableItem(Items.CHAINMAIL_LEGGINGS, EquipmentAssets.CHAINMAIL, TRIM_PREFIX_LEGGINGS, false);
+      this.generateTrimmableItem(Items.CHAINMAIL_BOOTS, EquipmentAssets.CHAINMAIL, TRIM_PREFIX_BOOTS, false);
+      this.generateTrimmableItem(Items.IRON_HELMET, EquipmentAssets.IRON, TRIM_PREFIX_HELMET, false);
+      this.generateTrimmableItem(Items.IRON_CHESTPLATE, EquipmentAssets.IRON, TRIM_PREFIX_CHESTPLATE, false);
+      this.generateTrimmableItem(Items.IRON_LEGGINGS, EquipmentAssets.IRON, TRIM_PREFIX_LEGGINGS, false);
+      this.generateTrimmableItem(Items.IRON_BOOTS, EquipmentAssets.IRON, TRIM_PREFIX_BOOTS, false);
+      this.generateTrimmableItem(Items.DIAMOND_HELMET, EquipmentAssets.DIAMOND, TRIM_PREFIX_HELMET, false);
+      this.generateTrimmableItem(Items.DIAMOND_CHESTPLATE, EquipmentAssets.DIAMOND, TRIM_PREFIX_CHESTPLATE, false);
+      this.generateTrimmableItem(Items.DIAMOND_LEGGINGS, EquipmentAssets.DIAMOND, TRIM_PREFIX_LEGGINGS, false);
+      this.generateTrimmableItem(Items.DIAMOND_BOOTS, EquipmentAssets.DIAMOND, TRIM_PREFIX_BOOTS, false);
+      this.generateTrimmableItem(Items.GOLDEN_HELMET, EquipmentAssets.GOLD, TRIM_PREFIX_HELMET, false);
+      this.generateTrimmableItem(Items.GOLDEN_CHESTPLATE, EquipmentAssets.GOLD, TRIM_PREFIX_CHESTPLATE, false);
+      this.generateTrimmableItem(Items.GOLDEN_LEGGINGS, EquipmentAssets.GOLD, TRIM_PREFIX_LEGGINGS, false);
+      this.generateTrimmableItem(Items.GOLDEN_BOOTS, EquipmentAssets.GOLD, TRIM_PREFIX_BOOTS, false);
+      this.generateTrimmableItem(Items.NETHERITE_HELMET, EquipmentAssets.NETHERITE, TRIM_PREFIX_HELMET, false);
+      this.generateTrimmableItem(Items.NETHERITE_CHESTPLATE, EquipmentAssets.NETHERITE, TRIM_PREFIX_CHESTPLATE, false);
+      this.generateTrimmableItem(Items.NETHERITE_LEGGINGS, EquipmentAssets.NETHERITE, TRIM_PREFIX_LEGGINGS, false);
+      this.generateTrimmableItem(Items.NETHERITE_BOOTS, EquipmentAssets.NETHERITE, TRIM_PREFIX_BOOTS, false);
       this.generateDyedItem(Items.LEATHER_HORSE_ARMOR, -6265536);
       this.generateFlatItem(Items.ANGLER_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ARCHER_POTTERY_SHERD, ModelTemplates.FLAT_ITEM);
@@ -743,21 +748,16 @@ public class ItemModelGenerators {
    }
 
    static {
-      TRIM_MATERIAL_MODELS = List.of(new TrimMaterialData("quartz", TrimMaterials.QUARTZ, Map.of()), new TrimMaterialData("iron", TrimMaterials.IRON, Map.of(EquipmentAssets.IRON, "iron_darker")), new TrimMaterialData("netherite", TrimMaterials.NETHERITE, Map.of(EquipmentAssets.NETHERITE, "netherite_darker")), new TrimMaterialData("redstone", TrimMaterials.REDSTONE, Map.of()), new TrimMaterialData("copper", TrimMaterials.COPPER, Map.of()), new TrimMaterialData("gold", TrimMaterials.GOLD, Map.of(EquipmentAssets.GOLD, "gold_darker")), new TrimMaterialData("emerald", TrimMaterials.EMERALD, Map.of()), new TrimMaterialData("diamond", TrimMaterials.DIAMOND, Map.of(EquipmentAssets.DIAMOND, "diamond_darker")), new TrimMaterialData("lapis", TrimMaterials.LAPIS, Map.of()), new TrimMaterialData("amethyst", TrimMaterials.AMETHYST, Map.of()), new TrimMaterialData("resin", TrimMaterials.RESIN, Map.of()));
+      TRIM_MATERIAL_MODELS = List.of(new TrimMaterialData(MaterialAssetGroup.QUARTZ, TrimMaterials.QUARTZ), new TrimMaterialData(MaterialAssetGroup.IRON, TrimMaterials.IRON), new TrimMaterialData(MaterialAssetGroup.NETHERITE, TrimMaterials.NETHERITE), new TrimMaterialData(MaterialAssetGroup.REDSTONE, TrimMaterials.REDSTONE), new TrimMaterialData(MaterialAssetGroup.COPPER, TrimMaterials.COPPER), new TrimMaterialData(MaterialAssetGroup.GOLD, TrimMaterials.GOLD), new TrimMaterialData(MaterialAssetGroup.EMERALD, TrimMaterials.EMERALD), new TrimMaterialData(MaterialAssetGroup.DIAMOND, TrimMaterials.DIAMOND), new TrimMaterialData(MaterialAssetGroup.LAPIS, TrimMaterials.LAPIS), new TrimMaterialData(MaterialAssetGroup.AMETHYST, TrimMaterials.AMETHYST), new TrimMaterialData(MaterialAssetGroup.RESIN, TrimMaterials.RESIN));
    }
 
-   static record TrimMaterialData(String name, ResourceKey<TrimMaterial> materialKey, Map<ResourceKey<EquipmentAsset>, String> overrideArmorMaterials) {
+   public static record TrimMaterialData(MaterialAssetGroup assets, ResourceKey<TrimMaterial> materialKey) {
       final ResourceKey<TrimMaterial> materialKey;
 
-      TrimMaterialData(String var1, ResourceKey<TrimMaterial> var2, Map<ResourceKey<EquipmentAsset>, String> var3) {
+      public TrimMaterialData(MaterialAssetGroup var1, ResourceKey<TrimMaterial> var2) {
          super();
-         this.name = var1;
+         this.assets = var1;
          this.materialKey = var2;
-         this.overrideArmorMaterials = var3;
-      }
-
-      public String textureName(ResourceKey<EquipmentAsset> var1) {
-         return (String)this.overrideArmorMaterials.getOrDefault(var1, this.name);
       }
    }
 }

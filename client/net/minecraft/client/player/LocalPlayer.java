@@ -588,15 +588,51 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public void applyInput() {
       if (this.isControlledCamera()) {
-         this.xxa = this.input.getMoveVector().x;
-         this.zza = this.input.getMoveVector().y;
+         Vec2 var1 = this.modifyInput(this.input.getMoveVector());
+         this.xxa = var1.x;
+         this.zza = var1.y;
          this.jumping = this.input.keyPresses.jump();
          this.yBobO = this.yBob;
          this.xBobO = this.xBob;
          this.xBob += (this.getXRot() - this.xBob) * 0.5F;
          this.yBob += (this.getYRot() - this.yBob) * 0.5F;
+      } else {
+         super.applyInput();
       }
 
+   }
+
+   private Vec2 modifyInput(Vec2 var1) {
+      if (var1.lengthSquared() == 0.0F) {
+         return var1;
+      } else {
+         Vec2 var2 = var1.scale(0.98F);
+         if (this.isUsingItem() && !this.isPassenger()) {
+            var2 = var2.scale(0.2F);
+         }
+
+         if (this.isMovingSlowly()) {
+            float var3 = (float)this.getAttributeValue(Attributes.SNEAKING_SPEED);
+            var2 = var2.scale(var3);
+         }
+
+         return modifyInputSpeedForSquareMovement(var2);
+      }
+   }
+
+   private static Vec2 modifyInputSpeedForSquareMovement(Vec2 var0) {
+      float var1 = var0.length();
+      Vec2 var2 = var0.scale(1.0F / var1);
+      float var3 = distanceToUnitSquare(var2);
+      float var4 = Math.min(var1 * var3, 1.0F);
+      return var2.scale(var4);
+   }
+
+   private static float distanceToUnitSquare(Vec2 var0) {
+      float var1 = Math.abs(var0.x);
+      float var2 = Math.abs(var0.y);
+      float var3 = var2 > var1 ? var1 / var2 : var2 / var1;
+      return Mth.sqrt(1.0F + Mth.square(var3));
    }
 
    protected boolean isControlledCamera() {
@@ -643,19 +679,13 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
 
       if (this.isUsingItem() && !this.isPassenger()) {
-         this.input.scaleMoveDirection(0.2F);
          this.sprintTriggerTime = 0;
       }
 
-      if (this.isMovingSlowly()) {
-         float var5 = (float)this.getAttributeValue(Attributes.SNEAKING_SPEED);
-         this.input.scaleMoveDirection(var5);
-      }
-
-      boolean var11 = false;
+      boolean var5 = false;
       if (this.autoJumpTime > 0) {
          --this.autoJumpTime;
-         var11 = true;
+         var5 = true;
          this.input.makeJump();
       }
 
@@ -697,15 +727,15 @@ public class LocalPlayer extends AbstractClientPlayer {
          }
       }
 
-      boolean var12 = false;
+      boolean var11 = false;
       if (var4.mayfly) {
          if (this.minecraft.gameMode.isAlwaysFlying()) {
             if (!var4.flying) {
                var4.flying = true;
-               var12 = true;
+               var11 = true;
                this.onUpdateAbilities();
             }
-         } else if (!var1 && this.input.keyPresses.jump() && !var11) {
+         } else if (!var1 && this.input.keyPresses.jump() && !var5) {
             if (this.jumpTriggerTime == 0) {
                this.jumpTriggerTime = 7;
             } else if (!this.isSwimming()) {
@@ -714,14 +744,14 @@ public class LocalPlayer extends AbstractClientPlayer {
                   this.jumpFromGround();
                }
 
-               var12 = true;
+               var11 = true;
                this.onUpdateAbilities();
                this.jumpTriggerTime = 0;
             }
          }
       }
 
-      if (this.input.keyPresses.jump() && !var12 && !var1 && !this.onClimbable() && this.tryToStartFallFlying()) {
+      if (this.input.keyPresses.jump() && !var11 && !var1 && !this.onClimbable() && this.tryToStartFallFlying()) {
          this.connection.send(new ServerboundPlayerCommandPacket(this, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
       }
 
@@ -731,30 +761,30 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
 
       if (this.isEyeInFluid(FluidTags.WATER)) {
-         int var13 = this.isSpectator() ? 10 : 1;
-         this.waterVisionTime = Mth.clamp(this.waterVisionTime + var13, 0, 600);
+         int var12 = this.isSpectator() ? 10 : 1;
+         this.waterVisionTime = Mth.clamp(this.waterVisionTime + var12, 0, 600);
       } else if (this.waterVisionTime > 0) {
          this.isEyeInFluid(FluidTags.WATER);
          this.waterVisionTime = Mth.clamp(this.waterVisionTime - 10, 0, 600);
       }
 
       if (var4.flying && this.isControlledCamera()) {
-         int var14 = 0;
+         int var13 = 0;
          if (this.input.keyPresses.shift()) {
-            --var14;
+            --var13;
          }
 
          if (this.input.keyPresses.jump()) {
-            ++var14;
+            ++var13;
          }
 
-         if (var14 != 0) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, (double)((float)var14 * var4.getFlyingSpeed() * 3.0F), 0.0));
+         if (var13 != 0) {
+            this.setDeltaMovement(this.getDeltaMovement().add(0.0, (double)((float)var13 * var4.getFlyingSpeed() * 3.0F), 0.0));
          }
       }
 
-      PlayerRideableJumping var15 = this.jumpableVehicle();
-      if (var15 != null && var15.getJumpCooldown() == 0) {
+      PlayerRideableJumping var14 = this.jumpableVehicle();
+      if (var14 != null && var14.getJumpCooldown() == 0) {
          if (this.jumpRidingTicks < 0) {
             ++this.jumpRidingTicks;
             if (this.jumpRidingTicks == 0) {
@@ -764,7 +794,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
          if (var1 && !this.input.keyPresses.jump()) {
             this.jumpRidingTicks = -10;
-            var15.onPlayerJump(Mth.floor(this.getJumpRidingScale() * 100.0F));
+            var14.onPlayerJump(Mth.floor(this.getJumpRidingScale() * 100.0F));
             this.sendRidingJump();
          } else if (!var1 && this.input.keyPresses.jump()) {
             this.jumpRidingTicks = 0;
@@ -790,7 +820,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    private boolean shouldStopSprinting() {
-      return this.hasBlindness() || this.isMovingSlowly() || this.isFallFlying() && !this.isUnderWater() || this.isPassenger() && !this.vehicleCanSprint(this.getVehicle()) || this.isUsingItem() && !this.isPassenger() && !this.isUnderWater();
+      return this.hasBlindness() || this.isFallFlying() && !this.isUnderWater() || this.isPassenger() && !this.vehicleCanSprint(this.getVehicle());
    }
 
    private boolean hasBlindness() {
@@ -998,8 +1028,11 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    private boolean hasEnoughImpulseToStartSprinting() {
-      double var1 = 0.8;
-      return this.input.hasForwardImpulse() && (this.isUnderWater() || (double)this.input.getMoveVector().length() >= 0.8);
+      if (!this.isUnderWater() && !this.isPassenger()) {
+         return this.input.hasForwardImpulse() && !this.isMovingSlowly() && !this.isUsingItem();
+      } else {
+         return this.input.hasForwardImpulse();
+      }
    }
 
    private boolean hasEnoughFoodToStartSprinting() {

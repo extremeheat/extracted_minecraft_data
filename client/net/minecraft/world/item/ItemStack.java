@@ -48,7 +48,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
@@ -78,6 +77,7 @@ import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.item.component.UseCooldown;
 import net.minecraft.world.item.component.UseRemainder;
@@ -93,12 +93,12 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
-import net.minecraft.world.level.saveddata.maps.MapId;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
 
 public final class ItemStack implements DataComponentHolder {
    private static final List<Component> OP_NBT_WARNING;
+   private static final Component UNBREAKABLE_TOOLTIP;
    public static final MapCodec<ItemStack> MAP_CODEC;
    public static final Codec<ItemStack> CODEC;
    public static final Codec<ItemStack> SINGLE_ITEM_CODEC;
@@ -784,86 +784,97 @@ public final class ItemStack implements DataComponentHolder {
       return var1;
    }
 
-   private <T extends TooltipProvider> void addToTooltip(DataComponentType<T> var1, Item.TooltipContext var2, Consumer<Component> var3, TooltipFlag var4) {
-      TooltipProvider var5 = (TooltipProvider)this.get(var1);
-      if (var5 != null) {
-         var5.addToTooltip(var2, var3, var4);
+   public <T extends TooltipProvider> void addToTooltip(DataComponentType<T> var1, Item.TooltipContext var2, TooltipDisplay var3, Consumer<Component> var4, TooltipFlag var5) {
+      TooltipProvider var6 = (TooltipProvider)this.get(var1);
+      if (var6 != null && var3.shows(var1)) {
+         var6.addToTooltip(var2, var4, var5, this.components);
       }
 
    }
 
    public List<Component> getTooltipLines(Item.TooltipContext var1, @Nullable Player var2, TooltipFlag var3) {
-      boolean var4 = this.getItem().shouldPrintOpWarning(this, var2);
-      if (!var3.isCreative() && this.has(DataComponents.HIDE_TOOLTIP)) {
-         return var4 ? OP_NBT_WARNING : List.of();
+      TooltipDisplay var4 = (TooltipDisplay)this.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT);
+      if (!var3.isCreative() && var4.hideTooltip()) {
+         boolean var6 = this.getItem().shouldPrintOpWarning(this, var2);
+         return var6 ? OP_NBT_WARNING : List.of();
       } else {
          ArrayList var5 = Lists.newArrayList();
          var5.add(this.getStyledHoverName());
-         if (!var3.isAdvanced() && !this.has(DataComponents.CUSTOM_NAME)) {
-            MapId var6 = (MapId)this.get(DataComponents.MAP_ID);
-            if (var6 != null) {
-               var5.add(MapItem.getTooltipForId(var6));
-            }
-         }
-
          Objects.requireNonNull(var5);
-         Consumer var10 = var5::add;
-         if (!this.has(DataComponents.HIDE_ADDITIONAL_TOOLTIP)) {
-            this.getItem().appendHoverText(this, var1, var5, var3);
-         }
-
-         this.addToTooltip(DataComponents.WRITTEN_BOOK_CONTENT, var1, var10, var3);
-         this.addToTooltip(DataComponents.JUKEBOX_PLAYABLE, var1, var10, var3);
-         this.addToTooltip(DataComponents.TRIM, var1, var10, var3);
-         this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var10, var3);
-         this.addToTooltip(DataComponents.ENCHANTMENTS, var1, var10, var3);
-         this.addToTooltip(DataComponents.DYED_COLOR, var1, var10, var3);
-         this.addToTooltip(DataComponents.LORE, var1, var10, var3);
-         this.addAttributeTooltips(var10, var2);
-         this.addToTooltip(DataComponents.UNBREAKABLE, var1, var10, var3);
-         this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var1, var10, var3);
-         this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, var1, var10, var3);
-         AdventureModePredicate var7 = (AdventureModePredicate)this.get(DataComponents.CAN_BREAK);
-         if (var7 != null && var7.showInTooltip()) {
-            var10.accept(CommonComponents.EMPTY);
-            var10.accept(AdventureModePredicate.CAN_BREAK_HEADER);
-            var7.addToTooltip(var10);
-         }
-
-         AdventureModePredicate var8 = (AdventureModePredicate)this.get(DataComponents.CAN_PLACE_ON);
-         if (var8 != null && var8.showInTooltip()) {
-            var10.accept(CommonComponents.EMPTY);
-            var10.accept(AdventureModePredicate.CAN_PLACE_HEADER);
-            var8.addToTooltip(var10);
-         }
-
-         if (var3.isAdvanced()) {
-            if (this.isDamaged()) {
-               var5.add(Component.translatable("item.durability", this.getMaxDamage() - this.getDamageValue(), this.getMaxDamage()));
-            }
-
-            var5.add(Component.literal(BuiltInRegistries.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
-            int var9 = this.components.size();
-            if (var9 > 0) {
-               var5.add(Component.translatable("item.components", var9).withStyle(ChatFormatting.DARK_GRAY));
-            }
-         }
-
-         if (var2 != null && !this.getItem().isEnabled(var2.level().enabledFeatures())) {
-            var5.add(DISABLED_ITEM_TOOLTIP);
-         }
-
-         if (var4) {
-            var5.addAll(OP_NBT_WARNING);
-         }
-
+         this.addDetailsToTooltip(var1, var4, var2, var3, var5::add);
          return var5;
       }
    }
 
-   private void addAttributeTooltips(Consumer<Component> var1, @Nullable Player var2) {
-      ItemAttributeModifiers var3 = (ItemAttributeModifiers)this.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
-      if (var3.showInTooltip()) {
+   public void addDetailsToTooltip(Item.TooltipContext var1, TooltipDisplay var2, @Nullable Player var3, TooltipFlag var4, Consumer<Component> var5) {
+      this.getItem().appendHoverText(this, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.TROPICAL_FISH_PATTERN, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.INSTRUMENT, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.MAP_ID, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.BEES, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.CONTAINER_LOOT, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.CONTAINER, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.BANNER_PATTERNS, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.POT_DECORATIONS, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.WRITTEN_BOOK_CONTENT, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.CHARGED_PROJECTILES, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.FIREWORKS, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.FIREWORK_EXPLOSION, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.POTION_CONTENTS, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.JUKEBOX_PLAYABLE, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.TRIM, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.ENCHANTMENTS, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.DYED_COLOR, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.LORE, var1, var2, var5, var4);
+      this.addAttributeTooltips(var5, var2, var3);
+      if (this.has(DataComponents.UNBREAKABLE) && var2.shows(DataComponents.UNBREAKABLE)) {
+         var5.accept(UNBREAKABLE_TOOLTIP);
+      }
+
+      this.addToTooltip(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.SUSPICIOUS_STEW_EFFECTS, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.BLOCK_STATE, var1, var2, var5, var4);
+      this.addToTooltip(DataComponents.BLOCK_ENTITY_DATA, var1, var2, var5, var4);
+      AdventureModePredicate var6 = (AdventureModePredicate)this.get(DataComponents.CAN_BREAK);
+      if (var6 != null && var2.shows(DataComponents.CAN_BREAK)) {
+         var5.accept(CommonComponents.EMPTY);
+         var5.accept(AdventureModePredicate.CAN_BREAK_HEADER);
+         var6.addToTooltip(var5);
+      }
+
+      AdventureModePredicate var7 = (AdventureModePredicate)this.get(DataComponents.CAN_PLACE_ON);
+      if (var7 != null && var2.shows(DataComponents.CAN_PLACE_ON)) {
+         var5.accept(CommonComponents.EMPTY);
+         var5.accept(AdventureModePredicate.CAN_PLACE_HEADER);
+         var7.addToTooltip(var5);
+      }
+
+      if (var4.isAdvanced()) {
+         if (this.isDamaged() && var2.shows(DataComponents.DAMAGE)) {
+            var5.accept(Component.translatable("item.durability", this.getMaxDamage() - this.getDamageValue(), this.getMaxDamage()));
+         }
+
+         var5.accept(Component.literal(BuiltInRegistries.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
+         int var8 = this.components.size();
+         if (var8 > 0) {
+            var5.accept(Component.translatable("item.components", var8).withStyle(ChatFormatting.DARK_GRAY));
+         }
+      }
+
+      if (var3 != null && !this.getItem().isEnabled(var3.level().enabledFeatures())) {
+         var5.accept(DISABLED_ITEM_TOOLTIP);
+      }
+
+      boolean var9 = this.getItem().shouldPrintOpWarning(this, var3);
+      if (var9) {
+         OP_NBT_WARNING.forEach(var5);
+      }
+
+   }
+
+   private void addAttributeTooltips(Consumer<Component> var1, TooltipDisplay var2, @Nullable Player var3) {
+      if (var2.shows(DataComponents.ATTRIBUTE_MODIFIERS)) {
          for(EquipmentSlotGroup var7 : EquipmentSlotGroup.values()) {
             MutableBoolean var8 = new MutableBoolean(true);
             this.forEachModifier((EquipmentSlotGroup)var7, (var5, var6) -> {
@@ -873,7 +884,7 @@ public final class ItemStack implements DataComponentHolder {
                   var8.setFalse();
                }
 
-               this.addModifierTooltip(var1, var2, var5, var6);
+               this.addModifierTooltip(var1, var3, var5, var6);
             });
          }
 
@@ -1076,10 +1087,6 @@ public final class ItemStack implements DataComponentHolder {
       this.getItem().onDestroyed(var1);
    }
 
-   public SoundEvent getBreakingSound() {
-      return this.getItem().getBreakingSound();
-   }
-
    public boolean canBeHurtBy(DamageSource var1) {
       DamageResistant var2 = (DamageResistant)this.get(DataComponents.DAMAGE_RESISTANT);
       return var2 == null || !var2.isResistantTo(var1);
@@ -1096,6 +1103,7 @@ public final class ItemStack implements DataComponentHolder {
 
    static {
       OP_NBT_WARNING = List.of(Component.translatable("item.op_warning.line1").withStyle(ChatFormatting.RED, ChatFormatting.BOLD), Component.translatable("item.op_warning.line2").withStyle(ChatFormatting.RED), Component.translatable("item.op_warning.line3").withStyle(ChatFormatting.RED));
+      UNBREAKABLE_TOOLTIP = Component.translatable("item.unbreakable").withStyle(ChatFormatting.BLUE);
       MAP_CODEC = MapCodec.recursive("ItemStack", (var0) -> RecordCodecBuilder.mapCodec((var0x) -> var0x.group(Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder), ExtraCodecs.intRange(1, 99).fieldOf("count").orElse(1).forGetter(ItemStack::getCount), DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter((var0) -> var0.components.asPatch())).apply(var0x, ItemStack::new)));
       MapCodec var10000 = MAP_CODEC;
       Objects.requireNonNull(var10000);

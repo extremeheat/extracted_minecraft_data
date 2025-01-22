@@ -104,7 +104,7 @@ import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.LevelTickAccess;
 import org.slf4j.Logger;
 
-public class ClientLevel extends Level {
+public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel> {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final double FLUID_PARTICLE_SPAWN_OFFSET = 0.05;
    private static final int NORMAL_LIGHT_UPDATES_PER_FRAME = 10;
@@ -804,6 +804,14 @@ public class ClientLevel extends Level {
 
    public int getSeaLevel() {
       return this.seaLevel;
+   }
+
+   public int getClientLeafTintColor(BlockPos var1) {
+      return Minecraft.getInstance().getBlockColors().getColor(this.getBlockState(var1), this, var1, 0);
+   }
+
+   public void registerForCleaning(CacheSlot<ClientLevel, ?> var1) {
+      this.connection.registerForCleaning(var1);
    }
 
    // $FF: synthetic method

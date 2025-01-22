@@ -21,6 +21,7 @@ import net.minecraft.advancements.critereon.ImpossibleTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
@@ -48,6 +49,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
+import net.minecraft.world.item.equipment.trim.TrimPattern;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -99,8 +101,9 @@ public abstract class RecipeProvider {
       SmithingTransformRecipeBuilder.smithing(Ingredient.of((ItemLike)Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE), Ingredient.of((ItemLike)var1), this.tag(ItemTags.NETHERITE_TOOL_MATERIALS), var2, var3).unlocks("has_netherite_ingot", this.has(ItemTags.NETHERITE_TOOL_MATERIALS)).save(this.output, getItemName(var3) + "_smithing");
    }
 
-   protected void trimSmithing(Item var1, ResourceKey<Recipe<?>> var2) {
-      SmithingTrimRecipeBuilder.smithingTrim(Ingredient.of((ItemLike)var1), this.tag(ItemTags.TRIMMABLE_ARMOR), this.tag(ItemTags.TRIM_MATERIALS), RecipeCategory.MISC).unlocks("has_smithing_trim_template", this.has(var1)).save(this.output, var2);
+   protected void trimSmithing(Item var1, ResourceKey<TrimPattern> var2, ResourceKey<Recipe<?>> var3) {
+      Holder.Reference var4 = this.registries.lookupOrThrow(Registries.TRIM_PATTERN).getOrThrow(var2);
+      SmithingTrimRecipeBuilder.smithingTrim(Ingredient.of((ItemLike)var1), this.tag(ItemTags.TRIMMABLE_ARMOR), this.tag(ItemTags.TRIM_MATERIALS), var4, RecipeCategory.MISC).unlocks("has_smithing_trim_template", this.has(var1)).save(this.output, var3);
    }
 
    protected void twoByTwoPacker(RecipeCategory var1, ItemLike var2, ItemLike var3) {

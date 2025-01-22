@@ -3,6 +3,7 @@ package net.minecraft.advancements.critereon;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import javax.annotation.Nullable;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -24,7 +25,7 @@ public record NbtPredicate(CompoundTag tag) {
       this.tag = var1;
    }
 
-   public boolean matches(ItemStack var1) {
+   public boolean matches(DataComponentGetter var1) {
       CustomData var2 = (CustomData)var1.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
       return var2.matchedBy(this.tag);
    }

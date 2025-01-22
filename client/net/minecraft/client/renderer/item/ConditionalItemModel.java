@@ -3,20 +3,23 @@ package net.minecraft.client.renderer.item;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import javax.annotation.Nullable;
+import net.minecraft.client.multiplayer.CacheSlot;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.properties.conditional.ConditionalItemModelProperties;
 import net.minecraft.client.renderer.item.properties.conditional.ConditionalItemModelProperty;
+import net.minecraft.client.renderer.item.properties.conditional.ItemModelPropertyTest;
 import net.minecraft.client.resources.model.ResolvableModel;
+import net.minecraft.util.RegistryContextSwapper;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 public class ConditionalItemModel implements ItemModel {
-   private final ConditionalItemModelProperty property;
+   private final ItemModelPropertyTest property;
    private final ItemModel onTrue;
    private final ItemModel onFalse;
 
-   public ConditionalItemModel(ConditionalItemModelProperty var1, ItemModel var2, ItemModel var3) {
+   public ConditionalItemModel(ItemModelPropertyTest var1, ItemModel var2, ItemModel var3) {
       super();
       this.property = var1;
       this.onTrue = var2;
@@ -42,7 +45,23 @@ public class ConditionalItemModel implements ItemModel {
       }
 
       public ItemModel bake(ItemModel.BakingContext var1) {
-         return new ConditionalItemModel(this.property, this.onTrue.bake(var1), this.onFalse.bake(var1));
+         return new ConditionalItemModel(this.adaptProperty(this.property, var1.contextSwapper()), this.onTrue.bake(var1), this.onFalse.bake(var1));
+      }
+
+      private ItemModelPropertyTest adaptProperty(ConditionalItemModelProperty var1, @Nullable RegistryContextSwapper var2) {
+         if (var2 == null) {
+            return var1;
+         } else {
+            CacheSlot var3 = new CacheSlot((var2x) -> swapContext(var1, var2, var2x));
+            return (var2x, var3x, var4, var5, var6) -> {
+               Object var7 = var3x == null ? var1 : (ItemModelPropertyTest)var3.compute(var3x);
+               return ((ItemModelPropertyTest)var7).get(var2x, var3x, var4, var5, var6);
+            };
+         }
+      }
+
+      private static <T extends ConditionalItemModelProperty> T swapContext(T var0, RegistryContextSwapper var1, ClientLevel var2) {
+         return (T)(var1.swapTo(var0.type().codec(), var0, var2.registryAccess()).result().orElse(var0));
       }
 
       public void resolveDependencies(ResolvableModel.Resolver var1) {

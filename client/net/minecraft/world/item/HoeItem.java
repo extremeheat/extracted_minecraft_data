@@ -10,7 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -26,7 +25,7 @@ public class HoeItem extends Item {
    protected static final Map<Block, Pair<Predicate<UseOnContext>, Consumer<UseOnContext>>> TILLABLES;
 
    public HoeItem(ToolMaterial var1, float var2, float var3, Item.Properties var4) {
-      super(var4.tool(var1, BlockTags.MINEABLE_WITH_HOE, var2, var3, false));
+      super(var4.hoe(var1, var2, var3));
    }
 
    public InteractionResult useOn(UseOnContext var1) {

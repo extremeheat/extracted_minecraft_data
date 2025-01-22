@@ -536,7 +536,21 @@ public class Util {
    }
 
    public static <T> T findPreviousInIterable(Iterable<T> var0, @Nullable T var1) {
-      // $FF: Couldn't be decompiled
+      Iterator var2 = var0.iterator();
+
+      Object var3;
+      Object var4;
+      for(var3 = null; var2.hasNext(); var3 = var4) {
+         var4 = var2.next();
+         if (var4 == var1) {
+            if (var3 == null) {
+               var3 = var2.hasNext() ? Iterators.getLast(var2) : var1;
+            }
+            break;
+         }
+      }
+
+      return (T)var3;
    }
 
    public static <T> T make(Supplier<T> var0) {

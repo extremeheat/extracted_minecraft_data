@@ -3,6 +3,7 @@ package net.minecraft.world.item.crafting;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
@@ -17,36 +18,38 @@ import net.minecraft.world.item.crafting.display.SlotDisplay;
 import net.minecraft.world.item.crafting.display.SmithingRecipeDisplay;
 import net.minecraft.world.item.equipment.trim.ArmorTrim;
 import net.minecraft.world.item.equipment.trim.TrimMaterials;
-import net.minecraft.world.item.equipment.trim.TrimPatterns;
+import net.minecraft.world.item.equipment.trim.TrimPattern;
 
 public class SmithingTrimRecipe implements SmithingRecipe {
-   final Optional<Ingredient> template;
-   final Optional<Ingredient> base;
-   final Optional<Ingredient> addition;
+   final Ingredient template;
+   final Ingredient base;
+   final Ingredient addition;
+   final Holder<TrimPattern> pattern;
    @Nullable
    private PlacementInfo placementInfo;
 
-   public SmithingTrimRecipe(Optional<Ingredient> var1, Optional<Ingredient> var2, Optional<Ingredient> var3) {
+   public SmithingTrimRecipe(Ingredient var1, Ingredient var2, Ingredient var3, Holder<TrimPattern> var4) {
       super();
       this.template = var1;
       this.base = var2;
       this.addition = var3;
+      this.pattern = var4;
    }
 
    public ItemStack assemble(SmithingRecipeInput var1, HolderLookup.Provider var2) {
-      return applyTrim(var2, var1.base(), var1.addition(), var1.template());
+      return applyTrim(var2, var1.base(), var1.addition(), this.pattern);
    }
 
-   public static ItemStack applyTrim(HolderLookup.Provider var0, ItemStack var1, ItemStack var2, ItemStack var3) {
+   public static ItemStack applyTrim(HolderLookup.Provider var0, ItemStack var1, ItemStack var2, Holder<TrimPattern> var3) {
       Optional var4 = TrimMaterials.getFromIngredient(var0, var2);
-      Optional var5 = TrimPatterns.getFromTemplate(var0, var3);
-      if (var4.isPresent() && var5.isPresent()) {
-         ArmorTrim var6 = (ArmorTrim)var1.get(DataComponents.TRIM);
-         if (var6 != null && var6.hasPatternAndMaterial((Holder)var5.get(), (Holder)var4.get())) {
+      if (var4.isPresent()) {
+         ArmorTrim var5 = (ArmorTrim)var1.get(DataComponents.TRIM);
+         ArmorTrim var6 = new ArmorTrim((Holder)var4.get(), var3);
+         if (Objects.equals(var5, var6)) {
             return ItemStack.EMPTY;
          } else {
             ItemStack var7 = var1.copyWithCount(1);
-            var7.set(DataComponents.TRIM, new ArmorTrim((Holder)var4.get(), (Holder)var5.get()));
+            var7.set(DataComponents.TRIM, var6);
             return var7;
          }
       } else {
@@ -55,15 +58,15 @@ public class SmithingTrimRecipe implements SmithingRecipe {
    }
 
    public Optional<Ingredient> templateIngredient() {
-      return this.template;
+      return Optional.of(this.template);
    }
 
-   public Optional<Ingredient> baseIngredient() {
+   public Ingredient baseIngredient() {
       return this.base;
    }
 
    public Optional<Ingredient> additionIngredient() {
-      return this.addition;
+      return Optional.of(this.addition);
    }
 
    public RecipeSerializer<SmithingTrimRecipe> getSerializer() {
@@ -72,21 +75,21 @@ public class SmithingTrimRecipe implements SmithingRecipe {
 
    public PlacementInfo placementInfo() {
       if (this.placementInfo == null) {
-         this.placementInfo = PlacementInfo.createFromOptionals(List.of(this.template, this.base, this.addition));
+         this.placementInfo = PlacementInfo.create(List.of(this.template, this.base, this.addition));
       }
 
       return this.placementInfo;
    }
 
    public List<RecipeDisplay> display() {
-      SlotDisplay var1 = Ingredient.optionalIngredientToDisplay(this.base);
-      SlotDisplay var2 = Ingredient.optionalIngredientToDisplay(this.addition);
-      SlotDisplay var3 = Ingredient.optionalIngredientToDisplay(this.template);
-      return List.of(new SmithingRecipeDisplay(var3, var1, var2, new SlotDisplay.SmithingTrimDemoSlotDisplay(var1, var2, var3), new SlotDisplay.ItemSlotDisplay(Items.SMITHING_TABLE)));
+      SlotDisplay var1 = this.base.display();
+      SlotDisplay var2 = this.addition.display();
+      SlotDisplay var3 = this.template.display();
+      return List.of(new SmithingRecipeDisplay(var3, var1, var2, new SlotDisplay.SmithingTrimDemoSlotDisplay(var1, var2, this.pattern), new SlotDisplay.ItemSlotDisplay(Items.SMITHING_TABLE)));
    }
 
    public static class Serializer implements RecipeSerializer<SmithingTrimRecipe> {
-      private static final MapCodec<SmithingTrimRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Ingredient.CODEC.optionalFieldOf("template").forGetter((var0x) -> var0x.template), Ingredient.CODEC.optionalFieldOf("base").forGetter((var0x) -> var0x.base), Ingredient.CODEC.optionalFieldOf("addition").forGetter((var0x) -> var0x.addition)).apply(var0, SmithingTrimRecipe::new));
+      private static final MapCodec<SmithingTrimRecipe> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Ingredient.CODEC.fieldOf("template").forGetter((var0x) -> var0x.template), Ingredient.CODEC.fieldOf("base").forGetter((var0x) -> var0x.base), Ingredient.CODEC.fieldOf("addition").forGetter((var0x) -> var0x.addition), TrimPattern.CODEC.fieldOf("pattern").forGetter((var0x) -> var0x.pattern)).apply(var0, SmithingTrimRecipe::new));
       public static final StreamCodec<RegistryFriendlyByteBuf, SmithingTrimRecipe> STREAM_CODEC;
 
       public Serializer() {
@@ -102,7 +105,7 @@ public class SmithingTrimRecipe implements SmithingRecipe {
       }
 
       static {
-         STREAM_CODEC = StreamCodec.composite(Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> var0.template, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> var0.base, Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC, (var0) -> var0.addition, SmithingTrimRecipe::new);
+         STREAM_CODEC = StreamCodec.composite(Ingredient.CONTENTS_STREAM_CODEC, (var0) -> var0.template, Ingredient.CONTENTS_STREAM_CODEC, (var0) -> var0.base, Ingredient.CONTENTS_STREAM_CODEC, (var0) -> var0.addition, TrimPattern.STREAM_CODEC, (var0) -> var0.pattern, SmithingTrimRecipe::new);
       }
    }
 }

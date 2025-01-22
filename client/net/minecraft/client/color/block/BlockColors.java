@@ -48,7 +48,6 @@ public class BlockColors {
       }, Blocks.PINK_PETALS, Blocks.WILDFLOWERS);
       var0.register((var0x, var1, var2, var3) -> -10380959, Blocks.SPRUCE_LEAVES);
       var0.register((var0x, var1, var2, var3) -> -8345771, Blocks.BIRCH_LEAVES);
-      var0.register((var0x, var1, var2, var3) -> -9399763, Blocks.AZALEA_LEAVES, Blocks.FLOWERING_AZALEA_LEAVES);
       var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageFoliageColor(var1, var2) : -12012264, Blocks.OAK_LEAVES, Blocks.JUNGLE_LEAVES, Blocks.ACACIA_LEAVES, Blocks.DARK_OAK_LEAVES, Blocks.VINE, Blocks.MANGROVE_LEAVES);
       var0.register((var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageWaterColor(var1, var2) : -1, Blocks.WATER, Blocks.BUBBLE_COLUMN, Blocks.WATER_CAULDRON);
       var0.register((var0x, var1, var2, var3) -> RedStoneWireBlock.getColorForPower((Integer)var0x.getValue(RedStoneWireBlock.POWER)), Blocks.REDSTONE_WIRE);

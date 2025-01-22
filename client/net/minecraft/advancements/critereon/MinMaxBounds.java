@@ -9,11 +9,14 @@ import com.mojang.datafixers.Products;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 public interface MinMaxBounds<T extends Number> {
    SimpleCommandExceptionType ERROR_EMPTY = new SimpleCommandExceptionType(Component.translatable("argument.range.empty"));
@@ -43,6 +46,38 @@ public interface MinMaxBounds<T extends Number> {
          Optional var1 = var0x.unwrapPoint();
          return var1.isPresent() ? Either.right((Number)var1.get()) : Either.left(var0x);
       });
+   }
+
+   static <B extends ByteBuf, T extends Number, R extends MinMaxBounds<T>> StreamCodec<B, R> createStreamCodec(final StreamCodec<B, T> var0, final BoundsFactory<T, R> var1) {
+      return new StreamCodec<B, R>() {
+         private static final int MIN_FLAG = 1;
+         public static final int MAX_FLAG = 2;
+
+         public R decode(B var1x) {
+            byte var2 = var1x.readByte();
+            Optional var3 = (var2 & 1) != 0 ? Optional.of((Number)var0.decode(var1x)) : Optional.empty();
+            Optional var4 = (var2 & 2) != 0 ? Optional.of((Number)var0.decode(var1x)) : Optional.empty();
+            return (R)var1.create(var3, var4);
+         }
+
+         public void encode(B var1x, R var2) {
+            Optional var3 = var2.min();
+            Optional var4 = var2.max();
+            var1x.writeByte((var3.isPresent() ? 1 : 0) | (var4.isPresent() ? 2 : 0));
+            var3.ifPresent((var2x) -> var0.encode(var1x, var2x));
+            var4.ifPresent((var2x) -> var0.encode(var1x, var2x));
+         }
+
+         // $FF: synthetic method
+         public void encode(final Object var1x, final Object var2) {
+            this.encode((ByteBuf)var1x, (MinMaxBounds)var2);
+         }
+
+         // $FF: synthetic method
+         public Object decode(final Object var1x) {
+            return this.decode((ByteBuf)var1x);
+         }
+      };
    }
 
    static <T extends Number, R extends MinMaxBounds<T>> R fromReader(StringReader var0, BoundsFromReaderFactory<T, R> var1, Function<String, T> var2, Supplier<DynamicCommandExceptionType> var3, Function<T, T> var4) throws CommandSyntaxException {
@@ -112,6 +147,7 @@ public interface MinMaxBounds<T extends Number> {
    public static record Ints(Optional<Integer> min, Optional<Integer> max, Optional<Long> minSq, Optional<Long> maxSq) implements MinMaxBounds<Integer> {
       public static final Ints ANY = new Ints(Optional.empty(), Optional.empty());
       public static final Codec<Ints> CODEC;
+      public static final StreamCodec<ByteBuf, Ints> STREAM_CODEC;
 
       private Ints(Optional<Integer> var1, Optional<Integer> var2) {
          this(var1, var2, var1.map((var0) -> var0.longValue() * var0.longValue()), squareOpt(var2));
@@ -183,12 +219,14 @@ public interface MinMaxBounds<T extends Number> {
 
       static {
          CODEC = MinMaxBounds.createCodec(Codec.INT, Ints::new);
+         STREAM_CODEC = MinMaxBounds.createStreamCodec(ByteBufCodecs.INT, Ints::new);
       }
    }
 
    public static record Doubles(Optional<Double> min, Optional<Double> max, Optional<Double> minSq, Optional<Double> maxSq) implements MinMaxBounds<Double> {
       public static final Doubles ANY = new Doubles(Optional.empty(), Optional.empty());
       public static final Codec<Doubles> CODEC;
+      public static final StreamCodec<ByteBuf, Doubles> STREAM_CODEC;
 
       private Doubles(Optional<Double> var1, Optional<Double> var2) {
          this(var1, var2, squareOpt(var1), squareOpt(var2));
@@ -260,6 +298,7 @@ public interface MinMaxBounds<T extends Number> {
 
       static {
          CODEC = MinMaxBounds.createCodec(Codec.DOUBLE, Doubles::new);
+         STREAM_CODEC = MinMaxBounds.createStreamCodec(ByteBufCodecs.DOUBLE, Doubles::new);
       }
    }
 

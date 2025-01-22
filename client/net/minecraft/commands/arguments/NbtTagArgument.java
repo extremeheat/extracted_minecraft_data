@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Arrays;
 import java.util.Collection;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 
@@ -25,7 +26,7 @@ public class NbtTagArgument implements ArgumentType<Tag> {
    }
 
    public Tag parse(StringReader var1) throws CommandSyntaxException {
-      return (new TagParser(var1)).readValue();
+      return (Tag)TagParser.parseAsArgument(NbtOps.INSTANCE, var1);
    }
 
    public Collection<String> getExamples() {

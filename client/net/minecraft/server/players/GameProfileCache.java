@@ -12,7 +12,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.GameProfileRepository;
-import com.mojang.authlib.ProfileLookupCallback;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -38,7 +37,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -79,19 +77,8 @@ public class GameProfileCache {
       if (!StringUtil.isValidPlayerName(var1)) {
          return createUnknownProfile(var1);
       } else {
-         final AtomicReference var2 = new AtomicReference();
-         ProfileLookupCallback var3 = new ProfileLookupCallback() {
-            public void onProfileLookupSucceeded(GameProfile var1) {
-               var2.set(var1);
-            }
-
-            public void onProfileLookupFailed(String var1, Exception var2x) {
-               var2.set((Object)null);
-            }
-         };
-         var0.findProfilesByNames(new String[]{var1}, var3);
-         GameProfile var4 = (GameProfile)var2.get();
-         return var4 != null ? Optional.of(var4) : createUnknownProfile(var1);
+         Optional var2 = var0.findProfileByName(var1);
+         return var2.isEmpty() ? createUnknownProfile(var1) : var2;
       }
    }
 

@@ -46,6 +46,7 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
@@ -279,8 +280,9 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
          BlockPos var4 = this.getBlockPos();
          if (var7.isEmpty()) {
             var1.accept(Component.translatable("test_instance_block.error.no_test", var4.getX(), var4.getY(), var4.getZ()).withStyle(ChatFormatting.RED));
+         } else if (!this.placeStructure()) {
+            var1.accept(Component.translatable("test_instance_block.error.no_test_structure", var4.getX(), var4.getY(), var4.getZ()).withStyle(ChatFormatting.RED));
          } else {
-            this.placeStructure();
             GameTestRunner.clearMarkers(var2);
             GameTestTicker.SINGLETON.clear();
             FailedTestTracker.forgetFailedTests();
@@ -315,7 +317,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
    }
 
    private void removeEntities() {
-      this.level.getEntities((Entity)null, this.getStructureBounds()).forEach(Entity::discard);
+      this.level.getEntities((Entity)null, this.getStructureBounds()).stream().filter((var0) -> !(var0 instanceof Player)).forEach(Entity::discard);
    }
 
    private void forceLoadChunks() {

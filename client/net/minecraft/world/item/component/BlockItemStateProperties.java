@@ -4,15 +4,22 @@ import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
 
-public record BlockItemStateProperties(Map<String, String> properties) {
+public record BlockItemStateProperties(Map<String, String> properties) implements TooltipProvider {
    public static final BlockItemStateProperties EMPTY = new BlockItemStateProperties(Map.of());
    public static final Codec<BlockItemStateProperties> CODEC;
    private static final StreamCodec<ByteBuf, Map<String, String>> PROPERTIES_STREAM_CODEC;
@@ -56,6 +63,14 @@ public record BlockItemStateProperties(Map<String, String> properties) {
 
    public boolean isEmpty() {
       return this.properties.isEmpty();
+   }
+
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
+      Integer var5 = (Integer)this.get(BeehiveBlock.HONEY_LEVEL);
+      if (var5 != null) {
+         var2.accept(Component.translatable("container.beehive.honey", var5, 5).withStyle(ChatFormatting.GRAY));
+      }
+
    }
 
    static {

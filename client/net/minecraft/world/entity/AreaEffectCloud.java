@@ -9,6 +9,9 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -403,6 +406,33 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
 
    public final boolean hurtServer(ServerLevel var1, DamageSource var2, float var3) {
       return false;
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      if (var1 == DataComponents.POTION_CONTENTS) {
+         return (T)castComponentValue(var1, this.potionContents);
+      } else {
+         return (T)(var1 == DataComponents.POTION_DURATION_SCALE ? castComponentValue(var1, this.potionDurationScale) : super.get(var1));
+      }
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.POTION_CONTENTS);
+      this.applyImplicitComponentIfPresent(var1, DataComponents.POTION_DURATION_SCALE);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.POTION_CONTENTS) {
+         this.setPotionContents((PotionContents)castComponentValue(DataComponents.POTION_CONTENTS, var2));
+         return true;
+      } else if (var1 == DataComponents.POTION_DURATION_SCALE) {
+         this.setPotionDurationScale((Float)castComponentValue(DataComponents.POTION_DURATION_SCALE, var2));
+         return true;
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    // $FF: synthetic method

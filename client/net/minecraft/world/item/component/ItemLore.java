@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -41,7 +42,7 @@ public record ItemLore(List<Component> lines, List<Component> styledLines) imple
       return new ItemLore(Util.copyAndAdd(this.lines, var1));
    }
 
-   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
       this.styledLines.forEach(var2);
    }
 

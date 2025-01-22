@@ -35,6 +35,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.Bees;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BeehiveBlock;
@@ -273,13 +274,13 @@ public class BeehiveBlockEntity extends BlockEntity {
    protected void applyImplicitComponents(DataComponentGetter var1) {
       super.applyImplicitComponents(var1);
       this.stored.clear();
-      List var2 = (List)var1.getOrDefault(DataComponents.BEES, List.of());
+      List var2 = ((Bees)var1.getOrDefault(DataComponents.BEES, Bees.EMPTY)).bees();
       var2.forEach(this::storeBee);
    }
 
    protected void collectImplicitComponents(DataComponentMap.Builder var1) {
       super.collectImplicitComponents(var1);
-      var1.set(DataComponents.BEES, this.getBees());
+      var1.set(DataComponents.BEES, new Bees(this.getBees()));
    }
 
    public void removeComponentsFromTag(CompoundTag var1) {

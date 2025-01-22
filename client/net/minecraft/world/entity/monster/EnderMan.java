@@ -45,7 +45,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.ThrownPotion;
+import net.minecraft.world.entity.projectile.AbstractThrownPotion;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -316,29 +316,38 @@ public class EnderMan extends Monster implements NeutralMob {
       if (this.isInvulnerableTo(var1, var2)) {
          return false;
       } else {
-         boolean var4 = var2.getDirectEntity() instanceof ThrownPotion;
-         if (!var2.is(DamageTypeTags.IS_PROJECTILE) && !var4) {
-            boolean var7 = super.hurtServer(var1, var2, var3);
+         Entity var6 = var2.getDirectEntity();
+         AbstractThrownPotion var10000;
+         if (var6 instanceof AbstractThrownPotion) {
+            AbstractThrownPotion var5 = (AbstractThrownPotion)var6;
+            var10000 = var5;
+         } else {
+            var10000 = null;
+         }
+
+         AbstractThrownPotion var4 = var10000;
+         if (!var2.is(DamageTypeTags.IS_PROJECTILE) && var4 == null) {
+            boolean var8 = super.hurtServer(var1, var2, var3);
             if (!(var2.getEntity() instanceof LivingEntity) && this.random.nextInt(10) != 0) {
                this.teleport();
             }
 
-            return var7;
+            return var8;
          } else {
-            boolean var5 = var4 && this.hurtWithCleanWater(var1, var2, (ThrownPotion)var2.getDirectEntity(), var3);
+            boolean var7 = var4 != null && this.hurtWithCleanWater(var1, var2, var4, var3);
 
-            for(int var6 = 0; var6 < 64; ++var6) {
+            for(int var9 = 0; var9 < 64; ++var9) {
                if (this.teleport()) {
                   return true;
                }
             }
 
-            return var5;
+            return var7;
          }
       }
    }
 
-   private boolean hurtWithCleanWater(ServerLevel var1, DamageSource var2, ThrownPotion var3, float var4) {
+   private boolean hurtWithCleanWater(ServerLevel var1, DamageSource var2, AbstractThrownPotion var3, float var4) {
       ItemStack var5 = var3.getItem();
       PotionContents var6 = (PotionContents)var5.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
       return var6.is(Potions.WATER) ? super.hurtServer(var1, var2, var4) : false;

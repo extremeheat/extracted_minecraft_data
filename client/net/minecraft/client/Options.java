@@ -1136,7 +1136,8 @@ public class Options {
             }
 
             public <T> T process(String var1, T var2, Function<String, T> var3, Function<T, String> var4) {
-               // $FF: Couldn't be decompiled
+               String var5 = this.getValueOrNull(var1);
+               return var5 == null ? var2 : var3.apply(var5);
             }
          });
          if (var8.contains("fullscreenResolution")) {

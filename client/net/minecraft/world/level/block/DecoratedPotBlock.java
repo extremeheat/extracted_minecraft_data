@@ -2,15 +2,10 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.List;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -28,12 +23,9 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ScheduledTickAccess;
@@ -189,15 +181,6 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
 
    protected SoundType getSoundType(BlockState var1) {
       return (Boolean)var1.getValue(CRACKED) ? SoundType.DECORATED_POT_CRACKED : SoundType.DECORATED_POT;
-   }
-
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
-      super.appendHoverText(var1, var2, var3, var4);
-      PotDecorations var5 = (PotDecorations)var1.getOrDefault(DataComponents.POT_DECORATIONS, PotDecorations.EMPTY);
-      if (!var5.equals(PotDecorations.EMPTY)) {
-         var3.add(CommonComponents.EMPTY);
-         Stream.of(var5.front(), var5.left(), var5.right(), var5.back()).forEach((var1x) -> var3.add((new ItemStack((ItemLike)var1x.orElse(Items.BRICK), 1)).getHoverName().plainCopy().withStyle(ChatFormatting.GRAY)));
-      }
    }
 
    protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {

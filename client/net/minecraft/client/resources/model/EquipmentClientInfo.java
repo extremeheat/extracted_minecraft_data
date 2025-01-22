@@ -134,6 +134,10 @@ public record EquipmentClientInfo(Map<LayerType, List<Layer>> layers) {
          return this.id;
       }
 
+      public String trimAssetPrefix() {
+         return "trims/entity/" + this.id;
+      }
+
       // $FF: synthetic method
       private static LayerType[] $values() {
          return new LayerType[]{HUMANOID, HUMANOID_LEGGINGS, WINGS, WOLF_BODY, HORSE_BODY, LLAMA_BODY, PIG_SADDLE, STRIDER_SADDLE, CAMEL_SADDLE, HORSE_SADDLE, DONKEY_SADDLE, MULE_SADDLE, ZOMBIE_HORSE_SADDLE, SKELETON_HORSE_SADDLE};

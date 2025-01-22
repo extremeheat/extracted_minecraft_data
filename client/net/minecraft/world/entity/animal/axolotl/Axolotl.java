@@ -338,7 +338,7 @@ public class Axolotl extends Animal implements Bucketable {
 
    public void saveToBucketTag(ItemStack var1) {
       Bucketable.saveDefaultDataToBucketTag(this, var1);
-      var1.copyFrom(DataComponents.AXOLOTL_VARIANT, var1);
+      var1.copyFrom(DataComponents.AXOLOTL_VARIANT, this);
       CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, (Consumer)((var1x) -> {
          var1x.putInt("Age", this.getAge());
          Brain var2 = this.getBrain();

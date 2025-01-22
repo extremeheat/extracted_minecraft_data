@@ -1,13 +1,10 @@
 package net.minecraft.world.entity.animal;
 
 import com.google.common.collect.UnmodifiableIterator;
-import java.util.Objects;
-import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -16,8 +13,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -51,6 +46,8 @@ import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.variant.SpawnContext;
+import net.minecraft.world.entity.variant.VariantUtils;
 import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -113,21 +110,17 @@ public class Pig extends Animal implements ItemSteerable {
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_BOOST_TIME, 0);
-      Registry var2 = this.registryAccess().lookupOrThrow(Registries.PIG_VARIANT);
-      EntityDataAccessor var10001 = DATA_VARIANT_ID;
-      Optional var10002 = var2.get(PigVariants.DEFAULT);
-      Objects.requireNonNull(var2);
-      var1.define(var10001, (Holder)var10002.or(var2::getAny).orElseThrow());
+      var1.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), PigVariants.DEFAULT));
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      this.getVariant().unwrapKey().ifPresent((var1x) -> var1.putString("variant", var1x.location().toString()));
+      VariantUtils.writeVariant(var1, this.getVariant());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant"))).map((var0) -> ResourceKey.create(Registries.PIG_VARIANT, var0)).flatMap((var1x) -> this.registryAccess().lookupOrThrow(Registries.PIG_VARIANT).get(var1x)).ifPresent(this::setVariant);
+      VariantUtils.readVariant(var1, this.registryAccess(), Registries.PIG_VARIANT).ifPresent(this::setVariant);
    }
 
    protected SoundEvent getAmbientSound() {
@@ -295,8 +288,7 @@ public class Pig extends Animal implements ItemSteerable {
    }
 
    public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
-      Holder var5 = var1.getBiome(this.blockPosition());
-      PigVariants.selectVariantToSpawn(this.random, this.registryAccess(), var5).ifPresent(this::setVariant);
+      PigVariants.selectVariantToSpawn(this.random, this.registryAccess(), SpawnContext.create(var1, this.blockPosition())).ifPresent(this::setVariant);
       return super.finalizeSpawn(var1, var2, var3, var4);
    }
 

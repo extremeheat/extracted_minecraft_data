@@ -184,7 +184,7 @@ public class Ravager extends Raider {
       return this.stunnedTick <= 0 && this.roarTick <= 0 ? super.hasLineOfSight(var1) : false;
    }
 
-   protected void blockedByShield(LivingEntity var1) {
+   protected void blockedByItem(LivingEntity var1) {
       if (this.roarTick == 0) {
          if (this.random.nextDouble() < 0.5) {
             this.stunnedTick = 40;

@@ -19,21 +19,15 @@ import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
-public record ItemAttributeModifiers(List<Entry> modifiers, boolean showInTooltip) {
-   public static final ItemAttributeModifiers EMPTY = new ItemAttributeModifiers(List.of(), true);
-   private static final Codec<ItemAttributeModifiers> FULL_CODEC = RecordCodecBuilder.create((var0) -> var0.group(ItemAttributeModifiers.Entry.CODEC.listOf().fieldOf("modifiers").forGetter(ItemAttributeModifiers::modifiers), Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(ItemAttributeModifiers::showInTooltip)).apply(var0, ItemAttributeModifiers::new));
+public record ItemAttributeModifiers(List<Entry> modifiers) {
+   public static final ItemAttributeModifiers EMPTY = new ItemAttributeModifiers(List.of());
    public static final Codec<ItemAttributeModifiers> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemAttributeModifiers> STREAM_CODEC;
    public static final DecimalFormat ATTRIBUTE_MODIFIER_FORMAT;
 
-   public ItemAttributeModifiers(List<Entry> var1, boolean var2) {
+   public ItemAttributeModifiers(List<Entry> var1) {
       super();
       this.modifiers = var1;
-      this.showInTooltip = var2;
-   }
-
-   public ItemAttributeModifiers withTooltip(boolean var1) {
-      return new ItemAttributeModifiers(this.modifiers, var1);
    }
 
    public static Builder builder() {
@@ -50,7 +44,7 @@ public record ItemAttributeModifiers(List<Entry> modifiers, boolean showInToolti
       }
 
       var4.add(new Entry(var1, var2, var3));
-      return new ItemAttributeModifiers(var4.build(), this.showInTooltip);
+      return new ItemAttributeModifiers(var4.build());
    }
 
    public void forEach(EquipmentSlotGroup var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
@@ -93,8 +87,8 @@ public record ItemAttributeModifiers(List<Entry> modifiers, boolean showInToolti
    }
 
    static {
-      CODEC = Codec.withAlternative(FULL_CODEC, ItemAttributeModifiers.Entry.CODEC.listOf(), (var0) -> new ItemAttributeModifiers(var0, true));
-      STREAM_CODEC = StreamCodec.composite(ItemAttributeModifiers.Entry.STREAM_CODEC.apply(ByteBufCodecs.list()), ItemAttributeModifiers::modifiers, ByteBufCodecs.BOOL, ItemAttributeModifiers::showInTooltip, ItemAttributeModifiers::new);
+      CODEC = ItemAttributeModifiers.Entry.CODEC.listOf().xmap(ItemAttributeModifiers::new, ItemAttributeModifiers::modifiers);
+      STREAM_CODEC = StreamCodec.composite(ItemAttributeModifiers.Entry.STREAM_CODEC.apply(ByteBufCodecs.list()), ItemAttributeModifiers::modifiers, ItemAttributeModifiers::new);
       ATTRIBUTE_MODIFIER_FORMAT = (DecimalFormat)Util.make(new DecimalFormat("#.##"), (var0) -> var0.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT)));
    }
 
@@ -134,7 +128,7 @@ public record ItemAttributeModifiers(List<Entry> modifiers, boolean showInToolti
       }
 
       public ItemAttributeModifiers build() {
-         return new ItemAttributeModifiers(this.entries.build(), true);
+         return new ItemAttributeModifiers(this.entries.build());
       }
    }
 }

@@ -25,7 +25,7 @@ public class CompoundTagArgument implements ArgumentType<CompoundTag> {
    }
 
    public CompoundTag parse(StringReader var1) throws CommandSyntaxException {
-      return (new TagParser(var1)).readStruct();
+      return TagParser.parseCompoundAsArgument(var1);
    }
 
    public Collection<String> getExamples() {

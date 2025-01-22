@@ -46,7 +46,7 @@ public class EndPortalBlock extends BaseEntityBlock implements Portal {
       return SHAPE;
    }
 
-   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, Level var2, BlockPos var3) {
+   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, Entity var4) {
       return var1.getShape(var2, var3);
    }
 

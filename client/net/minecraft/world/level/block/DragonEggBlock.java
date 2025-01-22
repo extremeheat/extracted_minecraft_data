@@ -76,4 +76,8 @@ public class DragonEggBlock extends FallingBlock {
    protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
+
+   public int getDustColor(BlockState var1, BlockGetter var2, BlockPos var3) {
+      return -16777216;
+   }
 }

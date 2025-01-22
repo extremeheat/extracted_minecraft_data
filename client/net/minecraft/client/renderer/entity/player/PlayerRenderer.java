@@ -92,6 +92,8 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
    private static HumanoidModel.ArmPose getArmPose(Player var0, ItemStack var1, InteractionHand var2) {
       if (var1.isEmpty()) {
          return HumanoidModel.ArmPose.EMPTY;
+      } else if (!var0.swinging && var1.is(Items.CROSSBOW) && CrossbowItem.isCharged(var1)) {
+         return HumanoidModel.ArmPose.CROSSBOW_HOLD;
       } else {
          if (var0.getUsedItemHand() == var2 && var0.getUseItemRemainingTicks() > 0) {
             ItemUseAnimation var3 = var1.getUseAnimation();
@@ -122,8 +124,6 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
             if (var3 == ItemUseAnimation.BRUSH) {
                return HumanoidModel.ArmPose.BRUSH;
             }
-         } else if (!var0.swinging && var1.is(Items.CROSSBOW) && CrossbowItem.isCharged(var1)) {
-            return HumanoidModel.ArmPose.CROSSBOW_HOLD;
          }
 
          return HumanoidModel.ArmPose.ITEM;

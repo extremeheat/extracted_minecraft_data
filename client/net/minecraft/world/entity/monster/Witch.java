@@ -33,7 +33,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestHealableRaiderTargetGoal
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.projectile.ThrownPotion;
+import net.minecraft.world.entity.projectile.ThrownSplashPotion;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -210,7 +210,7 @@ public class Witch extends Raider implements RangedAttackMob {
          if (var14 instanceof ServerLevel) {
             ServerLevel var13 = (ServerLevel)var14;
             ItemStack var15 = PotionContents.createItemStack(Items.SPLASH_POTION, var12);
-            Projectile.spawnProjectileUsingShoot(ThrownPotion::new, var13, var15, this, var4, var6 + var10 * 0.2, var8, 0.75F, 8.0F);
+            Projectile.spawnProjectileUsingShoot(ThrownSplashPotion::new, var13, var15, this, var4, var6 + var10 * 0.2, var8, 0.75F, 8.0F);
          }
 
          if (!this.isSilent()) {

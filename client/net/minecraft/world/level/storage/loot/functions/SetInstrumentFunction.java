@@ -11,6 +11,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Instrument;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.InstrumentComponent;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
@@ -31,7 +32,7 @@ public class SetInstrumentFunction extends LootItemConditionalFunction {
       Registry var3 = var2.getLevel().registryAccess().lookupOrThrow(Registries.INSTRUMENT);
       Optional var4 = var3.getRandomElementOf(this.options, var2.getRandom());
       if (var4.isPresent()) {
-         var1.set(DataComponents.INSTRUMENT, (Holder)var4.get());
+         var1.set(DataComponents.INSTRUMENT, new InstrumentComponent((Holder)var4.get()));
       }
 
       return var1;

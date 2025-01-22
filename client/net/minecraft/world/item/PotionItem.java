@@ -1,7 +1,5 @@
 package net.minecraft.world.item;
 
-import java.util.List;
-import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -65,13 +63,5 @@ public class PotionItem extends Item {
    public Component getName(ItemStack var1) {
       PotionContents var2 = (PotionContents)var1.get(DataComponents.POTION_CONTENTS);
       return var2 != null ? var2.getName(this.descriptionId + ".effect.") : super.getName(var1);
-   }
-
-   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
-      PotionContents var5 = (PotionContents)var1.get(DataComponents.POTION_CONTENTS);
-      if (var5 != null) {
-         Objects.requireNonNull(var3);
-         var5.addPotionTooltip(var3::add, (Float)var1.getOrDefault(DataComponents.POTION_DURATION_SCALE, 1.0F), var2.tickRate());
-      }
    }
 }

@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens.inventory;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.player.Inventory;
@@ -35,7 +36,7 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
          this.drawSlot(var1, var5 + 7, var6 + 35 - 18);
       }
 
-      if (this.horse.canUseSlot(EquipmentSlot.BODY)) {
+      if (this.horse.canUseSlot(EquipmentSlot.BODY) && this.horse.getType().is(EntityTypeTags.CAN_WEAR_HORSE_ARMOR)) {
          this.drawSlot(var1, var5 + 7, var6 + 35);
       }
 

@@ -27,7 +27,6 @@ public class EntityProjectileOwnerFix extends DataFix {
       var1 = this.updateEntity(var1, "minecraft:experience_bottle", this::updateOwnerThrowable);
       var1 = this.updateEntity(var1, "minecraft:snowball", this::updateOwnerThrowable);
       var1 = this.updateEntity(var1, "minecraft:potion", this::updateOwnerThrowable);
-      var1 = this.updateEntity(var1, "minecraft:potion", this::updateItemPotion);
       var1 = this.updateEntity(var1, "minecraft:llama_spit", this::updateOwnerLlamaSpit);
       var1 = this.updateEntity(var1, "minecraft:arrow", this::updateOwnerArrow);
       var1 = this.updateEntity(var1, "minecraft:spectral_arrow", this::updateOwnerArrow);
@@ -46,11 +45,6 @@ public class EntityProjectileOwnerFix extends DataFix {
       long var3 = var2.get("OwnerUUIDMost").asLong(0L);
       long var5 = var2.get("OwnerUUIDLeast").asLong(0L);
       return this.setUUID(var1, var3, var5).remove("Owner");
-   }
-
-   private Dynamic<?> updateItemPotion(Dynamic<?> var1) {
-      OptionalDynamic var2 = var1.get("Potion");
-      return var1.set("Item", var2.orElseEmptyMap()).remove("Potion");
    }
 
    private Dynamic<?> updateOwnerThrowable(Dynamic<?> var1) {

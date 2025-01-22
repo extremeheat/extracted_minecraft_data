@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.decoration;
 
-import com.mojang.serialization.Codec;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
@@ -14,7 +13,6 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -28,6 +26,7 @@ import net.minecraft.tags.PaintingVariantTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.variant.VariantUtils;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
@@ -37,7 +36,6 @@ import net.minecraft.world.phys.Vec3;
 
 public class Painting extends HangingEntity {
    private static final EntityDataAccessor<Holder<PaintingVariant>> DATA_PAINTING_VARIANT_ID;
-   private static final Codec<Holder<PaintingVariant>> VARIANT_CODEC;
    public static final float DEPTH = 0.0625F;
 
    public Painting(EntityType<? extends Painting> var1, Level var2) {
@@ -45,7 +43,7 @@ public class Painting extends HangingEntity {
    }
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      var1.define(DATA_PAINTING_VARIANT_ID, (Holder)this.registryAccess().lookupOrThrow(Registries.PAINTING_VARIANT).getAny().orElseThrow());
+      var1.define(DATA_PAINTING_VARIANT_ID, VariantUtils.getAny(this.registryAccess(), Registries.PAINTING_VARIANT));
    }
 
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
@@ -128,16 +126,16 @@ public class Painting extends HangingEntity {
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
-      VARIANT_CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.getVariant()).ifSuccess((var1x) -> var1.merge((CompoundTag)var1x));
       var1.putByte("facing", (byte)this.direction.get2DDataValue());
       super.addAdditionalSaveData(var1);
+      VariantUtils.writeVariant(var1, this.getVariant());
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
-      VARIANT_CODEC.parse(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), var1).ifSuccess(this::setVariant);
       this.direction = Direction.from2DDataValue(var1.getByte("facing"));
       super.readAdditionalSaveData(var1);
       this.setDirection(this.direction);
+      VariantUtils.readVariant(var1, this.registryAccess(), Registries.PAINTING_VARIANT).ifPresent(this::setVariant);
    }
 
    protected AABB calculateBoundingBox(BlockPos var1, Direction var2) {
@@ -200,6 +198,5 @@ public class Painting extends HangingEntity {
 
    static {
       DATA_PAINTING_VARIANT_ID = SynchedEntityData.<Holder<PaintingVariant>>defineId(Painting.class, EntityDataSerializers.PAINTING_VARIANT);
-      VARIANT_CODEC = PaintingVariant.CODEC.fieldOf("variant").codec();
    }
 }

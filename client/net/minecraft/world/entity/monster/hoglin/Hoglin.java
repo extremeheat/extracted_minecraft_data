@@ -94,7 +94,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
       }
    }
 
-   protected void blockedByShield(LivingEntity var1) {
+   protected void blockedByItem(LivingEntity var1) {
       if (this.isAdult()) {
          HoglinBase.throwTarget(this, var1);
       }

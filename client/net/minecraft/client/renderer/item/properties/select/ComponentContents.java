@@ -38,4 +38,8 @@ public record ComponentContents<T>(DataComponentType<T> componentType) implement
    public SelectItemModelProperty.Type<ComponentContents<T>, T> type() {
       return castType();
    }
+
+   public Codec<T> valueCodec() {
+      return this.componentType.codecOrThrow();
+   }
 }

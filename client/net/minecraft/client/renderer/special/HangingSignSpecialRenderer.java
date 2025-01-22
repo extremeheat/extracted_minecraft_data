@@ -3,9 +3,11 @@ package net.minecraft.client.renderer.special;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.EntityModelSet;
+import net.minecraft.client.renderer.MaterialMapper;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.HangingSignRenderer;
@@ -47,7 +49,10 @@ public class HangingSignSpecialRenderer implements NoDataSpecialModelRenderer {
 
       public SpecialModelRenderer<?> bake(EntityModelSet var1) {
          Model var2 = HangingSignRenderer.createSignModel(var1, this.woodType, HangingSignRenderer.AttachmentType.CEILING_MIDDLE);
-         Material var3 = (Material)this.texture.map(Sheets::createHangingSignMaterial).orElseGet(() -> Sheets.getHangingSignMaterial(this.woodType));
+         Optional var10000 = this.texture;
+         MaterialMapper var10001 = Sheets.HANGING_SIGN_MAPPER;
+         Objects.requireNonNull(var10001);
+         Material var3 = (Material)var10000.map(var10001::apply).orElseGet(() -> Sheets.getHangingSignMaterial(this.woodType));
          return new HangingSignSpecialRenderer(var2, var3);
       }
    }

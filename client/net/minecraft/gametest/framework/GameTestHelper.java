@@ -173,7 +173,7 @@ public class GameTestHelper {
    public <E extends Entity> E findClosestEntity(EntityType<E> var1, int var2, int var3, int var4, double var5) {
       List var7 = this.findEntities(var1, var2, var3, var4, var5);
       if (var7.isEmpty()) {
-         throw this.assertionException("test.error.expected_entity_at_pos", var1.getDescription(), var2, var3, var4);
+         throw this.assertionException("test.error.expected_entity_around", var1.getDescription(), var2, var3, var4);
       } else if (var7.size() > 1) {
          throw this.assertionException("test.error.too_many_entities", var1.toShortString(), var2, var3, var4, var7.size());
       } else {

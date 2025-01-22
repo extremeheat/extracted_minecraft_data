@@ -6,6 +6,7 @@ import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import org.slf4j.Logger;
 
@@ -78,7 +79,7 @@ public class BlockStateData {
 
    public static Dynamic<?> parse(String var0) {
       try {
-         return new Dynamic(NbtOps.INSTANCE, TagParser.parseTag(var0.replace('\'', '"')));
+         return new Dynamic(NbtOps.INSTANCE, (Tag)TagParser.parseFully(NbtOps.INSTANCE, (String)var0.replace('\'', '"')));
       } catch (Exception var2) {
          LOGGER.error("Parsing {}", var0, var2);
          throw new RuntimeException(var2);

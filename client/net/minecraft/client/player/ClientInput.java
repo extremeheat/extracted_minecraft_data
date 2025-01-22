@@ -20,10 +20,6 @@ public class ClientInput {
       return this.moveVector;
    }
 
-   public void scaleMoveDirection(float var1) {
-      this.moveVector = this.moveVector.scale(var1);
-   }
-
    public boolean hasForwardImpulse() {
       return this.moveVector.y > 1.0E-5F;
    }

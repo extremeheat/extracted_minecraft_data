@@ -864,6 +864,10 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
 
    public abstract FuelValues fuelValues();
 
+   public int getClientLeafTintColor(BlockPos var1) {
+      return 0;
+   }
+
    // $FF: synthetic method
    public ChunkAccess getChunk(final int var1, final int var2) {
       return this.getChunk(var1, var2);

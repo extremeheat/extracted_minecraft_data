@@ -83,6 +83,11 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       }
    }
 
+   protected VoxelShape getEntityInsideCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, Entity var4) {
+      VoxelShape var5 = this.getCollisionShape(var1, var2, var3, CollisionContext.of(var4));
+      return var5.isEmpty() ? Shapes.block() : var5;
+   }
+
    protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       if (var4 instanceof EntityCollisionContext var5) {
          Entity var6 = var5.getEntity();

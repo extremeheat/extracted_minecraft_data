@@ -172,6 +172,18 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       this.setDeltaMovement(this.getDeltaMovement().add(var10.x, var1.onGround() ? 0.0 : var10.y, var10.z));
    }
 
+   public void onAboveBubbleColumn(boolean var1, BlockPos var2) {
+      double var3 = var1 ? -0.03 : 0.1;
+      this.setDeltaMovement(this.getDeltaMovement().add(0.0, var3, 0.0));
+      sendBubbleColumnParticles(this.level(), var2);
+   }
+
+   public void onInsideBubbleColumn(boolean var1) {
+      double var2 = var1 ? -0.03 : 0.06;
+      this.setDeltaMovement(this.getDeltaMovement().add(0.0, var2, 0.0));
+      this.resetFallDistance();
+   }
+
    public static <T extends Projectile> T spawnProjectileFromRotation(ProjectileFactory<T> var0, ServerLevel var1, ItemStack var2, LivingEntity var3, float var4, float var5, float var6) {
       return (T)spawnProjectile(var0.create(var1, var3, var2), var1, var2, (var4x) -> var4x.shootFromRotation(var3, var3.getXRot(), var3.getYRot(), var4, var5, var6));
    }

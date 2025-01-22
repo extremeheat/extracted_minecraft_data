@@ -436,7 +436,7 @@ public final class NbtUtils {
    }
 
    public static CompoundTag snbtToStructure(String var0) throws CommandSyntaxException {
-      return unpackStructureTemplate(TagParser.parseTag(var0));
+      return unpackStructureTemplate(TagParser.parseCompoundFully(var0));
    }
 
    @VisibleForTesting

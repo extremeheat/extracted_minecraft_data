@@ -8,10 +8,10 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -29,14 +29,14 @@ public class AxeItem extends Item {
    protected static final Map<Block, Block> STRIPPABLES;
 
    public AxeItem(ToolMaterial var1, float var2, float var3, Item.Properties var4) {
-      super(var4.tool(var1, BlockTags.MINEABLE_WITH_AXE, var2, var3, true));
+      super(var4.axe(var1, var2, var3));
    }
 
    public InteractionResult useOn(UseOnContext var1) {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
       Player var4 = var1.getPlayer();
-      if (playerHasShieldUseIntent(var1)) {
+      if (playerHasBlockingItemUseIntent(var1)) {
          return InteractionResult.PASS;
       } else {
          Optional var5 = this.evaluateNewBlockState(var2, var3, var4, var2.getBlockState(var3));
@@ -59,9 +59,9 @@ public class AxeItem extends Item {
       }
    }
 
-   private static boolean playerHasShieldUseIntent(UseOnContext var0) {
+   private static boolean playerHasBlockingItemUseIntent(UseOnContext var0) {
       Player var1 = var0.getPlayer();
-      return var0.getHand().equals(InteractionHand.MAIN_HAND) && var1.getOffhandItem().is(Items.SHIELD) && !var1.isSecondaryUseActive();
+      return var0.getHand().equals(InteractionHand.MAIN_HAND) && var1.getOffhandItem().has(DataComponents.BLOCKS_ATTACKS) && !var1.isSecondaryUseActive();
    }
 
    private Optional<BlockState> evaluateNewBlockState(Level var1, BlockPos var2, @Nullable Player var3, BlockState var4) {

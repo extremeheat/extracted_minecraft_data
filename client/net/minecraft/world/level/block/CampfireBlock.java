@@ -149,11 +149,6 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
          }
       }
 
-      BlockEntity var5 = var1.getBlockEntity(var2);
-      if (var5 instanceof CampfireBlockEntity) {
-         ((CampfireBlockEntity)var5).dowse();
-      }
-
       var1.gameEvent(var0, (Holder)GameEvent.BLOCK_CHANGE, (BlockPos)var2);
    }
 

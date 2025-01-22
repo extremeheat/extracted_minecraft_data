@@ -401,7 +401,7 @@ public class GsonHelper {
    @Nullable
    @Contract("_,_,!null,_,_->!null;_,_,null,_,_->_")
    public static <T> T getAsObject(JsonObject var0, String var1, @Nullable T var2, JsonDeserializationContext var3, Class<? extends T> var4) {
-      // $FF: Couldn't be decompiled
+      return var0.has(var1) ? convertToObject(var0.get(var1), var1, var3, var4) : var2;
    }
 
    public static String getType(@Nullable JsonElement var0) {
