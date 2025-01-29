@@ -325,7 +325,6 @@ import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.ScoreAccess;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
-import net.minecraft.world.scores.Team;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.slf4j.Logger;
 
@@ -2002,16 +2001,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var2.setDisplayName(var1x.getDisplayName());
          var2.setColor(var1x.getColor());
          var2.unpackOptions(var1x.getOptions());
-         Team.Visibility var2x = Team.Visibility.byName(var1x.getNametagVisibility());
-         if (var2x != null) {
-            var2.setNameTagVisibility(var2x);
-         }
-
-         Team.CollisionRule var3 = Team.CollisionRule.byName(var1x.getCollisionRule());
-         if (var3 != null) {
-            var2.setCollisionRule(var3);
-         }
-
+         var2.setNameTagVisibility(var1x.getNametagVisibility());
+         var2.setCollisionRule(var1x.getCollisionRule());
          var2.setPlayerPrefix(var1x.getPlayerPrefix());
          var2.setPlayerSuffix(var1x.getPlayerSuffix());
       });

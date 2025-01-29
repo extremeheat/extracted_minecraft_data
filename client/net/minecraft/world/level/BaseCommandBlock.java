@@ -12,7 +12,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -59,12 +58,12 @@ public abstract class BaseCommandBlock implements CommandSource {
       var1.putInt("SuccessCount", this.successCount);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       if (this.customName != null) {
-         var1.put("CustomName", (Tag)ComponentSerialization.CODEC.encodeStart(var3, this.customName).getOrThrow());
+         var1.store("CustomName", ComponentSerialization.CODEC, var3, this.customName);
       }
 
       var1.putBoolean("TrackOutput", this.trackOutput);
       if (this.lastOutput != null && this.trackOutput) {
-         var1.put("LastOutput", (Tag)ComponentSerialization.CODEC.encodeStart(var3, this.lastOutput).getOrThrow());
+         var1.store("LastOutput", ComponentSerialization.CODEC, var3, this.lastOutput);
       }
 
       var1.putBoolean("UpdateLastExecution", this.updateLastExecution);

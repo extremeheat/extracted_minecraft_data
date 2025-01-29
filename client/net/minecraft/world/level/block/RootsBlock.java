@@ -9,7 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class RootsBlock extends BushBlock {
+public class RootsBlock extends VegetationBlock {
    public static final MapCodec<RootsBlock> CODEC = simpleCodec(RootsBlock::new);
    private static final VoxelShape SHAPE = Block.column(12.0, 0.0, 13.0);
 

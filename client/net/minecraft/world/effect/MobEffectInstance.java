@@ -3,19 +3,14 @@ package net.minecraft.world.effect;
 import com.google.common.collect.ComparisonChain;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
-import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -307,18 +302,6 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       var1 = 31 * var1 + (this.visible ? 1 : 0);
       var1 = 31 * var1 + (this.showIcon ? 1 : 0);
       return var1;
-   }
-
-   public Tag save() {
-      return (Tag)CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow();
-   }
-
-   @Nullable
-   public static MobEffectInstance load(CompoundTag var0) {
-      DataResult var10000 = CODEC.parse(NbtOps.INSTANCE, var0);
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      return (MobEffectInstance)var10000.resultOrPartial(var10001::error).orElse((Object)null);
    }
 
    public int compareTo(MobEffectInstance var1) {

@@ -1909,6 +1909,8 @@ public class BlockModelGenerators {
       this.createFlowerBed(Blocks.PINK_PETALS);
       this.createFlowerBed(Blocks.WILDFLOWERS);
       this.createLeafLitter(Blocks.LEAF_LITTER);
+      this.createCrossBlock(Blocks.FIREFLY_BUSH, BlockModelGenerators.PlantType.EMISSIVE_NOT_TINTED);
+      this.registerSimpleFlatItemModel(Items.FIREFLY_BUSH);
       this.createAirLikeBlock(Blocks.BARRIER, Items.BARRIER);
       this.registerSimpleFlatItemModel(Items.BARRIER);
       this.createLightBlock();
@@ -2256,6 +2258,8 @@ public class BlockModelGenerators {
       this.createMushroomBlock(Blocks.MUSHROOM_STEM);
       this.createCrossBlock(Blocks.SHORT_GRASS, BlockModelGenerators.PlantType.TINTED);
       this.createItemWithGrassTint(Blocks.SHORT_GRASS);
+      this.createCrossBlock(Blocks.BUSH, BlockModelGenerators.PlantType.TINTED);
+      this.createItemWithGrassTint(Blocks.BUSH);
       this.createCrossBlock(Blocks.SUGAR_CANE, BlockModelGenerators.PlantType.TINTED);
       this.registerSimpleFlatItemModel(Items.SUGAR_CANE);
       this.createGrowingPlant(Blocks.KELP, Blocks.KELP_PLANT, BlockModelGenerators.PlantType.NOT_TINTED);

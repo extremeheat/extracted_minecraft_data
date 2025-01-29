@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import com.mojang.logging.LogUtils;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -18,10 +17,8 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
-import org.slf4j.Logger;
 
 public class SculkSensorBlockEntity extends BlockEntity implements GameEventListener.Provider<VibrationSystem.Listener>, VibrationSystem {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private VibrationSystem.Data vibrationData;
    private final VibrationSystem.Listener vibrationListener;
    private final VibrationSystem.User vibrationUser;
@@ -46,17 +43,14 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
       super.loadAdditional(var1, var2);
       this.lastVibrationFrequency = var1.getInt("last_vibration_frequency");
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      if (var1.contains("listener", 10)) {
-         VibrationSystem.Data.CODEC.parse(var3, var1.getCompound("listener")).resultOrPartial((var0) -> LOGGER.error("Failed to parse vibration listener for Sculk Sensor: '{}'", var0)).ifPresent((var1x) -> this.vibrationData = var1x);
-      }
-
+      this.vibrationData = (VibrationSystem.Data)var1.read("listener", VibrationSystem.Data.CODEC, var3).orElseGet(VibrationSystem.Data::new);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       var1.putInt("last_vibration_frequency", this.lastVibrationFrequency);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      VibrationSystem.Data.CODEC.encodeStart(var3, this.vibrationData).resultOrPartial((var0) -> LOGGER.error("Failed to encode vibration listener for Sculk Sensor: '{}'", var0)).ifPresent((var1x) -> var1.put("listener", var1x));
+      var1.store("listener", VibrationSystem.Data.CODEC, var3, this.vibrationData);
    }
 
    public VibrationSystem.Data getVibrationData() {

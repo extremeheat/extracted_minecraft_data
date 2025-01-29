@@ -23,13 +23,17 @@ public class BlockBasedTestInstance extends GameTestInstance {
    }
 
    public void run(GameTestHelper var1) {
-      BlockPos var2 = this.findTestBlock(var1, TestBlockMode.START);
+      BlockPos var2 = this.findStartBlock(var1);
       TestBlockEntity var3 = (TestBlockEntity)var1.getBlockEntity(var2, TestBlockEntity.class);
       var3.trigger();
       var1.onEachTick(() -> {
-         BlockPos var2 = this.findTestBlock(var1, TestBlockMode.ACCEPT);
-         TestBlockEntity var3 = (TestBlockEntity)var1.getBlockEntity(var2, TestBlockEntity.class);
-         if (var3.hasTriggered()) {
+         List var2 = this.findTestBlocks(var1, TestBlockMode.ACCEPT);
+         if (var2.isEmpty()) {
+            var1.fail(Component.translatable("test_block.error.missing", TestBlockMode.ACCEPT.getDisplayName()));
+         }
+
+         boolean var3 = var2.stream().map((var1x) -> (TestBlockEntity)var1.getBlockEntity(var1x, TestBlockEntity.class)).anyMatch(TestBlockEntity::hasTriggered);
+         if (var3) {
             var1.succeed();
          } else {
             this.forAllTriggeredTestBlocks(var1, TestBlockMode.FAIL, (var1x) -> var1.fail(Component.literal(var1x.getMessage())));
@@ -50,17 +54,17 @@ public class BlockBasedTestInstance extends GameTestInstance {
 
    }
 
-   private BlockPos findTestBlock(GameTestHelper var1, TestBlockMode var2) {
-      List var3 = this.findTestBlocks(var1, var2);
-      if (var3.isEmpty()) {
-         var1.fail(Component.translatable("test_block.error.missing", var2.getDisplayName()));
+   private BlockPos findStartBlock(GameTestHelper var1) {
+      List var2 = this.findTestBlocks(var1, TestBlockMode.START);
+      if (var2.isEmpty()) {
+         var1.fail(Component.translatable("test_block.error.missing", TestBlockMode.START.getDisplayName()));
       }
 
-      if (var3.size() != 1) {
-         var1.fail(Component.translatable("test_block.error.too_many", var2.getDisplayName()));
+      if (var2.size() != 1) {
+         var1.fail(Component.translatable("test_block.error.too_many", TestBlockMode.START.getDisplayName()));
       }
 
-      return (BlockPos)var3.getFirst();
+      return (BlockPos)var2.getFirst();
    }
 
    private List<BlockPos> findTestBlocks(GameTestHelper var1, TestBlockMode var2) {

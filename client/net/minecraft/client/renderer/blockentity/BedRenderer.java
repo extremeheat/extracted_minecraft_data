@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.entity.BedBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.phys.Vec3;
 
 public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
    private final Model headModel;
@@ -58,14 +59,14 @@ public class BedRenderer implements BlockEntityRenderer<BedBlockEntity> {
       return LayerDefinition.create(var0, 64, 64);
    }
 
-   public void render(BedBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      Level var7 = var1.getLevel();
-      if (var7 != null) {
-         Material var8 = Sheets.getBedMaterial(var1.getColor());
-         BlockState var9 = var1.getBlockState();
-         DoubleBlockCombiner.NeighborCombineResult var10 = DoubleBlockCombiner.combineWithNeigbour(BlockEntityType.BED, BedBlock::getBlockType, BedBlock::getConnectedDirection, ChestBlock.FACING, var9, var7, var1.getBlockPos(), (var0, var1x) -> false);
-         int var11 = ((Int2IntFunction)var10.apply(new BrightnessCombiner())).get(var5);
-         this.renderPiece(var3, var4, var9.getValue(BedBlock.PART) == BedPart.HEAD ? this.headModel : this.footModel, (Direction)var9.getValue(BedBlock.FACING), var8, var11, var6, false);
+   public void render(BedBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
+      Level var8 = var1.getLevel();
+      if (var8 != null) {
+         Material var9 = Sheets.getBedMaterial(var1.getColor());
+         BlockState var10 = var1.getBlockState();
+         DoubleBlockCombiner.NeighborCombineResult var11 = DoubleBlockCombiner.combineWithNeigbour(BlockEntityType.BED, BedBlock::getBlockType, BedBlock::getConnectedDirection, ChestBlock.FACING, var10, var8, var1.getBlockPos(), (var0, var1x) -> false);
+         int var12 = ((Int2IntFunction)var11.apply(new BrightnessCombiner())).get(var5);
+         this.renderPiece(var3, var4, var10.getValue(BedBlock.PART) == BedPart.HEAD ? this.headModel : this.footModel, (Direction)var10.getValue(BedBlock.FACING), var9, var12, var6, false);
       }
 
    }

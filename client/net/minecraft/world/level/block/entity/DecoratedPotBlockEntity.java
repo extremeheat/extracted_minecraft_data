@@ -43,7 +43,10 @@ public class DecoratedPotBlockEntity extends BlockEntity implements Randomizable
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
-      this.decorations.save(var1);
+      if (!this.decorations.equals(PotDecorations.EMPTY)) {
+         var1.store("sherds", PotDecorations.CODEC, this.decorations);
+      }
+
       if (!this.trySaveLootTable(var1) && !this.item.isEmpty()) {
          var1.put("item", this.item.save(var2));
       }
@@ -52,7 +55,7 @@ public class DecoratedPotBlockEntity extends BlockEntity implements Randomizable
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      this.decorations = PotDecorations.load(var1);
+      this.decorations = (PotDecorations)var1.read("sherds", PotDecorations.CODEC).orElse(PotDecorations.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
          if (var1.contains("item", 10)) {
             this.item = (ItemStack)ItemStack.parse(var2, var1.getCompound("item")).orElse(ItemStack.EMPTY);

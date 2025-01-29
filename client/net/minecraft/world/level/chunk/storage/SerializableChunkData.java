@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.shorts.ShortArrayList;
@@ -33,7 +32,6 @@ import net.minecraft.nbt.NbtException;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.ShortTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
@@ -122,26 +120,8 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
          ChunkStatus var8 = ChunkStatus.byName(var2.getString("Status"));
          UpgradeData var9 = var2.contains("UpgradeData", 10) ? new UpgradeData(var2.getCompound("UpgradeData"), var0) : UpgradeData.EMPTY;
          boolean var10 = var2.getBoolean("isLightOn");
-         BlendingData.Packed var11;
-         if (var2.contains("blending_data", 10)) {
-            DataResult var10000 = BlendingData.Packed.CODEC.parse(NbtOps.INSTANCE, var2.getCompound("blending_data"));
-            Logger var10001 = LOGGER;
-            Objects.requireNonNull(var10001);
-            var11 = (BlendingData.Packed)var10000.resultOrPartial(var10001::error).orElse((Object)null);
-         } else {
-            var11 = null;
-         }
-
-         BelowZeroRetrogen var12;
-         if (var2.contains("below_zero_retrogen", 10)) {
-            DataResult var43 = BelowZeroRetrogen.CODEC.parse(NbtOps.INSTANCE, var2.getCompound("below_zero_retrogen"));
-            Logger var44 = LOGGER;
-            Objects.requireNonNull(var44);
-            var12 = (BelowZeroRetrogen)var43.resultOrPartial(var44::error).orElse((Object)null);
-         } else {
-            var12 = null;
-         }
-
+         BlendingData.Packed var11 = (BlendingData.Packed)var2.read("blending_data", BlendingData.Packed.CODEC).orElse((Object)null);
+         BelowZeroRetrogen var12 = (BelowZeroRetrogen)var2.read("below_zero_retrogen", BelowZeroRetrogen.CODEC).orElse((Object)null);
          long[] var13;
          if (var2.contains("carving_mask", 12)) {
             var13 = var2.getLongArray("carving_mask");
@@ -394,17 +374,11 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
       var1.putLong("InhabitedTime", this.inhabitedTime);
       var1.putString("Status", BuiltInRegistries.CHUNK_STATUS.getKey(this.chunkStatus).toString());
       if (this.blendingData != null) {
-         DataResult var10000 = BlendingData.Packed.CODEC.encodeStart(NbtOps.INSTANCE, this.blendingData);
-         Logger var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("blending_data", var1x));
+         var1.store("blending_data", BlendingData.Packed.CODEC, this.blendingData);
       }
 
       if (this.belowZeroRetrogen != null) {
-         DataResult var11 = BelowZeroRetrogen.CODEC.encodeStart(NbtOps.INSTANCE, this.belowZeroRetrogen);
-         Logger var12 = LOGGER;
-         Objects.requireNonNull(var12);
-         var11.resultOrPartial(var12::error).ifPresent((var1x) -> var1.put("below_zero_retrogen", var1x));
+         var1.store("below_zero_retrogen", BelowZeroRetrogen.CODEC, this.belowZeroRetrogen);
       }
 
       if (!this.upgradeData.isEmpty()) {
@@ -418,8 +392,8 @@ public record SerializableChunkData(Registry<Biome> biomeRegistry, ChunkPos chun
          CompoundTag var6 = new CompoundTag();
          LevelChunkSection var7 = var5.chunkSection;
          if (var7 != null) {
-            var6.put("block_states", (Tag)BLOCK_STATE_CODEC.encodeStart(NbtOps.INSTANCE, var7.getStates()).getOrThrow());
-            var6.put("biomes", (Tag)var3.encodeStart(NbtOps.INSTANCE, var7.getBiomes()).getOrThrow());
+            var6.store("block_states", BLOCK_STATE_CODEC, var7.getStates());
+            var6.store("biomes", var3, var7.getBiomes());
          }
 
          if (var5.blockLight != null) {

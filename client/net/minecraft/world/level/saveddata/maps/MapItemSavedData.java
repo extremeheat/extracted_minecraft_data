@@ -4,9 +4,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -17,20 +18,13 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -43,8 +37,8 @@ import net.minecraft.world.item.component.MapItemColor;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import org.slf4j.Logger;
 
 public class MapItemSavedData extends SavedData {
@@ -54,29 +48,36 @@ public class MapItemSavedData extends SavedData {
    public static final int MAX_SCALE = 4;
    public static final int TRACKED_DECORATION_LIMIT = 256;
    private static final String FRAME_PREFIX = "frame-";
+   public static final Codec<MapItemSavedData> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter((var0x) -> var0x.dimension), Codec.INT.fieldOf("xCenter").forGetter((var0x) -> var0x.centerX), Codec.INT.fieldOf("zCenter").forGetter((var0x) -> var0x.centerZ), Codec.BYTE.optionalFieldOf("scale", (byte)0).forGetter((var0x) -> var0x.scale), Codec.BYTE_BUFFER.fieldOf("colors").forGetter((var0x) -> ByteBuffer.wrap(var0x.colors)), Codec.BOOL.optionalFieldOf("trackingPosition", true).forGetter((var0x) -> var0x.trackingPosition), Codec.BOOL.optionalFieldOf("unlimitedTracking", false).forGetter((var0x) -> var0x.unlimitedTracking), Codec.BOOL.optionalFieldOf("locked", false).forGetter((var0x) -> var0x.locked), MapBanner.CODEC.listOf().optionalFieldOf("banners", List.of()).forGetter((var0x) -> List.copyOf(var0x.bannerMarkers.values())), MapFrame.CODEC.listOf().optionalFieldOf("frames", List.of()).forGetter((var0x) -> List.copyOf(var0x.frameMarkers.values()))).apply(var0, MapItemSavedData::new));
    public final int centerX;
    public final int centerZ;
    public final ResourceKey<Level> dimension;
    private final boolean trackingPosition;
    private final boolean unlimitedTracking;
    public final byte scale;
-   public byte[] colors = new byte[16384];
+   public byte[] colors;
    public final boolean locked;
-   private final List<HoldingPlayer> carriedBy = Lists.newArrayList();
-   private final Map<Player, HoldingPlayer> carriedByPlayers = Maps.newHashMap();
-   private final Map<String, MapBanner> bannerMarkers = Maps.newHashMap();
-   final Map<String, MapDecoration> decorations = Maps.newLinkedHashMap();
-   private final Map<String, MapFrame> frameMarkers = Maps.newHashMap();
+   private final List<HoldingPlayer> carriedBy;
+   private final Map<Player, HoldingPlayer> carriedByPlayers;
+   private final Map<String, MapBanner> bannerMarkers;
+   final Map<String, MapDecoration> decorations;
+   private final Map<String, MapFrame> frameMarkers;
    private int trackedDecorationCount;
 
-   public static SavedData.Factory<MapItemSavedData> factory() {
-      return new SavedData.Factory<MapItemSavedData>(() -> {
+   public static SavedDataType<MapItemSavedData> type(MapId var0) {
+      return new SavedDataType<MapItemSavedData>(var0.key(), () -> {
          throw new IllegalStateException("Should never create an empty map saved data");
-      }, MapItemSavedData::load, DataFixTypes.SAVED_DATA_MAP_DATA);
+      }, CODEC, DataFixTypes.SAVED_DATA_MAP_DATA);
    }
 
    private MapItemSavedData(int var1, int var2, byte var3, boolean var4, boolean var5, boolean var6, ResourceKey<Level> var7) {
       super();
+      this.colors = new byte[16384];
+      this.carriedBy = Lists.newArrayList();
+      this.carriedByPlayers = Maps.newHashMap();
+      this.bannerMarkers = Maps.newHashMap();
+      this.decorations = Maps.newLinkedHashMap();
+      this.frameMarkers = Maps.newHashMap();
       this.scale = var3;
       this.centerX = var1;
       this.centerZ = var2;
@@ -84,6 +85,24 @@ public class MapItemSavedData extends SavedData {
       this.trackingPosition = var4;
       this.unlimitedTracking = var5;
       this.locked = var6;
+   }
+
+   private MapItemSavedData(ResourceKey<Level> var1, int var2, int var3, byte var4, ByteBuffer var5, boolean var6, boolean var7, boolean var8, List<MapBanner> var9, List<MapFrame> var10) {
+      this(var2, var3, (byte)Mth.clamp(var4, 0, 4), var6, var7, var8, var1);
+      if (var5.array().length == 16384) {
+         this.colors = var5.array();
+      }
+
+      for(MapBanner var12 : var9) {
+         this.bannerMarkers.put(var12.getId(), var12);
+         this.addDecoration(var12.getDecoration(), (LevelAccessor)null, var12.getId(), (double)var12.pos().getX(), (double)var12.pos().getZ(), 180.0, (Component)var12.name().orElse((Object)null));
+      }
+
+      for(MapFrame var14 : var10) {
+         this.frameMarkers.put(var14.getId(), var14);
+         this.addDecoration(MapDecorationTypes.FRAME, (LevelAccessor)null, getFrameKey(var14.entityId()), (double)var14.pos().getX(), (double)var14.pos().getZ(), (double)var14.rotation(), (Component)null);
+      }
+
    }
 
    public static MapItemSavedData createFresh(double var0, double var2, byte var4, boolean var5, boolean var6, ResourceKey<Level> var7) {
@@ -97,67 +116,6 @@ public class MapItemSavedData extends SavedData {
 
    public static MapItemSavedData createForClient(byte var0, boolean var1, ResourceKey<Level> var2) {
       return new MapItemSavedData(0, 0, var0, false, false, var1, var2);
-   }
-
-   public static MapItemSavedData load(CompoundTag var0, HolderLookup.Provider var1) {
-      DataResult var10000 = DimensionType.parseLegacy(new Dynamic(NbtOps.INSTANCE, var0.get("dimension")));
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      ResourceKey var2 = (ResourceKey)var10000.resultOrPartial(var10001::error).orElseThrow(() -> new IllegalArgumentException("Invalid map dimension: " + String.valueOf(var0.get("dimension"))));
-      int var3 = var0.getInt("xCenter");
-      int var4 = var0.getInt("zCenter");
-      byte var5 = (byte)Mth.clamp(var0.getByte("scale"), 0, 4);
-      boolean var6 = !var0.contains("trackingPosition", 1) || var0.getBoolean("trackingPosition");
-      boolean var7 = var0.getBoolean("unlimitedTracking");
-      boolean var8 = var0.getBoolean("locked");
-      MapItemSavedData var9 = new MapItemSavedData(var3, var4, var5, var6, var7, var8, var2);
-      byte[] var10 = var0.getByteArray("colors");
-      if (var10.length == 16384) {
-         var9.colors = var10;
-      }
-
-      RegistryOps var11 = var1.createSerializationContext(NbtOps.INSTANCE);
-
-      for(MapBanner var14 : (List)MapBanner.LIST_CODEC.parse(var11, var0.get("banners")).resultOrPartial((var0x) -> LOGGER.warn("Failed to parse map banner: '{}'", var0x)).orElse(List.of())) {
-         var9.bannerMarkers.put(var14.getId(), var14);
-         var9.addDecoration(var14.getDecoration(), (LevelAccessor)null, var14.getId(), (double)var14.pos().getX(), (double)var14.pos().getZ(), 180.0, (Component)var14.name().orElse((Object)null));
-      }
-
-      ListTag var16 = var0.getList("frames", 10);
-
-      for(int var17 = 0; var17 < var16.size(); ++var17) {
-         MapFrame var15 = MapFrame.load(var16.getCompound(var17));
-         if (var15 != null) {
-            var9.frameMarkers.put(var15.getId(), var15);
-            var9.addDecoration(MapDecorationTypes.FRAME, (LevelAccessor)null, getFrameKey(var15.entityId()), (double)var15.pos().getX(), (double)var15.pos().getZ(), (double)var15.rotation(), (Component)null);
-         }
-      }
-
-      return var9;
-   }
-
-   public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
-      DataResult var10000 = ResourceLocation.CODEC.encodeStart(NbtOps.INSTANCE, this.dimension.location());
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("dimension", var1x));
-      var1.putInt("xCenter", this.centerX);
-      var1.putInt("zCenter", this.centerZ);
-      var1.putByte("scale", this.scale);
-      var1.putByteArray("colors", this.colors);
-      var1.putBoolean("trackingPosition", this.trackingPosition);
-      var1.putBoolean("unlimitedTracking", this.unlimitedTracking);
-      var1.putBoolean("locked", this.locked);
-      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      var1.put("banners", (Tag)MapBanner.LIST_CODEC.encodeStart(var3, List.copyOf(this.bannerMarkers.values())).getOrThrow());
-      ListTag var4 = new ListTag();
-
-      for(MapFrame var6 : this.frameMarkers.values()) {
-         var4.add(var6.save());
-      }
-
-      var1.put("frames", var4);
-      return var1;
    }
 
    public MapItemSavedData locked() {

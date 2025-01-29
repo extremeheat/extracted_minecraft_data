@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
-import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.doubles.DoubleListIterator;
 import it.unimi.dsi.fastutil.floats.FloatArraySet;
@@ -55,7 +54,6 @@ import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -144,10 +142,8 @@ import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Team;
 import org.jetbrains.annotations.Contract;
-import org.slf4j.Logger;
 
 public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess, ScoreHolder, DataComponentGetter {
-   private static final Logger LOGGER = LogUtils.getLogger();
    public static final String ID_TAG = "id";
    public static final String PASSENGERS_TAG = "Passengers";
    private static final AtomicInteger ENTITY_COUNTER = new AtomicInteger();
@@ -1321,14 +1317,18 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       if (this.type.is(EntityTypeTags.FALL_DAMAGE_IMMUNE)) {
          return false;
       } else {
-         if (this.isVehicle()) {
-            for(Entity var6 : this.getPassengers()) {
-               var6.causeFallDamage(var1, var3, var4);
-            }
-         }
-
+         this.propagateFallToPassengers(var1, var3, var4);
          return false;
       }
+   }
+
+   protected void propagateFallToPassengers(double var1, float var3, DamageSource var4) {
+      if (this.isVehicle()) {
+         for(Entity var6 : this.getPassengers()) {
+            var6.causeFallDamage(var1, var3, var4);
+         }
+      }
+
    }
 
    public boolean isInWater() {
@@ -1834,7 +1834,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
          Component var10 = this.getCustomName();
          if (var10 != null) {
             RegistryOps var11 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-            var1.put("CustomName", (Tag)ComponentSerialization.CODEC.encodeStart(var11, var10).getOrThrow());
+            var1.store("CustomName", ComponentSerialization.CODEC, var11, var10);
          }
 
          if (this.isCustomNameVisible()) {
@@ -1932,14 +1932,8 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
             if (Double.isFinite((double)this.getYRot()) && Double.isFinite((double)this.getXRot())) {
                this.reapplyPosition();
                this.setRot(this.getYRot(), this.getXRot());
-               Tag var13 = var1.get("CustomName");
-               if (var13 != null) {
-                  RegistryOps var14 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-                  ComponentSerialization.CODEC.parse(var14, var13).ifSuccess(this::setCustomName).ifError((var1x) -> LOGGER.warn("Failed to parse entity custom name {}: {}", var13, var1x));
-               } else {
-                  this.entityData.set(DATA_CUSTOM_NAME, Optional.empty());
-               }
-
+               RegistryOps var13 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+               this.setCustomName((Component)var1.read("CustomName", ComponentSerialization.CODEC, var13).orElse((Object)null));
                this.setCustomNameVisible(var1.getBoolean("CustomNameVisible"));
                this.setSilent(var1.getBoolean("Silent"));
                this.setNoGravity(var1.getBoolean("NoGravity"));
@@ -1948,11 +1942,11 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                this.hasVisualFire = var1.getBoolean("HasVisualFire");
                if (var1.contains("Tags", 9)) {
                   this.tags.clear();
-                  ListTag var20 = var1.getList("Tags", 8);
-                  int var15 = Math.min(var20.size(), 1024);
+                  ListTag var14 = var1.getList("Tags", 8);
+                  int var15 = Math.min(var14.size(), 1024);
 
                   for(int var16 = 0; var16 < var15; ++var16) {
-                     this.tags.add(var20.getString(var16));
+                     this.tags.add(var14.getString(var16));
                   }
                }
 

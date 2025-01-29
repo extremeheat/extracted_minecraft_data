@@ -414,6 +414,7 @@ public class SoundEvents {
    public static final Holder<SoundEvent> CROSSBOW_QUICK_CHARGE_2 = registerForHolder("item.crossbow.quick_charge_2");
    public static final Holder<SoundEvent> CROSSBOW_QUICK_CHARGE_3 = registerForHolder("item.crossbow.quick_charge_3");
    public static final SoundEvent CROSSBOW_SHOOT = register("item.crossbow.shoot");
+   public static final SoundEvent DEAD_BUSH_IDLE = register("block.deadbush.idle");
    public static final SoundEvent DECORATED_POT_BREAK = register("block.decorated_pot.break");
    public static final SoundEvent DECORATED_POT_FALL = register("block.decorated_pot.fall");
    public static final SoundEvent DECORATED_POT_HIT = register("block.decorated_pot.hit");
@@ -1228,6 +1229,8 @@ public class SoundEvents {
    public static final SoundEvent SAND_HIT = register("block.sand.hit");
    public static final SoundEvent SAND_PLACE = register("block.sand.place");
    public static final SoundEvent SAND_STEP = register("block.sand.step");
+   public static final SoundEvent SAND_IDLE = register("block.sand.idle");
+   public static final SoundEvent SAND_WIND = register("block.sand.wind");
    public static final SoundEvent SCAFFOLDING_BREAK = register("block.scaffolding.break");
    public static final SoundEvent SCAFFOLDING_FALL = register("block.scaffolding.fall");
    public static final SoundEvent SCAFFOLDING_HIT = register("block.scaffolding.hit");

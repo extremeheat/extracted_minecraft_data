@@ -3,10 +3,7 @@ package net.minecraft.world.level.block;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -25,7 +22,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -35,7 +31,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
-import org.slf4j.Logger;
 
 public class SculkSpreader {
    public static final int MAX_GROWTH_RATE_RADIUS = 24;
@@ -51,7 +46,6 @@ public class SculkSpreader {
    private final int chargeDecayRate;
    private final int additionalDecayRate;
    private List<ChargeCursor> cursors = new ArrayList();
-   private static final Logger LOGGER = LogUtils.getLogger();
 
    public SculkSpreader(boolean var1, TagKey<Block> var2, int var3, int var4, int var5, int var6) {
       super();
@@ -105,26 +99,12 @@ public class SculkSpreader {
    }
 
    public void load(CompoundTag var1) {
-      if (var1.contains("cursors", 9)) {
-         this.cursors.clear();
-         DataResult var10000 = SculkSpreader.ChargeCursor.CODEC.listOf().parse(new Dynamic(NbtOps.INSTANCE, var1.getList("cursors", 10)));
-         Logger var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         List var2 = (List)var10000.resultOrPartial(var10001::error).orElseGet(ArrayList::new);
-         int var3 = Math.min(var2.size(), 32);
-
-         for(int var4 = 0; var4 < var3; ++var4) {
-            this.addCursor((ChargeCursor)var2.get(var4));
-         }
-      }
-
+      this.cursors.clear();
+      ((List)var1.read("cursors", SculkSpreader.ChargeCursor.CODEC.sizeLimitedListOf(32)).orElse(List.of())).forEach(this::addCursor);
    }
 
    public void save(CompoundTag var1) {
-      DataResult var10000 = SculkSpreader.ChargeCursor.CODEC.listOf().encodeStart(NbtOps.INSTANCE, this.cursors);
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("cursors", var1x));
+      var1.store("cursors", SculkSpreader.ChargeCursor.CODEC.listOf(), this.cursors);
    }
 
    public void addCursors(BlockPos var1, int var2) {
@@ -192,7 +172,7 @@ public class SculkSpreader {
    }
 
    // $FF: synthetic method
-   private static Integer lambda$save$1(ChargeCursor var0) {
+   private static Integer lambda$save$0(ChargeCursor var0) {
       return 1;
    }
 

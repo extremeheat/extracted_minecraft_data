@@ -2,7 +2,7 @@ package net.minecraft.gametest.framework;
 
 import net.minecraft.network.chat.Component;
 
-public class GameTestAssertException extends RuntimeException {
+public class GameTestAssertException extends GameTestException {
    protected final Component message;
    protected final int tick;
 

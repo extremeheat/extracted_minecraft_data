@@ -30,7 +30,18 @@ public class ExtraDataFixUtils {
       Optional var1 = var0.get("X").asNumber().result();
       Optional var2 = var0.get("Y").asNumber().result();
       Optional var3 = var0.get("Z").asNumber().result();
-      return !var1.isEmpty() && !var2.isEmpty() && !var3.isEmpty() ? var0.createIntList(IntStream.of(new int[]{((Number)var1.get()).intValue(), ((Number)var2.get()).intValue(), ((Number)var3.get()).intValue()})) : var0;
+      return !var1.isEmpty() && !var2.isEmpty() && !var3.isEmpty() ? createBlockPos(var0, ((Number)var1.get()).intValue(), ((Number)var2.get()).intValue(), ((Number)var3.get()).intValue()) : var0;
+   }
+
+   public static Dynamic<?> fixInlineBlockPos(Dynamic<?> var0, String var1, String var2, String var3, String var4) {
+      Optional var5 = var0.get(var1).asNumber().result();
+      Optional var6 = var0.get(var2).asNumber().result();
+      Optional var7 = var0.get(var3).asNumber().result();
+      return !var5.isEmpty() && !var6.isEmpty() && !var7.isEmpty() ? var0.remove(var1).remove(var2).remove(var3).set(var4, createBlockPos(var0, ((Number)var5.get()).intValue(), ((Number)var6.get()).intValue(), ((Number)var7.get()).intValue())) : var0;
+   }
+
+   private static Dynamic<?> createBlockPos(Dynamic<?> var0, int var1, int var2, int var3) {
+      return var0.createIntList(IntStream.of(new int[]{var1, var2, var3}));
    }
 
    public static <T, R> Typed<R> cast(Type<R> var0, Typed<T> var1) {

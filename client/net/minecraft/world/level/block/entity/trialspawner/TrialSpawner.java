@@ -2,6 +2,7 @@ package net.minecraft.world.level.block.entity.trialspawner;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
@@ -67,8 +68,8 @@ public final class TrialSpawner {
    private boolean overridePeacefulAndMobSpawnRule;
    private boolean isOminous;
 
-   public Codec<TrialSpawner> codec() {
-      return RecordCodecBuilder.create((var1) -> var1.group(TrialSpawnerConfig.CODEC.optionalFieldOf("normal_config", Holder.direct(TrialSpawnerConfig.DEFAULT)).forGetter((var0) -> var0.normalConfig), TrialSpawnerConfig.CODEC.optionalFieldOf("ominous_config", Holder.direct(TrialSpawnerConfig.DEFAULT)).forGetter((var0) -> var0.ominousConfig), TrialSpawnerData.MAP_CODEC.forGetter(TrialSpawner::getData), Codec.intRange(0, 2147483647).optionalFieldOf("target_cooldown_length", 36000).forGetter(TrialSpawner::getTargetCooldownLength), Codec.intRange(1, 128).optionalFieldOf("required_player_range", 14).forGetter(TrialSpawner::getRequiredPlayerRange)).apply(var1, (var1x, var2, var3, var4, var5) -> new TrialSpawner(var1x, var2, var3, var4, var5, this.stateAccessor, this.playerDetector, this.entitySelector)));
+   public MapCodec<TrialSpawner> codec() {
+      return RecordCodecBuilder.mapCodec((var1) -> var1.group(TrialSpawnerConfig.CODEC.optionalFieldOf("normal_config", Holder.direct(TrialSpawnerConfig.DEFAULT)).forGetter((var0) -> var0.normalConfig), TrialSpawnerConfig.CODEC.optionalFieldOf("ominous_config", Holder.direct(TrialSpawnerConfig.DEFAULT)).forGetter((var0) -> var0.ominousConfig), TrialSpawnerData.MAP_CODEC.forGetter(TrialSpawner::getData), Codec.intRange(0, 2147483647).optionalFieldOf("target_cooldown_length", 36000).forGetter(TrialSpawner::getTargetCooldownLength), Codec.intRange(1, 128).optionalFieldOf("required_player_range", 14).forGetter(TrialSpawner::getRequiredPlayerRange)).apply(var1, (var1x, var2, var3, var4, var5) -> new TrialSpawner(var1x, var2, var3, var4, var5, this.stateAccessor, this.playerDetector, this.entitySelector)));
    }
 
    public TrialSpawner(StateAccessor var1, PlayerDetector var2, PlayerDetector.EntitySelector var3) {

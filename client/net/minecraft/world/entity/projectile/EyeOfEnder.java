@@ -148,7 +148,7 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
             }
          }
       } else {
-         this.setPosRaw(var2, var4, var6);
+         this.setPos(var2, var4, var6);
       }
 
    }

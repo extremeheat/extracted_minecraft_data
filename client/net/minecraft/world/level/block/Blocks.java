@@ -190,6 +190,7 @@ public class Blocks {
    public static final Block SHORT_GRASS;
    public static final Block FERN;
    public static final Block DEAD_BUSH;
+   public static final Block BUSH;
    public static final Block SEAGRASS;
    public static final Block TALL_SEAGRASS;
    public static final Block PISTON;
@@ -1156,6 +1157,7 @@ public class Blocks {
    public static final Block CLOSED_EYEBLOSSOM;
    public static final Block POTTED_OPEN_EYEBLOSSOM;
    public static final Block POTTED_CLOSED_EYEBLOSSOM;
+   public static final Block FIREFLY_BUSH;
 
    public Blocks() {
       super();
@@ -1307,9 +1309,9 @@ public class Blocks {
       BEDROCK = register("bedrock", BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).strength(-1.0F, 3600000.0F).noLootTable().isValidSpawn(Blocks::never));
       WATER = register("water", (var0) -> new LiquidBlock(Fluids.WATER, var0), BlockBehaviour.Properties.of().mapColor(MapColor.WATER).replaceable().noCollission().strength(100.0F).pushReaction(PushReaction.DESTROY).noLootTable().liquid().sound(SoundType.EMPTY));
       LAVA = register("lava", (var0) -> new LiquidBlock(Fluids.LAVA, var0), BlockBehaviour.Properties.of().mapColor(MapColor.FIRE).replaceable().noCollission().randomTicks().strength(100.0F).lightLevel((var0) -> 15).pushReaction(PushReaction.DESTROY).noLootTable().liquid().sound(SoundType.EMPTY));
-      SAND = register("sand", (var0) -> new ColoredFallingBlock(new ColorRGBA(14406560), var0), BlockBehaviour.Properties.of().mapColor(MapColor.SAND).instrument(NoteBlockInstrument.SNARE).strength(0.5F).sound(SoundType.SAND));
+      SAND = register("sand", (var0) -> new SandBlock(new ColorRGBA(14406560), var0), BlockBehaviour.Properties.of().mapColor(MapColor.SAND).instrument(NoteBlockInstrument.SNARE).strength(0.5F).sound(SoundType.SAND));
       SUSPICIOUS_SAND = register("suspicious_sand", (var0) -> new BrushableBlock(SAND, SoundEvents.BRUSH_SAND, SoundEvents.BRUSH_SAND, var0), BlockBehaviour.Properties.of().mapColor(MapColor.SAND).instrument(NoteBlockInstrument.SNARE).strength(0.25F).sound(SoundType.SUSPICIOUS_SAND).pushReaction(PushReaction.DESTROY));
-      RED_SAND = register("red_sand", (var0) -> new ColoredFallingBlock(new ColorRGBA(11098145), var0), BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).instrument(NoteBlockInstrument.SNARE).strength(0.5F).sound(SoundType.SAND));
+      RED_SAND = register("red_sand", (var0) -> new SandBlock(new ColorRGBA(11098145), var0), BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).instrument(NoteBlockInstrument.SNARE).strength(0.5F).sound(SoundType.SAND));
       GRAVEL = register("gravel", (var0) -> new ColoredFallingBlock(new ColorRGBA(-8356741), var0), BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.SNARE).strength(0.6F).sound(SoundType.GRAVEL));
       SUSPICIOUS_GRAVEL = register("suspicious_gravel", (var0) -> new BrushableBlock(GRAVEL, SoundEvents.BRUSH_GRAVEL, SoundEvents.BRUSH_GRAVEL, var0), BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.SNARE).strength(0.25F).sound(SoundType.SUSPICIOUS_GRAVEL).pushReaction(PushReaction.DESTROY));
       GOLD_ORE = register("gold_ore", (var0) -> new DropExperienceBlock(ConstantInt.of(0), var0), BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(3.0F, 3.0F));
@@ -1403,6 +1405,7 @@ public class Blocks {
       SHORT_GRASS = register("short_grass", TallGrassBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XYZ).ignitedByLava().pushReaction(PushReaction.DESTROY));
       FERN = register("fern", TallGrassBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XYZ).ignitedByLava().pushReaction(PushReaction.DESTROY));
       DEAD_BUSH = register("dead_bush", DeadBushBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).replaceable().noCollission().instabreak().sound(SoundType.GRASS).ignitedByLava().pushReaction(PushReaction.DESTROY));
+      BUSH = register("bush", BushBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().sound(SoundType.GRASS).ignitedByLava().pushReaction(PushReaction.DESTROY));
       SEAGRASS = register("seagrass", SeagrassBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WATER).replaceable().noCollission().instabreak().sound(SoundType.WET_GRASS).pushReaction(PushReaction.DESTROY));
       TALL_SEAGRASS = register("tall_seagrass", TallSeagrassBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WATER).replaceable().noCollission().instabreak().sound(SoundType.WET_GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
       PISTON = register("piston", (var0) -> new PistonBaseBlock(false, var0), pistonProperties());
@@ -1718,22 +1721,22 @@ public class Blocks {
       QUARTZ_STAIRS = registerLegacyStair("quartz_stairs", QUARTZ_BLOCK);
       ACTIVATOR_RAIL = register("activator_rail", PoweredRailBlock::new, BlockBehaviour.Properties.of().noCollission().strength(0.7F).sound(SoundType.METAL));
       DROPPER = register("dropper", DropperBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(3.5F));
-      WHITE_TERRACOTTA = register("white_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_WHITE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
-      ORANGE_TERRACOTTA = register("orange_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_ORANGE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
-      MAGENTA_TERRACOTTA = register("magenta_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_MAGENTA).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
-      LIGHT_BLUE_TERRACOTTA = register("light_blue_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_LIGHT_BLUE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
-      YELLOW_TERRACOTTA = register("yellow_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_YELLOW).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
-      LIME_TERRACOTTA = register("lime_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_LIGHT_GREEN).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
-      PINK_TERRACOTTA = register("pink_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_PINK).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
-      GRAY_TERRACOTTA = register("gray_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_GRAY).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
-      LIGHT_GRAY_TERRACOTTA = register("light_gray_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_LIGHT_GRAY).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
-      CYAN_TERRACOTTA = register("cyan_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_CYAN).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
-      PURPLE_TERRACOTTA = register("purple_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_PURPLE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
-      BLUE_TERRACOTTA = register("blue_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BLUE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
-      BROWN_TERRACOTTA = register("brown_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BROWN).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
-      GREEN_TERRACOTTA = register("green_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_GREEN).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
-      RED_TERRACOTTA = register("red_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_RED).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
-      BLACK_TERRACOTTA = register("black_terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BLACK).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      WHITE_TERRACOTTA = register("white_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_WHITE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      ORANGE_TERRACOTTA = register("orange_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_ORANGE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      MAGENTA_TERRACOTTA = register("magenta_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_MAGENTA).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      LIGHT_BLUE_TERRACOTTA = register("light_blue_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_LIGHT_BLUE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      YELLOW_TERRACOTTA = register("yellow_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_YELLOW).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      LIME_TERRACOTTA = register("lime_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_LIGHT_GREEN).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      PINK_TERRACOTTA = register("pink_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_PINK).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      GRAY_TERRACOTTA = register("gray_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_GRAY).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      LIGHT_GRAY_TERRACOTTA = register("light_gray_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_LIGHT_GRAY).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      CYAN_TERRACOTTA = register("cyan_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_CYAN).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      PURPLE_TERRACOTTA = register("purple_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_PURPLE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      BLUE_TERRACOTTA = register("blue_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BLUE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      BROWN_TERRACOTTA = register("brown_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BROWN).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      GREEN_TERRACOTTA = register("green_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_GREEN).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      RED_TERRACOTTA = register("red_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_RED).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      BLACK_TERRACOTTA = register("black_terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_BLACK).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
       WHITE_STAINED_GLASS_PANE = register("white_stained_glass_pane", (var0) -> new StainedGlassPaneBlock(DyeColor.WHITE, var0), BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.HAT).strength(0.3F).sound(SoundType.GLASS).noOcclusion());
       ORANGE_STAINED_GLASS_PANE = register("orange_stained_glass_pane", (var0) -> new StainedGlassPaneBlock(DyeColor.ORANGE, var0), BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.HAT).strength(0.3F).sound(SoundType.GLASS).noOcclusion());
       MAGENTA_STAINED_GLASS_PANE = register("magenta_stained_glass_pane", (var0) -> new StainedGlassPaneBlock(DyeColor.MAGENTA, var0), BlockBehaviour.Properties.of().instrument(NoteBlockInstrument.HAT).strength(0.3F).sound(SoundType.GLASS).noOcclusion());
@@ -1788,7 +1791,7 @@ public class Blocks {
       GREEN_CARPET = register("green_carpet", (var0) -> new WoolCarpetBlock(DyeColor.GREEN, var0), BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).strength(0.1F).sound(SoundType.WOOL).ignitedByLava());
       RED_CARPET = register("red_carpet", (var0) -> new WoolCarpetBlock(DyeColor.RED, var0), BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_RED).strength(0.1F).sound(SoundType.WOOL).ignitedByLava());
       BLACK_CARPET = register("black_carpet", (var0) -> new WoolCarpetBlock(DyeColor.BLACK, var0), BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).strength(0.1F).sound(SoundType.WOOL).ignitedByLava());
-      TERRACOTTA = register("terracotta", BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
+      TERRACOTTA = register("terracotta", TerracottaBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_ORANGE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(1.25F, 4.2F));
       COAL_BLOCK = register("coal_block", BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BLACK).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(5.0F, 6.0F));
       PACKED_ICE = register("packed_ice", BlockBehaviour.Properties.of().mapColor(MapColor.ICE).instrument(NoteBlockInstrument.CHIME).friction(0.98F).strength(0.5F).sound(SoundType.GLASS));
       SUNFLOWER = register("sunflower", TallFlowerBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).ignitedByLava().pushReaction(PushReaction.DESTROY));
@@ -2369,6 +2372,7 @@ public class Blocks {
       CLOSED_EYEBLOSSOM = register("closed_eyeblossom", (var0) -> new EyeblossomBlock(EyeblossomBlock.Type.CLOSED, var0), BlockBehaviour.Properties.of().mapColor(PALE_OAK_LEAVES.defaultMapColor()).noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY).randomTicks());
       POTTED_OPEN_EYEBLOSSOM = register("potted_open_eyeblossom", (var0) -> new FlowerPotBlock(OPEN_EYEBLOSSOM, var0), flowerPotProperties().randomTicks());
       POTTED_CLOSED_EYEBLOSSOM = register("potted_closed_eyeblossom", (var0) -> new FlowerPotBlock(CLOSED_EYEBLOSSOM, var0), flowerPotProperties().randomTicks());
+      FIREFLY_BUSH = register("firefly_bush", FireflyBushBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).ignitedByLava().lightLevel((var0) -> 2).noCollission().instabreak().sound(SoundType.SWEET_BERRY_BUSH).pushReaction(PushReaction.DESTROY));
 
       for(Block var1 : BuiltInRegistries.BLOCK) {
          UnmodifiableIterator var2 = var1.getStateDefinition().getPossibleStates().iterator();

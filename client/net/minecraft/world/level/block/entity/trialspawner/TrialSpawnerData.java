@@ -23,8 +23,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
@@ -261,7 +259,7 @@ public class TrialSpawnerData {
          var2.putLong("next_mob_spawns_at", this.nextMobSpawnsAt);
       }
 
-      this.nextSpawnData.ifPresent((var1x) -> var2.put("spawn_data", (Tag)SpawnData.CODEC.encodeStart(NbtOps.INSTANCE, var1x).result().orElseThrow(() -> new IllegalStateException("Invalid SpawnData"))));
+      this.nextSpawnData.ifPresent((var1x) -> var2.store("spawn_data", SpawnData.CODEC, var1x));
       return var2;
    }
 

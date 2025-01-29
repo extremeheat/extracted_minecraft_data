@@ -1,37 +1,17 @@
 package net.minecraft.world.level.saveddata.maps;
 
-import java.util.Optional;
-import javax.annotation.Nullable;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
 
 public record MapFrame(BlockPos pos, int rotation, int entityId) {
+   public static final Codec<MapFrame> CODEC = RecordCodecBuilder.create((var0) -> var0.group(BlockPos.CODEC.fieldOf("pos").forGetter(MapFrame::pos), Codec.INT.fieldOf("rotation").forGetter(MapFrame::rotation), Codec.INT.fieldOf("entity_id").forGetter(MapFrame::entityId)).apply(var0, MapFrame::new));
+
    public MapFrame(BlockPos var1, int var2, int var3) {
       super();
       this.pos = var1;
       this.rotation = var2;
       this.entityId = var3;
-   }
-
-   @Nullable
-   public static MapFrame load(CompoundTag var0) {
-      Optional var1 = NbtUtils.readBlockPos(var0, "pos");
-      if (var1.isEmpty()) {
-         return null;
-      } else {
-         int var2 = var0.getInt("rotation");
-         int var3 = var0.getInt("entity_id");
-         return new MapFrame((BlockPos)var1.get(), var2, var3);
-      }
-   }
-
-   public CompoundTag save() {
-      CompoundTag var1 = new CompoundTag();
-      var1.put("pos", NbtUtils.writeBlockPos(this.pos));
-      var1.putInt("rotation", this.rotation);
-      var1.putInt("entity_id", this.entityId);
-      return var1;
    }
 
    public String getId() {

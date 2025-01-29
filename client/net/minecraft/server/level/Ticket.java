@@ -1,45 +1,17 @@
 package net.minecraft.server.level;
 
-import javax.annotation.Nullable;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 
 public class Ticket {
+   public static final MapCodec<Ticket> CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(BuiltInRegistries.TICKET_TYPE.byNameCodec().fieldOf("type").forGetter(Ticket::getType), ExtraCodecs.NON_NEGATIVE_INT.fieldOf("level").forGetter(Ticket::getTicketLevel), Codec.LONG.optionalFieldOf("ticks_left", 0L).forGetter((var0x) -> var0x.ticksLeft)).apply(var0, Ticket::new));
    private final TicketType type;
    private final int ticketLevel;
    private long ticksLeft;
-
-   @Nullable
-   public static Ticket load(CompoundTag var0) {
-      TicketType var1 = (TicketType)BuiltInRegistries.TICKET_TYPE.getValue(ResourceLocation.tryParse(var0.getString("type")));
-      if (var1 == null) {
-         return null;
-      } else {
-         int var2 = var0.getInt("level");
-         if (var1.hasTimeout()) {
-            long var3 = var0.getLong("ticks_left");
-            return new Ticket(var1, var2, var3);
-         } else {
-            return new Ticket(var1, var2, 0L);
-         }
-      }
-   }
-
-   public void save(CompoundTag var1) {
-      ResourceLocation var2 = BuiltInRegistries.TICKET_TYPE.getKey(this.type);
-      if (var2 == null) {
-         throw new IllegalStateException("Unrecognised ticket type: " + String.valueOf(this.type));
-      } else {
-         var1.putString("type", var2.toString());
-         var1.putInt("level", this.ticketLevel);
-         if (this.type.hasTimeout()) {
-            var1.putLong("ticks_left", this.ticksLeft);
-         }
-
-      }
-   }
 
    public Ticket(TicketType var1, int var2) {
       this(var1, var2, var1.timeout());

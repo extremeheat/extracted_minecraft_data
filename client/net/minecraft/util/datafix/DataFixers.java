@@ -208,6 +208,7 @@ import net.minecraft.util.datafix.fixes.PoiTypeRemoveFix;
 import net.minecraft.util.datafix.fixes.PoiTypeRenameFix;
 import net.minecraft.util.datafix.fixes.PrimedTntBlockStateFixer;
 import net.minecraft.util.datafix.fixes.ProjectileStoredWeaponFix;
+import net.minecraft.util.datafix.fixes.RaidRenamesDataFix;
 import net.minecraft.util.datafix.fixes.RandomSequenceSettingsFix;
 import net.minecraft.util.datafix.fixes.RecipesFix;
 import net.minecraft.util.datafix.fixes.RecipesRenameningFix;
@@ -847,9 +848,9 @@ public class DataFixers {
       Map var174 = Map.of("minecraft:british", "minecraft:british_shorthair");
       var0.addFixer(new VariantRenameFix(var173, "Rename british shorthair", References.ENTITY, "minecraft:cat", var174));
       var0.addFixer(new CriteriaRenameFix(var173, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> (String)var174.getOrDefault(var1x, var1x)));
-      Set var269 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var269);
-      var0.addFixer(new PoiTypeRemoveFix(var173, "Remove unpopulated villager PoI types", var269::contains));
+      Set var270 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var270);
+      var0.addFixer(new PoiTypeRemoveFix(var173, "Remove unpopulated villager PoI types", var270::contains));
       Schema var175 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var175));
       Schema var176 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -1062,6 +1063,8 @@ public class DataFixers {
       var0.addFixer(new ThrownPotionSplitFix(var266));
       Schema var267 = var0.addSchema(4307, V4307::new);
       var0.addFixer(new TooltipDisplayComponentFix(var267));
+      Schema var268 = var0.addSchema(4309, SAME_NAMESPACED);
+      var0.addFixer(new RaidRenamesDataFix(var268));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import com.mojang.logging.LogUtils;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -9,7 +8,6 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
@@ -21,10 +19,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.AbstractBannerBlock;
 import net.minecraft.world.level.block.BannerBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import org.slf4j.Logger;
 
 public class BannerBlockEntity extends BlockEntity implements Nameable {
-   private static final Logger LOGGER = LogUtils.getLogger();
    public static final int MAX_PATTERNS = 6;
    private static final String TAG_PATTERNS = "patterns";
    @Nullable
@@ -55,11 +51,11 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
       super.saveAdditional(var1, var2);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       if (!this.patterns.equals(BannerPatternLayers.EMPTY)) {
-         var1.put("patterns", (Tag)BannerPatternLayers.CODEC.encodeStart(var3, this.patterns).getOrThrow());
+         var1.store("patterns", BannerPatternLayers.CODEC, var3, this.patterns);
       }
 
       if (this.name != null) {
-         var1.put("CustomName", (Tag)ComponentSerialization.CODEC.encodeStart(var3, this.name).getOrThrow());
+         var1.store("CustomName", ComponentSerialization.CODEC, var3, this.name);
       }
 
    }
@@ -70,10 +66,8 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
          this.name = parseCustomNameSafe(var1.get("CustomName"), var2);
       }
 
-      if (var1.contains("patterns")) {
-         BannerPatternLayers.CODEC.parse(var2.createSerializationContext(NbtOps.INSTANCE), var1.get("patterns")).resultOrPartial((var0) -> LOGGER.error("Failed to parse banner patterns: '{}'", var0)).ifPresent((var1x) -> this.patterns = var1x);
-      }
-
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+      this.patterns = (BannerPatternLayers)var1.read("patterns", BannerPatternLayers.CODEC, var3).orElse(BannerPatternLayers.EMPTY);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {

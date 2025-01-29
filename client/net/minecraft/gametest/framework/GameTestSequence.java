@@ -66,8 +66,8 @@ public class GameTestSequence {
       var10000.add(GameTestEvent.create(var10001::succeed));
    }
 
-   public void thenFail(Supplier<Exception> var1) {
-      this.events.add(GameTestEvent.create(() -> this.parent.fail((Throwable)var1.get())));
+   public void thenFail(Supplier<GameTestException> var1) {
+      this.events.add(GameTestEvent.create(() -> this.parent.fail((GameTestException)var1.get())));
    }
 
    public Condition thenTrigger() {
@@ -88,7 +88,7 @@ public class GameTestSequence {
       try {
          this.tick(var1);
       } catch (GameTestAssertException var3) {
-         this.parent.fail(var3);
+         this.parent.fail((GameTestException)var3);
       }
 
    }
@@ -97,7 +97,7 @@ public class GameTestSequence {
       try {
          var1.run();
       } catch (GameTestAssertException var3) {
-         this.parent.fail(var3);
+         this.parent.fail((GameTestException)var3);
       }
 
    }
@@ -113,7 +113,7 @@ public class GameTestSequence {
          int var5 = this.lastTick;
          this.lastTick = var1;
          if (var3.expectedDelay != null && var3.expectedDelay != (long)var4) {
-            this.parent.fail(new GameTestAssertException(Component.translatable("test.error.sequence.invalid_tick", (long)var5 + var3.expectedDelay), var1));
+            this.parent.fail((GameTestException)(new GameTestAssertException(Component.translatable("test.error.sequence.invalid_tick", (long)var5 + var3.expectedDelay), var1)));
             break;
          }
       }

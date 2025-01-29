@@ -51,6 +51,7 @@ import net.minecraft.world.level.entity.ChunkStatusUpdateListener;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.lighting.LevelLightEngine;
+import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import org.slf4j.Logger;
@@ -91,8 +92,8 @@ public class ServerChunkCache extends ChunkSource {
          LOGGER.error("Failed to create dimension data storage directory", var15);
       }
 
-      this.dataStorage = new DimensionDataStorage(var13, var3, var1.registryAccess());
-      this.ticketStorage = (TicketStorage)this.dataStorage.computeIfAbsent(TicketStorage.factory(), "chunks");
+      this.dataStorage = new DimensionDataStorage(new SavedData.Context(var1), var13, var3, var1.registryAccess());
+      this.ticketStorage = (TicketStorage)this.dataStorage.computeIfAbsent(TicketStorage.TYPE);
       this.chunkMap = new ChunkMap(var1, var2, var3, var4, var5, this.mainThreadProcessor, this, var6, var10, var11, var12, this.ticketStorage, var7, var9);
       this.lightEngine = this.chunkMap.getLightEngine();
       this.distanceManager = this.chunkMap.getDistanceManager();

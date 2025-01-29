@@ -4,8 +4,6 @@ import com.google.common.net.InetAddresses;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.Dynamic;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Collection;
@@ -40,7 +38,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.ChatType;
@@ -271,7 +268,7 @@ public class ServerPlayer extends Player {
       this.lastSectionPos = SectionPos.of(0, 0, 0);
       this.chunkTrackingView = ChunkTrackingView.EMPTY;
       this.respawnDimension = Level.OVERWORLD;
-      this.wardenSpawnTracker = new WardenSpawnTracker(0, 0, 0);
+      this.wardenSpawnTracker = new WardenSpawnTracker();
       this.lastKnownClientMovement = Vec3.ZERO;
       this.lastClientInput = Input.EMPTY;
       this.enderPearls = new HashSet();
@@ -411,13 +408,7 @@ public class ServerPlayer extends Player {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("warden_spawn_tracker", 10)) {
-         DataResult var10000 = WardenSpawnTracker.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.get("warden_spawn_tracker")));
-         Logger var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> this.wardenSpawnTracker = var1x);
-      }
-
+      this.wardenSpawnTracker = (WardenSpawnTracker)var1.read("warden_spawn_tracker", WardenSpawnTracker.CODEC).orElseGet(WardenSpawnTracker::new);
       if (var1.contains("enteredNetherPosition", 10)) {
          CompoundTag var2 = var1.getCompound("enteredNetherPosition");
          this.enteredNetherPosition = new Vec3(var2.getDouble("x"), var2.getDouble("y"), var2.getDouble("z"));
@@ -436,31 +427,16 @@ public class ServerPlayer extends Player {
          this.respawnPosition = new BlockPos(var1.getInt("SpawnX"), var1.getInt("SpawnY"), var1.getInt("SpawnZ"));
          this.respawnForced = var1.getBoolean("SpawnForced");
          this.respawnAngle = var1.getFloat("SpawnAngle");
-         if (var1.contains("SpawnDimension")) {
-            DataResult var5 = Level.RESOURCE_KEY_CODEC.parse(NbtOps.INSTANCE, var1.get("SpawnDimension"));
-            Logger var10002 = LOGGER;
-            Objects.requireNonNull(var10002);
-            this.respawnDimension = (ResourceKey)var5.resultOrPartial(var10002::error).orElse(Level.OVERWORLD);
-         }
+         this.respawnDimension = (ResourceKey)var1.read("SpawnDimension", Level.RESOURCE_KEY_CODEC).orElse(Level.OVERWORLD);
       }
 
       this.spawnExtraParticlesOnFall = var1.getBoolean("spawn_extra_particles_on_fall");
-      Tag var3 = var1.get("raid_omen_position");
-      if (var3 != null) {
-         DataResult var4 = BlockPos.CODEC.parse(NbtOps.INSTANCE, var3);
-         Logger var6 = LOGGER;
-         Objects.requireNonNull(var6);
-         var4.resultOrPartial(var6::error).ifPresent((var1x) -> this.raidOmenPosition = var1x);
-      }
-
+      this.raidOmenPosition = (BlockPos)var1.read("raid_omen_position", BlockPos.CODEC).orElse((Object)null);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      DataResult var10000 = WardenSpawnTracker.CODEC.encodeStart(NbtOps.INSTANCE, this.wardenSpawnTracker);
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("warden_spawn_tracker", var1x));
+      var1.store("warden_spawn_tracker", WardenSpawnTracker.CODEC, this.wardenSpawnTracker);
       this.storeGameTypes(var1);
       var1.putBoolean("seenCredits", this.seenCredits);
       if (this.enteredNetherPosition != null) {
@@ -480,18 +456,12 @@ public class ServerPlayer extends Player {
          var1.putInt("SpawnZ", this.respawnPosition.getZ());
          var1.putBoolean("SpawnForced", this.respawnForced);
          var1.putFloat("SpawnAngle", this.respawnAngle);
-         var10000 = ResourceLocation.CODEC.encodeStart(NbtOps.INSTANCE, this.respawnDimension.location());
-         var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("SpawnDimension", var1x));
+         var1.store("SpawnDimension", Level.RESOURCE_KEY_CODEC, this.respawnDimension);
       }
 
       var1.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
       if (this.raidOmenPosition != null) {
-         var10000 = BlockPos.CODEC.encodeStart(NbtOps.INSTANCE, this.raidOmenPosition);
-         var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("raid_omen_position", var1x));
+         var1.store("raid_omen_position", BlockPos.CODEC, this.raidOmenPosition);
       }
 
       this.saveEnderPearls(var1);
@@ -563,10 +533,7 @@ public class ServerPlayer extends Player {
             } else {
                CompoundTag var5 = new CompoundTag();
                var4.save(var5);
-               DataResult var10000 = ResourceLocation.CODEC.encodeStart(NbtOps.INSTANCE, var4.level().dimension().location());
-               Logger var10001 = LOGGER;
-               Objects.requireNonNull(var10001);
-               var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var5.put("ender_pearl_dimension", var1x));
+               var5.store("ender_pearl_dimension", Level.RESOURCE_KEY_CODEC, var4.level().dimension());
                var2.add(var5);
             }
          }
@@ -584,10 +551,7 @@ public class ServerPlayer extends Player {
             var3.forEach((var1x) -> {
                if (var1x instanceof CompoundTag var2) {
                   if (var2.contains("ender_pearl_dimension")) {
-                     DataResult var10000 = Level.RESOURCE_KEY_CODEC.parse(NbtOps.INSTANCE, var2.get("ender_pearl_dimension"));
-                     Logger var10001 = LOGGER;
-                     Objects.requireNonNull(var10001);
-                     Optional var3 = var10000.resultOrPartial(var10001::error);
+                     Optional var3 = var2.read("ender_pearl_dimension", Level.RESOURCE_KEY_CODEC);
                      if (var3.isEmpty()) {
                         LOGGER.warn("No dimension defined for ender pearl, skipping");
                         return;

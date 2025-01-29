@@ -43,6 +43,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"brushable", BrushableBlock.CODEC);
       Registry.register(var0, (String)"bubble_column", BubbleColumnBlock.CODEC);
       Registry.register(var0, (String)"budding_amethyst", BuddingAmethystBlock.CODEC);
+      Registry.register(var0, (String)"bush", BushBlock.CODEC);
       Registry.register(var0, (String)"button", ButtonBlock.CODEC);
       Registry.register(var0, (String)"cactus", CactusBlock.CODEC);
       Registry.register(var0, (String)"cake", CakeBlock.CODEC);
@@ -101,6 +102,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"fence", FenceBlock.CODEC);
       Registry.register(var0, (String)"fence_gate", FenceGateBlock.CODEC);
       Registry.register(var0, (String)"fire", FireBlock.CODEC);
+      Registry.register(var0, (String)"firefly_bush", FireflyBushBlock.CODEC);
       Registry.register(var0, (String)"fletching_table", FletchingTableBlock.CODEC);
       Registry.register(var0, (String)"flower", FlowerBlock.CODEC);
       Registry.register(var0, (String)"flower_pot", FlowerPotBlock.CODEC);
@@ -183,6 +185,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"roots", RootsBlock.CODEC);
       Registry.register(var0, (String)"rotated_pillar", RotatedPillarBlock.CODEC);
       Registry.register(var0, (String)"sapling", SaplingBlock.CODEC);
+      Registry.register(var0, (String)"sand", SandBlock.CODEC);
       Registry.register(var0, (String)"scaffolding", ScaffoldingBlock.CODEC);
       Registry.register(var0, (String)"sculk_catalyst", SculkCatalystBlock.CODEC);
       Registry.register(var0, (String)"sculk", SculkBlock.CODEC);
@@ -221,6 +224,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"tall_grass", TallGrassBlock.CODEC);
       Registry.register(var0, (String)"tall_seagrass", TallSeagrassBlock.CODEC);
       Registry.register(var0, (String)"target", TargetBlock.CODEC);
+      Registry.register(var0, (String)"terracotta", TerracottaBlock.CODEC);
       Registry.register(var0, (String)"test", TestBlock.CODEC);
       Registry.register(var0, (String)"test_instance", TestInstanceBlock.CODEC);
       Registry.register(var0, (String)"tinted_glass", TintedGlassBlock.CODEC);

@@ -16,27 +16,32 @@ import net.minecraft.world.phys.Vec3;
 
 public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements BlockEntityRenderer<T> {
    public static final ResourceLocation BEAM_LOCATION = ResourceLocation.withDefaultNamespace("textures/entity/beacon_beam.png");
-   public static final int MAX_RENDER_Y = 1024;
+   public static final int MAX_RENDER_Y = 2048;
+   private static final float BEAM_SCALE_THRESHOLD = 96.0F;
+   public static final float SOLID_BEAM_RADIUS = 0.2F;
+   public static final float BEAM_GLOW_RADIUS = 0.25F;
 
    public BeaconRenderer(BlockEntityRendererProvider.Context var1) {
       super();
    }
 
-   public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      long var7 = var1.getLevel().getGameTime();
-      List var9 = ((BeaconBeamOwner)var1).getBeamSections();
-      int var10 = 0;
+   public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
+      long var8 = var1.getLevel().getGameTime();
+      float var10 = (float)var7.subtract(var1.getBlockPos().getCenter()).horizontalDistance();
+      float var11 = Math.max(1.0F, var10 / 96.0F);
+      List var12 = ((BeaconBeamOwner)var1).getBeamSections();
+      int var13 = 0;
 
-      for(int var11 = 0; var11 < var9.size(); ++var11) {
-         BeaconBeamOwner.Section var12 = (BeaconBeamOwner.Section)var9.get(var11);
-         renderBeaconBeam(var3, var4, var2, var7, var10, var11 == var9.size() - 1 ? 1024 : var12.getHeight(), var12.getColor());
-         var10 += var12.getHeight();
+      for(int var14 = 0; var14 < var12.size(); ++var14) {
+         BeaconBeamOwner.Section var15 = (BeaconBeamOwner.Section)var12.get(var14);
+         renderBeaconBeam(var3, var4, var2, var11, var8, var13, var14 == var12.size() - 1 ? 2048 : var15.getHeight(), var15.getColor());
+         var13 += var15.getHeight();
       }
 
    }
 
-   private static void renderBeaconBeam(PoseStack var0, MultiBufferSource var1, float var2, long var3, int var5, int var6, int var7) {
-      renderBeaconBeam(var0, var1, BEAM_LOCATION, var2, 1.0F, var3, var5, var6, var7, 0.2F, 0.25F);
+   private static void renderBeaconBeam(PoseStack var0, MultiBufferSource var1, float var2, float var3, long var4, int var6, int var7, int var8) {
+      renderBeaconBeam(var0, var1, BEAM_LOCATION, var2, 1.0F, var4, var6, var7, var8, 0.2F * var3, 0.25F * var3);
    }
 
    public static void renderBeaconBeam(PoseStack var0, MultiBufferSource var1, ResourceLocation var2, float var3, float var4, long var5, int var7, int var8, int var9, float var10, float var11) {
@@ -96,7 +101,7 @@ public class BeaconRenderer<T extends BlockEntity & BeaconBeamOwner> implements 
    }
 
    public int getViewDistance() {
-      return 256;
+      return 2147483647;
    }
 
    public boolean shouldRender(T var1, Vec3 var2) {

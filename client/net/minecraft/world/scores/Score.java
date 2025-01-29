@@ -1,21 +1,17 @@
 package net.minecraft.world.scores;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.NumberFormatTypes;
-import net.minecraft.resources.RegistryOps;
 
 public class Score implements ReadOnlyScoreInfo {
-   private static final String TAG_SCORE = "Score";
-   private static final String TAG_LOCKED = "Locked";
-   private static final String TAG_DISPLAY = "display";
-   private static final String TAG_FORMAT = "format";
+   public static final MapCodec<Score> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(Codec.INT.optionalFieldOf("Score", 0).forGetter(Score::value), Codec.BOOL.optionalFieldOf("Locked", false).forGetter(Score::isLocked), ComponentSerialization.CODEC.optionalFieldOf("display").forGetter((var0x) -> Optional.ofNullable(var0x.display)), NumberFormatTypes.CODEC.optionalFieldOf("format").forGetter((var0x) -> Optional.ofNullable(var0x.numberFormat))).apply(var0, Score::new));
    private int value;
    private boolean locked = true;
    @Nullable
@@ -25,6 +21,14 @@ public class Score implements ReadOnlyScoreInfo {
 
    public Score() {
       super();
+   }
+
+   private Score(int var1, boolean var2, Optional<Component> var3, Optional<NumberFormat> var4) {
+      super();
+      this.value = var1;
+      this.locked = var2;
+      this.display = (Component)var3.orElse((Object)null);
+      this.numberFormat = (NumberFormat)var4.orElse((Object)null);
    }
 
    public int value() {
@@ -59,37 +63,5 @@ public class Score implements ReadOnlyScoreInfo {
 
    public void numberFormat(@Nullable NumberFormat var1) {
       this.numberFormat = var1;
-   }
-
-   public CompoundTag write(HolderLookup.Provider var1) {
-      CompoundTag var2 = new CompoundTag();
-      var2.putInt("Score", this.value);
-      var2.putBoolean("Locked", this.locked);
-      RegistryOps var3 = var1.createSerializationContext(NbtOps.INSTANCE);
-      if (this.display != null) {
-         var2.put("display", (Tag)ComponentSerialization.CODEC.encodeStart(var3, this.display).getOrThrow());
-      }
-
-      if (this.numberFormat != null) {
-         NumberFormatTypes.CODEC.encodeStart(var3, this.numberFormat).ifSuccess((var1x) -> var2.put("format", var1x));
-      }
-
-      return var2;
-   }
-
-   public static Score read(CompoundTag var0, HolderLookup.Provider var1) {
-      Score var2 = new Score();
-      var2.value = var0.getInt("Score");
-      var2.locked = var0.getBoolean("Locked");
-      RegistryOps var3 = var1.createSerializationContext(NbtOps.INSTANCE);
-      if (var0.contains("display")) {
-         ComponentSerialization.CODEC.parse(var3, var0.get("display")).ifSuccess((var1x) -> var2.display = var1x);
-      }
-
-      if (var0.contains("format", 10)) {
-         NumberFormatTypes.CODEC.parse(var3, var0.get("format")).ifSuccess((var1x) -> var2.numberFormat = var1x);
-      }
-
-      return var2;
    }
 }

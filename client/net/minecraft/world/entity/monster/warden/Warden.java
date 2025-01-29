@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.monster.warden;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import java.util.Collections;
 import java.util.Optional;
@@ -73,10 +72,8 @@ import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Contract;
-import org.slf4j.Logger;
 
 public class Warden extends Monster implements VibrationSystem {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private static final int VIBRATION_COOLDOWN_TICKS = 40;
    private static final int TIME_TO_USE_MELEE_UNTIL_SONIC_BOOM = 200;
    private static final int MAX_HEALTH = 500;
@@ -373,22 +370,16 @@ public class Warden extends Monster implements VibrationSystem {
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      AngerManagement.codec(this::canTargetEntity).encodeStart(var2, this.angerManagement).resultOrPartial((var0) -> LOGGER.error("Failed to encode anger state for Warden: '{}'", var0)).ifPresent((var1x) -> var1.put("anger", var1x));
-      VibrationSystem.Data.CODEC.encodeStart(var2, this.vibrationData).resultOrPartial((var0) -> LOGGER.error("Failed to encode vibration listener for Warden: '{}'", var0)).ifPresent((var1x) -> var1.put("listener", var1x));
+      var1.store("anger", AngerManagement.codec(this::canTargetEntity), var2, this.angerManagement);
+      var1.store("listener", VibrationSystem.Data.CODEC, var2, this.vibrationData);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      if (var1.contains("anger")) {
-         AngerManagement.codec(this::canTargetEntity).parse(var2, var1.get("anger")).resultOrPartial((var0) -> LOGGER.error("Failed to parse anger state for Warden: '{}'", var0)).ifPresent((var1x) -> this.angerManagement = var1x);
-         this.syncClientAngerLevel();
-      }
-
-      if (var1.contains("listener", 10)) {
-         VibrationSystem.Data.CODEC.parse(var2, var1.getCompound("listener")).resultOrPartial((var0) -> LOGGER.error("Failed to parse vibration listener for Warden: '{}'", var0)).ifPresent((var1x) -> this.vibrationData = var1x);
-      }
-
+      this.angerManagement = (AngerManagement)var1.read("anger", AngerManagement.codec(this::canTargetEntity), var2).orElseGet(() -> new AngerManagement(this::canTargetEntity, Collections.emptyList()));
+      this.syncClientAngerLevel();
+      this.vibrationData = (VibrationSystem.Data)var1.read("listener", VibrationSystem.Data.CODEC, var2).orElseGet(VibrationSystem.Data::new);
    }
 
    private void playListeningSound() {

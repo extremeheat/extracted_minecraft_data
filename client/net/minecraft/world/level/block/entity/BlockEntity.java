@@ -1,7 +1,7 @@
 package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.HashSet;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -82,7 +82,7 @@ public abstract class BlockEntity {
 
    public final void loadWithComponents(CompoundTag var1, HolderLookup.Provider var2) {
       this.loadAdditional(var1, var2);
-      BlockEntity.ComponentHelper.COMPONENTS_CODEC.parse(var2.createSerializationContext(NbtOps.INSTANCE), var1).resultOrPartial((var0) -> LOGGER.warn("Failed to load components: {}", var0)).ifPresent((var1x) -> this.components = var1x);
+      this.components = (DataComponentMap)var1.read((MapCodec)BlockEntity.ComponentHelper.COMPONENTS_CODEC, var2.createSerializationContext(NbtOps.INSTANCE)).orElse(DataComponentMap.EMPTY);
    }
 
    public final void loadCustomOnly(CompoundTag var1, HolderLookup.Provider var2) {
@@ -107,7 +107,7 @@ public abstract class BlockEntity {
    public final CompoundTag saveWithoutMetadata(HolderLookup.Provider var1) {
       CompoundTag var2 = new CompoundTag();
       this.saveAdditional(var2, var1);
-      BlockEntity.ComponentHelper.COMPONENTS_CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this.components).resultOrPartial((var0) -> LOGGER.warn("Failed to save components: {}", var0)).ifPresent((var1x) -> var2.merge((CompoundTag)var1x));
+      var2.store((MapCodec)BlockEntity.ComponentHelper.COMPONENTS_CODEC, var1.createSerializationContext(NbtOps.INSTANCE), this.components);
       return var2;
    }
 
@@ -312,14 +312,14 @@ public abstract class BlockEntity {
    }
 
    static class ComponentHelper {
-      public static final Codec<DataComponentMap> COMPONENTS_CODEC;
+      public static final MapCodec<DataComponentMap> COMPONENTS_CODEC;
 
       private ComponentHelper() {
          super();
       }
 
       static {
-         COMPONENTS_CODEC = DataComponentMap.CODEC.optionalFieldOf("components", DataComponentMap.EMPTY).codec();
+         COMPONENTS_CODEC = DataComponentMap.CODEC.optionalFieldOf("components", DataComponentMap.EMPTY);
       }
    }
 }

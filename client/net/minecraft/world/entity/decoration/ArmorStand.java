@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.decoration;
 
-import com.mojang.logging.LogUtils;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -11,7 +10,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -49,12 +47,10 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.Logger;
 
 public class ArmorStand extends LivingEntity {
    public static final int WOBBLE_TIME = 5;
    private static final boolean ENABLE_ARMS = true;
-   private static final Logger LOGGER = LogUtils.getLogger();
    public static final Rotations DEFAULT_HEAD_POSE = new Rotations(0.0F, 0.0F, 0.0F);
    public static final Rotations DEFAULT_BODY_POSE = new Rotations(0.0F, 0.0F, 0.0F);
    public static final Rotations DEFAULT_LEFT_ARM_POSE = new Rotations(-10.0F, 0.0F, -10.0F);
@@ -157,7 +153,7 @@ public class ArmorStand extends LivingEntity {
       super.addAdditionalSaveData(var1);
       if (!this.equipment.isEmpty()) {
          RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         var1.put("equipment", (Tag)EntityEquipment.CODEC.encodeStart(var2, this.equipment).getOrThrow());
+         var1.store("equipment", EntityEquipment.CODEC, var2, this.equipment);
       }
 
       var1.putBoolean("Invisible", this.isInvisible());
@@ -174,13 +170,8 @@ public class ArmorStand extends LivingEntity {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("equipment")) {
-         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         EntityEquipment.CODEC.parse(var2, var1.get("equipment")).resultOrPartial((var0) -> LOGGER.warn("Failed to parse equipment: {}", var0)).ifPresent((var1x) -> this.equipment = var1x);
-      } else {
-         this.equipment = new EntityEquipment();
-      }
-
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      this.equipment = (EntityEquipment)var1.read("equipment", EntityEquipment.CODEC, var2).orElseGet(EntityEquipment::new);
       this.setInvisible(var1.getBoolean("Invisible"));
       this.setSmall(var1.getBoolean("Small"));
       this.setShowArms(var1.getBoolean("ShowArms"));

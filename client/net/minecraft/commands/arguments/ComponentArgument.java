@@ -7,12 +7,15 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import java.util.Arrays;
 import java.util.Collection;
+import javax.annotation.Nullable;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.ParserUtils;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.world.entity.Entity;
 
 public class ComponentArgument implements ArgumentType<Component> {
    private static final Collection<String> EXAMPLES = Arrays.asList("\"hello world\"", "'hello world'", "\"\"", "{text:\"hello world\"}", "[\"\"]");
@@ -24,8 +27,16 @@ public class ComponentArgument implements ArgumentType<Component> {
       this.registries = var1;
    }
 
-   public static Component getComponent(CommandContext<CommandSourceStack> var0, String var1) {
+   public static Component getRawComponent(CommandContext<CommandSourceStack> var0, String var1) {
       return (Component)var0.getArgument(var1, Component.class);
+   }
+
+   public static Component getResolvedComponent(CommandContext<CommandSourceStack> var0, String var1, @Nullable Entity var2) throws CommandSyntaxException {
+      return ComponentUtils.updateForEntity((CommandSourceStack)var0.getSource(), getRawComponent(var0, var1), var2, 0);
+   }
+
+   public static Component getResolvedComponent(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
+      return getResolvedComponent(var0, var1, ((CommandSourceStack)var0.getSource()).getEntity());
    }
 
    public static ComponentArgument textComponent(CommandBuildContext var0) {

@@ -1,16 +1,12 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.Lists;
-import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
+import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
@@ -41,10 +37,8 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSeriali
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootTable;
-import org.slf4j.Logger;
 
 public class MineshaftPieces {
-   static final Logger LOGGER = LogUtils.getLogger();
    private static final int DEFAULT_SHAFT_WIDTH = 3;
    private static final int DEFAULT_SHAFT_HEIGHT = 3;
    private static final int DEFAULT_SHAFT_LENGTH = 5;
@@ -201,13 +195,7 @@ public class MineshaftPieces {
 
       public MineShaftRoom(CompoundTag var1) {
          super(StructurePieceType.MINE_SHAFT_ROOM, var1);
-         DataResult var10000 = BoundingBox.CODEC.listOf().parse(NbtOps.INSTANCE, var1.getList("Entrances", 11));
-         Logger var10001 = MineshaftPieces.LOGGER;
-         Objects.requireNonNull(var10001);
-         Optional var2 = var10000.resultOrPartial(var10001::error);
-         List var3 = this.childEntranceBoxes;
-         Objects.requireNonNull(var3);
-         var2.ifPresent(var3::addAll);
+         this.childEntranceBoxes.addAll((Collection)var1.read("Entrances", BoundingBox.CODEC.listOf()).orElse(List.of()));
       }
 
       public void addChildren(StructurePiece var1, StructurePieceAccessor var2, RandomSource var3) {
@@ -295,10 +283,7 @@ public class MineshaftPieces {
 
       protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
          super.addAdditionalSaveData(var1, var2);
-         DataResult var10000 = BoundingBox.CODEC.listOf().encodeStart(NbtOps.INSTANCE, this.childEntranceBoxes);
-         Logger var10001 = MineshaftPieces.LOGGER;
-         Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var2.put("Entrances", var1x));
+         var2.store("Entrances", BoundingBox.CODEC.listOf(), this.childEntranceBoxes);
       }
    }
 

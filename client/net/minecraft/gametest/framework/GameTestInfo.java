@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -45,7 +46,7 @@ public class GameTestInfo {
    private boolean done;
    private final Rotation extraRotation;
    @Nullable
-   private Throwable error;
+   private GameTestException error;
    @Nullable
    private TestInstanceBlockEntity testInstanceBlockEntity;
 
@@ -71,7 +72,7 @@ public class GameTestInfo {
       if (!this.placedStructure) {
          TestInstanceBlockEntity var1 = this.getTestInstanceBlockEntity();
          if (!var1.placeStructure()) {
-            this.fail(new IllegalStateException("Failed to place test structure for " + String.valueOf(var1.getTestName())));
+            this.fail((Component)Component.translatable("test.error.structure.failure", var1.getTestName().getString()));
          }
 
          this.placedStructure = true;
@@ -86,11 +87,15 @@ public class GameTestInfo {
    public void tick(GameTestRunner var1) {
       if (!this.isDone()) {
          if (!this.placedStructure) {
-            this.fail(new IllegalStateException("Ticking test before placing structure"));
+            this.fail((Component)Component.translatable("test.error.ticking_without_structure"));
          }
 
          if (this.testInstanceBlockEntity == null) {
-            this.fail(new IllegalStateException("Running test without structure block entity"));
+            this.fail((Component)Component.translatable("test.error.missing_block_entity"));
+         }
+
+         if (this.error != null) {
+            this.finish();
          }
 
          if (!this.chunksLoaded) {
@@ -129,8 +134,10 @@ public class GameTestInfo {
             if (var2.getLongValue() <= (long)this.tickCount) {
                try {
                   ((Runnable)var2.getKey()).run();
-               } catch (Exception var4) {
+               } catch (GameTestException var4) {
                   this.fail(var4);
+               } catch (Exception var5) {
+                  this.fail((GameTestException)(new UnknownGameTestException(var5)));
                }
 
                var1.remove();
@@ -139,11 +146,11 @@ public class GameTestInfo {
 
          if (this.tickCount > this.timeoutTicks) {
             if (this.sequences.isEmpty()) {
-               this.fail(new GameTestTimeoutException("Didn't succeed or fail within " + ((GameTestInstance)this.test.value()).maxTicks() + " ticks"));
+               this.fail((GameTestException)(new GameTestTimeoutException(Component.translatable("test.error.timeout.no_result", ((GameTestInstance)this.test.value()).maxTicks()))));
             } else {
                this.sequences.forEach((var1x) -> var1x.tickAndFailIfNotComplete(this.tickCount));
                if (this.error == null) {
-                  this.fail(new GameTestTimeoutException("No sequences finished"));
+                  this.fail((GameTestException)(new GameTestTimeoutException(Component.translatable("test.error.timeout.no_sequences_finished", ((GameTestInstance)this.test.value()).maxTicks()))));
                }
             }
          } else {
@@ -160,8 +167,10 @@ public class GameTestInfo {
 
          try {
             ((GameTestInstance)this.test.value()).run(new GameTestHelper(this));
-         } catch (Exception var2) {
+         } catch (GameTestException var2) {
             this.fail(var2);
+         } catch (Exception var3) {
+            this.fail((GameTestException)(new UnknownGameTestException(var3)));
          }
 
       }
@@ -253,13 +262,16 @@ public class GameTestInfo {
 
    }
 
-   public void fail(Throwable var1) {
+   public void fail(Component var1) {
+      this.fail((GameTestException)(new GameTestAssertException(var1, this.tickCount)));
+   }
+
+   public void fail(GameTestException var1) {
       this.error = var1;
-      this.finish();
    }
 
    @Nullable
-   public Throwable getError() {
+   public GameTestException getError() {
       return this.error;
    }
 

@@ -15,6 +15,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
+import net.minecraft.world.phys.Vec3;
 
 public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEntity> {
    private final ShulkerBoxModel model;
@@ -28,18 +29,18 @@ public class ShulkerBoxRenderer implements BlockEntityRenderer<ShulkerBoxBlockEn
       this.model = new ShulkerBoxModel(var1.bakeLayer(ModelLayers.SHULKER_BOX));
    }
 
-   public void render(ShulkerBoxBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      Direction var7 = (Direction)var1.getBlockState().getValueOrElse(ShulkerBoxBlock.FACING, Direction.UP);
-      DyeColor var8 = var1.getColor();
-      Material var9;
-      if (var8 == null) {
-         var9 = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION;
+   public void render(ShulkerBoxBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
+      Direction var8 = (Direction)var1.getBlockState().getValueOrElse(ShulkerBoxBlock.FACING, Direction.UP);
+      DyeColor var9 = var1.getColor();
+      Material var10;
+      if (var9 == null) {
+         var10 = Sheets.DEFAULT_SHULKER_TEXTURE_LOCATION;
       } else {
-         var9 = Sheets.getShulkerBoxMaterial(var8);
+         var10 = Sheets.getShulkerBoxMaterial(var9);
       }
 
-      float var10 = var1.getProgress(var2);
-      this.render(var3, var4, var5, var6, var7, var10, var9);
+      float var11 = var1.getProgress(var2);
+      this.render(var3, var4, var5, var6, var8, var11, var10);
    }
 
    public void render(PoseStack var1, MultiBufferSource var2, int var3, int var4, Direction var5, float var6, Material var7) {

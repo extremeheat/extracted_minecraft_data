@@ -476,6 +476,13 @@ public class ClientLevel extends Level implements CacheSlot.Cleaner<ClientLevel>
       this.minecraft.getSoundManager().play(new EntityBoundSoundInstance(var2, var3, var4, var5, var1, this.random.nextLong()));
    }
 
+   public void playPlayerSound(SoundEvent var1, SoundSource var2, float var3, float var4) {
+      if (this.minecraft.player != null) {
+         this.minecraft.getSoundManager().play(new EntityBoundSoundInstance(var1, var2, var3, var4, this.minecraft.player, this.random.nextLong()));
+      }
+
+   }
+
    public void playLocalSound(double var1, double var3, double var5, SoundEvent var7, SoundSource var8, float var9, float var10, boolean var11) {
       this.playSound(var1, var3, var5, var7, var8, var9, var10, var11, this.random.nextLong());
    }

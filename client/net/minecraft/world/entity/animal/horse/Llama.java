@@ -335,11 +335,7 @@ public class Llama extends AbstractChestedHorse implements RangedAttackMob {
       } else {
          if (var1 >= 6.0) {
             this.hurt(var4, (float)var5);
-            if (this.isVehicle()) {
-               for(Entity var7 : this.getIndirectPassengers()) {
-                  var7.hurt(var4, (float)var5);
-               }
-            }
+            this.propagateFallToPassengers(var1, var3, var4);
          }
 
          this.playBlockFallSound();

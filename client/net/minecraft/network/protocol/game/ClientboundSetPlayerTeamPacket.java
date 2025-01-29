@@ -13,6 +13,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Team;
 
 public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetPlayerTeamPacket> STREAM_CODEC = Packet.<RegistryFriendlyByteBuf, ClientboundSetPlayerTeamPacket>codec(ClientboundSetPlayerTeamPacket::write, ClientboundSetPlayerTeamPacket::new);
@@ -156,8 +157,8 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       private final Component displayName;
       private final Component playerPrefix;
       private final Component playerSuffix;
-      private final String nametagVisibility;
-      private final String collisionRule;
+      private final Team.Visibility nametagVisibility;
+      private final Team.CollisionRule collisionRule;
       private final ChatFormatting color;
       private final int options;
 
@@ -165,8 +166,8 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
          super();
          this.displayName = var1.getDisplayName();
          this.options = var1.packOptions();
-         this.nametagVisibility = var1.getNameTagVisibility().name;
-         this.collisionRule = var1.getCollisionRule().name;
+         this.nametagVisibility = var1.getNameTagVisibility();
+         this.collisionRule = var1.getCollisionRule();
          this.color = var1.getColor();
          this.playerPrefix = var1.getPlayerPrefix();
          this.playerSuffix = var1.getPlayerSuffix();
@@ -176,8 +177,8 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
          super();
          this.displayName = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1);
          this.options = var1.readByte();
-         this.nametagVisibility = var1.readUtf(40);
-         this.collisionRule = var1.readUtf(40);
+         this.nametagVisibility = (Team.Visibility)Team.Visibility.STREAM_CODEC.decode(var1);
+         this.collisionRule = (Team.CollisionRule)Team.CollisionRule.STREAM_CODEC.decode(var1);
          this.color = (ChatFormatting)var1.readEnum(ChatFormatting.class);
          this.playerPrefix = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1);
          this.playerSuffix = (Component)ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1);
@@ -195,11 +196,11 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
          return this.color;
       }
 
-      public String getNametagVisibility() {
+      public Team.Visibility getNametagVisibility() {
          return this.nametagVisibility;
       }
 
-      public String getCollisionRule() {
+      public Team.CollisionRule getCollisionRule() {
          return this.collisionRule;
       }
 
@@ -214,8 +215,8 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       public void write(RegistryFriendlyByteBuf var1) {
          ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.displayName);
          var1.writeByte(this.options);
-         var1.writeUtf(this.nametagVisibility);
-         var1.writeUtf(this.collisionRule);
+         Team.Visibility.STREAM_CODEC.encode(var1, this.nametagVisibility);
+         Team.CollisionRule.STREAM_CODEC.encode(var1, this.collisionRule);
          var1.writeEnum(this.color);
          ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.playerPrefix);
          ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.playerSuffix);

@@ -15,9 +15,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
@@ -45,10 +43,6 @@ public abstract class AbstractThrownPotion extends ThrowableItemProjectile {
 
    public AbstractThrownPotion(EntityType<? extends AbstractThrownPotion> var1, Level var2, double var3, double var5, double var7, ItemStack var9) {
       super(var1, var3, var5, var7, var2, var9);
-   }
-
-   protected Item getDefaultItem() {
-      return Items.SPLASH_POTION;
    }
 
    protected double getDefaultGravity() {

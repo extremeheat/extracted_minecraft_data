@@ -1,6 +1,5 @@
 package net.minecraft.world.level;
 
-import com.mojang.logging.LogUtils;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -10,8 +9,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedList;
@@ -26,11 +23,9 @@ import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
-import org.slf4j.Logger;
 
 public abstract class BaseSpawner {
    public static final String SPAWN_DATA_TAG = "SpawnData";
-   private static final Logger LOGGER = LogUtils.getLogger();
    private static final int EVENT_SPAWN = 1;
    private int spawnDelay = 20;
    private WeightedList<SpawnData> spawnPotentials = WeightedList.<SpawnData>of();
@@ -189,20 +184,8 @@ public abstract class BaseSpawner {
 
    public void load(@Nullable Level var1, BlockPos var2, CompoundTag var3) {
       this.spawnDelay = var3.getShort("Delay");
-      boolean var4 = var3.contains("SpawnData", 10);
-      if (var4) {
-         SpawnData var5 = (SpawnData)SpawnData.CODEC.parse(NbtOps.INSTANCE, var3.getCompound("SpawnData")).resultOrPartial((var0) -> LOGGER.warn("Invalid SpawnData: {}", var0)).orElseGet(SpawnData::new);
-         this.setNextSpawnData(var1, var2, var5);
-      }
-
-      boolean var7 = var3.contains("SpawnPotentials", 9);
-      if (var7) {
-         ListTag var6 = var3.getList("SpawnPotentials", 10);
-         this.spawnPotentials = (WeightedList)SpawnData.LIST_CODEC.parse(NbtOps.INSTANCE, var6).resultOrPartial((var0) -> LOGGER.warn("Invalid SpawnPotentials list: {}", var0)).orElseGet(WeightedList::of);
-      } else {
-         this.spawnPotentials = WeightedList.of(this.nextSpawnData != null ? this.nextSpawnData : new SpawnData());
-      }
-
+      var3.read("SpawnData", SpawnData.CODEC).ifPresent((var3x) -> this.setNextSpawnData(var1, var2, var3x));
+      this.spawnPotentials = (WeightedList)var3.read("SpawnPotentials", SpawnData.LIST_CODEC).orElseGet(() -> WeightedList.of(this.nextSpawnData != null ? this.nextSpawnData : new SpawnData()));
       if (var3.contains("MinSpawnDelay", 99)) {
          this.minSpawnDelay = var3.getShort("MinSpawnDelay");
          this.maxSpawnDelay = var3.getShort("MaxSpawnDelay");
@@ -230,10 +213,10 @@ public abstract class BaseSpawner {
       var1.putShort("RequiredPlayerRange", (short)this.requiredPlayerRange);
       var1.putShort("SpawnRange", (short)this.spawnRange);
       if (this.nextSpawnData != null) {
-         var1.put("SpawnData", (Tag)SpawnData.CODEC.encodeStart(NbtOps.INSTANCE, this.nextSpawnData).getOrThrow((var0) -> new IllegalStateException("Invalid SpawnData: " + var0)));
+         var1.store("SpawnData", SpawnData.CODEC, this.nextSpawnData);
       }
 
-      var1.put("SpawnPotentials", (Tag)SpawnData.LIST_CODEC.encodeStart(NbtOps.INSTANCE, this.spawnPotentials).getOrThrow());
+      var1.store("SpawnPotentials", SpawnData.LIST_CODEC, this.spawnPotentials);
       return var1;
    }
 

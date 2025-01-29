@@ -89,7 +89,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultFlowers(var4);
       BiomeDefaultFeatures.addGiantTaigaVegetation(var4);
       BiomeDefaultFeatures.addDefaultMushrooms(var4);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var4);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var4, true);
       BiomeDefaultFeatures.addCommonBerryBushes(var4);
       Music var5 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_OLD_GROWTH_TAIGA);
       return biome(true, var2 ? 0.25F : 0.3F, 0.8F, var3, var4, var5);
@@ -138,7 +138,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addWarmFlowers(var8);
       BiomeDefaultFeatures.addJungleGrass(var8);
       BiomeDefaultFeatures.addDefaultMushrooms(var8);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var8);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var8, true);
       BiomeDefaultFeatures.addJungleVines(var8);
       if (var4) {
          BiomeDefaultFeatures.addSparseJungleMelons(var8);
@@ -164,10 +164,11 @@ public class OverworldBiomes {
          BiomeDefaultFeatures.addMountainTrees(var4);
       }
 
+      BiomeDefaultFeatures.addBushes(var4);
       BiomeDefaultFeatures.addDefaultFlowers(var4);
       BiomeDefaultFeatures.addDefaultGrass(var4);
       BiomeDefaultFeatures.addDefaultMushrooms(var4);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var4);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var4, true);
       BiomeDefaultFeatures.addExtraEmeralds(var4);
       BiomeDefaultFeatures.addInfestedStone(var4);
       return biome(true, 0.2F, 0.3F, var3, var4, NORMAL_MUSIC);
@@ -206,6 +207,8 @@ public class OverworldBiomes {
          BiomeDefaultFeatures.addPlainGrass(var6);
          if (var2) {
             var6.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_SUNFLOWER);
+         } else {
+            BiomeDefaultFeatures.addBushes(var6);
          }
       }
 
@@ -220,13 +223,7 @@ public class OverworldBiomes {
       }
 
       BiomeDefaultFeatures.addDefaultMushrooms(var6);
-      if (var2) {
-         var6.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_SUGAR_CANE);
-         var6.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_PUMPKIN);
-      } else {
-         BiomeDefaultFeatures.addDefaultExtraVegetation(var6);
-      }
-
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var6, true);
       float var7 = var3 ? 0.0F : 0.8F;
       return biome(true, var7, var3 ? 0.5F : 0.4F, var5, var6, NORMAL_MUSIC);
    }
@@ -239,7 +236,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultOres(var3);
       BiomeDefaultFeatures.addDefaultSoftDisks(var3);
       BiomeDefaultFeatures.addMushroomFieldVegetation(var3);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var3);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var3, true);
       return biome(true, 0.9F, 1.0F, var2, var3, NORMAL_MUSIC);
    }
 
@@ -263,7 +260,7 @@ public class OverworldBiomes {
       }
 
       BiomeDefaultFeatures.addDefaultMushrooms(var4);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var4);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var4, true);
       MobSpawnSettings.Builder var5 = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.farmAnimals(var5);
       var5.addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.HORSE, 2, 6)).addSpawn(MobCategory.CREATURE, 1, new MobSpawnSettings.SpawnerData(EntityType.DONKEY, 1, 1)).addSpawn(MobCategory.CREATURE, 10, new MobSpawnSettings.SpawnerData(EntityType.ARMADILLO, 2, 3));
@@ -315,7 +312,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultFlowers(var2);
       BiomeDefaultFeatures.addDefaultGrass(var2);
       BiomeDefaultFeatures.addDefaultMushrooms(var2);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var2);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var2, true);
       return var2;
    }
 
@@ -376,7 +373,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultFlowers(var5);
       BiomeDefaultFeatures.addDefaultGrass(var5);
       BiomeDefaultFeatures.addDefaultMushrooms(var5);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var5);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var5, true);
       return (new Biome.BiomeBuilder()).hasPrecipitation(true).temperature(var4).temperatureAdjustment(Biome.TemperatureModifier.FROZEN).downfall(0.5F).specialEffects((new BiomeSpecialEffects.Builder()).waterColor(3750089).waterFogColor(329011).fogColor(12638463).skyColor(calculateSkyColor(var4)).ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS).build()).mobSpawnSettings(var3.build()).generationSettings(var5.build()).build();
    }
 
@@ -410,12 +407,13 @@ public class OverworldBiomes {
             BiomeDefaultFeatures.addOtherBirchTrees(var5);
          }
 
+         BiomeDefaultFeatures.addBushes(var5);
          BiomeDefaultFeatures.addDefaultFlowers(var5);
          BiomeDefaultFeatures.addForestGrass(var5);
       }
 
       BiomeDefaultFeatures.addDefaultMushrooms(var5);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var5);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var5, true);
       MobSpawnSettings.Builder var7 = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.farmAnimals(var7);
       BiomeDefaultFeatures.commonSpawns(var7);
@@ -443,7 +441,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addTaigaTrees(var5);
       BiomeDefaultFeatures.addDefaultFlowers(var5);
       BiomeDefaultFeatures.addTaigaGrass(var5);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var5);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var5, true);
       if (var2) {
          BiomeDefaultFeatures.addRareBerryBushes(var5);
       } else {
@@ -484,7 +482,7 @@ public class OverworldBiomes {
          BiomeDefaultFeatures.addLeafLitterPatch(var4);
       }
 
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var4);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var4, true);
       return (new Biome.BiomeBuilder()).hasPrecipitation(true).temperature(0.7F).downfall(0.8F).specialEffects(var2 ? (new BiomeSpecialEffects.Builder()).waterColor(7768221).waterFogColor(5597568).fogColor(8484720).skyColor(12171705).grassColorOverride(7832178).foliageColorOverride(8883574).ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS).silenceAllBackgroundMusic().build() : (new BiomeSpecialEffects.Builder()).waterColor(4159204).waterFogColor(329011).fogColor(12638463).skyColor(calculateSkyColor(0.7F)).grassColorModifier(BiomeSpecialEffects.GrassColorModifier.DARK_FOREST).ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS).backgroundMusic(Musics.createGameMusic(SoundEvents.MUSIC_BIOME_FOREST)).build()).mobSpawnSettings(var3.build()).generationSettings(var4.build()).build();
    }
 
@@ -535,10 +533,11 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultOres(var4);
       BiomeDefaultFeatures.addDefaultSoftDisks(var4);
       BiomeDefaultFeatures.addWaterTrees(var4);
+      BiomeDefaultFeatures.addBushes(var4);
       BiomeDefaultFeatures.addDefaultFlowers(var4);
       BiomeDefaultFeatures.addDefaultGrass(var4);
       BiomeDefaultFeatures.addDefaultMushrooms(var4);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var4);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var4, true);
       if (!var2) {
          var4.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, AquaticPlacements.SEAGRASS_RIVER);
       }
@@ -562,7 +561,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultFlowers(var6);
       BiomeDefaultFeatures.addDefaultGrass(var6);
       BiomeDefaultFeatures.addDefaultMushrooms(var6);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var6);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var6, true);
       float var7;
       if (var2) {
          var7 = 0.05F;
@@ -654,7 +653,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addFrozenSprings(var2);
       BiomeDefaultFeatures.addDefaultOres(var2);
       BiomeDefaultFeatures.addDefaultSoftDisks(var2);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var2);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var2, false);
       BiomeDefaultFeatures.addExtraEmeralds(var2);
       BiomeDefaultFeatures.addInfestedStone(var2);
       Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SNOWY_SLOPES);
@@ -671,7 +670,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultOres(var2);
       BiomeDefaultFeatures.addDefaultSoftDisks(var2);
       BiomeDefaultFeatures.addGroveTrees(var2);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var2);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var2, false);
       BiomeDefaultFeatures.addExtraEmeralds(var2);
       BiomeDefaultFeatures.addInfestedStone(var2);
       Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_GROVE);
@@ -704,7 +703,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultSoftDisks(var3);
       BiomeDefaultFeatures.addPlainVegetation(var3);
       BiomeDefaultFeatures.addDefaultMushrooms(var3);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var3);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var3, false);
       BiomeDefaultFeatures.addDripstone(var3);
       Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_DRIPSTONE_CAVES);
       return biome(true, 0.8F, 0.4F, var2, var3, var4);
@@ -725,7 +724,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultSoftDisks(var3);
       BiomeDefaultFeatures.addPlainVegetation(var3);
       BiomeDefaultFeatures.addDefaultMushrooms(var3);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var3);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var3, false);
       BiomeDefaultFeatures.addSculk(var3);
       Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_DEEP_DARK);
       return biome(true, 0.8F, 0.4F, var2, var3, var4);

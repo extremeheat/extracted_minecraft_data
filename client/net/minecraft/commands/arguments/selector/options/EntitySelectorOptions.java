@@ -38,7 +38,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -237,13 +236,9 @@ public class EntitySelectorOptions {
             boolean var1 = var0.shouldInvertValue();
             String var2 = var0.getReader().readUnquotedString();
             var0.addPredicate((var2x) -> {
-               if (!(var2x instanceof LivingEntity)) {
-                  return false;
-               } else {
-                  PlayerTeam var3 = var2x.getTeam();
-                  String var4 = var3 == null ? "" : ((Team)var3).getName();
-                  return var4.equals(var2) != var1;
-               }
+               PlayerTeam var3 = var2x.getTeam();
+               String var4 = var3 == null ? "" : ((Team)var3).getName();
+               return var4.equals(var2) != var1;
             });
             if (var1) {
                var0.setHasTeamNotEquals(true);

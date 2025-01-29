@@ -1,13 +1,10 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.Lists;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
-import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -48,10 +45,8 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.RuleProcessor
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
-import org.slf4j.Logger;
 
 public class RuinedPortalPiece extends TemplateStructurePiece {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private static final float PROBABILITY_OF_GOLD_GONE = 0.3F;
    private static final float PROBABILITY_OF_MAGMA_INSTEAD_OF_NETHERRACK = 0.07F;
    private static final float PROBABILITY_OF_MAGMA_INSTEAD_OF_LAVA = 0.2F;
@@ -67,7 +62,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
    public RuinedPortalPiece(StructureTemplateManager var1, CompoundTag var2) {
       super(StructurePieceType.RUINED_PORTAL, var2, var1, (var2x) -> makeSettings(var1, var2, var2x));
       this.verticalPlacement = RuinedPortalPiece.VerticalPlacement.byName(var2.getString("VerticalPlacement"));
-      this.properties = (Properties)RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var2.get("Properties"))).getPartialOrThrow();
+      this.properties = (Properties)var2.read("Properties", RuinedPortalPiece.Properties.CODEC).orElseThrow();
    }
 
    protected void addAdditionalSaveData(StructurePieceSerializationContext var1, CompoundTag var2) {
@@ -75,10 +70,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       var2.putString("Rotation", this.placeSettings.getRotation().name());
       var2.putString("Mirror", this.placeSettings.getMirror().name());
       var2.putString("VerticalPlacement", this.verticalPlacement.getName());
-      DataResult var10000 = RuinedPortalPiece.Properties.CODEC.encodeStart(NbtOps.INSTANCE, this.properties);
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var2.put("Properties", var1x));
+      var2.store("Properties", RuinedPortalPiece.Properties.CODEC, this.properties);
    }
 
    private static StructurePlaceSettings makeSettings(StructureTemplateManager var0, CompoundTag var1, ResourceLocation var2) {

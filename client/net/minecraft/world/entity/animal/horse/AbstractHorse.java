@@ -278,12 +278,7 @@ public abstract class AbstractHorse extends Animal implements HasCustomInventory
          return false;
       } else {
          this.hurt(var4, (float)var5);
-         if (this.isVehicle()) {
-            for(Entity var7 : this.getIndirectPassengers()) {
-               var7.hurt(var4, (float)var5);
-            }
-         }
-
+         this.propagateFallToPassengers(var1, var3, var4);
          this.playBlockFallSound();
          return true;
       }

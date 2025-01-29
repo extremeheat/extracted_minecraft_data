@@ -2,6 +2,8 @@ package net.minecraft.world.level;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMaps;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -12,11 +14,9 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.server.level.ChunkLevel;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.FullChunkStatus;
@@ -24,14 +24,15 @@ import net.minecraft.server.level.Ticket;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import org.slf4j.Logger;
 
 public class TicketStorage extends SavedData {
    private static final int INITIAL_TICKET_LIST_CAPACITY = 4;
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final String FILE_ID = "chunks";
-   private static final String TAG_TICKETS = "tickets";
-   private static final String TAG_CHUNK_POS = "chunk_pos";
+   private static final Codec<Pair<ChunkPos, Ticket>> TICKET_ENTRY;
+   public static final Codec<TicketStorage> CODEC;
+   public static final SavedDataType<TicketStorage> TYPE;
    private final Long2ObjectOpenHashMap<List<Ticket>> tickets;
    private final Long2ObjectOpenHashMap<List<Ticket>> deactivatedTickets;
    private LongSet chunksWithForcedTickets;
@@ -39,10 +40,6 @@ public class TicketStorage extends SavedData {
    private ChunkUpdated loadingChunkUpdatedListener;
    @Nullable
    private ChunkUpdated simulationChunkUpdatedListener;
-
-   public static SavedData.Factory<TicketStorage> factory() {
-      return new SavedData.Factory<TicketStorage>(TicketStorage::new, TicketStorage::load, DataFixTypes.SAVED_DATA_FORCED_CHUNKS);
-   }
 
    private TicketStorage(Long2ObjectOpenHashMap<List<Ticket>> var1, Long2ObjectOpenHashMap<List<Ticket>> var2) {
       super();
@@ -56,40 +53,43 @@ public class TicketStorage extends SavedData {
       this(new Long2ObjectOpenHashMap(4), new Long2ObjectOpenHashMap());
    }
 
-   public static TicketStorage load(CompoundTag var0, HolderLookup.Provider var1) {
-      Long2ObjectOpenHashMap var2 = new Long2ObjectOpenHashMap();
-      ListTag var3 = var0.getList("tickets", 10);
+   private static TicketStorage fromPacked(List<Pair<ChunkPos, Ticket>> var0) {
+      Long2ObjectOpenHashMap var1 = new Long2ObjectOpenHashMap();
 
-      for(int var4 = 0; var4 < var3.size(); ++var4) {
-         CompoundTag var5 = var3.getCompound(var4);
-         Ticket var6 = Ticket.load(var5);
-         if (var6 == null) {
-            LOGGER.warn("Failed to load invalid saved ticket: {} ", var5);
-         } else {
-            ChunkPos var7 = new ChunkPos(var5.getLong("chunk_pos"));
-            List var8 = (List)var2.computeIfAbsent(var7.toLong(), (var0x) -> new ObjectArrayList(4));
-            var8.add(var6);
-         }
+      for(Pair var3 : var0) {
+         ChunkPos var4 = (ChunkPos)var3.getFirst();
+         List var5 = (List)var1.computeIfAbsent(var4.toLong(), (var0x) -> new ObjectArrayList(4));
+         var5.add((Ticket)var3.getSecond());
       }
 
-      return new TicketStorage(new Long2ObjectOpenHashMap(4), var2);
+      return new TicketStorage(new Long2ObjectOpenHashMap(4), var1);
    }
 
-   public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
-      ListTag var3 = new ListTag();
-      this.tickets.forEach((var1x, var2x) -> saveTicketsForChunk(var3, var1x, var2x));
-      this.deactivatedTickets.forEach((var1x, var2x) -> saveTicketsForChunk(var3, var1x, var2x));
-      var1.put("tickets", var3);
+   private List<Pair<ChunkPos, Ticket>> packTickets() {
+      ArrayList var1 = new ArrayList();
+      this.forEachTicket((var1x, var2) -> {
+         if (var2.getType().persist()) {
+            var1.add(new Pair(var1x, var2));
+         }
+
+      });
       return var1;
    }
 
-   private static void saveTicketsForChunk(ListTag var0, long var1, List<Ticket> var3) {
-      for(Ticket var5 : var3) {
-         if (var5.getType().persist()) {
-            CompoundTag var6 = new CompoundTag();
-            var6.putLong("chunk_pos", var1);
-            var5.save(var6);
-            var0.add(var6);
+   private void forEachTicket(BiConsumer<ChunkPos, Ticket> var1) {
+      forEachTicket(var1, this.tickets);
+      forEachTicket(var1, this.deactivatedTickets);
+   }
+
+   private static void forEachTicket(BiConsumer<ChunkPos, Ticket> var0, Long2ObjectOpenHashMap<List<Ticket>> var1) {
+      ObjectIterator var2 = Long2ObjectMaps.fastIterable(var1).iterator();
+
+      while(var2.hasNext()) {
+         Long2ObjectMap.Entry var3 = (Long2ObjectMap.Entry)var2.next();
+         ChunkPos var4 = new ChunkPos(var3.getLongKey());
+
+         for(Ticket var6 : (List)var3.getValue()) {
+            var0.accept(var4, var6);
          }
       }
 
@@ -379,6 +379,12 @@ public class TicketStorage extends SavedData {
       }
 
       return var2;
+   }
+
+   static {
+      TICKET_ENTRY = Codec.mapPair(ChunkPos.CODEC.fieldOf("chunk_pos"), Ticket.CODEC).codec();
+      CODEC = RecordCodecBuilder.create((var0) -> var0.group(TICKET_ENTRY.listOf().optionalFieldOf("tickets", List.of()).forGetter(TicketStorage::packTickets)).apply(var0, TicketStorage::fromPacked));
+      TYPE = new SavedDataType<TicketStorage>("chunks", TicketStorage::new, CODEC, DataFixTypes.SAVED_DATA_FORCED_CHUNKS);
    }
 
    @FunctionalInterface

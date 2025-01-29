@@ -14,7 +14,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class WaterlilyBlock extends BushBlock {
+public class WaterlilyBlock extends VegetationBlock {
    public static final MapCodec<WaterlilyBlock> CODEC = simpleCodec(WaterlilyBlock::new);
    private static final VoxelShape SHAPE = Block.column(14.0, 0.0, 1.5);
 

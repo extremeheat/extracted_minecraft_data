@@ -192,6 +192,7 @@ public final class BlockTags {
    public static final TagKey<Block> MAINTAINS_FARMLAND = create("maintains_farmland");
    public static final TagKey<Block> BLOCKS_WIND_CHARGE_EXPLOSIONS = create("blocks_wind_charge_explosions");
    public static final TagKey<Block> DOES_NOT_BLOCK_HOPPERS = create("does_not_block_hoppers");
+   public static final TagKey<Block> PLAYS_AMBIENT_DESERT_BLOCK_SOUNDS = create("plays_ambient_desert_block_sounds");
    public static final TagKey<Block> AIR = create("air");
 
    private BlockTags() {

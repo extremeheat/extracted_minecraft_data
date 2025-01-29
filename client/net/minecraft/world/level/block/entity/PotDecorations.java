@@ -5,14 +5,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -55,21 +51,8 @@ public record PotDecorations(Optional<Item> back, Optional<Item> left, Optional<
       }
    }
 
-   public CompoundTag save(CompoundTag var1) {
-      if (this.equals(EMPTY)) {
-         return var1;
-      } else {
-         var1.put("sherds", (Tag)CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow());
-         return var1;
-      }
-   }
-
    public List<Item> ordered() {
       return Stream.of(this.back, this.left, this.right, this.front).map((var0) -> (Item)var0.orElse(Items.BRICK)).toList();
-   }
-
-   public static PotDecorations load(@Nullable CompoundTag var0) {
-      return var0 != null && var0.contains("sherds") ? (PotDecorations)CODEC.parse(NbtOps.INSTANCE, var0.get("sherds")).result().orElse(EMPTY) : EMPTY;
    }
 
    public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {

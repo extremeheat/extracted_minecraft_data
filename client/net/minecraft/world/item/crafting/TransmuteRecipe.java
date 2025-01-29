@@ -44,7 +44,11 @@ public class TransmuteRecipe implements CraftingRecipe {
          for(int var5 = 0; var5 < var1.size(); ++var5) {
             ItemStack var6 = var1.getItem(var5);
             if (!var6.isEmpty()) {
-               if (!var3 && this.input.test(var6) && var6.getItem() != this.result.item().value()) {
+               if (!var3 && this.input.test(var6)) {
+                  if (this.result.isResultUnchanged(var6)) {
+                     return false;
+                  }
+
                   var3 = true;
                } else {
                   if (var4 || !this.material.test(var6)) {
@@ -61,16 +65,14 @@ public class TransmuteRecipe implements CraftingRecipe {
    }
 
    public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
-      ItemStack var3 = ItemStack.EMPTY;
-
-      for(int var4 = 0; var4 < var1.size(); ++var4) {
-         ItemStack var5 = var1.getItem(var4);
-         if (!var5.isEmpty() && this.input.test(var5) && var5.getItem() != this.result.item().value()) {
-            var3 = var5;
+      for(int var3 = 0; var3 < var1.size(); ++var3) {
+         ItemStack var4 = var1.getItem(var3);
+         if (!var4.isEmpty() && this.input.test(var4)) {
+            return this.result.apply(var4);
          }
       }
 
-      return this.result.apply(var3);
+      return ItemStack.EMPTY;
    }
 
    public List<RecipeDisplay> display() {

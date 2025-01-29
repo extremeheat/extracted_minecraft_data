@@ -201,6 +201,7 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.TRIAL_OMEN, SpellParticle.Provider::new);
       this.register(ParticleTypes.OMINOUS_SPAWNING, FlyStraightTowardsParticle.OminousSpawnProvider::new);
       this.register(ParticleTypes.BLOCK_CRUMBLE, new TerrainParticle.CrumblingProvider());
+      this.register(ParticleTypes.FIREFLY, FireflyParticle.FireflyProvider::new);
    }
 
    private <T extends ParticleOptions> void register(ParticleType<T> var1, ParticleProvider<T> var2) {

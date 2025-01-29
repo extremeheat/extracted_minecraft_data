@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BellBlockEntity;
+import net.minecraft.world.phys.Vec3;
 
 public class BellRenderer implements BlockEntityRenderer<BellBlockEntity> {
    public static final Material BELL_RESOURCE_LOCATION;
@@ -20,10 +21,10 @@ public class BellRenderer implements BlockEntityRenderer<BellBlockEntity> {
       this.model = new BellModel(var1.bakeLayer(ModelLayers.BELL));
    }
 
-   public void render(BellBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      VertexConsumer var7 = BELL_RESOURCE_LOCATION.buffer(var4, RenderType::entitySolid);
+   public void render(BellBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
+      VertexConsumer var8 = BELL_RESOURCE_LOCATION.buffer(var4, RenderType::entitySolid);
       this.model.setupAnim(var1, var2);
-      this.model.renderToBuffer(var3, var7, var5, var6);
+      this.model.renderToBuffer(var3, var8, var5, var6);
    }
 
    static {

@@ -33,7 +33,7 @@ public record JukeboxPlayablePredicate(Optional<HolderSet<JukeboxSong>> song) im
 
          for(Holder var4 : (HolderSet)this.song.get()) {
             Optional var5 = var4.unwrapKey();
-            if (!var5.isEmpty() && var5.get() == var1.song().key()) {
+            if (!var5.isEmpty() && var5.equals(var1.song().key())) {
                var2 = true;
                break;
             }

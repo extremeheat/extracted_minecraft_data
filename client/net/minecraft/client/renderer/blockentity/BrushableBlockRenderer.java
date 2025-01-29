@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BrushableBlockEntity;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.phys.Vec3;
 
 public class BrushableBlockRenderer implements BlockEntityRenderer<BrushableBlockEntity> {
    private final ItemRenderer itemRenderer;
@@ -20,24 +21,24 @@ public class BrushableBlockRenderer implements BlockEntityRenderer<BrushableBloc
       this.itemRenderer = var1.getItemRenderer();
    }
 
-   public void render(BrushableBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
+   public void render(BrushableBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
       if (var1.getLevel() != null) {
-         int var7 = (Integer)var1.getBlockState().getValue(BlockStateProperties.DUSTED);
-         if (var7 > 0) {
-            Direction var8 = var1.getHitDirection();
-            if (var8 != null) {
-               ItemStack var9 = var1.getItem();
-               if (!var9.isEmpty()) {
+         int var8 = (Integer)var1.getBlockState().getValue(BlockStateProperties.DUSTED);
+         if (var8 > 0) {
+            Direction var9 = var1.getHitDirection();
+            if (var9 != null) {
+               ItemStack var10 = var1.getItem();
+               if (!var10.isEmpty()) {
                   var3.pushPose();
                   var3.translate(0.0F, 0.5F, 0.0F);
-                  float[] var10 = this.translations(var8, var7);
-                  var3.translate(var10[0], var10[1], var10[2]);
+                  float[] var11 = this.translations(var9, var8);
+                  var3.translate(var11[0], var11[1], var11[2]);
                   var3.mulPose(Axis.YP.rotationDegrees(75.0F));
-                  boolean var11 = var8 == Direction.EAST || var8 == Direction.WEST;
-                  var3.mulPose(Axis.YP.rotationDegrees((float)((var11 ? 90 : 0) + 11)));
+                  boolean var12 = var9 == Direction.EAST || var9 == Direction.WEST;
+                  var3.mulPose(Axis.YP.rotationDegrees((float)((var12 ? 90 : 0) + 11)));
                   var3.scale(0.5F, 0.5F, 0.5F);
-                  int var12 = LevelRenderer.getLightColor(var1.getLevel(), var1.getBlockState(), var1.getBlockPos().relative(var8));
-                  this.itemRenderer.renderStatic(var9, ItemDisplayContext.FIXED, var12, OverlayTexture.NO_OVERLAY, var3, var4, var1.getLevel(), 0);
+                  int var13 = LevelRenderer.getLightColor(var1.getLevel(), var1.getBlockState(), var1.getBlockPos().relative(var9));
+                  this.itemRenderer.renderStatic(var10, ItemDisplayContext.FIXED, var13, OverlayTexture.NO_OVERLAY, var3, var4, var1.getLevel(), 0);
                   var3.popPose();
                }
             }

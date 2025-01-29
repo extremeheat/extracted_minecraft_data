@@ -2,9 +2,7 @@ package net.minecraft.world.level.block.entity;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
@@ -97,34 +95,16 @@ public class SignBlockEntity extends BlockEntity {
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      DataResult var10000 = SignText.DIRECT_CODEC.encodeStart(var3, this.frontText);
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("front_text", var1x));
-      var10000 = SignText.DIRECT_CODEC.encodeStart(var3, this.backText);
-      var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("back_text", var1x));
+      var1.store("front_text", SignText.DIRECT_CODEC, var3, this.frontText);
+      var1.store("back_text", SignText.DIRECT_CODEC, var3, this.backText);
       var1.putBoolean("is_waxed", this.isWaxed);
    }
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      if (var1.contains("front_text")) {
-         DataResult var10000 = SignText.DIRECT_CODEC.parse(var3, var1.getCompound("front_text"));
-         Logger var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> this.frontText = this.loadLines(var1x));
-      }
-
-      if (var1.contains("back_text")) {
-         DataResult var4 = SignText.DIRECT_CODEC.parse(var3, var1.getCompound("back_text"));
-         Logger var5 = LOGGER;
-         Objects.requireNonNull(var5);
-         var4.resultOrPartial(var5::error).ifPresent((var1x) -> this.backText = this.loadLines(var1x));
-      }
-
+      this.frontText = (SignText)var1.read("front_text", SignText.DIRECT_CODEC, var3).map(this::loadLines).orElseGet(SignText::new);
+      this.backText = (SignText)var1.read("back_text", SignText.DIRECT_CODEC, var3).map(this::loadLines).orElseGet(SignText::new);
       this.isWaxed = var1.getBoolean("is_waxed");
    }
 

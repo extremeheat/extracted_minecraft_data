@@ -33,6 +33,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -44,8 +45,10 @@ import net.minecraft.world.level.chunk.storage.RegionFile;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
 import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.level.storage.WorldData;
 import org.slf4j.Logger;
 
 public class WorldUpgrader implements AutoCloseable {
@@ -77,15 +80,16 @@ public class WorldUpgrader implements AutoCloseable {
    static final Pattern REGEX = Pattern.compile("^r\\.(-?[0-9]+)\\.(-?[0-9]+)\\.mca$");
    final DimensionDataStorage overworldDataStorage;
 
-   public WorldUpgrader(LevelStorageSource.LevelStorageAccess var1, DataFixer var2, RegistryAccess var3, boolean var4, boolean var5) {
+   public WorldUpgrader(LevelStorageSource.LevelStorageAccess var1, DataFixer var2, WorldData var3, RegistryAccess var4, boolean var5, boolean var6) {
       super();
-      this.dimensions = var3.lookupOrThrow(Registries.LEVEL_STEM);
+      this.dimensions = var4.lookupOrThrow(Registries.LEVEL_STEM);
       this.levels = (Set)this.dimensions.registryKeySet().stream().map(Registries::levelStemToLevel).collect(Collectors.toUnmodifiableSet());
-      this.eraseCache = var4;
+      this.eraseCache = var5;
       this.dataFixer = var2;
       this.levelStorage = var1;
-      this.overworldDataStorage = new DimensionDataStorage(this.levelStorage.getDimensionPath(Level.OVERWORLD).resolve("data"), var2, var3);
-      this.recreateRegionFiles = var5;
+      SavedData.Context var7 = new SavedData.Context((ServerLevel)null, var3.worldGenOptions().seed());
+      this.overworldDataStorage = new DimensionDataStorage(var7, this.levelStorage.getDimensionPath(Level.OVERWORLD).resolve("data"), var2, var4);
+      this.recreateRegionFiles = var6;
       this.thread = THREAD_FACTORY.newThread(this::work);
       this.thread.setUncaughtExceptionHandler((var1x, var2x) -> {
          LOGGER.error("Error upgrading world", var2x);

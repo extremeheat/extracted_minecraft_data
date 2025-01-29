@@ -2,14 +2,13 @@ package net.minecraft.server;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.mojang.serialization.Codec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundResetScorePacket;
 import net.minecraft.network.protocol.game.ClientboundSetDisplayObjectivePacket;
@@ -18,7 +17,7 @@ import net.minecraft.network.protocol.game.ClientboundSetPlayerTeamPacket;
 import net.minecraft.network.protocol.game.ClientboundSetScorePacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerScoreEntry;
@@ -29,6 +28,7 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.ScoreboardSaveData;
 
 public class ServerScoreboard extends Scoreboard {
+   public static final SavedDataType<ScoreboardSaveData> TYPE;
    private final MinecraftServer server;
    private final Set<Objective> trackedObjectives = Sets.newHashSet();
    private final List<Runnable> dirtyListeners = Lists.newArrayList();
@@ -223,10 +223,6 @@ public class ServerScoreboard extends Scoreboard {
       return var2;
    }
 
-   public SavedData.Factory<ScoreboardSaveData> dataFactory() {
-      return new SavedData.Factory<ScoreboardSaveData>(this::createData, this::createData, DataFixTypes.SAVED_DATA_SCOREBOARD);
-   }
-
    private ScoreboardSaveData createData() {
       ScoreboardSaveData var1 = new ScoreboardSaveData(this);
       Objects.requireNonNull(var1);
@@ -234,8 +230,19 @@ public class ServerScoreboard extends Scoreboard {
       return var1;
    }
 
-   private ScoreboardSaveData createData(CompoundTag var1, HolderLookup.Provider var2) {
-      return this.createData().load(var1, var2);
+   private ScoreboardSaveData createData(ScoreboardSaveData.Packed var1) {
+      ScoreboardSaveData var2 = this.createData();
+      var2.loadFrom(var1);
+      return var2;
+   }
+
+   static {
+      TYPE = new SavedDataType<ScoreboardSaveData>("scoreboard", (var0) -> var0.levelOrThrow().getScoreboard().createData(), (var0) -> {
+         ServerScoreboard var1 = var0.levelOrThrow().getScoreboard();
+         Codec var10000 = ScoreboardSaveData.Packed.CODEC;
+         Objects.requireNonNull(var1);
+         return var10000.xmap(var1::createData, ScoreboardSaveData::pack);
+      }, DataFixTypes.SAVED_DATA_SCOREBOARD);
    }
 
    public static enum Method {

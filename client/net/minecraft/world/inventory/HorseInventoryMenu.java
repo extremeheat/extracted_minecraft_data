@@ -27,18 +27,23 @@ public class HorseInventoryMenu extends AbstractContainerMenu {
       this.horse = var4;
       var3.startOpen(var2.player);
       Container var6 = var4.createEquipmentSlotContainer(EquipmentSlot.SADDLE);
-      this.addSlot(new ArmorSlot(var6, var4, EquipmentSlot.SADDLE, 0, 8, 18, SADDLE_SLOT_SPRITE));
-      ResourceLocation var7 = var4 instanceof Llama ? LLAMA_ARMOR_SLOT_SPRITE : ARMOR_SLOT_SPRITE;
-      Container var8 = var4.createEquipmentSlotContainer(EquipmentSlot.BODY);
-      this.addSlot(new ArmorSlot(var8, var4, EquipmentSlot.BODY, 0, 8, 36, var7) {
+      this.addSlot(new ArmorSlot(var6, var4, EquipmentSlot.SADDLE, 0, 8, 18, SADDLE_SLOT_SPRITE) {
          public boolean isActive() {
-            return var4.canUseSlot(EquipmentSlot.BODY) && var4.getType().is(EntityTypeTags.CAN_WEAR_HORSE_ARMOR);
+            return var4.canUseSlot(EquipmentSlot.SADDLE) && var4.getType().is(EntityTypeTags.CAN_EQUIP_SADDLE);
+         }
+      });
+      final boolean var7 = var4 instanceof Llama;
+      ResourceLocation var8 = var7 ? LLAMA_ARMOR_SLOT_SPRITE : ARMOR_SLOT_SPRITE;
+      Container var9 = var4.createEquipmentSlotContainer(EquipmentSlot.BODY);
+      this.addSlot(new ArmorSlot(var9, var4, EquipmentSlot.BODY, 0, 8, 36, var8) {
+         public boolean isActive() {
+            return var4.canUseSlot(EquipmentSlot.BODY) && (var4.getType().is(EntityTypeTags.CAN_WEAR_HORSE_ARMOR) || var7);
          }
       });
       if (var5 > 0) {
-         for(int var9 = 0; var9 < 3; ++var9) {
-            for(int var10 = 0; var10 < var5; ++var10) {
-               this.addSlot(new Slot(var3, var10 + var9 * var5, 80 + var10 * 18, 18 + var9 * 18));
+         for(int var10 = 0; var10 < 3; ++var10) {
+            for(int var11 = 0; var11 < var5; ++var11) {
+               this.addSlot(new Slot(var3, var11 + var10 * var5, 80 + var11 * 18, 18 + var10 * 18));
             }
          }
       }

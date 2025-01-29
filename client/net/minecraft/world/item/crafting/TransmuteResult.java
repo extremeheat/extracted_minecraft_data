@@ -39,6 +39,11 @@ public record TransmuteResult(Holder<Item> item, int count, DataComponentPatch c
       return var2;
    }
 
+   public boolean isResultUnchanged(ItemStack var1) {
+      ItemStack var2 = this.apply(var1);
+      return ItemStack.matches(var1, var2);
+   }
+
    public SlotDisplay display() {
       return new SlotDisplay.ItemStackSlotDisplay(new ItemStack(this.item, this.count, this.components));
    }

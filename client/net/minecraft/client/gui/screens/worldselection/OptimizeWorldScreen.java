@@ -24,7 +24,6 @@ import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.worldupdate.WorldUpgrader;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.WorldData;
 import org.slf4j.Logger;
@@ -50,7 +49,7 @@ public class OptimizeWorldScreen extends Screen {
             WorldData var8 = var7.worldData();
             RegistryAccess.Frozen var9 = var7.registries().compositeAccess();
             var3.saveDataTag(var9, var8);
-            return new OptimizeWorldScreen(var1, var2, var3, var8.getLevelSettings(), var4, var9);
+            return new OptimizeWorldScreen(var1, var2, var3, var8, var4, var9);
          }
       } catch (Exception var13) {
          LOGGER.warn("Failed to load datapacks, can't optimize world", var13);
@@ -58,10 +57,10 @@ public class OptimizeWorldScreen extends Screen {
       }
    }
 
-   private OptimizeWorldScreen(BooleanConsumer var1, DataFixer var2, LevelStorageSource.LevelStorageAccess var3, LevelSettings var4, boolean var5, RegistryAccess var6) {
-      super(Component.translatable("optimizeWorld.title", var4.levelName()));
+   private OptimizeWorldScreen(BooleanConsumer var1, DataFixer var2, LevelStorageSource.LevelStorageAccess var3, WorldData var4, boolean var5, RegistryAccess var6) {
+      super(Component.translatable("optimizeWorld.title", var4.getLevelSettings().levelName()));
       this.callback = var1;
-      this.upgrader = new WorldUpgrader(var3, var2, var6, var5, false);
+      this.upgrader = new WorldUpgrader(var3, var2, var4, var6, var5, false);
    }
 
    protected void init() {

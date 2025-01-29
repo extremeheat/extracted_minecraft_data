@@ -670,6 +670,8 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.WAXED_WEATHERED_COPPER_BULB);
       this.dropSelf(Blocks.WAXED_OXIDIZED_COPPER_BULB);
       this.dropSelf(Blocks.HEAVY_CORE);
+      this.dropSelf(Blocks.FIREFLY_BUSH);
+      this.dropSelf(Blocks.BUSH);
       this.dropOther(Blocks.FARMLAND, Blocks.DIRT);
       this.dropOther(Blocks.TRIPWIRE, Items.STRING);
       this.dropOther(Blocks.DIRT_PATH, Blocks.DIRT);

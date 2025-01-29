@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import java.util.List;
@@ -429,15 +428,16 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_VILLAGER_DATA, new VillagerData(BuiltInRegistries.VILLAGER_TYPE.getOrThrow(VillagerType.PLAINS), BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NONE), 1));
+      var1.define(DATA_VILLAGER_DATA, createDefaultVillagerData());
+   }
+
+   public static VillagerData createDefaultVillagerData() {
+      return new VillagerData(BuiltInRegistries.VILLAGER_TYPE.getOrThrow(VillagerType.PLAINS), BuiltInRegistries.VILLAGER_PROFESSION.getOrThrow(VillagerProfession.NONE), 1);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      DataResult var10000 = VillagerData.CODEC.encodeStart(NbtOps.INSTANCE, this.getVillagerData());
-      Logger var10001 = LOGGER;
-      Objects.requireNonNull(var10001);
-      var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("VillagerData", var1x));
+      var1.store("VillagerData", VillagerData.CODEC, this.getVillagerData());
       var1.putByte("FoodLevel", (byte)this.foodLevel);
       var1.put("Gossips", (Tag)this.gossips.store(NbtOps.INSTANCE));
       var1.putInt("Xp", this.villagerXp);
@@ -452,13 +452,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("VillagerData", 10)) {
-         DataResult var10000 = VillagerData.CODEC.parse(NbtOps.INSTANCE, var1.get("VillagerData"));
-         Logger var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         var10000.resultOrPartial(var10001::error).ifPresent((var1x) -> this.entityData.set(DATA_VILLAGER_DATA, var1x));
-      }
-
+      this.entityData.set(DATA_VILLAGER_DATA, (VillagerData)var1.read("VillagerData", VillagerData.CODEC).orElseGet(Villager::createDefaultVillagerData));
       if (var1.contains("FoodLevel", 1)) {
          this.foodLevel = var1.getByte("FoodLevel");
       }

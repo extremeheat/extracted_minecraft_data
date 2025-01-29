@@ -8,7 +8,6 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.util.Mth;
@@ -40,7 +39,7 @@ public class EnchantingTableBlockEntity extends BlockEntity implements Nameable 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       if (this.hasCustomName()) {
-         var1.put("CustomName", (Tag)ComponentSerialization.CODEC.encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), this.name).getOrThrow());
+         var1.store("CustomName", ComponentSerialization.CODEC, var2.createSerializationContext(NbtOps.INSTANCE), this.name);
       }
 
    }

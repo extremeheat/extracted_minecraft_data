@@ -1,12 +1,17 @@
 package net.minecraft.world.scores;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.numbers.NumberFormat;
+import net.minecraft.network.chat.numbers.NumberFormatTypes;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
 public class Objective {
@@ -30,6 +35,10 @@ public class Objective {
       this.renderType = var5;
       this.displayAutoUpdate = var6;
       this.numberFormat = var7;
+   }
+
+   public Packed pack() {
+      return new Packed(this.name, this.criteria, this.displayName, this.renderType, this.displayAutoUpdate, Optional.ofNullable(this.numberFormat));
    }
 
    public Scoreboard getScoreboard() {
@@ -92,5 +101,19 @@ public class Objective {
    public void setNumberFormat(@Nullable NumberFormat var1) {
       this.numberFormat = var1;
       this.scoreboard.onObjectiveChanged(this);
+   }
+
+   public static record Packed(String name, ObjectiveCriteria criteria, Component displayName, ObjectiveCriteria.RenderType renderType, boolean displayAutoUpdate, Optional<NumberFormat> numberFormat) {
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("Name").forGetter(Packed::name), ObjectiveCriteria.CODEC.optionalFieldOf("CriteriaName", ObjectiveCriteria.DUMMY).forGetter(Packed::criteria), ComponentSerialization.CODEC.fieldOf("DisplayName").forGetter(Packed::displayName), ObjectiveCriteria.RenderType.CODEC.optionalFieldOf("RenderType", ObjectiveCriteria.RenderType.INTEGER).forGetter(Packed::renderType), Codec.BOOL.optionalFieldOf("display_auto_update", false).forGetter(Packed::displayAutoUpdate), NumberFormatTypes.CODEC.optionalFieldOf("format").forGetter(Packed::numberFormat)).apply(var0, Packed::new));
+
+      public Packed(String var1, ObjectiveCriteria var2, Component var3, ObjectiveCriteria.RenderType var4, boolean var5, Optional<NumberFormat> var6) {
+         super();
+         this.name = var1;
+         this.criteria = var2;
+         this.displayName = var3;
+         this.renderType = var4;
+         this.displayAutoUpdate = var5;
+         this.numberFormat = var6;
+      }
    }
 }

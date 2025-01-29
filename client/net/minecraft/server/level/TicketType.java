@@ -4,7 +4,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 
 public record TicketType(long timeout, boolean persist, TicketUse use) {
-   public static final int NO_TIMEOUT = 0;
+   public static final long NO_TIMEOUT = 0L;
    public static final TicketType START;
    public static final TicketType DRAGON;
    public static final TicketType PLAYER_LOADING;

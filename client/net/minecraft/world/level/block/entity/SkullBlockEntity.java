@@ -5,7 +5,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.yggdrasil.ProfileResult;
-import com.mojang.logging.LogUtils;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,7 +20,6 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.protocol.Packet;
@@ -33,13 +31,11 @@ import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import org.slf4j.Logger;
 
 public class SkullBlockEntity extends BlockEntity {
    private static final String TAG_PROFILE = "profile";
    private static final String TAG_NOTE_BLOCK_SOUND = "note_block_sound";
    private static final String TAG_CUSTOM_NAME = "custom_name";
-   private static final Logger LOGGER = LogUtils.getLogger();
    @Nullable
    private static Executor mainThreadExecutor;
    @Nullable
@@ -118,7 +114,7 @@ public class SkullBlockEntity extends BlockEntity {
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       if (this.owner != null) {
-         var1.put("profile", (Tag)ResolvableProfile.CODEC.encodeStart(NbtOps.INSTANCE, this.owner).getOrThrow());
+         var1.store("profile", ResolvableProfile.CODEC, this.owner);
       }
 
       if (this.noteBlockSound != null) {
@@ -126,17 +122,14 @@ public class SkullBlockEntity extends BlockEntity {
       }
 
       if (this.customName != null) {
-         var1.put("custom_name", (Tag)ComponentSerialization.CODEC.encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), this.customName).getOrThrow());
+         var1.store("custom_name", ComponentSerialization.CODEC, var2.createSerializationContext(NbtOps.INSTANCE), this.customName);
       }
 
    }
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
-      if (var1.contains("profile")) {
-         ResolvableProfile.CODEC.parse(NbtOps.INSTANCE, var1.get("profile")).resultOrPartial((var0) -> LOGGER.error("Failed to load profile from player head: {}", var0)).ifPresent(this::setOwner);
-      }
-
+      this.setOwner((ResolvableProfile)var1.read("profile", ResolvableProfile.CODEC).orElse((Object)null));
       if (var1.contains("note_block_sound", 8)) {
          this.noteBlockSound = ResourceLocation.tryParse(var1.getString("note_block_sound"));
       }

@@ -11,7 +11,6 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -49,7 +48,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
-public class MushroomCow extends Cow implements Shearable {
+public class MushroomCow extends AbstractCow implements Shearable {
    private static final EntityDataAccessor<Integer> DATA_TYPE;
    private static final int MUTATE_CHANCE = 1024;
    private static final String TAG_STEW_EFFECTS = "stew_effects";
@@ -168,7 +167,7 @@ public class MushroomCow extends Cow implements Shearable {
       super.addAdditionalSaveData(var1);
       var1.putString("Type", this.getVariant().getSerializedName());
       if (this.stewEffects != null) {
-         SuspiciousStewEffects.CODEC.encodeStart(NbtOps.INSTANCE, this.stewEffects).ifSuccess((var1x) -> var1.put("stew_effects", var1x));
+         var1.store("stew_effects", SuspiciousStewEffects.CODEC, this.stewEffects);
       }
 
    }
@@ -176,10 +175,7 @@ public class MushroomCow extends Cow implements Shearable {
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.setVariant(MushroomCow.Variant.byName(var1.getString("Type")));
-      if (var1.contains("stew_effects", 9)) {
-         SuspiciousStewEffects.CODEC.parse(NbtOps.INSTANCE, var1.get("stew_effects")).ifSuccess((var1x) -> this.stewEffects = var1x);
-      }
-
+      this.stewEffects = (SuspiciousStewEffects)var1.read("stew_effects", SuspiciousStewEffects.CODEC).orElse(SuspiciousStewEffects.EMPTY);
    }
 
    private Optional<SuspiciousStewEffects> getEffectsFromItemStack(ItemStack var1) {
@@ -235,12 +231,6 @@ public class MushroomCow extends Cow implements Shearable {
       }
 
       return var4;
-   }
-
-   // $FF: synthetic method
-   @Nullable
-   public Cow getBreedOffspring(final ServerLevel var1, final AgeableMob var2) {
-      return this.getBreedOffspring(var1, var2);
    }
 
    // $FF: synthetic method

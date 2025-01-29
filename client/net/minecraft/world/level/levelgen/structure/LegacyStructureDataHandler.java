@@ -181,7 +181,7 @@ public class LegacyStructureDataHandler {
             }
 
             String var14 = var3 + "_index";
-            StructureFeatureIndexSavedData var15 = (StructureFeatureIndexSavedData)var1.computeIfAbsent(StructureFeatureIndexSavedData.factory(), var14);
+            StructureFeatureIndexSavedData var15 = (StructureFeatureIndexSavedData)var1.computeIfAbsent(StructureFeatureIndexSavedData.type(var14));
             if (var15.getAll().isEmpty()) {
                StructureFeatureIndexSavedData var16 = new StructureFeatureIndexSavedData();
                this.indexMap.put(var3, var16);

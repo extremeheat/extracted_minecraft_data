@@ -6,7 +6,9 @@ import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 
 public class ThrownLingeringPotion extends AbstractThrownPotion {
@@ -20,6 +22,10 @@ public class ThrownLingeringPotion extends AbstractThrownPotion {
 
    public ThrownLingeringPotion(Level var1, double var2, double var4, double var6, ItemStack var8) {
       super(EntityType.LINGERING_POTION, var1, var2, var4, var6, var8);
+   }
+
+   protected Item getDefaultItem() {
+      return Items.LINGERING_POTION;
    }
 
    public void onHitAsPotion(ServerLevel var1, ItemStack var2, @Nullable Entity var3) {

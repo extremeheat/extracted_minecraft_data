@@ -15,9 +15,9 @@ public class TestInstanceRenderer implements BlockEntityRenderer<TestInstanceBlo
       this.box = new BlockEntityWithBoundingBoxRenderer<TestInstanceBlockEntity>(var1);
    }
 
-   public void render(TestInstanceBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      this.beacon.render(var1, var2, var3, var4, var5, var6);
-      this.box.render(var1, var2, var3, var4, var5, var6);
+   public void render(TestInstanceBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
+      this.beacon.render(var1, var2, var3, var4, var5, var6, var7);
+      this.box.render(var1, var2, var3, var4, var5, var6, var7);
    }
 
    public boolean shouldRenderOffScreen(TestInstanceBlockEntity var1) {

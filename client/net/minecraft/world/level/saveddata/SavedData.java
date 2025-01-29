@@ -1,11 +1,8 @@
 package net.minecraft.world.level.saveddata;
 
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.util.datafix.DataFixTypes;
+import java.util.Objects;
+import javax.annotation.Nullable;
+import net.minecraft.server.level.ServerLevel;
 
 public abstract class SavedData {
    private boolean dirty;
@@ -13,8 +10,6 @@ public abstract class SavedData {
    public SavedData() {
       super();
    }
-
-   public abstract CompoundTag save(CompoundTag var1, HolderLookup.Provider var2);
 
    public void setDirty() {
       this.setDirty(true);
@@ -28,20 +23,19 @@ public abstract class SavedData {
       return this.dirty;
    }
 
-   public CompoundTag save(HolderLookup.Provider var1) {
-      CompoundTag var2 = new CompoundTag();
-      var2.put("data", this.save(new CompoundTag(), var1));
-      NbtUtils.addCurrentDataVersion(var2);
-      this.setDirty(false);
-      return var2;
-   }
+   public static record Context(@Nullable ServerLevel level, long worldSeed) {
+      public Context(ServerLevel var1) {
+         this(var1, var1.getSeed());
+      }
 
-   public static record Factory<T extends SavedData>(Supplier<T> constructor, BiFunction<CompoundTag, HolderLookup.Provider, T> deserializer, DataFixTypes type) {
-      public Factory(Supplier<T> var1, BiFunction<CompoundTag, HolderLookup.Provider, T> var2, DataFixTypes var3) {
+      public Context(@Nullable ServerLevel var1, long var2) {
          super();
-         this.constructor = var1;
-         this.deserializer = var2;
-         this.type = var3;
+         this.level = var1;
+         this.worldSeed = var2;
+      }
+
+      public ServerLevel levelOrThrow() {
+         return (ServerLevel)Objects.requireNonNull(this.level);
       }
    }
 }

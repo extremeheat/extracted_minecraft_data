@@ -33,7 +33,7 @@ public class PigVariants {
    }
 
    public static void bootstrap(BootstrapContext<PigVariant> var0) {
-      register(var0, TEMPERATE, PigVariant.ModelType.NORMAL, "pig", SpawnPrioritySelectors.fallback(0));
+      register(var0, TEMPERATE, PigVariant.ModelType.NORMAL, "temperate_pig", SpawnPrioritySelectors.fallback(0));
       register(var0, WARM, PigVariant.ModelType.NORMAL, "warm_pig", BiomeTags.SPAWNS_WARM_VARIANT_FARM_ANIMALS);
       register(var0, COLD, PigVariant.ModelType.COLD, "cold_pig", BiomeTags.SPAWNS_COLD_VARIANT_FARM_ANIMALS);
    }

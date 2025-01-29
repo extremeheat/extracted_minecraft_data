@@ -64,6 +64,8 @@ public class ModelLayers {
    public static final ModelLayerLocation CHICKEN = register("chicken");
    public static final ModelLayerLocation CHICKEN_BABY = register("chicken_baby");
    public static final ModelLayerLocation COD = register("cod");
+   public static final ModelLayerLocation COLD_COW = register("cold_cow");
+   public static final ModelLayerLocation COLD_COW_BABY = register("cold_cow_baby");
    public static final ModelLayerLocation COLD_PIG = register("cold_pig");
    public static final ModelLayerLocation COLD_PIG_BABY = register("cold_pig_baby");
    public static final ModelLayerLocation COMMAND_BLOCK_MINECART = register("command_block_minecart");
@@ -254,6 +256,8 @@ public class ModelLayers {
    public static final ModelLayerLocation VINDICATOR = register("vindicator");
    public static final ModelLayerLocation WANDERING_TRADER = register("wandering_trader");
    public static final ModelLayerLocation WARDEN = register("warden");
+   public static final ModelLayerLocation WARM_COW = register("warm_cow");
+   public static final ModelLayerLocation WARM_COW_BABY = register("warm_cow_baby");
    public static final ModelLayerLocation WIND_CHARGE = register("wind_charge");
    public static final ModelLayerLocation WITCH = register("witch");
    public static final ModelLayerLocation WITHER = register("wither");

@@ -6,13 +6,13 @@ import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
@@ -191,13 +191,7 @@ public class AttributeInstance {
       var1.putString("id", var2.location().toString());
       var1.putDouble("base", this.baseValue);
       if (!this.permanentModifiers.isEmpty()) {
-         ListTag var3 = new ListTag();
-
-         for(AttributeModifier var5 : this.permanentModifiers.values()) {
-            var3.add(var5.save());
-         }
-
-         var1.put("modifiers", var3);
+         var1.store("modifiers", AttributeModifier.CODEC.listOf(), List.copyOf(this.permanentModifiers.values()));
       }
 
       return var1;
@@ -205,17 +199,11 @@ public class AttributeInstance {
 
    public void load(CompoundTag var1) {
       this.baseValue = var1.getDouble("base");
-      if (var1.contains("modifiers", 9)) {
-         ListTag var2 = var1.getList("modifiers", 10);
 
-         for(int var3 = 0; var3 < var2.size(); ++var3) {
-            AttributeModifier var4 = AttributeModifier.load(var2.getCompound(var3));
-            if (var4 != null) {
-               this.modifierById.put(var4.id(), var4);
-               this.getModifiers(var4.operation()).put(var4.id(), var4);
-               this.permanentModifiers.put(var4.id(), var4);
-            }
-         }
+      for(AttributeModifier var4 : (List)var1.read("modifiers", AttributeModifier.CODEC.listOf()).orElse(List.of())) {
+         this.modifierById.put(var4.id(), var4);
+         this.getModifiers(var4.operation()).put(var4.id(), var4);
+         this.permanentModifiers.put(var4.id(), var4);
       }
 
       this.setDirty();

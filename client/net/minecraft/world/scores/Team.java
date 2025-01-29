@@ -1,13 +1,17 @@
 package net.minecraft.world.scores;
 
-import java.util.Arrays;
+import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.Collection;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ByIdMap;
+import net.minecraft.util.StringRepresentable;
 
 public abstract class Team {
    public Team() {
@@ -40,24 +44,17 @@ public abstract class Team {
 
    public abstract CollisionRule getCollisionRule();
 
-   public static enum Visibility {
+   public static enum Visibility implements StringRepresentable {
       ALWAYS("always", 0),
       NEVER("never", 1),
       HIDE_FOR_OTHER_TEAMS("hideForOtherTeams", 2),
       HIDE_FOR_OWN_TEAM("hideForOwnTeam", 3);
 
-      private static final Map<String, Visibility> BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> var0.name, (var0) -> var0));
+      public static final Codec<Visibility> CODEC = StringRepresentable.<Visibility>fromEnum(Visibility::values);
+      private static final IntFunction<Visibility> BY_ID = ByIdMap.<Visibility>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final StreamCodec<ByteBuf, Visibility> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
       public final String name;
       public final int id;
-
-      public static String[] getAllNames() {
-         return (String[])BY_NAME.keySet().toArray(new String[0]);
-      }
-
-      @Nullable
-      public static Visibility byName(String var0) {
-         return (Visibility)BY_NAME.get(var0);
-      }
 
       private Visibility(final String var3, final int var4) {
          this.name = var3;
@@ -68,26 +65,27 @@ public abstract class Team {
          return Component.translatable("team.visibility." + this.name);
       }
 
+      public String getSerializedName() {
+         return this.name;
+      }
+
       // $FF: synthetic method
       private static Visibility[] $values() {
          return new Visibility[]{ALWAYS, NEVER, HIDE_FOR_OTHER_TEAMS, HIDE_FOR_OWN_TEAM};
       }
    }
 
-   public static enum CollisionRule {
+   public static enum CollisionRule implements StringRepresentable {
       ALWAYS("always", 0),
       NEVER("never", 1),
       PUSH_OTHER_TEAMS("pushOtherTeams", 2),
       PUSH_OWN_TEAM("pushOwnTeam", 3);
 
-      private static final Map<String, CollisionRule> BY_NAME = (Map)Arrays.stream(values()).collect(Collectors.toMap((var0) -> var0.name, (var0) -> var0));
+      public static final Codec<CollisionRule> CODEC = StringRepresentable.<CollisionRule>fromEnum(CollisionRule::values);
+      private static final IntFunction<CollisionRule> BY_ID = ByIdMap.<CollisionRule>continuous((var0) -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
+      public static final StreamCodec<ByteBuf, CollisionRule> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, (var0) -> var0.id);
       public final String name;
       public final int id;
-
-      @Nullable
-      public static CollisionRule byName(String var0) {
-         return (CollisionRule)BY_NAME.get(var0);
-      }
 
       private CollisionRule(final String var3, final int var4) {
          this.name = var3;
@@ -96,6 +94,10 @@ public abstract class Team {
 
       public Component getDisplayName() {
          return Component.translatable("team.collision." + this.name);
+      }
+
+      public String getSerializedName() {
+         return this.name;
       }
 
       // $FF: synthetic method

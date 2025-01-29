@@ -20,6 +20,7 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Unit;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.entity.animal.CatVariant;
+import net.minecraft.world.entity.animal.CowVariant;
 import net.minecraft.world.entity.animal.Fox;
 import net.minecraft.world.entity.animal.MushroomCow;
 import net.minecraft.world.entity.animal.Parrot;
@@ -143,7 +144,7 @@ public class DataComponents {
    public static final DataComponentType<ProvidesTrimMaterial> PROVIDES_TRIM_MATERIAL = register("provides_trim_material", (var0) -> var0.persistent(ProvidesTrimMaterial.CODEC).networkSynchronized(ProvidesTrimMaterial.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<OminousBottleAmplifier> OMINOUS_BOTTLE_AMPLIFIER = register("ominous_bottle_amplifier", (var0) -> var0.persistent(OminousBottleAmplifier.CODEC).networkSynchronized(OminousBottleAmplifier.STREAM_CODEC));
    public static final DataComponentType<JukeboxPlayable> JUKEBOX_PLAYABLE = register("jukebox_playable", (var0) -> var0.persistent(JukeboxPlayable.CODEC).networkSynchronized(JukeboxPlayable.STREAM_CODEC));
-   public static final DataComponentType<TagKey<BannerPattern>> PROVIDES_BANNER_PATTERNS = register("provides_banner_patterns", (var0) -> var0.persistent(TagKey.codec(Registries.BANNER_PATTERN)).networkSynchronized(TagKey.streamCodec(Registries.BANNER_PATTERN)).cacheEncoding());
+   public static final DataComponentType<TagKey<BannerPattern>> PROVIDES_BANNER_PATTERNS = register("provides_banner_patterns", (var0) -> var0.persistent(TagKey.hashedCodec(Registries.BANNER_PATTERN)).networkSynchronized(TagKey.streamCodec(Registries.BANNER_PATTERN)).cacheEncoding());
    public static final DataComponentType<List<ResourceKey<Recipe<?>>>> RECIPES = register("recipes", (var0) -> var0.persistent(ResourceKey.codec(Registries.RECIPE).listOf()).cacheEncoding());
    public static final DataComponentType<LodestoneTracker> LODESTONE_TRACKER = register("lodestone_tracker", (var0) -> var0.persistent(LodestoneTracker.CODEC).networkSynchronized(LodestoneTracker.STREAM_CODEC).cacheEncoding());
    public static final DataComponentType<FireworkExplosion> FIREWORK_EXPLOSION = register("firework_explosion", (var0) -> var0.persistent(FireworkExplosion.CODEC).networkSynchronized(FireworkExplosion.STREAM_CODEC).cacheEncoding());
@@ -171,6 +172,7 @@ public class DataComponents {
    public static final DataComponentType<MushroomCow.Variant> MOOSHROOM_VARIANT = register("mooshroom/variant", (var0) -> var0.persistent(MushroomCow.Variant.CODEC).networkSynchronized(MushroomCow.Variant.STREAM_CODEC));
    public static final DataComponentType<Rabbit.Variant> RABBIT_VARIANT = register("rabbit/variant", (var0) -> var0.persistent(Rabbit.Variant.CODEC).networkSynchronized(Rabbit.Variant.STREAM_CODEC));
    public static final DataComponentType<Holder<PigVariant>> PIG_VARIANT = register("pig/variant", (var0) -> var0.persistent(PigVariant.CODEC).networkSynchronized(PigVariant.STREAM_CODEC));
+   public static final DataComponentType<Holder<CowVariant>> COW_VARIANT = register("cow/variant", (var0) -> var0.persistent(CowVariant.CODEC).networkSynchronized(CowVariant.STREAM_CODEC));
    public static final DataComponentType<Holder<FrogVariant>> FROG_VARIANT = register("frog/variant", (var0) -> var0.persistent(FrogVariant.CODEC).networkSynchronized(FrogVariant.STREAM_CODEC));
    public static final DataComponentType<Variant> HORSE_VARIANT = register("horse/variant", (var0) -> var0.persistent(Variant.CODEC).networkSynchronized(Variant.STREAM_CODEC));
    public static final DataComponentType<Holder<PaintingVariant>> PAINTING_VARIANT = register("painting/variant", (var0) -> var0.persistent(PaintingVariant.CODEC).networkSynchronized(PaintingVariant.STREAM_CODEC));

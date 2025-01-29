@@ -1,9 +1,6 @@
 package net.minecraft.world.level.block.entity.vault;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -19,7 +16,6 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -45,10 +41,8 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.Logger;
 
 public class VaultBlockEntity extends BlockEntity {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private final VaultServerData serverData = new VaultServerData();
    private final VaultSharedData sharedData = new VaultSharedData();
    private final VaultClientData clientData = new VaultClientData();
@@ -65,50 +59,29 @@ public class VaultBlockEntity extends BlockEntity {
    }
 
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return (CompoundTag)Util.make(new CompoundTag(), (var2) -> var2.put("shared_data", encode(VaultSharedData.CODEC, this.sharedData, var1)));
+      return (CompoundTag)Util.make(new CompoundTag(), (var2) -> var2.store("shared_data", VaultSharedData.CODEC, var1.createSerializationContext(NbtOps.INSTANCE), this.sharedData));
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
-      var1.put("config", encode(VaultConfig.CODEC, this.config, var2));
-      var1.put("shared_data", encode(VaultSharedData.CODEC, this.sharedData, var2));
-      var1.put("server_data", encode(VaultServerData.CODEC, this.serverData, var2));
-   }
-
-   private static <T> Tag encode(Codec<T> var0, T var1, HolderLookup.Provider var2) {
-      return (Tag)var0.encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), var1).getOrThrow();
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+      var1.store("config", VaultConfig.CODEC, var3, this.config);
+      var1.store("shared_data", VaultSharedData.CODEC, var3, this.sharedData);
+      var1.store("server_data", VaultServerData.CODEC, var3, this.serverData);
    }
 
    protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.loadAdditional(var1, var2);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      if (var1.contains("server_data")) {
-         DataResult var10000 = VaultServerData.CODEC.parse(var3, var1.get("server_data"));
-         Logger var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         Optional var4 = var10000.resultOrPartial(var10001::error);
-         VaultServerData var8 = this.serverData;
-         Objects.requireNonNull(var8);
-         var4.ifPresent(var8::set);
-      }
-
-      if (var1.contains("config")) {
-         DataResult var5 = VaultConfig.CODEC.parse(var3, var1.get("config"));
-         Logger var9 = LOGGER;
-         Objects.requireNonNull(var9);
-         var5.resultOrPartial(var9::error).ifPresent((var1x) -> this.config = var1x);
-      }
-
-      if (var1.contains("shared_data")) {
-         DataResult var6 = VaultSharedData.CODEC.parse(var3, var1.get("shared_data"));
-         Logger var10 = LOGGER;
-         Objects.requireNonNull(var10);
-         Optional var7 = var6.resultOrPartial(var10::error);
-         VaultSharedData var11 = this.sharedData;
-         Objects.requireNonNull(var11);
-         var7.ifPresent(var11::set);
-      }
-
+      Optional var10000 = var1.read("server_data", VaultServerData.CODEC, var3);
+      VaultServerData var10001 = this.serverData;
+      Objects.requireNonNull(var10001);
+      var10000.ifPresent(var10001::set);
+      this.config = (VaultConfig)var1.read("config", VaultConfig.CODEC, var3).orElse(VaultConfig.DEFAULT);
+      var10000 = var1.read("shared_data", VaultSharedData.CODEC, var3);
+      VaultSharedData var5 = this.sharedData;
+      Objects.requireNonNull(var5);
+      var10000.ifPresent(var5::set);
    }
 
    @Nullable

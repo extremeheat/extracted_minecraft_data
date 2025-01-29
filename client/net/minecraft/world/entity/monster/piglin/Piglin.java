@@ -275,6 +275,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       return (double)this.random.nextFloat() < 0.5 ? new ItemStack(Items.CROSSBOW) : new ItemStack(Items.GOLDEN_SWORD);
    }
 
+   @Nullable
    public TagKey<Item> getPreferredWeaponType() {
       return this.isBaby() ? null : ItemTags.PIGLIN_PREFERRED_WEAPONS;
    }
@@ -388,9 +389,10 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    private Entity getTopPassenger(Entity var1, int var2) {
       List var3 = var1.getPassengers();
-      return var2 != 1 && !var3.isEmpty() ? this.getTopPassenger((Entity)var3.get(0), var2 - 1) : var1;
+      return var2 != 1 && !var3.isEmpty() ? this.getTopPassenger((Entity)var3.getFirst(), var2 - 1) : var1;
    }
 
+   @Nullable
    protected SoundEvent getAmbientSound() {
       return this.level().isClientSide ? null : (SoundEvent)PiglinAi.getSoundForCurrentActivity(this).orElse((Object)null);
    }

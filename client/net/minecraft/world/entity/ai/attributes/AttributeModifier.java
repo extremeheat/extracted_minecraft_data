@@ -1,24 +1,17 @@
 package net.minecraft.world.entity.ai.attributes;
 
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.util.function.IntFunction;
-import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
-import org.slf4j.Logger;
 
 public record AttributeModifier(ResourceLocation id, double amount, Operation operation) {
-   private static final Logger LOGGER = LogUtils.getLogger();
    public static final MapCodec<AttributeModifier> MAP_CODEC = RecordCodecBuilder.mapCodec((var0) -> var0.group(ResourceLocation.CODEC.fieldOf("id").forGetter(AttributeModifier::id), Codec.DOUBLE.fieldOf("amount").forGetter(AttributeModifier::amount), AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(AttributeModifier::operation)).apply(var0, AttributeModifier::new));
    public static final Codec<AttributeModifier> CODEC;
    public static final StreamCodec<ByteBuf, AttributeModifier> STREAM_CODEC;
@@ -28,22 +21,6 @@ public record AttributeModifier(ResourceLocation id, double amount, Operation op
       this.id = var1;
       this.amount = var2;
       this.operation = var4;
-   }
-
-   public CompoundTag save() {
-      DataResult var1 = CODEC.encode(this, NbtOps.INSTANCE, new CompoundTag());
-      return (CompoundTag)var1.getOrThrow();
-   }
-
-   @Nullable
-   public static AttributeModifier load(CompoundTag var0) {
-      DataResult var1 = CODEC.parse(NbtOps.INSTANCE, var0);
-      if (var1.isSuccess()) {
-         return (AttributeModifier)var1.getOrThrow();
-      } else {
-         LOGGER.warn("Unable to create attribute: {}", ((DataResult.Error)var1.error().get()).message());
-         return null;
-      }
    }
 
    public boolean is(ResourceLocation var1) {

@@ -6,13 +6,10 @@ import com.google.common.collect.Lists;
 import com.google.common.math.IntMath;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
-import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Predicate;
@@ -27,9 +24,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -121,10 +116,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
-import org.slf4j.Logger;
 
 public abstract class Player extends LivingEntity {
-   private static final Logger LOGGER = LogUtils.getLogger();
    public static final HumanoidArm DEFAULT_MAIN_HAND;
    public static final int DEFAULT_MODEL_CUSTOMIZATION = 0;
    public static final int MAX_HEALTH = 20;
@@ -751,20 +744,8 @@ public abstract class Player extends LivingEntity {
          this.setShoulderEntityRight(var1.getCompound("ShoulderEntityRight"));
       }
 
-      if (var1.contains("LastDeathLocation", 10)) {
-         DataResult var10001 = GlobalPos.CODEC.parse(NbtOps.INSTANCE, var1.get("LastDeathLocation"));
-         Logger var10002 = LOGGER;
-         Objects.requireNonNull(var10002);
-         this.setLastDeathLocation(var10001.resultOrPartial(var10002::error));
-      }
-
-      if (var1.contains("current_explosion_impact_pos", 9)) {
-         DataResult var10000 = Vec3.CODEC.parse(NbtOps.INSTANCE, var1.get("current_explosion_impact_pos"));
-         Logger var3 = LOGGER;
-         Objects.requireNonNull(var3);
-         var10000.resultOrPartial(var3::error).ifPresent((var1x) -> this.currentImpulseImpactPos = var1x);
-      }
-
+      this.setLastDeathLocation(var1.read("LastDeathLocation", GlobalPos.CODEC));
+      this.currentImpulseImpactPos = (Vec3)var1.read("current_explosion_impact_pos", Vec3.CODEC).orElse((Object)null);
       this.ignoreFallDamageFromCurrentImpulse = var1.getBoolean("ignore_fall_damage_from_current_explosion");
       this.currentImpulseContextResetGraceTime = var1.getInt("current_impulse_context_reset_grace_time");
    }
@@ -791,14 +772,9 @@ public abstract class Player extends LivingEntity {
          var1.put("ShoulderEntityRight", this.getShoulderEntityRight());
       }
 
-      this.getLastDeathLocation().flatMap((var0) -> {
-         DataResult var10000 = GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, var0);
-         Logger var10001 = LOGGER;
-         Objects.requireNonNull(var10001);
-         return var10000.resultOrPartial(var10001::error);
-      }).ifPresent((var1x) -> var1.put("LastDeathLocation", var1x));
+      this.lastDeathLocation.ifPresent((var1x) -> var1.store("LastDeathLocation", GlobalPos.CODEC, var1x));
       if (this.currentImpulseImpactPos != null) {
-         var1.put("current_explosion_impact_pos", (Tag)Vec3.CODEC.encodeStart(NbtOps.INSTANCE, this.currentImpulseImpactPos).getOrThrow());
+         var1.store("current_explosion_impact_pos", Vec3.CODEC, this.currentImpulseImpactPos);
       }
 
       var1.putBoolean("ignore_fall_damage_from_current_explosion", this.ignoreFallDamageFromCurrentImpulse);
@@ -1443,6 +1419,7 @@ public abstract class Player extends LivingEntity {
             this.resetCurrentImpulseContext();
             return true;
          } else {
+            this.propagateFallToPassengers(var1, var3, var4);
             return false;
          }
       }

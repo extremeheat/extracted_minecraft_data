@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class LeafLitterBlock extends BushBlock implements SegmentableBlock {
+public class LeafLitterBlock extends VegetationBlock implements SegmentableBlock {
    public static final MapCodec<LeafLitterBlock> CODEC = simpleCodec(LeafLitterBlock::new);
    public static final EnumProperty<Direction> FACING;
    private final Function<BlockState, VoxelShape> shapes;

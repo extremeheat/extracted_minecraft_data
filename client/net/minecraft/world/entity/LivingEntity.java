@@ -43,7 +43,6 @@ import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -56,6 +55,7 @@ import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerChunkCache;
@@ -668,14 +668,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
       var1.putShort("DeathTime", (short)this.deathTime);
       var1.putFloat("AbsorptionAmount", this.getAbsorptionAmount());
       var1.put("attributes", this.getAttributes().save());
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       if (!this.activeEffects.isEmpty()) {
-         ListTag var2 = new ListTag();
-
-         for(MobEffectInstance var4 : this.activeEffects.values()) {
-            var2.add(var4.save());
-         }
-
-         var1.put("active_effects", var2);
+         var1.store("active_effects", MobEffectInstance.CODEC.listOf(), var2, List.copyOf(this.activeEffects.values()));
       }
 
       var1.putBoolean("FallFlying", this.isFallFlying());
@@ -684,68 +679,10 @@ public abstract class LivingEntity extends Entity implements Attackable {
          var1.putInt("SleepingY", var1x.getY());
          var1.putInt("SleepingZ", var1x.getZ());
       });
-      DataResult var5 = this.brain.serializeStart(NbtOps.INSTANCE);
+      DataResult var3 = this.brain.serializeStart(NbtOps.INSTANCE);
       Logger var10001 = LOGGER;
       java.util.Objects.requireNonNull(var10001);
-      var5.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("Brain", var1x));
-      this.lastHurtByPlayer = EntityReference.<Player>read(var1, "last_hurt_by_player");
-      this.lastHurtByPlayerMemoryTime = var1.getInt("last_hurt_by_player_memory_time");
-      this.lastHurtByMob = EntityReference.<LivingEntity>read(var1, "last_hurt_by_mob");
-      this.lastHurtByMobTimestamp = var1.getInt("ticks_since_last_hurt_by_mob") + this.tickCount;
-   }
-
-   public void readAdditionalSaveData(CompoundTag var1) {
-      this.internalSetAbsorptionAmount(var1.getFloat("AbsorptionAmount"));
-      if (var1.contains("attributes", 9) && this.level() != null && !this.level().isClientSide) {
-         this.getAttributes().load(var1.getList("attributes", 10));
-      }
-
-      if (var1.contains("active_effects", 9)) {
-         ListTag var2 = var1.getList("active_effects", 10);
-
-         for(int var3 = 0; var3 < var2.size(); ++var3) {
-            CompoundTag var4 = var2.getCompound(var3);
-            MobEffectInstance var5 = MobEffectInstance.load(var4);
-            if (var5 != null) {
-               this.activeEffects.put(var5.getEffect(), var5);
-            }
-         }
-      }
-
-      if (var1.contains("Health", 99)) {
-         this.setHealth(var1.getFloat("Health"));
-      }
-
-      this.hurtTime = var1.getShort("HurtTime");
-      this.deathTime = var1.getShort("DeathTime");
-      this.lastHurtByMobTimestamp = var1.getInt("HurtByTimestamp");
-      if (var1.contains("Team", 8)) {
-         String var6 = var1.getString("Team");
-         Scoreboard var8 = this.level().getScoreboard();
-         PlayerTeam var9 = var8.getPlayerTeam(var6);
-         boolean var10 = var9 != null && var8.addPlayerToTeam(this.getStringUUID(), var9);
-         if (!var10) {
-            LOGGER.warn("Unable to add mob to team \"{}\" (that team probably doesn't exist)", var6);
-         }
-      }
-
-      if (var1.getBoolean("FallFlying")) {
-         this.setSharedFlag(7, true);
-      }
-
-      if (var1.contains("SleepingX", 99) && var1.contains("SleepingY", 99) && var1.contains("SleepingZ", 99)) {
-         BlockPos var7 = new BlockPos(var1.getInt("SleepingX"), var1.getInt("SleepingY"), var1.getInt("SleepingZ"));
-         this.setSleepingPos(var7);
-         this.entityData.set(DATA_POSE, Pose.SLEEPING);
-         if (!this.firstTick) {
-            this.setPosToBed(var7);
-         }
-      }
-
-      if (var1.contains("Brain", 10)) {
-         this.brain = this.makeBrain(new Dynamic(NbtOps.INSTANCE, var1.get("Brain")));
-      }
-
+      var3.resultOrPartial(var10001::error).ifPresent((var1x) -> var1.put("Brain", var1x));
       if (this.lastHurtByPlayer != null) {
          this.lastHurtByPlayer.store(var1, "last_hurt_by_player");
          var1.putInt("last_hurt_by_player_memory_time", this.lastHurtByPlayerMemoryTime);
@@ -756,6 +693,60 @@ public abstract class LivingEntity extends Entity implements Attackable {
          var1.putInt("ticks_since_last_hurt_by_mob", this.tickCount - this.lastHurtByMobTimestamp);
       }
 
+   }
+
+   public void readAdditionalSaveData(CompoundTag var1) {
+      this.internalSetAbsorptionAmount(var1.getFloat("AbsorptionAmount"));
+      if (var1.contains("attributes", 9) && this.level() != null && !this.level().isClientSide) {
+         this.getAttributes().load(var1.getList("attributes", 10));
+      }
+
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      List var3 = (List)var1.read("active_effects", MobEffectInstance.CODEC.listOf(), var2).orElse(List.of());
+      this.activeEffects.clear();
+
+      for(MobEffectInstance var5 : var3) {
+         this.activeEffects.put(var5.getEffect(), var5);
+      }
+
+      if (var1.contains("Health", 99)) {
+         this.setHealth(var1.getFloat("Health"));
+      }
+
+      this.hurtTime = var1.getShort("HurtTime");
+      this.deathTime = var1.getShort("DeathTime");
+      this.lastHurtByMobTimestamp = var1.getInt("HurtByTimestamp");
+      if (var1.contains("Team", 8)) {
+         String var8 = var1.getString("Team");
+         Scoreboard var10 = this.level().getScoreboard();
+         PlayerTeam var6 = var10.getPlayerTeam(var8);
+         boolean var7 = var6 != null && var10.addPlayerToTeam(this.getStringUUID(), var6);
+         if (!var7) {
+            LOGGER.warn("Unable to add mob to team \"{}\" (that team probably doesn't exist)", var8);
+         }
+      }
+
+      if (var1.getBoolean("FallFlying")) {
+         this.setSharedFlag(7, true);
+      }
+
+      if (var1.contains("SleepingX", 99) && var1.contains("SleepingY", 99) && var1.contains("SleepingZ", 99)) {
+         BlockPos var9 = new BlockPos(var1.getInt("SleepingX"), var1.getInt("SleepingY"), var1.getInt("SleepingZ"));
+         this.setSleepingPos(var9);
+         this.entityData.set(DATA_POSE, Pose.SLEEPING);
+         if (!this.firstTick) {
+            this.setPosToBed(var9);
+         }
+      }
+
+      if (var1.contains("Brain", 10)) {
+         this.brain = this.makeBrain(new Dynamic(NbtOps.INSTANCE, var1.get("Brain")));
+      }
+
+      this.lastHurtByPlayer = EntityReference.<Player>read(var1, "last_hurt_by_player");
+      this.lastHurtByPlayerMemoryTime = var1.getInt("last_hurt_by_player_memory_time");
+      this.lastHurtByMob = EntityReference.<LivingEntity>read(var1, "last_hurt_by_mob");
+      this.lastHurtByMobTimestamp = var1.getInt("ticks_since_last_hurt_by_mob") + this.tickCount;
    }
 
    protected void tickEffects() {
@@ -1096,29 +1087,9 @@ public abstract class LivingEntity extends Entity implements Attackable {
          }
 
          float var4 = var3;
-         boolean var5 = false;
-         float var6 = 0.0F;
-         BlocksAttacks var7 = (BlocksAttacks)this.getUseItem().get(DataComponents.BLOCKS_ATTACKS);
-         if (var3 > 0.0F && this.isDamageSourceBlocked(var2)) {
-            if (var7 != null) {
-               var7.hurtBlockingItem(this.level(), this.getUseItem(), this, this.getUsedItemHand(), var6);
-               var6 = var7.resolveBlockedDamage(var2, var3);
-            } else {
-               var6 = var3;
-            }
-
-            var3 -= var6;
-            if (!var2.is(DamageTypeTags.IS_PROJECTILE)) {
-               Entity var8 = var2.getDirectEntity();
-               if (var8 instanceof LivingEntity) {
-                  LivingEntity var9 = (LivingEntity)var8;
-                  this.blockUsingItem(var1, var9);
-               }
-            }
-
-            var5 = true;
-         }
-
+         float var5 = this.applyItemBlocking(var1, var2, var3);
+         var3 -= var5;
+         boolean var6 = var5 > 0.0F;
          if (var2.is(DamageTypeTags.IS_FREEZING) && this.getType().is(EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES)) {
             var3 *= 5.0F;
          }
@@ -1132,7 +1103,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
             var3 = 3.4028235E38F;
          }
 
-         boolean var15 = true;
+         boolean var7 = true;
          if ((float)this.invulnerableTime > 10.0F && !var2.is(DamageTypeTags.BYPASSES_COOLDOWN)) {
             if (var3 <= this.lastHurt) {
                return false;
@@ -1140,7 +1111,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
             this.actuallyHurt(var1, var2, var3 - this.lastHurt);
             this.lastHurt = var3;
-            var15 = false;
+            var7 = false;
          } else {
             this.lastHurt = var3;
             this.invulnerableTime = 20;
@@ -1151,77 +1122,129 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
          this.resolveMobResponsibleForDamage(var2);
          this.resolvePlayerResponsibleForDamage(var2);
-         if (var15) {
-            if (var5 && var7 != null) {
-               var7.onBlocked(var1, this);
+         if (var7) {
+            BlocksAttacks var8 = (BlocksAttacks)this.getUseItem().get(DataComponents.BLOCKS_ATTACKS);
+            if (var6 && var8 != null) {
+               var8.onBlocked(var1, this);
             } else {
                var1.broadcastDamageEvent(this, var2);
             }
 
-            if (!var2.is(DamageTypeTags.NO_IMPACT) && (!var5 || var3 > 0.0F)) {
+            if (!var2.is(DamageTypeTags.NO_IMPACT) && (!var6 || var3 > 0.0F)) {
                this.markHurt();
             }
 
             if (!var2.is(DamageTypeTags.NO_KNOCKBACK)) {
-               double var16 = 0.0;
+               double var9 = 0.0;
                double var11 = 0.0;
                Entity var14 = var2.getDirectEntity();
                if (var14 instanceof Projectile) {
                   Projectile var13 = (Projectile)var14;
-                  DoubleDoubleImmutablePair var22 = var13.calculateHorizontalHurtKnockbackDirection(this, var2);
-                  var16 = -var22.leftDouble();
-                  var11 = -var22.rightDouble();
+                  DoubleDoubleImmutablePair var21 = var13.calculateHorizontalHurtKnockbackDirection(this, var2);
+                  var9 = -var21.leftDouble();
+                  var11 = -var21.rightDouble();
                } else if (var2.getSourcePosition() != null) {
-                  var16 = var2.getSourcePosition().x() - this.getX();
+                  var9 = var2.getSourcePosition().x() - this.getX();
                   var11 = var2.getSourcePosition().z() - this.getZ();
                }
 
-               this.knockback(0.4000000059604645, var16, var11);
-               if (!var5) {
-                  this.indicateDamage(var16, var11);
+               this.knockback(0.4000000059604645, var9, var11);
+               if (!var6) {
+                  this.indicateDamage(var9, var11);
                }
             }
          }
 
          if (this.isDeadOrDying()) {
             if (!this.checkTotemDeathProtection(var2)) {
-               if (var15) {
+               if (var7) {
                   this.makeSound(this.getDeathSound());
                   this.playSecondaryHurtSound(var2);
                }
 
                this.die(var2);
             }
-         } else if (var15) {
+         } else if (var7) {
             this.playHurtSound(var2);
             this.playSecondaryHurtSound(var2);
          }
 
-         boolean var17 = !var5 || var3 > 0.0F;
-         if (var17) {
+         boolean var16 = !var6 || var3 > 0.0F;
+         if (var16) {
             this.lastDamageSource = var2;
             this.lastDamageStamp = this.level().getGameTime();
 
-            for(MobEffectInstance var20 : this.getActiveEffects()) {
-               var20.onMobHurt(var1, this, var2, var3);
+            for(MobEffectInstance var10 : this.getActiveEffects()) {
+               var10.onMobHurt(var1, this, var2, var3);
             }
          }
 
          if (this instanceof ServerPlayer) {
             ServerPlayer var18 = (ServerPlayer)this;
-            CriteriaTriggers.ENTITY_HURT_PLAYER.trigger(var18, var2, var4, var3, var5);
-            if (var6 > 0.0F && var6 < 3.4028235E37F) {
-               var18.awardStat(Stats.DAMAGE_BLOCKED_BY_SHIELD, Math.round(var6 * 10.0F));
+            CriteriaTriggers.ENTITY_HURT_PLAYER.trigger(var18, var2, var4, var3, var6);
+            if (var5 > 0.0F && var5 < 3.4028235E37F) {
+               var18.awardStat(Stats.DAMAGE_BLOCKED_BY_SHIELD, Math.round(var5 * 10.0F));
             }
          }
 
-         Entity var21 = var2.getEntity();
-         if (var21 instanceof ServerPlayer) {
-            ServerPlayer var19 = (ServerPlayer)var21;
-            CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(var19, this, var2, var4, var3, var5);
+         Entity var20 = var2.getEntity();
+         if (var20 instanceof ServerPlayer) {
+            ServerPlayer var19 = (ServerPlayer)var20;
+            CriteriaTriggers.PLAYER_HURT_ENTITY.trigger(var19, this, var2, var4, var3, var6);
          }
 
-         return var17;
+         return var16;
+      }
+   }
+
+   public float applyItemBlocking(ServerLevel var1, DamageSource var2, float var3) {
+      if (var3 <= 0.0F) {
+         return 0.0F;
+      } else {
+         ItemStack var4 = this.getItemBlockingWith();
+         if (var4 == null) {
+            return 0.0F;
+         } else {
+            BlocksAttacks var5 = (BlocksAttacks)var4.get(DataComponents.BLOCKS_ATTACKS);
+            if (var5 != null) {
+               Optional var10000 = var5.bypassedBy();
+               java.util.Objects.requireNonNull(var2);
+               if (!(Boolean)var10000.map(var2::is).orElse(false)) {
+                  Entity var7 = var2.getDirectEntity();
+                  if (var7 instanceof AbstractArrow) {
+                     AbstractArrow var6 = (AbstractArrow)var7;
+                     if (var6.getPierceLevel() > 0) {
+                        return 0.0F;
+                     }
+                  }
+
+                  Vec3 var8 = var2.getSourcePosition();
+                  double var12;
+                  if (var8 != null) {
+                     Vec3 var9 = this.calculateViewVector(0.0F, this.getYHeadRot());
+                     Vec3 var10 = var8.subtract(this.position());
+                     var10 = (new Vec3(var10.x, 0.0, var10.z)).normalize();
+                     var12 = Math.acos(var10.dot(var9));
+                  } else {
+                     var12 = 0.0;
+                  }
+
+                  float var13 = var5.resolveBlockedDamage(var2, var3, var12);
+                  var5.hurtBlockingItem(this.level(), var4, this, this.getUsedItemHand(), var13);
+                  if (!var2.is(DamageTypeTags.IS_PROJECTILE)) {
+                     Entity var15 = var2.getDirectEntity();
+                     if (var15 instanceof LivingEntity) {
+                        LivingEntity var11 = (LivingEntity)var15;
+                        this.blockUsingItem(var1, var11);
+                     }
+                  }
+
+                  return var13;
+               }
+            }
+
+            return 0.0F;
+         }
       }
    }
 
@@ -1322,28 +1345,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
          this.playSound(var1, this.getSoundVolume(), this.getVoicePitch());
       }
 
-   }
-
-   public boolean isDamageSourceBlocked(DamageSource var1) {
-      Entity var2 = var1.getDirectEntity();
-      boolean var3 = false;
-      if (var2 instanceof AbstractArrow var4) {
-         if (var4.getPierceLevel() > 0) {
-            var3 = true;
-         }
-      }
-
-      if (!var1.is(DamageTypeTags.BYPASSES_BLOCKING) && this.isBlocking() && !var3) {
-         Vec3 var7 = var1.getSourcePosition();
-         if (var7 != null) {
-            Vec3 var5 = this.calculateViewVector(0.0F, this.getYHeadRot());
-            Vec3 var6 = var7.vectorTo(this.position());
-            var6 = (new Vec3(var6.x, 0.0, var6.z)).normalize();
-            return var6.dot(var5) < 0.0;
-         }
-      }
-
-      return false;
    }
 
    private void breakItem(ItemStack var1) {

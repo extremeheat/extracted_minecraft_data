@@ -66,6 +66,10 @@ public abstract class AbstractPiglin extends Monster {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
+      if (!var1.contains("CanPickUpLoot")) {
+         this.setCanPickUpLoot(true);
+      }
+
       this.setImmuneToZombification(var1.getBoolean("IsImmuneToZombification"));
       this.timeInOverworld = var1.getInt("TimeInOverworld");
    }

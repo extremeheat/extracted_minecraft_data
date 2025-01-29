@@ -1,9 +1,13 @@
 package net.minecraft.nbt;
 
 import com.google.common.collect.Maps;
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.MapLike;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -11,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -19,8 +24,10 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.CrashReportDetail;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
+import org.slf4j.Logger;
 
 public class CompoundTag implements Tag {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final Codec<CompoundTag> CODEC;
    private static final int SELF_SIZE_IN_BYTES = 48;
    private static final int MAP_ENTRY_SIZE_IN_BYTES = 32;
@@ -446,6 +453,39 @@ public class CompoundTag implements Tag {
       }
 
       return var1.visitContainerEnd();
+   }
+
+   public <T> void store(String var1, Codec<T> var2, T var3) {
+      this.store(var1, var2, NbtOps.INSTANCE, var3);
+   }
+
+   public <T> void store(String var1, Codec<T> var2, DynamicOps<Tag> var3, T var4) {
+      this.put(var1, (Tag)var2.encodeStart(var3, var4).getOrThrow());
+   }
+
+   public <T> void store(MapCodec<T> var1, T var2) {
+      this.store((MapCodec)var1, NbtOps.INSTANCE, var2);
+   }
+
+   public <T> void store(MapCodec<T> var1, DynamicOps<Tag> var2, T var3) {
+      this.merge((CompoundTag)var1.encoder().encodeStart(var2, var3).getOrThrow());
+   }
+
+   public <T> Optional<T> read(String var1, Codec<T> var2) {
+      return this.<T>read(var1, var2, NbtOps.INSTANCE);
+   }
+
+   public <T> Optional<T> read(String var1, Codec<T> var2, DynamicOps<Tag> var3) {
+      Tag var4 = this.get(var1);
+      return var4 == null ? Optional.empty() : var2.parse(var3, var4).resultOrPartial((var2x) -> LOGGER.error("Failed to read field ({}={}): {}", new Object[]{var1, var4, var2x}));
+   }
+
+   public <T> Optional<T> read(MapCodec<T> var1) {
+      return this.read((MapCodec)var1, NbtOps.INSTANCE);
+   }
+
+   public <T> Optional<T> read(MapCodec<T> var1, DynamicOps<Tag> var2) {
+      return var1.decode(var2, (MapLike)var2.getMap(this).getOrThrow()).resultOrPartial((var1x) -> LOGGER.error("Failed to read value ({}): {}", this, var1x));
    }
 
    // $FF: synthetic method

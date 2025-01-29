@@ -124,6 +124,7 @@ public class ParticleTypes {
    public static final SimpleParticleType RAID_OMEN = register("raid_omen", false);
    public static final SimpleParticleType TRIAL_OMEN = register("trial_omen", false);
    public static final ParticleType<BlockParticleOption> BLOCK_CRUMBLE = register("block_crumble", false, BlockParticleOption::codec, BlockParticleOption::streamCodec);
+   public static final SimpleParticleType FIREFLY = register("firefly", false);
    public static final Codec<ParticleOptions> CODEC;
    public static final StreamCodec<RegistryFriendlyByteBuf, ParticleOptions> STREAM_CODEC;
 

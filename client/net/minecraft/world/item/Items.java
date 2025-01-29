@@ -261,9 +261,11 @@ public class Items {
    public static final Item COBWEB;
    public static final Item SHORT_GRASS;
    public static final Item FERN;
+   public static final Item BUSH;
    public static final Item AZALEA;
    public static final Item FLOWERING_AZALEA;
    public static final Item DEAD_BUSH;
+   public static final Item FIREFLY_BUSH;
    public static final Item SEAGRASS;
    public static final Item SEA_PICKLE;
    public static final Item WHITE_WOOL;
@@ -1727,9 +1729,11 @@ public class Items {
       COBWEB = registerBlock(Blocks.COBWEB);
       SHORT_GRASS = registerBlock(Blocks.SHORT_GRASS);
       FERN = registerBlock(Blocks.FERN);
+      BUSH = registerBlock(Blocks.BUSH);
       AZALEA = registerBlock(Blocks.AZALEA);
       FLOWERING_AZALEA = registerBlock(Blocks.FLOWERING_AZALEA);
       DEAD_BUSH = registerBlock(Blocks.DEAD_BUSH);
+      FIREFLY_BUSH = registerBlock(Blocks.FIREFLY_BUSH);
       SEAGRASS = registerBlock(Blocks.SEAGRASS);
       SEA_PICKLE = registerBlock(Blocks.SEA_PICKLE);
       WHITE_WOOL = registerBlock(Blocks.WHITE_WOOL);
@@ -2741,7 +2745,7 @@ public class Items {
       SPECTRAL_ARROW = registerItem("spectral_arrow", SpectralArrowItem::new);
       TIPPED_ARROW = registerItem("tipped_arrow", TippedArrowItem::new, (new Item.Properties()).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).component(DataComponents.POTION_DURATION_SCALE, 0.125F));
       LINGERING_POTION = registerItem("lingering_potion", LingeringPotionItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).component(DataComponents.POTION_DURATION_SCALE, 0.25F));
-      SHIELD = registerItem("shield", ShieldItem::new, (new Item.Properties()).durability(336).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).repairable(ItemTags.WOODEN_TOOL_MATERIALS).equippableUnswappable(EquipmentSlot.OFFHAND).component(DataComponents.BLOCKS_ATTACKS, new BlocksAttacks(0.25F, 1.0F, List.of(BlocksAttacks.DamageReduction.BLOCK_ALL), new BlocksAttacks.ItemDamageFunction(3.0F, 1.0F, 1.0F), Optional.of(SoundEvents.SHIELD_BLOCK), Optional.of(SoundEvents.SHIELD_BREAK))).component(DataComponents.BREAK_SOUND, SoundEvents.SHIELD_BREAK));
+      SHIELD = registerItem("shield", ShieldItem::new, (new Item.Properties()).durability(336).component(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).repairable(ItemTags.WOODEN_TOOL_MATERIALS).equippableUnswappable(EquipmentSlot.OFFHAND).component(DataComponents.BLOCKS_ATTACKS, new BlocksAttacks(0.25F, 1.0F, List.of(new BlocksAttacks.DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F)), new BlocksAttacks.ItemDamageFunction(3.0F, 1.0F, 1.0F), Optional.of(DamageTypeTags.BYPASSES_SHIELD), Optional.of(SoundEvents.SHIELD_BLOCK), Optional.of(SoundEvents.SHIELD_BREAK))).component(DataComponents.BREAK_SOUND, SoundEvents.SHIELD_BREAK));
       TOTEM_OF_UNDYING = registerItem("totem_of_undying", (new Item.Properties()).stacksTo(1).rarity(Rarity.UNCOMMON).component(DataComponents.DEATH_PROTECTION, DeathProtection.TOTEM_OF_UNDYING));
       SHULKER_SHELL = registerItem("shulker_shell");
       IRON_NUGGET = registerItem("iron_nugget");

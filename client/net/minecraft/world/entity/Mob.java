@@ -2,7 +2,6 @@ package net.minecraft.world.entity;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
-import com.mojang.logging.LogUtils;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -82,10 +80,8 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.ticks.ContainerSingleItem;
-import org.slf4j.Logger;
 
 public abstract class Mob extends LivingEntity implements EquipmentUser, Leashable, Targeting {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private static final EntityDataAccessor<Byte> DATA_MOB_FLAGS_ID;
    private static final int MOB_FLAG_NO_AI = 1;
    private static final int MOB_FLAG_LEFTHANDED = 2;
@@ -363,13 +359,13 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       super.addAdditionalSaveData(var1);
       var1.putBoolean("CanPickUpLoot", this.canPickUpLoot());
       var1.putBoolean("PersistenceRequired", this.persistenceRequired);
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       if (!this.equipment.isEmpty()) {
-         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         var1.put("equipment", (Tag)EntityEquipment.CODEC.encodeStart(var2, this.equipment).getOrThrow());
+         var1.store("equipment", EntityEquipment.CODEC, var2, this.equipment);
       }
 
       if (!this.dropChances.equals(DropChances.DEFAULT)) {
-         var1.put("drop_chances", (Tag)DropChances.CODEC.encodeStart(NbtOps.INSTANCE, this.dropChances).getOrThrow());
+         var1.store("drop_chances", DropChances.CODEC, var2, this.dropChances);
       }
 
       this.writeLeashData(var1, this.leashData);
@@ -392,19 +388,9 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       super.readAdditionalSaveData(var1);
       this.setCanPickUpLoot(var1.getBoolean("CanPickUpLoot"));
       this.persistenceRequired = var1.getBoolean("PersistenceRequired");
-      if (var1.contains("equipment")) {
-         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         EntityEquipment.CODEC.parse(var2, var1.get("equipment")).resultOrPartial((var0) -> LOGGER.warn("Failed to parse equipment: {}", var0)).ifPresent((var1x) -> this.equipment = var1x);
-      } else {
-         this.equipment = new EntityEquipment();
-      }
-
-      if (var1.contains("drop_chances")) {
-         DropChances.CODEC.parse(NbtOps.INSTANCE, var1.get("drop_chances")).resultOrPartial((var0) -> LOGGER.warn("Failed to parse mob drop chances: {}", var0)).ifPresent((var1x) -> this.dropChances = var1x);
-      } else {
-         this.dropChances = DropChances.DEFAULT;
-      }
-
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      this.equipment = (EntityEquipment)var1.read("equipment", EntityEquipment.CODEC, var2).orElseGet(EntityEquipment::new);
+      this.dropChances = (DropChances)var1.read("drop_chances", DropChances.CODEC, var2).orElse(DropChances.DEFAULT);
       this.readLeashData(var1);
       this.setLeftHanded(var1.getBoolean("LeftHanded"));
       if (var1.contains("DeathLootTable", 8)) {

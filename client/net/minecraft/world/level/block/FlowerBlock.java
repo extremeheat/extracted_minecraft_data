@@ -16,7 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class FlowerBlock extends BushBlock implements SuspiciousEffectHolder {
+public class FlowerBlock extends VegetationBlock implements SuspiciousEffectHolder {
    protected static final MapCodec<SuspiciousStewEffects> EFFECTS_FIELD;
    public static final MapCodec<FlowerBlock> CODEC;
    private static final VoxelShape SHAPE;

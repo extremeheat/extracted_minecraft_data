@@ -12,7 +12,7 @@ public interface GameTestInstances {
    static void bootstrap(BootstrapContext<GameTestInstance> var0) {
       HolderGetter var1 = var0.lookup(Registries.TEST_FUNCTION);
       HolderGetter var2 = var0.lookup(Registries.TEST_ENVIRONMENT);
-      var0.register(ALWAYS_PASS, new FunctionGameTestInstance(var1.getOrThrow(BuiltinTestFunctions.ALWAYS_PASS), new TestData(var2.getOrThrow(GameTestEnvironments.DEFAULT_KEY), ResourceLocation.withDefaultNamespace("empty"), 1, 1, false)));
+      var0.register(ALWAYS_PASS, new FunctionGameTestInstance(BuiltinTestFunctions.ALWAYS_PASS, new TestData(var2.getOrThrow(GameTestEnvironments.DEFAULT_KEY), ResourceLocation.withDefaultNamespace("empty"), 1, 1, false)));
    }
 
    private static ResourceKey<GameTestInstance> create(String var0) {

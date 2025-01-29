@@ -171,17 +171,26 @@ public class GameTestServer extends MinecraftServer {
          LOGGER.info("========= {} GAME TESTS COMPLETE IN {} ======================", this.testTracker.getTotalCount(), this.stopwatch.stop());
          if (this.testTracker.hasFailedRequired()) {
             LOGGER.info("{} required tests failed :(", this.testTracker.getFailedRequiredCount());
-            this.testTracker.getFailedRequired().forEach((var0) -> LOGGER.info("   - {}", var0.id()));
+            this.testTracker.getFailedRequired().forEach(GameTestServer::logFailedTest);
          } else {
             LOGGER.info("All {} required tests passed :)", this.testTracker.getTotalCount());
          }
 
          if (this.testTracker.hasFailedOptional()) {
             LOGGER.info("{} optional tests failed", this.testTracker.getFailedOptionalCount());
-            this.testTracker.getFailedOptional().forEach((var0) -> LOGGER.info("   - {} with rotation: {}", var0.id(), var0.getRotation()));
+            this.testTracker.getFailedOptional().forEach(GameTestServer::logFailedTest);
          }
 
          LOGGER.info("====================================================");
+      }
+
+   }
+
+   private static void logFailedTest(GameTestInfo var0) {
+      if (var0.getRotation() != Rotation.NONE) {
+         LOGGER.info("   - {} with rotation {}: {}", new Object[]{var0.id(), var0.getRotation().getSerializedName(), var0.getError().getDescription().getString()});
+      } else {
+         LOGGER.info("   - {}: {}", var0.id(), var0.getError().getDescription().getString());
       }
 
    }

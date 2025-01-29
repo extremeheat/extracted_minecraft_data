@@ -6,6 +6,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.Llama;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.HorseInventoryMenu;
 
@@ -32,11 +33,12 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
          var1.blitSprite(RenderType::guiTextured, CHEST_SLOTS_SPRITE, 90, 54, 0, 0, var5 + 79, var6 + 17, this.inventoryColumns * 18, 54);
       }
 
-      if (this.horse.canUseSlot(EquipmentSlot.SADDLE)) {
+      if (this.horse.canUseSlot(EquipmentSlot.SADDLE) && this.horse.getType().is(EntityTypeTags.CAN_EQUIP_SADDLE)) {
          this.drawSlot(var1, var5 + 7, var6 + 35 - 18);
       }
 
-      if (this.horse.canUseSlot(EquipmentSlot.BODY) && this.horse.getType().is(EntityTypeTags.CAN_WEAR_HORSE_ARMOR)) {
+      boolean var7 = this.horse instanceof Llama;
+      if (this.horse.canUseSlot(EquipmentSlot.BODY) && (this.horse.getType().is(EntityTypeTags.CAN_WEAR_HORSE_ARMOR) || var7)) {
          this.drawSlot(var1, var5 + 7, var6 + 35);
       }
 

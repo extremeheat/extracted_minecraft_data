@@ -669,19 +669,11 @@ public class LocalPlayer extends AbstractClientPlayer {
 
       boolean var1 = this.input.keyPresses.jump();
       boolean var2 = this.input.keyPresses.shift();
-      boolean var3 = this.hasEnoughImpulseToStartSprinting();
+      boolean var3 = this.input.hasForwardImpulse();
       Abilities var4 = this.getAbilities();
       this.crouching = !var4.flying && !this.isSwimming() && !this.isPassenger() && this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.CROUCHING) && (this.isShiftKeyDown() || !this.isSleeping() && !this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.STANDING));
       this.input.tick();
       this.minecraft.getTutorial().onInput(this.input);
-      if (this.shouldStopSprinting()) {
-         this.setSprinting(false);
-      }
-
-      if (this.isUsingItem() && !this.isPassenger()) {
-         this.sprintTriggerTime = 0;
-      }
-
       boolean var5 = false;
       if (this.autoJumpTime > 0) {
          --this.autoJumpTime;
@@ -696,43 +688,40 @@ public class LocalPlayer extends AbstractClientPlayer {
          this.moveTowardsClosestSpace(this.getX() + (double)this.getBbWidth() * 0.35, this.getZ() + (double)this.getBbWidth() * 0.35);
       }
 
-      if (var2) {
+      if (var2 || this.isUsingItem() && !this.isPassenger()) {
          this.sprintTriggerTime = 0;
       }
 
-      boolean var6 = this.canStartSprinting();
-      boolean var7 = this.isPassenger() ? this.getVehicle().onGround() : this.onGround();
-      boolean var8 = !var2 && !var3;
-      if ((var7 || this.isUnderWater()) && var8 && var6) {
-         if (this.sprintTriggerTime <= 0 && !this.minecraft.options.keySprint.isDown()) {
-            this.sprintTriggerTime = 7;
-         } else {
+      if (this.canStartSprinting()) {
+         if (!var3) {
+            if (this.sprintTriggerTime > 0) {
+               this.setSprinting(true);
+            } else {
+               this.sprintTriggerTime = 7;
+            }
+         }
+
+         if (this.input.keyPresses.sprint()) {
             this.setSprinting(true);
          }
       }
 
-      if ((!this.isInWater() || this.isUnderWater()) && var6 && this.minecraft.options.keySprint.isDown()) {
-         this.setSprinting(true);
-      }
-
       if (this.isSprinting()) {
-         boolean var9 = !this.input.hasForwardImpulse() || !this.hasEnoughFoodToStartSprinting();
-         boolean var10 = var9 || this.horizontalCollision && !this.minorHorizontalCollision || this.isInWater() && !this.isUnderWater();
          if (this.isSwimming()) {
-            if (!this.onGround() && !this.input.keyPresses.shift() && var9 || !this.isInWater()) {
+            if (this.shouldStopSwimSprinting()) {
                this.setSprinting(false);
             }
-         } else if (var10) {
+         } else if (this.shouldStopRunSprinting()) {
             this.setSprinting(false);
          }
       }
 
-      boolean var11 = false;
+      boolean var6 = false;
       if (var4.mayfly) {
          if (this.minecraft.gameMode.isAlwaysFlying()) {
             if (!var4.flying) {
                var4.flying = true;
-               var11 = true;
+               var6 = true;
                this.onUpdateAbilities();
             }
          } else if (!var1 && this.input.keyPresses.jump() && !var5) {
@@ -744,14 +733,14 @@ public class LocalPlayer extends AbstractClientPlayer {
                   this.jumpFromGround();
                }
 
-               var11 = true;
+               var6 = true;
                this.onUpdateAbilities();
                this.jumpTriggerTime = 0;
             }
          }
       }
 
-      if (this.input.keyPresses.jump() && !var11 && !var1 && !this.onClimbable() && this.tryToStartFallFlying()) {
+      if (this.input.keyPresses.jump() && !var6 && !var1 && !this.onClimbable() && this.tryToStartFallFlying()) {
          this.connection.send(new ServerboundPlayerCommandPacket(this, ServerboundPlayerCommandPacket.Action.START_FALL_FLYING));
       }
 
@@ -761,30 +750,30 @@ public class LocalPlayer extends AbstractClientPlayer {
       }
 
       if (this.isEyeInFluid(FluidTags.WATER)) {
-         int var12 = this.isSpectator() ? 10 : 1;
-         this.waterVisionTime = Mth.clamp(this.waterVisionTime + var12, 0, 600);
+         int var7 = this.isSpectator() ? 10 : 1;
+         this.waterVisionTime = Mth.clamp(this.waterVisionTime + var7, 0, 600);
       } else if (this.waterVisionTime > 0) {
          this.isEyeInFluid(FluidTags.WATER);
          this.waterVisionTime = Mth.clamp(this.waterVisionTime - 10, 0, 600);
       }
 
       if (var4.flying && this.isControlledCamera()) {
-         int var13 = 0;
+         int var8 = 0;
          if (this.input.keyPresses.shift()) {
-            --var13;
+            --var8;
          }
 
          if (this.input.keyPresses.jump()) {
-            ++var13;
+            ++var8;
          }
 
-         if (var13 != 0) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, (double)((float)var13 * var4.getFlyingSpeed() * 3.0F), 0.0));
+         if (var8 != 0) {
+            this.setDeltaMovement(this.getDeltaMovement().add(0.0, (double)((float)var8 * var4.getFlyingSpeed() * 3.0F), 0.0));
          }
       }
 
-      PlayerRideableJumping var14 = this.jumpableVehicle();
-      if (var14 != null && var14.getJumpCooldown() == 0) {
+      PlayerRideableJumping var9 = this.jumpableVehicle();
+      if (var9 != null && var9.getJumpCooldown() == 0) {
          if (this.jumpRidingTicks < 0) {
             ++this.jumpRidingTicks;
             if (this.jumpRidingTicks == 0) {
@@ -794,7 +783,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
          if (var1 && !this.input.keyPresses.jump()) {
             this.jumpRidingTicks = -10;
-            var14.onPlayerJump(Mth.floor(this.getJumpRidingScale() * 100.0F));
+            var9.onPlayerJump(Mth.floor(this.getJumpRidingScale() * 100.0F));
             this.sendRidingJump();
          } else if (!var1 && this.input.keyPresses.jump()) {
             this.jumpRidingTicks = 0;
@@ -819,8 +808,12 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    }
 
-   private boolean shouldStopSprinting() {
-      return this.hasBlindness() || this.isFallFlying() && !this.isUnderWater() || this.isPassenger() && !this.vehicleCanSprint(this.getVehicle());
+   private boolean shouldStopRunSprinting() {
+      return this.hasBlindness() || this.isPassenger() && !this.vehicleCanSprint(this.getVehicle()) || !this.input.hasForwardImpulse() || !this.hasEnoughFoodToSprint() || this.horizontalCollision && !this.minorHorizontalCollision || this.isInWater() && !this.isUnderWater();
+   }
+
+   private boolean shouldStopSwimSprinting() {
+      return this.hasBlindness() || this.isPassenger() && !this.vehicleCanSprint(this.getVehicle()) || !this.isInWater() || !this.input.hasForwardImpulse() && !this.onGround() && !this.input.keyPresses.shift() || !this.hasEnoughFoodToSprint();
    }
 
    private boolean hasBlindness() {
@@ -1020,22 +1013,14 @@ public class LocalPlayer extends AbstractClientPlayer {
    }
 
    private boolean canStartSprinting() {
-      return !this.isSprinting() && this.hasEnoughImpulseToStartSprinting() && this.hasEnoughFoodToStartSprinting() && !this.isUsingItem() && !this.hasBlindness() && (!this.isPassenger() || this.vehicleCanSprint(this.getVehicle())) && (!this.isFallFlying() || this.isUnderWater()) && (!this.isMovingSlowly() || this.isUnderWater());
+      return !this.isSprinting() && this.input.hasForwardImpulse() && this.hasEnoughFoodToSprint() && !this.isUsingItem() && !this.hasBlindness() && (!this.isPassenger() || this.vehicleCanSprint(this.getVehicle())) && (!this.isFallFlying() || this.isUnderWater()) && (!this.isMovingSlowly() || this.isUnderWater()) && (!this.isInWater() || this.isUnderWater());
    }
 
    private boolean vehicleCanSprint(Entity var1) {
       return var1.canSprint() && var1.isLocalInstanceAuthoritative();
    }
 
-   private boolean hasEnoughImpulseToStartSprinting() {
-      if (!this.isUnderWater() && !this.isPassenger()) {
-         return this.input.hasForwardImpulse() && !this.isMovingSlowly() && !this.isUsingItem();
-      } else {
-         return this.input.hasForwardImpulse();
-      }
-   }
-
-   private boolean hasEnoughFoodToStartSprinting() {
+   private boolean hasEnoughFoodToSprint() {
       return this.isPassenger() || (float)this.getFoodData().getFoodLevel() > 6.0F || this.getAbilities().mayfly;
    }
 

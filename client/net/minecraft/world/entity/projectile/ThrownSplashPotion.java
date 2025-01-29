@@ -10,7 +10,9 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -26,6 +28,10 @@ public class ThrownSplashPotion extends AbstractThrownPotion {
 
    public ThrownSplashPotion(Level var1, double var2, double var4, double var6, ItemStack var8) {
       super(EntityType.SPLASH_POTION, var1, var2, var4, var6, var8);
+   }
+
+   protected Item getDefaultItem() {
+      return Items.SPLASH_POTION;
    }
 
    public void onHitAsPotion(ServerLevel var1, ItemStack var2, @Nullable Entity var3) {

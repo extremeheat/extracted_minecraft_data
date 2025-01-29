@@ -1,17 +1,12 @@
 package net.minecraft.world.entity;
 
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -25,10 +20,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.Logger;
 
 public class Interaction extends Entity implements Attackable, Targeting {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private static final EntityDataAccessor<Float> DATA_WIDTH_ID;
    private static final EntityDataAccessor<Float> DATA_HEIGHT_ID;
    private static final EntityDataAccessor<Boolean> DATA_RESPONSE_ID;
@@ -62,24 +55,8 @@ public class Interaction extends Entity implements Attackable, Targeting {
          this.setHeight(var1.getFloat("height"));
       }
 
-      if (var1.contains("attack")) {
-         DataResult var10000 = Interaction.PlayerAction.CODEC.decode(NbtOps.INSTANCE, var1.get("attack"));
-         Logger var10002 = LOGGER;
-         Objects.requireNonNull(var10002);
-         var10000.resultOrPartial(Util.prefix("Interaction entity", var10002::error)).ifPresent((var1x) -> this.attack = (PlayerAction)var1x.getFirst());
-      } else {
-         this.attack = null;
-      }
-
-      if (var1.contains("interaction")) {
-         DataResult var2 = Interaction.PlayerAction.CODEC.decode(NbtOps.INSTANCE, var1.get("interaction"));
-         Logger var3 = LOGGER;
-         Objects.requireNonNull(var3);
-         var2.resultOrPartial(Util.prefix("Interaction entity", var3::error)).ifPresent((var1x) -> this.interaction = (PlayerAction)var1x.getFirst());
-      } else {
-         this.interaction = null;
-      }
-
+      this.attack = (PlayerAction)var1.read("attack", Interaction.PlayerAction.CODEC).orElse((Object)null);
+      this.interaction = (PlayerAction)var1.read("interaction", Interaction.PlayerAction.CODEC).orElse((Object)null);
       this.setResponse(var1.getBoolean("response"));
       this.setBoundingBox(this.makeBoundingBox());
    }
@@ -88,11 +65,11 @@ public class Interaction extends Entity implements Attackable, Targeting {
       var1.putFloat("width", this.getWidth());
       var1.putFloat("height", this.getHeight());
       if (this.attack != null) {
-         Interaction.PlayerAction.CODEC.encodeStart(NbtOps.INSTANCE, this.attack).ifSuccess((var1x) -> var1.put("attack", var1x));
+         var1.store("attack", Interaction.PlayerAction.CODEC, this.attack);
       }
 
       if (this.interaction != null) {
-         Interaction.PlayerAction.CODEC.encodeStart(NbtOps.INSTANCE, this.interaction).ifSuccess((var1x) -> var1.put("interaction", var1x));
+         var1.store("interaction", Interaction.PlayerAction.CODEC, this.interaction);
       }
 
       var1.putBoolean("response", this.getResponse());

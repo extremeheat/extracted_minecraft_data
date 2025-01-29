@@ -1,12 +1,17 @@
 package net.minecraft.world.scores;
 
 import com.google.common.collect.Sets;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
@@ -43,6 +48,10 @@ public class PlayerTeam extends Team {
       this.name = var2;
       this.displayName = Component.literal(var2);
       this.displayNameStyle = Style.EMPTY.withInsertion(var2).withHoverEvent(new HoverEvent.ShowText(Component.literal(var2)));
+   }
+
+   public Packed pack() {
+      return new Packed(this.name, Optional.of(this.displayName), this.color != ChatFormatting.RESET ? Optional.of(this.color) : Optional.empty(), this.allowFriendlyFire, this.seeFriendlyInvisibles, this.playerPrefix, this.playerSuffix, this.nameTagVisibility, this.deathMessageVisibility, this.collisionRule, List.copyOf(this.players));
    }
 
    public Scoreboard getScoreboard() {
@@ -182,5 +191,24 @@ public class PlayerTeam extends Team {
 
    public ChatFormatting getColor() {
       return this.color;
+   }
+
+   public static record Packed(String name, Optional<Component> displayName, Optional<ChatFormatting> color, boolean allowFriendlyFire, boolean seeFriendlyInvisibles, Component memberNamePrefix, Component memberNameSuffix, Team.Visibility nameTagVisibility, Team.Visibility deathMessageVisibility, Team.CollisionRule collisionRule, List<String> players) {
+      public static final Codec<Packed> CODEC = RecordCodecBuilder.create((var0) -> var0.group(Codec.STRING.fieldOf("Name").forGetter(Packed::name), ComponentSerialization.CODEC.optionalFieldOf("DisplayName").forGetter(Packed::displayName), ChatFormatting.COLOR_CODEC.optionalFieldOf("TeamColor").forGetter(Packed::color), Codec.BOOL.optionalFieldOf("AllowFriendlyFire", true).forGetter(Packed::allowFriendlyFire), Codec.BOOL.optionalFieldOf("SeeFriendlyInvisibles", true).forGetter(Packed::seeFriendlyInvisibles), ComponentSerialization.CODEC.optionalFieldOf("MemberNamePrefix", CommonComponents.EMPTY).forGetter(Packed::memberNamePrefix), ComponentSerialization.CODEC.optionalFieldOf("MemberNameSuffix", CommonComponents.EMPTY).forGetter(Packed::memberNameSuffix), Team.Visibility.CODEC.optionalFieldOf("NameTagVisibility", Team.Visibility.ALWAYS).forGetter(Packed::nameTagVisibility), Team.Visibility.CODEC.optionalFieldOf("DeathMessageVisibility", Team.Visibility.ALWAYS).forGetter(Packed::deathMessageVisibility), Team.CollisionRule.CODEC.optionalFieldOf("CollisionRule", Team.CollisionRule.ALWAYS).forGetter(Packed::collisionRule), Codec.STRING.listOf().optionalFieldOf("Players", List.of()).forGetter(Packed::players)).apply(var0, Packed::new));
+
+      public Packed(String var1, Optional<Component> var2, Optional<ChatFormatting> var3, boolean var4, boolean var5, Component var6, Component var7, Team.Visibility var8, Team.Visibility var9, Team.CollisionRule var10, List<String> var11) {
+         super();
+         this.name = var1;
+         this.displayName = var2;
+         this.color = var3;
+         this.allowFriendlyFire = var4;
+         this.seeFriendlyInvisibles = var5;
+         this.memberNamePrefix = var6;
+         this.memberNameSuffix = var7;
+         this.nameTagVisibility = var8;
+         this.deathMessageVisibility = var9;
+         this.collisionRule = var10;
+         this.players = var11;
+      }
    }
 }

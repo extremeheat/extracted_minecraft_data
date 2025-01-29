@@ -235,7 +235,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       this.updateSkyBrightness();
       this.prepareWeather();
       this.getWorldBorder().setAbsoluteMaxSize(var1.getAbsoluteMaxWorldSize());
-      this.raids = (Raids)this.getDataStorage().computeIfAbsent(Raids.factory(this), Raids.getFileId(this.dimensionTypeRegistration()));
+      this.raids = (Raids)this.getDataStorage().computeIfAbsent(Raids.getType(this.dimensionTypeRegistration()));
       if (!var1.isSingleplayer()) {
          var4.setGameType(var1.getDefaultGameType());
       }
@@ -251,7 +251,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       this.sleepStatus = new SleepStatus();
       this.gameEventDispatcher = new GameEventDispatcher(this);
-      this.randomSequences = (RandomSequences)Objects.requireNonNullElseGet(var13, () -> (RandomSequences)this.getDataStorage().computeIfAbsent(RandomSequences.factory(var18), "random_sequences"));
+      this.randomSequences = (RandomSequences)Objects.requireNonNullElseGet(var13, () -> (RandomSequences)this.getDataStorage().computeIfAbsent(RandomSequences.TYPE));
    }
 
    /** @deprecated */
@@ -320,7 +320,7 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
       var2.popPush("raid");
       if (var4) {
-         this.raids.tick();
+         this.raids.tick(this);
       }
 
       var2.popPush("chunkSource");
@@ -1212,15 +1212,15 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    @Nullable
    public MapItemSavedData getMapData(MapId var1) {
-      return (MapItemSavedData)this.getServer().overworld().getDataStorage().get(MapItemSavedData.factory(), var1.key());
+      return (MapItemSavedData)this.getServer().overworld().getDataStorage().get(MapItemSavedData.type(var1));
    }
 
    public void setMapData(MapId var1, MapItemSavedData var2) {
-      this.getServer().overworld().getDataStorage().set(var1.key(), var2);
+      this.getServer().overworld().getDataStorage().set(MapItemSavedData.type(var1), var2);
    }
 
    public MapId getFreeMapId() {
-      return ((MapIndex)this.getServer().overworld().getDataStorage().computeIfAbsent(MapIndex.factory(), "idcounts")).getFreeAuxValueForMap();
+      return ((MapIndex)this.getServer().overworld().getDataStorage().computeIfAbsent(MapIndex.TYPE)).getNextMapId();
    }
 
    public void setDefaultSpawnPos(BlockPos var1, float var2) {

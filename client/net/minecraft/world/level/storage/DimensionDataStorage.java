@@ -3,6 +3,7 @@ package net.minecraft.world.level.storage;
 import com.google.common.collect.Iterables;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.io.DataInput;
 import java.io.DataInputStream;
@@ -18,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
@@ -26,70 +26,77 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.FastBufferedInputStream;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import org.slf4j.Logger;
 
 public class DimensionDataStorage implements AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private final Map<String, Optional<SavedData>> cache = new HashMap();
+   private final SavedData.Context context;
+   private final Map<SavedDataType<?>, Optional<SavedData>> cache = new HashMap();
    private final DataFixer fixerUpper;
    private final HolderLookup.Provider registries;
    private final Path dataFolder;
    private CompletableFuture<?> pendingWriteFuture = CompletableFuture.completedFuture((Object)null);
 
-   public DimensionDataStorage(Path var1, DataFixer var2, HolderLookup.Provider var3) {
+   public DimensionDataStorage(SavedData.Context var1, Path var2, DataFixer var3, HolderLookup.Provider var4) {
       super();
-      this.fixerUpper = var2;
-      this.dataFolder = var1;
-      this.registries = var3;
+      this.context = var1;
+      this.fixerUpper = var3;
+      this.dataFolder = var2;
+      this.registries = var4;
    }
 
    private Path getDataFile(String var1) {
       return this.dataFolder.resolve(var1 + ".dat");
    }
 
-   public <T extends SavedData> T computeIfAbsent(SavedData.Factory<T> var1, String var2) {
-      SavedData var3 = this.get(var1, var2);
-      if (var3 != null) {
-         return (T)var3;
+   public <T extends SavedData> T computeIfAbsent(SavedDataType<T> var1) {
+      SavedData var2 = this.get(var1);
+      if (var2 != null) {
+         return (T)var2;
       } else {
-         SavedData var4 = (SavedData)var1.constructor().get();
-         this.set(var2, var4);
-         return (T)var4;
+         SavedData var3 = (SavedData)var1.constructor().apply(this.context);
+         this.set(var1, var3);
+         return (T)var3;
       }
    }
 
    @Nullable
-   public <T extends SavedData> T get(SavedData.Factory<T> var1, String var2) {
-      Optional var3 = (Optional)this.cache.get(var2);
-      if (var3 == null) {
-         var3 = Optional.ofNullable(this.readSavedData(var1.deserializer(), var1.type(), var2));
-         this.cache.put(var2, var3);
+   public <T extends SavedData> T get(SavedDataType<T> var1) {
+      Optional var2 = (Optional)this.cache.get(var1);
+      if (var2 == null) {
+         var2 = Optional.ofNullable(this.readSavedData(var1));
+         this.cache.put(var1, var2);
       }
 
-      return (T)(var3.orElse((Object)null));
+      return (T)(var2.orElse((Object)null));
    }
 
    @Nullable
-   private <T extends SavedData> T readSavedData(BiFunction<CompoundTag, HolderLookup.Provider, T> var1, DataFixTypes var2, String var3) {
+   private <T extends SavedData> T readSavedData(SavedDataType<T> var1) {
       try {
-         Path var4 = this.getDataFile(var3);
-         if (Files.exists(var4, new LinkOption[0])) {
-            CompoundTag var5 = this.readTagFromDisk(var3, var2, SharedConstants.getCurrentVersion().getDataVersion().getVersion());
-            return (T)(var1.apply(var5.getCompound("data"), this.registries));
+         Path var2 = this.getDataFile(var1.id());
+         if (Files.exists(var2, new LinkOption[0])) {
+            CompoundTag var3 = this.readTagFromDisk(var1.id(), var1.dataFixType(), SharedConstants.getCurrentVersion().getDataVersion().getVersion());
+            RegistryOps var4 = this.registries.createSerializationContext(NbtOps.INSTANCE);
+            return (T)(((Codec)var1.codec().apply(this.context)).parse(var4, var3.getCompound("data")).resultOrPartial((var1x) -> LOGGER.error("Failed to parse saved data for '{}': {}", var1, var1x)).orElse((Object)null));
          }
-      } catch (Exception var6) {
-         LOGGER.error("Error loading saved data: {}", var3, var6);
+      } catch (Exception var5) {
+         LOGGER.error("Error loading saved data: {}", var1, var5);
       }
 
       return null;
    }
 
-   public void set(String var1, SavedData var2) {
+   public <T extends SavedData> void set(SavedDataType<T> var1, T var2) {
       this.cache.put(var1, Optional.of(var2));
       var2.setDirty();
    }
@@ -181,40 +188,54 @@ public class DimensionDataStorage implements AutoCloseable {
          int var2 = Util.maxAllowedExecutorThreads();
          int var3 = var1.size();
          if (var3 > var2) {
-            this.pendingWriteFuture = this.pendingWriteFuture.thenCompose((var3x) -> {
-               ArrayList var4 = new ArrayList(var2);
-               int var5 = Mth.positiveCeilDiv(var3, var2);
+            this.pendingWriteFuture = this.pendingWriteFuture.thenCompose((var4) -> {
+               ArrayList var5 = new ArrayList(var2);
+               int var6 = Mth.positiveCeilDiv(var3, var2);
 
-               for(List var7 : Iterables.partition(var1.entrySet(), var5)) {
-                  var4.add(CompletableFuture.runAsync(() -> {
-                     for(Map.Entry var2 : var7) {
-                        tryWrite((Path)var2.getKey(), (CompoundTag)var2.getValue());
+               for(List var8 : Iterables.partition(var1.entrySet(), var6)) {
+                  var5.add(CompletableFuture.runAsync(() -> {
+                     for(Map.Entry var3 : var8) {
+                        this.tryWrite((SavedDataType)var3.getKey(), (CompoundTag)var3.getValue());
                      }
 
                   }, Util.ioPool()));
                }
 
-               return CompletableFuture.allOf((CompletableFuture[])var4.toArray((var0) -> new CompletableFuture[var0]));
+               return CompletableFuture.allOf((CompletableFuture[])var5.toArray((var0) -> new CompletableFuture[var0]));
             });
          } else {
-            this.pendingWriteFuture = this.pendingWriteFuture.thenCompose((var1x) -> CompletableFuture.allOf((CompletableFuture[])var1.entrySet().stream().map((var0) -> CompletableFuture.runAsync(() -> tryWrite((Path)var0.getKey(), (CompoundTag)var0.getValue()), Util.ioPool())).toArray((var0) -> new CompletableFuture[var0])));
+            this.pendingWriteFuture = this.pendingWriteFuture.thenCompose((var2x) -> CompletableFuture.allOf((CompletableFuture[])var1.entrySet().stream().map((var1x) -> CompletableFuture.runAsync(() -> this.tryWrite((SavedDataType)var1x.getKey(), (CompoundTag)var1x.getValue()), Util.ioPool())).toArray((var0) -> new CompletableFuture[var0])));
          }
 
          return this.pendingWriteFuture;
       }
    }
 
-   private Map<Path, CompoundTag> collectDirtyTagsToSave() {
+   private Map<SavedDataType<?>, CompoundTag> collectDirtyTagsToSave() {
       Object2ObjectArrayMap var1 = new Object2ObjectArrayMap();
-      this.cache.forEach((var2, var3) -> var3.filter(SavedData::isDirty).ifPresent((var3x) -> var1.put(this.getDataFile(var2), var3x.save(this.registries))));
+      RegistryOps var2 = this.registries.createSerializationContext(NbtOps.INSTANCE);
+      this.cache.forEach((var3, var4) -> var4.filter(SavedData::isDirty).ifPresent((var4x) -> {
+            var1.put(var3, this.encodeUnchecked(var3, var4x, var2));
+            var4x.setDirty(false);
+         }));
       return var1;
    }
 
-   private static void tryWrite(Path var0, CompoundTag var1) {
+   private <T extends SavedData> CompoundTag encodeUnchecked(SavedDataType<T> var1, SavedData var2, RegistryOps<Tag> var3) {
+      Codec var4 = (Codec)var1.codec().apply(this.context);
+      CompoundTag var5 = new CompoundTag();
+      var5.put("data", (Tag)var4.encodeStart(var3, var2).getOrThrow());
+      NbtUtils.addCurrentDataVersion(var5);
+      return var5;
+   }
+
+   private void tryWrite(SavedDataType<?> var1, CompoundTag var2) {
+      Path var3 = this.getDataFile(var1.id());
+
       try {
-         NbtIo.writeCompressed(var1, var0);
-      } catch (IOException var3) {
-         LOGGER.error("Could not save data to {}", var0.getFileName(), var3);
+         NbtIo.writeCompressed(var2, var3);
+      } catch (IOException var5) {
+         LOGGER.error("Could not save data to {}", var3.getFileName(), var5);
       }
 
    }

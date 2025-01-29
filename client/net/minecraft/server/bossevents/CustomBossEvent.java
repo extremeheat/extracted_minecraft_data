@@ -134,7 +134,7 @@ public class CustomBossEvent extends ServerBossEvent {
 
    public CompoundTag save(HolderLookup.Provider var1) {
       CompoundTag var2 = new CompoundTag();
-      var2.put("Name", (Tag)ComponentSerialization.CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this.name).getOrThrow());
+      var2.store("Name", ComponentSerialization.CODEC, var1.createSerializationContext(NbtOps.INSTANCE), this.name);
       var2.putBoolean("Visible", this.isVisible());
       var2.putInt("Value", this.value);
       var2.putInt("Max", this.max);
@@ -155,7 +155,7 @@ public class CustomBossEvent extends ServerBossEvent {
 
    public static CustomBossEvent load(CompoundTag var0, ResourceLocation var1, HolderLookup.Provider var2) {
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      Component var4 = (Component)ComponentSerialization.CODEC.parse(var3, var0.get("Name")).getOrThrow();
+      Component var4 = (Component)var0.read("Name", ComponentSerialization.CODEC, var3).orElseThrow();
       CustomBossEvent var5 = new CustomBossEvent(var1, var4);
       var5.setVisible(var0.getBoolean("Visible"));
       var5.setValue(var0.getInt("Value"));

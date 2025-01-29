@@ -463,6 +463,8 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.SMALL_DRIPLEAF, 60, 100);
       var0.setFlammable(Blocks.HANGING_ROOTS, 30, 60);
       var0.setFlammable(Blocks.GLOW_LICHEN, 15, 100);
+      var0.setFlammable(Blocks.FIREFLY_BUSH, 60, 100);
+      var0.setFlammable(Blocks.BUSH, 60, 100);
    }
 
    static {

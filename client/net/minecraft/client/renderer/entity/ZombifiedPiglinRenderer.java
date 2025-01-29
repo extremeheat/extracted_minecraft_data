@@ -15,7 +15,7 @@ public class ZombifiedPiglinRenderer extends HumanoidMobRenderer<ZombifiedPiglin
 
    public ZombifiedPiglinRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, ModelLayerLocation var4, ModelLayerLocation var5, ModelLayerLocation var6, ModelLayerLocation var7) {
       super(var1, new ZombifiedPiglinModel(var1.bakeLayer(var2)), new ZombifiedPiglinModel(var1.bakeLayer(var3)), 0.5F, PiglinRenderer.PIGLIN_CUSTOM_HEAD_TRANSFORMS);
-      this.addLayer(new HumanoidArmorLayer(this, new HumanoidArmorModel(var1.bakeLayer(var4)), new HumanoidArmorModel(var1.bakeLayer(var5)), new HumanoidArmorModel(var1.bakeLayer(var6)), new HumanoidArmorModel(var1.bakeLayer(var6)), var1.getEquipmentRenderer()));
+      this.addLayer(new HumanoidArmorLayer(this, new HumanoidArmorModel(var1.bakeLayer(var4)), new HumanoidArmorModel(var1.bakeLayer(var5)), new HumanoidArmorModel(var1.bakeLayer(var6)), new HumanoidArmorModel(var1.bakeLayer(var7)), var1.getEquipmentRenderer()));
    }
 
    public ResourceLocation getTextureLocation(ZombifiedPiglinRenderState var1) {

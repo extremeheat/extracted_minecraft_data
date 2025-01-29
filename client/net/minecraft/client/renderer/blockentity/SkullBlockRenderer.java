@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.WallSkullBlock;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
+import net.minecraft.world.phys.Vec3;
 
 public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity> {
    private final Function<SkullBlock.Type, SkullModelBase> modelByType;
@@ -68,17 +69,17 @@ public class SkullBlockRenderer implements BlockEntityRenderer<SkullBlockEntity>
       this.modelByType = Util.memoize((Function)((var1x) -> createModel(var2, var1x)));
    }
 
-   public void render(SkullBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      float var7 = var1.getAnimation(var2);
-      BlockState var8 = var1.getBlockState();
-      boolean var9 = var8.getBlock() instanceof WallSkullBlock;
-      Direction var10 = var9 ? (Direction)var8.getValue(WallSkullBlock.FACING) : null;
-      int var11 = var9 ? RotationSegment.convertToSegment(var10.getOpposite()) : (Integer)var8.getValue(SkullBlock.ROTATION);
-      float var12 = RotationSegment.convertToDegrees(var11);
-      SkullBlock.Type var13 = ((AbstractSkullBlock)var8.getBlock()).getType();
-      SkullModelBase var14 = (SkullModelBase)this.modelByType.apply(var13);
-      RenderType var15 = getRenderType(var13, var1.getOwnerProfile());
-      renderSkull(var10, var12, var7, var3, var4, var5, var14, var15);
+   public void render(SkullBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
+      float var8 = var1.getAnimation(var2);
+      BlockState var9 = var1.getBlockState();
+      boolean var10 = var9.getBlock() instanceof WallSkullBlock;
+      Direction var11 = var10 ? (Direction)var9.getValue(WallSkullBlock.FACING) : null;
+      int var12 = var10 ? RotationSegment.convertToSegment(var11.getOpposite()) : (Integer)var9.getValue(SkullBlock.ROTATION);
+      float var13 = RotationSegment.convertToDegrees(var12);
+      SkullBlock.Type var14 = ((AbstractSkullBlock)var9.getBlock()).getType();
+      SkullModelBase var15 = (SkullModelBase)this.modelByType.apply(var14);
+      RenderType var16 = getRenderType(var14, var1.getOwnerProfile());
+      renderSkull(var11, var13, var8, var3, var4, var5, var15, var16);
    }
 
    public static void renderSkull(@Nullable Direction var0, float var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, SkullModelBase var6, RenderType var7) {

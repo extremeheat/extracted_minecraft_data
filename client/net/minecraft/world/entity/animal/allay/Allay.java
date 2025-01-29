@@ -1,7 +1,6 @@
 package net.minecraft.world.entity.animal.allay;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import java.util.Objects;
 import java.util.Optional;
@@ -70,10 +69,8 @@ import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.Logger;
 
 public class Allay extends PathfinderMob implements InventoryCarrier, VibrationSystem {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private static final Vec3i ITEM_PICKUP_REACH = new Vec3i(1, 1, 1);
    private static final int LIFTING_ITEM_ANIMATION_DURATION = 5;
    private static final float DANCING_LOOP_DURATION = 55.0F;
@@ -412,7 +409,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       super.addAdditionalSaveData(var1);
       this.writeInventoryToTag(var1, this.registryAccess());
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      VibrationSystem.Data.CODEC.encodeStart(var2, this.vibrationData).resultOrPartial((var0) -> LOGGER.error("Failed to encode vibration listener for Allay: '{}'", var0)).ifPresent((var1x) -> var1.put("listener", var1x));
+      var1.store("listener", VibrationSystem.Data.CODEC, var2, this.vibrationData);
       var1.putLong("DuplicationCooldown", this.duplicationCooldown);
       var1.putBoolean("CanDuplicate", this.canDuplicate());
    }
@@ -421,10 +418,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       super.readAdditionalSaveData(var1);
       this.readInventoryFromTag(var1, this.registryAccess());
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      if (var1.contains("listener", 10)) {
-         VibrationSystem.Data.CODEC.parse(var2, var1.getCompound("listener")).resultOrPartial((var0) -> LOGGER.error("Failed to parse vibration listener for Allay: '{}'", var0)).ifPresent((var1x) -> this.vibrationData = var1x);
-      }
-
+      this.vibrationData = (VibrationSystem.Data)var1.read("listener", VibrationSystem.Data.CODEC, var2).orElseGet(VibrationSystem.Data::new);
       this.duplicationCooldown = (long)var1.getInt("DuplicationCooldown");
       this.entityData.set(DATA_CAN_DUPLICATE, var1.getBoolean("CanDuplicate"));
    }

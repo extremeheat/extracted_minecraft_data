@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.LidBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.ChestType;
+import net.minecraft.world.phys.Vec3;
 
 public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements BlockEntityRenderer<T> {
    private final ChestModel singleModel;
@@ -42,40 +43,40 @@ public class ChestRenderer<T extends BlockEntity & LidBlockEntity> implements Bl
       return var0.get(2) + 1 == 12 && var0.get(5) >= 24 && var0.get(5) <= 26;
    }
 
-   public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      Level var7 = var1.getLevel();
-      boolean var8 = var7 != null;
-      BlockState var9 = var8 ? var1.getBlockState() : (BlockState)Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH);
-      ChestType var10 = var9.hasProperty(ChestBlock.TYPE) ? (ChestType)var9.getValue(ChestBlock.TYPE) : ChestType.SINGLE;
-      Block var11 = var9.getBlock();
-      if (var11 instanceof AbstractChestBlock var12) {
-         boolean var13 = var10 != ChestType.SINGLE;
+   public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
+      Level var8 = var1.getLevel();
+      boolean var9 = var8 != null;
+      BlockState var10 = var9 ? var1.getBlockState() : (BlockState)Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.SOUTH);
+      ChestType var11 = var10.hasProperty(ChestBlock.TYPE) ? (ChestType)var10.getValue(ChestBlock.TYPE) : ChestType.SINGLE;
+      Block var12 = var10.getBlock();
+      if (var12 instanceof AbstractChestBlock var13) {
+         boolean var14 = var11 != ChestType.SINGLE;
          var3.pushPose();
-         float var14 = ((Direction)var9.getValue(ChestBlock.FACING)).toYRot();
+         float var15 = ((Direction)var10.getValue(ChestBlock.FACING)).toYRot();
          var3.translate(0.5F, 0.5F, 0.5F);
-         var3.mulPose(Axis.YP.rotationDegrees(-var14));
+         var3.mulPose(Axis.YP.rotationDegrees(-var15));
          var3.translate(-0.5F, -0.5F, -0.5F);
-         DoubleBlockCombiner.NeighborCombineResult var15;
-         if (var8) {
-            var15 = var12.combine(var9, var7, var1.getBlockPos(), true);
+         DoubleBlockCombiner.NeighborCombineResult var16;
+         if (var9) {
+            var16 = var13.combine(var10, var8, var1.getBlockPos(), true);
          } else {
-            var15 = DoubleBlockCombiner.Combiner::acceptNone;
+            var16 = DoubleBlockCombiner.Combiner::acceptNone;
          }
 
-         float var16 = ((Float2FloatFunction)var15.apply(ChestBlock.opennessCombiner((LidBlockEntity)var1))).get(var2);
-         var16 = 1.0F - var16;
-         var16 = 1.0F - var16 * var16 * var16;
-         int var17 = ((Int2IntFunction)var15.apply(new BrightnessCombiner())).applyAsInt(var5);
-         Material var18 = Sheets.chooseMaterial(var1, var10, this.xmasTextures);
-         VertexConsumer var19 = var18.buffer(var4, RenderType::entityCutout);
-         if (var13) {
-            if (var10 == ChestType.LEFT) {
-               this.render(var3, var19, this.doubleLeftModel, var16, var17, var6);
+         float var17 = ((Float2FloatFunction)var16.apply(ChestBlock.opennessCombiner((LidBlockEntity)var1))).get(var2);
+         var17 = 1.0F - var17;
+         var17 = 1.0F - var17 * var17 * var17;
+         int var18 = ((Int2IntFunction)var16.apply(new BrightnessCombiner())).applyAsInt(var5);
+         Material var19 = Sheets.chooseMaterial(var1, var11, this.xmasTextures);
+         VertexConsumer var20 = var19.buffer(var4, RenderType::entityCutout);
+         if (var14) {
+            if (var11 == ChestType.LEFT) {
+               this.render(var3, var20, this.doubleLeftModel, var17, var18, var6);
             } else {
-               this.render(var3, var19, this.doubleRightModel, var16, var17, var6);
+               this.render(var3, var20, this.doubleRightModel, var17, var18, var6);
             }
          } else {
-            this.render(var3, var19, this.singleModel, var16, var17, var6);
+            this.render(var3, var20, this.singleModel, var17, var18, var6);
          }
 
          var3.popPose();

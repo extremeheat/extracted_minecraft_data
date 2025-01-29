@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class FlowerBedBlock extends BushBlock implements BonemealableBlock, SegmentableBlock {
+public class FlowerBedBlock extends VegetationBlock implements BonemealableBlock, SegmentableBlock {
    public static final MapCodec<FlowerBedBlock> CODEC = simpleCodec(FlowerBedBlock::new);
    public static final EnumProperty<Direction> FACING;
    public static final IntegerProperty AMOUNT;

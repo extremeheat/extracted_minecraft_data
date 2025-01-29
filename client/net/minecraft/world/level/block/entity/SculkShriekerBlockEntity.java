@@ -1,6 +1,5 @@
 package net.minecraft.world.level.block.entity;
 
-import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.OptionalInt;
@@ -40,10 +39,8 @@ import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
 import net.minecraft.world.phys.Vec3;
-import org.slf4j.Logger;
 
 public class SculkShriekerBlockEntity extends BlockEntity implements GameEventListener.Provider<VibrationSystem.Listener>, VibrationSystem {
-   private static final Logger LOGGER = LogUtils.getLogger();
    private static final int WARNING_SOUND_RADIUS = 10;
    private static final int WARDEN_SPAWN_ATTEMPTS = 20;
    private static final int WARDEN_SPAWN_RANGE_XZ = 5;
@@ -80,17 +77,14 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
       }
 
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      if (var1.contains("listener", 10)) {
-         VibrationSystem.Data.CODEC.parse(var3, var1.getCompound("listener")).resultOrPartial((var0) -> LOGGER.error("Failed to parse vibration listener for Sculk Shrieker: '{}'", var0)).ifPresent((var1x) -> this.vibrationData = var1x);
-      }
-
+      this.vibrationData = (VibrationSystem.Data)var1.read("listener", VibrationSystem.Data.CODEC, var3).orElseGet(VibrationSystem.Data::new);
    }
 
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       var1.putInt("warning_level", this.warningLevel);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      VibrationSystem.Data.CODEC.encodeStart(var3, this.vibrationData).resultOrPartial((var0) -> LOGGER.error("Failed to encode vibration listener for Sculk Shrieker: '{}'", var0)).ifPresent((var1x) -> var1.put("listener", var1x));
+      var1.store("listener", VibrationSystem.Data.CODEC, var3, this.vibrationData);
    }
 
    @Nullable

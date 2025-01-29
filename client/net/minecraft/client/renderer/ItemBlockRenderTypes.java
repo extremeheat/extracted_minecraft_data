@@ -68,6 +68,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.COBWEB, var3);
       var0.put(Blocks.SHORT_GRASS, var3);
       var0.put(Blocks.FERN, var3);
+      var0.put(Blocks.BUSH, var3);
       var0.put(Blocks.DEAD_BUSH, var3);
       var0.put(Blocks.SEAGRASS, var3);
       var0.put(Blocks.TALL_SEAGRASS, var3);
@@ -303,6 +304,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.WAXED_EXPOSED_COPPER_GRATE, var3);
       var0.put(Blocks.WAXED_WEATHERED_COPPER_GRATE, var3);
       var0.put(Blocks.WAXED_OXIDIZED_COPPER_GRATE, var3);
+      var0.put(Blocks.FIREFLY_BUSH, var3);
       RenderType var4 = RenderType.translucent();
       var0.put(Blocks.ICE, var4);
       var0.put(Blocks.NETHER_PORTAL, var4);

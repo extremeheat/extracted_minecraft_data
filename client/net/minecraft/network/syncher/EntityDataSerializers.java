@@ -24,6 +24,7 @@ import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.animal.CatVariant;
+import net.minecraft.world.entity.animal.CowVariant;
 import net.minecraft.world.entity.animal.PigVariant;
 import net.minecraft.world.entity.animal.WolfVariant;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
@@ -65,6 +66,7 @@ public class EntityDataSerializers {
    public static final EntityDataSerializer<OptionalInt> OPTIONAL_UNSIGNED_INT;
    public static final EntityDataSerializer<Pose> POSE;
    public static final EntityDataSerializer<Holder<CatVariant>> CAT_VARIANT;
+   public static final EntityDataSerializer<Holder<CowVariant>> COW_VARIANT;
    public static final EntityDataSerializer<Holder<WolfVariant>> WOLF_VARIANT;
    public static final EntityDataSerializer<Holder<FrogVariant>> FROG_VARIANT;
    public static final EntityDataSerializer<Holder<PigVariant>> PIG_VARIANT;
@@ -187,6 +189,7 @@ public class EntityDataSerializers {
       OPTIONAL_UNSIGNED_INT = EntityDataSerializer.<OptionalInt>forValueType(OPTIONAL_UNSIGNED_INT_CODEC);
       POSE = EntityDataSerializer.<Pose>forValueType(Pose.STREAM_CODEC);
       CAT_VARIANT = EntityDataSerializer.<Holder<CatVariant>>forValueType(CatVariant.STREAM_CODEC);
+      COW_VARIANT = EntityDataSerializer.<Holder<CowVariant>>forValueType(CowVariant.STREAM_CODEC);
       WOLF_VARIANT = EntityDataSerializer.<Holder<WolfVariant>>forValueType(WolfVariant.STREAM_CODEC);
       FROG_VARIANT = EntityDataSerializer.<Holder<FrogVariant>>forValueType(FrogVariant.STREAM_CODEC);
       PIG_VARIANT = EntityDataSerializer.<Holder<PigVariant>>forValueType(PigVariant.STREAM_CODEC);
@@ -218,6 +221,7 @@ public class EntityDataSerializers {
       registerSerializer(OPTIONAL_UNSIGNED_INT);
       registerSerializer(POSE);
       registerSerializer(CAT_VARIANT);
+      registerSerializer(COW_VARIANT);
       registerSerializer(WOLF_VARIANT);
       registerSerializer(FROG_VARIANT);
       registerSerializer(PIG_VARIANT);

@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BoundingBoxRenderable;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BitSetDiscreteVoxelShape;
 import net.minecraft.world.phys.shapes.DiscreteVoxelShape;
 
@@ -22,22 +23,22 @@ public class BlockEntityWithBoundingBoxRenderer<T extends BlockEntity & Bounding
       super();
    }
 
-   public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
+   public void render(T var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
       if (Minecraft.getInstance().player.canUseGameMasterBlocks() || Minecraft.getInstance().player.isSpectator()) {
-         BoundingBoxRenderable.Mode var7 = ((BoundingBoxRenderable)var1).renderMode();
-         if (var7 != BoundingBoxRenderable.Mode.NONE) {
-            BoundingBoxRenderable.RenderableBox var8 = ((BoundingBoxRenderable)var1).getRenderableBox();
-            BlockPos var9 = var8.localPos();
-            Vec3i var10 = var8.size();
-            if (var10.getX() >= 1 && var10.getY() >= 1 && var10.getZ() >= 1) {
-               float var11 = 1.0F;
-               float var12 = 0.9F;
-               float var13 = 0.5F;
-               VertexConsumer var14 = var4.getBuffer(RenderType.lines());
-               BlockPos var15 = var9.offset(var10);
-               ShapeRenderer.renderLineBox(var3, var14, (double)var9.getX(), (double)var9.getY(), (double)var9.getZ(), (double)var15.getX(), (double)var15.getY(), (double)var15.getZ(), 0.9F, 0.9F, 0.9F, 1.0F, 0.5F, 0.5F, 0.5F);
-               if (var7 == BoundingBoxRenderable.Mode.BOX_AND_INVISIBLE_BLOCKS && var1.getLevel() != null) {
-                  this.renderInvisibleBlocks(var1, var1.getLevel(), var9, var10, var4, var3);
+         BoundingBoxRenderable.Mode var8 = ((BoundingBoxRenderable)var1).renderMode();
+         if (var8 != BoundingBoxRenderable.Mode.NONE) {
+            BoundingBoxRenderable.RenderableBox var9 = ((BoundingBoxRenderable)var1).getRenderableBox();
+            BlockPos var10 = var9.localPos();
+            Vec3i var11 = var9.size();
+            if (var11.getX() >= 1 && var11.getY() >= 1 && var11.getZ() >= 1) {
+               float var12 = 1.0F;
+               float var13 = 0.9F;
+               float var14 = 0.5F;
+               VertexConsumer var15 = var4.getBuffer(RenderType.lines());
+               BlockPos var16 = var10.offset(var11);
+               ShapeRenderer.renderLineBox(var3, var15, (double)var10.getX(), (double)var10.getY(), (double)var10.getZ(), (double)var16.getX(), (double)var16.getY(), (double)var16.getZ(), 0.9F, 0.9F, 0.9F, 1.0F, 0.5F, 0.5F, 0.5F);
+               if (var8 == BoundingBoxRenderable.Mode.BOX_AND_INVISIBLE_BLOCKS && var1.getLevel() != null) {
+                  this.renderInvisibleBlocks(var1, var1.getLevel(), var10, var11, var4, var3);
                }
 
             }

@@ -397,6 +397,9 @@ public abstract class Level implements LevelAccessor, UUIDLookup<Entity>, AutoCl
    public void playLocalSound(double var1, double var3, double var5, SoundEvent var7, SoundSource var8, float var9, float var10, boolean var11) {
    }
 
+   public void playPlayerSound(SoundEvent var1, SoundSource var2, float var3, float var4) {
+   }
+
    public void addParticle(ParticleOptions var1, double var2, double var4, double var6, double var8, double var10, double var12) {
    }
 

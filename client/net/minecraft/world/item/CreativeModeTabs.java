@@ -817,6 +817,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.WARPED_FUNGUS);
          var1.accept((ItemLike)Items.SHORT_GRASS);
          var1.accept((ItemLike)Items.FERN);
+         var1.accept((ItemLike)Items.BUSH);
          var1.accept((ItemLike)Items.DEAD_BUSH);
          var1.accept((ItemLike)Items.DANDELION);
          var1.accept((ItemLike)Items.POPPY);
@@ -838,6 +839,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.WILDFLOWERS);
          var1.accept((ItemLike)Items.LEAF_LITTER);
          var1.accept((ItemLike)Items.SPORE_BLOSSOM);
+         var1.accept((ItemLike)Items.FIREFLY_BUSH);
          var1.accept((ItemLike)Items.BAMBOO);
          var1.accept((ItemLike)Items.SUGAR_CANE);
          var1.accept((ItemLike)Items.CACTUS);

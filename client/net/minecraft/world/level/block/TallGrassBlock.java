@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class TallGrassBlock extends BushBlock implements BonemealableBlock {
+public class TallGrassBlock extends VegetationBlock implements BonemealableBlock {
    public static final MapCodec<TallGrassBlock> CODEC = simpleCodec(TallGrassBlock::new);
    private static final VoxelShape SHAPE = Block.column(12.0, 0.0, 13.0);
 

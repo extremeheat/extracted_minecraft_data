@@ -9,6 +9,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BaseSpawner;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
+import net.minecraft.world.phys.Vec3;
 
 public class SpawnerRenderer implements BlockEntityRenderer<SpawnerBlockEntity> {
    private final EntityRenderDispatcher entityRenderer;
@@ -18,13 +19,13 @@ public class SpawnerRenderer implements BlockEntityRenderer<SpawnerBlockEntity> 
       this.entityRenderer = var1.getEntityRenderer();
    }
 
-   public void render(SpawnerBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      Level var7 = var1.getLevel();
-      if (var7 != null) {
-         BaseSpawner var8 = var1.getSpawner();
-         Entity var9 = var8.getOrCreateDisplayEntity(var7, var1.getBlockPos());
-         if (var9 != null) {
-            renderEntityInSpawner(var2, var3, var4, var5, var9, this.entityRenderer, var8.getoSpin(), var8.getSpin());
+   public void render(SpawnerBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6, Vec3 var7) {
+      Level var8 = var1.getLevel();
+      if (var8 != null) {
+         BaseSpawner var9 = var1.getSpawner();
+         Entity var10 = var9.getOrCreateDisplayEntity(var8, var1.getBlockPos());
+         if (var10 != null) {
+            renderEntityInSpawner(var2, var3, var4, var5, var10, this.entityRenderer, var9.getoSpin(), var9.getSpin());
          }
 
       }

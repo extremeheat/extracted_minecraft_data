@@ -342,7 +342,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    private void readScoreboard(DimensionDataStorage var1) {
-      var1.computeIfAbsent(this.getScoreboard().dataFactory(), "scoreboard");
+      var1.computeIfAbsent(ServerScoreboard.TYPE);
    }
 
    protected abstract boolean initServer() throws IOException;
@@ -507,7 +507,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.waitUntilNextTick();
 
       for(ServerLevel var8 : this.levels.values()) {
-         TicketStorage var9 = (TicketStorage)var8.getDataStorage().get(TicketStorage.factory(), "chunks");
+         TicketStorage var9 = (TicketStorage)var8.getDataStorage().get(TicketStorage.TYPE);
          if (var9 != null) {
             var9.activateAllDeactivatedTickets();
          }
