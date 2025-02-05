@@ -28,6 +28,10 @@ public class CactusBlock extends Block {
    public static final int MAX_AGE = 15;
    private static final VoxelShape SHAPE;
    private static final VoxelShape SHAPE_COLLISION;
+   private static final int MAX_CACTUS_GROWING_HEIGHT = 3;
+   private static final int ATTEMPT_GROW_CACTUS_FLOWER_AGE = 8;
+   private static final double ATTEMPT_GROW_CACTUS_FLOWER_SMALL_CACTUS_CHANCE = 0.1;
+   private static final double ATTEMPT_GROW_CACTUS_FLOWER_TALL_CACTUS_CHANCE = 0.25;
 
    public MapCodec<CactusBlock> codec() {
       return CODEC;
@@ -48,22 +52,32 @@ public class CactusBlock extends Block {
    protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       BlockPos var5 = var3.above();
       if (var2.isEmptyBlock(var5)) {
-         int var6;
-         for(var6 = 1; var2.getBlockState(var3.below(var6)).is(this); ++var6) {
-         }
+         int var6 = 1;
+         int var7 = (Integer)var1.getValue(AGE);
 
-         if (var6 < 3) {
-            int var7 = (Integer)var1.getValue(AGE);
-            if (var7 == 15) {
-               var2.setBlockAndUpdate(var5, this.defaultBlockState());
-               BlockState var8 = (BlockState)var1.setValue(AGE, 0);
-               var2.setBlock(var3, var8, 260);
-               var2.neighborChanged(var8, var5, this, (Orientation)null, false);
-            } else {
-               var2.setBlock(var3, (BlockState)var1.setValue(AGE, var7 + 1), 260);
+         while(var2.getBlockState(var3.below(var6)).is(this)) {
+            ++var6;
+            if (var6 == 3 && var7 == 15) {
+               return;
             }
-
          }
+
+         if (var7 == 8 && this.canSurvive(this.defaultBlockState(), var2, var3.above())) {
+            double var10 = var6 >= 3 ? 0.25 : 0.1;
+            if (var4.nextDouble() <= var10) {
+               var2.setBlockAndUpdate(var5, Blocks.CACTUS_FLOWER.defaultBlockState());
+            }
+         } else if (var7 == 15 && var6 < 3) {
+            var2.setBlockAndUpdate(var5, this.defaultBlockState());
+            BlockState var8 = (BlockState)var1.setValue(AGE, 0);
+            var2.setBlock(var3, var8, 260);
+            var2.neighborChanged(var8, var5, this, (Orientation)null, false);
+         }
+
+         if (var7 < 15) {
+            var2.setBlock(var3, (BlockState)var1.setValue(AGE, var7 + 1), 260);
+         }
+
       }
    }
 

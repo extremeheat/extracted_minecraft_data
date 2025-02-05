@@ -1,9 +1,10 @@
 package net.minecraft.client.renderer;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import java.util.List;
 import java.util.Optional;
@@ -78,8 +79,7 @@ public abstract class RenderType extends RenderStateShard {
    private static final CompositeRenderType DEBUG_TRIANGLE_FAN;
    private static final CompositeRenderType DEBUG_STRUCTURE_QUADS;
    private static final CompositeRenderType DEBUG_SECTION_QUADS;
-   private static final RenderType WORLD_BORDER_NO_DEPTH_WRITE;
-   private static final RenderType WORLD_BORDER_DEPTH_WRITE;
+   private static final RenderType WORLD_BORDER;
    private static final Function<ResourceLocation, RenderType> OPAQUE_PARTICLE;
    private static final Function<ResourceLocation, RenderType> TRANSLUCENT_PARTICLE;
    private static final Function<ResourceLocation, RenderType> WEATHER_DEPTH_WRITE;
@@ -386,12 +386,8 @@ public abstract class RenderType extends RenderStateShard {
       return DEBUG_SECTION_QUADS;
    }
 
-   private static RenderType createWorldBorder(boolean var0) {
-      return create("world_border", DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS, 1536, false, false, RenderType.CompositeState.builder().setShaderState(POSITION_TEX_SHADER).setTextureState(new RenderStateShard.TextureStateShard(WorldBorderRenderer.FORCEFIELD_LOCATION, TriState.FALSE, false)).setTransparencyState(OVERLAY_TRANSPARENCY).setLightmapState(LIGHTMAP).setOutputState(WEATHER_TARGET).setWriteMaskState(var0 ? COLOR_DEPTH_WRITE : COLOR_WRITE).setLayeringState(WORLD_BORDER_LAYERING).setCullState(NO_CULL).createCompositeState(false));
-   }
-
-   public static RenderType worldBorder(boolean var0) {
-      return var0 ? WORLD_BORDER_DEPTH_WRITE : WORLD_BORDER_NO_DEPTH_WRITE;
+   public static RenderType worldBorder() {
+      return WORLD_BORDER;
    }
 
    public static RenderType opaqueParticle(ResourceLocation var0) {
@@ -501,7 +497,10 @@ public abstract class RenderType extends RenderStateShard {
 
    public void draw(MeshData var1) {
       this.setupRenderState();
-      BufferUploader.drawWithShader(var1);
+      VertexBuffer var2 = var1.drawState().format().getImmediateDrawVertexBuffer();
+      var2.bind();
+      var2.upload(var1);
+      var2.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
       this.clearRenderState();
    }
 
@@ -652,8 +651,7 @@ public abstract class RenderType extends RenderStateShard {
       DEBUG_TRIANGLE_FAN = create("debug_triangle_fan", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLE_FAN, 1536, false, true, RenderType.CompositeState.builder().setShaderState(POSITION_COLOR_SHADER).setTransparencyState(TRANSLUCENT_TRANSPARENCY).setCullState(NO_CULL).createCompositeState(false));
       DEBUG_STRUCTURE_QUADS = create("debug_structure_quads", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, 1536, false, true, RenderType.CompositeState.builder().setShaderState(POSITION_COLOR_SHADER).setTransparencyState(TRANSLUCENT_TRANSPARENCY).setCullState(NO_CULL).setDepthTestState(LEQUAL_DEPTH_TEST).setWriteMaskState(COLOR_WRITE).createCompositeState(false));
       DEBUG_SECTION_QUADS = create("debug_section_quads", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, 1536, false, true, RenderType.CompositeState.builder().setShaderState(POSITION_COLOR_SHADER).setLayeringState(VIEW_OFFSET_Z_LAYERING).setTransparencyState(TRANSLUCENT_TRANSPARENCY).setCullState(CULL).createCompositeState(false));
-      WORLD_BORDER_NO_DEPTH_WRITE = createWorldBorder(false);
-      WORLD_BORDER_DEPTH_WRITE = createWorldBorder(true);
+      WORLD_BORDER = create("world_border", DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS, 1536, false, false, RenderType.CompositeState.builder().setShaderState(RENDERTYPE_WORLD_BORDER).setTextureState(new RenderStateShard.TextureStateShard(WorldBorderRenderer.FORCEFIELD_LOCATION, TriState.FALSE, false)).setTransparencyState(OVERLAY_TRANSPARENCY).setLightmapState(LIGHTMAP).setOutputState(WEATHER_TARGET).setWriteMaskState(COLOR_DEPTH_WRITE).setLayeringState(WORLD_BORDER_LAYERING).setCullState(NO_CULL).createCompositeState(false));
       OPAQUE_PARTICLE = Util.memoize((Function)((var0) -> create("opaque_particle", DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS, 1536, false, false, RenderType.CompositeState.builder().setShaderState(PARTICLE_SHADER).setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false)).setLightmapState(LIGHTMAP).setWriteMaskState(COLOR_DEPTH_WRITE).createCompositeState(false))));
       TRANSLUCENT_PARTICLE = Util.memoize((Function)((var0) -> create("translucent_particle", DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS, 1536, false, false, RenderType.CompositeState.builder().setShaderState(PARTICLE_SHADER).setTextureState(new RenderStateShard.TextureStateShard(var0, TriState.FALSE, false)).setTransparencyState(TRANSLUCENT_TRANSPARENCY).setOutputState(PARTICLES_TARGET).setLightmapState(LIGHTMAP).setWriteMaskState(COLOR_DEPTH_WRITE).createCompositeState(false))));
       WEATHER_DEPTH_WRITE = createWeather(true);

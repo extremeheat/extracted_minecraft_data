@@ -817,6 +817,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.WARPED_FUNGUS);
          var1.accept((ItemLike)Items.SHORT_GRASS);
          var1.accept((ItemLike)Items.FERN);
+         var1.accept((ItemLike)Items.DRY_SHORT_GRASS);
          var1.accept((ItemLike)Items.BUSH);
          var1.accept((ItemLike)Items.DEAD_BUSH);
          var1.accept((ItemLike)Items.DANDELION);
@@ -832,6 +833,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.CORNFLOWER);
          var1.accept((ItemLike)Items.LILY_OF_THE_VALLEY);
          var1.accept((ItemLike)Items.TORCHFLOWER);
+         var1.accept((ItemLike)Items.CACTUS_FLOWER);
          var1.accept((ItemLike)Items.CLOSED_EYEBLOSSOM);
          var1.accept((ItemLike)Items.OPEN_EYEBLOSSOM);
          var1.accept((ItemLike)Items.WITHER_ROSE);
@@ -851,6 +853,7 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.VINE);
          var1.accept((ItemLike)Items.TALL_GRASS);
          var1.accept((ItemLike)Items.LARGE_FERN);
+         var1.accept((ItemLike)Items.DRY_TALL_GRASS);
          var1.accept((ItemLike)Items.SUNFLOWER);
          var1.accept((ItemLike)Items.LILAC);
          var1.accept((ItemLike)Items.ROSE_BUSH);
@@ -1375,6 +1378,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.END_CRYSTAL);
          var1.accept((ItemLike)Items.SNOWBALL);
          var1.accept((ItemLike)Items.EGG);
+         var1.accept((ItemLike)Items.BROWN_EGG);
+         var1.accept((ItemLike)Items.BLUE_EGG);
          var1.accept((ItemLike)Items.WIND_CHARGE);
          var1.accept((ItemLike)Items.BOW);
          var1.accept((ItemLike)Items.CROSSBOW);
@@ -1461,6 +1466,8 @@ public class CreativeModeTabs {
          var1.accept((ItemLike)Items.FEATHER);
          var1.accept((ItemLike)Items.SNOWBALL);
          var1.accept((ItemLike)Items.EGG);
+         var1.accept((ItemLike)Items.BROWN_EGG);
+         var1.accept((ItemLike)Items.BLUE_EGG);
          var1.accept((ItemLike)Items.LEATHER);
          var1.accept((ItemLike)Items.RABBIT_HIDE);
          var1.accept((ItemLike)Items.HONEYCOMB);

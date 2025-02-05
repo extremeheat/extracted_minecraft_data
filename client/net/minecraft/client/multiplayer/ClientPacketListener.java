@@ -631,7 +631,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleSetHeldSlot(ClientboundSetHeldSlotPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, (BlockableEventLoop)this.minecraft);
       if (Inventory.isHotbarSlot(var1.slot())) {
-         this.minecraft.player.getInventory().selected = var1.slot();
+         this.minecraft.player.getInventory().setSelectedSlot(var1.slot());
       }
 
    }

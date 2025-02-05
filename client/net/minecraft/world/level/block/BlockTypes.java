@@ -46,6 +46,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"bush", BushBlock.CODEC);
       Registry.register(var0, (String)"button", ButtonBlock.CODEC);
       Registry.register(var0, (String)"cactus", CactusBlock.CODEC);
+      Registry.register(var0, (String)"cactus_flower", CactusFlowerBlock.CODEC);
       Registry.register(var0, (String)"cake", CakeBlock.CODEC);
       Registry.register(var0, (String)"calibrated_sculk_sensor", CalibratedSculkSensorBlock.CODEC);
       Registry.register(var0, (String)"campfire", CampfireBlock.CODEC);
@@ -80,7 +81,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"crop", CropBlock.CODEC);
       Registry.register(var0, (String)"crying_obsidian", CryingObsidianBlock.CODEC);
       Registry.register(var0, (String)"daylight_detector", DaylightDetectorBlock.CODEC);
-      Registry.register(var0, (String)"dead_bush", DeadBushBlock.CODEC);
+      Registry.register(var0, (String)"dry_vegetation", DryVegetationBlock.CODEC);
       Registry.register(var0, (String)"decorated_pot", DecoratedPotBlock.CODEC);
       Registry.register(var0, (String)"detector_rail", DetectorRailBlock.CODEC);
       Registry.register(var0, (String)"dirt_path", DirtPathBlock.CODEC);
@@ -194,6 +195,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"sculk_vein", SculkVeinBlock.CODEC);
       Registry.register(var0, (String)"seagrass", SeagrassBlock.CODEC);
       Registry.register(var0, (String)"sea_pickle", SeaPickleBlock.CODEC);
+      Registry.register(var0, (String)"short_dry_grass", ShortDryGrassBlock.CODEC);
       Registry.register(var0, (String)"shulker_box", ShulkerBoxBlock.CODEC);
       Registry.register(var0, (String)"skull", SkullBlock.CODEC);
       Registry.register(var0, (String)"slab", SlabBlock.CODEC);
@@ -220,6 +222,7 @@ public class BlockTypes {
       Registry.register(var0, (String)"structure_void", StructureVoidBlock.CODEC);
       Registry.register(var0, (String)"sugar_cane", SugarCaneBlock.CODEC);
       Registry.register(var0, (String)"sweet_berry_bush", SweetBerryBushBlock.CODEC);
+      Registry.register(var0, (String)"tall_dry_grass", TallDryGrassBlock.CODEC);
       Registry.register(var0, (String)"tall_flower", TallFlowerBlock.CODEC);
       Registry.register(var0, (String)"tall_grass", TallGrassBlock.CODEC);
       Registry.register(var0, (String)"tall_seagrass", TallSeagrassBlock.CODEC);

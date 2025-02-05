@@ -675,7 +675,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
          int var3 = var2.findSlotMatchingItem(var1);
          if (var3 != -1) {
             if (Inventory.isHotbarSlot(var3)) {
-               var2.selected = var3;
+               var2.setSelectedSlot(var3);
             } else {
                var2.pickSlot(var3);
             }
@@ -683,7 +683,7 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
             var2.addAndPickItem(var1);
          }
 
-         this.player.connection.send(new ClientboundSetHeldSlotPacket(var2.selected));
+         this.player.connection.send(new ClientboundSetHeldSlotPacket(var2.getSelectedSlot()));
          this.player.inventoryMenu.broadcastChanges();
       }
    }
@@ -1322,11 +1322,11 @@ public class ServerGamePacketListenerImpl extends ServerCommonPacketListenerImpl
    public void handleSetCarriedItem(ServerboundSetCarriedItemPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (var1.getSlot() >= 0 && var1.getSlot() < Inventory.getSelectionSize()) {
-         if (this.player.getInventory().selected != var1.getSlot() && this.player.getUsedItemHand() == InteractionHand.MAIN_HAND) {
+         if (this.player.getInventory().getSelectedSlot() != var1.getSlot() && this.player.getUsedItemHand() == InteractionHand.MAIN_HAND) {
             this.player.stopUsingItem();
          }
 
-         this.player.getInventory().selected = var1.getSlot();
+         this.player.getInventory().setSelectedSlot(var1.getSlot());
          this.player.resetLastActionTime();
       } else {
          LOGGER.warn("{} tried to set an invalid carried item", this.player.getName().getString());

@@ -2,6 +2,7 @@ package net.minecraft.world.entity;
 
 import com.mojang.serialization.Codec;
 import java.util.EnumMap;
+import java.util.Map;
 import java.util.Objects;
 import net.minecraft.world.item.ItemStack;
 
@@ -19,6 +20,7 @@ public class EntityEquipment {
    }
 
    public ItemStack set(EquipmentSlot var1, ItemStack var2) {
+      var2.getItem().verifyComponentsAfterLoad(var2);
       return (ItemStack)Objects.requireNonNullElse((ItemStack)this.items.put(var1, var2), ItemStack.EMPTY);
    }
 
@@ -34,6 +36,33 @@ public class EntityEquipment {
       }
 
       return true;
+   }
+
+   public void tick(Entity var1) {
+      for(Map.Entry var3 : this.items.entrySet()) {
+         ItemStack var4 = (ItemStack)var3.getValue();
+         if (!var4.isEmpty()) {
+            var4.inventoryTick(var1.level(), var1, (EquipmentSlot)var3.getKey());
+         }
+      }
+
+   }
+
+   public void setAll(EntityEquipment var1) {
+      this.items.clear();
+      this.items.putAll(var1.items);
+   }
+
+   public void dropAll(LivingEntity var1) {
+      for(ItemStack var3 : this.items.values()) {
+         var1.drop(var3, true, false);
+      }
+
+      this.clear();
+   }
+
+   public void clear() {
+      this.items.replaceAll((var0, var1) -> ItemStack.EMPTY);
    }
 
    static {

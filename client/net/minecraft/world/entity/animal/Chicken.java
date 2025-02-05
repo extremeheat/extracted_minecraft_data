@@ -1,13 +1,23 @@
 package net.minecraft.world.entity.animal;
 
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentGetter;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
@@ -16,6 +26,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.BreedGoal;
@@ -27,8 +38,12 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.variant.SpawnContext;
+import net.minecraft.world.entity.variant.VariantUtils;
+import net.minecraft.world.item.EitherHolder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathType;
@@ -37,6 +52,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class Chicken extends Animal {
    private static final EntityDimensions BABY_DIMENSIONS;
+   private static final EntityDataAccessor<Holder<ChickenVariant>> DATA_VARIANT_ID;
    public float flap;
    public float flapSpeed;
    public float oFlapSpeed;
@@ -128,7 +144,17 @@ public class Chicken extends Animal {
 
    @Nullable
    public Chicken getBreedOffspring(ServerLevel var1, AgeableMob var2) {
-      return EntityType.CHICKEN.create(var1, EntitySpawnReason.BREEDING);
+      Chicken var3 = EntityType.CHICKEN.create(var1, EntitySpawnReason.BREEDING);
+      if (var3 != null && var2 instanceof Chicken var4) {
+         var3.setVariant(this.random.nextBoolean() ? this.getVariant() : var4.getVariant());
+      }
+
+      return var3;
+   }
+
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, EntitySpawnReason var3, @Nullable SpawnGroupData var4) {
+      ChickenVariants.selectVariantToSpawn(this.random, this.registryAccess(), SpawnContext.create(var1, this.blockPosition())).ifPresent(this::setVariant);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    public boolean isFood(ItemStack var1) {
@@ -139,6 +165,11 @@ public class Chicken extends Animal {
       return this.isChickenJockey() ? 10 : super.getBaseExperienceReward(var1);
    }
 
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_VARIANT_ID, VariantUtils.getDefaultOrAny(this.registryAccess(), ChickenVariants.TEMPERATE));
+   }
+
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.isChickenJockey = var1.getBoolean("IsChickenJockey");
@@ -146,12 +177,46 @@ public class Chicken extends Animal {
          this.eggTime = var1.getInt("EggLayTime");
       }
 
+      VariantUtils.readVariant(var1, this.registryAccess(), Registries.CHICKEN_VARIANT).ifPresent(this::setVariant);
    }
 
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putBoolean("IsChickenJockey", this.isChickenJockey);
       var1.putInt("EggLayTime", this.eggTime);
+      VariantUtils.writeVariant(var1, this.getVariant());
+   }
+
+   public void setVariant(Holder<ChickenVariant> var1) {
+      this.entityData.set(DATA_VARIANT_ID, var1);
+   }
+
+   public Holder<ChickenVariant> getVariant() {
+      return (Holder)this.entityData.get(DATA_VARIANT_ID);
+   }
+
+   @Nullable
+   public <T> T get(DataComponentType<? extends T> var1) {
+      return (T)(var1 == DataComponents.CHICKEN_VARIANT ? castComponentValue(var1, new EitherHolder(this.getVariant())) : super.get(var1));
+   }
+
+   protected void applyImplicitComponents(DataComponentGetter var1) {
+      this.applyImplicitComponentIfPresent(var1, DataComponents.CHICKEN_VARIANT);
+      super.applyImplicitComponents(var1);
+   }
+
+   protected <T> boolean applyImplicitComponent(DataComponentType<T> var1, T var2) {
+      if (var1 == DataComponents.CHICKEN_VARIANT) {
+         Optional var3 = ((EitherHolder)castComponentValue(DataComponents.CHICKEN_VARIANT, var2)).unwrap(this.registryAccess());
+         if (var3.isPresent()) {
+            this.setVariant((Holder)var3.get());
+            return true;
+         } else {
+            return false;
+         }
+      } else {
+         return super.applyImplicitComponent(var1, var2);
+      }
    }
 
    public boolean removeWhenFarAway(double var1) {
@@ -182,5 +247,6 @@ public class Chicken extends Animal {
 
    static {
       BABY_DIMENSIONS = EntityType.CHICKEN.getDimensions().scale(0.5F).withEyeHeight(0.2975F);
+      DATA_VARIANT_ID = SynchedEntityData.<Holder<ChickenVariant>>defineId(Chicken.class, EntityDataSerializers.CHICKEN_VARIANT);
    }
 }

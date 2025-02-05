@@ -70,6 +70,7 @@ public class SoundType {
    public static final SoundType COPPER_GRATE;
    public static final SoundType CAVE_VINES;
    public static final SoundType SPORE_BLOSSOM;
+   public static final SoundType CACTUS_FLOWER;
    public static final SoundType AZALEA;
    public static final SoundType FLOWERING_AZALEA;
    public static final SoundType MOSS_CARPET;
@@ -237,6 +238,7 @@ public class SoundType {
       COPPER_GRATE = new SoundType(1.0F, 1.0F, SoundEvents.COPPER_GRATE_BREAK, SoundEvents.COPPER_GRATE_STEP, SoundEvents.COPPER_GRATE_PLACE, SoundEvents.COPPER_GRATE_HIT, SoundEvents.COPPER_GRATE_FALL);
       CAVE_VINES = new SoundType(1.0F, 1.0F, SoundEvents.CAVE_VINES_BREAK, SoundEvents.CAVE_VINES_STEP, SoundEvents.CAVE_VINES_PLACE, SoundEvents.CAVE_VINES_HIT, SoundEvents.CAVE_VINES_FALL);
       SPORE_BLOSSOM = new SoundType(1.0F, 1.0F, SoundEvents.SPORE_BLOSSOM_BREAK, SoundEvents.SPORE_BLOSSOM_STEP, SoundEvents.SPORE_BLOSSOM_PLACE, SoundEvents.SPORE_BLOSSOM_HIT, SoundEvents.SPORE_BLOSSOM_FALL);
+      CACTUS_FLOWER = new SoundType(1.0F, 1.0F, SoundEvents.CACTUS_FLOWER_BREAK, SoundEvents.EMPTY, SoundEvents.CACTUS_FLOWER_PLACE, SoundEvents.EMPTY, SoundEvents.EMPTY);
       AZALEA = new SoundType(1.0F, 1.0F, SoundEvents.AZALEA_BREAK, SoundEvents.AZALEA_STEP, SoundEvents.AZALEA_PLACE, SoundEvents.AZALEA_HIT, SoundEvents.AZALEA_FALL);
       FLOWERING_AZALEA = new SoundType(1.0F, 1.0F, SoundEvents.FLOWERING_AZALEA_BREAK, SoundEvents.FLOWERING_AZALEA_STEP, SoundEvents.FLOWERING_AZALEA_PLACE, SoundEvents.FLOWERING_AZALEA_HIT, SoundEvents.FLOWERING_AZALEA_FALL);
       MOSS_CARPET = new SoundType(1.0F, 1.0F, SoundEvents.MOSS_CARPET_BREAK, SoundEvents.MOSS_CARPET_STEP, SoundEvents.MOSS_CARPET_PLACE, SoundEvents.MOSS_CARPET_HIT, SoundEvents.MOSS_CARPET_FALL);

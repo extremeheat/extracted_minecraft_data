@@ -19,6 +19,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.animal.ChickenVariants;
 import net.minecraft.world.food.Foods;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.Bees;
@@ -266,6 +267,8 @@ public class Items {
    public static final Item FLOWERING_AZALEA;
    public static final Item DEAD_BUSH;
    public static final Item FIREFLY_BUSH;
+   public static final Item DRY_SHORT_GRASS;
+   public static final Item DRY_TALL_GRASS;
    public static final Item SEAGRASS;
    public static final Item SEA_PICKLE;
    public static final Item WHITE_WOOL;
@@ -384,6 +387,7 @@ public class Items {
    public static final Item ICE;
    public static final Item SNOW_BLOCK;
    public static final Item CACTUS;
+   public static final Item CACTUS_FLOWER;
    public static final Item CLAY;
    public static final Item JUKEBOX;
    public static final Item OAK_FENCE;
@@ -1024,6 +1028,8 @@ public class Items {
    public static final Item BOOK;
    public static final Item SLIME_BALL;
    public static final Item EGG;
+   public static final Item BLUE_EGG;
+   public static final Item BROWN_EGG;
    public static final Item COMPASS;
    public static final Item RECOVERY_COMPASS;
    public static final Item BUNDLE;
@@ -1734,6 +1740,8 @@ public class Items {
       FLOWERING_AZALEA = registerBlock(Blocks.FLOWERING_AZALEA);
       DEAD_BUSH = registerBlock(Blocks.DEAD_BUSH);
       FIREFLY_BUSH = registerBlock(Blocks.FIREFLY_BUSH);
+      DRY_SHORT_GRASS = registerBlock(Blocks.SHORT_DRY_GRASS);
+      DRY_TALL_GRASS = registerBlock(Blocks.TALL_DRY_GRASS);
       SEAGRASS = registerBlock(Blocks.SEAGRASS);
       SEA_PICKLE = registerBlock(Blocks.SEA_PICKLE);
       WHITE_WOOL = registerBlock(Blocks.WHITE_WOOL);
@@ -1852,6 +1860,7 @@ public class Items {
       ICE = registerBlock(Blocks.ICE);
       SNOW_BLOCK = registerBlock(Blocks.SNOW_BLOCK);
       CACTUS = registerBlock(Blocks.CACTUS);
+      CACTUS_FLOWER = registerBlock(Blocks.CACTUS_FLOWER);
       CLAY = registerBlock(Blocks.CLAY);
       JUKEBOX = registerBlock(Blocks.JUKEBOX);
       OAK_FENCE = registerBlock(Blocks.OAK_FENCE);
@@ -2491,7 +2500,9 @@ public class Items {
       PAPER = registerItem("paper");
       BOOK = registerItem("book", (new Item.Properties()).enchantable(1));
       SLIME_BALL = registerItem("slime_ball");
-      EGG = registerItem("egg", EggItem::new, (new Item.Properties()).stacksTo(16));
+      EGG = registerItem("egg", EggItem::new, (new Item.Properties()).stacksTo(16).component(DataComponents.CHICKEN_VARIANT, new EitherHolder(ChickenVariants.TEMPERATE)));
+      BLUE_EGG = registerItem("blue_egg", EggItem::new, (new Item.Properties()).stacksTo(16).component(DataComponents.CHICKEN_VARIANT, new EitherHolder(ChickenVariants.COLD)));
+      BROWN_EGG = registerItem("brown_egg", EggItem::new, (new Item.Properties()).stacksTo(16).component(DataComponents.CHICKEN_VARIANT, new EitherHolder(ChickenVariants.WARM)));
       COMPASS = registerItem("compass", CompassItem::new);
       RECOVERY_COMPASS = registerItem("recovery_compass", (new Item.Properties()).rarity(Rarity.UNCOMMON));
       BUNDLE = registerItem("bundle", BundleItem::new, (new Item.Properties()).stacksTo(1).component(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY));

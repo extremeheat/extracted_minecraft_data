@@ -10,7 +10,11 @@ import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.pipeline.RenderCall;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import java.nio.ByteBuffer;
@@ -83,12 +87,15 @@ public class RenderSystem {
    private static FogParameters shaderFog;
    private static final Vector3f[] shaderLightDirections;
    private static float shaderGameTime;
+   private static Vector3f modelOffset;
    private static float shaderLineWidth;
    private static String apiDescription;
    @Nullable
    private static CompiledShaderProgram shader;
    private static final AtomicLong pollEventsWaitStart;
    private static final AtomicBoolean pollingEvents;
+   @Nullable
+   private static VertexBuffer QUAD_VERTICES;
 
    public RenderSystem() {
       super();
@@ -449,11 +456,6 @@ public class RenderSystem {
       GLX._setGlfwErrorCallback(var0);
    }
 
-   public static void renderCrosshair(int var0) {
-      assertOnRenderThread();
-      GLX._renderCrosshair(var0, true, true, true);
-   }
-
    public static String getCapsString() {
       assertOnRenderThread();
       return "Using framebuffer using OpenGL 3.2";
@@ -745,6 +747,39 @@ public class RenderSystem {
       return projectionType;
    }
 
+   public static VertexBuffer getQuadVertices() {
+      if (QUAD_VERTICES == null) {
+         try (ByteBufferBuilder var0 = new ByteBufferBuilder(DefaultVertexFormat.POSITION.getVertexSize() * 4)) {
+            BufferBuilder var1 = new BufferBuilder(var0, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
+            var1.addVertex(0.0F, 0.0F, 0.0F);
+            var1.addVertex(1.0F, 0.0F, 0.0F);
+            var1.addVertex(1.0F, 1.0F, 0.0F);
+            var1.addVertex(0.0F, 1.0F, 0.0F);
+            QUAD_VERTICES = new VertexBuffer(BufferUsage.STATIC_WRITE);
+            QUAD_VERTICES.bind();
+            QUAD_VERTICES.upload(var1.buildOrThrow());
+            VertexBuffer.unbind();
+         }
+      }
+
+      return QUAD_VERTICES;
+   }
+
+   public static void setModelOffset(float var0, float var1, float var2) {
+      assertOnRenderThread();
+      modelOffset.set(var0, var1, var2);
+   }
+
+   public static void resetModelOffset() {
+      assertOnRenderThread();
+      modelOffset.set(0.0F, 0.0F, 0.0F);
+   }
+
+   public static Vector3f getModelOffset() {
+      assertOnRenderThread();
+      return modelOffset;
+   }
+
    static {
       projectionType = ProjectionType.PERSPECTIVE;
       savedProjectionType = ProjectionType.PERSPECTIVE;
@@ -755,6 +790,7 @@ public class RenderSystem {
       shaderGlintAlpha = 1.0F;
       shaderFog = FogParameters.NO_FOG;
       shaderLightDirections = new Vector3f[2];
+      modelOffset = new Vector3f();
       shaderLineWidth = 1.0F;
       apiDescription = "Unknown";
       pollEventsWaitStart = new AtomicLong();

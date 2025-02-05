@@ -4,18 +4,12 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.DontObfuscate;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
-import net.minecraft.client.renderer.CoreShaders;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -107,55 +101,6 @@ public class GLX {
 
    public static String _getCpuInfo() {
       return cpuInfo == null ? "<unknown>" : cpuInfo;
-   }
-
-   public static void _renderCrosshair(int var0, boolean var1, boolean var2, boolean var3) {
-      if (var1 || var2 || var3) {
-         RenderSystem.assertOnRenderThread();
-         GlStateManager._depthMask(false);
-         GlStateManager._disableCull();
-         RenderSystem.setShader(CoreShaders.RENDERTYPE_LINES);
-         Tesselator var4 = RenderSystem.renderThreadTesselator();
-         BufferBuilder var5 = var4.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
-         RenderSystem.lineWidth(4.0F);
-         if (var1) {
-            var5.addVertex(0.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(1.0F, 0.0F, 0.0F);
-            var5.addVertex((float)var0, 0.0F, 0.0F).setColor(-16777216).setNormal(1.0F, 0.0F, 0.0F);
-         }
-
-         if (var2) {
-            var5.addVertex(0.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(0.0F, 1.0F, 0.0F);
-            var5.addVertex(0.0F, (float)var0, 0.0F).setColor(-16777216).setNormal(0.0F, 1.0F, 0.0F);
-         }
-
-         if (var3) {
-            var5.addVertex(0.0F, 0.0F, 0.0F).setColor(-16777216).setNormal(0.0F, 0.0F, 1.0F);
-            var5.addVertex(0.0F, 0.0F, (float)var0).setColor(-16777216).setNormal(0.0F, 0.0F, 1.0F);
-         }
-
-         BufferUploader.drawWithShader(var5.buildOrThrow());
-         RenderSystem.lineWidth(2.0F);
-         var5 = var4.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
-         if (var1) {
-            var5.addVertex(0.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F);
-            var5.addVertex((float)var0, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F);
-         }
-
-         if (var2) {
-            var5.addVertex(0.0F, 0.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F);
-            var5.addVertex(0.0F, (float)var0, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F);
-         }
-
-         if (var3) {
-            var5.addVertex(0.0F, 0.0F, 0.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F);
-            var5.addVertex(0.0F, 0.0F, (float)var0).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F);
-         }
-
-         BufferUploader.drawWithShader(var5.buildOrThrow());
-         RenderSystem.lineWidth(1.0F);
-         GlStateManager._enableCull();
-         GlStateManager._depthMask(true);
-      }
    }
 
    public static <T> T make(Supplier<T> var0) {

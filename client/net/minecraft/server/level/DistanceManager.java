@@ -2,12 +2,14 @@ package net.minecraft.server.level;
 
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.Long2ByteMap;
+import it.unimi.dsi.fastutil.longs.Long2ByteMaps;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntMaps;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongConsumer;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -20,8 +22,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import net.minecraft.core.SectionPos;
+import net.minecraft.util.TriState;
 import net.minecraft.util.thread.TaskScheduler;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.TicketStorage;
 import org.slf4j.Logger;
 
@@ -159,9 +163,28 @@ public abstract class DistanceManager {
       return this.naturalSpawnChunkCounter.chunks.size();
    }
 
-   public boolean hasPlayersNearby(long var1) {
+   public TriState hasPlayersNearby(long var1) {
       this.naturalSpawnChunkCounter.runAllUpdates();
-      return this.naturalSpawnChunkCounter.chunks.containsKey(var1);
+      int var3 = this.naturalSpawnChunkCounter.getLevel(var1);
+      if (var3 <= NaturalSpawner.INSCRIBED_SQUARE_SPAWN_DISTANCE_CHUNK) {
+         return TriState.TRUE;
+      } else {
+         return var3 > 8 ? TriState.FALSE : TriState.DEFAULT;
+      }
+   }
+
+   public void forEachBlockTickingChunks(LongConsumer var1) {
+      ObjectIterator var2 = Long2ByteMaps.fastIterable(this.simulationChunkTracker.chunks).iterator();
+
+      while(var2.hasNext()) {
+         Long2ByteMap.Entry var3 = (Long2ByteMap.Entry)var2.next();
+         byte var4 = var3.getByteValue();
+         long var5 = var3.getLongKey();
+         if (ChunkLevel.isBlockTicking(var4)) {
+            var1.accept(var5);
+         }
+      }
+
    }
 
    public LongIterator getSpawnCandidateChunks() {

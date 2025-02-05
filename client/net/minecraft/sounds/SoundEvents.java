@@ -235,6 +235,8 @@ public class SoundEvents {
    public static final SoundEvent BUNDLE_INSERT = register("item.bundle.insert");
    public static final SoundEvent BUNDLE_INSERT_FAIL = register("item.bundle.insert_fail");
    public static final SoundEvent BUNDLE_REMOVE_ONE = register("item.bundle.remove_one");
+   public static final SoundEvent CACTUS_FLOWER_BREAK = register("block.cactus_flower.break");
+   public static final SoundEvent CACTUS_FLOWER_PLACE = register("block.cactus_flower.place");
    public static final SoundEvent CAKE_ADD_CANDLE = register("block.cake.add_candle");
    public static final SoundEvent CALCITE_BREAK = register("block.calcite.break");
    public static final SoundEvent CALCITE_STEP = register("block.calcite.step");
@@ -540,6 +542,7 @@ public class SoundEvents {
    public static final SoundEvent FENCE_GATE_CLOSE = register("block.fence_gate.close");
    public static final SoundEvent FENCE_GATE_OPEN = register("block.fence_gate.open");
    public static final SoundEvent FIRECHARGE_USE = register("item.firecharge.use");
+   public static final SoundEvent FIREFLY_BUSH_IDLE = register("block.firefly_bush.idle");
    public static final SoundEvent FIREWORK_ROCKET_BLAST = register("entity.firework_rocket.blast");
    public static final SoundEvent FIREWORK_ROCKET_BLAST_FAR = register("entity.firework_rocket.blast_far");
    public static final SoundEvent FIREWORK_ROCKET_LARGE_BLAST = register("entity.firework_rocket.large_blast");

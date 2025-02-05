@@ -671,6 +671,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.WAXED_OXIDIZED_COPPER_BULB);
       this.dropSelf(Blocks.HEAVY_CORE);
       this.dropSelf(Blocks.FIREFLY_BUSH);
+      this.dropSelf(Blocks.CACTUS_FLOWER);
       this.dropSelf(Blocks.BUSH);
       this.dropOther(Blocks.FARMLAND, Blocks.DIRT);
       this.dropOther(Blocks.TRIPWIRE, Items.STRING);
@@ -961,6 +962,8 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.DEEPSLATE_LAPIS_ORE, (var1x) -> this.createLapisOreDrops(var1x));
       this.add(Blocks.COBWEB, (var1x) -> this.createSilkTouchOrShearsDispatchTable(var1x, (LootPoolEntryContainer.Builder)this.applyExplosionCondition(var1x, LootItem.lootTableItem(Items.STRING))));
       this.add(Blocks.DEAD_BUSH, (var1x) -> this.createShearsDispatchTable(var1x, (LootPoolEntryContainer.Builder)this.applyExplosionDecay(var1x, LootItem.lootTableItem(Items.STICK).apply(SetItemCountFunction.setCount(UniformGenerator.between(0.0F, 2.0F))))));
+      this.add(Blocks.SHORT_DRY_GRASS, (var1x) -> this.createShearsOrSilkTouchOnlyDrop(var1x));
+      this.add(Blocks.TALL_DRY_GRASS, (var1x) -> this.createShearsOrSilkTouchOnlyDrop(var1x));
       this.add(Blocks.NETHER_SPROUTS, (var1x) -> this.createShearsOnlyDrop(var1x));
       this.add(Blocks.SEAGRASS, (var1x) -> this.createShearsOnlyDrop(var1x));
       this.add(Blocks.VINE, (var1x) -> this.createShearsOnlyDrop(var1x));

@@ -293,7 +293,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.shaped(RecipeCategory.BUILDING_BLOCKS, Blocks.BRICKS).define('#', Items.BRICK).pattern("##").pattern("##").unlockedBy("has_brick", this.has(Items.BRICK)).save(this.output);
       this.shapeless(RecipeCategory.MISC, Items.BROWN_DYE).requires(Items.COCOA_BEANS).group("brown_dye").unlockedBy("has_cocoa_beans", this.has(Items.COCOA_BEANS)).save(this.output);
       this.shaped(RecipeCategory.MISC, Items.BUCKET).define('#', Items.IRON_INGOT).pattern("# #").pattern(" # ").unlockedBy("has_iron_ingot", this.has(Items.IRON_INGOT)).save(this.output);
-      this.shaped(RecipeCategory.FOOD, Blocks.CAKE).define('A', Items.MILK_BUCKET).define('B', Items.SUGAR).define('C', Items.WHEAT).define('E', Items.EGG).pattern("AAA").pattern("BEB").pattern("CCC").unlockedBy("has_egg", this.has(Items.EGG)).save(this.output);
+      this.shaped(RecipeCategory.FOOD, Blocks.CAKE).define('A', Items.MILK_BUCKET).define('B', Items.SUGAR).define('C', Items.WHEAT).define('E', ItemTags.EGGS).pattern("AAA").pattern("BEB").pattern("CCC").unlockedBy("has_egg", this.has(ItemTags.EGGS)).save(this.output);
       this.shaped(RecipeCategory.DECORATIONS, Blocks.CAMPFIRE).define('L', ItemTags.LOGS).define('S', Items.STICK).define('C', ItemTags.COALS).pattern(" S ").pattern("SCS").pattern("LLL").unlockedBy("has_stick", this.has(Items.STICK)).unlockedBy("has_coal", this.has(ItemTags.COALS)).save(this.output);
       this.shaped(RecipeCategory.TRANSPORTATION, Items.CARROT_ON_A_STICK).define('#', Items.FISHING_ROD).define('X', Items.CARROT).pattern("# ").pattern(" X").unlockedBy("has_carrot", this.has(Items.CARROT)).save(this.output);
       this.shaped(RecipeCategory.TRANSPORTATION, Items.WARPED_FUNGUS_ON_A_STICK).define('#', Items.FISHING_ROD).define('X', Items.WARPED_FUNGUS).pattern("# ").pattern(" X").unlockedBy("has_warped_fungus", this.has(Items.WARPED_FUNGUS)).save(this.output);
@@ -464,12 +464,13 @@ public class VanillaRecipeProvider extends RecipeProvider {
       this.threeByThreePacker(RecipeCategory.BUILDING_BLOCKS, Blocks.PACKED_ICE, Blocks.ICE);
       this.oneToOneConversionRecipe(Items.PINK_DYE, Blocks.PEONY, "pink_dye", 2);
       this.oneToOneConversionRecipe(Items.PINK_DYE, Blocks.PINK_TULIP, "pink_dye");
+      this.oneToOneConversionRecipe(Items.PINK_DYE, Blocks.CACTUS_FLOWER, "pink_dye");
       this.shapeless(RecipeCategory.MISC, Items.PINK_DYE, 2).requires(Items.RED_DYE).requires(Items.WHITE_DYE).group("pink_dye").unlockedBy("has_white_dye", this.has(Items.WHITE_DYE)).unlockedBy("has_red_dye", this.has(Items.RED_DYE)).save(this.output, "pink_dye_from_red_white_dye");
       this.shaped(RecipeCategory.REDSTONE, Blocks.PISTON).define('R', Items.REDSTONE).define('#', Blocks.COBBLESTONE).define('T', ItemTags.PLANKS).define('X', Items.IRON_INGOT).pattern("TTT").pattern("#X#").pattern("#R#").unlockedBy("has_redstone", this.has(Items.REDSTONE)).save(this.output);
       this.polished(RecipeCategory.BUILDING_BLOCKS, Blocks.POLISHED_BASALT, Blocks.BASALT);
       this.twoByTwoPacker(RecipeCategory.BUILDING_BLOCKS, Blocks.PRISMARINE, Items.PRISMARINE_SHARD);
       this.threeByThreePacker(RecipeCategory.BUILDING_BLOCKS, Blocks.PRISMARINE_BRICKS, Items.PRISMARINE_SHARD);
-      this.shapeless(RecipeCategory.FOOD, Items.PUMPKIN_PIE).requires(Blocks.PUMPKIN).requires(Items.SUGAR).requires(Items.EGG).unlockedBy("has_carved_pumpkin", this.has(Blocks.CARVED_PUMPKIN)).unlockedBy("has_pumpkin", this.has(Blocks.PUMPKIN)).save(this.output);
+      this.shapeless(RecipeCategory.FOOD, Items.PUMPKIN_PIE).requires(Blocks.PUMPKIN).requires(Items.SUGAR).requires(ItemTags.EGGS).unlockedBy("has_carved_pumpkin", this.has(Blocks.CARVED_PUMPKIN)).unlockedBy("has_pumpkin", this.has(Blocks.PUMPKIN)).save(this.output);
       this.shapeless(RecipeCategory.MISC, Items.PUMPKIN_SEEDS, 4).requires(Blocks.PUMPKIN).unlockedBy("has_pumpkin", this.has(Blocks.PUMPKIN)).save(this.output);
       this.shapeless(RecipeCategory.MISC, Items.PURPLE_DYE, 2).requires(Items.BLUE_DYE).requires(Items.RED_DYE).unlockedBy("has_blue_dye", this.has(Items.BLUE_DYE)).unlockedBy("has_red_dye", this.has(Items.RED_DYE)).save(this.output);
       this.shaped(RecipeCategory.DECORATIONS, Blocks.SHULKER_BOX).define('#', Blocks.CHEST).define('-', Items.SHULKER_SHELL).pattern("-").pattern("#").pattern("-").unlockedBy("has_shulker_shell", this.has(Items.SHULKER_SHELL)).save(this.output);

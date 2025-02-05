@@ -13,17 +13,17 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class DeadBushBlock extends VegetationBlock {
-   public static final MapCodec<DeadBushBlock> CODEC = simpleCodec(DeadBushBlock::new);
+public class DryVegetationBlock extends VegetationBlock {
+   public static final MapCodec<DryVegetationBlock> CODEC = simpleCodec(DryVegetationBlock::new);
    private static final VoxelShape SHAPE = Block.column(12.0, 0.0, 13.0);
    private static final int IDLE_SOUND_CHANCE = 150;
    private static final int IDLE_SOUND_BADLANDS_DECREASED_CHANCE = 5;
 
-   public MapCodec<DeadBushBlock> codec() {
+   public MapCodec<? extends DryVegetationBlock> codec() {
       return CODEC;
    }
 
-   protected DeadBushBlock(BlockBehaviour.Properties var1) {
+   protected DryVegetationBlock(BlockBehaviour.Properties var1) {
       super(var1);
    }
 
@@ -32,7 +32,7 @@ public class DeadBushBlock extends VegetationBlock {
    }
 
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(BlockTags.DEAD_BUSH_MAY_PLACE_ON);
+      return var1.is(BlockTags.DRY_VEGETATION_MAY_PLACE_ON);
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {

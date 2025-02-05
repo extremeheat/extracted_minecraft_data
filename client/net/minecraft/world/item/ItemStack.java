@@ -658,13 +658,13 @@ public final class ItemStack implements DataComponentHolder {
       return var10000 + " " + String.valueOf(this.getItem());
    }
 
-   public void inventoryTick(Level var1, Entity var2, int var3, boolean var4) {
+   public void inventoryTick(Level var1, Entity var2, @Nullable EquipmentSlot var3) {
       if (this.popTime > 0) {
          --this.popTime;
       }
 
-      if (this.getItem() != null) {
-         this.getItem().inventoryTick(this, var1, var2, var3, var4);
+      if (var1 instanceof ServerLevel var4) {
+         this.getItem().inventoryTick(this, var4, var2, var3);
       }
 
    }

@@ -56,6 +56,7 @@ public final class ItemTags {
    public static final TagKey<Item> DUPLICATES_ALLAYS = bind("duplicates_allays");
    public static final TagKey<Item> BREWING_FUEL = bind("brewing_fuel");
    public static final TagKey<Item> SHULKER_BOXES = bind("shulker_boxes");
+   public static final TagKey<Item> EGGS = bind("eggs");
    public static final TagKey<Item> MEAT = bind("meat");
    public static final TagKey<Item> SNIFFER_FOOD = bind("sniffer_food");
    public static final TagKey<Item> PIGLIN_FOOD = bind("piglin_food");

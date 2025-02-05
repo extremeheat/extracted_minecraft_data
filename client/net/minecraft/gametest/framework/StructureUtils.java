@@ -147,7 +147,7 @@ public class StructureUtils {
       }
 
       BlockInput var4 = new BlockInput(var3, Collections.emptySet(), (CompoundTag)null);
-      var4.place(var2, var1, 306);
+      var4.place(var2, var1, 818);
       var2.updateNeighborsAt(var1, var3.getBlock());
    }
 

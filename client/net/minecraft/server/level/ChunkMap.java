@@ -63,6 +63,7 @@ import net.minecraft.server.network.ServerPlayerConnection;
 import net.minecraft.util.CsvOutput;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StaticCache2D;
+import net.minecraft.util.TriState;
 import net.minecraft.util.profiling.Profiler;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.thread.BlockableEventLoop;
@@ -204,14 +205,6 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
 
    protected RandomState randomState() {
       return this.randomState;
-   }
-
-   private static double euclideanDistanceSquared(ChunkPos var0, Entity var1) {
-      double var2 = (double)SectionPos.sectionToBlockCoord(var0.x, 8);
-      double var4 = (double)SectionPos.sectionToBlockCoord(var0.z, 8);
-      double var6 = var2 - var1.getX();
-      double var8 = var4 - var1.getZ();
-      return var6 * var6 + var8 * var8;
    }
 
    boolean isChunkTracked(ServerPlayer var1, int var2, int var3) {
@@ -889,21 +882,36 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       return this.upgradeChunkTag(this.level.dimension(), this.overworldDataStorage, var1, this.generator().getTypeNameForDataFixer());
    }
 
-   void forEachSpawnCandidateChunk(Consumer<ChunkHolder> var1) {
+   void collectSpawningChunks(List<LevelChunk> var1) {
       LongIterator var2 = this.distanceManager.getSpawnCandidateChunks();
 
       while(var2.hasNext()) {
-         long var3 = var2.nextLong();
-         ChunkHolder var5 = (ChunkHolder)this.visibleChunkMap.get(var3);
-         if (var5 != null && this.anyPlayerCloseEnoughForSpawningInternal(var5.getPos())) {
-            var1.accept(var5);
+         ChunkHolder var3 = (ChunkHolder)this.visibleChunkMap.get(var2.nextLong());
+         if (var3 != null) {
+            LevelChunk var4 = var3.getTickingChunk();
+            if (var4 != null && this.anyPlayerCloseEnoughForSpawningInternal(var3.getPos())) {
+               var1.add(var4);
+            }
          }
       }
 
    }
 
+   void forEachBlockTickingChunk(Consumer<LevelChunk> var1) {
+      this.distanceManager.forEachBlockTickingChunks((var2) -> {
+         ChunkHolder var4 = (ChunkHolder)this.visibleChunkMap.get(var2);
+         if (var4 != null) {
+            LevelChunk var5 = var4.getTickingChunk();
+            if (var5 != null) {
+               var1.accept(var5);
+            }
+         }
+      });
+   }
+
    boolean anyPlayerCloseEnoughForSpawning(ChunkPos var1) {
-      return !this.distanceManager.hasPlayersNearby(var1.toLong()) ? false : this.anyPlayerCloseEnoughForSpawningInternal(var1);
+      TriState var2 = this.distanceManager.hasPlayersNearby(var1.toLong());
+      return var2 == TriState.DEFAULT ? this.anyPlayerCloseEnoughForSpawningInternal(var1) : var2.toBoolean(true);
    }
 
    private boolean anyPlayerCloseEnoughForSpawningInternal(ChunkPos var1) {
@@ -918,7 +926,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
 
    public List<ServerPlayer> getPlayersCloseForSpawning(ChunkPos var1) {
       long var2 = var1.toLong();
-      if (!this.distanceManager.hasPlayersNearby(var2)) {
+      if (!this.distanceManager.hasPlayersNearby(var2).toBoolean(true)) {
          return List.of();
       } else {
          ImmutableList.Builder var4 = ImmutableList.builder();
@@ -937,9 +945,17 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       if (var1.isSpectator()) {
          return false;
       } else {
-         double var3 = euclideanDistanceSquared(var2, var1);
+         double var3 = euclideanDistanceSquared(var2, var1.position());
          return var3 < 16384.0;
       }
+   }
+
+   private static double euclideanDistanceSquared(ChunkPos var0, Vec3 var1) {
+      double var2 = (double)SectionPos.sectionToBlockCoord(var0.x, 8);
+      double var4 = (double)SectionPos.sectionToBlockCoord(var0.z, 8);
+      double var6 = var2 - var1.x;
+      double var8 = var4 - var1.z;
+      return var6 * var6 + var8 * var8;
    }
 
    private boolean skipPlayer(ServerPlayer var1) {

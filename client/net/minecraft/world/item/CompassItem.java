@@ -1,6 +1,7 @@
 package net.minecraft.world.item;
 
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
@@ -10,6 +11,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.item.context.UseOnContext;
@@ -27,14 +29,12 @@ public class CompassItem extends Item {
       return var1.has(DataComponents.LODESTONE_TRACKER) || super.isFoil(var1);
    }
 
-   public void inventoryTick(ItemStack var1, Level var2, Entity var3, int var4, boolean var5) {
-      if (var2 instanceof ServerLevel var6) {
-         LodestoneTracker var7 = (LodestoneTracker)var1.get(DataComponents.LODESTONE_TRACKER);
-         if (var7 != null) {
-            LodestoneTracker var8 = var7.tick(var6);
-            if (var8 != var7) {
-               var1.set(DataComponents.LODESTONE_TRACKER, var8);
-            }
+   public void inventoryTick(ItemStack var1, ServerLevel var2, Entity var3, @Nullable EquipmentSlot var4) {
+      LodestoneTracker var5 = (LodestoneTracker)var1.get(DataComponents.LODESTONE_TRACKER);
+      if (var5 != null) {
+         LodestoneTracker var6 = var5.tick(var2);
+         if (var6 != var5) {
+            var1.set(DataComponents.LODESTONE_TRACKER, var6);
          }
       }
 

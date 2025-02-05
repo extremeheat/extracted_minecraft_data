@@ -190,7 +190,7 @@ public class BookEditScreen extends Screen {
       if (this.isModified) {
          this.eraseEmptyTrailingPages();
          this.updateLocalCopy();
-         int var2 = this.hand == InteractionHand.MAIN_HAND ? this.owner.getInventory().selected : 40;
+         int var2 = this.hand == InteractionHand.MAIN_HAND ? this.owner.getInventory().getSelectedSlot() : 40;
          this.minecraft.getConnection().send(new ServerboundEditBookPacket(var2, this.pages, var1 ? Optional.of(this.title.trim()) : Optional.empty()));
       }
    }

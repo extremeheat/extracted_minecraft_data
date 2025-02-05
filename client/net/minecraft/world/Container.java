@@ -1,5 +1,7 @@
 package net.minecraft.world;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
@@ -9,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-public interface Container extends Clearable {
+public interface Container extends Clearable, Iterable<ItemStack> {
    float DEFAULT_DISTANCE_BUFFER = 4.0F;
 
    int getContainerSize();
@@ -53,8 +55,7 @@ public interface Container extends Clearable {
    default int countItem(Item var1) {
       int var2 = 0;
 
-      for(int var3 = 0; var3 < this.getContainerSize(); ++var3) {
-         ItemStack var4 = this.getItem(var3);
+      for(ItemStack var4 : this) {
          if (var4.getItem().equals(var1)) {
             var2 += var4.getCount();
          }
@@ -68,8 +69,7 @@ public interface Container extends Clearable {
    }
 
    default boolean hasAnyMatching(Predicate<ItemStack> var1) {
-      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
-         ItemStack var3 = this.getItem(var2);
+      for(ItemStack var3 : this) {
          if (var1.test(var3)) {
             return true;
          }
@@ -89,6 +89,39 @@ public interface Container extends Clearable {
          return false;
       } else {
          return var3.getBlockEntity(var4) != var0 ? false : var1.canInteractWithBlock(var4, (double)var2);
+      }
+   }
+
+   default Iterator<ItemStack> iterator() {
+      return new ContainerIterator(this);
+   }
+
+   public static class ContainerIterator implements Iterator<ItemStack> {
+      private final Container container;
+      private int index;
+      private final int size;
+
+      public ContainerIterator(Container var1) {
+         super();
+         this.container = var1;
+         this.size = var1.getContainerSize();
+      }
+
+      public boolean hasNext() {
+         return this.index < this.size;
+      }
+
+      public ItemStack next() {
+         if (!this.hasNext()) {
+            throw new NoSuchElementException();
+         } else {
+            return this.container.getItem(this.index++);
+         }
+      }
+
+      // $FF: synthetic method
+      public Object next() {
+         return this.next();
       }
    }
 }

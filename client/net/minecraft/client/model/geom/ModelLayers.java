@@ -64,6 +64,8 @@ public class ModelLayers {
    public static final ModelLayerLocation CHICKEN = register("chicken");
    public static final ModelLayerLocation CHICKEN_BABY = register("chicken_baby");
    public static final ModelLayerLocation COD = register("cod");
+   public static final ModelLayerLocation COLD_CHICKEN = register("cold_chicken");
+   public static final ModelLayerLocation COLD_CHICKEN_BABY = register("cold_chicken_baby");
    public static final ModelLayerLocation COLD_COW = register("cold_cow");
    public static final ModelLayerLocation COLD_COW_BABY = register("cold_cow_baby");
    public static final ModelLayerLocation COLD_PIG = register("cold_pig");

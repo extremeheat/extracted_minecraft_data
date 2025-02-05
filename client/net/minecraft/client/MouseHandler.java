@@ -177,7 +177,7 @@ public class MouseHandler {
                   }
                } else {
                   Inventory var20 = this.minecraft.player.getInventory();
-                  var20.setSelectedHotbarSlot(ScrollWheelHandler.getNextScrollWheelSelection((double)var15, var20.selected, Inventory.getSelectionSize()));
+                  var20.setSelectedSlot(ScrollWheelHandler.getNextScrollWheelSelection((double)var15, var20.getSelectedSlot(), Inventory.getSelectionSize()));
                }
             }
          }

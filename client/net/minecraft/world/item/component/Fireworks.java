@@ -9,6 +9,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
@@ -35,11 +36,37 @@ public record Fireworks(int flightDuration, List<FireworkExplosion> explosions) 
          var2.accept(Component.translatable("item.minecraft.firework_rocket.flight").append(CommonComponents.SPACE).append(String.valueOf(this.flightDuration)).withStyle(ChatFormatting.GRAY));
       }
 
-      for(FireworkExplosion var6 : this.explosions) {
-         var6.addShapeNameTooltip(var2);
-         var6.addAdditionalTooltip((var1x) -> var2.accept(Component.literal("  ").append(var1x)));
+      FireworkExplosion var5 = null;
+      int var6 = 0;
+
+      for(FireworkExplosion var8 : this.explosions) {
+         if (var5 == null) {
+            var5 = var8;
+            var6 = 1;
+         } else if (var5.equals(var8)) {
+            ++var6;
+         } else {
+            addExplosionTooltip(var2, var5, var6);
+            var5 = var8;
+            var6 = 1;
+         }
       }
 
+      if (var5 != null) {
+         addExplosionTooltip(var2, var5, var6);
+      }
+
+   }
+
+   private static void addExplosionTooltip(Consumer<Component> var0, FireworkExplosion var1, int var2) {
+      MutableComponent var3 = var1.shape().getName();
+      if (var2 == 1) {
+         var0.accept(Component.translatable("item.minecraft.firework_rocket.single_star", var3).withStyle(ChatFormatting.GRAY));
+      } else {
+         var0.accept(Component.translatable("item.minecraft.firework_rocket.multiple_stars", var2, var3).withStyle(ChatFormatting.GRAY));
+      }
+
+      var1.addAdditionalTooltip((var1x) -> var0.accept(Component.literal("  ").append(var1x)));
    }
 
    static {

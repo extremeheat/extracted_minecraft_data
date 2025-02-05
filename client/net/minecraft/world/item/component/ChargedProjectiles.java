@@ -8,7 +8,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -81,12 +80,37 @@ public final class ChargedProjectiles implements TooltipProvider {
    }
 
    public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      for(ItemStack var6 : this.items) {
-         var2.accept(Component.translatable("item.minecraft.crossbow.projectile").append(CommonComponents.SPACE).append(var6.getDisplayName()));
-         TooltipDisplay var7 = (TooltipDisplay)var6.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT);
-         var6.addDetailsToTooltip(var1, var7, (Player)null, TooltipFlag.NORMAL, (var1x) -> var2.accept(Component.literal("  ").append(var1x).withStyle(ChatFormatting.GRAY)));
+      ItemStack var5 = null;
+      int var6 = 0;
+
+      for(ItemStack var8 : this.items) {
+         if (var5 == null) {
+            var5 = var8;
+            var6 = 1;
+         } else if (ItemStack.matches(var5, var8)) {
+            ++var6;
+         } else {
+            addProjectileTooltip(var1, var2, var5, var6);
+            var5 = var8;
+            var6 = 1;
+         }
       }
 
+      if (var5 != null) {
+         addProjectileTooltip(var1, var2, var5, var6);
+      }
+
+   }
+
+   private static void addProjectileTooltip(Item.TooltipContext var0, Consumer<Component> var1, ItemStack var2, int var3) {
+      if (var3 == 1) {
+         var1.accept(Component.translatable("item.minecraft.crossbow.projectile.single", var2.getDisplayName()));
+      } else {
+         var1.accept(Component.translatable("item.minecraft.crossbow.projectile.multiple", var3, var2.getDisplayName()));
+      }
+
+      TooltipDisplay var4 = (TooltipDisplay)var2.getOrDefault(DataComponents.TOOLTIP_DISPLAY, TooltipDisplay.DEFAULT);
+      var2.addDetailsToTooltip(var0, var4, (Player)null, TooltipFlag.NORMAL, (var1x) -> var1.accept(Component.literal("  ").append(var1x).withStyle(ChatFormatting.GRAY)));
    }
 
    static {

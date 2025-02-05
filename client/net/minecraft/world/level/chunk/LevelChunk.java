@@ -296,7 +296,7 @@ public class LevelChunk extends ChunkAccess {
             if (!var5.getBlockState(var7, var8, var9).is(var11)) {
                return null;
             } else {
-               if (!this.level.isClientSide && var15) {
+               if (!this.level.isClientSide && (var3 & 512) == 0) {
                   var2.onPlace(this.level, var1, var10, var14);
                }
 

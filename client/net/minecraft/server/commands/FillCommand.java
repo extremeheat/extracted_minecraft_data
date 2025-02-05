@@ -72,7 +72,7 @@ public class FillCommand {
                      if (var13) {
                         ++var10;
                      }
-                  } else if (!var14.place(var9, var12, 2 | (var5 ? 304 : 256))) {
+                  } else if (!var14.place(var9, var12, 2 | (var5 ? 816 : 256))) {
                      if (var13) {
                         ++var10;
                      }

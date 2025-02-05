@@ -112,6 +112,7 @@ public final class BlockTags {
    public static final TagKey<Block> FENCE_GATES = create("fence_gates");
    public static final TagKey<Block> UNSTABLE_BOTTOM_CENTER = create("unstable_bottom_center");
    public static final TagKey<Block> MUSHROOM_GROW_BLOCK = create("mushroom_grow_block");
+   public static final TagKey<Block> EDIBLE_FOR_SHEEP = create("edible_for_sheep");
    public static final TagKey<Block> INFINIBURN_OVERWORLD = create("infiniburn_overworld");
    public static final TagKey<Block> INFINIBURN_NETHER = create("infiniburn_nether");
    public static final TagKey<Block> INFINIBURN_END = create("infiniburn_end");
@@ -176,7 +177,7 @@ public final class BlockTags {
    public static final TagKey<Block> CONVERTABLE_TO_MUD = create("convertable_to_mud");
    public static final TagKey<Block> MANGROVE_LOGS_CAN_GROW_THROUGH = create("mangrove_logs_can_grow_through");
    public static final TagKey<Block> MANGROVE_ROOTS_CAN_GROW_THROUGH = create("mangrove_roots_can_grow_through");
-   public static final TagKey<Block> DEAD_BUSH_MAY_PLACE_ON = create("dead_bush_may_place_on");
+   public static final TagKey<Block> DRY_VEGETATION_MAY_PLACE_ON = create("dry_vegetation_may_place_on");
    public static final TagKey<Block> SNAPS_GOAT_HORN = create("snaps_goat_horn");
    public static final TagKey<Block> REPLACEABLE_BY_TREES = create("replaceable_by_trees");
    public static final TagKey<Block> REPLACEABLE_BY_MUSHROOMS = create("replaceable_by_mushrooms");

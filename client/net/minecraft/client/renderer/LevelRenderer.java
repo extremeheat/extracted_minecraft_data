@@ -330,6 +330,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          this.lastCameraSectionY = var8;
          this.lastCameraSectionZ = var9;
          this.viewArea.repositionCamera(SectionPos.of((Position)var5));
+         this.worldBorderRenderer.invalidate();
       }
 
       this.sectionRenderDispatcher.setCamera(var5);

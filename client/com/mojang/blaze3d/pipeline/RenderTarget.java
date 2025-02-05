@@ -3,10 +3,7 @@ package com.mojang.blaze3d.pipeline;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexBuffer;
 import java.nio.IntBuffer;
 import java.util.Objects;
 import net.minecraft.Util;
@@ -204,12 +201,10 @@ public abstract class RenderTarget {
       GlStateManager._viewport(0, 0, var1, var2);
       CompiledShaderProgram var3 = (CompiledShaderProgram)Objects.requireNonNull(RenderSystem.setShader(CoreShaders.BLIT_SCREEN), "Blit shader not loaded");
       var3.bindSampler("InSampler", this.colorTextureId);
-      BufferBuilder var4 = RenderSystem.renderThreadTesselator().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLIT_SCREEN);
-      var4.addVertex(0.0F, 0.0F, 0.0F);
-      var4.addVertex(1.0F, 0.0F, 0.0F);
-      var4.addVertex(1.0F, 1.0F, 0.0F);
-      var4.addVertex(0.0F, 1.0F, 0.0F);
-      BufferUploader.drawWithShader(var4.buildOrThrow());
+      VertexBuffer var4 = RenderSystem.getQuadVertices();
+      var4.bind();
+      var4.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
+      VertexBuffer.unbind();
       GlStateManager._depthMask(true);
       GlStateManager._colorMask(true, true, true, true);
    }

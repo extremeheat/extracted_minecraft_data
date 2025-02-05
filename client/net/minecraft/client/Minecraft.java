@@ -27,7 +27,6 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.platform.WindowEventHandler;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.TimerQuery;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.jtracy.DiscontinuousFrame;
@@ -1073,7 +1072,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.screen.added();
          }
 
-         BufferUploader.reset();
          if (var1 != null) {
             this.mouseHandler.releaseMouse();
             KeyMapping.releaseAll();
@@ -1829,7 +1827,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             if (this.player.isSpectator()) {
                this.gui.getSpectatorGui().onHotbarSelected(var4);
             } else if (!this.player.hasInfiniteMaterials() || this.screen != null || !var3 && !var2) {
-               this.player.getInventory().selected = var4;
+               this.player.getInventory().setSelectedSlot(var4);
             } else {
                CreativeModeInventoryScreen.handleHotbarLoadOrSave(this, var4, var3, var2);
             }

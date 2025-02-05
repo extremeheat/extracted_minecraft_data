@@ -209,7 +209,7 @@ public class ServerPlaceRecipe<R extends Recipe<?>> {
    private int getAmountOfFreeSlotsInInventory() {
       int var1 = 0;
 
-      for(ItemStack var3 : this.inventory.items) {
+      for(ItemStack var3 : this.inventory.getNonEquipmentItems()) {
          if (var3.isEmpty()) {
             ++var1;
          }

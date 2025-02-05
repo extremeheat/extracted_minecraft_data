@@ -190,7 +190,7 @@ public abstract class PlayerList {
       var13.send(new ClientboundLoginPacket(var2.getId(), var12.isHardcore(), this.server.levelKeys(), this.getMaxPlayers(), this.viewDistance, this.simulationDistance, var16, !var15, var17, var2.createCommonSpawnInfo(var10), this.server.enforceSecureProfile()));
       var13.send(new ClientboundChangeDifficultyPacket(var12.getDifficulty(), var12.isDifficultyLocked()));
       var13.send(new ClientboundPlayerAbilitiesPacket(var2.getAbilities()));
-      var13.send(new ClientboundSetHeldSlotPacket(var2.getInventory().selected));
+      var13.send(new ClientboundSetHeldSlotPacket(var2.getInventory().getSelectedSlot()));
       RecipeManager var18 = this.server.getRecipeManager();
       var13.send(new ClientboundUpdateRecipesPacket(var18.getSynchronizedItemProperties(), var18.getSynchronizedStonecutterRecipes()));
       this.sendPlayerPermissionLevel(var2);
@@ -643,7 +643,7 @@ public abstract class PlayerList {
    public void sendAllPlayerInfo(ServerPlayer var1) {
       var1.inventoryMenu.sendAllDataToRemote();
       var1.resetSentInfo();
-      var1.connection.send(new ClientboundSetHeldSlotPacket(var1.getInventory().selected));
+      var1.connection.send(new ClientboundSetHeldSlotPacket(var1.getInventory().getSelectedSlot()));
    }
 
    public int getPlayerCount() {

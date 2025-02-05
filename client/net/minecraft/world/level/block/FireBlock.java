@@ -114,75 +114,77 @@ public class FireBlock extends BaseFireBlock {
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       var2.scheduleTick(var3, this, getFireTickDelay(var2.random));
       if (var2.getGameRules().getBoolean(GameRules.RULE_DOFIRETICK)) {
-         if (!var1.canSurvive(var2, var3)) {
-            var2.removeBlock(var3, false);
-         }
-
-         BlockState var5 = var2.getBlockState(var3.below());
-         boolean var6 = var5.is(var2.dimensionType().infiniburn());
-         int var7 = (Integer)var1.getValue(AGE);
-         if (!var6 && var2.isRaining() && this.isNearRain(var2, var3) && var4.nextFloat() < 0.2F + (float)var7 * 0.03F) {
-            var2.removeBlock(var3, false);
-         } else {
-            int var8 = Math.min(15, var7 + var4.nextInt(3) / 2);
-            if (var7 != var8) {
-               var1 = (BlockState)var1.setValue(AGE, var8);
-               var2.setBlock(var3, var1, 260);
+         if (var2.getGameRules().getBoolean(GameRules.RULE_ALLOWFIRETICKAWAYFROMPLAYERS) || var2.anyPlayerCloseEnoughForSpawning(var3)) {
+            if (!var1.canSurvive(var2, var3)) {
+               var2.removeBlock(var3, false);
             }
 
-            if (!var6) {
-               if (!this.isValidFireLocation(var2, var3)) {
-                  BlockPos var20 = var3.below();
-                  if (!var2.getBlockState(var20).isFaceSturdy(var2, var20, Direction.UP) || var7 > 3) {
-                     var2.removeBlock(var3, false);
+            BlockState var5 = var2.getBlockState(var3.below());
+            boolean var6 = var5.is(var2.dimensionType().infiniburn());
+            int var7 = (Integer)var1.getValue(AGE);
+            if (!var6 && var2.isRaining() && this.isNearRain(var2, var3) && var4.nextFloat() < 0.2F + (float)var7 * 0.03F) {
+               var2.removeBlock(var3, false);
+            } else {
+               int var8 = Math.min(15, var7 + var4.nextInt(3) / 2);
+               if (var7 != var8) {
+                  var1 = (BlockState)var1.setValue(AGE, var8);
+                  var2.setBlock(var3, var1, 260);
+               }
+
+               if (!var6) {
+                  if (!this.isValidFireLocation(var2, var3)) {
+                     BlockPos var20 = var3.below();
+                     if (!var2.getBlockState(var20).isFaceSturdy(var2, var20, Direction.UP) || var7 > 3) {
+                        var2.removeBlock(var3, false);
+                     }
+
+                     return;
                   }
 
-                  return;
+                  if (var7 == 15 && var4.nextInt(4) == 0 && !this.canBurn(var2.getBlockState(var3.below()))) {
+                     var2.removeBlock(var3, false);
+                     return;
+                  }
                }
 
-               if (var7 == 15 && var4.nextInt(4) == 0 && !this.canBurn(var2.getBlockState(var3.below()))) {
-                  var2.removeBlock(var3, false);
-                  return;
-               }
-            }
+               boolean var9 = var2.getBiome(var3).is(BiomeTags.INCREASED_FIRE_BURNOUT);
+               int var10 = var9 ? -50 : 0;
+               this.checkBurnOut(var2, var3.east(), 300 + var10, var4, var7);
+               this.checkBurnOut(var2, var3.west(), 300 + var10, var4, var7);
+               this.checkBurnOut(var2, var3.below(), 250 + var10, var4, var7);
+               this.checkBurnOut(var2, var3.above(), 250 + var10, var4, var7);
+               this.checkBurnOut(var2, var3.north(), 300 + var10, var4, var7);
+               this.checkBurnOut(var2, var3.south(), 300 + var10, var4, var7);
+               BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
 
-            boolean var9 = var2.getBiome(var3).is(BiomeTags.INCREASED_FIRE_BURNOUT);
-            int var10 = var9 ? -50 : 0;
-            this.checkBurnOut(var2, var3.east(), 300 + var10, var4, var7);
-            this.checkBurnOut(var2, var3.west(), 300 + var10, var4, var7);
-            this.checkBurnOut(var2, var3.below(), 250 + var10, var4, var7);
-            this.checkBurnOut(var2, var3.above(), 250 + var10, var4, var7);
-            this.checkBurnOut(var2, var3.north(), 300 + var10, var4, var7);
-            this.checkBurnOut(var2, var3.south(), 300 + var10, var4, var7);
-            BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
-
-            for(int var12 = -1; var12 <= 1; ++var12) {
-               for(int var13 = -1; var13 <= 1; ++var13) {
-                  for(int var14 = -1; var14 <= 4; ++var14) {
-                     if (var12 != 0 || var14 != 0 || var13 != 0) {
-                        int var15 = 100;
-                        if (var14 > 1) {
-                           var15 += (var14 - 1) * 100;
-                        }
-
-                        var11.setWithOffset(var3, var12, var14, var13);
-                        int var16 = this.getIgniteOdds(var2, var11);
-                        if (var16 > 0) {
-                           int var17 = (var16 + 40 + var2.getDifficulty().getId() * 7) / (var7 + 30);
-                           if (var9) {
-                              var17 /= 2;
+               for(int var12 = -1; var12 <= 1; ++var12) {
+                  for(int var13 = -1; var13 <= 1; ++var13) {
+                     for(int var14 = -1; var14 <= 4; ++var14) {
+                        if (var12 != 0 || var14 != 0 || var13 != 0) {
+                           int var15 = 100;
+                           if (var14 > 1) {
+                              var15 += (var14 - 1) * 100;
                            }
 
-                           if (var17 > 0 && var4.nextInt(var15) <= var17 && (!var2.isRaining() || !this.isNearRain(var2, var11))) {
-                              int var18 = Math.min(15, var7 + var4.nextInt(5) / 4);
-                              var2.setBlock(var11, this.getStateWithAge(var2, var11, var18), 3);
+                           var11.setWithOffset(var3, var12, var14, var13);
+                           int var16 = this.getIgniteOdds(var2, var11);
+                           if (var16 > 0) {
+                              int var17 = (var16 + 40 + var2.getDifficulty().getId() * 7) / (var7 + 30);
+                              if (var9) {
+                                 var17 /= 2;
+                              }
+
+                              if (var17 > 0 && var4.nextInt(var15) <= var17 && (!var2.isRaining() || !this.isNearRain(var2, var11))) {
+                                 int var18 = Math.min(15, var7 + var4.nextInt(5) / 4);
+                                 var2.setBlock(var11, this.getStateWithAge(var2, var11, var18), 3);
+                              }
                            }
                         }
                      }
                   }
                }
-            }
 
+            }
          }
       }
    }
@@ -378,6 +380,8 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.SHORT_GRASS, 60, 100);
       var0.setFlammable(Blocks.FERN, 60, 100);
       var0.setFlammable(Blocks.DEAD_BUSH, 60, 100);
+      var0.setFlammable(Blocks.SHORT_DRY_GRASS, 60, 100);
+      var0.setFlammable(Blocks.TALL_DRY_GRASS, 60, 100);
       var0.setFlammable(Blocks.SUNFLOWER, 60, 100);
       var0.setFlammable(Blocks.LILAC, 60, 100);
       var0.setFlammable(Blocks.ROSE_BUSH, 60, 100);
@@ -404,6 +408,7 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.PINK_PETALS, 60, 100);
       var0.setFlammable(Blocks.WILDFLOWERS, 60, 100);
       var0.setFlammable(Blocks.LEAF_LITTER, 60, 100);
+      var0.setFlammable(Blocks.CACTUS_FLOWER, 60, 100);
       var0.setFlammable(Blocks.WHITE_WOOL, 30, 60);
       var0.setFlammable(Blocks.ORANGE_WOOL, 30, 60);
       var0.setFlammable(Blocks.MAGENTA_WOOL, 30, 60);

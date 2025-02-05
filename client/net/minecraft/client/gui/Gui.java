@@ -383,7 +383,7 @@ public class Gui {
                var11.rotateX(-var10.getXRot() * 0.017453292F);
                var11.rotateY(var10.getYRot() * 0.017453292F);
                var11.scale(-1.0F, -1.0F, -1.0F);
-               RenderSystem.renderCrosshair(10);
+               this.debugOverlay.render3dCrosshair();
                var11.popMatrix();
             } else {
                boolean var4 = true;
@@ -516,7 +516,7 @@ public class Gui {
          var1.pose().pushPose();
          var1.pose().translate(0.0F, 0.0F, -90.0F);
          var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_SPRITE, var6 - 91, var1.guiHeight() - 22, 182, 22);
-         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_SELECTION_SPRITE, var6 - 91 - 1 + var3.getInventory().selected * 20, var1.guiHeight() - 22 - 1, 24, 23);
+         var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_SELECTION_SPRITE, var6 - 91 - 1 + var3.getInventory().getSelectedSlot() * 20, var1.guiHeight() - 22 - 1, 24, 23);
          if (!var4.isEmpty()) {
             if (var5 == HumanoidArm.LEFT) {
                var1.blitSprite(RenderType::guiTextured, (ResourceLocation)HOTBAR_OFFHAND_LEFT_SPRITE, var6 - 91 - 29, var1.guiHeight() - 23, 29, 24);
@@ -531,7 +531,7 @@ public class Gui {
          for(int var10 = 0; var10 < 9; ++var10) {
             int var11 = var6 - 90 + var10 * 20 + 2;
             int var12 = var1.guiHeight() - 16 - 3;
-            this.renderSlot(var1, var11, var12, var2, var3, var3.getInventory().items.get(var10), var9++);
+            this.renderSlot(var1, var11, var12, var2, var3, var3.getInventory().getItem(var10), var9++);
          }
 
          if (!var4.isEmpty()) {
@@ -1149,7 +1149,7 @@ public class Gui {
       }
 
       if (this.minecraft.player != null) {
-         ItemStack var2 = this.minecraft.player.getInventory().getSelected();
+         ItemStack var2 = this.minecraft.player.getInventory().getSelectedItem();
          if (var2.isEmpty()) {
             this.toolHighlightTimer = 0;
          } else if (!this.lastToolHighlight.isEmpty() && var2.is(this.lastToolHighlight.getItem()) && var2.getHoverName().equals(this.lastToolHighlight.getHoverName())) {

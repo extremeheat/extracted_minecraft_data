@@ -108,7 +108,6 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
    @Nullable
    private LivingEntity target;
    private final Sensing sensing;
-   private EntityEquipment equipment = new EntityEquipment();
    private DropChances dropChances;
    private boolean canPickUpLoot;
    private boolean persistenceRequired;
@@ -360,10 +359,6 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       var1.putBoolean("CanPickUpLoot", this.canPickUpLoot());
       var1.putBoolean("PersistenceRequired", this.persistenceRequired);
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      if (!this.equipment.isEmpty()) {
-         var1.store("equipment", EntityEquipment.CODEC, var2, this.equipment);
-      }
-
       if (!this.dropChances.equals(DropChances.DEFAULT)) {
          var1.store("drop_chances", DropChances.CODEC, var2, this.dropChances);
       }
@@ -389,7 +384,6 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
       this.setCanPickUpLoot(var1.getBoolean("CanPickUpLoot"));
       this.persistenceRequired = var1.getBoolean("PersistenceRequired");
       RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.equipment = (EntityEquipment)var1.read("equipment", EntityEquipment.CODEC, var2).orElseGet(EntityEquipment::new);
       this.dropChances = (DropChances)var1.read("drop_chances", DropChances.CODEC, var2).orElse(DropChances.DEFAULT);
       this.readLeashData(var1);
       this.setLeftHanded(var1.getBoolean("LeftHanded"));
@@ -787,16 +781,6 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Leashab
 
    public void setBodyArmorItem(ItemStack var1) {
       this.setItemSlotAndDropWhenKilled(EquipmentSlot.BODY, var1);
-   }
-
-   public ItemStack getItemBySlot(EquipmentSlot var1) {
-      return this.equipment.get(var1);
-   }
-
-   public void setItemSlot(EquipmentSlot var1, ItemStack var2) {
-      this.verifyEquippedItem(var2);
-      ItemStack var3 = this.equipment.set(var1, var2);
-      this.onEquipItem(var1, var3, var2);
    }
 
    public Container createEquipmentSlotContainer(final EquipmentSlot var1) {

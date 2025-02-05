@@ -30,6 +30,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.DependantName;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
@@ -278,7 +279,7 @@ public class Item implements FeatureElement, ItemLike {
       return this.craftingRemainingItem == null ? ItemStack.EMPTY : new ItemStack(this.craftingRemainingItem);
    }
 
-   public void inventoryTick(ItemStack var1, Level var2, Entity var3, int var4, boolean var5) {
+   public void inventoryTick(ItemStack var1, ServerLevel var2, Entity var3, @Nullable EquipmentSlot var4) {
    }
 
    public void onCraftedBy(ItemStack var1, Level var2, Player var3) {

@@ -213,8 +213,8 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       this.reassessWeaponGoal();
    }
 
-   public void setItemSlot(EquipmentSlot var1, ItemStack var2) {
-      super.setItemSlot(var1, var2);
+   public void onEquipItem(EquipmentSlot var1, ItemStack var2, ItemStack var3) {
+      super.onEquipItem(var1, var2, var3);
       if (!this.level().isClientSide) {
          this.reassessWeaponGoal();
       }

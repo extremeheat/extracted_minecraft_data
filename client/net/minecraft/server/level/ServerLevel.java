@@ -413,73 +413,81 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
 
    public void tickChunk(LevelChunk var1, int var2) {
       ChunkPos var3 = var1.getPos();
-      boolean var4 = this.isRaining();
-      int var5 = var3.getMinBlockX();
-      int var6 = var3.getMinBlockZ();
-      ProfilerFiller var7 = Profiler.get();
-      var7.push("thunder");
-      if (var4 && this.isThundering() && this.random.nextInt(100000) == 0) {
-         BlockPos var8 = this.findLightningTargetAround(this.getBlockRandomPos(var5, 0, var6, 15));
-         if (this.isRainingAt(var8)) {
-            DifficultyInstance var9 = this.getCurrentDifficultyAt(var8);
-            boolean var10 = this.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && this.random.nextDouble() < (double)var9.getEffectiveDifficulty() * 0.01 && !this.getBlockState(var8.below()).is(Blocks.LIGHTNING_ROD);
-            if (var10) {
-               SkeletonHorse var11 = EntityType.SKELETON_HORSE.create(this, EntitySpawnReason.EVENT);
-               if (var11 != null) {
-                  var11.setTrap(true);
-                  var11.setAge(0);
-                  var11.setPos((double)var8.getX(), (double)var8.getY(), (double)var8.getZ());
-                  this.addFreshEntity(var11);
-               }
-            }
+      int var4 = var3.getMinBlockX();
+      int var5 = var3.getMinBlockZ();
+      ProfilerFiller var6 = Profiler.get();
+      var6.push("iceandsnow");
 
-            LightningBolt var21 = EntityType.LIGHTNING_BOLT.create(this, EntitySpawnReason.EVENT);
-            if (var21 != null) {
-               var21.snapTo(Vec3.atBottomCenterOf(var8));
-               var21.setVisualOnly(var10);
-               this.addFreshEntity(var21);
-            }
-         }
-      }
-
-      var7.popPush("iceandsnow");
-
-      for(int var17 = 0; var17 < var2; ++var17) {
+      for(int var7 = 0; var7 < var2; ++var7) {
          if (this.random.nextInt(48) == 0) {
-            this.tickPrecipitation(this.getBlockRandomPos(var5, 0, var6, 15));
+            this.tickPrecipitation(this.getBlockRandomPos(var4, 0, var5, 15));
          }
       }
 
-      var7.popPush("tickBlocks");
+      var6.popPush("tickBlocks");
       if (var2 > 0) {
-         LevelChunkSection[] var18 = var1.getSections();
+         LevelChunkSection[] var16 = var1.getSections();
 
-         for(int var19 = 0; var19 < var18.length; ++var19) {
-            LevelChunkSection var20 = var18[var19];
-            if (var20.isRandomlyTicking()) {
-               int var22 = var1.getSectionYFromSectionIndex(var19);
-               int var12 = SectionPos.sectionToBlockCoord(var22);
+         for(int var8 = 0; var8 < var16.length; ++var8) {
+            LevelChunkSection var9 = var16[var8];
+            if (var9.isRandomlyTicking()) {
+               int var10 = var1.getSectionYFromSectionIndex(var8);
+               int var11 = SectionPos.sectionToBlockCoord(var10);
 
-               for(int var13 = 0; var13 < var2; ++var13) {
-                  BlockPos var14 = this.getBlockRandomPos(var5, var12, var6, 15);
-                  var7.push("randomTick");
-                  BlockState var15 = var20.getBlockState(var14.getX() - var5, var14.getY() - var12, var14.getZ() - var6);
+               for(int var12 = 0; var12 < var2; ++var12) {
+                  BlockPos var13 = this.getBlockRandomPos(var4, var11, var5, 15);
+                  var6.push("randomTick");
+                  BlockState var14 = var9.getBlockState(var13.getX() - var4, var13.getY() - var11, var13.getZ() - var5);
+                  if (var14.isRandomlyTicking()) {
+                     var14.randomTick(this, var13, this.random);
+                  }
+
+                  FluidState var15 = var14.getFluidState();
                   if (var15.isRandomlyTicking()) {
-                     var15.randomTick(this, var14, this.random);
+                     var15.randomTick(this, var13, this.random);
                   }
 
-                  FluidState var16 = var15.getFluidState();
-                  if (var16.isRandomlyTicking()) {
-                     var16.randomTick(this, var14, this.random);
-                  }
-
-                  var7.pop();
+                  var6.pop();
                }
             }
          }
       }
 
-      var7.pop();
+      var6.pop();
+   }
+
+   public void tickThunder(LevelChunk var1) {
+      ChunkPos var2 = var1.getPos();
+      boolean var3 = this.isRaining();
+      int var4 = var2.getMinBlockX();
+      int var5 = var2.getMinBlockZ();
+      ProfilerFiller var6 = Profiler.get();
+      var6.push("thunder");
+      if (var3 && this.isThundering() && this.random.nextInt(100000) == 0) {
+         BlockPos var7 = this.findLightningTargetAround(this.getBlockRandomPos(var4, 0, var5, 15));
+         if (this.isRainingAt(var7)) {
+            DifficultyInstance var8 = this.getCurrentDifficultyAt(var7);
+            boolean var9 = this.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && this.random.nextDouble() < (double)var8.getEffectiveDifficulty() * 0.01 && !this.getBlockState(var7.below()).is(Blocks.LIGHTNING_ROD);
+            if (var9) {
+               SkeletonHorse var10 = EntityType.SKELETON_HORSE.create(this, EntitySpawnReason.EVENT);
+               if (var10 != null) {
+                  var10.setTrap(true);
+                  var10.setAge(0);
+                  var10.setPos((double)var7.getX(), (double)var7.getY(), (double)var7.getZ());
+                  this.addFreshEntity(var10);
+               }
+            }
+
+            LightningBolt var11 = EntityType.LIGHTNING_BOLT.create(this, EntitySpawnReason.EVENT);
+            if (var11 != null) {
+               var11.snapTo(Vec3.atBottomCenterOf(var7));
+               var11.setVisualOnly(var9);
+               this.addFreshEntity(var11);
+            }
+         }
+      }
+
+      var6.pop();
    }
 
    @VisibleForTesting
@@ -1591,12 +1599,16 @@ public class ServerLevel extends Level implements ServerEntityGetter, WorldGenLe
       return this.entityManager.isTicking(var1);
    }
 
-   public boolean isNaturalSpawningAllowed(BlockPos var1) {
-      return this.entityManager.canPositionTick(var1);
+   public boolean anyPlayerCloseEnoughForSpawning(BlockPos var1) {
+      return this.anyPlayerCloseEnoughForSpawning(new ChunkPos(var1));
    }
 
-   public boolean isNaturalSpawningAllowed(ChunkPos var1) {
-      return this.entityManager.canPositionTick(var1);
+   public boolean anyPlayerCloseEnoughForSpawning(ChunkPos var1) {
+      return this.chunkSource.chunkMap.anyPlayerCloseEnoughForSpawning(var1);
+   }
+
+   public boolean canSpawnEntitiesInChunk(ChunkPos var1) {
+      return this.entityManager.canPositionTick(var1) && this.getWorldBorder().isWithinBounds(var1);
    }
 
    public FeatureFlagSet enabledFeatures() {

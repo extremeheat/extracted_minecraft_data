@@ -8,7 +8,6 @@ import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.blaze3d.TracyBootstrap;
 import com.mojang.blaze3d.platform.DisplayData;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.jtracy.TracyClient;
 import com.mojang.logging.LogUtils;
 import com.mojang.util.UndashedUuid;
@@ -233,7 +232,6 @@ public class Main {
 
       Minecraft var90 = var87;
       var87.run();
-      BufferUploader.reset();
 
       try {
          var90.stop();

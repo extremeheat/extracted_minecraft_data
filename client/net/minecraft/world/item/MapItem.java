@@ -16,6 +16,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.component.MapPostProcessing;
 import net.minecraft.world.item.context.UseOnContext;
@@ -264,31 +265,18 @@ public class MapItem extends Item {
       }
    }
 
-   public void inventoryTick(ItemStack var1, Level var2, Entity var3, int var4, boolean var5) {
-      if (!var2.isClientSide) {
-         MapItemSavedData var6 = getSavedData(var1, var2);
-         if (var6 != null) {
-            if (var3 instanceof Player) {
-               Player var7 = (Player)var3;
-               var6.tickCarriedBy(var7, var1);
-            }
-
-            if (!var6.locked) {
-               if (!var5) {
-                  if (!(var3 instanceof Player)) {
-                     return;
-                  }
-
-                  Player var8 = (Player)var3;
-                  if (var8.getOffhandItem() != var1) {
-                     return;
-                  }
-               }
-
-               this.update(var2, var3, var6);
-            }
-
+   public void inventoryTick(ItemStack var1, ServerLevel var2, Entity var3, @Nullable EquipmentSlot var4) {
+      MapItemSavedData var5 = getSavedData((ItemStack)var1, var2);
+      if (var5 != null) {
+         if (var3 instanceof Player) {
+            Player var6 = (Player)var3;
+            var5.tickCarriedBy(var6, var1);
          }
+
+         if (!var5.locked && var4 != null && var4.getType() == EquipmentSlot.Type.HAND) {
+            this.update(var2, var3, var5);
+         }
+
       }
    }
 

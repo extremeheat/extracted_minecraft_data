@@ -306,7 +306,7 @@ public class EntitySelectorOptions {
             var0.addPredicate((var2x) -> {
                CompoundTag var3 = var2x.saveWithoutId(new CompoundTag());
                if (var2x instanceof ServerPlayer var4) {
-                  ItemStack var5 = var4.getInventory().getSelected();
+                  ItemStack var5 = var4.getInventory().getSelectedItem();
                   if (!var5.isEmpty()) {
                      var3.put("SelectedItem", var5.save(var4.registryAccess()));
                   }

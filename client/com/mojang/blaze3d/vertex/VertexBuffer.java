@@ -171,12 +171,10 @@ public class VertexBuffer implements AutoCloseable {
    }
 
    public void bind() {
-      BufferUploader.invalidate();
       GlStateManager._glBindVertexArray(this.arrayObjectId);
    }
 
    public static void unbind() {
-      BufferUploader.invalidate();
       GlStateManager._glBindVertexArray(0);
    }
 

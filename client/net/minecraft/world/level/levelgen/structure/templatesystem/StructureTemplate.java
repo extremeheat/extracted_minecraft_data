@@ -243,7 +243,7 @@ public class StructureTemplate {
                   FluidState var22 = var4.shouldApplyWaterlogging() ? var1.getFluidState(var21) : null;
                   BlockState var23 = var20.state.mirror(var4.getMirror()).rotate(var4.getRotation());
                   if (var20.nbt != null) {
-                     var1.setBlock(var21, Blocks.BARRIER.defaultBlockState(), 308);
+                     var1.setBlock(var21, Blocks.BARRIER.defaultBlockState(), 820);
                   }
 
                   if (var1.setBlock(var21, var23, var6)) {

@@ -30,6 +30,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.animal.CatVariant;
+import net.minecraft.world.entity.animal.ChickenVariant;
 import net.minecraft.world.entity.animal.CowVariant;
 import net.minecraft.world.entity.animal.PigVariant;
 import net.minecraft.world.entity.animal.WolfVariant;
@@ -209,6 +210,7 @@ public class Registries {
    public static final ResourceKey<Registry<Biome>> BIOME = createRegistryKey("worldgen/biome");
    public static final ResourceKey<Registry<CatVariant>> CAT_VARIANT = createRegistryKey("cat_variant");
    public static final ResourceKey<Registry<ChatType>> CHAT_TYPE = createRegistryKey("chat_type");
+   public static final ResourceKey<Registry<ChickenVariant>> CHICKEN_VARIANT = createRegistryKey("chicken_variant");
    public static final ResourceKey<Registry<ConfiguredWorldCarver<?>>> CONFIGURED_CARVER = createRegistryKey("worldgen/configured_carver");
    public static final ResourceKey<Registry<ConfiguredFeature<?, ?>>> CONFIGURED_FEATURE = createRegistryKey("worldgen/configured_feature");
    public static final ResourceKey<Registry<CowVariant>> COW_VARIANT = createRegistryKey("cow_variant");

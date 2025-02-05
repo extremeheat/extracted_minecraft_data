@@ -44,7 +44,7 @@ public abstract class GrowingPlantBlock extends Block {
       if (!this.canAttachTo(var5)) {
          return false;
       } else {
-         return var5.is(this.getBodyBlock()) || var5.isFaceSturdy(var2, var4, this.growthDirection);
+         return var5.is(this.getHeadBlock()) || var5.is(this.getBodyBlock()) || var5.isFaceSturdy(var2, var4, this.growthDirection);
       }
    }
 

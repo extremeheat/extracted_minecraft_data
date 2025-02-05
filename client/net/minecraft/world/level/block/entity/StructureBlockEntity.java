@@ -423,7 +423,7 @@ public class StructureBlockEntity extends BlockEntity implements BoundingBoxRend
       }
 
       BlockPos var4 = this.getBlockPos().offset(this.structurePos);
-      var2.placeInWorld(var1, var4, var4, var3, createRandom(this.seed), 2 | (this.strict ? 304 : 0));
+      var2.placeInWorld(var1, var4, var4, var3, createRandom(this.seed), 2 | (this.strict ? 816 : 0));
    }
 
    public void unloadStructure() {

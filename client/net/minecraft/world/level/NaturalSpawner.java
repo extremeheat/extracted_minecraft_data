@@ -54,8 +54,9 @@ public final class NaturalSpawner {
    private static final int MIN_SPAWN_DISTANCE = 24;
    public static final int SPAWN_DISTANCE_CHUNK = 8;
    public static final int SPAWN_DISTANCE_BLOCK = 128;
-   static final int MAGIC_NUMBER = (int)Math.pow(17.0, 2.0);
-   private static final MobCategory[] SPAWNING_CATEGORIES = (MobCategory[])Stream.of(MobCategory.values()).filter((var0) -> var0 != MobCategory.MISC).toArray((var0) -> new MobCategory[var0]);
+   public static final int INSCRIBED_SQUARE_SPAWN_DISTANCE_CHUNK;
+   static final int MAGIC_NUMBER;
+   private static final MobCategory[] SPAWNING_CATEGORIES;
 
    private NaturalSpawner() {
       super();
@@ -212,7 +213,8 @@ public final class NaturalSpawner {
       } else if (var0.getSharedSpawnPos().closerToCenterThan(new Vec3((double)var2.getX() + 0.5, (double)var2.getY(), (double)var2.getZ() + 0.5), 24.0)) {
          return false;
       } else {
-         return Objects.equals(new ChunkPos(var2), var1.getPos()) || var0.isNaturalSpawningAllowed((BlockPos)var2);
+         ChunkPos var5 = new ChunkPos(var2);
+         return Objects.equals(var5, var1.getPos()) || var0.canSpawnEntitiesInChunk(var5);
       }
    }
 
@@ -385,6 +387,12 @@ public final class NaturalSpawner {
       }
 
       return SpawnPlacements.getPlacementType(var1).adjustSpawnPosition(var0, var5.immutable());
+   }
+
+   static {
+      INSCRIBED_SQUARE_SPAWN_DISTANCE_CHUNK = Mth.floor(8.0F / Mth.SQRT_OF_TWO);
+      MAGIC_NUMBER = (int)Math.pow(17.0, 2.0);
+      SPAWNING_CATEGORIES = (MobCategory[])Stream.of(MobCategory.values()).filter((var0) -> var0 != MobCategory.MISC).toArray((var0) -> new MobCategory[var0]);
    }
 
    public static class SpawnState {

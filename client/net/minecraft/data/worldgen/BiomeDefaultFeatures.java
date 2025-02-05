@@ -225,6 +225,7 @@ public class BiomeDefaultFeatures {
 
    public static void addBadlandGrass(BiomeGenerationSettings.Builder var0) {
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_GRASS_BADLANDS);
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_DRY_GRASS_BADLANDS);
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_DEAD_BUSH_BADLANDS);
    }
 
@@ -268,6 +269,7 @@ public class BiomeDefaultFeatures {
    }
 
    public static void addDesertVegetation(BiomeGenerationSettings.Builder var0) {
+      var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_DRY_GRASS_DESERT);
       var0.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.PATCH_DEAD_BUSH_2);
    }
 

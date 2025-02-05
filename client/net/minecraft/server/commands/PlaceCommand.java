@@ -127,7 +127,7 @@ public class PlaceCommand {
             var12.clearProcessors().addProcessor(new BlockRotProcessor(var5)).setRandom(StructureBlockEntity.createRandom((long)var6));
          }
 
-         boolean var13 = var11.placeInWorld(var8, var2, var2, var12, StructureBlockEntity.createRandom((long)var6), 2 | (var7 ? 304 : 0));
+         boolean var13 = var11.placeInWorld(var8, var2, var2, var12, StructureBlockEntity.createRandom((long)var6), 2 | (var7 ? 816 : 0));
          if (!var13) {
             throw ERROR_TEMPLATE_FAILED.create();
          } else {

@@ -3,7 +3,15 @@ package net.minecraft.client.gui.components;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.mojang.blaze3d.buffers.BufferUsage;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.GlUtil;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexBuffer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.datafixers.DataFixUtils;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
@@ -34,6 +42,7 @@ import net.minecraft.client.gui.components.debugchart.PingDebugChart;
 import net.minecraft.client.gui.components.debugchart.ProfilerPieChart;
 import net.minecraft.client.gui.components.debugchart.TpsDebugChart;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -75,6 +84,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
 public class DebugScreenOverlay {
+   private static final int CROSSHAIR_LENGTH = 10;
    private static final int COLOR_GREY = 14737632;
    private static final int MARGIN_RIGHT = 2;
    private static final int MARGIN_LEFT = 2;
@@ -83,6 +93,7 @@ public class DebugScreenOverlay {
    private final Minecraft minecraft;
    private final AllocationRateCalculator allocationRateCalculator;
    private final Font font;
+   private final VertexBuffer crosshairBuffer;
    private HitResult block;
    private HitResult liquid;
    @Nullable
@@ -117,6 +128,21 @@ public class DebugScreenOverlay {
       this.pingChart = new PingDebugChart(this.font, this.pingLogger);
       this.bandwidthChart = new BandwidthDebugChart(this.font, this.bandwidthLogger);
       this.profilerPieChart = new ProfilerPieChart(this.font);
+
+      try (ByteBufferBuilder var2 = new ByteBufferBuilder(DefaultVertexFormat.POSITION_COLOR_NORMAL.getVertexSize() * 12)) {
+         BufferBuilder var3 = new BufferBuilder(var2, VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+         var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F);
+         var3.addVertex(10.0F, 0.0F, 0.0F).setColor(-65536).setNormal(1.0F, 0.0F, 0.0F);
+         var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F);
+         var3.addVertex(0.0F, 10.0F, 0.0F).setColor(-16711936).setNormal(0.0F, 1.0F, 0.0F);
+         var3.addVertex(0.0F, 0.0F, 0.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F);
+         var3.addVertex(0.0F, 0.0F, 10.0F).setColor(-8421377).setNormal(0.0F, 0.0F, 1.0F);
+         this.crosshairBuffer = new VertexBuffer(BufferUsage.STATIC_WRITE);
+         this.crosshairBuffer.bind();
+         this.crosshairBuffer.upload(var3.buildOrThrow());
+         VertexBuffer.unbind();
+      }
+
    }
 
    public void clearChunkCache() {
@@ -572,6 +598,23 @@ public class DebugScreenOverlay {
       this.tickTimeLogger.reset();
       this.pingLogger.reset();
       this.bandwidthLogger.reset();
+   }
+
+   public void render3dCrosshair() {
+      GlStateManager._depthMask(false);
+      GlStateManager._disableCull();
+      RenderSystem.setShader(CoreShaders.RENDERTYPE_LINES);
+      this.crosshairBuffer.bind();
+      RenderSystem.lineWidth(4.0F);
+      RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
+      this.crosshairBuffer.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
+      RenderSystem.lineWidth(2.0F);
+      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+      this.crosshairBuffer.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
+      VertexBuffer.unbind();
+      RenderSystem.lineWidth(1.0F);
+      GlStateManager._enableCull();
+      GlStateManager._depthMask(true);
    }
 
    static {

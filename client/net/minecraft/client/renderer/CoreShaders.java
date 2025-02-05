@@ -56,6 +56,7 @@ public class CoreShaders {
    public static final ShaderProgram RENDERTYPE_TRIPWIRE;
    public static final ShaderProgram RENDERTYPE_END_PORTAL;
    public static final ShaderProgram RENDERTYPE_END_GATEWAY;
+   public static final ShaderProgram RENDERTYPE_WORLD_BORDER;
    public static final ShaderProgram RENDERTYPE_CLOUDS;
    public static final ShaderProgram RENDERTYPE_LINES;
    public static final ShaderProgram RENDERTYPE_CRUMBLING;
@@ -132,6 +133,7 @@ public class CoreShaders {
       RENDERTYPE_TRIPWIRE = register("rendertype_tripwire", DefaultVertexFormat.BLOCK);
       RENDERTYPE_END_PORTAL = register("rendertype_end_portal", DefaultVertexFormat.POSITION);
       RENDERTYPE_END_GATEWAY = register("rendertype_end_gateway", DefaultVertexFormat.POSITION);
+      RENDERTYPE_WORLD_BORDER = register("rendertype_world_border", DefaultVertexFormat.POSITION_TEX);
       RENDERTYPE_CLOUDS = register("rendertype_clouds", DefaultVertexFormat.POSITION_COLOR);
       RENDERTYPE_LINES = register("rendertype_lines", DefaultVertexFormat.POSITION_COLOR_NORMAL);
       RENDERTYPE_CRUMBLING = register("rendertype_crumbling", DefaultVertexFormat.BLOCK);

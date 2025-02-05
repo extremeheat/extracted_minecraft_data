@@ -2,10 +2,7 @@ package net.minecraft.client.renderer;
 
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexBuffer;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -105,12 +102,10 @@ public class LightTexture implements AutoCloseable {
             var16.safeGetUniform("DarkenWorldFactor").set(this.renderer.getDarkenWorldAmount(var1));
             var16.safeGetUniform("BrightnessFactor").set(Math.max(0.0F, var15 - var7));
             this.target.bindWrite(true);
-            BufferBuilder var17 = RenderSystem.renderThreadTesselator().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.BLIT_SCREEN);
-            var17.addVertex(0.0F, 0.0F, 0.0F);
-            var17.addVertex(1.0F, 0.0F, 0.0F);
-            var17.addVertex(1.0F, 1.0F, 0.0F);
-            var17.addVertex(0.0F, 1.0F, 0.0F);
-            BufferUploader.drawWithShader(var17.buildOrThrow());
+            VertexBuffer var17 = RenderSystem.getQuadVertices();
+            var17.bind();
+            var17.drawWithShader(RenderSystem.getModelViewMatrix(), RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
+            VertexBuffer.unbind();
             this.target.unbindWrite();
             var2.pop();
          }

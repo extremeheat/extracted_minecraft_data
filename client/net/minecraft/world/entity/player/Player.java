@@ -61,6 +61,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -144,7 +145,7 @@ public abstract class Player extends LivingEntity {
    protected static final EntityDataAccessor<CompoundTag> DATA_SHOULDER_RIGHT;
    public static final int CLIENT_LOADED_TIMEOUT_TIME = 60;
    private long timeEntitySatOnShoulder;
-   final Inventory inventory = new Inventory(this);
+   final Inventory inventory;
    protected PlayerEnderChestContainer enderChestInventory = new PlayerEnderChestContainer();
    public final InventoryMenu inventoryMenu;
    public AbstractContainerMenu containerMenu;
@@ -192,9 +193,14 @@ public abstract class Player extends LivingEntity {
       this.lastDeathLocation = Optional.empty();
       this.setUUID(var4.getId());
       this.gameProfile = var4;
+      this.inventory = new Inventory(this, this.equipment);
       this.inventoryMenu = new InventoryMenu(this.inventory, !var1.isClientSide, this);
       this.containerMenu = this.inventoryMenu;
       this.snapTo((double)var2.getX() + 0.5, (double)(var2.getY() + 1), (double)var2.getZ() + 0.5, var3, 0.0F);
+   }
+
+   protected EntityEquipment createEquipment() {
+      return new PlayerEquipment(this);
    }
 
    public boolean blockActionRestricted(Level var1, BlockPos var2, GameType var3) {
@@ -665,17 +671,8 @@ public abstract class Player extends LivingEntity {
       return this.drop(var1, false, var2);
    }
 
-   @Nullable
-   public ItemEntity drop(ItemStack var1, boolean var2, boolean var3) {
-      if (!var1.isEmpty() && this.level().isClientSide) {
-         this.swing(InteractionHand.MAIN_HAND);
-      }
-
-      return null;
-   }
-
    public float getDestroySpeed(BlockState var1) {
-      float var2 = this.inventory.getDestroySpeed(var1);
+      float var2 = this.inventory.getSelectedItem().getDestroySpeed(var1);
       if (var2 > 1.0F) {
          var2 += (float)this.getAttributeValue(Attributes.MINING_EFFICIENCY);
       }
@@ -710,7 +707,7 @@ public abstract class Player extends LivingEntity {
    }
 
    public boolean hasCorrectToolForDrops(BlockState var1) {
-      return !var1.requiresCorrectToolForDrops() || this.inventory.getSelected().isCorrectToolForDrops(var1);
+      return !var1.requiresCorrectToolForDrops() || this.inventory.getSelectedItem().isCorrectToolForDrops(var1);
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
@@ -718,7 +715,7 @@ public abstract class Player extends LivingEntity {
       this.setUUID(this.gameProfile.getId());
       ListTag var2 = var1.getList("Inventory", 10);
       this.inventory.load(var2);
-      this.inventory.selected = var1.getInt("SelectedItemSlot");
+      this.inventory.setSelectedSlot(var1.getInt("SelectedItemSlot"));
       this.sleepCounter = var1.getShort("SleepTimer");
       this.experienceProgress = var1.getFloat("XpP");
       this.experienceLevel = var1.getInt("XpLevel");
@@ -754,7 +751,7 @@ public abstract class Player extends LivingEntity {
       super.addAdditionalSaveData(var1);
       NbtUtils.addCurrentDataVersion(var1);
       var1.put("Inventory", this.inventory.save(new ListTag()));
-      var1.putInt("SelectedItemSlot", this.inventory.selected);
+      var1.putInt("SelectedItemSlot", this.inventory.getSelectedSlot());
       var1.putShort("SleepTimer", (short)this.sleepCounter);
       var1.putFloat("XpP", this.experienceProgress);
       var1.putInt("XpLevel", this.experienceLevel);
@@ -1611,30 +1608,8 @@ public abstract class Player extends LivingEntity {
       return this.enderChestInventory;
    }
 
-   public ItemStack getItemBySlot(EquipmentSlot var1) {
-      if (var1 == EquipmentSlot.MAINHAND) {
-         return this.inventory.getSelected();
-      } else if (var1 == EquipmentSlot.OFFHAND) {
-         return (ItemStack)this.inventory.offhand.getFirst();
-      } else {
-         return var1.getType() == EquipmentSlot.Type.HUMANOID_ARMOR ? (ItemStack)this.inventory.armor.get(var1.getIndex()) : ItemStack.EMPTY;
-      }
-   }
-
    protected boolean doesEmitEquipEvent(EquipmentSlot var1) {
       return var1.getType() == EquipmentSlot.Type.HUMANOID_ARMOR;
-   }
-
-   public void setItemSlot(EquipmentSlot var1, ItemStack var2) {
-      this.verifyEquippedItem(var2);
-      if (var1 == EquipmentSlot.MAINHAND) {
-         this.onEquipItem(var1, this.inventory.items.set(this.inventory.selected, var2), var2);
-      } else if (var1 == EquipmentSlot.OFFHAND) {
-         this.onEquipItem(var1, this.inventory.offhand.set(0, var2), var2);
-      } else if (var1.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
-         this.onEquipItem(var1, this.inventory.armor.set(var1.getIndex(), var2), var2);
-      }
-
    }
 
    public boolean addItem(ItemStack var1) {
@@ -1755,7 +1730,7 @@ public abstract class Player extends LivingEntity {
                   return true;
                }
             };
-         } else if (var1 >= 0 && var1 < this.inventory.items.size()) {
+         } else if (var1 >= 0 && var1 < this.inventory.getNonEquipmentItems().size()) {
             return SlotAccess.forContainer(this.inventory, var1);
          } else {
             int var3 = var1 - 200;

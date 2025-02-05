@@ -247,6 +247,10 @@ public class CompiledShaderProgram implements AutoCloseable {
          this.GAME_TIME.set(RenderSystem.getShaderGameTime());
       }
 
+      if (this.MODEL_OFFSET != null) {
+         this.MODEL_OFFSET.set(RenderSystem.getModelOffset());
+      }
+
       if (this.SCREEN_SIZE != null) {
          this.SCREEN_SIZE.set((float)var4.getWidth(), (float)var4.getHeight());
       }

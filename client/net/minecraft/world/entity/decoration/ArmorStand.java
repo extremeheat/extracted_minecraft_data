@@ -9,11 +9,9 @@ import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -23,7 +21,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EntityEquipment;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
@@ -77,7 +74,6 @@ public class ArmorStand extends LivingEntity {
    public static final EntityDataAccessor<Rotations> DATA_LEFT_LEG_POSE;
    public static final EntityDataAccessor<Rotations> DATA_RIGHT_LEG_POSE;
    private static final Predicate<Entity> RIDABLE_MINECARTS;
-   private EntityEquipment equipment;
    private boolean invisible;
    public long lastHit;
    private int disabledSlots;
@@ -90,7 +86,6 @@ public class ArmorStand extends LivingEntity {
 
    public ArmorStand(EntityType<? extends ArmorStand> var1, Level var2) {
       super(var1, var2);
-      this.equipment = new EntityEquipment();
       this.headPose = DEFAULT_HEAD_POSE;
       this.bodyPose = DEFAULT_BODY_POSE;
       this.leftArmPose = DEFAULT_LEFT_ARM_POSE;
@@ -135,27 +130,12 @@ public class ArmorStand extends LivingEntity {
       var1.define(DATA_RIGHT_LEG_POSE, DEFAULT_RIGHT_LEG_POSE);
    }
 
-   public ItemStack getItemBySlot(EquipmentSlot var1) {
-      return this.equipment.get(var1);
-   }
-
    public boolean canUseSlot(EquipmentSlot var1) {
       return var1 != EquipmentSlot.BODY && var1 != EquipmentSlot.SADDLE && !this.isDisabled(var1);
    }
 
-   public void setItemSlot(EquipmentSlot var1, ItemStack var2) {
-      this.verifyEquippedItem(var2);
-      ItemStack var3 = this.equipment.set(var1, var2);
-      this.onEquipItem(var1, var3, var2);
-   }
-
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      if (!this.equipment.isEmpty()) {
-         RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-         var1.store("equipment", EntityEquipment.CODEC, var2, this.equipment);
-      }
-
       var1.putBoolean("Invisible", this.isInvisible());
       var1.putBoolean("Small", this.isSmall());
       var1.putBoolean("ShowArms", this.showArms());
@@ -170,8 +150,6 @@ public class ArmorStand extends LivingEntity {
 
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-      this.equipment = (EntityEquipment)var1.read("equipment", EntityEquipment.CODEC, var2).orElseGet(EntityEquipment::new);
       this.setInvisible(var1.getBoolean("Invisible"));
       this.setSmall(var1.getBoolean("Small"));
       this.setShowArms(var1.getBoolean("ShowArms"));
@@ -179,8 +157,8 @@ public class ArmorStand extends LivingEntity {
       this.setNoBasePlate(var1.getBoolean("NoBasePlate"));
       this.setMarker(var1.getBoolean("Marker"));
       this.noPhysics = !this.hasPhysics();
-      CompoundTag var3 = var1.getCompound("Pose");
-      this.readPose(var3);
+      CompoundTag var2 = var1.getCompound("Pose");
+      this.readPose(var2);
    }
 
    private void readPose(CompoundTag var1) {

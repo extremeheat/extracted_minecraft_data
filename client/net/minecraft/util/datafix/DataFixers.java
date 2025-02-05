@@ -202,6 +202,7 @@ import net.minecraft.util.datafix.fixes.OptionsProgrammerArtFix;
 import net.minecraft.util.datafix.fixes.OptionsRenameFieldFix;
 import net.minecraft.util.datafix.fixes.OverreachingTickFix;
 import net.minecraft.util.datafix.fixes.ParticleUnflatteningFix;
+import net.minecraft.util.datafix.fixes.PlayerEquipmentFix;
 import net.minecraft.util.datafix.fixes.PlayerHeadBlockProfileFix;
 import net.minecraft.util.datafix.fixes.PlayerUUIDFix;
 import net.minecraft.util.datafix.fixes.PoiTypeRemoveFix;
@@ -353,6 +354,7 @@ import net.minecraft.util.datafix.schemas.V4301;
 import net.minecraft.util.datafix.schemas.V4302;
 import net.minecraft.util.datafix.schemas.V4306;
 import net.minecraft.util.datafix.schemas.V4307;
+import net.minecraft.util.datafix.schemas.V4312;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -848,9 +850,9 @@ public class DataFixers {
       Map var174 = Map.of("minecraft:british", "minecraft:british_shorthair");
       var0.addFixer(new VariantRenameFix(var173, "Rename british shorthair", References.ENTITY, "minecraft:cat", var174));
       var0.addFixer(new CriteriaRenameFix(var173, "Migrate cat variant advancement for british shorthair", "minecraft:husbandry/complete_catalogue", (var1x) -> (String)var174.getOrDefault(var1x, var1x)));
-      Set var270 = Set.of("minecraft:unemployed", "minecraft:nitwit");
-      Objects.requireNonNull(var270);
-      var0.addFixer(new PoiTypeRemoveFix(var173, "Remove unpopulated villager PoI types", var270::contains));
+      Set var272 = Set.of("minecraft:unemployed", "minecraft:nitwit");
+      Objects.requireNonNull(var272);
+      var0.addFixer(new PoiTypeRemoveFix(var173, "Remove unpopulated villager PoI types", var272::contains));
       Schema var175 = var0.addSchema(3108, SAME_NAMESPACED);
       var0.addFixer(new BlendingDataRemoveFromNetherEndFix(var175));
       Schema var176 = var0.addSchema(3201, SAME_NAMESPACED);
@@ -1065,6 +1067,10 @@ public class DataFixers {
       var0.addFixer(new TooltipDisplayComponentFix(var267));
       Schema var268 = var0.addSchema(4309, SAME_NAMESPACED);
       var0.addFixer(new RaidRenamesDataFix(var268));
+      Schema var269 = var0.addSchema(4311, SAME_NAMESPACED);
+      var0.addFixer(new AdvancementsRenameFix(var269, false, "Use lodestone category change", createRenamer("minecraft:nether/use_lodestone", "minecraft:adventure/use_lodestone")));
+      Schema var270 = var0.addSchema(4312, V4312::new);
+      var0.addFixer(new PlayerEquipmentFix(var270));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

@@ -191,6 +191,8 @@ public class Blocks {
    public static final Block FERN;
    public static final Block DEAD_BUSH;
    public static final Block BUSH;
+   public static final Block SHORT_DRY_GRASS;
+   public static final Block TALL_DRY_GRASS;
    public static final Block SEAGRASS;
    public static final Block TALL_SEAGRASS;
    public static final Block PISTON;
@@ -322,6 +324,7 @@ public class Blocks {
    public static final Block ICE;
    public static final Block SNOW_BLOCK;
    public static final Block CACTUS;
+   public static final Block CACTUS_FLOWER;
    public static final Block CLAY;
    public static final Block SUGAR_CANE;
    public static final Block JUKEBOX;
@@ -1404,8 +1407,10 @@ public class Blocks {
       COBWEB = register("cobweb", WebBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOL).sound(SoundType.COBWEB).forceSolidOn().noCollission().requiresCorrectToolForDrops().strength(4.0F).pushReaction(PushReaction.DESTROY));
       SHORT_GRASS = register("short_grass", TallGrassBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XYZ).ignitedByLava().pushReaction(PushReaction.DESTROY));
       FERN = register("fern", TallGrassBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).replaceable().noCollission().instabreak().sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XYZ).ignitedByLava().pushReaction(PushReaction.DESTROY));
-      DEAD_BUSH = register("dead_bush", DeadBushBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).replaceable().noCollission().instabreak().sound(SoundType.GRASS).ignitedByLava().pushReaction(PushReaction.DESTROY));
+      DEAD_BUSH = register("dead_bush", DryVegetationBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WOOD).replaceable().noCollission().instabreak().sound(SoundType.GRASS).ignitedByLava().pushReaction(PushReaction.DESTROY));
       BUSH = register("bush", BushBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().instabreak().sound(SoundType.GRASS).ignitedByLava().pushReaction(PushReaction.DESTROY));
+      SHORT_DRY_GRASS = register("short_dry_grass", ShortDryGrassBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).replaceable().noCollission().instabreak().sound(SoundType.GRASS).ignitedByLava().pushReaction(PushReaction.DESTROY));
+      TALL_DRY_GRASS = register("tall_dry_grass", TallDryGrassBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_YELLOW).replaceable().noCollission().instabreak().sound(SoundType.GRASS).ignitedByLava().pushReaction(PushReaction.DESTROY));
       SEAGRASS = register("seagrass", SeagrassBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WATER).replaceable().noCollission().instabreak().sound(SoundType.WET_GRASS).pushReaction(PushReaction.DESTROY));
       TALL_SEAGRASS = register("tall_seagrass", TallSeagrassBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.WATER).replaceable().noCollission().instabreak().sound(SoundType.WET_GRASS).offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.DESTROY));
       PISTON = register("piston", (var0) -> new PistonBaseBlock(false, var0), pistonProperties());
@@ -1537,6 +1542,7 @@ public class Blocks {
       ICE = register("ice", IceBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.ICE).friction(0.98F).randomTicks().strength(0.5F).sound(SoundType.GLASS).noOcclusion().isValidSpawn((var0, var1x, var2x, var3x) -> var3x == EntityType.POLAR_BEAR).isRedstoneConductor(Blocks::never));
       SNOW_BLOCK = register("snow_block", BlockBehaviour.Properties.of().mapColor(MapColor.SNOW).requiresCorrectToolForDrops().strength(0.2F).sound(SoundType.SNOW));
       CACTUS = register("cactus", CactusBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).randomTicks().strength(0.4F).sound(SoundType.WOOL).pushReaction(PushReaction.DESTROY));
+      CACTUS_FLOWER = register("cactus_flower", CactusFlowerBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_PINK).noCollission().instabreak().ignitedByLava().sound(SoundType.CACTUS_FLOWER).pushReaction(PushReaction.DESTROY));
       CLAY = register("clay", BlockBehaviour.Properties.of().mapColor(MapColor.CLAY).instrument(NoteBlockInstrument.FLUTE).strength(0.6F).sound(SoundType.GRAVEL));
       SUGAR_CANE = register("sugar_cane", SugarCaneBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().randomTicks().instabreak().sound(SoundType.GRASS).pushReaction(PushReaction.DESTROY));
       JUKEBOX = register("jukebox", JukeboxBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.DIRT).instrument(NoteBlockInstrument.BASS).strength(2.0F, 6.0F).sound(SoundType.WOOD).ignitedByLava());
@@ -2320,7 +2326,7 @@ public class Blocks {
       MOSS_CARPET = register("moss_carpet", CarpetBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).strength(0.1F).sound(SoundType.MOSS_CARPET).pushReaction(PushReaction.DESTROY));
       PINK_PETALS = register("pink_petals", FlowerBedBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().sound(SoundType.PINK_PETALS).pushReaction(PushReaction.DESTROY));
       WILDFLOWERS = register("wildflowers", FlowerBedBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().sound(SoundType.PINK_PETALS).pushReaction(PushReaction.DESTROY));
-      LEAF_LITTER = register("leaf_litter", LeafLitterBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().sound(SoundType.LEAF_LITTER).pushReaction(PushReaction.DESTROY));
+      LEAF_LITTER = register("leaf_litter", LeafLitterBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_BROWN).noCollission().sound(SoundType.LEAF_LITTER).pushReaction(PushReaction.DESTROY));
       MOSS_BLOCK = register("moss_block", (var0) -> new BonemealableFeaturePlacerBlock(CaveFeatures.MOSS_PATCH_BONEMEAL, var0), BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_GREEN).strength(0.1F).sound(SoundType.MOSS).pushReaction(PushReaction.DESTROY));
       BIG_DRIPLEAF = register("big_dripleaf", BigDripleafBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).forceSolidOff().strength(0.1F).sound(SoundType.BIG_DRIPLEAF).pushReaction(PushReaction.DESTROY));
       BIG_DRIPLEAF_STEM = register("big_dripleaf_stem", BigDripleafStemBlock::new, BlockBehaviour.Properties.of().mapColor(MapColor.PLANT).noCollission().strength(0.1F).sound(SoundType.BIG_DRIPLEAF).pushReaction(PushReaction.DESTROY));

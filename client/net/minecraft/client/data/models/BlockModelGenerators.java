@@ -2258,6 +2258,8 @@ public class BlockModelGenerators {
       this.createMushroomBlock(Blocks.MUSHROOM_STEM);
       this.createCrossBlock(Blocks.SHORT_GRASS, BlockModelGenerators.PlantType.TINTED);
       this.createItemWithGrassTint(Blocks.SHORT_GRASS);
+      this.createCrossBlockWithDefaultItem(Blocks.SHORT_DRY_GRASS, BlockModelGenerators.PlantType.NOT_TINTED);
+      this.createCrossBlockWithDefaultItem(Blocks.TALL_DRY_GRASS, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createCrossBlock(Blocks.BUSH, BlockModelGenerators.PlantType.TINTED);
       this.createItemWithGrassTint(Blocks.BUSH);
       this.createCrossBlock(Blocks.SUGAR_CANE, BlockModelGenerators.PlantType.TINTED);
@@ -2271,6 +2273,7 @@ public class BlockModelGenerators {
       this.registerSimpleFlatItemModel(Blocks.TWISTING_VINES, "_plant");
       this.createCrossBlockWithDefaultItem(Blocks.BAMBOO_SAPLING, BlockModelGenerators.PlantType.TINTED, TextureMapping.cross(TextureMapping.getBlockTexture(Blocks.BAMBOO, "_stage0")));
       this.createBamboo();
+      this.createCrossBlockWithDefaultItem(Blocks.CACTUS_FLOWER, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createCrossBlockWithDefaultItem(Blocks.COBWEB, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createDoublePlantWithDefaultItem(Blocks.LILAC, BlockModelGenerators.PlantType.NOT_TINTED);
       this.createDoublePlantWithDefaultItem(Blocks.ROSE_BUSH, BlockModelGenerators.PlantType.NOT_TINTED);

@@ -143,6 +143,7 @@ public abstract class RenderStateShard {
    protected static final ShaderStateShard RENDERTYPE_TRIPWIRE_SHADER;
    protected static final ShaderStateShard RENDERTYPE_END_PORTAL_SHADER;
    protected static final ShaderStateShard RENDERTYPE_END_GATEWAY_SHADER;
+   protected static final ShaderStateShard RENDERTYPE_WORLD_BORDER;
    protected static final ShaderStateShard RENDERTYPE_CLOUDS_SHADER;
    protected static final ShaderStateShard RENDERTYPE_LINES_SHADER;
    protected static final ShaderStateShard RENDERTYPE_GUI_SHADER;
@@ -261,6 +262,7 @@ public abstract class RenderStateShard {
       RENDERTYPE_TRIPWIRE_SHADER = new ShaderStateShard(CoreShaders.RENDERTYPE_TRIPWIRE);
       RENDERTYPE_END_PORTAL_SHADER = new ShaderStateShard(CoreShaders.RENDERTYPE_END_PORTAL);
       RENDERTYPE_END_GATEWAY_SHADER = new ShaderStateShard(CoreShaders.RENDERTYPE_END_GATEWAY);
+      RENDERTYPE_WORLD_BORDER = new ShaderStateShard(CoreShaders.RENDERTYPE_WORLD_BORDER);
       RENDERTYPE_CLOUDS_SHADER = new ShaderStateShard(CoreShaders.RENDERTYPE_CLOUDS);
       RENDERTYPE_LINES_SHADER = new ShaderStateShard(CoreShaders.RENDERTYPE_LINES);
       RENDERTYPE_GUI_SHADER = new ShaderStateShard(CoreShaders.RENDERTYPE_GUI);

@@ -183,7 +183,7 @@ public class GameRenderer implements AutoCloseable {
 
    public void preloadUiShader(ResourceProvider var1) {
       try {
-         this.minecraft.getShaderManager().preloadForStartup(var1, CoreShaders.RENDERTYPE_GUI, CoreShaders.RENDERTYPE_GUI_OVERLAY, CoreShaders.POSITION_TEX_COLOR);
+         this.minecraft.getShaderManager().preloadForStartup(var1, CoreShaders.RENDERTYPE_GUI, CoreShaders.RENDERTYPE_GUI_OVERLAY, CoreShaders.POSITION_TEX_COLOR, CoreShaders.POSITION_COLOR);
       } catch (ShaderManager.CompilationException | IOException var3) {
          throw new RuntimeException("Could not preload shaders for loading UI", var3);
       }

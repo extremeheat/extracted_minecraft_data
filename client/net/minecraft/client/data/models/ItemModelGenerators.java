@@ -370,6 +370,8 @@ public class ItemModelGenerators {
       this.generateFlatItem(Items.DRAGON_BREATH, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.DRIED_KELP, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BLUE_EGG, ModelTemplates.FLAT_ITEM);
+      this.generateFlatItem(Items.BROWN_EGG, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.EMERALD, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ENCHANTED_BOOK, ModelTemplates.FLAT_ITEM);
       this.generateFlatItem(Items.ENDER_EYE, ModelTemplates.FLAT_ITEM);

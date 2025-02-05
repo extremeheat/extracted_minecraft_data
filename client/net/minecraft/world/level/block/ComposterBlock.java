@@ -104,6 +104,9 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.3F, Items.PITCHER_POD);
       add(0.3F, Items.FIREFLY_BUSH);
       add(0.3F, Items.BUSH);
+      add(0.3F, Items.CACTUS_FLOWER);
+      add(0.3F, Items.DRY_SHORT_GRASS);
+      add(0.3F, Items.DRY_TALL_GRASS);
       add(0.5F, Items.DRIED_KELP_BLOCK);
       add(0.5F, Items.TALL_GRASS);
       add(0.5F, Items.FLOWERING_AZALEA_LEAVES);

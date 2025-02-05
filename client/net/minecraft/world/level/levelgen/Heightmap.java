@@ -159,7 +159,7 @@ public class Heightmap {
       OCEAN_FLOOR_WG("OCEAN_FLOOR_WG", Heightmap.Usage.WORLDGEN, Heightmap.MATERIAL_MOTION_BLOCKING),
       OCEAN_FLOOR("OCEAN_FLOOR", Heightmap.Usage.LIVE_WORLD, Heightmap.MATERIAL_MOTION_BLOCKING),
       MOTION_BLOCKING("MOTION_BLOCKING", Heightmap.Usage.CLIENT, (var0) -> var0.blocksMotion() || !var0.getFluidState().isEmpty()),
-      MOTION_BLOCKING_NO_LEAVES("MOTION_BLOCKING_NO_LEAVES", Heightmap.Usage.LIVE_WORLD, (var0) -> (var0.blocksMotion() || !var0.getFluidState().isEmpty()) && !(var0.getBlock() instanceof LeavesBlock));
+      MOTION_BLOCKING_NO_LEAVES("MOTION_BLOCKING_NO_LEAVES", Heightmap.Usage.CLIENT, (var0) -> (var0.blocksMotion() || !var0.getFluidState().isEmpty()) && !(var0.getBlock() instanceof LeavesBlock));
 
       public static final Codec<Types> CODEC = StringRepresentable.<Types>fromEnum(Types::values);
       private final String serializationKey;

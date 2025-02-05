@@ -185,20 +185,26 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       return true;
    }
 
+   @Nullable
    public PlayerTeam getTeam() {
-      if (this.isTame()) {
-         LivingEntity var1 = this.getOwner();
-         if (var1 != null) {
-            return var1.getTeam();
+      PlayerTeam var1 = super.getTeam();
+      if (var1 != null) {
+         return var1;
+      } else {
+         if (this.isTame()) {
+            LivingEntity var2 = this.getRootOwner();
+            if (var2 != null) {
+               return var2.getTeam();
+            }
          }
-      }
 
-      return super.getTeam();
+         return null;
+      }
    }
 
    protected boolean considersEntityAsAlly(Entity var1) {
       if (this.isTame()) {
-         LivingEntity var2 = this.getOwner();
+         LivingEntity var2 = this.getRootOwner();
          if (var1 == var2) {
             return true;
          }

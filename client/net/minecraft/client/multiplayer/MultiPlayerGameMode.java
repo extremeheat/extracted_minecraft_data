@@ -263,7 +263,7 @@ public class MultiPlayerGameMode {
    }
 
    private void ensureHasSentCarriedItem() {
-      int var1 = this.minecraft.player.getInventory().selected;
+      int var1 = this.minecraft.player.getInventory().getSelectedSlot();
       if (var1 != this.carriedIndex) {
          this.carriedIndex = var1;
          this.connection.send(new ServerboundSetCarriedItemPacket(this.carriedIndex));

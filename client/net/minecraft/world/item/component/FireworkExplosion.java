@@ -39,12 +39,8 @@ public record FireworkExplosion(Shape shape, IntList colors, IntList fadeColors,
    }
 
    public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3, DataComponentGetter var4) {
-      this.addShapeNameTooltip(var2);
+      var2.accept(this.shape.getName().withStyle(ChatFormatting.GRAY));
       this.addAdditionalTooltip(var2);
-   }
-
-   public void addShapeNameTooltip(Consumer<Component> var1) {
-      var1.accept(this.shape.getName().withStyle(ChatFormatting.GRAY));
    }
 
    public void addAdditionalTooltip(Consumer<Component> var1) {

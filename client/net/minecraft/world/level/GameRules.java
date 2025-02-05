@@ -38,6 +38,7 @@ public class GameRules {
    static final Logger LOGGER = LogUtils.getLogger();
    private static final Map<Key<?>, Type<?>> GAME_RULE_TYPES = Maps.newTreeMap(Comparator.comparing((var0) -> var0.id));
    public static final Key<BooleanValue> RULE_DOFIRETICK;
+   public static final Key<BooleanValue> RULE_ALLOWFIRETICKAWAYFROMPLAYERS;
    public static final Key<BooleanValue> RULE_MOBGRIEFING;
    public static final Key<BooleanValue> RULE_KEEPINVENTORY;
    public static final Key<BooleanValue> RULE_DOMOBSPAWNING;
@@ -188,6 +189,7 @@ public class GameRules {
 
    static {
       RULE_DOFIRETICK = register("doFireTick", GameRules.Category.UPDATES, GameRules.BooleanValue.create(true));
+      RULE_ALLOWFIRETICKAWAYFROMPLAYERS = register("allowFireTicksAwayFromPlayer", GameRules.Category.UPDATES, GameRules.BooleanValue.create(false));
       RULE_MOBGRIEFING = register("mobGriefing", GameRules.Category.MOBS, GameRules.BooleanValue.create(true));
       RULE_KEEPINVENTORY = register("keepInventory", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false));
       RULE_DOMOBSPAWNING = register("doMobSpawning", GameRules.Category.SPAWNING, GameRules.BooleanValue.create(true));

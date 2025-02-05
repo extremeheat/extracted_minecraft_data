@@ -41,7 +41,7 @@ public record NbtPredicate(CompoundTag tag) {
    public static CompoundTag getEntityTagToCompare(Entity var0) {
       CompoundTag var1 = var0.saveWithoutId(new CompoundTag());
       if (var0 instanceof Player var2) {
-         ItemStack var3 = var2.getInventory().getSelected();
+         ItemStack var3 = var2.getInventory().getSelectedItem();
          if (!var3.isEmpty()) {
             var1.put("SelectedItem", var3.save(var0.registryAccess()));
          }

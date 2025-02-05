@@ -313,7 +313,7 @@ public class TestInstanceBlockEntity extends BlockEntity implements BeaconBeamOw
       BlockPos var4 = this.getStartCorner();
       this.forceLoadChunks();
       this.removeEntities();
-      var2.placeInWorld(var1, var4, var4, var3, var1.getRandom(), 306);
+      var2.placeInWorld(var1, var4, var4, var3, var1.getRandom(), 818);
    }
 
    private void removeEntities() {

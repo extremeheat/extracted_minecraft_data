@@ -19,6 +19,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
@@ -413,7 +414,7 @@ public class Zombie extends Monster {
    }
 
    public boolean canHoldItem(ItemStack var1) {
-      return var1.is(Items.EGG) && this.isBaby() && this.isPassenger() ? false : super.canHoldItem(var1);
+      return var1.is(ItemTags.EGGS) && this.isBaby() && this.isPassenger() ? false : super.canHoldItem(var1);
    }
 
    public boolean wantsToPickUp(ServerLevel var1, ItemStack var2) {

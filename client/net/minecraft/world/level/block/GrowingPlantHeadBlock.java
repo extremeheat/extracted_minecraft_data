@@ -65,8 +65,15 @@ public abstract class GrowingPlantHeadBlock extends GrowingPlantBlock implements
    }
 
    protected BlockState updateShape(BlockState var1, LevelReader var2, ScheduledTickAccess var3, BlockPos var4, Direction var5, BlockPos var6, BlockState var7, RandomSource var8) {
-      if (var5 == this.growthDirection.getOpposite() && !var1.canSurvive(var2, var4)) {
-         var3.scheduleTick(var4, (Block)this, 1);
+      if (var5 == this.growthDirection.getOpposite()) {
+         if (!var1.canSurvive(var2, var4)) {
+            var3.scheduleTick(var4, (Block)this, 1);
+         } else {
+            BlockState var9 = var2.getBlockState(var4.relative(this.growthDirection));
+            if (var9.is(this) || var9.is(this.getBodyBlock())) {
+               return this.updateBodyAfterConvertedFromHead(var1, this.getBodyBlock().defaultBlockState());
+            }
+         }
       }
 
       if (var5 != this.growthDirection || !var7.is(this) && !var7.is(this.getBodyBlock())) {

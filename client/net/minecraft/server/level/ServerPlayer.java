@@ -1157,11 +1157,6 @@ public class ServerPlayer extends Player {
 
    }
 
-   public void dismountTo(double var1, double var3, double var5) {
-      this.removeVehicle();
-      this.setPos(var1, var3, var5);
-   }
-
    public boolean isInvulnerableTo(ServerLevel var1, DamageSource var2) {
       return super.isInvulnerableTo(var1, var2) || this.isChangingDimension() && !var2.is(DamageTypes.ENDER_PEARL) || !this.hasClientLoaded();
    }
@@ -1840,53 +1835,16 @@ public class ServerPlayer extends Player {
    }
 
    public ItemEntity drop(ItemStack var1, boolean var2, boolean var3) {
-      ItemEntity var4 = this.createItemStackToDrop(var1, var2, var3);
-      if (var4 == null) {
-         return null;
-      } else {
-         this.level().addFreshEntity(var4);
-         ItemStack var5 = var4.getItem();
-         if (var3) {
-            if (!var5.isEmpty()) {
-               this.awardStat(Stats.ITEM_DROPPED.get(var5.getItem()), var1.getCount());
-            }
-
+      ItemEntity var4 = super.drop(var1, var2, var3);
+      if (var3) {
+         ItemStack var5 = var4 != null ? var4.getItem() : ItemStack.EMPTY;
+         if (!var5.isEmpty()) {
+            this.awardStat(Stats.ITEM_DROPPED.get(var5.getItem()), var1.getCount());
             this.awardStat(Stats.DROP);
          }
-
-         return var4;
       }
-   }
 
-   @Nullable
-   private ItemEntity createItemStackToDrop(ItemStack var1, boolean var2, boolean var3) {
-      if (var1.isEmpty()) {
-         return null;
-      } else {
-         double var4 = this.getEyeY() - 0.30000001192092896;
-         ItemEntity var6 = new ItemEntity(this.level(), this.getX(), var4, this.getZ(), var1);
-         var6.setPickUpDelay(40);
-         if (var3) {
-            var6.setThrower(this);
-         }
-
-         if (var2) {
-            float var7 = this.random.nextFloat() * 0.5F;
-            float var8 = this.random.nextFloat() * 6.2831855F;
-            var6.setDeltaMovement((double)(-Mth.sin(var8) * var7), 0.20000000298023224, (double)(Mth.cos(var8) * var7));
-         } else {
-            float var14 = 0.3F;
-            float var15 = Mth.sin(this.getXRot() * 0.017453292F);
-            float var9 = Mth.cos(this.getXRot() * 0.017453292F);
-            float var10 = Mth.sin(this.getYRot() * 0.017453292F);
-            float var11 = Mth.cos(this.getYRot() * 0.017453292F);
-            float var12 = this.random.nextFloat() * 6.2831855F;
-            float var13 = 0.02F * this.random.nextFloat();
-            var6.setDeltaMovement((double)(-var10 * var9 * 0.3F) + Math.cos((double)var12) * (double)var13, (double)(-var15 * 0.3F + 0.1F + (this.random.nextFloat() - this.random.nextFloat()) * 0.1F), (double)(var11 * var9 * 0.3F) + Math.sin((double)var12) * (double)var13);
-         }
-
-         return var6;
-      }
+      return var4;
    }
 
    public TextFilter getTextFilter() {
@@ -1949,7 +1907,7 @@ public class ServerPlayer extends Player {
    public boolean drop(boolean var1) {
       Inventory var2 = this.getInventory();
       ItemStack var3 = var2.removeFromSelected(var1);
-      this.containerMenu.findSlot(var2, var2.selected).ifPresent((var2x) -> this.containerMenu.setRemoteSlot(var2x, var2.getSelected()));
+      this.containerMenu.findSlot(var2, var2.getSelectedSlot()).ifPresent((var2x) -> this.containerMenu.setRemoteSlot(var2x, var2.getSelectedItem()));
       return this.drop(var3, false, true) != null;
    }
 

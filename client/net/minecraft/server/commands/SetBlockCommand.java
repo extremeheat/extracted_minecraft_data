@@ -45,7 +45,7 @@ public class SetBlockCommand {
             var7 = true;
          }
 
-         if (var7 && !var2.place(var6, var1, 2 | (var5 ? 304 : 256))) {
+         if (var7 && !var2.place(var6, var1, 2 | (var5 ? 816 : 256))) {
             throw ERROR_FAILED.create();
          } else {
             if (!var5) {

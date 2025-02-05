@@ -1,18 +1,27 @@
 package net.minecraft.data.loot.packs;
 
 import java.util.function.BiConsumer;
+import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentExactPredicate;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.animal.ChickenVariants;
+import net.minecraft.world.item.EitherHolder;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.entries.AlternativesEntry;
 import net.minecraft.world.level.storage.loot.entries.EmptyLootItem;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.functions.SetPotionFunction;
+import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
@@ -23,6 +32,7 @@ public record VanillaGiftLoot(HolderLookup.Provider registries) implements LootT
    }
 
    public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {
+      HolderLookup.RegistryLookup var2 = this.registries.lookupOrThrow(Registries.CHICKEN_VARIANT);
       var1.accept(BuiltInLootTables.CAT_MORNING_GIFT, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.RABBIT_HIDE).setWeight(10)).add(LootItem.lootTableItem(Items.RABBIT_FOOT).setWeight(10)).add(LootItem.lootTableItem(Items.CHICKEN).setWeight(10)).add(LootItem.lootTableItem(Items.FEATHER).setWeight(10)).add(LootItem.lootTableItem(Items.ROTTEN_FLESH).setWeight(10)).add(LootItem.lootTableItem(Items.STRING).setWeight(10)).add(LootItem.lootTableItem(Items.PHANTOM_MEMBRANE).setWeight(2))));
       var1.accept(BuiltInLootTables.ARMORER_GIFT, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.CHAINMAIL_HELMET)).add(LootItem.lootTableItem(Items.CHAINMAIL_CHESTPLATE)).add(LootItem.lootTableItem(Items.CHAINMAIL_LEGGINGS)).add(LootItem.lootTableItem(Items.CHAINMAIL_BOOTS))));
       var1.accept(BuiltInLootTables.BUTCHER_GIFT, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.COOKED_RABBIT)).add(LootItem.lootTableItem(Items.COOKED_CHICKEN)).add(LootItem.lootTableItem(Items.COOKED_PORKCHOP)).add(LootItem.lootTableItem(Items.COOKED_BEEF)).add(LootItem.lootTableItem(Items.COOKED_MUTTON))));
@@ -41,7 +51,7 @@ public record VanillaGiftLoot(HolderLookup.Provider registries) implements LootT
       var1.accept(BuiltInLootTables.BABY_VILLAGER_GIFT, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.POPPY))));
       var1.accept(BuiltInLootTables.SNIFFER_DIGGING, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.TORCHFLOWER_SEEDS)).add(LootItem.lootTableItem(Items.PITCHER_POD))));
       var1.accept(BuiltInLootTables.PANDA_SNEEZE, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.SLIME_BALL).setWeight(1)).add(EmptyLootItem.emptyItem().setWeight(699))));
-      var1.accept(BuiltInLootTables.CHICKEN_LAY, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.EGG))));
+      var1.accept(BuiltInLootTables.CHICKEN_LAY, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(AlternativesEntry.alternatives(LootItem.lootTableItem(Items.EGG).when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().components(DataComponentExactPredicate.expect(DataComponents.CHICKEN_VARIANT, new EitherHolder(var2.getOrThrow(ChickenVariants.TEMPERATE)))))), LootItem.lootTableItem(Items.BROWN_EGG).when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().components(DataComponentExactPredicate.expect(DataComponents.CHICKEN_VARIANT, new EitherHolder(var2.getOrThrow(ChickenVariants.WARM)))))), LootItem.lootTableItem(Items.BLUE_EGG).when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, EntityPredicate.Builder.entity().components(DataComponentExactPredicate.expect(DataComponents.CHICKEN_VARIANT, new EitherHolder(var2.getOrThrow(ChickenVariants.COLD))))))))));
       var1.accept(BuiltInLootTables.ARMADILLO_SHED, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.ARMADILLO_SCUTE))));
    }
 }

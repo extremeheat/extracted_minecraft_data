@@ -121,10 +121,10 @@ public class CloneCommands {
                   }
                }
 
-               int var31 = 2 | (var6 ? 304 : 0);
+               int var31 = 2 | (var6 ? 816 : 0);
                if (var5 == CloneCommands.Mode.MOVE) {
                   for(BlockPos var35 : var20) {
-                     var13.setBlock(var35, Blocks.BARRIER.defaultBlockState(), var31 | 304);
+                     var13.setBlock(var35, Blocks.BARRIER.defaultBlockState(), var31 | 816);
                   }
 
                   int var33 = var6 ? var31 : 3;
@@ -141,7 +141,7 @@ public class CloneCommands {
                List var37 = Lists.reverse(var34);
 
                for(CloneBlockInfo var41 : var37) {
-                  var14.setBlock(var41.pos, Blocks.BARRIER.defaultBlockState(), var31 | 304);
+                  var14.setBlock(var41.pos, Blocks.BARRIER.defaultBlockState(), var31 | 816);
                }
 
                int var40 = 0;

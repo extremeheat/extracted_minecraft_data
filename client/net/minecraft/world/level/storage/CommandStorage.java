@@ -72,7 +72,7 @@ public class CommandStorage {
 
       private Container(Map<String, CompoundTag> var1) {
          super();
-         this.storage = var1;
+         this.storage = new HashMap(var1);
       }
 
       private Container() {

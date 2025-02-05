@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -43,6 +44,10 @@ public class LeafLitterBlock extends VegetationBlock implements SegmentableBlock
 
    public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
       return this.canBeReplaced(var1, var2, this.getSegmentAmountProperty()) ? true : super.canBeReplaced(var1, var2);
+   }
+
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+      return canSupportCenter(var2, var3.below(), Direction.UP);
    }
 
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {

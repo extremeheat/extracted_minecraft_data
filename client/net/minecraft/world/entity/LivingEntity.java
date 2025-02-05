@@ -134,6 +134,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.slf4j.Logger;
 
 public abstract class LivingEntity extends Entity implements Attackable {
@@ -236,6 +237,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
    protected Brain<?> brain;
    private boolean skipDropExperience;
    private final EnumMap<EquipmentSlot, Reference2ObjectMap<Enchantment, Set<EnchantmentLocationBasedEffect>>> activeLocationDependentEnchantments;
+   protected final EntityEquipment equipment;
 
    protected LivingEntity(EntityType<? extends LivingEntity> var1, Level var2) {
       super(var1, var2);
@@ -244,12 +246,18 @@ public abstract class LivingEntity extends Entity implements Attackable {
       this.activeLocationDependentEnchantments = new EnumMap(EquipmentSlot.class);
       this.attributes = new AttributeMap(DefaultAttributes.getSupplier(var1));
       this.setHealth(this.getMaxHealth());
+      this.equipment = this.createEquipment();
       this.blocksBuilding = true;
       this.reapplyPosition();
       this.setYRot((float)(Math.random() * 6.2831854820251465));
       this.yHeadRot = this.getYRot();
       NbtOps var3 = NbtOps.INSTANCE;
       this.brain = this.makeBrain(new Dynamic(var3, (Tag)var3.createMap(ImmutableMap.of(var3.createString("memories"), (Tag)var3.emptyMap()))));
+   }
+
+   @SideEffectFree
+   protected EntityEquipment createEquipment() {
+      return new EntityEquipment();
    }
 
    public Brain<?> getBrain() {
@@ -693,6 +701,27 @@ public abstract class LivingEntity extends Entity implements Attackable {
          var1.putInt("ticks_since_last_hurt_by_mob", this.tickCount - this.lastHurtByMobTimestamp);
       }
 
+      if (!this.equipment.isEmpty()) {
+         var1.store("equipment", EntityEquipment.CODEC, var2, this.equipment);
+      }
+
+   }
+
+   @Nullable
+   public ItemEntity drop(ItemStack var1, boolean var2, boolean var3) {
+      if (var1.isEmpty()) {
+         return null;
+      } else if (this.level().isClientSide) {
+         this.swing(InteractionHand.MAIN_HAND);
+         return null;
+      } else {
+         ItemEntity var4 = this.createItemStackToDrop(var1, var2, var3);
+         if (var4 != null) {
+            this.level().addFreshEntity(var4);
+         }
+
+         return var4;
+      }
    }
 
    public void readAdditionalSaveData(CompoundTag var1) {
@@ -747,6 +776,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
       this.lastHurtByPlayerMemoryTime = var1.getInt("last_hurt_by_player_memory_time");
       this.lastHurtByMob = EntityReference.<LivingEntity>read(var1, "last_hurt_by_mob");
       this.lastHurtByMobTimestamp = var1.getInt("ticks_since_last_hurt_by_mob") + this.tickCount;
+      this.equipment.setAll((EntityEquipment)var1.read("equipment", EntityEquipment.CODEC, var2).orElseGet(EntityEquipment::new));
    }
 
    protected void tickEffects() {
@@ -2029,12 +2059,12 @@ public abstract class LivingEntity extends Entity implements Attackable {
       return true;
    }
 
-   public abstract ItemStack getItemBySlot(EquipmentSlot var1);
+   public ItemStack getItemBySlot(EquipmentSlot var1) {
+      return this.equipment.get(var1);
+   }
 
-   public abstract void setItemSlot(EquipmentSlot var1, ItemStack var2);
-
-   protected void verifyEquippedItem(ItemStack var1) {
-      var1.getItem().verifyComponentsAfterLoad(var1);
+   public void setItemSlot(EquipmentSlot var1, ItemStack var2) {
+      this.onEquipItem(var1, this.equipment.set(var1, var2), var2);
    }
 
    public float getArmorCoverPercentage() {
@@ -2644,6 +2674,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
          --this.lerpHeadSteps;
       }
 
+      this.equipment.tick(this);
       Vec3 var1 = this.getDeltaMovement();
       double var2 = var1.x;
       double var4 = var1.y;
@@ -3038,6 +3069,37 @@ public abstract class LivingEntity extends Entity implements Attackable {
          }
       }
 
+   }
+
+   @Nullable
+   private ItemEntity createItemStackToDrop(ItemStack var1, boolean var2, boolean var3) {
+      if (var1.isEmpty()) {
+         return null;
+      } else {
+         double var4 = this.getEyeY() - 0.30000001192092896;
+         ItemEntity var6 = new ItemEntity(this.level(), this.getX(), var4, this.getZ(), var1);
+         var6.setPickUpDelay(40);
+         if (var3) {
+            var6.setThrower(this);
+         }
+
+         if (var2) {
+            float var7 = this.random.nextFloat() * 0.5F;
+            float var8 = this.random.nextFloat() * 6.2831855F;
+            var6.setDeltaMovement((double)(-Mth.sin(var8) * var7), 0.20000000298023224, (double)(Mth.cos(var8) * var7));
+         } else {
+            float var14 = 0.3F;
+            float var15 = Mth.sin(this.getXRot() * 0.017453292F);
+            float var9 = Mth.cos(this.getXRot() * 0.017453292F);
+            float var10 = Mth.sin(this.getYRot() * 0.017453292F);
+            float var11 = Mth.cos(this.getYRot() * 0.017453292F);
+            float var12 = this.random.nextFloat() * 6.2831855F;
+            float var13 = 0.02F * this.random.nextFloat();
+            var6.setDeltaMovement((double)(-var10 * var9 * 0.3F) + Math.cos((double)var12) * (double)var13, (double)(-var15 * 0.3F + 0.1F + (this.random.nextFloat() - this.random.nextFloat()) * 0.1F), (double)(var11 * var9 * 0.3F) + Math.sin((double)var12) * (double)var13);
+         }
+
+         return var6;
+      }
    }
 
    protected void updateUsingItem(ItemStack var1) {
